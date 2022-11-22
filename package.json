@@ -1,0 +1,10 @@
+{
+  "name": "theme-check",
+  "version": "0.0.1",
+  "description": "The ultimate linter for Liquid, this time in TypeScript",
+  "main": "dist/index.js",
+  "repository": "https://github.com/Shopify/theme-check-js",
+  "author": "CP Clermont <cp.clermont@shopify.com>",
+  "license": "MIT",
+  "private": true
+}
