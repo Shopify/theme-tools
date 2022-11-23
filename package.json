@@ -6,5 +6,8 @@
   "repository": "https://github.com/Shopify/theme-check-js",
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "license": "MIT",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "typescript": "^4.9.3"
+  }
 }
