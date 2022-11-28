@@ -1,3 +1,5 @@
+import { NodeTypes, LiquidHtmlNode } from '@shopify/prettier-plugin-liquid/dist/types';
+
 interface Theme {
   files: Map<string, SourceCode>;
 }
@@ -18,7 +20,7 @@ enum SourceCodeType {
 interface JsonSourceCode
   extends BaseSourceCode<SourceCodeType.JSON, JSON> {}
 interface LiquidHtmlSourceCode
-  extends BaseSourceCode<SourceCodeType.LiquidHTML, LiquidHtmlAST> {}
+  extends BaseSourceCode<SourceCodeType.LiquidHTML, LiquidHtmlNode> {}
 
 type SourceCode = JsonSourceCode | LiquidHtmlSourceCode;
 
@@ -27,26 +29,7 @@ interface Config {
   checks: CheckDefinition[];
 }
 
-/* tmp == */
-enum NodeType {
-  AssignMarkup = 'AssignMarkup',
-  LiquidTag = 'LiquidTag',
-}
-
-type ASTNode = FooNode | BarNode;
-
-interface FooNode {
-  type: NodeType.AssignMarkup;
-  name: string;
-  markup: string[];
-}
-
-interface BarNode {
-  type: NodeType.LiquidTag;
-}
-/* ===== */
-
-type NodeOfType<T> = Extract<ASTNode, { type: T }>;
+type NodeOfType<T> = Extract<LiquidHtmlNode, { type: T }>;
 
 // Very intentionally eslint-like. Not reinventing the wheel + makes the
 // eslint plugin writing skills transferable.
@@ -73,11 +56,11 @@ type Check = CheckNodeMethods &
   CheckLifecycleMethods;
 
 type CheckNodeMethods = {
-  [T in NodeType]: (n: NodeOfType<T>) => Promise<void>;
+  [T in NodeTypes]: (n: NodeOfType<T>) => Promise<void>;
 };
 
 type CheckExitMethods = {
-  [T in NodeType as `${T}:exit`]: (n: NodeOfType<T>) => Promise<void>;
+  [T in NodeTypes as `${T}:exit`]: (n: NodeOfType<T>) => Promise<void>;
 };
 
 type CheckLifecycleMethods = {
