@@ -1,0 +1,9 @@
+{
+  "name": "@shopify/theme-check-common",
+  "version": "0.0.1",
+  "main": "index.ts",
+  "license": "MIT",
+  "dependencies": {
+    "@shopify/prettier-plugin-liquid": "^1.0.2"
+  }
+}

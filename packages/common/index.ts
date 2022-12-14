@@ -4,7 +4,7 @@ import {
 } from '@shopify/prettier-plugin-liquid/dist/types';
 
 // Immutable
-interface Theme {
+export interface Theme {
   files: Map<string, SourceCode<SourceCodeType>>;
 }
 
@@ -23,11 +23,13 @@ export enum SourceCodeType {
 }
 
 export type LiquidSourceCode = SourceCode<SourceCodeType.LiquidHtml>;
-export type LiquidCheckDefinition = CheckDefinition<SourceCodeType.LiquidHtml>
+export type LiquidCheckDefinition =
+  CheckDefinition<SourceCodeType.LiquidHtml>;
 export type LiquidCheck = Check<LiquidHtmlNode, LiquidSourceCode>;
 
 export type JSONSourceCode = SourceCode<SourceCodeType.JSON>;
-export type JSONCheckDefinition = CheckDefinition<SourceCodeType.JSON>
+export type JSONCheckDefinition =
+  CheckDefinition<SourceCodeType.JSON>;
 export type JSONCheck = Check<JSON, JSONSourceCode>;
 
 // AST[SourceCodeType.LiquidHtml] maps to LiquidHtmlNode
@@ -38,9 +40,13 @@ type AST = {
   }[T];
 };
 
+type CheckDefinitions<T> = [T] extends [infer P]
+  ? (P extends SourceCodeType ? CheckDefinition<P> : never)[]
+  : never;
+
 export interface Config {
   settings: {};
-  checks: CheckDefinition<SourceCodeType>[];
+  checks: CheckDefinitions<SourceCodeType>;
 }
 
 type NodeOfType<AST, T> = Extract<AST, { type: T }>;
@@ -233,9 +239,10 @@ export enum Severity {
   INFO = 2,
 }
 
+const resolve = () => Promise.resolve(undefined);
 const handleMissingMethod = {
   get(target: any, prop: string) {
-    if (!(prop in target)) return Promise.resolve;
+    if (!(prop in target)) return resolve;
     return target[prop];
   },
 };
@@ -282,7 +289,7 @@ function createContext<T extends SourceCodeType>(
 
 function checksOfType<T extends SourceCodeType>(
   type: T,
-  checks: CheckDefinition<SourceCodeType>[],
+  checks: CheckDefinitions<SourceCodeType>,
   offenses: Offense[],
 ): Check<AST[T], SourceCode<T>>[] {
   const filteredChecks = checks.filter(
