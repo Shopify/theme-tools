@@ -7,7 +7,13 @@
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "^4.9.3"
+  },
+  "dependencies": {
+    "@shopify/prettier-plugin-liquid": "^1.0.2"
   }
 }
