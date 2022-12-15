@@ -3,6 +3,8 @@ import {
   LiquidHtmlNode,
 } from '@shopify/prettier-plugin-liquid/dist/types';
 
+export { NodeTypes, LiquidHtmlNode };
+
 // Immutable
 export interface Theme {
   files: Map<string, SourceCode<SourceCodeType>>;

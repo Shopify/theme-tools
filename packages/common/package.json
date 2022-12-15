@@ -1,8 +1,11 @@
 {
   "name": "@shopify/theme-check-common",
-  "version": "0.0.1",
-  "main": "index.ts",
+  "version": "1.0.0",
+  "main": "dist/index.js",
   "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  },
   "dependencies": {
     "@shopify/prettier-plugin-liquid": "^1.0.2"
   }

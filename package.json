@@ -1,6 +1,6 @@
 {
   "name": "theme-check",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "The ultimate linter for Liquid, this time in TypeScript",
   "main": "dist/index.js",
   "repository": "https://github.com/Shopify/theme-check-js",
@@ -11,6 +11,7 @@
     "packages/*"
   ],
   "scripts": {
+    "build": "yarn workspaces run build",
     "cli": "node -r ts-node/register packages/node/cli",
     "cli:debug": "node --inspect-brk packages/node/dist/cli",
     "cli:debug:ts": "node --inspect-brk -r ts-node/register packages/node/cli",

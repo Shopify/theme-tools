@@ -1,14 +1,13 @@
 {
   "name": "@shopify/theme-check-node",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "webpack --mode production",
-    "dev:build": "webpack --mode development"
+    "build": "tsc -b tsconfig.build.json"
   },
   "dependencies": {
-    "@shopify/theme-check-common": "0.0.1",
+    "@shopify/theme-check-common": "1.0.0",
     "glob": "^8.0.3"
   },
   "devDependencies": {
