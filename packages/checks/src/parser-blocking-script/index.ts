@@ -40,11 +40,12 @@ export const ParserBlockingScript: LiquidCheckDefinition = {
         if (node.name !== 'script_tag') return;
         context.report(file, {
           message:
-            'Avoid parser blocking scripts by adding `defer` or `async` on this tag',
+            'The script_tag filter is parser-blocking. Use a <script> tag with async or defer for better performance',
           startIndex: node.position.start,
           endIndex: node.position.end,
         });
       },
+
       HtmlRawNode: async (node, file) => {
         if (node.name !== 'script') {
           return;
