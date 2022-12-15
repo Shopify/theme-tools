@@ -12,7 +12,9 @@
   ],
   "scripts": {
     "build": "yarn workspaces run build",
-    "cli": "node -r ts-node/register packages/node/cli",
+    "build:node": "yarn --cwd packages/node build",
+    "cli": "node packages/node/dist/cli",
+    "cli:ts": "node -r ts-node/register packages/node/src/cli",
     "cli:debug": "node --inspect-brk packages/node/dist/cli",
     "cli:debug:ts": "node --inspect-brk -r ts-node/register packages/node/cli",
     "type-check": "tsc --noEmit"

@@ -10,3 +10,4 @@ standalone.js.LICENSE.txt
 **/actual.liquid
 coverage
 .nyc_output
+tsconfig.builinfo
