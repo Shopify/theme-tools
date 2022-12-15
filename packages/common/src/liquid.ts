@@ -1,15 +1,11 @@
 import {
   LiquidHtmlNode,
-  NodeTypes,
-} from '@shopify/prettier-plugin-liquid/dist/types';
-import {
+  LiquidHtmlNodeTypes as NodeTypes,
   CheckNodeMethod,
   LiquidCheck,
   LiquidSourceCode,
   SourceCodeType,
 } from './types';
-
-export { LiquidHtmlNode, NodeTypes };
 
 function isLiquidHtmlNode(thing: unknown): thing is LiquidHtmlNode {
   return (

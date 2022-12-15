@@ -9,7 +9,6 @@ import {
   Theme,
   JSONSourceCode,
   LiquidSourceCode,
-  LiquidHtmlNode,
 } from '@shopify/theme-check-common';
 import { recommended } from '@shopify/theme-check-checks';
 
@@ -35,7 +34,7 @@ export async function toSourceCode(
         relativePath: path.relative(root, absolutePath),
         source,
         type: SourceCodeType.LiquidHtml,
-        ast: toLiquidHtmlAST(source) as any as LiquidHtmlNode,
+        ast: toLiquidHtmlAST(source),
       };
     } else {
       return {
