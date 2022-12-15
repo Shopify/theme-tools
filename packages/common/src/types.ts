@@ -1,7 +1,5 @@
-import {
-  LiquidHtmlNode,
-  NodeTypes as LiquidHtmlNodeTypes,
-} from '@shopify/prettier-plugin-liquid/dist/types';
+import { LiquidHtmlNode } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
+import { NodeTypes as LiquidHtmlNodeTypes } from '@shopify/prettier-plugin-liquid/dist/types';
 
 import {
   ArrayNode,

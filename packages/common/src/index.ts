@@ -1,8 +1,4 @@
 import {
-  NodeTypes,
-  LiquidHtmlNode,
-} from '@shopify/prettier-plugin-liquid/dist/types';
-import {
   Check,
   CheckDefinition,
   Config,
@@ -19,7 +15,6 @@ import {
 } from './types';
 import { visitLiquid } from './liquid';
 
-export { NodeTypes, LiquidHtmlNode };
 export * from './types';
 
 /**

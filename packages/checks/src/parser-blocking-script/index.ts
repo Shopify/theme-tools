@@ -1,6 +1,6 @@
 import {
   LiquidCheckDefinition,
-  NodeTypes,
+  LiquidHtmlNodeTypes as NodeTypes,
   Severity,
   SourceCodeType,
 } from '@shopify/theme-check-common';
