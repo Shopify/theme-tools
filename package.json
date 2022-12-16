@@ -18,6 +18,7 @@
     "cli:ts": "node -r ts-node/register packages/node/src/cli",
     "cli:debug": "node --inspect-brk packages/node/dist/cli",
     "cli:debug:ts": "node --inspect-brk -r ts-node/register packages/node/cli",
+    "playground": "npx http-server playground",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
