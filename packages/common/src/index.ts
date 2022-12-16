@@ -15,6 +15,7 @@ import {
   Theme,
 } from './types';
 import { visitLiquid, visitJSON } from './visitors';
+import lineColumn from 'line-column';
 
 export * from './types';
 export * from './checks';
@@ -65,15 +66,13 @@ function createSafeCheck<S extends SourceCodeType>(check: Partial<Check<S>>): Ch
   return new Proxy(check, handleMissingMethod);
 }
 
-function getPosition(_source: string | undefined, index: number): Position {
+function getPosition(source: string, index: number): Position {
+  const lineCol = lineColumn(source, { origin: 0 }).fromIndex(Math.min(index, source.length - 1));
+
   return {
     index,
-    get line() {
-      return 0; // TODO (should be lazy)
-    },
-    get character() {
-      return 0; // TODO
-    },
+    line: lineCol ? lineCol.line : -1,
+    character: lineCol ? lineCol.col : -1,
   };
 }
 

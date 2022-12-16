@@ -12,7 +12,7 @@ export type SourceCode<S> = S extends SourceCodeType
       relativePath: string; // snippet/foo.liquid
       absolutePath: string; // /path/to/snippet/foo.liquid
       version?: number;
-      source?: string;
+      source: string;
       type: S; // Liquid | LiquidHtml | JSON
       ast: AST[S]; // LiquidAST | LiquidHtmlAST | JSON object
     }

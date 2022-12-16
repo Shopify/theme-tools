@@ -135,6 +135,11 @@
   resolved "https://registry.yarnpkg.com/@types/json-to-ast/-/json-to-ast-2.1.2.tgz#1f6670cfcd44eb745472744a3630b4da563f27dc"
   integrity sha512-GEjR5l9wZGS74KhL1a1tZuyRJqdLB7LGgOXzWspJx9xxC/iyCFTwwKv71Lz8fzZyGuVW8FjASQGoYFi6XZJWLQ==
 
+"@types/line-column@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/line-column/-/line-column-1.0.0.tgz#fa5a59c21e885fef3739a273b43dacf55b63437f"
+  integrity sha512-wbw+IDRw/xY/RGy+BL6f4Eey4jsUgHQrMuA4Qj0CSG3x/7C2Oc57pmRoM2z3M4DkylWRz+G1pfX06sCXQm0J+w==
+
 "@types/minimatch@*":
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-5.1.2.tgz#07508b45797cb81ec3f273011b054cd0755eddca"

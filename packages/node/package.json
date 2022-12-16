@@ -8,7 +8,9 @@
   },
   "dependencies": {
     "@shopify/theme-check-common": "1.0.0",
-    "glob": "^8.0.3"
+    "@types/line-column": "^1.0.0",
+    "glob": "^8.0.3",
+    "line-column": "^1.0.2"
   },
   "devDependencies": {
     "@types/glob": "^8.0.0",

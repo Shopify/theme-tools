@@ -5,7 +5,9 @@ import {
   Severity,
   SourceCodeType,
 } from '@shopify/theme-check-common';
-import { LiteralNode, PropertyNode } from 'json-to-ast';
+import { LiteralNode, ObjectNode, PropertyNode } from 'json-to-ast';
+
+const PLURALIZATION_KEYS = new Set(['zero', 'one', 'two', 'few', 'many', 'other']);
 
 export const MatchingTranslations: JSONCheckDefinition = {
   meta: {
@@ -23,8 +25,13 @@ export const MatchingTranslations: JSONCheckDefinition = {
 
   create(context) {
     const translationsPerFile = new Map<JSONSourceCode, Map<string, PropertyNode>>();
-    const isLocaleFile = (file: JSONSourceCode) => file.relativePath.startsWith('locales/');
+    const isLocaleFile = (file: JSONSourceCode) =>
+      file.relativePath.startsWith('locales/') && !file.relativePath.endsWith('schema.json');
     const isTerminalNode = (node: JSONNode): node is LiteralNode => node.type === 'Literal';
+    const isObjectNode = (node: JSONNode): node is ObjectNode => node.type === 'Object';
+    const isPlurarizationNode = (node: PropertyNode) => PLURALIZATION_KEYS.has(node.key.value);
+    const isPlurarizationParent = (node: PropertyNode) =>
+      isObjectNode(node.value) && !!node.value.children.find(isPlurarizationNode);
 
     const objectPath = (nodes: JSONNode[]) => {
       return nodes
@@ -40,8 +47,11 @@ export const MatchingTranslations: JSONCheckDefinition = {
       },
 
       async Property(node, file, ancestors) {
-        if (!isLocaleFile(file) || !isTerminalNode(node.value)) return;
-        translationsPerFile.get(file)!.set(objectPath(ancestors.concat(node)), node);
+        if (!isLocaleFile(file)) return;
+        if (isPlurarizationNode(node)) return;
+        if (isTerminalNode(node.value) || isPlurarizationParent(node)) {
+          translationsPerFile.get(file)!.set(objectPath(ancestors.concat(node)), node);
+        }
       },
 
       async onEnd() {
