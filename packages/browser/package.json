@@ -1,5 +1,5 @@
 {
-  "name": "@shopify/theme-check-node",
+  "name": "@shopify/theme-check-browser",
   "version": "1.0.0",
   "main": "dist/index.js",
   "author": "CP Clermont <@charlespwd>",
@@ -8,10 +8,6 @@
     "build": "tsc -b tsconfig.build.json"
   },
   "dependencies": {
-    "@shopify/theme-check-common": "1.0.0",
-    "glob": "^8.0.3"
-  },
-  "devDependencies": {
-    "@types/glob": "^8.0.0"
+    "@shopify/theme-check-common": "1.0.0"
   }
 }

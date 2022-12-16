@@ -8,7 +8,11 @@
   },
   "dependencies": {
     "@shopify/prettier-plugin-liquid": "^1.0.2",
+    "json-to-ast": "^2.1.0",
+    "line-column": "^1.0.2"
+  },
+  "devDependencies": {
     "@types/json-to-ast": "^2.1.2",
-    "json-to-ast": "^2.1.0"
+    "@types/line-column": "^1.0.0"
   }
 }
