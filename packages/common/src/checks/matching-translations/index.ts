@@ -1,0 +1,108 @@
+import {
+  JSONCheckDefinition,
+  JSONNode,
+  JSONSourceCode,
+  Severity,
+  SourceCodeType,
+} from '@shopify/theme-check-common';
+import { LiteralNode, PropertyNode } from 'json-to-ast';
+
+export const MatchingTranslations: JSONCheckDefinition = {
+  meta: {
+    code: 'MatchingTranslations',
+    name: 'Translation files should have the same keys',
+    docs: {
+      description: 'TODO',
+      recommended: true,
+    },
+    type: SourceCodeType.JSON,
+    severity: Severity.ERROR,
+    schema: {},
+    targets: [],
+  },
+
+  create(context) {
+    const translationsPerFile = new Map<
+      JSONSourceCode,
+      Map<string, PropertyNode>
+    >();
+
+    const isLocaleFile = (file: JSONSourceCode) =>
+      file.relativePath.startsWith('locales/');
+
+    const isTerminalNode = (node: JSONNode): node is LiteralNode =>
+      node.type === 'Literal';
+
+    const objectPath = (nodes: JSONNode[]) => {
+      return nodes
+        .filter((node): node is PropertyNode => {
+          return node.type === 'Property';
+        })
+        .reduce((acc: string[], val) => acc.concat(val.key.value), [])
+        .join('.');
+    };
+
+    return {
+      async onCodePathStart(file) {
+        if (!isLocaleFile(file)) return;
+        translationsPerFile.set(file, new Map());
+      },
+
+      async Property(node, file, ancestors) {
+        if (!isLocaleFile(file) || !isTerminalNode(node.value)) return;
+        translationsPerFile
+          .get(file)!
+          .set(objectPath(ancestors.concat(node)), node);
+      },
+
+      async onEnd() {
+        const defaultTranslationsFile =
+          [...translationsPerFile.keys()].find((x) =>
+            x.relativePath.endsWith('.default.json'),
+          ) ||
+          [...translationsPerFile.keys()].find(
+            (x) => x.relativePath === 'locales/en.json',
+          );
+        if (!defaultTranslationsFile) return;
+
+        const defaultTranslations = translationsPerFile.get(
+          defaultTranslationsFile,
+        );
+        if (!defaultTranslations) return;
+
+        for (const [
+          file,
+          translations,
+        ] of translationsPerFile.entries()) {
+          if (file === defaultTranslationsFile) continue;
+
+          const missingInDefault = [...translations.keys()].filter(
+            (path) => !defaultTranslations.has(path),
+          );
+
+          for (const path of missingInDefault) {
+            const node = translations.get(path);
+            context.report(file, {
+              message: `A default translation for '${path}' does not exist`,
+              startIndex: node!.loc!.start.offset,
+              endIndex: node!.loc!.end.offset,
+            });
+          }
+
+          const missingInOther = [
+            ...defaultTranslations.keys(),
+          ].filter((path) => !translations.has(path));
+
+          for (const path of missingInOther) {
+            const commonAncestor = file.ast; // TODO, should be smarter than this
+            context.report(file, {
+              message: `Default translation '${path}' is missing`,
+              startIndex: commonAncestor.loc!.start.offset,
+              endIndex: file.ast.loc!.end.offset,
+            });
+          }
+        }
+      },
+    };
+  },
+};

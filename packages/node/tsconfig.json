@@ -8,8 +8,7 @@
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "references": [
-    { "path": "../common" },
-    { "path": "../checks" }
+    { "path": "../common" }
   ]
 }
 

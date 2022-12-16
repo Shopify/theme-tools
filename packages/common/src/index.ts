@@ -4,6 +4,7 @@ import {
   Config,
   Context,
   JSONCheck,
+  JSONSourceCode,
   LiquidCheck,
   LiquidSourceCode,
   Offense,
@@ -13,9 +14,10 @@ import {
   SourceCodeType,
   Theme,
 } from './types';
-import { visitLiquid } from './liquid';
+import { visitLiquid, visitJSON } from './visitors';
 
 export * from './types';
+export * from './checks';
 
 /**
  * What if this function was entirely pure?
@@ -25,15 +27,17 @@ export async function check(
   theme: Theme,
   config: Config,
 ): Promise<Offense[]> {
-  // That's a lot of promises :)
-  const pipelines: Promise<any>[] = [];
+  const pipelines: Promise<void>[] = [];
   const offenses: Offense[] = [];
   const allChecks: (LiquidCheck | JSONCheck)[] = [];
 
   for (const type of Object.values(SourceCodeType)) {
     switch (type) {
       case SourceCodeType.JSON: {
-        // visitJSON
+        const files = filesOfType(type, theme);
+        const checks = checksOfType(type, config.checks, offenses);
+        allChecks.push(...checks);
+        pipelines.push(checkJSONFiles(checks, files));
         break;
       }
       case SourceCodeType.LiquidHtml: {
@@ -125,19 +129,37 @@ function filesOfType<S extends SourceCodeType>(
   );
 }
 
+async function checkJSONFiles(
+  checks: JSONCheck[],
+  files: JSONSourceCode[],
+): Promise<void> {
+  await Promise.all(
+    files.map(async (file) => {
+      await Promise.all(
+        checks.map(async (check) => {
+          await check.onCodePathStart(file);
+          await visitJSON(file.ast, check, file);
+          await check.onCodePathEnd(file);
+        }),
+      );
+    }),
+  );
+}
+
 async function checkLiquidFiles(
   checks: LiquidCheck[],
   files: LiquidSourceCode[],
 ): Promise<void> {
-  await Promise.all([
+  await Promise.all(
     files.map(async (file) => {
-      await Promise.all([
+      // TODO obtain check ignore ranges before doing the following...
+      await Promise.all(
         checks.map(async (check) => {
           await check.onCodePathStart(file);
           await visitLiquid(file.ast, check, file);
           await check.onCodePathEnd(file);
         }),
-      ]);
+      );
     }),
-  ]);
+  );
 }

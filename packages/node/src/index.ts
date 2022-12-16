@@ -2,15 +2,15 @@ import { toLiquidHtmlAST } from '@shopify/prettier-plugin-liquid/dist/parser/sta
 import toJSON from 'json-to-ast';
 
 import {
-  check as coreCheck,
-  Offense,
   Config,
-  SourceCodeType,
-  Theme,
   JSONSourceCode,
   LiquidSourceCode,
+  Offense,
+  SourceCodeType,
+  Theme,
+  check as coreCheck,
+  recommended,
 } from '@shopify/theme-check-common';
-import { recommended } from '@shopify/theme-check-checks';
 
 import { promisify } from 'node:util';
 import path from 'node:path';

@@ -206,6 +206,7 @@ export type Check<S> = S extends SourceCodeType
 export type CheckNodeMethod<S extends SourceCodeType, T> = (
   node: NodeOfType<S, T>,
   file: SourceCode<S>,
+  ancestors: AST[S][],
 ) => Promise<void>;
 
 type CheckNodeMethods<S extends SourceCodeType> = {

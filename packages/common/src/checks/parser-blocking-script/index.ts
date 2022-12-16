@@ -36,6 +36,7 @@ export const ParserBlockingScript: LiquidCheckDefinition = {
 
   create(context) {
     return {
+      // { { 'asset' | asset_url | script_tag } }
       LiquidFilter: async (node, file) => {
         if (node.name !== 'script_tag') return;
         context.report(file, {
@@ -46,6 +47,7 @@ export const ParserBlockingScript: LiquidCheckDefinition = {
         });
       },
 
+      // <script src="...">
       HtmlRawNode: async (node, file) => {
         if (node.name !== 'script') {
           return;

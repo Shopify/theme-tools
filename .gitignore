@@ -11,3 +11,4 @@ standalone.js.LICENSE.txt
 coverage
 .nyc_output
 tsconfig.builinfo
+tsconfig.tsbuildinfo
