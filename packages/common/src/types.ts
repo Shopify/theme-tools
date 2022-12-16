@@ -1,13 +1,7 @@
 import { LiquidHtmlNode } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
 import { NodeTypes as LiquidHtmlNodeTypes } from '@shopify/prettier-plugin-liquid/dist/types';
 
-import {
-  ArrayNode,
-  IdentifierNode,
-  LiteralNode,
-  ObjectNode,
-  PropertyNode,
-} from 'json-to-ast';
+import { ArrayNode, IdentifierNode, LiteralNode, ObjectNode, PropertyNode } from 'json-to-ast';
 
 export interface Theme {
   files: Map<string, SourceCode<SourceCodeType>>;
@@ -30,31 +24,19 @@ export enum SourceCodeType {
 }
 
 export type LiquidSourceCode = SourceCode<SourceCodeType.LiquidHtml>;
-export type LiquidCheckDefinition =
-  CheckDefinition<SourceCodeType.LiquidHtml>;
+export type LiquidCheckDefinition = CheckDefinition<SourceCodeType.LiquidHtml>;
 export type LiquidCheck = Check<SourceCodeType.LiquidHtml>;
 
 export { LiquidHtmlNodeTypes };
 export { LiquidHtmlNode };
 
 export type JSONSourceCode = SourceCode<SourceCodeType.JSON>;
-export type JSONCheckDefinition =
-  CheckDefinition<SourceCodeType.JSON>;
+export type JSONCheckDefinition = CheckDefinition<SourceCodeType.JSON>;
 export type JSONCheck = Check<SourceCodeType.JSON>;
 
-export type JSONNodeTypes =
-  | 'Object'
-  | 'Property'
-  | 'Identifier'
-  | 'Array'
-  | 'Literal';
+export type JSONNodeTypes = 'Object' | 'Property' | 'Identifier' | 'Array' | 'Literal';
 
-export type JSONNode =
-  | ArrayNode
-  | IdentifierNode
-  | LiteralNode
-  | ObjectNode
-  | PropertyNode;
+export type JSONNode = ArrayNode | IdentifierNode | LiteralNode | ObjectNode | PropertyNode;
 
 // AST[SourceCodeType.LiquidHtml] maps to LiquidHtmlNode
 export type AST = {
@@ -76,10 +58,7 @@ export interface Config {
   checks: CheckDefinition<SourceCodeType>[];
 }
 
-type NodeOfType<S extends SourceCodeType, T> = Extract<
-  AST[S],
-  { type: T }
->;
+type NodeOfType<S extends SourceCodeType, T> = Extract<AST[S], { type: T }>;
 
 // Very intentionally eslint-like. Not reinventing the wheel + makes the
 // eslint plugin writing skills transferable.
@@ -198,9 +177,7 @@ export type CheckDefinition<T> = T extends SourceCodeType
  * }
  */
 export type Check<S> = S extends SourceCodeType
-  ? CheckNodeMethods<S> &
-      CheckExitMethods<S> &
-      CheckLifecycleMethods<S>
+  ? CheckNodeMethods<S> & CheckExitMethods<S> & CheckLifecycleMethods<S>
   : never;
 
 export type CheckNodeMethod<S extends SourceCodeType, T> = (

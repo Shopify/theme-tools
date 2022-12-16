@@ -23,10 +23,7 @@ export * from './checks';
  * What if this function was entirely pure?
  * Would make it rather easy to extend...
  */
-export async function check(
-  theme: Theme,
-  config: Config,
-): Promise<Offense[]> {
+export async function check(theme: Theme, config: Config): Promise<Offense[]> {
   const pipelines: Promise<void>[] = [];
   const offenses: Offense[] = [];
   const allChecks: (LiquidCheck | JSONCheck)[] = [];
@@ -64,16 +61,11 @@ const handleMissingMethod = {
   },
 };
 
-function createSafeCheck<S extends SourceCodeType>(
-  check: Partial<Check<S>>,
-): Check<S> {
+function createSafeCheck<S extends SourceCodeType>(check: Partial<Check<S>>): Check<S> {
   return new Proxy(check, handleMissingMethod);
 }
 
-function getPosition(
-  _source: string | undefined,
-  index: number,
-): Position {
+function getPosition(_source: string | undefined, index: number): Position {
   return {
     index,
     get line() {
@@ -110,9 +102,7 @@ function checksOfType<S extends SourceCodeType>(
   offenses: Offense[],
 ): Check<S>[] {
   return checks
-    .filter(
-      (def): def is CheckDefinition<S> => def.meta.type === type,
-    )
+    .filter((def): def is CheckDefinition<S> => def.meta.type === type)
     .map((check) => {
       const context = createContext(check, offenses);
       return check.create(context as any);
@@ -120,19 +110,13 @@ function checksOfType<S extends SourceCodeType>(
     .map(createSafeCheck) as Check<S>[];
 }
 
-function filesOfType<S extends SourceCodeType>(
-  type: S,
-  theme: Theme,
-): SourceCode<S>[] {
+function filesOfType<S extends SourceCodeType>(type: S, theme: Theme): SourceCode<S>[] {
   return Array.from(theme.files.values()).filter(
     (file): file is SourceCode<S> => file.type === type,
   );
 }
 
-async function checkJSONFiles(
-  checks: JSONCheck[],
-  files: JSONSourceCode[],
-): Promise<void> {
+async function checkJSONFiles(checks: JSONCheck[], files: JSONSourceCode[]): Promise<void> {
   await Promise.all(
     files.map(async (file) => {
       await Promise.all(
@@ -146,10 +130,7 @@ async function checkJSONFiles(
   );
 }
 
-async function checkLiquidFiles(
-  checks: LiquidCheck[],
-  files: LiquidSourceCode[],
-): Promise<void> {
+async function checkLiquidFiles(checks: LiquidCheck[], files: LiquidSourceCode[]): Promise<void> {
   await Promise.all(
     files.map(async (file) => {
       // TODO obtain check ignore ranges before doing the following...

@@ -52,25 +52,15 @@ export async function toSourceCode(
 
 export async function getTheme(root: string): Promise<Theme> {
   root = root.startsWith('/') ? `${process.cwd()}/${root}` : root;
-  const paths = await asyncGlob(
-    path.join(root, '**/*.{liquid,json}'),
-  );
-  const fileKVs: [
-    string,
-    LiquidSourceCode | JSONSourceCode | undefined,
-  ][] = await Promise.all(
+  const paths = await asyncGlob(path.join(root, '**/*.{liquid,json}'));
+  const fileKVs: [string, LiquidSourceCode | JSONSourceCode | undefined][] = await Promise.all(
     paths.map(async (absolutePath) => [
       path.relative(root, absolutePath),
       await toSourceCode(absolutePath, root),
     ]),
   );
   return {
-    files: new Map(
-      fileKVs.filter(([, v]) => !!v) as [
-        string,
-        LiquidSourceCode | JSONSourceCode,
-      ][],
-    ),
+    files: new Map(fileKVs.filter(([, v]) => !!v) as [string, LiquidSourceCode | JSONSourceCode][]),
   };
 }
 

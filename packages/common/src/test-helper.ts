@@ -60,20 +60,11 @@ export type MockTheme = {
 };
 
 export function getTheme(themeDesc: MockTheme): Theme {
-  const fileKVs: [
-    string,
-    LiquidSourceCode | JSONSourceCode | undefined,
-  ][] = Object.entries(themeDesc).map(([relativePath, source]) => [
-    relativePath,
-    toSourceCode(relativePath, source),
-  ]);
+  const fileKVs: [string, LiquidSourceCode | JSONSourceCode | undefined][] = Object.entries(
+    themeDesc,
+  ).map(([relativePath, source]) => [relativePath, toSourceCode(relativePath, source)]);
   return {
-    files: new Map(
-      fileKVs.filter(([, v]) => !!v) as [
-        string,
-        LiquidSourceCode | JSONSourceCode,
-      ][],
-    ),
+    files: new Map(fileKVs.filter(([, v]) => !!v) as [string, LiquidSourceCode | JSONSourceCode][]),
   };
 }
 

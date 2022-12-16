@@ -5,11 +5,7 @@ import {
   SourceCodeType,
 } from '@shopify/theme-check-common';
 
-function isSimplePropertyEqualTo(
-  node: any,
-  property: string,
-  value: string,
-): boolean {
+function isSimplePropertyEqualTo(node: any, property: string, value: string): boolean {
   if (!(property in node)) return false;
   const propertyValue = node[property];
   if (!Array.isArray(propertyValue)) return false;
@@ -72,8 +68,7 @@ export const ParserBlockingScript: LiquidCheckDefinition = {
         }
 
         context.report(file, {
-          message:
-            'Avoid parser blocking scripts by adding `defer` or `async` on this tag',
+          message: 'Avoid parser blocking scripts by adding `defer` or `async` on this tag',
           startIndex: node.blockStartPosition.start,
           endIndex: node.blockEndPosition.end,
         });

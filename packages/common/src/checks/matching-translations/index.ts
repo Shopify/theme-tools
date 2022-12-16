@@ -22,22 +22,13 @@ export const MatchingTranslations: JSONCheckDefinition = {
   },
 
   create(context) {
-    const translationsPerFile = new Map<
-      JSONSourceCode,
-      Map<string, PropertyNode>
-    >();
-
-    const isLocaleFile = (file: JSONSourceCode) =>
-      file.relativePath.startsWith('locales/');
-
-    const isTerminalNode = (node: JSONNode): node is LiteralNode =>
-      node.type === 'Literal';
+    const translationsPerFile = new Map<JSONSourceCode, Map<string, PropertyNode>>();
+    const isLocaleFile = (file: JSONSourceCode) => file.relativePath.startsWith('locales/');
+    const isTerminalNode = (node: JSONNode): node is LiteralNode => node.type === 'Literal';
 
     const objectPath = (nodes: JSONNode[]) => {
       return nodes
-        .filter((node): node is PropertyNode => {
-          return node.type === 'Property';
-        })
+        .filter((node): node is PropertyNode => node.type === 'Property')
         .reduce((acc: string[], val) => acc.concat(val.key.value), [])
         .join('.');
     };
@@ -50,30 +41,20 @@ export const MatchingTranslations: JSONCheckDefinition = {
 
       async Property(node, file, ancestors) {
         if (!isLocaleFile(file) || !isTerminalNode(node.value)) return;
-        translationsPerFile
-          .get(file)!
-          .set(objectPath(ancestors.concat(node)), node);
+        translationsPerFile.get(file)!.set(objectPath(ancestors.concat(node)), node);
       },
 
       async onEnd() {
+        const files = [...translationsPerFile.keys()];
         const defaultTranslationsFile =
-          [...translationsPerFile.keys()].find((x) =>
-            x.relativePath.endsWith('.default.json'),
-          ) ||
-          [...translationsPerFile.keys()].find(
-            (x) => x.relativePath === 'locales/en.json',
-          );
+          files.find((x) => x.relativePath.endsWith('.default.json')) ||
+          files.find((x) => x.relativePath === 'locales/en.json');
         if (!defaultTranslationsFile) return;
 
-        const defaultTranslations = translationsPerFile.get(
-          defaultTranslationsFile,
-        );
+        const defaultTranslations = translationsPerFile.get(defaultTranslationsFile);
         if (!defaultTranslations) return;
 
-        for (const [
-          file,
-          translations,
-        ] of translationsPerFile.entries()) {
+        for (const [file, translations] of translationsPerFile.entries()) {
           if (file === defaultTranslationsFile) continue;
 
           const missingInDefault = [...translations.keys()].filter(
@@ -89,16 +70,16 @@ export const MatchingTranslations: JSONCheckDefinition = {
             });
           }
 
-          const missingInOther = [
-            ...defaultTranslations.keys(),
-          ].filter((path) => !translations.has(path));
+          const missingInOther = [...defaultTranslations.keys()].filter(
+            (path) => !translations.has(path),
+          );
 
           for (const path of missingInOther) {
             const commonAncestor = file.ast; // TODO, should be smarter than this
             context.report(file, {
               message: `Default translation '${path}' is missing`,
               startIndex: commonAncestor.loc!.start.offset,
-              endIndex: file.ast.loc!.end.offset,
+              endIndex: commonAncestor.loc!.end.offset,
             });
           }
         }

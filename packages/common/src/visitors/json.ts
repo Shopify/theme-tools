@@ -1,10 +1,4 @@
-import {
-  JSONNode,
-  CheckNodeMethod,
-  JSONCheck,
-  JSONSourceCode,
-  SourceCodeType,
-} from '../types';
+import { JSONNode, CheckNodeMethod, JSONCheck, JSONSourceCode, SourceCodeType } from '../types';
 
 function isJSONNode(thing: unknown): thing is JSONNode {
   return !!thing && typeof thing === 'object' && 'type' in thing;
@@ -16,10 +10,7 @@ function onCheckNodeEnterMethod(
   file: JSONSourceCode,
   ancestors: JSONNode[],
 ): Promise<void> {
-  const method = check[node.type] as CheckNodeMethod<
-    SourceCodeType.JSON,
-    typeof node.type
-  >;
+  const method = check[node.type] as CheckNodeMethod<SourceCodeType.JSON, typeof node.type>;
   return method(node, file, ancestors);
 }
 
@@ -54,11 +45,7 @@ export async function visitJSON(
 
     if (Array.isArray(value)) {
       await Promise.all(
-        value
-          .filter(isJSONNode)
-          .map((node: JSONNode) =>
-            visitJSON(node, check, file, lineage),
-          ),
+        value.filter(isJSONNode).map((node: JSONNode) => visitJSON(node, check, file, lineage)),
       );
     } else if (isJSONNode(value)) {
       await visitJSON(value, check, file, lineage);

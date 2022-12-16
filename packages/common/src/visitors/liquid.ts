@@ -10,10 +10,7 @@ import {
 
 function isLiquidHtmlNode(thing: unknown): thing is LiquidHtmlNode {
   return (
-    !!thing &&
-    typeof thing === 'object' &&
-    'type' in thing &&
-    !!NodeTypes[thing.type as NodeTypes]
+    !!thing && typeof thing === 'object' && 'type' in thing && !!NodeTypes[thing.type as NodeTypes]
   );
 }
 
@@ -23,10 +20,7 @@ function onCheckNodeEnterMethod(
   file: LiquidSourceCode,
   ancestors: LiquidHtmlNode[] = [],
 ): Promise<void> {
-  const method = check[node.type] as CheckNodeMethod<
-    SourceCodeType.LiquidHtml,
-    typeof node.type
-  >;
+  const method = check[node.type] as CheckNodeMethod<SourceCodeType.LiquidHtml, typeof node.type>;
   return method(node, file, ancestors);
 }
 
@@ -61,9 +55,7 @@ export async function visitLiquid(
       await Promise.all(
         value
           .filter(isLiquidHtmlNode)
-          .map((node: LiquidHtmlNode) =>
-            visitLiquid(node, check, file, lineage),
-          ),
+          .map((node: LiquidHtmlNode) => visitLiquid(node, check, file, lineage)),
       );
     } else if (isLiquidHtmlNode(value)) {
       await visitLiquid(value, check, file, lineage);

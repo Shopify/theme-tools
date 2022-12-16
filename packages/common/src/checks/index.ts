@@ -7,6 +7,4 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   MatchingTranslations,
 ];
 
-export const recommended = allChecks.filter(
-  (check) => check.meta.docs.recommended,
-);
+export const recommended = allChecks.filter((check) => check.meta.docs.recommended);
