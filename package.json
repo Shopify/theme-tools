@@ -1,0 +1,10 @@
+{
+  "name": "@shopify/liquid-language-server",
+  "version": "0.0.1",
+  "description": "A Liquid Language Server for all your DX needs",
+  "main": "index.js",
+  "repository": "https://github.com/Shopify/liquid-language-server",
+  "author": "CP Clermont <@charlespwd>",
+  "license": "MIT",
+  "private": false
+}
