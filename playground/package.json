@@ -1,0 +1,10 @@
+{
+  "name": "@shopify/liquid-language-server-playground",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "author": "CP Clermont <cp.clermont@shopify.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack"
+  }
+}
