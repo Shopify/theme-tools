@@ -1,6 +1,6 @@
 const worker = new Worker(new URL('./worker.js', import.meta.url));
 
-console.log('[MAIN] hello worker')
+console.log('[MAIN] hello worker');
 
 worker.postMessage({
   jsonrpc: '2.0',
@@ -12,6 +12,6 @@ worker.postMessage({
 });
 
 worker.addEventListener('message', ({ data: message }) => {
-  console.log('[MAIN] message!')
+  console.log('[MAIN] message!');
   console.log(`[MAIN] Received ${typeof message}:`, message);
 });
