@@ -4,3 +4,6 @@ yarn-error.log
 .DS_Store
 coverage
 .nyc_output
+tsconfig.tsbuildinfo
+packages/browser/standalone.js
+packages/browser/standalone.js.map

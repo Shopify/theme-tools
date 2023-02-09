@@ -1,0 +1,17 @@
+{
+  "name": "@shopify/liquid-language-server-node",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "author": "CP Clermont <cp.clermont@shopify.com>",
+  "license": "MIT",
+  "private": false,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json"
+  },
+  "dependencies": {
+    "@shopify/liquid-language-server-common": "1.0.0"
+  }
+}
