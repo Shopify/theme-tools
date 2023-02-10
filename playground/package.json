@@ -5,6 +5,7 @@
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "license": "MIT",
   "scripts": {
-    "build": "webpack"
+    "build": "webpack",
+    "dev": "webpack serve"
   }
 }

@@ -18,8 +18,17 @@ const config = {
   plugins: [
     new HtmlWebpackPlugin({
       title: 'Output Management',
+      template: path.join(path.resolve(__dirname), 'src/index.html'),
     }),
   ],
+  module: {
+    rules: [
+      {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader'],
+      },
+    ],
+  },
   devtool: 'source-map',
   infrastructureLogging: {
     level: 'log', // enables logging required for problem matchers
