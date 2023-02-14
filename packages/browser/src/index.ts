@@ -53,5 +53,7 @@ export function startServer(channel: Worker) {
   };
 
   const connection = createConnection(reader, writer);
-  startCoreServer(connection);
+  startCoreServer(connection, {
+    log: (message: string) => console.log(message),
+  });
 }

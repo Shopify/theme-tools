@@ -16,10 +16,7 @@
     "build:playground": "yarn --cwd playground build",
     "dev:playground": "yarn --cwd playground dev",
     "format": "prettier --write packages/**/*.ts",
-    "cli": "node packages/node/dist/cli",
-    "cli:ts": "node -r ts-node/register packages/node/src/cli",
-    "cli:debug": "node --inspect-brk packages/node/dist/cli",
-    "cli:debug:ts": "node --inspect-brk -r ts-node/register packages/node/cli",
+    "cli": "scripts/language-server-liquid",
     "playground": "npx http-server playground/dist",
     "type-check": "tsc --noEmit"
   },

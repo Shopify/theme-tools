@@ -4,7 +4,7 @@ const input = document.getElementById('input');
 const output = document.getElementById('output');
 const worker = new Worker(new URL('./worker.js', import.meta.url));
 const requests = new Map();
-let textDocumentVersion;
+let textDocumentVersion = 0;
 let id = 0;
 
 function sendMessage(message) {

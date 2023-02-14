@@ -1,12 +1,28 @@
 import { Connection, InitializeResult } from 'vscode-languageserver';
 
-// Inject "boundary" stuff
-// But what is it?
-// - Filesystem
-// - Formatter
-// - The way it was built
-export function startServer(connection: Connection) {
-  connection.onInitialize((_params) => {
+interface Dependencies {
+  log?(message: string): void;
+}
+
+const defaultLogger = () => {};
+
+/**
+ * This code runs in node and the browser, it can't talk to the file system
+ * or make requests. Stuff like that should be injected.
+ */
+export function startServer(
+  connection: Connection,
+  { log = defaultLogger }: Dependencies = {},
+) {
+  log('wooot')
+  connection.onInitialize((params) => {
+    log(
+      `[SERVER] Received initialize request with params:\n ${JSON.stringify(
+        params,
+        null,
+        2,
+      )}`,
+    );
     const result: InitializeResult = {
       capabilities: {},
       serverInfo: {
