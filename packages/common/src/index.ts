@@ -14,7 +14,6 @@ export function startServer(
   connection: Connection,
   { log = defaultLogger }: Dependencies = {},
 ) {
-  log('wooot')
   connection.onInitialize((params) => {
     log(
       `[SERVER] Received initialize request with params:\n ${JSON.stringify(

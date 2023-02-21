@@ -12,7 +12,7 @@ const disposable = (dispose: () => void): Disposable => ({ dispose });
 // This is where you do the worker.postMessage stuff?
 // Or is this where we accept the worker.postMessage stuff?
 // Yeah I think this is where you _accept_ the worker.postMessage stuff
-export function startServer(channel: Worker) {
+export function startServer(worker: Worker) {
   // This is just ugly glue code that basically pipes the messages from the
   // worker connection to the library. They have a very specific interface
   // we need to map to, so that's what we're doing here.
@@ -29,9 +29,9 @@ export function startServer(channel: Worker) {
     dispose() {},
     listen(callback) {
       const onMessage = (message: MessageEvent<any>) => callback(message.data);
-      channel.addEventListener('message', onMessage);
+      worker.addEventListener('message', onMessage);
       return disposable(() =>
-        channel.removeEventListener('message', onMessage),
+        worker.removeEventListener('message', onMessage),
       );
     },
   };
@@ -48,7 +48,7 @@ export function startServer(channel: Worker) {
     dispose() {},
     end() {},
     async write(msg: Message) {
-      channel.postMessage(msg);
+      worker.postMessage(msg);
     },
   };
 
