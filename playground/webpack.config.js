@@ -9,7 +9,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 /** @type WebpackConfig */
 const config = {
   mode: 'development',
-  entry: './src/playground.js',
+  entry: './src/playground.ts',
   output: {
     path: path.join(path.resolve(__dirname), 'dist'),
     filename: '[name].bundle.js',
