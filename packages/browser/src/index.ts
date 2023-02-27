@@ -18,7 +18,7 @@ export { allChecks, recommended, Config };
 export function toSourceCode(
   relativePath: string,
   source: string,
-  version: number,
+  version?: number,
 ): LiquidSourceCode | JSONSourceCode | undefined {
   try {
     const isLiquid = relativePath.endsWith('.liquid');

@@ -4,8 +4,9 @@
   "main": "dist/index.js",
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
-    "test": "mocha 'src/**/*.ts'"
+    "build": "tsc -b tsconfig.build.json",
+    "test": "mocha 'src/**/*.ts'",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@shopify/prettier-plugin-liquid": "^1.0.2",
