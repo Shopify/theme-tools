@@ -15,9 +15,10 @@ import {
 
 export { allChecks, recommended, Config };
 
-function toSourceCode(
+export function toSourceCode(
   relativePath: string,
   source: string,
+  version: number,
 ): LiquidSourceCode | JSONSourceCode | undefined {
   try {
     const isLiquid = relativePath.endsWith('.liquid');
@@ -29,6 +30,7 @@ function toSourceCode(
         source,
         type: SourceCodeType.LiquidHtml,
         ast: toLiquidHtmlAST(source),
+        version: version,
       };
     } else {
       return {
@@ -37,6 +39,7 @@ function toSourceCode(
         source,
         type: SourceCodeType.JSON,
         ast: toJSON(source),
+        version: version,
       };
     }
   } catch (e) {
