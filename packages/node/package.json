@@ -5,7 +5,8 @@
   "author": "CP Clermont <@charlespwd>",
   "license": "MIT",
   "scripts": {
-    "build": "tsc -b tsconfig.build.json"
+    "build": "tsc -b tsconfig.build.json",
+    "test": "mocha 'src/**/*.ts'"
   },
   "dependencies": {
     "@shopify/theme-check-common": "1.0.0",
