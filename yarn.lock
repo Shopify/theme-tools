@@ -62,10 +62,10 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@shopify/prettier-plugin-liquid@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@shopify/prettier-plugin-liquid/-/prettier-plugin-liquid-1.0.2.tgz#608a22100199a7e62c731f909fe9f4f26e6cf6f8"
-  integrity sha512-Y6NBcfbdcgKyS0S2cqpFbN3iL328ivexizjvScIdeDl4SZ5YGImINqMWG/J+ec+OwnDZgecqgeZm4qHMJ3CwOg==
+"@shopify/prettier-plugin-liquid@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@shopify/prettier-plugin-liquid/-/prettier-plugin-liquid-1.0.6.tgz#f269150e48b211d41bc141ff2cffbcd0ca449ff3"
+  integrity sha512-Z4fo0H4jkmlRBRDxFbayiXDu4nWV2ZoUqdYKT7QFjIqMRM/xsBOd+GiLgZE6Nomdl8I0DF9Oyy0UCZZMn6QYXg==
   dependencies:
     html-styles "^1.0.0"
     line-column "^1.0.2"
