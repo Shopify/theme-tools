@@ -32,5 +32,9 @@ export function startServer(
     return result;
   });
 
+  connection.onInitialized(() => {
+    log(`[SERVER] Let's roll!`);
+  });
+
   connection.listen();
 }

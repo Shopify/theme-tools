@@ -1,180 +1,112 @@
 import {
-  InitializeResult,
-  PublishDiagnosticsNotification,
-  PublishDiagnosticsParams,
-} from 'vscode-languageserver-protocol';
-import {
-  DidChangeTextDocumentParams,
   DidChangeTextDocumentNotification,
   DidOpenTextDocumentNotification,
-  InitializeRequest,
+  InitializedNotification,
   InitializeParams,
-  ResponseMessage,
+  InitializeRequest,
+  PublishDiagnosticsNotification,
 } from 'vscode-languageserver-protocol';
-import {} from 'vscode-languageserver-types';
+import * as is from './is';
+import { SimpleLanguageClient } from './simple-language-client';
 import './styles.css';
 
-const input = document.getElementById('input') as HTMLTextAreaElement;
+const inputTextArea = document.getElementById('input') as HTMLTextAreaElement;
 const output = document.getElementById('output') as HTMLTextAreaElement;
 
-interface PromiseCompletion {
-  resolve(value: unknown): void;
-  reject(error: unknown): void;
-}
-
-function isResponse(message: any): message is ResponseMessage {
-  return message.id && ('error' in message || 'result' in message);
-}
-
-class SimpleLanguageClient extends EventTarget {
-  private requestId: number;
-  private requests: Map<string, PromiseCompletion>;
-  private dispose: () => void;
-
-  constructor(public readonly worker: Worker) {
-    super();
-    this.requests = new Map();
-    this.requestId = 0;
-    this.dispose = () => {};
-  }
-
-  /**
-   * This is the method you use to react to messages from the server.
-   *
-   * @example
-   * client.on('textDocument/publishDiagnostics', (params: PublishDiagnosticsParams) => {
-   *   ...
-   * })
-   */
-  on<T>(method: string, callback: (params: T) => void): void {
-    this.addEventListener(method, (event: Event) => {
-      callback((event as CustomEvent<T>).detail);
-    });
-  }
-
-  /**
-   * Lifecycle method to start the server
-   */
-  start() {
-    const handler = this.handleMessage.bind(this);
-    this.worker.addEventListener('message', handler);
-    this.dispose = () => {
-      this.worker.removeEventListener('message', handler);
-    };
-  }
-
-  /**
-   * Lifecycle method to stop the server. Incomplete.
-   */
-  stop() {
-    this.dispose();
-  }
-
-  /**
-   * Map messages to their correct destition.
-   *  - Responses -> resolve or reject the corresponding Request
-   *  - Notification -> emit(message.method, message.params)
-   *  - Request -> emit(message.method, message.params)
-   */
-  private handleMessage(message: any) {
-    if (isResponse(message)) {
-      const id = message.id!.toString();
-      if ('result' in message) {
-        this.requests.get(id)!.resolve(message.result!);
-      } else {
-        this.requests.get(id)!.reject(message.error);
-      }
-      this.requests.delete(id);
-    } else {
-      this.dispatchEvent(new CustomEvent(message.method, message.params));
-    }
-  }
-
-  async sendRequest<ReturnType>(
-    method: string,
-    params?: any,
-  ): Promise<ReturnType> {
-    this.requestId += 1;
-    this.sendMessage({
-      id: this.requestId,
-      method,
-      params,
-    });
-
-    return new Promise((resolve, reject) => {
-      this.requests.set(this.requestId.toString(), { resolve, reject });
-    });
-  }
-
-  sendNotification(method: string, params?: any): void {
-    this.sendMessage({
-      method,
-      params,
-    });
-  }
-
-  sendMessage(message: any) {
-    message.jsonrpc = '2.0';
-    this.worker.postMessage(message);
-  }
+function log(message: any, prefix = '') {
+  output.innerHTML += '\n';
+  output.innerHTML += `${prefix}\n`;
+  output.innerHTML += JSON.stringify(message, null, 2);
+  console.log(message);
 }
 
 async function main() {
+  // We initialize the language server in a web worker.
   const languageServer = new Worker(new URL('./worker.js', import.meta.url));
-  const client = new SimpleLanguageClient(languageServer);
+
+  // We initialize a language client on the main thread that will
+  // communicate with the language server
+  const client = new SimpleLanguageClient(languageServer, { log });
+
+  // We setup message handlers.
+  // Here's one that listens to `textDocument/publishDiagnostics`
+  // notifications and logs them to the console.
+  client.onNotification(PublishDiagnosticsNotification.type, (params) => {
+    // Note that `params` has an inferred type here :D
+    console.log('received diagnostics!', params.diagnostics);
+  });
+
+  // We start the client.
   client.start();
 
+  // State initializer (don't worry about that right now)
   let textDocumentVersion = 0;
 
-  // Initialize loop
+  // You can use the types directly by importing them from the lib, but you
+  // can also dump it directly in the method call and have typescript
+  // complain about missing args. Your choice :D
+  //
+  // Here we go with the imported type approach
   const initParams: InitializeParams = {
     capabilities: {},
     processId: 0,
     rootUri: 'browser://',
   };
 
-  const resp: InitializeResult = await client.sendRequest(
-    InitializeRequest.method,
-    initParams,
-  );
+  // Here we start the lifecycle by sending an "initialize" request.
+  // `resp` is inferred to be ResponseError<InitializeError> | InitializeResult
+  const resp = await client.sendRequest(InitializeRequest.type, initParams);
+  console.log(resp);
 
+  if (is.error(resp)) {
+    return; // Uh oh!; We should do something smart here...
+  }
+
+  // Now we know resp can't be ResponseError<InitializeError> because of
+  // the previous if + return. We have inferred the types of resp, and thus
+  // of resp.capabilities and resp.serverInfo as well!
   const serverCapabilities = resp.capabilities;
   const serverInfo = resp.serverInfo;
 
-  client.on(
-    PublishDiagnosticsNotification.method,
-    (params: PublishDiagnosticsParams) => {
-      console.log(params);
-    },
-  );
+  console.log('Received initialize response!', resp);
+  console.log('Received capabilities', serverCapabilities);
+  console.log('Received serverInfo', serverInfo);
 
-  client.sendNotification(DidOpenTextDocumentNotification.method, {
+  // Because we're good LSP citizens, it's now our job to tell the server
+  // we're ready to roll! Turns out the expected params is an empty object.
+  // Note that we didn't need to type it.
+  client.sendNotification(InitializedNotification.type, {});
+
+  // Tell the server that we have opened a file and that its content is the
+  // contents of the <textarea id="input"> element
+  client.sendNotification(DidOpenTextDocumentNotification.type, {
     textDocument: {
       uri: 'browser://input',
       languageId: 'liquid',
       version: textDocumentVersion,
-      text: input.value,
+      text: inputTextArea.value,
     },
   });
 
-  input.addEventListener('input', () => {
+  // Setup an event handler on the textarea that looks for content changes.
+  // When it changes, send a `textDocument/didChange` notification to the
+  // language server.
+  inputTextArea.addEventListener('input', () => {
     textDocumentVersion += 1;
-    const didChangeParams: DidChangeTextDocumentParams = {
+
+    // Note how we didn't have to type the params. The types are inferred
+    // and TS will complain if we don't fit the API.
+    client.sendNotification(DidChangeTextDocumentNotification.type, {
       textDocument: {
         uri: 'browser://input',
         version: textDocumentVersion,
       },
       contentChanges: [
         {
-          text: input.value,
+          text: inputTextArea.value,
         },
       ],
-    };
-
-    client.sendNotification(
-      DidChangeTextDocumentNotification.method,
-      didChangeParams,
-    );
+    });
   });
 }
 
