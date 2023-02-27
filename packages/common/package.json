@@ -5,8 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc -b tsconfig.build.json",
-    "test": "mocha 'src/**/*.ts'",
-    "type-check": "tsc --noEmit"
+    "test": "mocha 'src/**/*.ts'"
   },
   "dependencies": {
     "@shopify/prettier-plugin-liquid": "^1.0.6",

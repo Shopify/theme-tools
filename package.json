@@ -20,8 +20,7 @@
     "format": "prettier --write 'packages/*/src/**/*.t's",
     "format:check": "prettier --check --ignore-unknown 'packages/*/src/**/*.ts'",
     "playground": "npx http-server playground",
-    "test": "mocha 'packages/*/src/**/*.ts'",
-    "type-check": "yarn workspaces run type-check"
+    "test": "mocha 'packages/*/src/**/*.ts'"
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",

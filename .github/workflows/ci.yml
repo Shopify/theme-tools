@@ -26,9 +26,6 @@ jobs:
       - name: Install the packages
         run: yarn install --frozen-lockfile --ignore-engines
 
-      - name: Type check
-        run: yarn type-check
-
       - name: Build the code
         run: yarn build
         env:
