@@ -5,6 +5,7 @@
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "license": "MIT",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc -b tsconfig.build.json",
+    "test": "mocha 'src/**/*.spec.ts'"
   }
 }

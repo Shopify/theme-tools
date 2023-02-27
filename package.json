@@ -18,11 +18,16 @@
     "format": "prettier --write packages/**/*.ts",
     "cli": "scripts/language-server-liquid",
     "playground": "npx http-server playground/dist",
+    "test": "mocha 'packages/*/src/**.spec.ts'",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
+    "chai": "^4.3.7",
     "css-loader": "^6.7.3",
     "html-webpack-plugin": "^5.5.0",
+    "mocha": "^10.2.0",
     "prettier": "^2.8.4",
     "style-loader": "^3.3.1",
     "ts-loader": "^9.4.2",
