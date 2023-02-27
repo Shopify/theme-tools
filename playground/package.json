@@ -6,8 +6,7 @@
   "license": "MIT",
   "scripts": {
     "build": "webpack",
-    "dev": "webpack serve",
-    "type-check": "true"
+    "dev": "webpack serve"
   },
   "dependencies": {
     "vscode-jsonrpc": "^8.1.0",

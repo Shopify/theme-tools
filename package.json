@@ -19,8 +19,7 @@
     "format:check": "prettier --check --ignore-unknown 'packages/*/src/**/*.ts'",
     "cli": "scripts/language-server-liquid",
     "playground": "npx http-server playground/dist",
-    "test": "mocha 'packages/*/src/**.spec.ts'",
-    "type-check": "yarn workspaces run type-check"
+    "test": "mocha 'packages/*/src/**.spec.ts'"
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",

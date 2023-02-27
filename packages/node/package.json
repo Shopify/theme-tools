@@ -7,8 +7,7 @@
   "private": false,
   "scripts": {
     "build": "tsc -b tsconfig.build.json",
-    "test": "mocha 'src/**/*.spec.ts'",
-    "type-check": "tsc --noEmit"
+    "test": "mocha 'src/**/*.spec.ts'"
   },
   "dependencies": {
     "@shopify/liquid-language-server-common": "1.0.0"
