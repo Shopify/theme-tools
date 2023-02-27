@@ -10,4 +10,3 @@ export function startServer() {
     log: (message: string) => console.error(message),
   });
 }
-

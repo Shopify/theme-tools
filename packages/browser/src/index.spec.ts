@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { startServer } from './index'
+import { startServer } from './index';
 
 describe('Module: index (browser)', () => {
   it('should exist and run', () => {

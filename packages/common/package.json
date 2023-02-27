@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc -b tsconfig.build.json",
-    "test": "mocha 'src/**/*.spec.ts'"
+    "test": "mocha 'src/**/*.spec.ts'",
+    "type-check": "tsc --noEmit"
   }
 }

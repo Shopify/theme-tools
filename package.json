@@ -15,11 +15,12 @@
     "build:node": "yarn --cwd packages/node build",
     "build:playground": "yarn --cwd playground build",
     "dev:playground": "yarn --cwd playground dev",
-    "format": "prettier --write packages/**/*.ts",
+    "format": "prettier --write 'packages/*/src/**/*.ts'",
+    "format:check": "prettier --check --ignore-unknown 'packages/*/src/**/*.ts'",
     "cli": "scripts/language-server-liquid",
     "playground": "npx http-server playground/dist",
     "test": "mocha 'packages/*/src/**.spec.ts'",
-    "type-check": "tsc --noEmit"
+    "type-check": "yarn workspaces run type-check"
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",

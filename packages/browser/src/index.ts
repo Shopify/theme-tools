@@ -30,9 +30,7 @@ export function startServer(worker: Worker) {
     listen(callback) {
       const onMessage = (message: MessageEvent<any>) => callback(message.data);
       worker.addEventListener('message', onMessage);
-      return disposable(() =>
-        worker.removeEventListener('message', onMessage),
-      );
+      return disposable(() => worker.removeEventListener('message', onMessage));
     },
   };
 
