@@ -7,5 +7,8 @@
   "scripts": {
     "build": "tsc -b tsconfig.build.json",
     "test": "mocha 'src/**/*.spec.ts'"
+  },
+  "dependencies": {
+    "vscode-languageserver": "^8.0.2"
   }
 }

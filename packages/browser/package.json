@@ -11,6 +11,7 @@
     "test": "mocha 'src/**/*.spec.ts'"
   },
   "dependencies": {
-    "@shopify/liquid-language-server-common": "1.0.0"
+   "@shopify/liquid-language-server-common": "1.0.0",
+    "vscode-languageserver": "^8.0.2"
   }
 }

@@ -21,7 +21,8 @@
     "playground": "npx http-server playground/dist",
     "test": "mocha 'packages/*/src/**.spec.ts'"
   },
-  "devDependencies": {
+  "dependencies": {
+    "@changesets/cli": "^2.26.0",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
     "chai": "^4.3.7",
@@ -36,8 +37,5 @@
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.0",
     "webpack-dev-server": "^4.11.1"
-  },
-  "dependencies": {
-    "vscode-languageserver": "^8.0.2"
   }
 }
