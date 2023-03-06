@@ -81,7 +81,7 @@ async function main() {
   // contents of the <textarea id="input"> element
   client.sendNotification(DidOpenTextDocumentNotification.type, {
     textDocument: {
-      uri: 'browser://input',
+      uri: 'browser://input.liquid',
       languageId: 'liquid',
       version: textDocumentVersion,
       text: inputTextArea.value,
@@ -98,7 +98,7 @@ async function main() {
     // and TS will complain if we don't fit the API.
     client.sendNotification(DidChangeTextDocumentNotification.type, {
       textDocument: {
-        uri: 'browser://input',
+        uri: 'browser://input.liquid',
         version: textDocumentVersion,
       },
       contentChanges: [
