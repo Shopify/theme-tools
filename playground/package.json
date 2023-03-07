@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "author": "CP Clermont <cp.clermont@shopify.com>",
+  "private": true,
   "license": "MIT",
   "scripts": {
     "build": "webpack",

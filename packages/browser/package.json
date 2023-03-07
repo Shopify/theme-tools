@@ -4,6 +4,9 @@
   "main": "dist/index.js",
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "license": "MIT",
+  "publishConfig": {
+    "access": "restricted"
+  },
   "scripts": {
     "build": "yarn build:ts && yarn build:standalone",
     "build:ts": "tsc -b tsconfig.build.json",
@@ -11,7 +14,7 @@
     "test": "mocha 'src/**/*.spec.ts'"
   },
   "dependencies": {
-   "@shopify/liquid-language-server-common": "1.0.0",
+    "@shopify/liquid-language-server-common": "1.0.0",
     "vscode-languageserver": "^8.0.2"
   }
 }

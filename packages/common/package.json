@@ -4,6 +4,9 @@
   "main": "dist/index.js",
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "license": "MIT",
+  "publishConfig": {
+    "access": "restricted"
+  },
   "scripts": {
     "build": "tsc -b tsconfig.build.json",
     "test": "mocha 'src/**/*.spec.ts'"
