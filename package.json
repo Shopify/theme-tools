@@ -17,10 +17,10 @@
     "cli:debug": "node --inspect-brk packages/node/dist/cli",
     "cli:debug:ts": "node --inspect-brk -r ts-node/register packages/node/cli",
     "cli:ts": "node -r ts-node/register packages/node/src/cli",
-    "format": "prettier --write 'packages/*/src/**/*.t's",
-    "format:check": "prettier --check --ignore-unknown 'packages/*/src/**/*.ts'",
+    "format": "prettier --write \"packages/*/src/**/*.ts\"",
+    "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
     "playground": "npx http-server playground",
-    "test": "mocha 'packages/*/src/**/*.ts'"
+    "test": "mocha \"packages/*/src/**/*.ts\""
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",
