@@ -23,6 +23,7 @@
     "test": "mocha \"packages/*/src/**/*.ts\""
   },
   "devDependencies": {
+    "@changesets/cli": "^2.26.0",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
     "chai": "^4.3.7",
