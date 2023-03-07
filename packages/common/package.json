@@ -1,9 +1,12 @@
 {
   "name": "@shopify/liquid-language-server-common",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "main": "dist/index.js",
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "license": "MIT",
+  "publishConfig": {
+    "access": "restricted"
+  },
   "scripts": {
     "build": "tsc -b tsconfig.build.json",
     "test": "mocha 'src/**/*.spec.ts'"
