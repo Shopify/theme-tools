@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-check-browser",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "main": "dist/index.js",
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "license": "MIT",
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@shopify/prettier-plugin-liquid": "^1.0.6",
-    "@shopify/theme-check-common": "0.0.1"
+    "@shopify/theme-check-common": "1.0.0"
   },
   "devDependencies": {
     "webpack": "^5.75.0",
