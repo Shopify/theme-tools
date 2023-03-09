@@ -1,51 +1,16 @@
-import { toLiquidHtmlAST } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
-import toJSON from 'json-to-ast';
-
 import {
   Config,
   JSONSourceCode,
   LiquidSourceCode,
   Offense,
-  SourceCodeType,
   Theme,
   allChecks,
   check as coreCheck,
+  toSourceCode,
   recommended,
 } from '@shopify/theme-check-common';
 
-export { allChecks, recommended, Config };
-
-export function toSourceCode(
-  relativePath: string,
-  source: string,
-  version?: number,
-): LiquidSourceCode | JSONSourceCode | undefined {
-  try {
-    const isLiquid = relativePath.endsWith('.liquid');
-
-    if (isLiquid) {
-      return {
-        absolutePath: '/' + relativePath,
-        relativePath,
-        source,
-        type: SourceCodeType.LiquidHtml,
-        ast: toLiquidHtmlAST(source),
-        version: version,
-      };
-    } else {
-      return {
-        absolutePath: '/' + relativePath,
-        relativePath,
-        source,
-        type: SourceCodeType.JSON,
-        ast: toJSON(source),
-        version: version,
-      };
-    }
-  } catch (e) {
-    return undefined;
-  }
-}
+export { toSourceCode, allChecks, recommended, Config };
 
 /**
  * @example
@@ -67,7 +32,10 @@ export type ThemeData = {
 export function getTheme(themeDesc: ThemeData): Theme {
   const fileKVs: [string, LiquidSourceCode | JSONSourceCode | undefined][] = Object.entries(
     themeDesc,
-  ).map(([relativePath, source]) => [relativePath, toSourceCode(relativePath, source)]);
+  ).map(([relativePath, source]) => [
+    relativePath,
+    toSourceCode('/' + relativePath, relativePath, source),
+  ]);
   return {
     files: new Map(fileKVs.filter(([, v]) => !!v) as [string, LiquidSourceCode | JSONSourceCode][]),
   };

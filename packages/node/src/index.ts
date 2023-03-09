@@ -1,14 +1,11 @@
-import { toLiquidHtmlAST } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
-import toJSON from 'json-to-ast';
-
 import {
   Config,
   JSONSourceCode,
   LiquidSourceCode,
   Offense,
-  SourceCodeType,
   Theme,
   check as coreCheck,
+  toSourceCode as commonToSourceCode,
   recommended,
 } from '@shopify/theme-check-common';
 
@@ -26,25 +23,7 @@ export async function toSourceCode(
 ): Promise<LiquidSourceCode | JSONSourceCode | undefined> {
   try {
     const source = await fs.promises.readFile(absolutePath, 'utf8');
-    const isLiquid = absolutePath.endsWith('.liquid');
-
-    if (isLiquid) {
-      return {
-        absolutePath,
-        relativePath: path.relative(root, absolutePath),
-        source,
-        type: SourceCodeType.LiquidHtml,
-        ast: toLiquidHtmlAST(source),
-      };
-    } else {
-      return {
-        absolutePath,
-        relativePath: path.relative(root, absolutePath),
-        source,
-        type: SourceCodeType.JSON,
-        ast: toJSON(source),
-      };
-    }
+    return commonToSourceCode(absolutePath, path.relative(root, absolutePath), source);
   } catch (e) {
     return undefined;
   }

@@ -19,6 +19,7 @@ import lineColumn from 'line-column';
 
 export * from './types';
 export * from './checks';
+export * from './to-source-code';
 
 /**
  * What if this function was entirely pure?
