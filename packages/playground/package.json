@@ -1,0 +1,28 @@
+{
+  "name": "@shopify/liquid-language-server-playground",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "author": "CP Clermont <cp.clermont@shopify.com>",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack",
+    "dev": "webpack serve"
+  },
+  "dependencies": {
+    "@codemirror/state": "^6.1.1",
+    "@codemirror/theme-one-dark": "^6.1.1",
+    "@codemirror/view": "^6.1.1",
+    "@shopify/lang-liquid": "^0.0.19",
+    "@shopify/liquid-language-server-browser": "^1.1.0"
+  },
+  "devDependencies": {
+    "css-loader": "^6.7.3",
+    "html-webpack-plugin": "^5.5.0",
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.0.2",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.0",
+    "webpack-dev-server": "^4.11.1"
+  }
+}

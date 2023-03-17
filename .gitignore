@@ -1,0 +1,10 @@
+node_modules
+dist
+yarn-error.log
+.DS_Store
+coverage
+.nyc_output
+tsconfig.tsbuildinfo
+standalone.js
+standalone.js.map
+standalone.js.LICENSE.txt
