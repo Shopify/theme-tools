@@ -2,7 +2,10 @@ import { Facet } from '@codemirror/state';
 
 import { AbstractLanguageClient } from '../LanguageClient';
 
-export const clientFacet = Facet.define<AbstractLanguageClient, AbstractLanguageClient>({
+export const clientFacet = Facet.define<
+  AbstractLanguageClient,
+  AbstractLanguageClient
+>({
   combine: (values) => values[0],
 });
 
