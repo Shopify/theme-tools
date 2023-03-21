@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { vi, expect, describe, it, beforeEach } from 'vitest';
+import { vi, expect, describe, it, beforeEach, afterEach } from 'vitest';
 import { EditorState, Extension, StateEffect } from '@codemirror/state';
 import { textDocumentField, textDocumentSync } from './textDocumentSync';
 import { clientFacet, fileUriFacet } from './client';
@@ -112,6 +112,10 @@ describe('Module: TextDocumentSyncPlugin', () => {
     view = new EditorView({
       state,
     });
+  });
+
+  afterEach(() => {
+    view.destroy();
   });
 
   it('should send a textDocument/didOpen notification on start', () => {
