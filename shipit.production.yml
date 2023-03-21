@@ -1,3 +1,7 @@
+ci:
+  require:
+    - buildkite/shopify-slash-shopify-build-builder
+
 deploy:
   override:
     - yarn install
