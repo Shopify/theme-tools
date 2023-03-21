@@ -35,7 +35,21 @@ interface Dependencies {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export class LanguageClient extends EventTarget {
+// Useful for mocking/stubbing the client in our tests. aka our "public" API.
+export interface AbstractLanguageClient {
+  clientCapabilities: ClientCapabilities;
+  serverCapabilities: ServerCapabilities | null;
+  serverInfo: any;
+  onRequest: LanguageClient['onRequest'];
+  onNotification: LanguageClient['onNotification'];
+  sendRequest: LanguageClient['sendRequest'];
+  sendNotification: LanguageClient['sendNotification'];
+}
+
+export class LanguageClient
+  extends EventTarget
+  implements AbstractLanguageClient
+{
   public readonly clientCapabilities: ClientCapabilities;
   public serverCapabilities: ServerCapabilities | null;
   public serverInfo: any;

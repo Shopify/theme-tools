@@ -72,7 +72,7 @@ main();
 
 ## Testing
 
-Testings are done with [mocha](https://mochajs.org/) and [chai](https://www.chaijs.com/guide/styles/#expect) because they run really fast.
+Testings is powered [vitest](https://vitest.dev/). Tests that must run in-browser are done with the `// @vitest-environment jsdom` directive (see [textDocumentSync.spec.ts](/src/extensions/textDocumentSync.spec.ts))
 
 Run tests with this command:
 

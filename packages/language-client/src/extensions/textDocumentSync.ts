@@ -12,19 +12,40 @@ import {
   ViewUpdate,
 } from '@codemirror/view';
 
-import { LanguageClient } from '../LanguageClient';
+import { AbstractLanguageClient } from '../LanguageClient';
 
 import { clientFacet, fileUriFacet } from './client';
 
 class TextDocumentSyncPlugin implements PluginValue {
-  private client: LanguageClient;
+  private client: AbstractLanguageClient;
   private uri: string;
 
   constructor(view: EditorView) {
     const doc = view.state.field(textDocumentField);
     this.client = view.state.facet(clientFacet);
     this.uri = doc.uri;
+    this.openFile(doc);
+  }
 
+  update(update: ViewUpdate) {
+    const doc = update.state.field(textDocumentField);
+    const prevFileUri = update.startState.facet(fileUriFacet);
+    const currFileUri = update.state.facet(fileUriFacet);
+
+    if (prevFileUri !== currFileUri) {
+      this.closeFile(prevFileUri);
+      this.openFile(doc);
+      this.uri = currFileUri;
+    } else if (update.docChanged) {
+      this.changeFile(doc);
+    }
+  }
+
+  destroy() {
+    this.closeFile(this.uri);
+  }
+
+  private openFile(doc: TextDocument) {
     // Here we initialize the state in the Language Server by sending a
     // textDocument/didOpen notification.
     this.client.sendNotification(DidOpenTextDocumentNotification.type, {
@@ -37,10 +58,7 @@ class TextDocumentSyncPlugin implements PluginValue {
     });
   }
 
-  update(update: ViewUpdate) {
-    if (!update.docChanged) return;
-    const doc = update.state.field(textDocumentField);
-
+  private changeFile(doc: TextDocument) {
     // Here we send the textDocument/didChange notification to the server
     // to tell it the file was modified. The version attribute is used to
     // verify if the server and client are in sync (if the versions don't
@@ -58,10 +76,10 @@ class TextDocumentSyncPlugin implements PluginValue {
     });
   }
 
-  destroy() {
+  private closeFile(uri: string) {
     this.client.sendNotification(DidCloseTextDocumentNotification.type, {
       textDocument: {
-        uri: this.uri,
+        uri,
       },
     });
   }
@@ -79,13 +97,27 @@ export const textDocumentField = StateField.define<TextDocument>({
     );
   },
   update(previousValue, tr) {
-    if (!tr.docChanged) return previousValue;
-    return TextDocument.create(
-      previousValue.uri,
-      previousValue.languageId,
-      previousValue.version + 1,
-      tr.newDoc.sliceString(0, tr.newDoc.length),
-    );
+    const prevFileUri = tr.startState.facet(fileUriFacet);
+    const currFileUri = tr.state.facet(fileUriFacet);
+    const isNewFile = prevFileUri !== currFileUri;
+    const doc = tr.newDoc;
+    if (isNewFile) {
+      const version = 0;
+      return TextDocument.create(
+        currFileUri,
+        languageId(currFileUri),
+        version,
+        doc.sliceString(0, doc.length),
+      );
+    } else if (tr.docChanged) {
+      return TextDocument.create(
+        previousValue.uri,
+        previousValue.languageId,
+        previousValue.version + 1,
+        doc.sliceString(0, doc.length),
+      );
+    }
+    return previousValue;
   },
 });
 

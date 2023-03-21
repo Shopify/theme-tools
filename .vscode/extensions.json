@@ -1,9 +1,7 @@
 
 {
   "recommendations": [
-    "hbenl.vscode-mocha-test-adapter",
-    "connorshea.vscode-test-explorer-status-bar",
-    "hbenl.vscode-test-explorer",
+    "ZixuanChen.vitest-explorer",
     "esbenp.prettier-vscode"
   ]
 }
