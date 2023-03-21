@@ -11,10 +11,11 @@ import {
   check,
   Config,
   Offense,
+  Severity,
   Theme,
   toSourceCode,
 } from '@shopify/theme-check-common';
-import { immutableMapDelete, immutableMapSet } from './util';
+import { assertNever, immutableMapDelete, immutableMapSet } from './util';
 
 interface Dependencies {
   log(message: string): void;
@@ -26,21 +27,6 @@ const defaultDebounce: Dependencies['debounce'] =
   (fn) =>
   (...args) =>
     fn(...args);
-
-// function debounce(fn, milliseconds = 1000): void {
-//   let timeoutId;
-
-//   return (...allzearguments: any[]) => {
-//     if (timeoutId !== undefined) {
-//       clearTimeout(timeoutId);
-//       timeoutId = undefined;
-//     }
-//     timeoutId = setTimeout(() => {
-//       fn(...allzearguments);
-//       timeoutId = undefined;
-//     }, milliseconds);
-//   }
-// }
 
 /**
  * This code runs in node and the browser, it can't talk to the file system
@@ -102,7 +88,6 @@ export function startServer(
     documentManager(uri).close(uri);
   });
 
-  // TODO debounce function
   const runChecks = async (uri: string, version: number) => {
     const offenses = await check(documentManager(uri).theme, config);
     console.log(documentManager(uri).theme);
@@ -186,12 +171,26 @@ function offenseRangeToDiagnosticRange(offense: Offense): Range {
   };
 }
 
+
 function offenseMessageToDiagnosticMessage(offense: Offense): string {
-  return offense.message;
+  return `${offense.message} [${offense.check}]`;
 }
 
 function offenseSeverityToDiagnosticSeverity(
   offense: Offense,
 ): DiagnosticSeverity {
-  return <DiagnosticSeverity>offense.severity;
+  switch (offense.severity) {
+    case Severity.INFO: {
+      return DiagnosticSeverity.Information;
+    }
+    case Severity.WARNING: {
+      return DiagnosticSeverity.Warning;
+    }
+    case Severity.ERROR: {
+      return DiagnosticSeverity.Error;
+    }
+    default: {
+      return assertNever(offense.severity);
+    }
+  }
 }

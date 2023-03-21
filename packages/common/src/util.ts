@@ -14,3 +14,7 @@ export function immutableMapDelete<K, V>(
 ): Map<K, V> {
   return new Map([...oldMap.entries()].filter(([key, _]) => key !== removeKey));
 }
+
+export function assertNever(value: never): never {
+  throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(value)}`);
+}
