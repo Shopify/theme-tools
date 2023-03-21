@@ -171,7 +171,6 @@ function offenseRangeToDiagnosticRange(offense: Offense): Range {
   };
 }
 
-
 function offenseMessageToDiagnosticMessage(offense: Offense): string {
   return `${offense.message} [${offense.check}]`;
 }
