@@ -1,3 +1,7 @@
+ci:
+  require:
+    - buildkite/liquid-language-server
+
 deploy:
   override:
     - yarn install
