@@ -5,10 +5,12 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
+    "types": [],
     "lib": [
       "es2019",
       "webworker"
     ],
+    "target": "ES2019",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "references": [
