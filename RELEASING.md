@@ -33,7 +33,7 @@
 
 3. Push and merge your changes.
 
-3. On [Shipit](https://shipit.shopify.io/shopify/liquid-language-server), deploy your commit.
+3. On [Shipit](https://shipit.shopify.io/shopify/code-mirror-language-client), deploy your commit.
 
 4. [Create a GitHub release](https://github.com/Shopify/theme-check-js/releases/new) for the change.
 
