@@ -15,18 +15,18 @@ import {
   Theme,
   toSourceCode,
 } from '@shopify/theme-check-common';
-import { assertNever, immutableMapDelete, immutableMapSet } from './util';
+import {
+  assertNever,
+  immutableMapDelete,
+  immutableMapSet,
+  debounce,
+} from './util';
 
-interface Dependencies {
+export interface Dependencies {
   log(message: string): void;
-  debounce(fn: (...args: any[]) => void, ms?: number): (...args: any[]) => void;
 }
 
 const defaultLogger = () => {};
-const defaultDebounce: Dependencies['debounce'] =
-  (fn) =>
-  (...args) =>
-    fn(...args);
 
 /**
  * This code runs in node and the browser, it can't talk to the file system
@@ -34,7 +34,7 @@ const defaultDebounce: Dependencies['debounce'] =
  */
 export function startServer(
   connection: Connection,
-  { log = defaultLogger, debounce = defaultDebounce }: Partial<Dependencies>,
+  { log = defaultLogger }: Partial<Dependencies>,
 ) {
   let rootUri: string;
   let _documentManager: DocumentManager;
