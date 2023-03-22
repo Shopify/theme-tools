@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it, describe } from 'vitest';
 import { immutableMapDelete, immutableMapSet } from './util';
 
 describe('Module: util', () => {

@@ -19,30 +19,20 @@
     "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
     "cli": "scripts/language-server-liquid",
     "playground": "npx http-server playground/dist",
-    "test": "mocha 'packages/*/src/**.spec.ts'"
+    "test": "vitest"
   },
   "dependencies": {
     "@changesets/cli": "^2.26.0",
-    "@types/chai": "^4.3.4",
-    "@types/mocha": "^10.0.1",
-    "chai": "^4.3.7",
     "css-loader": "^6.7.3",
     "html-webpack-plugin": "^5.5.0",
-    "mocha": "^10.2.0",
     "prettier": "^2.8.4",
     "style-loader": "^3.3.1",
     "ts-loader": "^9.4.2",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.3",
+    "vitest": "^0.29.7",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.0",
     "webpack-dev-server": "^4.11.1"
-  },
-  "devDependencies": {
-    "@types/sinon": "^10.0.13",
-    "@types/sinon-chai": "^3.2.9",
-    "chai-sinon": "^2.8.1",
-    "sinon": "^15.0.1",
-    "sinon-chai": "^3.7.0"
   }
 }

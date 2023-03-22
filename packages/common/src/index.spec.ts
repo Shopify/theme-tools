@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, describe, it } from 'vitest';
 import { startServer } from './index';
 
 describe('Module: index (common)', () => {
