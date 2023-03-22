@@ -16,6 +16,7 @@ import {
 } from './types';
 import { visitLiquid, visitJSON } from './visitors';
 import lineColumn from 'line-column';
+import { createDisabledChecksModule } from './disabled-checks';
 
 export * from './types';
 export * from './checks';
@@ -28,6 +29,8 @@ export * from './to-source-code';
 export async function check(theme: Theme, config: Config): Promise<Offense[]> {
   const pipelines: Promise<void>[] = [];
   const offenses: Offense[] = [];
+  const { DisabledChecks, isDisabled } = createDisabledChecksModule();
+
   const allChecks: (LiquidCheck | JSONCheck)[] = [];
 
   for (const type of Object.values(SourceCodeType)) {
@@ -42,6 +45,7 @@ export async function check(theme: Theme, config: Config): Promise<Offense[]> {
       case SourceCodeType.LiquidHtml: {
         const files = filesOfType(type, theme);
         const checks = checksOfType(type, config.checks, offenses);
+        checks.push(createSafeCheck(DisabledChecks));
         allChecks.push(...checks);
         pipelines.push(checkLiquidFiles(checks, files));
         break;
@@ -52,7 +56,7 @@ export async function check(theme: Theme, config: Config): Promise<Offense[]> {
   await Promise.all(pipelines);
   await Promise.all(allChecks.map((check) => check.onEnd()));
 
-  return offenses;
+  return offenses.filter((offense) => !isDisabled(offense));
 }
 
 const resolve = () => Promise.resolve(undefined);
@@ -133,7 +137,6 @@ async function checkJSONFiles(checks: JSONCheck[], files: JSONSourceCode[]): Pro
 async function checkLiquidFiles(checks: LiquidCheck[], files: LiquidSourceCode[]): Promise<void> {
   await Promise.all(
     files.map(async (file) => {
-      // TODO obtain check ignore ranges before doing the following...
       await Promise.all(
         checks.map(async (check) => {
           await check.onCodePathStart(file);
