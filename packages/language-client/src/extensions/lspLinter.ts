@@ -1,4 +1,10 @@
-import { StateEffect, StateField, Extension } from '@codemirror/state';
+import {
+  StateEffect,
+  StateField,
+  Extension,
+  StateEffectType,
+  Facet,
+} from '@codemirror/state';
 import { PluginValue, EditorView, ViewPlugin } from '@codemirror/view';
 import { linter, Diagnostic as CodeMirrorDiagnostic } from '@codemirror/lint';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -22,21 +28,12 @@ class DiagnosticsPlugin implements PluginValue {
     this.handlers.push(
       client.onNotification(PublishDiagnosticsNotification.type, (params) => {
         if (params.uri !== fileUri) return;
-
-        const textDocument = view.state.field(textDocumentField);
-
-        // If the version of the TextDocument inside the CodeMirror state
-        // does not match the version of the TextDocument for which the
-        // Language Server has provided diagnostics for, then they are out
-        // of date and should be discarded.
-        const lspDiagnostics =
-          textDocument.version === params.version ? params.diagnostics : [];
-
-        const codeMirrorDiagnostics = lspDiagnostics.map((diagnostic) =>
-          lspToCodeMirrorDiagnostic(diagnostic, textDocument),
-        );
-
-        view.dispatch({ effects: setDiagnostics.of(codeMirrorDiagnostics) });
+        view.dispatch({
+          effects: [
+            setLSPDiagnosticsVersion.of(params.version ?? null),
+            setLSPDiagnostics.of(params.diagnostics),
+          ],
+        });
       }),
     );
   }
@@ -46,27 +43,55 @@ class DiagnosticsPlugin implements PluginValue {
   }
 }
 
-const setDiagnostics = StateEffect.define<CodeMirrorDiagnostic[]>();
+export const setLSPDiagnosticsVersion = StateEffect.define<number | null>();
+export const lspDiagnosticsVersionField = simpleStateField(
+  setLSPDiagnosticsVersion,
+  null,
+);
 
-const diagnosticState = StateField.define<CodeMirrorDiagnostic[]>({
-  create: () => [],
-  update(value, tr) {
-    let updatedValue = value;
+export const setLSPDiagnostics = StateEffect.define<LSPDiagnostic[]>();
+export const lspDiagnosticsField = simpleStateField(setLSPDiagnostics, []);
 
-    for (const effect of tr.effects) {
-      if (effect.is(setDiagnostics)) {
-        updatedValue = effect.value;
-      }
-    }
-
-    return updatedValue;
-  },
+export const diagnosticsFacet = Facet.define<
+  CodeMirrorDiagnostic[],
+  CodeMirrorDiagnostic[]
+>({
+  combine: (values) => values[0],
 });
 
+export const computedCodeMirrorDiagnosticsValueProvider =
+  diagnosticsFacet.compute(
+    [textDocumentField, lspDiagnosticsField, lspDiagnosticsVersionField],
+    (state) => {
+      const doc = state.field(textDocumentField);
+      const lspDiagnosticsVersion = state.field(lspDiagnosticsVersionField);
+
+      // If the diagnostics version and doc version don't match, it means
+      // the diagnostics are stale.
+      if (lspDiagnosticsVersion !== doc.version) {
+        return [];
+      }
+
+      const lspDiagnostics = state.field(lspDiagnosticsField);
+      return lspDiagnostics.map((diagnostic) =>
+        lspToCodeMirrorDiagnostic(diagnostic, doc),
+      );
+    },
+  );
+
+export const diagnosticsLinter = linter(
+  (view) => view.state.facet(diagnosticsFacet),
+  { delay: 100 },
+);
+export const diagnosticsPlugin = ViewPlugin.fromClass(DiagnosticsPlugin);
+
 export const lspLinter: Extension = [
-  diagnosticState,
-  ViewPlugin.fromClass(DiagnosticsPlugin),
-  linter((view) => view.state.field(diagnosticState), { delay: 100 }),
+  textDocumentField,
+  lspDiagnosticsField,
+  lspDiagnosticsVersionField,
+  computedCodeMirrorDiagnosticsValueProvider,
+  diagnosticsLinter,
+  diagnosticsPlugin,
 ];
 
 type CodeMirrorSeverity = 'info' | 'warning' | 'error';
@@ -85,8 +110,6 @@ function lspToCodeMirrorSeverity(
     case LSPSeverity.Hint:
     case LSPSeverity.Information:
     default: {
-      // TODO demo magic...
-      return 'error';
       return 'info';
     }
   }
@@ -104,4 +127,24 @@ function lspToCodeMirrorDiagnostic(
     message,
     severity: lspToCodeMirrorSeverity(severity),
   };
+}
+
+function simpleStateField<T>(
+  stateEffect: StateEffectType<T>,
+  defaultValue: T,
+): StateField<T> {
+  return StateField.define<T>({
+    create: () => defaultValue,
+    update(value, tr) {
+      let updatedValue = value;
+
+      for (const effect of tr.effects) {
+        if (effect.is(stateEffect)) {
+          updatedValue = effect.value;
+        }
+      }
+
+      return updatedValue;
+    },
+  });
 }

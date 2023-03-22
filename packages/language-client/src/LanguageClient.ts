@@ -23,7 +23,7 @@ import {
   ClientCapabilities,
 } from 'vscode-languageserver-protocol';
 
-interface PromiseCompletion {
+export interface PromiseCompletion {
   resolve(value: unknown): void;
   reject(error: unknown): void;
 }
@@ -315,10 +315,14 @@ export class LanguageClient
   }
 
   private disposable(dispose: () => void) {
-    const disp = { dispose };
+    const disp = disposable(dispose);
     this.disposables.push(disp);
     return disp;
   }
+}
+
+export function disposable(dispose: () => void): Disposable {
+  return { dispose };
 }
 
 function isResponse(message: any): message is ResponseMessage {

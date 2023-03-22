@@ -121,11 +121,13 @@ export const textDocumentField = StateField.define<TextDocument>({
   },
 });
 
+const textDocumentSyncPlugin = ViewPlugin.fromClass(TextDocumentSyncPlugin);
+
 // Implicitly depends on the fileUriFacet and clientFacet...
 // Don't know how that's typically handled yet...
 export const textDocumentSync: Extension = [
   textDocumentField,
-  ViewPlugin.fromClass(TextDocumentSyncPlugin),
+  textDocumentSyncPlugin,
 ];
 
 function languageId(uri: string): string {

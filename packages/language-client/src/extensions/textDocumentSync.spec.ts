@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-import { vi, expect, describe, it, beforeEach, afterEach } from 'vitest';
+import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import { EditorState, Extension, StateEffect } from '@codemirror/state';
 import { textDocumentField, textDocumentSync } from './textDocumentSync';
 import { clientFacet, fileUriFacet } from './client';
-import { AbstractLanguageClient } from '../LanguageClient';
+import { MockClient } from '../test/MockClient';
 import {
   DidChangeTextDocumentNotification,
   DidCloseTextDocumentNotification,
@@ -87,19 +87,11 @@ describe('Module: textDocumentField', () => {
 });
 
 describe('Module: TextDocumentSyncPlugin', () => {
-  let state: EditorState, client: AbstractLanguageClient, extensions: Extension;
+  let state: EditorState, client: MockClient, extensions: Extension;
   let view: EditorView;
 
   beforeEach(() => {
-    client = {
-      clientCapabilities: {},
-      serverCapabilities: null,
-      serverInfo: null,
-      sendRequest: vi.fn() as any,
-      sendNotification: vi.fn() as any,
-      onRequest: vi.fn() as any,
-      onNotification: vi.fn() as any,
-    };
+    client = new MockClient();
     extensions = [
       clientFacet.of(client),
       fileUriFacet.of('browser://input.liquid'),
