@@ -1,5 +1,5 @@
 {
-  "name": "@shopify/liquid-language-server-playground",
+  "name": "@shopify/code-mirror-language-client-playground",
   "version": "1.0.0",
   "main": "dist/index.js",
   "author": "CP Clermont <cp.clermont@shopify.com>",
