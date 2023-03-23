@@ -7,7 +7,7 @@
 </h1>
 
 <p align="center">
-  <a href="https://cloudsmith.io/~shopify/repos/node/packages/detail/npm/@shopify%252Fliquid-language-server-browser/1.1.0/"><img src="https://api-prd.cloudsmith.io/v1/badges/version/shopify/node/npm/@shopify/liquid-language-server-browser/1.1.0/x/?render=true&badge_token=gAAAAABkGaRnk3p4aG7P5qwpNZfD5o8fzU8gR7Rk5WpEnvA7NklmJz71niiLBG15sF0spMs3ZVwF4rUcBrkM7cVx1VuxVlRaLarA6jqdiSb0DBzfFtJPRsM%3D" alt="This version of '@shopify/liquid-language-server-browser' @ Cloudsmith" /></a>
+  <a href="https://cloudsmith.io/~shopify/repos/node/packages/detail/npm/@shopify%252Fcode-mirror-language-client/latest/"><img src="https://api-prd.cloudsmith.io/v1/badges/version/shopify/node/npm/@shopify/code-mirror-language-client/latest/x/?render=true&show_latest=true&badge_token=gAAAAABkHJtfR24VmfHwTug33VPxi_j-YKBj_ZaAbAzYYTLoxwQidbKukn7AgiydnvdC35Zp5jvtGwJ5etfqWlyojwzZflZS4t6I-vyVMeAbGlAr23VfRog%3D" alt="Latest version of '@shopify/code-mirror-language-client' @ Cloudsmith" /></a>
   <a href="https://buildkite.com/shopify/code-mirror-language-client"><img src="https://badge.buildkite.com/7691c1730f5c62151a8c4ae39d21a70cabaa30582f599f7287.svg" alt="Build status"></a>
 </p>
 
