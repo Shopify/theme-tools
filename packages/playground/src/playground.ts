@@ -1,3 +1,4 @@
+import { basicSetup } from 'codemirror';
 import { EditorView } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -29,6 +30,7 @@ async function main() {
     state: EditorState.create({
       doc: exampleTemplate,
       extensions: [
+        basicSetup,
         liquid(),
         liquidHighLightStyle,
         oneDark,

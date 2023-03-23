@@ -14,7 +14,8 @@
     "@codemirror/theme-one-dark": "^6.1.1",
     "@codemirror/view": "^6.1.1",
     "@shopify/lang-liquid": "^0.0.19",
-    "@shopify/liquid-language-server-browser": "^1.1.0"
+    "@shopify/liquid-language-server-browser": "^1.1.0",
+    "codemirror": "^6.0.1"
   },
   "devDependencies": {
     "css-loader": "^6.7.3",
