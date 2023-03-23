@@ -66,7 +66,7 @@ const diagnosticState = StateField.define<CodeMirrorDiagnostic[]>({
 export const lspLinter: Extension = [
   diagnosticState,
   ViewPlugin.fromClass(DiagnosticsPlugin),
-  linter((view) => view.state.field(diagnosticState)),
+  linter((view) => view.state.field(diagnosticState), { delay: 100 }),
 ];
 
 type CodeMirrorSeverity = 'info' | 'warning' | 'error';
