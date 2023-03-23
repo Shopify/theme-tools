@@ -1,6 +1,6 @@
 ci:
   require:
-    - buildkite/shopify-slash-shopify-build-builder
+    - buildkite/code-mirror-language-client
 
 deploy:
   override:
