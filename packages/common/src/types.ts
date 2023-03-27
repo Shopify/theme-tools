@@ -215,8 +215,13 @@ type CheckLifecycleMethods<S extends SourceCodeType> = {
   onEnd(): Promise<void>;
 };
 
-export type Context<S> = S extends SourceCodeType
-  ? {
+export interface Dependencies {
+  getDefaultTranslations(): Promise<object>;
+  fileExists(absolutePath: string): Promise<boolean>;
+}
+
+export type Context<S extends SourceCodeType> = S extends SourceCodeType
+  ? Dependencies & {
       report(file: SourceCode<S>, problem: Problem): void;
     }
   : never;

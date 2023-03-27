@@ -54,5 +54,12 @@ export async function check(
     settings: {},
     checks: checks,
   };
-  return coreCheck(theme, config);
+  return coreCheck(theme, config, {
+    async fileExists(absolutePath: string) {
+      return !!themeDesc[absolutePath.replace(/^\//, '')];
+    },
+    async getDefaultTranslations() {
+      return JSON.parse(themeDesc['locales/en.default.json'] || '{}');
+    },
+  });
 }

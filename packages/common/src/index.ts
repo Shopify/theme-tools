@@ -3,6 +3,7 @@ import {
   CheckDefinition,
   Config,
   Context,
+  Dependencies,
   JSONCheck,
   JSONSourceCode,
   LiquidCheck,
@@ -22,11 +23,11 @@ export * from './types';
 export * from './checks';
 export * from './to-source-code';
 
-/**
- * What if this function was entirely pure?
- * Would make it rather easy to extend...
- */
-export async function check(theme: Theme, config: Config): Promise<Offense[]> {
+export async function check(
+  theme: Theme,
+  config: Config,
+  dependencies: Dependencies,
+): Promise<Offense[]> {
   const pipelines: Promise<void>[] = [];
   const offenses: Offense[] = [];
   const { DisabledChecks, isDisabled } = createDisabledChecksModule();
@@ -37,14 +38,14 @@ export async function check(theme: Theme, config: Config): Promise<Offense[]> {
     switch (type) {
       case SourceCodeType.JSON: {
         const files = filesOfType(type, theme);
-        const checks = checksOfType(type, config.checks, offenses);
+        const checks = checksOfType(type, config.checks, offenses, dependencies);
         allChecks.push(...checks);
         pipelines.push(checkJSONFiles(checks, files));
         break;
       }
       case SourceCodeType.LiquidHtml: {
         const files = filesOfType(type, theme);
-        const checks = checksOfType(type, config.checks, offenses);
+        const checks = checksOfType(type, config.checks, offenses, dependencies);
         checks.push(createSafeCheck(DisabledChecks));
         allChecks.push(...checks);
         pipelines.push(checkLiquidFiles(checks, files));
@@ -84,9 +85,11 @@ function getPosition(source: string, index: number): Position {
 function createContext<S extends SourceCodeType>(
   check: CheckDefinition<S>,
   offenses: Offense[],
+  dependencies: Dependencies,
 ): Context<S> {
   // we build ASTs here in the one and done context
   return {
+    ...dependencies,
     report(file: SourceCode<S>, problem: Problem): void {
       offenses.push({
         check: check.meta.code,
@@ -104,11 +107,12 @@ function checksOfType<S extends SourceCodeType>(
   type: S,
   checks: CheckDefinition<SourceCodeType>[],
   offenses: Offense[],
+  dependencies: Dependencies,
 ): Check<S>[] {
   return checks
     .filter((def): def is CheckDefinition<S> => def.meta.type === type)
     .map((check) => {
-      const context = createContext(check, offenses);
+      const context = createContext(check, offenses, dependencies);
       return check.create(context as any);
     })
     .map(createSafeCheck) as Check<S>[];
