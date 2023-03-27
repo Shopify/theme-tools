@@ -18,7 +18,7 @@
     "@shopify/theme-check-common": "1.0.1"
   },
   "devDependencies": {
-    "webpack": "^5.75.0",
+    "webpack": "^5.76.0",
     "webpack-cli": "^5.0.0"
   }
 }
