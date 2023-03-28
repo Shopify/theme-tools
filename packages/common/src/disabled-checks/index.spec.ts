@@ -1,5 +1,5 @@
-import { getTheme } from '../test-helper';
-import { check, Offense } from '..';
+import { check } from '../test-helper';
+import { Offense } from '..';
 import { expect } from 'chai';
 import { LiquidFilter, RenderMarkup } from './test-checks';
 
@@ -27,20 +27,9 @@ function expectRenderMarkupOffense(offenses: Offense[], templateName: string) {
   expect(foundOffenses).to.have.length(1);
 }
 
-function determineOffenses(file: string) {
-  const theme = getTheme({
-    'code.liquid': file,
-  });
-
-  const config = {
-    settings: {},
-    checks: [LiquidFilter, RenderMarkup],
-  };
-
-  return check(theme, config);
-}
-
 describe('Module: DisabledChecks', () => {
+  const checks = [LiquidFilter, RenderMarkup];
+
   commentTypes.forEach((buildComment, index) => {
     describe(`Comment variant ${index + 1}`, () => {
       it('should disable checks for the entire document if comment is placed on the first line', async () => {
@@ -52,7 +41,7 @@ describe('Module: DisabledChecks', () => {
 {{ 'asset' | random_filter }}
 {% render 'something' %}`;
 
-        const offenses = await determineOffenses(file);
+        const offenses = await check({ 'code.liquid': file }, checks);
         expect(offenses).to.have.length(1);
         expectRenderMarkupOffense(offenses, 'something.liquid');
       });
@@ -62,7 +51,7 @@ describe('Module: DisabledChecks', () => {
 {{ 'asset' | random_filter }}
 {% render 'something' %}`;
 
-        const offenses = await determineOffenses(file);
+        const offenses = await check({ 'code.liquid': file }, checks);
         expect(offenses).to.have.length(0);
       });
 
@@ -75,7 +64,7 @@ ${buildComment('theme-check-disable')}
 ${buildComment('theme-check-enable')}
 {{ 'asset-3' | random_filter }}`;
 
-        const offenses = await determineOffenses(file);
+        const offenses = await check({ 'code.liquid': file }, checks);
         expect(offenses).to.have.length(3);
         expectLiquidFilterOffense(offenses, file, 'asset-1');
         expectLiquidFilterOffense(offenses, file, 'asset-3');
@@ -89,7 +78,7 @@ ${buildComment('theme-check-enable')}
 ${buildComment('theme-check-enable LiquidFilter')}
 {{ 'asset-2' | random_filter }}`;
 
-        const offenses = await determineOffenses(file);
+        const offenses = await check({ 'code.liquid': file }, checks);
         expect(offenses).to.have.length(2);
         expectLiquidFilterOffense(offenses, file, 'asset-2');
         expectRenderMarkupOffense(offenses, 'something.liquid');
@@ -102,7 +91,7 @@ ${buildComment('theme-check-enable LiquidFilter')}
 ${buildComment('theme-check-enable LiquidFilter,RenderMarkup')}
 {{ 'asset-2' | random_filter }}`;
 
-        const offenses = await determineOffenses(file);
+        const offenses = await check({ 'code.liquid': file }, checks);
         expect(offenses).to.have.length(1);
         expectLiquidFilterOffense(offenses, file, 'asset-2');
       });
@@ -118,7 +107,7 @@ ${buildComment('theme-check-enable LiquidFilter')}
 {{ 'asset-3' | random_filter }}
 {% render 'something-3' %}`;
 
-        const offenses = await determineOffenses(file);
+        const offenses = await check({ 'code.liquid': file }, checks);
         expect(offenses).to.have.length(3);
         expectLiquidFilterOffense(offenses, file, 'asset-3');
         expectRenderMarkupOffense(offenses, 'something-2.liquid');
@@ -133,7 +122,7 @@ ${buildComment('theme-check-enable LiquidFilter')}
 ${buildComment('theme-check-enable RenderMarkup')}
 {{ 'asset-2' | random_filter }}
 {% render 'something-2' %}`;
-          const offenses = await determineOffenses(file);
+          const offenses = await check({ 'code.liquid': file }, checks);
           expect(offenses).to.have.length(0);
         });
 
@@ -145,7 +134,7 @@ ${buildComment('theme-check-enable')}
 {{ 'asset-4' | random_filter }}
 {% render 'something-4' %}`;
 
-          const offenses = await determineOffenses(file);
+          const offenses = await check({ 'code.liquid': file }, checks);
           expect(offenses).to.have.length(2);
           expectLiquidFilterOffense(offenses, file, 'asset-4');
           expectRenderMarkupOffense(offenses, 'something-4.liquid');

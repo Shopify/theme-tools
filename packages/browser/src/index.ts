@@ -8,6 +8,7 @@ import {
   check as coreCheck,
   toSourceCode,
   recommended,
+  Dependencies,
 } from '@shopify/theme-check-common';
 
 export { toSourceCode, allChecks, recommended, Config };
@@ -47,9 +48,13 @@ export function getTheme(themeDesc: ThemeData): Theme {
  * But if you want to manage your memory (e.g. don't reparse ASTs for files that were not modified),
  * it might be preferable to call coreCheck directly.
  */
-export async function simpleCheck(themeDesc: ThemeData, config: Config): Promise<Offense[]> {
+export async function simpleCheck(
+  themeDesc: ThemeData,
+  config: Config,
+  dependencies: Dependencies,
+): Promise<Offense[]> {
   const theme = getTheme(themeDesc);
-  return coreCheck(theme, config);
+  return coreCheck(theme, config, dependencies);
 }
 
 export { coreCheck };

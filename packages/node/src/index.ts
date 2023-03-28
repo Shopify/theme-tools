@@ -16,6 +16,7 @@ import process from 'node:process';
 import glob = require('glob');
 
 const asyncGlob = promisify(glob);
+const fileExists = promisify(fs.exists);
 
 export async function toSourceCode(
   absolutePath: string,
@@ -50,5 +51,11 @@ export async function check(root: string): Promise<Offense[]> {
     checks: recommended,
   };
 
-  return coreCheck(theme, config);
+  return coreCheck(theme, config, {
+    fileExists,
+    async getDefaultTranslations() {
+      // TODO
+      return JSON.parse(theme.files.get('locales/en.default.json')?.source || '{}');
+    },
+  });
 }

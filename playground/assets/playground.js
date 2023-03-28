@@ -8,6 +8,15 @@ function check() {
         settings: {},
         checks: ThemeCheck.recommended,
       },
+      {
+        fileExists: async (absolutePath) => false,
+        getDefaultTranslations: () =>
+          Promise.resolve({
+            product: {
+              title: 'hi',
+            },
+          }),
+      },
     ).then((offenses) => {
       output.value = JSON.stringify(offenses, null, 2);
     });
