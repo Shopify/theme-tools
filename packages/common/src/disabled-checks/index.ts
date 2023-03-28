@@ -9,14 +9,14 @@ export function createDisabledChecksModule() {
   const INLINE_COMMENT_TAG = '#';
   const disabledChecks: DisabledChecksMap = new Map();
 
-  function determineRanges(relativePath: string, value: string, position: Position) {
+  function determineRanges(absolutePath: string, value: string, position: Position) {
     const [_, command, checksJoined] =
       value.trim().match(/^(?:theme\-check\-(disable|enable)) ?(.*)/) || [];
 
     const checks = checksJoined ? checksJoined.split(/,[ ]*/) : [SPECIFIC_CHECK_NOT_DEFINED];
 
     checks.forEach((check) => {
-      const disabledRanges = disabledChecks.get(relativePath)!;
+      const disabledRanges = disabledChecks.get(absolutePath)!;
 
       if (command === 'disable') {
         if (!disabledRanges.has(check)) {
@@ -45,36 +45,36 @@ export function createDisabledChecksModule() {
   }
 
   const DisabledChecks: Partial<LiquidCheck> = {
-    async onCodePathStart({ relativePath }) {
-      disabledChecks.set(relativePath, new Map());
+    async onCodePathStart({ absolutePath }) {
+      disabledChecks.set(absolutePath, new Map());
     },
 
-    async LiquidRawTag(node, { relativePath }) {
+    async LiquidRawTag(node, { absolutePath }) {
       if (node.name !== 'comment') {
         return;
       }
 
-      determineRanges(relativePath, node.body.value, node.position);
+      determineRanges(absolutePath, node.body.value, node.position);
     },
 
-    async LiquidTag(node, { relativePath }) {
+    async LiquidTag(node, { absolutePath }) {
       if (typeof node.markup !== 'string' || node.name !== INLINE_COMMENT_TAG) {
         return;
       }
 
-      determineRanges(relativePath, node.markup, node.position);
+      determineRanges(absolutePath, node.markup, node.position);
     },
   };
 
   function isDisabled(offense: Offense) {
     const ranges = [SPECIFIC_CHECK_NOT_DEFINED, offense.check].flatMap((check) => {
-      if (!disabledChecks.has(offense.relativePath)) {
+      if (!disabledChecks.has(offense.absolutePath)) {
         return [];
       }
-      if (!disabledChecks.get(offense.relativePath)!.has(check)) {
+      if (!disabledChecks.get(offense.absolutePath)!.has(check)) {
         return [];
       }
-      return disabledChecks.get(offense.relativePath)!.get(check)!;
+      return disabledChecks.get(offense.absolutePath)!.get(check)!;
     });
 
     return ranges.some(

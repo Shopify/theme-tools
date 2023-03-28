@@ -18,6 +18,7 @@ import {
 import { visitLiquid, visitJSON } from './visitors';
 import lineColumn from 'line-column';
 import { createDisabledChecksModule } from './disabled-checks';
+import * as path from './path';
 
 export * from './types';
 export * from './checks';
@@ -38,14 +39,14 @@ export async function check(
     switch (type) {
       case SourceCodeType.JSON: {
         const files = filesOfType(type, theme);
-        const checks = checksOfType(type, config.checks, offenses, dependencies);
+        const checks = checksOfType(type, config, offenses, dependencies);
         allChecks.push(...checks);
         pipelines.push(checkJSONFiles(checks, files));
         break;
       }
       case SourceCodeType.LiquidHtml: {
         const files = filesOfType(type, theme);
-        const checks = checksOfType(type, config.checks, offenses, dependencies);
+        const checks = checksOfType(type, config, offenses, dependencies);
         checks.push(createSafeCheck(DisabledChecks));
         allChecks.push(...checks);
         pipelines.push(checkLiquidFiles(checks, files));
@@ -85,16 +86,18 @@ function getPosition(source: string, index: number): Position {
 function createContext<S extends SourceCodeType>(
   check: CheckDefinition<S>,
   offenses: Offense[],
+  config: Config,
   dependencies: Dependencies,
 ): Context<S> {
-  // we build ASTs here in the one and done context
   return {
     ...dependencies,
+    absolutePath: (relativePath) => path.join(config.root, relativePath),
+    relativePath: (absolutePath) => path.relative(absolutePath, config.root),
     report(file: SourceCode<S>, problem: Problem): void {
       offenses.push({
         check: check.meta.code,
         message: problem.message,
-        relativePath: file.relativePath,
+        absolutePath: file.absolutePath,
         severity: check.meta.severity,
         start: getPosition(file.source, problem.startIndex),
         end: getPosition(file.source, problem.endIndex),
@@ -105,23 +108,21 @@ function createContext<S extends SourceCodeType>(
 
 function checksOfType<S extends SourceCodeType>(
   type: S,
-  checks: CheckDefinition<SourceCodeType>[],
+  config: Config,
   offenses: Offense[],
   dependencies: Dependencies,
 ): Check<S>[] {
-  return checks
+  return config.checks
     .filter((def): def is CheckDefinition<S> => def.meta.type === type)
     .map((check) => {
-      const context = createContext(check, offenses, dependencies);
+      const context = createContext(check, offenses, config, dependencies);
       return check.create(context as any);
     })
     .map(createSafeCheck) as Check<S>[];
 }
 
 function filesOfType<S extends SourceCodeType>(type: S, theme: Theme): SourceCode<S>[] {
-  return Array.from(theme.files.values()).filter(
-    (file): file is SourceCode<S> => file.type === type,
-  );
+  return theme.filter((file): file is SourceCode<S> => file.type === type);
 }
 
 async function checkJSONFiles(checks: JSONCheck[], files: JSONSourceCode[]): Promise<void> {

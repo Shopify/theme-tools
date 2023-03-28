@@ -31,19 +31,13 @@ export type ThemeData = {
 };
 
 export function getTheme(themeDesc: ThemeData): Theme {
-  const fileKVs: [string, LiquidSourceCode | JSONSourceCode | undefined][] = Object.entries(
-    themeDesc,
-  ).map(([relativePath, source]) => [
-    relativePath,
-    toSourceCode('/' + relativePath, relativePath, source),
-  ]);
-  return {
-    files: new Map(fileKVs.filter(([, v]) => !!v) as [string, LiquidSourceCode | JSONSourceCode][]),
-  };
+  return Object.entries(themeDesc)
+    .map(([relativePath, source]) => toSourceCode(asAbsolutePath(relativePath), source))
+    .filter((x): x is LiquidSourceCode | JSONSourceCode => x !== undefined);
 }
 
 /**
- * In the event where you don't care about reusing your Theme object, simpleCheck works alright.
+ * In the event where you don't care about reusing your SourceCode objects, simpleCheck works alright.
  *
  * But if you want to manage your memory (e.g. don't reparse ASTs for files that were not modified),
  * it might be preferable to call coreCheck directly.
@@ -58,3 +52,7 @@ export async function simpleCheck(
 }
 
 export { coreCheck };
+
+function asAbsolutePath(relativePath: string) {
+  return '/' + relativePath;
+}
