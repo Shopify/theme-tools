@@ -1,6 +1,6 @@
 import {
   check as coreCheck,
-  toSourceCode as commonToSourceCode,
+  toSourceCode,
   Offense,
   Config,
   SourceCodeType,
@@ -10,14 +10,6 @@ import {
   CheckDefinition,
   recommended,
 } from '@shopify/theme-check-common';
-
-function toSourceCode(
-  relativePath: string,
-  source: string,
-  version?: number,
-): LiquidSourceCode | JSONSourceCode | undefined {
-  return commonToSourceCode('/' + relativePath, relativePath, source, version);
-}
 
 /**
  * @example
@@ -37,12 +29,9 @@ export type MockTheme = {
 };
 
 export function getTheme(themeDesc: MockTheme): Theme {
-  const fileKVs: [string, LiquidSourceCode | JSONSourceCode | undefined][] = Object.entries(
-    themeDesc,
-  ).map(([relativePath, source]) => [relativePath, toSourceCode(relativePath, source)]);
-  return {
-    files: new Map(fileKVs.filter(([, v]) => !!v) as [string, LiquidSourceCode | JSONSourceCode][]),
-  };
+  return Object.entries(themeDesc)
+    .map(([relativePath, source]) => toSourceCode(asAbsolutePath(relativePath), source))
+    .filter((x): x is LiquidSourceCode | JSONSourceCode => x !== undefined);
 }
 
 export async function check(
@@ -53,6 +42,7 @@ export async function check(
   const config: Config = {
     settings: {},
     checks: checks,
+    root: '/',
   };
   return coreCheck(theme, config, {
     async fileExists(absolutePath: string) {
@@ -62,4 +52,8 @@ export async function check(
       return JSON.parse(themeDesc['locales/en.default.json'] || '{}');
     },
   });
+}
+
+function asAbsolutePath(relativePath: string) {
+  return '/' + relativePath;
 }

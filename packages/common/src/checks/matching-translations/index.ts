@@ -26,7 +26,7 @@ export const MatchingTranslations: JSONCheckDefinition = {
   create(context) {
     const translationsPerFile = new Map<JSONSourceCode, Map<string, PropertyNode>>();
     const isLocaleFile = (file: JSONSourceCode) =>
-      file.relativePath.startsWith('locales/') && !file.relativePath.endsWith('schema.json');
+      file.absolutePath.includes('/locales/') && !file.absolutePath.endsWith('schema.json');
     const isTerminalNode = (node: JSONNode): node is LiteralNode => node.type === 'Literal';
     const isObjectNode = (node: JSONNode): node is ObjectNode => node.type === 'Object';
     const isPlurarizationNode = (node: PropertyNode) => PLURALIZATION_KEYS.has(node.key.value);
@@ -57,8 +57,8 @@ export const MatchingTranslations: JSONCheckDefinition = {
       async onEnd() {
         const files = [...translationsPerFile.keys()];
         const defaultTranslationsFile =
-          files.find((x) => x.relativePath.endsWith('.default.json')) ||
-          files.find((x) => x.relativePath === 'locales/en.json');
+          files.find((x) => x.absolutePath.endsWith('.default.json')) ||
+          files.find((x) => x.absolutePath.includes('locales/en.json'));
         if (!defaultTranslationsFile) return;
 
         const defaultTranslations = translationsPerFile.get(defaultTranslationsFile);

@@ -4,18 +4,16 @@ import toJSON from 'json-to-ast';
 import { SourceCodeType, JSONSourceCode, LiquidSourceCode } from './types';
 
 export function toSourceCode(
-  relativePath: string,
   absolutePath: string,
   source: string,
   version?: number,
 ): LiquidSourceCode | JSONSourceCode | undefined {
   try {
-    const isLiquid = relativePath.endsWith('.liquid');
+    const isLiquid = absolutePath.endsWith('.liquid');
 
     if (isLiquid) {
       return {
         absolutePath,
-        relativePath,
         source,
         type: SourceCodeType.LiquidHtml,
         ast: toLiquidHtmlAST(source),
@@ -24,7 +22,6 @@ export function toSourceCode(
     } else {
       return {
         absolutePath,
-        relativePath,
         source,
         type: SourceCodeType.JSON,
         ast: toJSON(source),

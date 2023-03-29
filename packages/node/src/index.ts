@@ -20,11 +20,10 @@ const fileExists = promisify(fs.exists);
 
 export async function toSourceCode(
   absolutePath: string,
-  root: string,
 ): Promise<LiquidSourceCode | JSONSourceCode | undefined> {
   try {
     const source = await fs.promises.readFile(absolutePath, 'utf8');
-    return commonToSourceCode(absolutePath, path.relative(root, absolutePath), source);
+    return commonToSourceCode(absolutePath, source);
   } catch (e) {
     return undefined;
   }
@@ -33,15 +32,8 @@ export async function toSourceCode(
 export async function getTheme(root: string): Promise<Theme> {
   root = root.startsWith('/') ? `${process.cwd()}/${root}` : root;
   const paths = await asyncGlob(path.join(root, '**/*.{liquid,json}'));
-  const fileKVs: [string, LiquidSourceCode | JSONSourceCode | undefined][] = await Promise.all(
-    paths.map(async (absolutePath) => [
-      path.relative(root, absolutePath),
-      await toSourceCode(absolutePath, root),
-    ]),
-  );
-  return {
-    files: new Map(fileKVs.filter(([, v]) => !!v) as [string, LiquidSourceCode | JSONSourceCode][]),
-  };
+  const sourceCodes = await Promise.all(paths.map(toSourceCode));
+  return sourceCodes.filter((x): x is LiquidSourceCode | JSONSourceCode => x !== undefined);
 }
 
 export async function check(root: string): Promise<Offense[]> {
@@ -49,13 +41,17 @@ export async function check(root: string): Promise<Offense[]> {
   const config: Config = {
     settings: {},
     checks: recommended,
+    root,
   };
+
+  const defaultTranslations = JSON.parse(
+    theme.find((sc) => sc.absolutePath.endsWith('default.json'))?.source || '{}',
+  );
 
   return coreCheck(theme, config, {
     fileExists,
     async getDefaultTranslations() {
-      // TODO
-      return JSON.parse(theme.files.get('locales/en.default.json')?.source || '{}');
+      return defaultTranslations;
     },
   });
 }

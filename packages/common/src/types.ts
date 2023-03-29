@@ -3,13 +3,10 @@ import { NodeTypes as LiquidHtmlNodeTypes } from '@shopify/prettier-plugin-liqui
 
 import { ArrayNode, IdentifierNode, LiteralNode, ObjectNode, PropertyNode } from 'json-to-ast';
 
-export interface Theme {
-  files: Map<string, SourceCode<SourceCodeType>>;
-}
+export type Theme = SourceCode<SourceCodeType>[];
 
 export type SourceCode<S> = S extends SourceCodeType
   ? {
-      relativePath: string; // snippet/foo.liquid
       absolutePath: string; // /path/to/snippet/foo.liquid
       version?: number;
       source: string;
@@ -53,9 +50,13 @@ export type NodeTypes = {
   }[T];
 };
 
+export type AbsolutePath = string;
+export type RelativePath = string;
+
 export interface Config {
   settings: {};
   checks: CheckDefinition<SourceCodeType>[];
+  root: AbsolutePath;
 }
 
 type NodeOfType<S extends SourceCodeType, T> = Extract<AST[S], { type: T }>;
@@ -220,10 +221,14 @@ export interface Dependencies {
   fileExists(absolutePath: string): Promise<boolean>;
 }
 
+type StaticContextMethods<S> = {
+  report(file: SourceCode<S>, problem: Problem): void;
+  relativePath(absolutePath: AbsolutePath): RelativePath;
+  absolutePath(relativePath: RelativePath): AbsolutePath;
+};
+
 export type Context<S extends SourceCodeType> = S extends SourceCodeType
-  ? Dependencies & {
-      report(file: SourceCode<S>, problem: Problem): void;
-    }
+  ? StaticContextMethods<S> & Dependencies
   : never;
 
 export interface Problem {
@@ -237,7 +242,7 @@ export interface Problem {
 export interface Offense {
   check: string;
   message: string;
-  relativePath: string;
+  absolutePath: string;
   severity: Severity;
   start: Position;
   end: Position;
