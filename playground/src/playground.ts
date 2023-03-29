@@ -22,7 +22,7 @@ function log(message: any, prefix = '') {
 
 async function main() {
   // We initialize the language server in a web worker.
-  const languageServer = new Worker(new URL('./worker.js', import.meta.url));
+  const languageServer = new Worker(new URL('./worker.ts', import.meta.url));
 
   // We initialize a language client on the main thread that will
   // communicate with the language server
@@ -50,7 +50,7 @@ async function main() {
   const initParams: InitializeParams = {
     capabilities: {},
     processId: 0,
-    rootUri: 'browser://',
+    rootUri: 'browser:///',
   };
 
   // Here we start the lifecycle by sending an "initialize" request.
@@ -81,7 +81,7 @@ async function main() {
   // contents of the <textarea id="input"> element
   client.sendNotification(DidOpenTextDocumentNotification.type, {
     textDocument: {
-      uri: 'browser://input.liquid',
+      uri: 'browser:///input.liquid',
       languageId: 'liquid',
       version: textDocumentVersion,
       text: inputTextArea.value,
@@ -98,7 +98,7 @@ async function main() {
     // and TS will complain if we don't fit the API.
     client.sendNotification(DidChangeTextDocumentNotification.type, {
       textDocument: {
-        uri: 'browser://input.liquid',
+        uri: 'browser:///input.liquid',
         version: textDocumentVersion,
       },
       contentChanges: [

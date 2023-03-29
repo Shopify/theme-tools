@@ -1,0 +1,1 @@
+export { DiagnosticsManager } from './DiagnosticsManager';
