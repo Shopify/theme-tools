@@ -46,7 +46,8 @@ export async function check(
   };
   return coreCheck(theme, config, {
     async fileExists(absolutePath: string) {
-      return !!themeDesc[absolutePath.replace(/^\//, '')];
+      const relativePath = absolutePath.replace(/^\/\//, '');
+      return themeDesc[relativePath] !== undefined;
     },
     async getDefaultTranslations() {
       return JSON.parse(themeDesc['locales/en.default.json'] || '{}');
