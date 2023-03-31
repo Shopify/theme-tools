@@ -32,13 +32,17 @@ export const ParserBlockingScript: LiquidCheckDefinition = {
 
   create(context) {
     return {
-      // { { 'asset' | asset_url | script_tag } }
+      // {{ 'asset' | asset_url | script_tag }}
       LiquidFilter: async (node, file) => {
         if (node.name !== 'script_tag') return;
+
+        const filterString = node.source.slice(node.position.start, node.position.end);
+        const offset = filterString.indexOf('script_tag');
+
         context.report(file, {
           message:
             'The script_tag filter is parser-blocking. Use a <script> tag with async or defer for better performance',
-          startIndex: node.position.start,
+          startIndex: node.position.start + offset,
           endIndex: node.position.end,
         });
       },
@@ -69,8 +73,8 @@ export const ParserBlockingScript: LiquidCheckDefinition = {
 
         context.report(file, {
           message: 'Avoid parser blocking scripts by adding `defer` or `async` on this tag',
-          startIndex: node.blockStartPosition.start,
-          endIndex: node.blockEndPosition.end,
+          startIndex: node.position.start,
+          endIndex: node.position.end,
         });
       },
     };
