@@ -9,6 +9,10 @@ import {
 import * as is from './is';
 import { SimpleLanguageClient } from './simple-language-client';
 import './styles.css';
+import {
+  SetDefaultTranslationsNotification,
+  SetFileTreeNofification,
+} from './types';
 
 const inputTextArea = document.getElementById('input') as HTMLTextAreaElement;
 const output = document.getElementById('output') as HTMLTextAreaElement;
@@ -20,9 +24,43 @@ function log(message: any, prefix = '') {
   console.log(message);
 }
 
+function setDefaultTranslations(worker: Worker) {
+  const defaultTranslations = {
+    product: {
+      price: 'hello',
+    },
+  };
+
+  // Example state that lives here that is being passed down to the web
+  // worker.
+  worker.postMessage({
+    jsonrpc: '2.0',
+    method: 'shopify/setDefaultTranslations',
+    params: defaultTranslations,
+  } as SetDefaultTranslationsNotification);
+}
+
+function setFileTree(worker: Worker) {
+  const fileTree = [
+    '/input.liquid',
+    '/snippets/product.liquid',
+    '/snippets/price.liquid',
+  ];
+
+  // Example state that lives here that is being passed down to the web
+  // worker.
+  worker.postMessage({
+    jsonrpc: '2.0',
+    method: 'shopify/setFileTree',
+    params: fileTree,
+  } as SetFileTreeNofification);
+}
+
 async function main() {
   // We initialize the language server in a web worker.
   const languageServer = new Worker(new URL('./worker.ts', import.meta.url));
+  setDefaultTranslations(languageServer);
+  setFileTree(languageServer);
 
   // We initialize a language client on the main thread that will
   // communicate with the language server
