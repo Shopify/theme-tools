@@ -171,10 +171,6 @@ export type CheckDefinition<T> = T extends SourceCodeType
  *   async onCodePathEnd(file) {
  *     // Happens once per file
  *   }
- *
- *   async onEnd() {
- *     // Happens once per run, after all files were traversed
- *   }
  * }
  */
 export type Check<S> = S extends SourceCodeType
@@ -210,10 +206,6 @@ type CheckLifecycleMethods<S extends SourceCodeType> = {
    * Happens after traversing a file
    */
   onCodePathEnd(file: SourceCode<S>): Promise<void>;
-  /**
-   * Happens after traversing all files
-   */
-  onEnd(): Promise<void>;
 };
 
 export interface Dependencies {

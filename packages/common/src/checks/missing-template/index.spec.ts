@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { MissingTemplate } from '.';
-import { check as reportOffenses } from '../../test-helper';
+import { check } from '../../test-helper';
 
 describe('Module: MissingTemplate', () => {
   [
@@ -11,7 +11,12 @@ describe('Module: MissingTemplate', () => {
         {% render 'missing' with foo as arg          %}
         {% render myvariable %}
       `,
-      expectedOffense: "'snippets/missing.liquid' is not found",
+      expected: {
+        message: "'snippets/missing.liquid' is not found",
+        absolutePath: '/snippets/snippet.liquid',
+        start: { index: 51, line: 2, character: 18 },
+        end: { index: 60, line: 2, character: 27 },
+      },
       filesWith: (file: string) => ({
         'snippets/snippet.liquid': file,
         'snippets/existing.liquid': '',
@@ -20,7 +25,12 @@ describe('Module: MissingTemplate', () => {
     {
       testCase: 'should report the missing snippet to be rendered with "include"',
       file: "{% include 'missing' %}",
-      expectedOffense: "'snippets/missing.liquid' is not found",
+      expected: {
+        message: "'snippets/missing.liquid' is not found",
+        absolutePath: '/snippets/snippet.liquid',
+        start: { index: 11, line: 0, character: 11 },
+        end: { index: 20, line: 0, character: 20 },
+      },
       filesWith: (file: string) => ({
         'snippets/snippet.liquid': file,
         'snippets/existing.liquid': '',
@@ -29,26 +39,26 @@ describe('Module: MissingTemplate', () => {
     {
       testCase: 'should report the missing section to be rendered with "section"',
       file: "{% section 'missing' %}",
-      expectedOffense: "'sections/missing.liquid' is not found",
+      expected: {
+        message: "'sections/missing.liquid' is not found",
+        absolutePath: '/sections/section.liquid',
+        start: { index: 11, line: 0, character: 11 },
+        end: { index: 20, line: 0, character: 20 },
+      },
       filesWith: (file: string) => ({
         'sections/section.liquid': file,
         'sections/existing.liquid': '',
       }),
     },
-  ].forEach(({ testCase, file, expectedOffense, filesWith }) => {
+  ].forEach(({ testCase, file, expected, filesWith }) => {
     it(testCase, async () => {
-      const needle = "'missing'";
-      const startIndex = file.indexOf(needle);
-      const endIndex = file.indexOf(needle) + needle.length;
-
-      const offenses = await reportOffenses(filesWith(file), [MissingTemplate]);
+      const offenses = await check(filesWith(file), [MissingTemplate]);
 
       expect(offenses).to.have.length(1);
-      const { check, message, start, end } = offenses[0];
-      expect(check).to.equal(MissingTemplate.meta.code);
-      expect(message).to.equal(expectedOffense);
-      expect(start.index).to.equal(startIndex);
-      expect(end.index).to.equal(endIndex);
+      expect(offenses).to.containOffense({
+        check: MissingTemplate.meta.code,
+        ...expected,
+      });
     });
   });
 });

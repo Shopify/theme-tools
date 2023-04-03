@@ -1,3 +1,4 @@
+import chai from 'chai';
 import {
   check as coreCheck,
   toSourceCode,
@@ -10,6 +11,10 @@ import {
   CheckDefinition,
   recommended,
 } from '@shopify/theme-check-common';
+import { OffensesAssertion } from './test-helper/chai-offenses-assertion';
+
+// Setup 'chai' extensions
+chai.Assertion.addMethod(OffensesAssertion.name, OffensesAssertion.fn);
 
 /**
  * @example

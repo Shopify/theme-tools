@@ -5,7 +5,7 @@ import {
   Severity,
   SourceCodeType,
 } from '@shopify/theme-check-common';
-import { LiteralNode, ObjectNode, PropertyNode } from 'json-to-ast';
+import { PropertyNode } from 'json-to-ast';
 
 const PLURALIZATION_KEYS = new Set(['zero', 'one', 'two', 'few', 'many', 'other']);
 
@@ -24,14 +24,51 @@ export const MatchingTranslations: JSONCheckDefinition = {
   },
 
   create(context) {
-    const translationsPerFile = new Map<JSONSourceCode, Map<string, PropertyNode>>();
-    const isLocaleFile = (file: JSONSourceCode) =>
-      file.absolutePath.includes('/locales/') && !file.absolutePath.endsWith('schema.json');
-    const isTerminalNode = (node: JSONNode): node is LiteralNode => node.type === 'Literal';
-    const isObjectNode = (node: JSONNode): node is ObjectNode => node.type === 'Object';
-    const isPlurarizationNode = (node: PropertyNode) => PLURALIZATION_KEYS.has(node.key.value);
-    const isPlurarizationParent = (node: PropertyNode) =>
-      isObjectNode(node.value) && !!node.value.children.find(isPlurarizationNode);
+    // --- State
+
+    const missingTranslationsPerFile = new Map<JSONSourceCode, Set<string>>();
+
+    let defaultTranslations: Set<string> | undefined;
+
+    // --- Helpers
+
+    const hasDefaultTranslations = () => defaultTranslations?.size ?? 0 > 0;
+
+    const isTerminalNode = ({ type }: JSONNode) => type === 'Literal';
+
+    const isPluralizationNode = (node: PropertyNode) => PLURALIZATION_KEYS.has(node.key.value);
+
+    const isShopifyPath = (path: string) => path.startsWith('shopify.');
+
+    const hasDefaultTranslation = (translationPath: string) =>
+      defaultTranslations?.has(translationPath) ?? false;
+
+    const isDefaultTranslationsFile = ({ absolutePath }: JSONSourceCode) =>
+      absolutePath.endsWith('.default.json');
+
+    const isPluralizationPath = (path: string) =>
+      [...PLURALIZATION_KEYS].some((key) => path.endsWith(key));
+
+    const isLocaleFile = ({ absolutePath }: JSONSourceCode) => {
+      const relativePath = context.relativePath(absolutePath);
+
+      return relativePath.startsWith('locales/') && !relativePath.endsWith('schema.json');
+    };
+
+    const jsonPaths = (json: any): string[] => {
+      const keys = Object.keys(json);
+
+      return keys.reduce((acc: string[], key: string) => {
+        if (typeof json[key] !== 'object') {
+          return acc.concat(key);
+        }
+
+        const childJson = json[key];
+        const childPaths = jsonPaths(childJson);
+
+        return acc.concat(childPaths.map((path) => `${key}.${path}`));
+      }, []);
+    };
 
     const objectPath = (nodes: JSONNode[]) => {
       return nodes
@@ -40,59 +77,63 @@ export const MatchingTranslations: JSONCheckDefinition = {
         .join('.');
     };
 
+    // --- Core
+
     return {
       async onCodePathStart(file) {
         if (!isLocaleFile(file)) return;
-        translationsPerFile.set(file, new Map());
+        if (isDefaultTranslationsFile(file)) return;
+
+        defaultTranslations ??= new Set<string>(jsonPaths(await context.getDefaultTranslations()));
+
+        // At the `onCodePathStart`, we assume that all translations are missing,
+        // and remove translation paths while traversing through the file.
+        const missingTranslation = new Set<string>(defaultTranslations);
+
+        missingTranslationsPerFile.set(file, missingTranslation);
+      },
+
+      async onCodePathEnd(file) {
+        if (!isLocaleFile(file)) return;
+        if (isDefaultTranslationsFile(file)) return;
+
+        missingTranslationsPerFile.get(file)?.forEach((path) => {
+          if (isPluralizationPath(path)) return;
+          if (isShopifyPath(path)) return;
+
+          context.report(file, {
+            message: `The translation for '${path}' is missing`,
+            startIndex: file.ast.loc!.start.offset,
+            endIndex: file.ast.loc!.end.offset,
+          });
+        });
       },
 
       async Property(node, file, ancestors) {
+        if (!hasDefaultTranslations()) return;
+
+        if (isDefaultTranslationsFile(file)) return;
         if (!isLocaleFile(file)) return;
-        if (isPlurarizationNode(node)) return;
-        if (isTerminalNode(node.value) || isPlurarizationParent(node)) {
-          translationsPerFile.get(file)!.set(objectPath(ancestors.concat(node)), node);
+
+        if (isPluralizationNode(node)) return;
+        if (!isTerminalNode(node.value)) return;
+
+        const path = objectPath(ancestors.concat(node));
+
+        if (isShopifyPath(path)) return;
+
+        if (hasDefaultTranslation(path)) {
+          // As `path` is present, we remove it from the
+          // `missingTranslationsPerFile` bucket.
+          missingTranslationsPerFile.get(file)?.delete(path);
+          return;
         }
-      },
 
-      async onEnd() {
-        const files = [...translationsPerFile.keys()];
-        const defaultTranslationsFile =
-          files.find((x) => x.absolutePath.endsWith('.default.json')) ||
-          files.find((x) => x.absolutePath.includes('locales/en.json'));
-        if (!defaultTranslationsFile) return;
-
-        const defaultTranslations = translationsPerFile.get(defaultTranslationsFile);
-        if (!defaultTranslations) return;
-
-        for (const [file, translations] of translationsPerFile.entries()) {
-          if (file === defaultTranslationsFile) continue;
-
-          const missingInDefault = [...translations.keys()].filter(
-            (path) => !defaultTranslations.has(path),
-          );
-
-          for (const path of missingInDefault) {
-            const node = translations.get(path);
-            context.report(file, {
-              message: `A default translation for '${path}' does not exist`,
-              startIndex: node!.loc!.start.offset,
-              endIndex: node!.loc!.end.offset,
-            });
-          }
-
-          const missingInOther = [...defaultTranslations.keys()].filter(
-            (path) => !translations.has(path),
-          );
-
-          for (const path of missingInOther) {
-            const commonAncestor = file.ast; // TODO, should be smarter than this
-            context.report(file, {
-              message: `Default translation '${path}' is missing`,
-              startIndex: commonAncestor.loc!.start.offset,
-              endIndex: commonAncestor.loc!.end.offset,
-            });
-          }
-        }
+        context.report(file, {
+          message: `A default translation for '${path}' does not exist`,
+          startIndex: node.loc!.start.offset,
+          endIndex: node.loc!.end.offset,
+        });
       },
     };
   },

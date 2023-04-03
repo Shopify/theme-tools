@@ -56,7 +56,6 @@ export async function check(
   }
 
   await Promise.all(pipelines);
-  await Promise.all(allChecks.map((check) => check.onEnd()));
 
   return offenses.filter((offense) => !isDisabled(offense));
 }
