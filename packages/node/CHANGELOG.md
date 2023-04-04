@@ -1,5 +1,13 @@
 # @shopify/liquid-language-server-node
 
+## 1.2.1
+
+### Patch Changes
+
+- d4682a6: Reexport theme-check-common interfaces
+- Updated dependencies [d4682a6]
+  - @shopify/liquid-language-server-common@1.2.1
+
 ## 1.2.0
 
 ### Patch Changes
