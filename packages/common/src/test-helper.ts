@@ -51,7 +51,7 @@ export async function check(
   };
   return coreCheck(theme, config, {
     async fileExists(absolutePath: string) {
-      const relativePath = absolutePath.replace(/^\/\//, '');
+      const relativePath = absolutePath.replace(/^\//, '');
       return themeDesc[relativePath] !== undefined;
     },
     async getDefaultTranslations() {

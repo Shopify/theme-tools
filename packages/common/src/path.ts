@@ -7,5 +7,9 @@ export function relative(from: AbsolutePath, to: AbsolutePath): RelativePath {
 
 export function join(...paths: string[]): string {
   // TODO (#15): do the right thing, collapse slashes and shit.
-  return paths.join('/');
+  return paths.map(removeTrailingSlash).join('/');
+}
+
+function removeTrailingSlash(path: string): string {
+  return path.replace(/\/+$/, '');
 }
