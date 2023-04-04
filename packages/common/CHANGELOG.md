@@ -1,5 +1,12 @@
 # @shopify/theme-check-common
 
+## 1.2.0
+
+### Minor Changes
+
+- 4c099d5: Add check `MissingTemplate`
+- 4c099d5: Consider comments to disable checks (`# theme-check-disable/enable`)
+
 ## 1.1.0
 
 ### Minor Changes
