@@ -1,5 +1,14 @@
 # @shopify/liquid-language-server-common
 
+## 1.2.0
+
+### Minor Changes
+
+- 19efbcf: Bump theme-check to v1.2.0
+
+  - Adds MatchingTranslations check
+  - Adds `{% # theme-check-disable %}`
+
 ## 1.1.0
 
 ### Minor Changes

@@ -1,5 +1,12 @@
 # @shopify/liquid-language-server-node
 
+## 1.2.0
+
+### Patch Changes
+
+- Updated dependencies [19efbcf]
+  - @shopify/liquid-language-server-common@1.2.0
+
 ## 1.1.0
 
 ### Minor Changes

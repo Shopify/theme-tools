@@ -1,6 +1,6 @@
 {
   "name": "@shopify/liquid-language-server-common",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "main": "dist/index.js",
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "license": "MIT",
