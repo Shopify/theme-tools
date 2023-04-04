@@ -13,7 +13,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@shopify/theme-check-common": "1.1.0",
+    "@shopify/theme-check-common": "1.2.0",
     "vscode-languageserver": "^8.0.2"
   }
 }
