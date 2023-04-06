@@ -80,8 +80,18 @@ export const computedCodeMirrorDiagnosticsValueProvider =
   );
 
 export const diagnosticsLinter = linter(
-  (view) => view.state.facet(diagnosticsFacet),
-  { delay: 100 },
+  (view) => {
+    const diagnostics = view.state.facet(diagnosticsFacet);
+    return diagnostics;
+  },
+  {
+    delay: 100,
+    needsRefresh(update) {
+      const currVersion = update.state.field(lspDiagnosticsVersionField);
+      const prevVersion = update.startState.field(lspDiagnosticsVersionField);
+      return update.docChanged || prevVersion !== currVersion;
+    },
+  },
 );
 export const diagnosticsPlugin = ViewPlugin.fromClass(DiagnosticsPlugin);
 

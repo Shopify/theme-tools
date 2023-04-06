@@ -631,20 +631,20 @@
     "@codemirror/lang-json" "^6.0.0"
     "@lezer/lr" "^1.2.3"
 
-"@shopify/liquid-language-server-browser@^1.1.0":
-  version "1.1.0"
-  resolved "https://npm.shopify.io/node/@shopify/liquid-language-server-browser/-/1.1.0/liquid-language-server-browser-1.1.0.tgz#4bb57a6b7c4664ecfd9b3963d9a658c12d3ce159"
-  integrity sha512-PYPVLJ9HcuXlnVtvJkWevDnk7TYeE52GtGPFbysVZxn9PoenMGKZQzbdfkTIi/YlrhNKSY7owOI2g8/a6mOgeA==
+"@shopify/liquid-language-server-browser@1.2.1":
+  version "1.2.1"
+  resolved "https://npm.shopify.io/node/@shopify/liquid-language-server-browser/-/1.2.1/liquid-language-server-browser-1.2.1.tgz#87fbce550da6b658f96a513ab4ea60d3d21872fc"
+  integrity sha512-CF4JbtjON4tRfpFhGLZq7NP3iHoLsGU8An1vnY87WN0lqRCohNA1XABPWeZwetC4+uMrifd6XTos8wNtK2pejg==
   dependencies:
-    "@shopify/liquid-language-server-common" "1.1.0"
+    "@shopify/liquid-language-server-common" "1.2.1"
     vscode-languageserver "^8.0.2"
 
-"@shopify/liquid-language-server-common@1.1.0":
-  version "1.1.0"
-  resolved "https://npm.shopify.io/node/@shopify/liquid-language-server-common/-/1.1.0/liquid-language-server-common-1.1.0.tgz#973467f1e9282e6a5e28c7d4f01e4f287aabfadc"
-  integrity sha512-rKsjH6JrM2BK5Lp+rDMxzGkUc9GKYixz6+mEHDkk30P2Gx+JQdYGYtaISM/dk1IZ6/cUYSY/exZ53rJVTnSOeA==
+"@shopify/liquid-language-server-common@1.2.1":
+  version "1.2.1"
+  resolved "https://npm.shopify.io/node/@shopify/liquid-language-server-common/-/1.2.1/liquid-language-server-common-1.2.1.tgz#5f96d413be69a1a766eed0ddae14bba6e1f247d1"
+  integrity sha512-5rtetEhwYK4JWE3JdEH3mM7oR+BTZEub4pvftju8NVmen0dC3CUp5htZCUo4sHyXN1DgrV13RIEK4XPmoDUh3Q==
   dependencies:
-    "@shopify/theme-check-common" "^1.0.1"
+    "@shopify/theme-check-common" "1.2.0"
     vscode-languageserver "^8.0.2"
 
 "@shopify/prettier-plugin-liquid@^1.0.6":
@@ -656,10 +656,10 @@
     line-column "^1.0.2"
     ohm-js "^16.3.0"
 
-"@shopify/theme-check-common@^1.0.1":
-  version "1.0.1"
-  resolved "https://npm.shopify.io/node/@shopify/theme-check-common/-/1.0.1/theme-check-common-1.0.1.tgz#9a1d8a0f056d1a49f34dd786e851db8308686f5f"
-  integrity sha512-52zl4rD4S7Nh2X8kcTvbm02LXe0IciILbe+MncpMg/u2An4zEQx5DxidKYfvFcoZoWMJVvPgcJonYj4dwx537Q==
+"@shopify/theme-check-common@1.2.0":
+  version "1.2.0"
+  resolved "https://npm.shopify.io/node/@shopify/theme-check-common/-/1.2.0/theme-check-common-1.2.0.tgz#6a6ebdc50b148cebad9e070bae7d9d093f4ee175"
+  integrity sha512-AiOIotGGDtMh4dzp73vQjbJnLnZWEZ4Ls5f2akvWoHnwR5EEf0/a6zlyERTbf9pIjtLDtt2bmsnJXeog+GGL3Q==
   dependencies:
     "@shopify/prettier-plugin-liquid" "^1.0.6"
     json-to-ast "^2.1.0"

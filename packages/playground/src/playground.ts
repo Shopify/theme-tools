@@ -5,6 +5,8 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { liquid, liquidHighLightStyle } from '@shopify/lang-liquid';
 
 import { CodeMirrorLanguageClient } from '@shopify/code-mirror-language-client';
+import * as SetFileTreeNotification from './SetFileTreeNotification';
+import * as SetDefaultTranslationsNotification from './SetDefaultTranslationsNotification';
 
 const exampleTemplate = `<!doctype html>
 <html class="no-js" lang="{{ request.locale.iso_code }}">
@@ -26,6 +28,32 @@ async function main() {
   const client = new CodeMirrorLanguageClient(worker);
   await client.start();
 
+  // Mock "main-thread-provided" value for the filetree
+  worker.postMessage({
+    jsonrpc: '2.0',
+    method: SetFileTreeNotification.method,
+    params: [
+      '/snippets/article-card.liquid',
+      '/snippets/product-card.liquid',
+      '/snippets/product.liquid',
+    ],
+  } as SetFileTreeNotification.type);
+
+  // Mock "main-thread-provided" value for the default translations
+  worker.postMessage({
+    jsonrpc: '2.0',
+    method: SetDefaultTranslationsNotification.method,
+    params: {
+      product: {
+        price: 'Price',
+        size: 'Size',
+      },
+      footer: {
+        subscribe: 'Subscribe to our newsletter',
+      },
+    },
+  } as SetDefaultTranslationsNotification.type);
+
   new EditorView({
     state: EditorState.create({
       doc: exampleTemplate,
@@ -34,7 +62,7 @@ async function main() {
         liquid(),
         liquidHighLightStyle,
         oneDark,
-        client.extension('browser///input.liquid'),
+        client.extension('browser:///input.liquid'),
       ],
     }),
     parent: document.getElementById('editor')!,

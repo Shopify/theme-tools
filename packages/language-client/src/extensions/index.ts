@@ -1,3 +1,3 @@
 export { clientFacet, fileUriFacet } from './client';
-export { textDocumentSync } from './textDocumentSync';
-export { lspLinter } from './lspLinter';
+export { textDocumentSync, textDocumentField } from './textDocumentSync';
+export { lspLinter, diagnosticsFacet, lspDiagnosticsField } from './lspLinter';
