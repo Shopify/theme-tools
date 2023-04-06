@@ -1,6 +1,6 @@
 {
   "name": "@shopify/code-mirror-language-client",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A Language Client for CodeMirror",
   "repository": "https://github.com/Shopify/code-mirror-language-client",
   "author": "CP Clermont <cp.clermont@shopify.com>",
