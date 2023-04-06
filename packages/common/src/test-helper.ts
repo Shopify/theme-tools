@@ -49,6 +49,7 @@ export async function check(
     checks: checks,
     root: '/',
   };
+  const defaultTranslationsFileAbsolutePath = 'locales/en.default.json';
   return coreCheck(theme, config, {
     async fileExists(absolutePath: string) {
       const relativePath = absolutePath.replace(/^\//, '');
@@ -56,11 +57,14 @@ export async function check(
     },
     async getDefaultTranslations() {
       try {
-        return JSON.parse(themeDesc['locales/en.default.json'] || '{}');
+        return JSON.parse(themeDesc[defaultTranslationsFileAbsolutePath] || '{}');
       } catch (e) {
         if (e instanceof SyntaxError) return {};
         throw e;
       }
+    },
+    get defaultLocale() {
+      return defaultTranslationsFileAbsolutePath.match(/locales\/(.*)\.default\.json$/)?.[1]!;
     },
   });
 }

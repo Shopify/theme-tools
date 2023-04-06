@@ -205,10 +205,11 @@ type CheckLifecycleMethods<S extends SourceCodeType> = {
 
 export type Translations = {
   [k in string]: Translations;
-}
+};
 
 export interface Dependencies {
   getDefaultTranslations(): Promise<Translations>;
+  get defaultLocale(): string;
   fileExists(absolutePath: string): Promise<boolean>;
 }
 
