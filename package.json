@@ -15,7 +15,7 @@
     "dev:playground": "yarn --cwd packages/playground dev",
     "format": "prettier --write \"packages/*/src/**/*.ts\"",
     "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
-    "playground": "npx http-server playground/dist",
+    "playground": "npx http-server packages/playground/dist",
     "test": "vitest"
   },
   "dependencies": {
