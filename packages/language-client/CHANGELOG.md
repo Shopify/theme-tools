@@ -1,5 +1,11 @@
 # @shopify/code-mirror-language-client
 
+## 0.0.3
+
+### Patch Changes
+
+- Split output into UMD & ESM for webpack/jest support
+
 ## 0.0.2
 
 ### Patch Changes
