@@ -28,7 +28,7 @@ export interface PromiseCompletion {
   reject(error: unknown): void;
 }
 
-interface Dependencies {
+export interface Dependencies {
   clientCapabilities: ClientCapabilities;
   log(...args: any[]): void;
 }

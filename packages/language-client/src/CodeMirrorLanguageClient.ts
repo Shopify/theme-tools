@@ -1,7 +1,7 @@
 import { Extension } from '@codemirror/state';
 import { ClientCapabilities } from 'vscode-languageserver-protocol';
 
-import { LanguageClient } from './LanguageClient';
+import { Dependencies, LanguageClient } from './LanguageClient';
 import {
   clientFacet,
   fileUriFacet,
@@ -16,6 +16,9 @@ import {
  * but we migth need to change that and this is where we'll do it.
  */
 const clientCapabilities: ClientCapabilities = {};
+const defaultLogger = console.log.bind(console);
+
+export { Dependencies };
 
 // There is one LanguageClient
 // There is one LanguageServer
@@ -23,11 +26,13 @@ const clientCapabilities: ClientCapabilities = {};
 export class CodeMirrorLanguageClient {
   private readonly client: LanguageClient;
 
-  constructor(private readonly worker: Worker) {
+  constructor(
+    private readonly worker: Worker,
+    { log = defaultLogger }: Partial<Dependencies> = {},
+  ) {
     this.client = new LanguageClient(worker, {
-      // eslint-disable-next-line no-console
-      log: console.log.bind(console),
       clientCapabilities,
+      log,
     });
     this.worker = worker;
   }
