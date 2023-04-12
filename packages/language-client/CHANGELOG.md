@@ -1,5 +1,11 @@
 # @shopify/code-mirror-language-client
 
+## 0.0.4
+
+### Patch Changes
+
+- Unhardcode the logger
+
 ## 0.0.3
 
 ### Patch Changes
