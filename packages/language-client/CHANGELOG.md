@@ -1,5 +1,11 @@
 # @shopify/code-mirror-language-client
 
+## 0.0.5
+
+### Patch Changes
+
+- Fix squiggly line disappearing on odd user interactions
+
 ## 0.0.4
 
 ### Patch Changes
