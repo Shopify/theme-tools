@@ -86,15 +86,20 @@ export const diagnosticsLinter = linter(
   },
   {
     delay: 100,
-    needsRefresh() {
-      // Not doing this caused weird issues where the diagnostics would
-      // disappear because of user interaction that don't cause document
-      // changes (resizing, saving file, switching focus). Trying to catch
-      // all the use cases from in here doesn't make sense.
-      //
-      // The function is cheap to execute, so there's no need for a good
-      // "needsRefresh."
-      return true;
+    needsRefresh(update) {
+      const currVersion = update.state.field(lspDiagnosticsVersionField);
+      const prevVersion = update.startState.field(lspDiagnosticsVersionField);
+
+      // Checking against any kind of changes otherwise the squiggly line disappears!!
+      return (
+        update.geometryChanged ||
+        update.viewportChanged ||
+        update.heightChanged ||
+        update.focusChanged ||
+        update.docChanged ||
+        update.transactions[0]?.reconfigured ||
+        prevVersion !== currVersion
+      );
     },
   },
 );
