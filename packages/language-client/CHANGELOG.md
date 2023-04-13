@@ -1,5 +1,11 @@
 # @shopify/code-mirror-language-client
 
+## 0.0.7
+
+### Patch Changes
+
+- Squiggly line mistery-final.psd
+
 ## 0.0.6
 
 ### Patch Changes
