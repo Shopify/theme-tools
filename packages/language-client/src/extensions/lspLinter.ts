@@ -89,7 +89,16 @@ export const diagnosticsLinter = linter(
     needsRefresh(update) {
       const currVersion = update.state.field(lspDiagnosticsVersionField);
       const prevVersion = update.startState.field(lspDiagnosticsVersionField);
-      return update.docChanged || prevVersion !== currVersion;
+
+      // Checking against any kind of changes otherwise the squiggly line disappears!!
+      return (
+        update.geometryChanged ||
+        update.viewportChanged ||
+        update.heightChanged ||
+        update.focusChanged ||
+        update.docChanged ||
+        prevVersion !== currVersion
+      );
     },
   },
 );
