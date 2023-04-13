@@ -1,5 +1,11 @@
 # @shopify/code-mirror-language-client
 
+## 0.0.6
+
+### Patch Changes
+
+- Squiggly line mistery resolution: bazooka edition
+
 ## 0.0.5
 
 ### Patch Changes
