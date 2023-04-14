@@ -7,7 +7,7 @@ import {
 import { URI } from 'vscode-languageserver-types';
 import { toAbsolutePath } from '../utils';
 
-type AugmentedSourceCode = SourceCode<SourceCodeType> & { uri: URI };
+export type AugmentedSourceCode = SourceCode<SourceCodeType> & { uri: URI };
 
 // Goals:
 // - Memory efficient

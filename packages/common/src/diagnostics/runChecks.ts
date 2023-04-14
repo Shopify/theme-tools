@@ -4,6 +4,7 @@ import { Dependencies } from '../types';
 import { DocumentManager } from '../documents';
 import { DiagnosticsManager } from './DiagnosticsManager';
 import { offenseToDiagnostic } from './offenseToDiagnostic';
+import { useBufferOrInjectedTranslations } from './useBufferOrInjectedTranslations';
 
 export function makeRunChecks({
   loadConfig,
@@ -24,8 +25,14 @@ export function makeRunChecks({
       findRootURI(triggerUri),
     ]);
     const theme = documentManager.theme(rootURI);
+    const defaultTranslations = await useBufferOrInjectedTranslations(
+      getDefaultTranslationsFactory,
+      theme,
+      rootURI,
+    );
+
     const offenses = await check(theme, config, {
-      getDefaultTranslations: getDefaultTranslationsFactory(rootURI),
+      getDefaultTranslations: async () => defaultTranslations,
       fileExists,
     });
 

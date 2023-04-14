@@ -1,5 +1,10 @@
 import { vi, expect, describe, it, beforeEach } from 'vitest';
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '@shopify/theme-check-common';
+import {
+  allChecks,
+  LiquidCheckDefinition,
+  Severity,
+  SourceCodeType,
+} from '@shopify/theme-check-common';
 import { Connection } from 'vscode-languageserver';
 import { DocumentManager } from '../documents';
 import { DiagnosticsManager } from './DiagnosticsManager';
@@ -52,7 +57,7 @@ describe('Module: runChecks', () => {
       loadConfig: async () => ({
         settings: {},
         checks: [LiquidFilter],
-        root: 'browser:///',
+        root: '/',
       }),
     });
   });
@@ -175,6 +180,65 @@ describe('Module: runChecks', () => {
         version: fileVersion,
         diagnostics,
       });
+    });
+  });
+
+  it('should use the contents of the default translations file buffer (if any) instead of the result of the factory', async () => {
+    const defaultURI = 'browser:///locales/en.default.json';
+    const frURI = 'browser:///locales/fr.json';
+    const files = {
+      [defaultURI]: JSON.stringify({ hello: 'hello' }),
+      [frURI]: JSON.stringify({ hello: 'bonjour', hi: 'salut' }),
+    };
+
+    const matchingTranslation = allChecks.filter((c) => c.meta.code === 'MatchingTranslations');
+    expect(matchingTranslation).to.have.lengthOf(1);
+    runChecks = makeRunChecks({
+      findRootURI: async () => 'browser:///',
+      fileExists: async () => true,
+      getDefaultTranslationsFactory: () => async () => JSON.parse(files[defaultURI]),
+      loadConfig: async () => ({
+        settings: {},
+        checks: matchingTranslation,
+        root: '/',
+      }),
+    });
+
+    // Open and have errors
+    documentManager.open(frURI, files[frURI], 0);
+    await runChecks(documentManager, diagnosticsManager, frURI);
+    expect(connection.sendDiagnostics).toHaveBeenCalledWith({
+      uri: frURI,
+      version: 0,
+      diagnostics: [
+        {
+          source: 'theme-check',
+          code: 'MatchingTranslations',
+          message: `A default translation for 'hi' does not exist`,
+          severity: 1,
+          range: {
+            end: {
+              character: 31,
+              line: 0,
+            },
+            start: {
+              character: 19,
+              line: 0,
+            },
+          },
+        },
+      ],
+    });
+
+    // Change the contents of the defaultURI buffer, expect frURI to be fixed
+    documentManager.open(defaultURI, files[defaultURI], 0);
+    documentManager.change(defaultURI, JSON.stringify({ hello: 'hello', hi: 'hi' }), 1);
+    connection.sendDiagnostics.mockClear();
+    await runChecks(documentManager, diagnosticsManager, frURI);
+    expect(connection.sendDiagnostics).toHaveBeenCalledWith({
+      uri: frURI,
+      version: 0,
+      diagnostics: [],
     });
   });
 });
