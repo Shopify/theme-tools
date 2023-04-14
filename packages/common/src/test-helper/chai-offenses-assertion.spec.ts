@@ -4,7 +4,7 @@ import { Offense } from '../types';
 describe('Module: OffensesAssertion', () => {
   const offenses: Offense[] = [
     buildOffense(`The translation for 'hello.world' is missing`, 'locales/en.json'),
-    buildOffense(`'snippets/missing.liquid' is not found`, 'layout/theme.liquid'),
+    buildOffense(`'snippets/missing.liquid' does not exist`, 'layout/theme.liquid'),
   ];
 
   describe('with string assertions', () => {

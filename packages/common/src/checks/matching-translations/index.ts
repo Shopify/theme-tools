@@ -24,24 +24,18 @@ export const MatchingTranslations: JSONCheckDefinition = {
   },
 
   create(context) {
-    // --- State
+    // State
+    const defaultTranslations = new Set<string>();
+    const missingTranslations = new Set<string>();
 
-    const missingTranslationsPerFile = new Map<JSONSourceCode, Set<string>>();
-
-    let defaultTranslations: Set<string> | undefined;
-
-    // --- Helpers
-
-    const hasDefaultTranslations = () => defaultTranslations?.size ?? 0 > 0;
-
+    // Helpers
+    const hasDefaultTranslations = () => defaultTranslations.size > 0;
     const isTerminalNode = ({ type }: JSONNode) => type === 'Literal';
-
     const isPluralizationNode = (node: PropertyNode) => PLURALIZATION_KEYS.has(node.key.value);
-
     const isShopifyPath = (path: string) => path.startsWith('shopify.');
 
     const hasDefaultTranslation = (translationPath: string) =>
-      defaultTranslations?.has(translationPath) ?? false;
+      defaultTranslations.has(translationPath) ?? false;
 
     const isDefaultTranslationsFile = ({ absolutePath }: JSONSourceCode) =>
       absolutePath.endsWith('.default.json');
@@ -77,62 +71,55 @@ export const MatchingTranslations: JSONCheckDefinition = {
         .join('.');
     };
 
-    // --- Core
+    const file = context.file;
+    if (!isLocaleFile(file) || isDefaultTranslationsFile(file)) {
+      // No need to lint a file that isn't a translation file, we return an
+      // empty object as the check for those.
+      return {};
+    }
 
     return {
-      async onCodePathStart(file) {
-        if (!isLocaleFile(file)) return;
-        if (isDefaultTranslationsFile(file)) return;
-
-        defaultTranslations ??= new Set<string>(jsonPaths(await context.getDefaultTranslations()));
+      async onCodePathStart() {
+        const defaultTranslationPaths = await context.getDefaultTranslations().then(jsonPaths);
+        defaultTranslationPaths.forEach(Set.prototype.add, defaultTranslations);
 
         // At the `onCodePathStart`, we assume that all translations are missing,
         // and remove translation paths while traversing through the file.
-        const missingTranslation = new Set<string>(defaultTranslations);
-
-        missingTranslationsPerFile.set(file, missingTranslation);
+        defaultTranslationPaths.forEach(Set.prototype.add, missingTranslations);
       },
 
-      async onCodePathEnd(file) {
-        if (!isLocaleFile(file)) return;
-        if (isDefaultTranslationsFile(file)) return;
-
-        missingTranslationsPerFile.get(file)?.forEach((path) => {
-          if (isPluralizationPath(path)) return;
-          if (isShopifyPath(path)) return;
-
-          context.report(file, {
-            message: `The translation for '${path}' is missing`,
-            startIndex: file.ast.loc!.start.offset,
-            endIndex: file.ast.loc!.end.offset,
-          });
-        });
-      },
-
-      async Property(node, file, ancestors) {
+      async Property(node, ancestors) {
         if (!hasDefaultTranslations()) return;
-
-        if (isDefaultTranslationsFile(file)) return;
-        if (!isLocaleFile(file)) return;
-
         if (isPluralizationNode(node)) return;
         if (!isTerminalNode(node.value)) return;
 
         const path = objectPath(ancestors.concat(node));
-
         if (isShopifyPath(path)) return;
 
         if (hasDefaultTranslation(path)) {
           // As `path` is present, we remove it from the
           // `missingTranslationsPerFile` bucket.
-          missingTranslationsPerFile.get(file)?.delete(path);
+          missingTranslations.delete(path);
           return;
         }
 
-        context.report(file, {
+        context.report({
           message: `A default translation for '${path}' does not exist`,
           startIndex: node.loc!.start.offset,
           endIndex: node.loc!.end.offset,
+        });
+      },
+
+      async onCodePathEnd() {
+        missingTranslations.forEach((path) => {
+          if (isPluralizationPath(path)) return;
+          if (isShopifyPath(path)) return;
+
+          context.report({
+            message: `The translation for '${path}' is missing`,
+            startIndex: file.ast.loc!.start.offset,
+            endIndex: file.ast.loc!.end.offset,
+          });
         });
       },
     };
