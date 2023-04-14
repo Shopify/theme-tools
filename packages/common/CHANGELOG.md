@@ -1,5 +1,11 @@
 # @shopify/liquid-language-server-common
 
+## 1.2.2
+
+### Patch Changes
+
+- Use buffer value of default translations before the injected value
+
 ## 1.2.1
 
 ### Patch Changes
