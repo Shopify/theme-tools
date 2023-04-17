@@ -1,8 +1,9 @@
 import { Position } from '@shopify/prettier-plugin-liquid/dist/types';
-import { LiquidCheck } from '@shopify/theme-check-common';
-import { Offense } from '../types';
+import { LiquidCheckDefinition, Offense } from '../types';
 
-type DisabledChecksMap = Map<string, Map<string, { from: number; to?: number }[]>>;
+type AbsolutePath = string;
+type CheckName = string;
+type DisabledChecksMap = Map<AbsolutePath, Map<CheckName, { from: number; to?: number }[]>>;
 
 export function createDisabledChecksModule() {
   const SPECIFIC_CHECK_NOT_DEFINED = '@all';
@@ -44,26 +45,29 @@ export function createDisabledChecksModule() {
     });
   }
 
-  const DisabledChecks: Partial<LiquidCheck> = {
-    async onCodePathStart({ absolutePath }) {
-      disabledChecks.set(absolutePath, new Map());
-    },
+  const DisabledChecksVisitor: LiquidCheckDefinition = {
+    meta: {} as any,
+    create: ({ file }) => ({
+      async onCodePathStart() {
+        disabledChecks.set(file.absolutePath, new Map());
+      },
 
-    async LiquidRawTag(node, { absolutePath }) {
-      if (node.name !== 'comment') {
-        return;
-      }
+      async LiquidRawTag(node) {
+        if (node.name !== 'comment') {
+          return;
+        }
 
-      determineRanges(absolutePath, node.body.value, node.position);
-    },
+        determineRanges(file.absolutePath, node.body.value, node.position);
+      },
 
-    async LiquidTag(node, { absolutePath }) {
-      if (typeof node.markup !== 'string' || node.name !== INLINE_COMMENT_TAG) {
-        return;
-      }
+      async LiquidTag(node) {
+        if (typeof node.markup !== 'string' || node.name !== INLINE_COMMENT_TAG) {
+          return;
+        }
 
-      determineRanges(absolutePath, node.markup, node.position);
-    },
+        determineRanges(file.absolutePath, node.markup, node.position);
+      },
+    }),
   };
 
   function isDisabled(offense: Offense) {
@@ -83,7 +87,7 @@ export function createDisabledChecksModule() {
   }
 
   return {
-    DisabledChecks,
+    DisabledChecksVisitor,
     isDisabled,
   };
 }

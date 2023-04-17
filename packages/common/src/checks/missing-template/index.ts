@@ -1,12 +1,6 @@
 import { LiquidTag, LiquidTagNamed } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
 import { NamedTags, NodeTypes, Position } from '@shopify/prettier-plugin-liquid/dist/types';
-import {
-  LiquidCheckDefinition,
-  LiquidSourceCode,
-  RelativePath,
-  Severity,
-  SourceCodeType,
-} from '../../types';
+import { LiquidCheckDefinition, RelativePath, Severity, SourceCodeType } from '../../types';
 
 export const MissingTemplate: LiquidCheckDefinition = {
   meta: {
@@ -26,41 +20,40 @@ export const MissingTemplate: LiquidCheckDefinition = {
     const isNamedLiquidTag = (tag: LiquidTag): tag is LiquidTagNamed =>
       typeof tag.markup !== 'string';
 
-    const check = async (
-      file: LiquidSourceCode,
+    async function verifyFileExists(
       requiredPath: RelativePath,
       { position }: { position: Position },
-    ) => {
+    ) {
       const absolutePath = context.absolutePath(requiredPath);
       const fileExists = await context.fileExists(absolutePath);
 
       if (fileExists) return;
 
-      context.report(file, {
-        message: `'${requiredPath}' is not found`,
+      context.report({
+        message: `'${requiredPath}' does not exist`,
         startIndex: position.start,
         endIndex: position.end,
       });
-    };
+    }
 
     return {
-      async RenderMarkup(node, file) {
+      async RenderMarkup(node) {
         if (node.snippet.type === NodeTypes.VariableLookup) return;
 
         const snippet = node.snippet;
         const requiredPath = `snippets/${snippet.value}.liquid`;
 
-        check(file, requiredPath, snippet);
+        await verifyFileExists(requiredPath, snippet);
       },
 
-      async LiquidTag(node, file) {
+      async LiquidTag(node) {
         if (!isNamedLiquidTag(node)) return;
         if (node.name !== NamedTags.section) return;
 
         const markup = node.markup;
         const requiredPath = `sections/${markup.value}.liquid`;
 
-        check(file, requiredPath, markup);
+        await verifyFileExists(requiredPath, markup);
       },
     };
   },

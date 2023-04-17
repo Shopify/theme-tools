@@ -17,8 +17,8 @@ export const LiquidFilter: LiquidCheckDefinition = {
 
   create(context) {
     return {
-      LiquidFilter: async (node, file) => {
-        context.report(file, {
+      LiquidFilter: async (node) => {
+        context.report({
           message: 'Liquid filter can not be used',
           startIndex: node.position.start,
           endIndex: node.position.end,
@@ -44,12 +44,12 @@ export const RenderMarkup: LiquidCheckDefinition = {
 
   create(context) {
     return {
-      async RenderMarkup(node, file) {
+      async RenderMarkup(node) {
         if (node.snippet.type === NodeTypes.VariableLookup) {
           return;
         }
 
-        context.report(file, {
+        context.report({
           message: `'${node.snippet.value}.liquid' can not be rendered`,
           startIndex: node.snippet.position.start,
           endIndex: node.snippet.position.end,

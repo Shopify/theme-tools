@@ -12,7 +12,7 @@ describe('Module: MissingTemplate', () => {
         {% render myvariable %}
       `,
       expected: {
-        message: "'snippets/missing.liquid' is not found",
+        message: "'snippets/missing.liquid' does not exist",
         absolutePath: '/snippets/snippet.liquid',
         start: { index: 51, line: 2, character: 18 },
         end: { index: 60, line: 2, character: 27 },
@@ -26,7 +26,7 @@ describe('Module: MissingTemplate', () => {
       testCase: 'should report the missing snippet to be rendered with "include"',
       file: "{% include 'missing' %}",
       expected: {
-        message: "'snippets/missing.liquid' is not found",
+        message: "'snippets/missing.liquid' does not exist",
         absolutePath: '/snippets/snippet.liquid',
         start: { index: 11, line: 0, character: 11 },
         end: { index: 20, line: 0, character: 20 },
@@ -40,7 +40,7 @@ describe('Module: MissingTemplate', () => {
       testCase: 'should report the missing section to be rendered with "section"',
       file: "{% section 'missing' %}",
       expected: {
-        message: "'sections/missing.liquid' is not found",
+        message: "'sections/missing.liquid' does not exist",
         absolutePath: '/sections/section.liquid',
         start: { index: 11, line: 0, character: 11 },
         end: { index: 20, line: 0, character: 20 },

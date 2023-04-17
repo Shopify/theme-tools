@@ -43,15 +43,23 @@ export async function check(root: string): Promise<Offense[]> {
     checks: recommended,
     root,
   };
-
-  const defaultTranslations = JSON.parse(
-    theme.find((sc) => sc.absolutePath.endsWith('default.json'))?.source || '{}',
-  );
+  const defaultLocale = 'en';
+  const defaultTranslationsFile = theme.find((sc) => sc.absolutePath.endsWith('default.json'));
+  const defaultTranslations = JSON.parse(defaultTranslationsFile?.source || '{}');
 
   return coreCheck(theme, config, {
     fileExists,
     async getDefaultTranslations() {
       return defaultTranslations;
+    },
+    get defaultLocale() {
+      if (!defaultTranslationsFile) {
+        return defaultLocale;
+      }
+      const defaultTranslationsFileLocale = defaultTranslationsFile.absolutePath.match(
+        /locales\/(.*)\.default\.json$/,
+      )?.[1];
+      return defaultTranslationsFileLocale || defaultLocale;
     },
   });
 }

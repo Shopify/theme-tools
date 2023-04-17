@@ -18,6 +18,7 @@ import {
 import { visitLiquid, visitJSON } from './visitors';
 import lineColumn from 'line-column';
 import { createDisabledChecksModule } from './disabled-checks';
+import { createSafeCheck } from './create-safe-check';
 import * as path from './path';
 
 export * from './types';
@@ -25,31 +26,36 @@ export * from './checks';
 export * from './to-source-code';
 
 export async function check(
-  theme: Theme,
+  sourceCodes: Theme,
   config: Config,
   dependencies: Dependencies,
 ): Promise<Offense[]> {
   const pipelines: Promise<void>[] = [];
   const offenses: Offense[] = [];
-  const { DisabledChecks, isDisabled } = createDisabledChecksModule();
-
-  const allChecks: (LiquidCheck | JSONCheck)[] = [];
+  const { DisabledChecksVisitor, isDisabled } = createDisabledChecksModule();
 
   for (const type of Object.values(SourceCodeType)) {
     switch (type) {
       case SourceCodeType.JSON: {
-        const files = filesOfType(type, theme);
-        const checks = checksOfType(type, config, offenses, dependencies);
-        allChecks.push(...checks);
-        pipelines.push(checkJSONFiles(checks, files));
+        const files = filesOfType(type, sourceCodes);
+        const checkDefs = checksOfType(type, config.checks);
+        for (const file of files) {
+          for (const checkDef of checkDefs) {
+            const check = createCheck(checkDef, file, config, offenses, dependencies);
+            pipelines.push(checkJSONFile(check, file));
+          }
+        }
         break;
       }
       case SourceCodeType.LiquidHtml: {
-        const files = filesOfType(type, theme);
-        const checks = checksOfType(type, config, offenses, dependencies);
-        checks.push(createSafeCheck(DisabledChecks));
-        allChecks.push(...checks);
-        pipelines.push(checkLiquidFiles(checks, files));
+        const files = filesOfType(type, sourceCodes);
+        const checkDefs = [DisabledChecksVisitor, ...checksOfType(type, config.checks)];
+        for (const file of files) {
+          for (const checkDef of checkDefs) {
+            const check = createCheck(checkDef, file, config, offenses, dependencies);
+            pipelines.push(checkLiquidFile(check, file));
+          }
+        }
         break;
       }
     }
@@ -58,18 +64,6 @@ export async function check(
   await Promise.all(pipelines);
 
   return offenses.filter((offense) => !isDisabled(offense));
-}
-
-const resolve = () => Promise.resolve(undefined);
-const handleMissingMethod = {
-  get(target: any, prop: string) {
-    if (!(prop in target)) return resolve;
-    return target[prop];
-  },
-};
-
-function createSafeCheck<S extends SourceCodeType>(check: Partial<Check<S>>): Check<S> {
-  return new Proxy(check, handleMissingMethod);
 }
 
 function getPosition(source: string, index: number): Position {
@@ -84,6 +78,7 @@ function getPosition(source: string, index: number): Position {
 
 function createContext<S extends SourceCodeType>(
   check: CheckDefinition<S>,
+  file: SourceCode<S>,
   offenses: Offense[],
   config: Config,
   dependencies: Dependencies,
@@ -92,7 +87,7 @@ function createContext<S extends SourceCodeType>(
     ...dependencies,
     absolutePath: (relativePath) => path.join(config.root, relativePath),
     relativePath: (absolutePath) => path.relative(absolutePath, config.root),
-    report(file: SourceCode<S>, problem: Problem): void {
+    report(problem: Problem): void {
       offenses.push({
         check: check.meta.code,
         message: problem.message,
@@ -102,52 +97,40 @@ function createContext<S extends SourceCodeType>(
         end: getPosition(file.source, problem.endIndex),
       });
     },
+    file,
   } as Context<S>;
 }
 
 function checksOfType<S extends SourceCodeType>(
   type: S,
+  checks: CheckDefinition<SourceCodeType>[],
+): CheckDefinition<S>[] {
+  return checks.filter((def): def is CheckDefinition<S> => def.meta.type === type);
+}
+
+function createCheck<S extends SourceCodeType>(
+  check: CheckDefinition<S>,
+  file: SourceCode<S>,
   config: Config,
   offenses: Offense[],
   dependencies: Dependencies,
-): Check<S>[] {
-  return config.checks
-    .filter((def): def is CheckDefinition<S> => def.meta.type === type)
-    .map((check) => {
-      const context = createContext(check, offenses, config, dependencies);
-      return check.create(context as any);
-    })
-    .map(createSafeCheck) as Check<S>[];
+): Check<S> {
+  const context = createContext(check, file, offenses, config, dependencies);
+  return createSafeCheck(check.create(context as any)) as Check<S>;
 }
 
-function filesOfType<S extends SourceCodeType>(type: S, theme: Theme): SourceCode<S>[] {
-  return theme.filter((file): file is SourceCode<S> => file.type === type);
+function filesOfType<S extends SourceCodeType>(type: S, sourceCodes: Theme): SourceCode<S>[] {
+  return sourceCodes.filter((file): file is SourceCode<S> => file.type === type);
 }
 
-async function checkJSONFiles(checks: JSONCheck[], files: JSONSourceCode[]): Promise<void> {
-  await Promise.all(
-    files.map(async (file) => {
-      await Promise.all(
-        checks.map(async (check) => {
-          await check.onCodePathStart(file);
-          await visitJSON(file.ast, check, file);
-          await check.onCodePathEnd(file);
-        }),
-      );
-    }),
-  );
+async function checkJSONFile(check: JSONCheck, file: JSONSourceCode): Promise<void> {
+  await check.onCodePathStart(file);
+  await visitJSON(file.ast, check);
+  await check.onCodePathEnd(file);
 }
 
-async function checkLiquidFiles(checks: LiquidCheck[], files: LiquidSourceCode[]): Promise<void> {
-  await Promise.all(
-    files.map(async (file) => {
-      await Promise.all(
-        checks.map(async (check) => {
-          await check.onCodePathStart(file);
-          await visitLiquid(file.ast, check, file);
-          await check.onCodePathEnd(file);
-        }),
-      );
-    }),
-  );
+async function checkLiquidFile(check: LiquidCheck, file: LiquidSourceCode): Promise<void> {
+  await check.onCodePathStart(file);
+  await visitLiquid(file.ast, check);
+  await check.onCodePathEnd(file);
 }

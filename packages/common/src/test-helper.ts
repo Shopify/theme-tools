@@ -10,7 +10,7 @@ import {
   LiquidSourceCode,
   CheckDefinition,
   recommended,
-} from '@shopify/theme-check-common';
+} from './index';
 import { OffensesAssertion } from './test-helper/chai-offenses-assertion';
 
 // Setup 'chai' extensions
@@ -49,13 +49,22 @@ export async function check(
     checks: checks,
     root: '/',
   };
+  const defaultTranslationsFileAbsolutePath = 'locales/en.default.json';
   return coreCheck(theme, config, {
     async fileExists(absolutePath: string) {
       const relativePath = absolutePath.replace(/^\//, '');
       return themeDesc[relativePath] !== undefined;
     },
     async getDefaultTranslations() {
-      return JSON.parse(themeDesc['locales/en.default.json'] || '{}');
+      try {
+        return JSON.parse(themeDesc[defaultTranslationsFileAbsolutePath] || '{}');
+      } catch (e) {
+        if (e instanceof SyntaxError) return {};
+        throw e;
+      }
+    },
+    get defaultLocale() {
+      return defaultTranslationsFileAbsolutePath.match(/locales\/(.*)\.default\.json$/)?.[1]!;
     },
   });
 }

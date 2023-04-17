@@ -121,28 +121,24 @@ export type CheckDefinition<T> = T extends SourceCodeType
        * A function that returns a Check, the function scope is a good place to
        * initialize state for a run.
        *
-       * - One check is created per run
-       * - The state is shared while traversing all files
+       * - One check is created per file
+       * - The state is not shared while traversing all files
        * - To report problems, use the context.report method.
        *
        * @example
        *
        * create(context) {
-       *   const variables = new Map();
+       *   const tags = []
        *
        *   return {
-       *     async onCodePathStart(file) {
-       *       variables.set(file, new Set());
+       *     async LiquidTag(node) {
+       *       tags.push(node);
        *     },
        *
-       *     async LiquidAssignMarkup(node, file) {
-       *       if (node.name.includes(/[A-Z]/)) {
-       *         context.report(file, {
-       *           message: 'prefer snake_case',
-       *           startIndex: node.position.start,
-       *           endIndex: node.position.end,
-       *         })
-       *       }
+       *     async onCodePathEnd() {
+       *       tags.forEach(tag => {
+       *         ...
+       *       });
        *     },
        *   }
        * }
@@ -157,7 +153,7 @@ export type CheckDefinition<T> = T extends SourceCodeType
  * @example
  * {
  *   async onCodePathStart(file) {
- *     // Happens once per file
+ *     // Happens at the very beginning
  *   },
  *
  *   AssignMarkup: async (node, file) => {
@@ -169,7 +165,7 @@ export type CheckDefinition<T> = T extends SourceCodeType
  *   },
  *
  *   async onCodePathEnd(file) {
- *     // Happens once per file
+ *     // Happens at the very end
  *   }
  * }
  */
@@ -179,7 +175,6 @@ export type Check<S> = S extends SourceCodeType
 
 export type CheckNodeMethod<S extends SourceCodeType, T> = (
   node: NodeOfType<S, T>,
-  file: SourceCode<S>,
   ancestors: AST[S][],
 ) => Promise<void>;
 
@@ -208,19 +203,25 @@ type CheckLifecycleMethods<S extends SourceCodeType> = {
   onCodePathEnd(file: SourceCode<S>): Promise<void>;
 };
 
+export type Translations = {
+  [k in string]: Translations;
+};
+
 export interface Dependencies {
-  getDefaultTranslations(): Promise<object>;
+  getDefaultTranslations(): Promise<Translations>;
+  get defaultLocale(): string;
   fileExists(absolutePath: string): Promise<boolean>;
 }
 
-type StaticContextMethods<S> = {
-  report(file: SourceCode<S>, problem: Problem): void;
+type StaticContextProperties<S> = {
+  report(problem: Problem): void;
   relativePath(absolutePath: AbsolutePath): RelativePath;
   absolutePath(relativePath: RelativePath): AbsolutePath;
+  file: SourceCode<S>;
 };
 
 export type Context<S extends SourceCodeType> = S extends SourceCodeType
-  ? StaticContextMethods<S> & Dependencies
+  ? StaticContextProperties<S> & Dependencies
   : never;
 
 export interface Problem {
