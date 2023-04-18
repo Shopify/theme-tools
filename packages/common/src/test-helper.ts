@@ -69,6 +69,19 @@ export async function check(
   });
 }
 
+export function highlightedOffenses(theme: MockTheme, offenses: Offense[]) {
+  return offenses.map((offense) => {
+    const relativePath = offense.absolutePath.substring(1);
+    const source = theme[relativePath];
+    const {
+      start: { index: startIndex },
+      end: { index: endIndex },
+    } = offense;
+
+    return source.slice(startIndex, endIndex);
+  });
+}
+
 function asAbsolutePath(relativePath: string) {
   return '/' + relativePath;
 }

@@ -27,6 +27,7 @@ export const MatchingTranslations: JSONCheckDefinition = {
     // State
     const defaultTranslations = new Set<string>();
     const missingTranslations = new Set<string>();
+    const nodesByPath = new Map<string, PropertyNode>();
 
     // Helpers
     const hasDefaultTranslations = () => defaultTranslations.size > 0;
@@ -71,6 +72,33 @@ export const MatchingTranslations: JSONCheckDefinition = {
         .join('.');
     };
 
+    const closestTranslationKey = (translationKey: string) => {
+      const keys = Array.from(nodesByPath.keys());
+      const [closestMatch, _commonParts] = keys
+        .map((path): [string, number] => {
+          const common = countCommonParts(path.split('.'), translationKey.split('.'));
+          return [path, common];
+        })
+        .reduce(
+          ([pathA, commonA], [pathB, commonB]) => {
+            return commonB > commonA ? [pathB, commonB] : [pathA, commonA];
+          },
+          ['', 0],
+        );
+
+      return nodesByPath.get(closestMatch) ?? file.ast;
+    };
+
+    const countCommonParts = (arrayA: string[], arrayB: string[]): number => {
+      const firstMismatch = arrayA.findIndex((part, i) => part !== arrayB[i]);
+
+      if (firstMismatch !== -1) {
+        return firstMismatch;
+      }
+
+      return Math.min(arrayA.length, arrayB.length);
+    };
+
     const file = context.file;
     if (!isLocaleFile(file) || isDefaultTranslationsFile(file)) {
       // No need to lint a file that isn't a translation file, we return an
@@ -89,11 +117,13 @@ export const MatchingTranslations: JSONCheckDefinition = {
       },
 
       async Property(node, ancestors) {
+        const path = objectPath(ancestors.concat(node));
+
+        nodesByPath.set(path, node);
+
         if (!hasDefaultTranslations()) return;
         if (isPluralizationNode(node)) return;
         if (!isTerminalNode(node.value)) return;
-
-        const path = objectPath(ancestors.concat(node));
         if (isShopifyPath(path)) return;
 
         if (hasDefaultTranslation(path)) {
@@ -112,13 +142,15 @@ export const MatchingTranslations: JSONCheckDefinition = {
 
       async onCodePathEnd() {
         missingTranslations.forEach((path) => {
+          const closest = closestTranslationKey(path);
+
           if (isPluralizationPath(path)) return;
           if (isShopifyPath(path)) return;
 
           context.report({
             message: `The translation for '${path}' is missing`,
-            startIndex: file.ast.loc!.start.offset,
-            endIndex: file.ast.loc!.end.offset,
+            startIndex: closest.loc!.start.offset,
+            endIndex: closest.loc!.end.offset,
           });
         });
       },

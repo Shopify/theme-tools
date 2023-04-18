@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { check } from '../../test-helper';
+import { check, highlightedOffenses } from '../../test-helper';
 import { MatchingTranslations } from '../../checks/matching-translations/index';
 
 describe('Module: MatchingTranslations', async () => {
@@ -216,5 +216,101 @@ describe('Module: MatchingTranslations', async () => {
     const offenses = await check(theme, [MatchingTranslations]);
 
     expect(offenses).to.length(0);
+  });
+
+  it('should highlight the proper element when the translation file is missing a key', async () => {
+    const theme = {
+      'locales/en.default.json': JSON.stringify({
+        hello: 'Hello',
+        world: 'World',
+      }),
+      'locales/pt-BR.json': JSON.stringify({
+        hello: 'Olá',
+      }),
+    };
+
+    const offenses = await check(theme, [MatchingTranslations]);
+    const elements = highlightedOffenses(theme, offenses);
+
+    expect(elements).to.deep.eq(['{"hello":"Olá"}']);
+  });
+
+  it('should highlight the proper element when the default translation is missing a key', async () => {
+    const theme = {
+      'locales/en.default.json': JSON.stringify({
+        hello: 'Hello',
+      }),
+      'locales/pt-BR.json': JSON.stringify({
+        hello: 'Olá',
+        world: 'Mundo',
+      }),
+    };
+
+    const offenses = await check(theme, [MatchingTranslations]);
+    const elements = highlightedOffenses(theme, offenses);
+
+    expect(elements).to.deep.eq(['"world":"Mundo"']);
+  });
+
+  it('should highlight the proper element when nested translation keys do not exist', async () => {
+    const theme = {
+      'locales/en.default.json': JSON.stringify({
+        hello: {
+          world: 'Hello, world!',
+        },
+        welcome: 'Welcome',
+      }),
+      'locales/pt-BR.json': JSON.stringify({
+        hello: {},
+        welcome: 'Bem-vinda',
+      }),
+    };
+
+    const offenses = await check(theme, [MatchingTranslations]);
+    const elements = highlightedOffenses(theme, offenses);
+
+    expect(elements).to.deep.eq(['"hello":{}']);
+  });
+
+  it('should highlight the proper element when nested translation keys do not exist and there is a sibling node', async () => {
+    const theme = {
+      'locales/en.default.json': JSON.stringify({
+        hello: {
+          shopify: 'Shopify!',
+          world: 'Hello, world!',
+        },
+        welcome: 'Welcome',
+      }),
+      'locales/pt-BR.json': JSON.stringify({
+        hello: {
+          shopify: 'Shopify!',
+        },
+        welcome: 'Bem-vinda',
+      }),
+    };
+
+    const offenses = await check(theme, [MatchingTranslations]);
+    const elements = highlightedOffenses(theme, offenses);
+
+    expect(elements).to.deep.eq(['"hello":{"shopify":"Shopify!"}']);
+  });
+
+  it('should highlight the proper element when translation shapes do not match', async () => {
+    const theme = {
+      'locales/en.default.json': JSON.stringify({
+        hello: { world: 'Hello, world!' },
+      }),
+      'locales/pt-BR.json': JSON.stringify({
+        hello: 'Olá',
+      }),
+    };
+
+    const offenses = await check(theme, [MatchingTranslations]);
+    const elements = highlightedOffenses(theme, offenses);
+
+    // We have two elements because we have two offenses:
+    // - A default translation for 'hello' does not exist"
+    // - The translation for 'hello.world' is missing"
+    expect(elements).to.deep.eq(['"hello":"Olá"', '"hello":"Olá"']);
   });
 });
