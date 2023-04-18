@@ -23,33 +23,47 @@ export function makeRunChecks({
   return async function runChecks(
     documentManager: DocumentManager,
     diagnosticsManager: DiagnosticsManager,
-    triggerUri: string,
+    triggerURIs: string[],
   ): Promise<void> {
-    const [config, rootURI] = await Promise.all([
-      loadConfig(triggerUri),
-      findRootURI(triggerUri),
-    ]);
-    const theme = documentManager.theme(rootURI);
-    const defaultTranslations = await useBufferOrInjectedTranslations(
-      getDefaultTranslationsFactory,
-      theme,
-      rootURI,
-    );
+    // This function takes an array of triggerURIs so that we can correctly
+    // recheck on file renames that came from out of bounds in a
+    // workspaces.
+    //
+    // e.g. if a user renames
+    //  theme1/snippets/a.liquid to
+    //  theme1/snippets/b.liquid
+    //
+    // then we recheck theme1
+    const rootURIs = await Promise.all(triggerURIs.map(findRootURI));
+    const deduplicatedRootURIs = new Set(rootURIs);
+    await Promise.all([...deduplicatedRootURIs].map(runChecksForRoot));
 
-    const offenses = await check(theme, config, {
-      getDefaultTranslations: async () => defaultTranslations,
-      getDefaultLocale: getDefaultLocaleFactory(rootURI),
-      fileExists,
-    });
+    return;
 
-    // We iterate over the theme files (as opposed to offenses) because if
-    // there were offenses before, we need to send an empty array to clear
-    // them.
-    for (const sourceCode of theme) {
-      const diagnostics = offenses
-        .filter((offense) => offense.absolutePath === sourceCode.absolutePath)
-        .map(offenseToDiagnostic);
-      diagnosticsManager.set(sourceCode.uri, sourceCode.version, diagnostics);
+    async function runChecksForRoot(rootURI: string) {
+      const config = await loadConfig(rootURI);
+      const theme = documentManager.theme(rootURI);
+      const defaultTranslations = await useBufferOrInjectedTranslations(
+        getDefaultTranslationsFactory,
+        theme,
+        rootURI,
+      );
+
+      const offenses = await check(theme, config, {
+        getDefaultTranslations: async () => defaultTranslations,
+        getDefaultLocale: getDefaultLocaleFactory(rootURI),
+        fileExists,
+      });
+
+      // We iterate over the theme files (as opposed to offenses) because if
+      // there were offenses before, we need to send an empty array to clear
+      // them.
+      for (const sourceCode of theme) {
+        const diagnostics = offenses
+          .filter((offense) => offense.absolutePath === sourceCode.absolutePath)
+          .map(offenseToDiagnostic);
+        diagnosticsManager.set(sourceCode.uri, sourceCode.version, diagnostics);
+      }
     }
   };
 }

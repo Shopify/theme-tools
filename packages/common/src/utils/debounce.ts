@@ -1,5 +1,22 @@
 import { ArgumentTypes } from './types';
 
+interface DebouncedFunction<F extends Function> {
+  /**
+   * A function that will execute on the trailing edge of a timer with the
+   * last arguments it was called with (unless forced)
+   */
+  (...args: ArgumentTypes<F>): void;
+
+  /**
+   * Debounced version of a function but making sure that it is called with
+   * this specific set of arguments.
+   *
+   * Subsequent calls will be ignored until the timer has expired and the
+   * function has executed.
+   */
+  force(...args: ArgumentTypes<F>): void;
+}
+
 /**
  * debounce(fn, ms)
  *
@@ -20,13 +37,27 @@ import { ArgumentTypes } from './types';
  * @param ms milliseconds after last function call for it to execute
  * @returns a function that will execute on the trailing edge of a timer with the last argument it was called with
  */
-export function debounce<F extends Function>(fn: F, ms?: number) {
+export function debounce<F extends Function>(
+  fn: F,
+  ms?: number,
+): DebouncedFunction<F> {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
-  return (...args: ArgumentTypes<F>): void => {
+  let force = false; // force use a certain set of arguments in the next call
+
+  const debouncedFn = (...args: ArgumentTypes<F>): void => {
+    if (timeoutId !== null && force) return;
     if (timeoutId !== null) clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
+    timeoutId = setTimeout(async () => {
+      await Promise.resolve(fn(...args));
       timeoutId = null;
-      fn(...args);
+      force = false;
     }, ms);
   };
+
+  debouncedFn.force = (...args: ArgumentTypes<F>): void => {
+    debouncedFn(...args);
+    force = true;
+  };
+
+  return debouncedFn;
 }
