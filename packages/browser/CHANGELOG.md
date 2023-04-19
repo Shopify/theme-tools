@@ -1,5 +1,12 @@
 # @shopify/liquid-language-server-browser
 
+## 1.3.1
+
+### Patch Changes
+
+- Updated dependencies [d63cadb]
+  - @shopify/liquid-language-server-common@1.3.1
+
 ## 1.3.0
 
 ### Minor Changes
