@@ -204,7 +204,7 @@ type CheckLifecycleMethods<S extends SourceCodeType> = {
 };
 
 export type Translations = {
-  [k in string]: Translations;
+  [k in string]: string | Translations;
 };
 
 export interface Dependencies {
