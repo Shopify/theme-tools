@@ -1,5 +1,21 @@
 # @shopify/theme-check-node
 
+## 1.3.0
+
+### Minor Changes
+
+- 72a9330: Breaking: Add `defaultLocale` dependency
+- 72a9330: Add check TranslationKeyExists
+- 5329963: Breaking: change signature of `getDefaultTranslations` to return a `Promise<Translations>`
+
+### Patch Changes
+
+- Updated dependencies [72a9330]
+- Updated dependencies [5329963]
+- Updated dependencies [72a9330]
+- Updated dependencies [5329963]
+  - @shopify/theme-check-common@1.3.0
+
 ## 1.2.0
 
 ### Patch Changes
