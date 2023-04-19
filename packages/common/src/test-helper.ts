@@ -63,7 +63,7 @@ export async function check(
         throw e;
       }
     },
-    get defaultLocale() {
+    async getDefaultLocale() {
       return defaultTranslationsFileAbsolutePath.match(/locales\/(.*)\.default\.json$/)?.[1]!;
     },
   });

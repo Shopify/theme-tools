@@ -52,7 +52,7 @@ export async function check(root: string): Promise<Offense[]> {
     async getDefaultTranslations() {
       return defaultTranslations;
     },
-    get defaultLocale() {
+    async getDefaultLocale() {
       if (!defaultTranslationsFile) {
         return defaultLocale;
       }

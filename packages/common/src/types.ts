@@ -209,7 +209,7 @@ export type Translations = {
 
 export interface Dependencies {
   getDefaultTranslations(): Promise<Translations>;
-  get defaultLocale(): string;
+  getDefaultLocale(): Promise<string>;
   fileExists(absolutePath: string): Promise<boolean>;
 }
 
