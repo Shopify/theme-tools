@@ -1,4 +1,4 @@
-import { allChecks } from '@shopify/theme-check-common';
+import { allChecks, Translations } from '@shopify/theme-check-common';
 import { startServer } from '@shopify/liquid-language-server-browser';
 import { URI } from 'vscode-languageserver-types';
 import {
@@ -22,7 +22,7 @@ async function fileExists(path: string) {
 }
 
 // The default translations are provided from the main thread.
-let defaultTranslations: object = {};
+let defaultTranslations: Translations = {};
 worker.addEventListener('message', (ev) => {
   const message = ev.data;
   if (isSetDefaultTranslationsNotification(message)) {
@@ -32,6 +32,10 @@ worker.addEventListener('message', (ev) => {
 
 function getDefaultTranslationsFactory() {
   return async () => defaultTranslations;
+}
+
+function getDefaultLocaleFactory() {
+  return async () => 'en';
 }
 
 async function findRootURI(_uri: URI) {
@@ -50,5 +54,6 @@ startServer(worker, {
   fileExists,
   findRootURI,
   getDefaultTranslationsFactory,
+  getDefaultLocaleFactory,
   loadConfig,
 });

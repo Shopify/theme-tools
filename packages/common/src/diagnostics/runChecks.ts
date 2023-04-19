@@ -11,9 +11,14 @@ export function makeRunChecks({
   findRootURI,
   fileExists,
   getDefaultTranslationsFactory,
+  getDefaultLocaleFactory,
 }: Pick<
   Dependencies,
-  'loadConfig' | 'findRootURI' | 'fileExists' | 'getDefaultTranslationsFactory'
+  | 'loadConfig'
+  | 'findRootURI'
+  | 'fileExists'
+  | 'getDefaultTranslationsFactory'
+  | 'getDefaultLocaleFactory'
 >) {
   return async function runChecks(
     documentManager: DocumentManager,
@@ -33,6 +38,7 @@ export function makeRunChecks({
 
     const offenses = await check(theme, config, {
       getDefaultTranslations: async () => defaultTranslations,
+      getDefaultLocale: getDefaultLocaleFactory(rootURI),
       fileExists,
     });
 

@@ -3,7 +3,7 @@ import { createConnection, URI } from 'vscode-languageserver/node';
 import { stdin, stdout } from 'node:process';
 import path from 'node:path';
 import * as fs from 'node:fs/promises';
-import { allChecks } from '@shopify/theme-check-common';
+import { allChecks, Translations } from '@shopify/theme-check-common';
 
 function asAbsolutePath(uri: URI) {
   // TODO, probably not good on Windows (USE vscode-uri)...
@@ -66,20 +66,20 @@ async function loadConfig(uri: URI) {
 
 function getDefaultTranslationsFactory(rootURI: URI) {
   const root = asAbsolutePath(rootURI);
-  let cachedPromise: Promise<object>;
+  let cachedPromise: Promise<Translations>;
 
   async function getDefaultTranslations() {
     try {
-      // TODO this assumes en.default.json which isn't always true.
+      const defaultLocale = await getDefaultLocale(root);
       const defaultTranslationsFilePath = path.join(
         root,
-        'locales/en.default.json',
+        `locales/${defaultLocale}.default.json`,
       );
       const defaultTranslationsFile = await fs.readFile(
         defaultTranslationsFilePath,
         'utf8',
       );
-      return JSON.parse(defaultTranslationsFile) as object;
+      return JSON.parse(defaultTranslationsFile) as Translations;
     } catch (error) {
       return {};
     }
@@ -91,6 +91,34 @@ function getDefaultTranslationsFactory(rootURI: URI) {
   };
 }
 
+async function getDefaultLocale(root: string) {
+  try {
+    const localesFolder = path.join(root, 'locales');
+    const files = await fs.readdir(localesFolder, {
+      encoding: 'utf8',
+      withFileTypes: true,
+    });
+    const defaultLocaleEntry = files.find(
+      (dirent) => dirent.isFile() && dirent.name.endsWith('.default.json'),
+    );
+    return defaultLocaleEntry
+      ? path.basename(defaultLocaleEntry.name, '.default.json')
+      : 'en';
+  } catch (error) {
+    return 'en';
+  }
+}
+
+function getDefaultLocaleFactory(rootURI: URI) {
+  const root = asAbsolutePath(rootURI);
+  let cachedPromise: Promise<string>;
+
+  return async () => {
+    if (!cachedPromise) cachedPromise = getDefaultLocale(root);
+    return cachedPromise;
+  };
+}
+
 export function startServer() {
   const connection = createConnection(stdin, stdout);
 
@@ -98,6 +126,7 @@ export function startServer() {
     // Using console.error to not interfere with messages sent on STDIN/OUT
     log: (message: string) => console.error(message),
     getDefaultTranslationsFactory,
+    getDefaultLocaleFactory,
     findRootURI,
     fileExists,
     loadConfig,

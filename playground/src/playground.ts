@@ -6,6 +6,7 @@ import {
   InitializeRequest,
   PublishDiagnosticsNotification,
 } from 'vscode-languageserver-protocol';
+import { Translations } from '@shopify/theme-check-common';
 import * as is from './is';
 import { SimpleLanguageClient } from './simple-language-client';
 import './styles.css';
@@ -36,7 +37,7 @@ function setDefaultTranslations(worker: Worker) {
   worker.postMessage({
     jsonrpc: '2.0',
     method: 'shopify/setDefaultTranslations',
-    params: defaultTranslations,
+    params: defaultTranslations as any as Translations,
   } as SetDefaultTranslationsNotification);
 }
 

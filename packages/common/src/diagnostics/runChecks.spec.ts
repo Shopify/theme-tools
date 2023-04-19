@@ -26,8 +26,8 @@ const LiquidFilter: LiquidCheckDefinition = {
 
   create(context) {
     return {
-      LiquidFilter: async (node, file) => {
-        context.report(file, {
+      LiquidFilter: async (node) => {
+        context.report({
           message: 'Liquid filter can not be used',
           startIndex: node.position.start,
           endIndex: node.position.end,
@@ -54,6 +54,7 @@ describe('Module: runChecks', () => {
       findRootURI: async () => 'browser:///',
       fileExists: async () => true,
       getDefaultTranslationsFactory: () => async () => ({}),
+      getDefaultLocaleFactory: () => async () => 'en',
       loadConfig: async () => ({
         settings: {},
         checks: [LiquidFilter],
@@ -197,6 +198,7 @@ describe('Module: runChecks', () => {
       findRootURI: async () => 'browser:///',
       fileExists: async () => true,
       getDefaultTranslationsFactory: () => async () => JSON.parse(files[defaultURI]),
+      getDefaultLocaleFactory: () => async () => 'en',
       loadConfig: async () => ({
         settings: {},
         checks: matchingTranslation,

@@ -28,6 +28,7 @@ export function startServer(
     loadConfig,
     findRootURI,
     getDefaultTranslationsFactory,
+    getDefaultLocaleFactory,
     fileExists,
   }: Dependencies,
 ) {
@@ -38,6 +39,7 @@ export function startServer(
       loadConfig,
       findRootURI,
       getDefaultTranslationsFactory,
+      getDefaultLocaleFactory,
       fileExists,
     }),
     100,

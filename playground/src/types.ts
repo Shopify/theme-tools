@@ -1,4 +1,5 @@
 import { NotificationMessage } from 'vscode-jsonrpc';
+import { Translations } from '@shopify/theme-check-common';
 import { URI } from 'vscode-languageserver-types';
 
 export interface SetFileTreeNofification extends NotificationMessage {
@@ -14,9 +15,10 @@ export function isSetFileTreeNotificationMessage(
   );
 }
 
-export interface SetDefaultTranslationsNotification extends NotificationMessage {
+export interface SetDefaultTranslationsNotification
+  extends NotificationMessage {
   method: 'shopify/setDefaultTranslations';
-  params: object;
+  params: Translations;
 }
 
 export function isSetDefaultTranslationsNotification(

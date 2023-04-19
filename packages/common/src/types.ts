@@ -74,5 +74,16 @@ export interface RequiredDependencies {
     rootURI: URI,
   ): ThemeCheckDependencies['getDefaultTranslations'];
 
+  /**
+   * getDefaultLocale(root: URI)
+   *
+   * Returns the theme-check-js getDefaultLocale() dependency.
+   *
+   * A factory because different repos have different default locales.
+   */
+  getDefaultLocaleFactory(
+    rootURI: URI,
+  ): ThemeCheckDependencies['getDefaultLocale'];
+
   fileExists: ThemeCheckDependencies['fileExists'];
 }
