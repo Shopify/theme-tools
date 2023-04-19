@@ -457,10 +457,10 @@
     line-column "^1.0.2"
     ohm-js "^16.3.0"
 
-"@shopify/theme-check-common@1.4.0":
-  version "1.4.0"
-  resolved "https://npm.shopify.io/node/@shopify/theme-check-common/-/1.4.0/theme-check-common-1.4.0.tgz#1172a609a265d82fb3bf56b31f1ab8a6148e3eb4"
-  integrity sha512-/cIK45eUuVizqu7Mc0PUgRK4WuIHtOiu6ZpIGntANQbBhYurVP15ofFpRzqH+W+LGeozP90XYbFr4HFVx0EVgA==
+"@shopify/theme-check-common@1.4.1":
+  version "1.4.1"
+  resolved "https://npm.shopify.io/node/@shopify/theme-check-common/-/1.4.1/theme-check-common-1.4.1.tgz#d9c26cdbc2d5c2eb1ce3df1321310031fd93486e"
+  integrity sha512-DyldmRgEiDo3Slm587Yc+/zkjzit8lqTh14u4VyN1E9LwiNOgCPtbpd4VZjHV7pgC8quM2/DfulFpE9wzzNcrw==
   dependencies:
     "@shopify/prettier-plugin-liquid" "^1.0.6"
     json-to-ast "^2.1.0"

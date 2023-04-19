@@ -37,7 +37,7 @@ function setDefaultTranslations(worker: Worker) {
   worker.postMessage({
     jsonrpc: '2.0',
     method: 'shopify/setDefaultTranslations',
-    params: defaultTranslations as any as Translations,
+    params: defaultTranslations as Translations,
   } as SetDefaultTranslationsNotification);
 }
 
