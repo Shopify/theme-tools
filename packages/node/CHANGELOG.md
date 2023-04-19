@@ -1,5 +1,16 @@
 # @shopify/theme-check-node
 
+## 1.4.0
+
+### Minor Changes
+
+- 9d419ca: Breaking: change dependency `get defaultLocale` to `getDefaultLocale(): Promise<string>`
+
+### Patch Changes
+
+- Updated dependencies [9d419ca]
+  - @shopify/theme-check-common@1.4.0
+
 ## 1.3.0
 
 ### Minor Changes
