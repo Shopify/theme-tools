@@ -1,5 +1,19 @@
 # @shopify/liquid-language-server-browser
 
+## 1.3.0
+
+### Minor Changes
+
+- Bump @shopify/theme-check-common to v1.4.0
+
+  - Adds new check: `TranslationKeyExists`
+
+### Patch Changes
+
+- Updated dependencies [6f5c92c]
+- Updated dependencies
+  - @shopify/liquid-language-server-common@1.3.0
+
 ## 1.2.2
 
 ### Patch Changes

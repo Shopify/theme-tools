@@ -1,5 +1,14 @@
 # @shopify/liquid-language-server-common
 
+## 1.3.0
+
+### Minor Changes
+
+- 6f5c92c: Start listening for workspace/did{Create,Rename,Delete}Files notifications
+- Bump @shopify/theme-check-common to v1.4.0
+
+  - Adds new check: `TranslationKeyExists`
+
 ## 1.2.2
 
 ### Patch Changes
