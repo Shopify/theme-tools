@@ -1,5 +1,14 @@
 # @shopify/theme-check-browser
 
+## 1.4.1
+
+### Patch Changes
+
+- a8cda19: Add TranslationKeyExists to allChecks array
+- Updated dependencies [9f8d47f]
+- Updated dependencies [a8cda19]
+  - @shopify/theme-check-common@1.4.1
+
 ## 1.4.0
 
 ### Minor Changes
