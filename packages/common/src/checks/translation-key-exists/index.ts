@@ -61,7 +61,7 @@ export const TranslationKeyExists: LiquidCheckDefinition = {
           return;
         }
 
-        const defaultLocale = context.defaultLocale;
+        const defaultLocale = await context.getDefaultLocale();
         try {
           schemaLocales = JSON.parse(node.body.value).locales[defaultLocale];
         } catch (error) {
@@ -74,6 +74,7 @@ export const TranslationKeyExists: LiquidCheckDefinition = {
 
       async onCodePathEnd() {
         const defaultTranslations = await context.getDefaultTranslations();
+        const defaultLocale = await context.getDefaultLocale();
         if (!defaultTranslations) return;
 
         nodes.forEach(({ translationKey, startIndex, endIndex }) => {
@@ -85,7 +86,7 @@ export const TranslationKeyExists: LiquidCheckDefinition = {
             return;
           }
 
-          let message = `'${translationKey}' does not have a matching entry in 'locales/${context.defaultLocale}.default.json'`;
+          let message = `'${translationKey}' does not have a matching entry in 'locales/${defaultLocale}.default.json'`;
           if (schemaLocales) {
             message += ` or '${context.relativePath(context.file.absolutePath)}'`;
           }
