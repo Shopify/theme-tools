@@ -1,7 +1,7 @@
-import { EditorState, TransactionSpec } from '@codemirror/state';
 import {
   check as coreCheck,
   autofix as coreAutofix,
+  applyFixToString,
   toSourceCode,
   Offense,
   Config,
@@ -14,8 +14,6 @@ import {
   StringCorrector,
   JSONCorrector,
   FixApplicator,
-  flattenFixes,
-  Fix,
   createCorrector,
 } from '../index';
 
@@ -74,28 +72,12 @@ export async function check(
   });
 }
 
-function applyFix(source: string, fixes: Fix): string {
-  const state = EditorState.create({ doc: source });
-  const fixDescs = flattenFixes(fixes);
-  const specs: TransactionSpec[] = fixDescs.map((fix) => ({
-    changes: [
-      {
-        from: fix.startIndex,
-        to: fix.endIndex,
-        insert: fix.insert,
-      },
-    ],
-  }));
-  const transaction = state.update(...specs);
-  return transaction.state.doc.toString();
-}
-
 export async function autofix(themeDesc: MockTheme, offenses: Offense[]) {
   const theme = getTheme(themeDesc);
   const fixed = { ...themeDesc };
 
   const stringApplicator: FixApplicator = async (sourceCode, fixes) => {
-    fixed[asRelative(sourceCode.absolutePath)] = applyFix(sourceCode.source, fixes);
+    fixed[asRelative(sourceCode.absolutePath)] = applyFixToString(sourceCode.source, fixes);
   };
 
   await coreAutofix(theme, offenses, stringApplicator);
@@ -114,7 +96,7 @@ export function applySuggestions(
   return offense.suggest?.map((suggestion) => {
     const corrector = createCorrector(offense.type, source);
     suggestion.fix(corrector as any);
-    return applyFix(source, corrector.fix);
+    return applyFixToString(source, corrector.fix);
   });
 }
 
