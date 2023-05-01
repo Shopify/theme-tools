@@ -1,4 +1,4 @@
-import { check } from '../test-helper';
+import { check } from '../test';
 import { Offense } from '..';
 import { expect } from 'chai';
 import { LiquidFilter, RenderMarkup } from './test-checks';

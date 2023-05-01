@@ -3,7 +3,9 @@ import {
   LiquidHtmlNodeTypes as NodeTypes,
   Severity,
   SourceCodeType,
-} from '@shopify/theme-check-common';
+} from '../../types';
+import { last } from '../../utils';
+import { liquidFilterSuggestion, scriptTagSuggestion } from './suggestions';
 
 function isSimplePropertyEqualTo(node: any, property: string, value: string): boolean {
   if (!(property in node)) return false;
@@ -33,17 +35,30 @@ export const ParserBlockingScript: LiquidCheckDefinition = {
   create(context) {
     return {
       // {{ 'asset' | asset_url | script_tag }}
-      LiquidFilter: async (node) => {
+      LiquidFilter: async (node, ancestors) => {
         if (node.name !== 'script_tag') return;
 
         const filterString = node.source.slice(node.position.start, node.position.end);
         const offset = filterString.indexOf('script_tag');
+        const parentNode = last(ancestors);
+        const grandParentNode = last(ancestors, -1);
 
         context.report({
           message:
             'The script_tag filter is parser-blocking. Use a <script> tag with async or defer for better performance',
           startIndex: node.position.start + offset,
           endIndex: node.position.end,
+          suggest:
+            grandParentNode &&
+            grandParentNode.type === NodeTypes.LiquidDrop &&
+            parentNode &&
+            parentNode.type === NodeTypes.LiquidVariable &&
+            last(parentNode.filters) === node
+              ? [
+                  liquidFilterSuggestion('defer', node, parentNode, grandParentNode),
+                  liquidFilterSuggestion('async', node, parentNode, grandParentNode),
+                ]
+              : undefined,
         });
       },
 
@@ -75,6 +90,7 @@ export const ParserBlockingScript: LiquidCheckDefinition = {
           message: 'Avoid parser blocking scripts by adding `defer` or `async` on this tag',
           startIndex: node.position.start,
           endIndex: node.position.end,
+          suggest: [scriptTagSuggestion('defer', node), scriptTagSuggestion('async', node)],
         });
       },
     };

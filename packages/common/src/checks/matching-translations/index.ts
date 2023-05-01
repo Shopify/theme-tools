@@ -1,11 +1,11 @@
+import { PropertyNode } from 'json-to-ast';
 import {
   JSONCheckDefinition,
   JSONNode,
   JSONSourceCode,
   Severity,
   SourceCodeType,
-} from '@shopify/theme-check-common';
-import { PropertyNode } from 'json-to-ast';
+} from '../../types';
 
 const PLURALIZATION_KEYS = new Set(['zero', 'one', 'two', 'few', 'many', 'other']);
 
@@ -137,6 +137,14 @@ export const MatchingTranslations: JSONCheckDefinition = {
           message: `A default translation for '${path}' does not exist`,
           startIndex: node.loc!.start.offset,
           endIndex: node.loc!.end.offset,
+          suggest: [
+            {
+              message: 'Delete unneeded translation key',
+              fix(corrector) {
+                corrector.remove(path);
+              },
+            },
+          ],
         });
       },
 
@@ -151,6 +159,9 @@ export const MatchingTranslations: JSONCheckDefinition = {
             message: `The translation for '${path}' is missing`,
             startIndex: closest.loc!.start.offset,
             endIndex: closest.loc!.end.offset,
+            fix(corrector) {
+              corrector.add(path, 'TODO');
+            },
           });
         });
       },

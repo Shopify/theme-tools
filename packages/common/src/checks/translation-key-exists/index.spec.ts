@@ -1,5 +1,5 @@
 import { TranslationKeyExists } from '.';
-import { check } from '../../test-helper';
+import { check } from '../../test';
 import { expect } from 'chai';
 
 describe('Module: TranslationKeyExists', () => {

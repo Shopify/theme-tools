@@ -1,12 +1,10 @@
-import { Offense } from '../types';
-
-type WithOptional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+import { Offense, WithOptional } from '../types';
 
 declare global {
   export namespace Chai {
     interface Assertion {
       containOffense(
-        offense: WithOptional<Offense, 'start' | 'check' | 'end' | 'severity'> | string,
+        offense: WithOptional<Offense, 'start' | 'check' | 'end' | 'severity' | 'type'> | string,
       ): Promise<void>;
     }
   }

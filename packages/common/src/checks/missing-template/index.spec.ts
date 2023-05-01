@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { MissingTemplate } from '.';
-import { check } from '../../test-helper';
+import { check } from '../../test';
 
 describe('Module: MissingTemplate', () => {
   [

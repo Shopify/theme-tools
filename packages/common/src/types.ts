@@ -3,6 +3,8 @@ import { NodeTypes as LiquidHtmlNodeTypes } from '@shopify/prettier-plugin-liqui
 
 import { ArrayNode, IdentifierNode, LiteralNode, ObjectNode, PropertyNode } from 'json-to-ast';
 
+import { StringCorrector, JSONCorrector } from './fixes';
+
 export type Theme = SourceCode<SourceCodeType>[];
 
 export type SourceCode<S> = S extends SourceCodeType
@@ -59,7 +61,9 @@ export interface Config {
   root: AbsolutePath;
 }
 
-type NodeOfType<S extends SourceCodeType, T> = Extract<AST[S], { type: T }>;
+export type NodeOfType<S extends SourceCodeType, T> = Extract<AST[S], { type: T }>;
+export type LiquidHtmlNodeOfType<T> = NodeOfType<SourceCodeType.LiquidHtml, T>;
+export type JSONNodeOfType<T> = NodeOfType<SourceCodeType.LiquidHtml, T>;
 
 // Very intentionally eslint-like. Not reinventing the wheel + makes the
 // eslint plugin writing skills transferable.
@@ -76,9 +80,7 @@ export type CheckDefinition<T> = T extends SourceCodeType
        * Its name, documentation, severity, etc.
        */
       meta: {
-        /**
-         * A human readable name for the check
-         */
+        /** A human readable name for the check */
         name: string;
 
         /**
@@ -90,19 +92,13 @@ export type CheckDefinition<T> = T extends SourceCodeType
          */
         code: string;
 
-        /**
-         * The severity determines the icon and color of diagnostics
-         */
+        /** The severity determines the icon and color of diagnostics */
         severity: Severity.ERROR | Severity.WARNING | Severity.INFO;
 
-        /**
-         * Which AST type the check targets, must be one of SourceCodeType.
-         */
+        /** Which AST type the check targets, must be one of SourceCodeType. */
         type: T;
 
-        /**
-         * Human readable short description of the check as well as link to documentation.
-         */
+        /** Human readable short description of the check as well as link to documentation. */
         docs: {
           description: string;
           recommended?: boolean;
@@ -110,8 +106,6 @@ export type CheckDefinition<T> = T extends SourceCodeType
         };
 
         targets: [];
-        fixable?: boolean;
-        hasSuggestions?: boolean;
         schema: {}; // TODO
         deprecated?: boolean;
         replacedBy?: boolean;
@@ -179,27 +173,20 @@ export type CheckNodeMethod<S extends SourceCodeType, T> = (
 ) => Promise<void>;
 
 type CheckNodeMethods<S extends SourceCodeType> = {
-  /**
-   * Happens once per node, while going down the tree
-   */
+  /** Happens once per node, while going down the tree */
   [T in NodeTypes[S]]: CheckNodeMethod<S, T>;
 };
 
 type CheckExitMethods<S extends SourceCodeType> = {
-  /**
-   * Happens once per node, in reverse order
-   */
+  /** Happens once per node, in reverse order */
   [T in NodeTypes[S] as `${T}:exit`]: CheckNodeMethod<S, T>;
 };
 
 type CheckLifecycleMethods<S extends SourceCodeType> = {
-  /**
-   * Happens before traversing a file
-   */
+  /** Happens before traversing a file */
   onCodePathStart(file: SourceCode<S>): Promise<void>;
-  /**
-   * Happens after traversing a file
-   */
+
+  /** Happens after traversing a file */
   onCodePathEnd(file: SourceCode<S>): Promise<void>;
 };
 
@@ -213,42 +200,162 @@ export interface Dependencies {
   fileExists(absolutePath: string): Promise<boolean>;
 }
 
-type StaticContextProperties<S> = {
-  report(problem: Problem): void;
-  relativePath(absolutePath: AbsolutePath): RelativePath;
-  absolutePath(relativePath: RelativePath): AbsolutePath;
-  file: SourceCode<S>;
-};
+type StaticContextProperties<S extends SourceCodeType> = S extends SourceCodeType
+  ? {
+      report(problem: Problem<S>): void;
+      relativePath(absolutePath: AbsolutePath): RelativePath;
+      absolutePath(relativePath: RelativePath): AbsolutePath;
+      file: SourceCode<S>;
+    }
+  : never;
 
 export type Context<S extends SourceCodeType> = S extends SourceCodeType
   ? StaticContextProperties<S> & Dependencies
   : never;
 
-export interface Problem {
-  message: string;
-  startIndex: number; // 0-indexed
-  endIndex: number; // 0-indexed
-  fix?: undefined; // TODO
-  suggest?: undefined; // TODO
+export type Corrector<S extends SourceCodeType> = S extends SourceCodeType
+  ? {
+      [SourceCodeType.JSON]: JSONCorrector;
+      [SourceCodeType.LiquidHtml]: StringCorrector;
+    }[S]
+  : never;
+
+/**
+ * A Fixer is a function that returns a Fix (a data representation of the change).
+ *
+ * The Corrector module is helpful for creating Fix objects.
+ *
+ * import { Corrector } from '@shopify/theme-check-common';
+ */
+export type Fixer<S extends SourceCodeType> = S extends SourceCodeType
+  ? (corrector: Corrector<S>) => void
+  : never;
+export type LiquidHtmlFixer = Fixer<SourceCodeType.LiquidHtml>;
+export type JSONFixer = Fixer<SourceCodeType.JSON>;
+
+/**
+ * A data representation of a collection of changes to a document. They all
+ * assume that they operate on the initial string independently.
+ *
+ * It is recursive so that fixes can be grouped together.
+ */
+export type Fix = FixDescription | Fix[];
+
+/**
+ * A data representation of a change to a document.
+ *
+ * To insert:
+ *   - startIndex: x, endIndex: x, insert: insertion
+ *
+ * To replace:
+ *   - startIndex: x, endIndex: y, insert: replacement
+ *
+ * To delete:
+ *   - startIndex: x, endIndex: y, insert: ''
+ */
+export interface FixDescription {
+  /** 0-based index, included */
+  startIndex: number;
+  /** 0-based index, excluded */
+  endIndex: number;
+  /** What to replace the contents of the range with. To delete, put entry string. */
+  insert: string;
 }
 
-export interface Offense {
-  check: string;
-  message: string;
-  absolutePath: string;
-  severity: Severity;
-  start: Position;
-  end: Position;
+/**
+ * The FixApplicator is a function that takes a list of FixDescription and
+ * applies them on the source to produce a result.
+ *
+ * - In a CLI context, this might be changeString().then(saveFile)
+ * - In the Language Server, this function will collect the TextEdit[]
+ *   before sending them as a WorkspaceEdit
+ *
+ * It is assumed that all FixDescription are all applied to the initial
+ * document, and not the one produced by previous FixDescription.
+ *
+ * It is the FixApplicator's job to throw an error if the FixDescription
+ * array contains overlapping ranges.
+ *
+ * It is the FixApplicator's job to change the location of fixes as indexes
+ * drift. See [1] and [2] for inspiration, we're following the same
+ * pattern.
+ *
+ * [1]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textEditArray
+ * [2]: https://codemirror.net/docs/ref/#state.EditorState.update
+ */
+export interface FixApplicator {
+  (source: SourceCode<SourceCodeType>, fixes: Fix): Promise<void>;
 }
+
+/**
+ * A suggestion is a Fix that we cannot apply automatically. Perhaps
+ * because there are multiple options or because the fix is dangerous and
+ * requires care.
+ *
+ * To be used by code editors.
+ */
+export type Suggestion<S extends SourceCodeType> = S extends SourceCodeType
+  ? {
+      message: string;
+      fix: Fixer<S>;
+    }
+  : never;
+
+export type LiquidHtmlSuggestion = Suggestion<SourceCodeType.LiquidHtml>;
+export type JSONSuggestion = Suggestion<SourceCodeType.JSON>;
+
+export type Problem<S extends SourceCodeType> = S extends SourceCodeType
+  ? {
+      /** The description of the problem shown to the user */
+      message: string;
+
+      /** 0-indexed, included */
+      startIndex: number;
+
+      /** 0-indexed, excluded */
+      endIndex: number;
+
+      /**
+       * The fix attribute is used to provide a "autofix" rule
+       * to the offense. It is reserved for safe changes.
+       * Unsafe changes should go in `suggest`.
+       */
+      fix?: Fixer<S>;
+
+      /**
+       * Sometimes, it's not appropriate to automatically apply a fix either
+       * because it is not safe, or because there are multiple ways to fix it.
+       *
+       * For instance, we can't know if you'd want to fix a parser blocking
+       * script with `defer` or with `async`. The suggest array allows us to
+       * provide fixes for either and the user can choose which one they want.
+       */
+      suggest?: Suggestion<S>[];
+    }
+  : never;
+
+export type Offense<S extends SourceCodeType = SourceCodeType> = S extends SourceCodeType
+  ? {
+      type: S;
+      check: string;
+      message: string;
+      absolutePath: string;
+      severity: Severity;
+      start: Position;
+      end: Position;
+      fix?: Fixer<S>;
+      suggest?: Suggestion<S>[];
+    }
+  : never;
 
 export interface Position {
-  // 0-indexed
+  /** 0-indexed */
   index: number;
 
-  // 1-indexed
-  get line(): number; // 1-indexed
+  /** 1-indexed */
+  get line(): number;
 
-  // 0-indexed
+  /** 0-indexed */
   get character(): number;
 }
 
@@ -257,3 +364,6 @@ export enum Severity {
   WARNING = 1,
   INFO = 2,
 }
+
+export type WithRequired<T, K extends keyof T> = Required<Pick<T, K>> & Omit<T, K>;
+export type WithOptional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;

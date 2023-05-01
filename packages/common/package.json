@@ -13,10 +13,15 @@
   "dependencies": {
     "@shopify/prettier-plugin-liquid": "^1.0.6",
     "json-to-ast": "^2.1.0",
-    "line-column": "^1.0.2"
+    "line-column": "^1.0.2",
+    "lodash.set": "^4.3.2",
+    "lodash.unset": "^4.5.2"
   },
   "devDependencies": {
+    "@codemirror/state": "^6.2.0",
     "@types/json-to-ast": "^2.1.2",
-    "@types/line-column": "^1.0.0"
+    "@types/line-column": "^1.0.0",
+    "@types/lodash.set": "^4.3.7",
+    "@types/lodash.unset": "^4.5.7"
   }
 }

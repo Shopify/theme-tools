@@ -1,6 +1,8 @@
 import { expect } from 'chai';
-import { check, highlightedOffenses } from '../../test-helper';
+import { autofix, check, highlightedOffenses } from '../../test';
 import { MatchingTranslations } from '../../checks/matching-translations/index';
+
+const prettyJSON = (json: any) => JSON.stringify(json, null, 2);
 
 describe('Module: MatchingTranslations', async () => {
   it('should report offenses when the translation file is missing a key', async () => {
@@ -16,7 +18,7 @@ describe('Module: MatchingTranslations', async () => {
 
     const offenses = await check(theme, [MatchingTranslations]);
 
-    expect(offenses).to.length(1);
+    expect(offenses).to.be.of.length(1);
     expect(offenses).to.containOffense("The translation for 'world' is missing");
   });
 
@@ -33,8 +35,19 @@ describe('Module: MatchingTranslations', async () => {
 
     const offenses = await check(theme, [MatchingTranslations]);
 
-    expect(offenses).to.length(1);
+    expect(offenses).to.be.of.length(1);
     expect(offenses).to.containOffense("A default translation for 'world' does not exist");
+    expect(offenses[0]!).to.suggest(
+      theme['locales/pt-BR.json'],
+      'Delete unneeded translation key',
+      {
+        startIndex: 0,
+        endIndex: theme['locales/pt-BR.json'].length,
+        insert: prettyJSON({
+          hello: 'Olá',
+        }),
+      },
+    );
   });
 
   it('should report offenses when nested translation keys do not exist', async () => {
@@ -49,11 +62,20 @@ describe('Module: MatchingTranslations', async () => {
 
     const offenses = await check(theme, [MatchingTranslations]);
 
-    expect(offenses).to.length(1);
+    expect(offenses).to.be.of.length(1);
     expect(offenses).to.containOffense({
       message: "The translation for 'hello.world' is missing",
       absolutePath: '/locales/pt-BR.json',
     });
+
+    const fixed = await autofix(theme, offenses);
+    expect(fixed['locales/pt-BR.json']).to.eql(
+      prettyJSON({
+        hello: {
+          world: 'TODO',
+        },
+      }),
+    );
   });
 
   it('should report offenses when translation shapes do not match', async () => {
@@ -68,7 +90,7 @@ describe('Module: MatchingTranslations', async () => {
 
     const offenses = await check(theme, [MatchingTranslations]);
 
-    expect(offenses).to.length(2);
+    expect(offenses).to.be.of.length(2);
     expect(offenses).to.containOffense({
       message: "A default translation for 'hello' does not exist",
       absolutePath: '/locales/pt-BR.json',
@@ -77,6 +99,14 @@ describe('Module: MatchingTranslations', async () => {
       message: "The translation for 'hello.world' is missing",
       absolutePath: '/locales/pt-BR.json',
     });
+
+    const fixed = await autofix(theme, offenses);
+
+    expect(fixed['locales/pt-BR.json']).to.eql(
+      prettyJSON({
+        hello: { world: 'TODO' },
+      }),
+    );
   });
 
   it('should report offenses when nested translation keys do not match', async () => {
@@ -94,7 +124,7 @@ describe('Module: MatchingTranslations', async () => {
 
     const offenses = await check(theme, [MatchingTranslations]);
 
-    expect(offenses).to.length(3);
+    expect(offenses).to.be.of.length(3);
     expect(offenses).to.containOffense({
       message: "A default translation for 'hello.monde' does not exist",
       absolutePath: '/locales/fr.json',
@@ -107,6 +137,16 @@ describe('Module: MatchingTranslations', async () => {
       message: "The translation for 'hello.world' is missing",
       absolutePath: '/locales/fr.json',
     });
+
+    const fixed = await autofix(theme, offenses);
+    expect(fixed['locales/fr.json']).to.eql(
+      prettyJSON({
+        hello: { monde: 'Bonjour, monde', world: 'TODO' },
+      }),
+    );
+
+    // Default does not exist should be a suggestion and not autofixed.
+    expect(fixed['locales/es-ES.json']).to.eql(theme['locales/es-ES.json']);
   });
 
   it('should not report offenses when default translations do not exist', async () => {
@@ -121,7 +161,7 @@ describe('Module: MatchingTranslations', async () => {
 
     const offenses = await check(theme, [MatchingTranslations]);
 
-    expect(offenses).to.length(0);
+    expect(offenses).to.be.of.length(0);
   });
 
   it('should not report offenses when translations match', async () => {
@@ -138,7 +178,7 @@ describe('Module: MatchingTranslations', async () => {
 
     const offenses = await check(theme, [MatchingTranslations]);
 
-    expect(offenses).to.length(0);
+    expect(offenses).to.be.of.length(0);
   });
 
   it('should not report offenses when nested translations match', async () => {
@@ -156,7 +196,7 @@ describe('Module: MatchingTranslations', async () => {
 
     const offenses = await check(theme, [MatchingTranslations]);
 
-    expect(offenses).to.length(0);
+    expect(offenses).to.be.of.length(0);
   });
 
   it('should not report offenses and ignore pluralization', async () => {
@@ -177,7 +217,7 @@ describe('Module: MatchingTranslations', async () => {
 
     const offenses = await check(theme, [MatchingTranslations]);
 
-    expect(offenses).to.length(0);
+    expect(offenses).to.be.of.length(0);
   });
 
   it('should not report offenses and ignore keys provided by Shopify', async () => {
@@ -204,7 +244,7 @@ describe('Module: MatchingTranslations', async () => {
 
     const offenses = await check(theme, [MatchingTranslations]);
 
-    expect(offenses).to.length(0);
+    expect(offenses).to.be.of.length(0);
   });
 
   it('should not report offenses and ignore "*.schema.json" files', async () => {
@@ -215,7 +255,7 @@ describe('Module: MatchingTranslations', async () => {
 
     const offenses = await check(theme, [MatchingTranslations]);
 
-    expect(offenses).to.length(0);
+    expect(offenses).to.be.of.length(0);
   });
 
   it('should highlight the proper element when the translation file is missing a key', async () => {

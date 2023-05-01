@@ -1,4 +1,4 @@
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '@shopify/theme-check-common';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import shopifyTranslationKeys from './shopify-translation-keys.json';
 
 function keyExists(key: string, pointer: any) {

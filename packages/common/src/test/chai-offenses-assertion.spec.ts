@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Offense } from '../types';
+import { Offense, SourceCodeType } from '../types';
 
 describe('Module: OffensesAssertion', () => {
   const offenses: Offense[] = [
@@ -59,6 +59,7 @@ describe('Module: OffensesAssertion', () => {
 
   function buildOffense(message: string, absolutePath: string): Offense {
     return {
+      type: SourceCodeType.LiquidHtml,
       message,
       absolutePath,
       check: '',

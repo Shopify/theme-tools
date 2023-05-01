@@ -9,6 +9,8 @@ import {
   recommended,
 } from '@shopify/theme-check-common';
 
+import { autofix } from './autofix';
+
 import { promisify } from 'node:util';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -17,6 +19,8 @@ import glob = require('glob');
 
 const asyncGlob = promisify(glob);
 const fileExists = promisify(fs.exists);
+
+export * from '@shopify/theme-check-common';
 
 export async function toSourceCode(
   absolutePath: string,
@@ -36,8 +40,8 @@ export async function getTheme(root: string): Promise<Theme> {
   return sourceCodes.filter((x): x is LiquidSourceCode | JSONSourceCode => x !== undefined);
 }
 
-export async function check(root: string): Promise<Offense[]> {
-  const theme = await getTheme(root);
+export async function check(root: string, theme?: Theme): Promise<Offense[]> {
+  theme = theme ?? (await getTheme(root));
   const config: Config = {
     settings: {},
     checks: recommended,
@@ -62,4 +66,10 @@ export async function check(root: string): Promise<Offense[]> {
       return defaultTranslationsFileLocale || defaultLocale;
     },
   });
+}
+
+export async function checkAndAutofix(root: string) {
+  const theme = await getTheme(root);
+  const offenses = await check(root, theme);
+  await autofix(theme, offenses);
 }

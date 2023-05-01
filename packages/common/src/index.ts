@@ -21,6 +21,7 @@ import { createDisabledChecksModule } from './disabled-checks';
 import { createSafeCheck } from './create-safe-check';
 import * as path from './path';
 
+export * from './fixes';
 export * from './types';
 export * from './checks';
 export * from './to-source-code';
@@ -87,15 +88,18 @@ function createContext<S extends SourceCodeType>(
     ...dependencies,
     absolutePath: (relativePath) => path.join(config.root, relativePath),
     relativePath: (absolutePath) => path.relative(absolutePath, config.root),
-    report(problem: Problem): void {
+    report(problem: Problem<S>): void {
       offenses.push({
+        type: check.meta.type,
         check: check.meta.code,
         message: problem.message,
         absolutePath: file.absolutePath,
         severity: check.meta.severity,
         start: getPosition(file.source, problem.startIndex),
         end: getPosition(file.source, problem.endIndex),
-      });
+        fix: problem.fix,
+        suggest: problem.suggest,
+      } as Offense<S>);
     },
     file,
   } as Context<S>;
