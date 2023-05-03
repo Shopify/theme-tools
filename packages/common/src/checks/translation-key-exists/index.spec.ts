@@ -100,6 +100,32 @@ describe('Module: TranslationKeyExists', () => {
     });
   });
 
+  it('should not crash if the schema locales does not exist', async () => {
+    const offenses = await check(
+      {
+        'code.liquid': `
+          {{ "this.does.not.exist" | translate }}
+          {% schema %}
+            {
+              "name": "Slideshow",
+              "tag": "section",
+              "class": "slideshow",
+              "limit": 1
+            }
+          {% endschema %}`,
+      },
+      [TranslationKeyExists],
+    );
+    expect(offenses).to.have.length(1);
+    expect(offenses).to.containOffense({
+      check: TranslationKeyExists.meta.code,
+      message: "'this.does.not.exist' does not have a matching entry in 'locales/en.default.json'",
+      absolutePath: '/code.liquid',
+      start: { index: 14, line: 1, character: 13 },
+      end: { index: 35, line: 1, character: 34 },
+    });
+  });
+
   it('should only report unknown keys for translate filter', async () => {
     const offenses = await check(
       {

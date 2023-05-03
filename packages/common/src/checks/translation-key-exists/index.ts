@@ -63,7 +63,7 @@ export const TranslationKeyExists: LiquidCheckDefinition = {
 
         const defaultLocale = await context.getDefaultLocale();
         try {
-          schemaLocales = JSON.parse(node.body.value).locales[defaultLocale];
+          schemaLocales = JSON.parse(node.body.value).locales?.[defaultLocale];
         } catch (error) {
           if (error instanceof SyntaxError) {
             return;
