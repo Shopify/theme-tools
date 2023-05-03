@@ -457,14 +457,16 @@
     line-column "^1.0.2"
     ohm-js "^16.3.0"
 
-"@shopify/theme-check-common@1.4.1":
-  version "1.4.1"
-  resolved "https://npm.shopify.io/node/@shopify/theme-check-common/-/1.4.1/theme-check-common-1.4.1.tgz#d9c26cdbc2d5c2eb1ce3df1321310031fd93486e"
-  integrity sha512-DyldmRgEiDo3Slm587Yc+/zkjzit8lqTh14u4VyN1E9LwiNOgCPtbpd4VZjHV7pgC8quM2/DfulFpE9wzzNcrw==
+"@shopify/theme-check-common@1.5.1":
+  version "1.5.1"
+  resolved "https://npm.shopify.io/node/@shopify/theme-check-common/-/1.5.1/theme-check-common-1.5.1.tgz#63319aff5c0d4f5022387b2d388fac72fb2a1a24"
+  integrity sha512-A4aR+wgxmApaQM5IFE889kfKDNa9kmJ4yvP/FGnPKYt3KeYsRQtAtTVouM2iAIq0yi3ceVKVPm//rqMtEGzN5Q==
   dependencies:
     "@shopify/prettier-plugin-liquid" "^1.0.6"
     json-to-ast "^2.1.0"
     line-column "^1.0.2"
+    lodash.set "^4.3.2"
+    lodash.unset "^4.5.2"
 
 "@tsconfig/node10@^1.0.7":
   version "1.0.9"
@@ -2740,10 +2742,20 @@ locate-path@^6.0.0:
   dependencies:
     p-locate "^5.0.0"
 
+lodash.set@^4.3.2:
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/lodash.set/-/lodash.set-4.3.2.tgz#d8757b1da807dde24816b0d6a84bea1a76230b23"
+  integrity sha512-4hNPN5jlm/N/HLMCO43v8BXKq9Z7QdAGc/VGrRD61w8gN9g/6jF9A4L1pbUgBLCffi0w9VsXfTOij5x8iTyFvg==
+
 lodash.startcase@^4.4.0:
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/lodash.startcase/-/lodash.startcase-4.4.0.tgz#9436e34ed26093ed7ffae1936144350915d9add8"
   integrity sha512-+WKqsK294HMSc2jEbNgpHpd0JfIBhp7rEV4aqXWqFr6AlXov+SlcgB1Fv01y2kGe3Gc8nMW7VA0SrGuSkRfIEg==
+
+lodash.unset@^4.5.2:
+  version "4.5.2"
+  resolved "https://registry.yarnpkg.com/lodash.unset/-/lodash.unset-4.5.2.tgz#370d1d3e85b72a7e1b0cdf2d272121306f23e4ed"
+  integrity sha512-bwKX88k2JhCV9D1vtE8+naDKlLiGrSmf8zi/Y9ivFHwbmRfA8RxS/aVJ+sIht2XOwqoNr4xUPUkGZpc1sHFEKg==
 
 lodash@^4.17.20, lodash@^4.17.21:
   version "4.17.21"

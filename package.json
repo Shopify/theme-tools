@@ -14,6 +14,7 @@
     "build": "yarn workspaces run build",
     "build:node": "yarn --cwd packages/node build",
     "build:playground": "yarn --cwd playground build",
+    "dev:common": "yarn --cwd packages/common dev",
     "dev:playground": "yarn --cwd playground dev",
     "format": "prettier --write \"packages/*/src/**/*.ts\"",
     "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
