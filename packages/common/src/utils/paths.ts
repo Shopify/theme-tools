@@ -1,10 +1,10 @@
-import { URI } from 'vscode-languageserver';
+import { URI } from 'vscode-uri';
 
 export type AbsolutePath = string;
 export type RelativePath = string;
 export type Protocol = 'browser' | 'file';
 
-export function toAbsolutePath(uri: URI): AbsolutePath {
-  // TODO
-  return uri.replace(/^\w+:(\/\/)?/, '');
+export function toAbsolutePath(uriString: string): AbsolutePath {
+  const uri = URI.parse(uriString);
+  return uri.path;
 }

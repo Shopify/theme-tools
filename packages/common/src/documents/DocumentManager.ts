@@ -8,25 +8,6 @@ import { URI } from 'vscode-languageserver-types';
 import { toAbsolutePath } from '../utils';
 
 export type AugmentedSourceCode = SourceCode<SourceCodeType> & { uri: URI };
-
-// Goals:
-// - Memory efficient
-// - Fast
-//
-// Trying to avoid:
-// - Subtle memory bugs
-// - Reparsing unnecessarily
-//
-// Things that are true:
-// - offenses[file] = f(theme, config)
-// - theme = f(root)
-// - root = f(file)
-// - sourceCode = f(file, root) // because relativePath
-// - sourceCode = f(file), since root is f(file)
-//
-// Things that would be weird:
-// - If a file has two roots (e.g. root .theme-check.yml and src/.theme-check.yml)
-// - This doesn't make sense so the parent should ignore the src folder.
 export class DocumentManager {
   private sourceCodes: Map<URI, AugmentedSourceCode>;
 

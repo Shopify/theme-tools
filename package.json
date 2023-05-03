@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "build": "yarn workspaces run build",
+    "build:ts": "yarn workspaces run build:ts",
     "build:node": "yarn --cwd packages/node build",
     "build:playground": "yarn --cwd playground build",
     "dev:common": "yarn --cwd packages/common dev",

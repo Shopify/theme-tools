@@ -8,12 +8,14 @@
     "access": "restricted"
   },
   "scripts": {
-    "build": "tsc -b tsconfig.build.json",
+    "build": "yarn build:ts",
+    "build:ts": "tsc -b tsconfig.build.json",
     "dev": "tsc --watch",
     "test": "vitest"
   },
   "dependencies": {
     "@shopify/theme-check-common": "1.5.1",
-    "vscode-languageserver": "^8.0.2"
+    "vscode-languageserver": "^8.0.2",
+    "vscode-uri": "^3.0.7"
   }
 }
