@@ -1,5 +1,13 @@
 # @shopify/theme-check-browser
 
+## 1.5.1
+
+### Patch Changes
+
+- 60c92be: Fix unhandled TranslationKeyExists error
+- Updated dependencies [60c92be]
+  - @shopify/theme-check-common@1.5.1
+
 ## 1.5.0
 
 ### Minor Changes
