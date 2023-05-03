@@ -1,5 +1,11 @@
 # @shopify/liquid-language-server-common
 
+## 1.3.3
+
+### Patch Changes
+
+- 81ec8c2: Normalize paths and URIs across platforms
+
 ## 1.3.2
 
 ### Patch Changes
