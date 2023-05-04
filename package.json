@@ -12,14 +12,16 @@
   ],
   "scripts": {
     "build": "yarn workspaces run build",
-    "build:ts": "yarn workspaces run build:ts",
     "build:node": "yarn --cwd packages/node build",
     "build:playground": "yarn --cwd playground build",
+    "build:ts": "yarn workspaces run build:ts",
+    "cli": "scripts/language-server-liquid",
+    "dev:browser": "yarn --cwd packages/browser dev",
     "dev:common": "yarn --cwd packages/common dev",
+    "dev:node": "yarn --cwd packages/dev dev",
     "dev:playground": "yarn --cwd playground dev",
     "format": "prettier --write \"packages/*/src/**/*.ts\"",
     "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
-    "cli": "scripts/language-server-liquid",
     "playground": "npx http-server playground/dist",
     "test": "vitest"
   },

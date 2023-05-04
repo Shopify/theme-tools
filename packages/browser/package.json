@@ -11,6 +11,7 @@
     "build": "yarn build:ts && yarn build:standalone",
     "build:ts": "tsc -b tsconfig.build.json",
     "build:standalone": "webpack --mode production",
+    "dev": "tsc --watch",
     "test": "vitest"
   },
   "dependencies": {

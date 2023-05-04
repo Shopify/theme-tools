@@ -2,6 +2,6 @@
   "extends": "./tsconfig.json",
   "exclude": ["**/*.spec.ts"],
   "references": [
-    { "path": "../common/src" }
+    { "path": ".." }
   ]
 }

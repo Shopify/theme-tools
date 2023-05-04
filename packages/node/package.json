@@ -10,6 +10,7 @@
   "scripts": {
     "build": "yarn build:ts",
     "build:ts": "tsc -b tsconfig.build.json",
+    "dev": "tsc --watch",
     "test": "vitest"
   },
   "dependencies": {

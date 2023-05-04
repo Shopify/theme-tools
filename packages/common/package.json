@@ -9,8 +9,8 @@
   },
   "scripts": {
     "build": "yarn build:ts",
-    "build:ts": "tsc -b tsconfig.build.json",
-    "dev": "tsc --watch",
+    "build:ts": "tsc -b src/tsconfig.build.json",
+    "dev": "tsc -b src --watch",
     "test": "vitest"
   },
   "dependencies": {

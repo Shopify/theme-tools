@@ -11,6 +11,7 @@ import { debounce } from '../utils';
 import { DiagnosticsManager, makeRunChecks } from '../diagnostics';
 import { DocumentManager } from '../documents';
 import { Dependencies } from '../types';
+import { VERSION } from '../version';
 
 const defaultLogger = () => {};
 
@@ -75,7 +76,7 @@ export function startServer(
       },
       serverInfo: {
         name: 'liquid-language-server',
-        version: '0.0.1',
+        version: VERSION,
       },
     };
     return result;
