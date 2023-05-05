@@ -75,17 +75,19 @@ export async function check(
 export async function runLiquidCheck(
   checkDef: CheckDefinition<SourceCodeType.LiquidHtml>,
   sourceCode: string,
+  fileName: string = 'file.liquid',
 ): Promise<Offense[]> {
-  const offenses = await check({ 'file.liquid': sourceCode }, [checkDef]);
-  return offenses.filter((offense) => offense.absolutePath === '/file.liquid');
+  const offenses = await check({ [fileName]: sourceCode }, [checkDef]);
+  return offenses.filter((offense) => offense.absolutePath === `/${fileName}`);
 }
 
 export async function runJSONCheck(
   checkDef: CheckDefinition<SourceCodeType.JSON>,
   sourceCode: string,
+  fileName: string = 'file.json',
 ): Promise<Offense[]> {
-  const offenses = await check({ 'file.json': sourceCode }, [checkDef]);
-  return offenses.filter((offense) => offense.absolutePath === '/file.json');
+  const offenses = await check({ [fileName]: sourceCode }, [checkDef]);
+  return offenses.filter((offense) => offense.absolutePath === `/${fileName}`);
 }
 
 export async function autofix(themeDesc: MockTheme, offenses: Offense[]) {
@@ -99,6 +101,19 @@ export async function autofix(themeDesc: MockTheme, offenses: Offense[]) {
   await coreAutofix(theme, offenses, stringApplicator);
 
   return fixed;
+}
+
+export function applyFix(
+  themeDescOrSource: MockTheme | string,
+  offense: Offense,
+): string | undefined {
+  const source =
+    typeof themeDescOrSource === 'string'
+      ? themeDescOrSource
+      : themeDescOrSource[asRelative(offense.absolutePath)];
+  const corrector = createCorrector(offense.type, source);
+  offense.fix?.(corrector as any);
+  return applyFixToString(source, corrector.fix);
 }
 
 export function applySuggestions(
