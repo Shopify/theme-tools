@@ -73,6 +73,9 @@ describe('Module: dependencies', () => {
 
   describe('Unit: findRootURI', () => {
     it('should accurately return the root of a theme', async () => {
+      expect(await findRootURI(workspace.uri('gitRootTheme'))).to.eql(
+        workspace.uri('gitRootTheme'),
+      );
       expect(await findRootURI(workspace.uri('gitRootTheme/snippets/header.liquid'))).to.eql(
         workspace.uri('gitRootTheme'),
       );

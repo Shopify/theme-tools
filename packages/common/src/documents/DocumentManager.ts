@@ -4,10 +4,15 @@ import {
   Theme,
   toSourceCode,
 } from '@shopify/theme-check-common';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-languageserver-types';
 import { toAbsolutePath } from '../utils';
 
-export type AugmentedSourceCode = SourceCode<SourceCodeType> & { uri: URI };
+export type AugmentedSourceCode = SourceCode<SourceCodeType> & {
+  textDocument: TextDocument;
+  uri: URI;
+};
+
 export class DocumentManager {
   private sourceCodes: Map<URI, AugmentedSourceCode>;
 
@@ -33,14 +38,26 @@ export class DocumentManager {
       .map(([, sourceCode]) => sourceCode) satisfies Theme;
   }
 
+  public get(uri: URI) {
+    return this.sourceCodes.get(uri);
+  }
+
   private set(uri: URI, source: string, version: number | undefined) {
     const absolutePath = toAbsolutePath(uri);
     const sourceCode = toSourceCode(absolutePath, source, version);
-
     if (!sourceCode) {
       this.sourceCodes.delete(uri);
     } else {
-      this.sourceCodes.set(uri, { ...sourceCode, uri });
+      this.sourceCodes.set(uri, {
+        ...sourceCode,
+        textDocument: TextDocument.create(
+          uri,
+          sourceCode.type,
+          sourceCode.version ?? 0,
+          sourceCode.source,
+        ),
+        uri,
+      });
     }
   }
 }

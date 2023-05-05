@@ -32,15 +32,15 @@ async function isRoot(dirURI: URI) {
 }
 
 async function findRoot(curr: URI): Promise<URI> {
+  const currIsRoot = await isRoot(curr);
+  if (currIsRoot) {
+    return curr;
+  }
+
   const dirURI = Utils.dirname(curr);
   const currIsAbsoluteRoot = dirURI.fsPath === curr.fsPath;
   if (currIsAbsoluteRoot) {
     return curr;
-  }
-
-  const dirIsRoot = await isRoot(dirURI);
-  if (dirIsRoot) {
-    return dirURI;
   }
 
   return findRoot(dirURI);

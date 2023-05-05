@@ -12,6 +12,7 @@ import { DiagnosticsManager, makeRunChecks } from '../diagnostics';
 import { DocumentManager } from '../documents';
 import { Dependencies } from '../types';
 import { VERSION } from '../version';
+import { DocumentLinksProvider } from '../documentLinks';
 
 const defaultLogger = () => {};
 
@@ -38,6 +39,7 @@ export function startServer(
 ) {
   const documentManager = new DocumentManager();
   const diagnosticsManager = new DiagnosticsManager(connection);
+  const documentLinksProvider = new DocumentLinksProvider(documentManager);
   const runChecks = debounce(
     makeRunChecks({
       loadConfig,
@@ -65,6 +67,10 @@ export function startServer(
       capabilities: {
         textDocumentSync: {
           change: TextDocumentSyncKind.Full,
+        },
+        documentLinkProvider: {
+          resolveProvider: false,
+          workDoneProgress: false,
         },
         workspace: {
           fileOperations: {
@@ -102,6 +108,12 @@ export function startServer(
     const { uri } = params.textDocument;
     documentManager.close(uri);
     diagnosticsManager.clear(uri);
+  });
+
+  connection.onDocumentLinks(async (params) => {
+    const { uri } = params.textDocument;
+    const rootUri = await findRootURI(uri);
+    return documentLinksProvider.documentLinks(uri, rootUri);
   });
 
   // These notifications could cause a MissingSnippet check to be invalidated
