@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "build": "yarn workspaces run build",
+    "build:ts": "yarn workspaces run build:ts",
     "build:node": "yarn --cwd packages/node build",
     "cli": "node packages/node/dist/cli",
     "cli:debug": "node --inspect-brk packages/node/dist/cli",

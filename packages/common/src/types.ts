@@ -2,18 +2,19 @@ import { LiquidHtmlNode } from '@shopify/prettier-plugin-liquid/dist/parser/stag
 import { NodeTypes as LiquidHtmlNodeTypes } from '@shopify/prettier-plugin-liquid/dist/types';
 
 import { ArrayNode, IdentifierNode, LiteralNode, ObjectNode, PropertyNode } from 'json-to-ast';
+import { SchemaPropFactory } from './types/schema-prop-factory';
 
 import { StringCorrector, JSONCorrector } from './fixes';
 
 export type Theme = SourceCode<SourceCodeType>[];
 
-export type SourceCode<S> = S extends SourceCodeType
+export type SourceCode<T> = T extends SourceCodeType
   ? {
       absolutePath: string; // /path/to/snippet/foo.liquid
       version?: number;
       source: string;
-      type: S; // Liquid | LiquidHtml | JSON
-      ast: AST[S]; // LiquidAST | LiquidHtmlAST | JSON object
+      type: T; // Liquid | LiquidHtml | JSON
+      ast: AST[T]; // LiquidAST | LiquidHtmlAST | JSON object
     }
   : never;
 
@@ -23,14 +24,20 @@ export enum SourceCodeType {
 }
 
 export type LiquidSourceCode = SourceCode<SourceCodeType.LiquidHtml>;
-export type LiquidCheckDefinition = CheckDefinition<SourceCodeType.LiquidHtml>;
+export type LiquidCheckDefinition<S extends Schema = Schema> = CheckDefinition<
+  SourceCodeType.LiquidHtml,
+  S
+>;
 export type LiquidCheck = Check<SourceCodeType.LiquidHtml>;
 
 export { LiquidHtmlNodeTypes };
 export { LiquidHtmlNode };
 
 export type JSONSourceCode = SourceCode<SourceCodeType.JSON>;
-export type JSONCheckDefinition = CheckDefinition<SourceCodeType.JSON>;
+export type JSONCheckDefinition<S extends Schema = Schema> = CheckDefinition<
+  SourceCodeType.JSON,
+  S
+>;
 export type JSONCheck = Check<SourceCodeType.JSON>;
 
 export type JSONNodeTypes = 'Object' | 'Property' | 'Identifier' | 'Array' | 'Literal';
@@ -55,13 +62,42 @@ export type NodeTypes = {
 export type AbsolutePath = string;
 export type RelativePath = string;
 
+export interface Schema {
+  [key: string]: SchemaProperty<any>;
+}
+
+export interface SchemaProperty<T> {
+  defaultValue: T;
+  properties?: Schema;
+}
+
+export type DynamicSchema<T extends Schema> = {
+  [P in keyof T]: T[P]['defaultValue'] extends boolean
+    ? boolean
+    : T[P]['defaultValue'] extends number[]
+    ? number[]
+    : T[P]['defaultValue'] extends number
+    ? number
+    : T[P]['defaultValue'] extends string[]
+    ? string[]
+    : T[P]['defaultValue'] extends string
+    ? string
+    : T[P]['defaultValue'] extends object
+    ? T[P] extends { properties: infer U extends Schema }
+      ? DynamicSchema<U>
+      : object
+    : T[P]['defaultValue'];
+};
+
+export const SchemaProp = { ...SchemaPropFactory };
+
 export interface Config {
   settings: {};
-  checks: CheckDefinition<SourceCodeType>[];
+  checks: CheckDefinition<SourceCodeType, Schema>[];
   root: AbsolutePath;
 }
 
-export type NodeOfType<S extends SourceCodeType, T> = Extract<AST[S], { type: T }>;
+export type NodeOfType<T extends SourceCodeType, NT> = Extract<AST[T], { type: NT }>;
 export type LiquidHtmlNodeOfType<T> = NodeOfType<SourceCodeType.LiquidHtml, T>;
 export type JSONNodeOfType<T> = NodeOfType<SourceCodeType.LiquidHtml, T>;
 
@@ -73,7 +109,7 @@ export type JSONNodeOfType<T> = NodeOfType<SourceCodeType.LiquidHtml, T>;
 //
 // That is, we want (CheckDefinition<JSON> | CheckDefinition<LiquidHTML>)[]
 //    we don't want (CheckDefinition<JSON | LiquidHtml>)[]
-export type CheckDefinition<T> = T extends SourceCodeType
+export type CheckDefinition<T, S extends Schema = Schema> = T extends SourceCodeType
   ? {
       /**
        * The meta object holds information about the check.
@@ -105,8 +141,15 @@ export type CheckDefinition<T> = T extends SourceCodeType
           url?: string;
         };
 
+        /**
+         * Schema of settings passed to your check.
+         *
+         * Used to support validations of your setting values, documentation,
+         * and IDE support.
+         */
+        schema: Schema;
+
         targets: [];
-        schema: {}; // TODO
         deprecated?: boolean;
         replacedBy?: boolean;
       };
@@ -137,7 +180,7 @@ export type CheckDefinition<T> = T extends SourceCodeType
        *   }
        * }
        */
-      create(context: Context<T>): Partial<Check<T>>;
+      create(context: Context<T, S>): Partial<Check<T>>;
     }
   : never;
 
@@ -163,36 +206,40 @@ export type CheckDefinition<T> = T extends SourceCodeType
  *   }
  * }
  */
-export type Check<S> = S extends SourceCodeType
-  ? CheckNodeMethods<S> & CheckExitMethods<S> & CheckLifecycleMethods<S>
+export type Check<T> = T extends SourceCodeType
+  ? CheckNodeMethods<T> & CheckExitMethods<T> & CheckLifecycleMethods<T>
   : never;
 
-export type CheckNodeMethod<S extends SourceCodeType, T> = (
-  node: NodeOfType<S, T>,
-  ancestors: AST[S][],
+export type CheckNodeMethod<T extends SourceCodeType, NT> = (
+  node: NodeOfType<T, NT>,
+  ancestors: AST[T][],
 ) => Promise<void>;
 
-type CheckNodeMethods<S extends SourceCodeType> = {
+type CheckNodeMethods<T extends SourceCodeType> = {
   /** Happens once per node, while going down the tree */
-  [T in NodeTypes[S]]: CheckNodeMethod<S, T>;
+  [NT in NodeTypes[T]]: CheckNodeMethod<T, NT>;
 };
 
-type CheckExitMethods<S extends SourceCodeType> = {
+type CheckExitMethods<T extends SourceCodeType> = {
   /** Happens once per node, in reverse order */
-  [T in NodeTypes[S] as `${T}:exit`]: CheckNodeMethod<S, T>;
+  [NT in NodeTypes[T] as `${NT}:exit`]: CheckNodeMethod<T, NT>;
 };
 
-type CheckLifecycleMethods<S extends SourceCodeType> = {
+type CheckLifecycleMethods<T extends SourceCodeType> = {
   /** Happens before traversing a file */
-  onCodePathStart(file: SourceCode<S>): Promise<void>;
+  onCodePathStart(file: SourceCode<T>): Promise<void>;
 
   /** Happens after traversing a file */
-  onCodePathEnd(file: SourceCode<S>): Promise<void>;
+  onCodePathEnd(file: SourceCode<T>): Promise<void>;
 };
 
 export type Translations = {
   [k in string]: string | Translations;
 };
+
+export interface Settings<S extends Schema> {
+  settings: DynamicSchema<S> & { severity: Severity };
+}
 
 export interface Dependencies {
   getDefaultTranslations(): Promise<Translations>;
@@ -200,35 +247,33 @@ export interface Dependencies {
   fileExists(absolutePath: string): Promise<boolean>;
 }
 
-type StaticContextProperties<S extends SourceCodeType> = S extends SourceCodeType
+type StaticContextProperties<T extends SourceCodeType> = T extends SourceCodeType
   ? {
-      report(problem: Problem<S>): void;
+      report(problem: Problem<T>): void;
       relativePath(absolutePath: AbsolutePath): RelativePath;
       absolutePath(relativePath: RelativePath): AbsolutePath;
-      file: SourceCode<S>;
+      file: SourceCode<T>;
     }
   : never;
 
-export type Context<S extends SourceCodeType> = S extends SourceCodeType
-  ? StaticContextProperties<S> & Dependencies
+export type Context<T extends SourceCodeType, S extends Schema = Schema> = T extends SourceCodeType
+  ? StaticContextProperties<T> & Dependencies & Settings<S>
   : never;
 
-export type Corrector<S extends SourceCodeType> = S extends SourceCodeType
+export type Corrector<T extends SourceCodeType> = T extends SourceCodeType
   ? {
       [SourceCodeType.JSON]: JSONCorrector;
       [SourceCodeType.LiquidHtml]: StringCorrector;
-    }[S]
+    }[T]
   : never;
 
 /**
  * A Fixer is a function that returns a Fix (a data representation of the change).
  *
  * The Corrector module is helpful for creating Fix objects.
- *
- * import { Corrector } from '@shopify/theme-check-common';
  */
-export type Fixer<S extends SourceCodeType> = S extends SourceCodeType
-  ? (corrector: Corrector<S>) => void
+export type Fixer<T extends SourceCodeType> = T extends SourceCodeType
+  ? (corrector: Corrector<T>) => void
   : never;
 export type LiquidHtmlFixer = Fixer<SourceCodeType.LiquidHtml>;
 export type JSONFixer = Fixer<SourceCodeType.JSON>;
@@ -294,17 +339,17 @@ export interface FixApplicator {
  *
  * To be used by code editors.
  */
-export type Suggestion<S extends SourceCodeType> = S extends SourceCodeType
+export type Suggestion<T extends SourceCodeType> = T extends SourceCodeType
   ? {
       message: string;
-      fix: Fixer<S>;
+      fix: Fixer<T>;
     }
   : never;
 
 export type LiquidHtmlSuggestion = Suggestion<SourceCodeType.LiquidHtml>;
 export type JSONSuggestion = Suggestion<SourceCodeType.JSON>;
 
-export type Problem<S extends SourceCodeType> = S extends SourceCodeType
+export type Problem<T extends SourceCodeType> = T extends SourceCodeType
   ? {
       /** The description of the problem shown to the user */
       message: string;
@@ -320,7 +365,7 @@ export type Problem<S extends SourceCodeType> = S extends SourceCodeType
        * to the offense. It is reserved for safe changes.
        * Unsafe changes should go in `suggest`.
        */
-      fix?: Fixer<S>;
+      fix?: Fixer<T>;
 
       /**
        * Sometimes, it's not appropriate to automatically apply a fix either
@@ -330,21 +375,21 @@ export type Problem<S extends SourceCodeType> = S extends SourceCodeType
        * script with `defer` or with `async`. The suggest array allows us to
        * provide fixes for either and the user can choose which one they want.
        */
-      suggest?: Suggestion<S>[];
+      suggest?: Suggestion<T>[];
     }
   : never;
 
-export type Offense<S extends SourceCodeType = SourceCodeType> = S extends SourceCodeType
+export type Offense<T extends SourceCodeType = SourceCodeType> = T extends SourceCodeType
   ? {
-      type: S;
+      type: T;
       check: string;
       message: string;
       absolutePath: string;
       severity: Severity;
       start: Position;
       end: Position;
-      fix?: Fixer<S>;
-      suggest?: Suggestion<S>[];
+      fix?: Fixer<T>;
+      suggest?: Suggestion<T>[];
     }
   : never;
 
@@ -359,6 +404,7 @@ export interface Position {
   get character(): number;
 }
 
+/** The severity determines the icon and color of diagnostics */
 export enum Severity {
   ERROR = 0,
   WARNING = 1,

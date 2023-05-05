@@ -7,7 +7,8 @@
     "access": "restricted"
   },
   "scripts": {
-    "build": "tsc -b tsconfig.build.json",
+    "build": "yarn build:ts",
+    "build:ts": "tsc -b tsconfig.build.json",
     "test": "mocha 'src/**/*.ts'"
   },
   "dependencies": {

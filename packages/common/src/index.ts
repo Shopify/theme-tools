@@ -11,6 +11,7 @@ import {
   Offense,
   Position,
   Problem,
+  Schema,
   SourceCode,
   SourceCodeType,
   Theme,
@@ -84,8 +85,11 @@ function createContext<S extends SourceCodeType>(
   config: Config,
   dependencies: Dependencies,
 ): Context<S> {
+  const settings = createSettings(config, check.meta.schema);
+
   return {
     ...dependencies,
+    settings,
     absolutePath: (relativePath) => path.join(config.root, relativePath),
     relativePath: (absolutePath) => path.relative(absolutePath, config.root),
     report(problem: Problem<S>): void {
@@ -94,7 +98,7 @@ function createContext<S extends SourceCodeType>(
         check: check.meta.code,
         message: problem.message,
         absolutePath: file.absolutePath,
-        severity: check.meta.severity,
+        severity: settings.severity || check.meta.severity,
         start: getPosition(file.source, problem.startIndex),
         end: getPosition(file.source, problem.endIndex),
         fix: problem.fix,
@@ -103,6 +107,17 @@ function createContext<S extends SourceCodeType>(
     },
     file,
   } as Context<S>;
+}
+
+// TODO: build settings based on `config` and `check.meta.schema`
+function createSettings(_config: Config, schema: Schema) {
+  const settings: Record<string, any> = {};
+
+  for (const key in schema) {
+    settings[key] = schema[key].defaultValue;
+  }
+
+  return settings;
 }
 
 function checksOfType<S extends SourceCodeType>(
