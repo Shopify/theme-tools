@@ -72,6 +72,22 @@ export async function check(
   });
 }
 
+export async function runLiquidCheck(
+  checkDef: CheckDefinition<SourceCodeType.LiquidHtml>,
+  sourceCode: string,
+): Promise<Offense[]> {
+  const offenses = await check({ 'file.liquid': sourceCode }, [checkDef]);
+  return offenses.filter((offense) => offense.absolutePath === '/file.liquid');
+}
+
+export async function runJSONCheck(
+  checkDef: CheckDefinition<SourceCodeType.JSON>,
+  sourceCode: string,
+): Promise<Offense[]> {
+  const offenses = await check({ 'file.json': sourceCode }, [checkDef]);
+  return offenses.filter((offense) => offense.absolutePath === '/file.json');
+}
+
 export async function autofix(themeDesc: MockTheme, offenses: Offense[]) {
   const theme = getTheme(themeDesc);
   const fixed = { ...themeDesc };
