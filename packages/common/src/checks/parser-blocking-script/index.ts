@@ -5,18 +5,8 @@ import {
   SourceCodeType,
 } from '../../types';
 import { last } from '../../utils';
+import { isAttr, isHtmlAttribute, isValuedHtmlAttribute } from '../utils';
 import { liquidFilterSuggestion, scriptTagSuggestion } from './suggestions';
-
-function isSimplePropertyEqualTo(node: any, property: string, value: string): boolean {
-  if (!(property in node)) return false;
-  const propertyValue = node[property];
-  if (!Array.isArray(propertyValue)) return false;
-  return (
-    propertyValue.length === 1 &&
-    propertyValue[0].type === NodeTypes.TextNode &&
-    propertyValue[0].value === value
-  );
-}
 
 export const ParserBlockingScript: LiquidCheckDefinition = {
   meta: {
@@ -68,19 +58,17 @@ export const ParserBlockingScript: LiquidCheckDefinition = {
           return;
         }
 
-        const hasSrc = !!node.attributes.find((attr) => {
-          return isSimplePropertyEqualTo(attr, 'name', 'src');
-        });
+        const hasSrc = node.attributes
+          .filter(isValuedHtmlAttribute)
+          .some((attr) => isAttr(attr, 'src'));
 
         if (!hasSrc) {
           return;
         }
 
-        const hasDeferOrAsync = !!node.attributes.find(
-          (attr) =>
-            isSimplePropertyEqualTo(attr, 'name', 'async') ||
-            isSimplePropertyEqualTo(attr, 'name', 'defer'),
-        );
+        const hasDeferOrAsync = node.attributes
+          .filter(isHtmlAttribute)
+          .some((attr) => isAttr(attr, 'async') || isAttr(attr, 'defer'));
 
         if (hasDeferOrAsync) {
           return;

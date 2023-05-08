@@ -1,6 +1,4 @@
 // src/checks/required-layout-theme-object/index.ts
-import { HtmlElement } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
-import { Position } from '@shopify/prettier-plugin-liquid/dist/types';
 import {
   LiquidCheckDefinition,
   LiquidHtmlNodeTypes as NodeTypes,
@@ -8,20 +6,9 @@ import {
   Severity,
   SourceCodeType,
 } from '../../types';
+import { isHtmlTag } from '../utils';
 
 type VariableLookup = NodeOfType<NodeTypes.VariableLookup>;
-
-function isHtmlTag<T>(
-  name: T,
-  node: HtmlElement,
-): node is HtmlElement & { name: [{ name: T }]; blockEndPosition: Position } {
-  return (
-    node.name.length === 1 &&
-    node.name[0].type === NodeTypes.TextNode &&
-    node.name[0].value === name &&
-    !!node.blockEndPosition
-  );
-}
 
 export const RequiredLayoutThemeObject: LiquidCheckDefinition = {
   meta: {
@@ -60,9 +47,9 @@ export const RequiredLayoutThemeObject: LiquidCheckDefinition = {
       },
 
       async HtmlElement(node) {
-        if (isHtmlTag('head', node)) {
+        if (isHtmlTag(node, 'head')) {
           headTagEndPosition = node.blockEndPosition.start - 1;
-        } else if (isHtmlTag('body', node)) {
+        } else if (isHtmlTag(node, 'body')) {
           bodyTagEndPosition = node.blockEndPosition.start - 1;
         }
       },

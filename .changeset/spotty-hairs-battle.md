@@ -4,4 +4,4 @@
 '@shopify/theme-check-node': minor
 ---
 
-Add DeprecateBgsizes
+Add `DeprecateBgsizes`
