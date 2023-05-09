@@ -14,7 +14,7 @@ export type SourceCode<T> = T extends SourceCodeType
       version?: number;
       source: string;
       type: T; // Liquid | LiquidHtml | JSON
-      ast: AST[T]; // LiquidAST | LiquidHtmlAST | JSON object
+      ast: AST[T] | Error; // LiquidAST | LiquidHtmlAST | JSON object | null when unparseable
     }
   : never;
 
@@ -226,11 +226,11 @@ type CheckExitMethods<T extends SourceCodeType> = {
 };
 
 type CheckLifecycleMethods<T extends SourceCodeType> = {
-  /** Happens before traversing a file */
+  /** Happens before traversing a file, file might be unparseable */
   onCodePathStart(file: SourceCode<T>): Promise<void>;
 
-  /** Happens after traversing a file */
-  onCodePathEnd(file: SourceCode<T>): Promise<void>;
+  /** Happens after traversing a file, file is guaranteed to exist */
+  onCodePathEnd(file: SourceCode<T> & { ast: AST[T] }): Promise<void>;
 };
 
 export type Translations = {

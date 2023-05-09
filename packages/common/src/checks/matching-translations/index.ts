@@ -77,6 +77,24 @@ export const MatchingTranslations: JSONCheckDefinition<typeof schema> = {
         .join('.');
     };
 
+    const countCommonParts = (arrayA: string[], arrayB: string[]): number => {
+      const firstMismatch = arrayA.findIndex((part, i) => part !== arrayB[i]);
+
+      if (firstMismatch !== -1) {
+        return firstMismatch;
+      }
+
+      return Math.min(arrayA.length, arrayB.length);
+    };
+
+    const file = context.file;
+    const ast = file.ast;
+    if (!isLocaleFile(file) || isDefaultTranslationsFile(file) || ast instanceof Error) {
+      // No need to lint a file that isn't a translation file, we return an
+      // empty object as the check for those.
+      return {};
+    }
+
     const closestTranslationKey = (translationKey: string) => {
       const keys = Array.from(nodesByPath.keys());
       const [closestMatch, _commonParts] = keys
@@ -91,25 +109,8 @@ export const MatchingTranslations: JSONCheckDefinition<typeof schema> = {
           ['', 0],
         );
 
-      return nodesByPath.get(closestMatch) ?? file.ast;
+      return nodesByPath.get(closestMatch) ?? ast;
     };
-
-    const countCommonParts = (arrayA: string[], arrayB: string[]): number => {
-      const firstMismatch = arrayA.findIndex((part, i) => part !== arrayB[i]);
-
-      if (firstMismatch !== -1) {
-        return firstMismatch;
-      }
-
-      return Math.min(arrayA.length, arrayB.length);
-    };
-
-    const file = context.file;
-    if (!isLocaleFile(file) || isDefaultTranslationsFile(file)) {
-      // No need to lint a file that isn't a translation file, we return an
-      // empty object as the check for those.
-      return {};
-    }
 
     return {
       async onCodePathStart() {

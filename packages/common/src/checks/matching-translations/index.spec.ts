@@ -353,4 +353,16 @@ describe('Module: MatchingTranslations', async () => {
     // - The translation for 'hello.world' is missing"
     expect(elements).to.deep.eq(['"hello":"Olá"', '"hello":"Olá"']);
   });
+
+  it('should not highlight anything if the file is unparseable', async () => {
+    const theme = {
+      'locales/en.default.json': JSON.stringify({
+        hello: { world: 'Hello, world!' },
+      }),
+      'locales/pt-BR.json': `{"hello": }`,
+    };
+
+    const offenses = await check(theme, [MatchingTranslations]);
+    expect(offenses).to.have.length(0);
+  });
 });

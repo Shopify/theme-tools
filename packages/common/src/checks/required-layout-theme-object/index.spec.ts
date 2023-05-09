@@ -88,4 +88,20 @@ describe('RequiredLayoutThemeObject', () => {
     );
     expect(offenses).to.have.length(0);
   });
+
+  it('should not report an error if the file is unparseable', async () => {
+    const input = `
+      <html>
+        <head>{{ content_for_header }}</head>
+        <body>{{ content_for_layout }}{% echo }}</body>
+      </html>
+    `;
+
+    const offenses = await runLiquidCheck(
+      RequiredLayoutThemeObject,
+      input,
+      'snippets/example.liquid',
+    );
+    expect(offenses).to.have.length(0);
+  });
 });

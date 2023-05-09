@@ -5,11 +5,12 @@ import {
   Context,
   Dependencies,
   JSONCheck,
+  JSONNode,
   JSONSourceCode,
   LiquidCheck,
+  LiquidHtmlNode,
   LiquidSourceCode,
   Offense,
-  Position,
   Problem,
   Schema,
   SourceCode,
@@ -17,10 +18,10 @@ import {
   Theme,
 } from './types';
 import { visitLiquid, visitJSON } from './visitors';
-import lineColumn from 'line-column';
 import { createDisabledChecksModule } from './disabled-checks';
 import { createSafeCheck } from './create-safe-check';
 import * as path from './path';
+import { getPosition } from './utils';
 
 export * from './fixes';
 export * from './types';
@@ -66,16 +67,6 @@ export async function check(
   await Promise.all(pipelines);
 
   return offenses.filter((offense) => !isDisabled(offense));
-}
-
-function getPosition(source: string, index: number): Position {
-  const lineCol = lineColumn(source, { origin: 0 }).fromIndex(Math.min(index, source.length - 1));
-
-  return {
-    index,
-    line: lineCol ? lineCol.line : -1,
-    character: lineCol ? lineCol.col : -1,
-  };
 }
 
 function createContext<S extends SourceCodeType>(
@@ -144,12 +135,14 @@ function filesOfType<S extends SourceCodeType>(type: S, sourceCodes: Theme): Sou
 
 async function checkJSONFile(check: JSONCheck, file: JSONSourceCode): Promise<void> {
   await check.onCodePathStart(file);
+  if (file.ast instanceof Error) return;
   await visitJSON(file.ast, check);
-  await check.onCodePathEnd(file);
+  await check.onCodePathEnd(file as typeof file & { ast: JSONNode });
 }
 
 async function checkLiquidFile(check: LiquidCheck, file: LiquidSourceCode): Promise<void> {
   await check.onCodePathStart(file);
+  if (file.ast instanceof Error) return;
   await visitLiquid(file.ast, check);
-  await check.onCodePathEnd(file);
+  await check.onCodePathEnd(file as typeof file & { ast: LiquidHtmlNode });
 }
