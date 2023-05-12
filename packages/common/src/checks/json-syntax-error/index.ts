@@ -1,13 +1,9 @@
 import { Severity, SourceCodeType, JSONCheckDefinition } from '../../types';
-import { getOffset } from '../../utils';
+import { getOffset, isError } from '../../utils';
 
 function cleanErrorMessage(error: Error) {
   const message = 'rawMessage' in error ? (error.rawMessage as string) : error.message;
   return message.replace(/\s+at \d+:\d+/, '');
-}
-
-function isError(error: unknown): error is Error {
-  return error instanceof Error;
 }
 
 export const JSONSyntaxError: JSONCheckDefinition = {
