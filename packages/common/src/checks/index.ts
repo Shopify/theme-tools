@@ -10,6 +10,7 @@ import { ParserBlockingScript } from './parser-blocking-script';
 import { RequiredLayoutThemeObject } from './required-layout-theme-object';
 import { TranslationKeyExists } from './translation-key-exists';
 import { UnusedAssign } from './unused-assign';
+import { ImgWidthAndHeight } from './img-width-and-height';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   DeprecateBgsizes,
@@ -22,6 +23,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   RequiredLayoutThemeObject,
   TranslationKeyExists,
   UnusedAssign,
+  ImgWidthAndHeight,
 ];
 
 export const recommended = allChecks.filter((check) => check.meta.docs.recommended);
