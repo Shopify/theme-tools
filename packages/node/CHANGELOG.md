@@ -1,5 +1,33 @@
 # @shopify/theme-check-node
 
+## 1.6.0
+
+### Minor Changes
+
+- 9e99728: Add `UnusedAssign`
+- f99c896: Add `LiquidHTMLSyntaxError`
+- e0c131a: Add `JSONSyntaxError`
+- e0c131a: Breaking: `SourceCode` can take `ast: AST[T] | Error`, where `Error` is a parsing error
+- ccd5146: Add `DeprecatedLazysizes`
+- c715fbe: Add `ImgWidthAndHeight`
+- 9e99728: Add `RequiredLayoutThemeObject`
+- edd8925: Add `DeprecateBgsizes`
+
+### Patch Changes
+
+- 9d3d557: Fix RequiredLayoutThemeObject bugs
+- Updated dependencies [cad8e17]
+- Updated dependencies [9e99728]
+- Updated dependencies [f99c896]
+- Updated dependencies [e0c131a]
+- Updated dependencies [e0c131a]
+- Updated dependencies [ccd5146]
+- Updated dependencies [c715fbe]
+- Updated dependencies [9e99728]
+- Updated dependencies [9d3d557]
+- Updated dependencies [edd8925]
+  - @shopify/theme-check-common@1.6.0
+
 ## 1.5.1
 
 ### Patch Changes

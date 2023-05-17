@@ -1,5 +1,68 @@
 # @shopify/theme-check-common
 
+## 1.6.0
+
+### Minor Changes
+
+- cad8e17: Introduce API for schema definition
+
+  **New**: The `meta.schema` property of `CheckDefinition`s accept a key-value pair of `SchemaProp`.
+
+  ```typescript
+  const schema = {
+    myNumberSetting: SchemaProp.number(10),
+    myStringSetting: SchemaProp.string('default'),
+    myStringArraySetting: SchemaProp.array<string>(['default', 'value']),
+    myBooleanSetting: SchemaProp.boolean(true),
+    myObjectSetting: SchemaProp.object({
+      age: SchemaProp.number(),
+      name: SchemaProp.string(),
+      company: SchemaProp.object({
+        name: SchemaProp.string(),
+      }).optional(),
+    }),
+  };
+
+  // `<typeof schema>` is required to type `context.settings`.
+  export const SomeCheck: LiquidCheckDefinition<typeof schema> = {
+    meta: {
+      code: '...',
+      name: '...',
+      docs: {
+        /* ... */
+      },
+      type: SourceCodeType.LiquidHtml,
+      severity: Severity.ERROR,
+      schema,
+      targets: [],
+    },
+    create(context) {
+      context.settings.severity; // typed as Severity
+      context.settings.myNumberSetting; // typed as number
+      context.settings.myBooleanSetting; // typed as boolean
+      context.settings.myStringSetting; // typed as string
+      context.settings.myStringArraySetting; // typed as string[]
+      context.settings.myObjectSetting.age; // typed as number | undefined
+      context.settings.myObjectSetting.name; // typed as string
+      context.settings.myObjectSetting.company?.name; // typed as string | undefined
+      return {};
+    },
+  };
+  ```
+
+- 9e99728: Add `UnusedAssign`
+- f99c896: Add `LiquidHTMLSyntaxError`
+- e0c131a: Add `JSONSyntaxError`
+- e0c131a: Breaking: `SourceCode` can take `ast: AST[T] | Error`, where `Error` is a parsing error
+- ccd5146: Add `DeprecatedLazysizes`
+- c715fbe: Add `ImgWidthAndHeight`
+- 9e99728: Add `RequiredLayoutThemeObject`
+- edd8925: Add `DeprecateBgsizes`
+
+### Patch Changes
+
+- 9d3d557: Fix RequiredLayoutThemeObject bugs
+
 ## 1.5.1
 
 ### Patch Changes
