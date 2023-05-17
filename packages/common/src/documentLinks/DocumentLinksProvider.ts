@@ -16,7 +16,11 @@ export class DocumentLinksProvider {
 
   documentLinks(uriString: string, rootUri: string) {
     const sourceCode = this.documentManager.get(uriString);
-    if (!sourceCode || sourceCode.type !== SourceCodeType.LiquidHtml) {
+    if (
+      !sourceCode ||
+      sourceCode.type !== SourceCodeType.LiquidHtml ||
+      sourceCode.ast instanceof Error
+    ) {
       return [];
     }
 

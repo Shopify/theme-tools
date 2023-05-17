@@ -15,7 +15,9 @@ export type Visitor<S extends SourceCodeType, R> = {
   [T in NodeTypes[S]]?: VisitorMethod<S, T, R>;
 };
 
-function isNode(x: any): x is { type: any } {
+function isNode<S extends SourceCodeType>(
+  x: any,
+): x is NodeOfType<S, NodeTypes[S]> {
   return x !== null && typeof x === 'object' && typeof x.type === 'string';
 }
 
@@ -48,17 +50,19 @@ export function visit<S extends SourceCodeType, R>(
     };
 
     const visitNode = visitor[node.type as any as NodeTypes[S]];
-    const result = visitNode ? visitNode(node, lineage) : undefined;
+    const result = visitNode
+      ? visitNode(node as NodeOfType<S, NodeTypes[S]>, lineage)
+      : undefined;
     if (result !== undefined) results.push(result);
 
     // Enqueue child nodes
     const newLineage = lineage.concat(node);
     for (const value of Object.values(node)) {
       if (Array.isArray(value)) {
-        for (const child of value.filter(isNode).reverse()) {
+        for (const child of value.filter(isNode<S>).reverse()) {
           stack.push({ node: child, lineage: newLineage });
         }
-      } else if (isNode(value)) {
+      } else if (isNode<S>(value)) {
         stack.push({ node: value, lineage: newLineage });
       }
     }
