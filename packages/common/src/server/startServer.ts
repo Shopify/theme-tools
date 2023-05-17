@@ -15,6 +15,7 @@ import { Dependencies } from '../types';
 import { VERSION } from '../version';
 import { DocumentLinksProvider } from '../documentLinks';
 import { CodeActionsProvider } from '../codeActions';
+import { Commands, ExecuteCommandProvider } from '../commands';
 
 const defaultLogger = () => {};
 
@@ -45,6 +46,11 @@ export function startServer(
   const codeActionsProvider = new CodeActionsProvider(
     documentManager,
     diagnosticsManager,
+  );
+  const executeCommandProvider = new ExecuteCommandProvider(
+    documentManager,
+    diagnosticsManager,
+    connection,
   );
   const runChecks = debounce(
     makeRunChecks({
@@ -83,6 +89,9 @@ export function startServer(
         documentLinkProvider: {
           resolveProvider: false,
           workDoneProgress: false,
+        },
+        executeCommandProvider: {
+          commands: [...Commands],
         },
         workspace: {
           fileOperations: {
@@ -130,6 +139,10 @@ export function startServer(
 
   connection.onCodeAction(async (params) => {
     return codeActionsProvider.codeActions(params);
+  });
+
+  connection.onExecuteCommand(async (params) => {
+    await executeCommandProvider.execute(params);
   });
 
   // These notifications could cause a MissingSnippet check to be invalidated

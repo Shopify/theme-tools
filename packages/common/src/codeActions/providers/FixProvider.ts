@@ -10,6 +10,7 @@ import {
   Command,
   Diagnostic,
 } from 'vscode-languageserver';
+import { applyFixCommand } from '../../commands';
 import { Anomaly, DiagnosticsManager } from '../../diagnostics';
 import { DocumentManager } from '../../documents';
 import { BaseCodeActionsProvider } from '../BaseCodeActionsProvider';
@@ -50,39 +51,6 @@ export class FixProvider implements BaseCodeActionsProvider {
       ...quickfixAllAction(uri, version, fixableAnomalies),
     ];
   }
-}
-
-// TODO what do I want?
-// I might want to fix all in a particular file
-// uri, version, id[]
-//
-// const diagnostics = this.diagnosticsManager.get(uri)
-// const document = this.documentManager.get(uri)
-// if (!document || !diagnostics || diagnostics.version !== version) return
-//
-// const fixes = ids
-//   .map(id => diagnostics.anomalies[id])
-//   .map(anomaly => anomaly.offense.fix)
-//
-// const corrector = createCorrector(type, document.source);
-//
-// for (const collectFixes of fixes) {
-//   collectFixes(corrector);
-// }
-//
-// const edits = applyFix(source, corrector.fix);
-function applyFixCommand(
-  uri: string,
-  version: number | undefined,
-  ids: number[],
-): Command {
-  return Command.create(
-    'applyFixes',
-    'themeCheck/applyFixes',
-    uri,
-    version,
-    ids,
-  );
 }
 
 // I might want to fix all in a particular file
