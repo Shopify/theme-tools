@@ -1,4 +1,5 @@
 import {
+  CodeActionKind,
   Connection,
   DidCreateFilesNotification,
   DidDeleteFilesNotification,
@@ -13,6 +14,7 @@ import { DocumentManager } from '../documents';
 import { Dependencies } from '../types';
 import { VERSION } from '../version';
 import { DocumentLinksProvider } from '../documentLinks';
+import { CodeActionsProvider } from '../codeActions';
 
 const defaultLogger = () => {};
 
@@ -40,6 +42,10 @@ export function startServer(
   const documentManager = new DocumentManager();
   const diagnosticsManager = new DiagnosticsManager(connection);
   const documentLinksProvider = new DocumentLinksProvider(documentManager);
+  const codeActionsProvider = new CodeActionsProvider(
+    documentManager,
+    diagnosticsManager,
+  );
   const runChecks = debounce(
     makeRunChecks({
       loadConfig,
@@ -67,6 +73,12 @@ export function startServer(
       capabilities: {
         textDocumentSync: {
           change: TextDocumentSyncKind.Full,
+        },
+        codeActionProvider: {
+          codeActionKinds: [
+            CodeActionKind.QuickFix,
+            CodeActionKind.SourceFixAll,
+          ],
         },
         documentLinkProvider: {
           resolveProvider: false,
@@ -114,6 +126,10 @@ export function startServer(
     const { uri } = params.textDocument;
     const rootUri = await findRootURI(uri);
     return documentLinksProvider.documentLinks(uri, rootUri);
+  });
+
+  connection.onCodeAction(async (params) => {
+    return codeActionsProvider.codeActions(params);
   });
 
   // These notifications could cause a MissingSnippet check to be invalidated

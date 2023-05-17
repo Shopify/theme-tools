@@ -1,6 +1,8 @@
+import { Offense, SourceCodeType } from '@shopify/theme-check-common';
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 import { Connection, Diagnostic, Range } from 'vscode-languageserver';
 import { DiagnosticsManager } from './DiagnosticsManager';
+import { offenseToDiagnostic } from './offenseToDiagnostic';
 
 describe('Module: DiagnosticsManager', () => {
   let diagnosticsManager: DiagnosticsManager;
@@ -16,18 +18,27 @@ describe('Module: DiagnosticsManager', () => {
   it('should send diagnostics on set', () => {
     const fileURI = 'browser:///input.liquid';
     const fileVersion = 0;
-    const range: Range = {
-      start: {
-        line: 0,
-        character: 0,
+    const offenses: Offense[] = [
+      {
+        absolutePath: '/input.liquid',
+        message: 'Test',
+        check: 'TestCheck',
+        start: {
+          character: 0,
+          line: 0,
+          index: 0,
+        },
+        end: {
+          character: 10,
+          line: 0,
+          index: 10,
+        },
+        severity: 0,
+        type: SourceCodeType.LiquidHtml,
       },
-      end: {
-        line: 10,
-        character: 10,
-      },
-    };
-    const diagnostics: Diagnostic[] = [Diagnostic.create(range, 'test', 1, 'Test', 'theme-check')];
-    diagnosticsManager.set(fileURI, fileVersion, diagnostics);
+    ];
+    const diagnostics = offenses.map(offenseToDiagnostic);
+    diagnosticsManager.set(fileURI, fileVersion, offenses);
     expect(connection.sendDiagnostics).toBeCalledWith({
       uri: fileURI,
       version: fileVersion,
@@ -38,18 +49,26 @@ describe('Module: DiagnosticsManager', () => {
   it('should sendDiagnostics with an empty array on clear', () => {
     const fileURI = 'browser:///input.liquid';
     const fileVersion = 0;
-    const range: Range = {
-      start: {
-        line: 0,
-        character: 0,
+    const offenses: Offense[] = [
+      {
+        absolutePath: '/input.liquid',
+        message: 'Test',
+        check: 'TestCheck',
+        start: {
+          character: 0,
+          line: 0,
+          index: 0,
+        },
+        end: {
+          character: 10,
+          line: 0,
+          index: 10,
+        },
+        severity: 0,
+        type: SourceCodeType.LiquidHtml,
       },
-      end: {
-        line: 10,
-        character: 10,
-      },
-    };
-    const diagnostics: Diagnostic[] = [Diagnostic.create(range, 'test', 1, 'Test', 'theme-check')];
-    diagnosticsManager.set(fileURI, fileVersion, diagnostics);
+    ];
+    diagnosticsManager.set(fileURI, fileVersion, offenses);
     diagnosticsManager.clear(fileURI);
     expect(connection.sendDiagnostics).toBeCalledTimes(2);
     expect(connection.sendDiagnostics).toHaveBeenLastCalledWith({

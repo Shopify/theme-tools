@@ -1,0 +1,1 @@
+export { FixProvider } from './FixProvider';

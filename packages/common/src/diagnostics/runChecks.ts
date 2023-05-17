@@ -3,7 +3,6 @@ import { check } from '@shopify/theme-check-common';
 import { Dependencies } from '../types';
 import { DocumentManager } from '../documents';
 import { DiagnosticsManager } from './DiagnosticsManager';
-import { offenseToDiagnostic } from './offenseToDiagnostic';
 import { useBufferOrInjectedTranslations } from './useBufferOrInjectedTranslations';
 
 export function makeRunChecks({
@@ -59,10 +58,14 @@ export function makeRunChecks({
       // there were offenses before, we need to send an empty array to clear
       // them.
       for (const sourceCode of theme) {
-        const diagnostics = offenses
-          .filter((offense) => offense.absolutePath === sourceCode.absolutePath)
-          .map(offenseToDiagnostic);
-        diagnosticsManager.set(sourceCode.uri, sourceCode.version, diagnostics);
+        const sourceCodeOffenses = offenses.filter(
+          (offense) => offense.absolutePath === sourceCode.absolutePath,
+        );
+        diagnosticsManager.set(
+          sourceCode.uri,
+          sourceCode.version,
+          sourceCodeOffenses,
+        );
       }
     }
   };
