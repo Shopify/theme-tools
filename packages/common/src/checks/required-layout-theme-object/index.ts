@@ -48,9 +48,9 @@ export const RequiredLayoutThemeObject: LiquidCheckDefinition = {
 
       async HtmlElement(node) {
         if (isHtmlTag(node, 'head')) {
-          headTagEndPosition = node.blockEndPosition.start - 1;
+          headTagEndPosition = node.blockEndPosition.start;
         } else if (isHtmlTag(node, 'body')) {
-          bodyTagEndPosition = node.blockEndPosition.start - 1;
+          bodyTagEndPosition = node.blockEndPosition.start;
         }
       },
 

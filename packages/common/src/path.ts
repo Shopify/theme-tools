@@ -2,7 +2,7 @@ import { RelativePath, AbsolutePath } from './types';
 
 export function relative(from: AbsolutePath, to: AbsolutePath): RelativePath {
   // TODO (#15): do the right thing for windows and shit.
-  return from.replace(to, '');
+  return from.replace(to, '').replace(/^\//, '');
 }
 
 export function join(...paths: string[]): string {
