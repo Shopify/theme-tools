@@ -10,6 +10,7 @@ import {
   Command,
   Diagnostic,
 } from 'vscode-languageserver';
+import { applySuggestionCommand } from '../../commands/providers';
 import { Anomaly } from '../../diagnostics';
 import { BaseCodeActionsProvider } from '../BaseCodeActionsProvider';
 import { isInRange, toCodeAction } from './utils';
@@ -36,39 +37,6 @@ export class SuggestionProvider extends BaseCodeActionsProvider {
 
     return quickfixCursorActions(uri, version, anomaliesUnderCursor);
   }
-}
-
-// I might want to fix all in a particular file
-// uri, version, SuggestionId[]
-//
-// const diagnostics = this.diagnosticsManager.get(uri)
-// const document = this.documentManager.get(uri)
-// if (!document || !diagnostics || diagnostics.version !== version) return
-//
-// const suggestions = suggestionIds
-//  .map(([anomalyId, suggestId]) => diagnostics.anomalies[anomalyId].offense.suggest[suggestId])
-//
-// const corrector = createCorrector(type, document.source);
-//
-// for (const collectFixes of suggestions) {
-//   collectFixes(corrector);
-// }
-//
-// const edits = applyFix(source, corrector.fix);
-function applySuggestionCommand(
-  uri: string,
-  version: number | undefined,
-  anomalyId: number,
-  suggestionIndex: number,
-): Command {
-  return Command.create(
-    'applySuggestion',
-    'themeCheck/applySuggestion',
-    uri,
-    version,
-    anomalyId,
-    suggestionIndex,
-  );
 }
 
 /**

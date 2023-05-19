@@ -2,9 +2,12 @@ import { Connection, ExecuteCommandParams } from 'vscode-languageserver';
 import { DiagnosticsManager } from '../diagnostics';
 import { DocumentManager } from '../documents';
 import { BaseExecuteCommandProvider } from './BaseExecuteCommandProvider';
-import { ApplyFixesProvider } from './providers';
+import { ApplyFixesProvider, ApplySuggestionProvider } from './providers';
 
-export const Commands = [ApplyFixesProvider.command] as const;
+export const Commands = [
+  ApplyFixesProvider.command,
+  ApplySuggestionProvider.command,
+] as const;
 
 type Command = (typeof Commands)[number];
 
@@ -22,6 +25,11 @@ export class ExecuteCommandProvider {
   ) {
     this.commands = {
       [ApplyFixesProvider.command]: new ApplyFixesProvider(
+        documentManager,
+        diagnosticsManager,
+        connection,
+      ),
+      [ApplySuggestionProvider.command]: new ApplySuggestionProvider(
         documentManager,
         diagnosticsManager,
         connection,
