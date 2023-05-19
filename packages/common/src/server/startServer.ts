@@ -1,5 +1,4 @@
 import {
-  CodeActionKind,
   Connection,
   DidCreateFilesNotification,
   DidDeleteFilesNotification,
@@ -14,7 +13,7 @@ import { DocumentManager } from '../documents';
 import { Dependencies } from '../types';
 import { VERSION } from '../version';
 import { DocumentLinksProvider } from '../documentLinks';
-import { CodeActionsProvider } from '../codeActions';
+import { CodeActionKinds, CodeActionsProvider } from '../codeActions';
 import { Commands, ExecuteCommandProvider } from '../commands';
 
 const defaultLogger = () => {};
@@ -81,10 +80,7 @@ export function startServer(
           change: TextDocumentSyncKind.Full,
         },
         codeActionProvider: {
-          codeActionKinds: [
-            CodeActionKind.QuickFix,
-            CodeActionKind.SourceFixAll,
-          ],
+          codeActionKinds: [...CodeActionKinds],
         },
         documentLinkProvider: {
           resolveProvider: false,

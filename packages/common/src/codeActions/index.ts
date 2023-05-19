@@ -1,1 +1,1 @@
-export { CodeActionsProvider } from './CodeActionsProvider';
+export { CodeActionsProvider, CodeActionKinds } from './CodeActionsProvider';

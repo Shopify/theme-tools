@@ -11,17 +11,12 @@ import {
   Diagnostic,
 } from 'vscode-languageserver';
 import { applyFixCommand } from '../../commands';
-import { Anomaly, DiagnosticsManager } from '../../diagnostics';
-import { DocumentManager } from '../../documents';
+import { Anomaly } from '../../diagnostics';
 import { BaseCodeActionsProvider } from '../BaseCodeActionsProvider';
+import { isInRange, toCodeAction } from './utils';
 
-export class FixProvider implements BaseCodeActionsProvider {
-  constructor(
-    private documentManager: DocumentManager,
-    private diagnosticsManager: DiagnosticsManager,
-  ) {}
-
-  kind = CodeActionKind.QuickFix;
+export class FixProvider extends BaseCodeActionsProvider {
+  static kind = CodeActionKind.QuickFix;
 
   codeActions(params: CodeActionParams): (Command | CodeAction)[] {
     const { uri } = params.textDocument;
@@ -53,27 +48,6 @@ export class FixProvider implements BaseCodeActionsProvider {
   }
 }
 
-// I might want to fix all in a particular file
-// uri, version, SuggestionId[]
-//
-// const diagnostics = this.diagnosticsManager.get(uri)
-// const document = this.documentManager.get(uri)
-// if (!document || !diagnostics || diagnostics.version !== version) return
-//
-// const suggestions = suggestionIds
-//  .map(([anomalyId, suggestId]) => diagnostics.anomalies[anomalyId].offense.suggest[suggestId])
-//
-// const corrector = createCorrector(type, document.source);
-//
-// for (const collectFixes of suggestions) {
-//   collectFixes(corrector);
-// }
-//
-// const edits = applyFix(source, corrector.fix);
-function applySuggestionCommand(): Command {
-  return Command.create('applySuggestions', 'themeCheck/applySuggestions', []);
-}
-
 /**
  * @returns code actions to fix only one of the offenses under the cursor
  * @example Fix this ParserBlockingScript problem: '...'
@@ -88,6 +62,7 @@ function quickfixCursorActions(
       `Fix this ${offense.check} problem: ${offense.message}`,
       applyFixCommand(uri, version, [id]),
       [diagnostic],
+      FixProvider.kind,
       true,
     );
   });
@@ -119,6 +94,7 @@ function quickfixSameTypeActions(
       `Fix all ${check} problems`,
       applyFixCommand(uri, version, ids),
       diagnostics,
+      FixProvider.kind,
     );
   });
 }
@@ -144,6 +120,7 @@ function quickfixAllAction(
       `Fix all auto-fixable problems`,
       applyFixCommand(uri, version, ids),
       diagnostics,
+      FixProvider.kind,
     ),
   ];
 }
@@ -165,29 +142,4 @@ type FixableAnomaly<S extends SourceCodeType = SourceCodeType> =
 function isFixable(anomaly: Anomaly): anomaly is FixableAnomaly {
   const { offense } = anomaly;
   return 'fix' in offense && offense.fix !== undefined;
-}
-
-/**
- * The range is either the selection or cursor position, an offense is in
- * range if the selection and offense overlap in any way.
- */
-function isInRange({ offense }: Anomaly, start: number, end: number) {
-  const offenseStart = offense.start.index;
-  const offenseEnd = offense.end.index;
-  const isOutOfRange = offenseEnd < start || offenseStart > end;
-  return !isOutOfRange;
-}
-
-// They have an awkard API for creating them, so we have this helper here
-// to make it a bit more straightforward.
-function toCodeAction(
-  title: string,
-  command: Command,
-  diagnostics: Diagnostic[],
-  isPreferred: boolean = false,
-): CodeAction {
-  const codeAction = CodeAction.create(title, command, CodeActionKind.QuickFix);
-  codeAction.diagnostics = diagnostics;
-  codeAction.isPreferred = isPreferred;
-  return codeAction;
 }

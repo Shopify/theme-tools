@@ -55,16 +55,14 @@ describe('Unit: FixProvider', () => {
     });
 
     it('provides all code actions categories', async () => {
-      const params = {
+      const codeActions = fixProvider.codeActions({
         textDocument: { uri },
         range: {
           start: document.positionAt(contents.indexOf('2.js')),
           end: document.positionAt(contents.indexOf('2.js')),
         },
         context: { diagnostics: [] },
-      };
-
-      const codeActions = fixProvider.codeActions(params);
+      });
 
       expect(codeActions.length).toBe(3);
 
@@ -117,16 +115,14 @@ describe('Unit: FixProvider', () => {
     });
 
     it('provides code actions, and the fix all same type is omitted', async () => {
-      const params = {
+      const codeActions = fixProvider.codeActions({
         textDocument: { uri },
         range: {
           start: document.positionAt(contents.indexOf('2.js')),
           end: document.positionAt(contents.indexOf('2.js')),
         },
         context: { diagnostics: [] },
-      };
-
-      const codeActions = fixProvider.codeActions(params);
+      });
 
       expect(codeActions.length).toBe(2);
 
@@ -167,16 +163,14 @@ describe('Unit: FixProvider', () => {
     });
 
     it('provides code actions, and the fix all code action is omitted', async () => {
-      const params = {
+      const codeActions = fixProvider.codeActions({
         textDocument: { uri },
         range: {
           start: document.positionAt(contents.indexOf('2.js')),
           end: document.positionAt(contents.indexOf('2.js')),
         },
         context: { diagnostics: [] },
-      };
-
-      const codeActions = fixProvider.codeActions(params);
+      });
 
       expect(codeActions.length).toBe(2);
 
@@ -216,16 +210,14 @@ describe('Unit: FixProvider', () => {
     });
 
     it('provides a code action to fix it', async () => {
-      const params = {
+      const codeActions = fixProvider.codeActions({
         textDocument: { uri },
         range: {
           start: document.positionAt(contents.indexOf('2.js')),
           end: document.positionAt(contents.indexOf('2.js')),
         },
         context: { diagnostics: [] },
-      };
-
-      const codeActions = fixProvider.codeActions(params);
+      });
 
       expect(codeActions.length).toBe(1);
 
@@ -252,16 +244,14 @@ describe('Unit: FixProvider', () => {
       makeOffense('ParserBlockingScript', '<script src="3.js"></script>'),
     ]);
 
-    const params = {
+    const codeActions = fixProvider.codeActions({
       textDocument: { uri },
       range: {
         start: document.positionAt(contents.indexOf('2.js')),
         end: document.positionAt(contents.indexOf('2.js')),
       },
       context: { diagnostics: [] },
-    };
-
-    const codeActions = fixProvider.codeActions(params);
+    });
 
     expect(codeActions.length).toBe(3);
 
@@ -308,16 +298,14 @@ describe('Unit: FixProvider', () => {
     const nonFixableOffense = makeOffense('ParserBlockingScript', '<script src="2.js">', true);
     diagnosticsManager.set(uri, 1, [nonFixableOffense]);
 
-    const params = {
+    const codeActions = fixProvider.codeActions({
       textDocument: { uri },
       range: {
         start: document.positionAt(contents.indexOf('2.js')),
         end: document.positionAt(contents.indexOf('2.js')),
       },
       context: { diagnostics: [] },
-    };
-
-    const codeActions = fixProvider.codeActions(params);
+    });
 
     expect(codeActions.length).toBe(0);
   });
@@ -328,16 +316,14 @@ describe('Unit: FixProvider', () => {
       makeOffense('ParserBlockingScript', '<script src="3.js"></script>'),
     ]);
 
-    const params = {
+    const codeActions = fixProvider.codeActions({
       textDocument: { uri },
       range: {
         start: document.positionAt(contents.indexOf('assign x = 1')),
         end: document.positionAt(contents.indexOf('= 1')),
       },
       context: { diagnostics: [] },
-    };
-
-    const codeActions = fixProvider.codeActions(params);
+    });
 
     expect(codeActions.length).toBe(0);
   });
