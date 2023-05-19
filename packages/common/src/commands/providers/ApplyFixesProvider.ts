@@ -28,7 +28,8 @@ export class ApplyFixesProvider extends BaseExecuteCommandProvider {
   async execute(uri: string, version: number | undefined, ids: number[]) {
     const diagnostics = this.diagnosticsManager.get(uri);
     const document = this.documentManager.get(uri);
-    if (!document || !diagnostics || diagnostics.version !== version) return;
+    if (!document || !diagnostics) return;
+    if (document.version !== version || diagnostics.version !== version) return;
 
     const anomalies = ids
       .map((id) => diagnostics.anomalies[id])
