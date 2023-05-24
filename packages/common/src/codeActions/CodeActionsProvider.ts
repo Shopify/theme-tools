@@ -1,11 +1,11 @@
 import { CodeAction, CodeActionParams, Command } from 'vscode-languageserver';
 import { DiagnosticsManager } from '../diagnostics';
 import { DocumentManager } from '../documents';
-import { FixProvider, SuggestionProvider } from './providers';
+import { FixAllProvider, FixProvider, SuggestionProvider } from './providers';
 import { BaseCodeActionsProvider } from './BaseCodeActionsProvider';
 
 export const CodeActionKinds = Array.from(
-  new Set([FixProvider.kind, SuggestionProvider.kind]),
+  new Set([FixAllProvider.kind, FixProvider.kind, SuggestionProvider.kind]),
 );
 
 export class CodeActionsProvider {
@@ -16,12 +16,19 @@ export class CodeActionsProvider {
     diagnosticsManager: DiagnosticsManager,
   ) {
     this.providers = [
+      new FixAllProvider(documentManager, diagnosticsManager),
       new FixProvider(documentManager, diagnosticsManager),
       new SuggestionProvider(documentManager, diagnosticsManager),
     ];
   }
 
   codeActions(params: CodeActionParams): (Command | CodeAction)[] {
-    return this.providers.flatMap((provider) => provider.codeActions(params));
+    const only = params.context.only;
+    return this.providers
+      .filter(
+        (provider) =>
+          !only || only.some((kind) => provider.kind.startsWith(kind)),
+      )
+      .flatMap((provider) => provider.codeActions(params));
   }
 }

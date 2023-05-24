@@ -15,5 +15,9 @@ export abstract class BaseCodeActionsProvider {
     protected diagnosticsManager: DiagnosticsManager,
   ) {}
 
+  get kind() {
+    return (this.constructor as typeof BaseCodeActionsProvider).kind;
+  }
+
   abstract codeActions(params: CodeActionParams): (Command | CodeAction)[];
 }

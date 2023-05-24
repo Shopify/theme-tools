@@ -1,19 +1,12 @@
 import {
-  Offense,
-  SourceCodeType,
-  WithRequired,
-} from '@shopify/theme-check-common';
-import {
   CodeAction,
   CodeActionKind,
   CodeActionParams,
   Command,
-  Diagnostic,
 } from 'vscode-languageserver';
 import { applyFixCommand } from '../../commands';
-import { Anomaly } from '../../diagnostics';
 import { BaseCodeActionsProvider } from '../BaseCodeActionsProvider';
-import { isInRange, toCodeAction } from './utils';
+import { FixableAnomaly, isFixable, isInRange, toCodeAction } from './utils';
 
 export class FixProvider extends BaseCodeActionsProvider {
   static kind = CodeActionKind.QuickFix;
@@ -123,23 +116,4 @@ function quickfixAllAction(
       FixProvider.kind,
     ),
   ];
-}
-
-/**
- * An anomaly is fixable if the offense has the `fix` attribute
- *
- * This type guarantees that Offense.fix is defined (and is thus fixable).
- */
-type FixableAnomaly<S extends SourceCodeType = SourceCodeType> =
-  S extends SourceCodeType
-    ? {
-        diagnostic: Diagnostic;
-        offense: WithRequired<Offense<S>, 'fix'>;
-        id: number;
-      }
-    : never;
-
-function isFixable(anomaly: Anomaly): anomaly is FixableAnomaly {
-  const { offense } = anomaly;
-  return 'fix' in offense && offense.fix !== undefined;
 }

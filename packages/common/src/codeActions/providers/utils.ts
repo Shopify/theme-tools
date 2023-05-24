@@ -1,4 +1,9 @@
 import {
+  Offense,
+  SourceCodeType,
+  WithRequired,
+} from '@shopify/theme-check-common';
+import {
   CodeAction,
   CodeActionKind,
   Command,
@@ -30,4 +35,23 @@ export function isInRange({ offense }: Anomaly, start: number, end: number) {
   const offenseEnd = offense.end.index;
   const isOutOfRange = offenseEnd < start || offenseStart > end;
   return !isOutOfRange;
+}
+
+/**
+ * An anomaly is fixable if the offense has the `fix` attribute
+ *
+ * This type guarantees that Offense.fix is defined (and is thus fixable).
+ */
+export type FixableAnomaly<S extends SourceCodeType = SourceCodeType> =
+  S extends SourceCodeType
+    ? {
+        diagnostic: Diagnostic;
+        offense: WithRequired<Offense<S>, 'fix'>;
+        id: number;
+      }
+    : never;
+
+export function isFixable(anomaly: Anomaly): anomaly is FixableAnomaly {
+  const { offense } = anomaly;
+  return 'fix' in offense && offense.fix !== undefined;
 }
