@@ -26,6 +26,8 @@ export class ApplyFixesProvider extends BaseExecuteCommandProvider {
   static command = 'themeCheck/applyFixes' as const;
 
   async execute(uri: string, version: number | undefined, ids: number[]) {
+    if (!this.clientCapabilities.hasApplyEditSupport()) return;
+
     const diagnostics = this.diagnosticsManager.get(uri);
     const document = this.documentManager.get(uri);
     if (!document || !diagnostics) return;

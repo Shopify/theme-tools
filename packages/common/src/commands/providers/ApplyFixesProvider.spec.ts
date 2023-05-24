@@ -45,9 +45,11 @@ describe('Unit: ApplyFixesProvider', () => {
     documentManager = new DocumentManager();
     diagnosticsManager = new DiagnosticsManager(connection as any);
     documentManager.open(uri, contents, 1);
+    const capabilities = { hasApplyEditSupport: vi.fn().mockReturnValue(true) };
     applyFixProvider = new ApplyFixesProvider(
       documentManager,
       diagnosticsManager,
+      capabilities as any,
       connection as any,
     );
   });

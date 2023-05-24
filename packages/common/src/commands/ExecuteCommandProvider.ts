@@ -1,4 +1,5 @@
 import { Connection, ExecuteCommandParams } from 'vscode-languageserver';
+import { ClientCapabilities } from '../ClientCapabilities';
 import { DiagnosticsManager } from '../diagnostics';
 import { DocumentManager } from '../documents';
 import { BaseExecuteCommandProvider } from './BaseExecuteCommandProvider';
@@ -21,17 +22,20 @@ export class ExecuteCommandProvider {
   constructor(
     documentManager: DocumentManager,
     diagnosticsManager: DiagnosticsManager,
+    clientCapabilities: ClientCapabilities,
     connection: Connection,
   ) {
     this.commands = {
       [ApplyFixesProvider.command]: new ApplyFixesProvider(
         documentManager,
         diagnosticsManager,
+        clientCapabilities,
         connection,
       ),
       [ApplySuggestionProvider.command]: new ApplySuggestionProvider(
         documentManager,
         diagnosticsManager,
+        clientCapabilities,
         connection,
       ),
     };

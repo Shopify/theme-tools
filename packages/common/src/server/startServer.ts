@@ -15,6 +15,7 @@ import { VERSION } from '../version';
 import { DocumentLinksProvider } from '../documentLinks';
 import { CodeActionKinds, CodeActionsProvider } from '../codeActions';
 import { Commands, ExecuteCommandProvider } from '../commands';
+import { ClientCapabilities } from '../ClientCapabilities';
 
 const defaultLogger = () => {};
 
@@ -39,6 +40,7 @@ export function startServer(
     fileExists,
   }: Dependencies,
 ) {
+  const clientCapabilities = new ClientCapabilities();
   const documentManager = new DocumentManager();
   const diagnosticsManager = new DiagnosticsManager(connection);
   const documentLinksProvider = new DocumentLinksProvider(documentManager);
@@ -49,6 +51,7 @@ export function startServer(
   const executeCommandProvider = new ExecuteCommandProvider(
     documentManager,
     diagnosticsManager,
+    clientCapabilities,
     connection,
   );
   const runChecks = debounce(
@@ -62,7 +65,9 @@ export function startServer(
     100,
   );
 
-  connection.onInitialize((_params) => {
+  connection.onInitialize((params) => {
+    clientCapabilities.setup(params.capabilities);
+
     const fileOperationRegistrationOptions: FileOperationRegistrationOptions = {
       filters: [
         {
