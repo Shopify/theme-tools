@@ -9,6 +9,7 @@ export const MissingTemplate: LiquidCheckDefinition = {
     docs: {
       description: 'Reports missing include/render/section liquid file',
       recommended: true,
+      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/missing-template',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.ERROR,

@@ -21,6 +21,7 @@ export const MatchingTranslations: JSONCheckDefinition<typeof schema> = {
     docs: {
       description: 'TODO',
       recommended: true,
+      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/matching-translations',
     },
     type: SourceCodeType.JSON,
     severity: Severity.ERROR,

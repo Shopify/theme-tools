@@ -8,6 +8,7 @@ export const DeprecateBgsizes: LiquidCheckDefinition = {
     docs: {
       description: 'This check is aimed at discouraging the use of the lazySizes bgset plugin.',
       recommended: true,
+      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/deprecate-bgsizes',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,

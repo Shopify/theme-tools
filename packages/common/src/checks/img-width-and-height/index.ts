@@ -1,13 +1,5 @@
-import {
-  LiquidHtmlNodeTypes as NodeTypes,
-  LiquidHtmlNodeOfType as NodeOfType,
-  Severity,
-  SourceCodeType,
-  LiquidCheckDefinition,
-} from '../../types';
-import { isHtmlTag, isAttr, isValuedHtmlAttribute, ValuedHtmlAttribute } from '../utils';
-
-type HtmlElement = NodeOfType<NodeTypes.HtmlElement>;
+import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
+import { isAttr, isValuedHtmlAttribute, ValuedHtmlAttribute } from '../utils';
 
 export const ImgWidthAndHeight: LiquidCheckDefinition = {
   meta: {
@@ -17,6 +9,7 @@ export const ImgWidthAndHeight: LiquidCheckDefinition = {
       description:
         'This check is aimed at eliminating content layout shift in themes by enforcing the use of the width and height attributes on img tags.',
       recommended: true,
+      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/img-width-and-height',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,

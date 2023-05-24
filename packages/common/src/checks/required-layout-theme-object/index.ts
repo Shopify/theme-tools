@@ -18,6 +18,7 @@ export const RequiredLayoutThemeObject: LiquidCheckDefinition = {
       description:
         'This check prevents missing {{ content_for_header }} and {{ content_for_layout }} objects in layout/theme.liquid.',
       recommended: true,
+      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/required-layout-theme-object',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.ERROR,

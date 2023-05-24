@@ -13,6 +13,7 @@ export const JSONSyntaxError: JSONCheckDefinition = {
     docs: {
       description: 'This check exists to prevent invalid JSON files in themes.',
       recommended: true,
+      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/valid-json',
     },
     type: SourceCodeType.JSON,
     severity: Severity.ERROR,

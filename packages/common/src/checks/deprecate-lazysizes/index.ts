@@ -19,6 +19,7 @@ export const DeprecateLazysizes: LiquidCheckDefinition = {
       description:
         'This check is aimed at discouraging the use of the lazysizes JavaScript library',
       recommended: true,
+      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/deprecate-lazysizes',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,

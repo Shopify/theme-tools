@@ -17,6 +17,7 @@ export const UnusedAssign: LiquidCheckDefinition = {
       description:
         'This check exists to prevent bloat in themes by surfacing variable definitions that are not used.',
       recommended: true,
+      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/unused-assign',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,
