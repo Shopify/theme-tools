@@ -1,15 +1,38 @@
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver';
-import { Offense, Severity } from '@shopify/theme-check-common';
+import { allChecks, Offense, Severity } from '@shopify/theme-check-common';
 import { assertNever } from '../utils';
 
+type CheckToDocsUrl = {
+  [code in string]?: string;
+};
+
+const checkToDocsUrl = allChecks.reduce<CheckToDocsUrl>(
+  (acc, checkDescription) => {
+    const url = checkDescription.meta.docs.url;
+    const code = checkDescription.meta.code;
+    if (url !== undefined) {
+      acc[code] = url;
+    }
+    return acc;
+  },
+  {},
+);
+
 export function offenseToDiagnostic(offense: Offense): Diagnostic {
-  return Diagnostic.create(
+  const diagnostic = Diagnostic.create(
     diagnosticRange(offense),
     offense.message,
     diagnosticSeverity(offense),
     offense.check,
     'theme-check',
   );
+
+  const url = checkToDocsUrl[offense.check];
+  if (url) {
+    diagnostic.codeDescription = { href: url };
+  }
+
+  return diagnostic;
 }
 
 function diagnosticRange({ start, end }: Offense): Range {

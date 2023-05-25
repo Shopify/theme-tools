@@ -240,6 +240,7 @@ describe('Module: server', () => {
   function missingTemplateDiagnostic() {
     return {
       code: 'MissingTemplate',
+      codeDescription: { href: expect.any(String) },
       message: "'snippets/foo.liquid' does not exist",
       severity: 1,
       source: 'theme-check',

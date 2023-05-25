@@ -216,6 +216,7 @@ describe('Module: runChecks', () => {
         {
           source: 'theme-check',
           code: 'MatchingTranslations',
+          codeDescription: { href: expect.any(String) },
           message: `A default translation for 'hi' does not exist`,
           severity: 1,
           range: {
