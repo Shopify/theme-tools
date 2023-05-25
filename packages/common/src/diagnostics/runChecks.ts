@@ -5,25 +5,25 @@ import { DocumentManager } from '../documents';
 import { DiagnosticsManager } from './DiagnosticsManager';
 import { useBufferOrInjectedTranslations } from './useBufferOrInjectedTranslations';
 
-export function makeRunChecks({
-  loadConfig,
-  findRootURI,
-  fileExists,
-  getDefaultTranslationsFactory,
-  getDefaultLocaleFactory,
-}: Pick<
-  Dependencies,
-  | 'loadConfig'
-  | 'findRootURI'
-  | 'fileExists'
-  | 'getDefaultTranslationsFactory'
-  | 'getDefaultLocaleFactory'
->) {
-  return async function runChecks(
-    documentManager: DocumentManager,
-    diagnosticsManager: DiagnosticsManager,
-    triggerURIs: string[],
-  ): Promise<void> {
+export function makeRunChecks(
+  documentManager: DocumentManager,
+  diagnosticsManager: DiagnosticsManager,
+  {
+    loadConfig,
+    findRootURI,
+    fileExists,
+    getDefaultTranslationsFactory,
+    getDefaultLocaleFactory,
+  }: Pick<
+    Dependencies,
+    | 'loadConfig'
+    | 'findRootURI'
+    | 'fileExists'
+    | 'getDefaultTranslationsFactory'
+    | 'getDefaultLocaleFactory'
+  >,
+) {
+  return async function runChecks(triggerURIs: string[]): Promise<void> {
     // This function takes an array of triggerURIs so that we can correctly
     // recheck on file renames that came from out of bounds in a
     // workspaces.

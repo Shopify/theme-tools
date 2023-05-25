@@ -55,7 +55,7 @@ export function startServer(
     connection,
   );
   const runChecks = debounce(
-    makeRunChecks({
+    makeRunChecks(documentManager, diagnosticsManager, {
       loadConfig,
       findRootURI,
       getDefaultTranslationsFactory,
@@ -117,13 +117,13 @@ export function startServer(
   connection.onDidOpenTextDocument((params) => {
     const { uri, text, version } = params.textDocument;
     documentManager.open(uri, text, version);
-    runChecks(documentManager, diagnosticsManager, [uri]);
+    runChecks([uri]);
   });
 
   connection.onDidChangeTextDocument((params) => {
     const { uri, version } = params.textDocument;
     documentManager.change(uri, params.contentChanges[0].text, version);
-    runChecks(documentManager, diagnosticsManager, [uri]);
+    runChecks([uri]);
   });
 
   connection.onDidCloseTextDocument((params) => {
@@ -158,15 +158,15 @@ export function startServer(
   // So we're using runChecks.force for that.
   connection.onNotification(DidCreateFilesNotification.type, (params) => {
     const triggerUris = params.files.map((fileCreate) => fileCreate.uri);
-    runChecks.force(documentManager, diagnosticsManager, triggerUris);
+    runChecks.force(triggerUris);
   });
   connection.onNotification(DidRenameFilesNotification.type, (params) => {
     const triggerUris = params.files.map((fileRename) => fileRename.newUri);
-    runChecks.force(documentManager, diagnosticsManager, triggerUris);
+    runChecks.force(triggerUris);
   });
   connection.onNotification(DidDeleteFilesNotification.type, (params) => {
     const triggerUris = params.files.map((fileDelete) => fileDelete.uri);
-    runChecks.force(documentManager, diagnosticsManager, triggerUris);
+    runChecks.force(triggerUris);
   });
 
   connection.listen();

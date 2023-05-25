@@ -48,9 +48,9 @@ describe('Module: runChecks', () => {
       sendDiagnostics: vi.fn(),
     };
 
-    diagnosticsManager = new DiagnosticsManager(connection as any as Connection);
     documentManager = new DocumentManager();
-    runChecks = makeRunChecks({
+    diagnosticsManager = new DiagnosticsManager(connection as any as Connection);
+    runChecks = makeRunChecks(documentManager, diagnosticsManager, {
       findRootURI: async () => 'browser:///',
       fileExists: async () => true,
       getDefaultTranslationsFactory: () => async () => ({}),
@@ -69,7 +69,7 @@ describe('Module: runChecks', () => {
     const fileVersion = 0;
     documentManager.open(fileURI, fileContents, fileVersion);
 
-    await runChecks(documentManager, diagnosticsManager, ['browser:///input.liquid']);
+    await runChecks(['browser:///input.liquid']);
     expect(connection.sendDiagnostics).toBeCalled();
     expect(connection.sendDiagnostics).toBeCalledWith({
       uri: fileURI,
@@ -103,12 +103,12 @@ describe('Module: runChecks', () => {
 
     // Open and have errors
     documentManager.open(fileURI, fileContentsWithError, fileVersion);
-    await runChecks(documentManager, diagnosticsManager, ['browser:///input.liquid']);
+    await runChecks(['browser:///input.liquid']);
 
     // Change doc to fix errors
     fileVersion = 2;
     documentManager.change(fileURI, fileContentsWithoutError, fileVersion);
-    await runChecks(documentManager, diagnosticsManager, ['browser:///input.liquid']);
+    await runChecks(['browser:///input.liquid']);
 
     expect(connection.sendDiagnostics).toBeCalledTimes(2);
     expect(connection.sendDiagnostics).toHaveBeenLastCalledWith({
@@ -173,7 +173,7 @@ describe('Module: runChecks', () => {
       documentManager.open(fileURI, fileContents, fileVersion);
     });
 
-    await runChecks(documentManager, diagnosticsManager, ['browser:///input1.liquid']);
+    await runChecks(['browser:///input1.liquid']);
 
     files.forEach(({ fileURI, fileVersion, diagnostics }) => {
       expect(connection.sendDiagnostics).toBeCalledWith({
@@ -194,7 +194,7 @@ describe('Module: runChecks', () => {
 
     const matchingTranslation = allChecks.filter((c) => c.meta.code === 'MatchingTranslations');
     expect(matchingTranslation).to.have.lengthOf(1);
-    runChecks = makeRunChecks({
+    runChecks = makeRunChecks(documentManager, diagnosticsManager, {
       findRootURI: async () => 'browser:///',
       fileExists: async () => true,
       getDefaultTranslationsFactory: () => async () => JSON.parse(files[defaultURI]),
@@ -208,7 +208,7 @@ describe('Module: runChecks', () => {
 
     // Open and have errors
     documentManager.open(frURI, files[frURI], 0);
-    await runChecks(documentManager, diagnosticsManager, [frURI]);
+    await runChecks([frURI]);
     expect(connection.sendDiagnostics).toHaveBeenCalledWith({
       uri: frURI,
       version: 0,
@@ -237,7 +237,7 @@ describe('Module: runChecks', () => {
     documentManager.open(defaultURI, files[defaultURI], 0);
     documentManager.change(defaultURI, JSON.stringify({ hello: 'hello', hi: 'hi' }), 1);
     connection.sendDiagnostics.mockClear();
-    await runChecks(documentManager, diagnosticsManager, [frURI]);
+    await runChecks([frURI]);
     expect(connection.sendDiagnostics).toHaveBeenCalledWith({
       uri: frURI,
       version: 0,
