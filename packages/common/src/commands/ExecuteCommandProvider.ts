@@ -3,11 +3,16 @@ import { ClientCapabilities } from '../ClientCapabilities';
 import { DiagnosticsManager } from '../diagnostics';
 import { DocumentManager } from '../documents';
 import { BaseExecuteCommandProvider } from './BaseExecuteCommandProvider';
-import { ApplyFixesProvider, ApplySuggestionProvider } from './providers';
+import {
+  ApplyFixesProvider,
+  ApplySuggestionProvider,
+  RunChecksProvider,
+} from './providers';
 
 export const Commands = [
   ApplyFixesProvider.command,
   ApplySuggestionProvider.command,
+  RunChecksProvider.command,
 ] as const;
 
 type Command = (typeof Commands)[number];
@@ -23,6 +28,7 @@ export class ExecuteCommandProvider {
     documentManager: DocumentManager,
     diagnosticsManager: DiagnosticsManager,
     clientCapabilities: ClientCapabilities,
+    runChecks: RunChecksProvider['runChecks'],
     connection: Connection,
   ) {
     this.commands = {
@@ -38,12 +44,20 @@ export class ExecuteCommandProvider {
         clientCapabilities,
         connection,
       ),
+      [RunChecksProvider.command]: new RunChecksProvider(
+        documentManager,
+        diagnosticsManager,
+        clientCapabilities,
+        connection,
+        runChecks,
+      ),
     };
   }
 
   async execute(params: ExecuteCommandParams): Promise<void> {
     if (!isKnownCommand(params.command)) return;
     const provider = this.commands[params.command];
-    await provider.execute(...(params.arguments as any[]));
+    const args = params.arguments ?? [];
+    await provider.execute(...args);
   }
 }

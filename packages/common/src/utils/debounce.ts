@@ -1,6 +1,6 @@
 import { ArgumentTypes } from './types';
 
-interface DebouncedFunction<F extends Function> {
+export interface DebouncedFunction<F extends Function> {
   /**
    * A function that will execute on the trailing edge of a timer with the
    * last arguments it was called with (unless forced)

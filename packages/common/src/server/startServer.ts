@@ -48,12 +48,6 @@ export function startServer(
     documentManager,
     diagnosticsManager,
   );
-  const executeCommandProvider = new ExecuteCommandProvider(
-    documentManager,
-    diagnosticsManager,
-    clientCapabilities,
-    connection,
-  );
   const runChecks = debounce(
     makeRunChecks(documentManager, diagnosticsManager, {
       loadConfig,
@@ -63,6 +57,13 @@ export function startServer(
       fileExists,
     }),
     100,
+  );
+  const executeCommandProvider = new ExecuteCommandProvider(
+    documentManager,
+    diagnosticsManager,
+    clientCapabilities,
+    runChecks,
+    connection,
   );
 
   connection.onInitialize((params) => {

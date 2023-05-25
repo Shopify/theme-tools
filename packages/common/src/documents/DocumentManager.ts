@@ -38,6 +38,10 @@ export class DocumentManager {
       .map(([, sourceCode]) => sourceCode) satisfies Theme;
   }
 
+  public get openDocuments(): AugmentedSourceCode[] {
+    return [...this.sourceCodes.values()];
+  }
+
   public get(uri: URI) {
     return this.sourceCodes.get(uri);
   }
