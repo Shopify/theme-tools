@@ -26,9 +26,12 @@
 2.  Commit your changes.
 
     ```bash
+    version="v$(cat packages/common/package.json | jq -r '.version')"
     git add packages/*/package.json
     git add packages/*/CHANGELOG.md
-    git commit
+    git commit -m "Bump to $version"
+    git tag $version
+    git push origin $version
     ```
 
 3. Push and merge your changes.
@@ -38,11 +41,11 @@
 4. [Create a GitHub release](https://github.com/Shopify/theme-check-js/releases/new) for the change.
 
    ```
-   VERSION=...
+   version="vX.X.X"
    git fetch origin
    git fetch origin --tags
-   git reset origin v$VERSION
-   gh release create -t v$VERSION
+   git reset origin $version
+   gh release create -t $version
    ```
 
    (It's a good idea to copy parts of the CHANGELOG in there)

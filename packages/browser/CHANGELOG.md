@@ -1,5 +1,16 @@
 # @shopify/theme-check-browser
 
+## 1.7.0
+
+### Minor Changes
+
+- 502bad8: Add documentation URLs to checks
+
+### Patch Changes
+
+- Updated dependencies [502bad8]
+  - @shopify/theme-check-common@1.7.0
+
 ## 1.6.0
 
 ### Minor Changes

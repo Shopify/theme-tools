@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 1.7.0
+
+### Minor Changes
+
+- 502bad8: Add documentation URLs to checks
+
 ## 1.6.0
 
 ### Minor Changes
