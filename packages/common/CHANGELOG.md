@@ -1,5 +1,11 @@
 # @shopify/liquid-language-server-common
 
+## 1.4.1
+
+### Patch Changes
+
+- 28c8f88: Bump theme-check-common to v1.7.1
+
 ## 1.4.0
 
 ### Minor Changes
