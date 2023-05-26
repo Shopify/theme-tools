@@ -1,5 +1,13 @@
 # @shopify/theme-check-node
 
+## 1.7.1
+
+### Patch Changes
+
+- Bump prettier-plugin-liquid to v1.1.0
+- Updated dependencies
+  - @shopify/theme-check-common@1.7.1
+
 ## 1.7.0
 
 ### Minor Changes
