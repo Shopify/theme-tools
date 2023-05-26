@@ -11,7 +11,7 @@
     "build": "yarn build:ts && yarn build:standalone",
     "build:ts": "tsc -b tsconfig.build.json",
     "build:standalone": "webpack --mode production",
-    "test": "mocha 'src/**/*.ts'"
+    "test": "vitest"
   },
   "dependencies": {
     "@shopify/prettier-plugin-liquid": "^1.0.6",

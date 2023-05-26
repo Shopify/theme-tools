@@ -1,24 +1,23 @@
-import { util } from 'chai';
+import { chai } from 'vitest';
 import { createCorrector } from '../fixes';
 import { Offense, Fix } from '../types';
+const { util } = chai;
 
-declare global {
-  export namespace Chai {
-    interface Assertion {
-      /**
-       * @param source {string} - the source to correct
-       * @param message {string} - the suggestion message
-       * @param fix {Fix} - the Fix suggested
-       *
-       * @example
-       * expect(offense).to.offerFix(file, {
-       *   startIndex: 0,
-       *   endIndex: file.length,
-       *   insert: '<script ... defer></script>'
-       * });
-       */
-      offerFix: (source: string, fix: Fix) => void;
-    }
+declare module 'vitest' {
+  interface Assertion {
+    /**
+     * @param source {string} - the source to correct
+     * @param message {string} - the suggestion message
+     * @param fix {Fix} - the Fix suggested
+     *
+     * @example
+     * expect(offense).to.offerFix(file, {
+     *   startIndex: 0,
+     *   endIndex: file.length,
+     *   insert: '<script ... defer></script>'
+     * });
+     */
+    offerFix: (source: string, fix: Fix) => void;
   }
 }
 

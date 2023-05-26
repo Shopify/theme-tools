@@ -1,12 +1,10 @@
 import { Offense, WithOptional } from '../types';
 
-declare global {
-  export namespace Chai {
-    interface Assertion {
-      containOffense(
-        offense: WithOptional<Offense, 'start' | 'check' | 'end' | 'severity' | 'type'> | string,
-      ): Promise<void>;
-    }
+declare module 'vitest' {
+  interface Assertion {
+    containOffense(
+      offense: WithOptional<Offense, 'start' | 'check' | 'end' | 'severity' | 'type'> | string,
+    ): Promise<void>;
   }
 }
 

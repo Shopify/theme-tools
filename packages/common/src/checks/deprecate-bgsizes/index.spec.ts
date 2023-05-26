@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import { describe, it } from 'mocha';
+import { expect, describe, it } from 'vitest';
 import { DeprecateBgsizes } from './index';
 import { runLiquidCheck, highlightedOffenses } from '../../test';
 

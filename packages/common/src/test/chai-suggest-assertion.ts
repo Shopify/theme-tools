@@ -1,24 +1,24 @@
-import { util } from 'chai';
+import { chai } from 'vitest';
 import { createCorrector, flattenFixes } from '../fixes';
 import { Offense, Fix } from '../types';
 
-declare global {
-  export namespace Chai {
-    interface Assertion {
-      /**
-       * @param source {string} - the source to correct
-       * @param message {string} - the suggestion message
-       * @param fix {Fix} - the Fix suggested
-       *
-       * @example
-       * expect(offense).to.suggest(file, 'Use an HTML script tag with the defer attribute instead', {
-       *   startIndex: 0,
-       *   endIndex: file.length,
-       *   insert: '<script ... defer></script>'
-       * });
-       */
-      suggest: (source: string, message: string, suggestion?: Fix) => void;
-    }
+const { util } = chai;
+
+declare module 'vitest' {
+  interface Assertion {
+    /**
+     * @param source {string} - the source to correct
+     * @param message {string} - the suggestion message
+     * @param fix {Fix} - the Fix suggested
+     *
+     * @example
+     * expect(offense).to.suggest(file, 'Use an HTML script tag with the defer attribute instead', {
+     *   startIndex: 0,
+     *   endIndex: file.length,
+     *   insert: '<script ... defer></script>'
+     * });
+     */
+    suggest: (source: string, message: string, suggestion?: Fix) => void;
   }
 }
 

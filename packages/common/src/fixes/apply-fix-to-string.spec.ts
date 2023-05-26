@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, describe, it } from 'vitest';
 import { applyFixToString } from './apply-fix-to-string';
 
 // You'll be happy to note that ChatGPT kind of generated this as well.

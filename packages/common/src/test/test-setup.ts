@@ -1,4 +1,4 @@
-import chai from 'chai';
+import { chai } from 'vitest';
 import { OffensesAssertion } from './chai-offenses-assertion';
 import { OfferFixAssertion } from './chai-offer-fix-assertion';
 import { SuggestAssertion } from './chai-suggest-assertion';

@@ -10,7 +10,7 @@
   "scripts": {
     "build": "yarn build:ts",
     "build:ts": "tsc -b tsconfig.build.json",
-    "test": "mocha 'src/**/*.ts'"
+    "test": "vitest"
   },
   "dependencies": {
     "@shopify/prettier-plugin-liquid": "^1.0.6",

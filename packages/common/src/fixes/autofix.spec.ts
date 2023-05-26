@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, describe, it } from 'vitest';
 import { autofix, prettyJSON } from '../test';
 import { Offense, SourceCodeType } from '../types';
 

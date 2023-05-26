@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import { describe, it } from 'mocha';
+import { expect, describe, it } from 'vitest';
 import { highlightedOffenses, runLiquidCheck } from '../../test';
 import { ImgWidthAndHeight } from './index';
 

@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, describe, it } from 'vitest';
 import { check } from './index';
 
 describe('Module: Hello World', () => {

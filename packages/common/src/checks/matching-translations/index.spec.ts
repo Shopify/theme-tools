@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, describe, it } from 'vitest';
 import { autofix, check, highlightedOffenses } from '../../test';
 import { MatchingTranslations } from '../../checks/matching-translations/index';
 

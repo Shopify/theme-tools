@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, describe, it } from 'vitest';
 import { highlightedOffenses, runLiquidCheck } from '../../test';
 import { Offense } from '../../types';
 import { LiquidHTMLSyntaxError } from './index';

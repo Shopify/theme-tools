@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, describe, it } from 'vitest';
 import { Offense, SourceCodeType } from '../types';
 
 describe('Module: OffensesAssertion', () => {

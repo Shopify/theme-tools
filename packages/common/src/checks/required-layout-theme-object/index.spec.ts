@@ -1,5 +1,5 @@
 // test/checks/required-layout-theme-object.test.ts
-import { expect } from 'chai';
+import { expect, describe, it } from 'vitest';
 import { RequiredLayoutThemeObject } from './index';
 import { runLiquidCheck, applyFix } from '../../test';
 

@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, describe, it } from 'vitest';
 import { JSONSyntaxError } from './index';
 import { highlightedOffenses, runJSONCheck } from '../../test';
 

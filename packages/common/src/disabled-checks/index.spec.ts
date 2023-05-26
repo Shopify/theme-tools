@@ -1,6 +1,6 @@
 import { check } from '../test';
 import { Offense } from '..';
-import { expect } from 'chai';
+import { describe, it, expect } from 'vitest';
 import { LiquidFilter, RenderMarkup } from './test-checks';
 
 const commentTypes = [
