@@ -68,3 +68,7 @@ export function valueIncludes(attr: ValuedHtmlAttribute, word: string) {
     .filter((node): node is TextNode => isNodeOfType(NodeTypes.TextNode, node))
     .some((valueNode) => regex.test(valueNode.value));
 }
+
+export function isLiquidString(node: LiquidHtmlNode): node is NodeOfType<NodeTypes.String> {
+  return node.type === NodeTypes.String;
+}
