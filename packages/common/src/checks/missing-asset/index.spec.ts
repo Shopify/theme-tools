@@ -70,7 +70,7 @@ describe('Module: MissingAsset', () => {
       'snippets/snippet.liquid': file,
       'assets/styles.css': '',
     });
-    const file = `<link rel="stylesheet" href="{{ 'styles.css' | asset_url }}" />`
+    const file = `<link rel="stylesheet" href="{{ 'styles.css' | asset_url }}" />`;
 
     const offenses = await check(filesWith(file), [MissingAsset]);
 
