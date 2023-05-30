@@ -1,5 +1,4 @@
 import { LiquidCheckDefinition, RelativePath, Severity, SourceCodeType } from '../../types';
-import { join } from 'path';
 import { isLiquidString } from '../utils';
 
 export const MissingAsset: LiquidCheckDefinition = {
@@ -35,7 +34,7 @@ export const MissingAsset: LiquidCheckDefinition = {
         }
 
         const expression = node.expression;
-        const assetPath = join('assets', expression.value);
+        const assetPath = `assets/${expression.value}`;
 
         const fileExists = await verifyFileExists(assetPath);
 
