@@ -8,17 +8,16 @@ import {
   toSourceCode as commonToSourceCode,
   recommended,
 } from '@shopify/theme-check-common';
-
-import { autofix } from './autofix';
-
 import { promisify } from 'node:util';
 import path from 'node:path';
-import fs from 'node:fs';
 import process from 'node:process';
+import fs from 'node:fs/promises';
 import glob = require('glob');
 
+import { fileExists } from './fileExists';
+import { autofix } from './autofix';
+
 const asyncGlob = promisify(glob);
-const fileExists = promisify(fs.exists);
 
 export * from '@shopify/theme-check-common';
 
@@ -26,7 +25,7 @@ export async function toSourceCode(
   absolutePath: string,
 ): Promise<LiquidSourceCode | JSONSourceCode | undefined> {
   try {
-    const source = await fs.promises.readFile(absolutePath, 'utf8');
+    const source = await fs.readFile(absolutePath, 'utf8');
     return commonToSourceCode(absolutePath, source);
   } catch (e) {
     return undefined;
