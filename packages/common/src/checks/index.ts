@@ -11,19 +11,21 @@ import { RequiredLayoutThemeObject } from './required-layout-theme-object';
 import { TranslationKeyExists } from './translation-key-exists';
 import { UnusedAssign } from './unused-assign';
 import { ImgWidthAndHeight } from './img-width-and-height';
+import { MissingAsset } from './missing-asset';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   DeprecateBgsizes,
   DeprecateLazysizes,
+  ImgWidthAndHeight,
   JSONSyntaxError,
   LiquidHTMLSyntaxError,
   MatchingTranslations,
+  MissingAsset,
   MissingTemplate,
   ParserBlockingScript,
   RequiredLayoutThemeObject,
   TranslationKeyExists,
   UnusedAssign,
-  ImgWidthAndHeight,
 ];
 
 export const recommended = allChecks.filter((check) => check.meta.docs.recommended);
