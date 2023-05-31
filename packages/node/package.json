@@ -15,7 +15,8 @@
   "dependencies": {
     "@shopify/prettier-plugin-liquid": "^1.0.6",
     "@shopify/theme-check-common": "1.8.0",
-    "glob": "^8.0.3"
+    "glob": "^8.0.3",
+    "yaml": "^2.3.0"
   },
   "devDependencies": {
     "@types/glob": "^8.0.0"
