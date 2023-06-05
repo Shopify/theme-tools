@@ -11,9 +11,11 @@ import { RequiredLayoutThemeObject } from './required-layout-theme-object';
 import { TranslationKeyExists } from './translation-key-exists';
 import { UnusedAssign } from './unused-assign';
 import { ImgWidthAndHeight } from './img-width-and-height';
+import { AssetUrlFilters } from './asset-url-filters';
 import { MissingAsset } from './missing-asset';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
+  AssetUrlFilters,
   DeprecateBgsizes,
   DeprecateLazysizes,
   ImgWidthAndHeight,
