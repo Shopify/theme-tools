@@ -1,6 +1,7 @@
 import { JSONCheckDefinition, LiquidCheckDefinition } from '@shopify/theme-check-common';
 
 import { DeprecateBgsizes } from './deprecate-bgsizes';
+import { CdnPreconnect } from './cdn-preconnect';
 import { DeprecateLazysizes } from './deprecate-lazysizes';
 import { JSONSyntaxError } from './json-syntax-error';
 import { LiquidHTMLSyntaxError } from './liquid-html-syntax-error';
@@ -16,6 +17,7 @@ import { MissingAsset } from './missing-asset';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AssetUrlFilters,
+  CdnPreconnect,
   DeprecateBgsizes,
   DeprecateLazysizes,
   ImgWidthAndHeight,
