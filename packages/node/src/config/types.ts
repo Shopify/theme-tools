@@ -24,10 +24,15 @@ export const LegacyIdentifiers = new Map(
   }),
 );
 
-export type LegacySeverity = 'error' | 'suggestion' | 'style';
+export type LegacySeverity = 'error' | 'suggestion' | 'style' | 'warning' | 'info';
 
 export const LegacySeverities: { [k in LegacySeverity]: Severity } = {
-  error: Severity.ERROR,
+  // actually legacy
   suggestion: Severity.WARNING,
   style: Severity.INFO,
+
+  // included for convenience, the numerical values are not user friendly
+  error: Severity.ERROR,
+  warning: Severity.WARNING,
+  info: Severity.INFO,
 };
