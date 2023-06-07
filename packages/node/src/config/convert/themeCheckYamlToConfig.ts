@@ -8,6 +8,7 @@ import {
 import path from 'node:path';
 import { FullyResolvedThemeCheckYaml } from '../types';
 
+// TODO (#99)
 const nodeModuleChecks: CheckDefinition<SourceCodeType>[] = [];
 
 /**
