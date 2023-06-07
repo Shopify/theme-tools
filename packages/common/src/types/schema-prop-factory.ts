@@ -1,69 +1,64 @@
-import { DynamicSchema, Schema } from '../types';
-
-/**
- * Creates a boolean property definition
- *
- * @param defaultValue `false` if not provided
- */
-const boolean = (defaultValue: boolean = false) => propertyDefinition(defaultValue);
-
-/**
- * Creates a array property definition
- *
- * @param defaultValue `[]` if not provided
- */
-const array = <T extends string | number>(defaultValue: T[] = []) =>
-  propertyDefinition(defaultValue);
-
-/**
- * Creates a number property definition
- *
- * @param defaultValue `0` if not provided
- */
-const number = (defaultValue: number = 0) => propertyDefinition(defaultValue);
-
-/**
- * Creates a string property definition
- *
- * @param defaultValue `''` if not provided
- *
- */
-const string = (defaultValue: string = '') => propertyDefinition(defaultValue);
-
-/**
- * Creates an object schema property definition
- *
- * Usage:
- * ```
- * const schema = {
- *   user: SchemaProp.object({
- *     age: SchemaProp.number(),
- *     name: SchemaProp.string(),
- *   })
- * };
- * ```
- *
- * @param properties the nested schema properties of the object.
- *
- * @param defaultValue `{}` if not provided
- *
- * @returns a schema property definition for an object type
- */
-const object = <T extends Schema>(properties: T = {} as T, defaultValue: object = {}) => ({
-  properties,
-  defaultValue,
-  optional: () => ({ defaultValue: defaultValue as DynamicSchema<T> | undefined }),
-});
-
-export const SchemaPropFactory = {
-  boolean,
-  array,
-  number,
-  string,
-  object,
+export type Schema = {
+  [key: string]: SchemaProp<any>;
 };
 
-const propertyDefinition = <T>(defaultValue: T) => ({
-  defaultValue,
-  optional: () => ({ defaultValue: defaultValue as T | undefined }),
-});
+export type SchemaType = 'string' | 'number' | 'boolean' | 'object' | 'array';
+
+export type SettingValue<T extends SchemaProp<any>> = T extends SchemaProp<infer U> ? U : never;
+
+export type Settings<S extends Schema> = {
+  [K in keyof S]: SettingValue<S[K]>;
+};
+
+export interface SchemaPropOptions<T> {
+  type: SchemaType;
+  defaultValue?: T;
+  optional?: boolean;
+  properties?: Schema;
+  itemType?: SchemaProp<any>;
+}
+
+export class SchemaProp<T> {
+  options: SchemaPropOptions<T>;
+
+  constructor(options: SchemaPropOptions<T>) {
+    this.options = options;
+  }
+
+  static string(defaultValue?: string): SchemaProp<string> {
+    return new SchemaProp({ type: 'string', defaultValue });
+  }
+
+  static number(defaultValue?: number): SchemaProp<number> {
+    return new SchemaProp({ type: 'number', defaultValue });
+  }
+
+  static boolean(defaultValue?: boolean): SchemaProp<boolean> {
+    return new SchemaProp({ type: 'boolean', defaultValue });
+  }
+
+  static object<S extends Schema>(
+    properties: S,
+    defaultValue?: Settings<S>,
+  ): SchemaProp<Settings<S>> {
+    const schema = new SchemaProp({ type: 'object', defaultValue, properties });
+    return schema;
+  }
+
+  static array<SP extends SchemaProp<any>>(
+    itemType: SP,
+    defaultValue?: Array<SettingValue<SP>>,
+  ): SchemaProp<Array<SettingValue<SP>>> {
+    const schema = new SchemaProp({ type: 'array', defaultValue, itemType });
+    return schema;
+  }
+
+  optional(): SchemaProp<T | undefined> {
+    this.options.optional = true;
+    return this as unknown as SchemaProp<T | undefined>;
+  }
+
+  defaultValue(): T | undefined {
+    return this.options.defaultValue;
+  }
+}

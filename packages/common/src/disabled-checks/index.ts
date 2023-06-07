@@ -46,7 +46,7 @@ export function createDisabledChecksModule() {
   }
 
   const DisabledChecksVisitor: LiquidCheckDefinition = {
-    meta: {} as any,
+    meta: { schema: {} } as any,
     create: ({ file }) => ({
       async onCodePathStart() {
         disabledChecks.set(file.absolutePath, new Map());

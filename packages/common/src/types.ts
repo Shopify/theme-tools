@@ -2,13 +2,14 @@ import { LiquidHtmlNode } from '@shopify/prettier-plugin-liquid/dist/parser/stag
 import { NodeTypes as LiquidHtmlNodeTypes } from '@shopify/prettier-plugin-liquid/dist/types';
 
 import { ArrayNode, IdentifierNode, LiteralNode, ObjectNode, PropertyNode } from 'json-to-ast';
-import { SchemaPropFactory } from './types/schema-prop-factory';
+import { Schema, Settings } from './types/schema-prop-factory';
 
 import { StringCorrector, JSONCorrector } from './fixes';
 
 import { ThemeDocset, ThemeSchemas } from './types/theme-liquid-docs';
 
 export * from './types/theme-liquid-docs';
+export * from './types/schema-prop-factory';
 
 export type Theme = SourceCode<SourceCodeType>[];
 
@@ -66,39 +67,23 @@ export type NodeTypes = {
 export type AbsolutePath = string;
 export type RelativePath = string;
 
-export interface Schema {
-  [key: string]: SchemaProperty<any>;
-}
-
-export interface SchemaProperty<T> {
-  defaultValue: T;
-  properties?: Schema;
-}
-
-export type DynamicSchema<T extends Schema> = {
-  [P in keyof T]: T[P]['defaultValue'] extends boolean
-    ? boolean
-    : T[P]['defaultValue'] extends number[]
-    ? number[]
-    : T[P]['defaultValue'] extends number
-    ? number
-    : T[P]['defaultValue'] extends string[]
-    ? string[]
-    : T[P]['defaultValue'] extends string
-    ? string
-    : T[P]['defaultValue'] extends object
-    ? T[P] extends { properties: infer U extends Schema }
-      ? DynamicSchema<U>
-      : object
-    : T[P]['defaultValue'];
+export type ChecksSettings = {
+  [code in string]?: CheckSettings;
 };
 
-export const SchemaProp = { ...SchemaPropFactory };
+export type CheckSettings = {
+  enabled: boolean;
+  severity?: Severity;
+  ignore?: string[];
+} & {
+  [key in string]: any;
+};
 
 export interface Config {
-  settings: {};
+  settings: ChecksSettings;
   checks: CheckDefinition<SourceCodeType, Schema>[];
   root: AbsolutePath;
+  ignore?: string[];
 }
 
 export type NodeOfType<T extends SourceCodeType, NT> = Extract<AST[T], { type: NT }>;
@@ -241,10 +226,6 @@ export type Translations = {
   [k in string]: string | Translations;
 };
 
-export interface Settings<S extends Schema> {
-  settings: DynamicSchema<S> & { severity: Severity };
-}
-
 export interface Dependencies {
   getDefaultTranslations(): Promise<Translations>;
   getDefaultLocale(): Promise<string>;
@@ -263,7 +244,7 @@ type StaticContextProperties<T extends SourceCodeType> = T extends SourceCodeTyp
   : never;
 
 export type Context<T extends SourceCodeType, S extends Schema = Schema> = T extends SourceCodeType
-  ? StaticContextProperties<T> & Dependencies & Settings<S>
+  ? StaticContextProperties<T> & Dependencies & { settings: Settings<S> }
   : never;
 
 export type Corrector<T extends SourceCodeType> = T extends SourceCodeType

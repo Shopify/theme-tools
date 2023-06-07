@@ -11,7 +11,7 @@ import {
 const PLURALIZATION_KEYS = new Set(['zero', 'one', 'two', 'few', 'many', 'other']);
 
 const schema = {
-  ignore: SchemaProp.array<string>(),
+  ignore: SchemaProp.array(SchemaProp.string()),
 };
 
 export const MatchingTranslations: JSONCheckDefinition<typeof schema> = {

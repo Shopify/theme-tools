@@ -1,6 +1,7 @@
 import {
   Check,
   CheckDefinition,
+  CheckSettings,
   Config,
   Context,
   Dependencies,
@@ -13,6 +14,7 @@ import {
   Offense,
   Problem,
   Schema,
+  Settings,
   SourceCode,
   SourceCodeType,
   Theme,
@@ -69,46 +71,47 @@ export async function check(
   return offenses.filter((offense) => !isDisabled(offense));
 }
 
-function createContext<S extends SourceCodeType>(
-  check: CheckDefinition<S>,
-  file: SourceCode<S>,
+function createContext<T extends SourceCodeType, S extends Schema>(
+  check: CheckDefinition<T, S>,
+  file: SourceCode<T>,
   offenses: Offense[],
   config: Config,
   dependencies: Dependencies,
-): Context<S> {
-  const settings = createSettings(config, check.meta.schema);
-
+): Context<T, S> {
+  const checkSettings = config.settings[check.meta.code];
   return {
     ...dependencies,
-    settings,
+    settings: createSettings(checkSettings, check.meta.schema),
     absolutePath: (relativePath) => path.join(config.root, relativePath),
     relativePath: (absolutePath) => path.relative(absolutePath, config.root),
-    report(problem: Problem<S>): void {
+    report(problem: Problem<T>): void {
       offenses.push({
         type: check.meta.type,
         check: check.meta.code,
         message: problem.message,
         absolutePath: file.absolutePath,
-        severity: settings.severity || check.meta.severity,
+        severity: checkSettings?.severity ?? check.meta.severity,
         start: getPosition(file.source, problem.startIndex),
         end: getPosition(file.source, problem.endIndex),
         fix: problem.fix,
         suggest: problem.suggest,
-      } as Offense<S>);
+      } as Offense<T>);
     },
     file,
-  } as Context<S>;
+  } as Context<T, S>;
 }
 
-// TODO: build settings based on `config` and `check.meta.schema`
-function createSettings(_config: Config, schema: Schema) {
-  const settings: Record<string, any> = {};
+function createSettings<S extends Schema>(
+  checkSettings: CheckSettings | undefined,
+  schema: S,
+): Settings<S> {
+  const settings: Partial<Settings<S>> = {};
 
-  for (const key in schema) {
-    settings[key] = schema[key].defaultValue;
+  for (const [key, schemaProp] of Object.entries(schema)) {
+    settings[key as keyof S] = checkSettings?.[key] ?? schemaProp.defaultValue();
   }
 
-  return settings;
+  return settings as Settings<S>;
 }
 
 function checksOfType<S extends SourceCodeType>(
