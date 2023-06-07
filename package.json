@@ -21,7 +21,8 @@
     "format": "prettier --write \"packages/*/src/**/*.ts\"",
     "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
     "playground": "npx http-server playground",
-    "test": "vitest"
+    "test": "vitest",
+    "type-check": "yarn workspaces run type-check"
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.0",
