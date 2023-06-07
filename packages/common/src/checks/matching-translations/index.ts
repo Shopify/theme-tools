@@ -3,18 +3,13 @@ import {
   JSONCheckDefinition,
   JSONNode,
   JSONSourceCode,
-  SchemaProp,
   Severity,
   SourceCodeType,
 } from '../../types';
 
 const PLURALIZATION_KEYS = new Set(['zero', 'one', 'two', 'few', 'many', 'other']);
 
-const schema = {
-  ignore: SchemaProp.array(SchemaProp.string()),
-};
-
-export const MatchingTranslations: JSONCheckDefinition<typeof schema> = {
+export const MatchingTranslations: JSONCheckDefinition = {
   meta: {
     code: 'MatchingTranslations',
     name: 'Translation files should have the same keys',
@@ -25,7 +20,7 @@ export const MatchingTranslations: JSONCheckDefinition<typeof schema> = {
     },
     type: SourceCodeType.JSON,
     severity: Severity.ERROR,
-    schema,
+    schema: {},
     targets: [],
   },
 
