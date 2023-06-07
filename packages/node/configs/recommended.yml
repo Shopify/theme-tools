@@ -1,0 +1,44 @@
+# WARNING:
+# This file was generated automatically by running "scripts/generate-factory-configs"
+# Do not modify manually. Your changes will be overwritten.
+ignore:
+  - node_modules/**
+AssetUrlFilters:
+  enabled: true
+  severity: 1
+DeprecateBgsizes:
+  enabled: true
+  severity: 1
+DeprecateLazysizes:
+  enabled: true
+  severity: 1
+ImgWidthAndHeight:
+  enabled: true
+  severity: 1
+JSONSyntaxError:
+  enabled: true
+  severity: 0
+LiquidHTMLSyntaxError:
+  enabled: true
+  severity: 0
+MatchingTranslations:
+  enabled: true
+  severity: 0
+MissingAsset:
+  enabled: true
+  severity: 0
+MissingTemplate:
+  enabled: true
+  severity: 0
+ParserBlockingScript:
+  enabled: true
+  severity: 0
+RequiredLayoutThemeObject:
+  enabled: true
+  severity: 0
+TranslationKeyExists:
+  enabled: true
+  severity: 0
+UnusedAssign:
+  enabled: true
+  severity: 1

@@ -22,7 +22,8 @@
     "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
     "playground": "npx http-server playground",
     "test": "vitest",
-    "type-check": "yarn workspaces run type-check"
+    "type-check": "yarn workspaces run type-check",
+    "update-config": "yarn --cwd packages/node generate-factory-configs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.0",

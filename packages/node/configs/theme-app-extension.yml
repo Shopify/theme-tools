@@ -1,0 +1,4 @@
+extends: theme-check:recommended
+
+RequiredLayoutThemeObject:
+  enabled: false
