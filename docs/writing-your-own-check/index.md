@@ -71,10 +71,10 @@ Users can extend this configuration directly instead of providing configuration 
 # In a user's `.theme-check.yml`
 extends:
   - 'theme-check:recommended'
-  - '@acme/theme-check-extension/recommended'
+  - '@acme/theme-check-extension/recommended.yml'
 ```
 
-**Note** the `.yml` extension is assumed and is optional for users.
+**Note** the `.yml` extension is required.
 
 For a detailed explanation, see the [Using it in your projects](#Using-it-in-your-projects) section.
 
@@ -95,7 +95,7 @@ In order to make it available for others to use, you may [publish](https://docs.
    ```yaml
    extends:
      - 'theme-check:recommended'
-     - '@acme/theme-check-extension/recommended'
+     - '@acme/theme-check-extension/recommended.yml'
    MyNonRecommendedCheck:
      enabled: true
      severity: suggestion
