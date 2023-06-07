@@ -2,6 +2,7 @@ import { describe, it, expect, afterAll, beforeAll } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { loadYamlConfig } from './loadYamlConfig';
+import { Severity } from '@shopify/theme-check-common';
 
 const mockYamlContent = `
 root: ./dist
@@ -31,9 +32,9 @@ describe('Unit: loadYamlConfig', () => {
     const config = await loadYamlConfig(filePath);
 
     expect(config).toEqual({
-      root: path.resolve(path.dirname(filePath), 'dist'),
+      root: './dist',
       ignore: ['assets', 'config'],
-      extends: 'theme-check:recommended',
+      extends: ['theme-check:recommended'],
       checkSettings: {
         SomeCheck: {
           enabled: false,
@@ -46,14 +47,13 @@ describe('Unit: loadYamlConfig', () => {
 
   describe('Unit: extends', () => {
     it('supports array arguments', async () => {
-      const filePath = await createMockYamlFile(`extends: ['theme-check:recommended', 'theme-check:all']`);
+      const filePath = await createMockYamlFile(
+        `extends: ['theme-check:recommended', 'theme-check:all']`,
+      );
       const config = await loadYamlConfig(filePath);
       expect(config).toEqual({
-        root: path.resolve(path.dirname(filePath)),
-        extends: [
-          'theme-check:recommended',
-          'theme-check:all',
-        ],
+        ignore: [],
+        extends: ['theme-check:recommended', 'theme-check:all'],
         checkSettings: {},
       });
     });
@@ -63,8 +63,8 @@ describe('Unit: loadYamlConfig', () => {
       const filePath = await createMockYamlFile(`extends: '${baseConfigPath}'`);
       const config = await loadYamlConfig(filePath);
       expect(config).toEqual({
-        root: path.resolve(path.dirname(filePath)),
-        extends: baseConfigPath,
+        extends: [baseConfigPath],
+        ignore: [],
         checkSettings: {},
       });
     });
@@ -85,8 +85,8 @@ describe('Unit: loadYamlConfig', () => {
 
       const config = await loadYamlConfig(filePath);
       expect(config).toEqual({
-        root: path.resolve(path.dirname(filePath)),
-        extends: path.join(tempDir, 'configurations', 'theme-check.yml'),
+        extends: [path.join(tempDir, 'configurations', 'theme-check.yml')],
+        ignore: [],
         checkSettings: {},
       });
     });
@@ -115,43 +115,80 @@ describe('Unit: loadYamlConfig', () => {
 
       const config = await loadYamlConfig(filePath);
       expect(config).toEqual({
-        root: path.resolve(path.dirname(filePath)),
-        extends: await fs.realpath(path.join(mockNodeModulePath, 'recommended.yml')),
+        ignore: [],
+        extends: [await fs.realpath(path.join(mockNodeModulePath, 'recommended.yml'))],
         checkSettings: {},
       });
     });
 
-    [
-      {
-        testCase: 'translates legacy `:default` to `theme-check:recommended`',
-        extendsValue: ':default',
-        expected: 'theme-check:recommended',
-      },
-      {
-        testCase: 'translates legacy `default` to `theme-check:recommended`',
-        extendsValue: 'default',
-        expected: 'theme-check:recommended',
-      },
-      {
-        testCase: 'translates legacy `:theme_app_extensions` to `theme-check:theme-app-extensions`',
-        extendsValue: ':theme_app_extensions',
-        expected: 'theme-check:theme-app-extensions',
-      },
-      {
-        testCase: 'translates legacy `:nothing` to `undefined`',
-        extendsValue: ':nothing',
-        expected: undefined,
-      },
-    ].forEach(({ testCase, extendsValue, expected }) => {
-      it(testCase, async () => {
+    it('translates legacy extend values to modern ones', async () => {
+      const testCases = [
+        {
+          testCase: 'translates legacy `:default` to `theme-check:recommended`',
+          extendsValue: [':default'],
+          expected: ['theme-check:recommended'],
+        },
+        {
+          testCase: 'translates legacy `default` to `theme-check:recommended`',
+          extendsValue: 'default',
+          expected: ['theme-check:recommended'],
+        },
+        {
+          testCase:
+            'translates legacy `:theme_app_extensions` to `theme-check:theme-app-extension`',
+          extendsValue: [':theme_app_extensions'],
+          expected: ['theme-check:theme-app-extension'],
+        },
+        {
+          testCase: 'translates legacy [`:nothing`] to []',
+          extendsValue: [':nothing'],
+          expected: [],
+        },
+      ];
+
+      for (const { testCase, extendsValue, expected } of testCases) {
         const filePath = await createMockYamlFile(`extends: ${extendsValue}`);
         const config = await loadYamlConfig(filePath);
-        expect(config).toEqual({
-          root: path.resolve(path.dirname(filePath)),
-          extends: expected,
-          checkSettings: {},
-        });
-      });
+        expect(config.extends, testCase).toEqual(expected);
+      }
+    });
+  });
+
+  describe('Unit: severity', () => {
+    it('supports the legacy severities', async () => {
+      const testCases = [
+        { severity: 'error', expected: Severity.ERROR },
+        { severity: 'suggestion', expected: Severity.WARNING },
+        { severity: 'style', expected: Severity.INFO },
+      ];
+
+      for (const { severity, expected } of testCases) {
+        const filePath = await createMockSeverityFile(severity);
+        const config = await loadYamlConfig(filePath);
+        expect(config.checkSettings.MockCheck!.severity).toEqual(expected);
+      }
+    });
+
+    it('supports modern severities', async () => {
+      const testCases = [
+        { severity: 0, expected: Severity.ERROR },
+        { severity: 1, expected: Severity.WARNING },
+        { severity: 2, expected: Severity.INFO },
+      ];
+
+      for (const { severity, expected } of testCases) {
+        const filePath = await createMockSeverityFile(severity);
+        const config = await loadYamlConfig(filePath);
+        expect(config.checkSettings.MockCheck!.severity).toEqual(expected);
+      }
+    });
+
+    it('throws an error for unknown severities', async () => {
+      const testCases = [{ severity: 3 }, { severity: 'unknown' }];
+      for (const { severity } of testCases) {
+        const filePath = await createMockSeverityFile(severity);
+        await expect(loadYamlConfig(filePath)).rejects.toThrow(/Unsupported severity:/);
+      }
     });
   });
 
@@ -159,13 +196,6 @@ describe('Unit: loadYamlConfig', () => {
     const filePath = await createMockYamlFile('- not_an_object: true');
     await expect(loadYamlConfig(filePath)).rejects.toThrow(
       `Expecting parsed contents of config file at path '${filePath}' to be a plain object`,
-    );
-  });
-
-  it('throws an error when the root property is an absolute path', async () => {
-    const filePath = await createMockYamlFile('root: /absolute/path');
-    await expect(loadYamlConfig(filePath)).rejects.toThrow(
-      'the `root` property can only be relative',
     );
   });
 
@@ -180,5 +210,11 @@ describe('Unit: loadYamlConfig', () => {
     const filePath = path.resolve(tempDir, '.theme-check.yml');
     await fs.writeFile(filePath, content, 'utf8');
     return filePath;
+  }
+  function createMockSeverityFile(severity: string | number) {
+    return createMockYamlFile(`
+MockCheck:
+  severity: ${severity}
+`);
   }
 });

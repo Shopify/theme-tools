@@ -6,7 +6,6 @@ import {
   Theme,
   check as coreCheck,
   toSourceCode as commonToSourceCode,
-  recommended,
 } from '@shopify/theme-check-common';
 import { promisify } from 'node:util';
 import path from 'node:path';
@@ -14,6 +13,7 @@ import process from 'node:process';
 import fs from 'node:fs/promises';
 import glob = require('glob');
 
+import { loadConfig } from './config';
 import { fileExists } from './fileExists';
 import { autofix } from './autofix';
 
@@ -41,11 +41,7 @@ export async function getTheme(root: string): Promise<Theme> {
 
 export async function check(root: string, theme?: Theme): Promise<Offense[]> {
   theme = theme ?? (await getTheme(root));
-  const config: Config = {
-    settings: {},
-    checks: recommended,
-    root,
-  };
+  const config: Config = await loadConfig(root);
   const defaultLocale = 'en';
   const defaultTranslationsFile = theme.find((sc) => sc.absolutePath.endsWith('default.json'));
   const defaultTranslations = JSON.parse(defaultTranslationsFile?.source || '{}');
