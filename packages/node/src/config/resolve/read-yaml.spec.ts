@@ -1,7 +1,7 @@
 import { describe, it, expect, afterAll, beforeAll } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { loadYamlConfig } from './loadYamlConfig';
+import { readYamlConfigDescription } from './read-yaml';
 import { Severity } from '@shopify/theme-check-common';
 
 const mockYamlContent = `
@@ -16,7 +16,7 @@ SomeCheck:
   some_setting: value
 `;
 
-describe('Unit: loadYamlConfig', () => {
+describe('Unit: readYamlConfigDescription', () => {
   let tempDir: string;
 
   beforeAll(async () => {
@@ -29,7 +29,7 @@ describe('Unit: loadYamlConfig', () => {
 
   it('loads and parses a YAML config file', async () => {
     const filePath = await createMockYamlFile(mockYamlContent);
-    const config = await loadYamlConfig(filePath);
+    const config = await readYamlConfigDescription(filePath);
 
     expect(config).toEqual({
       root: './dist',
@@ -50,7 +50,7 @@ describe('Unit: loadYamlConfig', () => {
       const filePath = await createMockYamlFile(
         `extends: ['theme-check:recommended', 'theme-check:all']`,
       );
-      const config = await loadYamlConfig(filePath);
+      const config = await readYamlConfigDescription(filePath);
       expect(config).toEqual({
         ignore: [],
         extends: ['theme-check:recommended', 'theme-check:all'],
@@ -61,7 +61,7 @@ describe('Unit: loadYamlConfig', () => {
     it('uses an absolute path as is', async () => {
       const baseConfigPath = await createMockYamlFile(`extends: :nothing`);
       const filePath = await createMockYamlFile(`extends: '${baseConfigPath}'`);
-      const config = await loadYamlConfig(filePath);
+      const config = await readYamlConfigDescription(filePath);
       expect(config).toEqual({
         extends: [baseConfigPath],
         ignore: [],
@@ -83,7 +83,7 @@ describe('Unit: loadYamlConfig', () => {
         'utf8',
       );
 
-      const config = await loadYamlConfig(filePath);
+      const config = await readYamlConfigDescription(filePath);
       expect(config).toEqual({
         extends: [path.join(tempDir, 'configurations', 'theme-check.yml')],
         ignore: [],
@@ -113,7 +113,7 @@ describe('Unit: loadYamlConfig', () => {
       // mock recommended.yml file
       await fs.writeFile(path.join(mockNodeModulePath, 'recommended.yml'), '', 'utf8');
 
-      const config = await loadYamlConfig(filePath);
+      const config = await readYamlConfigDescription(filePath);
       expect(config).toEqual({
         ignore: [],
         extends: [await fs.realpath(path.join(mockNodeModulePath, 'recommended.yml'))],
@@ -148,7 +148,7 @@ describe('Unit: loadYamlConfig', () => {
 
       for (const { testCase, extendsValue, expected } of testCases) {
         const filePath = await createMockYamlFile(`extends: ${extendsValue}`);
-        const config = await loadYamlConfig(filePath);
+        const config = await readYamlConfigDescription(filePath);
         expect(config.extends, testCase).toEqual(expected);
       }
     });
@@ -164,7 +164,7 @@ describe('Unit: loadYamlConfig', () => {
 
       for (const { severity, expected } of testCases) {
         const filePath = await createMockSeverityFile(severity);
-        const config = await loadYamlConfig(filePath);
+        const config = await readYamlConfigDescription(filePath);
         expect(config.checkSettings.MockCheck!.severity).toEqual(expected);
       }
     });
@@ -178,7 +178,7 @@ describe('Unit: loadYamlConfig', () => {
 
       for (const { severity, expected } of testCases) {
         const filePath = await createMockSeverityFile(severity);
-        const config = await loadYamlConfig(filePath);
+        const config = await readYamlConfigDescription(filePath);
         expect(config.checkSettings.MockCheck!.severity).toEqual(expected);
       }
     });
@@ -187,21 +187,21 @@ describe('Unit: loadYamlConfig', () => {
       const testCases = [{ severity: 3 }, { severity: 'unknown' }];
       for (const { severity } of testCases) {
         const filePath = await createMockSeverityFile(severity);
-        await expect(loadYamlConfig(filePath)).rejects.toThrow(/Unsupported severity:/);
+        await expect(readYamlConfigDescription(filePath)).rejects.toThrow(/Unsupported severity:/);
       }
     });
   });
 
   it('throws an error when the parsed YAML content is not a plain object', async () => {
     const filePath = await createMockYamlFile('- not_an_object: true');
-    await expect(loadYamlConfig(filePath)).rejects.toThrow(
+    await expect(readYamlConfigDescription(filePath)).rejects.toThrow(
       `Expecting parsed contents of config file at path '${filePath}' to be a plain object`,
     );
   });
 
   it('throws an error when a check setting value is not a plain object', async () => {
     const filePath = await createMockYamlFile('SomeCheck: not_an_object');
-    await expect(loadYamlConfig(filePath)).rejects.toThrow(
+    await expect(readYamlConfigDescription(filePath)).rejects.toThrow(
       'Expected a plain object value for SomeCheck but got string',
     );
   });

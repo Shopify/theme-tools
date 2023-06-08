@@ -14,12 +14,20 @@ import fs from 'node:fs/promises';
 import glob = require('glob');
 
 import { loadConfig } from './config';
-import { fileExists } from './fileExists';
 import { autofix } from './autofix';
 
 const asyncGlob = promisify(glob);
 
 export * from '@shopify/theme-check-common';
+
+async function fileExists(path: string) {
+  try {
+    await fs.stat(path);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 
 export async function toSourceCode(
   absolutePath: string,

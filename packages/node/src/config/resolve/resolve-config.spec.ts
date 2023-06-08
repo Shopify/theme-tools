@@ -1,9 +1,7 @@
-// packages/node/src/config/resolveConfig.spec.ts
-
 import { describe, it, expect, afterEach, beforeEach } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { resolveConfig } from './resolveConfig';
+import { resolveConfig } from './resolve-config';
 import { ModernIdentifiers } from '../types';
 
 describe('Unit: resolveConfig', () => {
@@ -108,7 +106,7 @@ SomeCheck:
     for (const modernIdentifier of ModernIdentifiers) {
       const filePath = await createMockYamlFile(`extends: ${modernIdentifier}`);
       const config = await resolveConfig(filePath);
-      expect(config.checkSettings.ParserBlockingScript.enabled).to.be.true;
+      expect(config.checkSettings.ParserBlockingScript!.enabled).to.be.true;
     }
   });
 

@@ -1,7 +1,7 @@
-import { FullyResolvedThemeCheckYaml, ThemeCheckYaml } from '../types';
+import { ConfigDescription, ConfigFragment } from '../types';
 
 /**
- * Merges a set of base configs with a config.
+ * Merges a set of ConfigDescription with a ConfigFragment to obtain a new ConfigDescription.
  *
  * Merge rules:
  *   - The latest `root` is selected, it is not resolved ('./dist' remains './dist')
@@ -9,10 +9,10 @@ import { FullyResolvedThemeCheckYaml, ThemeCheckYaml } from '../types';
  *   - top level `ignore` is extended by concatenation
  *   - checkSettings are deep merged
  */
-export function mergeConfigs(
-  baseConfigs: FullyResolvedThemeCheckYaml[],
-  config: ThemeCheckYaml,
-): FullyResolvedThemeCheckYaml {
+export function mergeFragments(
+  baseConfigs: ConfigDescription[],
+  config: ConfigFragment,
+): ConfigDescription {
   return {
     // we use the last one defined
     root: selectLatest(

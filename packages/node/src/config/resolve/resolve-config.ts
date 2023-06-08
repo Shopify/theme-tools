@@ -1,20 +1,20 @@
 import path from 'node:path';
 import { AbsolutePath } from '@shopify/theme-check-common';
-import { loadYamlConfig } from './loadYamlConfig';
-import { mergeConfigs } from './mergeConfigs';
-import { FullyResolvedThemeCheckYaml, ModernIdentifier, ModernIdentifiers } from '../types';
+import { readYamlConfigDescription } from './read-yaml';
+import { mergeFragments } from './merge-fragments';
+import { ConfigDescription, ModernIdentifier, ModernIdentifiers } from '../types';
 
 const modernConfigsPath = path.resolve(__dirname, '../../../configs');
 
 /**
  * Given a modern identifier or absolute path, fully resolves and flattens
- * a yaml config. In other words, extends are all loaded and merged with
+ * a config description. In other words, extends are all loaded and merged with
  * the config at the configPath.
  */
 export async function resolveConfig(
   configPath: AbsolutePath | ModernIdentifier,
   isRootConfig: boolean = false,
-): Promise<FullyResolvedThemeCheckYaml> {
+): Promise<ConfigDescription> {
   if (isModernIdentifier(configPath)) {
     const modernConfigPath = path.join(
       modernConfigsPath,
@@ -23,9 +23,10 @@ export async function resolveConfig(
     return resolveConfig(modernConfigPath);
   }
 
-  const current = await loadYamlConfig(configPath, isRootConfig);
+  // TODO: Add support for more file formats.
+  const current = await readYamlConfigDescription(configPath, isRootConfig);
   const baseConfigs = await Promise.all(current.extends.map((extend) => resolveConfig(extend)));
-  return mergeConfigs(baseConfigs, current);
+  return mergeFragments(baseConfigs, current);
 }
 
 function isModernIdentifier(thing: string): thing is ModernIdentifier {

@@ -1,16 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { mergeConfigs } from './mergeConfigs';
-import { FullyResolvedThemeCheckYaml, ThemeCheckYaml } from '../types';
+import { mergeFragments } from './merge-fragments';
+import { ConfigDescription, ConfigFragment } from '../types';
 
-const emptyConfig: FullyResolvedThemeCheckYaml = {
+const emptyConfig: ConfigDescription = {
   extends: [],
   ignore: [],
   checkSettings: {},
 };
 
-describe('Unit: mergeConfigs', () => {
-  it('merges baseConfigs and config correctly', () => {
-    const baseConfigs: FullyResolvedThemeCheckYaml[] = [
+describe('Unit: mergeFragments', () => {
+  it('merges ConfigDescriptions with a ConfigFragment correctly', () => {
+    const baseConfigs: ConfigDescription[] = [
       {
         root: './dist1',
         extends: [],
@@ -35,7 +35,7 @@ describe('Unit: mergeConfigs', () => {
       },
     ];
 
-    const config: ThemeCheckYaml = {
+    const config: ConfigFragment = {
       ignore: ['node_modules'],
       extends: ['theme-check:recommended'],
       checkSettings: {
@@ -45,7 +45,7 @@ describe('Unit: mergeConfigs', () => {
       },
     };
 
-    const mergedConfig = mergeConfigs(baseConfigs, config);
+    const mergedConfig = mergeFragments(baseConfigs, config);
 
     expect(mergedConfig).toEqual({
       root: './dist2',
@@ -82,40 +82,40 @@ describe('Unit: mergeConfigs', () => {
         expected: undefined,
       },
     ].forEach(({ base, curr, expected }) => {
-      const baseConfigs: FullyResolvedThemeCheckYaml[] = [
+      const baseConfigs: ConfigDescription[] = [
         { ...emptyConfig, root: base[0] },
         { ...emptyConfig, root: base[1] },
       ];
 
-      const config: ThemeCheckYaml = { ...emptyConfig, root: curr };
+      const config: ConfigFragment = { ...emptyConfig, root: curr };
 
-      const mergedConfig = mergeConfigs(baseConfigs, config);
+      const mergedConfig = mergeFragments(baseConfigs, config);
       expect(mergedConfig.root).toEqual(expected);
     });
   });
 
   it('concatenates ignore configs', () => {
-    const baseConfigs: FullyResolvedThemeCheckYaml[] = [
+    const baseConfigs: ConfigDescription[] = [
       { ...emptyConfig, ignore: ['a', 'b'] },
       { ...emptyConfig, ignore: ['c', 'd'] },
     ];
 
-    const config: ThemeCheckYaml = { ...emptyConfig, ignore: ['e', 'f'] };
+    const config: ConfigFragment = { ...emptyConfig, ignore: ['e', 'f'] };
 
-    const mergedConfig = mergeConfigs(baseConfigs, config);
+    const mergedConfig = mergeFragments(baseConfigs, config);
     expect(mergedConfig.ignore).to.eql(['a', 'b', 'c', 'd', 'e', 'f']);
   });
 
   it('handles empty baseConfigs and config', () => {
-    const baseConfigs: FullyResolvedThemeCheckYaml[] = [];
-    const config: ThemeCheckYaml = {
+    const baseConfigs: ConfigDescription[] = [];
+    const config: ConfigFragment = {
       root: './dist',
       ignore: [],
       extends: [],
       checkSettings: {},
     };
 
-    const mergedConfig = mergeConfigs(baseConfigs, config);
+    const mergedConfig = mergeFragments(baseConfigs, config);
 
     expect(mergedConfig).toEqual({
       root: './dist',
@@ -126,7 +126,7 @@ describe('Unit: mergeConfigs', () => {
   });
 
   it('deep merges checkSettings correctly', () => {
-    const baseConfigs: FullyResolvedThemeCheckYaml[] = [
+    const baseConfigs: ConfigDescription[] = [
       {
         root: './dist',
         extends: [],
@@ -142,7 +142,7 @@ describe('Unit: mergeConfigs', () => {
       },
     ];
 
-    const config: ThemeCheckYaml = {
+    const config: ConfigFragment = {
       root: './dist',
       ignore: [],
       extends: [],
@@ -156,7 +156,7 @@ describe('Unit: mergeConfigs', () => {
       },
     };
 
-    const mergedConfig = mergeConfigs(baseConfigs, config);
+    const mergedConfig = mergeFragments(baseConfigs, config);
 
     expect(mergedConfig).toEqual({
       root: './dist',

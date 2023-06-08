@@ -6,7 +6,7 @@ import {
   allChecks,
 } from '@shopify/theme-check-common';
 import path from 'node:path';
-import { FullyResolvedThemeCheckYaml } from '../types';
+import { ConfigDescription } from './types';
 
 // TODO (#99)
 const nodeModuleChecks: CheckDefinition<SourceCodeType>[] = [];
@@ -15,31 +15,29 @@ const nodeModuleChecks: CheckDefinition<SourceCodeType>[] = [];
  * Creates the checks array, loads node modules checks and validates
  * settings against the respective check schemas.
  *
- * @param themeCheckYaml - A flattened representation of the YAML file
- * @param root - absolute path to root
- * @returns the ThemeCheck#Config object for that config file
+ * Effectively "loads" a ConfigDescription into a Config.
  */
-export function themeCheckYamlToConfig(
-  themeCheckYaml: FullyResolvedThemeCheckYaml,
+export function loadConfigDescription(
+  configDescription: ConfigDescription,
   root: AbsolutePath,
 ): Config {
   const checks: CheckDefinition<SourceCodeType>[] = allChecks
     .concat(nodeModuleChecks)
-    .filter(isEnabled(themeCheckYaml));
+    .filter(isEnabledBy(configDescription));
 
-  const settings = themeCheckYaml.checkSettings;
+  const settings = configDescription.checkSettings;
 
   return {
     settings,
     checks,
-    ignore: themeCheckYaml.ignore,
-    root: resolveRoot(root, themeCheckYaml.root),
+    ignore: configDescription.ignore,
+    root: resolveRoot(root, configDescription.root),
   };
 }
 
 /**
  * @param root - absolute path of the config file
- * @param pathLike - resovled textual value of the `root` property from the config files
+ * @param pathLike - resolved textual value of the `root` property from the config files
  * @returns {string} resolved absolute path of the root property
  */
 export function resolveRoot(root: AbsolutePath, pathLike: string | undefined): string {
@@ -54,8 +52,8 @@ export function resolveRoot(root: AbsolutePath, pathLike: string | undefined): s
   return path.resolve(root, pathLike);
 }
 
-const isEnabled =
-  (config: FullyResolvedThemeCheckYaml) => (checkDefinition: CheckDefinition<SourceCodeType>) => {
+const isEnabledBy =
+  (config: ConfigDescription) => (checkDefinition: CheckDefinition<SourceCodeType>) => {
     const checkSettings = config.checkSettings[checkDefinition.meta.code];
     if (!checkSettings) return false;
     return checkSettings.enabled;

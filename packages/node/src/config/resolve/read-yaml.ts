@@ -4,24 +4,22 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import {
   LegacyIdentifiers,
-  LegacySeverities,
-  LegacySeverity,
+  ConvenienceSeverities,
+  ConvenienceSeverity,
   ModernIdentifier,
-  ThemeCheckYaml,
+  ConfigFragment,
 } from '../types';
 
 /**
  * Takes an absolute path, parses the yaml at that path and turns it into a
- * ThemeCheckYaml object.
- *
- * This function is flat and does not resolve extends.
+ * ConfigFragment object.
  */
-export async function loadYamlConfig(
+export async function readYamlConfigDescription(
   /** the absolute path to a theme-check.yml file */
   absolutePath: AbsolutePath,
   /** only the root config has `extends: theme-check:recommended` by default, it's nothing everywhere else */
   isRootConfig: boolean = false,
-): Promise<ThemeCheckYaml> {
+): Promise<ConfigFragment> {
   const root = path.dirname(absolutePath);
   const contents = await fs.readFile(absolutePath, 'utf8');
   const yamlFile = parse(contents);
@@ -32,7 +30,7 @@ export async function loadYamlConfig(
     );
   }
 
-  const config: ThemeCheckYaml = {
+  const config: ConfigFragment = {
     checkSettings: {},
     ignore: [],
     extends: [],
@@ -141,13 +139,15 @@ function resolveSettings(
 }
 
 function resolveSeverity(severity: unknown): Severity {
-  if (isLegacySeverity(severity)) return LegacySeverities[severity];
+  if (isConvenienceSeverity(severity)) return ConvenienceSeverities[severity];
   if (isSeverity(severity)) return severity;
-  throw new Error(`Unsupported severity: ${severity}. Try one of ${Object.keys(LegacySeverities)}`);
+  throw new Error(
+    `Unsupported severity: ${severity}. Try one of ${Object.keys(ConvenienceSeverities)}`,
+  );
 }
 
-function isLegacySeverity(severity: unknown): severity is LegacySeverity {
-  return typeof severity === 'string' && severity in LegacySeverities;
+function isConvenienceSeverity(severity: unknown): severity is ConvenienceSeverity {
+  return typeof severity === 'string' && severity in ConvenienceSeverities;
 }
 
 function isSeverity(severity: unknown): severity is Severity {

@@ -1,1 +1,1 @@
-export { loadConfig } from './loadConfig';
+export { loadConfig } from './load-config';

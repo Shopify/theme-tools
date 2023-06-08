@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateConfig } from './validateConfig';
+import { validateConfig } from './validation';
 import {
   allChecks,
   Severity,

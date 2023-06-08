@@ -1,12 +1,29 @@
 import { ChecksSettings, Severity } from '@shopify/theme-check-common';
 
-export type FullyResolvedThemeCheckYaml = Omit<ThemeCheckYaml, 'extends'> & { extends: [] };
-export interface ThemeCheckYaml {
+/**
+ * The pipeline goes like this:
+ *
+ * File                   # the input file as a string
+ * -> ConfigFragment      # an intermediate representation of the file
+ * -> ConfigFragment[]    # the file and its extends
+ * -> ConfigDescription   # the flattened config (no extends)
+ * -> Config              # the theme check config
+ *
+ * Our goal is to support more than one config file format, so what we'll
+ * do is have one adapter per file format that outputs a ConfigFragment.
+ *
+ * Then we'll be able to merge all the config fragments, independently of
+ * which file format used.
+ */
+export interface ConfigFragment {
   root?: string;
   ignore: string[];
   extends: string[];
   checkSettings: ChecksSettings;
 }
+
+/** A ConfigDescription is a ConfigFragment that doesn't extend anything. */
+export type ConfigDescription = Omit<ConfigFragment, 'extends'> & { extends: [] };
 
 export const ModernIdentifiers = [
   'theme-check:recommended',
@@ -24,14 +41,14 @@ export const LegacyIdentifiers = new Map(
   }),
 );
 
-export type LegacySeverity = 'error' | 'suggestion' | 'style' | 'warning' | 'info';
+export type ConvenienceSeverity = 'error' | 'suggestion' | 'style' | 'warning' | 'info';
 
-export const LegacySeverities: { [k in LegacySeverity]: Severity } = {
-  // actually legacy
+export const ConvenienceSeverities: { [k in ConvenienceSeverity]: Severity } = {
+  // legacy
   suggestion: Severity.WARNING,
   style: Severity.INFO,
 
-  // included for convenience, the numerical values are not user friendly
+  // the numerical values are not user friendly
   error: Severity.ERROR,
   warning: Severity.WARNING,
   info: Severity.INFO,

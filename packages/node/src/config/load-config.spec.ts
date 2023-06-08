@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, it, expect, afterEach, beforeEach } from 'vitest';
-import { loadConfig } from './loadConfig';
+import { loadConfig } from './load-config';
 import {
   allChecks,
   CheckDefinition,

@@ -1,1 +1,1 @@
-export { resolveConfig } from './resolveConfig';
+export { resolveConfig } from './resolve-config';
