@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { realpathSync } from 'node:fs';
 import { describe, it, expect, afterAll, beforeAll } from 'vitest';
 import { readYamlConfigDescription } from './read-yaml';
 import { Severity } from '@shopify/theme-check-common';
@@ -117,7 +118,7 @@ describe('Unit: readYamlConfigDescription', () => {
       const config = await readYamlConfigDescription(filePath);
       expect(config).toEqual({
         ignore: [],
-        extends: [await fs.realpath(path.join(mockNodeModulePath, 'recommended.yml'))],
+        extends: [realpathSync(path.join(mockNodeModulePath, 'recommended.yml'))],
         checkSettings: {},
       });
     });

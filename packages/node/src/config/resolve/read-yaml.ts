@@ -2,6 +2,7 @@ import { AbsolutePath, CheckSettings, Severity } from '@shopify/theme-check-comm
 import { parse } from 'yaml';
 import path from 'node:path';
 import fs from 'node:fs/promises';
+import { realpathSync } from 'node:fs';
 import {
   LegacyIdentifiers,
   ConvenienceSeverities,
@@ -104,7 +105,7 @@ function resolveExtends(
     return path.resolve(root, pathLike);
   }
 
-  return require.resolve(pathLike, { paths: getAncestorNodeModules(root)! });
+  return realpathSync(require.resolve(pathLike, { paths: getAncestorNodeModules(root)! }));
 }
 
 /**
