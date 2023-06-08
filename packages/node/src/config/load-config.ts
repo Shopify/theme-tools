@@ -1,5 +1,5 @@
-import { AbsolutePath, Config } from '@shopify/theme-check-common';
 import path from 'node:path';
+import { AbsolutePath, Config } from '@shopify/theme-check-common';
 import { resolveConfig } from './resolve';
 import { loadConfigDescription } from './load-config-description';
 import { validateConfig } from './validation';
@@ -16,11 +16,12 @@ import { validateConfig } from './validation';
  */
 export async function loadConfig(
   /** The absolute path of config file */
-  configPath: AbsolutePath,
+  configPath: AbsolutePath | undefined,
   /** The root of the theme */
-  root: AbsolutePath = path.dirname(configPath),
+  root: AbsolutePath | undefined = configPath ? path.dirname(configPath) : undefined,
 ): Promise<Config> {
-  const configDescription = await resolveConfig(configPath);
+  if (!root) throw new Error('loadConfig cannot be called without a root argument');
+  const configDescription = await resolveConfig(configPath ?? 'theme-check:recommended');
   const config = loadConfigDescription(configDescription, root);
   validateConfig(config);
   return config;

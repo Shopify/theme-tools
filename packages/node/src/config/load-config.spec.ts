@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import os from 'node:os';
 import { describe, it, expect, afterEach, beforeEach } from 'vitest';
 import { loadConfig } from './load-config';
 import {
@@ -9,32 +10,42 @@ import {
   Severity,
   SourceCodeType,
 } from '@shopify/theme-check-common';
+import { createMockConfigFile, makeTmpFolder, removeTmpFolder } from '../test/test-helpers';
 
 describe('Unit: loadConfig', () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp('/tmp/test-');
+    tempDir = await makeTmpFolder();
   });
 
   afterEach(async () => {
-    await fs.rm(tempDir, { recursive: true, force: true });
+    await removeTmpFolder(tempDir);
+  });
+
+  it('loads the recommended config by default', async () => {
+    const config = await loadConfig(undefined, __dirname);
+    expect(config.checks).to.eql(recommended);
+    expect(config.root).to.eql(__dirname);
   });
 
   it('loads the recommended config', async () => {
-    const configPath = await createMockYamlFile(`extends: theme-check:recommended`);
+    const configPath = await createMockConfigFile(tempDir, `extends: theme-check:recommended`);
     const config = await loadConfig(configPath);
     expect(config.checks).to.eql(recommended);
   });
 
   it('loads the all config', async () => {
-    const configPath = await createMockYamlFile(`extends: theme-check:all`);
+    const configPath = await createMockConfigFile(tempDir, `extends: theme-check:all`);
     const config = await loadConfig(configPath);
     expect(config.checks).to.eql(allChecks);
   });
 
   it('loads a compound config', async () => {
-    const configPath = await createMockYamlFile(`extends: theme-check:theme-app-extension`);
+    const configPath = await createMockConfigFile(
+      tempDir,
+      `extends: theme-check:theme-app-extension`,
+    );
     const config = await loadConfig(configPath);
 
     const ParserBlockingScript = check('ParserBlockingScript')!;
@@ -79,12 +90,6 @@ describe('Unit: loadConfig', () => {
     expect(config.ignore).to.include('node_modules/**');
     expect(config.ignore).to.include('src/**');
   });
-
-  async function createMockYamlFile(content: string): Promise<string> {
-    const filePath = path.resolve(tempDir, '.theme-check.yml');
-    await fs.writeFile(filePath, content, 'utf8');
-    return filePath;
-  }
 
   function check(code: string) {
     return allChecks.find(isCheck(code));

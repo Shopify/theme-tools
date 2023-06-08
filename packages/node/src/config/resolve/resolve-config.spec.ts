@@ -3,16 +3,17 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { resolveConfig } from './resolve-config';
 import { ModernIdentifiers } from '../types';
+import { createMockConfigFile, makeTmpFolder, removeTmpFolder } from '../../test/test-helpers';
 
 describe('Unit: resolveConfig', () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp('/tmp/test-');
+    tempDir = await makeTmpFolder();
   });
 
   afterEach(async () => {
-    await fs.rm(tempDir, { recursive: true, force: true });
+    await removeTmpFolder(tempDir);
   });
 
   it('resolves a config without extends', async () => {
@@ -60,7 +61,7 @@ SomeCheck:
     // mock recommended.yml file
     await fs.writeFile(
       path.join(mockNodeModulePath, 'recommended.yml'),
-      await fs.readFile(path.join(__dirname, '..', 'fixtures', 'node_module_rec.yml')),
+      await fs.readFile(path.join(__dirname, '..', 'fixtures', 'node-module-rec.yml')),
       'utf8',
     );
 
@@ -111,8 +112,6 @@ SomeCheck:
   });
 
   async function createMockYamlFile(content: string): Promise<string> {
-    const filePath = path.resolve(tempDir, '.theme-check.yml');
-    await fs.writeFile(filePath, content, 'utf8');
-    return filePath;
+    return createMockConfigFile(tempDir, content);
   }
 });

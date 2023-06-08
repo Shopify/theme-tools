@@ -1,8 +1,9 @@
-import { describe, it, expect, afterAll, beforeAll } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { describe, it, expect, afterAll, beforeAll } from 'vitest';
 import { readYamlConfigDescription } from './read-yaml';
 import { Severity } from '@shopify/theme-check-common';
+import { createMockConfigFile, makeTmpFolder, removeTmpFolder } from '../../test/test-helpers';
 
 const mockYamlContent = `
 root: ./dist
@@ -20,11 +21,11 @@ describe('Unit: readYamlConfigDescription', () => {
   let tempDir: string;
 
   beforeAll(async () => {
-    tempDir = await fs.mkdtemp('/tmp/test-');
+    tempDir = await makeTmpFolder();
   });
 
   afterAll(async () => {
-    await fs.rm(tempDir, { recursive: true, force: true });
+    await removeTmpFolder(tempDir);
   });
 
   it('loads and parses a YAML config file', async () => {
@@ -207,10 +208,9 @@ describe('Unit: readYamlConfigDescription', () => {
   });
 
   async function createMockYamlFile(content: string): Promise<string> {
-    const filePath = path.resolve(tempDir, '.theme-check.yml');
-    await fs.writeFile(filePath, content, 'utf8');
-    return filePath;
+    return createMockConfigFile(tempDir, content);
   }
+
   function createMockSeverityFile(severity: string | number) {
     return createMockYamlFile(`
 MockCheck:

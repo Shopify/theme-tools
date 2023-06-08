@@ -9,25 +9,23 @@ import {
 } from '@shopify/theme-check-common';
 import { promisify } from 'node:util';
 import path from 'node:path';
-import process from 'node:process';
 import fs from 'node:fs/promises';
 import glob = require('glob');
 
-import { loadConfig } from './config';
+import { fileExists } from './file-utils';
+import { loadConfig, findConfigPath } from './config';
 import { autofix } from './autofix';
 
+const defaultLocale = 'en';
 const asyncGlob = promisify(glob);
 
 export * from '@shopify/theme-check-common';
 
-async function fileExists(path: string) {
-  try {
-    await fs.stat(path);
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
+export type ThemeCheckRun = {
+  theme: Theme;
+  config: Config;
+  offenses: Offense[];
+};
 
 export async function toSourceCode(
   absolutePath: string,
@@ -40,21 +38,22 @@ export async function toSourceCode(
   }
 }
 
-export async function getTheme(root: string): Promise<Theme> {
-  root = root.startsWith('/') ? `${process.cwd()}/${root}` : root;
-  const paths = await asyncGlob(path.join(root, '**/*.{liquid,json}'));
-  const sourceCodes = await Promise.all(paths.map(toSourceCode));
-  return sourceCodes.filter((x): x is LiquidSourceCode | JSONSourceCode => x !== undefined);
+export async function check(root: string, configPath?: string): Promise<Offense[]> {
+  const run = await themeCheckRun(root, configPath);
+  return run.offenses;
 }
 
-export async function check(root: string, theme?: Theme): Promise<Offense[]> {
-  theme = theme ?? (await getTheme(root));
-  const config: Config = await loadConfig(root);
-  const defaultLocale = 'en';
+export async function checkAndAutofix(root: string, configPath?: string) {
+  const { theme, offenses } = await themeCheckRun(root, configPath);
+  await autofix(theme, offenses);
+}
+
+export async function themeCheckRun(root: string, configPath?: string): Promise<ThemeCheckRun> {
+  const { theme, config } = await getThemeAndConfig(root, configPath);
   const defaultTranslationsFile = theme.find((sc) => sc.absolutePath.endsWith('default.json'));
   const defaultTranslations = JSON.parse(defaultTranslationsFile?.source || '{}');
 
-  return coreCheck(theme, config, {
+  const offenses = await coreCheck(theme, config, {
     fileExists,
     async getDefaultTranslations() {
       return defaultTranslations;
@@ -69,10 +68,29 @@ export async function check(root: string, theme?: Theme): Promise<Offense[]> {
       return defaultTranslationsFileLocale || defaultLocale;
     },
   });
+
+  return {
+    theme,
+    config,
+    offenses,
+  };
 }
 
-export async function checkAndAutofix(root: string) {
-  const theme = await getTheme(root);
-  const offenses = await check(root, theme);
-  await autofix(theme, offenses);
+async function getThemeAndConfig(
+  root: string,
+  configPath?: string,
+): Promise<{ theme: Theme; config: Config }> {
+  configPath = configPath ?? (await findConfigPath(root));
+  const config = await loadConfig(configPath, root);
+  const theme = await getTheme(config.root);
+  return {
+    theme,
+    config,
+  };
+}
+
+export async function getTheme(root: string): Promise<Theme> {
+  const paths = await asyncGlob(path.join(root, '**/*.{liquid,json}'));
+  const sourceCodes = await Promise.all(paths.map(toSourceCode));
+  return sourceCodes.filter((x): x is LiquidSourceCode | JSONSourceCode => x !== undefined);
 }
