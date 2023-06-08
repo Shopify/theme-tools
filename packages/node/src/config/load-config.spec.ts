@@ -1,6 +1,4 @@
-import fs from 'node:fs/promises';
 import path from 'node:path';
-import os from 'node:os';
 import { describe, it, expect, afterEach, beforeEach } from 'vitest';
 import { loadConfig } from './load-config';
 import {
@@ -27,6 +25,19 @@ describe('Unit: loadConfig', () => {
     const config = await loadConfig(undefined, __dirname);
     expect(config.checks).to.eql(recommended);
     expect(config.root).to.eql(__dirname);
+  });
+
+  it('extends the recommended config by default', async () => {
+    const configPath = await createMockConfigFile(tempDir, `ignore: ['src/**']`);
+    const config = await loadConfig(configPath);
+    expect(config.checks).to.eql(recommended);
+    expect(config.ignore).to.include('src/**');
+  });
+
+  it('has no checks if it extends nothing', async () => {
+    const configPath = await createMockConfigFile(tempDir, `extends: nothing`);
+    const config = await loadConfig(configPath);
+    expect(config.checks).to.be.empty;
   });
 
   it('loads the recommended config', async () => {

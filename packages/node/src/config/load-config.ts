@@ -21,7 +21,7 @@ export async function loadConfig(
   root: AbsolutePath | undefined = configPath ? path.dirname(configPath) : undefined,
 ): Promise<Config> {
   if (!root) throw new Error('loadConfig cannot be called without a root argument');
-  const configDescription = await resolveConfig(configPath ?? 'theme-check:recommended');
+  const configDescription = await resolveConfig(configPath ?? 'theme-check:recommended', true);
   const config = loadConfigDescription(configDescription, root);
   validateConfig(config);
   return config;
