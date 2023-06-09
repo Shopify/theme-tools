@@ -20,8 +20,8 @@ describe('Module: AssetUrlFilters', () => {
       'src="{{ \'image.png\' }}"',
       'href="{{ \'style.css\' }}"',
       'src="{{ \'script.js\' }}"',
-      '"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" | stylesheet_tag',
       'url | img_tag',
+      '"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" | stylesheet_tag',
     ]);
   });
 

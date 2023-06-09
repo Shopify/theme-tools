@@ -4,50 +4,37 @@ function isJSONNode(thing: unknown): thing is JSONNode {
   return !!thing && typeof thing === 'object' && 'type' in thing;
 }
 
-function onCheckNodeEnterMethod(
-  check: JSONCheck,
-  node: JSONNode,
-  ancestors: JSONNode[],
-): Promise<void> {
-  const method = check[node.type] as CheckNodeMethod<SourceCodeType.JSON, typeof node.type>;
-  return method(node, ancestors);
-}
-
-function onCheckNodeExitMethod(
-  check: JSONCheck,
-  node: JSONNode,
-  ancestors: JSONNode[],
-): Promise<void> {
-  const method = check[`${node.type}:exit`] as CheckNodeMethod<
-    SourceCodeType.JSON,
-    typeof node.type
-  >;
-  return method(node, ancestors);
-}
-
 const nonTraversableProperties = new Set(['loc']);
 
-export async function visitJSON(
-  node: JSONNode,
-  check: JSONCheck,
-  ancestors: JSONNode[] = [],
-): Promise<void> {
-  await onCheckNodeEnterMethod(check, node, ancestors);
-  const lineage = ancestors.concat(node);
+export async function visitJSON(node: JSONNode, check: JSONCheck): Promise<void> {
+  const stack: { node: JSONNode; ancestors: JSONNode[] }[] = [{ node, ancestors: [] }];
+  let method: CheckNodeMethod<SourceCodeType.JSON, any> | undefined;
 
-  for (const [key, value] of Object.entries(node)) {
-    if (nonTraversableProperties.has(key)) {
-      continue;
+  while (stack.length > 0) {
+    const { node, ancestors } = stack.pop()!;
+    const lineage = ancestors.concat(node);
+
+    method = check[node.type];
+    if (method) await method(node, ancestors);
+
+    for (const key in node) {
+      if (!node.hasOwnProperty(key) || nonTraversableProperties.has(key)) {
+        continue;
+      }
+
+      const value = node[key as keyof JSONNode];
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          if (isJSONNode(item)) {
+            stack.push({ node: item, ancestors: lineage });
+          }
+        }
+      } else if (isJSONNode(value)) {
+        stack.push({ node: value, ancestors: lineage });
+      }
     }
 
-    if (Array.isArray(value)) {
-      await Promise.all(
-        value.filter(isJSONNode).map((node: JSONNode) => visitJSON(node, check, lineage)),
-      );
-    } else if (isJSONNode(value)) {
-      await visitJSON(value, check, lineage);
-    }
+    method = check[`${node.type}:exit`];
+    if (method) await method(node, ancestors);
   }
-
-  await onCheckNodeExitMethod(check, node, ancestors);
 }

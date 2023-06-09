@@ -21,7 +21,6 @@ import {
 } from './types';
 import { visitLiquid, visitJSON } from './visitors';
 import { createDisabledChecksModule } from './disabled-checks';
-import { createSafeCheck } from './create-safe-check';
 import * as path from './path';
 import { getPosition } from './utils';
 
@@ -129,7 +128,7 @@ function createCheck<S extends SourceCodeType>(
   dependencies: Dependencies,
 ): Check<S> {
   const context = createContext(check, file, offenses, config, dependencies);
-  return createSafeCheck(check.create(context as any)) as Check<S>;
+  return check.create(context as any) as Check<S>;
 }
 
 function filesOfType<S extends SourceCodeType>(type: S, sourceCodes: Theme): SourceCode<S>[] {
@@ -137,15 +136,15 @@ function filesOfType<S extends SourceCodeType>(type: S, sourceCodes: Theme): Sou
 }
 
 async function checkJSONFile(check: JSONCheck, file: JSONSourceCode): Promise<void> {
-  await check.onCodePathStart(file);
+  if (check.onCodePathStart) await check.onCodePathStart(file);
   if (file.ast instanceof Error) return;
-  await visitJSON(file.ast, check);
-  await check.onCodePathEnd(file as typeof file & { ast: JSONNode });
+  if (Object.keys(check).length > 0) await visitJSON(file.ast, check);
+  if (check.onCodePathEnd) await check.onCodePathEnd(file as typeof file & { ast: JSONNode });
 }
 
 async function checkLiquidFile(check: LiquidCheck, file: LiquidSourceCode): Promise<void> {
-  await check.onCodePathStart(file);
+  if (check.onCodePathStart) await check.onCodePathStart(file);
   if (file.ast instanceof Error) return;
-  await visitLiquid(file.ast, check);
-  await check.onCodePathEnd(file as typeof file & { ast: LiquidHtmlNode });
+  if (Object.keys(check).length > 0) await visitLiquid(file.ast, check);
+  if (check.onCodePathEnd) await check.onCodePathEnd(file as typeof file & { ast: LiquidHtmlNode });
 }

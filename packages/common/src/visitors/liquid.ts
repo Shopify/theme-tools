@@ -1,62 +1,39 @@
 import { nonTraversableProperties } from '@shopify/prettier-plugin-liquid/dist/types';
-import {
-  LiquidHtmlNode,
-  LiquidHtmlNodeTypes as NodeTypes,
-  CheckNodeMethod,
-  LiquidCheck,
-  SourceCodeType,
-} from '../types';
+import { LiquidHtmlNode, CheckNodeMethod, LiquidCheck, SourceCodeType } from '../types';
 
 function isLiquidHtmlNode(thing: unknown): thing is LiquidHtmlNode {
-  return (
-    !!thing && typeof thing === 'object' && 'type' in thing && !!NodeTypes[thing.type as NodeTypes]
-  );
+  return !!thing && typeof thing === 'object' && 'type' in thing;
 }
 
-function onCheckNodeEnterMethod(
-  check: LiquidCheck,
-  node: LiquidHtmlNode,
-  ancestors: LiquidHtmlNode[] = [],
-): Promise<void> {
-  const method = check[node.type] as CheckNodeMethod<SourceCodeType.LiquidHtml, typeof node.type>;
-  return method(node, ancestors);
-}
+export async function visitLiquid(node: LiquidHtmlNode, check: LiquidCheck): Promise<void> {
+  const stack: { node: LiquidHtmlNode; ancestors: LiquidHtmlNode[] }[] = [{ node, ancestors: [] }];
+  let method: CheckNodeMethod<SourceCodeType.LiquidHtml, any> | undefined;
 
-function onCheckNodeExitMethod(
-  check: LiquidCheck,
-  node: LiquidHtmlNode,
-  ancestors: LiquidHtmlNode[] = [],
-): Promise<void> {
-  const method = check[`${node.type}:exit`] as CheckNodeMethod<
-    SourceCodeType.LiquidHtml,
-    typeof node.type
-  >;
-  return method(node, ancestors);
-}
+  while (stack.length > 0) {
+    const { node, ancestors } = stack.shift()!;
+    const lineage = ancestors.concat(node);
 
-export async function visitLiquid(
-  node: LiquidHtmlNode,
-  check: LiquidCheck,
-  ancestors: LiquidHtmlNode[] = [],
-): Promise<void> {
-  await onCheckNodeEnterMethod(check, node, ancestors);
-  const lineage = ancestors.concat(node);
+    method = check[node.type];
+    if (method) await method(node, ancestors);
 
-  for (const [key, value] of Object.entries(node)) {
-    if (nonTraversableProperties.has(key)) {
-      continue;
+    for (const key in node) {
+      if (!node.hasOwnProperty(key) || nonTraversableProperties.has(key)) {
+        continue;
+      }
+
+      const value = node[key as keyof LiquidHtmlNode];
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          if (isLiquidHtmlNode(item)) {
+            stack.push({ node: item, ancestors: lineage });
+          }
+        }
+      } else if (isLiquidHtmlNode(value)) {
+        stack.push({ node: value, ancestors: lineage });
+      }
     }
 
-    if (Array.isArray(value)) {
-      await Promise.all(
-        value
-          .filter(isLiquidHtmlNode)
-          .map((node: LiquidHtmlNode) => visitLiquid(node, check, lineage)),
-      );
-    } else if (isLiquidHtmlNode(value)) {
-      await visitLiquid(value, check, lineage);
-    }
+    method = check[`${node.type}:exit`];
+    if (method) await method(node, ancestors);
   }
-
-  await onCheckNodeExitMethod(check, node, ancestors);
 }

@@ -196,7 +196,7 @@ export type CheckDefinition<T, S extends Schema = Schema> = T extends SourceCode
  * }
  */
 export type Check<T> = T extends SourceCodeType
-  ? CheckNodeMethods<T> & CheckExitMethods<T> & CheckLifecycleMethods<T>
+  ? Partial<CheckNodeMethods<T> & CheckExitMethods<T> & CheckLifecycleMethods<T>>
   : never;
 
 export type CheckNodeMethod<T extends SourceCodeType, NT> = (
