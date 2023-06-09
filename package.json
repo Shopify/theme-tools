@@ -11,6 +11,11 @@
     "packages/*"
   ],
   "scripts": {
+    "bench": "node benchmarks/run",
+    "bench:fast": "node benchmarks/run _ 5",
+    "bench:accept": "node benchmarks/run accept",
+    "bench:compare": "node benchmarks/run compare",
+    "bench:setup": "git clone --depth 1 --branch v10.0.0 https://github.com/shopify/dawn benchmarks/dawn",
     "build": "yarn workspaces run build",
     "build:ts": "yarn workspaces run build:ts",
     "build:node": "yarn --cwd packages/node build",

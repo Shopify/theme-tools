@@ -13,3 +13,4 @@ coverage
 tsconfig.builinfo
 tsconfig.tsbuildinfo
 packages/**/standalone.*
+benchmarks/dawn
