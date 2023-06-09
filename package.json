@@ -16,7 +16,7 @@
     "build:node": "yarn --cwd packages/node build",
     "cli": "node packages/node/dist/cli",
     "cli:debug": "node --inspect-brk packages/node/dist/cli",
-    "cli:debug:ts": "node --inspect-brk -r ts-node/register packages/node/cli",
+    "cli:debug:ts": "node --inspect-brk -r ts-node/register packages/node/src/cli",
     "cli:ts": "node -r ts-node/register packages/node/src/cli",
     "format": "prettier --write \"packages/*/src/**/*.ts\"",
     "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
