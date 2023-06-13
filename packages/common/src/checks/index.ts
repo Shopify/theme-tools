@@ -14,6 +14,7 @@ import { UnusedAssign } from './unused-assign';
 import { ImgWidthAndHeight } from './img-width-and-height';
 import { AssetUrlFilters } from './asset-url-filters';
 import { MissingAsset } from './missing-asset';
+import { PaginationSize } from './pagination-size';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AssetUrlFilters,
@@ -26,6 +27,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   MatchingTranslations,
   MissingAsset,
   MissingTemplate,
+  PaginationSize,
   ParserBlockingScript,
   RequiredLayoutThemeObject,
   TranslationKeyExists,
