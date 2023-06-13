@@ -23,11 +23,13 @@ import { visitLiquid, visitJSON } from './visitors';
 import { createDisabledChecksModule } from './disabled-checks';
 import * as path from './path';
 import { getPosition } from './utils';
+import { isIgnored } from './ignore';
 
 export * from './fixes';
 export * from './types';
 export * from './checks';
 export * from './to-source-code';
+export * from './ignore';
 
 export async function check(
   sourceCodes: Theme,
@@ -45,6 +47,7 @@ export async function check(
         const checkDefs = checksOfType(type, config.checks);
         for (const file of files) {
           for (const checkDef of checkDefs) {
+            if (isIgnored(file.absolutePath, config, checkDef)) continue;
             const check = createCheck(checkDef, file, config, offenses, dependencies);
             pipelines.push(checkJSONFile(check, file));
           }
@@ -56,6 +59,7 @@ export async function check(
         const checkDefs = [DisabledChecksVisitor, ...checksOfType(type, config.checks)];
         for (const file of files) {
           for (const checkDef of checkDefs) {
+            if (isIgnored(file.absolutePath, config, checkDef)) continue;
             const check = createCheck(checkDef, file, config, offenses, dependencies);
             pipelines.push(checkLiquidFile(check, file));
           }

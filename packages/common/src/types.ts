@@ -13,7 +13,7 @@ export * from './types/schema-prop-factory';
 
 export type Theme = SourceCode<SourceCodeType>[];
 
-export type SourceCode<T> = T extends SourceCodeType
+export type SourceCode<T = SourceCodeType> = T extends SourceCodeType
   ? {
       absolutePath: string; // /path/to/snippet/foo.liquid
       version?: number;
@@ -98,7 +98,10 @@ export type JSONNodeOfType<T> = NodeOfType<SourceCodeType.LiquidHtml, T>;
 //
 // That is, we want (CheckDefinition<JSON> | CheckDefinition<LiquidHTML>)[]
 //    we don't want (CheckDefinition<JSON | LiquidHtml>)[]
-export type CheckDefinition<T, S extends Schema = Schema> = T extends SourceCodeType
+export type CheckDefinition<
+  T = SourceCodeType,
+  S extends Schema = Schema,
+> = T extends SourceCodeType
   ? {
       /**
        * The meta object holds information about the check.

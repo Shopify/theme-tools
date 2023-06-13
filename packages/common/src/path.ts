@@ -1,8 +1,8 @@
 import { RelativePath, AbsolutePath } from './types';
 
-export function relative(from: AbsolutePath, to: AbsolutePath): RelativePath {
+export function relative(absolutePath: AbsolutePath, root: AbsolutePath): RelativePath {
   // TODO (#15): do the right thing for windows and shit.
-  return from.replace(to, '').replace(/^\//, '');
+  return absolutePath.replace(root, '').replace(/^\//, '');
 }
 
 export function join(...paths: string[]): string {

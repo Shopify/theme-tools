@@ -6,6 +6,7 @@ import {
   Theme,
   check as coreCheck,
   toSourceCode as commonToSourceCode,
+  isIgnored,
 } from '@shopify/theme-check-common';
 import { promisify } from 'node:util';
 import path from 'node:path';
@@ -82,15 +83,18 @@ async function getThemeAndConfig(
 ): Promise<{ theme: Theme; config: Config }> {
   configPath = configPath ?? (await findConfigPath(root));
   const config = await loadConfig(configPath, root);
-  const theme = await getTheme(config.root);
+  const theme = await getTheme(config);
   return {
     theme,
     config,
   };
 }
 
-export async function getTheme(root: string): Promise<Theme> {
-  const paths = await asyncGlob(path.join(root, '**/*.{liquid,json}'));
+export async function getTheme(config: Config): Promise<Theme> {
+  const paths = await asyncGlob(path.join(config.root, '**/*.{liquid,json}')).then((result) =>
+    // Global ignored paths should not be part of the theme
+    result.filter((filePath) => !isIgnored(filePath, config)),
+  );
   const sourceCodes = await Promise.all(paths.map(toSourceCode));
   return sourceCodes.filter((x): x is LiquidSourceCode | JSONSourceCode => x !== undefined);
 }
