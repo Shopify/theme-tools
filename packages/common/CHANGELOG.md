@@ -1,5 +1,15 @@
 # @shopify/theme-check-common
 
+## 1.8.0
+
+### Minor Changes
+
+- 2f0f941: Add `MissingAsset` check
+- fd3fc3c: Add `AssetUrlFilters`
+- 5ae97c9: Add `PaginationSize` check
+- 85cf8f3: Add `CdnPreconnect`
+- 051aff1: Introduce `ThemeDocset` and `ThemeSchemas` dependencies to support core checks
+
 ## 1.7.1
 
 ### Patch Changes
