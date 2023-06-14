@@ -6,6 +6,10 @@ import { SchemaPropFactory } from './types/schema-prop-factory';
 
 import { StringCorrector, JSONCorrector } from './fixes';
 
+import { ThemeDocset, ThemeSchemas } from './types/theme-liquid-docs';
+
+export * from './types/theme-liquid-docs';
+
 export type Theme = SourceCode<SourceCodeType>[];
 
 export type SourceCode<T> = T extends SourceCodeType
@@ -245,6 +249,8 @@ export interface Dependencies {
   getDefaultTranslations(): Promise<Translations>;
   getDefaultLocale(): Promise<string>;
   fileExists(absolutePath: string): Promise<boolean>;
+  themeDocset?: ThemeDocset;
+  themeSchemas?: ThemeSchemas;
 }
 
 type StaticContextProperties<T extends SourceCodeType> = T extends SourceCodeType
