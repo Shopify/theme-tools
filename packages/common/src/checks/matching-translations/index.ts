@@ -74,13 +74,15 @@ export const MatchingTranslations: JSONCheckDefinition = {
     };
 
     const countCommonParts = (arrayA: string[], arrayB: string[]): number => {
-      const firstMismatch = arrayA.findIndex((part, i) => part !== arrayB[i]);
+      const minLength = Math.min(arrayA.length, arrayB.length);
 
-      if (firstMismatch !== -1) {
-        return firstMismatch;
+      for (let i = 0; i < minLength; i++) {
+        if (arrayA[i] !== arrayB[i]) {
+          return i;
+        }
       }
 
-      return Math.min(arrayA.length, arrayB.length);
+      return minLength;
     };
 
     const file = context.file;
@@ -92,18 +94,19 @@ export const MatchingTranslations: JSONCheckDefinition = {
     }
 
     const closestTranslationKey = (translationKey: string) => {
-      const keys = Array.from(nodesByPath.keys());
-      const [closestMatch, _commonParts] = keys
-        .map((path): [string, number] => {
-          const common = countCommonParts(path.split('.'), translationKey.split('.'));
-          return [path, common];
-        })
-        .reduce(
-          ([pathA, commonA], [pathB, commonB]) => {
-            return commonB > commonA ? [pathB, commonB] : [pathA, commonA];
-          },
-          ['', 0],
-        );
+      const translationKeyParts = translationKey.split('.');
+      let closestMatch = '';
+      let maxCommonParts = 0;
+
+      for (const path of nodesByPath.keys()) {
+        const pathParts = path.split('.');
+        const commonParts = countCommonParts(pathParts, translationKeyParts);
+
+        if (commonParts > maxCommonParts) {
+          maxCommonParts = commonParts;
+          closestMatch = path;
+        }
+      }
 
       return nodesByPath.get(closestMatch) ?? ast;
     };
