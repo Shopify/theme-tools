@@ -10,7 +10,7 @@ export async function visitLiquid(node: LiquidHtmlNode, check: LiquidCheck): Pro
   let method: CheckNodeMethod<SourceCodeType.LiquidHtml, any> | undefined;
 
   while (stack.length > 0) {
-    const { node, ancestors } = stack.shift()!;
+    const { node, ancestors } = stack.pop()!;
     const lineage = ancestors.concat(node);
 
     method = check[node.type];
@@ -23,7 +23,8 @@ export async function visitLiquid(node: LiquidHtmlNode, check: LiquidCheck): Pro
 
       const value = node[key as keyof LiquidHtmlNode];
       if (Array.isArray(value)) {
-        for (const item of value) {
+        for (let i = value.length - 1; i >= 0; i--) {
+          const item = value[i];
           if (isLiquidHtmlNode(item)) {
             stack.push({ node: item, ancestors: lineage });
           }

@@ -24,7 +24,8 @@ export async function visitJSON(node: JSONNode, check: JSONCheck): Promise<void>
 
       const value = node[key as keyof JSONNode];
       if (Array.isArray(value)) {
-        for (const item of value) {
+        for (let i = value.length - 1; i >= 0; i--) {
+          const item = value[i];
           if (isJSONNode(item)) {
             stack.push({ node: item, ancestors: lineage });
           }
