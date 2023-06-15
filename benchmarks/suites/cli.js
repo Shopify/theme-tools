@@ -1,5 +1,4 @@
 const path = require('node:path');
-const fs = require('node:fs');
 const { themeCheckRun } = require('@shopify/theme-check-node');
 const { mean, stdDev, bench } = require('../utils');
 
