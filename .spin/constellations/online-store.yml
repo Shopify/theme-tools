@@ -1,0 +1,5 @@
+schema: v1
+repos:
+  - theme-check-js
+  - liquid-language-server
+  - online-store-web
