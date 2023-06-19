@@ -15,6 +15,7 @@ import { ImgWidthAndHeight } from './img-width-and-height';
 import { AssetUrlFilters } from './asset-url-filters';
 import { MissingAsset } from './missing-asset';
 import { PaginationSize } from './pagination-size';
+import { ValidHTMLTranslation } from './valid-html-translation';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AssetUrlFilters,
@@ -32,6 +33,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   RequiredLayoutThemeObject,
   TranslationKeyExists,
   UnusedAssign,
+  ValidHTMLTranslation,
 ];
 
 export const recommended = allChecks.filter((check) => check.meta.docs.recommended);
