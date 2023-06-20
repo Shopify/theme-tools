@@ -12,7 +12,7 @@ describe('Module: ImgLazyLoading', () => {
 
     expect(offenses).toHaveLength(1);
     expect(offense.message).to.equal(
-      'Improve performance using loading="eager" or loading="lazy".',
+      'Improve performance by using loading="eager" or loading="lazy".',
     );
 
     expect(offense.suggest).toHaveLength(2);
@@ -68,7 +68,7 @@ describe('Module: ImgLazyLoading', () => {
     const offense = offenses[0];
     expect(offenses).toHaveLength(1);
     expect(offenses[0].message).to.equal(
-      'Improve performance using loading="eager" or loading="lazy".',
+      'Improve performance by using loading="eager" or loading="lazy".',
     );
 
     expect(offense.suggest).toHaveLength(2);
@@ -117,7 +117,7 @@ describe('Module: ImgLazyLoading', () => {
 
     expect(offenses).toHaveLength(1);
     expect(offense.message).to.equal(
-      'Improve performance using loading="eager" or loading="lazy".',
+      'Improve performance by using loading="eager" or loading="lazy".',
     );
     expect(offense.suggest).toHaveLength(2);
 

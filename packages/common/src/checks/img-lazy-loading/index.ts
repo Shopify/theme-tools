@@ -49,7 +49,7 @@ export const ImgLazyLoading: LiquidCheckDefinition = {
 
         if (!loadingValue) {
           context.report({
-            message: 'Improve performance using loading="eager" or loading="lazy".',
+            message: 'Improve performance by using loading="eager" or loading="lazy".',
             startIndex: node.position.start,
             endIndex: node.position.end,
             suggest: [
