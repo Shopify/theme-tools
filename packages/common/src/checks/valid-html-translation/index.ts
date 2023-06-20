@@ -18,8 +18,12 @@ export const ValidHTMLTranslation: JSONCheckDefinition = {
   },
 
   create(context) {
+    // We ignore non-`locales/` json files.
+    const relativePath = context.relativePath(context.file.absolutePath);
+    if (!relativePath.startsWith('locales/')) return {};
+
     return {
-      async Literal(node: LiteralNode, ancestors: JSONNode[]) {
+      async Literal(node: LiteralNode) {
         const htmlRegex = /<[^>]+>/;
 
         if (typeof node.value !== 'string' || !htmlRegex.test(node.value)) return;
