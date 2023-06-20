@@ -6,6 +6,9 @@ ignore:
 AssetUrlFilters:
   enabled: true
   severity: 1
+CdnPreconnect:
+  enabled: true
+  severity: 1
 DeprecateBgsizes:
   enabled: true
   severity: 1
@@ -30,6 +33,11 @@ MissingAsset:
 MissingTemplate:
   enabled: true
   severity: 0
+PaginationSize:
+  enabled: true
+  severity: 1
+  minSize: 1
+  maxSize: 50
 ParserBlockingScript:
   enabled: true
   severity: 0
@@ -40,5 +48,8 @@ TranslationKeyExists:
   enabled: true
   severity: 0
 UnusedAssign:
+  enabled: true
+  severity: 1
+ValidHTMLTranslation:
   enabled: true
   severity: 1
