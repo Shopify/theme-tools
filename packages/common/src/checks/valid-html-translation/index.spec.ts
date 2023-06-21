@@ -12,7 +12,7 @@ describe('ValidHTMLTranslation', () => {
       foo: 'bar',
     });
 
-    const offenses = await runJSONCheck(ValidHTMLTranslation, sourceCode);
+    const offenses = await runJSONCheck(ValidHTMLTranslation, sourceCode, 'locales/en.json');
     expect(offenses).toHaveLength(0);
   });
 
@@ -21,13 +21,13 @@ describe('ValidHTMLTranslation', () => {
       hello_html: '<h1>Hello, world',
     });
 
-    const offenses = await runJSONCheck(ValidHTMLTranslation, sourceCode);
+    const offenses = await runJSONCheck(ValidHTMLTranslation, sourceCode, 'locales/en.json');
     expect(offenses).toHaveLength(1);
     expect(offenses[0].message).to.equal(
       "LiquidHTMLParsingError: Attempting to end parsing before HtmlElement 'h1' was closed.",
     );
 
-    const highlights = highlightedOffenses({ 'file.json': sourceCode }, offenses);
+    const highlights = highlightedOffenses({ 'locales/en.json': sourceCode }, offenses);
     expect(highlights).toHaveLength(1);
     expect(highlights[0]).to.equal(`"<h1>Hello, world"`);
   });
@@ -45,13 +45,13 @@ describe('ValidHTMLTranslation', () => {
       },
     });
 
-    const offenses = await runJSONCheck(ValidHTMLTranslation, sourceCode);
+    const offenses = await runJSONCheck(ValidHTMLTranslation, sourceCode, 'locales/en.json');
     expect(offenses).toHaveLength(1);
     expect(offenses[0].message).to.equal(
       "LiquidHTMLParsingError: Attempting to end parsing before HtmlElement 'h1' was closed.",
     );
 
-    const highlights = highlightedOffenses({ 'file.json': sourceCode }, offenses);
+    const highlights = highlightedOffenses({ 'locales/en.json': sourceCode }, offenses);
     expect(highlights).toHaveLength(1);
     expect(highlights[0]).to.equal(`"<h1>Hello, world"`);
   });
@@ -61,13 +61,13 @@ describe('ValidHTMLTranslation', () => {
       hello_html: { one: '<h1>Hello, world' },
     });
 
-    const offenses = await runJSONCheck(ValidHTMLTranslation, sourceCode);
+    const offenses = await runJSONCheck(ValidHTMLTranslation, sourceCode, 'locales/en.json');
     expect(offenses).toHaveLength(1);
     expect(offenses[0].message).to.equal(
       "LiquidHTMLParsingError: Attempting to end parsing before HtmlElement 'h1' was closed.",
     );
 
-    const highlights = highlightedOffenses({ 'file.json': sourceCode }, offenses);
+    const highlights = highlightedOffenses({ 'locales/en.json': sourceCode }, offenses);
     expect(highlights).toHaveLength(1);
     expect(highlights[0]).to.equal(`"<h1>Hello, world"`);
   });
