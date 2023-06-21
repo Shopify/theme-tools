@@ -19,3 +19,43 @@ export async function createMockConfigFile(
   await fs.writeFile(filePath, contents, 'utf8');
   return filePath;
 }
+
+export const mockNodeModuleCheck = `
+  const MockCheck = {
+    meta: {
+      name: 'MockCheck',
+      code: 'MockCheck',
+      docs: { description: '...' },
+      schema: {},
+      severity: 0,
+      targets: [],
+      type: 'LiquidHtml',
+    },
+    create() {
+      return {};
+    },
+  };
+
+  exports.checks = [
+    MockCheck,
+  ];
+`;
+
+export async function createMockNodeModule(
+  tempDir: string,
+  moduleName: string,
+  moduleContent: string = mockNodeModuleCheck,
+): Promise<string> {
+  const nodeModuleRoot = path.join(tempDir, 'node_modules', moduleName);
+  await fs.mkdir(nodeModuleRoot, { recursive: true });
+  await fs.writeFile(
+    path.join(nodeModuleRoot, 'package.json'),
+    JSON.stringify({
+      name: moduleName,
+      main: './index.js',
+    }),
+    'utf8',
+  );
+  await fs.writeFile(path.join(nodeModuleRoot, 'index.js'), moduleContent);
+  return nodeModuleRoot;
+}

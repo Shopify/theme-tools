@@ -34,6 +34,7 @@ SomeCheck:
       root: './dist',
       extends: [],
       ignore: ['assets', 'config'],
+      require: [],
       checkSettings: {
         SomeCheck: {
           enabled: false,
@@ -85,6 +86,7 @@ SomeCheck:
       root: './dist',
       extends: [],
       ignore: ['base_assets', 'base_config', 'assets', 'config'],
+      require: [],
       checkSettings: {
         BaseCheck: {
           enabled: true,

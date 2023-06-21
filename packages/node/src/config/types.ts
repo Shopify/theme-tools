@@ -19,6 +19,7 @@ export interface ConfigFragment {
   root?: string;
   ignore: string[];
   extends: string[];
+  require: string[];
   checkSettings: ChecksSettings;
 }
 

@@ -6,10 +6,10 @@ import {
   allChecks,
 } from '@shopify/theme-check-common';
 import path from 'node:path';
+import { loadThirdPartyChecks } from './load-third-party-checks';
 import { ConfigDescription } from './types';
 
-// TODO (#99)
-const nodeModuleChecks: CheckDefinition<SourceCodeType>[] = [];
+const thisNodeModuleRoot = path.dirname(path.dirname('@shopify/theme-check-common/package.json'));
 
 /**
  * Creates the checks array, loads node modules checks and validates
@@ -17,12 +17,16 @@ const nodeModuleChecks: CheckDefinition<SourceCodeType>[] = [];
  *
  * Effectively "loads" a ConfigDescription into a Config.
  */
-export function loadConfigDescription(
+export async function loadConfigDescription(
   configDescription: ConfigDescription,
   root: AbsolutePath,
-): Config {
+): Promise<Config> {
+  const thirdPartyChecks = await loadThirdPartyChecks(
+    thisNodeModuleRoot,
+    configDescription.require, // TODO
+  );
   const checks: CheckDefinition<SourceCodeType>[] = allChecks
-    .concat(nodeModuleChecks)
+    .concat(thirdPartyChecks)
     .filter(isEnabledBy(configDescription));
 
   const settings = configDescription.checkSettings;

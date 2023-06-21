@@ -5,6 +5,7 @@ import { ConfigDescription, ConfigFragment } from '../types';
 const emptyConfig: ConfigDescription = {
   extends: [],
   ignore: [],
+  require: [],
   checkSettings: {},
 };
 
@@ -15,6 +16,7 @@ describe('Unit: mergeFragments', () => {
         root: './dist1',
         extends: [],
         ignore: ['assets'],
+        require: ['./lib/index.js'],
         checkSettings: {
           SomeCheck: {
             enabled: true,
@@ -26,6 +28,7 @@ describe('Unit: mergeFragments', () => {
         root: './dist2',
         extends: [],
         ignore: ['config'],
+        require: ['@acme/theme-check-extension'],
         checkSettings: {
           AnotherCheck: {
             enabled: false,
@@ -38,6 +41,7 @@ describe('Unit: mergeFragments', () => {
     const config: ConfigFragment = {
       ignore: ['node_modules'],
       extends: ['theme-check:recommended'],
+      require: [],
       checkSettings: {
         SomeCheck: {
           enabled: false,
@@ -51,6 +55,7 @@ describe('Unit: mergeFragments', () => {
       root: './dist2',
       extends: [],
       ignore: ['assets', 'config', 'node_modules'],
+      require: ['./lib/index.js', '@acme/theme-check-extension'],
       checkSettings: {
         SomeCheck: {
           enabled: false,
@@ -112,6 +117,7 @@ describe('Unit: mergeFragments', () => {
       root: './dist',
       ignore: [],
       extends: [],
+      require: [],
       checkSettings: {},
     };
 
@@ -121,6 +127,7 @@ describe('Unit: mergeFragments', () => {
       root: './dist',
       extends: [],
       ignore: [],
+      require: [],
       checkSettings: {},
     });
   });
@@ -131,6 +138,7 @@ describe('Unit: mergeFragments', () => {
         root: './dist',
         extends: [],
         ignore: [],
+        require: [],
         checkSettings: {
           SomeCheck: {
             enabled: true,
@@ -146,6 +154,7 @@ describe('Unit: mergeFragments', () => {
       root: './dist',
       ignore: [],
       extends: [],
+      require: [],
       checkSettings: {
         SomeCheck: {
           enabled: false,
@@ -162,6 +171,7 @@ describe('Unit: mergeFragments', () => {
       root: './dist',
       extends: [],
       ignore: [],
+      require: [],
       checkSettings: {
         SomeCheck: {
           enabled: false,

@@ -4,7 +4,12 @@ import { realpathSync } from 'node:fs';
 import { describe, it, expect, afterAll, beforeAll } from 'vitest';
 import { readYamlConfigDescription } from './read-yaml';
 import { Severity } from '@shopify/theme-check-common';
-import { createMockConfigFile, makeTmpFolder, removeTmpFolder } from '../../test/test-helpers';
+import {
+  createMockConfigFile,
+  makeTmpFolder,
+  removeTmpFolder,
+  createMockNodeModule,
+} from '../../test/test-helpers';
 
 const mockYamlContent = `
 root: ./dist
@@ -37,6 +42,7 @@ describe('Unit: readYamlConfigDescription', () => {
       root: './dist',
       ignore: ['assets', 'config'],
       extends: ['theme-check:recommended'],
+      require: [],
       checkSettings: {
         SomeCheck: {
           enabled: false,
@@ -55,6 +61,7 @@ describe('Unit: readYamlConfigDescription', () => {
       const config = await readYamlConfigDescription(filePath);
       expect(config).toEqual({
         ignore: [],
+        require: [],
         extends: ['theme-check:recommended', 'theme-check:all'],
         checkSettings: {},
       });
@@ -67,6 +74,7 @@ describe('Unit: readYamlConfigDescription', () => {
       expect(config).toEqual({
         extends: [baseConfigPath],
         ignore: [],
+        require: [],
         checkSettings: {},
       });
     });
@@ -89,6 +97,7 @@ describe('Unit: readYamlConfigDescription', () => {
       expect(config).toEqual({
         extends: [path.join(tempDir, 'configurations', 'theme-check.yml')],
         ignore: [],
+        require: [],
         checkSettings: {},
       });
     });
@@ -119,6 +128,7 @@ describe('Unit: readYamlConfigDescription', () => {
       expect(config).toEqual({
         ignore: [],
         extends: [realpathSync(path.join(mockNodeModulePath, 'recommended.yml'))],
+        require: [],
         checkSettings: {},
       });
     });
@@ -153,6 +163,29 @@ describe('Unit: readYamlConfigDescription', () => {
         const config = await readYamlConfigDescription(filePath);
         expect(config.extends, testCase).toEqual(expected);
       }
+    });
+  });
+
+  describe('Unit: require', () => {
+    it('supports array arguments', async () => {
+      const filePath = await createMockYamlFile(`require: ['./lib/index.js']`);
+      const libPath = path.resolve(tempDir, 'lib', 'index.js');
+      const config = await readYamlConfigDescription(filePath);
+      expect(config.require).toEqual([libPath]);
+    });
+
+    it('uses an absolute path as is', async () => {
+      const filePath = await createMockYamlFile(`require: './lib/index.js'`);
+      const libPath = path.resolve(tempDir, 'lib', 'index.js');
+      const config = await readYamlConfigDescription(filePath);
+      expect(config.require).toEqual([libPath]);
+    });
+
+    it('translates a node_module into the resolved path of the node_module relative to the config file', async () => {
+      const filePath = await createMockYamlFile(`require: '@acme/theme-check-extension'`);
+      const nodeModuleRoot = await createMockNodeModule(tempDir, '@acme/theme-check-extension');
+      const config = await readYamlConfigDescription(filePath);
+      expect(config.require).toEqual([realpathSync(path.join(nodeModuleRoot, 'index.js'))]);
     });
   });
 

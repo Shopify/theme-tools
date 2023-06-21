@@ -26,6 +26,9 @@ export function mergeFragments(
     // we merge the ignore configs by concatenation
     ignore: baseConfigs.flatMap((b) => b.ignore).concat(config.ignore),
 
+    // we merge the require configs by concatenation
+    require: baseConfigs.flatMap((b) => b.require).concat(config.require),
+
     // we merge deep the settings
     checkSettings: baseConfigs
       .map((b) => b.checkSettings)

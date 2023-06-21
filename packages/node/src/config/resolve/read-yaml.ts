@@ -35,6 +35,7 @@ export async function readYamlConfigDescription(
     checkSettings: {},
     ignore: [],
     extends: [],
+    require: [],
   };
 
   if (yamlFile.root) {
@@ -45,6 +46,13 @@ export async function readYamlConfigDescription(
   if (yamlFile.ignore) {
     config.ignore = asArray(yamlFile.ignore);
     delete yamlFile.ignore;
+  }
+
+  if (yamlFile.require) {
+    config.require = asArray(yamlFile.require)
+      .map((pathLike: string) => resolvePath(root, pathLike))
+      .filter(isString);
+    delete yamlFile.require;
   }
 
   if (yamlFile.extends) {
@@ -97,6 +105,24 @@ function resolveExtends(
     return pathLike;
   }
 
+  return resolvePath(root, pathLike);
+}
+
+/**
+ * resolves a pathLike property from the configuration file.
+ *
+ * pathLike can be any of the following:
+ *   - a node_module (e.g. '@acme/theme-check-extension')
+ *   - a relative path (e.g. './lib/main.js')
+ *
+ * @returns {string} resolved absolute path of the extended config
+ */
+function resolvePath(
+  /** absolute path of the config file */
+  root: string,
+  /** pathLike textual value of the `extends` property in the config file */
+  pathLike: string,
+): string {
   if (path.isAbsolute(pathLike)) {
     return pathLike;
   }
