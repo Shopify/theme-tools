@@ -7,6 +7,14 @@
 Add support for `.theme-check.yml` config files
 
 **New features**:
+- Developers can write their own checks and publish them to [npm](https://npmjs.com)
+
+  Modules that follow the `@scope/theme-check-*` or `theme-check-*` naming conventions are automatically loaded.
+
+  The `require` property of the configuration file can be used to load checks that do not follow the naming convention.
+
+  See [Creating a Theme Check extension](docs/writing-your-own-check/index.md) for more info.
+
 - `extends` can be an array
 - `extends` can refer to node module dependencies
 - `extends` also accepts "modern" config identifiers:
@@ -19,7 +27,7 @@ Add support for `.theme-check.yml` config files
 - `exclude_categories: []`
 
 **Replaced features**:
-- `require: []` this is now only used for non-node-module checks, `node_modules` checks are automatically loaded if configured.
+- `require: []` this can be used to load unconventional (or private) `theme-check-js` checks. Ruby checks are not supported.
 
 **Breaking changes**:
 - Custom checks written in Ruby won't work Theme Check in TypeScript
