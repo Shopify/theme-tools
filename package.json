@@ -21,6 +21,7 @@
     "build:node": "yarn --cwd packages/node build",
     "build:links": "sh ./scripts/build-local-pkgs.sh",
     "setup:extension": "sh ./scripts/setup-dev-extension.sh",
+    "setup:admin": "sh ./scripts/setup-dev-admin.sh",
     "cli": "node packages/node/dist/cli",
     "cli:debug": "node --inspect-brk packages/node/dist/cli",
     "cli:debug:ts": "node --inspect-brk -r ts-node/register packages/node/src/cli",
