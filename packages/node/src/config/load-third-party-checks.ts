@@ -29,7 +29,6 @@ export async function loadThirdPartyChecks(
       const tpModule = require(mod);
       const moduleChecks = tpModule.checks as unknown;
       if (!Array.isArray(moduleChecks)) {
-        console.error(tpModule);
         throw new Error(
           `Expected the 'checks' export to be an array and got ${typeof moduleChecks}, ${tpModule}`,
         );

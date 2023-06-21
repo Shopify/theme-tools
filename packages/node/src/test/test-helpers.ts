@@ -3,7 +3,9 @@ import path from 'node:path';
 import os from 'node:os';
 
 export async function makeTmpFolder() {
-  return fs.mkdtemp(path.join(os.tmpdir(), 'test-'));
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'test-'));
+  await fs.mkdir(path.join(tmpDir, '.git'));
+  return tmpDir;
 }
 
 export async function removeTmpFolder(tempDir: string) {
@@ -21,10 +23,10 @@ export async function createMockConfigFile(
 }
 
 export const mockNodeModuleCheck = `
-  const MockCheck = {
+  const NodeModuleCheck = {
     meta: {
-      name: 'MockCheck',
-      code: 'MockCheck',
+      name: 'NodeModuleCheck',
+      code: 'NodeModuleCheck',
       docs: { description: '...' },
       schema: {},
       severity: 0,
@@ -37,7 +39,7 @@ export const mockNodeModuleCheck = `
   };
 
   exports.checks = [
-    MockCheck,
+    NodeModuleCheck,
   ];
 `;
 

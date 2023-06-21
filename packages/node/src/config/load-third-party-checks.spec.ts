@@ -41,21 +41,21 @@ describe('Module: ThirdPartyChecks', () => {
       await fs.writeFile(localModulePath, mockNodeModuleCheck);
       const checks = await loadThirdPartyChecks(tempDir, [localModulePath]);
       expect(checks.length).to.be.greaterThan(0);
-      expect(checks[0].meta.code).to.equal('MockCheck');
+      expect(checks[0].meta.code).to.equal('NodeModuleCheck');
     });
 
     it('loads third-party checks from node_modules', async () => {
       await createMockNodeModule(tempDir, 'theme-check-react', mockNodeModuleCheck);
       const checks = await loadThirdPartyChecks(tempDir);
       expect(checks.length).to.be.greaterThan(0);
-      expect(checks[0].meta.code).to.equal('MockCheck');
+      expect(checks[0].meta.code).to.equal('NodeModuleCheck');
     });
 
     it('loads third-party checks from node_modules (scoped)', async () => {
       await createMockNodeModule(tempDir, '@acme/theme-check-extension', mockNodeModuleCheck);
       const checks = await loadThirdPartyChecks(tempDir);
       expect(checks.length).to.be.greaterThan(0);
-      expect(checks[0].meta.code).to.equal('MockCheck');
+      expect(checks[0].meta.code).to.equal('NodeModuleCheck');
     });
 
     it('handles errors when loading third-party checks', async () => {

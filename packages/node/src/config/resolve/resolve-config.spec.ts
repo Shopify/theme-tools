@@ -98,7 +98,7 @@ SomeCheck:
           ignore: ['snippets'],
           someSetting: 'value',
         },
-        OtherCheck: {
+        NodeModuleCheck: {
           enabled: true,
         },
       },
