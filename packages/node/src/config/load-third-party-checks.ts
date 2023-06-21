@@ -51,8 +51,8 @@ export async function loadThirdPartyChecks(
 
 export async function findThirdPartyChecks(nodeModuleRoot: AbsolutePath): Promise<ModulePath[]> {
   const paths = [
-    path.join(nodeModuleRoot, '**/node_modules/theme-check-*/package.json'),
-    path.join(nodeModuleRoot, '**/node_modules/@*/theme-check-*/package.json'),
+    globJoin(nodeModuleRoot.replace(/\\/g, '/'), '**/node_modules/theme-check-*/package.json'),
+    globJoin(nodeModuleRoot.replace(/\\/g, '/'), '**/node_modules/@*/theme-check-*/package.json'),
   ];
   return Promise.all(paths.map((path) => asyncGlob(path))).then((arrs) =>
     arrs
@@ -60,6 +60,10 @@ export async function findThirdPartyChecks(nodeModuleRoot: AbsolutePath): Promis
       .map(path.dirname)
       .filter((x) => !x.endsWith(path.join('@shopify', 'theme-check-common'))),
   );
+}
+
+function globJoin(...parts: string[]): string {
+  return parts.flatMap((x) => x.replace(/\\/g, '/').replace(/\/+$/, '')).join('/');
 }
 
 function isObjLiteral(thing: unknown): thing is Record<PropertyKey, any> {

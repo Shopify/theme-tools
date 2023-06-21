@@ -46,7 +46,7 @@ export async function createMockNodeModule(
   moduleName: string,
   moduleContent: string = mockNodeModuleCheck,
 ): Promise<string> {
-  const nodeModuleRoot = path.join(tempDir, 'node_modules', moduleName);
+  const nodeModuleRoot = path.join(tempDir, 'node_modules', ...moduleName.split('/'));
   await fs.mkdir(nodeModuleRoot, { recursive: true });
   await fs.writeFile(
     path.join(nodeModuleRoot, 'package.json'),
