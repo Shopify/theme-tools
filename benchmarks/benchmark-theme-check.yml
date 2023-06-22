@@ -1,1 +1,7 @@
 extends: theme-check:all
+
+require:
+  - './example-checks.js'
+
+NoScriptTag:
+  enabled: true
