@@ -16,12 +16,14 @@ import { AssetUrlFilters } from './asset-url-filters';
 import { MissingAsset } from './missing-asset';
 import { PaginationSize } from './pagination-size';
 import { ValidHTMLTranslation } from './valid-html-translation';
+import { ImgLazyLoading } from './img-lazy-loading';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AssetUrlFilters,
   CdnPreconnect,
   DeprecateBgsizes,
   DeprecateLazysizes,
+  ImgLazyLoading,
   ImgWidthAndHeight,
   JSONSyntaxError,
   LiquidHTMLSyntaxError,

@@ -15,6 +15,9 @@ DeprecateBgsizes:
 DeprecateLazysizes:
   enabled: true
   severity: 1
+ImgLazyLoading:
+  enabled: true
+  severity: 1
 ImgWidthAndHeight:
   enabled: true
   severity: 1
