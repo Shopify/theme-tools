@@ -7,8 +7,11 @@ import {
 } from '@shopify/theme-check-common';
 import path from 'node:path';
 import { fileExists } from '../file-utils';
-import { loadThirdPartyChecks } from './load-third-party-checks';
+import { thisNodeModuleRoot } from './installation-location';
+import { findThirdPartyChecks, loadThirdPartyChecks } from './load-third-party-checks';
 import { ConfigDescription } from './types';
+
+const flatten = <T>(arrs: T[][]): T[] => arrs.flat();
 
 /**
  * Creates the checks array, loads node modules checks and validates
@@ -21,7 +24,14 @@ export async function loadConfigDescription(
   root: AbsolutePath,
 ): Promise<Config> {
   const nodeModuleRoot = await findNodeModuleRoot(root);
-  const thirdPartyChecks = await loadThirdPartyChecks(nodeModuleRoot, configDescription.require);
+  const thirdPartyChecksPaths = await Promise.all([
+    findThirdPartyChecks(thisNodeModuleRoot), // global checks
+    findThirdPartyChecks(nodeModuleRoot),
+  ]).then(flatten);
+  const thirdPartyChecks = loadThirdPartyChecks([
+    ...configDescription.require,
+    ...thirdPartyChecksPaths,
+  ]);
   const checks: CheckDefinition<SourceCodeType>[] = allChecks
     .concat(thirdPartyChecks)
     .filter(isEnabledBy(configDescription));

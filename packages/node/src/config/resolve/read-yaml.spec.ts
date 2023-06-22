@@ -174,7 +174,7 @@ describe('Unit: readYamlConfigDescription', () => {
       expect(config.require).toEqual([libPath]);
     });
 
-    it('uses an absolute path as is', async () => {
+    it('resolves a relative path to an absolute path', async () => {
       const filePath = await createMockYamlFile(`require: './lib/index.js'`);
       const libPath = path.resolve(tempDir, 'lib', 'index.js');
       const config = await readYamlConfigDescription(filePath);

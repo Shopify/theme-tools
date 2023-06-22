@@ -1,36 +1,31 @@
 import { AbsolutePath, CheckDefinition, SourceCodeType } from '@shopify/theme-check-common';
 import glob from 'glob';
-import path from 'node:path';
 import { promisify } from 'node:util';
 
 const asyncGlob = promisify(glob);
 
 type ModulePath = string;
 
-export async function loadThirdPartyChecks(
+export function loadThirdPartyChecks(
   /**
-   * Not to be confused with the root of the theme. A workspace could be a
-   * monorepo where @shopify/cli is installed at the root. We might need to
-   * be able to discover checks in node_modules in folders above the one
-   * we're checking.
-   */
-  nodeModuleRoot: AbsolutePath,
-  /**
-   * The value of the `require:` array in the config file. This is for
-   * folks who don't want to publish their checks to NPM or that wish to
-   * debug them.
-   */
-  requirePaths: ModulePath[] = [],
-): Promise<CheckDefinition<SourceCodeType>[]> {
+   * An array of require()-able paths.
+   * @example
+   * [
+   *   '@acme/theme-check-extension',
+   *   '/absolute/path/to/checks.js',
+   *   './lib/checks.js',
+   * ]
+   * */
+  modulePaths: ModulePath[] = [],
+): CheckDefinition<SourceCodeType>[] {
   const checks = [];
-  const modules = requirePaths.concat(await findThirdPartyChecks(nodeModuleRoot));
-  for (const mod of modules) {
+  for (const modulePath of modulePaths) {
     try {
-      const tpModule = require(mod);
-      const moduleChecks = tpModule.checks as unknown;
+      const moduleValue = require(modulePath);
+      const moduleChecks = moduleValue.checks as unknown;
       if (!Array.isArray(moduleChecks)) {
         throw new Error(
-          `Expected the 'checks' export to be an array and got ${typeof moduleChecks}, ${tpModule}`,
+          `Expected the 'checks' export to be an array and got ${typeof moduleChecks}`,
         );
       }
 
@@ -42,7 +37,7 @@ export async function loadThirdPartyChecks(
         }
       }
     } catch (e) {
-      console.error(`Error loading ${mod}, ${e}. Ignoring it.`);
+      console.error(`Error loading ${modulePath}, ignoring it.\n${e}`);
     }
   }
   return checks;
@@ -50,15 +45,11 @@ export async function loadThirdPartyChecks(
 
 export async function findThirdPartyChecks(nodeModuleRoot: AbsolutePath): Promise<ModulePath[]> {
   const paths = [
-    globJoin(nodeModuleRoot.replace(/\\/g, '/'), '**/node_modules/theme-check-*/package.json'),
-    globJoin(nodeModuleRoot.replace(/\\/g, '/'), '**/node_modules/@*/theme-check-*/package.json'),
+    globJoin(nodeModuleRoot.replace(/\\/g, '/'), '/node_modules/theme-check-*/'),
+    globJoin(nodeModuleRoot.replace(/\\/g, '/'), '/node_modules/@*/theme-check-*/'),
   ];
-  return Promise.all(paths.map((path) => asyncGlob(path))).then((arrs) =>
-    arrs
-      .flat()
-      .map(path.dirname)
-      .filter((x) => !x.endsWith(path.join('@shopify', 'theme-check-common'))),
-  );
+  const results = await Promise.all(paths.map((path) => asyncGlob(path)));
+  return results.flat().filter((x) => !/\@shopify\/theme-check-(node|common|browser)/.test(x));
 }
 
 function globJoin(...parts: string[]): string {

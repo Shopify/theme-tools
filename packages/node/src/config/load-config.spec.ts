@@ -16,6 +16,7 @@ import {
   mockNodeModuleCheck,
   removeTmpFolder,
 } from '../test/test-helpers';
+import { thisNodeModuleRoot } from './installation-location';
 
 describe('Unit: loadConfig', () => {
   let tempDir: string;
@@ -109,6 +110,27 @@ describe('Unit: loadConfig', () => {
     expect(config.ignore).to.include('src/**');
   });
 
+  it('does not automatically load a community-provided extensions that does not match the naming convention', async () => {
+    const configPath = path.resolve(__dirname, 'fixtures/node-module-rec.yml');
+    await createMockNodeModule(thisNodeModuleRoot, 'not-conventional', mockNodeModuleCheck);
+    const config = await loadConfig(configPath, tempDir);
+    const nodeModuleCheck = config.checks.find((check) => check.meta.code === 'NodeModuleCheck');
+    expect(nodeModuleCheck).not.to.exist;
+  });
+
+  it('loads a community-provided extension that is sibling to the installation of this node module (e.g. global install)', async () => {
+    const configPath = path.resolve(__dirname, 'fixtures/node-module-rec.yml');
+    const globalModulePath = await createMockNodeModule(
+      thisNodeModuleRoot,
+      'theme-check-global-extension',
+      mockNodeModuleCheck,
+    );
+    const config = await loadConfig(configPath, tempDir);
+    await fs.rm(globalModulePath, { recursive: true });
+    const nodeModuleCheck = config.checks.find((check) => check.meta.code === 'NodeModuleCheck');
+    expect(nodeModuleCheck).to.exist;
+  });
+
   it('loads a community-provided extension by automatic node_module discovery (unscoped)', async () => {
     const configPath = path.resolve(__dirname, 'fixtures/node-module-rec.yml');
     await createMockNodeModule(tempDir, 'theme-check-node-example', mockNodeModuleCheck);
@@ -125,7 +147,7 @@ describe('Unit: loadConfig', () => {
     expect(nodeModuleCheck).to.exist;
   });
 
-  it('loads an community-provided extension by the require property (scoped)', async () => {
+  it('loads a community-provided extension by the require property (scoped)', async () => {
     const configPath = await createMockConfigFile(
       tempDir,
       `
