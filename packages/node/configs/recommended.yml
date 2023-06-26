@@ -3,6 +3,9 @@
 # Do not modify manually. Your changes will be overwritten.
 ignore:
   - node_modules/**
+AssetPreload:
+  enabled: true
+  severity: 1
 AssetUrlFilters:
   enabled: true
   severity: 1
