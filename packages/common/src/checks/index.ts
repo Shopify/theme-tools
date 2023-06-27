@@ -17,8 +17,10 @@ import { MissingAsset } from './missing-asset';
 import { PaginationSize } from './pagination-size';
 import { ValidHTMLTranslation } from './valid-html-translation';
 import { ImgLazyLoading } from './img-lazy-loading';
+import { AssetPreload } from './asset-preload';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
+  AssetPreload,
   AssetUrlFilters,
   CdnPreconnect,
   DeprecateBgsizes,
