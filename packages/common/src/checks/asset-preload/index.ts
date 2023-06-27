@@ -35,12 +35,12 @@ export const AssetPreload: LiquidCheckDefinition = {
 
   create(context) {
     return {
-      async HtmlVoidElement(node: NodeOfType<NodeTypes.HtmlVoidElement>) {
+      async HtmlVoidElement(node) {
         const preloadLinkAttr = node.attributes.find(
           (attr) => isValuedHtmlAttribute(attr) && isPreload(attr),
         ) as ValuedHtmlAttribute | undefined;
 
-        if (preloadLinkAttr) {
+        if (node.name === 'link' && preloadLinkAttr) {
           const asAttr: ValuedHtmlAttribute | undefined = node.attributes
             .filter(isValuedHtmlAttribute)
             .find((attr) => isAttr(attr, 'as'));
