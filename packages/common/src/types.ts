@@ -1,7 +1,14 @@
 import { LiquidHtmlNode } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
 import { NodeTypes as LiquidHtmlNodeTypes } from '@shopify/prettier-plugin-liquid/dist/types';
 
-import { ArrayNode, IdentifierNode, LiteralNode, ObjectNode, PropertyNode } from 'json-to-ast';
+import {
+  ArrayNode,
+  IdentifierNode,
+  LiteralNode,
+  ObjectNode,
+  PropertyNode,
+  ASTNode,
+} from 'json-to-ast';
 import { Schema, Settings } from './types/schema-prop-factory';
 
 import { StringCorrector, JSONCorrector } from './fixes';
@@ -10,6 +17,10 @@ import { ThemeDocset, ThemeSchemas } from './types/theme-liquid-docs';
 
 export * from './types/theme-liquid-docs';
 export * from './types/schema-prop-factory';
+
+export const isObjectNode = (node?: ASTNode): node is ObjectNode => node?.type === 'Object';
+export const isArrayNode = (node?: ASTNode): node is ArrayNode => node?.type === 'Array';
+export const isPropertyNode = (node?: ASTNode): node is PropertyNode => node?.type === 'Property';
 
 export type Theme = SourceCode<SourceCodeType>[];
 
