@@ -152,7 +152,19 @@ export type CheckDefinition<
          */
         schema: Schema;
 
-        targets: [];
+        /**
+         * An optional array that determines which yaml configs will have this check enabled.
+         *
+         * When no values are given, this check will be `enabled: true` in the `all.yml` configuration
+         *
+         * When values are given, this check will be `enabled: false` in the `all.yml` configuration
+         * and `enabled: true` within all yaml configurations with a matching filename.
+         *
+         * targets: ["theme-app-extension"] will set the check to `enabled: true`
+         * only within `theme-app-extension.yml`
+         */
+        targets?: ConfigTarget[];
+
         deprecated?: boolean;
         replacedBy?: boolean;
       };
@@ -410,6 +422,13 @@ export enum Severity {
   ERROR = 0,
   WARNING = 1,
   INFO = 2,
+}
+
+/** The yaml configurations to target checks */
+export enum ConfigTarget {
+  All = 'all',
+  Recommended = 'recommended',
+  ThemeAppExtension = 'theme-app-extension',
 }
 
 export type WithRequired<T, K extends keyof T> = Required<Pick<T, K>> & Omit<T, K>;

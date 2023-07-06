@@ -1,5 +1,10 @@
-import { JSONCheckDefinition, LiquidCheckDefinition } from '@shopify/theme-check-common';
+import {
+  ConfigTarget,
+  JSONCheckDefinition,
+  LiquidCheckDefinition,
+} from '@shopify/theme-check-common';
 
+import { AppBlockValidTags } from './app-block-valid-tags';
 import { AssetPreload } from './asset-preload';
 import { AssetUrlFilters } from './asset-url-filters';
 import { CdnPreconnect } from './cdn-preconnect';
@@ -21,6 +26,7 @@ import { ValidHTMLTranslation } from './valid-html-translation';
 import { ValidSchema } from './valid-schema';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
+  AppBlockValidTags,
   AssetPreload,
   AssetUrlFilters,
   CdnPreconnect,
@@ -42,4 +48,17 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidSchema,
 ];
 
-export const recommended = allChecks.filter((check) => check.meta.docs.recommended);
+/**
+ * The recommended checks is populated by all checks with the following conditions:
+ * - meta.docs.recommended: true
+ * - Either no meta.targets list exist or if it does exist then Recommended is a target
+ */
+export const recommended = allChecks.filter((check) => {
+  const isRecommended = check.meta.docs.recommended;
+  const isValidTarget =
+    !check.meta.targets ||
+    !check.meta.targets.length ||
+    check.meta.targets.includes(ConfigTarget.Recommended);
+
+  return isRecommended && isValidTarget;
+});

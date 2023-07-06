@@ -1,5 +1,6 @@
 // src/checks/required-layout-theme-object/index.ts
 import {
+  ConfigTarget,
   LiquidCheckDefinition,
   LiquidHtmlNodeTypes as NodeTypes,
   LiquidHtmlNodeOfType as NodeOfType,
@@ -23,7 +24,7 @@ export const RequiredLayoutThemeObject: LiquidCheckDefinition = {
     type: SourceCodeType.LiquidHtml,
     severity: Severity.ERROR,
     schema: {},
-    targets: [],
+    targets: [ConfigTarget.All, ConfigTarget.Recommended],
   },
 
   create(context) {
