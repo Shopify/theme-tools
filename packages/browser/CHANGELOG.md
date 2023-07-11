@@ -1,5 +1,16 @@
 # @shopify/liquid-language-server-browser
 
+## 1.5.0
+
+### Minor Changes
+
+- 57f28a6: Bump `@shopify/theme-check-common` to v1.9.0
+
+### Patch Changes
+
+- Updated dependencies [57f28a6]
+  - @shopify/liquid-language-server-common@1.5.0
+
 ## 1.4.1
 
 ### Patch Changes
