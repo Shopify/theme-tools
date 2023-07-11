@@ -73,6 +73,7 @@ export const AssetUrlFilters: LiquidCheckDefinition = {
         endIndex: urlAttribute.position.end,
       });
     }
+
     function checkLiquidFilter(
       node: NodeOfType<NodeTypes.LiquidFilter>,
       ancestors: LiquidHtmlNode[],

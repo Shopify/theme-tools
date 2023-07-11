@@ -8,8 +8,9 @@
     "access": "restricted"
   },
   "scripts": {
-    "build": "yarn build:ts && yarn generate-factory-configs",
+    "build": "yarn build:ts",
     "build:ts": "tsc -b tsconfig.build.json",
+    "postbuild:ts": "yarn generate-factory-configs",
     "generate-factory-configs": "node scripts/generate-factory-configs",
     "test": "vitest",
     "type-check": "tsc --noEmit"

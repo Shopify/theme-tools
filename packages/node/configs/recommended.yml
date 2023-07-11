@@ -59,6 +59,3 @@ UnusedAssign:
 ValidHTMLTranslation:
   enabled: true
   severity: 1
-ValidSchema:
-  enabled: true
-  severity: 0

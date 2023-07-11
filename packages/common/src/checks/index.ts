@@ -23,7 +23,7 @@ import { RequiredLayoutThemeObject } from './required-layout-theme-object';
 import { TranslationKeyExists } from './translation-key-exists';
 import { UnusedAssign } from './unused-assign';
 import { ValidHTMLTranslation } from './valid-html-translation';
-import { ValidSchema } from './valid-schema';
+// import { ValidSchema } from './valid-schema';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -45,7 +45,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   TranslationKeyExists,
   UnusedAssign,
   ValidHTMLTranslation,
-  ValidSchema,
+  // ValidSchema,
 ];
 
 /**

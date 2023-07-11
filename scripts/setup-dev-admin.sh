@@ -8,7 +8,7 @@
 sh ./scripts/setup-dev.sh
 
 # Create the yarn links that will point to the packages built local to this instance
-../online-store-web
+cd ../online-store-web
 
 yarn link @shopify/liquid-language-server-browser
 yarn link @shopify/liquid-language-server-common

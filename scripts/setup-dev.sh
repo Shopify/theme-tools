@@ -9,8 +9,7 @@ for p in packages/*; do
   yarn --cwd $p link
 done
 
-yarn build
-
+yarn build:ts
 
 # Setup liquid-language-server
 cd ../liquid-language-server/
@@ -21,4 +20,4 @@ for p in packages/*; do
   yarn --cwd $p link
 done
 
-yarn build
+yarn build:ts
