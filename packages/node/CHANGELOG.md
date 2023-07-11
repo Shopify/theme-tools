@@ -1,5 +1,64 @@
 # @shopify/theme-check-node
 
+## 1.9.0
+
+### Minor Changes
+
+- b3ed3b9: Add `ValidSchema` check
+- d19500f: Add `AppBlockValidTags` check
+- 8e76424: Add support for `.theme-check.yml` config files
+
+  **New features**:
+
+  - Developers can write their own checks and publish them to [npm](https://npmjs.com)
+
+    Modules that follow the `@scope/theme-check-*` or `theme-check-*` naming conventions are automatically loaded.
+
+    The `require` property of the configuration file can be used to load checks that do not follow the naming convention.
+
+    See [Creating a Theme Check extension](docs/writing-your-own-check/index.md) for more info.
+
+  - `extends` can be an array
+  - `extends` can refer to node module dependencies
+  - `extends` also accepts "modern" config identifiers:
+    - `theme-check:all` for all the checks and with default settings
+    - `theme-check:recommended` for the recommended checks and settings
+    - `theme-check:theme-app-extension` for theme app extensions
+
+  **Removed features**:
+
+  - `include_categories: []`
+  - `exclude_categories: []`
+
+  **Replaced features**:
+
+  - `require: []` this can be used to load unconventional (or private) `theme-check-js` checks. Ruby checks are not supported.
+
+  **Breaking changes**:
+
+  - Custom checks written in Ruby won't work Theme Check in TypeScript
+  - The `*` (star) glob in `ignore` configurations does not capture the forward slash (`/`) unless at the end of the pattern.
+
+    Fix: replace `*` by `**`.
+
+    This comes from a difference between how `minimatch` and Ruby handles file globs.
+
+  Extra care has been placed to make the transition as smooth as possible.
+
+- 3096e53: Add `ValidHTMLTranslation` check
+- daf5189: Add `AssetPreload` check
+- 6fb9db9: Add `ImgLazyLoading` check
+
+### Patch Changes
+
+- Updated dependencies [b3ed3b9]
+- Updated dependencies [d19500f]
+- Updated dependencies [8e76424]
+- Updated dependencies [3096e53]
+- Updated dependencies [daf5189]
+- Updated dependencies [6fb9db9]
+  - @shopify/theme-check-common@1.9.0
+
 ## 1.8.0
 
 ### Minor Changes
