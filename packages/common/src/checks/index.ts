@@ -24,6 +24,7 @@ import { TranslationKeyExists } from './translation-key-exists';
 import { UnusedAssign } from './unused-assign';
 import { ValidHTMLTranslation } from './valid-html-translation';
 // import { ValidSchema } from './valid-schema';
+import { UnknownFilter } from './unknown-filter';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -43,6 +44,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ParserBlockingScript,
   RequiredLayoutThemeObject,
   TranslationKeyExists,
+  UnknownFilter,
   UnusedAssign,
   ValidHTMLTranslation,
   // ValidSchema,
