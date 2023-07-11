@@ -457,16 +457,18 @@
     line-column "^1.0.2"
     ohm-js "^16.3.0"
 
-"@shopify/theme-check-common@1.7.1":
-  version "1.7.1"
-  resolved "https://npm.shopify.io/node/@shopify/theme-check-common/-/1.7.1/theme-check-common-1.7.1.tgz#1ecdf90591860ab6141b9cbf14a66adc63cfab5a"
-  integrity sha512-Kl1hVEwc1sQ86QZazsGJ9ukcl9xAa1DhyVj9kj7f2Qg5Y0uyjlZEk0Ao86zJQ7z+ufdW2ipODbtnrk54maeavg==
+"@shopify/theme-check-common@1.9.0":
+  version "1.9.0"
+  resolved "https://npm.shopify.io/node/@shopify/theme-check-common/-/1.9.0/theme-check-common-1.9.0.tgz#fd6ae5db9a1f36ebbcf65d006d9d891a363862ba"
+  integrity sha512-hlV5E/WmlWGxt73SRoEfmv4/KMm7OsAuRi2p2XSudxk553b6RLlOS36k3He4EfbloIsreK7+9F8Wt1CQLwoszw==
   dependencies:
     "@shopify/prettier-plugin-liquid" "^1.1.0"
+    ajv "^8.12.0"
     json-to-ast "^2.1.0"
     line-column "^1.0.2"
     lodash.set "^4.3.2"
     lodash.unset "^4.5.2"
+    minimatch "^9.0.1"
 
 "@tsconfig/node10@^1.0.7":
   version "1.0.9"
@@ -906,7 +908,7 @@ ajv@^6.12.5:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-ajv@^8.0.0, ajv@^8.8.0:
+ajv@^8.0.0, ajv@^8.12.0, ajv@^8.8.0:
   version "8.12.0"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-8.12.0.tgz#d1a0527323e22f53562c567c00991577dfbe19d1"
   integrity sha512-sRu1kpcO9yLtYxBKvqfTeh9KzZEwO3STyX1HT+4CaDzC6HpTGYhIhPIzj9XuKU7KYDwnaeh5hcOwjy1QuJzBPA==
@@ -1082,6 +1084,13 @@ brace-expansion@^1.1.7:
   dependencies:
     balanced-match "^1.0.0"
     concat-map "0.0.1"
+
+brace-expansion@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-2.0.1.tgz#1edc459e0f0c548486ecf9fc99f2221364b9a0ae"
+  integrity sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==
+  dependencies:
+    balanced-match "^1.0.0"
 
 braces@^3.0.2, braces@~3.0.2:
   version "3.0.2"
@@ -2901,6 +2910,13 @@ minimatch@^3.1.1:
   integrity sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==
   dependencies:
     brace-expansion "^1.1.7"
+
+minimatch@^9.0.1:
+  version "9.0.3"
+  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-9.0.3.tgz#a6e00c3de44c3a542bfaae70abfc22420a6da825"
+  integrity sha512-RHiac9mvaRw0x3AYRgDC1CxAP7HTcNrrECeA8YYJeWnpo+2Q5CegtZjaotWTWxDG3UeGA1coE05iH1mPjT/2mg==
+  dependencies:
+    brace-expansion "^2.0.1"
 
 minimist-options@^4.0.2:
   version "4.1.0"
