@@ -6,7 +6,7 @@
   <br>
 </h1>
 
-<a href="https://buildkite.com/shopify/liquid-language-server"><img src="https://badge.buildkite.com/6bf30fa49aa5caf63d4033a6dd125b2d0dd158097f185e20ef.svg" alt="Build status"></a> 
+<a href="https://buildkite.com/shopify/liquid-language-server"><img src="https://badge.buildkite.com/6bf30fa49aa5caf63d4033a6dd125b2d0dd158097f185e20ef.svg?branch=main" alt="Build status"></a> 
 [![Latest version of '@shopify/liquid-language-server-common' @ Cloudsmith](https://api-prd.cloudsmith.io/v1/badges/version/shopify/node/npm/@shopify/liquid-language-server-common/latest/x/?render=true&show_latest=true&badge_token=gAAAAABkGuuWbRVUicN59-Kiv7PW8PbXzmXYetTZbR5_-wRCHNk62Usni1ukxrViWi8b79jBY1bwA58FVaPFGyIwHvFN3eQGKmTdzdkWHYkvb5EIyxytObw%3D)](https://cloudsmith.io/~shopify/repos/node/packages/detail/npm/@shopify%252Fliquid-language-server-common/latest/)
 
 The [Language Server Protocol](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/) empowers developers to provide code editing features to all code editors in a single code base with no code-editor-specific code. 
