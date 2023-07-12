@@ -49,7 +49,9 @@ export async function findThirdPartyChecks(nodeModuleRoot: AbsolutePath): Promis
     globJoin(nodeModuleRoot.replace(/\\/g, '/'), '/node_modules/@*/theme-check-*/'),
   ];
   const results = await Promise.all(paths.map((path) => asyncGlob(path)));
-  return results.flat().filter((x) => !/\@shopify\/theme-check-(node|common|browser)/.test(x));
+  return results
+    .flat()
+    .filter((x) => !/\@shopify\/theme-check-(node|common|browser|docs-updater)/.test(x));
 }
 
 function globJoin(...parts: string[]): string {
