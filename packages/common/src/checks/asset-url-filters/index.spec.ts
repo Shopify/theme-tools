@@ -110,4 +110,15 @@ describe('Module: AssetUrlFilters', () => {
     const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
     expect(highlights).to.eql(['src="{{ \'image.png\' }}"']);
   });
+
+  it('should not report an offense when asset_url filters are used with known assets', async () => {
+    const sourceCode = `<link rel="canonical" href="{{ canonical_url }}">
+    <link href={{ canonical_url }}
+    {{ 'example.js' | canonical_url }}`;
+
+    const offenses = await runLiquidCheck(AssetUrlFilters, sourceCode);
+    expect(offenses).to.be.empty;
+    const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
+    expect(highlights).to.be.empty;
+  });
 });
