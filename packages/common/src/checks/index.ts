@@ -25,12 +25,14 @@ import { UnknownFilter } from './unknown-filter';
 import { UnusedAssign } from './unused-assign';
 import { ValidHTMLTranslation } from './valid-html-translation';
 import { ValidSchema } from './valid-schema';
+import { ContentForHeaderModification } from './content-for-header-modification';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
   AssetPreload,
   AssetUrlFilters,
   CdnPreconnect,
+  ContentForHeaderModification,
   DeprecateBgsizes,
   DeprecateLazysizes,
   ImgLazyLoading,
