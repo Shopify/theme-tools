@@ -69,6 +69,30 @@ export async function check(
     async getDefaultLocale() {
       return defaultTranslationsFileAbsolutePath.match(/locales\/(.*)\.default\.json$/)?.[1]!;
     },
+    themeDocset: {
+      async filters() {
+        return [
+          {
+            name: 'item_count_for_variant',
+          },
+          {
+            name: 'link_to_type',
+          },
+          {
+            name: 'link_to_vendor',
+          },
+          {
+            name: 'append',
+          },
+        ];
+      },
+      async objects() {
+        return [];
+      },
+      async tags() {
+        return [];
+      },
+    },
   });
 }
 
