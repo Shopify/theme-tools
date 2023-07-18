@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-check-docs-updater",
-  "version": "1.0.0",
+  "version": "1.10.0",
   "description": "Scripts to initialize theme-check data with assets from the theme-liquid-docs repo.",
   "main": "dist/index.js",
   "author": "Albert Chu <albert.chu@shopify.com>",
@@ -18,7 +18,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/theme-check-common": "^1.8.0",
+    "@shopify/theme-check-common": "^1.10.0",
     "ajv": "^8.12.0",
     "env-paths": "^2.2.1",
     "node-fetch": "^2.6.11"
