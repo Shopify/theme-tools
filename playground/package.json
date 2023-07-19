@@ -8,7 +8,8 @@
   "scripts": {
     "build": "webpack",
     "build:ts": "true",
-    "dev": "webpack serve"
+    "dev": "webpack serve",
+    "type-check": "true"
   },
   "dependencies": {
     "vscode-jsonrpc": "^8.1.0",

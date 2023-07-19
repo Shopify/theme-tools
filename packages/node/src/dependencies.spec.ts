@@ -73,9 +73,7 @@ describe('Module: dependencies', () => {
 
   describe('Unit: findRootURI', () => {
     it('should accurately return the root of a theme', async () => {
-      expect(await findRootURI(workspace.uri('gitRootTheme'))).to.eql(
-        workspace.uri('gitRootTheme'),
-      );
+      expect(await findRootURI(workspace.uri('gitRootTheme'))).to.eql(workspace.uri('gitRootTheme'));
       expect(await findRootURI(workspace.uri('gitRootTheme/snippets/header.liquid'))).to.eql(
         workspace.uri('gitRootTheme'),
       );
@@ -94,8 +92,7 @@ describe('Module: dependencies', () => {
   describe('Unit: fileExists', () => {
     it('should tell you if a file exists by path', async () => {
       expect(await fileExists(workspace.path('gitRootTheme/snippets/header.liquid'))).to.be.true;
-      expect(await fileExists(workspace.path('gitRootTheme/snippets/does-not-exist.liquid'))).to.be
-        .false;
+      expect(await fileExists(workspace.path('gitRootTheme/snippets/does-not-exist.liquid'))).to.be.false;
     });
 
     it('should return true for directories', async () => {
@@ -152,9 +149,7 @@ async function makeTempWorkspace(structure: Tree): Promise<Workspace> {
         promises.push(fs.writeFile(path.join(...ancestors, pathEl), value, 'utf8'));
       } else {
         promises.push(
-          fs
-            .mkdir(path.join(...ancestors, pathEl))
-            .then(() => createFiles(value, ancestors.concat(pathEl))),
+          fs.mkdir(path.join(...ancestors, pathEl)).then(() => createFiles(value, ancestors.concat(pathEl))),
         );
       }
     }

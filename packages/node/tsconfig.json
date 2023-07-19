@@ -7,8 +7,6 @@
     "rootDir": "src",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
-  "references": [
-    { "path": "../common/src" }
-  ]
+  "references": [{ "path": "../common/src" }]
 }
 

@@ -9,7 +9,7 @@
     {
       "files": "*.spec.ts",
       "options": {
-        "printWidth": 100
+        "printWidth": 120
       }
     },
     {

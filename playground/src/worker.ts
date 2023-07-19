@@ -1,4 +1,8 @@
-import { allChecks, Translations } from '@shopify/theme-check-common';
+import {
+  allChecks,
+  Translations,
+  ValidateFunction,
+} from '@shopify/theme-check-common';
 import { startServer } from '@shopify/liquid-language-server-browser';
 import { URI } from 'vscode-languageserver-types';
 import {
@@ -50,10 +54,22 @@ async function loadConfig(_uri: URI) {
   };
 }
 
+const themeDocset = {
+  filters: async () => [],
+  objects: async () => [],
+  tags: async () => [],
+};
+
+const schemaValidators = {
+  validateSectionSchema: async () => ({} as ValidateFunction),
+};
+
 startServer(worker, {
   fileExists,
   findRootURI,
   getDefaultTranslationsFactory,
   getDefaultLocaleFactory,
   loadConfig,
+  themeDocset,
+  schemaValidators,
 });

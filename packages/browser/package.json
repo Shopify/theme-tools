@@ -12,7 +12,8 @@
     "build:ts": "tsc -b tsconfig.build.json",
     "build:standalone": "webpack --mode production",
     "dev": "tsc --watch",
-    "test": "vitest"
+    "test": "vitest",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@shopify/liquid-language-server-common": "1.5.0",

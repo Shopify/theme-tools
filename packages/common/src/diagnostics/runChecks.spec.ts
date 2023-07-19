@@ -4,6 +4,7 @@ import {
   LiquidCheckDefinition,
   Severity,
   SourceCodeType,
+  ValidateFunction,
 } from '@shopify/theme-check-common';
 import { Connection } from 'vscode-languageserver';
 import { DocumentManager } from '../documents';
@@ -60,6 +61,14 @@ describe('Module: runChecks', () => {
         checks: [LiquidFilter],
         root: '/',
       }),
+      themeDocset: {
+        filters: async () => [],
+        objects: async () => [],
+        tags: async () => [],
+      },
+      schemaValidators: {
+        validateSectionSchema: async () => ({} as ValidateFunction),
+      },
     });
   });
 
@@ -204,6 +213,14 @@ describe('Module: runChecks', () => {
         checks: matchingTranslation,
         root: '/',
       }),
+      themeDocset: {
+        filters: async () => [],
+        objects: async () => [],
+        tags: async () => [],
+      },
+      schemaValidators: {
+        validateSectionSchema: async () => ({} as ValidateFunction),
+      },
     });
 
     // Open and have errors

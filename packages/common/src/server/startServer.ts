@@ -14,8 +14,10 @@ import { Dependencies } from '../types';
 import { VERSION } from '../version';
 import { DocumentLinksProvider } from '../documentLinks';
 import { CodeActionKinds, CodeActionsProvider } from '../codeActions';
+import { CompletionsProvider } from '../completions';
 import { Commands, ExecuteCommandProvider } from '../commands';
 import { ClientCapabilities } from '../ClientCapabilities';
+import { AugmentedThemeDocset } from '../docset';
 
 const defaultLogger = () => {};
 
@@ -32,12 +34,14 @@ const defaultLogger = () => {};
 export function startServer(
   connection: Connection,
   {
-    log = defaultLogger,
-    loadConfig,
-    findRootURI,
-    getDefaultTranslationsFactory,
-    getDefaultLocaleFactory,
     fileExists,
+    findRootURI,
+    getDefaultLocaleFactory,
+    getDefaultTranslationsFactory,
+    loadConfig,
+    themeDocset: remoteThemeDocset,
+    schemaValidators,
+    log = defaultLogger,
   }: Dependencies,
 ) {
   const clientCapabilities = new ClientCapabilities();
@@ -48,6 +52,7 @@ export function startServer(
     documentManager,
     diagnosticsManager,
   );
+  const themeDocset = new AugmentedThemeDocset(remoteThemeDocset);
   const runChecks = debounce(
     makeRunChecks(documentManager, diagnosticsManager, {
       loadConfig,
@@ -55,8 +60,15 @@ export function startServer(
       getDefaultTranslationsFactory,
       getDefaultLocaleFactory,
       fileExists,
+      themeDocset,
+      schemaValidators,
     }),
     100,
+  );
+  const completionsProvider = new CompletionsProvider(
+    documentManager,
+    themeDocset,
+    log,
   );
   const executeCommandProvider = new ExecuteCommandProvider(
     documentManager,
@@ -88,6 +100,9 @@ export function startServer(
         codeActionProvider: {
           codeActionKinds: [...CodeActionKinds],
         },
+        completionProvider: {
+          triggerCharacters: ['.', '{{ ', '{% ', '<', '['],
+        },
         documentLinkProvider: {
           resolveProvider: false,
           workDoneProgress: false,
@@ -108,6 +123,7 @@ export function startServer(
         version: VERSION,
       },
     };
+
     return result;
   });
 
@@ -145,6 +161,10 @@ export function startServer(
 
   connection.onExecuteCommand(async (params) => {
     await executeCommandProvider.execute(params);
+  });
+
+  connection.onCompletion(async (params) => {
+    return completionsProvider.completions(params);
   });
 
   // These notifications could cause a MissingSnippet check to be invalidated

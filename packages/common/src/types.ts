@@ -53,6 +53,22 @@ export interface RequiredDependencies {
   loadConfig(uri: URI): Promise<Config>;
 
   /**
+   * In local environments, the Language Server can download the latest versions
+   * of themes docset from `Shopify/theme-liquid-docs`. However, this is not
+   * possible in the browser, so we implement different solutions for each
+   * environment.
+   */
+  themeDocset: NonNullable<ThemeCheckDependencies['themeDocset']>;
+
+  /**
+   * In local environments, the Language Server can download the latest versions
+   * of themes schemas from `Shopify/theme-liquid-docs`. Due to limitations in
+   * browser environments, json schemas must be precompiled into validators prior
+   * to theme-check instantiation.
+   */
+  schemaValidators: NonNullable<ThemeCheckDependencies['schemaValidators']>;
+
+  /**
    * findRootURI(uri: URI)
    *
    * A function that asynchronously returns the "root" of a theme.

@@ -19,11 +19,7 @@ describe('Unit: FixAllProvider', () => {
   let diagnosticsManager: DiagnosticsManager;
   let fixProvider: FixAllProvider;
 
-  function makeOffense(
-    checkName: string,
-    needle: string,
-    unfixable?: boolean,
-  ): Offense<SourceCodeType.LiquidHtml> {
+  function makeOffense(checkName: string, needle: string, unfixable?: boolean): Offense<SourceCodeType.LiquidHtml> {
     const start = contents.indexOf(needle);
     const end = start + needle.length;
 
