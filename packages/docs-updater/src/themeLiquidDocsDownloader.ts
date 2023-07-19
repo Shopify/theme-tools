@@ -17,9 +17,10 @@ export async function downloadFile(file: Resource | 'latest', destination: strin
   const remotePath = buildRemotePath(file);
   const localPath = buildLocalPath(file, destination);
 
-  return fetch(remotePath)
-    .then((res) => res.text())
-    .then((text) => fs.writeFile(localPath, text, 'utf8'));
+  const res = await fetch(remotePath);
+  const text = await res.text();
+
+  return fs.writeFile(localPath, text, 'utf8');
 }
 
 function buildRemotePath(file: Resource | 'latest') {
@@ -31,7 +32,7 @@ function buildLocalPath(file: string, destination: string) {
   return path.join(destination, `${file}.json`);
 }
 
-async function exists(path: string) {
+export async function exists(path: string) {
   try {
     await fs.stat(path);
     return true;

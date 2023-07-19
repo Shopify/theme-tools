@@ -21,10 +21,10 @@ import { PaginationSize } from './pagination-size';
 import { ParserBlockingScript } from './parser-blocking-script';
 import { RequiredLayoutThemeObject } from './required-layout-theme-object';
 import { TranslationKeyExists } from './translation-key-exists';
+import { UnknownFilter } from './unknown-filter';
 import { UnusedAssign } from './unused-assign';
 import { ValidHTMLTranslation } from './valid-html-translation';
-// import { ValidSchema } from './valid-schema';
-import { UnknownFilter } from './unknown-filter';
+import { ValidSchema } from './valid-schema';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -47,7 +47,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   UnknownFilter,
   UnusedAssign,
   ValidHTMLTranslation,
-  // ValidSchema,
+  ValidSchema,
 ];
 
 /**

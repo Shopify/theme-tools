@@ -2,6 +2,8 @@ import lodashSet from 'lodash.set';
 import { describe, expect, it } from 'vitest';
 import { runLiquidCheck } from '../../test';
 import { ValidSchema } from './index';
+import { ValidateFunction } from '../../types/theme-liquid-docs';
+import { Dependencies } from '../../types';
 
 const DEFAULT_FILE_NAME = 'sections/file.liquid';
 const VALID_SECTION_SCHEMA = {
@@ -41,6 +43,23 @@ lodashSet(INVALID_SECTION_SCHEMA, 'settings.2.label', 420);
 lodashSet(INVALID_SECTION_SCHEMA, 'disabled_on', true);
 lodashSet(INVALID_SECTION_SCHEMA, 'max_blocks', 51);
 
+const buildMockDeps = (errors?: any[]): Partial<Dependencies> => ({
+  schemaValidators: {
+    async validateSectionSchema() {
+      const mockValidator: ValidateFunction = () => {
+        mockValidator.errors = errors ?? [
+          { instancePath: '/settings/2/label', message: 'must be string' },
+          { instancePath: '/max_blocks', message: 'must be <= 50' },
+          { instancePath: '/disabled_on', message: 'must be object' },
+        ];
+        return false;
+      };
+
+      return mockValidator;
+    },
+  },
+});
+
 describe('ValidSchema', () => {
   it('should report a syntax error when the schema json is malformed', async () => {
     const sourceCode = `
@@ -50,7 +69,12 @@ describe('ValidSchema', () => {
     {% endschema %}
     `;
 
-    const offenses = await runLiquidCheck(ValidSchema, sourceCode, DEFAULT_FILE_NAME);
+    const offenses = await runLiquidCheck(
+      ValidSchema,
+      sourceCode,
+      DEFAULT_FILE_NAME,
+      buildMockDeps(),
+    );
 
     expect(offenses).to.have.length(1);
     expect(offenses).to.containOffense({
@@ -71,7 +95,12 @@ describe('ValidSchema', () => {
     {% endschema %}
     `;
 
-    const offenses = await runLiquidCheck(ValidSchema, sourceCode, DEFAULT_FILE_NAME);
+    const offenses = await runLiquidCheck(
+      ValidSchema,
+      sourceCode,
+      DEFAULT_FILE_NAME,
+      buildMockDeps(),
+    );
 
     expect(offenses).to.have.length(1);
     expect(offenses).to.containOffense({
@@ -83,14 +112,19 @@ describe('ValidSchema', () => {
     });
   });
 
-  it('should complain appropriately when a section schema contains multiple errors', async () => {
+  it('should complain appropriately when a section schema contains errors', async () => {
     const sourceCode = `
     {% schema %}
     ${JSON.stringify(INVALID_SECTION_SCHEMA, null, 2)}
     {% endschema %}
     `;
 
-    const offenses = await runLiquidCheck(ValidSchema, sourceCode, DEFAULT_FILE_NAME);
+    const offenses = await runLiquidCheck(
+      ValidSchema,
+      sourceCode,
+      DEFAULT_FILE_NAME,
+      buildMockDeps(),
+    );
 
     expect(offenses).to.have.length(3);
     expect(offenses).to.containOffense({
@@ -148,7 +182,12 @@ describe('ValidSchema', () => {
     {% endschema %}
     `;
 
-    const offenses = await runLiquidCheck(ValidSchema, sourceCode, DEFAULT_FILE_NAME);
+    const offenses = await runLiquidCheck(
+      ValidSchema,
+      sourceCode,
+      DEFAULT_FILE_NAME,
+      buildMockDeps([]),
+    );
 
     expect(offenses).to.have.length(0);
   });

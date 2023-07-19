@@ -13,7 +13,7 @@ import { Schema, Settings } from './types/schema-prop-factory';
 
 import { StringCorrector, JSONCorrector } from './fixes';
 
-import { ThemeDocset, ThemeSchemas } from './types/theme-liquid-docs';
+import { ThemeDocset, JsonSchemaValidators } from './types/theme-liquid-docs';
 
 export * from './types/theme-liquid-docs';
 export * from './types/schema-prop-factory';
@@ -257,7 +257,7 @@ export interface Dependencies {
   getDefaultLocale(): Promise<string>;
   fileExists(absolutePath: string): Promise<boolean>;
   themeDocset?: ThemeDocset;
-  themeSchemas?: ThemeSchemas;
+  schemaValidators?: JsonSchemaValidators;
 }
 
 type StaticContextProperties<T extends SourceCodeType> = T extends SourceCodeType

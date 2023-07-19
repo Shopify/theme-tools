@@ -15,6 +15,7 @@ yarn build:ts
 cd ../liquid-language-server/
 
 yarn link @shopify/theme-check-common
+yarn link @shopify/theme-check-docs-updater
 yarn
 for p in packages/*; do
   yarn --cwd $p link

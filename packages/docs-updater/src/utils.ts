@@ -5,7 +5,7 @@ import { Resource, downloadFile } from './themeLiquidDocsDownloader';
 export const noop = () => {};
 
 const paths = envPaths('theme-liquid-docs');
-const root = paths.cache;
+export const root = paths.cache;
 
 export function download(file: Resource | 'latest') {
   return downloadFile(file, root);

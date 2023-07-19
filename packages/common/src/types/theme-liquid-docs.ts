@@ -59,49 +59,6 @@ export interface TagEntry extends DocsetEntry {
   parameters?: DocsetEntry[];
 }
 
-export type JsonSchemaType =
-  | 'string'
-  | 'number'
-  | 'integer'
-  | 'boolean'
-  | 'object'
-  | 'array'
-  | 'null';
-
-export interface JsonSchema {
-  $id?: string;
-  $schema?: string;
-  $ref?: string;
-  description?: string;
-  type?: JsonSchemaType | JsonSchemaType[];
-  required?: string[];
-  properties?: { [key: string]: JsonSchema };
-  additionalProperties?: boolean | JsonSchema;
-  items?: JsonSchema | JsonSchema[];
-  minItems?: number;
-  maxItems?: number;
-  minLength?: number;
-  maxLength?: number;
-  minimum?: number;
-  maximum?: number;
-  exclusiveMinimum?: number;
-  exclusiveMaximum?: number;
-  pattern?: string;
-  format?: string;
-  enum?: any[];
-  const?: any;
-  multipleOf?: number;
-  definitions?: { [key: string]: JsonSchema };
-  dependencies?: { [key: string]: JsonSchema | string[] };
-  allOf?: JsonSchema[];
-  anyOf?: JsonSchema[];
-  oneOf?: JsonSchema[];
-  not?: JsonSchema;
-  if?: JsonSchema;
-  then?: JsonSchema;
-  else?: JsonSchema;
-}
-
 /**
  * Shopify themes docset.
  */
@@ -123,11 +80,22 @@ export interface ThemeDocset {
 }
 
 /**
+ * This is a shallow redefinition of the ajv ValidateFunction.
+ *
+ * While theme-check was written with ajv validators in mind, you can
+ * use any other validator as long as it implements this interface
+ */
+export interface ValidateFunction<T = unknown> {
+  (data: T): boolean | Promise<boolean>;
+  errors?: null | { instancePath: string; message?: string }[];
+}
+
+/**
  * JSON schemas resources for themes.
  */
-export interface ThemeSchemas {
+export interface JsonSchemaValidators {
   /**
-   * Retrieves the JSON Schema for theme sections.
+   * Retrieves the JSON schema validator for theme sections.
    */
-  sectionSchema(): Promise<JsonSchema>;
+  validateSectionSchema(): Promise<ValidateFunction>;
 }

@@ -15,6 +15,7 @@ import {
   JSONCorrector,
   FixApplicator,
   createCorrector,
+  Dependencies,
 } from '../index';
 
 export { StringCorrector, JSONCorrector };
@@ -45,6 +46,7 @@ export function getTheme(themeDesc: MockTheme): Theme {
 export async function check(
   themeDesc: MockTheme,
   checks: CheckDefinition<SourceCodeType>[] = recommended,
+  mockDependencies: Partial<Dependencies> = {},
 ): Promise<Offense[]> {
   const theme = getTheme(themeDesc);
   const config: Config = {
@@ -53,7 +55,7 @@ export async function check(
     root: '/',
   };
   const defaultTranslationsFileAbsolutePath = 'locales/en.default.json';
-  return coreCheck(theme, config, {
+  const defaultMockDependencies = {
     async fileExists(absolutePath: string) {
       const relativePath = absolutePath.replace(/^\//, '');
       return themeDesc[relativePath] !== undefined;
@@ -72,18 +74,10 @@ export async function check(
     themeDocset: {
       async filters() {
         return [
-          {
-            name: 'item_count_for_variant',
-          },
-          {
-            name: 'link_to_type',
-          },
-          {
-            name: 'link_to_vendor',
-          },
-          {
-            name: 'append',
-          },
+          { name: 'item_count_for_variant' },
+          { name: 'link_to_type' },
+          { name: 'link_to_vendor' },
+          { name: 'append' },
         ];
       },
       async objects() {
@@ -93,15 +87,18 @@ export async function check(
         return [];
       },
     },
-  });
+  };
+
+  return coreCheck(theme, config, { ...defaultMockDependencies, ...mockDependencies });
 }
 
 export async function runLiquidCheck(
   checkDef: CheckDefinition<SourceCodeType.LiquidHtml>,
   sourceCode: string,
   fileName: string = 'file.liquid',
+  mockDependencies: any = {},
 ): Promise<Offense[]> {
-  const offenses = await check({ [fileName]: sourceCode }, [checkDef]);
+  const offenses = await check({ [fileName]: sourceCode }, [checkDef], mockDependencies);
   return offenses.filter((offense) => offense.absolutePath === `/${fileName}`);
 }
 

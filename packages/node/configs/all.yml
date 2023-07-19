@@ -58,10 +58,13 @@ TranslationKeyExists:
   severity: 0
 UnknownFilter:
   enabled: true
-  severity: 1
+  severity: 0
 UnusedAssign:
   enabled: true
   severity: 1
 ValidHTMLTranslation:
   enabled: true
   severity: 1
+ValidSchema:
+  enabled: true
+  severity: 0

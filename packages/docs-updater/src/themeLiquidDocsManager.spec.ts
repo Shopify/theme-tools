@@ -33,12 +33,13 @@ vi.mock('node:fs/promises', async () => {
     'MOCKED_CACHE/theme-liquid-docs/tags.json': '[{"name": "if"}]',
     'MOCKED_CACHE/theme-liquid-docs/latest.json': '{"revision": "1"}',
     'MOCKED_CACHE/theme-liquid-docs/section_schema.json':
-      '{ "$schema": "...",  "title": "section schema" }',
+      '{"type":"object","properties":{"name":{"type":"string"},"age":{"type":"number"}},"required":["name","age"]}',
   };
 
   return {
     default: {
       readFile: vi.fn().mockImplementation((path) => fileSystem[path]),
+      mkdir: vi.fn(),
     },
   };
 });
@@ -95,10 +96,45 @@ describe('Module: ThemeLiquidDocsManager', async () => {
     });
   });
 
-  describe('Unit: sectionSchema', () => {
-    it('should return an array', async () => {
-      const sectionSchema = await manager.sectionSchema();
-      expect(sectionSchema).to.eql({ $schema: '...', title: 'section schema' });
+  describe('Unit: validateSectionSchema', () => {
+    it('should return a validator for the given json schema', async () => {
+      const validate = await manager.validateSectionSchema();
+
+      expect(validate).to.be.a('function');
+    });
+
+    it('should return a validator that approves valid data', async () => {
+      const data = {
+        name: 'John Doe',
+        age: 42,
+      };
+      const validate = await manager.validateSectionSchema();
+
+      const valid = validate(data);
+
+      expect(valid).toBe(true);
+      expect(validate.errors).toBeNull();
+    });
+
+    it('should return a validator that catches data violations', async () => {
+      const data = {
+        name: 'John Doe',
+      };
+      const validate = await manager.validateSectionSchema();
+
+      const valid = validate(data);
+
+      // Check if the data is not valid
+      expect(valid).toBe(false);
+      expect(validate.errors).to.be.an('array');
+      expect(validate.errors).to.have.lengthOf(1);
+
+      // Conditional to satisfy typescript. This is already checked by the previous expect.
+      if (validate.errors) {
+        const error = validate.errors[0];
+        expect(error.keyword).toBe('required');
+        expect(error.params.missingProperty).toBe('age');
+      }
     });
   });
 });

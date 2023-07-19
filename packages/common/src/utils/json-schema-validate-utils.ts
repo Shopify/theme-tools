@@ -1,4 +1,4 @@
-import Ajv, { Options } from 'ajv';
+import type { ValidateFunction } from '../types';
 
 const getLastToken = (inputString: string): string => {
   const tokens = inputString.split('/');
@@ -10,10 +10,10 @@ export interface SchemaError {
   message: string;
 }
 
-export const buildValidator = (jsonSchema: any, options?: Options) => {
-  const ajv = new Ajv({ allErrors: true, ...(options ?? {}) });
-  const validate = ajv.compile(jsonSchema);
-
+/**
+ * Wraps a json schema validator with formatted error messages for rendering
+ */
+export const withErrorFormatting = (validate: ValidateFunction) => {
   return (sectionSchema: object): SchemaError[] => {
     validate(sectionSchema);
 

@@ -1,12 +1,9 @@
 import parseToAst, { Location } from 'json-to-ast';
 import { LiquidCheckDefinition, Severity, SourceCodeType, isPropertyNode } from '../../types';
 
-import { buildValidator } from '../../utils/build-json-validator';
+import { withErrorFormatting } from '../../utils/json-schema-validate-utils';
 import { findNodeAtPath } from './find-node-at-path';
 import { parseJsonBody, JsonParseError } from './parse-json-body';
-
-// TODO: Replace this local static section schema with a json schema that is dependency injected
-import sectionSchemaSchema from './temp-json-schema.json';
 
 export const ValidSchema: LiquidCheckDefinition = {
   meta: {
@@ -26,9 +23,6 @@ export const ValidSchema: LiquidCheckDefinition = {
   create(context) {
     const filePath = context.file.absolutePath;
     const isSectionsDir = filePath.includes('/sections/');
-
-    // Setting strictTypes to false allows us to validate "default" as a keyword without warnings
-    const validateSectionSchema = buildValidator(sectionSchemaSchema, { strictTypes: false });
 
     return {
       async LiquidRawTag(node) {
@@ -51,8 +45,7 @@ export const ValidSchema: LiquidCheckDefinition = {
 
         if (!isSectionsDir) {
           /**
-           * Blocks for flex-sections, will use the schema tag and a similar yet different schema format.
-           * The JSON schema validation is not quite applicable to flex-sections.
+           * Blocks for flex-sections, will use the schema tag but a different format than validateSectionSchema.
            *
            * TODO: We should support this case with its own bespoke JSON schema validation once
            * blocks liquid schemas is finalized and documented.
@@ -60,8 +53,15 @@ export const ValidSchema: LiquidCheckDefinition = {
           return;
         }
 
+        const validateSectionSchema = await context.schemaValidators?.validateSectionSchema();
+        if (!validateSectionSchema) {
+          return;
+        }
+
+        const validate = withErrorFormatting(validateSectionSchema);
+
         // Otherwise the schema is syntactically valid and we can perform further validation on the contents
-        const errors = validateSectionSchema(body);
+        const errors = validate(body);
 
         const sectionSchemaAst = parseToAst(node.body.value, { loc: true });
 

@@ -1,20 +1,19 @@
 import {
   FilterEntry,
-  JsonSchema,
   ObjectEntry,
   TagEntry,
   ThemeDocset,
-  ThemeSchemas,
+  JsonSchemaValidators,
 } from '@shopify/theme-check-common';
 import { ValidateFunction } from 'ajv';
 import fs from 'node:fs/promises';
 import { compileJsonSchema } from './jsonSchemaCompiler';
-import { Resource, Resources } from './themeLiquidDocsDownloader';
-import { download, filePath, memo, noop } from './utils';
+import { Resource, Resources, exists } from './themeLiquidDocsDownloader';
+import { download, filePath, memo, noop, root } from './utils';
 
 type Logger = (message: string) => void;
 
-export class ThemeLiquidDocsManager implements ThemeDocset, ThemeSchemas {
+export class ThemeLiquidDocsManager implements ThemeDocset, JsonSchemaValidators {
   constructor(private log: Logger = noop) {}
 
   // These methods are memoized so that they both are lazy and cached with
@@ -31,12 +30,9 @@ export class ThemeLiquidDocsManager implements ThemeDocset, ThemeSchemas {
     return this.loadResource('tags', []);
   });
 
-  sectionSchema = memo(async (): Promise<JsonSchema> => {
-    return this.loadResource('section_schema', {});
-  });
-
-  sectionSchemaValidator = memo(async (): Promise<ValidateFunction<unknown>> => {
-    return compileJsonSchema(await this.sectionSchema());
+  validateSectionSchema = memo(async (): Promise<ValidateFunction> => {
+    const sectionSchema = await this.loadResource('section_schema', {});
+    return compileJsonSchema(sectionSchema);
   });
 
   /**
@@ -47,6 +43,10 @@ export class ThemeLiquidDocsManager implements ThemeDocset, ThemeSchemas {
    * The setup method then downloads the other files.
    */
   setup = memo(async (): Promise<void> => {
+    if (!(await exists(root))) {
+      await fs.mkdir(root, { recursive: true });
+    }
+
     const local = await this.latestRevision();
     await download('latest');
     const remote = await this.latestRevision();
