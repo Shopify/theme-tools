@@ -13,10 +13,8 @@ export function createCompletionItem(
   return {
     label: entry.name,
     sortText: entry.name,
-
     ...documentationProperties(entry),
     ...deprecatedProperties(entry),
-
     ...extraProperties,
   };
 }
