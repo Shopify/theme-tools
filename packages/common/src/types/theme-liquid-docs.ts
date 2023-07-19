@@ -49,6 +49,15 @@ export interface FilterEntry extends DocsetEntry {
  * Object entry.
  */
 export interface ObjectEntry extends DocsetEntry {
+  /**
+   * `access` can be used to flag a type as non-global, but as a type that
+   * exists. For instance, `image` is a non-global object, but it's a type
+   * that exists. Has properties. etc. */
+  access?: {
+    /** Whether the object is a global object or not */
+    global: boolean;
+  };
+
   properties?: DocsetEntry[];
 }
 
