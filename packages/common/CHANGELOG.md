@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 1.11.0
+
+### Minor Changes
+
+- e67a16d: Breaking: Dependency injected json schema validators
+
 ## 1.10.0
 
 ### Minor Changes
