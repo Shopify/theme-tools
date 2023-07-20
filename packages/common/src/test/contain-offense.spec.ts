@@ -1,7 +1,7 @@
 import { expect, describe, it } from 'vitest';
 import { Offense, SourceCodeType } from '../types';
 
-describe('Module: OffensesAssertion', () => {
+describe('Module: containOffense', () => {
   const offenses: Offense[] = [
     buildOffense(`The translation for 'hello.world' is missing`, 'locales/en.json'),
     buildOffense(`'snippets/missing.liquid' does not exist`, 'layout/theme.liquid'),

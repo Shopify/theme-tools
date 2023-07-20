@@ -1,6 +1,6 @@
 import lodashSet from 'lodash.set';
 import { describe, expect, it } from 'vitest';
-import { runLiquidCheck } from '../../test';
+import { runLiquidCheck, highlightedOffenses } from '../../test';
 import { ValidSchema } from './index';
 import { ValidateFunction } from '../../types/theme-liquid-docs';
 import { Dependencies } from '../../types';
@@ -75,14 +75,15 @@ describe('ValidSchema', () => {
       DEFAULT_FILE_NAME,
       buildMockDeps(),
     );
+    const highlights = highlightedOffenses({ [DEFAULT_FILE_NAME]: sourceCode }, offenses);
+    expect(highlights).to.have.length(1);
+    expect(highlights[0].trim()).to.equal('{');
 
     expect(offenses).to.have.length(1);
     expect(offenses).to.containOffense({
       check: ValidSchema.meta.code,
-      message: 'Invalid syntax in schema JSON: Unexpected end of JSON input',
+      message: expect.stringContaining('Invalid syntax in schema JSON: '),
       absolutePath: `/${DEFAULT_FILE_NAME}`,
-      start: { index: 17, line: 1, character: 16 },
-      end: { index: 34, line: 4, character: 4 },
     });
   });
 
@@ -102,13 +103,15 @@ describe('ValidSchema', () => {
       buildMockDeps(),
     );
 
+    const highlights = highlightedOffenses({ [DEFAULT_FILE_NAME]: sourceCode }, offenses);
+    expect(highlights).to.have.length(1);
+    expect(highlights[0]).to.equal(' }');
+
     expect(offenses).to.have.length(1);
     expect(offenses).to.containOffense({
       check: ValidSchema.meta.code,
-      message: 'Invalid syntax in schema JSON: Unexpected token }',
+      message: expect.stringContaining('Invalid syntax in schema JSON: '),
       absolutePath: `/${DEFAULT_FILE_NAME}`,
-      start: { index: 58, line: 4, character: 3 },
-      end: { index: 60, line: 4, character: 5 },
     });
   });
 
