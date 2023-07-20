@@ -1,5 +1,13 @@
 # @shopify/theme-check-node
 
+## 1.11.1
+
+### Patch Changes
+
+- 2e73166: Fix the `DocsetEntry` types to better match the theme-liquid-docs json files
+- Updated dependencies [2e73166]
+  - @shopify/theme-check-common@1.11.1
+
 ## 1.11.0
 
 ### Minor Changes
