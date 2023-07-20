@@ -25,13 +25,26 @@ const NON_DEPRECATED = [
   'shopify_asset_url',
   'external_video_url',
 ];
+const LIQUID_OBJECT = 'canonical_url';
 
-function valueIncludes(attr: ValuedHtmlAttribute, filterName: string): boolean {
+function valueIsShopifyHosted(attr: ValuedHtmlAttribute): boolean {
+  const ASSET_URL_FILTER_NAMES = [...DEPRECATED, ...NON_DEPRECATED];
+  const ASSET_URL_OBJECT_NAMES = [LIQUID_OBJECT];
+
   return attr.value.some((node) => {
     if (!isNodeOfType(NodeTypes.LiquidDrop, node)) return false;
     if (typeof node.markup === 'string') return false;
     if (!isNodeOfType(NodeTypes.LiquidVariable, node.markup)) return false;
-    return node.markup.filters.some((filter) => filter.name === filterName);
+
+    const includesFilter = node.markup.filters.some((filter) =>
+      ASSET_URL_FILTER_NAMES.includes(filter.name),
+    );
+    if (includesFilter) return true;
+
+    if (!isNodeOfType(NodeTypes.VariableLookup, node.markup.expression)) return false;
+    return node.markup.expression.name
+      ? ASSET_URL_OBJECT_NAMES.includes(node.markup.expression.name)
+      : false;
   });
 }
 
@@ -58,14 +71,9 @@ export const AssetUrlFilters: LiquidCheckDefinition = {
 
       if (!urlAttribute) return;
 
-      const hasDeprecatedFilter = DEPRECATED.some((filterName) =>
-        valueIncludes(urlAttribute, filterName),
-      );
-      const hasNonDeprecatedFilter = NON_DEPRECATED.some((filterName) =>
-        valueIncludes(urlAttribute, filterName),
-      );
+      const hasShopifyHostedValue = valueIsShopifyHosted(urlAttribute);
 
-      if (hasDeprecatedFilter || hasNonDeprecatedFilter) return;
+      if (hasShopifyHostedValue) return;
 
       context.report({
         message: 'Use one of the asset_url filters to serve assets',
