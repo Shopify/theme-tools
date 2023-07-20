@@ -26,10 +26,12 @@ import { UnusedAssign } from './unused-assign';
 import { ValidHTMLTranslation } from './valid-html-translation';
 import { ValidSchema } from './valid-schema';
 import { ContentForHeaderModification } from './content-for-header-modification';
+import { AssetSizeAppBlockCSS } from './asset-size-app-block-css';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
   AssetPreload,
+  AssetSizeAppBlockCSS,
   AssetUrlFilters,
   CdnPreconnect,
   ContentForHeaderModification,

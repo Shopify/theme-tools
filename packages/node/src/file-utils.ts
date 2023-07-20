@@ -1,3 +1,4 @@
+import { Dependencies } from '@shopify/theme-check-common';
 import fs from 'node:fs/promises';
 
 export async function fileExists(path: string) {
@@ -8,3 +9,13 @@ export async function fileExists(path: string) {
     return false;
   }
 }
+
+export const fileSize: Dependencies['fileSize'] = async (path: string) => {
+  try {
+    const stats = await fs.stat(path);
+    return stats.size;
+  } catch (error) {
+    console.error(`Failed to get file size: ${error}`);
+    return 0;
+  }
+};

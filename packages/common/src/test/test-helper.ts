@@ -56,6 +56,10 @@ export async function check(
   };
   const defaultTranslationsFileAbsolutePath = 'locales/en.default.json';
   const defaultMockDependencies = {
+    async fileSize(absolutePath: string) {
+      const relativePath = absolutePath.replace(/^\//, '');
+      return themeDesc[relativePath].length;
+    },
     async fileExists(absolutePath: string) {
       const relativePath = absolutePath.replace(/^\//, '');
       return themeDesc[relativePath] !== undefined;

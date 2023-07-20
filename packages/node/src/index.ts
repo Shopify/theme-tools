@@ -13,7 +13,7 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import glob = require('glob');
 
-import { fileExists } from './file-utils';
+import { fileExists, fileSize } from './file-utils';
 import { loadConfig, findConfigPath } from './config';
 import { autofix } from './autofix';
 
@@ -56,6 +56,7 @@ export async function themeCheckRun(root: string, configPath?: string): Promise<
 
   const offenses = await coreCheck(theme, config, {
     fileExists,
+    fileSize,
     async getDefaultTranslations() {
       return defaultTranslations;
     },
