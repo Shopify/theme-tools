@@ -4,4 +4,4 @@
 '@shopify/theme-check-node': patch
 ---
 
-Add .access optional property in ObjectEntry
+Fix the `DocsetEntry` types to better match the theme-liquid-docs json files

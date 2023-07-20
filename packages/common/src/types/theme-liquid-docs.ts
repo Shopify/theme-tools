@@ -1,74 +1,4 @@
 /**
- * Represents an entry on themes docset.
- */
-export interface DocsetEntry {
-  /**
-   * The name of the entry.
-   */
-  name: string;
-
-  /**
-   * A brief summary of the entry.
-   */
-  summary?: string;
-
-  /**
-   * A detailed description of the entry.
-   */
-  description?: string;
-
-  /**
-   * Whether the entry is deprecated or not.
-   */
-  deprecated?: boolean;
-
-  /**
-   * The documentation link.
-   */
-  link?: string;
-
-  /**
-   * The reason why the entry is deprecated.
-   */
-  deprecationReason?: string;
-
-  /**
-   * The return type of the entry.
-   */
-  returnRype?: string;
-}
-
-/**
- * Filter entry.
- */
-export interface FilterEntry extends DocsetEntry {
-  parameters?: DocsetEntry[];
-}
-
-/**
- * Object entry.
- */
-export interface ObjectEntry extends DocsetEntry {
-  /**
-   * `access` can be used to flag a type as non-global, but as a type that
-   * exists. For instance, `image` is a non-global object, but it's a type
-   * that exists. Has properties. etc. */
-  access?: {
-    /** Whether the object is a global object or not */
-    global: boolean;
-  };
-
-  properties?: DocsetEntry[];
-}
-
-/**
- * Tag entry.
- */
-export interface TagEntry extends DocsetEntry {
-  parameters?: DocsetEntry[];
-}
-
-/**
  * Shopify themes docset.
  */
 export interface ThemeDocset {
@@ -89,6 +19,16 @@ export interface ThemeDocset {
 }
 
 /**
+ * JSON schemas resources for themes.
+ */
+export interface JsonSchemaValidators {
+  /**
+   * Retrieves the JSON schema validator for theme sections.
+   */
+  validateSectionSchema(): Promise<ValidateFunction>;
+}
+
+/**
  * This is a shallow redefinition of the ajv ValidateFunction.
  *
  * While theme-check was written with ajv validators in mind, you can
@@ -99,12 +39,133 @@ export interface ValidateFunction<T = unknown> {
   errors?: null | { instancePath: string; message?: string }[];
 }
 
-/**
- * JSON schemas resources for themes.
- */
-export interface JsonSchemaValidators {
+export interface DocsetEntry {
+  /** The name of the entry. */
+  name: string;
+
+  /** A brief summary of the entry. */
+  summary?: string;
+
+  /** A detailed description of the entry. */
+  description?: string;
+
+  /** Whether the entry is deprecated or not. */
+  deprecated?: boolean;
+
+  /** The reason why the entry is deprecated. */
+  deprecation_reason?: string;
+
+  /** documentation examples */
+  examples?: Example[];
+}
+
+export interface ObjectEntry extends DocsetEntry {
   /**
-   * Retrieves the JSON schema validator for theme sections.
+   * Holds the information on whether an ObjectEntry refers to a type or global variable.
+   *
+   * When not defined, we assume it's a global.
    */
-  validateSectionSchema(): Promise<ValidateFunction>;
+  access?: Access;
+
+  /**
+   * Object properties and their types
+   */
+  properties?: ObjectEntry[];
+
+  /**
+   * The return type of the variable.
+   * When multiple, it's because the return value is an enum (e.g. video | image).
+   */
+  return_type?: ReturnType[];
+
+  /** Don't care about this */
+  json_data?: JsonData;
+}
+
+export interface FilterEntry extends DocsetEntry {
+  /** Used for categorization on the docs website */
+  category?: string;
+
+  /** Argument types */
+  parameters?: Parameter[];
+
+  /** Return type */
+  return_type?: ReturnType[];
+
+  /** e.g. cart | item_count_for_variant: {variant_id} */
+  syntax?: string;
+}
+
+export interface TagEntry extends DocsetEntry {
+  /** Used for categorization on the docs website */
+  category?: string;
+
+  /** Argument types */
+  parameters?: Parameter[];
+
+  /** e.g. {% for item in array %}\n  expression{% endfor %} */
+  syntax?: string;
+
+  /** e.g. item, array, expression */
+  syntax_keywords?: SyntaxKeyword[];
+}
+
+export interface Access {
+  /** Whether the ObjectEntry is a global variable or a type */
+  global: boolean;
+  parents: Parent[];
+  template: string[];
+}
+
+export interface Parent {
+  object: string;
+  property: string;
+}
+
+export interface Parameter {
+  description: string;
+  name: string;
+  required: boolean;
+  types: string[];
+}
+
+export interface SyntaxKeyword {
+  description: string;
+  keyword: string;
+}
+
+export interface Example {
+  /* don't care about this */
+  // description: string;
+  // display_type: string;
+  // name: string;
+  // parameter: boolean;
+  // path: string;
+  // raw_liquid: string;
+  // show_data_tab: boolean;
+  // syntax: string;
+}
+
+export interface JsonData {
+  /* don't care about those */
+  // data_from_file: string;
+  // handle: string;
+  // path: string;
+}
+
+export type ReturnType = EnumReturnType | ArrayReturnType | OtherReturnType;
+
+export interface EnumReturnType {
+  type: 'string';
+  name: string;
+}
+
+export interface ArrayReturnType {
+  type: 'array';
+  array_value: string;
+}
+
+export interface OtherReturnType {
+  type: 'string' | 'number' | 'untyped' | string;
+  name: '';
 }
