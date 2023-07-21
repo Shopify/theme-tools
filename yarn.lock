@@ -466,18 +466,6 @@
     line-column "^1.0.2"
     ohm-js "^16.3.0"
 
-"@shopify/theme-check-common@^1.11.0":
-  version "1.11.0"
-  resolved "https://npm.shopify.io/node/@shopify/theme-check-common/-/1.11.0/theme-check-common-1.11.0.tgz#920b6a4e95d65c037d69060f35073daefebfb423"
-  integrity sha512-kSiQuOzYTbxLqAL1NTYtbB+i8n3dJ64sYkOMUP3BVTSq0intXhIQ31elWuhBqbTyJqiJKxAVV7PBJAaBRYP2mA==
-  dependencies:
-    "@shopify/prettier-plugin-liquid" "^1.2.1"
-    json-to-ast "^2.1.0"
-    line-column "^1.0.2"
-    lodash.set "^4.3.2"
-    lodash.unset "^4.5.2"
-    minimatch "^9.0.1"
-
 "@shopify/theme-check-common@^1.11.1":
   version "1.11.1"
   resolved "https://npm.shopify.io/node/@shopify/theme-check-common/-/1.11.1/theme-check-common-1.11.1.tgz#b9d3c69274329e695253820612dbc69e77b94f69"
@@ -490,12 +478,12 @@
     lodash.unset "^4.5.2"
     minimatch "^9.0.1"
 
-"@shopify/theme-check-docs-updater@^1.11.0":
-  version "1.11.0"
-  resolved "https://npm.shopify.io/node/@shopify/theme-check-docs-updater/-/1.11.0/theme-check-docs-updater-1.11.0.tgz#b098a7721ae4bd85a541ca0bd848f00d26b8c95e"
-  integrity sha512-Axa3wT8a1fHKgqCQ4BIkx+bTXK5oWrLHw81mo65VBE8XT26Q69jaO/Wrpbf0K1PKQ0dhaw9wMScLKA7ARX8OnQ==
+"@shopify/theme-check-docs-updater@^1.11.1":
+  version "1.11.1"
+  resolved "https://npm.shopify.io/node/@shopify/theme-check-docs-updater/-/1.11.1/theme-check-docs-updater-1.11.1.tgz#36174c3a33ce6029137dfb0fa242f534073be423"
+  integrity sha512-vnrBVXsMfOz9C+m0oLPPejRa872LXfXwpwMX0sLkh3IDtbZDRE7ioKwmMxZoMsS0SReKSt68iQZkiAKW7l15fw==
   dependencies:
-    "@shopify/theme-check-common" "^1.11.0"
+    "@shopify/theme-check-common" "^1.11.1"
     ajv "^8.12.0"
     env-paths "^2.2.1"
     node-fetch "^2.6.11"

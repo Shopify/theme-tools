@@ -1,5 +1,22 @@
 # @shopify/liquid-language-server-browser
 
+## 1.6.0
+
+### Minor Changes
+
+- 8f2270f: Fixed: type of docset entry data rendered
+- 6bad30d: Introduce Intelligent Code Completion foundations + Liquid tags completion provider
+- 57f28a6: Bump `@shopify/theme-check-common` to v1.9.0
+
+### Patch Changes
+
+- f369925: Add ObjectCompletionProvider
+- Updated dependencies [8f2270f]
+- Updated dependencies [f369925]
+- Updated dependencies [6bad30d]
+- Updated dependencies [57f28a6]
+  - @shopify/liquid-language-server-common@1.6.0
+
 ## 1.5.0
 
 ### Minor Changes
