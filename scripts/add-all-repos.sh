@@ -1,0 +1,1 @@
+sh ./scripts/add-repo.sh theme-check-js git@github.com:Shopify/theme-check-js.git

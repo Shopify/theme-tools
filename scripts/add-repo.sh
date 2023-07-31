@@ -16,11 +16,8 @@ git remote add $repo_name $repo_url
 # Fetch the remote repository
 git fetch $repo_name
 
-# Create a subdirectory for the repository
-mkdir ./packages/$repo_name
+# Merge the repository contents into a subdirectory of the current HEAD
+git subtree add --prefix=packages/$repo_name $repo_name main
 
-# Merge the repository contents into the subdirectory
-git read-tree --prefix=packages/$repo_name/ -u $repo_name/master
-
-# Commit the changes
-git commit -m "Imported $repo_name into $repo_name/ subdirectory"
+# Remove the remote repository
+git remote remove $repo_name
