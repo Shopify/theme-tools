@@ -1,0 +1,30 @@
+It should strip arguments from style tags
+{% style what %}
+{% endstyle %}
+
+It should strip arguments from schema tags
+{% schema what %}
+{% endschema %}
+
+It should strip arguments from javascript tags
+{% javascript what %}
+{% endjavascript %}
+
+It should strip arguments from else tags
+{% if cond %}{% else what %}{% endif %}
+
+It should strip arguments from break tags
+{% break what %}
+
+It should strip arguments from continue tags
+{% continue what %}
+
+It should strip arguments from comment tags
+{% comment what %}
+  hi
+{% endcomment %}
+{% comment what %}
+{% endcomment %}
+
+It should strip arguments from raw tags
+{% raw what %}{% endraw %}

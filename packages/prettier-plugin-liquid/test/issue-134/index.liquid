@@ -1,0 +1,8 @@
+it should format as expected
+<div class="bundle-product"
+  data-variantId="{{ variant_id }}"
+  {% for i in (1..3) %}
+      {% assign plan_id = i | minus: 1 %}
+      data-sellingId-{{i}}="{{ product.selling_plan_groups[0].selling_plans[plan_id].id }}"
+  {% endfor %}
+></div>

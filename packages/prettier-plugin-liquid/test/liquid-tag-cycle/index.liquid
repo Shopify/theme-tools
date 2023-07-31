@@ -1,0 +1,14 @@
+It should not break when it only has one arg (weird)
+printWidth: 1
+{% cycle x %}
+{% cycle var:x %}
+
+It should break before the first argument
+printWidth: 1
+{% cycle thing,'string' %}
+{% cycle var:  thing,   'string' %}
+
+It should support all types of arguments, and add spaces
+{% cycle x:f,'string',true %}
+{% cycle "group":f,"string" %}
+{% cycle 1:f,0.0 %}

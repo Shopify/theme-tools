@@ -1,0 +1,49 @@
+It should print the basic cases with dot access
+{{ x }}
+{{ x.y }}
+{{ x.y.z }}
+{{ x.y }}
+{{ x.y.z }}
+{{ x.y.z }}
+{{ x.y.z }}
+
+It should support empty?
+{{ x.y.empty? }}
+
+It should support recursive lookups
+{{ x.y[z] }}
+{{ x.y[(0..z)] }}
+
+It should convert dash-properties to string access
+{{ x['about-us'].contents }}
+
+It should support number access
+{{ x.y[0] }}
+
+It should index access strings with spaces
+{{ x.y['hello world'] }}
+
+It should respect singleQuote
+liquidSingleQuote: false
+{{ x.y["hello world"] }}
+
+It should keep double quotes if single quotes are in the string
+{{ x.y["string o' strings"] }}
+
+It should support spaces inside braces
+{{ x.y["string o' strings"] }}
+
+It should support spaces outside braces
+{{ x.y.z }}
+
+It should support spaces before the dot
+{{ x.y }}
+
+It should support spaces after the dot
+{{ x.y }}
+
+It should print global access variable lookups
+{{ [type] }}
+
+It should not convert the first global access string
+{{ ['product'] }}

@@ -1,0 +1,23 @@
+It should not consider the trailing whitespace of the last attribute to be sensitive
+printWidth: 1
+<ul
+  {% render 'hi',
+    arg: 1
+  %}
+></ul>
+<img
+  {% render 'hi',
+    arg: 1
+  %}
+>
+<self-closing
+  {% render 'hi',
+    arg: 1
+  %}
+/>
+
+It should not change the whitespace stripping when it doesn't break
+pritnWidth: 1000
+<ul {% render 'hi', arg: 1 %}></ul>
+<img {% render 'hi', arg: 1 %}>
+<self-closing {% render 'hi', arg: 1 %} />

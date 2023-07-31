@@ -1,0 +1,45 @@
+When it doesn't break, it should conditionally omit the leading space
+
+It should omit the leading space if it is stripped anyway
+{% if a -%}space{% endif %}
+
+It should not omit the leading space if there's leading whitespace
+{% if a %}{% endif %}
+{% if a %} {% endif %}
+{% if a %} space{% endif %}
+{%- if a %} space{% endif -%}
+{% if a %} space{% endif %}
+
+It should not omit the leading space if there's leading whitespace (even if the parent is not sensitive)
+<div>
+  {% if a %} space{% endif %}
+</div>
+
+It should not omit the leading space if there's leading whitespace (even if the parent has it)
+<span>
+  {% if a %} space{% endif -%}
+</span>
+
+When leadingSpaceSensitive, the leading space cannot be omitted if it is absent outside the tag
+<span>
+  {%- if a %} space{% endif -%}
+</span>
+
+It should not omit the whitespace because of whitespace stripping outside the tag
+<p>
+  {{ value -}}
+  {%- if a %} aaaaaaaaaaaaaaaaaaaaaaaaaaaa{% endif %}
+</p>
+
+It should not omit the whitespace when leadingSpaceSensitive
+<p>
+  haha{% if a %} space{% endif %}
+</p>
+
+It should strip leading outer whitespace when it breaks and keep the inner leading whitespace when leadingSpaceSensitive
+<p>
+  haha
+  {%- if a %}
+    looooooooooooooooooooooooooooooooooooooooooooooooooooooo
+  {%- endif %}
+</p>

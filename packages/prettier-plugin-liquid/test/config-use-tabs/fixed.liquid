@@ -1,0 +1,84 @@
+It should convert tabs to spaces by default
+<div>
+  <div>
+    <a></a>
+  </div>
+</div>
+
+It should convert space tabs to tabs with useTabs
+useTabs: true
+<div>
+	<div>
+		<a></a>
+	</div>
+</div>
+
+It should not convert tabs to spaces inside "paste-as-is" docs
+<pre>
+	hello
+	hello
+</pre>
+
+It should print pre-like tags without reindenting (LiquidRaw)
+<div>
+  <div>
+    {% raw %}
+  hello
+  hello
+{% endraw %}
+  </div>
+</div>
+
+It should not convert tabs to spaces inside "paste-as-is" docs (LiquidRaw)
+<div>
+  {% raw %}
+	hello
+	hello
+{% endraw %}
+</div>
+
+It should print pre-like tags without reindenting (capture tag)
+<div>
+  <div>
+    {% capture var %}
+  hello
+  hello
+{% endcapture %}
+  </div>
+</div>
+
+It should not convert tabs to spaces inside "paste-as-is" docs (capture tag)
+<div>
+  {% capture var %}
+	hello
+	hello
+{% endcapture %}
+</div>
+
+It should print pre-like tags without reindenting (pre)
+<div>
+  <div>
+    <pre>
+  hello
+  hello
+</pre>
+  </div>
+</div>
+
+It should not convert tabs to spaces inside "paste-as-is" docs (pre)
+<div>
+  <pre>
+	hello
+	hello
+</pre>
+</div>
+
+It should useTabs inside attributes too
+useTabs: true
+singleQuote: true
+<div
+	class='test'
+	{% if foo != blank %}
+		id='{{ foo }}'
+	{% endif %}
+></div>

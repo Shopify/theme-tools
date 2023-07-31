@@ -1,0 +1,53 @@
+It should not reindent raw tags bodies, as this tag is indentation sensitive
+<div>
+  {% raw %}
+  const a = [1, 2, 3];
+  const b = function() {
+    return null;
+  }
+
+  const config = {
+    product: {{ product | json }},
+  };
+
+  for (const x of foo) {
+    if (true) {
+      // noooo
+    }
+  }
+  {% endraw %}
+  {% raw %}
+  <div x=1 y=2 z=3>UNCLOSED HAHA
+{% endraw %}
+</div>
+
+It should be indentation (and whitespace) sensitive
+<p>
+  {% raw %}
+  # markdown example
+
+  - this is a list
+  	* this is indented with mixed tabs!
+{% endraw %}
+</p>
+
+It should be indentation (and whitespace) sensitive (useTabs)
+useTabs: true
+<p>
+	{% raw %}
+  # markdown example
+
+  - this is a list
+  	* this is indented with mixed tabs!
+{% endraw %}
+</p>
+
+it should pretty-print and indent the contents of the schema tag
+printWidth: 1
+{% schema %}
+  {
+    "some": {
+      "indented": "Object"
+    }
+  }
+{% endschema %}

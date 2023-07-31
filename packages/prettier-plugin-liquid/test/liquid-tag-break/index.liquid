@@ -1,0 +1,11 @@
+It should strip extraneous whitespace
+printWidth: 1
+{% for i in col %} {% break   %} {% endfor %}
+
+It should support missing whitespace
+printWidth: 1
+{% for i in col %} {%-break-%} {% endfor %}
+
+It should strip extraneous args
+printWidth: 1
+{% for i in col %} {% break huh?? %} {% endfor %}

@@ -1,0 +1,40 @@
+Should reindent base case
+<div>
+  <style>
+    :root {
+      --bg-color: {{ settings.backgroundColor }};
+    }
+
+    .container {
+      width: 100%;
+      padding-top: 100%;
+    }
+
+    .image {
+      position: absolute;
+      width: 100%;
+      top: 0;
+      left: 0;
+    }
+  </style>
+  <style id="my-style">
+    .container {
+      width: 100%;
+      padding-top: 100%;
+    }
+
+    .image {
+      position: absolute;
+      width: 100%;
+      top: 0;
+      left: 0;
+    }
+  </style>
+</div>
+
+should be idempotent (and not reindent multiple times)
+<style>
+  section.foo {
+    display: none;
+  }
+</style>

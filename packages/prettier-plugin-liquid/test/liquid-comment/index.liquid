@@ -1,0 +1,48 @@
+{% comment %}
+This gets reindented, but we don't parse the content.
+So stuff can be unclosed and it'll be fine.
+<article id="1234">
+{% endcomment %}
+
+{% comment %}theme-check-disable foo{% endcomment %}
+
+It should support nested comments
+{%comment%}
+ho
+{% comment %}
+  hi
+{% endcomment %}
+ha
+{%endcomment%}
+
+It should support empty comments
+{% comment %}{% endcomment %}
+
+It should support nested empty comments
+{% comment %}{% comment %}{% endcomment %}{% endcomment %}
+
+It should support nested empty comments (pt 2)
+{% comment %}
+hi
+{% comment %}
+{% endcomment %}
+ho
+{% endcomment %}
+
+It should support inline comments
+{% # hello world %}
+
+It should maintain paragraphs, but not indentation
+{% # hello world how are you doing today?
+# this keeps on going
+    # and it's looking weird
+  # Here's a list of things:
+  #  - one
+  #  - two
+  #  - three
+
+  # Here's a new paragraph
+  # oh hi!
+  #
+  # Here's another one with a # before the paragraph
+%}

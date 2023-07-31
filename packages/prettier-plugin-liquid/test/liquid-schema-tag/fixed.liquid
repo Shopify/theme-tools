@@ -1,0 +1,26 @@
+<div>
+  {% schema %}
+    {
+      "hello": "world"
+    }
+  {% endschema %}
+  {%- schema -%}
+    {
+      "hello": "world"
+    }
+  {%- endschema -%}
+</div>
+
+it should not try to format invalid json, but should reindent
+{% schema %}
+  { "invalid":
+    x0482 }
+{% endschema %}
+
+It should respect the indentSchema option
+indentSchema: false
+{% schema %}
+{
+  "hello": "world"
+}
+{% endschema %}

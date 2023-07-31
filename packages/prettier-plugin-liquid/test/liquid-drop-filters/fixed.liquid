@@ -1,0 +1,81 @@
+It should never break a name
+printWidth: 1
+{{ x }}
+
+It should break before/after delimiters and indent everything
+printWidth: 1
+{{
+  x
+  | filter1
+  | filter2
+}}
+
+It should break and indent named arguments
+printWidth: 1
+{{
+  x
+  | filter1:
+    key1: value1,
+    key2: value2
+  | filter2
+}}
+
+It should not break the first positional argument
+printWidth: 1
+{{
+  x
+  | filter1: arg1
+  | filter2: arg2,
+    arg3,
+    arg4
+}}
+
+It should break arguments only if necessary
+printWidth: 40
+{{
+  x
+  | filter1: key1: value1, key2: value2
+  | filter2
+}}
+
+It should support a mix of positional and named arguments as expected (p1)
+printWidth: 1
+{{
+  x
+  | filter1: pos1,
+    pos2,
+    key1: val1,
+    key2: val2
+}}
+
+It should support a mix of positional and named arguments as expected (p40)
+printWidth: 50
+{{
+  x
+  | filter1: pos1, pos2, key1: val1, key2: val2
+}}
+
+It should support a mix of positional and named arguments as expected (p80)
+printWidth: 80
+{{ x | filter1: pos1, pos2, key1: val1, key2: val2 }}
+
+It should support all types of arguments
+{{ x | f: 'string' }}
+{{ x | f: 'string' }}
+{{ x | f: 0.0 }}
+{{ x | f: 0 }}
+{{ x | f: x }}
+{{ x | f: (0..a) }}
+{{ x | f: true }}
+
+It should support all types of named arguments, and add spaces
+{{ x | f: key: 'string' }}
+{{ x | f: key: 'string' }}
+{{ x | f: key: 0.0 }}
+{{ x | f: key: 0 }}
+{{ x | f: key: x }}
+{{ x | f: key: (0..a) }}
+{{ x | f: key: true }}
+
+It should support spaces or lack of thereof erywhere
+{{ x | f: a: b, range: (a..b) }}

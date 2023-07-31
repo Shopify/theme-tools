@@ -1,0 +1,20 @@
+It should maintain at most 1 newline between attributes, and none at the end
+<label class="block relative">
+  <input
+    class="absolute inset-0 opacity-0 pointer-events-none peer"
+    type="radio"
+    name="id"
+
+    id="variant-{{ variant.id }}"
+    value="{{ variant.id }}"
+    required
+
+    {% unless variant.available %}
+      disabled
+    {% endunless %}
+
+    {% if product.selected_variant == variant %}
+      checked
+    {% endif %}
+  >
+</label>

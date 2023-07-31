@@ -1,0 +1,9 @@
+It should default to using single quotes
+{{ 'hello' }}
+
+It should keep double quotes if the string includes single quotes
+{{ "string o' string" }}
+
+It should maintain whitespace stripping characters and respect the singleQuote config
+liquidSingleQuote: false
+{{- "hello" -}}

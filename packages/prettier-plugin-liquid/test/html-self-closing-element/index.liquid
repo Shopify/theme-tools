@@ -1,0 +1,20 @@
+It should format self closing tags as expected
+printWidth: 40
+<self-closing/>
+<self-closing />
+<self-closing with=attributes />
+<self-closing with=attributes that=would span=on multiple lines />
+
+It should borrow parent and close tag parameters
+<span><sc src="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" /></span>
+
+It should not borrow parent and close tag parameters when htmlWhitespaceSensitivity is set to ignore
+htmlWhitespaceSensitivity: "ignore"
+<span><sc src="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" /></span>
+
+It should borrow prev and next tag parameters
+<span><sc /><sc src="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"/><sc/></span>
+
+It should not borrow prev and next tag parameters when htmlWhitespaceSensitivity is set to ignore
+htmlWhitespaceSensitivity: "ignore"
+<span><sc /><sc src="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" /><sc /></span>

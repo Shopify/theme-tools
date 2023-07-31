@@ -1,0 +1,45 @@
+# https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+name: CI
+
+on: [push]
+
+jobs:
+  lint:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        node-version: [16.x, 17.x]
+        prettier-major: [2, 3]
+
+    name: OS ${{ matrix.os }} / NodeJS ${{ matrix.node-version }} / Prettier ${{ matrix.prettier-major }}
+
+    env:
+      PRETTIER_MAJOR: ${{ matrix.prettier-major }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'yarn'
+
+      - name: Install the packages
+        run: yarn install --frozen-lockfile --ignore-engines
+
+      - name: Build the code
+        run: yarn build
+        env:
+          NODE_ENV: production
+
+      - name: Check formatting
+        run: yarn format:check
+
+      - name: Run the unit tests
+        run: yarn test
+
+      - name: Run the idempotence tests
+        run: yarn test:idempotence

@@ -1,0 +1,44 @@
+It should respect the html prettier-ignore comment
+printWidth: 1
+<!-- prettier-ignore -->
+{% cycle a,b,c %}
+
+It should respect the html prettier-ignore comment on tags
+printWidth: 1
+<a>
+<!-- prettier-ignore -->
+<b>{% cycle a,b,c %}</b>hi
+</a>
+
+It should respect the html prettier-ignore comment on liquid tags
+printWidth: 1
+<a>
+<!-- prettier-ignore -->
+{%capture foo%}{% for x in (0 .. 1) %}{% cycle a,b,c %}{% endfor %}{%endcapture%}
+</a>
+
+It should respect the liquid prettier-ignore comment
+printWidth: 1
+{% # prettier-ignore %}
+{% cycle a,b,c %}
+
+It should respect the liquid prettier-ignore comment on tags
+printWidth: 1
+<a>
+{% # prettier-ignore %}
+<b>{% cycle a,b,c %}</b>hi
+</a>
+
+It should respect the liquid prettier-ignore comment on liquid tags
+printWidth: 1
+<a>
+{% # prettier-ignore %}
+{%capture foo%}{% for x in (0 .. 1) %}{% cycle a,b,c %}{% endfor %}{%endcapture%}
+</a>
+
+It should respect the liquid prettier-ignore comment on tags (and maintain whitespace semantic meaning)
+printWidth: 1
+<a>
+{% # prettier-ignore %}
+{%capture foo%}{% for x in (0 .. 1) %}{% cycle a,b,c %}{% endfor %}{%endcapture%}{{ 'hi' }}
+</a>

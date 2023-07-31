@@ -1,0 +1,30 @@
+When it doesn't break, it should conditionally omit the trailing space
+
+It should omit the trailing space if it is stripped anyway
+{% if %}{% else %}space{%- endif %}
+{% if %}X{% else %}space{%- endif %}
+
+It should not omit the trailing space if there's space before the named branch
+(else)
+{% if %}{% else %}space {% endif %}
+{%- if %}{% else %}space {% endif -%}
+{% if %}{% else %}space {% endif %}
+
+It should not omit the outer whitespace in elsif else chain
+{% if a %}{% elsif b %}{% else %}{% endif %}
+{% if a %}{% elsif b %} {% else %}{% endif %}
+{% if a %}{% elsif b %}X {% else %}{% endif %}
+{% if a %}{% elsif b %} X {% else %}{% endif %}
+{% if a %}{% elsif b %} X {% else %}{% endif %}
+
+It should not omit the whitespace because of whitespace stripping outside the
+tag
+<p>
+  {% if %}{% else %}aaaaaaaaaaaaaaaaaaaaaaaaaaaa {% endif -%}
+  {{- value }}
+</p>
+
+It should not omit the whitespace if it is included inline in a paragraph
+<p>
+  haha{% if %}{% else %}space {% endif %}haha
+</p>

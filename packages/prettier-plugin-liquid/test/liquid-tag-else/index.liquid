@@ -1,0 +1,11 @@
+It should strip extraneous whitespace
+printWidth: 1
+{% if false %} {% else   %} hello {% endif %}
+
+It should support missing whitespace
+printWidth: 1
+{% if false %} {%-else-%} hello {% endif %}
+
+It should strip extraneous args
+printWidth: 1
+{% if false %} {% else huh??  %} hello {% endif %}

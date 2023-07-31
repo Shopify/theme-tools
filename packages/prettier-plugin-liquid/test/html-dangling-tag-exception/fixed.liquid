@@ -1,0 +1,70 @@
+It should pretty print dangling open tags inside if statements
+printWidth: 1
+{% if condition %}
+  <div
+    attr="value"
+    other="{{ product.id }}"
+  >
+{% else -%}
+  <product-wrapper
+    id="{{ product.id }}"
+  >
+{%- endif %}
+
+It should pretty print dangling open tags inside unless statements
+printWidth: 1
+{% unless condition -%}
+  <product-wrapper
+    attr="value"
+    other="{{ product.id }}"
+  >
+{%- else %}
+  <div
+    id="{{ product.id }}"
+  >
+{% endunless %}
+
+It should pretty print dangling close tags inside if statements
+printWidth: 1
+{% if condition %}
+  </div>
+{% else -%}
+  </product-wrapper>
+{%- endif %}
+
+It should pretty print dangling close tags inside unless statements
+printWidth: 1
+{% unless condition %}
+  </div>
+{% else -%}
+  </product-wrapper>
+{%- endunless %}
+
+It should allow two nodes as well, without indenting
+printWidth: 1
+{% if condition %}
+  <div
+    attr="value"
+    other="{{ product.id }}"
+  >
+  <p
+    attr="value"
+  >
+{% endif %}
+
+It should format as expected, Dawn example...
+printWidth: 80
+<div>
+  {%- if block.settings.make_collapsible_row -%}
+    <details id="Details-{{ block.id }}-{{ section.id }}" open>
+    <summary>
+  {%- endif %}
+  ...
+  {%- if block.settings.make_collapsible_row -%}
+    </summary>
+  {%- endif %}
+  ...
+  {%- if block.settings.make_collapsible_row -%}
+    </details>
+  {%- endif %}
+</div>

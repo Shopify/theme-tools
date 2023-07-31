@@ -1,0 +1,28 @@
+{
+  "extends": "@tsconfig/node14/tsconfig.json",
+  "compilerOptions": {
+    "lib": ["es2020"],
+    "noImplicitAny": true,
+    "removeComments": true,
+    "declaration": true,
+    "preserveConstEnums": true,
+    "outDir": "dist",
+    "emitDecoratorMetadata": true,
+    "module": "commonjs",
+    "diagnostics": false,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "inlineSourceMap": true,
+    "target": "ES6",
+    "allowJs": true,
+    "jsx": "react",
+    "experimentalDecorators": true,
+    "allowUnusedLabels": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

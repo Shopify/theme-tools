@@ -1,0 +1,35 @@
+it should not add Whitespace Trim Characters (WTC) if the liquid tag does not
+break on a new line
+<div>{% echo 'hello' %}</div>
+
+it should not add wtc if the liquid tag breaks on a new line, is not leading
+space sensitive and there was no leading space.
+<div>
+  {% echo 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' %}
+</div>
+
+it should add wtc if the liquid tag breaks on a new line and is leading space
+sensitive
+<span>
+  {%- echo 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' -%}
+</span>
+
+it should not add wtc if the liquid tag breaks on a new line and the
+previous/next characters were spaces
+<div>
+  {% echo 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' %}
+</div>
+
+it should break next to a character, so there should be wtc
+<div>
+  Hey
+  {% echo 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' -%}
+  , how are you doing?
+</div>
+
+it should add wtc when it adds hardlines in places there wasn't whitespace before
+<span>
+  {%- render 'icon-error' -%}
+  {{- 'blogs.article.email' | t }}
+  {{ form.errors.messages.email }}.</span
+>

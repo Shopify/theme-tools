@@ -1,0 +1,42 @@
+It should pretty print CSS inside style tags
+printWidth: 20
+<style>
+  .class,
+  #id,
+  html,
+  body {
+    background-color: green;
+    width: 100%;
+  }
+  .container {
+    display: flex;
+  }
+</style>
+
+It should fallback to reindenting when it doesn't parse
+printWidth: 20
+<style>
+  .class,#id,html,body{background-color:{{setting.color}};width:100%}
+  .container{display:flex;}
+</style>
+
+it should reindent when it doesn't parse, and swap minIndent with tabs with useTabs
+printWidth: 20
+useTabs: true
+<style>
+	.class,#id,html,body{
+	  background-color:{{setting.color}};
+	  width:100%;
+	}
+	.container{display:flex;}
+</style>
+
+It should fallback to reindenting when it contains liquid in calc. (somehow this parses!)
+<style>
+  @media screen and (max-width: 749px) {
+    .collection-hero--with-image .collection-hero__inner {
+      padding-bottom: calc({{ settings.media_shadow_vertical_offset | at_least: 0 }}px + 2rem);
+    }
+  }
+</style>
+

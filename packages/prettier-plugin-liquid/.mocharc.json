@@ -1,0 +1,4 @@
+{
+  "require": ["./build/shims", "./test/test-setup", "ts-node/register/transpile-only", "tsconfig-paths/register"],
+  "reporter": "spec"
+}

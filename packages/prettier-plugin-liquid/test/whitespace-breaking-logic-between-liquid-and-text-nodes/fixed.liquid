@@ -1,0 +1,38 @@
+it should avoid breaking between text and nodes, when the node fits on a line
+<p>
+  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (-
+  {{- product.price -}}
+  -)
+</p>
+
+<p>
+  Ipsum. Praesent scelerisque tortor a justo. Quisque consequat libero erat<em
+    >product.price</em
+  >ok
+</p>
+
+it should break between text and node when the group wouldn't fit on a line
+<p>
+  |=============
+  {{- 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' -}}
+  =============|
+</p>
+
+it should break between text and node when the child has linebreaks
+<p>
+  |=============
+  {{-
+    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    | append: 'aaa'
+  -}}
+  =============|
+</p>
+
+it should break parent and add WTC when the child breaks
+<p>
+  (-
+  {%- if liquid -%}
+    <span>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</span>
+  {%- endif -%}
+  -)
+</p>

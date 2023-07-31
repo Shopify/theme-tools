@@ -1,0 +1,12 @@
+node_modules
+dist
+yarn-error.log
+.DS_Store
+dawn
+TODO
+grammar/liquid-html.ohm.js
+standalone.js
+standalone.js.LICENSE.txt
+**/actual.liquid
+coverage
+.nyc_output

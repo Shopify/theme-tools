@@ -1,0 +1,54 @@
+<div>
+  <script></script>
+  <script src="//short.js" defer="defer"></script>
+  <script
+    src="{{ 'very-long-line-oh-my-god.js' | asset_url }}"
+    defer="defer"
+  ></script>
+  <script
+    src="{{ 'very-long-line-oh-my-god.js' | asset_url }}"
+    crossorigin="anonymous"
+    defer="defer"
+  ></script>
+  <script>
+    const a = [1, 2, 3];
+    const b = function() {
+      return null;
+    }
+
+    const config = {
+      product: {{ product | json }},
+    };
+
+    for (const x of foo) {
+      if (true) {
+        // noooo
+      }
+    }
+  </script>
+  <script id="my-script" type="text/javascript">
+    const a = [1, 2, 3];
+    const b = function() {
+      return null;
+    }
+
+    const config = {
+      product: {{ product | json }},
+    };
+
+    for (const x of foo) {
+      if (true) {
+        // noooo
+      }
+    }
+  </script>
+</div>
+
+It should fix issue #21
+<script>
+  document.documentElement.className =
+    document.documentElement.className.replace('no-js', 'js');
+  if (Shopify.designMode) {
+    document.documentElement.classList.add('shopify-design-mode');
+  }
+</script>

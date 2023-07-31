@@ -1,0 +1,23 @@
+it should break on html tags that always break
+<html><head><link href="hello world"></head><body><main></main></body></html>
+
+it should break if original had line breaks
+<div x=1 y=2 z=3></div>
+<div
+  x=1 y=2 z=3></div>
+
+it should indent child
+<div x=1 y=2>Child</div>
+<div
+  x=1 y=2 z=3>Child</div>
+
+it should not break when it fits on a line
+<div x="1" y="2"><div>Hello</div></div>
+
+it should break if there's more than one child on a line
+<div x="1" y="2"><div>Hello</div><div>World</div></div>
+
+it should borrow the closing span in this situation
+printWidth: 30
+<a class="link animate-arrow" ><span class="icon-wrap">&nbsp;{% render 'icon-arrow' %}</span></a>
+<a class="link animate-arrow" ><span class="icon-wrap">&nbsp; aaaaaaaaaaaaaaaaaaaaaaaa </span></a>

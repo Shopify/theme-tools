@@ -1,0 +1,68 @@
+<!--
+This gets reindented, but we don't parse the content.
+So stuff can be unclosed and it'll be fine.
+<article id="1234">
+-->
+
+<!-- This gets reindented, but we don't parse the content.
+So stuff can be unclosed and it'll be fine.
+<article id="1234"> -->
+
+<!-- if it fits inline, it fits inline -->
+
+It should change the css display of the next node
+printWidth: 1
+<!-- display: block -->
+<span>{{ hi }}</span>
+
+It should preserve MSO conditional comments
+<!--[if mso]>
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="570" align="center">
+<tr>
+<td bgcolor="#054A49">&nbsp
+<![endif]-->
+
+It should support the IE Comment '&' operators
+<!--[if (gt IE 5)&(lt IE 7)]>
+<script src="DD_belatedPNG.js"></script>
+<script>
+  DD_belatedPNG.fix('.png');
+</script>
+<![endif]-->
+
+It should support the IE Comment '|' operators
+<!--[if (IE 6)|(IE 7)]>
+<style type="text/css">
+a		{ color:#fff; }
+</style>
+<![endif]-->
+
+It should support and indend the bodies of all IE comment variations
+printWidth: 60
+<!--[if IE]>
+According to the conditional comment this is IE<br />
+<![endif]-->
+<!--[if IE 6]>
+According to the conditional comment this is IE 6<br />
+<![endif]-->
+<!--[if IE 7]>
+According to the conditional comment this is IE 7<br />
+<![endif]-->
+<!--[if IE 8]>
+According to the conditional comment this is IE 8<br />
+<![endif]-->
+<!--[if IE 9]>
+According to the conditional comment this is IE 9<br />
+<![endif]-->
+<!--[if gte IE 8]>
+According to the conditional comment this is IE 8 or higher<br />
+<![endif]-->
+<!--[if lt IE 9]>
+According to the conditional comment this is IE lower than 9<br />
+<![endif]-->
+<!--[if lte IE 7]>
+According to the conditional comment this is IE lower or equal to 7<br />
+<![endif]-->
+<!--[if gt IE 6]>
+According to the conditional comment this is IE greater than 6<br />
+<![endif]-->
