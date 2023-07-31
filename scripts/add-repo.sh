@@ -1,14 +1,16 @@
 #!/bin/bash
 
 # Check if the correct number of arguments are provided
-if [ "$#" -ne 2 ]; then
-    echo "Usage: ./add_repo.sh <repo_name> <repo_url>"
+if [ "$#" -ne 1 ]; then
+    echo "Usage: ./add_repo.sh <repo_url>"
     exit 1
 fi
 
-# Assign the script arguments to variables
-repo_name=$1
-repo_url=$2
+# Assign the script argument to variable
+repo_url=$1
+
+# Extract the repo_name from the repo_url
+repo_name=$(basename -s .git "$repo_url")
 
 # Add the remote repository
 git remote add $repo_name $repo_url
