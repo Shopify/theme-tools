@@ -1,0 +1,18 @@
+extends:
+  # this turns PBS on
+  - theme-check:all
+  # this turns it off
+  - ./disable-parser-blocking.yml
+  # this turns something else off
+  - ./disable-matching-translations.yml
+
+# this turns PBS back on
+ParserBlockingScript:
+  enabled: true
+
+ImgWidthAndHeight:
+  ignore:
+    - 'snippets/**'
+
+UnusedAssign:
+  severity: 'error'

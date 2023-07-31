@@ -1,0 +1,36 @@
+Arguments: 
+  /opt/homebrew/Cellar/node/19.0.1/bin/node /opt/homebrew/Cellar/yarn/1.22.19/libexec/bin/yarn.js init
+
+PATH: 
+  /Users/charles/.pyenv/shims:/opt/dev/bin/user:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/charles/bin:../../node_modules/.bin:node_modules/.bin:/opt/homebrew/opt/python/libexec/bin:/usr/local/opt/coreutils/libexec/gnubin:/opt/local/bin:/opt/local/sbin:/Users/charles/npm/bin:/usr/local/bin:/bin:/usr/sbin:/sbin:/usr/bin:/usr/texbin:/opt/homebrew/bin:/Applications/Visual Studio Code.app/Contents/Resources/app/bin:/Users/charles/.yarn/bin:/Users/charles/.gems/bin:/Users/charles/.fzf/bin
+
+Yarn version: 
+  1.22.19
+
+Node version: 
+  19.0.1
+
+Platform: 
+  darwin arm64
+
+Trace: 
+  Error: canceled
+      at Interface.<anonymous> (/opt/homebrew/Cellar/yarn/1.22.19/libexec/lib/cli.js:137150:13)
+      at Interface.emit (node:events:513:28)
+      at [_ttyWrite] [as _ttyWrite] (node:internal/readline/interface:1125:18)
+      at ReadStream.onkeypress (node:internal/readline/interface:274:20)
+      at ReadStream.emit (node:events:513:28)
+      at emitKeys (node:internal/readline/utils:357:14)
+      at emitKeys.next (<anonymous>)
+      at ReadStream.onData (node:internal/readline/emitKeypressEvents:64:36)
+      at ReadStream.emit (node:events:513:28)
+      at addChunk (node:internal/streams/readable:324:12)
+
+npm manifest: 
+  No manifest
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

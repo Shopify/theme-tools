@@ -1,0 +1,6 @@
+{
+  "mochaExplorer.autoload": true,
+  "mochaExplorer.configFile": ".mocharc.json",
+  "mochaExplorer.files": "packages/*/src/**/*.spec.ts",
+  "mochaExplorer.watch": "packages/*/src/**/*.spec.ts"
+}

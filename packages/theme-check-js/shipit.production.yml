@@ -1,0 +1,4 @@
+deploy:
+  override:
+    - yarn install
+    - yarn build && yarn changeset publish

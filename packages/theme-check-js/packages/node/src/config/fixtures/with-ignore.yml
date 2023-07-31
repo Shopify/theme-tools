@@ -1,0 +1,5 @@
+extends:
+  - theme-check:recommended
+ignore:
+  - 'src/**'
+  - 'dist/**'

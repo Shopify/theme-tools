@@ -1,0 +1,94 @@
+<head id="head">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <script src="assets/standalone.js" defer></script>
+  <script src="assets/playground.js" defer></script>
+  <title>Theme Check JS - Playground</title>
+</head>
+
+<body>
+  <header>
+    <span href="/" class="logo-wrapper">
+      <img
+        class="logo"
+        src="https://github.com/Shopify/theme-check-vscode/blob/main/images/shopify_glyph.png?raw=true"
+        alt=""
+      />
+      <h1>
+        Theme Check
+        <span id="version"
+          ><a
+            href="https://github.com/shopify/theme-check-js/blob/main/CHANGELOG.md"
+            target="_blank"
+            rel="noreferrer noopener"
+            >v1.0.0</a
+          ></span
+        >
+      </h1>
+    </span>
+    <span class="links">
+      <!-- Place this tag where you want the button to render. -->
+      <a
+        class="github-button"
+        href="https://github.com/shopify/theme-check-js"
+        data-size="large"
+        data-show-count="true"
+        aria-label="Star shopify/theme-check-js on GitHub"
+        >Star</a
+      >
+    </span>
+  </header>
+  <div id="root" class="playground-container">
+    <div class="editors-container">
+      <textarea
+        id="input"
+        class="editor"
+        placeholder="Unformatted input"
+        spellcheck="false"
+      >
+&lt;ul&gt;{% for el in col %}&lt;li class=&quot;{% cycle &#039;odd&#039;, &#039;even&#039; %}&quot; id=&quot;el-{{ el.index }}&quot;&gt;{{ el.image }}&lt;/li&gt;{% endfor %}&lt;/ul&gt;
+
+&lt;ul class=&quot;container&quot;&gt;
+{% for el in col %}&lt;li class=&quot;{% cycle &#039;odd&#039;, &#039;even&#039; %}&quot; id=&quot;something&quot; data-prop=&quot;some value&quot;&gt;
+  &lt;div class=&quot;item-container&quot;&gt;  &lt;label&gt;{{ el.value }}&lt;/label&gt;
+   {% assign alt = el.featured_image.alt | replace: &#039;vanilla&#039;, &#039;chocolate&#039; | upcase %}
+   {{ el.featured_image | image_url | image_tag }}
+      &lt;/div&gt;
+    &lt;/li&gt; {% endfor %}
+&lt;/ul&gt;
+      </textarea>
+      <div class="editor">
+        <textarea
+          id="output"
+          class="editor"
+          placeholder="Nothing to report!"
+          readonly
+        ></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-bar">
+    <div class="bottom-bar-buttons"></div>
+    <div class="bottom-bar-buttons bottom-bar-buttons-center">
+      Inspired by the
+      <a href="https://prettier.io/playground" target="_blank">
+        Prettier playground
+      </a>
+    </div>
+    <div class="bottom-bar-buttons bottom-bar-buttons-right">
+      <a
+        id="reportIssue"
+        href="https://github.com/shopify/theme-check-js/issues/new"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <button type="button" class="btn">Report issue</button>
+      </a>
+    </div>
+  </div>
+
+  <!-- Place this tag in your head or just before your close body tag. -->
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+</body>
