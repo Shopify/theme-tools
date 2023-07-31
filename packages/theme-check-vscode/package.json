@@ -1,0 +1,211 @@
+{
+  "name": "theme-check-vscode",
+  "author": {
+    "name": "charlespwd"
+  },
+  "version": "1.10.0",
+  "publisher": "Shopify",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "displayName": "Shopify Liquid",
+  "description": "A complete developer experience for Shopify themes",
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Language Packs"
+  ],
+  "keywords": [
+    "liquid",
+    "shopify",
+    "theme-check"
+  ],
+  "preview": false,
+  "icon": "images/shopify_glyph.png",
+  "homepage": "https://github.com/shopify/theme-check-vscode",
+  "bugs": {
+    "url": "https://github.com/shopify/theme-check-vscode/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shopify/theme-check-vscode.git"
+  },
+  "scripts": {
+    "build": "yarn build:ci",
+    "build:ci": "yarn build:extension && yarn build:language-config && yarn build:syntax",
+    "build:extension": "webpack --mode production",
+    "build:language-config": "scripts/make-language-configuration",
+    "build:syntax": "yarn --cwd ./syntaxes build",
+    "dev": "rimraf dist && yarn dev:watch",
+    "dev:build": "webpack --mode development",
+    "dev:syntax": "yarn --cwd ./syntaxes dev",
+    "dev:watch": "webpack --mode development --watch",
+    "format": "prettier --write 'src/**/*.{ts,js}'",
+    "format:check": "prettier --check 'src/**/*.{js,ts}'",
+    "lint": "eslint src --ext ts",
+    "package": "yarn build && vsce package",
+    "postinstall": "yarn --cwd ./syntaxes install",
+    "prebuild": "yarn && rimraf dist language-configuration.json",
+    "pretest": "yarn run test:build && yarn run dev:build && yarn run lint",
+    "test": "mocha 'src/**/*.test.js'",
+    "test:build": "tsc -p . --outDir out",
+    "test:watch": "tsc -p . -w --outDir out",
+    "type-check": "tsc --noEmit"
+  },
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "dependencies": {
+    "@shopify/prettier-plugin-liquid": "^1.1.0",
+    "prettier": "^2.6.2",
+    "vsce": "^1.87.0",
+    "vscode-languageclient": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.0.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@types/prettier": "^2.4.2",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "@vscode/test-electron": "^2.2.0",
+    "chai": "^4.3.4",
+    "eslint": "^8.28.0",
+    "eslint-config-prettier": "^8.3.0",
+    "mocha": "^8.3.2",
+    "rimraf": "^3.0.2",
+    "ts-loader": "^9.4.1",
+    "typescript": "^4.9.3",
+    "vscode-test": "^1.3.0",
+    "webpack": "^5.76.0",
+    "webpack-cli": "^5.0.0"
+  },
+  "activationEvents": [
+    "workspaceContains:**/.theme-check.yml",
+    "onLanguage:liquid"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "shopifyLiquid.restart",
+        "title": "Liquid Theme Check: Restart Server"
+      },
+      {
+        "command": "shopifyLiquid.runChecks",
+        "title": "Liquid Theme Check: Run Checks"
+      }
+    ],
+    "configuration": {
+      "title": "Shopify Liquid | Syntax Highlighting & Linter by Shopify",
+      "properties": {
+        "shopifyLiquid.shopifyCLIPath": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Path to shopify executable. Defaults to `which shopify` if available on `$PATH`."
+        },
+        "shopifyLiquid.languageServerPath": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Path to theme-check-language-server. Defaults to `which theme-check-language-server` if available on `$PATH`."
+        },
+        "shopifyLiquid.disableWindowsWarning": {
+          "type": [
+            "boolean"
+          ],
+          "description": "When true, theme check won't bug you with the Windows warning anymore.",
+          "default": false
+        },
+        "themeCheck.checkOnOpen": {
+          "type": [
+            "boolean"
+          ],
+          "description": "When true, theme check runs on file open.",
+          "default": true
+        },
+        "themeCheck.checkOnChange": {
+          "type": [
+            "boolean"
+          ],
+          "description": "When true, theme check runs on file change.",
+          "default": true
+        },
+        "themeCheck.checkOnSave": {
+          "type": [
+            "boolean"
+          ],
+          "description": "When true, theme check runs on file save.",
+          "default": true
+        },
+        "themeCheck.onlySingleFileChecks": {
+          "type": [
+            "boolean"
+          ],
+          "description": "When true, disables whole theme checks. Can improve performance. (theme-check v1.10.0+)",
+          "default": false
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "liquid",
+        "configuration": "./language-configuration.json",
+        "aliases": [
+          "Liquid",
+          "liquid",
+          "HTML Liquid"
+        ],
+        "extensions": [
+          ".liquid"
+        ]
+      },
+      {
+        "id": "javascript",
+        "extensions": [
+          ".js.liquid",
+          ".ts.liquid"
+        ]
+      },
+      {
+        "id": "css",
+        "extensions": [
+          ".css.liquid"
+        ]
+      },
+      {
+        "id": "scss",
+        "extensions": [
+          ".scss.liquid",
+          ".sass.liquid"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "liquid",
+        "scopeName": "text.html.liquid",
+        "path": "./syntaxes/grammars/liquid.tmLanguage.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.css": "css",
+          "meta.embedded.block.js": "javascript"
+        }
+      },
+      {
+        "path": "./syntaxes/grammars/liquid-injection.tmLanguage.json",
+        "scopeName": "liquid.injection",
+        "embeddedLanguages": {
+          "meta.object.liquid": "liquid",
+          "meta.tag.liquid": "liquid"
+        },
+        "injectTo": [
+          "text.html.liquid"
+        ]
+      }
+    ]
+  }
+}
