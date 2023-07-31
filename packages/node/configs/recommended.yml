@@ -6,10 +6,17 @@ ignore:
 AssetPreload:
   enabled: true
   severity: 1
+AssetSizeAppBlockCSS:
+  enabled: true
+  severity: 1
+  thresholdInBytes: 100000
 AssetUrlFilters:
   enabled: true
   severity: 1
 CdnPreconnect:
+  enabled: true
+  severity: 1
+ContentForHeaderModification:
   enabled: true
   severity: 1
 DeprecateBgsizes:

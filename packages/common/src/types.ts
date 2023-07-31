@@ -256,6 +256,7 @@ export interface Dependencies {
   getDefaultTranslations(): Promise<Translations>;
   getDefaultLocale(): Promise<string>;
   fileExists(absolutePath: string): Promise<boolean>;
+  fileSize?(absolutePath: string): Promise<number>;
   themeDocset?: ThemeDocset;
   schemaValidators?: JsonSchemaValidators;
 }
