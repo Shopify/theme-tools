@@ -1,0 +1,104 @@
+# The way this works is the following:
+# - each test case consists of a pair of lines separated by two new lines,
+# - the first line of each pair is "where you are",
+# - the second line of each pair is "what we expect the fix to be".
+# The █ character is used to represent the cursor position, and will
+# be parsed as a placeholder character
+# Lines that start by # are ignored as comments.
+<div class="container" id="
+<div class="container" id="">
+
+<div class="container" id="{{
+<div class="container" id="{{█}}">
+
+<div class="container" id="{{ var.
+<div class="container" id="{{ var.█}}">
+
+<div class="container" id="{{ var['
+<div class="container" id="{{ var['█']}}">
+
+<div class="container" id="{{ var['key'
+<div class="container" id="{{ var['key']}}">
+
+<div class="container" id="{{ var['key']
+<div class="container" id="{{ var['key']}}">
+
+<div class="container" id="{{ var['key'] }}"
+<div class="container" id="{{ var['key'] }}">
+
+<div class="container" id="{{ var['key'] }}"></div>
+<div class="container" id="{{ var['key'] }}"></div>
+
+{% for item in list
+{% for item in list%}
+
+{% for item in list %}
+{% for item in list %}
+
+{% for item in list %}<p>{{ █
+{% for item in list %}<p>{{ █}}
+
+{% for item in list %}<p>{{ item.
+{% for item in list %}<p>{{ item.█}}
+
+{% for item in list %}<p>{{ item['
+{% for item in list %}<p>{{ item['█']}}
+
+{% for item in list %}<p>{{ item['key'
+{% for item in list %}<p>{{ item['key']}}
+
+{% for item in list %}<p>{{ item['key']
+{% for item in list %}<p>{{ item['key']}}
+
+{% for item in list %}<p>{{ item['key'] }}</p>
+{% for item in list %}<p>{{ item['key'] }}</p>
+
+{% for item in list %}<p>{{ item['key'] }}</p>{% endfor █
+{% for item in list %}<p>{{ item['key'] }}</p>{% endfor █%}
+
+{% for item in list %}<p>{{ item['key'] }}</p>{% endfor %}
+{% for item in list %}<p>{{ item['key'] }}</p>{% endfor %}
+
+{% for item in (1..a
+{% for item in (1..a)%}
+
+{% form "cart",
+{% form "cart",█%}
+
+<a href="{% url '
+<a href="{% url ''%}">
+
+<a href="{% url 'name' █
+<a href="{% url 'name' █%}">
+
+<a href="{% url 'name' %}
+<a href="{% url 'name' %}">
+
+<a href="{% url 'name' %}"
+<a href="{% url 'name' %}">
+
+<a href="{% url 'name' %}"></a>
+<a href="{% url 'name' %}"></a>
+
+{% if condition %}
+{% if condition %}
+
+{% if condition %}<p>
+{% if condition %}<p>
+
+{% if condition %}<p>Hello, world!
+{% if condition %}<p>Hello, world!
+
+{% if condition %}<p>Hello, world!</p>
+{% if condition %}<p>Hello, world!</p>
+
+# cursor is included because no way to tell if you didn't want another var
+{% if condition %}<p>Hello, world!</p>{% endif 
+{% if condition %}<p>Hello, world!</p>{% endif █%}
+
+{% if condition %}<p>Hello, world!</p>{% endif %}
+{% if condition %}<p>Hello, world!</p>{% endif %}
+
+# this one looks at symbols that have meaning depending on context
+{% if a <b %}<p attr="hi'">{% else > b %}Hello, world!{{ "don't
+{% if a <b %}<p attr="hi'">{% else > b %}Hello, world!{{ "don't"}}
