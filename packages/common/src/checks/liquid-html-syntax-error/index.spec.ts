@@ -3,7 +3,7 @@ import { highlightedOffenses, runLiquidCheck } from '../../test';
 import { Offense } from '../../types';
 import { LiquidHTMLSyntaxError } from './index';
 
-describe('LiquidHTMLSyntaxError', () => {
+describe('Module: LiquidHTMLSyntaxError', () => {
   it('should report unclosed Liquid tags', async () => {
     const sourceCode = `
       {% capture some_variable %}

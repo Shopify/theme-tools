@@ -2,7 +2,7 @@ import { expect, describe, it } from 'vitest';
 import { JSONSyntaxError } from './index';
 import { highlightedOffenses, runJSONCheck } from '../../test';
 
-describe('JSONSyntaxError', () => {
+describe('Module: JSONSyntaxError', () => {
   it('should report an error for invalid JSON', async () => {
     const invalidJson = `{
       "key1": "value1",

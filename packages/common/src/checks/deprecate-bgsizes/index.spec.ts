@@ -2,7 +2,7 @@ import { expect, describe, it } from 'vitest';
 import { DeprecateBgsizes } from './index';
 import { runLiquidCheck, highlightedOffenses } from '../../test';
 
-describe('DeprecateBgsizes', () => {
+describe('Module: DeprecateBgsizes', () => {
   it('should report offenses for deprecated attributes', async () => {
     const sourceCode = `
       <div class="lazyload" data-bgset="image.jpg"></div>

@@ -2,7 +2,7 @@ import { expect, describe, it } from 'vitest';
 import { runLiquidCheck } from '../../test';
 import { DeprecateLazysizes } from './index';
 
-describe('DeprecateLazysizes', () => {
+describe('Module: DeprecateLazysizes', () => {
   it('should report data-srcset and data-sizes attributes', async () => {
     const sourceCode = `
       <img data-srcset="image.jpg" data-sizes="auto" class="lazyload" />

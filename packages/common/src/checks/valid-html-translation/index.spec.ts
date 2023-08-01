@@ -2,7 +2,7 @@ import { ValidHTMLTranslation } from './index';
 import { highlightedOffenses, runJSONCheck } from '../../test';
 import { expect, describe, it } from 'vitest';
 
-describe('ValidHTMLTranslation', () => {
+describe('Module: ValidHTMLTranslation', () => {
   it('should not report valid HTML in translations', async () => {
     const sourceCode = JSON.stringify({
       hello_html: '<h1>Hello, world</h1>',

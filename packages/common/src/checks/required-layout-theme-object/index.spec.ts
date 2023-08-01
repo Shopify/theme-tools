@@ -3,7 +3,7 @@ import { expect, describe, it } from 'vitest';
 import { RequiredLayoutThemeObject } from './index';
 import { runLiquidCheck, applyFix } from '../../test';
 
-describe('RequiredLayoutThemeObject', () => {
+describe('Module: RequiredLayoutThemeObject', () => {
   it('should report an error if content_for_header is missing', async () => {
     const input = `
       <html>
