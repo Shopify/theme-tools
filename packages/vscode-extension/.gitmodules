@@ -1,0 +1,3 @@
+[submodule "syntaxes"]
+	path = syntaxes
+	url = git@github.com:Shopify/liquid-tm-grammar.git

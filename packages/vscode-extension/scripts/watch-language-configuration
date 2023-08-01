@@ -1,0 +1,27 @@
+#!/usr/bin/env node
+const lc = '../src/language-configuration';
+const fs = require('fs');
+
+console.log('watching src');
+
+let happening = false;
+
+fs.watch('src', async (e, file) => {
+  if (happening == true) return;
+  if (!file.endsWith('language-configuration.js')) return;
+  try {
+    happening = true;
+    const config = require(lc);
+    await fs.promises.writeFile(
+      './language-configuration.json',
+      JSON.stringify(config, null, 2),
+      'utf8',
+    );
+    console.log(`Succesfully updated language configuration - ${Date.now()}`);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    delete require.cache[require.resolve(lc)];
+    happening = false;
+  }
+});

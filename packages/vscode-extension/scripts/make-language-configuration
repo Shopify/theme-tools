@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+const config = require('../src/language-configuration')
+const fs = require('fs');
+fs.writeFileSync('./language-configuration.json', JSON.stringify(config, null, 2), 'utf8');

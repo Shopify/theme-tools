@@ -1,0 +1,30 @@
+# https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+name: CI
+
+on: [push]
+
+jobs:
+  build-format-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.x
+          cache: 'yarn'
+
+      - name: Install the packages
+        run: yarn install --frozen-lockfile --ignore-engines
+
+      - name: Build the code
+        run: yarn build:ci
+
+      - name: Check formatting
+        run: yarn format:check
+
+      - name: Check lint
+        run: yarn lint
