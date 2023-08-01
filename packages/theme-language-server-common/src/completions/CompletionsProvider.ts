@@ -1,6 +1,11 @@
 import { CompletionItem, CompletionParams } from 'vscode-languageserver';
 import { SourceCodeType, ThemeDocset } from '@shopify/theme-check-common';
-import { Provider, LiquidTagsCompletionProvider, ObjectCompletionProvider } from './providers';
+import {
+  Provider,
+  LiquidTagsCompletionProvider,
+  ObjectAttributeCompletionProvider,
+  ObjectCompletionProvider,
+} from './providers';
 import { DocumentManager } from '../documents';
 import { createLiquidCompletionParams } from './params';
 
@@ -15,10 +20,10 @@ export class CompletionsProvider {
     this.providers = [
       new LiquidTagsCompletionProvider(themeDocset),
       new ObjectCompletionProvider(themeDocset),
+      new ObjectAttributeCompletionProvider(themeDocset),
       // new HTMLTagsCompletionProvider(themeDocset),
       // new AssignmentsCompletionProvider(themeDocset),
       // new FilterCompletionProvider(themeDocset),
-      // new ObjectAttributeCompletionProvider(themeDocset),
       // new RenderSnippetCompletionProvider(themeDocset),
     ];
   }
