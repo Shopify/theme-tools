@@ -1,22 +1,22 @@
 import { expect, describe, it } from 'vitest';
-import { AssetSizeAppBlockCSS } from '.';
+import { AssetSizeAppBlockJavaScript } from '.';
 import { check, MockTheme } from '../../test';
 import { SchemaProp } from '../../types';
 
-describe('Module: AssetSizeAppBlockCSS', () => {
+describe('Module: AssetSizeAppBlockJavaScript', () => {
   const extensionFiles: MockTheme = {
-    'assets/app.css': '* { color: green } ',
+    'assets/app.js': 'console.log("Hello, world!");',
     'blocks/app.liquid': `
       {% schema %}
       {
-        "stylesheet": "app.css"
+        "javascript": "app.js"
       }
       {% endschema %}
     `,
   };
 
-  it('should not report any offenses if CSS is smaller than threshold', async () => {
-    const offenses = await check(extensionFiles, [AssetSizeAppBlockCSS]);
+  it('should not report any offenses if JavaScript is smaller than threshold', async () => {
+    const offenses = await check(extensionFiles, [AssetSizeAppBlockJavaScript]);
 
     expect(offenses).toHaveLength(0);
   });
@@ -26,51 +26,51 @@ describe('Module: AssetSizeAppBlockCSS', () => {
       fileSize: undefined,
     };
 
-    const offenses = await check(extensionFiles, [AssetSizeAppBlockCSS], context);
+    const offenses = await check(extensionFiles, [AssetSizeAppBlockJavaScript], context);
     expect(offenses).toHaveLength(0);
   });
 
-  it('should report an offense if CSS is larger than threshold', async () => {
-    const CustomAssetSizeAppBlockCSS = {
-      ...AssetSizeAppBlockCSS,
+  it('should report an offense if JavaScript is larger than threshold', async () => {
+    const CustomAssetSizeAppBlockJavaScript = {
+      ...AssetSizeAppBlockJavaScript,
       meta: {
-        ...AssetSizeAppBlockCSS.meta,
+        ...AssetSizeAppBlockJavaScript.meta,
         schema: {
           thresholdInBytes: SchemaProp.number(1),
         },
       },
     };
 
-    const offenses = await check(extensionFiles, [CustomAssetSizeAppBlockCSS]);
+    const offenses = await check(extensionFiles, [CustomAssetSizeAppBlockJavaScript]);
 
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
-      message: "The file size for 'app.css' exceeds the configured threshold.",
+      message: "The file size for 'app.js' exceeds the configured threshold.",
       absolutePath: '/blocks/app.liquid',
       start: { index: 51 },
-      end: { index: 57 },
+      end: { index: 56 },
     });
   });
 
-  it('should report an offense if the CSS file does not exist', async () => {
+  it('should report an offense if the JavaScript file does not exist', async () => {
     const extensionFiles: MockTheme = {
       'blocks/app.liquid': `
         {% schema %}
         {
-          "stylesheet": "nonexistent.css"
+          "javascript": "nonexistent.js"
         }
         {% endschema %}
       `,
     };
 
-    const offenses = await check(extensionFiles, [AssetSizeAppBlockCSS]);
+    const offenses = await check(extensionFiles, [AssetSizeAppBlockJavaScript]);
 
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
-      message: `'nonexistent.css' does not exist.`,
+      message: `'nonexistent.js' does not exist.`,
       absolutePath: '/blocks/app.liquid',
       start: { index: 57 },
-      end: { index: 71 },
+      end: { index: 70 },
     });
   });
 
@@ -79,12 +79,12 @@ describe('Module: AssetSizeAppBlockCSS', () => {
       'blocks/app.liquid': `
         {% schema %}
         {
-          "stylesheet": "app.css",
+          "javascript": "app.js",
         {% endschema %}
       `,
     };
 
-    const offenses = await check(extensionFiles, [AssetSizeAppBlockCSS]);
+    const offenses = await check(extensionFiles, [AssetSizeAppBlockJavaScript]);
     expect(offenses).toHaveLength(0);
   });
 });
