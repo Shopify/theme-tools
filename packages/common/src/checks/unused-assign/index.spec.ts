@@ -2,7 +2,7 @@ import { expect, describe, it } from 'vitest';
 import { UnusedAssign } from './index';
 import { runLiquidCheck, applySuggestions } from '../../test';
 
-describe('UnusedAssign', () => {
+describe('Module: UnusedAssign', () => {
   it('should report an error when a variable is assigned but not used', async () => {
     const sourceCode = `
       {% assign unusedVar = "value" %}

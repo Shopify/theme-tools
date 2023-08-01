@@ -2,7 +2,7 @@ import { expect, describe, it } from 'vitest';
 import { runLiquidCheck } from '../../test';
 import { CdnPreconnect } from './index';
 
-describe('CdnPreconnect', () => {
+describe('Module: CdnPreconnect', () => {
   it('should report preconnect to cdn.shopify.com', async () => {
     const sourceCode = `
       <link rel="preconnect" href="https://cdn.shopify.com/"/>
