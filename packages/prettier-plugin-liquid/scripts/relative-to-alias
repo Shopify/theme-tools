@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+
+const path = require('path');
+const fs = require('fs').promises;
+const glob = require('glob');
+const root = path.resolve(__dirname, '../src');
+
+// '../../utils' => 'utils'
+function relativeToRootPath(target, dirname) {
+  return path.relative(root, path.resolve(dirname, target));
+}
+
+async function relativeReplace(filePath) {
+  const contents = await fs.readFile(filePath, 'utf8');
+  const result = contents.replaceAll(/from '(\.[^']*)'/g, (match, target) => {
+    return `from '~/${relativeToRootPath(target, path.dirname(filePath))}'`;
+  });
+  await fs.writeFile(filePath, result, 'utf8');
+}
+
+async function run() {
+  await Promise.all(glob.sync('src/**/*.ts').map(relativeReplace));
+}
+
+async function main() {
+  let statusCode = 0;
+  try {
+    await run();
+  } catch (e) {
+    console.log(e);
+    statusCode = 1;
+  }
+  process.exit(statusCode);
+}
+
+main();

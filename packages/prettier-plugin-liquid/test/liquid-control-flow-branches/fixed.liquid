@@ -1,0 +1,80 @@
+<div>
+  {% for a in b %}
+    <span>{{ a }}</span>
+  {% else %}
+    <span>Hello world!</span>
+  {% endfor %}
+</div>
+
+<div>
+  {% if condition %}
+    <span>{{ condition }}</span>
+  {% else %}
+    <span>Hello world!</span>
+  {% endif %}
+</div>
+
+<div>
+  {% unless condition %}
+    <span>Hello world!</span>
+  {% elsif other %}
+    <span>{{ condition }}</span>
+  {% endunless %}
+</div>
+
+It should indent when statements and their children
+<div>
+  {% case pastry %}
+    {% when 'oopsie' %}
+
+    {% when 'croissant' %}
+      Mmmm
+    {% when 'muffin' %}
+      Yea. Alright.
+    {% when 'veggie' %}
+      That's not a pastry!
+    {% else %}
+      What do you want?
+  {% endcase %}
+</div>
+
+When there's a TextNode child, it should format the children as a paragraph
+<div>
+  {% if a %}
+    hello {{ world }}!
+  {% elsif b %}
+    {% if x %}Greetings{% else %}Hello{% endif %}, friend!
+  {% endif %}
+</div>
+
+When there's aren't TextNodes children, it should break every child on a new
+line.
+<section>
+  {% if a %}
+    <div>Hello</div>
+    <div>content</div>
+  {% elsif b %}
+    {% if greeting %}
+      <div>hello</div>
+    {% endif %}
+    <div>content</div>
+  {% endif %}
+</section>
+
+When there's a new line in the input, there should be a new line in the output.
+{% if a -%}
+  hello
+{% endif %}
+{% if a -%}
+  hello
+{%- elsif b -%}
+  b
+{%- else -%}
+  c
+{% endif %}
+
+Deeply nested tags should break line
+{% if greeting %}hello world{% endif %}
+{% if greeting -%}
+  <span>hello world</span>
+{%- endif %}

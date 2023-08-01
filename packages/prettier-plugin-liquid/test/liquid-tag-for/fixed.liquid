@@ -1,0 +1,41 @@
+It takes an element and a collection
+{% for element in collection -%}
+{%- endfor %}
+
+It does not breaks on in collection
+printWidth: 1
+{% for element in collection %}
+  {{ collection }}
+{% endfor %}
+
+It breaks on reversed
+printWidth: 1
+{% for element in collection
+  reversed
+%}
+  {{ element }}
+{% endfor %}
+
+It breaks on tag arguments
+printWidth: 1
+{% for element in collection
+  limit: 10
+  offset: 10
+%}
+  {{ element }}
+{% endfor %}
+
+It breaks on both reversed and tag arguments
+printWidth: 1
+{% for element in collection
+  reversed
+  limit: 10
+%}
+  {{ element }}
+{% endfor %}
+
+It only breaks if the printWidth is hit
+printWidth: 80
+{% for element in collection reversed limit: 10 %}
+  {{ element }}
+{% endfor %}

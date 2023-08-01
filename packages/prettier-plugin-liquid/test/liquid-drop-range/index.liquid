@@ -1,0 +1,8 @@
+It should strip whitespace
+{{ ( 0 .. 1 ) }}
+
+It should convert floats to ints the same way .to_i would
+{{ (0.5..2.5) }}
+
+It should not do anything with weird types (but still strip whitespace)
+{{ ( "0" .. "1"  ) }}

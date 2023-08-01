@@ -1,0 +1,25 @@
+It should not break singular expressions, but we break children
+printWidth: 1
+{% if false %} {% elsif x %} hello {% endif %}
+{% if false %} {% elsif  'string'%} hello {% endif %}
+{% if false %} {% elsif   nil  %} hello {% endif %}
+
+It should break before logical operators
+printWidth: 1
+{% if false %} {% elsif conditionA and var[ "key" ] and true %} hello {% endif %}
+
+It should break before comparators (and indent)
+printWidth: 1
+{% if false %} {% elsif lower < some.variable and some.variable < upper %} hello {% endif %}
+
+It should try to keep comparators on same line
+printWidth: 30
+{% if false %} {% elsif lower < some.variable and some.variable < upper %} hello {% endif %}
+
+It should support all kinds of shit
+printWidth: 30
+{% if false %} {% elsif lower < some.variable and some.variable < upper and string contains "hi" or string == empty or nil or var.lookup %} hello {% endif %}
+
+It should support all kinds of shit (same but for unless)
+printWidth: 30
+{% unless false %} {% elsif lower < some.variable and some.variable < upper and string contains 'hi' or string == empty or nil or var.lookup %} hello {% endunless %}

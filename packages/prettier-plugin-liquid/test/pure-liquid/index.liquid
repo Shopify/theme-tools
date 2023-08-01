@@ -1,0 +1,15 @@
+{%-    comment    %}
+Hey buddy, how are you doing today?
+Excited about Liquid?
+{%-    endcomment    %}
+{{ product | image_tag: preload: true }}
+{% assign x = 1 %}
+
+{% for product in products %}
+{%-comment%}
+Hey buddy, how are you doing today?
+Excited about Liquid?
+{%-endcomment%}
+
+{{ product | image_tag: preload: true }}
+{% endfor %}

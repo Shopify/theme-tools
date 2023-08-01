@@ -1,0 +1,25 @@
+It should borrow parent and close tag parameters
+<span><img src="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"></span>
+
+It should not borrow parent and close tag parameters when htmlWhitespaceSensitivity is set to ignore
+htmlWhitespaceSensitivity: "ignore"
+<span><img src="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"></span>
+
+It should borrow prev and next tag parameters
+<span><img><img src="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"><img></span>
+
+It should not borrow prev and next tag parameters when htmlWhitespaceSensitivity is set to ignore
+htmlWhitespaceSensitivity: "ignore"
+<span><img><img src="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"><img></span>
+
+It should not add a space before closing tag when there are multiple attributes
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="">
+<link rel="canonical" href="{{ canonical_url }}">
+<link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+
+It should honor the singleLineLinkTags configuration
+printWidth: 1
+singleLineLinkTags: true
+<link rel="preconnect" href="https://cdn.shopify.com" crossorigin>

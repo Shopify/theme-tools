@@ -1,0 +1,165 @@
+It should use double quotes for all attributes, unless boolean attribute
+<div
+  id="1234"
+  class="long string of classes"
+  style="color: blue;"
+  content=""
+  disabled
+></div>
+
+It should use single quotes for all attributes, unless boolean attribute when singleQuote is true
+singleQuote: true
+<div
+  id='1234'
+  class='long string of classes'
+  style='color: blue;'
+  content=''
+  disabled
+></div>
+
+It should break LiquidTags attribute nodes and consider the insides _not_ whitespace sensitive
+<div
+  src="https://content.instructables.com/ORIG/F23/YMO0/FPIUQOJF/F23YMO0FPIUQOJF.jpg"
+  width="320"
+  height="240"
+  loading="lazy"
+  {{ block.shopify_attributes }}
+  {% if A %}
+    disabled
+  {% else %}
+    checked
+  {% endif %}
+></div>
+
+It should not try to format HTML attributes (yet) (1)
+<img
+  class="image {% if sticky %}image--sticky{% endif %} {% if wrapped %}image--wrapped{% endif %}"
+  id="img--{{ product.id }}"
+  src="{{ product.featured_image }}"
+  width="{{ product.featured_image.width }}"
+  height="{{ product.featured_image.height }}"
+  loading="lazy"
+>
+
+It should break and indent attributes that are long af
+<img
+  srcset="
+    {% if media.preview_image.width >= 493 %}{{ media.preview_image | image_url: width: 493 }} 493w,{% endif %}
+    {% if media.preview_image.width >= 600 %}{{ media.preview_image | image_url: width: 600 }} 600w,{% endif %}
+    {% if media.preview_image.width >= 713 %}{{ media.preview_image | image_url: width: 713 }} 713w,{% endif %}
+    {% if media.preview_image.width >= 823 %}{{ media.preview_image | image_url: width: 823 }} 823w,{% endif %}
+    {% if media.preview_image.width >= 990 %}{{ media.preview_image | image_url: width: 990 }} 990w,{% endif %}
+    {% if media.preview_image.width >= 1100 %}{{ media.preview_image | image_url: width: 1100 }} 1100w,{% endif %}
+    {% if media.preview_image.width >= 1206 %}{{ media.preview_image | image_url: width: 1206 }} 1206w,{% endif %}
+    {% if media.preview_image.width >= 1346 %}{{ media.preview_image | image_url: width: 1346 }} 1346w,{% endif %}
+    {% if media.preview_image.width >= 1426 %}{{ media.preview_image | image_url: width: 1426 }} 1426w,{% endif %}
+    {% if media.preview_image.width >= 1646 %}{{ media.preview_image | image_url: width: 1646 }} 1646w,{% endif %}
+    {% if media.preview_image.width >= 1946 %}{{ media.preview_image | image_url: width: 1946 }} 1946w,{% endif %}
+    {{ media.preview_image | image_url }} {{ media.preview_image.width }}w
+  "
+  src="{{ media | image_url: width: 1946 }}"
+  sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | times: media_width | round }}px, (min-width: 990px) calc({{ media_width | times: 100 }}vw - 10rem), (min-width: 750px) calc((100vw - 11.5rem) / 2), calc(100vw - 4rem)"
+  {% unless lazy_load == false %}
+    loading="lazy"
+  {% endunless %}
+  width="973"
+  height="{{ 973 | divided_by: media.preview_image.aspect_ratio | ceil }}"
+  alt="{{ media.preview_image.alt | escape }}"
+>
+
+If there's only one attribute and self-closing, don't break when the line is too long.
+<img class="Lorem ipsum dolor sit amet consectetur adipiscing elit Sed feugiat semper sem eu ultrices nisl interdum sit amet">
+
+If there's only one attribute and not self-closing, break the attr and close the tag on a different line.
+<div
+  class="Lorem ipsum dolor sit amet consectetur adipiscing elit Sed feugiat semper sem eu ultrices nisl interdum sit amet"
+></div>
+
+If there's only one attribute and not self-closing, but with children, do not break the attr and close the tag on a different line.
+<div class="Lorem ipsum dolor sit amet consectetur adipiscing elit Sed feugiat semper sem eu ultrices nisl interdum sit amet">
+  Hello
+</div>
+
+If there's only one attribute, not self-closing, with children, do not break the LiquidTag attr and close the tag on a different line.
+<div {% echo 'disabled' %}>
+  Hello
+</div>
+
+If there's only one attribute, not self-closing, with children, do not break the LiquidNode attr and close the tag on a different line.
+<div {{ block_attributes }}>
+  Hello
+</div>
+
+If there's only one attribute, not self closing, with children, but the attribute is a liquid tag that has children, break it normally.
+printWidth: 30
+<div
+  {% if some_condition %}
+    attribute="value"
+  {% endif %}
+>
+  hello world
+</div>
+
+If there's only one attribute, not self closing, without children, but the attribute is a liquid tag that has children, break it normally.
+printWidth: 30
+<div
+  {% if some_condition %}
+    attribute="value"
+  {% endif %}
+></div>
+
+If there's multiple attributes inside an if tag attribute node, print until print width
+<div
+  {% if some_condition %}
+    attribute="abstractNode" ok="value"
+  {% endif %}
+></div>
+
+If there's multiple attributes inside an if tag attribute node, print until print width
+printWidth: 1
+<div
+  {% if some_condition %}
+    attribute="abstractNode"
+    ok="value"
+  {% endif %}
+></div>
+
+If there's multiple attributes inside an if tag attribute node with a newline, maintain newline
+<div
+  {% if some_condition %}
+    attribute="abstractNode"
+    ok="value"
+  {% endif %}
+></div>
+
+If singleQuote is true, and the attribute value contained single quotes, use double quotes
+singleQuote: true
+<link onload="this.media='all'">
+
+If singleQuote is false, and the attribute value contained double quotes, use single quotes
+singleQuote: false
+<link onload='this.media="all"'>
+
+If singleQuote is true, and the attribute value has liquid tags that contain single quotes, don't care.
+singleQuote: true
+<script src='{{ 'styles.css' | asset_url }}'></script>
+
+If singleQuote is false, and the attribute value has liquid tags that contain double quotes, don't care.
+singleQuote: false
+<script src="{{ "styles.css" | asset_url }}"></script>
+
+It should pretty print attribute names with Liquid in them
+singleQuote: true
+<div data-popup-{{ section.id }}='size-{{ section.id }}'></div>
+
+It should pretty print attribute names with Liquid in them without new lines
+printWidth: 1
+<div
+  data-popup-{{ section.id | upcase }}="size-{{ section.id }}"
+></div>
+
+It should pretty unquoted liquid drop attributes
+<div id="{{ section.id }}--omg"></div>
+
+It should pretty print smart quotes into dumb quotes to prevent copy pasting errors
+<h1 class="section-header__title h2" id="abc"></h1>

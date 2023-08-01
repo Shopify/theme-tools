@@ -1,0 +1,101 @@
+It should not break singular expressions, but we break children
+printWidth: 1
+{% if x %}
+  hello
+{% endif %}
+{% if 'string' %}
+  hello
+{% endif %}
+{% if null %}
+  hello
+{% endif %}
+
+It should break before logical operators
+printWidth: 1
+{% if conditionA
+  and var.key
+  and true
+%}
+  hello
+{% endif %}
+
+It should break before comparators (and indent)
+printWidth: 1
+{% if lower
+    < some.variable
+  and some.variable
+    < upper
+%}
+  hello
+{% endif %}
+
+It should try to keep comparators on same line
+printWidth: 30
+{% if lower < some.variable
+  and some.variable < upper
+%}
+  hello
+{% endif %}
+
+It should support all kinds of shit
+printWidth: 30
+{% if lower < some.variable
+  and some.variable < upper
+  and string contains 'hi'
+  or string == empty
+  or null
+  or var.lookup
+%}
+  hello
+{% endif %}
+
+It should support all kinds of shit (same but for unless)
+printWidth: 30
+{% unless lower
+    < some.variable
+  and some.variable < upper
+  and string contains 'hi'
+  or string == empty
+  or null
+  or var.lookup
+%}
+  hello
+{% endunless %}
+
+It should be idempotent
+{% if variable >= 1 %} {% endif %}
+
+It should not maintain leading whitespace in default branch
+{% if true %}
+  hello
+{% endif %}
+
+It should maintain at most 1 new line between the default branch and the next
+{% if true %}
+  hello
+
+{% else %}
+  world
+{% endif %}
+
+It should maintain at most 1 new line between the branches
+{% if true %}
+  hello
+
+{% elsif true %}
+  world
+
+{% else %}
+  world
+{% endif %}
+
+It should not maintain trailing newlines between last branch and parent node
+{% if true %}
+  hello
+
+{% elsif true %}
+  world
+
+{% else %}
+  world
+{% endif %}

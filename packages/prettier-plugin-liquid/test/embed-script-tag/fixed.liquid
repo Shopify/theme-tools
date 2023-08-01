@@ -1,0 +1,64 @@
+It should pretty pring pure JS inside a script tag
+printWidth: 20
+<script>
+  function main() {
+    console.log(
+      'hello'
+    );
+  }
+  const x =
+    100 > 42
+      ? x
+      : y;
+</script>
+
+It should pretty print json inside a script tag
+<script type="application/json">
+  {
+    "a": [1, 2, 3],
+    "b": "string"
+  }
+</script>
+
+It should pretty print typescript
+<script type="application/x-typescript">
+  type Node = LiquidNode | HtmlNode | TextNode;
+  type LiquidNode = LiquidDrop | LiquidTag;
+  function print(node: Node) {
+    return node.toString();
+  }
+</script>
+
+It should pretty print markdown (?) why not!?
+<div>
+  <script type="text/markdown">
+# heading
+
+- item
+- item
+  - item
+- item
+  </script>
+</div>
+
+It should fallback to reindenting when it can't parse the source
+(e.g. because of Liquid in JS)
+printWidth: 20
+<script>
+  function main(){console.log({{ drop }});}const x = 100 > 42 ? x : y;
+</script>
+
+It should reindent with tabs when useTabs is true
+useTabs: true
+<script>
+	function main(){
+	  console.log({{ drop }});
+	}
+	const x = 100 > 42 ? x : y;
+</script>
+
+It should respect embeddedSingleQuote
+embeddedSingleQuote: false
+<script>
+  console.log("hello");
+</script>

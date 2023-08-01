@@ -1,0 +1,144 @@
+<div>
+{%
+  liquid
+  assign x = 1
+  assign y = 2
+  if A
+    assign z = 1
+  endif
+%}
+</div>
+<div>
+{%- liquid
+  assign x = 1
+  assign y = 2
+  if A
+    assign z = 1
+  endif -%}
+</div>
+
+It should reindent and format
+{%- liquid
+  if empty   and   true
+render 'icon-cart-empty'
+      else
+  render 'icon-cart'
+      endif
+-%}
+
+It should handle comments correctly
+{%- liquid
+comment
+how u doin?
+endcomment -%}
+
+It should handle nested comments correctly
+{%- liquid
+comment
+how u doin?
+comment
+  ho
+endcomment
+endcomment -%}
+
+It should handle empty nested comments correctly
+{%- liquid
+comment
+how u doin?
+comment
+endcomment
+endcomment -%}
+
+It should handle inline comments correctly
+{%- liquid
+# heyy how u doin
+# not too bad
+  #
+# you? -%}
+
+It should pretty print #### lines without a space
+{%- liquid
+#############
+#     fancy
+#############
+-%}
+
+It should keep at most one empty new line between statements, and strip trailing
+{% liquid
+# some reason
+if cond
+
+      echo foo
+
+
+      echo bar
+
+else
+echo bar
+endif
+
+
+# some other block
+case foo
+when bar,baz
+echo 'hi'
+
+else
+echo 'no'
+endcase
+
+%}
+
+It should parse tags properly and print them properly
+printWidth: 1
+{% liquid
+assign x = thing['property']|filter1|fitler2
+echo x |filter1|  filter2
+capture var
+  if nil
+  echo true
+  else
+  echo false
+  endif
+endcapture
+cycle 'one', 'two', 'three'
+
+for x in col reversed limit:10
+echo x
+else
+echo 'nope'
+endfor
+
+form 'cart', cart
+  echo 'huh?'
+endform
+
+increment i
+section 'string'
+layout 'string'
+
+paginate col by 10 window_size:50
+render 'icon' with x as bar foo:bar
+endpaginate
+%}
+
+It should keep newlines between tags
+{% liquid
+  # comment 1
+
+  # comment 2
+  if cond
+    echo foo
+
+    echo bar
+  endif
+%}
+
+It should keep leading whitespace in comments
+{% liquid
+# This list should not be reindented:
+#   - a
+#   - b
+#      - d
+#   - c
+%}

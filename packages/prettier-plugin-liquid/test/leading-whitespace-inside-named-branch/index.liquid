@@ -1,0 +1,20 @@
+When it doesn't break, it should conditionally omit a leading space
+
+It should omit the leading space if it is stripped anyway
+{% if A %}{% else -%} space{% endif %}
+{% if A %}X{% else -%} space{% endif %}
+
+It should not omit the leading space if there's space before the named branch (else)
+{% if A %}{% else %} space{% endif %}
+{% if A %} {% else %} space{% endif %}
+{% if A %}X{% else %} space{% endif %}
+
+It should not omit the leading space if there's space before the named branch (elsif)
+{% if A %}{% elsif b %}{% else %} space{% endif %}
+{% if A %}{% elsif b %}X{% else %} space{% endif %}
+{% if A %}{% elsif b %} {% else %} space{% endif %}
+{% if A %}{% elsif b %}X {% else %} space{% endif %}
+{% if A %}{% elsif b %} X {% else %} space{% endif %}
+
+It should not omit the whitespace if it is included inline in a paragraph
+<p>haha{% if A %}{% else %} space{% endif %}</p>

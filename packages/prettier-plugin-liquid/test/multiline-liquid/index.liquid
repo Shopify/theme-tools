@@ -1,0 +1,20 @@
+It should print multiline liquid the way we'd expect
+printWidth: 80
+<div>
+{% render 'foo',
+  product: product %}
+{{ product.featured_image
+  | image_url: width: 400, height: 400, crop: 'top'
+  | image_tag }}
+</div>
+<div>
+{%
+  render 'foo',
+  product: product
+%}
+{{
+  product.featured_image
+    | image_url: width: 400, height: 400, crop: 'top'
+    | image_tag
+}}
+</div>

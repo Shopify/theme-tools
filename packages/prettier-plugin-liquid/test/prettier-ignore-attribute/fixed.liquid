@@ -1,0 +1,48 @@
+It should be typo-proof and indent attributes
+printWidth: 1
+<!-- prettier-ignore-attribute -->
+<p
+  (mouseup)=" wat " (mousedown)=" wat "
+>
+  hello
+</p>
+<!-- prettier-ignore-attributes -->
+<p
+  (mouseup)=" wat " (mousedown)=" wat "
+>
+  hello
+</p>
+
+It should respect html whitespace sensitivity
+printWidth: 1
+<!-- prettier-ignore-attributes -->
+<a
+  (mouseup)=" wat " (mousedown)=" wat "
+  >hello</a
+>
+
+It should print all attributes as is (pw40)
+printWidth: 40
+<!-- prettier-ignore-attribute -->
+<a (mouseup)=" wat " (mousedown)=" wat "
+  >hello</a
+>
+
+It should respect indentation and multiple attributes per line input
+printWidth: 1
+<!-- prettier-ignore-attributes -->
+<a
+  [[#if Something]]
+    href="abc"
+  [[/if ]]
+  >hello</a
+>
+
+It should work with Liquid inline comments
+printWidth: 1
+{% # prettier-ignore-attribute %}
+<p
+  (mouseup)=" wat " (mousedown)=" wat "
+>
+  hello
+</p>

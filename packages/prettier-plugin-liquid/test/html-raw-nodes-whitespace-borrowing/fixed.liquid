@@ -1,0 +1,28 @@
+it should create a block rendering context for raw nodes
+<span>
+  hello
+  <script type="text/javascript">
+    console.log('hello world');
+  </script>
+  hello
+</span>
+
+it should create a block rendering context for raw nodes even with htmlWhitespaceSensitivity set to ignore
+htmlWhitespaceSensitivity: "ignore"
+<span>
+  hello
+  <script type="text/javascript">
+    console.log('hello world');
+  </script>
+  hello
+</span>
+
+it should create a block rendering context for raw nodes even with htmlWhitespaceSensitivity set to strict
+htmlWhitespaceSensitivity: "strict"
+<span>
+  hello
+  <script type="text/javascript">
+    console.log('hello world');
+  </script>
+  hello
+</span>

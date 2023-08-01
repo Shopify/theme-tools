@@ -1,0 +1,14 @@
+It should pretty print html element compound tag names
+<h{{ header_number }}></h{{ header_number }}>
+<{{ header_type }}-header></{{ header_type }}-header>
+
+It should print compound names on a single line, even if long
+printWidth: 1
+<h{{ header_number | round }}></h{{ header_number | round }}>
+
+It should print compound names with attributes as it would
+printWidth: 1
+<h{{ header_number | round }}
+  attr="value"
+  disabled
+></h{{ header_number | round }}>

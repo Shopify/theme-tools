@@ -1,0 +1,15 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+cleanup() {
+  rm node_modules/prettier
+}
+
+# format with prettier2
+ln -s ./prettier2 node_modules/prettier
+
+# cleanup when done
+trap cleanup EXIT
+
+# pretty-quick on code base
+pretty-quick --staged --pattern 'src/**/*.ts'

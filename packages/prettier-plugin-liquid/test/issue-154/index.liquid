@@ -1,0 +1,11 @@
+{%- liquid
+layout none
+
+paginate search.results by 28
+  render 'product-item', product: item
+endpaginate
+
+paginate search.results by 28 window_size:1
+  render 'product-item', product: item
+endpaginate
+-%}

@@ -1,0 +1,54 @@
+It should never break on case expression
+printWidth: 1
+{% case  "name"  %} {% endcase %}
+{% case true %} {% endcase %}
+{%case var.lookup %} {% endcase %}
+{%- case
+var.lookup
+-%} {% endcase %}
+
+It should break and indent when statements, and not break the when
+printWidth: 1
+{% case candy.type %} {% when "gummy bears" %} yum! {% endcase %}
+
+It should break on when comma syntax
+printWidth: 1
+{% case candy.type %} {% when "gummy bears", "chocolate" %} yum! {% endcase %}
+
+It should break on when or syntax (and prefer commas)
+printWidth: 1
+{% case candy.type %} {% when "gummy bears" or "chocolate" or "chips" %} yum! {% else %} ok! {% endcase %}
+
+It should join args with comma and space
+{% case candy.type %} {% when foo,bar %} yum! {% endcase %}
+
+It should maintain at most one new line between cases
+{% case foo %}
+  {% when bar %}
+    <div>Something</div>
+
+
+  {% when baz %}
+    <div>Something else</div>
+{% endcase %}
+
+It should not maintain trailing whitespace between last case and parent
+{% case foo %}
+  {% when bar %}
+    <div>Something</div>
+
+  {% when baz %}
+    <div>Something else</div>
+
+
+{% endcase %}
+
+It should not maintain leading whitespace in default branch
+{% case foo %}
+
+  {% when bar %}
+    <div>Something</div>
+
+  {% when baz %}
+    <div>Something else</div>
+{% endcase %}

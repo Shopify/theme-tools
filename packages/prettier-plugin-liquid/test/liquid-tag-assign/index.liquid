@@ -1,0 +1,55 @@
+It should never break a name
+printWidth: 1
+{% assign z = x %}
+
+It should break before/after delimiters and indent everything
+printWidth: 1
+{% assign z = x | filter1 | filter2 %}
+
+It should break and indent named arguments
+printWidth: 1
+{% assign z = x | filter1: key1: value1, key2: value2 | filter2 %}
+
+It should not break the first positional argument
+printWidth: 1
+{% assign z = x | filter1: arg1 | filter2: arg2, arg3, arg4 %}
+
+It should break arguments only if necessary
+printWidth: 40
+{% assign z = x | filter1: key1: value1, key2: value2 | filter2 %}
+
+It should support a mix of positional and named arguments as expected (p1)
+printWidth: 1
+{% assign z = x | filter1: pos1, pos2, key1: val1, key2: val2 %}
+
+It should support a mix of positional and named arguments as expected (p50)
+printWidth: 50
+{% assign z = x | filter1: pos1, pos2, key1: val1, key2: val2 %}
+
+It should support a mix of positional and named arguments as expected (p80)
+printWidth: 80
+{% assign z = x | filter1: pos1, pos2, key1: val1, key2: val2 %}
+
+It should support all types of arguments, and add spaces
+{% assign z=x|f:'string' %}
+{% assign z=x|f:"string" %}
+{% assign z=x|f:0.0 %}
+{% assign z=x|f:0 %}
+{% assign z=x|f:x %}
+{% assign z=x|f:(0..a) %}
+{% assign z=x|f:true %}
+
+It should support all types of named arguments, and add spaces
+{% assign z=x|f:key:'string' %}
+{% assign z=x|f:key:"string" %}
+{% assign z=x|f:key:0.0 %}
+{% assign z=x|f:key:0 %}
+{% assign z=x|f:key:x %}
+{% assign z=x|f:key:(0..a) %}
+{% assign z=x|f:key:true %}
+
+It should support spaces or lack of thereof erywhere
+{% assign z =   x|f:
+a    :  b  , range
+: ( a .. b)
+%}

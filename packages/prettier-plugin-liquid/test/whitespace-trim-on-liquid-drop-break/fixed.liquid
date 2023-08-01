@@ -1,0 +1,39 @@
+|print-width--------------------------------------------------------------------|
+
+In children array,
+
+it should not add Whitespace Trim Characters (WTC) if the liquid drop does not
+break on a new line
+<div>{{ 'hello' }}</div>
+
+it should add wtc if the liquid drop breaks on a new line, the previous/next
+characters were not spaces, and the parent node is leading/trailing whitespace
+sensitive.
+<span>
+  {{- 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' -}}
+</span>
+
+it should not add wtc if the liquid drop breaks on a new line and the
+previous/next characters were spaces
+<div>
+  {{ 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' }}
+</div>
+
+It should add wtc to the left of a br, but not to the right (as per prettier/language-html)
+printWidth: 20
+<span>
+  {{- some_drop -}}
+  <br>
+  {{ some_drop -}}
+</span>
+
+--------------------------------------------------------------------------------
+
+In paragraphs,
+
+it should add wtc if the liquid drop breaks next to a character (but not if not)
+<div>
+  Hey
+  {{ 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' }},
+  how are you doing?
+</div>

@@ -1,0 +1,13 @@
+It should pretty print CSS inside stylesheet tags
+printWidth: 20
+{% stylesheet %}
+.class,#id,html,body{background-color:green;width:100%}
+.container{display:flex;}
+{% endstylesheet %}
+
+It should fallback to reindenting when it doesn't parse
+printWidth: 20
+{% stylesheet %}
+.class,#id,html,body{background-color:{{setting.color}};width:100%}
+.container{display:flex;}
+{% endstylesheet %}

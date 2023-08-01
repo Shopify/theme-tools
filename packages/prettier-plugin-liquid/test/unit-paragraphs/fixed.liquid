@@ -1,0 +1,76 @@
+|print-width--------------------------------------------------------------------|
+
+it should maintain whitespace (or lack of thereof) in flow text.
+<div>hello {{ name }}!</div>
+
+it should break child html elements liquid prettier would for html
+<span>
+  Some&nbsp;<b>freeform</b>&nbsp;text
+  <em
+    >hello world that might span multiple lines. That's fine. It's a paragraph
+    after all...</em
+  >
+  We can definitely deal with that.
+</span>
+
+it should break liquid tags on new lines when it has leading and trailing
+whitespace because it prefers newlines
+<div>
+  More freeform text
+  {%- if liquid -%}But with liquid instead.{%- endif -%}
+  I wonder what this will look like {{ punctuation }}.
+</div>
+
+it should break child liquid tags on new lines
+<div>
+  If a child breaks, it breaks on a new line.
+  {%- if liquid -%}
+    <span>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</span>
+  {%- endif -%}
+  But the paragraph that <i>follows</i> keeps on going as before. If an
+  <em>fits on the line line</em>, it flows inline. But it will
+  <em>never open in the middle of a line and end on another</em>
+</div>
+
+it should maintain whitespace between inline elements
+<h1>HELLO <span> WORLD </span></h1>
+
+it should not maintain whitespace between inline elements with htmlWhitespaceSensitivity set to ignore
+htmlWhitespaceSensitivity: "ignore"
+<h1>
+  HELLO
+  <span>WORLD</span>
+</h1>
+
+if there arent whitespace on either side of the text, when it breaks it should
+break on both sides
+<p>
+  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (-
+  {{- product.price -}}
+  -)
+</p>
+
+it should behave like prettier/language-html
+<p>
+  Ipsum. Praesent scelerisque tortor a justo. Quisque consequat libero erat<em
+    >product.price</em
+  >ok
+</p>
+
+it should break parent and add WTC when the child breaks
+<p>
+  (-
+  {%- if liquid -%}
+    <span>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</span>
+  {%- endif -%}
+  -)
+</p>
+
+it should add wtc between liquid drop and span if the ifbreak breaks.
+printWidth: 20
+<p>
+  {{ drop -}}
+  <span
+    >Lorem Ipsum</span
+  >
+</p>

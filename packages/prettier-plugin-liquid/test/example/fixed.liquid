@@ -1,0 +1,25 @@
+{%- comment %}
+  Hey buddy, how are you doing today?
+  Excited about Liquid?
+{%- endcomment %}
+{{ product | image_tag: preload: true }}
+{% assign x = 1 %}
+
+{% for product in products %}
+  <div
+    id="hero"
+    class="container"
+    style="width: 100%; padding-top: 100%"
+  >
+    {{ product | image_tag: preload: true }}
+
+    {% assign img = product.featured_image %}
+    <div>Look! Void elements don't screw up your indentation!</div>
+    <img
+      src="{{ img | image_url }}"
+      width="{{ img.width }}"
+      height="{{ img.height }}"
+    >
+    <a>Click me!</a>
+  </div>
+{% endfor %}

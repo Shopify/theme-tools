@@ -1,0 +1,38 @@
+It should never break a name
+printWidth: 1
+{% render block %}
+{%- render "snippet" -%}
+
+It should not break aliases if there's no variable (obscure syntax)
+printWidth: 1
+{% render "foo/bar" as foo %}
+
+It should not break on variable expression alone
+printWidth: 1
+{% render "foo" with foo %}
+
+It should break on variable expression + alias
+printWidth: 1
+{% render "foo" with foo as bar %}
+
+It should break on alias + args (after alias)
+printWidth: 1
+{% render "foo/bar" as bar, key1: val1, key2: (0..1) %}
+
+It should break on variable + args (after variable)
+printWidth: 1
+{% render "foo/bar" with "string", key1: val1, key2: (0..1) %}
+
+It should break on variable + alias + args (before variable)
+printWidth: 1
+{% render "foo/bar" with "string" as bar, key1: val1, key2: (0..1) %}
+
+It should break on named args
+printWidth: 1
+{% render "foo/bar", key1: val1, key2: (0..1) %}
+
+It should not require commas (as per syntax) but add them when pretty printed
+{% render "foo/bar" key1: val1 key2: (0..1) %}
+
+It should not require spaces (as per syntax) but add them when pretty printed
+{%render "foo/bar",key1:val1,key2:(0..1)%}

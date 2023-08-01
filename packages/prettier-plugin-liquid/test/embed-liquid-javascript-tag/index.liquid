@@ -1,0 +1,29 @@
+It should pretty print pure JS inside a script tag
+printWidth: 20
+embeddedSingleQuote: false
+{% javascript %}
+function main(){console.log("hello");}const x = 100 > 42 ? x : y;
+{% endjavascript %}
+
+It should fallback to reindenting when it can't parse the source
+(e.g. because of Liquid in JS)
+printWidth: 20
+{% javascript %}
+function main(){console.log({{ drop }});}const x = 100 > 42 ? x : y;
+{% endjavascript %}
+
+It should reindent when it can't parse and change spaces to tabs with useTabs
+printWidth: 20
+useTabs: true
+{% javascript %}
+  function main(){
+    console.log({{ drop }});
+  }
+  const x = 100 > 42 ? x : y;
+{% endjavascript %}
+
+It should respect embeddedSingleQuote
+embeddedSingleQuote: true
+{% javascript %}
+console.log("hi");
+{% endjavascript %}

@@ -1,0 +1,22 @@
+It takes a collection and a pageSize
+{% paginate collection by pageSize %}{% endpaginate %}
+
+It breaks on by pageSize when printWidth is hit
+printWidth: 1
+{% paginate collection by pageSize %}
+  {{ collection }}
+{% endpaginate %}
+
+It is undocumented, but it also accepts named attributes (window_size). Those are comma separated.
+printWidth: 80
+{% paginate collection by pageSize window_size:50, attr:(0.. 2) %}
+  {{ collection }}
+{% endpaginate %}
+
+It is undocumented, but it also accepts named attributes (window_size). We print
+those comma separated and on a new line when it breaks.
+printWidth: 1
+{% paginate collection by pageSize window_size: 50 %}
+  {{ collection }}
+{% endpaginate %}
+

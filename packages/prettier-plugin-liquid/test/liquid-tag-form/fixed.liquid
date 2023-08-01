@@ -1,0 +1,45 @@
+It always takes at least one argument, but we don't break it
+printWidth: 1
+{% form x %}{% endform %}
+{% form x %}
+  hello
+{% endform %}
+
+It can take named arguments, and respects liquidSingleQuote
+printWidth: 1
+{% form 'cart',
+  key: value
+%}{% endform %}
+
+It can take named arguments, and respects liquidSingleQuote (pw80)
+printWidth: 80
+{% form 'cart', key1: value1, key2: 'value2' %}{% endform %}
+
+It can take positional arguments
+printWidth: 1
+{% form 'cart',
+  pos1
+%}{% endform %}
+{% form 'cart',
+  pos1,
+  pos2
+%}{% endform %}
+
+It can take positional and named arguments (at the same time)
+printWidth: 1
+{% form 'cart',
+  pos1[0],
+  empty,
+  key: true,
+  ind: (0..2)
+%}
+  <input type="submit">
+{% endform %}
+
+It indents content (without whitespace stripping b/c form is inner insensitive)
+printWidth: 1
+{% form 'cart',
+  pos1
+%}
+  hello
+{% endform %}
