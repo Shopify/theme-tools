@@ -6,14 +6,17 @@ import {
 
 import { AppBlockValidTags } from './app-block-valid-tags';
 import { AssetPreload } from './asset-preload';
+import { AssetSizeAppBlockCSS } from './asset-size-app-block-css';
 import { AssetUrlFilters } from './asset-url-filters';
 import { CdnPreconnect } from './cdn-preconnect';
+import { ContentForHeaderModification } from './content-for-header-modification';
 import { DeprecateBgsizes } from './deprecate-bgsizes';
 import { DeprecateLazysizes } from './deprecate-lazysizes';
 import { ImgLazyLoading } from './img-lazy-loading';
 import { ImgWidthAndHeight } from './img-width-and-height';
 import { JSONSyntaxError } from './json-syntax-error';
 import { LiquidHTMLSyntaxError } from './liquid-html-syntax-error';
+import { MatchingSchemaTranslations } from './matching-schema-translations';
 import { MatchingTranslations } from './matching-translations';
 import { MissingAsset } from './missing-asset';
 import { MissingTemplate } from './missing-template';
@@ -25,8 +28,6 @@ import { UnknownFilter } from './unknown-filter';
 import { UnusedAssign } from './unused-assign';
 import { ValidHTMLTranslation } from './valid-html-translation';
 import { ValidSchema } from './valid-schema';
-import { ContentForHeaderModification } from './content-for-header-modification';
-import { AssetSizeAppBlockCSS } from './asset-size-app-block-css';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -41,6 +42,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ImgWidthAndHeight,
   JSONSyntaxError,
   LiquidHTMLSyntaxError,
+  MatchingSchemaTranslations,
   MatchingTranslations,
   MissingAsset,
   MissingTemplate,
