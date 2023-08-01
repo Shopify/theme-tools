@@ -1,0 +1,17 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@2.3.0/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [[
+    "@shopify/liquid-language-server-browser",
+    "@shopify/liquid-language-server-node",
+    "@shopify/liquid-language-server-common"
+  ]],
+  "linked": [],
+  "access": "restricted",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": [
+    "@shopify/liquid-language-server-playground"
+  ]
+}
