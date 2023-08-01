@@ -1,0 +1,12 @@
+schema: v1
+repos:
+  - theme-check-js
+  - liquid-language-server
+  - online-store-web
+  - storefront-renderer
+  - shopify
+  - web
+  - identity
+  - imagery4:
+      env:
+        ENV: "spin"

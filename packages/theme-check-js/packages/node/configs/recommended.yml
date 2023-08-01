@@ -1,0 +1,74 @@
+# WARNING:
+# This file was generated automatically by running "scripts/generate-factory-configs"
+# Do not modify manually. Your changes will be overwritten.
+ignore:
+  - node_modules/**
+AssetPreload:
+  enabled: true
+  severity: 1
+AssetSizeAppBlockCSS:
+  enabled: true
+  severity: 1
+  thresholdInBytes: 100000
+AssetUrlFilters:
+  enabled: true
+  severity: 1
+CdnPreconnect:
+  enabled: true
+  severity: 1
+ContentForHeaderModification:
+  enabled: true
+  severity: 1
+DeprecateBgsizes:
+  enabled: true
+  severity: 1
+DeprecateLazysizes:
+  enabled: true
+  severity: 1
+ImgLazyLoading:
+  enabled: true
+  severity: 1
+ImgWidthAndHeight:
+  enabled: true
+  severity: 1
+JSONSyntaxError:
+  enabled: true
+  severity: 0
+LiquidHTMLSyntaxError:
+  enabled: true
+  severity: 0
+MatchingTranslations:
+  enabled: true
+  severity: 0
+MissingAsset:
+  enabled: true
+  severity: 0
+MissingTemplate:
+  enabled: true
+  severity: 0
+PaginationSize:
+  enabled: true
+  severity: 1
+  minSize: 1
+  maxSize: 50
+ParserBlockingScript:
+  enabled: true
+  severity: 0
+RequiredLayoutThemeObject:
+  enabled: true
+  severity: 0
+TranslationKeyExists:
+  enabled: true
+  severity: 0
+UnknownFilter:
+  enabled: true
+  severity: 0
+UnusedAssign:
+  enabled: true
+  severity: 1
+ValidHTMLTranslation:
+  enabled: true
+  severity: 1
+ValidSchema:
+  enabled: true
+  severity: 0

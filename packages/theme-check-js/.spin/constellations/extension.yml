@@ -1,0 +1,6 @@
+schema: v1
+repos:
+  - theme-check-js
+  - liquid-language-server
+  - theme-check-vscode
+  - dawn

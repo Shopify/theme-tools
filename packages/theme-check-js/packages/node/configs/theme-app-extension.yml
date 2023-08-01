@@ -1,0 +1,13 @@
+# WARNING:
+# This file was generated automatically by running "scripts/generate-factory-configs"
+# Do not modify manually. Your changes will be overwritten.
+
+extends: theme-check:recommended
+ignore:
+  - node_modules/**
+AppBlockValidTags:
+  enabled: true
+  severity: 0
+RequiredLayoutThemeObject:
+  enabled: false
+  severity: 0

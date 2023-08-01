@@ -1,0 +1,27 @@
+{
+  "name": "@shopify/theme-check-node",
+  "version": "1.11.1",
+  "main": "dist/index.js",
+  "author": "CP Clermont <cp.clermont@shopify.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "scripts": {
+    "build": "yarn build:ts",
+    "build:ts": "tsc -b tsconfig.build.json",
+    "postbuild:ts": "yarn generate-factory-configs",
+    "generate-factory-configs": "node scripts/generate-factory-configs",
+    "test": "vitest",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@shopify/prettier-plugin-liquid": "^1.0.6",
+    "@shopify/theme-check-common": "1.11.1",
+    "glob": "^8.0.3",
+    "yaml": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.0.0"
+  }
+}
