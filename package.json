@@ -8,6 +8,7 @@
   "license": "MIT",
   "private": true,
   "workspaces": [
+    "packages/*-common",
     "packages/theme-*"
   ],
   "scripts": {
