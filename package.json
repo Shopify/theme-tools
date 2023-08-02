@@ -1,0 +1,30 @@
+{
+  "name": "theme-tools",
+  "version": "1.0.0",
+  "description": "The Swiss Army Knife for Shopify Liquid themes. Everything you need in one handy monorepo!",
+  "main": "index.js",
+  "repository": "https://github.com/Shopify/theme-tools",
+  "author": "Albert Chu <albert.chu@shopify.com>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "packages/theme-check-*"
+  ],
+  "scripts": {
+    "build": "yarn workspaces run build",
+    "build:ts": "yarn workspaces run build:ts",
+    "format": "prettier --write \"packages/*/src/**/*.ts\"",
+    "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
+    "test": "vitest",
+    "type-check": "yarn workspaces run type-check",
+    "delete-node-modules": "find . -name \"node_modules\" -type d -prune -exec rm -rf '{}' +"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.26.0",
+    "chai": "^4.3.7",
+    "prettier": "^2.8.4",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.3",
+    "vitest": "^0.31.1"
+  }
+}

@@ -12,7 +12,7 @@
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "references": [
-    { "path": "../common" }
+    { "path": "../theme-check-common" }
   ]
 }
 
