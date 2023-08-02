@@ -8,7 +8,9 @@
   "license": "MIT",
   "private": true,
   "workspaces": [
-    "packages/theme-*"
+    "packages/*-common",
+    "packages/theme-*",
+    "packages/vscode-extension"
   ],
   "scripts": {
     "build": "yarn workspaces run build",
@@ -17,7 +19,7 @@
     "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
     "test": "vitest",
     "type-check": "yarn workspaces run type-check",
-    "delete-node-modules": "find . -name \"node_modules\" -type d -prune -exec rm -rf '{}' +"
+    "reset": "find . -name \"node_modules\" -type d -prune -exec rm -rf '{}' +"
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.0",

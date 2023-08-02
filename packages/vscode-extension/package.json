@@ -44,6 +44,7 @@
     "package": "yarn build && vsce package",
     "postinstall": "yarn --cwd ./syntaxes install",
     "prebuild": "yarn && rimraf dist language-configuration.json",
+    "preinstall": "sh scripts/fetch-syntaxes.sh",
     "pretest": "yarn run test:build && yarn run dev:build && yarn run lint",
     "test": "mocha 'src/**/*.test.js'",
     "test:build": "tsc -p . --outDir out",
