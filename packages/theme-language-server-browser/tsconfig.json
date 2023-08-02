@@ -14,7 +14,7 @@
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "references": [
-    { "path": "../common/src" }
+    { "path": "../theme-language-server-common/src" }
   ]
 }
 

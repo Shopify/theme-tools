@@ -8,7 +8,7 @@
   "license": "MIT",
   "private": true,
   "workspaces": [
-    "packages/theme-check-*"
+    "packages/theme-*"
   ],
   "scripts": {
     "build": "yarn workspaces run build",

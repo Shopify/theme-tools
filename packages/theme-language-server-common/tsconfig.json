@@ -4,5 +4,6 @@
   "compilerOptions": {
     "outDir": ".",
     "rootDir": "."
-  }
+  },
+  "references": [{ "path": "../theme-check-common" }]
 }
