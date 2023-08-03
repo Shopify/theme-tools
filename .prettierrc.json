@@ -11,6 +11,13 @@
       "options": {
         "printWidth": 100
       }
+    },
+    {
+      "files": "*.liquid",
+      "options": {
+        "singleQuote": false,
+        "printWidth": 80
+      }
     }
   ]
 }
