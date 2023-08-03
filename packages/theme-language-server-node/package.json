@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "yarn build:ts",
+    "build:ci": "yarn build",
     "build:ts": "tsc -b tsconfig.build.json",
     "dev": "tsc --watch",
     "test": "vitest",

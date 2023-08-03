@@ -13,6 +13,7 @@
   },
   "scripts": {
     "build": "yarn build:ts",
+    "build:ci": "yarn build",
     "build:ts": "tsc -b tsconfig.build.json",
     "test": "vitest",
     "type-check": "tsc --noEmit"
