@@ -1,2 +1,0 @@
-- [Principles](./principles/index.md)
-- [Whitespace handling](./whitespace-handling.md)
