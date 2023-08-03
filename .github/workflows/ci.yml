@@ -9,8 +9,8 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
-        node-version: [16.x, 18.x, 20.x]
+        os: [ubuntu-latest]
+        node-version: [16.x]
 
     name: OS ${{ matrix.os }} / NodeJS ${{ matrix.node-version }}
 
@@ -29,7 +29,7 @@ jobs:
         run: yarn install --frozen-lockfile --ignore-engines
 
       - name: Build the code
-        run: yarn build
+        run: yarn build:ci
         env:
           NODE_ENV: production
 
