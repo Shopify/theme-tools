@@ -17,7 +17,8 @@ A clear and concise description of what you want to happen.
 A clear and concise description of any alternative solutions or features you've considered.
 
 **Checklist** 
-- [ ] I have checked and made sure that the proposal adheres to this plugin's [principles](https://github.com/Shopify/prettier-plugin-liquid/blob/main/docs/principles/index.md)
+<!-- Include this check when updating anything within packages/prettier-plugin-liquid -->
+- [ ] I have checked and made sure that the proposal adheres to this plugin's [principles](../../docs/prettier-plugin-liquid/principles/index.md)
 
 **Additional context**
 Add any other context or screenshots about the feature request here.
