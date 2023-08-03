@@ -7,7 +7,6 @@ export default defineConfig({
     exclude: [
       ...configDefaults.exclude,
       "packages/prettier-plugin-liquid/**", // TODO: Set up testing for this package.
-      "packages/vscode-extension/**", // TODO: Set up testing for this package.
     ],
     singleThread: true,
     setupFiles: [

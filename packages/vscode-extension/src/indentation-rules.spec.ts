@@ -1,6 +1,6 @@
-const { expect } = require('chai');
-const { voidElements, openingLiquidTags } = require('./constants');
-const indentationRules = require('./indentation-rules');
+import { describe, it, expect } from 'vitest';
+import { voidElements, openingLiquidTags } from './constants';
+import indentationRules from './indentation-rules';
 
 describe('Module: indentationRules', () => {
   const increase = new RegExp(indentationRules.increaseIndentPattern, 'im');
@@ -21,7 +21,7 @@ describe('Module: indentationRules', () => {
   });
 
   it('should not match void elements', () => {
-    voidElements.forEach((voidElement) => {
+    voidElements.forEach((voidElement: any) => {
       expect(`<${voidElement}>`).not.to.match(increase);
       expect(`<${voidElement}/>`).not.to.match(increase);
       expect(`<${voidElement} defer />`).not.to.match(increase);
@@ -32,7 +32,7 @@ describe('Module: indentationRules', () => {
   });
 
   it('should match opening liquid tags', () => {
-    openingLiquidTags.forEach((tag) => {
+    openingLiquidTags.forEach((tag: any) => {
       expect(`{% ${tag} %}`).to.match(increase);
       expect(`{% end${tag} %}`).to.match(decrease);
       expect(`{% ${tag} in collection %}`).to.match(increase);
