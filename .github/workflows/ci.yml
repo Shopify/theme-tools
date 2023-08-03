@@ -15,13 +15,15 @@ jobs:
     name: OS ${{ matrix.os }} / NodeJS ${{ matrix.node-version }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'yarn'
+          cache: "yarn"
 
       - name: Install the packages
         run: yarn install --frozen-lockfile --ignore-engines
