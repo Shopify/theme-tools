@@ -32,7 +32,7 @@
     "build": "yarn build:ci",
     "build:ci": "yarn build:extension && yarn build:language-config && yarn build:syntax",
     "build:extension": "webpack --mode production",
-    "build:language-config": "scripts/make-language-configuration",
+    "build:language-config": "node scripts/make-language-configuration",
     "build:syntax": "yarn --cwd ./syntaxes build",
     "dev": "rimraf dist && yarn dev:watch",
     "dev:build": "webpack --mode development",
