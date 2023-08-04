@@ -37,10 +37,7 @@ export interface DebouncedFunction<F extends Function> {
  * @param ms milliseconds after last function call for it to execute
  * @returns a function that will execute on the trailing edge of a timer with the last argument it was called with
  */
-export function debounce<F extends Function>(
-  fn: F,
-  ms?: number,
-): DebouncedFunction<F> {
+export function debounce<F extends Function>(fn: F, ms?: number): DebouncedFunction<F> {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
   let force = false; // force use a certain set of arguments in the next call
 

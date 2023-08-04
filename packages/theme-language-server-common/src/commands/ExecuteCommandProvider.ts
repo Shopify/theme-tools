@@ -3,11 +3,7 @@ import { ClientCapabilities } from '../ClientCapabilities';
 import { DiagnosticsManager } from '../diagnostics';
 import { DocumentManager } from '../documents';
 import { BaseExecuteCommandProvider } from './BaseExecuteCommandProvider';
-import {
-  ApplyFixesProvider,
-  ApplySuggestionProvider,
-  RunChecksProvider,
-} from './providers';
+import { ApplyFixesProvider, ApplySuggestionProvider, RunChecksProvider } from './providers';
 
 export const Commands = [
   ApplyFixesProvider.command,

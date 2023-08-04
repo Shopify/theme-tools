@@ -1,4 +1,9 @@
-import { LiquidHtmlNode, LiquidHtmlNodeTypes, SourceCodeType, toSourceCode } from '@shopify/theme-check-common';
+import {
+  LiquidHtmlNode,
+  LiquidHtmlNodeTypes,
+  SourceCodeType,
+  toSourceCode,
+} from '@shopify/theme-check-common';
 import { expect, describe, it } from 'vitest';
 import { Visitor, visit } from './visitor';
 
@@ -10,7 +15,10 @@ describe('Module: visitor', () => {
           return;
         }
 
-        if (typeof node.markup === 'string' || node.markup.snippet.type === LiquidHtmlNodeTypes.VariableLookup) {
+        if (
+          typeof node.markup === 'string' ||
+          node.markup.snippet.type === LiquidHtmlNodeTypes.VariableLookup
+        ) {
           return;
         }
 

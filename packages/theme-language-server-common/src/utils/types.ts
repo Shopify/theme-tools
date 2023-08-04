@@ -9,11 +9,7 @@
  *
  * type DoStuffArgs = ArgumentTypes<typeof doStuff> // = [number, string].
  */
-export type ArgumentTypes<F extends Function> = F extends (
-  ...args: infer T
-) => void
-  ? T
-  : never;
+export type ArgumentTypes<F extends Function> = F extends (...args: infer T) => void ? T : never;
 
 /**
  * WithOptional<T, K> turns the properties K of type T optional.
@@ -33,8 +29,7 @@ export type ArgumentTypes<F extends Function> = F extends (
  *   // but loadConfig is not optional
  * }
  */
-export type WithOptional<T, K extends keyof T> = Omit<T, K> &
-  Partial<Pick<T, K>>;
+export type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 /**
  * assertNever(x: never);
@@ -53,7 +48,5 @@ export type WithOptional<T, K extends keyof T> = Omit<T, K> &
  * }
  */
 export function assertNever(x: never): never {
-  throw new Error(
-    `We should never reach this code, you are missing a case for ${x}`,
-  );
+  throw new Error(`We should never reach this code, you are missing a case for ${x}`);
 }

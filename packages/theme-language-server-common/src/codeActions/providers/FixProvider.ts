@@ -1,9 +1,4 @@
-import {
-  CodeAction,
-  CodeActionKind,
-  CodeActionParams,
-  Command,
-} from 'vscode-languageserver';
+import { CodeAction, CodeActionKind, CodeActionParams, Command } from 'vscode-languageserver';
 import { applyFixCommand } from '../../commands';
 import { BaseCodeActionsProvider } from '../BaseCodeActionsProvider';
 import { FixableAnomaly, isFixable, isInRange, toCodeAction } from './utils';
@@ -30,12 +25,7 @@ export class FixProvider extends BaseCodeActionsProvider {
 
     return [
       ...quickfixCursorActions(uri, version, anomaliesUnderCursor),
-      ...quickfixSameTypeActions(
-        uri,
-        version,
-        anomaliesUnderCursor,
-        fixableAnomalies,
-      ),
+      ...quickfixSameTypeActions(uri, version, anomaliesUnderCursor, fixableAnomalies),
       ...quickfixAllAction(uri, version, fixableAnomalies),
     ];
   }
@@ -71,13 +61,9 @@ function quickfixSameTypeActions(
   anomaliesUnderCursor: FixableAnomaly[],
   fixableAnomalies: FixableAnomaly[],
 ): CodeAction[] {
-  const checks = new Set(
-    anomaliesUnderCursor.map((anomaly) => anomaly.offense.check),
-  );
+  const checks = new Set(anomaliesUnderCursor.map((anomaly) => anomaly.offense.check));
   return Array.from(checks).flatMap((check) => {
-    const checkAnomalies = fixableAnomalies.filter(
-      ({ offense }) => offense.check === check,
-    );
+    const checkAnomalies = fixableAnomalies.filter(({ offense }) => offense.check === check);
 
     // We don't want to show this one if there's only one of this type.
     if (checkAnomalies.length < 2) return [];

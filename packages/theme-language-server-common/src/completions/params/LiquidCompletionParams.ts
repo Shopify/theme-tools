@@ -1,8 +1,5 @@
 import { CompletionParams } from 'vscode-languageserver';
-import {
-  LiquidHtmlNode,
-  LiquidHtmlNodeTypes as NodeTypes,
-} from '@shopify/theme-check-common';
+import { LiquidHtmlNode, LiquidHtmlNodeTypes as NodeTypes } from '@shopify/theme-check-common';
 import { AugmentedSourceCode } from '../../documents';
 import { toLiquidHtmlAST } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
 import { fix } from './fix';
@@ -205,13 +202,8 @@ function findCurrentNode(
 
       case NodeTypes.LiquidTag: {
         if (isCoveredExcluded(cursor, current.blockStartPosition)) {
-          if (
-            hasNonNullProperty(current, 'markup') &&
-            typeof current.markup !== 'string'
-          ) {
-            finder.current = Array.isArray(current.markup)
-              ? current.markup.at(-1)
-              : current.markup;
+          if (hasNonNullProperty(current, 'markup') && typeof current.markup !== 'string') {
+            finder.current = Array.isArray(current.markup) ? current.markup.at(-1) : current.markup;
           } else {
             // Exits the loop and the node is the thing to complete
             // (presumably name or something else)
@@ -226,13 +218,8 @@ function findCurrentNode(
       }
 
       case NodeTypes.LiquidBranch:
-        if (
-          isCovered(cursor, current.blockStartPosition) &&
-          typeof current.markup !== 'string'
-        ) {
-          finder.current = Array.isArray(current.markup)
-            ? current.markup.at(-1)
-            : current.markup;
+        if (isCovered(cursor, current.blockStartPosition) && typeof current.markup !== 'string') {
+          finder.current = Array.isArray(current.markup) ? current.markup.at(-1) : current.markup;
         } else if (hasNonEmptyArrayProperty(current, 'children')) {
           finder.current = last(current.children);
         } else {
@@ -247,9 +234,7 @@ function findCurrentNode(
       case NodeTypes.AttrSingleQuoted:
       case NodeTypes.AttrEmpty:
       case NodeTypes.AttrUnquoted: {
-        const lastNameNode = last(
-          current.name as NonEmptyArray<(typeof current.name)[number]>,
-        ); // there's at least one... guaranteed.
+        const lastNameNode = last(current.name as NonEmptyArray<(typeof current.name)[number]>); // there's at least one... guaranteed.
         if (isCovered(cursor, lastNameNode.position)) {
           finder.current = lastNameNode;
         } else if (
@@ -312,10 +297,7 @@ function findCurrentNode(
       case NodeTypes.ForMarkup: {
         if (isCovered(cursor, current.collection.position)) {
           finder.current = current.collection;
-        } else if (
-          isNotEmpty(current.args) &&
-          isCovered(cursor, last(current.args).position)
-        ) {
+        } else if (isNotEmpty(current.args) && isCovered(cursor, last(current.args).position)) {
           finder.current = last(current.args);
         }
         break;
@@ -359,10 +341,7 @@ function findCurrentNode(
       case NodeTypes.RenderMarkup: {
         if (isNotEmpty(current.args)) {
           finder.current = last(current.args);
-        } else if (
-          current.variable &&
-          isCovered(cursor, current.variable.position)
-        ) {
+        } else if (current.variable && isCovered(cursor, current.variable.position)) {
           finder.current = current.variable;
         }
 
@@ -408,14 +387,11 @@ function hasNonNullProperty<K extends PropertyKey>(
   return thing !== null && property in thing && !!thing[property];
 }
 
-function isIncompleteBlockTag(
-  thing: any,
-): thing is { children: NonEmptyArray<any> } {
+function isIncompleteBlockTag(thing: any): thing is { children: NonEmptyArray<any> } {
   return (
     hasNonEmptyArrayProperty(thing, 'children') &&
     (!hasNonNullProperty(thing, 'blockEndPosition') ||
-      (thing.blockEndPosition.start === -1 &&
-        thing.blockEndPosition.end === -1))
+      (thing.blockEndPosition.start === -1 && thing.blockEndPosition.end === -1))
   );
 }
 
@@ -460,7 +436,5 @@ function last<T = any>(x: NonEmptyArray<T>): T {
 }
 
 function assertNever(x: never): never {
-  throw new Error(
-    `This function should never be called, but was called with ${x}`,
-  );
+  throw new Error(`This function should never be called, but was called with ${x}`);
 }

@@ -11,10 +11,7 @@ declare global {
        * @example
        * expect(provider).to.complete("{% end", ["endcomment"])
        */
-      complete(
-        source: string,
-        completionItem: CompletionItem[] | string[],
-      ): Promise<void>;
+      complete(source: string, completionItem: CompletionItem[] | string[]): Promise<void>;
     }
   }
 }
@@ -113,9 +110,7 @@ function createCompletionParams(context: string) {
 
 function createPosition(context: string): Position {
   const index = context.indexOf('█');
-  const lines = context
-    .substring(0, index === -1 ? context.length : index)
-    .split('\n');
+  const lines = context.substring(0, index === -1 ? context.length : index).split('\n');
   const line = lines.length - 1;
   const character = lines[line].length;
 

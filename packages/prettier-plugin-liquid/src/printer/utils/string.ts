@@ -1,9 +1,4 @@
-import {
-  LiquidAstPath,
-  LiquidHtmlNode,
-  LiquidParserOptions,
-  Position,
-} from '~/types';
+import { LiquidAstPath, LiquidHtmlNode, LiquidParserOptions, Position } from '~/types';
 
 export function isWhitespace(source: string, loc: number): boolean {
   if (loc < 0 || loc >= source.length) return false;
@@ -46,11 +41,7 @@ export function originallyHadLineBreaks(
   return hasLineBreakInRange(node.source, locStart(node), locEnd(node));
 }
 
-export function hasLineBreakInRange(
-  source: string,
-  locStart: number,
-  locEnd: number,
-): boolean {
+export function hasLineBreakInRange(source: string, locStart: number, locEnd: number): boolean {
   const indexOfNewLine = source.indexOf('\n', locStart);
   return 0 <= indexOfNewLine && indexOfNewLine < locEnd;
 }

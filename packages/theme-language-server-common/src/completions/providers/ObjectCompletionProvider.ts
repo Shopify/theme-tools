@@ -36,9 +36,7 @@ export class ObjectCompletionProvider implements Provider {
     return options
       .filter(({ name }) => name.startsWith(partial))
       .sort(sortByName)
-      .map((tag) =>
-        createCompletionItem(tag, { kind: CompletionItemKind.Variable }),
-      );
+      .map((tag) => createCompletionItem(tag, { kind: CompletionItemKind.Variable }));
   }
 }
 
@@ -74,8 +72,7 @@ function collectVariables(
       // {% endfor %}
       // {% # el is undefined here %}
       // {% echo █ %}
-      const isOutOfScope =
-        parentNode.blockEndPosition && parentNode.blockEndPosition.end !== -1;
+      const isOutOfScope = parentNode.blockEndPosition && parentNode.blockEndPosition.end !== -1;
       if (isOutOfScope) return;
 
       return node.variableName;

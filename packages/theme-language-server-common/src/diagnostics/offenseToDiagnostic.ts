@@ -6,17 +6,14 @@ type CheckToDocsUrl = {
   [code in string]?: string;
 };
 
-const checkToDocsUrl = allChecks.reduce<CheckToDocsUrl>(
-  (acc, checkDescription) => {
-    const url = checkDescription.meta.docs.url;
-    const code = checkDescription.meta.code;
-    if (url !== undefined) {
-      acc[code] = url;
-    }
-    return acc;
-  },
-  {},
-);
+const checkToDocsUrl = allChecks.reduce<CheckToDocsUrl>((acc, checkDescription) => {
+  const url = checkDescription.meta.docs.url;
+  const code = checkDescription.meta.code;
+  if (url !== undefined) {
+    acc[code] = url;
+  }
+  return acc;
+}, {});
 
 export function offenseToDiagnostic(offense: Offense): Diagnostic {
   const diagnostic = Diagnostic.create(

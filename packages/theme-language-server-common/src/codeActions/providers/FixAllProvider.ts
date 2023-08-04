@@ -1,9 +1,4 @@
-import {
-  CodeAction,
-  CodeActionKind,
-  CodeActionParams,
-  Command,
-} from 'vscode-languageserver';
+import { CodeAction, CodeActionKind, CodeActionParams, Command } from 'vscode-languageserver';
 import { applyFixCommand } from '../../commands';
 import { BaseCodeActionsProvider } from '../BaseCodeActionsProvider';
 import { FixableAnomaly, isFixable, toCodeAction } from './utils';

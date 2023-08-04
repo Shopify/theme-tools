@@ -1,8 +1,4 @@
-import {
-  Offense,
-  SourceCodeType,
-  WithRequired,
-} from '@shopify/theme-check-common';
+import { Offense, SourceCodeType, WithRequired } from '@shopify/theme-check-common';
 import {
   CodeAction,
   CodeActionKind,
@@ -65,14 +61,13 @@ function quickfixCursorActions(
  *
  * This type guarantees that Offense.suggest is defined
  */
-type SuggestibleAnomaly<S extends SourceCodeType = SourceCodeType> =
-  S extends SourceCodeType
-    ? {
-        diagnostic: Diagnostic;
-        offense: WithRequired<Offense<S>, 'suggest'>;
-        id: number;
-      }
-    : never;
+type SuggestibleAnomaly<S extends SourceCodeType = SourceCodeType> = S extends SourceCodeType
+  ? {
+      diagnostic: Diagnostic;
+      offense: WithRequired<Offense<S>, 'suggest'>;
+      id: number;
+    }
+  : never;
 
 function isSuggestible(anomaly: Anomaly): anomaly is SuggestibleAnomaly {
   const { offense } = anomaly;

@@ -25,10 +25,7 @@ function getCssWhitespaceFromComment(body: string) {
   return body.match(/^\s*white-?space:\s*([a-z]+)\s*$/)?.[1];
 }
 
-function getCssDisplay(
-  node: AugmentedNode<WithSiblings>,
-  options: LiquidParserOptions,
-): string {
+function getCssDisplay(node: AugmentedNode<WithSiblings>, options: LiquidParserOptions): string {
   if (node.prev && node.prev.type === NodeTypes.HtmlComment) {
     // <!-- display: block -->
     const cssDisplay = getCssDisplayFromComment(node.prev.body);
@@ -37,11 +34,7 @@ function getCssDisplay(
     }
   }
 
-  if (
-    node.prev &&
-    node.prev.type === NodeTypes.LiquidTag &&
-    node.prev.name === '#'
-  ) {
+  if (node.prev && node.prev.type === NodeTypes.LiquidTag && node.prev.name === '#') {
     // {% # display: block %}
     const cssDisplay = getCssDisplayFromComment(node.prev.markup);
     if (cssDisplay) {
@@ -95,9 +88,7 @@ function getCssDisplay(
         case 'ignore':
           return 'block';
         default: {
-          return (
-            CSS_DISPLAY_LIQUID_TAGS[node.name] || CSS_DISPLAY_LIQUID_DEFAULT
-          );
+          return CSS_DISPLAY_LIQUID_TAGS[node.name] || CSS_DISPLAY_LIQUID_DEFAULT;
         }
       }
 
@@ -153,11 +144,7 @@ function getNodeCssStyleWhiteSpace(node: AugmentedNode<WithSiblings>): string {
     }
   }
 
-  if (
-    node.prev &&
-    node.prev.type === NodeTypes.LiquidTag &&
-    node.prev.name === '#'
-  ) {
+  if (node.prev && node.prev.type === NodeTypes.LiquidTag && node.prev.name === '#') {
     // {% # white-space: normal %}
     const whitespace = getCssWhitespaceFromComment(node.prev.markup);
     if (whitespace) {
@@ -234,10 +221,7 @@ function getNodeCssStyleWhiteSpace(node: AugmentedNode<WithSiblings>): string {
   }
 }
 
-export const augmentWithCSSProperties: Augment<WithSiblings> = (
-  options,
-  node,
-) => {
+export const augmentWithCSSProperties: Augment<WithSiblings> = (options, node) => {
   const augmentations: WithCssProperties = {
     cssDisplay: getCssDisplay(node, options),
     cssWhitespace: getNodeCssStyleWhiteSpace(node),

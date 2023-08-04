@@ -1,11 +1,7 @@
 'use strict';
 
 import { doc, Doc } from 'prettier';
-import {
-  shouldPreserveContent,
-  forceBreakContent,
-  hasNoCloseMarker,
-} from '~/printer/utils';
+import { shouldPreserveContent, forceBreakContent, hasNoCloseMarker } from '~/printer/utils';
 import {
   printOpeningTagPrefix,
   printOpeningTag,
@@ -28,15 +24,7 @@ import {
 import { RawMarkupKinds } from '~/parser';
 
 const {
-  builders: {
-    breakParent,
-    dedentToRoot,
-    group,
-    indent,
-    hardline,
-    line,
-    softline,
-  },
+  builders: { breakParent, dedentToRoot, group, indent, hardline, line, softline },
 } = doc;
 const { replaceEndOfLine } = doc.utils as any;
 
@@ -121,10 +109,7 @@ export function printElement(
     );
 
   const printLineBeforeChildren = () => {
-    if (
-      node.firstChild!.hasLeadingWhitespace &&
-      node.firstChild!.isLeadingWhitespaceSensitive
-    ) {
+    if (node.firstChild!.hasLeadingWhitespace && node.firstChild!.isLeadingWhitespaceSensitive) {
       return line;
     }
 
@@ -143,29 +128,19 @@ export function printElement(
       ? needsToBorrowPrevClosingTagEndMarker(node.next)
       : needsToBorrowLastChildClosingTagEndMarker(node.parentNode!);
     if (needsToBorrow) {
-      if (
-        node.lastChild!.hasTrailingWhitespace &&
-        node.lastChild!.isTrailingWhitespaceSensitive
-      ) {
+      if (node.lastChild!.hasTrailingWhitespace && node.lastChild!.isTrailingWhitespaceSensitive) {
         return ' ';
       }
       return '';
     }
-    if (
-      node.lastChild!.hasTrailingWhitespace &&
-      node.lastChild!.isTrailingWhitespaceSensitive
-    ) {
+    if (node.lastChild!.hasTrailingWhitespace && node.lastChild!.isTrailingWhitespaceSensitive) {
       return line;
     }
     return softline;
   };
 
   if (node.children.length === 0) {
-    return printTag(
-      node.hasDanglingWhitespace && node.isDanglingWhitespaceSensitive
-        ? line
-        : '',
-    );
+    return printTag(node.hasDanglingWhitespace && node.isDanglingWhitespaceSensitive ? line : '');
   }
 
   return printTag([

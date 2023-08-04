@@ -46,16 +46,13 @@ async function findRoot(curr: URI): Promise<URI> {
   return findRoot(dirURI);
 }
 
-export const findRootURI: Dependencies['findRootURI'] =
-  async function findRootURI(uriString) {
-    const uri = parse(uriString);
-    const root = await findRoot(uri);
-    return root.toString();
-  };
+export const findRootURI: Dependencies['findRootURI'] = async function findRootURI(uriString) {
+  const uri = parse(uriString);
+  const root = await findRoot(uri);
+  return root.toString();
+};
 
-export const fileExists: Dependencies['fileExists'] = async function fileExists(
-  path,
-) {
+export const fileExists: Dependencies['fileExists'] = async function fileExists(path) {
   try {
     // This gets called from within theme-check-js which assumes
     // forward-slashes. We need to denormalize those here.
@@ -66,9 +63,7 @@ export const fileExists: Dependencies['fileExists'] = async function fileExists(
   }
 };
 
-export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(
-  uriString: string,
-) {
+export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(uriString: string) {
   const uri = parse(uriString);
   return {
     settings: {},
@@ -127,9 +122,7 @@ async function getDefaultLocale(rootURI: URI) {
     const defaultLocaleEntry = files.find(
       (dirent) => dirent.isFile() && dirent.name.endsWith('.default.json'),
     );
-    return defaultLocaleEntry
-      ? basename(defaultLocaleEntry.name, '.default.json')
-      : 'en';
+    return defaultLocaleEntry ? basename(defaultLocaleEntry.name, '.default.json') : 'en';
   } catch (error) {
     return 'en';
   }

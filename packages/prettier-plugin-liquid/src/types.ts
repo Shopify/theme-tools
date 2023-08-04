@@ -1,16 +1,10 @@
 import { Doc } from 'prettier';
 import type { AstPath as AstPath2 } from 'prettier';
-import type {
-  AstPath as AstPath3,
-  ParserOptions as ParserOptions3,
-} from 'prettier3';
+import type { AstPath as AstPath3, ParserOptions as ParserOptions3 } from 'prettier3';
 import * as AST from '~/parser/stage-2-ast';
 
 export type CommonKeys<T1, T2> = Extract<keyof T1, keyof T2>;
-export type AstPath<T = any> = Pick<
-  AstPath2<T>,
-  CommonKeys<AstPath2<T>, AstPath3<T>>
->;
+export type AstPath<T = any> = Pick<AstPath2<T>, CommonKeys<AstPath2<T>, AstPath3<T>>>;
 export type ParserOptions<T = any> = ParserOptions3<T>;
 
 export interface Position {
@@ -133,10 +127,7 @@ export type LiquidPrinterArgs = {
   isLiquidStatement?: boolean;
   truncate?: boolean;
 };
-export type LiquidPrinter = (
-  path: AstPath<LiquidHtmlNode>,
-  args?: LiquidPrinterArgs,
-) => Doc;
+export type LiquidPrinter = (path: AstPath<LiquidHtmlNode>, args?: LiquidPrinterArgs) => Doc;
 
 // Those properties create loops that would make walking infinite
 export const nonTraversableProperties = new Set([
@@ -254,43 +245,22 @@ export type LiquidRawTag = Augmented<AST.LiquidRawTag, AllAugmentations>;
 export type LiquidTag = Augmented<AST.LiquidTag, AllAugmentations>;
 export type LiquidTagNamed = Augmented<AST.LiquidTagNamed, AllAugmentations>;
 export type LiquidBranch = Augmented<AST.LiquidBranch, AllAugmentations>;
-export type LiquidBranchNamed = Augmented<
-  AST.LiquidBranchNamed,
-  AllAugmentations
->;
+export type LiquidBranchNamed = Augmented<AST.LiquidBranchNamed, AllAugmentations>;
 export type LiquidDrop = Augmented<AST.LiquidDrop, AllAugmentations>;
 export type HtmlNode = Augmented<AST.HtmlNode, AllAugmentations>;
 export type HtmlTag = Exclude<HtmlNode, HtmlComment>;
 export type HtmlElement = Augmented<AST.HtmlElement, AllAugmentations>;
-export type HtmlDanglingMarkerOpen = Augmented<
-  AST.HtmlDanglingMarkerOpen,
-  AllAugmentations
->;
-export type HtmlDanglingMarkerClose = Augmented<
-  AST.HtmlDanglingMarkerClose,
-  AllAugmentations
->;
+export type HtmlDanglingMarkerOpen = Augmented<AST.HtmlDanglingMarkerOpen, AllAugmentations>;
+export type HtmlDanglingMarkerClose = Augmented<AST.HtmlDanglingMarkerClose, AllAugmentations>;
 export type HtmlVoidElement = Augmented<AST.HtmlVoidElement, AllAugmentations>;
-export type HtmlSelfClosingElement = Augmented<
-  AST.HtmlSelfClosingElement,
-  AllAugmentations
->;
+export type HtmlSelfClosingElement = Augmented<AST.HtmlSelfClosingElement, AllAugmentations>;
 export type HtmlRawNode = Augmented<AST.HtmlRawNode, AllAugmentations>;
 export type HtmlDoctype = Augmented<AST.HtmlDoctype, AllAugmentations>;
 export type HtmlComment = Augmented<AST.HtmlComment, AllAugmentations>;
 export type AttributeNode = Augmented<AST.AttributeNode, AllAugmentations>;
-export type AttrSingleQuoted = Augmented<
-  AST.AttrSingleQuoted,
-  AllAugmentations
->;
-export type AttrDoubleQuoted = Augmented<
-  AST.AttrDoubleQuoted,
-  AllAugmentations
->;
+export type AttrSingleQuoted = Augmented<AST.AttrSingleQuoted, AllAugmentations>;
+export type AttrDoubleQuoted = Augmented<AST.AttrDoubleQuoted, AllAugmentations>;
 export type AttrUnquoted = Augmented<AST.AttrUnquoted, AllAugmentations>;
 export type AttrEmpty = Augmented<AST.AttrEmpty, AllAugmentations>;
-export type LiquidExpression = Augmented<
-  AST.LiquidExpression,
-  AllAugmentations
->;
+export type LiquidExpression = Augmented<AST.LiquidExpression, AllAugmentations>;
 export type TextNode = Augmented<AST.TextNode, AllAugmentations>;

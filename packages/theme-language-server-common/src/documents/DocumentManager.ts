@@ -1,9 +1,4 @@
-import {
-  SourceCode,
-  SourceCodeType,
-  Theme,
-  toSourceCode,
-} from '@shopify/theme-check-common';
+import { SourceCode, SourceCodeType, Theme, toSourceCode } from '@shopify/theme-check-common';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-languageserver-types';
 import { toAbsolutePath } from '../utils';

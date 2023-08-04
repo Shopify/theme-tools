@@ -204,8 +204,7 @@ export type LiquidTagNamed =
   | LiquidTagTablerow
   | LiquidTagUnless;
 
-export interface LiquidTagNode<Name, Markup>
-  extends ASTNode<NodeTypes.LiquidTag> {
+export interface LiquidTagNode<Name, Markup> extends ASTNode<NodeTypes.LiquidTag> {
   /**
    * e.g. if, ifchanged, for, etc.
    */
@@ -225,11 +224,9 @@ export interface LiquidTagNode<Name, Markup>
 }
 
 export interface LiquidTagBaseCase extends LiquidTagNode<string, string> {}
-export interface LiquidTagEcho
-  extends LiquidTagNode<NamedTags.echo, LiquidVariable> {}
+export interface LiquidTagEcho extends LiquidTagNode<NamedTags.echo, LiquidVariable> {}
 
-export interface LiquidTagAssign
-  extends LiquidTagNode<NamedTags.assign, AssignMarkup> {}
+export interface LiquidTagAssign extends LiquidTagNode<NamedTags.assign, AssignMarkup> {}
 export interface AssignMarkup extends ASTNode<NodeTypes.AssignMarkup> {
   name: string;
   value: LiquidVariable;
@@ -240,23 +237,18 @@ export interface LiquidTagIncrement
 export interface LiquidTagDecrement
   extends LiquidTagNode<NamedTags.decrement, LiquidVariableLookup> {}
 
-export interface LiquidTagCapture
-  extends LiquidTagNode<NamedTags.capture, LiquidVariableLookup> {}
+export interface LiquidTagCapture extends LiquidTagNode<NamedTags.capture, LiquidVariableLookup> {}
 
-export interface LiquidTagCycle
-  extends LiquidTagNode<NamedTags.cycle, CycleMarkup> {}
+export interface LiquidTagCycle extends LiquidTagNode<NamedTags.cycle, CycleMarkup> {}
 export interface CycleMarkup extends ASTNode<NodeTypes.CycleMarkup> {
   groupName: LiquidExpression | null;
   args: LiquidExpression[];
 }
 
-export interface LiquidTagCase
-  extends LiquidTagNode<NamedTags.case, LiquidExpression> {}
-export interface LiquidBranchWhen
-  extends LiquidBranchNode<NamedTags.when, LiquidExpression[]> {}
+export interface LiquidTagCase extends LiquidTagNode<NamedTags.case, LiquidExpression> {}
+export interface LiquidBranchWhen extends LiquidBranchNode<NamedTags.when, LiquidExpression[]> {}
 
-export interface LiquidTagForm
-  extends LiquidTagNode<NamedTags.form, LiquidArgument[]> {}
+export interface LiquidTagForm extends LiquidTagNode<NamedTags.form, LiquidArgument[]> {}
 
 export interface LiquidTagFor extends LiquidTagNode<NamedTags.for, ForMarkup> {}
 export interface ForMarkup extends ASTNode<NodeTypes.ForMarkup> {
@@ -266,12 +258,10 @@ export interface ForMarkup extends ASTNode<NodeTypes.ForMarkup> {
   args: LiquidNamedArgument[];
 }
 
-export interface LiquidTagTablerow
-  extends LiquidTagNode<NamedTags.tablerow, ForMarkup> {}
+export interface LiquidTagTablerow extends LiquidTagNode<NamedTags.tablerow, ForMarkup> {}
 
 export interface LiquidTagIf extends LiquidTagConditional<NamedTags.if> {}
-export interface LiquidTagUnless
-  extends LiquidTagConditional<NamedTags.unless> {}
+export interface LiquidTagUnless extends LiquidTagConditional<NamedTags.unless> {}
 export interface LiquidBranchElsif
   extends LiquidBranchNode<NamedTags.elsif, LiquidConditionalExpression> {}
 export interface LiquidTagConditional<Name>
@@ -282,8 +272,7 @@ export type LiquidConditionalExpression =
   | LiquidComparison
   | LiquidExpression;
 
-export interface LiquidLogicalExpression
-  extends ASTNode<NodeTypes.LogicalExpression> {
+export interface LiquidLogicalExpression extends ASTNode<NodeTypes.LogicalExpression> {
   relation: 'and' | 'or';
   left: LiquidConditionalExpression;
   right: LiquidConditionalExpression;
@@ -295,28 +284,21 @@ export interface LiquidComparison extends ASTNode<NodeTypes.Comparison> {
   right: LiquidConditionalExpression;
 }
 
-export interface LiquidTagPaginate
-  extends LiquidTagNode<NamedTags.paginate, PaginateMarkup> {}
+export interface LiquidTagPaginate extends LiquidTagNode<NamedTags.paginate, PaginateMarkup> {}
 export interface PaginateMarkup extends ASTNode<NodeTypes.PaginateMarkup> {
   collection: LiquidExpression;
   pageSize: LiquidExpression;
   args: LiquidNamedArgument[];
 }
 
-export interface LiquidTagRender
-  extends LiquidTagNode<NamedTags.render, RenderMarkup> {}
-export interface LiquidTagInclude
-  extends LiquidTagNode<NamedTags.include, RenderMarkup> {}
+export interface LiquidTagRender extends LiquidTagNode<NamedTags.render, RenderMarkup> {}
+export interface LiquidTagInclude extends LiquidTagNode<NamedTags.include, RenderMarkup> {}
 
-export interface LiquidTagSection
-  extends LiquidTagNode<NamedTags.section, LiquidString> {}
-export interface LiquidTagSections
-  extends LiquidTagNode<NamedTags.sections, LiquidString> {}
-export interface LiquidTagLayout
-  extends LiquidTagNode<NamedTags.layout, LiquidExpression> {}
+export interface LiquidTagSection extends LiquidTagNode<NamedTags.section, LiquidString> {}
+export interface LiquidTagSections extends LiquidTagNode<NamedTags.sections, LiquidString> {}
+export interface LiquidTagLayout extends LiquidTagNode<NamedTags.layout, LiquidExpression> {}
 
-export interface LiquidTagLiquid
-  extends LiquidTagNode<NamedTags.liquid, LiquidStatement[]> {}
+export interface LiquidTagLiquid extends LiquidTagNode<NamedTags.liquid, LiquidStatement[]> {}
 
 export interface RenderMarkup extends ASTNode<NodeTypes.RenderMarkup> {
   snippet: LiquidString | LiquidVariableLookup;
@@ -325,20 +307,15 @@ export interface RenderMarkup extends ASTNode<NodeTypes.RenderMarkup> {
   args: LiquidNamedArgument[];
 }
 
-export interface RenderVariableExpression
-  extends ASTNode<NodeTypes.RenderVariableExpression> {
+export interface RenderVariableExpression extends ASTNode<NodeTypes.RenderVariableExpression> {
   kind: 'for' | 'with';
   name: LiquidExpression;
 }
 
-export type LiquidBranch =
-  | LiquidBranchUnnamed
-  | LiquidBranchBaseCase
-  | LiquidBranchNamed;
+export type LiquidBranch = LiquidBranchUnnamed | LiquidBranchBaseCase | LiquidBranchNamed;
 export type LiquidBranchNamed = LiquidBranchElsif | LiquidBranchWhen;
 
-interface LiquidBranchNode<Name, Markup>
-  extends ASTNode<NodeTypes.LiquidBranch> {
+interface LiquidBranchNode<Name, Markup> extends ASTNode<NodeTypes.LiquidBranch> {
   /**
    * e.g. else, elsif, when | null when in the main branch
    */
@@ -355,8 +332,7 @@ interface LiquidBranchNode<Name, Markup>
 }
 
 export interface LiquidBranchUnnamed extends LiquidBranchNode<null, string> {}
-export interface LiquidBranchBaseCase
-  extends LiquidBranchNode<string, string> {}
+export interface LiquidBranchBaseCase extends LiquidBranchNode<string, string> {}
 
 export interface LiquidDrop extends ASTNode<NodeTypes.LiquidDrop> {
   /**
@@ -435,19 +411,16 @@ export interface HtmlElement extends HtmlNodeBase<NodeTypes.HtmlElement> {
   blockEndPosition: Position;
 }
 
-export interface HtmlDanglingMarkerOpen
-  extends HtmlNodeBase<NodeTypes.HtmlDanglingMarkerOpen> {
+export interface HtmlDanglingMarkerOpen extends HtmlNodeBase<NodeTypes.HtmlDanglingMarkerOpen> {
   name: (TextNode | LiquidDrop)[];
 }
 
-export interface HtmlDanglingMarkerClose
-  extends ASTNode<NodeTypes.HtmlDanglingMarkerClose> {
+export interface HtmlDanglingMarkerClose extends ASTNode<NodeTypes.HtmlDanglingMarkerClose> {
   name: (TextNode | LiquidDrop)[];
   blockStartPosition: Position;
 }
 
-export interface HtmlSelfClosingElement
-  extends HtmlNodeBase<NodeTypes.HtmlSelfClosingElement> {
+export interface HtmlSelfClosingElement extends HtmlNodeBase<NodeTypes.HtmlSelfClosingElement> {
   /**
    * The name of the tag can be compound
    * @example <{{ header_type }}--header />
@@ -455,8 +428,7 @@ export interface HtmlSelfClosingElement
   name: (TextNode | LiquidDrop)[];
 }
 
-export interface HtmlVoidElement
-  extends HtmlNodeBase<NodeTypes.HtmlVoidElement> {
+export interface HtmlVoidElement extends HtmlNodeBase<NodeTypes.HtmlVoidElement> {
   name: string;
 }
 
@@ -504,12 +476,9 @@ export type AttributeNode =
   | AttrUnquoted
   | AttrEmpty;
 
-export interface AttrSingleQuoted
-  extends AttributeNodeBase<NodeTypes.AttrSingleQuoted> {}
-export interface AttrDoubleQuoted
-  extends AttributeNodeBase<NodeTypes.AttrDoubleQuoted> {}
-export interface AttrUnquoted
-  extends AttributeNodeBase<NodeTypes.AttrUnquoted> {}
+export interface AttrSingleQuoted extends AttributeNodeBase<NodeTypes.AttrSingleQuoted> {}
+export interface AttrDoubleQuoted extends AttributeNodeBase<NodeTypes.AttrDoubleQuoted> {}
+export interface AttrUnquoted extends AttributeNodeBase<NodeTypes.AttrUnquoted> {}
 export interface AttrEmpty extends ASTNode<NodeTypes.AttrEmpty> {
   name: (TextNode | LiquidDrop)[];
 }
@@ -549,29 +518,18 @@ interface ASTBuildOptions {
 }
 
 export function isBranchedTag(node: LiquidHtmlNode) {
-  return (
-    node.type === NodeTypes.LiquidTag &&
-    ['if', 'for', 'unless', 'case'].includes(node.name)
-  );
+  return node.type === NodeTypes.LiquidTag && ['if', 'for', 'unless', 'case'].includes(node.name);
 }
 
 // Not exported because you can use node.type === NodeTypes.LiquidBranch.
-function isLiquidBranchDisguisedAsTag(
-  node: LiquidHtmlNode,
-): node is LiquidTagBaseCase {
-  return (
-    node.type === NodeTypes.LiquidTag &&
-    ['else', 'elsif', 'when'].includes(node.name)
-  );
+function isLiquidBranchDisguisedAsTag(node: LiquidHtmlNode): node is LiquidTagBaseCase {
+  return node.type === NodeTypes.LiquidTag && ['else', 'elsif', 'when'].includes(node.name);
 }
 
 function isConcreteLiquidBranchDisguisedAsTag(
   node: LiquidHtmlConcreteNode,
 ): node is ConcreteLiquidNode & { name: 'else' | 'eslif' | 'when' } {
-  return (
-    node.type === ConcreteNodeTypes.LiquidTag &&
-    ['else', 'eslif', 'when'].includes(node.name)
-  );
+  return node.type === ConcreteNodeTypes.LiquidTag && ['else', 'eslif', 'when'].includes(node.name);
 }
 
 export function toLiquidAST(
@@ -656,10 +614,7 @@ class ASTBuilder {
   }
 
   push(node: LiquidHtmlNode) {
-    if (
-      node.type === NodeTypes.LiquidTag &&
-      isLiquidBranchDisguisedAsTag(node)
-    ) {
+    if (node.type === NodeTypes.LiquidTag && isLiquidBranchDisguisedAsTag(node)) {
       this.cursor.pop();
       this.cursor.pop();
       this.open(toNamedLiquidBranchBaseCase(node));
@@ -687,23 +642,18 @@ class ASTBuilder {
 
     if (!this.parent) {
       throw new LiquidHTMLASTParsingError(
-        `Attempting to close ${nodeType} '${getName(
-          node,
-        )}' before it was opened`,
+        `Attempting to close ${nodeType} '${getName(node)}' before it was opened`,
         this.source,
         node.locStart,
         node.locEnd,
       );
     }
 
-    if (
-      getName(this.parent) !== getName(node) ||
-      this.parent.type !== nodeType
-    ) {
+    if (getName(this.parent) !== getName(node) || this.parent.type !== nodeType) {
       throw new LiquidHTMLASTParsingError(
-        `Attempting to close ${nodeType} '${getName(node)}' before ${
-          this.parent.type
-        } '${getName(this.parent)}' was closed`,
+        `Attempting to close ${nodeType} '${getName(node)}' before ${this.parent.type} '${getName(
+          this.parent,
+        )}' was closed`,
         this.source,
         this.parent.position.start,
         node.locEnd,
@@ -713,10 +663,7 @@ class ASTBuilder {
     // The parent end is the end of the outer tag.
     this.parent.position.end = node.locEnd;
     this.parent.blockEndPosition = position(node);
-    if (
-      this.parent.type == NodeTypes.LiquidTag &&
-      node.type == ConcreteNodeTypes.LiquidTagClose
-    ) {
+    if (this.parent.type == NodeTypes.LiquidTag && node.type == ConcreteNodeTypes.LiquidTagClose) {
       this.parent.delimiterWhitespaceStart = node.whitespaceStart ?? '';
       this.parent.delimiterWhitespaceEnd = node.whitespaceEnd ?? '';
     }
@@ -725,9 +672,7 @@ class ASTBuilder {
   }
 }
 
-function isLiquidBranch(
-  node: LiquidHtmlNode | undefined,
-): node is LiquidBranchNode<any, any> {
+function isLiquidBranch(node: LiquidHtmlNode | undefined): node is LiquidBranchNode<any, any> {
   return !!node && node.type === NodeTypes.LiquidBranch;
 }
 
@@ -743,10 +688,7 @@ function getName(
     case ConcreteNodeTypes.HtmlTagClose:
       return node.name
         .map((part) => {
-          if (
-            part.type === NodeTypes.TextNode ||
-            part.type == ConcreteNodeTypes.TextNode
-          ) {
+          if (part.type === NodeTypes.TextNode || part.type == ConcreteNodeTypes.TextNode) {
             return part.value;
           } else if (typeof part.markup === 'string') {
             return `{{${part.markup.trim()}}}`;
@@ -936,20 +878,19 @@ function buildAst(
       case ConcreteNodeTypes.AttrSingleQuoted:
       case ConcreteNodeTypes.AttrDoubleQuoted:
       case ConcreteNodeTypes.AttrUnquoted: {
-        const abstractNode: AttrUnquoted | AttrSingleQuoted | AttrDoubleQuoted =
-          {
-            type: node.type as unknown as
-              | NodeTypes.AttrSingleQuoted
-              | NodeTypes.AttrDoubleQuoted
-              | NodeTypes.AttrUnquoted,
-            name: cstToAst(node.name, options) as (TextNode | LiquidDrop)[],
-            position: position(node),
-            source: node.source,
+        const abstractNode: AttrUnquoted | AttrSingleQuoted | AttrDoubleQuoted = {
+          type: node.type as unknown as
+            | NodeTypes.AttrSingleQuoted
+            | NodeTypes.AttrDoubleQuoted
+            | NodeTypes.AttrUnquoted,
+          name: cstToAst(node.name, options) as (TextNode | LiquidDrop)[],
+          position: position(node),
+          source: node.source,
 
-            // placeholders
-            attributePosition: { start: -1, end: -1 },
-            value: [],
-          };
+          // placeholders
+          attributePosition: { start: -1, end: -1 },
+          value: [],
+        };
         const value = toAttributeValue(node.value, options);
         abstractNode.value = value;
         abstractNode.attributePosition = toAttributePosition(node, value);
@@ -983,10 +924,7 @@ function nameLength(names: (ConcreteLiquidDrop | ConcreteTextNode)[]) {
 }
 
 function toAttributePosition(
-  node:
-    | ConcreteAttrSingleQuoted
-    | ConcreteAttrDoubleQuoted
-    | ConcreteAttrUnquoted,
+  node: ConcreteAttrSingleQuoted | ConcreteAttrDoubleQuoted | ConcreteAttrUnquoted,
   value: (LiquidNode | TextNode)[],
 ): Position {
   if (value.length === 0) {
@@ -1223,9 +1161,7 @@ function toNamedLiquidTag(
   }
 }
 
-function toNamedLiquidBranchBaseCase(
-  node: LiquidTagBaseCase,
-): LiquidBranchBaseCase {
+function toNamedLiquidBranchBaseCase(node: LiquidTagBaseCase): LiquidBranchBaseCase {
   return {
     name: node.name,
     type: NodeTypes.LiquidBranch,
@@ -1239,9 +1175,7 @@ function toNamedLiquidBranchBaseCase(
   };
 }
 
-function toUnnamedLiquidBranch(
-  parentNode: LiquidHtmlNode,
-): LiquidBranchUnnamed {
+function toUnnamedLiquidBranch(parentNode: LiquidHtmlNode): LiquidBranchUnnamed {
   return {
     type: NodeTypes.LiquidBranch,
     name: null,
@@ -1304,9 +1238,7 @@ function toPaginateMarkup(node: ConcretePaginateMarkup): PaginateMarkup {
   };
 }
 
-function toRawMarkup(
-  node: ConcreteHtmlRawTag | ConcreteLiquidRawTag,
-): RawMarkup {
+function toRawMarkup(node: ConcreteHtmlRawTag | ConcreteLiquidRawTag): RawMarkup {
   return {
     type: NodeTypes.RawMarkup,
     kind: toRawMarkupKind(node),
@@ -1319,9 +1251,7 @@ function toRawMarkup(
   };
 }
 
-function toRawMarkupKind(
-  node: ConcreteHtmlRawTag | ConcreteLiquidRawTag,
-): RawMarkupKinds {
+function toRawMarkupKind(node: ConcreteHtmlRawTag | ConcreteLiquidRawTag): RawMarkupKinds {
   switch (node.type) {
     case ConcreteNodeTypes.HtmlRawTag:
       return toRawMarkupKindFromHtmlNode(node);
@@ -1387,9 +1317,7 @@ function toRawMarkupKindFromHtmlNode(node: ConcreteHtmlRawTag): RawMarkupKinds {
   }
 }
 
-function toRawMarkupKindFromLiquidNode(
-  node: ConcreteLiquidRawTag,
-): RawMarkupKinds {
+function toRawMarkupKindFromLiquidNode(node: ConcreteLiquidRawTag): RawMarkupKinds {
   switch (node.name) {
     case 'javascript':
       return RawMarkupKinds.javascript;
@@ -1431,9 +1359,7 @@ function toRenderVariableExpression(
   };
 }
 
-function toConditionalExpression(
-  nodes: ConcreteLiquidCondition[],
-): LiquidConditionalExpression {
+function toConditionalExpression(nodes: ConcreteLiquidCondition[]): LiquidConditionalExpression {
   if (nodes.length === 1) {
     return toComparisonOrExpression(nodes[0]);
   }
@@ -1479,10 +1405,7 @@ function toComparison(node: ConcreteLiquidComparison): LiquidComparison {
 function toLiquidDrop(node: ConcreteLiquidDrop): LiquidDrop {
   return {
     type: NodeTypes.LiquidDrop,
-    markup:
-      typeof node.markup === 'string'
-        ? node.markup
-        : toLiquidVariable(node.markup),
+    markup: typeof node.markup === 'string' ? node.markup : toLiquidVariable(node.markup),
     whitespaceStart: node.whitespaceStart ?? '',
     whitespaceEnd: node.whitespaceEnd ?? '',
     position: position(node),
@@ -1574,9 +1497,7 @@ function toLiquidArgument(node: ConcreteLiquidArgument): LiquidArgument {
   }
 }
 
-function toNamedArgument(
-  node: ConcreteLiquidNamedArgument,
-): LiquidNamedArgument {
+function toNamedArgument(node: ConcreteLiquidNamedArgument): LiquidNamedArgument {
   return {
     type: NodeTypes.NamedArgument,
     name: node.name,
@@ -1586,10 +1507,7 @@ function toNamedArgument(
   };
 }
 
-function toHtmlElement(
-  node: ConcreteHtmlTagOpen,
-  options: ASTBuildOptions,
-): HtmlElement {
+function toHtmlElement(node: ConcreteHtmlTagOpen, options: ASTBuildOptions): HtmlElement {
   return {
     type: NodeTypes.HtmlElement,
     name: cstToAst(node.name, options) as (TextNode | LiquidDrop)[],
@@ -1673,12 +1591,7 @@ function isAcceptableDanglingMarkerOpen(
   cst: LiquidHtmlCST,
   currIndex: number,
 ): boolean {
-  return isAcceptableDanglingMarker(
-    builder,
-    cst,
-    currIndex,
-    ConcreteNodeTypes.HtmlTagOpen,
-  );
+  return isAcceptableDanglingMarker(builder, cst, currIndex, ConcreteNodeTypes.HtmlTagOpen);
 }
 
 function isAcceptableDanglingMarkerClose(
@@ -1686,12 +1599,7 @@ function isAcceptableDanglingMarkerClose(
   cst: LiquidHtmlCST,
   currIndex: number,
 ): boolean {
-  return isAcceptableDanglingMarker(
-    builder,
-    cst,
-    currIndex,
-    ConcreteNodeTypes.HtmlTagClose,
-  );
+  return isAcceptableDanglingMarker(builder, cst, currIndex, ConcreteNodeTypes.HtmlTagClose);
 }
 
 function isAcceptableDanglingMarker(
@@ -1773,9 +1681,7 @@ export function walk(
 
     const value = (ast as any)[key];
     if (Array.isArray(value)) {
-      value
-        .filter(isLiquidHtmlNode)
-        .forEach((node: LiquidHtmlNode) => walk(node, fn, ast));
+      value.filter(isLiquidHtmlNode).forEach((node: LiquidHtmlNode) => walk(node, fn, ast));
     } else if (isLiquidHtmlNode(value)) {
       walk(value, fn, ast);
     }

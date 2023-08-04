@@ -18,7 +18,11 @@ describe('Unit: FixProvider', () => {
   let diagnosticsManager: DiagnosticsManager;
   let fixProvider: FixProvider;
 
-  function makeOffense(checkName: string, needle: string, unfixable?: boolean): Offense<SourceCodeType.LiquidHtml> {
+  function makeOffense(
+    checkName: string,
+    needle: string,
+    unfixable?: boolean,
+  ): Offense<SourceCodeType.LiquidHtml> {
     const start = contents.indexOf(needle);
     const end = start + needle.length;
 
@@ -200,7 +204,9 @@ describe('Unit: FixProvider', () => {
 
   describe('When there is only one offense', () => {
     beforeEach(() => {
-      diagnosticsManager.set(uri, 1, [makeOffense('ParserBlockingScript', '<script src="2.js"></script>')]);
+      diagnosticsManager.set(uri, 1, [
+        makeOffense('ParserBlockingScript', '<script src="2.js"></script>'),
+      ]);
     });
 
     it('provides a code action to fix it', async () => {

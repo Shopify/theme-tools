@@ -1,9 +1,4 @@
-import {
-  ThemeDocset,
-  ObjectEntry,
-  TagEntry,
-  FilterEntry,
-} from '@shopify/theme-check-common';
+import { ThemeDocset, ObjectEntry, TagEntry, FilterEntry } from '@shopify/theme-check-common';
 import { memo } from '../utils';
 
 const toFilterEntry = (name: string): FilterEntry => ({ name });
@@ -63,16 +58,10 @@ export class AugmentedThemeDocset implements ThemeDocset {
   });
 
   objects = memo(async (): Promise<ObjectEntry[]> => {
-    return [
-      ...(await this.themeDocset.objects()),
-      ...undocumentedObjects.map(toObjectEntry),
-    ];
+    return [...(await this.themeDocset.objects()), ...undocumentedObjects.map(toObjectEntry)];
   });
 
   tags = memo(async (): Promise<TagEntry[]> => {
-    return [
-      ...(await this.themeDocset.tags()),
-      ...undocumentedTags.map(toTagEntry),
-    ];
+    return [...(await this.themeDocset.tags()), ...undocumentedTags.map(toTagEntry)];
   });
 }

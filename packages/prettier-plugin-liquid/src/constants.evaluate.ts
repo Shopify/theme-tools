@@ -83,8 +83,7 @@ export const CSS_DISPLAY_LIQUID_TAGS: Record<string, string> = {
 export const CSS_DISPLAY_LIQUID_DEFAULT = 'inline';
 
 export const CSS_DISPLAY_DEFAULT = 'inline';
-export const CSS_WHITE_SPACE_TAGS: Record<string, string> =
-  getCssStyleTags('white-space');
+export const CSS_WHITE_SPACE_TAGS: Record<string, string> = getCssStyleTags('white-space');
 export const CSS_WHITE_SPACE_DEFAULT = 'normal';
 
 export const CSS_WHITE_SPACE_LIQUID_TAGS: Record<string, string> = {

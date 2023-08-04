@@ -1,10 +1,6 @@
 import { CompletionItem, CompletionParams } from 'vscode-languageserver';
 import { SourceCodeType, ThemeDocset } from '@shopify/theme-check-common';
-import {
-  Provider,
-  LiquidTagsCompletionProvider,
-  ObjectCompletionProvider,
-} from './providers';
+import { Provider, LiquidTagsCompletionProvider, ObjectCompletionProvider } from './providers';
 import { DocumentManager } from '../documents';
 import { createLiquidCompletionParams } from './params';
 

@@ -1,9 +1,4 @@
-import {
-  CodeAction,
-  CodeActionKind,
-  CodeActionParams,
-  Command,
-} from 'vscode-languageserver';
+import { CodeAction, CodeActionKind, CodeActionParams, Command } from 'vscode-languageserver';
 import { DiagnosticsManager } from '../diagnostics';
 import { DocumentManager } from '../documents';
 

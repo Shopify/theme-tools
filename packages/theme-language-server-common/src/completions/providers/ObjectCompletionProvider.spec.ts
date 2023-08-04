@@ -43,7 +43,9 @@ describe('Module: ObjectCompletionProvider', async () => {
       `<a data="{{ a█ }}"`,
       `<a data='x{{ a█ }}'`,
     ];
-    await Promise.all(contexts.map((context) => expect(provider, context).to.complete(context, ['all_products'])));
+    await Promise.all(
+      contexts.map((context) => expect(provider, context).to.complete(context, ['all_products'])),
+    );
   });
 
   it('should complete variable lookups (placeholder mode)', async () => {
@@ -78,7 +80,9 @@ describe('Module: ObjectCompletionProvider', async () => {
     ];
 
     await Promise.all(
-      contexts.map((context) => expect(provider, context).to.complete(context, ['all_products', 'global'])),
+      contexts.map((context) =>
+        expect(provider, context).to.complete(context, ['all_products', 'global']),
+      ),
     );
   });
 

@@ -15,9 +15,7 @@ export class LiquidHTMLCSTParsingError extends SyntaxError {
 
     const input = (ohm as any).input;
     const errorPos = (ohm as any)._rightmostFailurePosition;
-    const lineCol = lineColumn(input).fromIndex(
-      Math.min(errorPos, input.length - 1),
-    );
+    const lineCol = lineColumn(input).fromIndex(Math.min(errorPos, input.length - 1));
 
     // Plugging ourselves into @babel/code-frame since this is how
     // the babel parser can print where the parsing error occured.
@@ -40,12 +38,7 @@ export class LiquidHTMLCSTParsingError extends SyntaxError {
 export class LiquidHTMLASTParsingError extends SyntaxError {
   loc?: { start: LineColPosition; end: LineColPosition };
 
-  constructor(
-    message: string,
-    source: string,
-    startIndex: number,
-    endIndex: number,
-  ) {
+  constructor(message: string, source: string, startIndex: number, endIndex: number) {
     super(message);
     this.name = 'LiquidHTMLParsingError';
 

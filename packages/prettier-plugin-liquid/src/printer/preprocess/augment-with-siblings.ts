@@ -19,9 +19,7 @@ export function next(node: AugmentedNode<WithParent>) {
   return collection[collection.indexOf(node) + 1];
 }
 
-function parentCollection(
-  node: AugmentedNode<WithParent>,
-): AugmentedNode<WithParent>[] {
+function parentCollection(node: AugmentedNode<WithParent>): AugmentedNode<WithParent>[] {
   if (!node.parentNode) {
     return [];
   }

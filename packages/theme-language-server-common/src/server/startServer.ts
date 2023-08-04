@@ -48,10 +48,7 @@ export function startServer(
   const documentManager = new DocumentManager();
   const diagnosticsManager = new DiagnosticsManager(connection);
   const documentLinksProvider = new DocumentLinksProvider(documentManager);
-  const codeActionsProvider = new CodeActionsProvider(
-    documentManager,
-    diagnosticsManager,
-  );
+  const codeActionsProvider = new CodeActionsProvider(documentManager, diagnosticsManager);
   const themeDocset = new AugmentedThemeDocset(remoteThemeDocset);
   const runChecks = debounce(
     makeRunChecks(documentManager, diagnosticsManager, {
@@ -65,11 +62,7 @@ export function startServer(
     }),
     100,
   );
-  const completionsProvider = new CompletionsProvider(
-    documentManager,
-    themeDocset,
-    log,
-  );
+  const completionsProvider = new CompletionsProvider(documentManager, themeDocset, log);
   const executeCommandProvider = new ExecuteCommandProvider(
     documentManager,
     diagnosticsManager,

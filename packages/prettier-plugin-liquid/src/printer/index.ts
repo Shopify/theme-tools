@@ -1,7 +1,4 @@
-import {
-  printerLiquidHtml2,
-  printerLiquidHtml3,
-} from '~/printer/printer-liquid-html';
+import { printerLiquidHtml2, printerLiquidHtml3 } from '~/printer/printer-liquid-html';
 import { liquidHtmlAstFormat } from '~/parser';
 
 export const printers2 = {
