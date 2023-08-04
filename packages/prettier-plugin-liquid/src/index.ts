@@ -19,8 +19,7 @@ const options: SupportOptions = {
     type: 'boolean',
     category: 'LIQUID',
     default: true,
-    description:
-      'Use single quotes instead of double quotes in Liquid tags and objects.',
+    description: 'Use single quotes instead of double quotes in Liquid tags and objects.',
     since: '0.2.0',
   },
   embeddedSingleQuote: {

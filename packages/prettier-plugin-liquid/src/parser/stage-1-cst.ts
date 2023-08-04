@@ -105,18 +105,15 @@ export interface ConcreteHtmlNodeBase<T> extends ConcreteBasicNode<T> {
   attrList?: ConcreteAttributeNode[];
 }
 
-export interface ConcreteHtmlDoctype
-  extends ConcreteBasicNode<ConcreteNodeTypes.HtmlDoctype> {
+export interface ConcreteHtmlDoctype extends ConcreteBasicNode<ConcreteNodeTypes.HtmlDoctype> {
   legacyDoctypeString: string | null;
 }
 
-export interface ConcreteHtmlComment
-  extends ConcreteBasicNode<ConcreteNodeTypes.HtmlComment> {
+export interface ConcreteHtmlComment extends ConcreteBasicNode<ConcreteNodeTypes.HtmlComment> {
   body: string;
 }
 
-export interface ConcreteHtmlRawTag
-  extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlRawTag> {
+export interface ConcreteHtmlRawTag extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlRawTag> {
   name: string;
   body: string;
   blockStartLocStart: number;
@@ -132,12 +129,10 @@ export interface ConcreteHtmlSelfClosingElement
   extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlSelfClosingElement> {
   name: (ConcreteTextNode | ConcreteLiquidDrop)[];
 }
-export interface ConcreteHtmlTagOpen
-  extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlTagOpen> {
+export interface ConcreteHtmlTagOpen extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlTagOpen> {
   name: (ConcreteTextNode | ConcreteLiquidDrop)[];
 }
-export interface ConcreteHtmlTagClose
-  extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlTagClose> {
+export interface ConcreteHtmlTagClose extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlTagClose> {
   name: (ConcreteTextNode | ConcreteLiquidDrop)[];
 }
 
@@ -159,8 +154,7 @@ export interface ConcreteAttrDoubleQuoted
   extends ConcreteAttributeNodeBase<ConcreteNodeTypes.AttrDoubleQuoted> {}
 export interface ConcreteAttrUnquoted
   extends ConcreteAttributeNodeBase<ConcreteNodeTypes.AttrUnquoted> {}
-export interface ConcreteAttrEmpty
-  extends ConcreteBasicNode<ConcreteNodeTypes.AttrEmpty> {
+export interface ConcreteAttrEmpty extends ConcreteBasicNode<ConcreteNodeTypes.AttrEmpty> {
   name: (ConcreteLiquidDrop | ConcreteTextNode)[];
 }
 
@@ -189,9 +183,7 @@ export interface ConcreteLiquidRawTag
   blockEndLocEnd: number;
 }
 
-export type ConcreteLiquidTagOpen =
-  | ConcreteLiquidTagOpenBaseCase
-  | ConcreteLiquidTagOpenNamed;
+export type ConcreteLiquidTagOpen = ConcreteLiquidTagOpenBaseCase | ConcreteLiquidTagOpenNamed;
 export type ConcreteLiquidTagOpenNamed =
   | ConcreteLiquidTagOpenCase
   | ConcreteLiquidTagOpenCapture
@@ -208,14 +200,10 @@ export interface ConcreteLiquidTagOpenNode<Name, Markup>
   markup: Markup;
 }
 
-export interface ConcreteLiquidTagOpenBaseCase
-  extends ConcreteLiquidTagOpenNode<string, string> {}
+export interface ConcreteLiquidTagOpenBaseCase extends ConcreteLiquidTagOpenNode<string, string> {}
 
 export interface ConcreteLiquidTagOpenCapture
-  extends ConcreteLiquidTagOpenNode<
-    NamedTags.capture,
-    ConcreteLiquidVariableLookup
-  > {}
+  extends ConcreteLiquidTagOpenNode<NamedTags.capture, ConcreteLiquidVariableLookup> {}
 
 export interface ConcreteLiquidTagOpenCase
   extends ConcreteLiquidTagOpenNode<NamedTags.case, ConcreteLiquidExpression> {}
@@ -225,21 +213,16 @@ export interface ConcreteLiquidTagWhen
 export interface ConcreteLiquidTagOpenIf
   extends ConcreteLiquidTagOpenNode<NamedTags.if, ConcreteLiquidCondition[]> {}
 export interface ConcreteLiquidTagOpenUnless
-  extends ConcreteLiquidTagOpenNode<
-    NamedTags.unless,
-    ConcreteLiquidCondition[]
-  > {}
+  extends ConcreteLiquidTagOpenNode<NamedTags.unless, ConcreteLiquidCondition[]> {}
 export interface ConcreteLiquidTagElsif
   extends ConcreteLiquidTagNode<NamedTags.elsif, ConcreteLiquidCondition[]> {}
 
-export interface ConcreteLiquidCondition
-  extends ConcreteBasicNode<ConcreteNodeTypes.Condition> {
+export interface ConcreteLiquidCondition extends ConcreteBasicNode<ConcreteNodeTypes.Condition> {
   relation: 'and' | 'or' | null;
   expression: ConcreteLiquidComparison | ConcreteLiquidExpression;
 }
 
-export interface ConcreteLiquidComparison
-  extends ConcreteBasicNode<ConcreteNodeTypes.Comparison> {
+export interface ConcreteLiquidComparison extends ConcreteBasicNode<ConcreteNodeTypes.Comparison> {
   comparator: Comparators;
   left: ConcreteLiquidExpression;
   right: ConcreteLiquidExpression;
@@ -249,12 +232,8 @@ export interface ConcreteLiquidTagOpenForm
   extends ConcreteLiquidTagOpenNode<NamedTags.form, ConcreteLiquidArgument[]> {}
 
 export interface ConcreteLiquidTagOpenFor
-  extends ConcreteLiquidTagOpenNode<
-    NamedTags.for,
-    ConcreteLiquidTagForMarkup
-  > {}
-export interface ConcreteLiquidTagForMarkup
-  extends ConcreteBasicNode<ConcreteNodeTypes.ForMarkup> {
+  extends ConcreteLiquidTagOpenNode<NamedTags.for, ConcreteLiquidTagForMarkup> {}
+export interface ConcreteLiquidTagForMarkup extends ConcreteBasicNode<ConcreteNodeTypes.ForMarkup> {
   variableName: string;
   collection: ConcreteLiquidExpression;
   reversed: 'reversed' | null;
@@ -262,16 +241,10 @@ export interface ConcreteLiquidTagForMarkup
 }
 
 export interface ConcreteLiquidTagOpenTablerow
-  extends ConcreteLiquidTagOpenNode<
-    NamedTags.tablerow,
-    ConcreteLiquidTagForMarkup
-  > {}
+  extends ConcreteLiquidTagOpenNode<NamedTags.tablerow, ConcreteLiquidTagForMarkup> {}
 
 export interface ConcreteLiquidTagOpenPaginate
-  extends ConcreteLiquidTagOpenNode<
-    NamedTags.paginate,
-    ConcretePaginateMarkup
-  > {}
+  extends ConcreteLiquidTagOpenNode<NamedTags.paginate, ConcretePaginateMarkup> {}
 
 export interface ConcretePaginateMarkup
   extends ConcreteBasicNode<ConcreteNodeTypes.PaginateMarkup> {
@@ -285,9 +258,7 @@ export interface ConcreteLiquidTagClose
   name: string;
 }
 
-export type ConcreteLiquidTag =
-  | ConcreteLiquidTagNamed
-  | ConcreteLiquidTagBaseCase;
+export type ConcreteLiquidTag = ConcreteLiquidTagNamed | ConcreteLiquidTagBaseCase;
 export type ConcreteLiquidTagNamed =
   | ConcreteLiquidTagAssign
   | ConcreteLiquidTagCycle
@@ -309,20 +280,13 @@ export interface ConcreteLiquidTagNode<Name, Markup>
   name: Name;
 }
 
-export interface ConcreteLiquidTagBaseCase
-  extends ConcreteLiquidTagNode<string, string> {}
+export interface ConcreteLiquidTagBaseCase extends ConcreteLiquidTagNode<string, string> {}
 export interface ConcreteLiquidTagEcho
   extends ConcreteLiquidTagNode<NamedTags.echo, ConcreteLiquidVariable> {}
 export interface ConcreteLiquidTagIncrement
-  extends ConcreteLiquidTagNode<
-    NamedTags.increment,
-    ConcreteLiquidVariableLookup
-  > {}
+  extends ConcreteLiquidTagNode<NamedTags.increment, ConcreteLiquidVariableLookup> {}
 export interface ConcreteLiquidTagDecrement
-  extends ConcreteLiquidTagNode<
-    NamedTags.decrement,
-    ConcreteLiquidVariableLookup
-  > {}
+  extends ConcreteLiquidTagNode<NamedTags.decrement, ConcreteLiquidVariableLookup> {}
 export interface ConcreteLiquidTagSection
   extends ConcreteLiquidTagNode<NamedTags.section, ConcreteStringLiteral> {}
 export interface ConcreteLiquidTagSections
@@ -331,10 +295,7 @@ export interface ConcreteLiquidTagLayout
   extends ConcreteLiquidTagNode<NamedTags.layout, ConcreteLiquidExpression> {}
 
 export interface ConcreteLiquidTagLiquid
-  extends ConcreteLiquidTagNode<
-    NamedTags.liquid,
-    ConcreteLiquidLiquidTagNode[]
-  > {}
+  extends ConcreteLiquidTagNode<NamedTags.liquid, ConcreteLiquidLiquidTagNode[]> {}
 export type ConcreteLiquidLiquidTagNode =
   | ConcreteLiquidTagOpen
   | ConcreteLiquidTagClose
@@ -342,10 +303,7 @@ export type ConcreteLiquidLiquidTagNode =
   | ConcreteLiquidRawTag;
 
 export interface ConcreteLiquidTagAssign
-  extends ConcreteLiquidTagNode<
-    NamedTags.assign,
-    ConcreteLiquidTagAssignMarkup
-  > {}
+  extends ConcreteLiquidTagNode<NamedTags.assign, ConcreteLiquidTagAssignMarkup> {}
 export interface ConcreteLiquidTagAssignMarkup
   extends ConcreteBasicNode<ConcreteNodeTypes.AssignMarkup> {
   name: string;
@@ -353,10 +311,7 @@ export interface ConcreteLiquidTagAssignMarkup
 }
 
 export interface ConcreteLiquidTagCycle
-  extends ConcreteLiquidTagNode<
-    NamedTags.cycle,
-    ConcreteLiquidTagCycleMarkup
-  > {}
+  extends ConcreteLiquidTagNode<NamedTags.cycle, ConcreteLiquidTagCycleMarkup> {}
 export interface ConcreteLiquidTagCycleMarkup
   extends ConcreteBasicNode<ConcreteNodeTypes.CycleMarkup> {
   groupName: ConcreteLiquidExpression | null;
@@ -364,15 +319,9 @@ export interface ConcreteLiquidTagCycleMarkup
 }
 
 export interface ConcreteLiquidTagRender
-  extends ConcreteLiquidTagNode<
-    NamedTags.render,
-    ConcreteLiquidTagRenderMarkup
-  > {}
+  extends ConcreteLiquidTagNode<NamedTags.render, ConcreteLiquidTagRenderMarkup> {}
 export interface ConcreteLiquidTagInclude
-  extends ConcreteLiquidTagNode<
-    NamedTags.include,
-    ConcreteLiquidTagRenderMarkup
-  > {}
+  extends ConcreteLiquidTagNode<NamedTags.include, ConcreteLiquidTagRenderMarkup> {}
 
 export interface ConcreteLiquidTagRenderMarkup
   extends ConcreteBasicNode<ConcreteNodeTypes.RenderMarkup> {
@@ -388,8 +337,7 @@ export interface ConcreteRenderVariableExpression
   name: ConcreteLiquidExpression;
 }
 
-export interface ConcreteLiquidDrop
-  extends ConcreteBasicLiquidNode<ConcreteNodeTypes.LiquidDrop> {
+export interface ConcreteLiquidDrop extends ConcreteBasicLiquidNode<ConcreteNodeTypes.LiquidDrop> {
   markup: ConcreteLiquidVariable | string;
 }
 
@@ -401,15 +349,12 @@ export interface ConcreteLiquidVariable
   rawSource: string;
 }
 
-export interface ConcreteLiquidFilter
-  extends ConcreteBasicNode<ConcreteNodeTypes.LiquidFilter> {
+export interface ConcreteLiquidFilter extends ConcreteBasicNode<ConcreteNodeTypes.LiquidFilter> {
   name: string;
   args: ConcreteLiquidArgument[];
 }
 
-export type ConcreteLiquidArgument =
-  | ConcreteLiquidExpression
-  | ConcreteLiquidNamedArgument;
+export type ConcreteLiquidArgument = ConcreteLiquidExpression | ConcreteLiquidNamedArgument;
 
 export interface ConcreteLiquidNamedArgument
   extends ConcreteBasicNode<ConcreteNodeTypes.NamedArgument> {
@@ -424,25 +369,21 @@ export type ConcreteLiquidExpression =
   | ConcreteLiquidRange
   | ConcreteLiquidVariableLookup;
 
-export interface ConcreteStringLiteral
-  extends ConcreteBasicNode<ConcreteNodeTypes.String> {
+export interface ConcreteStringLiteral extends ConcreteBasicNode<ConcreteNodeTypes.String> {
   value: string;
   single: boolean;
 }
 
-export interface ConcreteNumberLiteral
-  extends ConcreteBasicNode<ConcreteNodeTypes.Number> {
+export interface ConcreteNumberLiteral extends ConcreteBasicNode<ConcreteNodeTypes.Number> {
   value: string; // float parsing is weird but supported
 }
 
-export interface ConcreteLiquidLiteral
-  extends ConcreteBasicNode<ConcreteNodeTypes.LiquidLiteral> {
+export interface ConcreteLiquidLiteral extends ConcreteBasicNode<ConcreteNodeTypes.LiquidLiteral> {
   keyword: keyof typeof LiquidLiteralValues;
   value: (typeof LiquidLiteralValues)[keyof typeof LiquidLiteralValues];
 }
 
-export interface ConcreteLiquidRange
-  extends ConcreteBasicNode<ConcreteNodeTypes.Range> {
+export interface ConcreteLiquidRange extends ConcreteBasicNode<ConcreteNodeTypes.Range> {
   start: ConcreteLiquidExpression;
   end: ConcreteLiquidExpression;
 }
@@ -462,8 +403,7 @@ export type ConcreteHtmlNode =
   | ConcreteHtmlTagOpen
   | ConcreteHtmlTagClose;
 
-export interface ConcreteTextNode
-  extends ConcreteBasicNode<ConcreteNodeTypes.TextNode> {
+export interface ConcreteTextNode extends ConcreteBasicNode<ConcreteNodeTypes.TextNode> {
   value: string;
 }
 
@@ -503,8 +443,7 @@ type TopLevelFunctionMapping = (...nodes: Node[]) => any;
 type FunctionMapping = (nodes: Node[]) => any;
 
 const markup = (i: number) => (tokens: Node[]) => tokens[i].sourceString.trim();
-const markupTrimEnd = (i: number) => (tokens: Node[]) =>
-  tokens[i].sourceString.trimEnd();
+const markupTrimEnd = (i: number) => (tokens: Node[]) => tokens[i].sourceString.trimEnd();
 
 export interface CSTBuildOptions {
   /**
@@ -554,8 +493,7 @@ function toCST<T>(
   // When we switch parser, our locStart and locEnd functions must account
   // for the offset of the {% liquid %} markup
   let liquidStatementOffset = 0;
-  const locStart = (tokens: Node[]) =>
-    liquidStatementOffset + tokens[0].source.startIdx;
+  const locStart = (tokens: Node[]) => liquidStatementOffset + tokens[0].source.startIdx;
   const locEnd = (tokens: Node[]) =>
     liquidStatementOffset + tokens[tokens.length - 1].source.endIdx;
   const locEndSecondToLast = (tokens: Node[]) =>
@@ -586,17 +524,11 @@ function toCST<T>(
     emptyListOf: () => [],
     nonemptyListOf(first: any, _sep: any, rest: any) {
       const self = this as any;
-      return [first.toAST(self.args.mapping)].concat(
-        rest.toAST(self.args.mapping),
-      );
+      return [first.toAST(self.args.mapping)].concat(rest.toAST(self.args.mapping));
     },
 
     nonemptyOrderedListOf: 0,
-    nonemptyOrderedListOfBoth(
-      nonemptyListOfA: Node,
-      _sep: Node,
-      nonemptyListOfB: Node,
-    ) {
+    nonemptyOrderedListOfBoth(nonemptyListOfA: Node, _sep: Node, nonemptyListOfB: Node) {
       const self = this as any;
       return nonemptyListOfA
         .toAST(self.args.mapping)
@@ -630,10 +562,8 @@ function toCST<T>(
       body: (tokens: Node[]) => tokens[1].sourceString,
       whitespaceStart: (tokens: Node[]) => tokens[0].children[1].sourceString,
       whitespaceEnd: (tokens: Node[]) => tokens[0].children[7].sourceString,
-      delimiterWhitespaceStart: (tokens: Node[]) =>
-        tokens[2].children[1].sourceString,
-      delimiterWhitespaceEnd: (tokens: Node[]) =>
-        tokens[2].children[7].sourceString,
+      delimiterWhitespaceStart: (tokens: Node[]) => tokens[2].children[1].sourceString,
+      delimiterWhitespaceEnd: (tokens: Node[]) => tokens[2].children[7].sourceString,
       locStart,
       locEnd,
       source,
@@ -771,10 +701,7 @@ function toCST<T>(
 
     liquidTagLiquid: 0,
     liquidTagLiquidMarkup(tagMarkup: Node) {
-      const res = grammars['LiquidStatement'].match(
-        tagMarkup.sourceString,
-        'Node',
-      );
+      const res = grammars['LiquidStatement'].match(tagMarkup.sourceString, 'Node');
 
       if (res.failed()) {
         throw new LiquidHTMLCSTParsingError(res);
@@ -853,9 +780,7 @@ function toCST<T>(
       expression: 0,
       filters: 1,
       rawSource: (tokens: Node[]) =>
-        source
-          .slice(locStart(tokens), tokens[tokens.length - 2].source.endIdx)
-          .trimEnd(),
+        source.slice(locStart(tokens), tokens[tokens.length - 2].source.endIdx).trimEnd(),
       locStart,
       // The last node of this rule is a positive lookahead, we don't
       // want its endIdx, we want the endIdx of the previous one.
@@ -920,8 +845,7 @@ function toCST<T>(
     liquidLiteral: {
       type: ConcreteNodeTypes.LiquidLiteral,
       value: (tokens: Node[]) => {
-        const keyword = tokens[0]
-          .sourceString as keyof typeof LiquidLiteralValues;
+        const keyword = tokens[0].sourceString as keyof typeof LiquidLiteralValues;
         return LiquidLiteralValues[keyword];
       },
       keyword: 0,
@@ -1030,14 +954,10 @@ function toCST<T>(
       locStart,
       locEnd: locEndSecondToLast,
       source,
-      blockStartLocStart: (tokens: Node[]) =>
-        liquidStatementOffset + tokens[0].source.startIdx,
-      blockStartLocEnd: (tokens: Node[]) =>
-        liquidStatementOffset + tokens[2].source.endIdx,
-      blockEndLocStart: (tokens: Node[]) =>
-        liquidStatementOffset + tokens[5].source.startIdx,
-      blockEndLocEnd: (tokens: Node[]) =>
-        liquidStatementOffset + tokens[5].source.endIdx,
+      blockStartLocStart: (tokens: Node[]) => liquidStatementOffset + tokens[0].source.startIdx,
+      blockStartLocEnd: (tokens: Node[]) => liquidStatementOffset + tokens[2].source.endIdx,
+      blockEndLocStart: (tokens: Node[]) => liquidStatementOffset + tokens[5].source.startIdx,
+      blockEndLocEnd: (tokens: Node[]) => liquidStatementOffset + tokens[5].source.endIdx,
     },
 
     liquidBlockComment: {
@@ -1058,14 +978,10 @@ function toCST<T>(
       locStart,
       locEnd,
       source,
-      blockStartLocStart: (tokens: Node[]) =>
-        liquidStatementOffset + tokens[0].source.startIdx,
-      blockStartLocEnd: (tokens: Node[]) =>
-        liquidStatementOffset + tokens[0].source.endIdx,
-      blockEndLocStart: (tokens: Node[]) =>
-        liquidStatementOffset + tokens[4].source.startIdx,
-      blockEndLocEnd: (tokens: Node[]) =>
-        liquidStatementOffset + tokens[4].source.endIdx,
+      blockStartLocStart: (tokens: Node[]) => liquidStatementOffset + tokens[0].source.startIdx,
+      blockStartLocEnd: (tokens: Node[]) => liquidStatementOffset + tokens[0].source.endIdx,
+      blockEndLocStart: (tokens: Node[]) => liquidStatementOffset + tokens[4].source.startIdx,
+      blockEndLocEnd: (tokens: Node[]) => liquidStatementOffset + tokens[4].source.endIdx,
     },
 
     liquidInlineComment: {
@@ -1084,9 +1000,7 @@ function toCST<T>(
     Node(frontmatter: Node, nodes: Node) {
       const self = this as any;
       const frontmatterNode =
-        frontmatter.sourceString.length === 0
-          ? []
-          : [frontmatter.toAST(self.args.mapping)];
+        frontmatter.sourceString.length === 0 ? [] : [frontmatter.toAST(self.args.mapping)];
 
       return frontmatterNode.concat(nodes.toAST(self.args.mapping));
     },
@@ -1122,8 +1036,7 @@ function toCST<T>(
         const mappings = (this as any).args.mapping;
         return tokens[0].children[2].toAST(mappings);
       },
-      body: (tokens: Node[]) =>
-        source.slice(tokens[0].source.endIdx, tokens[2].source.startIdx),
+      body: (tokens: Node[]) => source.slice(tokens[0].source.endIdx, tokens[2].source.startIdx),
       locStart,
       locEnd,
       source,
@@ -1174,9 +1087,7 @@ function toCST<T>(
     trailingTagNameTextNode: textNode,
     tagName(leadingPart: Node, trailingParts: Node) {
       const mappings = (this as any).args.mapping;
-      return [leadingPart.toAST(mappings)].concat(
-        trailingParts.toAST(mappings),
-      );
+      return [leadingPart.toAST(mappings)].concat(trailingParts.toAST(mappings));
     },
 
     AttrUnquoted: {

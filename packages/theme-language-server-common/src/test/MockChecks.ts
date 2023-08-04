@@ -1,8 +1,4 @@
-import {
-  LiquidCheckDefinition,
-  Severity,
-  SourceCodeType,
-} from '@shopify/theme-check-common';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '@shopify/theme-check-common';
 
 export const LiquidFilter: LiquidCheckDefinition = {
   meta: {

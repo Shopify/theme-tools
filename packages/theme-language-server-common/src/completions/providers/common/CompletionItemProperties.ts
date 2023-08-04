@@ -1,8 +1,4 @@
-import {
-  CompletionItem,
-  CompletionItemTag,
-  MarkupContent,
-} from 'vscode-languageserver';
+import { CompletionItem, CompletionItemTag, MarkupContent } from 'vscode-languageserver';
 import { render } from './MarkdownRenderer';
 import { DocsetEntry } from '@shopify/theme-check-common';
 

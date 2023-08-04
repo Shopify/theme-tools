@@ -27,7 +27,9 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
     await expect(provider).to.complete('{% comment %} hello there {% end', ['endcomment']);
     await expect(provider).to.complete('{% if cond %} hello {% else %} then {% end', ['endif']);
     await expect(provider).to.complete('{% for i in (1..3) %}{% end', ['endfor']);
-    await expect(provider).to.complete('{% javascript %} console.log("hi") {% end', ['endjavascript']);
+    await expect(provider).to.complete('{% javascript %} console.log("hi") {% end', [
+      'endjavascript',
+    ]);
     await expect(provider).to.complete('{% form "cart", cart %} ... {% end', ['endform']);
   });
 

@@ -1,8 +1,5 @@
 import { URI } from 'vscode-languageserver';
-import {
-  Config,
-  Dependencies as ThemeCheckDependencies,
-} from '@shopify/theme-check-common';
+import { Config, Dependencies as ThemeCheckDependencies } from '@shopify/theme-check-common';
 
 import { WithOptional } from './utils';
 
@@ -86,9 +83,7 @@ export interface RequiredDependencies {
    *
    * A factory because different repos have different default translations.
    */
-  getDefaultTranslationsFactory(
-    rootURI: URI,
-  ): ThemeCheckDependencies['getDefaultTranslations'];
+  getDefaultTranslationsFactory(rootURI: URI): ThemeCheckDependencies['getDefaultTranslations'];
 
   /**
    * getDefaultLocale(root: URI)
@@ -97,9 +92,7 @@ export interface RequiredDependencies {
    *
    * A factory because different repos have different default locales.
    */
-  getDefaultLocaleFactory(
-    rootURI: URI,
-  ): ThemeCheckDependencies['getDefaultLocale'];
+  getDefaultLocaleFactory(rootURI: URI): ThemeCheckDependencies['getDefaultLocale'];
 
   fileExists: ThemeCheckDependencies['fileExists'];
 }

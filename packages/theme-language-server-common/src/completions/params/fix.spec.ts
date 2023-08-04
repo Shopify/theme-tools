@@ -18,14 +18,20 @@ describe('Unit: fix', async () => {
     expect(fix(`{{ "hello`)).to.equal(`{{ "hello"}}`);
     expect(fix(`{{ 'hello' | append: ' world`)).to.equal(`{{ 'hello' | append: ' world'}}`);
     expect(fix(`{{ "hello" | append: " world`)).to.equal(`{{ "hello" | append: " world"}}`);
-    expect(fix(`{{ 'hello' | replace: 'hello', 'hi`)).to.equal(`{{ 'hello' | replace: 'hello', 'hi'}}`);
-    expect(fix(`{{ "hello" | replace: "hello", "hi`)).to.equal(`{{ "hello" | replace: "hello", "hi"}}`);
+    expect(fix(`{{ 'hello' | replace: 'hello', 'hi`)).to.equal(
+      `{{ 'hello' | replace: 'hello', 'hi'}}`,
+    );
+    expect(fix(`{{ "hello" | replace: "hello", "hi`)).to.equal(
+      `{{ "hello" | replace: "hello", "hi"}}`,
+    );
     expect(fix(`{{ "don't freak out`)).to.equal(`{{ "don't freak out"}}`);
     expect(fix(`{{ 'he said: "no way!`)).to.equal(`{{ 'he said: "no way!'}}`);
   });
 
   it('does not close strings inside text blocks', () => {
-    expect(fix(`<a href="hi">don't freak out<img href`)).to.equal(`<a href="hi">don't freak out<img href>`);
+    expect(fix(`<a href="hi">don't freak out<img href`)).to.equal(
+      `<a href="hi">don't freak out<img href>`,
+    );
     expect(fix(`<a href="hi">a quote "<img href`)).to.equal(`<a href="hi">a quote "<img href>`);
   });
 
@@ -58,8 +64,12 @@ describe('Unit: fix', async () => {
     expect(fix(`{{ "hello"`)).to.equal(`{{ "hello"}}`);
     expect(fix(`{{ 'hello' | append: ' world`)).to.equal(`{{ 'hello' | append: ' world'}}`);
     expect(fix(`{{ "hello" | append: " world`)).to.equal(`{{ "hello" | append: " world"}}`);
-    expect(fix(`{{ 'hello' | replace: 'hello', 'hi'`)).to.equal(`{{ 'hello' | replace: 'hello', 'hi'}}`);
-    expect(fix(`{{ "hello" | replace: "hello", "hi"`)).to.equal(`{{ "hello" | replace: "hello", "hi"}}`);
+    expect(fix(`{{ 'hello' | replace: 'hello', 'hi'`)).to.equal(
+      `{{ 'hello' | replace: 'hello', 'hi'}}`,
+    );
+    expect(fix(`{{ "hello" | replace: "hello", "hi"`)).to.equal(
+      `{{ "hello" | replace: "hello", "hi"}}`,
+    );
   });
 
   it('appends a cursor character as a placeholder for variable lookups (to be used with completion mode parsing)', () => {

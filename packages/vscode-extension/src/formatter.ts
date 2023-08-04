@@ -17,9 +17,7 @@ export default class LiquidFormatter {
     public diagnosticTextDocumentVersion: Map<Uri, number>,
   ) {}
 
-  async provideDocumentFormattingEdits(
-    textDocument: TextDocument,
-  ): Promise<TextEdit[] | null> {
+  async provideDocumentFormattingEdits(textDocument: TextDocument): Promise<TextEdit[] | null> {
     try {
       const textEdits = [await toTextEdit(textDocument)];
 
@@ -32,19 +30,11 @@ export default class LiquidFormatter {
       return textEdits;
     } catch (err: any) {
       // Present the LiquidHTMLParsingError as an error in the Problems tab
-      if (
-        !!err &&
-        'name' in err &&
-        'loc' in err &&
-        err.name === 'LiquidHTMLParsingError'
-      ) {
+      if (!!err && 'name' in err && 'loc' in err && err.name === 'LiquidHTMLParsingError') {
         const diagnostic = toDiagnostic(err as LiquidHTMLASTParsingError);
         if (diagnostic) {
           this.diagnosticCollection.set(textDocument.uri, [diagnostic]);
-          this.diagnosticTextDocumentVersion.set(
-            textDocument.uri,
-            textDocument.version,
-          );
+          this.diagnosticTextDocumentVersion.set(textDocument.uri, textDocument.version);
         }
       }
 
@@ -73,10 +63,7 @@ function toDiagnostic(err: LiquidHTMLASTParsingError): Diagnostic | undefined {
   const { start, end } = err.loc!;
   const errorMessage = err.message.split('\n')[0];
   const diagnostic = new Diagnostic(
-    new Range(
-      new Position(start.line - 1, start.column),
-      new Position(end.line - 1, end.column),
-    ),
+    new Range(new Position(start.line - 1, start.column), new Position(end.line - 1, end.column)),
     errorMessage,
   );
   diagnostic.source = 'prettier-plugin-liquid';

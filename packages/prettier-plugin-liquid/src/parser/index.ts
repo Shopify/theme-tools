@@ -1,8 +1,4 @@
-import {
-  liquidHtmlParser,
-  liquidHtmlAstFormat,
-  liquidHtmlLanguageName,
-} from '~/parser/parser';
+import { liquidHtmlParser, liquidHtmlAstFormat, liquidHtmlLanguageName } from '~/parser/parser';
 
 export * from '~/parser/stage-2-ast';
 

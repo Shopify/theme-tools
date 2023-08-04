@@ -18,12 +18,7 @@ export const ParserMap: { [key in RawMarkupKinds]: string | null } = {
 // Prettier 2 and 3 have a slightly different API for embed.
 //
 // https://github.com/prettier/prettier/wiki/How-to-migrate-my-plugin-to-support-Prettier-v3%3F
-export const embed2: Printer2<LiquidHtmlNode>['embed'] = (
-  path,
-  _print,
-  textToDoc,
-  options,
-) => {
+export const embed2: Printer2<LiquidHtmlNode>['embed'] = (path, _print, textToDoc, options) => {
   const node = path.getValue();
   switch (node.type) {
     case NodeTypes.RawMarkup: {
@@ -32,8 +27,7 @@ export const embed2: Printer2<LiquidHtmlNode>['embed'] = (
         return doc.utils.stripTrailingHardline(
           textToDoc(node.value, {
             ...options,
-            singleQuote: (options as any as LiquidParserOptions)
-              .embeddedSingleQuote,
+            singleQuote: (options as any as LiquidParserOptions).embeddedSingleQuote,
             parser,
             __embeddedInHtml: true,
           }),
@@ -57,9 +51,7 @@ export const embed3: Printer3<LiquidHtmlNode>['embed'] = (path, options) => {
             singleQuote: (options as LiquidParserOptions).embeddedSingleQuote,
             parser,
             __embeddedInHtml: true,
-          }).then((document) =>
-            doc.utils.stripTrailingHardline(document),
-          ) as Promise<Doc3>;
+          }).then((document) => doc.utils.stripTrailingHardline(document)) as Promise<Doc3>;
         }
       }
       default:

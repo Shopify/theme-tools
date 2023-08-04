@@ -11,10 +11,7 @@ export const CodeActionKinds = Array.from(
 export class CodeActionsProvider {
   private providers: BaseCodeActionsProvider[];
 
-  constructor(
-    documentManager: DocumentManager,
-    diagnosticsManager: DiagnosticsManager,
-  ) {
+  constructor(documentManager: DocumentManager, diagnosticsManager: DiagnosticsManager) {
     this.providers = [
       new FixAllProvider(documentManager, diagnosticsManager),
       new FixProvider(documentManager, diagnosticsManager),
@@ -25,10 +22,7 @@ export class CodeActionsProvider {
   codeActions(params: CodeActionParams): (Command | CodeAction)[] {
     const only = params.context.only;
     return this.providers
-      .filter(
-        (provider) =>
-          !only || only.some((kind) => provider.kind.startsWith(kind)),
-      )
+      .filter((provider) => !only || only.some((kind) => provider.kind.startsWith(kind)))
       .flatMap((provider) => provider.codeActions(params));
   }
 }

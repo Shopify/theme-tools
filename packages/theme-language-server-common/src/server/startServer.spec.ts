@@ -64,22 +64,28 @@ describe('Module: server', () => {
     // Make sure you get the diagnostics you'd expect (for the right
     // version of the file)
     expect(connection.spies.sendNotification).toHaveBeenCalledOnce();
-    expect(connection.spies.sendNotification).toHaveBeenCalledWith(PublishDiagnosticsNotification.type, {
-      diagnostics: [],
-      uri: fileURI,
-      version: 3,
-    });
+    expect(connection.spies.sendNotification).toHaveBeenCalledWith(
+      PublishDiagnosticsNotification.type,
+      {
+        diagnostics: [],
+        uri: fileURI,
+        version: 3,
+      },
+    );
   });
 
   it('should trigger a re-check on did create files notifications', async () => {
     // Setup & expectations
     connection.openDocument(filePath, fileContents);
     await advanceAndFlush(100);
-    expect(connection.spies.sendNotification).toHaveBeenCalledWith(PublishDiagnosticsNotification.type, {
-      uri: fileURI,
-      version: 0,
-      diagnostics: [missingTemplateDiagnostic()],
-    });
+    expect(connection.spies.sendNotification).toHaveBeenCalledWith(
+      PublishDiagnosticsNotification.type,
+      {
+        uri: fileURI,
+        version: 0,
+        diagnostics: [missingTemplateDiagnostic()],
+      },
+    );
 
     // Clear mocks for future use
     connection.spies.sendNotification.mockClear();
@@ -101,11 +107,14 @@ describe('Module: server', () => {
 
     // Verify that we re-check'ed filePath to remove the linting error
     expect(connection.spies.sendNotification).toHaveBeenCalledOnce();
-    expect(connection.spies.sendNotification).toHaveBeenCalledWith(PublishDiagnosticsNotification.type, {
-      diagnostics: [],
-      uri: fileURI,
-      version: 0,
-    });
+    expect(connection.spies.sendNotification).toHaveBeenCalledWith(
+      PublishDiagnosticsNotification.type,
+      {
+        diagnostics: [],
+        uri: fileURI,
+        version: 0,
+      },
+    );
   });
 
   it('should trigger a re-check on did file rename notifications', async () => {
@@ -113,11 +122,14 @@ describe('Module: server', () => {
     fileTree.add('/snippets/bar.liquid');
     connection.openDocument(filePath, fileContents);
     await advanceAndFlush(100);
-    expect(connection.spies.sendNotification).toHaveBeenCalledWith(PublishDiagnosticsNotification.type, {
-      uri: fileURI,
-      version: 0,
-      diagnostics: [missingTemplateDiagnostic()],
-    });
+    expect(connection.spies.sendNotification).toHaveBeenCalledWith(
+      PublishDiagnosticsNotification.type,
+      {
+        uri: fileURI,
+        version: 0,
+        diagnostics: [missingTemplateDiagnostic()],
+      },
+    );
 
     // Reset mocks for different expectations later
     connection.spies.sendNotification.mockClear();
@@ -142,11 +154,14 @@ describe('Module: server', () => {
     // Make sure only one publishDiagnostics has been called and that the
     // error disappears because of the file rename.
     expect(connection.spies.sendNotification).toHaveBeenCalledOnce();
-    expect(connection.spies.sendNotification).toHaveBeenCalledWith(PublishDiagnosticsNotification.type, {
-      diagnostics: [],
-      uri: fileURI,
-      version: 0,
-    });
+    expect(connection.spies.sendNotification).toHaveBeenCalledWith(
+      PublishDiagnosticsNotification.type,
+      {
+        diagnostics: [],
+        uri: fileURI,
+        version: 0,
+      },
+    );
   });
 
   it('should trigger a re-check on did delete files notifications', async () => {
@@ -154,11 +169,14 @@ describe('Module: server', () => {
     fileTree.add('/snippets/foo.liquid');
     connection.openDocument(filePath, fileContents);
     await advanceAndFlush(100);
-    expect(connection.spies.sendNotification).toHaveBeenCalledWith(PublishDiagnosticsNotification.type, {
-      uri: fileURI,
-      version: 0,
-      diagnostics: [],
-    });
+    expect(connection.spies.sendNotification).toHaveBeenCalledWith(
+      PublishDiagnosticsNotification.type,
+      {
+        uri: fileURI,
+        version: 0,
+        diagnostics: [],
+      },
+    );
 
     // Clear mocks for future expectations
     connection.spies.sendNotification.mockClear();
@@ -176,11 +194,14 @@ describe('Module: server', () => {
 
     // Make sure there's an error now that the file no longer exists
     expect(connection.spies.sendNotification).toHaveBeenCalledOnce();
-    expect(connection.spies.sendNotification).toHaveBeenCalledWith(PublishDiagnosticsNotification.type, {
-      diagnostics: [missingTemplateDiagnostic()],
-      uri: fileURI,
-      version: 0,
-    });
+    expect(connection.spies.sendNotification).toHaveBeenCalledWith(
+      PublishDiagnosticsNotification.type,
+      {
+        diagnostics: [missingTemplateDiagnostic()],
+        uri: fileURI,
+        version: 0,
+      },
+    );
   });
 
   // When you're using fake timers and stuff runs async, you want to flush
@@ -202,7 +223,9 @@ describe('Module: server', () => {
 
     return {
       findRootURI: async () => 'browser:///',
-      fileExists: vi.fn().mockImplementation(async (absolutePath: string) => fileTree.has(absolutePath)),
+      fileExists: vi
+        .fn()
+        .mockImplementation(async (absolutePath: string) => fileTree.has(absolutePath)),
       getDefaultTranslationsFactory: () => async () => ({}),
       getDefaultLocaleFactory: () => async () => 'en',
       loadConfig: async () => ({

@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { URI } from 'vscode-uri';
-import { Offense, SourceCodeType, Severity, Position, Suggestion } from '@shopify/theme-check-common';
+import {
+  Offense,
+  SourceCodeType,
+  Severity,
+  Position,
+  Suggestion,
+} from '@shopify/theme-check-common';
 import { DiagnosticsManager } from '../../diagnostics';
 import { DocumentManager } from '../../documents';
 import { ApplySuggestionProvider } from './ApplySuggestionProvider';
@@ -21,7 +27,11 @@ describe('Unit: ApplySuggestionProvider', () => {
   let diagnosticsManager: DiagnosticsManager;
   let applySuggestionProvider: ApplySuggestionProvider;
 
-  function makeOffense(checkName: string, needle: string, unfixable?: boolean): Offense<SourceCodeType.LiquidHtml> {
+  function makeOffense(
+    checkName: string,
+    needle: string,
+    unfixable?: boolean,
+  ): Offense<SourceCodeType.LiquidHtml> {
     const start = contents.indexOf(needle);
     const end = start + needle.length;
     const suggestion = (replaceWith: string): Suggestion<SourceCodeType.LiquidHtml> => ({

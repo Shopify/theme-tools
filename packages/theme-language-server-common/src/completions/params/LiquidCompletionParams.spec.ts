@@ -227,7 +227,10 @@ function deepGet<T = any>(path: (string | number)[], obj: any): T {
   }, obj);
 }
 
-function createLiquidParamsFromContext(context: string, cursorPosition: Position = calculatePosition(context)) {
+function createLiquidParamsFromContext(
+  context: string,
+  cursorPosition: Position = calculatePosition(context),
+) {
   const regex = new RegExp('█', 'g');
   const documentManager = new DocumentManager();
   const uri = 'file:///path/to/file.liquid';

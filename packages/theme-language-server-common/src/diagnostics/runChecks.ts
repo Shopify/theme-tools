@@ -67,11 +67,7 @@ export function makeRunChecks(
         const sourceCodeOffenses = offenses.filter(
           (offense) => offense.absolutePath === sourceCode.absolutePath,
         );
-        diagnosticsManager.set(
-          sourceCode.uri,
-          sourceCode.version,
-          sourceCodeOffenses,
-        );
+        diagnosticsManager.set(sourceCode.uri, sourceCode.version, sourceCodeOffenses);
       }
     }
   };

@@ -1,9 +1,4 @@
-import {
-  createCorrector,
-  Fix,
-  FixDescription,
-  flattenFixes,
-} from '@shopify/theme-check-common';
+import { createCorrector, Fix, FixDescription, flattenFixes } from '@shopify/theme-check-common';
 import {
   ApplyWorkspaceEditRequest,
   Command,
@@ -59,9 +54,7 @@ export class ApplyFixesProvider extends BaseExecuteCommandProvider {
     // Clean up state diagnostics when we're done
     const offenses = diagnostics.anomalies.map((a) => a.offense);
     const fixedOffenses = anomalies.map((a) => a.offense);
-    const remainingOffenses = offenses.filter(
-      (offense) => !fixedOffenses.includes(offense),
-    );
+    const remainingOffenses = offenses.filter((offense) => !fixedOffenses.includes(offense));
     this.diagnosticsManager.set(uri, diagnostics.version, remainingOffenses);
   }
 }
@@ -69,18 +62,8 @@ export class ApplyFixesProvider extends BaseExecuteCommandProvider {
 /**
  * applyFixCommand creates an LSP Command that the client can call
  */
-export function applyFixCommand(
-  uri: string,
-  version: number | undefined,
-  ids: number[],
-): Command {
-  return Command.create(
-    'applyFixes',
-    ApplyFixesProvider.command,
-    uri,
-    version,
-    ids,
-  );
+export function applyFixCommand(uri: string, version: number | undefined, ids: number[]): Command {
+  return Command.create('applyFixes', ApplyFixesProvider.command, uri, version, ids);
 }
 
 function toTextEdit(document: TextDocument, fixDesc: FixDescription): TextEdit {

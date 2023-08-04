@@ -1,9 +1,4 @@
-import {
-  createCorrector,
-  Fix,
-  FixDescription,
-  flattenFixes,
-} from '@shopify/theme-check-common';
+import { createCorrector, Fix, FixDescription, flattenFixes } from '@shopify/theme-check-common';
 import {
   ApplyWorkspaceEditRequest,
   Command,
@@ -66,9 +61,7 @@ export class ApplySuggestionProvider extends BaseExecuteCommandProvider {
     // Clean up state diagnostics when we're done
     const offenses = diagnostics.anomalies.map((a) => a.offense);
     const fixedOffense = offense;
-    const remainingOffenses = offenses.filter(
-      (offense) => offense !== fixedOffense,
-    );
+    const remainingOffenses = offenses.filter((offense) => offense !== fixedOffense);
     this.diagnosticsManager.set(uri, diagnostics.version, remainingOffenses);
   }
 }

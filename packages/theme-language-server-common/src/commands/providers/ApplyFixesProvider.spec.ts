@@ -20,7 +20,11 @@ describe('Unit: ApplyFixesProvider', () => {
   let diagnosticsManager: DiagnosticsManager;
   let applyFixProvider: ApplyFixesProvider;
 
-  function makeOffense(checkName: string, needle: string, fixable: boolean = true): Offense<SourceCodeType.LiquidHtml> {
+  function makeOffense(
+    checkName: string,
+    needle: string,
+    fixable: boolean = true,
+  ): Offense<SourceCodeType.LiquidHtml> {
     const start = contents.indexOf(needle);
     const end = start + needle.length;
 

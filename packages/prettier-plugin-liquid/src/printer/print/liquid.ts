@@ -41,8 +41,7 @@ import { printChildren } from '~/printer/print/children';
 const LIQUID_TAGS_THAT_ALWAYS_BREAK = ['for', 'case'];
 
 const { builders, utils } = doc;
-const { group, hardline, ifBreak, indent, join, line, softline, literalline } =
-  builders;
+const { group, hardline, ifBreak, indent, join, line, softline, literalline } = builders;
 const { replaceEndOfLine } = doc.utils as any;
 
 export function printLiquidDrop(
@@ -88,15 +87,7 @@ export function printLiquidDrop(
     ]);
   }
 
-  return group([
-    '{{',
-    whitespaceStart,
-    ' ',
-    node.markup,
-    ' ',
-    whitespaceEnd,
-    '}}',
-  ]);
+  return group(['{{', whitespaceStart, ' ', node.markup, ' ', whitespaceEnd, '}}']);
 }
 
 function printNamedLiquidBlockStart(
@@ -124,11 +115,7 @@ function printNamedLiquidBlockStart(
       return {
         wrapper: group,
         prefix: ['{%', whitespaceStart, ' '],
-        suffix: (trailingWhitespace: Doc) => [
-          trailingWhitespace,
-          whitespaceEnd,
-          '%}',
-        ],
+        suffix: (trailingWhitespace: Doc) => [trailingWhitespace, whitespaceEnd, '%}'],
       };
     }
   })();
@@ -163,8 +150,7 @@ function printNamedLiquidBlockStart(
     }
 
     case NamedTags.assign: {
-      const trailingWhitespace =
-        node.markup.value.filters.length > 0 ? line : ' ';
+      const trailingWhitespace = node.markup.value.filters.length > 0 ? line : ' ';
       return tag(trailingWhitespace);
     }
 
@@ -184,9 +170,7 @@ function printNamedLiquidBlockStart(
     case NamedTags.render: {
       const markup = node.markup;
       const trailingWhitespace =
-        markup.args.length > 0 || (markup.variable && markup.alias)
-          ? line
-          : ' ';
+        markup.args.length > 0 || (markup.variable && markup.alias) ? line : ' ';
       return tag(trailingWhitespace);
     }
 
@@ -208,8 +192,7 @@ function printNamedLiquidBlockStart(
 
     case NamedTags.tablerow:
     case NamedTags.for: {
-      const trailingWhitespace =
-        node.markup.reversed || node.markup.args.length > 0 ? line : ' ';
+      const trailingWhitespace = node.markup.reversed || node.markup.args.length > 0 ? line : ' ';
       return tag(trailingWhitespace);
     }
 
@@ -220,10 +203,9 @@ function printNamedLiquidBlockStart(
     case NamedTags.if:
     case NamedTags.elsif:
     case NamedTags.unless: {
-      const trailingWhitespace = [
-        NodeTypes.Comparison,
-        NodeTypes.LogicalExpression,
-      ].includes(node.markup.type)
+      const trailingWhitespace = [NodeTypes.Comparison, NodeTypes.LogicalExpression].includes(
+        node.markup.type,
+      )
         ? line
         : ' ';
       return tag(trailingWhitespace);
@@ -273,13 +255,8 @@ function printLiquidStatement(
 ): Doc {
   const node = path.getValue();
   const shouldSkipLeadingSpace =
-    node.markup.trim() === '' ||
-    (node.name === '#' && node.markup.startsWith('#'));
-  return doc.utils.removeLines([
-    node.name,
-    shouldSkipLeadingSpace ? '' : ' ',
-    node.markup,
-  ]);
+    node.markup.trim() === '' || (node.name === '#' && node.markup.startsWith('#'));
+  return doc.utils.removeLines([node.name, shouldSkipLeadingSpace ? '' : ' ', node.markup]);
 }
 
 export function printLiquidBlockStart(
@@ -385,21 +362,12 @@ export function printLiquidBlockEnd(
     hasMeaningfulLackOfTrailingWhitespace(node),
     trailingSpaceGroupId,
   );
-  return group([
-    '{%',
-    whitespaceStart,
-    ` end${node.name} `,
-    whitespaceEnd,
-    '%}',
-  ]);
+  return group(['{%', whitespaceStart, ` end${node.name} `, whitespaceEnd, '%}']);
 }
 
 function getNodeContent(node: LiquidTag) {
   if (!node.children || !node.blockEndPosition) return '';
-  return node.source.slice(
-    node.blockStartPosition.end,
-    node.blockEndPosition.start,
-  );
+  return node.source.slice(node.blockStartPosition.end, node.blockEndPosition.start);
 }
 
 export function printLiquidTag(
@@ -468,17 +436,14 @@ export function printLiquidTag(
     ]);
   }
 
-  return group(
-    [blockStart, body, innerTrailingWhitespace(node, args), blockEnd],
-    {
-      id: tagGroupId,
-      shouldBreak:
-        LIQUID_TAGS_THAT_ALWAYS_BREAK.includes(node.name) ||
-        originallyHadLineBreaks(path, options) ||
-        isAttributeNode(node) ||
-        isDeeplyNested(node),
-    },
-  );
+  return group([blockStart, body, innerTrailingWhitespace(node, args), blockEnd], {
+    id: tagGroupId,
+    shouldBreak:
+      LIQUID_TAGS_THAT_ALWAYS_BREAK.includes(node.name) ||
+      originallyHadLineBreaks(path, options) ||
+      isAttributeNode(node) ||
+      isDeeplyNested(node),
+  });
 }
 
 export function printLiquidRawTag(
@@ -493,11 +458,7 @@ export function printLiquidRawTag(
   const shouldNotIndentBody = node.name === 'schema' && !options.indentSchema;
   const shouldPrintAsIs =
     node.isIndentationSensitive ||
-    !hasLineBreakInRange(
-      node.source,
-      node.body.position.start,
-      node.body.position.end,
-    );
+    !hasLineBreakInRange(node.source, node.body.position.start, node.body.position.end);
   const blockStart = isLiquidStatement
     ? [node.name]
     : group([
@@ -512,24 +473,10 @@ export function printLiquidRawTag(
       ]);
   const blockEnd = isLiquidStatement
     ? ['end', node.name]
-    : [
-        '{%',
-        node.whitespaceStart,
-        ' ',
-        'end',
-        node.name,
-        ' ',
-        node.whitespaceEnd,
-        '%}',
-      ];
+    : ['{%', node.whitespaceStart, ' ', 'end', node.name, ' ', node.whitespaceEnd, '%}'];
 
   if (shouldPrintAsIs) {
-    body = [
-      node.source.slice(
-        node.blockStartPosition.end,
-        node.blockEndPosition.start,
-      ),
-    ];
+    body = [node.source.slice(node.blockStartPosition.end, node.blockEndPosition.start)];
   } else if (hasEmptyBody) {
     body = [hardline];
   } else if (shouldNotIndentBody) {
@@ -550,20 +497,14 @@ function innerLeadingWhitespace(node: LiquidTag | LiquidBranch) {
     }
   }
 
-  if (
-    node.firstChild.hasLeadingWhitespace &&
-    node.firstChild.isLeadingWhitespaceSensitive
-  ) {
+  if (node.firstChild.hasLeadingWhitespace && node.firstChild.isLeadingWhitespaceSensitive) {
     return line;
   }
 
   return softline;
 }
 
-function innerTrailingWhitespace(
-  node: LiquidTag | LiquidBranch,
-  args: LiquidPrinterArgs,
-) {
+function innerTrailingWhitespace(node: LiquidTag | LiquidBranch, args: LiquidPrinterArgs) {
   if (
     (!args.isLiquidStatement && shouldPreserveContent(node)) ||
     node.type === NodeTypes.LiquidBranch ||
@@ -573,10 +514,7 @@ function innerTrailingWhitespace(
     return '';
   }
 
-  if (
-    node.lastChild.hasTrailingWhitespace &&
-    node.lastChild.isTrailingWhitespaceSensitive
-  ) {
+  if (node.lastChild.hasTrailingWhitespace && node.lastChild.isTrailingWhitespaceSensitive) {
     return line;
   }
 
@@ -596,16 +534,14 @@ function printLiquidDefaultBranch(
   // from the trailingWhitespace of the parent. When this happens, we don't
   // want the branch to print another one so we collapse it.
   // e.g. {% if A %} {% endif %}
-  const shouldCollapseSpace =
-    isEmpty(branch.children) && parentNode.children!.length === 1;
+  const shouldCollapseSpace = isEmpty(branch.children) && parentNode.children!.length === 1;
   if (shouldCollapseSpace) return '';
 
   // When the branch is empty and doesn't have whitespace, we don't want
   // anything so print nothing.
   // e.g. {% if A %}{% endif %}
   // e.g. {% if A %}{% else %}...{% endif %}
-  const isBranchEmptyWithoutSpace =
-    isEmpty(branch.children) && !branch.hasDanglingWhitespace;
+  const isBranchEmptyWithoutSpace = isEmpty(branch.children) && !branch.hasDanglingWhitespace;
   if (isBranchEmptyWithoutSpace) return '';
 
   // If the branch does not break, is empty and had whitespace, we might
@@ -670,14 +606,10 @@ export function printLiquidBranch(
   ];
 }
 
-function needsBlockStartLeadingWhitespaceStrippingOnBreak(
-  node: LiquidTag | LiquidBranch,
-): boolean {
+function needsBlockStartLeadingWhitespaceStrippingOnBreak(node: LiquidTag | LiquidBranch): boolean {
   switch (node.type) {
     case NodeTypes.LiquidTag: {
-      return (
-        !isAttributeNode(node) && hasMeaningfulLackOfLeadingWhitespace(node)
-      );
+      return !isAttributeNode(node) && hasMeaningfulLackOfLeadingWhitespace(node);
     }
     case NodeTypes.LiquidBranch: {
       return (
@@ -697,9 +629,7 @@ function needsBlockStartTrailingWhitespaceStrippingOnBreak(
   switch (node.type) {
     case NodeTypes.LiquidTag: {
       if (isBranchedTag(node)) {
-        return needsBlockStartLeadingWhitespaceStrippingOnBreak(
-          node.firstChild! as LiquidBranch,
-        );
+        return needsBlockStartLeadingWhitespaceStrippingOnBreak(node.firstChild! as LiquidBranch);
       }
 
       if (!node.children) {
@@ -755,17 +685,10 @@ function getSchema(contents: string, options: LiquidParserOptions) {
   }
 }
 
-function getSpaceBetweenLines(
-  prev: LiquidStatement | null,
-  curr: LiquidStatement,
-): Doc {
+function getSpaceBetweenLines(prev: LiquidStatement | null, curr: LiquidStatement): Doc {
   if (!prev) return '';
   const source = curr.source;
-  const whitespaceBetweenNodes = source.slice(
-    prev.position.end,
-    curr.position.start,
-  );
-  const hasMoreThanOneNewLine =
-    (whitespaceBetweenNodes.match(/\n/g) || []).length > 1;
+  const whitespaceBetweenNodes = source.slice(prev.position.end, curr.position.start);
+  const hasMoreThanOneNewLine = (whitespaceBetweenNodes.match(/\n/g) || []).length > 1;
   return hasMoreThanOneNewLine ? hardline : '';
 }

@@ -3,12 +3,7 @@ export const CURSOR = '█';
 const SINGLE_QUOTE = `'` as const;
 const DOUBLE_QUOTE = `"` as const;
 const HTML_TOKENS: Token[] = ['<', '>'];
-const SHOULD_IGNORE_HTML_TOKENS: Token[] = [
-  SINGLE_QUOTE,
-  DOUBLE_QUOTE,
-  '{{',
-  '{%',
-];
+const SHOULD_IGNORE_HTML_TOKENS: Token[] = [SINGLE_QUOTE, DOUBLE_QUOTE, '{{', '{%'];
 
 const QUOTES: Token[] = [SINGLE_QUOTE, DOUBLE_QUOTE];
 const CONTROL_TOKENS: Token[] = ['{{', '{%', '<'];
@@ -23,9 +18,7 @@ const TokenPairs = {
   '(': ')',
 } as const;
 
-type Token =
-  | (typeof TokenPairs)[keyof typeof TokenPairs]
-  | keyof typeof TokenPairs;
+type Token = (typeof TokenPairs)[keyof typeof TokenPairs] | keyof typeof TokenPairs;
 
 /**
  * Fix the source code and return the new fixed source with the new absolute
@@ -152,18 +145,14 @@ class Fixer {
     const current = this.current;
     const isInTextContext = !current;
     const isInStringContext = QUOTES.includes(current as any);
-    const isInLiquidContext =
-      this.stack.includes('}}') || this.stack.includes('%}');
+    const isInLiquidContext = this.stack.includes('}}') || this.stack.includes('%}');
     return (
       (isInTextContext && !CONTROL_TOKENS.includes(token)) ||
-      (isInStringContext &&
-        !CONTROL_TOKENS.includes(token) &&
-        !QUOTES.includes(token)) ||
+      (isInStringContext && !CONTROL_TOKENS.includes(token) && !QUOTES.includes(token)) ||
       (isInLiquidContext && token === '<') ||
       (current === SINGLE_QUOTE && token === DOUBLE_QUOTE) ||
       (current === DOUBLE_QUOTE && token === SINGLE_QUOTE) ||
-      (SHOULD_IGNORE_HTML_TOKENS.includes(current!) &&
-        HTML_TOKENS.includes(token))
+      (SHOULD_IGNORE_HTML_TOKENS.includes(current!) && HTML_TOKENS.includes(token))
     );
   }
 
@@ -228,13 +217,11 @@ class Fixer {
   shouldIncludeCursorPlaceholder() {
     const prevCharacter = this.markup.at(-1) ?? '';
     const prevPrevCharacter = this.markup.at(-2) ?? '';
-    const isInLiquidContext =
-      this.stack.includes('%}') || this.stack.includes('}}');
+    const isInLiquidContext = this.stack.includes('%}') || this.stack.includes('}}');
     const isInStringContext = QUOTES.includes(this.current as any);
     return (
       isInLiquidContext &&
-      ((!isInStringContext &&
-        [' ', '.', '{', '[', ','].includes(prevCharacter)) ||
+      ((!isInStringContext && [' ', '.', '{', '[', ','].includes(prevCharacter)) ||
         (isInStringContext && prevPrevCharacter === '['))
     );
   }

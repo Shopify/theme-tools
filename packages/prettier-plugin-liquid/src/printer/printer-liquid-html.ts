@@ -32,18 +32,9 @@ import {
 import { assertNever } from '~/utils';
 
 import { preprocess } from '~/printer/print-preprocess';
-import {
-  bodyLines,
-  hasLineBreakInRange,
-  isEmpty,
-  isTextLikeNode,
-  reindent,
-} from '~/printer/utils';
+import { bodyLines, hasLineBreakInRange, isEmpty, isTextLikeNode, reindent } from '~/printer/utils';
 import { printElement } from '~/printer/print/element';
-import {
-  printClosingTagSuffix,
-  printOpeningTagPrefix,
-} from '~/printer/print/tag';
+import { printClosingTagSuffix, printOpeningTagPrefix } from '~/printer/print/tag';
 import {
   printLiquidBranch,
   printLiquidDrop,
@@ -85,9 +76,11 @@ function printAttributeName(
   );
 }
 
-function printAttribute<
-  T extends Extract<LiquidHtmlNode, { attributePosition: Position }>,
->(path: AstPath<T>, options: LiquidParserOptions, print: LiquidPrinter): Doc {
+function printAttribute<T extends Extract<LiquidHtmlNode, { attributePosition: Position }>>(
+  path: AstPath<T>,
+  options: LiquidParserOptions,
+  print: LiquidPrinter,
+): Doc {
   const node = path.getValue();
   const attrGroupId = Symbol('attr-group-id');
   // What should be the rule here? Should it really be "paragraph"?
@@ -116,38 +109,21 @@ function printAttribute<
   // Anyway, for that reason ^, for now I'll just paste in what we have in
   // the source. It's too hard to get right.
 
-  const value = node.source.slice(
-    node.attributePosition.start,
-    node.attributePosition.end,
-  );
+  const value = node.source.slice(node.attributePosition.start, node.attributePosition.end);
   const preferredQuote = options.singleQuote ? `'` : `"`;
   const attributeValueContainsQuote = !!node.value.find(
-    (valueNode) =>
-      isTextLikeNode(valueNode) && valueNode.value.includes(preferredQuote),
+    (valueNode) => isTextLikeNode(valueNode) && valueNode.value.includes(preferredQuote),
   );
-  const quote = attributeValueContainsQuote
-    ? oppositeQuotes[preferredQuote]
-    : preferredQuote;
+  const quote = attributeValueContainsQuote ? oppositeQuotes[preferredQuote] : preferredQuote;
 
   return [
     printAttributeName(path, options, print),
     '=',
     quote,
-    hasLineBreakInRange(
-      node.source,
-      node.attributePosition.start,
-      node.attributePosition.end,
-    )
-      ? group(
-          [
-            indent([
-              softline,
-              join(hardline, reindent(bodyLines(value), true)),
-            ]),
-            softline,
-          ],
-          { id: attrGroupId },
-        )
+    hasLineBreakInRange(node.source, node.attributePosition.start, node.attributePosition.end)
+      ? group([indent([softline, join(hardline, reindent(bodyLines(value), true))]), softline], {
+          id: attrGroupId,
+        })
       : value,
     quote,
   ];
@@ -209,10 +185,7 @@ function printNode(
   const node = path.getValue();
   switch (node.type) {
     case NodeTypes.Document: {
-      return [
-        printChildren(path as AstPath<DocumentNode>, options, print, args),
-        hardline,
-      ];
+      return [printChildren(path as AstPath<DocumentNode>, options, print, args), hardline];
     }
 
     case NodeTypes.HtmlElement: {
@@ -220,39 +193,19 @@ function printNode(
     }
 
     case NodeTypes.HtmlDanglingMarkerOpen: {
-      return printElement(
-        path as AstPath<HtmlDanglingMarkerOpen>,
-        options,
-        print,
-        args,
-      );
+      return printElement(path as AstPath<HtmlDanglingMarkerOpen>, options, print, args);
     }
 
     case NodeTypes.HtmlDanglingMarkerClose: {
-      return printElement(
-        path as AstPath<HtmlDanglingMarkerClose>,
-        options,
-        print,
-        args,
-      );
+      return printElement(path as AstPath<HtmlDanglingMarkerClose>, options, print, args);
     }
 
     case NodeTypes.HtmlVoidElement: {
-      return printElement(
-        path as AstPath<HtmlVoidElement>,
-        options,
-        print,
-        args,
-      );
+      return printElement(path as AstPath<HtmlVoidElement>, options, print, args);
     }
 
     case NodeTypes.HtmlSelfClosingElement: {
-      return printElement(
-        path as AstPath<HtmlSelfClosingElement>,
-        options,
-        print,
-        args,
-      );
+      return printElement(path as AstPath<HtmlSelfClosingElement>, options, print, args);
     }
 
     case NodeTypes.HtmlRawNode: {
@@ -278,9 +231,7 @@ function printNode(
 
       const lines = bodyLines(node.value);
 
-      const rawFirstLineIsntIndented = !!node.value
-        .split(/\r?\n/)[0]
-        ?.match(/\S/);
+      const rawFirstLineIsntIndented = !!node.value.split(/\r?\n/)[0]?.match(/\S/);
       const shouldSkipFirstLine = rawFirstLineIsntIndented;
 
       return lines.length > 0 && lines.find((line) => line.trim() !== '')
@@ -293,12 +244,7 @@ function printNode(
     }
 
     case NodeTypes.LiquidRawTag: {
-      return printLiquidRawTag(
-        path as AstPath<LiquidRawTag>,
-        options,
-        print,
-        args,
-      );
+      return printLiquidRawTag(path as AstPath<LiquidRawTag>, options, print, args);
     }
 
     case NodeTypes.LiquidTag: {
@@ -306,12 +252,7 @@ function printNode(
     }
 
     case NodeTypes.LiquidBranch: {
-      return printLiquidBranch(
-        path as AstPath<LiquidBranch>,
-        options,
-        print,
-        args,
-      );
+      return printLiquidBranch(path as AstPath<LiquidBranch>, options, print, args);
     }
 
     case NodeTypes.AttrEmpty: {
@@ -341,10 +282,7 @@ function printNode(
         const { startTag, body, endTag } = conditionalComment;
         return [
           startTag,
-          group([
-            indent([line, join(hardline, reindent(bodyLines(body), true))]),
-            line,
-          ]),
+          group([indent([line, join(hardline, reindent(bodyLines(body), true))]), line]),
           endTag,
         ];
       }
@@ -357,10 +295,7 @@ function printNode(
       }
       return [
         '<!--',
-        group([
-          indent([line, join(hardline, reindent(bodyLines(node.body), true))]),
-          line,
-        ]),
+        group([indent([line, join(hardline, reindent(bodyLines(node.body), true))]), line]),
         '-->',
       ];
     }
@@ -409,12 +344,7 @@ function printNode(
     }
 
     case NodeTypes.PaginateMarkup: {
-      const doc = [
-        path.call(print, 'collection'),
-        line,
-        'by ',
-        path.call(print, 'pageSize'),
-      ];
+      const doc = [path.call(print, 'collection'), line, 'by ', path.call(print, 'pageSize')];
 
       if (node.args.length > 0) {
         doc.push([
@@ -458,13 +388,7 @@ function printNode(
     }
 
     case NodeTypes.LogicalExpression: {
-      return [
-        path.call(print, 'left'),
-        line,
-        node.relation,
-        ' ',
-        path.call(print, 'right'),
-      ];
+      return [path.call(print, 'left'), line, node.relation, ' ', path.call(print, 'right')];
     }
 
     case NodeTypes.Comparison: {
@@ -494,14 +418,11 @@ function printNode(
 
       if (node.args.length > 0) {
         const printed = path.map((p) => print(p), 'args');
-        const shouldPrintFirstArgumentSameLine =
-          node.args[0].type !== NodeTypes.NamedArgument;
+        const shouldPrintFirstArgumentSameLine = node.args[0].type !== NodeTypes.NamedArgument;
 
         if (shouldPrintFirstArgumentSameLine) {
           const [firstDoc, ...rest] = printed;
-          const restDoc = isEmpty(rest)
-            ? ''
-            : indent([',', line, join([',', line], rest)]);
+          const restDoc = isEmpty(rest) ? '' : indent([',', line, join([',', line], rest)]);
           args = [': ', firstDoc, restDoc];
         } else {
           args = [':', indent([line, join([',', line], printed)])];
@@ -526,9 +447,7 @@ function printNode(
     case NodeTypes.String: {
       const preferredQuote = options.liquidSingleQuote ? `'` : `"`;
       const valueHasQuotes = node.value.includes(preferredQuote);
-      const quote = valueHasQuotes
-        ? oppositeQuotes[preferredQuote]
-        : preferredQuote;
+      const quote = valueHasQuotes ? oppositeQuotes[preferredQuote] : preferredQuote;
       return [quote, node.value, quote];
     }
 
@@ -598,8 +517,7 @@ export const printerLiquidHtml2: Printer2<LiquidHtmlNode> & {
   preprocess,
   getVisitorKeys(node: any, nonTraversableKeys: Set<string>) {
     return Object.keys(node).filter(
-      (key) =>
-        !nonTraversableKeys.has(key) && !nonTraversableProperties.has(key),
+      (key) => !nonTraversableKeys.has(key) && !nonTraversableProperties.has(key),
     );
   },
 };
@@ -612,8 +530,7 @@ export const printerLiquidHtml3: Printer3<LiquidHtmlNode> & {
   preprocess,
   getVisitorKeys(node: any, nonTraversableKeys: Set<string>) {
     return Object.keys(node).filter(
-      (key) =>
-        !nonTraversableKeys.has(key) && !nonTraversableProperties.has(key),
+      (key) => !nonTraversableKeys.has(key) && !nonTraversableProperties.has(key),
     );
   },
 };

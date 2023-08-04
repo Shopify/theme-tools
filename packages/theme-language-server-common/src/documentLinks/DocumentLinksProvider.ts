@@ -24,10 +24,7 @@ export class DocumentLinksProvider {
       return [];
     }
 
-    const visitor = documentLinksVisitor(
-      sourceCode.textDocument,
-      URI.parse(rootUri),
-    );
+    const visitor = documentLinksVisitor(sourceCode.textDocument, URI.parse(rootUri));
 
     return visit(sourceCode.ast, visitor);
   }
@@ -49,11 +46,7 @@ function documentLinksVisitor(
         const snippet = node.markup.snippet;
         return DocumentLink.create(
           range(textDocument, snippet),
-          Utils.resolvePath(
-            root,
-            'snippets',
-            snippet.value + '.liquid',
-          ).toString(),
+          Utils.resolvePath(root, 'snippets', snippet.value + '.liquid').toString(),
         );
       }
 
@@ -66,11 +59,7 @@ function documentLinksVisitor(
         const sectionName = node.markup;
         return DocumentLink.create(
           range(textDocument, sectionName),
-          Utils.resolvePath(
-            root,
-            'sections',
-            sectionName.value + '.liquid',
-          ).toString(),
+          Utils.resolvePath(root, 'sections', sectionName.value + '.liquid').toString(),
         );
       }
     },
@@ -94,10 +83,7 @@ function documentLinksVisitor(
   };
 }
 
-function range(
-  textDocument: TextDocument,
-  node: { position: LiquidHtmlNode['position'] },
-): Range {
+function range(textDocument: TextDocument, node: { position: LiquidHtmlNode['position'] }): Range {
   const start = textDocument.positionAt(node.position.start);
   const end = textDocument.positionAt(node.position.end);
   return Range.create(start, end);

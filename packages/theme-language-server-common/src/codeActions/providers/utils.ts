@@ -1,14 +1,5 @@
-import {
-  Offense,
-  SourceCodeType,
-  WithRequired,
-} from '@shopify/theme-check-common';
-import {
-  CodeAction,
-  CodeActionKind,
-  Command,
-  Diagnostic,
-} from 'vscode-languageserver';
+import { Offense, SourceCodeType, WithRequired } from '@shopify/theme-check-common';
+import { CodeAction, CodeActionKind, Command, Diagnostic } from 'vscode-languageserver';
 import { Anomaly } from '../../diagnostics';
 
 // They have an awkard API for creating them, so we have this helper here
@@ -42,14 +33,13 @@ export function isInRange({ offense }: Anomaly, start: number, end: number) {
  *
  * This type guarantees that Offense.fix is defined (and is thus fixable).
  */
-export type FixableAnomaly<S extends SourceCodeType = SourceCodeType> =
-  S extends SourceCodeType
-    ? {
-        diagnostic: Diagnostic;
-        offense: WithRequired<Offense<S>, 'fix'>;
-        id: number;
-      }
-    : never;
+export type FixableAnomaly<S extends SourceCodeType = SourceCodeType> = S extends SourceCodeType
+  ? {
+      diagnostic: Diagnostic;
+      offense: WithRequired<Offense<S>, 'fix'>;
+      id: number;
+    }
+  : never;
 
 export function isFixable(anomaly: Anomaly): anomaly is FixableAnomaly {
   const { offense } = anomaly;

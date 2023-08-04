@@ -52,13 +52,9 @@ type MockConnectionMethods = {
  * A mock connection behaves like a real connection, except we can trigger
  * messages manually via the extra MockConnectionMethods.
  */
-export type MockConnection = ReturnType<typeof createConnection> &
-  MockConnectionMethods;
+export type MockConnection = ReturnType<typeof createConnection> & MockConnectionMethods;
 
-function protocolConnection(
-  requests: EventEmitter,
-  notifications: EventEmitter,
-) {
+function protocolConnection(requests: EventEmitter, notifications: EventEmitter) {
   return {
     dispose: vi.fn(),
     end: vi.fn(),
@@ -68,11 +64,9 @@ function protocolConnection(
     onDispose: vi.fn(),
     onError: vi.fn(),
     onProgress: vi.fn(),
-    onNotification: vi
-      .fn()
-      .mockImplementation((type: MessageSignature, handler) => {
-        notifications.addListener(type.method, handler);
-      }),
+    onNotification: vi.fn().mockImplementation((type: MessageSignature, handler) => {
+      notifications.addListener(type.method, handler);
+    }),
     onRequest: vi.fn().mockImplementation((type: MessageSignature, handler) => {
       requests.addListener(type.method, handler);
     }),
@@ -99,18 +93,14 @@ export function mockConnection(): MockConnection {
   const connection = createConnection(() => spies, watchDog);
 
   // Create a mock way to trigger notification in our tests
-  const triggerNotification: MockConnection['sendNotification'] = async (
-    ...args: any[]
-  ) => {
+  const triggerNotification: MockConnection['sendNotification'] = async (...args: any[]) => {
     const [type, params] = args;
     const method = typeof type === 'string' ? type : type.method;
     notifications.emit(method, params);
   };
 
   // Create a mock way to trigger requests in our tests
-  const triggerRequest: MockConnection['triggerRequest'] = async (
-    ...args: any[]
-  ) => {
+  const triggerRequest: MockConnection['triggerRequest'] = async (...args: any[]) => {
     const [type, params] = args;
     const method = typeof type === 'string' ? type : type.method;
     requests.emit(method, params);
@@ -160,8 +150,5 @@ export function mockConnection(): MockConnection {
     },
   };
 
-  return Object.assign(
-    connection,
-    mockConnectionMethods,
-  ) satisfies MockConnection;
+  return Object.assign(connection, mockConnectionMethods) satisfies MockConnection;
 }

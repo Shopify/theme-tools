@@ -1,8 +1,5 @@
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
-import {
-  BLOCKS,
-  RAW_TAGS,
-} from '@shopify/prettier-plugin-liquid/dist/parser/grammar';
+import { BLOCKS, RAW_TAGS } from '@shopify/prettier-plugin-liquid/dist/parser/grammar';
 import {
   LiquidHtmlNode,
   LiquidHtmlNodeOfType,
@@ -44,16 +41,11 @@ export class LiquidTagsCompletionProvider implements Provider {
     return tags
       .filter(({ name }) => name.startsWith(partial))
       .sort(sortByName)
-      .map((tag) =>
-        createCompletionItem(tag, { kind: CompletionItemKind.Keyword }),
-      );
+      .map((tag) => createCompletionItem(tag, { kind: CompletionItemKind.Keyword }));
   }
 }
 
-function findParentNode(
-  partial: string,
-  ancestors: LiquidHtmlNode[],
-): LiquidTag | undefined {
+function findParentNode(partial: string, ancestors: LiquidHtmlNode[]): LiquidTag | undefined {
   if (!partial.startsWith('end')) return;
 
   // This covers the scenario where we have a dangling conditional tag

@@ -19,7 +19,11 @@ describe('Unit: SuggestionProvider', () => {
   let diagnosticsManager: DiagnosticsManager;
   let suggestionProvider: SuggestionProvider;
 
-  function makeOffense(checkName: string, needle: string, unfixable?: boolean): Offense<SourceCodeType.LiquidHtml> {
+  function makeOffense(
+    checkName: string,
+    needle: string,
+    unfixable?: boolean,
+  ): Offense<SourceCodeType.LiquidHtml> {
     const start = contents.indexOf(needle);
     const end = start + needle.length;
     const suggestion = (replaceWith: string): Suggestion<SourceCodeType.LiquidHtml> => ({

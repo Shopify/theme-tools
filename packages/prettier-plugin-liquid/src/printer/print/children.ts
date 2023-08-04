@@ -115,8 +115,7 @@ function printBetweenLine(
          *             ~
          *       attr
          */
-        (nextNode.type === NodeTypes.HtmlElement &&
-          nextNode.attributes.length > 0))) ||
+        (nextNode.type === NodeTypes.HtmlElement && nextNode.attributes.length > 0))) ||
     /**
      *     <img
      *       src="long"
@@ -153,15 +152,9 @@ function printBetweenLine(
   return nextNode.hasLeadingWhitespace ? line : softline;
 }
 
-export type HasChildren = Extract<
-  LiquidHtmlNode,
-  { children?: LiquidHtmlNode[] }
->;
+export type HasChildren = Extract<LiquidHtmlNode, { children?: LiquidHtmlNode[] }>;
 
-type Whitespace =
-  | doc.builders.Line
-  | doc.builders.Softline
-  | doc.builders.IfBreak;
+type Whitespace = doc.builders.Line | doc.builders.Softline | doc.builders.IfBreak;
 
 interface WhitespaceBetweenNode {
   /**
@@ -200,9 +193,7 @@ export function printChildren(
   const node = path.getValue();
 
   if (!node.children) {
-    throw new Error(
-      'attempting to use printChildren on something without children',
-    );
+    throw new Error('attempting to use printChildren on something without children');
   }
 
   if (forceBreakChildren(node)) {
@@ -215,10 +206,7 @@ export function printChildren(
         return [
           !prevBetweenLine
             ? ''
-            : [
-                prevBetweenLine,
-                forceNextEmptyLine(childNode.prev) ? hardline : '',
-              ],
+            : [prevBetweenLine, forceNextEmptyLine(childNode.prev) ? hardline : ''],
           printChild(childPath, options, print, {
             ...args,
             leadingSpaceGroupId: FORCE_BREAK_GROUP_ID,
@@ -229,12 +217,8 @@ export function printChildren(
     ];
   }
 
-  const leadingSpaceGroupIds = node.children.map((_, i) =>
-    Symbol(`leading-${i}`),
-  );
-  const trailingSpaceGroupIds = node.children.map((_, i) =>
-    Symbol(`trailing-${i}`),
-  );
+  const leadingSpaceGroupIds = node.children.map((_, i) => Symbol(`leading-${i}`));
+  const trailingSpaceGroupIds = node.children.map((_, i) => Symbol(`trailing-${i}`));
 
   /**
    * Whitespace handling. My favourite topic.
@@ -254,10 +238,7 @@ export function printChildren(
    *   breaks.
    */
   const whitespaceBetweenNode = path.map(
-    (
-      childPath: AstPath<LiquidHtmlNode>,
-      childIndex: number,
-    ): WhitespaceBetweenNode => {
+    (childPath: AstPath<LiquidHtmlNode>, childIndex: number): WhitespaceBetweenNode => {
       const childNode = childPath.getValue();
 
       const leadingHardlines: (typeof hardline)[] = [];
@@ -287,9 +268,7 @@ export function printChildren(
         } else {
           if (isTextLikeNode(childNode.prev)) {
             if (isLiquidNode(childNode) && prevBetweenLine === softline) {
-              leadingDependentWhitespace.push(
-                prevBetweenLine as typeof softline,
-              );
+              leadingDependentWhitespace.push(prevBetweenLine as typeof softline);
             } else {
               leadingWhitespace.push(prevBetweenLine as doc.builders.Line);
             }
@@ -354,14 +333,8 @@ export function printChildren(
               ...leadingDependentWhitespace, // breaks with trailing
               printChild(childPath, options, print, {
                 ...args,
-                leadingSpaceGroupId: leadingSpaceGroupId(
-                  whitespaceBetweenNode,
-                  childIndex,
-                ),
-                trailingSpaceGroupId: trailingSpaceGroupId(
-                  whitespaceBetweenNode,
-                  childIndex,
-                ),
+                leadingSpaceGroupId: leadingSpaceGroupId(whitespaceBetweenNode, childIndex),
+                trailingSpaceGroupId: trailingSpaceGroupId(whitespaceBetweenNode, childIndex),
               }),
               ...trailingWhitespace, // breaks second, if content breaks
             ],
@@ -413,10 +386,7 @@ export function printChildren(
     return groupIds;
   }
 
-  function trailingSpaceGroupId(
-    whitespaceBetweenNode: WhitespaceBetweenNode[],
-    index: number,
-  ) {
+  function trailingSpaceGroupId(whitespaceBetweenNode: WhitespaceBetweenNode[], index: number) {
     if (index === whitespaceBetweenNode.length - 1) {
       return args.trailingSpaceGroupId;
     }
