@@ -33,7 +33,8 @@
     "build:ts": "true",
     "build:ci": "yarn build:extension && yarn build:language-config && yarn build:syntax",
     "build:extension": "webpack --mode production",
-    "build:language-config": "node scripts/make-language-configuration",
+    "build:extension:dev": "webpack --mode development",
+    "build:language-config": "scripts/make-language-configuration",
     "build:syntax": "yarn --cwd ./syntaxes build",
     "dev": "rimraf dist && yarn dev:watch",
     "dev:build": "webpack --mode development",
@@ -45,9 +46,8 @@
     "package": "yarn build && vsce package",
     "postinstall": "yarn --cwd ./syntaxes install",
     "prebuild": "yarn && rimraf dist language-configuration.json",
-    "preinstall": "sh scripts/fetch-syntaxes.sh",
     "pretest": "yarn run test:build && yarn run dev:build && yarn run lint",
-    "test": "vitest",
+    "test": "mocha 'src/**/*.test.js'",
     "test:build": "tsc -p . --outDir out",
     "test:watch": "tsc -p . -w --outDir out",
     "type-check": "tsc --noEmit"
@@ -56,10 +56,11 @@
     "vscode": "^1.74.0"
   },
   "dependencies": {
+    "@shopify/liquid-language-server-node": "^1.3.3",
     "@shopify/prettier-plugin-liquid": "^1.1.0",
     "prettier": "^2.6.2",
     "vsce": "^1.87.0",
-    "vscode-languageclient": "^8.0.0"
+    "vscode-languageclient": "^8.1.0"
   },
   "devDependencies": {
     "@types/glob": "^8.0.0",
@@ -73,6 +74,7 @@
     "chai": "^4.3.4",
     "eslint": "^8.28.0",
     "eslint-config-prettier": "^8.3.0",
+    "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
     "ts-loader": "^9.4.1",
     "typescript": "^4.9.3",
@@ -114,6 +116,13 @@
           ],
           "default": null,
           "description": "Path to theme-check-language-server. Defaults to `which theme-check-language-server` if available on `$PATH`."
+        },
+        "shopifyLiquid.onlineStoreCodeEditorMode": {
+          "type": [
+            "boolean"
+          ],
+          "description": "When true, will use @shopify/liquid-language-server-node instead of the ruby version.",
+          "default": false
         },
         "shopifyLiquid.disableWindowsWarning": {
           "type": [

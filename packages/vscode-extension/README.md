@@ -44,6 +44,7 @@ To install the `shopify` CLI, follow these steps:
 
 - `"shopifyLiquid.shopifyCLIPath": string`, (optional, Unix-only) a path to the `shopify` executable.
 - `"shopifyLiquid.languageServerPath": string`, (optional) a path to the `theme-check-language-server` executable.
+- `"shopifyLiquid.onlineStoreCodeEditorMode": boolean`, (optional) when true, will use `@shopify/liquid-language-server-node` as the language server instead of the ruby version (aka batteries-included mode). Supercedes `shopifyCLIPath` and `languageServerPath`.
 - `"shopifyLiquid.disableWindowsWarning": boolean`, (default: `false`) When true, theme check won't bug you with the Windows warning anymore.
 - `"themeCheck.checkOnOpen": boolean`, (default: `true`) makes it so theme check runs on file open.
 - `"themeCheck.checkOnChange": boolean`, (default: `true`) makes it so theme check runs on file change.

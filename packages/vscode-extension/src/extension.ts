@@ -1,9 +1,9 @@
 import { promisify } from 'util';
 import * as child_process from 'child_process';
+import * as path from 'node:path';
 
 import {
   commands,
-  Disposable,
   DocumentFilter,
   ExtensionContext,
   languages,
@@ -11,7 +11,12 @@ import {
   window,
   workspace,
 } from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient/node';
+import {
+  LanguageClient,
+  LanguageClientOptions,
+  ServerOptions,
+  TransportKind,
+} from 'vscode-languageclient/node';
 import LiquidFormatter from './formatter';
 const exec = promisify(child_process.exec);
 
@@ -32,7 +37,7 @@ const isWin = process.platform === 'win32';
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 let client: LanguageClient | undefined;
-let context: { subscriptions: Disposable[] } | undefined;
+let context: ExtensionContext | undefined;
 
 function getConfig(path: string) {
   const [namespace, key] = path.split('.');
@@ -42,17 +47,24 @@ function getConfig(path: string) {
 export async function activate(extensionContext: ExtensionContext) {
   context = extensionContext;
 
-  context.subscriptions.push(commands.registerCommand('shopifyLiquid.restart', restartServer));
   context.subscriptions.push(
-    commands.registerCommand('shopifyLiquid.runChecks', () =>
+    commands.registerCommand('shopifyLiquid.restart', restartServer),
+  );
+  context.subscriptions.push(
+    commands.registerCommand('shopifyLiquid.runChecks', () => {
+      const isRubyLanguageServer = !getConfig(
+        'shopifyLiquid.onlineStoreCodeEditorMode',
+      );
       client!.sendRequest('workspace/executeCommand', {
-        command: 'runChecks',
-      }),
-    ),
+        command: isRubyLanguageServer ? 'runChecks' : 'themeCheck/runChecks',
+      });
+    }),
   );
 
   const diagnosticTextDocumentVersion = new Map<Uri, number>();
-  const diagnosticCollection = languages.createDiagnosticCollection('prettier-plugin-liquid');
+  const diagnosticCollection = languages.createDiagnosticCollection(
+    'prettier-plugin-liquid',
+  );
   context.subscriptions.push(diagnosticCollection);
 
   const formattingProvider = languages.registerDocumentFormattingEditProvider(
@@ -65,7 +77,9 @@ export async function activate(extensionContext: ExtensionContext) {
 
   // If you change the file, the prettier syntax error is no longer valid
   workspace.onDidChangeTextDocument(({ document }) => {
-    const bufferVersionOfDiagnostic = diagnosticTextDocumentVersion.get(document.uri);
+    const bufferVersionOfDiagnostic = diagnosticTextDocumentVersion.get(
+      document.uri,
+    );
     if (bufferVersionOfDiagnostic !== document.version) {
       diagnosticCollection.delete(document.uri);
     }
@@ -130,10 +144,23 @@ async function restartServer() {
   await startServer();
 }
 
-function onConfigChange(event: { affectsConfiguration: (arg0: string) => any }) {
-  const didChangeThemeCheck = event.affectsConfiguration('shopifyLiquid.languageServerPath');
-  const didChangeShopifyCLI = event.affectsConfiguration('shopifyLiquid.shopifyCLIPath');
-  if (didChangeThemeCheck || didChangeShopifyCLI) {
+function onConfigChange(event: {
+  affectsConfiguration: (arg0: string) => any;
+}) {
+  const didChangeThemeCheck = event.affectsConfiguration(
+    'shopifyLiquid.languageServerPath',
+  );
+  const didChangeShopifyCLI = event.affectsConfiguration(
+    'shopifyLiquid.shopifyCLIPath',
+  );
+  const didChangeOnlineStoreCodeEditorMode = event.affectsConfiguration(
+    'shopifyLiquid.onlineStoreCodeEditorMode',
+  );
+  if (
+    didChangeThemeCheck ||
+    didChangeShopifyCLI ||
+    didChangeOnlineStoreCodeEditorMode
+  ) {
     restartServer();
   }
 }
@@ -147,8 +174,33 @@ async function getServerOptions(): Promise<ServerOptions | undefined> {
       'Shopify Liquid support on Windows is experimental. Please report any issue.',
     );
   }
-  const themeCheckPath = getConfig('shopifyLiquid.languageServerPath') as string | undefined;
-  const shopifyCLIPath = getConfig('shopifyLiquid.shopifyCLIPath') as string | undefined;
+
+  if (getConfig('shopifyLiquid.onlineStoreCodeEditorMode')) {
+    const serverModule = context!.asAbsolutePath(
+      path.join('dist', 'server.js'),
+    );
+    return {
+      run: {
+        module: serverModule,
+        transport: TransportKind.stdio,
+      },
+      debug: {
+        module: serverModule,
+        transport: TransportKind.stdio,
+        options: {
+          // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
+          execArgv: ['--nolazy', '--inspect=6009'],
+        },
+      },
+    };
+  }
+
+  const themeCheckPath = getConfig('shopifyLiquid.languageServerPath') as
+    | string
+    | undefined;
+  const shopifyCLIPath = getConfig('shopifyLiquid.shopifyCLIPath') as
+    | string
+    | undefined;
 
   try {
     const executable: ServerOptions | undefined =
@@ -210,7 +262,9 @@ async function getThemeCheckExecutable(): Promise<ServerOptions | undefined> {
   }
 }
 
-async function shopifyCLIExecutable(command: string | boolean): Promise<ServerOptions | undefined> {
+async function shopifyCLIExecutable(
+  command: string | boolean,
+): Promise<ServerOptions | undefined> {
   if (isWin || typeof command !== 'string' || command === '') {
     return;
   }
@@ -220,7 +274,9 @@ async function shopifyCLIExecutable(command: string | boolean): Promise<ServerOp
   };
 }
 
-async function themeCheckExecutable(command: string | boolean): Promise<ServerOptions | undefined> {
+async function themeCheckExecutable(
+  command: string | boolean,
+): Promise<ServerOptions | undefined> {
   if (typeof command !== 'string' || command === '') {
     return undefined;
   }
@@ -234,6 +290,8 @@ async function commandExists(command: string): Promise<void> {
   try {
     !isWin && (await exec(`[ -f "${command}" ]`));
   } catch (e) {
-    throw new CommandNotFoundError(`${command} not found, are you sure this is the correct path?`);
+    throw new CommandNotFoundError(
+      `${command} not found, are you sure this is the correct path?`,
+    );
   }
 }
