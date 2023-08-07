@@ -51,7 +51,11 @@ export async function findThirdPartyChecks(nodeModuleRoot: AbsolutePath): Promis
   const results = await Promise.all(paths.map((path) => asyncGlob(path)));
   return results
     .flat()
-    .filter((x) => !/\@shopify\/theme-check-(node|common|browser|docs-updater)/.test(x));
+    .filter(
+      (x) =>
+        !/\@shopify\/theme-check-(node|common|browser|docs-updater)/.test(x) &&
+        !/theme-check-vscode/.test(x),
+    );
 }
 
 function globJoin(...parts: string[]): string {

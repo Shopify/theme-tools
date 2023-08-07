@@ -30,6 +30,7 @@
   },
   "scripts": {
     "build": "yarn build:ci",
+    "build:ts": "true",
     "build:ci": "yarn build:extension && yarn build:language-config && yarn build:syntax",
     "build:extension": "webpack --mode production",
     "build:language-config": "node scripts/make-language-configuration",
