@@ -47,14 +47,10 @@ function getConfig(path: string) {
 export async function activate(extensionContext: ExtensionContext) {
   context = extensionContext;
 
-  context.subscriptions.push(
-    commands.registerCommand('shopifyLiquid.restart', restartServer),
-  );
+  context.subscriptions.push(commands.registerCommand('shopifyLiquid.restart', restartServer));
   context.subscriptions.push(
     commands.registerCommand('shopifyLiquid.runChecks', () => {
-      const isRubyLanguageServer = !getConfig(
-        'shopifyLiquid.onlineStoreCodeEditorMode',
-      );
+      const isRubyLanguageServer = !getConfig('shopifyLiquid.onlineStoreCodeEditorMode');
       client!.sendRequest('workspace/executeCommand', {
         command: isRubyLanguageServer ? 'runChecks' : 'themeCheck/runChecks',
       });
@@ -62,9 +58,7 @@ export async function activate(extensionContext: ExtensionContext) {
   );
 
   const diagnosticTextDocumentVersion = new Map<Uri, number>();
-  const diagnosticCollection = languages.createDiagnosticCollection(
-    'prettier-plugin-liquid',
-  );
+  const diagnosticCollection = languages.createDiagnosticCollection('prettier-plugin-liquid');
   context.subscriptions.push(diagnosticCollection);
 
   const formattingProvider = languages.registerDocumentFormattingEditProvider(
@@ -77,9 +71,7 @@ export async function activate(extensionContext: ExtensionContext) {
 
   // If you change the file, the prettier syntax error is no longer valid
   workspace.onDidChangeTextDocument(({ document }) => {
-    const bufferVersionOfDiagnostic = diagnosticTextDocumentVersion.get(
-      document.uri,
-    );
+    const bufferVersionOfDiagnostic = diagnosticTextDocumentVersion.get(document.uri);
     if (bufferVersionOfDiagnostic !== document.version) {
       diagnosticCollection.delete(document.uri);
     }
@@ -144,23 +136,13 @@ async function restartServer() {
   await startServer();
 }
 
-function onConfigChange(event: {
-  affectsConfiguration: (arg0: string) => any;
-}) {
-  const didChangeThemeCheck = event.affectsConfiguration(
-    'shopifyLiquid.languageServerPath',
-  );
-  const didChangeShopifyCLI = event.affectsConfiguration(
-    'shopifyLiquid.shopifyCLIPath',
-  );
+function onConfigChange(event: { affectsConfiguration: (arg0: string) => any }) {
+  const didChangeThemeCheck = event.affectsConfiguration('shopifyLiquid.languageServerPath');
+  const didChangeShopifyCLI = event.affectsConfiguration('shopifyLiquid.shopifyCLIPath');
   const didChangeOnlineStoreCodeEditorMode = event.affectsConfiguration(
     'shopifyLiquid.onlineStoreCodeEditorMode',
   );
-  if (
-    didChangeThemeCheck ||
-    didChangeShopifyCLI ||
-    didChangeOnlineStoreCodeEditorMode
-  ) {
+  if (didChangeThemeCheck || didChangeShopifyCLI || didChangeOnlineStoreCodeEditorMode) {
     restartServer();
   }
 }
@@ -176,9 +158,7 @@ async function getServerOptions(): Promise<ServerOptions | undefined> {
   }
 
   if (getConfig('shopifyLiquid.onlineStoreCodeEditorMode')) {
-    const serverModule = context!.asAbsolutePath(
-      path.join('dist', 'server.js'),
-    );
+    const serverModule = context!.asAbsolutePath(path.join('dist', 'server.js'));
     return {
       run: {
         module: serverModule,
@@ -195,12 +175,8 @@ async function getServerOptions(): Promise<ServerOptions | undefined> {
     };
   }
 
-  const themeCheckPath = getConfig('shopifyLiquid.languageServerPath') as
-    | string
-    | undefined;
-  const shopifyCLIPath = getConfig('shopifyLiquid.shopifyCLIPath') as
-    | string
-    | undefined;
+  const themeCheckPath = getConfig('shopifyLiquid.languageServerPath') as string | undefined;
+  const shopifyCLIPath = getConfig('shopifyLiquid.shopifyCLIPath') as string | undefined;
 
   try {
     const executable: ServerOptions | undefined =
@@ -262,9 +238,7 @@ async function getThemeCheckExecutable(): Promise<ServerOptions | undefined> {
   }
 }
 
-async function shopifyCLIExecutable(
-  command: string | boolean,
-): Promise<ServerOptions | undefined> {
+async function shopifyCLIExecutable(command: string | boolean): Promise<ServerOptions | undefined> {
   if (isWin || typeof command !== 'string' || command === '') {
     return;
   }
@@ -274,9 +248,7 @@ async function shopifyCLIExecutable(
   };
 }
 
-async function themeCheckExecutable(
-  command: string | boolean,
-): Promise<ServerOptions | undefined> {
+async function themeCheckExecutable(command: string | boolean): Promise<ServerOptions | undefined> {
   if (typeof command !== 'string' || command === '') {
     return undefined;
   }
@@ -290,8 +262,6 @@ async function commandExists(command: string): Promise<void> {
   try {
     !isWin && (await exec(`[ -f "${command}" ]`));
   } catch (e) {
-    throw new CommandNotFoundError(
-      `${command} not found, are you sure this is the correct path?`,
-    );
+    throw new CommandNotFoundError(`${command} not found, are you sure this is the correct path?`);
   }
 }

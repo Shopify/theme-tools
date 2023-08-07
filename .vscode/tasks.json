@@ -1,0 +1,22 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+    {
+      "type": "npm",
+      "script": "build:extension:dev",
+      "path": "packages/vscode-extension",
+      "group": "build",
+      "label": "npm: build:extension:dev - packages/vscode-extension",
+      "detail": "webpack --mode development",
+      "dependsOn": "npm: build:ts"
+    },
+    {
+      "type": "npm",
+      "script": "build:ts",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: build:ts",
+      "detail": "yarn workspaces run build:ts"
+    }
+  ],
+}

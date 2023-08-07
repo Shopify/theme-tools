@@ -10,12 +10,11 @@
 			"request": "launch",
 			"name": "Launch Client",
 			"runtimeExecutable": "${execPath}",
-			"args": ["--extensionDevelopmentPath=${workspaceRoot}" ],
+			"args": ["--extensionDevelopmentPath=${workspaceRoot}/packages/vscode-extension" ],
 			"autoAttachChildProcesses": true,
 			"sourceMaps": true,
-			"outFiles": ["${workspaceRoot}/dist/**/*.js"],
-			"preLaunchTask": "${defaultBuildTask}"
+			"outFiles": ["${workspaceRoot}/packages/vscode-extension/dist/**/*.js"],
+			"preLaunchTask": "npm: build:extension:dev - packages/vscode-extension"
 		},
-
 	]
 }
