@@ -30,11 +30,12 @@
   },
   "scripts": {
     "build": "yarn build:ci",
-    "build:ts": "true",
     "build:ci": "yarn build:extension && yarn build:language-config && yarn build:syntax",
     "build:extension": "webpack --mode production",
+    "build:extension:dev": "webpack --mode development",
     "build:language-config": "node scripts/make-language-configuration",
     "build:syntax": "yarn --cwd ./syntaxes build",
+    "build:ts": "true",
     "dev": "rimraf dist && yarn dev:watch",
     "dev:build": "webpack --mode development",
     "dev:syntax": "yarn --cwd ./syntaxes dev",
@@ -56,14 +57,14 @@
     "vscode": "^1.74.0"
   },
   "dependencies": {
+    "@shopify/liquid-language-server-node": "^1.3.3",
     "@shopify/prettier-plugin-liquid": "^1.1.0",
     "prettier": "^2.6.2",
     "vsce": "^1.87.0",
-    "vscode-languageclient": "^8.0.0"
+    "vscode-languageclient": "^8.1.0"
   },
   "devDependencies": {
     "@types/glob": "^8.0.0",
-    "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
     "@types/prettier": "^2.4.2",
     "@types/vscode": "^1.74.0",
@@ -114,6 +115,13 @@
           ],
           "default": null,
           "description": "Path to theme-check-language-server. Defaults to `which theme-check-language-server` if available on `$PATH`."
+        },
+        "shopifyLiquid.onlineStoreCodeEditorMode": {
+          "type": [
+            "boolean"
+          ],
+          "description": "When true, will use @shopify/liquid-language-server-node instead of the ruby version.",
+          "default": false
         },
         "shopifyLiquid.disableWindowsWarning": {
           "type": [
