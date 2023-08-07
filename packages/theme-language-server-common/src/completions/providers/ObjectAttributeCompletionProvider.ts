@@ -47,12 +47,12 @@ export class ObjectAttributeCompletionProvider implements Provider {
     }
 
     const partial = lastLookup.value.replace(CURSOR, '');
-    const [symbolsMap, globalVariables] = await Promise.all([
+    const [symbolsMap, seedSymbolsTable] = await Promise.all([
       this.symbolsMap(),
-      this.globalVariables(),
+      this.seedSymbolsTable(),
     ]);
 
-    const symbolsTable = buildSymbolsTable(partialAst, globalVariables);
+    const symbolsTable = buildSymbolsTable(partialAst, seedSymbolsTable);
 
     // Fake a VaraiableLookup up to the last one.
     const parentLookup = { ...node };
@@ -85,6 +85,33 @@ export class ObjectAttributeCompletionProvider implements Provider {
     );
   });
 
+  /**
+   * The seedSymbolsTable contains all the global variables.
+   *
+   * This lets us have the ambient type of things first, but if someone
+   * reassigns product, then we'll be able to change the type of product on
+   * the appropriate range.
+   *
+   * This is not memo'ed because we would otherwise need to clone the thing.
+   */
+  private seedSymbolsTable = async () => {
+    const globalVariables = await this.globalVariables();
+    return globalVariables.reduce((table, objectEntry) => {
+      table[objectEntry.name] ??= [];
+      table[objectEntry.name].push({
+        identifier: objectEntry.name,
+        type: objectEntryType(objectEntry),
+        range: [0],
+      });
+      return table;
+    }, {} as SymbolsTable);
+  };
+
+  /**
+   * An indexed representation of objects.json by name
+   *
+   * e.g. symbolsMap['product'] returns the product ObjectEntry.
+   */
   private symbolsMap = memo(async (): Promise<SymbolsMap> => {
     const entries = await this.objectEntries();
     return entries.reduce((map, entry) => {
@@ -95,7 +122,7 @@ export class ObjectAttributeCompletionProvider implements Provider {
 }
 
 /** An indexed representation on objects.json (by name) */
-type SymbolsMap = Record<PseudoType, ObjectEntry>;
+type SymbolsMap = Record<ObjectEntryName, ObjectEntry>;
 
 /** An identifier refers to the name of a variable, e.g. `x`, `product`, etc. */
 type Identifier = string;
@@ -104,7 +131,7 @@ type Identifier = string;
 type ObjectEntryName = ObjectEntry['name'];
 
 /** A pseudo-type is what ObjectEntry return types refer to */
-type PseudoType = ObjectEntryName | 'string' | 'number' | 'untyped';
+type PseudoType = ObjectEntryName | 'string' | 'number' | 'boolean' | 'untyped';
 
 /** Some things can be an array type (e.g. product.images) */
 type ArrayType = {
@@ -112,7 +139,6 @@ type ArrayType = {
   array_value: PseudoType;
 };
 
-/** We're using null to mean we don't know the type of this thing */
 const Untyped = 'untyped' as const;
 type Untyped = typeof Untyped;
 
@@ -200,7 +226,7 @@ const lazyLookup = (node: LiquidVariableLookup, offset: number): LazyVariableLoo
 //
 function buildSymbolsTable(
   partialAst: LiquidHtmlNode,
-  globalVariables: ObjectEntry[],
+  seedSymbolsTable: SymbolsTable,
 ): SymbolsTable {
   const entries = visit<SourceCodeType.LiquidHtml, TypeRange>(partialAst, {
     // {% assign x = foo.x | filter %}
@@ -237,23 +263,13 @@ function buildSymbolsTable(
     },
   });
 
-  const seededTable = globalVariables.reduce((table, objectEntry) => {
-    table[objectEntry.name] ??= [];
-    table[objectEntry.name].push({
-      identifier: objectEntry.name,
-      type: objectEntryType(objectEntry),
-      range: [0],
-    });
-    return table;
-  }, {} as SymbolsTable);
-
   return entries
     .sort(({ range: [startA] }, { range: [startB] }) => startA - startB)
     .reduce((table, typeRange) => {
       table[typeRange.identifier] ??= [];
       table[typeRange.identifier].push(typeRange);
       return table;
-    }, seededTable);
+    }, seedSymbolsTable);
 }
 
 function end(offset: number | undefined): number | undefined {
