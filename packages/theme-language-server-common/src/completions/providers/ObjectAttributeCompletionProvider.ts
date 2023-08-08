@@ -8,17 +8,20 @@ import {
   ObjectEntry,
   ReturnType,
   ArrayReturnType,
+  FilterEntry,
 } from '@shopify/theme-check-common';
 import { Provider, createCompletionItem, sortByName } from './common';
 import { CURSOR, LiquidCompletionParams } from '../params';
 import { visit } from '../../visitor';
 import { findLast, memo } from '../../utils';
+import { LiquidExpression } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
 
 type LiquidTag = NodeOfType<NodeTypes.LiquidTag>;
 type LiquidVariable = NodeOfType<NodeTypes.LiquidVariable>;
 type LiquidVariableLookup = NodeOfType<NodeTypes.VariableLookup>;
 
-const ArrayTypeOptions = ['empty?', 'size', 'first', 'last'];
+const ArrayCoreProperties = ['size', 'first', 'last'] as const;
+const StringCoreProperties = ['size'] as const;
 
 function toPropertyCompletionItem(object: ObjectEntry) {
   return createCompletionItem(object, { kind: CompletionItemKind.Variable });
@@ -47,43 +50,38 @@ export class ObjectAttributeCompletionProvider implements Provider {
     }
 
     const partial = lastLookup.value.replace(CURSOR, '');
-    const [symbolsMap, seedSymbolsTable] = await Promise.all([
-      this.symbolsMap(),
-      this.seedSymbolsTable(),
+    const [objectMap, filtersMap, symbolsTable] = await Promise.all([
+      this.objectMap(),
+      this.filtersMap(),
+      this.symbolsTable(partialAst),
     ]);
 
-    const symbolsTable = buildSymbolsTable(partialAst, seedSymbolsTable);
-
-    // Fake a VaraiableLookup up to the last one.
+    // Fake a VariableLookup up to the last one.
     const parentLookup = { ...node };
     parentLookup.lookups = [...parentLookup.lookups];
     parentLookup.lookups.pop();
 
-    const parentType = inferType(parentLookup, symbolsTable, symbolsMap);
+    const parentType = inferType(parentLookup, symbolsTable, objectMap, filtersMap);
     if (isArrayType(parentType)) {
-      return ArrayTypeOptions.filter((name) => name.startsWith(partial))
-        .map((name) => ({ name }))
-        .map(toPropertyCompletionItem);
+      return completionItems(
+        ArrayCoreProperties.map((name) => ({ name })),
+        partial,
+      );
+    } else if (parentType === 'string') {
+      return completionItems(
+        StringCoreProperties.map((name) => ({ name })),
+        partial,
+      );
     }
 
-    const options = symbolsMap[parentType]?.properties || [];
-
-    return options
-      .filter(({ name }) => name.startsWith(partial))
-      .sort(sortByName)
-      .map(toPropertyCompletionItem);
+    const parentTypeProperties = objectMap[parentType]?.properties || [];
+    return completionItems(parentTypeProperties, partial);
   }
 
-  private objectEntries = memo(async () => {
-    return this.themeDocset.objects();
-  });
-
-  private globalVariables = memo(async () => {
-    const entries = await this.objectEntries();
-    return entries.filter(
-      (entry) => !entry.access || entry.access.global === true || entry.access.template.length > 0,
-    );
-  });
+  private async symbolsTable(partialAst: LiquidHtmlNode): Promise<SymbolsTable> {
+    const seedSymbolsTable = await this.seedSymbolsTable();
+    return buildSymbolsTable(partialAst, seedSymbolsTable);
+  }
 
   /**
    * The seedSymbolsTable contains all the global variables.
@@ -110,34 +108,62 @@ export class ObjectAttributeCompletionProvider implements Provider {
   /**
    * An indexed representation of objects.json by name
    *
-   * e.g. symbolsMap['product'] returns the product ObjectEntry.
+   * e.g. objectMap['product'] returns the product ObjectEntry.
    */
-  private symbolsMap = memo(async (): Promise<SymbolsMap> => {
+  private objectMap = memo(async (): Promise<ObjectMap> => {
     const entries = await this.objectEntries();
     return entries.reduce((map, entry) => {
       map[entry.name] = entry;
       return map;
-    }, {} as SymbolsMap);
+    }, {} as ObjectMap);
+  });
+
+  /** An indexed representation of filters.json by name */
+  private filtersMap = memo(async (): Promise<FiltersMap> => {
+    const entries = await this.filterEntries();
+    return entries.reduce((map, entry) => {
+      map[entry.name] = entry;
+      return map;
+    }, {} as FiltersMap);
+  });
+
+  private filterEntries = memo(async () => {
+    return this.themeDocset.filters();
+  });
+
+  private objectEntries = memo(async () => {
+    return this.themeDocset.objects();
+  });
+
+  private globalVariables = memo(async () => {
+    const entries = await this.objectEntries();
+    return entries.filter(
+      (entry) => !entry.access || entry.access.global === true || entry.access.template.length > 0,
+    );
   });
 }
 
+function completionItems(options: ObjectEntry[], partial: string) {
+  return options
+    .filter(({ name }) => name.startsWith(partial))
+    .sort(sortByName)
+    .map(toPropertyCompletionItem);
+}
+
 /** An indexed representation on objects.json (by name) */
-type SymbolsMap = Record<ObjectEntryName, ObjectEntry>;
+type ObjectMap = Record<ObjectEntryName, ObjectEntry>;
+
+/** An indexed representation on objects.json (by name) */
+type FiltersMap = Record<FilterEntryName, FilterEntry>;
 
 /** An identifier refers to the name of a variable, e.g. `x`, `product`, etc. */
 type Identifier = string;
 
-/** Object entries also declare the type of things */
 type ObjectEntryName = ObjectEntry['name'];
+type FilterEntryName = FilterEntry['name'];
 
 /** A pseudo-type is what ObjectEntry return types refer to */
 type PseudoType = ObjectEntryName | 'string' | 'number' | 'boolean' | 'untyped';
-
-/** Some things can be an array type (e.g. product.images) */
-type ArrayType = {
-  type: 'array';
-  array_value: PseudoType;
-};
 
 const Untyped = 'untyped' as const;
 type Untyped = typeof Untyped;
@@ -159,15 +185,11 @@ type String = typeof String;
  *   {{ x }} # string
  */
 interface TypeRange {
-  /**
-   * The name of the variable
-   */
+  /** The name of the variable */
   identifier: Identifier;
 
-  /**
-   * The type of the variable
-   */
-  type: PseudoType | ArrayType | LazyVariableLookupType | LazyVariableType;
+  /** The type of the variable */
+  type: PseudoType | ArrayType | LazyVariableType | LazyDeconstructedExpression;
 
   /**
    * The range may be one of two things:
@@ -177,15 +199,15 @@ interface TypeRange {
   range: [start: number, end?: number];
 }
 
-/**
- * Because a type may depend on another, this represents the type of
- * something as the type of some other lookup.
- */
-type LazyVariableLookupType = {
-  type: NodeTypes.VariableLookup;
-  node: LiquidVariableLookup;
-  offset: number;
+/** Some things can be an array type (e.g. product.images) */
+type ArrayType = {
+  kind: 'array';
+  valueType: PseudoType;
 };
+const arrayType = (valueType: PseudoType): ArrayType => ({
+  kind: 'array',
+  valueType,
+});
 
 /**
  * Because a type may depend on another, this represents the type of
@@ -193,10 +215,38 @@ type LazyVariableLookupType = {
  * {{ x.foo | filter1 | filter2 }}
  */
 type LazyVariableType = {
-  type: NodeTypes.LiquidVariable;
+  kind: NodeTypes.LiquidVariable;
   node: LiquidVariable;
   offset: number;
 };
+const lazyVariable = (node: LiquidVariable, offset: number): LazyVariableType => ({
+  kind: NodeTypes.LiquidVariable,
+  node,
+  offset,
+});
+
+/**
+ * A thing may be the deconstruction of something else.
+ *
+ * examples
+ * - for thing in (0..2)
+ * - for thing in collection
+ * - for thing in parent.collection
+ * - for thing in 'string?'
+ */
+type LazyDeconstructedExpression = {
+  kind: 'deconstructed';
+  node: LiquidExpression;
+  offset: number;
+};
+const LazyDeconstructedExpression = (
+  node: LiquidExpression,
+  offset: number,
+): LazyDeconstructedExpression => ({
+  kind: 'deconstructed',
+  node,
+  offset,
+});
 
 /**
  * A symbols table is a map of identifiers to TypeRanges.
@@ -207,23 +257,6 @@ type LazyVariableType = {
  */
 type SymbolsTable = Record<Identifier, TypeRange[]>;
 
-const lazyVariable = (node: LiquidVariable, offset: number): LazyVariableType => ({
-  type: NodeTypes.LiquidVariable,
-  node,
-  offset,
-});
-
-const lazyLookup = (node: LiquidVariableLookup, offset: number): LazyVariableLookupType => ({
-  type: NodeTypes.VariableLookup,
-  node,
-  offset,
-});
-
-// const lazyArrayLookup = (
-//   node: LiquidVariableLookup,
-//   offset: number,
-// )
-//
 function buildSymbolsTable(
   partialAst: LiquidHtmlNode,
   seedSymbolsTable: SymbolsTable,
@@ -244,7 +277,7 @@ function buildSymbolsTable(
 
       return {
         identifier: node.variableName,
-        type: lazyLookup(node.collection as LiquidVariableLookup, node.position.start),
+        type: LazyDeconstructedExpression(node.collection, node.position.start),
         range: [node.position.end, end(parentNode.blockEndPosition?.end)],
       };
     },
@@ -277,15 +310,26 @@ function end(offset: number | undefined): number | undefined {
   return offset;
 }
 
+function filterEntryReturnType(entry: FilterEntry): PseudoType | ArrayType {
+  const returnTypes = entry.return_type;
+  if (returnTypes && returnTypes.length > 0) {
+    const returnType = returnTypes[0];
+    if (isArrayReturnType(returnType)) {
+      return arrayType(returnType.array_value);
+    } else {
+      return returnType.type;
+    }
+  }
+
+  return 'string';
+}
+
 function objectEntryType(entry: ObjectEntry): PseudoType | ArrayType {
   const returnTypes = entry.return_type;
   if (returnTypes && returnTypes.length > 0) {
     const returnType = returnTypes[0];
     if (isArrayReturnType(returnType)) {
-      return {
-        type: 'array',
-        array_value: returnType.array_value,
-      };
+      return arrayType(returnType.array_value);
     } else {
       return returnType.type;
     }
@@ -297,7 +341,8 @@ function objectEntryType(entry: ObjectEntry): PseudoType | ArrayType {
 function inferIdentifierType(
   node: LiquidVariableLookup,
   symbolsTable: SymbolsTable,
-  symbolsMap: SymbolsMap,
+  objectMap: ObjectMap,
+  filtersMap: FiltersMap,
 ) {
   // The name of a variable
   const identifier = node.name;
@@ -310,109 +355,88 @@ function inferIdentifierType(
   // {% assign x = x.foo %}
   const typeRange = findLast(typeRanges, (tr) => isCorrectTypeRange(tr, node));
 
-  return typeRange ? resolveType(typeRange, symbolsTable, symbolsMap) : Untyped;
+  return typeRange ? resolveType(typeRange, symbolsTable, objectMap, filtersMap) : Untyped;
 }
 
 function resolveType(
   typeRange: TypeRange,
   symbolsTable: SymbolsTable,
-  symbolsMap: SymbolsMap,
+  objectMap: ObjectMap,
+  filtersMap: FiltersMap,
 ): PseudoType | ArrayType {
-  if (typeof typeRange.type === 'string' || typeRange.type.type === 'array') {
+  if (typeof typeRange.type === 'string') {
     return typeRange.type;
-  } else {
-    return inferType(typeRange.type.node, symbolsTable, symbolsMap);
+  }
+
+  const type = typeRange.type;
+
+  switch (type.kind) {
+    case 'array': {
+      return type;
+    }
+
+    case 'deconstructed': {
+      const arrayType = inferType(type.node, symbolsTable, objectMap, filtersMap);
+      if (typeof arrayType === 'string') {
+        return Untyped;
+      } else {
+        return arrayType.valueType;
+      }
+    }
+
+    default: {
+      return inferType(type.node, symbolsTable, objectMap, filtersMap);
+    }
   }
 }
 
 function inferType(
-  thing: Identifier | LiquidVariableLookup | LiquidVariable,
+  thing: Identifier | LiquidExpression | LiquidVariable,
   symbolsTable: SymbolsTable,
-  symbolsMap: SymbolsMap,
+  objectMap: ObjectMap,
+  filtersMap: FiltersMap,
 ): PseudoType | ArrayType {
   if (typeof thing === 'string') {
-    return symbolsMap[thing as PseudoType]?.name ?? Untyped;
+    return objectMap[thing as PseudoType]?.name ?? Untyped;
   }
 
-  // {% assign x = y.property %}
-  if (
-    thing.type === NodeTypes.LiquidVariable &&
-    thing.filters.length === 0 &&
-    thing.expression.type === NodeTypes.VariableLookup
-  ) {
-    return inferType(thing.expression, symbolsTable, symbolsMap);
-  }
-
-  if (thing.type === NodeTypes.VariableLookup) {
-    // we return the type of the drop, so a.b.c
-    const node = thing;
-    if (node.name === null) return Untyped;
-
-    let curr = inferIdentifierType(node, symbolsTable, symbolsMap);
-
-    for (let lookup of node.lookups) {
-      // This part infers the type of a lookup on an ArrayType
-      // - images[0] becomes 'image'
-      // - images[index] becomes 'image'
-      // - images.first becomes 'image'
-      // - images.last becomes 'image'
-      // - images.empty? becomes 'boolean'
-      // - images.size becomes 'number'
-      // - anything else becomes 'untyped'
-      if (isArrayType(curr)) {
-        if (lookup.type === NodeTypes.Number || lookup.type === NodeTypes.VariableLookup) {
-          curr = curr.array_value;
-        } else if (lookup.type === NodeTypes.String) {
-          switch (lookup.value) {
-            // images.empty?
-            case 'empty?': {
-              curr = 'boolean';
-              break;
-            }
-
-            // images.first
-            case 'first':
-            case 'last': {
-              curr = curr.array_value;
-              break;
-            }
-
-            // images.size
-            case 'size': {
-              curr = 'number';
-              break;
-            }
-
-            default: {
-              return Untyped;
-            }
-          }
-        } else {
-          return Untyped;
-        }
-
-        continue;
-      }
-
-      const entry: ObjectEntry | undefined = symbolsMap[curr];
-      if (!entry || lookup.type !== NodeTypes.String) {
-        return Untyped;
-      }
-
-      const lookupName = lookup.value;
-      const property = entry.properties?.find((property) => property.name === lookupName);
-
-      if (!property) return Untyped;
-
-      curr = objectEntryType(property);
-
-      if (curr === Untyped) return Untyped;
+  switch (thing.type) {
+    case NodeTypes.Number: {
+      return 'number';
     }
 
-    return curr;
-  }
+    case NodeTypes.String: {
+      return 'string';
+    }
 
-  return Untyped;
+    case NodeTypes.LiquidLiteral: {
+      return 'boolean';
+    }
+
+    case NodeTypes.Range: {
+      return arrayType('number');
+    }
+
+    // {% assign x = y.property %}
+    case NodeTypes.VariableLookup: {
+      return inferLookupType(thing, symbolsTable, objectMap, filtersMap);
+    }
+
+    // {% assign x = y.property | filter1 | filter2 %}
+    case NodeTypes.LiquidVariable: {
+      if (thing.filters.length > 0) {
+        const lastFilter = thing.filters.at(-1)!;
+        const filterEntry = filtersMap[lastFilter.name];
+        return filterEntry ? filterEntryReturnType(filterEntry) : Untyped;
+      } else {
+        return inferType(thing.expression, symbolsTable, objectMap, filtersMap);
+      }
+    }
+
+    default: {
+      return Untyped;
+    }
+  }
 }
 
 function isArrayReturnType(rt: ReturnType): rt is ArrayReturnType {
@@ -428,4 +452,71 @@ function isCorrectTypeRange(typeRange: TypeRange, node: LiquidVariableLookup): b
   const [start, end] = typeRange.range;
   if (end && node.position.start > end) return false;
   return node.position.start > start;
+}
+
+function inferLookupType(
+  thing: LiquidVariableLookup,
+  symbolsTable: SymbolsTable,
+  objectMap: ObjectMap,
+  filtersMap: FiltersMap,
+) {
+  // we return the type of the drop, so a.b.c
+  const node = thing;
+  if (node.name === null) return Untyped;
+
+  let curr = inferIdentifierType(node, symbolsTable, objectMap, filtersMap);
+
+  for (let lookup of node.lookups) {
+    // This part infers the type of a lookup on an ArrayType
+    // - images[0] becomes 'image'
+    // - images[index] becomes 'image'
+    // - images.first becomes 'image'
+    // - images.last becomes 'image'
+    // - images.size becomes 'number'
+    // - anything else becomes 'untyped'
+    if (isArrayType(curr)) {
+      if (lookup.type === NodeTypes.Number || lookup.type === NodeTypes.VariableLookup) {
+        curr = curr.valueType;
+      } else if (lookup.type === NodeTypes.String) {
+        switch (lookup.value) {
+          // images.first
+          case 'first':
+          case 'last': {
+            curr = curr.valueType;
+            break;
+          }
+
+          // images.size
+          case 'size': {
+            curr = 'number';
+            break;
+          }
+
+          default: {
+            return Untyped;
+          }
+        }
+      } else {
+        return Untyped;
+      }
+
+      continue;
+    }
+
+    const entry: ObjectEntry | undefined = objectMap[curr];
+    if (!entry || lookup.type !== NodeTypes.String) {
+      return Untyped;
+    }
+
+    const lookupName = lookup.value;
+    const property = entry.properties?.find((property) => property.name === lookupName);
+
+    if (!property) return Untyped;
+
+    curr = objectEntryType(property);
+
+    if (curr === Untyped) return Untyped;
+  }
+
+  return curr;
 }
