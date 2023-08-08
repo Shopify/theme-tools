@@ -459,7 +459,7 @@ function inferLookupType(
   symbolsTable: SymbolsTable,
   objectMap: ObjectMap,
   filtersMap: FiltersMap,
-) {
+): PseudoType | ArrayType {
   // we return the type of the drop, so a.b.c
   const node = thing;
   if (node.name === null) return Untyped;
