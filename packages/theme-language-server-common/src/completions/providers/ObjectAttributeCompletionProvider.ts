@@ -261,7 +261,7 @@ function buildSymbolsTable(
   partialAst: LiquidHtmlNode,
   seedSymbolsTable: SymbolsTable,
 ): SymbolsTable {
-  const entries = visit<SourceCodeType.LiquidHtml, TypeRange>(partialAst, {
+  const typeRanges = visit<SourceCodeType.LiquidHtml, TypeRange>(partialAst, {
     // {% assign x = foo.x | filter %}
     AssignMarkup(node) {
       return {
@@ -296,7 +296,7 @@ function buildSymbolsTable(
     },
   });
 
-  return entries
+  return typeRanges
     .sort(({ range: [startA] }, { range: [startB] }) => startA - startB)
     .reduce((table, typeRange) => {
       table[typeRange.identifier] ??= [];
@@ -305,78 +305,29 @@ function buildSymbolsTable(
     }, seedSymbolsTable);
 }
 
-function end(offset: number | undefined): number | undefined {
-  if (offset === -1) return undefined;
-  return offset;
-}
-
-function filterEntryReturnType(entry: FilterEntry): PseudoType | ArrayType {
-  const returnTypes = entry.return_type;
-  if (returnTypes && returnTypes.length > 0) {
-    const returnType = returnTypes[0];
-    if (isArrayReturnType(returnType)) {
-      return arrayType(returnType.array_value);
-    } else {
-      return returnType.type;
-    }
-  }
-
-  return 'string';
-}
-
-function objectEntryType(entry: ObjectEntry): PseudoType | ArrayType {
-  const returnTypes = entry.return_type;
-  if (returnTypes && returnTypes.length > 0) {
-    const returnType = returnTypes[0];
-    if (isArrayReturnType(returnType)) {
-      return arrayType(returnType.array_value);
-    } else {
-      return returnType.type;
-    }
-  }
-
-  return entry.name;
-}
-
-function inferIdentifierType(
-  node: LiquidVariableLookup,
-  symbolsTable: SymbolsTable,
-  objectMap: ObjectMap,
-  filtersMap: FiltersMap,
-) {
-  // The name of a variable
-  const identifier = node.name;
-  if (!identifier) {
-    return Untyped;
-  }
-
-  const typeRanges = symbolsTable[identifier];
-
-  // {% assign x = x.foo %}
-  const typeRange = findLast(typeRanges, (tr) => isCorrectTypeRange(tr, node));
-
-  return typeRange ? resolveType(typeRange, symbolsTable, objectMap, filtersMap) : Untyped;
-}
-
-function resolveType(
-  typeRange: TypeRange,
+/**
+ * Given a TypeRange['type'] (which may be lazy), resolve its type recursively.
+ *
+ * The output is a fully resolved PseudoType | ArrayType. Which means we
+ * could use it to power completions.
+ */
+function resolveTypeRangeType(
+  typeRangeType: TypeRange['type'],
   symbolsTable: SymbolsTable,
   objectMap: ObjectMap,
   filtersMap: FiltersMap,
 ): PseudoType | ArrayType {
-  if (typeof typeRange.type === 'string') {
-    return typeRange.type;
+  if (typeof typeRangeType === 'string') {
+    return typeRangeType;
   }
 
-  const type = typeRange.type;
-
-  switch (type.kind) {
+  switch (typeRangeType.kind) {
     case 'array': {
-      return type;
+      return typeRangeType;
     }
 
     case 'deconstructed': {
-      const arrayType = inferType(type.node, symbolsTable, objectMap, filtersMap);
+      const arrayType = inferType(typeRangeType.node, symbolsTable, objectMap, filtersMap);
       if (typeof arrayType === 'string') {
         return Untyped;
       } else {
@@ -385,7 +336,7 @@ function resolveType(
     }
 
     default: {
-      return inferType(type.node, symbolsTable, objectMap, filtersMap);
+      return inferType(typeRangeType.node, symbolsTable, objectMap, filtersMap);
     }
   }
 }
@@ -439,6 +390,187 @@ function inferType(
   }
 }
 
+function inferLookupType(
+  thing: LiquidVariableLookup,
+  symbolsTable: SymbolsTable,
+  objectMap: ObjectMap,
+  filtersMap: FiltersMap,
+): PseudoType | ArrayType {
+  // we return the type of the drop, so a.b.c
+  const node = thing;
+
+  // We don't complete global lookups. It's too much of an edge case.
+  if (node.name === null) return Untyped;
+
+  /**
+   * curr stores the type of the variable lookup starting at the beginning.
+   *
+   * It starts as the type of the top-level identifier, and the we
+   * recursively change it to the return type of the lookups.
+   *
+   * So, for x.images.first.src we do:
+   * - curr = infer type of x                   | x
+   * - curr = x.images -> ArrayType<image>      | x.images
+   * - curr = images.first -> image             | x.images.first
+   * - curr = first.src -> string               | x.images.first.src
+   *
+   * Once were done iterating, the type of the lookup is curr.
+   */
+  let curr = inferIdentifierType(node, symbolsTable, objectMap, filtersMap);
+
+  for (let lookup of node.lookups) {
+    // Here we redefine curr to be the returnType of the lookup.
+
+    // e.g. images[0] -> image
+    // e.g. images.first -> image
+    // e.g. images.size -> number
+    if (isArrayType(curr)) {
+      curr = inferArrayTypeLookupType(curr, lookup);
+    }
+
+    // e.g. product.featured_image -> image
+    // e.g. product.images -> ArrayType<images>
+    // e.g. product.name -> string
+    else {
+      curr = inferPseudoTypePropertyType(curr, lookup, objectMap);
+    }
+
+    // Early return
+    if (curr === Untyped) {
+      return Untyped;
+    }
+  }
+
+  return curr;
+}
+
+/**
+ * Given a VariableLookup node, infer the type of its root (position-relative).
+ *
+ * e.g. for the following
+ *   {% assign x = product %}
+ *   {{ x.images.first }}
+ *
+ * This function infers the type of `x`.
+ */
+function inferIdentifierType(
+  node: LiquidVariableLookup,
+  symbolsTable: SymbolsTable,
+  objectMap: ObjectMap,
+  filtersMap: FiltersMap,
+) {
+  // The name of a variable
+  const identifier = node.name;
+
+  // We don't complete the global access edge case
+  // e.g. {{ ['all_products'] }}
+  if (!identifier) {
+    return Untyped;
+  }
+
+  const typeRanges = symbolsTable[identifier];
+  const typeRange = findLast(typeRanges, (tr) => isCorrectTypeRange(tr, node));
+
+  return typeRange
+    ? resolveTypeRangeType(typeRange.type, symbolsTable, objectMap, filtersMap)
+    : Untyped;
+}
+
+/**
+ * infers the type of a lookup on an ArrayType
+ * - images[0] becomes 'image'
+ * - images[index] becomes 'image'
+ * - images.first becomes 'image'
+ * - images.last becomes 'image'
+ * - images.size becomes 'number'
+ * - anything else becomes 'untyped'
+ */
+function inferArrayTypeLookupType(curr: ArrayType, lookup: LiquidExpression) {
+  // images[0]
+  // images[index]
+  if (lookup.type === NodeTypes.Number || lookup.type === NodeTypes.VariableLookup) {
+    return curr.valueType;
+  }
+  // images.first
+  // images.last
+  // images.size
+  // anything else is undef
+  else if (lookup.type === NodeTypes.String) {
+    switch (lookup.value) {
+      case 'first':
+      case 'last': {
+        return curr.valueType;
+      }
+
+      case 'size': {
+        return 'number';
+      }
+
+      default: {
+        return Untyped;
+      }
+    }
+  }
+  // images[true]
+  // images[(0..2)]
+  else {
+    return Untyped;
+  }
+}
+
+function inferPseudoTypePropertyType(
+  curr: PseudoType,
+  lookup: LiquidExpression,
+  objectMap: ObjectMap,
+) {
+  const parentEntry: ObjectEntry | undefined = objectMap[curr];
+
+  // products[0]
+  // products[true]
+  // products[(0..10)]
+  // unknown.images
+  if (!parentEntry || lookup.type !== NodeTypes.String) {
+    return Untyped;
+  }
+
+  const propertyName = lookup.value;
+  const property = parentEntry.properties?.find((property) => property.name === propertyName);
+  if (!property) {
+    return Untyped;
+  }
+
+  return objectEntryType(property);
+}
+
+function filterEntryReturnType(entry: FilterEntry): PseudoType | ArrayType {
+  return docsetEntryReturnType(entry, 'string');
+}
+
+function objectEntryType(entry: ObjectEntry): PseudoType | ArrayType {
+  return docsetEntryReturnType(entry, entry.name);
+}
+
+/**
+ * This function converts the return_type property in one of the .json
+ * files into a PseudoType or ArrayType.
+ */
+function docsetEntryReturnType(
+  entry: ObjectEntry | FilterEntry,
+  defaultValue: PseudoType,
+): PseudoType | ArrayType {
+  const returnTypes = entry.return_type;
+  if (returnTypes && returnTypes.length > 0) {
+    const returnType = returnTypes[0];
+    if (isArrayReturnType(returnType)) {
+      return arrayType(returnType.array_value);
+    } else {
+      return returnType.type;
+    }
+  }
+
+  return defaultValue;
+}
+
 function isArrayReturnType(rt: ReturnType): rt is ArrayReturnType {
   return rt.type === 'array';
 }
@@ -454,69 +586,7 @@ function isCorrectTypeRange(typeRange: TypeRange, node: LiquidVariableLookup): b
   return node.position.start > start;
 }
 
-function inferLookupType(
-  thing: LiquidVariableLookup,
-  symbolsTable: SymbolsTable,
-  objectMap: ObjectMap,
-  filtersMap: FiltersMap,
-): PseudoType | ArrayType {
-  // we return the type of the drop, so a.b.c
-  const node = thing;
-  if (node.name === null) return Untyped;
-
-  let curr = inferIdentifierType(node, symbolsTable, objectMap, filtersMap);
-
-  for (let lookup of node.lookups) {
-    // This part infers the type of a lookup on an ArrayType
-    // - images[0] becomes 'image'
-    // - images[index] becomes 'image'
-    // - images.first becomes 'image'
-    // - images.last becomes 'image'
-    // - images.size becomes 'number'
-    // - anything else becomes 'untyped'
-    if (isArrayType(curr)) {
-      if (lookup.type === NodeTypes.Number || lookup.type === NodeTypes.VariableLookup) {
-        curr = curr.valueType;
-      } else if (lookup.type === NodeTypes.String) {
-        switch (lookup.value) {
-          // images.first
-          case 'first':
-          case 'last': {
-            curr = curr.valueType;
-            break;
-          }
-
-          // images.size
-          case 'size': {
-            curr = 'number';
-            break;
-          }
-
-          default: {
-            return Untyped;
-          }
-        }
-      } else {
-        return Untyped;
-      }
-
-      continue;
-    }
-
-    const entry: ObjectEntry | undefined = objectMap[curr];
-    if (!entry || lookup.type !== NodeTypes.String) {
-      return Untyped;
-    }
-
-    const lookupName = lookup.value;
-    const property = entry.properties?.find((property) => property.name === lookupName);
-
-    if (!property) return Untyped;
-
-    curr = objectEntryType(property);
-
-    if (curr === Untyped) return Untyped;
-  }
-
-  return curr;
+function end(offset: number | undefined): number | undefined {
+  if (offset === -1) return undefined;
+  return offset;
 }

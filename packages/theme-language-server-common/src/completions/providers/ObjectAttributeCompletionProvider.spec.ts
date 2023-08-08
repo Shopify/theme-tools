@@ -75,6 +75,19 @@ describe('Module: ObjectAttributeCompletionProvider', async () => {
     await expect(provider).to.complete('{{ product["█ }}', ['images']);
   });
 
+  it('has nothing to complete for numbers', async () => {
+    const sources = [
+      `{% assign x = 10 %}
+       {{ x.█ }}`,
+      `{% for x in (0..5) %}
+         {{ x.█ }}
+       {% endfor %}`,
+    ];
+    for (const source of sources) {
+      await expect(provider).to.complete(source, []);
+    }
+  });
+
   describe('Case: global variables', () => {
     it('returns the properties of global variables', async () => {
       await expect(provider).to.complete('{{ global_default.█ }}', ['prop1', 'prop2']);
