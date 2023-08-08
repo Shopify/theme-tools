@@ -42,9 +42,9 @@ export function printRawElement(
 
   if (!hasEmptyBody) {
     if (shouldIndentBody) {
-      body = [indent([hardline, path.call(print, 'body')]), hardline];
+      body = [indent([hardline, path.call((p: any) => print(p), 'body')]), hardline];
     } else {
-      body = [dedentToRoot([hardline, path.call(print, 'body')]), hardline];
+      body = [dedentToRoot([hardline, path.call((p: any) => print(p), 'body')]), hardline];
     }
   }
 

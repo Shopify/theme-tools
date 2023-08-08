@@ -67,7 +67,7 @@ export function printLiquidDrop(
     return group([
       '{{',
       whitespaceStart,
-      indent([whitespace, path.call(print, 'markup')]),
+      indent([whitespace, path.call((p: any) => print(p), 'markup')]),
       whitespace,
       whitespaceEnd,
       '}}',
@@ -125,7 +125,7 @@ function printNamedLiquidBlockStart(
       ...prefix,
       node.name,
       ' ',
-      indent(path.call((p) => print(p, args), 'markup')),
+      indent(path.call((p: any) => print(p, args), 'markup')),
       ...suffix(trailingWhitespace),
     ]);
 
@@ -161,7 +161,7 @@ function printNamedLiquidBlockStart(
         node.name,
         // We want to break after the groupName
         node.markup.groupName ? ' ' : '',
-        indent(path.call((p) => print(p, args), 'markup')),
+        indent(path.call((p: any) => print(p, args), 'markup')),
         ...suffix(whitespace),
       ]);
     }
@@ -231,7 +231,7 @@ function printNamedLiquidBlockStart(
             path.map((p) => {
               const curr = p.getValue();
               return [
-                getSpaceBetweenLines(curr.prev as LiquidStatement | null, curr),
+                getSpaceBetweenLines(curr.prev as LiquidStatement | null, curr as LiquidStatement),
                 print(p, { ...args, isLiquidStatement: true }),
               ];
             }, 'markup'),
@@ -480,9 +480,9 @@ export function printLiquidRawTag(
   } else if (hasEmptyBody) {
     body = [hardline];
   } else if (shouldNotIndentBody) {
-    body = [hardline, path.call(print, 'body'), hardline];
+    body = [hardline, path.call((p) => print(p), 'body'), hardline];
   } else {
-    body = [indent([hardline, path.call(print, 'body')]), hardline];
+    body = [indent([hardline, path.call((p: any) => print(p), 'body')]), hardline];
   }
 
   return [blockStart, ...body, blockEnd];

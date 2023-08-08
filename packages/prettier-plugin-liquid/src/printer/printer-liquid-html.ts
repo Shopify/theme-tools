@@ -301,14 +301,17 @@ function printNode(
     }
 
     case NodeTypes.AssignMarkup: {
-      return [node.name, ' = ', path.call(print, 'value')];
+      return [node.name, ' = ', path.call((p: any) => print(p), 'value')];
     }
 
     case NodeTypes.CycleMarkup: {
       const doc: Doc[] = [];
 
       if (node.groupName) {
-        doc.push(path.call(print, 'groupName'), ':');
+        doc.push(
+          path.call((p: any) => print(p), 'groupName'),
+          ':',
+        );
       }
 
       const whitespace = node.args.length > 1 ? line : ' ';
@@ -324,7 +327,7 @@ function printNode(
     }
 
     case NodeTypes.ForMarkup: {
-      const doc = [node.variableName, ' in ', path.call(print, 'collection')];
+      const doc = [node.variableName, ' in ', path.call((p: any) => print(p), 'collection')];
 
       if (node.reversed) {
         doc.push(line, 'reversed');
@@ -344,7 +347,12 @@ function printNode(
     }
 
     case NodeTypes.PaginateMarkup: {
-      const doc = [path.call(print, 'collection'), line, 'by ', path.call(print, 'pageSize')];
+      const doc = [
+        path.call((p: any) => print(p), 'collection'),
+        line,
+        'by ',
+        path.call((p: any) => print(p), 'pageSize'),
+      ];
 
       if (node.args.length > 0) {
         doc.push([
@@ -361,11 +369,14 @@ function printNode(
     }
 
     case NodeTypes.RenderMarkup: {
-      const snippet = path.call(print, 'snippet');
+      const snippet = path.call((p: any) => print(p), 'snippet');
       const doc: Doc = [snippet];
       if (node.variable) {
         const whitespace = node.alias ? line : ' ';
-        doc.push(whitespace, path.call(print, 'variable'));
+        doc.push(
+          whitespace,
+          path.call((p: any) => print(p), 'variable'),
+        );
       }
       if (node.alias) {
         doc.push(' ', 'as', ' ', node.alias);
@@ -384,22 +395,28 @@ function printNode(
     }
 
     case NodeTypes.RenderVariableExpression: {
-      return [node.kind, ' ', path.call(print, 'name')];
+      return [node.kind, ' ', path.call((p: any) => print(p), 'name')];
     }
 
     case NodeTypes.LogicalExpression: {
-      return [path.call(print, 'left'), line, node.relation, ' ', path.call(print, 'right')];
+      return [
+        path.call((p: any) => print(p), 'left'),
+        line,
+        node.relation,
+        ' ',
+        path.call((p: any) => print(p), 'right'),
+      ];
     }
 
     case NodeTypes.Comparison: {
       return group([
-        path.call(print, 'left'),
-        indent([line, node.comparator, ' ', path.call(print, 'right')]),
+        path.call((p: any) => print(p), 'left'),
+        indent([line, node.comparator, ' ', path.call((p: any) => print(p), 'right')]),
       ]);
     }
 
     case NodeTypes.LiquidVariable: {
-      const name = path.call(print, 'expression');
+      const name = path.call((p: any) => print(p), 'expression');
       let filters: Doc = '';
       if (node.filters.length > 0) {
         filters = [
@@ -433,7 +450,7 @@ function printNode(
     }
 
     case NodeTypes.NamedArgument: {
-      return [node.name, ': ', path.call(print, 'value')];
+      return [node.name, ': ', path.call((p: any) => print(p), 'value')];
     }
 
     case NodeTypes.TextNode: {
@@ -514,7 +531,7 @@ export const printerLiquidHtml2: Printer2<LiquidHtmlNode> & {
 } & { getVisitorKeys: any } = {
   print: printNode as any,
   embed: embed2,
-  preprocess,
+  preprocess: preprocess as any,
   getVisitorKeys(node: any, nonTraversableKeys: Set<string>) {
     return Object.keys(node).filter(
       (key) => !nonTraversableKeys.has(key) && !nonTraversableProperties.has(key),
@@ -527,7 +544,7 @@ export const printerLiquidHtml3: Printer3<LiquidHtmlNode> & {
 } & { getVisitorKeys: any } = {
   print: printNode as any,
   embed: embed3,
-  preprocess,
+  preprocess: preprocess as any,
   getVisitorKeys(node: any, nonTraversableKeys: Set<string>) {
     return Object.keys(node).filter(
       (key) => !nonTraversableKeys.has(key) && !nonTraversableProperties.has(key),

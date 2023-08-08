@@ -8,9 +8,7 @@
   "license": "MIT",
   "private": true,
   "workspaces": [
-    "packages/*-common",
-    "packages/theme-*",
-    "packages/vscode-extension"
+    "packages/*"
   ],
   "scripts": {
     "build:ci": "yarn workspaces run build:ci",

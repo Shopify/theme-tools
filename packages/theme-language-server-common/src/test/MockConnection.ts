@@ -7,13 +7,11 @@ import {
   DidOpenTextDocumentNotification,
   InitializedNotification,
   InitializeRequest,
-  Logger,
   MessageSignature,
   ProtocolConnection,
   WatchDog,
   _Connection,
 } from 'vscode-languageserver';
-import { Protocol } from '../utils';
 
 type MockConnectionMethods = {
   /**
@@ -73,7 +71,7 @@ function protocolConnection(requests: EventEmitter, notifications: EventEmitter)
     onUnhandledNotification: vi.fn(),
     sendNotification: vi.fn().mockReturnValue(Promise.resolve()),
     sendProgress: vi.fn(),
-    sendRequest: vi.fn(),
+    sendRequest: vi.fn() as any,
     trace: vi.fn().mockReturnValue(Promise.resolve()),
   } satisfies ProtocolConnection;
 }

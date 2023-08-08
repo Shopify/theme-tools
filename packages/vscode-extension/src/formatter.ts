@@ -49,7 +49,7 @@ async function toTextEdit(textDocument: TextDocument): Promise<TextEdit> {
   const formatted = prettier.format(text, {
     ...options,
     parser: 'liquid-html',
-    plugins: [LiquidPrettierPlugin],
+    plugins: [LiquidPrettierPlugin as any],
   });
   const start = textDocument.positionAt(0);
   const end = textDocument.positionAt(text.length);
