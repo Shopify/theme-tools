@@ -152,6 +152,9 @@ describe('Module: LiquidCompletionParams', async () => {
           `{% render 'snip', var: a█ %}`,
           `{% render 'snip' for col█ as item %}`,
           `{% render 'snip' with object█ as name %}`,
+          `{% liquid
+            echo a█
+           %}`,
           `{% for x in (1..a█) %}`,
           // `{% paginate a█ by 50 %}`,
           `<a-{{ a█ }}`,

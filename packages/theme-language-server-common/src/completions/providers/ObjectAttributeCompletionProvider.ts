@@ -153,7 +153,7 @@ function completionItems(options: ObjectEntry[], partial: string) {
 /** An indexed representation on objects.json (by name) */
 type ObjectMap = Record<ObjectEntryName, ObjectEntry>;
 
-/** An indexed representation on objects.json (by name) */
+/** An indexed representation on filters.json (by name) */
 type FiltersMap = Record<FilterEntryName, FilterEntry>;
 
 /** An identifier refers to the name of a variable, e.g. `x`, `product`, etc. */
@@ -162,14 +162,14 @@ type Identifier = string;
 type ObjectEntryName = ObjectEntry['name'];
 type FilterEntryName = FilterEntry['name'];
 
-/** A pseudo-type is what ObjectEntry return types refer to */
-type PseudoType = ObjectEntryName | 'string' | 'number' | 'boolean' | 'untyped';
-
 const Untyped = 'untyped' as const;
 type Untyped = typeof Untyped;
 
 const String = 'string' as const;
 type String = typeof String;
+
+/** A pseudo-type is the possible values of an ObjectEntry's return_type.type */
+type PseudoType = ObjectEntryName | String | Untyped | 'number' | 'boolean';
 
 /**
  * A variable can have many types in the same file
@@ -212,7 +212,7 @@ const arrayType = (valueType: PseudoType): ArrayType => ({
 /**
  * Because a type may depend on another, this represents the type of
  * something as the type of a LiquidVariable chain.
- * {{ x.foo | filter1 | filter2 }}
+ * {% assign x = y.foo | filter1 | filter2 %}
  */
 type LazyVariableType = {
   kind: NodeTypes.LiquidVariable;

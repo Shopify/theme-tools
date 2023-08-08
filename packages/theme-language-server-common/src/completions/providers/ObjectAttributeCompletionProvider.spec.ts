@@ -117,6 +117,18 @@ describe('Module: ObjectAttributeCompletionProvider', async () => {
       await expect(provider).to.complete(source, ['src']);
     });
 
+    it('returns the properties of the infered type of a series of threaded types (liquid tag)', async () => {
+      const source = `
+        {% liquid
+          assign x = product
+          assign y = x.images
+          assign z = y.first
+          echo z.s█
+        %}
+      `;
+      await expect(provider).to.complete(source, ['src']);
+    });
+
     describe('When: inside a for/tablerow loop', () => {
       it('returns the properties of the array_value of the array', async () => {
         for (const tag of ['for', 'tablerow']) {
