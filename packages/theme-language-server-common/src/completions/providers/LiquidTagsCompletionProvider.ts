@@ -8,6 +8,7 @@ import {
 } from '@shopify/theme-check-common';
 import { Provider, createCompletionItem, sortByName } from './common';
 import { CURSOR, LiquidCompletionParams } from '../params';
+import { findLast } from '../../utils';
 
 type LiquidTag = LiquidHtmlNodeOfType<LiquidHtmlNodeTypes.LiquidTag>;
 
@@ -130,12 +131,5 @@ function findParentNode(partial: string, ancestors: LiquidHtmlNode[]): LiquidTag
     ))
   ) {
     return previousNode as LiquidTag;
-  }
-}
-
-// Array.prototype.findLast is only available in es2023. Which feels too new?
-function findLast<T>(array: T[], pred: (n: T) => boolean): T | undefined {
-  for (let i = array.length - 1; i >= 0; i--) {
-    if (pred(array[i])) return array[i];
   }
 }

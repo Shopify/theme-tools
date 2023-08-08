@@ -1,9 +1,15 @@
 import { CompletionParams } from 'vscode-languageserver';
-import { LiquidHtmlNode, LiquidHtmlNodeTypes as NodeTypes } from '@shopify/theme-check-common';
+import {
+  LiquidHtmlNode,
+  LiquidHtmlNodeTypes as NodeTypes,
+  LiquidHtmlNodeOfType as NodeOfType,
+} from '@shopify/theme-check-common';
 import { AugmentedSourceCode } from '../../documents';
 import { toLiquidHtmlAST } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
 import { fix } from './fix';
 import { Position } from '@shopify/prettier-plugin-liquid/dist/types';
+
+type LiquidTag = NodeOfType<NodeTypes.LiquidTag>;
 
 interface CompletionContext {
   /** The AST of the Liquid template up to the cursor position */
@@ -123,6 +129,10 @@ class Finder {
     return last(this.stack);
   }
 
+  get parent(): LiquidHtmlNode | undefined {
+    return this.stack.at(-2);
+  }
+
   set current(node: LiquidHtmlNode | undefined) {
     this.stack.push(node);
   }
@@ -201,7 +211,10 @@ function findCurrentNode(
       }
 
       case NodeTypes.LiquidTag: {
-        if (isCoveredExcluded(cursor, current.blockStartPosition)) {
+        if (
+          isLiquidLiquidTag(finder.parent) ||
+          isCoveredExcluded(cursor, current.blockStartPosition)
+        ) {
           if (hasNonNullProperty(current, 'markup') && typeof current.markup !== 'string') {
             finder.current = Array.isArray(current.markup) ? current.markup.at(-1) : current.markup;
           } else {
@@ -413,6 +426,13 @@ function hasNonEmptyArrayProperty<K extends PropertyKey>(
     Array.isArray(thing[property]) &&
     !isEmpty(thing[property])
   );
+}
+
+function isLiquidLiquidTag(
+  node: LiquidHtmlNode | undefined,
+): node is LiquidTag & { name: 'liquid' } {
+  if (!node) return false;
+  return node.type === NodeTypes.LiquidTag && node.name === 'liquid';
 }
 
 function isCoveredExcluded(cursor: number, position: Position): boolean {
