@@ -5,6 +5,7 @@
   },
   "version": "1.10.0",
   "publisher": "Shopify",
+  "private": true,
   "license": "SEE LICENSE IN LICENSE.md",
   "displayName": "Shopify Liquid",
   "description": "A complete developer experience for Shopify themes",
