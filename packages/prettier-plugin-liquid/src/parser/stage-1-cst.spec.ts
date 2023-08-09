@@ -6,23 +6,22 @@ import { deepGet } from '~/utils';
 
 describe('Unit: Stage 1 (CST)', () => {
   describe('Unit: toLiquidHtmlCST(text) and toLiquidCST(text)', () => {
-    [
+    const testCases = [
       {
-        title: 'toLiquidHtmlCST(text)',
-        fn: toLiquidHtmlCST,
+        expectPath: makeExpectPath('toLiquidHtmlCST(text)'),
+        toCST: toLiquidHtmlCST,
       },
       {
-        title: 'toLiquidCST(text)',
-        fn: toLiquidCST,
+        expectPath: makeExpectPath('toLiquidCST(text)'),
+        toCST: toLiquidCST,
       },
-    ].forEach((testContext) => {
-      let cst: LiquidHtmlCST | LiquidCST;
+    ];
 
-      const title = testContext.title;
-      const toCST = testContext.fn;
+    let cst: LiquidHtmlCST | LiquidCST;
 
-      describe(`${title} - Case: LiquidDrop`, () => {
-        it('should basically parse unparseables', () => {
+    describe('Case: LiquidDrop', () => {
+      it('should basically parse unparseables', () => {
+        for (const { toCST, expectPath } of testCases) {
           cst = toCST('{{ !-asdl }}{{- !-asdl -}}');
           expectPath(cst, '0.type').to.equal('LiquidDrop');
           expectPath(cst, '0.markup').to.equal('!-asdl');
@@ -32,14 +31,16 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '1.markup').to.equal('!-asdl');
           expectPath(cst, '1.whitespaceStart').to.equal('-');
           expectPath(cst, '1.whitespaceEnd').to.equal('-');
-        });
+        }
+      });
 
-        it('should parse strings', () => {
-          [
-            { expression: `"string o' string"`, value: `string o' string`, single: false },
-            { expression: `'He said: "hi!"'`, value: `He said: "hi!"`, single: true },
-          ].forEach(({ expression, value, single }) => {
-            cst = toLiquidCST(`{{ ${expression} }}`);
+      it('should parse strings', () => {
+        [
+          { expression: `"string o' string"`, value: `string o' string`, single: false },
+          { expression: `'He said: "hi!"'`, value: `He said: "hi!"`, single: true },
+        ].forEach(({ expression, value, single }) => {
+          for (const { toCST, expectPath } of testCases) {
+            cst = toCST(`{{ ${expression} }}`);
             expectPath(cst, '0.type').to.equal('LiquidDrop');
             expectPath(cst, '0.markup.type').to.equal('LiquidVariable');
             expectPath(cst, '0.markup.rawSource').to.equal(expression);
@@ -48,18 +49,20 @@ describe('Unit: Stage 1 (CST)', () => {
             expectPath(cst, '0.markup.expression.single').to.equal(single);
             expectPath(cst, '0.whitespaceStart').to.equal(null);
             expectPath(cst, '0.whitespaceEnd').to.equal(null);
-          });
+          }
         });
+      });
 
-        it('should parse numbers', () => {
-          [
-            { expression: `1`, value: '1' },
-            { expression: `1.02`, value: '1.02' },
-            { expression: `0`, value: '0' },
-            { expression: `-0`, value: '-0' },
-            { expression: `-0.0`, value: '-0.0' },
-          ].forEach(({ expression, value }) => {
-            cst = toLiquidCST(`{{ ${expression} }}`);
+      it('should parse numbers', () => {
+        [
+          { expression: `1`, value: '1' },
+          { expression: `1.02`, value: '1.02' },
+          { expression: `0`, value: '0' },
+          { expression: `-0`, value: '-0' },
+          { expression: `-0.0`, value: '-0.0' },
+        ].forEach(({ expression, value }) => {
+          for (const { toCST, expectPath } of testCases) {
+            cst = toCST(`{{ ${expression} }}`);
             expectPath(cst, '0.type').to.equal('LiquidDrop');
             expectPath(cst, '0.markup.type').to.equal('LiquidVariable');
             expectPath(cst, '0.markup.rawSource').to.equal(expression);
@@ -67,18 +70,20 @@ describe('Unit: Stage 1 (CST)', () => {
             expectPath(cst, '0.markup.expression.value').to.equal(value);
             expectPath(cst, '0.whitespaceStart').to.equal(null);
             expectPath(cst, '0.whitespaceEnd').to.equal(null);
-          });
+          }
         });
+      });
 
-        it('should parse Liquid literals', () => {
-          [
-            { expression: `nil`, value: null },
-            { expression: `null`, value: null },
-            { expression: `true`, value: true },
-            { expression: `blank`, value: '' },
-            { expression: `empty`, value: '' },
-          ].forEach(({ expression, value }) => {
-            cst = toLiquidCST(`{{ ${expression} }}`);
+      it('should parse Liquid literals', () => {
+        [
+          { expression: `nil`, value: null },
+          { expression: `null`, value: null },
+          { expression: `true`, value: true },
+          { expression: `blank`, value: '' },
+          { expression: `empty`, value: '' },
+        ].forEach(({ expression, value }) => {
+          for (const { toCST, expectPath } of testCases) {
+            cst = toCST(`{{ ${expression} }}`);
             expectPath(cst, '0.type').to.equal('LiquidDrop');
             expectPath(cst, '0.markup.type').to.equal('LiquidVariable', expression);
             expectPath(cst, '0.markup.rawSource').to.equal(expression);
@@ -87,40 +92,42 @@ describe('Unit: Stage 1 (CST)', () => {
             expectPath(cst, '0.markup.expression.value').to.equal(value);
             expectPath(cst, '0.whitespaceStart').to.equal(null);
             expectPath(cst, '0.whitespaceEnd').to.equal(null);
-          });
+          }
         });
+      });
 
-        interface Lookup {
-          type: 'VariableLookup';
-          lookups: (string | number | Lookup)[];
-          name: string | undefined;
-        }
+      interface Lookup {
+        type: 'VariableLookup';
+        lookups: (string | number | Lookup)[];
+        name: string | undefined;
+      }
 
-        it('should parse variable lookups', () => {
-          const v = (name: string, lookups: (string | number | Lookup)[] = []): Lookup => ({
-            type: 'VariableLookup',
-            name,
-            lookups,
-          });
-          [
-            { expression: `x`, name: 'x', lookups: [] },
-            { expression: `x.y`, name: 'x', lookups: ['y'] },
-            { expression: `x["y"]`, name: 'x', lookups: ['y'] },
-            { expression: `x['y']`, name: 'x', lookups: ['y'] },
-            { expression: `x[1]`, name: 'x', lookups: [1] },
-            { expression: `x.y.z`, name: 'x', lookups: ['y', 'z'] },
-            { expression: `x["y"]["z"]`, name: 'x', lookups: ['y', 'z'] },
-            { expression: `x["y"].z`, name: 'x', lookups: ['y', 'z'] },
-            { expression: `["product"]`, name: null, lookups: ['product'] },
-            { expression: `page.about-us`, name: 'page', lookups: ['about-us'] },
-            { expression: `["x"].y`, name: null, lookups: ['x', 'y'] },
-            { expression: `["x"]["y"]`, name: null, lookups: ['x', 'y'] },
-            { expression: `x[y]`, name: 'x', lookups: [v('y')] },
-            { expression: `x[y.z]`, name: 'x', lookups: [v('y', ['z'])] },
-            { expression: `true_thing`, name: 'true_thing', lookups: [] },
-            { expression: `null_thing`, name: 'null_thing', lookups: [] },
-          ].forEach(({ expression, name, lookups }) => {
-            cst = toLiquidCST(`{{ ${expression} }}`);
+      it('should parse variable lookups', () => {
+        const v = (name: string, lookups: (string | number | Lookup)[] = []): Lookup => ({
+          type: 'VariableLookup',
+          name,
+          lookups,
+        });
+        [
+          { expression: `x`, name: 'x', lookups: [] },
+          { expression: `x.y`, name: 'x', lookups: ['y'] },
+          { expression: `x["y"]`, name: 'x', lookups: ['y'] },
+          { expression: `x['y']`, name: 'x', lookups: ['y'] },
+          { expression: `x[1]`, name: 'x', lookups: [1] },
+          { expression: `x.y.z`, name: 'x', lookups: ['y', 'z'] },
+          { expression: `x["y"]["z"]`, name: 'x', lookups: ['y', 'z'] },
+          { expression: `x["y"].z`, name: 'x', lookups: ['y', 'z'] },
+          { expression: `["product"]`, name: null, lookups: ['product'] },
+          { expression: `page.about-us`, name: 'page', lookups: ['about-us'] },
+          { expression: `["x"].y`, name: null, lookups: ['x', 'y'] },
+          { expression: `["x"]["y"]`, name: null, lookups: ['x', 'y'] },
+          { expression: `x[y]`, name: 'x', lookups: [v('y')] },
+          { expression: `x[y.z]`, name: 'x', lookups: [v('y', ['z'])] },
+          { expression: `true_thing`, name: 'true_thing', lookups: [] },
+          { expression: `null_thing`, name: 'null_thing', lookups: [] },
+        ].forEach(({ expression, name, lookups }) => {
+          for (const { toCST, expectPath } of testCases) {
+            cst = toCST(`{{ ${expression} }}`);
             expectPath(cst, '0.type').to.equal('LiquidDrop');
             expectPath(cst, '0.markup.type').to.equal('LiquidVariable', expression);
             expectPath(cst, '0.markup.rawSource').to.equal(expression);
@@ -163,28 +170,30 @@ describe('Unit: Stage 1 (CST)', () => {
 
             expectPath(cst, '0.whitespaceStart').to.equal(null);
             expectPath(cst, '0.whitespaceEnd').to.equal(null);
-          });
+          }
         });
+      });
 
-        it('should parse ranges', () => {
-          [
-            {
-              expression: `(0..5)`,
-              start: { value: '0', type: 'Number' },
-              end: { value: '5', type: 'Number' },
-            },
-            {
-              expression: `( 0 .. 5 )`,
-              start: { value: '0', type: 'Number' },
-              end: { value: '5', type: 'Number' },
-            },
-            {
-              expression: `(true..false)`,
-              start: { value: true, type: 'LiquidLiteral' },
-              end: { value: false, type: 'LiquidLiteral' },
-            },
-          ].forEach(({ expression, start, end }) => {
-            cst = toLiquidCST(`{{ ${expression} }}`);
+      it('should parse ranges', () => {
+        [
+          {
+            expression: `(0..5)`,
+            start: { value: '0', type: 'Number' },
+            end: { value: '5', type: 'Number' },
+          },
+          {
+            expression: `( 0 .. 5 )`,
+            start: { value: '0', type: 'Number' },
+            end: { value: '5', type: 'Number' },
+          },
+          {
+            expression: `(true..false)`,
+            start: { value: true, type: 'LiquidLiteral' },
+            end: { value: false, type: 'LiquidLiteral' },
+          },
+        ].forEach(({ expression, start, end }) => {
+          for (const { toCST, expectPath } of testCases) {
+            cst = toCST(`{{ ${expression} }}`);
             expectPath(cst, '0.type').to.equal('LiquidDrop');
             expectPath(cst, '0.markup.type').to.equal('LiquidVariable', expression);
             expectPath(cst, '0.markup.rawSource').to.equal(expression);
@@ -195,46 +204,48 @@ describe('Unit: Stage 1 (CST)', () => {
             expectPath(cst, '0.markup.expression.end.value').to.equal(end.value);
             expectPath(cst, '0.whitespaceStart').to.equal(null);
             expectPath(cst, '0.whitespaceEnd').to.equal(null);
-          });
-        });
-
-        it('should parse filters', () => {
-          interface Filter {
-            name: string;
-            args: FilterArgument[];
           }
-          type FilterArgument = any;
+        });
+      });
 
-          const filter = (name: string, args: FilterArgument[] = []): Filter => ({ name, args });
-          const arg = (type: string, value: string) => ({ type, value });
-          const namedArg = (name: string, valueType: string) => ({
-            type: 'NamedArgument',
-            name,
-            valueType,
-          });
-          [
-            { expression: '', filters: [] },
-            { expression: `| filter1`, filters: [filter('filter1')] },
-            { expression: `| filter1 | filter2`, filters: [filter('filter1'), filter('filter2')] },
-            {
-              expression: `| filter1: 'hi', 'there'`,
-              filters: [filter('filter1', [arg('String', 'hi'), arg('String', 'there')])],
-            },
-            {
-              expression: `| filter1: key: value, kind: 'string'`,
-              filters: [
-                filter('filter1', [namedArg('key', 'VariableLookup'), namedArg('kind', 'String')]),
-              ],
-            },
-            {
-              expression: `| f1: 'hi', key: (0..1) | f2: key: value, kind: 'string'`,
-              filters: [
-                filter('f1', [arg('String', 'hi'), namedArg('key', 'Range')]),
-                filter('f2', [namedArg('key', 'VariableLookup'), namedArg('kind', 'String')]),
-              ],
-            },
-          ].forEach(({ expression, filters }) => {
-            cst = toLiquidCST(`{{ 'hello' ${expression} }}`);
+      it('should parse filters', () => {
+        interface Filter {
+          name: string;
+          args: FilterArgument[];
+        }
+        type FilterArgument = any;
+
+        const filter = (name: string, args: FilterArgument[] = []): Filter => ({ name, args });
+        const arg = (type: string, value: string) => ({ type, value });
+        const namedArg = (name: string, valueType: string) => ({
+          type: 'NamedArgument',
+          name,
+          valueType,
+        });
+        [
+          { expression: '', filters: [] },
+          { expression: `| filter1`, filters: [filter('filter1')] },
+          { expression: `| filter1 | filter2`, filters: [filter('filter1'), filter('filter2')] },
+          {
+            expression: `| filter1: 'hi', 'there'`,
+            filters: [filter('filter1', [arg('String', 'hi'), arg('String', 'there')])],
+          },
+          {
+            expression: `| filter1: key: value, kind: 'string'`,
+            filters: [
+              filter('filter1', [namedArg('key', 'VariableLookup'), namedArg('kind', 'String')]),
+            ],
+          },
+          {
+            expression: `| f1: 'hi', key: (0..1) | f2: key: value, kind: 'string'`,
+            filters: [
+              filter('f1', [arg('String', 'hi'), namedArg('key', 'Range')]),
+              filter('f2', [namedArg('key', 'VariableLookup'), namedArg('kind', 'String')]),
+            ],
+          },
+        ].forEach(({ expression, filters }) => {
+          for (const { toCST, expectPath } of testCases) {
+            cst = toCST(`{{ 'hello' ${expression} }}`);
             expectPath(cst, '0.type').to.equal('LiquidDrop');
             expectPath(cst, '0.markup.type').to.equal('LiquidVariable');
             expectPath(cst, '0.markup.rawSource').to.equal((`'hello' ` + expression).trimEnd());
@@ -272,51 +283,53 @@ describe('Unit: Stage 1 (CST)', () => {
             });
             expectPath(cst, '0.whitespaceStart').to.equal(null);
             expectPath(cst, '0.whitespaceEnd').to.equal(null);
-          });
+          }
         });
       });
+    });
 
-      describe(`${title} - Case: LiquidTag`, () => {
-        it('should parse the liquid liquid tag as a list of tags', () => {
+    describe('Case: LiquidTag', () => {
+      it('should parse the liquid liquid tag as a list of tags', () => {
+        [
           [
-            [
-              {
-                expression: `echo "hi"`,
-                type: 'LiquidTag',
-                name: 'echo',
-              },
-              {
-                expression: `
+            {
+              expression: `echo "hi"`,
+              type: 'LiquidTag',
+              name: 'echo',
+            },
+            {
+              expression: `
                 comment
                   hello there
                   got you, eh?
                 endcomment`,
-                type: 'LiquidRawTag',
-                name: 'comment',
-              },
-              {
-                expression: `
+              type: 'LiquidRawTag',
+              name: 'comment',
+            },
+            {
+              expression: `
                 if cond
               `,
-                type: 'LiquidTagOpen',
-                name: 'if',
-              },
-              {
-                expression: `
+              type: 'LiquidTagOpen',
+              name: 'if',
+            },
+            {
+              expression: `
                 endif
               `,
-                type: 'LiquidTagClose',
-                name: 'if',
-              },
-              {
-                expression: `
+              type: 'LiquidTagClose',
+              name: 'if',
+            },
+            {
+              expression: `
                 # this is an inline comment
               `,
-                type: 'LiquidTag',
-                name: '#',
-              },
-            ],
-          ].forEach((expressions) => {
+              type: 'LiquidTag',
+              name: '#',
+            },
+          ],
+        ].forEach((expressions) => {
+          for (const { toCST, expectPath } of testCases) {
             cst = toCST(`{% liquid \n${expressions.map((x) => x.expression).join('\n')} -%}`);
             expectPath(cst, '0.type').to.equal('LiquidTag');
             expectPath(cst, '0.name').to.equal('liquid');
@@ -326,15 +339,17 @@ describe('Unit: Stage 1 (CST)', () => {
             });
             expectPath(cst, '0.whitespaceStart').to.equal(null);
             expectPath(cst, '0.whitespaceEnd').to.equal('-');
-          });
+          }
         });
+      });
 
-        it('should support nested comments', () => {
+      it('should support nested comments', () => {
+        for (const { toCST, expectPath } of testCases) {
           const commentBodyContainingNestedComment = `  hello
         comment tagMarkup
           nested comment body
         endcomment
-        outer comment body`;
+          outer comment body`;
           const statementSep = '\n  ';
           const commentExpr = ['comment', commentBodyContainingNestedComment, 'endcomment'].join(
             statementSep,
@@ -364,13 +379,15 @@ describe('Unit: Stage 1 (CST)', () => {
             testStr.length - 'endcomment\n%}'.length,
           );
           expectPath(cst, '0.markup.0.blockEndLocEnd').to.equal(testStr.length - '\n%}'.length);
-        });
+        }
+      });
 
-        it('should parse the echo tag as variables', () => {
-          [
-            { expression: `"hi"`, expressionType: 'String', expressionValue: 'hi', filters: [] },
-            { expression: `x | f`, expressionType: 'VariableLookup', filters: ['f'] },
-          ].forEach(({ expression, expressionType, expressionValue, filters }) => {
+      it('should parse the echo tag as variables', () => {
+        [
+          { expression: `"hi"`, expressionType: 'String', expressionValue: 'hi', filters: [] },
+          { expression: `x | f`, expressionType: 'VariableLookup', filters: ['f'] },
+        ].forEach(({ expression, expressionType, expressionValue, filters }) => {
+          for (const { toCST, expectPath } of testCases) {
             cst = toCST(`{% echo ${expression} -%}`);
             expectPath(cst, '0.type').to.equal('LiquidTag');
             expectPath(cst, '0.name').to.equal('echo');
@@ -382,25 +399,27 @@ describe('Unit: Stage 1 (CST)', () => {
             expectPath(cst, '0.markup.filters').to.have.lengthOf(filters.length);
             expectPath(cst, '0.whitespaceStart').to.equal(null);
             expectPath(cst, '0.whitespaceEnd').to.equal('-');
-          });
+          }
         });
+      });
 
-        it('should parse the assign tag as assign markup + liquid variable', () => {
-          [
-            {
-              expression: `x = "hi"`,
-              name: 'x',
-              expressionType: 'String',
-              expressionValue: 'hi',
-              filters: [],
-            },
-            {
-              expression: `z = y | f`,
-              name: 'z',
-              expressionType: 'VariableLookup',
-              filters: ['f'],
-            },
-          ].forEach(({ expression, name, expressionType, expressionValue, filters }) => {
+      it('should parse the assign tag as assign markup + liquid variable', () => {
+        [
+          {
+            expression: `x = "hi"`,
+            name: 'x',
+            expressionType: 'String',
+            expressionValue: 'hi',
+            filters: [],
+          },
+          {
+            expression: `z = y | f`,
+            name: 'z',
+            expressionType: 'VariableLookup',
+            filters: ['f'],
+          },
+        ].forEach(({ expression, name, expressionType, expressionValue, filters }) => {
+          for (const { toCST, expectPath } of testCases) {
             cst = toCST(`{% assign ${expression} -%}`);
             expectPath(cst, '0.type').to.equal('LiquidTag');
             expectPath(cst, '0.name').to.equal('assign');
@@ -413,22 +432,24 @@ describe('Unit: Stage 1 (CST)', () => {
             expectPath(cst, '0.markup.value.filters').to.have.lengthOf(filters.length);
             expectPath(cst, '0.whitespaceStart').to.equal(null);
             expectPath(cst, '0.whitespaceEnd').to.equal('-');
-          });
+          }
         });
+      });
 
-        it('should parse the cycle tag as cycle markup', () => {
-          [
-            {
-              expression: `a, "string", 10`,
-              groupName: null,
-              args: [{ type: 'VariableLookup' }, { type: 'String' }, { type: 'Number' }],
-            },
-            {
-              expression: `var: a, "string", 10`,
-              groupName: { type: 'VariableLookup' },
-              args: [{ type: 'VariableLookup' }, { type: 'String' }, { type: 'Number' }],
-            },
-          ].forEach(({ expression, groupName, args }) => {
+      it('should parse the cycle tag as cycle markup', () => {
+        [
+          {
+            expression: `a, "string", 10`,
+            groupName: null,
+            args: [{ type: 'VariableLookup' }, { type: 'String' }, { type: 'Number' }],
+          },
+          {
+            expression: `var: a, "string", 10`,
+            groupName: { type: 'VariableLookup' },
+            args: [{ type: 'VariableLookup' }, { type: 'String' }, { type: 'Number' }],
+          },
+        ].forEach(({ expression, groupName, args }) => {
+          for (const { toCST, expectPath } of testCases) {
             cst = toCST(`{% cycle ${expression} -%}`);
             expectPath(cst, '0.type').to.equal('LiquidTag');
             expectPath(cst, '0.name').to.equal('cycle');
@@ -444,66 +465,68 @@ describe('Unit: Stage 1 (CST)', () => {
             });
             expectPath(cst, '0.whitespaceStart').to.equal(null);
             expectPath(cst, '0.whitespaceEnd').to.equal('-');
-          });
+          }
         });
+      });
 
-        it('should parse the render tag', () => {
-          [
-            {
-              expression: `"snippet"`,
-              snippetType: 'String',
-              alias: null,
-              renderVariableExpression: null,
-              namedArguments: [],
-            },
-            {
-              expression: `"snippet" as foo`,
-              snippetType: 'String',
-              alias: 'foo',
-              renderVariableExpression: null,
-              namedArguments: [],
-            },
-            {
-              expression: `"snippet" with "string" as foo`,
-              snippetType: 'String',
-              alias: 'foo',
-              renderVariableExpression: {
-                kind: 'with',
-                name: {
-                  type: 'String',
-                },
+      it('should parse the render tag', () => {
+        [
+          {
+            expression: `"snippet"`,
+            snippetType: 'String',
+            alias: null,
+            renderVariableExpression: null,
+            namedArguments: [],
+          },
+          {
+            expression: `"snippet" as foo`,
+            snippetType: 'String',
+            alias: 'foo',
+            renderVariableExpression: null,
+            namedArguments: [],
+          },
+          {
+            expression: `"snippet" with "string" as foo`,
+            snippetType: 'String',
+            alias: 'foo',
+            renderVariableExpression: {
+              kind: 'with',
+              name: {
+                type: 'String',
               },
-              namedArguments: [],
             },
-            {
-              expression: `"snippet" for products as product`,
-              snippetType: 'String',
-              alias: 'product',
-              renderVariableExpression: {
-                kind: 'for',
-                name: {
-                  type: 'VariableLookup',
-                },
+            namedArguments: [],
+          },
+          {
+            expression: `"snippet" for products as product`,
+            snippetType: 'String',
+            alias: 'product',
+            renderVariableExpression: {
+              kind: 'for',
+              name: {
+                type: 'VariableLookup',
               },
-              namedArguments: [],
             },
-            {
-              expression: `variable with "string" as foo, key1: val1, key2: "hi"`,
-              snippetType: 'VariableLookup',
-              alias: 'foo',
-              renderVariableExpression: {
-                kind: 'with',
-                name: {
-                  type: 'String',
-                },
+            namedArguments: [],
+          },
+          {
+            expression: `variable with "string" as foo, key1: val1, key2: "hi"`,
+            snippetType: 'VariableLookup',
+            alias: 'foo',
+            renderVariableExpression: {
+              kind: 'with',
+              name: {
+                type: 'String',
               },
-              namedArguments: [
-                { name: 'key1', valueType: 'VariableLookup' },
-                { name: 'key2', valueType: 'String' },
-              ],
             },
-          ].forEach(
-            ({ expression, snippetType, renderVariableExpression, alias, namedArguments }) => {
+            namedArguments: [
+              { name: 'key1', valueType: 'VariableLookup' },
+              { name: 'key2', valueType: 'String' },
+            ],
+          },
+        ].forEach(
+          ({ expression, snippetType, renderVariableExpression, alias, namedArguments }) => {
+            for (const { toCST, expectPath } of testCases) {
               cst = toCST(`{% render ${expression} -%}`);
               expectPath(cst, '0.type').to.equal('LiquidTag');
               expectPath(cst, '0.name').to.equal('render');
@@ -527,17 +550,19 @@ describe('Unit: Stage 1 (CST)', () => {
               });
               expectPath(cst, '0.whitespaceStart').to.equal(null);
               expectPath(cst, '0.whitespaceEnd').to.equal('-');
-            },
-          );
-        });
+            }
+          },
+        );
       });
+    });
 
-      describe(`${title} - Case: LiquidTagOpen`, () => {
-        it('should parse the form tag open markup as arguments', () => {
-          [
-            { expression: `product`, args: [{ type: 'VariableLookup' }] },
-            { expression: `"product"`, args: [{ type: 'String' }] },
-          ].forEach(({ expression, args }) => {
+    describe('Case: LiquidTagOpen', () => {
+      it('should parse the form tag open markup as arguments', () => {
+        [
+          { expression: `product`, args: [{ type: 'VariableLookup' }] },
+          { expression: `"product"`, args: [{ type: 'String' }] },
+        ].forEach(({ expression, args }) => {
+          for (const { toCST, expectPath } of testCases) {
             cst = toCST(`{% form ${expression} -%}`);
             expectPath(cst, '0.type').to.equal('LiquidTagOpen');
             expectPath(cst, '0.name').to.equal('form');
@@ -546,51 +571,53 @@ describe('Unit: Stage 1 (CST)', () => {
               expectPath(cst, `0.markup.${i}.type`).to.equal(arg.type);
             });
             expectPath(cst, '0.whitespaceEnd').to.equal('-');
-          });
+          }
         });
+      });
 
-        it('should parse the for and tablerow tags open markup as ForMarkup', () => {
-          ['for', 'tablerow'].forEach((tagName) => {
-            [
-              {
-                expression: `product in all_products`,
-                variableName: 'product',
-                collection: { type: 'VariableLookup' },
-                reversed: null,
-                args: [],
-              },
-              {
-                expression: `i in (0..x)`,
-                variableName: 'i',
-                collection: { type: 'Range' },
-                reversed: null,
-                args: [],
-              },
-              {
-                expression: `product in all_products reversed`,
-                variableName: 'product',
-                collection: { type: 'VariableLookup' },
-                reversed: 'reversed',
-                args: [],
-              },
-              {
-                expression: `product in all_products limit: 10`,
-                variableName: 'product',
-                collection: { type: 'VariableLookup' },
-                reversed: null,
-                args: [{ type: 'NamedArgument', name: 'limit', value: { type: 'Number' } }],
-              },
-              {
-                expression: `product in all_products reversed limit: 10 offset:var`,
-                variableName: 'product',
-                collection: { type: 'VariableLookup' },
-                reversed: 'reversed',
-                args: [
-                  { type: 'NamedArgument', name: 'limit', value: { type: 'Number' } },
-                  { type: 'NamedArgument', name: 'offset', value: { type: 'VariableLookup' } },
-                ],
-              },
-            ].forEach(({ expression, variableName, collection, reversed, args }) => {
+      it('should parse the for and tablerow tags open markup as ForMarkup', () => {
+        ['for', 'tablerow'].forEach((tagName) => {
+          [
+            {
+              expression: `product in all_products`,
+              variableName: 'product',
+              collection: { type: 'VariableLookup' },
+              reversed: null,
+              args: [],
+            },
+            {
+              expression: `i in (0..x)`,
+              variableName: 'i',
+              collection: { type: 'Range' },
+              reversed: null,
+              args: [],
+            },
+            {
+              expression: `product in all_products reversed`,
+              variableName: 'product',
+              collection: { type: 'VariableLookup' },
+              reversed: 'reversed',
+              args: [],
+            },
+            {
+              expression: `product in all_products limit: 10`,
+              variableName: 'product',
+              collection: { type: 'VariableLookup' },
+              reversed: null,
+              args: [{ type: 'NamedArgument', name: 'limit', value: { type: 'Number' } }],
+            },
+            {
+              expression: `product in all_products reversed limit: 10 offset:var`,
+              variableName: 'product',
+              collection: { type: 'VariableLookup' },
+              reversed: 'reversed',
+              args: [
+                { type: 'NamedArgument', name: 'limit', value: { type: 'Number' } },
+                { type: 'NamedArgument', name: 'offset', value: { type: 'VariableLookup' } },
+              ],
+            },
+          ].forEach(({ expression, variableName, collection, reversed, args }) => {
+            for (const { toCST, expectPath } of testCases) {
               cst = toCST(`{% ${tagName} ${expression} -%}`);
               expectPath(cst, '0.type').to.equal('LiquidTagOpen');
               expectPath(cst, '0.name').to.equal(tagName);
@@ -605,43 +632,49 @@ describe('Unit: Stage 1 (CST)', () => {
                 expectPath(cst, `0.markup.args.${i}.value.type`).to.equal(arg.value.type);
               });
               expectPath(cst, '0.whitespaceEnd').to.equal('-');
-            });
+            }
           });
         });
+      });
 
-        it('should parse case arguments as a singular liquid expression', () => {
-          [
-            { expression: `"string"`, type: 'String' },
-            { expression: `var.lookup`, type: 'VariableLookup' },
-          ].forEach(({ expression, type }) => {
+      it('should parse case arguments as a singular liquid expression', () => {
+        [
+          { expression: `"string"`, type: 'String' },
+          { expression: `var.lookup`, type: 'VariableLookup' },
+        ].forEach(({ expression, type }) => {
+          for (const { toCST, expectPath } of testCases) {
             cst = toCST(`{% case ${expression} -%}`);
             expectPath(cst, '0.type').to.equal('LiquidTagOpen');
             expectPath(cst, '0.name').to.equal('case');
             expectPath(cst, '0.markup.type').to.equal(type);
-          });
+          }
         });
+      });
 
-        it('should parse capture arguments as a singular liquid variable lookup', () => {
-          [{ expression: `var`, type: 'VariableLookup' }].forEach(({ expression, type }) => {
+      it('should parse capture arguments as a singular liquid variable lookup', () => {
+        [{ expression: `var`, type: 'VariableLookup' }].forEach(({ expression, type }) => {
+          for (const { toCST, expectPath } of testCases) {
             cst = toCST(`{% capture ${expression} -%}`);
             expectPath(cst, '0.type').to.equal('LiquidTagOpen');
             expectPath(cst, '0.name').to.equal('capture');
             expectPath(cst, '0.markup.type').to.equal(type);
-          });
+          }
         });
+      });
 
-        it('should parse when arguments as an array of liquid expressions', () => {
-          [
-            { expression: `"string"`, args: [{ type: 'String' }] },
-            {
-              expression: `"string", var.lookup`,
-              args: [{ type: 'String' }, { type: 'VariableLookup' }],
-            },
-            {
-              expression: `"string" or var.lookup`,
-              args: [{ type: 'String' }, { type: 'VariableLookup' }],
-            },
-          ].forEach(({ expression, args }) => {
+      it('should parse when arguments as an array of liquid expressions', () => {
+        [
+          { expression: `"string"`, args: [{ type: 'String' }] },
+          {
+            expression: `"string", var.lookup`,
+            args: [{ type: 'String' }, { type: 'VariableLookup' }],
+          },
+          {
+            expression: `"string" or var.lookup`,
+            args: [{ type: 'String' }, { type: 'VariableLookup' }],
+          },
+        ].forEach(({ expression, args }) => {
+          for (const { toCST, expectPath } of testCases) {
             cst = toCST(`{% when ${expression} -%}`);
             expectPath(cst, '0.type').to.equal('LiquidTag');
             expectPath(cst, '0.name').to.equal('when');
@@ -649,34 +682,36 @@ describe('Unit: Stage 1 (CST)', () => {
             args.forEach((arg, i) => {
               expectPath(cst, `0.markup.${i}.type`).to.equal(arg.type);
             });
-          });
+          }
         });
+      });
 
-        it('should parse the paginate tag open markup as arguments', () => {
-          [
-            {
-              expression: `collection.products by 50`,
-              collection: { type: 'VariableLookup' },
-              pageSize: { type: 'Number' },
-            },
-            {
-              expression: `collection.products by setting.value`,
-              collection: { type: 'VariableLookup' },
-              pageSize: { type: 'VariableLookup' },
-            },
-            {
-              expression: `collection.products by setting.value window_size: 2`,
-              collection: { type: 'VariableLookup' },
-              pageSize: { type: 'VariableLookup' },
-              args: [{ type: 'Number' }],
-            },
-            {
-              expression: `collection.products by setting.value, window_size: 2`,
-              collection: { type: 'VariableLookup' },
-              pageSize: { type: 'VariableLookup' },
-              args: [{ type: 'Number' }],
-            },
-          ].forEach(({ expression, collection, pageSize, args }) => {
+      it('should parse the paginate tag open markup as arguments', () => {
+        [
+          {
+            expression: `collection.products by 50`,
+            collection: { type: 'VariableLookup' },
+            pageSize: { type: 'Number' },
+          },
+          {
+            expression: `collection.products by setting.value`,
+            collection: { type: 'VariableLookup' },
+            pageSize: { type: 'VariableLookup' },
+          },
+          {
+            expression: `collection.products by setting.value window_size: 2`,
+            collection: { type: 'VariableLookup' },
+            pageSize: { type: 'VariableLookup' },
+            args: [{ type: 'Number' }],
+          },
+          {
+            expression: `collection.products by setting.value, window_size: 2`,
+            collection: { type: 'VariableLookup' },
+            pageSize: { type: 'VariableLookup' },
+            args: [{ type: 'Number' }],
+          },
+        ].forEach(({ expression, collection, pageSize, args }) => {
+          for (const { toCST, expectPath } of testCases) {
             cst = toCST(`{% paginate ${expression} -%}`);
             expectPath(cst, '0.type').to.equal('LiquidTagOpen');
             expectPath(cst, '0.name').to.equal('paginate');
@@ -692,40 +727,42 @@ describe('Unit: Stage 1 (CST)', () => {
             } else {
               expectPath(cst, '0.markup.args').to.have.lengthOf(0);
             }
-          });
+          }
         });
+      });
 
-        it('should parse the if, unless and elsif tag arguments as a list of conditions', () => {
-          ['if', 'unless', 'elsif'].forEach((tagName) => {
-            [
-              {
-                expression: 'a',
-                conditions: [{ relation: null, conditional: { type: 'VariableLookup' } }],
-              },
-              {
-                expression: 'a and "string"',
-                conditions: [
-                  { relation: null, conditional: { type: 'VariableLookup' } },
-                  { relation: 'and', conditional: { type: 'String' } },
-                ],
-              },
-              {
-                expression: 'a and "string" or a<1',
-                conditions: [
-                  { relation: null, conditional: { type: 'VariableLookup' } },
-                  { relation: 'and', conditional: { type: 'String' } },
-                  {
-                    relation: 'or',
-                    conditional: {
-                      type: 'Comparison',
-                      comparator: '<',
-                      left: { type: 'VariableLookup' },
-                      right: { type: 'Number' },
-                    },
+      it('should parse the if, unless and elsif tag arguments as a list of conditions', () => {
+        ['if', 'unless', 'elsif'].forEach((tagName) => {
+          [
+            {
+              expression: 'a',
+              conditions: [{ relation: null, conditional: { type: 'VariableLookup' } }],
+            },
+            {
+              expression: 'a and "string"',
+              conditions: [
+                { relation: null, conditional: { type: 'VariableLookup' } },
+                { relation: 'and', conditional: { type: 'String' } },
+              ],
+            },
+            {
+              expression: 'a and "string" or a<1',
+              conditions: [
+                { relation: null, conditional: { type: 'VariableLookup' } },
+                { relation: 'and', conditional: { type: 'String' } },
+                {
+                  relation: 'or',
+                  conditional: {
+                    type: 'Comparison',
+                    comparator: '<',
+                    left: { type: 'VariableLookup' },
+                    right: { type: 'Number' },
                   },
-                ],
-              },
-            ].forEach(({ expression, conditions }) => {
+                },
+              ],
+            },
+          ].forEach(({ expression, conditions }) => {
+            for (const { toCST, expectPath } of testCases) {
               cst = toCST(`{% ${tagName} ${expression} -%}`);
               expectPath(cst, '0.type').to.equal(
                 tagName === 'elsif' ? 'LiquidTag' : 'LiquidTagOpen',
@@ -748,14 +785,16 @@ describe('Unit: Stage 1 (CST)', () => {
                   );
                 }
               });
-            });
+            }
           });
         });
       });
+    });
 
-      describe(`${title} - Case: LiquidNode`, () => {
-        it('should parse raw tags', () => {
-          ['style', 'raw'].forEach((raw) => {
+    describe('Case: LiquidNode', () => {
+      it('should parse raw tags', () => {
+        ['style', 'raw'].forEach((raw) => {
+          for (const { toCST, expectPath } of testCases) {
             cst = toCST(`{% ${raw} -%}<div>{%- end${raw} %}`);
             expectPath(cst, '0.type').to.equal('LiquidRawTag');
             expectPath(cst, '0.body').to.equal('<div>');
@@ -763,10 +802,12 @@ describe('Unit: Stage 1 (CST)', () => {
             expectPath(cst, '0.whitespaceEnd').to.equal('-');
             expectPath(cst, '0.delimiterWhitespaceStart').to.equal('-');
             expectPath(cst, '0.delimiterWhitespaceEnd').to.equal(null);
-          });
+          }
         });
+      });
 
-        it('should properly return block{Start,End}Loc{Start,End} locations of raw tags', () => {
+      it('should properly return block{Start,End}Loc{Start,End} locations of raw tags', () => {
+        for (const { toCST, expectPath } of testCases) {
           const source = '{% raw -%}<div>{%- endraw %}';
           cst = toCST(source);
           expectPath(cst, '0.type').to.equal('LiquidRawTag');
@@ -777,9 +818,11 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.blockEndLocEnd').to.equal(source.length);
           expectPath(cst, '0.delimiterWhitespaceStart').to.equal('-');
           expectPath(cst, '0.delimiterWhitespaceEnd').to.equal(null);
-        });
+        }
+      });
 
-        it('should basically parse liquid tags', () => {
+      it('should basically parse liquid tags', () => {
+        for (const { toCST, expectPath } of testCases) {
           cst = toCST('{%   unknown x = 1 %}{% if hi -%}{%- endif %}');
           expectPath(cst, '0.type').to.equal('LiquidTag');
           expectPath(cst, '0.name').to.equal('unknown');
@@ -794,9 +837,11 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '2.name').to.equal('if');
           expectPath(cst, '2.whitespaceStart').to.equal('-');
           expectPath(cst, '2.whitespaceEnd').to.equal(null);
-        });
+        }
+      });
 
-        it('should support nested comments', () => {
+      it('should support nested comments', () => {
+        for (const { toCST, expectPath } of testCases) {
           const testStr =
             '{% comment -%} ho {% comment %} ho {% endcomment %} ho {%- endcomment %}';
           cst = toCST(testStr);
@@ -813,10 +858,12 @@ describe('Unit: Stage 1 (CST)', () => {
             testStr.length - '{%- endcomment %}'.length,
           );
           expectPath(cst, '0.blockEndLocEnd').to.equal(testStr.length);
-        });
+        }
+      });
 
-        it('should parse tag open / close', () => {
-          BLOCKS.forEach((block: string) => {
+      it('should parse tag open / close', () => {
+        BLOCKS.forEach((block: string) => {
+          for (const { toCST, expectPath } of testCases) {
             cst = toCST(`{% ${block} args -%}{%- end${block} %}`);
             expectPath(cst, '0.type').to.equal('LiquidTagOpen', block);
             expectPath(cst, '0.name').to.equal(block);
@@ -829,7 +876,7 @@ describe('Unit: Stage 1 (CST)', () => {
             expectPath(cst, '1.name').to.equal(block);
             expectPath(cst, '1.whitespaceStart').to.equal('-');
             expectPath(cst, '1.whitespaceEnd').to.equal(null);
-          });
+          }
         });
       });
     });
@@ -837,6 +884,7 @@ describe('Unit: Stage 1 (CST)', () => {
 
   describe('Unit: toLiquidHtmlCST(text)', () => {
     let cst: LiquidHtmlCST;
+    const expectPath = makeExpectPath('toLiquidHtmlCST');
 
     describe('Case: HtmlDoctype', () => {
       it('should basically parse html doctypes', () => {
@@ -979,16 +1027,16 @@ describe('Unit: Stage 1 (CST)', () => {
         });
       });
 
-      [
-        { type: 'AttrSingleQuoted', name: 'single', quote: "'" },
-        { type: 'AttrSingleQuoted', name: 'single', quote: '‘' },
-        { type: 'AttrSingleQuoted', name: 'single', quote: '’' },
-        { type: 'AttrDoubleQuoted', name: 'double', quote: '"' },
-        { type: 'AttrDoubleQuoted', name: 'double', quote: '“' },
-        { type: 'AttrDoubleQuoted', name: 'double', quote: '”' },
-        { type: 'AttrUnquoted', name: 'unquoted', quote: '' },
-      ].forEach((testConfig) => {
-        it(`should parse ${testConfig.type} attributes`, () => {
+      it(`should parse quoted attributes`, () => {
+        [
+          { type: 'AttrSingleQuoted', name: 'single', quote: "'" },
+          { type: 'AttrSingleQuoted', name: 'single', quote: '‘' },
+          { type: 'AttrSingleQuoted', name: 'single', quote: '’' },
+          { type: 'AttrDoubleQuoted', name: 'double', quote: '"' },
+          { type: 'AttrDoubleQuoted', name: 'double', quote: '“' },
+          { type: 'AttrDoubleQuoted', name: 'double', quote: '”' },
+          { type: 'AttrUnquoted', name: 'unquoted', quote: '' },
+        ].forEach((testConfig) => {
           [
             `<div ${testConfig.name}=${testConfig.quote}${testConfig.name}${testConfig.quote}>`,
             `<div ${testConfig.name}=${testConfig.quote}${testConfig.name}${testConfig.quote} >`,
@@ -1000,10 +1048,9 @@ describe('Unit: Stage 1 (CST)', () => {
             expectPath(cst, '0.attrList.0.value.0.type').to.eql('TextNode');
             expectPath(cst, '0.attrList.0.value.0.value').to.eql(testConfig.name);
           });
-        });
 
-        if (testConfig.name != 'unquoted') {
-          it(`should accept liquid nodes inside ${testConfig.type}`, () => {
+          // `should accept liquid nodes inside ${testConfig.type}`
+          if (testConfig.name != 'unquoted') {
             [
               `<div ${testConfig.name}=${testConfig.quote}https://{{ name }}${testConfig.quote}>`,
               `<div ${testConfig.name}=${testConfig.quote}https://{{ name }}${testConfig.quote} >`,
@@ -1012,10 +1059,9 @@ describe('Unit: Stage 1 (CST)', () => {
               cst = toLiquidHtmlCST(text);
               expectPath(cst, '0.attrList.0.value.1.type').to.eql('LiquidDrop', text);
             });
-          });
-        }
+          }
 
-        it(`should accept top level liquid nodes that contain ${testConfig.type}`, () => {
+          // `should accept top level liquid nodes that contain ${testConfig.type}`
           [
             `<div {% if A %}${testConfig.name}=${testConfig.quote}https://name${testConfig.quote}{% endif %}>`,
             `<div {% if A %} ${testConfig.name}=${testConfig.quote}https://name${testConfig.quote} {% endif %}>`,
@@ -1085,6 +1131,8 @@ describe('Unit: Stage 1 (CST)', () => {
 
   describe('Unit: toLiquidCST(text)', () => {
     let cst: LiquidHtmlCST;
+    let expectPath = makeExpectPath('toLiquidCST(text)');
+
     it('should not throw when trying to parse unparseable code', () => {
       cst = toLiquidCST(`
         {%- liquid
@@ -1115,6 +1163,7 @@ describe('Unit: Stage 1 (CST)', () => {
   });
 
   describe('Unit: toLiquidHtmlCST(text, { mode: "completion" })', () => {
+    let expectPath = makeExpectPath('LiquidHtmlCST');
     let cst: LiquidHtmlCST;
     it('should parse special placeholder characters', () => {
       const toCST = (source: string) => toLiquidHtmlCST(source, { mode: 'completion' });
@@ -1178,8 +1227,10 @@ describe('Unit: Stage 1 (CST)', () => {
     });
   });
 
-  function expectPath(cst: LiquidHtmlCST, path: string) {
-    return expect(deepGet(path.split('.'), cst));
+  function makeExpectPath(message: string) {
+    return function expectPath(cst: LiquidHtmlCST, path: string) {
+      return expect(deepGet(path.split('.'), cst), message);
+    };
   }
 
   function expectPathStringified(cst: LiquidHtmlCST, path: string) {
