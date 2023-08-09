@@ -1,6 +1,7 @@
+import { test } from 'vitest';
 import { assertFormattedEqualsFixed } from '../test-helpers';
 import * as path from 'path';
 
-describe(`Unit: ${path.basename(__dirname)}`, () => {
-  assertFormattedEqualsFixed(__dirname);
+test('Unit: liquid-drop-number', async () => {
+  await assertFormattedEqualsFixed(__dirname);
 });

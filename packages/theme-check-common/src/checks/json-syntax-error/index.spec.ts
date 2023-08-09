@@ -3,7 +3,7 @@ import { JSONSyntaxError } from './index';
 import { highlightedOffenses, runJSONCheck } from '../../test';
 
 describe('Module: JSONSyntaxError', () => {
-  it('should report an error for invalid JSON', async () => {
+  it('should report an error for invalid JSON (0)', async () => {
     const invalidJson = `{
       "key1": "value1",
       "key2": "value2",,
@@ -18,7 +18,7 @@ describe('Module: JSONSyntaxError', () => {
     expect(highlights[0]).to.equal(',');
   });
 
-  it('should report an error for invalid JSON', async () => {
+  it('should report an error for invalid JSON (1)', async () => {
     const invalidJson = `{
       "key1": "value1",
       "key2": "value2"
@@ -33,7 +33,7 @@ describe('Module: JSONSyntaxError', () => {
     expect(highlights[0]).to.equal('\n');
   });
 
-  it('should report an error for invalid JSON', async () => {
+  it('should report an error for invalid JSON (2)', async () => {
     const invalidJson = `{
       'key1': "value1",
       "key2": "value2"

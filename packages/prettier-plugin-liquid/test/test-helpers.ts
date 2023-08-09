@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect } from 'vitest';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as prettier from 'prettier';
@@ -7,15 +7,13 @@ import { parse } from '../src/parser/parser';
 import { preprocess } from '../src/printer/print-preprocess';
 import { LiquidParserOptions } from '../src/types';
 
-const PARAGRAPH_SPLITTER =
-  /(?:\r?\n){2,}(?=\/\/|It|When|If|focus|debug|skip|<)/i;
+const PARAGRAPH_SPLITTER = /(?:\r?\n){2,}(?=\/\/|It|When|If|focus|debug|skip|<)/i;
 
-const TEST_MESSAGE =
-  /^(\/\/|It|When|If|focus|debug|skip)((\s|\S)(?!<)(?!{)(?!---))*./i;
+const TEST_MESSAGE = /^(\/\/|It|When|If|focus|debug|skip)((\s|\S)(?!<)(?!{)(?!---))*./i;
 
-function testMessage(input: string, actual: string) {
+function testMessage(input: string, actual: string, itMessage: string) {
   return [
-    '',
+    itMessage,
     '########## INPUT',
     input.trimEnd(),
     '########## ACTUAL',
@@ -36,7 +34,7 @@ const TEST_IDEMPOTENCE = !!(
   process.env.TEST_IDEMPOTENCE && JSON.parse(process.env.TEST_IDEMPOTENCE)
 );
 
-export function assertFormattedEqualsFixed(
+export async function assertFormattedEqualsFixed(
   dirname: string,
   options: Partial<LiquidParserOptions> = {},
 ) {
@@ -46,54 +44,54 @@ export function assertFormattedEqualsFixed(
 
   const chunks = source.split(PARAGRAPH_SPLITTER).map(trimEnd);
   const expectedChunks = expectedResults.split(PARAGRAPH_SPLITTER).map(trimEnd);
+  const testConfigs: ReturnType<typeof getTestSetup>[] = [];
 
   for (let i = 0; i < chunks.length; i++) {
     const src = chunks[i];
-    const testConfig = getTestSetup(src, i);
-    const test = async () => {
-      const testOptions = merge(options, testConfig.prettierOptions);
-      const input = src.replace(TEST_MESSAGE, '').trimStart();
-      if (testConfig.debug) await debug(input, testOptions);
-      let actual = (await format(input, testOptions)).trimEnd();
-      let expected = expectedChunks[i].replace(TEST_MESSAGE, '').trimStart();
+    testConfigs.push(getTestSetup(src, i, expectedChunks[i]));
+  }
 
-      if (TEST_IDEMPOTENCE) {
-        if (testConfig.debug) await debug(actual, testOptions);
-        actual = (await format(actual, testOptions)).trimEnd();
+  let runnableConfigs = testConfigs.filter((x) => x.skip);
+  if (runnableConfigs.find((x) => x.focus || x.debug)) {
+    runnableConfigs = runnableConfigs.filter((x) => x.focus || x.debug);
+  }
+
+  for (const testConfig of runnableConfigs) {
+    const { sourceParagraph, expectedParagraph } = testConfig;
+    const testOptions = merge(options, testConfig.prettierOptions);
+    const input = sourceParagraph.replace(TEST_MESSAGE, '').trimStart();
+    if (testConfig.debug) await debug(input, testOptions);
+    let actual = (await format(input, testOptions)).trimEnd();
+    let expected = expectedParagraph.replace(TEST_MESSAGE, '').trimStart();
+
+    if (TEST_IDEMPOTENCE) {
+      if (testConfig.debug) await debug(actual, testOptions);
+      actual = (await format(actual, testOptions)).trimEnd();
+    }
+
+    try {
+      expect(actual, testMessage(input, actual, testConfig.message)).to.eql(expected);
+    } catch (e) {
+      // Improve the stack trace so that it points to the fixed file instead
+      // of this test-helper file. Might make navigation smoother.
+      if ((e as any).stack as any) {
+        const fixedUrl = path.join(dirname, 'fixed.liquid');
+        const inputUrl = path.join(dirname, 'index.liquid');
+        const testUrl = path.join(dirname, 'index.spec.ts');
+        const fixedOffset = lineOffset(expectedResults, expected);
+        const fixedLoc = diffLoc(expected, actual, fixedOffset).join(':');
+        const inputLine = lineOffset(source, sourceParagraph) + 1;
+        (e as any).stack = ((e as any).stack as string).replace(
+          /^(\s+)at Context.test \(.*:\d+:\d+\)/im,
+          [
+            `$1at fixed.liquid (${fixedUrl}:${fixedLoc})`,
+            `$1at input.liquid (${inputUrl}:${inputLine}:0)`,
+            `$1at assertFormattedEqualsFixed (${testUrl}:5:6)`,
+          ].join('\n'),
+        );
       }
 
-      try {
-        expect(actual, testMessage(input, actual)).to.eql(expected);
-      } catch (e) {
-        // Improve the stack trace so that it points to the fixed file instead
-        // of this test-helper file. Might make navigation smoother.
-        if ((e as any).stack as any) {
-          const fixedUrl = path.join(dirname, 'fixed.liquid');
-          const inputUrl = path.join(dirname, 'index.liquid');
-          const testUrl = path.join(dirname, 'index.spec.ts');
-          const fixedOffset = lineOffset(expectedResults, expected);
-          const fixedLoc = diffLoc(expected, actual, fixedOffset).join(':');
-          const inputLine = lineOffset(source, src) + 1;
-          (e as any).stack = ((e as any).stack as string).replace(
-            /^(\s+)at Context.test \(.*:\d+:\d+\)/im,
-            [
-              `$1at fixed.liquid (${fixedUrl}:${fixedLoc})`,
-              `$1at input.liquid (${inputUrl}:${inputLine}:0)`,
-              `$1at assertFormattedEqualsFixed (${testUrl}:5:6)`,
-            ].join('\n'),
-          );
-        }
-
-        throw e;
-      }
-    };
-
-    if (testConfig.focus || testConfig.debug) {
-      it.only(testConfig.message, test);
-    } else if (testConfig.skip) {
-      it.skip(testConfig.message, test);
-    } else {
-      it(testConfig.message, test);
+      throw e;
     }
   }
 }
@@ -101,8 +99,8 @@ export function assertFormattedEqualsFixed(
 // prefix your tests with `debug` so that only this test runs and starts a debugging session
 // prefix your tests with `focus` so that only this test runs.
 // prefix your tests with `skip` so that it shows up as skipped.
-function getTestSetup(paragraph: string, index: number) {
-  let testMessage = TEST_MESSAGE.exec(paragraph) || [
+function getTestSetup(sourceParagraph: string, index: number, expectedParagraph: string) {
+  let testMessage = TEST_MESSAGE.exec(sourceParagraph) || [
     `it should format as expected (chunk ${index})`,
   ];
 
@@ -123,6 +121,8 @@ function getTestSetup(paragraph: string, index: number) {
   }
 
   return {
+    sourceParagraph,
+    expectedParagraph,
     message: message.replace(optionsParser, '').trimEnd(),
     prettierOptions,
     focus: /^focus/i.test(message),

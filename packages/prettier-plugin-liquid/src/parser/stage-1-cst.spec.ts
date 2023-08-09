@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it, describe } from 'vitest';
 import { LiquidHtmlCST, toLiquidHtmlCST, toLiquidCST, LiquidCST } from '~/parser/stage-1-cst';
 import { BLOCKS, VOID_ELEMENTS } from '~/parser/grammar';
 import { NamedTags } from '~/types';
