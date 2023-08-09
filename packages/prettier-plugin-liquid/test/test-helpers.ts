@@ -51,7 +51,7 @@ export async function assertFormattedEqualsFixed(
     testConfigs.push(getTestSetup(src, i, expectedChunks[i]));
   }
 
-  let runnableConfigs = testConfigs.filter((x) => x.skip);
+  let runnableConfigs = testConfigs.filter((x) => !x.skip);
   if (runnableConfigs.find((x) => x.focus || x.debug)) {
     runnableConfigs = runnableConfigs.filter((x) => x.focus || x.debug);
   }
