@@ -20,6 +20,11 @@ const filters: FilterEntry[] = [
     return_type: [{ type: 'array', array_value: 'string' }],
   },
   {
+    name: 'first',
+    syntax: 'array | first',
+    return_type: [{ type: 'untyped', name: '' }],
+  },
+  {
     name: 'map',
     syntax: 'array | map: string',
     return_type: [{ type: 'array', array_value: 'string' }],
@@ -63,7 +68,7 @@ const anyFilters = filtersNamesOfInputType('variable');
 const stringFilters = filtersNamesOfInputType('string');
 const metafieldFilters = filtersNamesOfInputType('metafield');
 const arrayFilters = filtersNamesOfInputType('array');
-const allFilters = filters.map((x) => x.name);
+const allFilters = filters.map((x) => x.name).sort();
 
 describe('Module: FilterCompletionProvider', async () => {
   let provider: CompletionsProvider;
@@ -101,11 +106,11 @@ describe('Module: FilterCompletionProvider', async () => {
       '{{ metafield | metafield_tag | █ }}',
       stringFilters.concat(anyFilters),
     );
-    await expect(provider).to.complete('{{ array | first | █ }}', stringFilters.concat(anyFilters));
     await expect(provider).to.complete(
       '{{ string | split: "" | █ }}',
       arrayFilters.concat(anyFilters),
     );
+    await expect(provider).to.complete('{{ array | first | █ }}', allFilters);
   });
 
   it('should append the any filters after the filters of the specific type', async () => {

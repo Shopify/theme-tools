@@ -7,10 +7,6 @@ import { isArrayType, TypeSystem } from '../TypeSystem';
 const ArrayCoreProperties = ['size', 'first', 'last'] as const;
 const StringCoreProperties = ['size'] as const;
 
-function toPropertyCompletionItem(object: ObjectEntry) {
-  return createCompletionItem(object, { kind: CompletionItemKind.Variable });
-}
-
 export class ObjectAttributeCompletionProvider implements Provider {
   constructor(private readonly typeSystem: TypeSystem) {}
 
@@ -64,4 +60,8 @@ function completionItems(options: ObjectEntry[], partial: string) {
     .filter(({ name }) => name.startsWith(partial))
     .sort(sortByName)
     .map(toPropertyCompletionItem);
+}
+
+function toPropertyCompletionItem(object: ObjectEntry) {
+  return createCompletionItem(object, { kind: CompletionItemKind.Variable });
 }

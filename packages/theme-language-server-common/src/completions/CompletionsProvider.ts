@@ -25,7 +25,7 @@ export class CompletionsProvider {
       new LiquidTagsCompletionProvider(themeDocset),
       new ObjectCompletionProvider(themeDocset),
       new ObjectAttributeCompletionProvider(typeSystem),
-      new FilterCompletionProvider(themeDocset),
+      new FilterCompletionProvider(typeSystem),
       // new HTMLTagsCompletionProvider(themeDocset),
       // new AssignmentsCompletionProvider(themeDocset),
       // new RenderSnippetCompletionProvider(themeDocset),

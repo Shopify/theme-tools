@@ -55,6 +55,14 @@ export class TypeSystem {
     }, {} as FiltersMap);
   });
 
+  public filterEntries = memo(async () => {
+    return this.themeDocset.filters();
+  });
+
+  public objectEntries = memo(async () => {
+    return this.themeDocset.objects();
+  });
+
   private async symbolsTable(partialAst: LiquidHtmlNode): Promise<SymbolsTable> {
     const seedSymbolsTable = await this.seedSymbolsTable();
     return buildSymbolsTable(partialAst, seedSymbolsTable);
@@ -81,14 +89,6 @@ export class TypeSystem {
       return table;
     }, {} as SymbolsTable);
   };
-
-  private filterEntries = memo(async () => {
-    return this.themeDocset.filters();
-  });
-
-  private objectEntries = memo(async () => {
-    return this.themeDocset.objects();
-  });
 
   private globalVariables = memo(async () => {
     const entries = await this.objectEntries();
@@ -117,7 +117,7 @@ const String = 'string' as const;
 type String = typeof String;
 
 /** A pseudo-type is the possible values of an ObjectEntry's return_type.type */
-type PseudoType = ObjectEntryName | String | Untyped | 'number' | 'boolean';
+export type PseudoType = ObjectEntryName | String | Untyped | 'number' | 'boolean';
 
 /**
  * A variable can have many types in the same file
@@ -148,7 +148,7 @@ interface TypeRange {
 }
 
 /** Some things can be an array type (e.g. product.images) */
-type ArrayType = {
+export type ArrayType = {
   kind: 'array';
   valueType: PseudoType;
 };
@@ -417,6 +417,10 @@ function inferIdentifierType(
   }
 
   const typeRanges = symbolsTable[identifier];
+  if (!typeRanges) {
+    return Untyped;
+  }
+
   const typeRange = findLast(typeRanges, (tr) => isCorrectTypeRange(tr, node));
 
   return typeRange
