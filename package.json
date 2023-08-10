@@ -11,7 +11,8 @@
     "packages/prettier-plugin-liquid",
     "packages/theme-check-*",
     "packages/theme-language-server-*",
-    "packages/vscode-extension"
+    "packages/vscode-extension",
+    "packages/release-orchestrator"
   ],
   "scripts": {
     "build:ci": "yarn workspaces run build:ci",
@@ -21,6 +22,7 @@
     "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
     "test": "vitest",
     "type-check": "yarn workspaces run type-check",
+    "release": "yarn workspace release-orchestrator run start",
     "reset": "find . -name \"node_modules\" -type d -prune -exec rm -rf '{}' +"
   },
   "devDependencies": {
