@@ -5,4 +5,4 @@
 '@shopify/theme-check-docs-updater': minor
 ---
 
-Add 'AssetSizeAppBlockCSS' check
+Add `AssetSizeAppBlockCSS` check

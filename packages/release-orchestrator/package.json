@@ -1,0 +1,15 @@
+{
+  "name": "release-orchestrator",
+  "version": "1.0.0",
+  "description": "Internal theme-tools package for handling the release process.",
+  "main": "dist/index.js",
+  "author": "Albert Chu <albert.chu@shopify.com>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "yarn build:ts",
+    "build:ci": "yarn build",
+    "build:ts": "tsc -b tsconfig.build.json",
+    "start": "yarn build && node dist/index.js"
+  }
+}
