@@ -9,6 +9,7 @@ import {
 } from './providers';
 import { DocumentManager } from '../documents';
 import { createLiquidCompletionParams } from './params';
+import { TypeSystem } from './TypeSystem';
 
 export class CompletionsProvider {
   private providers: Provider[] = [];
@@ -18,10 +19,12 @@ export class CompletionsProvider {
     readonly themeDocset: ThemeDocset,
     readonly log: (message: string) => void = (_m: string) => {},
   ) {
+    const typeSystem = new TypeSystem(themeDocset);
+
     this.providers = [
       new LiquidTagsCompletionProvider(themeDocset),
       new ObjectCompletionProvider(themeDocset),
-      new ObjectAttributeCompletionProvider(themeDocset),
+      new ObjectAttributeCompletionProvider(typeSystem),
       new FilterCompletionProvider(themeDocset),
       // new HTMLTagsCompletionProvider(themeDocset),
       // new AssignmentsCompletionProvider(themeDocset),
