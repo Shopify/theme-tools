@@ -2,17 +2,17 @@ import { LiquidCheckDefinition, SchemaProp, Severity, SourceCodeType } from '../
 import { assertFileExists, assertFileSize } from '../../utils/file-utils';
 
 const schema = {
-  thresholdInBytes: SchemaProp.number(100000),
+  thresholdInBytes: SchemaProp.number(10000),
 };
 
-export const AssetSizeAppBlockCSS: LiquidCheckDefinition<typeof schema> = {
+export const AssetSizeAppBlockJavaScript: LiquidCheckDefinition<typeof schema> = {
   meta: {
-    code: 'AssetSizeAppBlockCSS',
-    name: 'Asset Size App Block CSS',
+    code: 'AssetSizeAppBlockJavaScript',
+    name: 'Asset Size App Block JavaScript',
     docs: {
       description:
-        'This check is aimed at preventing large CSS bundles from being included via Theme App Extensions.',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/asset-size-app-block-css',
+        'This check is aimed at preventing large JavaScript bundles from being included via Theme App Extensions.',
+      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/asset-size-app-block-javascript',
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,
@@ -31,7 +31,7 @@ export const AssetSizeAppBlockCSS: LiquidCheckDefinition<typeof schema> = {
         if (node.name !== 'schema') return;
         let filePath;
         try {
-          filePath = JSON.parse(node.body.value).stylesheet;
+          filePath = JSON.parse(node.body.value).javascript;
         } catch (error) {
           return;
         }
@@ -52,7 +52,6 @@ export const AssetSizeAppBlockCSS: LiquidCheckDefinition<typeof schema> = {
           });
           return;
         }
-
         const fileExceedsThreshold = await assertFileSize(context, absolutePath, thresholdInBytes);
 
         if (fileExceedsThreshold) {

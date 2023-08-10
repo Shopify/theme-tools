@@ -1,6 +1,7 @@
 import { LiquidTag, LiquidTagNamed } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
 import { NamedTags, NodeTypes, Position } from '@shopify/prettier-plugin-liquid/dist/types';
 import { LiquidCheckDefinition, RelativePath, Severity, SourceCodeType } from '../../types';
+import { assertFileExists } from '../../utils/file-utils';
 
 export const MissingTemplate: LiquidCheckDefinition = {
   meta: {
@@ -21,13 +22,8 @@ export const MissingTemplate: LiquidCheckDefinition = {
     const isNamedLiquidTag = (tag: LiquidTag): tag is LiquidTagNamed =>
       typeof tag.markup !== 'string';
 
-    async function verifyFileExists(
-      requiredPath: RelativePath,
-      { position }: { position: Position },
-    ) {
-      const absolutePath = context.absolutePath(requiredPath);
-      const fileExists = await context.fileExists(absolutePath);
-
+    async function contextReport(requiredPath: RelativePath, { position }: { position: Position }) {
+      const fileExists = await assertFileExists(context, requiredPath);
       if (fileExists) return;
 
       context.report({
@@ -44,7 +40,7 @@ export const MissingTemplate: LiquidCheckDefinition = {
         const snippet = node.snippet;
         const requiredPath = `snippets/${snippet.value}.liquid`;
 
-        await verifyFileExists(requiredPath, snippet);
+        await contextReport(requiredPath, snippet);
       },
 
       async LiquidTag(node) {
@@ -54,7 +50,7 @@ export const MissingTemplate: LiquidCheckDefinition = {
         const markup = node.markup;
         const requiredPath = `sections/${markup.value}.liquid`;
 
-        await verifyFileExists(requiredPath, markup);
+        await contextReport(requiredPath, markup);
       },
     };
   },
