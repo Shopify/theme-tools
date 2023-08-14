@@ -8,7 +8,10 @@
   "license": "MIT",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/prettier-plugin-liquid",
+    "packages/theme-check-*",
+    "packages/theme-language-server-*",
+    "packages/vscode-extension"
   ],
   "scripts": {
     "build:ci": "yarn workspaces run build:ci",

@@ -7,6 +7,9 @@
     "rootDir": "src",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
-  "references": [{ "path": "../theme-language-server-common/src" }]
+  "references": [
+    { "path": "../theme-language-server-common/src" },
+    { "path": "../theme-check-docs-updater" }
+  ]
 }
 
