@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it, describe } from 'vitest';
 import { placeholderGrammars, strictGrammars, tolerantGrammars } from '~/parser/grammar';
 
 describe('Unit: liquidHtmlGrammar', () => {

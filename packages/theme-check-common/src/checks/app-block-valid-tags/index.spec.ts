@@ -1,26 +1,26 @@
 import { describe, it, expect } from 'vitest';
-import { runLiquidCheck, highlightedOffenses } from '../../test';
+import { runLiquidCheck } from '../../test';
 import { ForbiddenTag, AppBlockValidTags } from './index';
 
 const blocksFilePath = 'blocks/app.liquid';
 
 describe('Module: AppBlockValidTags', () => {
-  it.each(['include', 'layout', 'section', 'sections'])(
-    'should report an offense when the forbidden tag %s is used in blocks directory liquid file',
-    async (tag) => {
+  it('should report an offense when the forbidden tag is used in blocks directory liquid file', async () => {
+    const tags = ['include', 'layout', 'section', 'sections'];
+    for (const tag of tags) {
       const sourceCode = `
-    {% ${tag} 'test' %}
-    {% schema %}
-    { }
-    {% endschema %}
+        {% ${tag} 'test' %}
+        {% schema %}
+        { }
+        {% endschema %}
       `;
 
       const offenses = await runLiquidCheck(AppBlockValidTags, sourceCode, blocksFilePath);
 
       const expectedStart = {
-        index: 5,
+        index: 9,
         line: 1,
-        character: 4,
+        character: 8,
       };
       const tagEndOffset = 13;
       const endOffset = tag.length + tagEndOffset;
@@ -40,29 +40,29 @@ describe('Module: AppBlockValidTags', () => {
         start: expectedStart,
         end: expectedEnd,
       });
-    },
-  );
+    }
+  });
 
-  it.each(['javascript', 'stylesheet'])(
-    'should report an offense when the forbidden tag %s is used with an end tag in blocks directory liquid file',
-    async (tag) => {
+  it('should report an offense when the forbidden tag is used with an end tag in blocks directory liquid file', async () => {
+    const tags = ['javascript', 'stylesheet'];
+    for (const tag of tags) {
       const sourceCode = `
-    {% ${tag} %}
-    {% end${tag} %}
-    {% schema %}
-    { }
-    {% endschema %}
+        {% ${tag} %}
+        {% end${tag} %}
+        {% schema %}
+        { }
+        {% endschema %}
       `;
 
       const offenses = await runLiquidCheck(AppBlockValidTags, sourceCode, blocksFilePath);
 
       const expectedStart = {
-        index: 5,
+        index: 9,
         line: 1,
-        character: 4,
+        character: 8,
       };
       const expectedEnd = {
-        index: expectedStart.index + tag.length + 30,
+        index: expectedStart.index + tag.length + 34,
         line: 2,
         character: expectedStart.character + tag.length + 9,
       };
@@ -76,8 +76,8 @@ describe('Module: AppBlockValidTags', () => {
         start: expectedStart,
         end: expectedEnd,
       });
-    },
-  );
+    }
+  });
 
   it('should contain specifically the following forbidden tags', async () => {
     const actualTagValues = Object.values(ForbiddenTag);

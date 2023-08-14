@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it, describe } from 'vitest';
 import * as array from '~/printer/utils/array';
 
 describe('Module: array', () => {

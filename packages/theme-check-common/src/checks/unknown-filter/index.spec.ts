@@ -39,19 +39,19 @@ describe('Module: UnknownFilter', () => {
     expect(offenses).toHaveLength(0);
   });
 
-  it('should not report an offense when a known filter is used', async () => {
+  it('should not report an offense when a known filter is used (0)', async () => {
     const sourceCode = `{{ 'hello' | item_count_for_variant }}`;
     const offenses = await runLiquidCheck(UnknownFilter, sourceCode);
     expect(offenses).toHaveLength(0);
   });
 
-  it('should not report an offense when a known filter is used', async () => {
+  it('should not report an offense when a known filter is used (1)', async () => {
     const sourceCode = `{{ 'hello' | link_to_type }}`;
     const offenses = await runLiquidCheck(UnknownFilter, sourceCode);
     expect(offenses).toHaveLength(0);
   });
 
-  it('should not report an offense when a known filter is used', async () => {
+  it('should not report an offense when a known filter is used (2)', async () => {
     const sourceCode = `{{ 'hello' | link_to_vendor }}`;
     const offenses = await runLiquidCheck(UnknownFilter, sourceCode);
     expect(offenses).toHaveLength(0);
