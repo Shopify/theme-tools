@@ -8,8 +8,9 @@
   "license": "MIT",
   "private": true,
   "workspaces": [
-    "packages/*-common",
-    "packages/theme-*",
+    "packages/prettier-plugin-liquid",
+    "packages/theme-check-*",
+    "packages/theme-language-server-*",
     "packages/vscode-extension"
   ],
   "scripts": {

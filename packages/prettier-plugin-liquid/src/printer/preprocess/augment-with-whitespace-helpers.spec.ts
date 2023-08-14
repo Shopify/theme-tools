@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it, describe } from 'vitest';
 import { deepGet } from '~/utils';
 import { NodeTypes } from '~/types';
 import { toLiquidHtmlAST } from '~/parser';

@@ -1,37 +1,41 @@
-import { expect } from 'chai';
+import { expect, it, describe } from 'vitest';
 import { toLiquidHtmlAST, toLiquidAST, LiquidHtmlNode } from '~/parser/stage-2-ast';
 import { deepGet } from '~/utils';
 
 describe('Unit: Stage 2 (AST)', () => {
   let ast: any;
-  describe('Unit: toLiquidHtmlAST(text) and toLiquidAST(text)', () => {
-    [
-      {
-        title: 'toLiquidHtmlAST(text)',
-        fn: toLiquidHtmlAST,
-      },
-      {
-        title: 'toLiquidAST(text)',
-        fn: toLiquidAST,
-      },
-    ].forEach((testContext) => {
-      const title = testContext.title;
-      const toAST = testContext.fn;
 
-      describe(`${title} - Unit: LiquidDrop`, () => {
-        it('should transform a base case Liquid Drop into a LiquidDrop', () => {
+  describe('Unit: toLiquidHtmlAST(text) and toLiquidAST(text)', () => {
+    const testCases = [
+      {
+        expectPath: makeExpectPath('toLiquidHtmlAST(text)'),
+        expectPosition: makeExpectPosition('toLiquidHtmlAST(text)'),
+        toAST: toLiquidHtmlAST,
+      },
+      {
+        expectPath: makeExpectPath('toLiquidAST(text)'),
+        expectPosition: makeExpectPosition('toLiquidAST(text)'),
+        toAST: toLiquidAST,
+      },
+    ];
+
+    describe('Unit: LiquidDrop', () => {
+      it('should transform a base case Liquid Drop into a LiquidDrop', () => {
+        for (const { toAST, expectPath, expectPosition } of testCases) {
           ast = toAST('{{ !-asd }}');
           expectPath(ast, 'children.0').to.exist;
           expectPath(ast, 'children.0.type').to.eql('LiquidDrop');
           expectPath(ast, 'children.0.markup').to.eql('!-asd');
           expectPosition(ast, 'children.0');
-        });
+        }
+      });
 
-        it('should parse strings as LiquidVariable > String', () => {
-          [
-            { expression: `"string o' string"`, value: `string o' string`, single: false },
-            { expression: `'He said: "hi!"'`, value: `He said: "hi!"`, single: true },
-          ].forEach(({ expression, value, single }) => {
+      it('should parse strings as LiquidVariable > String', () => {
+        [
+          { expression: `"string o' string"`, value: `string o' string`, single: false },
+          { expression: `'He said: "hi!"'`, value: `He said: "hi!"`, single: true },
+        ].forEach(({ expression, value, single }) => {
+          for (const { toAST, expectPath, expectPosition } of testCases) {
             ast = toAST(`{{ ${expression} }}`);
             expectPath(ast, 'children.0').to.exist;
             expectPath(ast, 'children.0.type').to.eql('LiquidDrop');
@@ -43,17 +47,19 @@ describe('Unit: Stage 2 (AST)', () => {
             expectPosition(ast, 'children.0');
             expectPosition(ast, 'children.0.markup');
             expectPosition(ast, 'children.0.markup.expression');
-          });
+          }
         });
+      });
 
-        it('should parse numbers as LiquidVariable > Number', () => {
-          [
-            { expression: `1`, value: '1' },
-            { expression: `1.02`, value: '1.02' },
-            { expression: `0`, value: '0' },
-            { expression: `-0`, value: '-0' },
-            { expression: `-0.0`, value: '-0.0' },
-          ].forEach(({ expression, value }) => {
+      it('should parse numbers as LiquidVariable > Number', () => {
+        [
+          { expression: `1`, value: '1' },
+          { expression: `1.02`, value: '1.02' },
+          { expression: `0`, value: '0' },
+          { expression: `-0`, value: '-0' },
+          { expression: `-0.0`, value: '-0.0' },
+        ].forEach(({ expression, value }) => {
+          for (const { toAST, expectPath, expectPosition } of testCases) {
             ast = toAST(`{{ ${expression} }}`);
             expectPath(ast, 'children.0').to.exist;
             expectPath(ast, 'children.0.type').to.eql('LiquidDrop');
@@ -64,17 +70,19 @@ describe('Unit: Stage 2 (AST)', () => {
             expectPosition(ast, 'children.0');
             expectPosition(ast, 'children.0.markup');
             expectPosition(ast, 'children.0.markup.expression');
-          });
+          }
         });
+      });
 
-        it('should parse numbers as LiquidVariable > LiquidLiteral', () => {
-          [
-            { expression: `nil`, value: null },
-            { expression: `null`, value: null },
-            { expression: `true`, value: true },
-            { expression: `blank`, value: '' },
-            { expression: `empty`, value: '' },
-          ].forEach(({ expression, value }) => {
+      it('should parse numbers as LiquidVariable > LiquidLiteral', () => {
+        [
+          { expression: `nil`, value: null },
+          { expression: `null`, value: null },
+          { expression: `true`, value: true },
+          { expression: `blank`, value: '' },
+          { expression: `empty`, value: '' },
+        ].forEach(({ expression, value }) => {
+          for (const { toAST, expectPath, expectPosition } of testCases) {
             ast = toAST(`{{ ${expression} }}`);
             expectPath(ast, 'children.0').to.exist;
             expectPath(ast, 'children.0.type').to.eql('LiquidDrop');
@@ -86,27 +94,29 @@ describe('Unit: Stage 2 (AST)', () => {
             expectPosition(ast, 'children.0');
             expectPosition(ast, 'children.0.markup');
             expectPosition(ast, 'children.0.markup.expression');
-          });
+          }
         });
+      });
 
-        it('should parse ranges as LiquidVariable > Range', () => {
-          [
-            {
-              expression: `(0..5)`,
-              start: { value: '0', type: 'Number' },
-              end: { value: '5', type: 'Number' },
-            },
-            {
-              expression: `( 0 .. 5 )`,
-              start: { value: '0', type: 'Number' },
-              end: { value: '5', type: 'Number' },
-            },
-            {
-              expression: `(true..false)`,
-              start: { value: true, type: 'LiquidLiteral' },
-              end: { value: false, type: 'LiquidLiteral' },
-            },
-          ].forEach(({ expression, start, end }) => {
+      it('should parse ranges as LiquidVariable > Range', () => {
+        [
+          {
+            expression: `(0..5)`,
+            start: { value: '0', type: 'Number' },
+            end: { value: '5', type: 'Number' },
+          },
+          {
+            expression: `( 0 .. 5 )`,
+            start: { value: '0', type: 'Number' },
+            end: { value: '5', type: 'Number' },
+          },
+          {
+            expression: `(true..false)`,
+            start: { value: true, type: 'LiquidLiteral' },
+            end: { value: false, type: 'LiquidLiteral' },
+          },
+        ].forEach(({ expression, start, end }) => {
+          for (const { toAST, expectPath, expectPosition } of testCases) {
             ast = toAST(`{{ ${expression} }}`);
             expectPath(ast, 'children.0').to.exist;
             expectPath(ast, 'children.0.type').to.eql('LiquidDrop');
@@ -122,37 +132,39 @@ describe('Unit: Stage 2 (AST)', () => {
             expectPosition(ast, 'children.0.markup.expression');
             expectPosition(ast, 'children.0.markup.expression.start');
             expectPosition(ast, 'children.0.markup.expression.end');
-          });
+          }
         });
+      });
 
-        interface Lookup {
-          type: 'VariableLookup';
-          lookups: (string | number | Lookup)[];
-          name: string | undefined;
-        }
+      interface Lookup {
+        type: 'VariableLookup';
+        lookups: (string | number | Lookup)[];
+        name: string | undefined;
+      }
 
-        it('should parse variable lookups as LiquidVariable > VariableLookup', () => {
-          const v = (name: string, lookups: (string | number | Lookup)[] = []): Lookup => ({
-            type: 'VariableLookup',
-            name,
-            lookups,
-          });
-          [
-            { expression: `x`, name: 'x', lookups: [] },
-            { expression: `x.y`, name: 'x', lookups: ['y'] },
-            { expression: `x["y"]`, name: 'x', lookups: ['y'] },
-            { expression: `x['y']`, name: 'x', lookups: ['y'] },
-            { expression: `x[1]`, name: 'x', lookups: [1] },
-            { expression: `x.y.z`, name: 'x', lookups: ['y', 'z'] },
-            { expression: `x["y"]["z"]`, name: 'x', lookups: ['y', 'z'] },
-            { expression: `x["y"].z`, name: 'x', lookups: ['y', 'z'] },
-            { expression: `["product"]`, name: null, lookups: ['product'] },
-            { expression: `page.about-us`, name: 'page', lookups: ['about-us'] },
-            { expression: `["x"].y`, name: null, lookups: ['x', 'y'] },
-            { expression: `["x"]["y"]`, name: null, lookups: ['x', 'y'] },
-            { expression: `x[y]`, name: 'x', lookups: [v('y')] },
-            { expression: `x[y.z]`, name: 'x', lookups: [v('y', ['z'])] },
-          ].forEach(({ expression, name, lookups }) => {
+      it('should parse variable lookups as LiquidVariable > VariableLookup', () => {
+        const v = (name: string, lookups: (string | number | Lookup)[] = []): Lookup => ({
+          type: 'VariableLookup',
+          name,
+          lookups,
+        });
+        [
+          { expression: `x`, name: 'x', lookups: [] },
+          { expression: `x.y`, name: 'x', lookups: ['y'] },
+          { expression: `x["y"]`, name: 'x', lookups: ['y'] },
+          { expression: `x['y']`, name: 'x', lookups: ['y'] },
+          { expression: `x[1]`, name: 'x', lookups: [1] },
+          { expression: `x.y.z`, name: 'x', lookups: ['y', 'z'] },
+          { expression: `x["y"]["z"]`, name: 'x', lookups: ['y', 'z'] },
+          { expression: `x["y"].z`, name: 'x', lookups: ['y', 'z'] },
+          { expression: `["product"]`, name: null, lookups: ['product'] },
+          { expression: `page.about-us`, name: 'page', lookups: ['about-us'] },
+          { expression: `["x"].y`, name: null, lookups: ['x', 'y'] },
+          { expression: `["x"]["y"]`, name: null, lookups: ['x', 'y'] },
+          { expression: `x[y]`, name: 'x', lookups: [v('y')] },
+          { expression: `x[y.z]`, name: 'x', lookups: [v('y', ['z'])] },
+        ].forEach(({ expression, name, lookups }) => {
+          for (const { toAST, expectPath, expectPosition } of testCases) {
             ast = toAST(`{{ ${expression} }}`);
             expectPath(ast, 'children.0').to.exist;
             expectPath(ast, 'children.0.type').to.eql('LiquidDrop');
@@ -207,44 +219,46 @@ describe('Unit: Stage 2 (AST)', () => {
             expectPosition(ast, 'children.0');
             expectPosition(ast, 'children.0.markup');
             expectPosition(ast, 'children.0.markup.expression');
-          });
-        });
-
-        it('should parse filters', () => {
-          interface Filter {
-            name: string;
-            args: FilterArgument[];
           }
-          type FilterArgument = any;
+        });
+      });
 
-          const filter = (name: string, args: FilterArgument[] = []): Filter => ({ name, args });
-          const arg = (type: string, value: string) => ({ type, value });
-          const namedArg = (name: string, valueType: string) => ({
-            type: 'NamedArgument',
-            name,
-            valueType,
-          });
-          [
-            { expression: `| filter1`, filters: [filter('filter1')] },
-            { expression: `| filter1 | filter2`, filters: [filter('filter1'), filter('filter2')] },
-            {
-              expression: `| filter1: 'hi', 'there'`,
-              filters: [filter('filter1', [arg('String', 'hi'), arg('String', 'there')])],
-            },
-            {
-              expression: `| filter1: key: value, kind: 'string'`,
-              filters: [
-                filter('filter1', [namedArg('key', 'VariableLookup'), namedArg('kind', 'String')]),
-              ],
-            },
-            {
-              expression: `| f1: 'hi', key: (0..1) | f2: key: value, kind: 'string'`,
-              filters: [
-                filter('f1', [arg('String', 'hi'), namedArg('key', 'Range')]),
-                filter('f2', [namedArg('key', 'VariableLookup'), namedArg('kind', 'String')]),
-              ],
-            },
-          ].forEach(({ expression, filters }) => {
+      it('should parse filters', () => {
+        interface Filter {
+          name: string;
+          args: FilterArgument[];
+        }
+        type FilterArgument = any;
+
+        const filter = (name: string, args: FilterArgument[] = []): Filter => ({ name, args });
+        const arg = (type: string, value: string) => ({ type, value });
+        const namedArg = (name: string, valueType: string) => ({
+          type: 'NamedArgument',
+          name,
+          valueType,
+        });
+        [
+          { expression: `| filter1`, filters: [filter('filter1')] },
+          { expression: `| filter1 | filter2`, filters: [filter('filter1'), filter('filter2')] },
+          {
+            expression: `| filter1: 'hi', 'there'`,
+            filters: [filter('filter1', [arg('String', 'hi'), arg('String', 'there')])],
+          },
+          {
+            expression: `| filter1: key: value, kind: 'string'`,
+            filters: [
+              filter('filter1', [namedArg('key', 'VariableLookup'), namedArg('kind', 'String')]),
+            ],
+          },
+          {
+            expression: `| f1: 'hi', key: (0..1) | f2: key: value, kind: 'string'`,
+            filters: [
+              filter('f1', [arg('String', 'hi'), namedArg('key', 'Range')]),
+              filter('f2', [namedArg('key', 'VariableLookup'), namedArg('kind', 'String')]),
+            ],
+          },
+        ].forEach(({ expression, filters }) => {
+          for (const { toAST, expectPath, expectPosition } of testCases) {
             ast = toAST(`{{ 'hello' ${expression} }}`);
             expectPath(ast, 'children.0.type').to.equal('LiquidDrop');
             expectPath(ast, 'children.0.markup.type').to.equal('LiquidVariable');
@@ -294,12 +308,14 @@ describe('Unit: Stage 2 (AST)', () => {
             expectPosition(ast, 'children.0');
             expectPosition(ast, 'children.0.markup');
             expectPosition(ast, 'children.0.markup.expression');
-          });
+          }
         });
       });
+    });
 
-      describe(`${title} - Case: LiquidTag`, () => {
-        it('should transform a basic Liquid Tag into a LiquidTag', () => {
+    describe('Case: LiquidTag', () => {
+      it('should transform a basic Liquid Tag into a LiquidTag', () => {
+        for (const { toAST, expectPath, expectPosition } of testCases) {
           ast = toAST('{% name %}{% if -%}{%- endif %}');
           expectPath(ast, 'children.0').to.exist;
           expectPath(ast, 'children.0.type').to.eql('LiquidTag');
@@ -311,13 +327,15 @@ describe('Unit: Stage 2 (AST)', () => {
           expectPath(ast, 'children.1.delimiterWhitespaceStart').to.eql('-');
           expectPath(ast, 'children.1.delimiterWhitespaceEnd').to.eql('');
           expectPosition(ast, 'children.0');
-        });
+        }
+      });
 
-        it('should parse echo tags', () => {
-          [
-            { expression: `"hi"`, expressionType: 'String', expressionValue: 'hi', filters: [] },
-            { expression: `x | f`, expressionType: 'VariableLookup', filters: ['f'] },
-          ].forEach(({ expression, expressionType, expressionValue, filters }) => {
+      it('should parse echo tags', () => {
+        [
+          { expression: `"hi"`, expressionType: 'String', expressionValue: 'hi', filters: [] },
+          { expression: `x | f`, expressionType: 'VariableLookup', filters: ['f'] },
+        ].forEach(({ expression, expressionType, expressionValue, filters }) => {
+          for (const { toAST, expectPath, expectPosition } of testCases) {
             ast = toAST(`{% echo ${expression} -%}`);
             expectPath(ast, 'children.0').to.exist;
             expectPath(ast, 'children.0.type').to.eql('LiquidTag');
@@ -335,25 +353,27 @@ describe('Unit: Stage 2 (AST)', () => {
             expectPosition(ast, 'children.0');
             expectPosition(ast, 'children.0.markup');
             expectPosition(ast, 'children.0.markup.expression');
-          });
+          }
         });
+      });
 
-        it('should parse assign tags', () => {
-          [
-            {
-              expression: `x = "hi"`,
-              name: 'x',
-              expressionType: 'String',
-              expressionValue: 'hi',
-              filters: [],
-            },
-            {
-              expression: `z = y | f`,
-              name: 'z',
-              expressionType: 'VariableLookup',
-              filters: ['f'],
-            },
-          ].forEach(({ expression, name, expressionType, expressionValue, filters }) => {
+      it('should parse assign tags', () => {
+        [
+          {
+            expression: `x = "hi"`,
+            name: 'x',
+            expressionType: 'String',
+            expressionValue: 'hi',
+            filters: [],
+          },
+          {
+            expression: `z = y | f`,
+            name: 'z',
+            expressionType: 'VariableLookup',
+            filters: ['f'],
+          },
+        ].forEach(({ expression, name, expressionType, expressionValue, filters }) => {
+          for (const { toAST, expectPath, expectPosition } of testCases) {
             ast = toAST(`{% assign ${expression} -%}`);
             expectPath(ast, 'children.0').to.exist;
             expectPath(ast, 'children.0.type').to.eql('LiquidTag');
@@ -373,66 +393,68 @@ describe('Unit: Stage 2 (AST)', () => {
             expectPosition(ast, 'children.0.markup');
             expectPosition(ast, 'children.0.markup.value');
             expectPosition(ast, 'children.0.markup.value.expression');
-          });
+          }
         });
+      });
 
-        it('should parse render tags', () => {
-          [
-            {
-              expression: `"snippet"`,
-              snippetType: 'String',
-              alias: null,
-              renderVariableExpression: null,
-              namedArguments: [],
-            },
-            {
-              expression: `"snippet" as foo`,
-              snippetType: 'String',
-              alias: 'foo',
-              renderVariableExpression: null,
-              namedArguments: [],
-            },
-            {
-              expression: `"snippet" with "string" as foo`,
-              snippetType: 'String',
-              alias: 'foo',
-              renderVariableExpression: {
-                kind: 'with',
-                name: {
-                  type: 'String',
-                },
+      it('should parse render tags', () => {
+        [
+          {
+            expression: `"snippet"`,
+            snippetType: 'String',
+            alias: null,
+            renderVariableExpression: null,
+            namedArguments: [],
+          },
+          {
+            expression: `"snippet" as foo`,
+            snippetType: 'String',
+            alias: 'foo',
+            renderVariableExpression: null,
+            namedArguments: [],
+          },
+          {
+            expression: `"snippet" with "string" as foo`,
+            snippetType: 'String',
+            alias: 'foo',
+            renderVariableExpression: {
+              kind: 'with',
+              name: {
+                type: 'String',
               },
-              namedArguments: [],
             },
-            {
-              expression: `"snippet" for products as product`,
-              snippetType: 'String',
-              alias: 'product',
-              renderVariableExpression: {
-                kind: 'for',
-                name: {
-                  type: 'VariableLookup',
-                },
+            namedArguments: [],
+          },
+          {
+            expression: `"snippet" for products as product`,
+            snippetType: 'String',
+            alias: 'product',
+            renderVariableExpression: {
+              kind: 'for',
+              name: {
+                type: 'VariableLookup',
               },
-              namedArguments: [],
             },
-            {
-              expression: `variable with "string" as foo, key1: val1, key2: "hi"`,
-              snippetType: 'VariableLookup',
-              alias: 'foo',
-              renderVariableExpression: {
-                kind: 'with',
-                name: {
-                  type: 'String',
-                },
+            namedArguments: [],
+          },
+          {
+            expression: `variable with "string" as foo, key1: val1, key2: "hi"`,
+            snippetType: 'VariableLookup',
+            alias: 'foo',
+            renderVariableExpression: {
+              kind: 'with',
+              name: {
+                type: 'String',
               },
-              namedArguments: [
-                { name: 'key1', valueType: 'VariableLookup' },
-                { name: 'key2', valueType: 'String' },
-              ],
             },
-          ].forEach(
-            ({ expression, snippetType, renderVariableExpression, alias, namedArguments }) => {
+            namedArguments: [
+              { name: 'key1', valueType: 'VariableLookup' },
+              { name: 'key2', valueType: 'String' },
+            ],
+          },
+        ].forEach(
+          ({ expression, snippetType, renderVariableExpression, alias, namedArguments }) => {
+            for (const { toAST, expectPath, expectPosition } of testCases) {
               ast = toAST(`{% render ${expression} -%}`);
               expectPath(ast, 'children.0.type').to.equal('LiquidTag');
               expectPath(ast, 'children.0.name').to.equal('render');
@@ -466,48 +488,50 @@ describe('Unit: Stage 2 (AST)', () => {
               expectPath(ast, 'children.0.whitespaceEnd').to.equal('-');
               expectPosition(ast, 'children.0');
               expectPosition(ast, 'children.0.markup');
-            },
-          );
-        });
+            }
+          },
+        );
+      });
 
-        it('should parse conditional tags into conditional expressions', () => {
-          ['if', 'unless'].forEach((tagName) => {
-            [
-              {
-                expression: 'a',
-                markup: {
-                  type: 'VariableLookup',
-                },
+      it('should parse conditional tags into conditional expressions', () => {
+        ['if', 'unless'].forEach((tagName) => {
+          [
+            {
+              expression: 'a',
+              markup: {
+                type: 'VariableLookup',
               },
-              {
-                expression: 'a and "string"',
-                markup: {
-                  type: 'LogicalExpression',
-                  relation: 'and',
-                  left: { type: 'VariableLookup' },
-                  right: { type: 'String' },
-                },
+            },
+            {
+              expression: 'a and "string"',
+              markup: {
+                type: 'LogicalExpression',
+                relation: 'and',
+                left: { type: 'VariableLookup' },
+                right: { type: 'String' },
               },
-              {
-                expression: 'a and "string" or a<1',
-                markup: {
+            },
+            {
+              expression: 'a and "string" or a<1',
+              markup: {
+                type: 'LogicalExpression',
+                relation: 'and',
+                left: { type: 'VariableLookup' },
+                right: {
                   type: 'LogicalExpression',
-                  relation: 'and',
-                  left: { type: 'VariableLookup' },
+                  relation: 'or',
+                  left: { type: 'String' },
                   right: {
-                    type: 'LogicalExpression',
-                    relation: 'or',
-                    left: { type: 'String' },
-                    right: {
-                      type: 'Comparison',
-                      comparator: '<',
-                      left: { type: 'VariableLookup' },
-                      right: { type: 'Number' },
-                    },
+                    type: 'Comparison',
+                    comparator: '<',
+                    left: { type: 'VariableLookup' },
+                    right: { type: 'Number' },
                   },
                 },
               },
-            ].forEach(({ expression, markup }) => {
+            },
+          ].forEach(({ expression, markup }) => {
+            for (const { toAST, expectPath, expectPosition } of testCases) {
               ast = toAST(`{% ${tagName} ${expression} -%}{% end${tagName} %}`);
               expectPath(ast, 'children.0.type').to.equal('LiquidTag');
               expectPath(ast, 'children.0.name').to.equal(tagName);
@@ -551,12 +575,14 @@ describe('Unit: Stage 2 (AST)', () => {
               }
 
               expectPosition(ast, 'children.0');
-            });
+            }
           });
         });
       });
+    });
 
-      it(`${title} - should parse liquid inline comments`, () => {
+    it(`should parse liquid inline comments`, () => {
+      for (const { toAST, expectPath } of testCases) {
         ast = toAST(`{% #%}`);
         expectPath(ast, 'children.0').to.exist;
         expectPath(ast, 'children.0.type').to.eql('LiquidTag');
@@ -568,9 +594,11 @@ describe('Unit: Stage 2 (AST)', () => {
         expectPath(ast, 'children.0.type').to.eql('LiquidTag');
         expectPath(ast, 'children.0.name').to.eql('#');
         expectPath(ast, 'children.0.markup').to.eql('hello world');
-      });
+      }
+    });
 
-      it(`${title} - should parse liquid case as branches`, () => {
+    it(`should parse liquid case as branches`, () => {
+      for (const { toAST, expectPath } of testCases) {
         ast = toAST(`{% case A %}{% when A %}A{% when "B" %}B{% else    %}C{% endcase %}`);
         expectPath(ast, 'children.0').to.exist;
         expectPath(ast, 'children.0.type').to.eql('LiquidTag');
@@ -602,9 +630,11 @@ describe('Unit: Stage 2 (AST)', () => {
         expectPath(ast, 'children.0.children.3.markup').to.eql('');
         expectPath(ast, 'children.0.children.3.children.0.type').to.eql('TextNode');
         expectPath(ast, 'children.0.children.3.children.0.value').to.eql('C');
-      });
+      }
+    });
 
-      it(`${title} - should parse liquid ifs as branches`, () => {
+    it(`should parse liquid ifs as branches`, () => {
+      for (const { toAST, expectPath } of testCases) {
         ast = toAST(`{% if A %}A{% elsif B %}B{% else %}C{% endif %}`);
         expectPath(ast, 'children.0').to.exist;
         expectPath(ast, 'children.0.type').to.eql('LiquidTag');
@@ -626,20 +656,24 @@ describe('Unit: Stage 2 (AST)', () => {
         expectPath(ast, 'children.0.children.2.name').to.eql('else');
         expectPath(ast, 'children.0.children.2.children.0.type').to.eql('TextNode');
         expectPath(ast, 'children.0.children.2.children.0.value').to.eql('C');
-      });
+      }
+    });
 
-      it(`${title} - should parse a basic text node into a TextNode`, () => {
+    it(`should parse a basic text node into a TextNode`, () => {
+      for (const { toAST, expectPath, expectPosition } of testCases) {
         ast = toAST('Hello world!');
         expectPath(ast, 'children.0').to.exist;
         expectPath(ast, 'children.0.type').to.eql('TextNode');
         expectPath(ast, 'children.0.value').to.eql('Hello world!');
         expectPosition(ast, 'children.0');
-      });
+      }
     });
   });
 
   describe('Unit: toLiquidHtmlAST(text)', () => {
     let ast: any;
+    let expectPath = makeExpectPath('toLiquidHtmlAST');
+    let expectPosition = makeExpectPath('toLiquidHtmlAST');
 
     it('should parse HTML attributes', () => {
       ast = toLiquidHtmlAST(`<img src="https://1234" loading='lazy' disabled checked="">`);
@@ -872,6 +906,7 @@ describe('Unit: Stage 2 (AST)', () => {
 
   describe('Unit: toLiquidAST(text)', () => {
     let ast: any;
+    let expectPath = makeExpectPath('toLiquidAST');
 
     it('should parse nested unclosed tags', () => {
       ast = toLiquidAST('{% for a in b %} <div> {% if true %}');
@@ -951,84 +986,95 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.type').to.eql('TextNode');
       expectPath(ast, 'children.0.value').to.eql('<style>\n  :root { --bg:');
     });
-  });
 
-  it('should allow for dangling html open tags inside branches when the conditions are right', () => {
-    ['if', 'unless'].forEach((conditional) => {
-      ast = toLiquidHtmlAST(`
+    it('should allow for dangling html open tags inside branches when the conditions are right', () => {
+      ['if', 'unless'].forEach((conditional) => {
+        ast = toLiquidHtmlAST(`
         {% ${conditional} condition %}
           <section class="unclosed">
         {% end${conditional} %}
       `);
-      expectPath(ast, 'children.0.children.0.type').to.equal('LiquidBranch');
-      expectPath(ast, 'children.0.children.0.children.0.type').to.equal('HtmlDanglingMarkerOpen');
-      expectPath(ast, 'children.0.children.0.children.0.attributes.0.name.0.value').to.equal(
-        'class',
-      );
-      expectPath(ast, 'children.0.children.0.children.0.attributes.0.value.0.value').to.equal(
-        'unclosed',
-      );
+        expectPath(ast, 'children.0.children.0.type').to.equal('LiquidBranch');
+        expectPath(ast, 'children.0.children.0.children.0.type').to.equal('HtmlDanglingMarkerOpen');
+        expectPath(ast, 'children.0.children.0.children.0.attributes.0.name.0.value').to.equal(
+          'class',
+        );
+        expectPath(ast, 'children.0.children.0.children.0.attributes.0.value.0.value').to.equal(
+          'unclosed',
+        );
 
-      ast = toLiquidHtmlAST(`
+        ast = toLiquidHtmlAST(`
         {% ${conditional} condition %}
           <section class="unclosed">
         {% else %}
           <section class="unclosed">
         {% end${conditional} %}
       `);
-      expectPath(ast, 'children.0.children.0.type').to.equal('LiquidBranch');
-      expectPath(ast, 'children.0.children.0.children.0.type').to.equal('HtmlDanglingMarkerOpen');
-      expectPath(ast, 'children.0.children.0.children.0.attributes.0.name.0.value').to.equal(
-        'class',
-      );
-      expectPath(ast, 'children.0.children.0.children.0.attributes.0.value.0.value').to.equal(
-        'unclosed',
-      );
+        expectPath(ast, 'children.0.children.0.type').to.equal('LiquidBranch');
+        expectPath(ast, 'children.0.children.0.children.0.type').to.equal('HtmlDanglingMarkerOpen');
+        expectPath(ast, 'children.0.children.0.children.0.attributes.0.name.0.value').to.equal(
+          'class',
+        );
+        expectPath(ast, 'children.0.children.0.children.0.attributes.0.value.0.value').to.equal(
+          'unclosed',
+        );
 
-      expectPath(ast, 'children.0.children.1.type').to.equal('LiquidBranch');
-      expectPath(ast, 'children.0.children.1.children.0.type').to.equal('HtmlDanglingMarkerOpen');
-      expectPath(ast, 'children.0.children.1.children.0.attributes.0.name.0.value').to.equal(
-        'class',
-      );
-      expectPath(ast, 'children.0.children.1.children.0.attributes.0.value.0.value').to.equal(
-        'unclosed',
-      );
+        expectPath(ast, 'children.0.children.1.type').to.equal('LiquidBranch');
+        expectPath(ast, 'children.0.children.1.children.0.type').to.equal('HtmlDanglingMarkerOpen');
+        expectPath(ast, 'children.0.children.1.children.0.attributes.0.name.0.value').to.equal(
+          'class',
+        );
+        expectPath(ast, 'children.0.children.1.children.0.attributes.0.value.0.value').to.equal(
+          'unclosed',
+        );
+      });
     });
-  });
 
-  it('should allow for dangling html close tags inside branches when the conditions are right', () => {
-    ['if', 'unless'].forEach((conditional) => {
-      ast = toLiquidHtmlAST(`
+    it('should allow for dangling html close tags inside branches when the conditions are right', () => {
+      ['if', 'unless'].forEach((conditional) => {
+        ast = toLiquidHtmlAST(`
         {% ${conditional} condition %}
           </section>
         {% end${conditional} %}
       `);
-      expectPath(ast, 'children.0.children.0.type').to.equal('LiquidBranch');
-      expectPath(ast, 'children.0.children.0.children.0.type').to.equal('HtmlDanglingMarkerClose');
+        expectPath(ast, 'children.0.children.0.type').to.equal('LiquidBranch');
+        expectPath(ast, 'children.0.children.0.children.0.type').to.equal(
+          'HtmlDanglingMarkerClose',
+        );
 
-      ast = toLiquidHtmlAST(`
+        ast = toLiquidHtmlAST(`
         {% ${conditional} condition %}
           </section>
         {% else %}
           </main>
         {% end${conditional} %}
       `);
-      expectPath(ast, 'children.0.children.0.type').to.equal('LiquidBranch');
-      expectPath(ast, 'children.0.children.0.children.0.type').to.equal('HtmlDanglingMarkerClose');
-      expectPath(ast, 'children.0.children.0.children.0.name.0.value').to.equal('section');
+        expectPath(ast, 'children.0.children.0.type').to.equal('LiquidBranch');
+        expectPath(ast, 'children.0.children.0.children.0.type').to.equal(
+          'HtmlDanglingMarkerClose',
+        );
+        expectPath(ast, 'children.0.children.0.children.0.name.0.value').to.equal('section');
 
-      expectPath(ast, 'children.0.children.1.type').to.equal('LiquidBranch');
-      expectPath(ast, 'children.0.children.1.children.0.type').to.equal('HtmlDanglingMarkerClose');
-      expectPath(ast, 'children.0.children.1.children.0.name.0.value').to.equal('main');
+        expectPath(ast, 'children.0.children.1.type').to.equal('LiquidBranch');
+        expectPath(ast, 'children.0.children.1.children.0.type').to.equal(
+          'HtmlDanglingMarkerClose',
+        );
+        expectPath(ast, 'children.0.children.1.children.0.name.0.value').to.equal('main');
+      });
     });
   });
 
-  function expectPath(ast: LiquidHtmlNode, path: string) {
-    return expect(deepGet(path.split('.'), ast));
+  function makeExpectPath(message: string) {
+    return function expectPath(ast: LiquidHtmlNode, path: string) {
+      return expect(deepGet(path.split('.'), ast), message);
+    };
   }
 
-  function expectPosition(ast: LiquidHtmlNode, path: string) {
-    expectPath(ast, path + '.position.start').to.be.a('number');
-    expectPath(ast, path + '.position.end').to.be.a('number');
+  function makeExpectPosition(message: string) {
+    const expectPath = makeExpectPath(message);
+    return function expectPosition(ast: LiquidHtmlNode, path: string) {
+      expectPath(ast, path + '.position.start').to.be.a('number');
+      expectPath(ast, path + '.position.end').to.be.a('number');
+    };
   }
 });
