@@ -48,16 +48,21 @@ export class FilterCompletionProvider implements Provider {
         .filter((entry) => entry.syntax?.startsWith(inputType))
         .sort(sortByName);
 
+      // Case we take "anything" as argument
       if (inputType === 'variable') {
-        return options;
+        const entriesWithoutSyntax = filterEntries.filter((entry) => !entry.syntax);
+        return options.concat(entriesWithoutSyntax).sort(sortByName);
       }
 
+      // Case there doesn't exist filter entries for that type
       if (options.length === 0) {
         return filterEntries.sort(sortByName);
       }
 
       const untypedOptions = await this.options('variable');
 
+      // We show 'array' options before 'untyped' options because they feel
+      // like better options.
       return [...options, ...untypedOptions.map(deprioritized)];
     },
     (inputType) => inputType,

@@ -39,6 +39,15 @@ const filters: FilterEntry[] = [
     syntax: 'metafield | metafield_tag',
     return_type: [{ type: 'string', name: '' }],
   },
+  {
+    name: 'default',
+    syntax: 'variable | default: variable',
+    return_type: [{ type: 'untyped', name: '' }],
+  },
+  {
+    name: 'missing_syntax',
+    /* syntax: undefined */
+  },
 ];
 
 const objects: ObjectEntry[] = [
@@ -64,7 +73,9 @@ const objects: ObjectEntry[] = [
   },
 ];
 
-const anyFilters = filtersNamesOfInputType('variable');
+const anyFilters = filtersNamesOfInputType('variable').concat(
+  filters.filter((entry) => !entry.syntax).map((x) => x.name),
+);
 const stringFilters = filtersNamesOfInputType('string');
 const metafieldFilters = filtersNamesOfInputType('metafield');
 const arrayFilters = filtersNamesOfInputType('array');
