@@ -2,9 +2,12 @@ import path from 'path';
 import { defineConfig } from 'vite';
 import { configDefaults } from 'vitest/config';
 
+const CI = !!process.env.CI;
+const prettierPluginExclude = ['./packages/prettier-plugin-liquid'];
+
 export default defineConfig({
   test: {
-    exclude: [...configDefaults.exclude],
+    exclude: CI ? [...configDefaults.exclude, ...prettierPluginExclude] : configDefaults.exclude,
     singleThread: true,
     setupFiles: [
       './packages/theme-check-common/src/test/test-setup.ts',
