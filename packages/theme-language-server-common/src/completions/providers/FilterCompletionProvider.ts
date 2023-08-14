@@ -40,7 +40,7 @@ export class FilterCompletionProvider implements Provider {
     return completionItems(options, partial);
   }
 
-  options: (inputType: PseudoType) => Promise<FilterEntry[]> = memoize(
+  options: (inputType: PseudoType) => Promise<MaybeDeprioritisedFilterEntry[]> = memoize(
     async (inputType) => {
       const filterEntries = await this.typeSystem.filterEntries();
 
@@ -58,16 +58,24 @@ export class FilterCompletionProvider implements Provider {
 
       const untypedOptions = await this.options('variable');
 
-      return [...options, ...untypedOptions];
+      return [...options, ...untypedOptions.map(deprioritized)];
     },
     (inputType) => inputType,
   );
 }
 
-function completionItems(options: FilterEntry[], partial: string) {
+type MaybeDeprioritisedFilterEntry = FilterEntry & { deprioritized?: boolean };
+
+function deprioritized(entry: FilterEntry): MaybeDeprioritisedFilterEntry {
+  return { ...entry, deprioritized: true };
+}
+
+function completionItems(options: MaybeDeprioritisedFilterEntry[], partial: string) {
   return options.filter(({ name }) => name.startsWith(partial)).map(toPropertyCompletionItem);
 }
 
-function toPropertyCompletionItem(entry: FilterEntry) {
-  return createCompletionItem(entry, { kind: CompletionItemKind.Function });
+function toPropertyCompletionItem(entry: MaybeDeprioritisedFilterEntry) {
+  return createCompletionItem(entry, {
+    kind: CompletionItemKind.Function,
+  });
 }
