@@ -807,7 +807,7 @@ function buildAst(
       }
 
       case ConcreteNodeTypes.HtmlTagClose: {
-        if (isAcceptableDanglingMarkerClose(builder, cst as LiquidHtmlCST, i)) {
+        if (isAcceptableDanglingMarkerClose(builder, cst as LiquidHtmlCST, i, options.mode)) {
           builder.push(toHtmlDanglingMarkerClose(node, options));
         } else {
           builder.close(node, NodeTypes.HtmlElement);
@@ -1598,10 +1598,35 @@ function isAcceptableDanglingMarkerClose(
   builder: ASTBuilder,
   cst: LiquidHtmlCST,
   currIndex: number,
+  mode: ASTBuildOptions['mode'],
 ): boolean {
+  if (mode === 'completion') {
+    const current = cst[currIndex] as ConcreteHtmlTagClose;
+    const parentIsOfCorrectName =
+      builder.parent &&
+      builder.parent.type === NodeTypes.HtmlElement &&
+      getName(builder.parent) === getName(current);
+    return !parentIsOfCorrectName;
+  }
+
   return isAcceptableDanglingMarker(builder, cst, currIndex, ConcreteNodeTypes.HtmlTagClose);
 }
 
+// This function checks that the builder.current node accepts dangling nodes.
+//
+// The current logic is:
+//  - Grandparent node must be an if-like statement
+//  - Parent node must be a LiquidBranch
+//  - All sibling nodes must be of the same type (all close or all open)
+//
+// I want to extend that to pushing dangling close in completion mode...
+//
+// So that I can complete </[cursor]> and not have a broken AST.
+//
+// That would mean that the partial ast looks like this
+// <a>
+//   ...children
+//   </[cursor]>
 function isAcceptableDanglingMarker(
   builder: ASTBuilder,
   cst: LiquidHtmlCST,
