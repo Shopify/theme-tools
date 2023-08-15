@@ -218,11 +218,14 @@ class Fixer {
     const prevCharacter = this.markup.at(-1) ?? '';
     const prevPrevCharacter = this.markup.at(-2) ?? '';
     const isInLiquidContext = this.stack.includes('%}') || this.stack.includes('}}');
+    const isInHtmlContext = this.stack.at(-1) === '>';
     const isInStringContext = QUOTES.includes(this.current as any);
     return (
-      isInLiquidContext &&
-      ((!isInStringContext && [' ', '.', '{', '[', ','].includes(prevCharacter)) ||
-        (isInStringContext && prevPrevCharacter === '['))
+      (isInHtmlContext &&
+        (prevCharacter === '<' || (prevPrevCharacter === '<' && prevCharacter === '/'))) ||
+      (isInLiquidContext &&
+        ((!isInStringContext && [' ', '.', '{', '[', ','].includes(prevCharacter)) ||
+          (isInStringContext && prevPrevCharacter === '[')))
     );
   }
 

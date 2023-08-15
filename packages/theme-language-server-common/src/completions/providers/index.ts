@@ -1,3 +1,4 @@
+export { HtmlTagCompletionProvider } from './HtmlTagCompletionProvider';
 export { LiquidTagsCompletionProvider } from './LiquidTagsCompletionProvider';
 export { ObjectCompletionProvider } from './ObjectCompletionProvider';
 export { ObjectAttributeCompletionProvider } from './ObjectAttributeCompletionProvider';

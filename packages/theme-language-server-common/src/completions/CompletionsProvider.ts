@@ -5,6 +5,7 @@ import {
   LiquidTagsCompletionProvider,
   ObjectAttributeCompletionProvider,
   ObjectCompletionProvider,
+  HtmlTagCompletionProvider,
 } from './providers';
 import { DocumentManager } from '../documents';
 import { createLiquidCompletionParams } from './params';
@@ -18,10 +19,10 @@ export class CompletionsProvider {
     readonly log: (message: string) => void = (_m: string) => {},
   ) {
     this.providers = [
+      new HtmlTagCompletionProvider(),
       new LiquidTagsCompletionProvider(themeDocset),
       new ObjectCompletionProvider(themeDocset),
       new ObjectAttributeCompletionProvider(themeDocset),
-      // new HTMLTagsCompletionProvider(themeDocset),
       // new AssignmentsCompletionProvider(themeDocset),
       // new FilterCompletionProvider(themeDocset),
       // new RenderSnippetCompletionProvider(themeDocset),

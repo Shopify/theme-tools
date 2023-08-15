@@ -1032,6 +1032,11 @@
     jszip "^3.10.1"
     semver "^7.5.2"
 
+"@vscode/web-custom-data@^0.4.6":
+  version "0.4.6"
+  resolved "https://registry.yarnpkg.com/@vscode/web-custom-data/-/web-custom-data-0.4.6.tgz#a5f9f353dcbbc4334f0624c5fd0942f1f3205850"
+  integrity sha512-4zen0CzChZ0cvVqttxe9B+G56M3A0pMoaG6Y9784EN2zvr5n61m6JebfYhJ5rzINbTqePEqmwG+7tsdr5g9BJA==
+
 "@webassemblyjs/ast@1.11.6", "@webassemblyjs/ast@^1.11.5":
   version "1.11.6"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.11.6.tgz#db046555d3c413f8966ca50a95176a0e2c642e24"
