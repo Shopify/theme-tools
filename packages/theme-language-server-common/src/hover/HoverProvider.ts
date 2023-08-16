@@ -4,18 +4,16 @@ import { DocumentManager } from '../documents';
 import { forEachChildNodes } from '../visitor';
 import { TypeSystem } from '../TypeSystem';
 import { BaseHoverProvider } from './BaseHoverProvider';
-import { LiquidTagHoverProvider } from './providers';
+import { LiquidFilterHoverProvider, LiquidTagHoverProvider } from './providers';
 
 export class HoverProvider {
   private providers: BaseHoverProvider[] = [];
 
-  constructor(
-    readonly documentManager: DocumentManager,
-    readonly themeDocset: ThemeDocset,
-  ) {
+  constructor(readonly documentManager: DocumentManager, readonly themeDocset: ThemeDocset) {
     const typeSystem = new TypeSystem(themeDocset);
     this.providers = [
       new LiquidTagHoverProvider(themeDocset),
+      new LiquidFilterHoverProvider(themeDocset),
       // new HtmlTagCompletionProvider(),
       // new HtmlAttributeCompletionProvider(),
       // new LiquidTagsCompletionProvider(themeDocset),
