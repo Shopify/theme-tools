@@ -2,7 +2,7 @@ import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { FilterEntry, LiquidHtmlNodeTypes as NodeTypes } from '@shopify/theme-check-common';
 import { Provider, createCompletionItem, sortByName } from './common';
 import { CURSOR, LiquidCompletionParams } from '../params';
-import { isArrayType, PseudoType, TypeSystem } from '../TypeSystem';
+import { isArrayType, PseudoType, TypeSystem } from '../../TypeSystem';
 import { memoize } from '../../utils';
 
 export class FilterCompletionProvider implements Provider {
