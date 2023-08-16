@@ -15,6 +15,7 @@ import { VERSION } from '../version';
 import { DocumentLinksProvider } from '../documentLinks';
 import { CodeActionKinds, CodeActionsProvider } from '../codeActions';
 import { CompletionsProvider } from '../completions';
+import { HoverProvider } from '../hover';
 import { Commands, ExecuteCommandProvider } from '../commands';
 import { ClientCapabilities } from '../ClientCapabilities';
 import { AugmentedThemeDocset } from '../docset';
@@ -63,6 +64,7 @@ export function startServer(
     100,
   );
   const completionsProvider = new CompletionsProvider(documentManager, themeDocset, log);
+  const hoverProvider = new HoverProvider(documentManager);
   const executeCommandProvider = new ExecuteCommandProvider(
     documentManager,
     diagnosticsManager,
@@ -102,6 +104,9 @@ export function startServer(
         },
         executeCommandProvider: {
           commands: [...Commands],
+        },
+        hoverProvider: {
+          workDoneProgress: false,
         },
         workspace: {
           fileOperations: {
@@ -158,6 +163,10 @@ export function startServer(
 
   connection.onCompletion(async (params) => {
     return completionsProvider.completions(params);
+  });
+
+  connection.onHover(async (params) => {
+    return hoverProvider.hover(params);
   });
 
   // These notifications could cause a MissingSnippet check to be invalidated

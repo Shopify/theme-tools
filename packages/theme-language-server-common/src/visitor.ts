@@ -14,6 +14,8 @@ function isNode<S extends SourceCodeType>(x: any): x is NodeOfType<S, NodeTypes[
   return x !== null && typeof x === 'object' && typeof x.type === 'string';
 }
 
+export type ExecuteFunction<S extends SourceCodeType> = (node: AST[S], lineage: AST[S][]) => void;
+
 /**
  * @example
  *
@@ -31,6 +33,7 @@ function isNode<S extends SourceCodeType>(x: any): x is NodeOfType<S, NodeTypes[
 export function visit<S extends SourceCodeType, R>(node: AST[S], visitor: Visitor<S, R>): R[] {
   const results: R[] = [];
   const stack: { node: AST[S]; lineage: AST[S][] }[] = [{ node, lineage: [] }];
+  const pushStack = (node: AST[S], lineage: AST[S][]) => stack.push({ node, lineage });
 
   while (stack.length > 0) {
     // Visit current node
@@ -45,16 +48,24 @@ export function visit<S extends SourceCodeType, R>(node: AST[S], visitor: Visito
 
     // Enqueue child nodes
     const newLineage = lineage.concat(node);
-    for (const value of Object.values(node)) {
-      if (Array.isArray(value)) {
-        for (const child of value.filter(isNode<S>).reverse()) {
-          stack.push({ node: child, lineage: newLineage });
-        }
-      } else if (isNode<S>(value)) {
-        stack.push({ node: value, lineage: newLineage });
-      }
-    }
+    forEachChildNodes(node, newLineage, pushStack);
   }
 
   return results;
+}
+
+export function forEachChildNodes<S extends SourceCodeType>(
+  node: AST[S],
+  lineage: AST[S][],
+  execute: ExecuteFunction<S>,
+) {
+  for (const value of Object.values(node)) {
+    if (Array.isArray(value)) {
+      for (const child of value.filter(isNode<S>).reverse()) {
+        execute(child, lineage);
+      }
+    } else if (isNode<S>(value)) {
+      execute(value, lineage);
+    }
+  }
 }
