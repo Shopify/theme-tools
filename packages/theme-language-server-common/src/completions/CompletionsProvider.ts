@@ -11,7 +11,7 @@ import {
 } from './providers';
 import { DocumentManager } from '../documents';
 import { createLiquidCompletionParams } from './params';
-import { TypeSystem } from './TypeSystem';
+import { TypeSystem } from '../TypeSystem';
 
 export class CompletionsProvider {
   private providers: Provider[] = [];

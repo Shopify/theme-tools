@@ -9,8 +9,8 @@ import {
   ArrayReturnType,
   FilterEntry,
 } from '@shopify/theme-check-common';
-import { visit } from '../visitor';
-import { findLast, memo } from '../utils';
+import { visit } from './visitor';
+import { findLast, memo } from './utils';
 import { LiquidExpression } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
 
 type LiquidTag = NodeOfType<NodeTypes.LiquidTag>;
