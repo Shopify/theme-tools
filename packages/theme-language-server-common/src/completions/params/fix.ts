@@ -222,9 +222,12 @@ class Fixer {
     const isInStringContext = QUOTES.includes(this.current as any);
     return (
       (isInHtmlContext &&
-        (prevCharacter === '<' || (prevPrevCharacter === '<' && prevCharacter === '/'))) ||
+        (/\s/.test(prevCharacter) ||
+          prevCharacter === '<' ||
+          (prevPrevCharacter === '<' && prevCharacter === '/') ||
+          (prevPrevCharacter === '%' && prevCharacter === '}'))) ||
       (isInLiquidContext &&
-        ((!isInStringContext && [' ', '.', '{', '[', ','].includes(prevCharacter)) ||
+        ((!isInStringContext && [' ', '\t', '\n', '.', '{', '[', ','].includes(prevCharacter)) ||
           (isInStringContext && prevPrevCharacter === '[')))
     );
   }

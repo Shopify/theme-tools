@@ -6,6 +6,7 @@ import {
   ObjectAttributeCompletionProvider,
   ObjectCompletionProvider,
   HtmlTagCompletionProvider,
+  HtmlAttributeCompletionProvider,
 } from './providers';
 import { DocumentManager } from '../documents';
 import { createLiquidCompletionParams } from './params';
@@ -20,6 +21,7 @@ export class CompletionsProvider {
   ) {
     this.providers = [
       new HtmlTagCompletionProvider(),
+      new HtmlAttributeCompletionProvider(),
       new LiquidTagsCompletionProvider(themeDocset),
       new ObjectCompletionProvider(themeDocset),
       new ObjectAttributeCompletionProvider(themeDocset),

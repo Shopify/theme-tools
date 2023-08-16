@@ -28,7 +28,7 @@ function htmlEntryBody(entry: HtmlEntry) {
 }
 
 function description(entry: HtmlEntry) {
-  if (typeof entry.description === 'string') {
+  if (!entry.description || typeof entry.description === 'string') {
     return entry.description;
   }
 

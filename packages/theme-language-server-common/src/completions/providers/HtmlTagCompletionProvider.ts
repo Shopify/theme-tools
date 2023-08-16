@@ -1,16 +1,18 @@
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import {
-  LiquidHtmlNodeTypes as NodeTypes,
-  LiquidHtmlNodeOfType as NodeOfType,
+  HtmlDanglingMarkerClose,
+  HtmlElement,
   LiquidHtmlNode,
-} from '@shopify/theme-check-common';
-import { Provider, sortByName, renderHtmlEntry } from './common';
+  NodeTypes,
+  Provider,
+  TextNode,
+  isTextNode,
+  renderHtmlEntry,
+  sortByName,
+} from './common';
 import { CURSOR, LiquidCompletionParams } from '../params';
 import { HtmlData, Tag } from '../HtmlDocset';
 
-type HtmlElement = NodeOfType<NodeTypes.HtmlElement>;
-type HtmlDanglingMarkerClose = NodeOfType<NodeTypes.HtmlDanglingMarkerClose>;
-type TextNode = NodeOfType<NodeTypes.TextNode>;
 type CompletableParentNode = (HtmlElement | HtmlDanglingMarkerClose) & { name: [TextNode] };
 
 export class HtmlTagCompletionProvider implements Provider {
@@ -116,8 +118,4 @@ function isElementOrDanglingClose(
   node: LiquidHtmlNode,
 ): node is HtmlElement | HtmlDanglingMarkerClose {
   return [NodeTypes.HtmlElement, NodeTypes.HtmlDanglingMarkerClose].includes(node.type);
-}
-
-function isTextNode(node: LiquidHtmlNode): node is TextNode {
-  return node.type === NodeTypes.TextNode;
 }
