@@ -4,20 +4,20 @@ import { NodeTypes } from '@shopify/prettier-plugin-liquid/dist/types';
 import { render } from '../../completions/providers/common';
 import { BaseHoverProvider } from '../BaseHoverProvider';
 
-export class LiquidTagHoverProvider implements BaseHoverProvider {
-  constructor(public themeDocset: ThemeDocset) {}
+export class LiquidFilterHoverProvider implements BaseHoverProvider {
+  constructor(private themeDocset: ThemeDocset) { }
 
   async hover(
     _params: HoverParams,
     currentNode: LiquidHtmlNode,
-    _ancestors: LiquidHtmlNode[],
+    _ancestors: LiquidHtmlNode[]
   ): Promise<Hover | null> {
-    if (currentNode.type !== NodeTypes.LiquidTag && currentNode.type !== NodeTypes.LiquidBranch) {
+    if (currentNode.type !== NodeTypes.LiquidFilter) {
       return null;
     }
 
     const name = currentNode.name;
-    const entries = await this.themeDocset.tags();
+    const entries = await this.themeDocset.filters();
     const entry = entries.find((entry) => entry.name === name);
     if (!entry) {
       return null;
