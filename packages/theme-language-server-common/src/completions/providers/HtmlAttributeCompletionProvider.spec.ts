@@ -5,8 +5,8 @@ import { HtmlData } from '../HtmlDocset';
 import { sortByName } from './common';
 
 const globalAttributeNames = [...HtmlData.globalAttributes].sort(sortByName).map((x) => x.name);
-const aTag = HtmlData.tags.find(x => x.name === 'a')!;
-const aTagAttributeNames = aTag.attributes.map(x => x.name);
+const aTag = HtmlData.tags.find((x) => x.name === 'a')!;
+const aTagAttributeNames = aTag.attributes.map((x) => x.name);
 
 describe('Module: LiquidTagsCompletionProvider', async () => {
   let provider: CompletionsProvider;

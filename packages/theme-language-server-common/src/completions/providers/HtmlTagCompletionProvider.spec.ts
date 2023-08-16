@@ -26,7 +26,10 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
   });
 
   it('should complete void elements with only the void element', async () => {
-    await expect(provider).to.complete('<img█', allTagNames.filter((x) => x === 'img'));
+    await expect(provider).to.complete(
+      '<img█',
+      allTagNames.filter((x) => x === 'img'),
+    );
   });
 
   it('should complete html tag open names with parent name', async () => {

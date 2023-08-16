@@ -106,7 +106,7 @@ describe('Module: LiquidCompletionParams', async () => {
       });
 
       it('returns the HtmlVoidElement node when inside the tag', async () => {
-        const context = '<img█'
+        const context = '<img█';
         const { completionContext } = createLiquidParamsFromContext(context);
         const { node } = completionContext!;
         expectPath(node, 'type', context).to.eql('HtmlVoidElement');
