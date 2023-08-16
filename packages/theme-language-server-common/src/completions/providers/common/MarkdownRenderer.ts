@@ -36,7 +36,7 @@ function description(entry: HtmlEntry) {
 }
 
 function references(entry: HtmlEntry) {
-  if (!entry.references) return undefined;
+  if (!entry.references || entry.references.length === 0) return undefined;
   return [`#### Learn more`, entry.references.map((ref) => `- [${ref.name}](${ref.url})`)].join(
     '\n\n',
   );

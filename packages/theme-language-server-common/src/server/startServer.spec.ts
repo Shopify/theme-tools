@@ -240,7 +240,7 @@ describe('Module: server', () => {
         tags: async () => [],
       },
       schemaValidators: {
-        validateSectionSchema: async () => ({}) as ValidateFunction,
+        validateSectionSchema: async () => ({} as ValidateFunction),
       },
     } satisfies Dependencies;
   }
