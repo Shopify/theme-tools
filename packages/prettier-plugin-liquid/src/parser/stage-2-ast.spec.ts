@@ -1081,6 +1081,14 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.type').to.equal('HtmlElement');
       expectPath(ast, 'children.0.name.0.value').to.equal('h█');
     });
+
+    it('should not freak out when parsing dangling liquid tags', () => {
+      ast = toAST(`<h {% if cond %}attr{% end█ %}>`);
+      expectPath(ast, 'children.0.type').to.equal('HtmlElement');
+      expectPath(ast, 'children.0.attributes.0.type').to.equal('LiquidTag');
+      expectPath(ast, 'children.0.attributes.0.children.0.type').to.equal('LiquidBranch');
+      expectPath(ast, 'children.0.attributes.0.children.0.children.1.type').to.equal('LiquidTag');
+    });
   });
 
   function makeExpectPath(message: string) {
