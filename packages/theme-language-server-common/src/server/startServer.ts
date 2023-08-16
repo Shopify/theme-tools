@@ -64,7 +64,7 @@ export function startServer(
     100,
   );
   const completionsProvider = new CompletionsProvider(documentManager, themeDocset, log);
-  const hoverProvider = new HoverProvider(documentManager);
+  const hoverProvider = new HoverProvider(documentManager, themeDocset);
   const executeCommandProvider = new ExecuteCommandProvider(
     documentManager,
     diagnosticsManager,

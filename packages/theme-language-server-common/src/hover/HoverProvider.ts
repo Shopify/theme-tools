@@ -2,30 +2,20 @@ import { Hover, HoverParams } from 'vscode-languageserver';
 import { LiquidHtmlNode, SourceCodeType, ThemeDocset } from '@shopify/theme-check-common';
 import { DocumentManager } from '../documents';
 import { forEachChildNodes } from '../visitor';
-
-interface BaseHoverProvider {
-  hover(
-    params: HoverParams,
-    currentNode: LiquidHtmlNode,
-    ancestors: LiquidHtmlNode[],
-  ): Promise<Hover | null>;
-}
-
-class LiquidTagHoverProvider implements BaseHoverProvider {
-  async hover(params: HoverParams, currentNode: LiquidHtmlNode, ancestors: LiquidHtmlNode[]) {
-    console.error(currentNode);
-    return null;
-  }
-}
+import { TypeSystem } from '../TypeSystem';
+import { BaseHoverProvider } from './BaseHoverProvider';
+import { LiquidTagHoverProvider } from './providers';
 
 export class HoverProvider {
   private providers: BaseHoverProvider[] = [];
 
   constructor(
     readonly documentManager: DocumentManager,
+    readonly themeDocset: ThemeDocset,
   ) {
+    const typeSystem = new TypeSystem(themeDocset);
     this.providers = [
-      new LiquidTagHoverProvider(),
+      new LiquidTagHoverProvider(themeDocset),
       // new HtmlTagCompletionProvider(),
       // new HtmlAttributeCompletionProvider(),
       // new LiquidTagsCompletionProvider(themeDocset),

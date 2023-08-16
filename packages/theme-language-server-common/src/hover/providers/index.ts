@@ -1,0 +1,1 @@
+export { LiquidTagHoverProvider } from './LiquidTagHoverProvider';
