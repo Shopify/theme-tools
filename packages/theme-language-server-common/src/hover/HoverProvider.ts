@@ -4,7 +4,11 @@ import { DocumentManager } from '../documents';
 import { forEachChildNodes } from '../visitor';
 import { TypeSystem } from '../TypeSystem';
 import { BaseHoverProvider } from './BaseHoverProvider';
-import { LiquidFilterHoverProvider, LiquidTagHoverProvider } from './providers';
+import {
+  LiquidFilterHoverProvider,
+  LiquidObjectHoverProvider,
+  LiquidTagHoverProvider,
+} from './providers';
 
 export class HoverProvider {
   private providers: BaseHoverProvider[] = [];
@@ -14,6 +18,7 @@ export class HoverProvider {
     this.providers = [
       new LiquidTagHoverProvider(themeDocset),
       new LiquidFilterHoverProvider(themeDocset),
+      new LiquidObjectHoverProvider(typeSystem),
       // new HtmlTagCompletionProvider(),
       // new HtmlAttributeCompletionProvider(),
       // new LiquidTagsCompletionProvider(themeDocset),

@@ -5,12 +5,12 @@ import { render } from '../../completions/providers/common';
 import { BaseHoverProvider } from '../BaseHoverProvider';
 
 export class LiquidFilterHoverProvider implements BaseHoverProvider {
-  constructor(private themeDocset: ThemeDocset) { }
+  constructor(private themeDocset: ThemeDocset) {}
 
   async hover(
     _params: HoverParams,
     currentNode: LiquidHtmlNode,
-    _ancestors: LiquidHtmlNode[]
+    _ancestors: LiquidHtmlNode[],
   ): Promise<Hover | null> {
     if (currentNode.type !== NodeTypes.LiquidFilter) {
       return null;
