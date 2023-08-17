@@ -11,7 +11,10 @@ import {
 } from '@shopify/theme-check-common';
 import { visit } from './visitor';
 import { findLast, memo } from './utils';
-import { LiquidExpression } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
+import {
+  AssignMarkup,
+  LiquidExpression,
+} from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
 
 type LiquidTag = NodeOfType<NodeTypes.LiquidTag>;
 type LiquidVariable = NodeOfType<NodeTypes.LiquidVariable>;
@@ -21,7 +24,7 @@ export class TypeSystem {
   constructor(private readonly themeDocset: ThemeDocset) {}
 
   async inferType(
-    thing: Identifier | LiquidExpression | LiquidVariable,
+    thing: Identifier | LiquidExpression | LiquidVariable | AssignMarkup,
     partialAst: LiquidHtmlNode,
   ): Promise<PseudoType | ArrayType> {
     const [objectMap, filtersMap, symbolsTable] = await Promise.all([
@@ -215,7 +218,7 @@ function buildSymbolsTable(
       return {
         identifier: node.name,
         type: lazyVariable(node.value, node.position.start),
-        range: [node.position.end],
+        range: [node.position.start],
       };
     },
 
@@ -290,7 +293,7 @@ function resolveTypeRangeType(
 }
 
 function inferType(
-  thing: Identifier | LiquidExpression | LiquidVariable,
+  thing: Identifier | LiquidExpression | LiquidVariable | AssignMarkup,
   symbolsTable: SymbolsTable,
   objectMap: ObjectMap,
   filtersMap: FiltersMap,
@@ -316,12 +319,21 @@ function inferType(
       return arrayType('number');
     }
 
-    // {% assign x = y.property %}
+    // The type of the assign markup is the type of the right hand side.
+    // {% assign x = y.property | filter1 | filter2 %}
+    case NodeTypes.AssignMarkup: {
+      return inferType(thing.value, symbolsTable, objectMap, filtersMap);
+    }
+
+    // A variable lookup is expression[.lookup]*
+    // {{ y.property }}
     case NodeTypes.VariableLookup: {
       return inferLookupType(thing, symbolsTable, objectMap, filtersMap);
     }
 
-    // {% assign x = y.property | filter1 | filter2 %}
+    // A variable is the VariableLookup + Filters
+    // The type is the return value of the last filter
+    // {{ y.property | filter1 | filter2 }}
     case NodeTypes.LiquidVariable: {
       if (thing.filters.length > 0) {
         const lastFilter = thing.filters.at(-1)!;
@@ -506,7 +518,7 @@ function objectEntryType(entry: ObjectEntry): PseudoType | ArrayType {
  * This function converts the return_type property in one of the .json
  * files into a PseudoType or ArrayType.
  */
-function docsetEntryReturnType(
+export function docsetEntryReturnType(
   entry: ObjectEntry | FilterEntry,
   defaultValue: PseudoType,
 ): PseudoType | ArrayType {
