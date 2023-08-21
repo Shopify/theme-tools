@@ -32,5 +32,5 @@ expect.extend({ containOffense });
 
 process.on('unhandledRejection', (reason) => {
   console.error(reason);
-  debugger
+  debugger;
 });
