@@ -1,5 +1,4 @@
 export { createCompletionItem } from './CompletionItemProperties';
-export { render, renderHtmlEntry } from './MarkdownRenderer';
 export { Provider } from './Provider';
 export * from './node';
 

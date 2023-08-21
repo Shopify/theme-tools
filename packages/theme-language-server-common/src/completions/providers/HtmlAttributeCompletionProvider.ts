@@ -2,7 +2,6 @@ import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import {
   Provider,
   sortByName,
-  renderHtmlEntry,
   isTextNode,
   isAttrEmpty,
   isNamedHtmlElementNode,
@@ -11,6 +10,7 @@ import {
 import { CURSOR, LiquidCompletionParams } from '../params';
 import { Attribute, HtmlData } from '../HtmlDocset';
 import { findLast } from '../../utils';
+import { renderHtmlEntry } from '../../docset';
 
 export class HtmlAttributeCompletionProvider implements Provider {
   constructor() {}

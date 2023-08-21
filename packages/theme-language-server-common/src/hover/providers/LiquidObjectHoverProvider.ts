@@ -5,9 +5,9 @@ import {
   LiquidHtmlNodeOfType as NodeOfType,
   ObjectEntry,
 } from '@shopify/theme-check-common';
-import { render } from '../../completions/providers/common';
 import { BaseHoverProvider } from '../BaseHoverProvider';
 import { TypeSystem, isArrayType } from '../../TypeSystem';
+import { render } from '../../docset';
 
 type LiquidVariableLookup = NodeOfType<NodeTypes.VariableLookup>;
 

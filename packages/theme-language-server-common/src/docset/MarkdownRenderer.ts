@@ -1,13 +1,13 @@
 import { DocsetEntry, FilterEntry, ObjectEntry } from '@shopify/theme-check-common';
-import { Tag, Attribute } from '../../HtmlDocset';
-import { ArrayType, docsetEntryReturnType, isArrayType, PseudoType } from '../../../TypeSystem';
+import { Tag, Attribute } from '../completions/HtmlDocset';
+import { ArrayType, docsetEntryReturnType, isArrayType, PseudoType } from '../TypeSystem';
 
 const HORIZONTAL_SEPARATOR = '\n\n---\n\n';
 
 type HtmlEntry = Tag | Attribute;
 
 export function render(entry: DocsetEntry, returnType?: PseudoType | ArrayType) {
-  return [title(entry, returnType), docsetEntryBody(entry)].filter(exists).join('\n');
+  return [title(entry, returnType), docsetEntryBody(entry)].filter(Boolean).join('\n');
 }
 
 export function renderHtmlEntry(entry: HtmlEntry) {
