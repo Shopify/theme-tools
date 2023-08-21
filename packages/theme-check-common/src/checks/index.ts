@@ -28,12 +28,14 @@ import { ValidSchema } from './valid-schema';
 import { ContentForHeaderModification } from './content-for-header-modification';
 import { AssetSizeAppBlockCSS } from './asset-size-app-block-css';
 import { AssetSizeAppBlockJavaScript } from './asset-size-app-block-javascript';
+import { AssetSizeCSS } from './asset-size-css';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
   AssetPreload,
   AssetSizeAppBlockCSS,
   AssetSizeAppBlockJavaScript,
+  AssetSizeCSS,
   AssetUrlFilters,
   CdnPreconnect,
   ContentForHeaderModification,
