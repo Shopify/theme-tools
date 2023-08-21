@@ -44,7 +44,7 @@ describe('Module: server', () => {
     vi.useRealTimers();
   });
 
-  it("should log `Let's roll!` on successful setup", () => {
+  it("should log Let's roll! on successful setup", () => {
     expect(logger).toHaveBeenCalledWith("[SERVER] Let's roll!");
   });
 
@@ -222,7 +222,7 @@ describe('Module: server', () => {
     const MissingTemplate = allChecks.filter((c) => c.meta.code === 'MissingTemplate');
 
     return {
-      findRootURI: async () => 'browser:///',
+      findRootURI: async (_: string) => 'browser:///',
       fileExists: vi
         .fn()
         .mockImplementation(async (absolutePath: string) => fileTree.has(absolutePath)),
@@ -242,7 +242,7 @@ describe('Module: server', () => {
       schemaValidators: {
         validateSectionSchema: async () => ({} as ValidateFunction),
       },
-    } satisfies Dependencies;
+    } as Dependencies;
   }
 
   function missingTemplateDiagnostic() {
