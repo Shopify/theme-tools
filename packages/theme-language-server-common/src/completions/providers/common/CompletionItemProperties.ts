@@ -1,5 +1,5 @@
 import { CompletionItem, CompletionItemTag, MarkupContent } from 'vscode-languageserver';
-import { render } from './MarkdownRenderer';
+import { render } from '../../../docset';
 import { DocsetEntry } from '@shopify/theme-check-common';
 
 // ASCII tokens that make a string appear lower in the list.

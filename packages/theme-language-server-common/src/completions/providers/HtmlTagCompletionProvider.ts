@@ -7,11 +7,11 @@ import {
   Provider,
   TextNode,
   isTextNode,
-  renderHtmlEntry,
   sortByName,
 } from './common';
 import { CURSOR, LiquidCompletionParams } from '../params';
 import { HtmlData, Tag } from '../HtmlDocset';
+import { renderHtmlEntry } from '../../docset';
 
 type CompletableParentNode = (HtmlElement | HtmlDanglingMarkerClose) & { name: [TextNode] };
 

@@ -1,9 +1,9 @@
 import { Hover, HoverParams } from 'vscode-languageserver';
 import { LiquidHtmlNode } from '@shopify/theme-check-common';
 import { NodeTypes } from '@shopify/prettier-plugin-liquid/dist/types';
-import { render } from '../../completions/providers/common';
 import { BaseHoverProvider } from '../BaseHoverProvider';
 import { TypeSystem, isArrayType } from '../../TypeSystem';
+import { render } from '../../docset';
 
 export class LiquidObjectAttributeHoverProvider implements BaseHoverProvider {
   constructor(private typeSystem: TypeSystem) {}
