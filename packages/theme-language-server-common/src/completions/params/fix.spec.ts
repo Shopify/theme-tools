@@ -3,7 +3,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fix } from './fix';
 
-const CURSOR = '█';
 const scenarios = fs
   .readFileSync(path.join(__dirname, './testcases.txt'), 'utf8')
   .replace(/^#[^\n]*\n/gm, '')
