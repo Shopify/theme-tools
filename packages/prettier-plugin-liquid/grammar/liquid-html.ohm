@@ -498,4 +498,6 @@ WithPlaceholderLiquidStatement <: LiquidStatement {
 WithPlaceholderLiquidHTML <: LiquidHTML {
   liquidTagName := (letter | "█") (alnum | "_")*
   variableSegment := (letter | "_" | "█") identifierCharacter*
+  leadingTagNameTextNode := (letter | "█") (alnum | "-" | ":" | "█")*
+  trailingTagNameTextNode := (alnum | "-" | ":" | "█")+
 }

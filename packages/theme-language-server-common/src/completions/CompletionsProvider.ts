@@ -5,6 +5,8 @@ import {
   LiquidTagsCompletionProvider,
   ObjectAttributeCompletionProvider,
   ObjectCompletionProvider,
+  HtmlTagCompletionProvider,
+  HtmlAttributeCompletionProvider,
   Provider,
 } from './providers';
 import { DocumentManager } from '../documents';
@@ -22,11 +24,12 @@ export class CompletionsProvider {
     const typeSystem = new TypeSystem(themeDocset);
 
     this.providers = [
+      new HtmlTagCompletionProvider(),
+      new HtmlAttributeCompletionProvider(),
       new LiquidTagsCompletionProvider(themeDocset),
       new ObjectCompletionProvider(themeDocset),
       new ObjectAttributeCompletionProvider(typeSystem),
       new FilterCompletionProvider(typeSystem),
-      // new HTMLTagsCompletionProvider(themeDocset),
       // new AssignmentsCompletionProvider(themeDocset),
       // new RenderSnippetCompletionProvider(themeDocset),
     ];

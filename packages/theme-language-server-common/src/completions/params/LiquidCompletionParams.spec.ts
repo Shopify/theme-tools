@@ -95,13 +95,35 @@ describe('Module: LiquidCompletionParams', async () => {
           `{% if %}█`,
           `{% assign x %}`,
           `<img>█`,
-          `<img />█`,
+          `<self-closing />█`,
           `<a></a>█`,
         ];
         for (const context of contexts) {
           const { completionContext } = createLiquidParamsFromContext(context);
           const { node } = completionContext!;
           expect(node, context).to.eql(undefined);
+        }
+      });
+
+      it('returns the HtmlVoidElement node when inside the tag', async () => {
+        const context = '<img█';
+        const { completionContext } = createLiquidParamsFromContext(context);
+        const { node } = completionContext!;
+        expectPath(node, 'type', context).to.eql('HtmlVoidElement');
+      });
+
+      it("returns the TextNode when you're completing an HTML tag name", async () => {
+        const contexts = [
+          `<█`,
+          `<a█ href="...">`,
+          `</█`,
+          `</a█ href="...">`,
+          `<h1></h█ href="...">`,
+        ];
+        for (const context of contexts) {
+          const { completionContext } = createLiquidParamsFromContext(context);
+          const { node } = completionContext!;
+          expectPath(node, 'type', context).to.eql('TextNode');
         }
       });
 

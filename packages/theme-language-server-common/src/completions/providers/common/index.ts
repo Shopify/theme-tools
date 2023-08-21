@@ -1,6 +1,7 @@
 export { createCompletionItem } from './CompletionItemProperties';
-export { render } from './MarkdownRenderer';
+export { render, renderHtmlEntry } from './MarkdownRenderer';
 export { Provider } from './Provider';
+export * from './node';
 
 export function sortByName(
   { name: nameA }: { name: string },

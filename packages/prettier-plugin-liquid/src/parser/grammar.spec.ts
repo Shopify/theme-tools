@@ -139,10 +139,14 @@ describe('Unit: liquidHtmlGrammar', () => {
       expectMatchSucceeded('{% echo var | replace: █ %}').to.be.true;
       expectMatchSucceeded('{% echo var | replace: "foo", █ %}').to.be.true;
       expectMatchSucceeded('{% echo var | replace: "foo", var: █ %}').to.be.true;
+      expectMatchSucceeded('<█>').to.be.true;
+      expectMatchSucceeded('<a█>').to.be.true;
+      expectMatchSucceeded('</█>').to.be.true;
+      expectMatchSucceeded('</a█>').to.be.true;
     });
 
     function expectMatchSucceeded(text: string) {
-      const match = placeholderGrammars.Liquid.match(text.trimStart(), 'Node');
+      const match = placeholderGrammars.LiquidHTML.match(text.trimStart(), 'Node');
       return expect(match.succeeded(), text);
     }
   });

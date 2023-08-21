@@ -1064,6 +1064,33 @@ describe('Unit: Stage 2 (AST)', () => {
     });
   });
 
+  describe('toLiquidHTML(test, mode: completion)', () => {
+    const toAST = (source: string) =>
+      toLiquidHtmlAST(source, { mode: 'completion', allowUnclosedDocumentNode: true });
+    const expectPath = makeExpectPath('toLiquidHTML(test, mode: completion)');
+
+    it('should not freak out when parsing dangling closing nodes outside of the normally accepted context', () => {
+      ast = toAST(`<h1></h█>`);
+      expectPath(ast, 'children.0.type').to.equal('HtmlElement');
+      expectPath(ast, 'children.0.children.0.type').to.equal('HtmlDanglingMarkerClose');
+      expectPath(ast, 'children.0.children.0.name.0.value').to.equal('h█');
+    });
+
+    it('should not freak out when parsing dangling open node outside of the normally accepted context', () => {
+      ast = toAST(`<h█>`);
+      expectPath(ast, 'children.0.type').to.equal('HtmlElement');
+      expectPath(ast, 'children.0.name.0.value').to.equal('h█');
+    });
+
+    it('should not freak out when parsing dangling liquid tags', () => {
+      ast = toAST(`<h {% if cond %}attr{% end█ %}>`);
+      expectPath(ast, 'children.0.type').to.equal('HtmlElement');
+      expectPath(ast, 'children.0.attributes.0.type').to.equal('LiquidTag');
+      expectPath(ast, 'children.0.attributes.0.children.0.type').to.equal('LiquidBranch');
+      expectPath(ast, 'children.0.attributes.0.children.0.children.1.type').to.equal('LiquidTag');
+    });
+  });
+
   function makeExpectPath(message: string) {
     return function expectPath(ast: LiquidHtmlNode, path: string) {
       return expect(deepGet(path.split('.'), ast), message);

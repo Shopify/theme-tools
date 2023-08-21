@@ -201,8 +201,16 @@ function findCurrentNode(
           finder.current = last(current.children);
         } else if (hasNonEmptyArrayProperty(current, 'attributes')) {
           finder.current = last(current.attributes);
-        } else if (hasNonEmptyArrayProperty(current, 'name')) {
+        } else if (
+          hasNonEmptyArrayProperty(current, 'name') &&
+          isCoveredExcluded(cursor, current.blockStartPosition)
+        ) {
           finder.current = last(current.name);
+        } else if (
+          typeof current.name === 'string' &&
+          isCoveredExcluded(cursor, current.blockStartPosition)
+        ) {
+          /* break */
         } else {
           finder.current = undefined; // there's nothing to complete
         }

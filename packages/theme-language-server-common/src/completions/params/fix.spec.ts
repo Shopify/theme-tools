@@ -114,6 +114,30 @@ describe('Unit: fix', async () => {
     }
   });
 
+  it('appends a cursor character as a placeholder for html element names (to be used with completion mode parsing)', () => {
+    // prettier-ignore
+    const contexts = [
+      `<█>`,
+      `</█>`,
+    ];
+    for (const context of contexts) {
+      expect(fix(context.replace(/█.*$/, ''))).to.equal(context);
+    }
+  });
+
+  it('appends a cursor character as a placeholder for html attribute names (to be used with completion mode parsing)', () => {
+    // prettier-ignore
+    const contexts = [
+      `<a █>`,
+      `<a attr="value" █>`,
+      `<a {% if cond %}█>`,
+      `<a {% if cond %}\n█>`,
+    ];
+    for (const context of contexts) {
+      expect(fix(context.replace(/█.*$/, ''))).to.equal(context);
+    }
+  });
+
   describe('Case: the rest of the fucking owl', () => {
     it('fixes templates properly', () => {
       for (const { source, expected } of scenarios) {
