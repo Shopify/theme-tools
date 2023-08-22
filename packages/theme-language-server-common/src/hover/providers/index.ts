@@ -4,4 +4,4 @@ export { LiquidObjectHoverProvider } from './LiquidObjectHoverProvider';
 export { LiquidObjectAttributeHoverProvider } from './LiquidObjectAttributeHoverProvider';
 export { HtmlTagHoverProvider } from './HtmlTagHoverProvider';
 export { HtmlAttributeHoverProvider } from './HtmlAttributeHoverProvider';
-export { HtmlAttributeValueHoverProvider} from './HtmlAttributeValueHoverProvider';
+export { HtmlAttributeValueHoverProvider } from './HtmlAttributeValueHoverProvider';
