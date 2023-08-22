@@ -16,19 +16,22 @@ export class HtmlAttributeHoverProvider implements BaseHoverProvider {
     currentNode: LiquidHtmlNode,
     ancestors: LiquidHtmlNode[],
   ): Promise<Hover | null> {
-    const parentNode = ancestors.at(-1);
-    const grandParentNode = findLast(ancestors, isNamedHtmlElementNode);
+    const attributeNode = ancestors.at(-1);
+    const tagNode = findLast(ancestors, isNamedHtmlElementNode);
     if (
-      !parentNode ||
-      !grandParentNode ||
+      !attributeNode ||
+      !tagNode ||
       !isTextNode(currentNode) ||
-      !isHtmlAttribute(parentNode) ||
-      !isNamedHtmlElementNode(grandParentNode)
+      !isHtmlAttribute(attributeNode) ||
+      !attributeNode.name.includes(currentNode) ||
+      attributeNode.name.length > 1 ||
+      !isNamedHtmlElementNode(tagNode)
     ) {
       return null;
     }
+
     const name = currentNode.value;
-    const tagName = getCompoundName(grandParentNode);
+    const tagName = getCompoundName(tagNode);
     const tagEntry = HtmlData.tags.find((tag) => tag.name === tagName);
     const tagEntryAttributes = tagEntry?.attributes || [];
     const attribute =
@@ -42,7 +45,7 @@ export class HtmlAttributeHoverProvider implements BaseHoverProvider {
     return {
       contents: {
         kind: 'markdown',
-        value: renderHtmlEntry(attribute, tagEntry),
+        value: renderHtmlEntry(attribute, 'references' in attribute ? undefined : tagEntry),
       },
     };
   }
