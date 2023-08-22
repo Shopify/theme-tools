@@ -1,5 +1,5 @@
 import { DocsetEntry, FilterEntry, ObjectEntry } from '@shopify/theme-check-common';
-import { Tag, Attribute } from '../completions/HtmlDocset';
+import { Tag, Attribute } from '.';
 import { ArrayType, docsetEntryReturnType, isArrayType, PseudoType } from '../TypeSystem';
 
 const HORIZONTAL_SEPARATOR = '\n\n---\n\n';

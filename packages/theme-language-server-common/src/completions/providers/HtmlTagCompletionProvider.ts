@@ -10,7 +10,7 @@ import {
   sortByName,
 } from './common';
 import { CURSOR, LiquidCompletionParams } from '../params';
-import { HtmlData, Tag } from '../HtmlDocset';
+import { HtmlData, Tag } from '../../docset';
 import { renderHtmlEntry } from '../../docset';
 
 type CompletableParentNode = (HtmlElement | HtmlDanglingMarkerClose) & { name: [TextNode] };

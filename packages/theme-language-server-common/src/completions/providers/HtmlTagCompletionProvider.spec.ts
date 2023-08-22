@@ -1,7 +1,7 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
-import { HtmlData } from '../HtmlDocset';
+import { HtmlData } from '../../docset';
 import { sortByName } from './common';
 
 const allTagNames = [...HtmlData.tags].sort(sortByName).map((x) => x.name);
