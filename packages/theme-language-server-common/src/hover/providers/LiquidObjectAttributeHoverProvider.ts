@@ -41,7 +41,7 @@ export class LiquidObjectAttributeHoverProvider implements BaseHoverProvider {
     }
 
     const parentTypeProperties = objectMap[parentType]?.properties || [];
-    const entry = parentTypeProperties.find(p => p.name === currentNode.value)
+    const entry = parentTypeProperties.find((p) => p.name === currentNode.value);
     if (!entry) {
       return null;
     }

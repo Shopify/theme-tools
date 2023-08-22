@@ -1,10 +1,12 @@
-import { Hover, HoverParams } from 'vscode-languageserver';
 import { LiquidHtmlNode, SourceCodeType, ThemeDocset } from '@shopify/theme-check-common';
+import { Hover, HoverParams } from 'vscode-languageserver';
+import { TypeSystem } from '../TypeSystem';
 import { DocumentManager } from '../documents';
 import { forEachChildNodes } from '../visitor';
-import { TypeSystem } from '../TypeSystem';
 import { BaseHoverProvider } from './BaseHoverProvider';
 import {
+  HtmlAttributeHoverProvider,
+  HtmlTagHoverProvider,
   LiquidFilterHoverProvider,
   LiquidObjectAttributeHoverProvider,
   LiquidObjectHoverProvider,
@@ -21,8 +23,8 @@ export class HoverProvider {
       new LiquidFilterHoverProvider(themeDocset),
       new LiquidObjectHoverProvider(typeSystem),
       new LiquidObjectAttributeHoverProvider(typeSystem),
-      // new HtmlTagHoverProvider(),
-      // new HtmlAttributeHoverProvider(),
+      new HtmlTagHoverProvider(),
+      new HtmlAttributeHoverProvider(),
       // new FilterHoverProvider(themeDocset),
     ];
   }

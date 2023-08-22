@@ -43,10 +43,17 @@ export class LiquidObjectHoverProvider implements BaseHoverProvider {
     const entry = objectMap[isArrayType(type) ? type.valueType : type];
 
     if (!entry) {
+      const entryByName = objectMap[currentNode.name] ?? {};
       return {
         contents: {
           kind: 'markdown',
-          value: render({ name: currentNode.name }, type),
+          value: render(
+            {
+              ...entryByName,
+              name: currentNode.name,
+            },
+            type,
+          ),
         },
       };
     }
