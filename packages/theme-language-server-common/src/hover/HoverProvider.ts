@@ -6,6 +6,7 @@ import { TypeSystem } from '../TypeSystem';
 import { BaseHoverProvider } from './BaseHoverProvider';
 import {
   LiquidFilterHoverProvider,
+  LiquidObjectAttributeHoverProvider,
   LiquidObjectHoverProvider,
   LiquidTagHoverProvider,
 } from './providers';
@@ -19,14 +20,10 @@ export class HoverProvider {
       new LiquidTagHoverProvider(themeDocset),
       new LiquidFilterHoverProvider(themeDocset),
       new LiquidObjectHoverProvider(typeSystem),
-      // new HtmlTagCompletionProvider(),
-      // new HtmlAttributeCompletionProvider(),
-      // new LiquidTagsCompletionProvider(themeDocset),
-      // new ObjectCompletionProvider(themeDocset),
-      // new ObjectAttributeCompletionProvider(themeDocset),
-      // new AssignmentsCompletionProvider(themeDocset),
-      // new FilterCompletionProvider(themeDocset),
-      // new RenderSnippetCompletionProvider(themeDocset),
+      new LiquidObjectAttributeHoverProvider(typeSystem),
+      // new HtmlTagHoverProvider(),
+      // new HtmlAttributeHoverProvider(),
+      // new FilterHoverProvider(themeDocset),
     ];
   }
 
