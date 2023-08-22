@@ -229,7 +229,7 @@ function buildSymbolsTable(
       return {
         identifier: node.variableName,
         type: LazyDeconstructedExpression(node.collection, node.position.start),
-        range: [node.position.end, end(parentNode.blockEndPosition?.end)],
+        range: [node.position.start, end(parentNode.blockEndPosition?.end)],
       };
     },
 

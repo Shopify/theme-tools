@@ -1,22 +1,32 @@
 import { LiquidHtmlNode } from '@shopify/theme-check-common';
 import { Hover, HoverParams } from 'vscode-languageserver';
 import { HtmlData, renderHtmlEntry } from '../../docset';
-import { getCompoundName, isNamedHtmlElementNode } from '../../utils';
+import { findLast, getCompoundName, isNamedHtmlElementNode, isTextNode } from '../../utils';
 import { BaseHoverProvider } from '../BaseHoverProvider';
 
 export class HtmlTagHoverProvider implements BaseHoverProvider {
   async hover(
     _params: HoverParams,
     currentNode: LiquidHtmlNode,
-    _ancestors: LiquidHtmlNode[],
+    ancestors: LiquidHtmlNode[],
   ): Promise<Hover | null> {
-    if (!isNamedHtmlElementNode(currentNode)) {
-      return null;
+    let name: string | undefined;
+    const parentNode = ancestors.at(-1);
+
+    if (isNamedHtmlElementNode(currentNode) && typeof currentNode.name === 'string') {
+      name = currentNode.name;
+    } else if (
+      isTextNode(currentNode) &&
+      parentNode &&
+      isNamedHtmlElementNode(parentNode) &&
+      typeof parentNode.name !== 'string' &&
+      parentNode.name.includes(currentNode) &&
+      parentNode.name.length === 1
+    ) {
+      name = currentNode.value;
     }
 
-    const name = getCompoundName(currentNode);
-
-    if (!name || name === 'unknown') {
+    if (!name) {
       return null;
     }
 
