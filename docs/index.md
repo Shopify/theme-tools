@@ -1,10 +1,12 @@
 # Shopify Theme Tools Documentation Hub
 Each package serves a unique purpose and can be used individually or collectively, enabling a flexible development process tailored to your specific needs. The intent of these tools is to provide significant quality of life improvements for developers making advanced edits to Shopify online store themes.
 
+## Releasing
+To learn more about our release practices, please read [our releasing documentation](./releasing.md)
+
 ## Prettier Liquid Plugin
 - [Principles](./prettier-plugin-liquid/principles/index.md)
 - [Whitespace handling](./prettier-plugin-liquid/whitespace-handling.md)
-
 
 We encourage you to explore these documents to better understand the capabilities and usage of each tool. 
 
