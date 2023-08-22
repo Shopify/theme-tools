@@ -42,7 +42,7 @@ export function isNamedHtmlElementNode(node: LiquidHtmlNode): node is NamedHtmlE
   return (HtmlElementTypes as readonly NodeTypes[]).includes(node.type);
 }
 
-export function getNamedHtmlElementNodeName(node: NamedHtmlElementNode): string {
+export function getCompoundName(node: NamedHtmlElementNode | HtmlAttribute): string {
   if (typeof node.name === 'string') return node.name;
 
   const names = node.name;

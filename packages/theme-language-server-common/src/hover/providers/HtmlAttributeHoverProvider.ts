@@ -4,7 +4,7 @@ import { BaseHoverProvider } from '../BaseHoverProvider';
 import { HtmlData, renderHtmlEntry } from '../../docset';
 import {
   findLast,
-  getNamedHtmlElementNodeName,
+  getCompoundName,
   isHtmlAttribute,
   isNamedHtmlElementNode,
   isTextNode,
@@ -28,7 +28,7 @@ export class HtmlAttributeHoverProvider implements BaseHoverProvider {
       return null;
     }
     const name = currentNode.value;
-    const tagName = getNamedHtmlElementNodeName(grandParentNode);
+    const tagName = getCompoundName(grandParentNode);
     const tagEntry = HtmlData.tags.find((tag) => tag.name === tagName);
     const tagEntryAttributes = tagEntry?.attributes || [];
     const attribute =
@@ -42,7 +42,7 @@ export class HtmlAttributeHoverProvider implements BaseHoverProvider {
     return {
       contents: {
         kind: 'markdown',
-        value: renderHtmlEntry(attribute),
+        value: renderHtmlEntry(attribute, tagEntry),
       },
     };
   }

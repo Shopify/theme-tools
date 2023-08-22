@@ -12,6 +12,7 @@ import {
   LiquidObjectHoverProvider,
   LiquidTagHoverProvider,
 } from './providers';
+import { HtmlAttributeValueHoverProvider } from './providers/HtmlAttributeValueHoverProvider';
 
 export class HoverProvider {
   private providers: BaseHoverProvider[] = [];
@@ -25,7 +26,7 @@ export class HoverProvider {
       new LiquidObjectAttributeHoverProvider(typeSystem),
       new HtmlTagHoverProvider(),
       new HtmlAttributeHoverProvider(),
-      // new FilterHoverProvider(themeDocset),
+      new HtmlAttributeValueHoverProvider(),
     ];
   }
 
