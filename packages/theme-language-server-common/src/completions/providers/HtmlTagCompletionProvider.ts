@@ -1,17 +1,9 @@
+import { LiquidHtmlNode } from '@shopify/theme-check-common';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
-import {
-  HtmlDanglingMarkerClose,
-  HtmlElement,
-  LiquidHtmlNode,
-  NodeTypes,
-  Provider,
-  TextNode,
-  isTextNode,
-  sortByName,
-} from './common';
+import { HtmlData, Tag, renderHtmlEntry } from '../../docset';
+import { HtmlDanglingMarkerClose, HtmlElement, NodeTypes, TextNode, isTextNode } from '../../utils';
 import { CURSOR, LiquidCompletionParams } from '../params';
-import { HtmlData, Tag } from '../../docset';
-import { renderHtmlEntry } from '../../docset';
+import { Provider, sortByName } from './common';
 
 type CompletableParentNode = (HtmlElement | HtmlDanglingMarkerClose) & { name: [TextNode] };
 

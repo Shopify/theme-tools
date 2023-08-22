@@ -21,6 +21,15 @@ export const HtmlElementTypes = [
 ] as const;
 export type NamedHtmlElementNode = NodeOfType<HtmlElementTypes>;
 
+export type HtmlAttributeTypes = (typeof HtmlAttributeTypes)[number];
+export type HtmlAttribute = NodeOfType<HtmlAttributeTypes>
+export const HtmlAttributeTypes = [
+  NodeTypes.AttrUnquoted,
+  NodeTypes.AttrDoubleQuoted,
+  NodeTypes.AttrSingleQuoted,
+  NodeTypes.AttrEmpty,
+] as const;
+
 export function isTextNode(node: LiquidHtmlNode): node is TextNode {
   return node.type === NodeTypes.TextNode;
 }
@@ -42,4 +51,8 @@ export function getNamedHtmlElementNodeName(node: NamedHtmlElementNode): string 
   }
 
   return names[0].value;
+}
+
+export function isHtmlAttribute(node: LiquidHtmlNode): node is HtmlAttribute {
+  return HtmlAttributeTypes.some((type) => node.type === type);
 }
