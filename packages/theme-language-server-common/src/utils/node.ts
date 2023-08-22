@@ -22,7 +22,7 @@ export const HtmlElementTypes = [
 export type NamedHtmlElementNode = NodeOfType<HtmlElementTypes>;
 
 export type HtmlAttributeTypes = (typeof HtmlAttributeTypes)[number];
-export type HtmlAttribute = NodeOfType<HtmlAttributeTypes>
+export type HtmlAttribute = NodeOfType<HtmlAttributeTypes>;
 export const HtmlAttributeTypes = [
   NodeTypes.AttrUnquoted,
   NodeTypes.AttrDoubleQuoted,
