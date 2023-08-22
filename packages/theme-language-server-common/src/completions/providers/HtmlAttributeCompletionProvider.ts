@@ -8,7 +8,7 @@ import {
   getNamedHtmlElementNodeName,
 } from './common';
 import { CURSOR, LiquidCompletionParams } from '../params';
-import { Attribute, HtmlData } from '../HtmlDocset';
+import { Attribute, HtmlData } from '../../docset';
 import { findLast } from '../../utils';
 import { renderHtmlEntry } from '../../docset';
 

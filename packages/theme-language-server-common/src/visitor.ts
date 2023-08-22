@@ -47,8 +47,7 @@ export function visit<S extends SourceCodeType, R>(node: AST[S], visitor: Visito
     if (result !== undefined) results.push(result);
 
     // Enqueue child nodes
-    const newLineage = lineage.concat(node);
-    forEachChildNodes(node, newLineage, pushStack);
+    forEachChildNodes(node, lineage.concat(node), pushStack);
   }
 
   return results;
