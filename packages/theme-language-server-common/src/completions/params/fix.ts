@@ -218,9 +218,10 @@ class Fixer {
     const prevCharacter = this.markup.at(-1) ?? '';
     const prevPrevCharacter = this.markup.at(-2) ?? '';
     const isInLiquidContext = this.stack.includes('%}') || this.stack.includes('}}');
-    const isInHtmlContext = this.stack.at(-1) === '>';
+    const isInHtmlContext = this.current === '>';
     const isInStringContext = QUOTES.includes(this.current as any);
     return (
+      (isInStringContext && this.stack.at(-2) === '>' && QUOTES.includes(prevCharacter as any)) ||
       (isInHtmlContext &&
         (/\s/.test(prevCharacter) ||
           prevCharacter === '<' ||

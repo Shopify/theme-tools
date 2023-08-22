@@ -8,7 +8,7 @@ const globalAttributeNames = [...HtmlData.globalAttributes].sort(sortByName).map
 const aTag = HtmlData.tags.find((x) => x.name === 'a')!;
 const aTagAttributeNames = aTag.attributes.map((x) => x.name);
 
-describe('Module: LiquidTagsCompletionProvider', async () => {
+describe('Module: HtmlAttributeCompletionProvider', async () => {
   let provider: CompletionsProvider;
 
   beforeEach(async () => {
