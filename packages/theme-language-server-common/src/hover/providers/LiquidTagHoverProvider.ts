@@ -1,4 +1,4 @@
-import { Hover, HoverParams } from 'vscode-languageserver';
+import { Hover } from 'vscode-languageserver';
 import { LiquidHtmlNode, ThemeDocset } from '@shopify/theme-check-common';
 import { NodeTypes } from '@shopify/prettier-plugin-liquid/dist/types';
 import { BaseHoverProvider } from '../BaseHoverProvider';
@@ -7,11 +7,7 @@ import { render } from '../../docset';
 export class LiquidTagHoverProvider implements BaseHoverProvider {
   constructor(public themeDocset: ThemeDocset) {}
 
-  async hover(
-    _params: HoverParams,
-    currentNode: LiquidHtmlNode,
-    _ancestors: LiquidHtmlNode[],
-  ): Promise<Hover | null> {
+  async hover(currentNode: LiquidHtmlNode): Promise<Hover | null> {
     if (currentNode.type !== NodeTypes.LiquidTag && currentNode.type !== NodeTypes.LiquidBranch) {
       return null;
     }

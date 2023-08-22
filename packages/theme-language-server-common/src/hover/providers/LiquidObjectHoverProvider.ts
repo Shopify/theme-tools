@@ -1,9 +1,8 @@
-import { Hover, HoverParams } from 'vscode-languageserver';
+import { Hover } from 'vscode-languageserver';
 import {
   LiquidHtmlNode,
   LiquidHtmlNodeTypes as NodeTypes,
   LiquidHtmlNodeOfType as NodeOfType,
-  ObjectEntry,
 } from '@shopify/theme-check-common';
 import { BaseHoverProvider } from '../BaseHoverProvider';
 import { TypeSystem, isArrayType } from '../../TypeSystem';
@@ -14,11 +13,7 @@ type LiquidVariableLookup = NodeOfType<NodeTypes.VariableLookup>;
 export class LiquidObjectHoverProvider implements BaseHoverProvider {
   constructor(private typeSystem: TypeSystem) {}
 
-  async hover(
-    _params: HoverParams,
-    currentNode: LiquidHtmlNode,
-    ancestors: LiquidHtmlNode[],
-  ): Promise<Hover | null> {
+  async hover(currentNode: LiquidHtmlNode, ancestors: LiquidHtmlNode[]): Promise<Hover | null> {
     if (
       currentNode.type !== NodeTypes.VariableLookup &&
       currentNode.type !== NodeTypes.AssignMarkup
