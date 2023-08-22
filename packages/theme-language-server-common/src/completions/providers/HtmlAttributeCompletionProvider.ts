@@ -2,7 +2,7 @@ import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { Attribute, HtmlData, renderHtmlEntry } from '../../docset';
 import {
   findLast,
-  getNamedHtmlElementNodeName,
+  getCompoundName,
   isAttrEmpty,
   isNamedHtmlElementNode,
   isTextNode,
@@ -28,7 +28,7 @@ export class HtmlAttributeCompletionProvider implements Provider {
       return [];
     }
 
-    const grandParentNodeName = getNamedHtmlElementNodeName(grandParentNode);
+    const grandParentNodeName = getCompoundName(grandParentNode);
     const name = node.value;
     const partial = name.replace(CURSOR, '');
     const options = getOptions(partial, grandParentNodeName);

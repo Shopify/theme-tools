@@ -1,17 +1,17 @@
 import { DocsetEntry, FilterEntry, ObjectEntry } from '@shopify/theme-check-common';
-import { Tag, Attribute } from '.';
-import { ArrayType, docsetEntryReturnType, isArrayType, PseudoType } from '../TypeSystem';
+import { ArrayType, PseudoType, docsetEntryReturnType, isArrayType } from '../TypeSystem';
+import { Attribute, Tag, Value } from './HtmlDocset';
 
 const HORIZONTAL_SEPARATOR = '\n\n---\n\n';
 
-type HtmlEntry = Tag | Attribute;
+type HtmlEntry = Tag | Attribute | Value;
 
 export function render(entry: DocsetEntry, returnType?: PseudoType | ArrayType) {
   return [title(entry, returnType), docsetEntryBody(entry)].filter(Boolean).join('\n');
 }
 
-export function renderHtmlEntry(entry: HtmlEntry) {
-  return [title(entry, 'untyped'), htmlEntryBody(entry)].join('\n');
+export function renderHtmlEntry(entry: HtmlEntry, parentEntry?: HtmlEntry) {
+  return [title(entry, 'untyped'), htmlEntryBody(entry, parentEntry)].join('\n');
 }
 
 function title(
@@ -45,8 +45,10 @@ function docsetEntryBody(entry: DocsetEntry) {
     .join(HORIZONTAL_SEPARATOR);
 }
 
-function htmlEntryBody(entry: HtmlEntry) {
-  return [description(entry), references(entry)].filter(Boolean).join(HORIZONTAL_SEPARATOR);
+function htmlEntryBody(entry: HtmlEntry, parentEntry?: HtmlEntry) {
+  return [description(entry), references(entry), references(parentEntry)]
+    .filter(Boolean)
+    .join(HORIZONTAL_SEPARATOR);
 }
 
 function description(entry: HtmlEntry) {
@@ -57,8 +59,16 @@ function description(entry: HtmlEntry) {
   return entry.description.value;
 }
 
-function references(entry: HtmlEntry) {
-  if (!entry.references || entry.references.length === 0) return undefined;
+function references(entry: HtmlEntry | undefined) {
+  if (!entry || !('references' in entry) || !entry.references || entry.references.length === 0) {
+    return undefined;
+  }
+
+  if (entry.references.length === 1) {
+    const [ref] = entry.references;
+    return `[${ref.name}](${ref.url})`;
+  }
+
   return [`#### Learn more`, entry.references.map((ref) => `- [${ref.name}](${ref.url})`)].join(
     '\n\n',
   );
