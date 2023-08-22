@@ -6,7 +6,7 @@
 # be parsed as a placeholder character
 # Lines that start by # are ignored as comments.
 <div class="container" id="
-<div class="container" id="">
+<div class="container" id="█">
 
 <div class="container" id="{{
 <div class="container" id="{{█}}">
