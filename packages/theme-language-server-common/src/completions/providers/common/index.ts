@@ -1,6 +1,5 @@
 export { createCompletionItem } from './CompletionItemProperties';
 export { Provider } from './Provider';
-export * from './node';
 
 export function sortByName(
   { name: nameA }: { name: string },

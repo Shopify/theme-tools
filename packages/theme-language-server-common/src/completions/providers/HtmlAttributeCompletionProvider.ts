@@ -1,16 +1,14 @@
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { Attribute, HtmlData, renderHtmlEntry } from '../../docset';
 import {
-  Provider,
-  sortByName,
-  isTextNode,
+  findLast,
+  getNamedHtmlElementNodeName,
   isAttrEmpty,
   isNamedHtmlElementNode,
-  getNamedHtmlElementNodeName,
-} from './common';
+  isTextNode,
+} from '../../utils';
 import { CURSOR, LiquidCompletionParams } from '../params';
-import { Attribute, HtmlData } from '../../docset';
-import { findLast } from '../../utils';
-import { renderHtmlEntry } from '../../docset';
+import { Provider, sortByName } from './common';
 
 export class HtmlAttributeCompletionProvider implements Provider {
   constructor() {}
