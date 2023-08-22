@@ -44,7 +44,7 @@ export class HoverProvider {
       document.textDocument.offsetAt(params.position),
     );
 
-    const promises = this.providers.map((p) => p.hover(params, currentNode, ancestors));
+    const promises = this.providers.map((p) => p.hover(currentNode, ancestors));
     const results = await Promise.all(promises);
     return results.find(Boolean) ?? null;
   }

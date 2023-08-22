@@ -1,15 +1,11 @@
 import { LiquidHtmlNode } from '@shopify/theme-check-common';
-import { Hover, HoverParams } from 'vscode-languageserver';
+import { Hover } from 'vscode-languageserver';
 import { HtmlData, renderHtmlEntry } from '../../docset';
-import { findLast, getCompoundName, isNamedHtmlElementNode, isTextNode } from '../../utils';
+import { isNamedHtmlElementNode, isTextNode } from '../../utils';
 import { BaseHoverProvider } from '../BaseHoverProvider';
 
 export class HtmlTagHoverProvider implements BaseHoverProvider {
-  async hover(
-    _params: HoverParams,
-    currentNode: LiquidHtmlNode,
-    ancestors: LiquidHtmlNode[],
-  ): Promise<Hover | null> {
+  async hover(currentNode: LiquidHtmlNode, ancestors: LiquidHtmlNode[]): Promise<Hover | null> {
     let name: string | undefined;
     const parentNode = ancestors.at(-1);
 
