@@ -138,6 +138,17 @@ describe('Unit: fix', async () => {
     }
   });
 
+  it('appends a cursor character as a placeholder for html attribute values (to be used with completion mode parsing)', () => {
+    // prettier-ignore
+    const contexts = [
+      `<a attr="█">`,
+      `<a attr='█'>`,
+    ];
+    for (const context of contexts) {
+      expect(fix(context.replace(/█.*$/, ''))).to.equal(context);
+    }
+  });
+
   describe('Case: the rest of the fucking owl', () => {
     it('fixes templates properly', () => {
       for (const { source, expected } of scenarios) {

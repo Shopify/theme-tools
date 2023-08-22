@@ -6,7 +6,7 @@ import { sortByName } from './common';
 
 const allTagNames = [...HtmlData.tags].sort(sortByName).map((x) => x.name);
 
-describe('Module: LiquidTagsCompletionProvider', async () => {
+describe('Module: HtmlTagCompletionProvider', async () => {
   let provider: CompletionsProvider;
 
   beforeEach(async () => {
