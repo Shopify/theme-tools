@@ -784,7 +784,7 @@ function toCST<T>(
       locStart,
       // The last node of this rule is a positive lookahead, we don't
       // want its endIdx, we want the endIdx of the previous one.
-      locEnd: (tokens: Node[]) => tokens[tokens.length - 2].source.endIdx,
+      locEnd: locEndSecondToLast,
       source,
     },
 
@@ -886,8 +886,8 @@ function toCST<T>(
     dotLookup: {
       type: ConcreteNodeTypes.String,
       value: 3,
-      locStart: (nodes: Node[]) => nodes[2].source.startIdx,
-      locEnd: (nodes: Node[]) => nodes[nodes.length - 1].source.endIdx,
+      locStart: (nodes: Node[]) => liquidStatementOffset + nodes[2].source.startIdx,
+      locEnd: (nodes: Node[]) => liquidStatementOffset + nodes[nodes.length - 1].source.endIdx,
       source,
     },
 
