@@ -44,19 +44,15 @@ export class DocumentManager {
   private set(uri: URI, source: string, version: number | undefined) {
     const absolutePath = toAbsolutePath(uri);
     const sourceCode = toSourceCode(absolutePath, source, version);
-    if (!sourceCode) {
-      this.sourceCodes.delete(uri);
-    } else {
-      this.sourceCodes.set(uri, {
-        ...sourceCode,
-        textDocument: TextDocument.create(
-          uri,
-          sourceCode.type,
-          sourceCode.version ?? 0,
-          sourceCode.source,
-        ),
+    this.sourceCodes.set(uri, {
+      ...sourceCode,
+      textDocument: TextDocument.create(
         uri,
-      });
-    }
+        sourceCode.type,
+        sourceCode.version ?? 0,
+        sourceCode.source,
+      ),
+      uri,
+    });
   }
 }

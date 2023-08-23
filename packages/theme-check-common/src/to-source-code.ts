@@ -35,7 +35,7 @@ export function toSourceCode(
   absolutePath: string,
   source: string,
   version?: number,
-): LiquidSourceCode | JSONSourceCode | undefined {
+): LiquidSourceCode | JSONSourceCode {
   const isLiquid = absolutePath.endsWith('.liquid');
 
   if (isLiquid) {
