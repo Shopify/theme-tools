@@ -37,6 +37,10 @@ export class LiquidObjectHoverProvider implements BaseHoverProvider {
     const objectMap = await this.typeSystem.objectMap();
     const entry = objectMap[isArrayType(type) ? type.valueType : type];
 
+    if (type === 'untyped') {
+      return null;
+    }
+
     if (!entry) {
       const entryByName = objectMap[currentNode.name] ?? {};
       return {
