@@ -36,6 +36,6 @@ describe('Module: visitor', () => {
   });
 
   function toAST(code: string) {
-    return toSourceCode('/tmp/foo.liquid', code) as LiquidHtmlNode | undefined;
+    return toSourceCode('/tmp/foo.liquid', code).ast as LiquidHtmlNode;
   }
 });

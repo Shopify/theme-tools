@@ -1,5 +1,4 @@
 import { ExpectationResult, MatcherState, RawMatcherFn } from '@vitest/expect';
-import { expect } from 'vitest';
 import { Offense } from '../types';
 
 interface CustomMatchers<R = unknown> {
