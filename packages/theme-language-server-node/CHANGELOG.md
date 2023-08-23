@@ -1,5 +1,17 @@
 # @shopify/liquid-language-server-node
 
+## 1.6.1
+
+### Patch Changes
+
+- 968dbe1: Patch bump because it depends on @shopify/theme-check-docs-updater
+- Updated dependencies [968dbe1]
+- Updated dependencies [65bdebb]
+- Updated dependencies [65bdebb]
+- Updated dependencies [65bdebb]
+  - @shopify/liquid-language-server-common@1.6.1
+  - @shopify/theme-check-docs-updater@1.12.0
+
 ## 1.6.0
 
 ### Minor Changes
