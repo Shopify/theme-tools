@@ -47,8 +47,14 @@ describe('Module: LiquidObjectAttributeHoverProvider', async () => {
       '{% liquid\n echo product.featured_image█ %}',
     ];
     for (const context of contexts) {
-      await expect(provider).to.hover(context, expect.stringContaining('featured_image description'));
-      await expect(provider).to.hover(context, expect.stringMatching(/##* featured_image: `image`/));
+      await expect(provider).to.hover(
+        context,
+        expect.stringContaining('featured_image description'),
+      );
+      await expect(provider).to.hover(
+        context,
+        expect.stringMatching(/##* featured_image: `image`/),
+      );
     }
   });
 
