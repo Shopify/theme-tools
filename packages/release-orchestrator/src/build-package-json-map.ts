@@ -1,9 +1,5 @@
-import fs from 'fs';
-import { promisify } from 'node:util';
-
 import type { PackageJson, PackageJsonMap } from './types';
-
-const readFile = promisify(fs.readFile);
+import { readFile } from './utils';
 
 /**
  * Reads a list of package.json files and builds a map with package names as keys and
