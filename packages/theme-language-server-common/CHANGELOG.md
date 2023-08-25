@@ -1,5 +1,16 @@
 # @shopify/liquid-language-server-common
 
+## 1.6.1
+
+### Patch Changes
+
+- Patch bump because it depends on @shopify/theme-check-common
+- Updated dependencies [24d0774]
+- Updated dependencies [24d0774]
+- Updated dependencies [24d0774]
+- Updated dependencies [24d0774]
+  - @shopify/theme-check-common@1.12.0
+
 ## 1.6.0
 
 ### Minor Changes
