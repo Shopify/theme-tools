@@ -1,8 +1,0 @@
----
-'@shopify/theme-check-common': minor
-'@shopify/theme-check-browser': minor
-'@shopify/theme-check-docs-updater': minor
-'@shopify/theme-check-node': minor
----
-
-Fixed bug for `AssetUrlFilters` check
