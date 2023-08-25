@@ -1,4 +1,5 @@
-import { gitStatus, run } from './utils';
+import { gitStatus } from './git-status';
+import { run } from './utils';
 
 const EXPECTED_BRANCH = 'main';
 

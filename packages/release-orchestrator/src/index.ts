@@ -1,5 +1,5 @@
 import { buildReleasePipeline } from './build-release-pipeline';
-import { flow } from './utils';
+import { flow } from './flow';
 
 const main = async () => {
   const args = process.argv.slice(2);

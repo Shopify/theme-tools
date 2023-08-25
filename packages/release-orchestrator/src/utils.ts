@@ -2,7 +2,7 @@ import { exec } from 'child_process';
 import { promisify } from 'node:util';
 
 import { memoize } from './memoize';
-import type { FileStatus, RunOptions, StageFunction } from './types';
+import type { RunOptions } from './types';
 
 const execAsync = promisify(exec);
 
@@ -19,35 +19,4 @@ export const run = async (cmd: string, runInRepoRoot = true): Promise<string> =>
   }
 
   return stdout.trim();
-};
-
-export const gitStatus = async (): Promise<FileStatus[]> => {
-  const output = await run('git status --porcelain');
-  if (!output) {
-    return [];
-  }
-
-  return output.split('\n').map((line) => {
-    const [status, filepath] = line.trim().split(' ');
-    return { status, filepath };
-  });
-};
-
-/**
- * Async implementation of lodash's flow function
- */
-export const flow = (fns: Array<StageFunction>) => async () => {
-  let result = undefined;
-
-  for (let i = 0; i < fns.length; i++) {
-    const fn = fns[i];
-    try {
-      result = await fn(result);
-    } catch (error) {
-      console.error(`Error in function ${fn.name}:`, error);
-      throw error; // Re-throw the error so it can be handled upstream
-    }
-  }
-
-  return result;
 };
