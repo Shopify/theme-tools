@@ -24,6 +24,7 @@ If this branch already exists remotely, this will overwrite the contents in the 
   if (proceed) {
     await run(`git push --force origin ${branchName}`);
   } else {
-    console.log('Operation cancelled.');
+    console.log('You have chosen not to push the current branch. Operation cancelled.');
+    process.exit();
   }
 };

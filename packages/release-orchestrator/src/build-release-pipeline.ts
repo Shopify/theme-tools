@@ -1,14 +1,14 @@
-import { patchBumpDependants } from './patch-bump-dependants';
-import { locateAllPkgJsons } from './locate-all-package-jsons';
-import { changesetVersion, changesetTag, changesetStatus } from './changeset';
-import { gitCommitChanges } from './git-commit-changes';
-import { finalMessaging, initialMessaging } from './messaging';
-import { gitChangeBranch } from './git-change-branch';
-import { getCurrentDateFormatted } from './get-current-date-formatted';
-import { sanityCheck } from './sanity-check';
-import { gitPushBranch } from './git-push-branch';
-import type { StageFunction, ChangesetStatus, StatusProperty } from './types';
 import { buildPackageJsonMap } from './build-package-json-map';
+import { changesetStatus, changesetTag, changesetVersion } from './changeset';
+import { commitPackageVersionBumps } from './commit-package-version-changes';
+import { getCurrentDateFormatted } from './get-current-date-formatted';
+import { gitChangeBranch } from './git-change-branch';
+import { gitPushBranch } from './git-push-branch';
+import { locateAllPkgJsons } from './locate-all-package-jsons';
+import { finalMessaging, initialMessaging } from './messaging';
+import { patchBumpDependants } from './patch-bump-dependants';
+import { sanityCheck } from './sanity-check';
+import type { ChangesetStatus, StageFunction, StatusProperty } from './types';
 
 const identity = (x: any) => x;
 
@@ -48,17 +48,6 @@ export const buildReleasePipeline = (args: string[]) => {
 
   const createReleaseBranch = skipGitOps ? identity : gitChangeBranch(releaseBranchName);
 
-  const commitPatchChangesets = skipGitOps
-    ? identity
-    : gitCommitChanges('release: patch changelogs for dependent packages', ['.changeset/*']);
-
-  const commitVersionBumps = skipGitOps
-    ? identity
-    : gitCommitChanges('release: bumped package versions for release', [
-        './packages/*',
-        '--update', // This flag includes modifications such as deletions. ie: `changeset version` deleting changelogs.
-      ]);
-
   const setChangesetStatus = async () => {
     statusProperty.value = await changesetStatus();
   };
@@ -72,10 +61,9 @@ export const buildReleasePipeline = (args: string[]) => {
     locateAllPkgJsons,
     buildPackageJsonMap,
     patchBumpDependants,
-    commitPatchChangesets,
     setChangesetStatus,
     changesetVersion,
-    commitVersionBumps,
+    commitPackageVersionBumps(skipGitOps, statusProperty),
     changesetTag,
     pushReleaseBranch,
     finalMessaging(releaseBranchName, statusProperty),
