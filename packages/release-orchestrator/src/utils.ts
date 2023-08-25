@@ -1,4 +1,4 @@
-import { execSync, exec } from 'child_process';
+import { exec } from 'child_process';
 import { promisify } from 'node:util';
 
 import type { FileStatus, StageFunction, RunOptions } from './types';
