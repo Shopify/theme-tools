@@ -1,10 +1,12 @@
 import { exec } from 'child_process';
 import { promisify } from 'node:util';
+import fs from 'fs';
 
 import { memoize } from './memoize';
 import type { RunOptions } from './types';
 
 const execAsync = promisify(exec);
+export const readFile = promisify(fs.readFile);
 
 export const getRepoRoot = memoize(() => run('git rev-parse --show-toplevel', false));
 

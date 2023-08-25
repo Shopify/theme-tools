@@ -16,7 +16,7 @@ export const generatePatchChangeset = async (pkgName: string, updatedDeps: strin
   const changesetPath = path.join(changesetDir, `${changesetId}.md`);
 
   const depsDescription =
-    updatedDeps.length === 1 ? ` ${updatedDeps[0]}` : `:\n - ${updatedDeps.join('\n -')}`;
+    updatedDeps.length === 1 ? ` ${updatedDeps[0]}` : `:\n - ${updatedDeps.join('\n - ')}`;
 
   const changesetContent = `---
 "${pkgName}": patch
