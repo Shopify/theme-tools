@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 import type { ChangesetStatus } from './types';
-import { run, getRepoRoot } from './utils';
+import { getRepoRoot, run } from './utils';
 
 export const changesetTag = async () => {
   console.log('Creating git tags for package versions...');

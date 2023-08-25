@@ -1,6 +1,6 @@
-import type { ChangesetStatus, PackageJsonMap } from './types';
-import { generatePatchChangeset } from './generate-patch-changeset';
 import { changesetStatus } from './changeset';
+import { generatePatchChangeset } from './generate-patch-changeset';
+import type { ChangesetStatus, PackageJsonMap } from './types';
 
 /**
  * Creates patch changelogs for all packages that depend on the

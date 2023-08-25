@@ -1,5 +1,5 @@
-import { run } from './utils';
 import { confirmProceed } from './confirm-proceed';
+import { run } from './utils';
 
 export const gitChangeBranch = (branchName: string) => async (): Promise<void> => {
   console.log(`You are about to change to branch '${branchName}'.`);

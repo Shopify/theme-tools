@@ -1,8 +1,4 @@
-import fs from 'fs';
-import path from 'path';
-import { readdir } from 'node:fs/promises';
-
-import { gitStatus, run } from './utils';
+import { run } from './utils';
 
 import { confirmProceed } from './confirm-proceed';
 
