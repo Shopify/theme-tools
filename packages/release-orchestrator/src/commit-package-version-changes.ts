@@ -1,7 +1,6 @@
-import { gitCommitChanges } from './git-commit-changes';
 import { getCurrentDateFormatted } from './get-current-date-formatted';
-
-import type { StatusProperty, ChangesetStatus } from './types';
+import { gitCommitChanges } from './git-commit-changes';
+import type { ChangesetStatus, StatusProperty } from './types';
 
 const generateCommitMessage = (changesetStatus: ChangesetStatus): string => {
   // Map each release to a string describing the package name, old version, new version, and type of change
@@ -10,7 +9,10 @@ const generateCommitMessage = (changesetStatus: ChangesetStatus): string => {
   });
 
   // Join all release messages into a single string with line breaks
-  const commitTitle = `Applied changelogs and updated ${changesetStatus.releases.length} package versions`;
+  const commitTitle =
+    `Release ${getCurrentDateFormatted()}: ` +
+    `Updated ${changesetStatus.releases.length} package versions`;
+
   const commitDescription = releaseMessages.join('\n');
 
   return `${commitTitle}\n\n${commitDescription}`;

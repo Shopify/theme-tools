@@ -1,8 +1,8 @@
 import { exec } from 'child_process';
 import { promisify } from 'node:util';
 
-import type { FileStatus, StageFunction, RunOptions } from './types';
 import { memoize } from './memoize';
+import type { FileStatus, RunOptions, StageFunction } from './types';
 
 const execAsync = promisify(exec);
 
