@@ -1,5 +1,4 @@
 import { expect, it, describe, afterEach, afterAll, vi, Mock } from 'vitest';
-import crypto from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
 import { generatePatchChangeset } from './generate-patch-changeset';
@@ -20,10 +19,7 @@ const changelogPathRegex = new RegExp(
 
 vi.mock('./utils', async () => ({
   getRepoRoot: vi.fn(),
-}));
-
-vi.mock('crypto', async () => ({
-  default: { randomBytes: vi.fn() },
+  getRandomId: vi.fn(() => '123456'),
 }));
 
 vi.mock('fs/promises', async () => ({
@@ -41,7 +37,6 @@ describe('generatePatchChangeset', () => {
 
   it('should generate a patch changeset for a package with single dependency', async () => {
     (getRepoRoot as Mock).mockResolvedValueOnce(expectedRepoPath);
-    (crypto.randomBytes as Mock).mockReturnValueOnce({ toString: () => '123456' });
 
     await generatePatchChangeset('package1', ['dependency1']);
 
@@ -61,7 +56,6 @@ Patch bump because it depends on dependency1
 
   it('should generate a patch changeset for a package with multiple dependencies', async () => {
     (getRepoRoot as Mock).mockResolvedValueOnce(expectedRepoPath);
-    (crypto.randomBytes as Mock).mockReturnValueOnce({ toString: () => '123456' });
 
     await generatePatchChangeset('package1', ['dependency1', 'dependency2']);
 

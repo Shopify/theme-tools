@@ -1,8 +1,7 @@
-import crypto from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
 
-import { getRepoRoot } from './utils';
+import { getRepoRoot, getRandomId } from './utils';
 
 /**
  * Generate a patch changeset for a package.
@@ -11,7 +10,7 @@ import { getRepoRoot } from './utils';
  *
  */
 export const generatePatchChangeset = async (pkgName: string, updatedDeps: string[]) => {
-  const changesetId = crypto.randomBytes(6).toString('hex');
+  const changesetId = getRandomId(6);
   const changesetDir = path.resolve(await getRepoRoot(), '.changeset');
   const changesetPath = path.join(changesetDir, `${changesetId}.md`);
 

@@ -9,6 +9,7 @@ import { finalMessaging, initialMessaging } from './messaging';
 import { patchBumpDependants } from './patch-bump-dependants';
 import { sanityCheck } from './sanity-check';
 import type { ChangesetStatus, StageFunction, StatusProperty } from './types';
+import { getRandomId } from './utils';
 
 /**
  * We need to persist the changeset status between multiple release pipeline stages.
@@ -36,7 +37,12 @@ export const buildReleasePipeline = (args: string[]) => {
    */
   const skipSanityCheck = args.includes('--no-sanity');
 
-  const releaseBranchName = `release/${getCurrentDateFormatted()}`;
+  /**
+   * We can add more configurability to the branch name if needed.
+   * For now, we just want to make sure that the branch name is unique and
+   * can help in identifying creation date.
+   */
+  const releaseBranchName = `release/${getCurrentDateFormatted()}-${getRandomId(4)}`;
 
   const createReleaseBranch = gitChangeBranch(releaseBranchName);
 

@@ -1,6 +1,7 @@
 import { exec } from 'child_process';
 import { promisify } from 'node:util';
 import fs from 'fs';
+import crypto from 'crypto';
 
 import { memoize } from './memoize';
 import type { RunOptions } from './types';
@@ -22,3 +23,5 @@ export const run = async (cmd: string, runInRepoRoot = true): Promise<string> =>
 
   return stdout.trim();
 };
+
+export const getRandomId = (numChars: number) => crypto.randomBytes(numChars).toString('hex');
