@@ -14,7 +14,11 @@ We encourage you to explore these documents to better understand the capabilitie
 
 We welcome contributions to the Shopify Theme Tools repository. If you'd like to contribute, please fork the repository and use a feature branch. Pull requests are warmly welcomed.
 
-For more information, please contact the Shopify Theme Code Tools team.
+For more information, you may check with the following places:
+- [Code of conduct](./code-of-conduct.md)
+- [Contributing](./contributing.md)
+
+For all other questions please contact the Shopify Theme Code Tools team.
 
 ## Licensing
 
