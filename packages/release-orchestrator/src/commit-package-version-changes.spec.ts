@@ -9,33 +9,12 @@ vi.mock('./git-commit-changes', async () => {
   };
 });
 
-vi.stubGlobal('process', {
-  exit: vi.fn(),
-});
-
 describe('commitPackageVersionBumps', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  afterAll(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it('should not commit changes if skipGitOps is true', async () => {
-    const skipGitOps = true;
-    const statusProperty: StatusProperty = {
-      _value: { changesets: [], releases: [] },
-      value: { changesets: [], releases: [] },
-    };
-
-    await commitPackageVersionBumps(skipGitOps, statusProperty)();
-
-    expect(gitCommitChanges).not.toHaveBeenCalled();
-  });
-
-  it('should commit changes if skipGitOps is false', async () => {
-    const skipGitOps = false;
+  it('should commit changes', async () => {
     const statusProperty: StatusProperty = {
       _value: {
         changesets: [],
@@ -61,7 +40,7 @@ describe('commitPackageVersionBumps', () => {
       },
     };
 
-    await commitPackageVersionBumps(skipGitOps, statusProperty)();
+    await commitPackageVersionBumps(statusProperty)();
 
     expect(gitCommitChanges).toHaveBeenCalled();
     expect(gitCommitChanges).toHaveBeenCalledWith(expect.stringContaining('Release'), [

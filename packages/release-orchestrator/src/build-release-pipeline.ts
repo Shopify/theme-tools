@@ -10,8 +10,6 @@ import { patchBumpDependants } from './patch-bump-dependants';
 import { sanityCheck } from './sanity-check';
 import type { ChangesetStatus, StageFunction, StatusProperty } from './types';
 
-const identity = (x: any) => x;
-
 /**
  * We need to persist the changeset status between multiple release pipeline stages.
  *
@@ -38,21 +36,15 @@ export const buildReleasePipeline = (args: string[]) => {
    */
   const skipSanityCheck = args.includes('--no-sanity');
 
-  /**
-   * The --no-git flag is meant to skip all parts of the release pipeline that changes something through git.
-   * In development, this is useful when you want to run the release pipeline without committing anything.
-   */
-  const skipGitOps = args.includes('--no-git');
-
   const releaseBranchName = `release/${getCurrentDateFormatted()}`;
 
-  const createReleaseBranch = skipGitOps ? identity : gitChangeBranch(releaseBranchName);
+  const createReleaseBranch = gitChangeBranch(releaseBranchName);
 
   const setChangesetStatus = async () => {
     statusProperty.value = await changesetStatus();
   };
 
-  const pushReleaseBranch = skipGitOps ? identity : gitPushBranch(releaseBranchName);
+  const pushReleaseBranch = gitPushBranch(releaseBranchName);
 
   return [
     sanityCheck(skipSanityCheck),
@@ -63,7 +55,7 @@ export const buildReleasePipeline = (args: string[]) => {
     patchBumpDependants,
     setChangesetStatus,
     changesetVersion,
-    commitPackageVersionBumps(skipGitOps, statusProperty),
+    commitPackageVersionBumps(statusProperty),
     changesetTag,
     pushReleaseBranch,
     finalMessaging(releaseBranchName, statusProperty),
