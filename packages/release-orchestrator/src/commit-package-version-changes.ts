@@ -20,15 +20,11 @@ const generateCommitMessage = (changesetStatus: ChangesetStatus): string => {
 /**
  * Commits all changes to the packages and any other files that were modified during the release process.
  */
-export const commitPackageVersionBumps =
-  (skipGitOps: boolean, statusProperty: StatusProperty) => async () => {
-    if (skipGitOps) {
-      return;
-    }
-    const commitMsg = generateCommitMessage(statusProperty.value);
+export const commitPackageVersionBumps = (statusProperty: StatusProperty) => async () => {
+  const commitMsg = generateCommitMessage(statusProperty.value);
 
-    return gitCommitChanges(commitMsg, [
-      './packages/*',
-      '--update', // This flag includes modifications such as deletions. ie: `changeset version` deleting changelogs.
-    ])();
-  };
+  return gitCommitChanges(commitMsg, [
+    './packages/*',
+    '--update', // This flag includes modifications such as deletions. ie: `changeset version` deleting changelogs.
+  ])();
+};

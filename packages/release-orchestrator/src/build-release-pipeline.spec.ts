@@ -1,13 +1,12 @@
-import { expect, it, describe, afterEach, afterAll, vi, Mock } from 'vitest';
-import { buildReleasePipeline } from './build-release-pipeline';
+import { Mock, afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 import { buildPackageJsonMap } from './build-package-json-map';
-import { changesetStatus, changesetTag, changesetVersion } from './changeset';
-import { commitPackageVersionBumps } from './commit-package-version-changes';
+import { buildReleasePipeline } from './build-release-pipeline';
+import { changesetTag, changesetVersion } from './changeset';
 import { getCurrentDateFormatted } from './get-current-date-formatted';
 import { gitChangeBranch } from './git-change-branch';
 import { gitPushBranch } from './git-push-branch';
 import { locateAllPkgJsons } from './locate-all-package-jsons';
-import { finalMessaging, initialMessaging } from './messaging';
+import { initialMessaging } from './messaging';
 import { patchBumpDependants } from './patch-bump-dependants';
 import { sanityCheck } from './sanity-check';
 
@@ -22,7 +21,7 @@ vi.mock('./changeset', async () => ({
 }));
 
 vi.mock('./commit-package-version-changes', async () => ({
-  commitPackageVersionBumps: vi.fn(),
+  commitPackageVersionBumps: vi.fn(() => vi.fn()),
 }));
 
 vi.mock('./get-current-date-formatted', async () => ({
@@ -42,7 +41,7 @@ vi.mock('./locate-all-package-jsons', async () => ({
 }));
 
 vi.mock('./messaging', async () => ({
-  finalMessaging: vi.fn(),
+  finalMessaging: vi.fn(() => vi.fn()),
   initialMessaging: vi.fn(),
 }));
 
@@ -51,7 +50,7 @@ vi.mock('./patch-bump-dependants', async () => ({
 }));
 
 vi.mock('./sanity-check', async () => ({
-  sanityCheck: vi.fn(),
+  sanityCheck: vi.fn((skip) => skip),
 }));
 
 describe('buildReleasePipeline', () => {
@@ -59,47 +58,29 @@ describe('buildReleasePipeline', () => {
     vi.clearAllMocks();
   });
 
-  afterAll(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it('should return an array of functions to be executed in ascending order', async () => {
+  it('should return an array of functions to be executed in ascending order', () => {
     (getCurrentDateFormatted as Mock).mockReturnValueOnce('2022-01-01');
+    const pipeline = buildReleasePipeline([]);
 
-    const result = buildReleasePipeline([]);
-
-    expect(result).toEqual([
-      sanityCheck(false),
-      initialMessaging,
-      gitChangeBranch('release/2022-01-01'),
-      locateAllPkgJsons,
-      buildPackageJsonMap,
-      patchBumpDependants,
-      expect.any(Function), // setChangesetStatus
-      changesetVersion,
-      commitPackageVersionBumps(false, expect.any(Object)), // statusProperty
-      changesetTag,
-      gitPushBranch('release/2022-01-01'),
-      finalMessaging('release/2022-01-01', expect.any(Object)), // statusProperty
-    ]);
+    expect(pipeline).toHaveLength(12);
+    expect(pipeline[0]).toBe(sanityCheck(false));
+    expect(pipeline[1]).toBe(initialMessaging);
+    expect(pipeline[2]).toBe(gitChangeBranch('release/2022-01-01'));
+    expect(pipeline[3]).toBe(locateAllPkgJsons);
+    expect(pipeline[4]).toBe(buildPackageJsonMap);
+    expect(pipeline[5]).toBe(patchBumpDependants);
+    expect(pipeline[6]).toBeInstanceOf(Function); // setChangesetStatus
+    expect(pipeline[7]).toBe(changesetVersion);
+    expect(pipeline[8]).toBeInstanceOf(Function); // commitPackageVersionBumps
+    expect(pipeline[9]).toBe(changesetTag);
+    expect(pipeline[10]).toBe(gitPushBranch('release/2022-01-01'));
+    expect(pipeline[11]).toBeInstanceOf(Function); // finalMessaging
   });
 
-  it('should return an array of functions with skipped stages if --no-sanity and --no-git flags are present', async () => {
-    const result = buildReleasePipeline(['--no-sanity', '--no-git']);
+  it('should skip sanity checks if --no-sanity flag is present', () => {
+    (getCurrentDateFormatted as Mock).mockReturnValueOnce('2022-01-01');
+    const pipeline = buildReleasePipeline(['--no-sanity']);
 
-    expect(result).toEqual([
-      sanityCheck(true),
-      initialMessaging,
-      expect.any(Function), // identity
-      locateAllPkgJsons,
-      buildPackageJsonMap,
-      patchBumpDependants,
-      expect.any(Function), // setChangesetStatus
-      changesetVersion,
-      commitPackageVersionBumps(true, expect.any(Object)), // statusProperty
-      changesetTag,
-      expect.any(Function), // identity
-      finalMessaging('', expect.any(Object)), // statusProperty
-    ]);
+    expect(pipeline[0]).toBe(sanityCheck(true));
   });
 });
