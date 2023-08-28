@@ -11,8 +11,23 @@ jobs:
     # This workflow only runs when a release pull request is merged into main
     if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/') && github.base_ref == 'main'
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
 
-      - name: Publish package versions
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: "yarn"
+
+      - name: Install the packages
+        run: yarn install --frozen-lockfile --ignore-engines
+
+      - name: Build the code
+        run: yarn build:ci
+        env:
+          NODE_ENV: production
+
+      - name: Publish updated package versions
         run: yarn changeset publish
