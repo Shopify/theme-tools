@@ -33,6 +33,9 @@ DeprecateBgsizes:
 DeprecateLazysizes:
   enabled: true
   severity: 1
+DeprecatedTags:
+  enabled: true
+  severity: 1
 ImgLazyLoading:
   enabled: true
   severity: 1
