@@ -95,4 +95,6 @@ export interface RequiredDependencies {
   getDefaultLocaleFactory(rootURI: URI): ThemeCheckDependencies['getDefaultLocale'];
 
   fileExists: ThemeCheckDependencies['fileExists'];
+
+  fileSize: ThemeCheckDependencies['fileSize'];
 }

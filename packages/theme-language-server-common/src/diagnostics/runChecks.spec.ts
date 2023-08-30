@@ -54,6 +54,7 @@ describe('Module: runChecks', () => {
     runChecks = makeRunChecks(documentManager, diagnosticsManager, {
       findRootURI: async () => 'browser:///',
       fileExists: async () => true,
+      fileSize: async () => 420,
       getDefaultTranslationsFactory: () => async () => ({}),
       getDefaultLocaleFactory: () => async () => 'en',
       loadConfig: async () => ({
@@ -206,6 +207,7 @@ describe('Module: runChecks', () => {
     runChecks = makeRunChecks(documentManager, diagnosticsManager, {
       findRootURI: async () => 'browser:///',
       fileExists: async () => true,
+      fileSize: async () => 420,
       getDefaultTranslationsFactory: () => async () => JSON.parse(files[defaultURI]),
       getDefaultLocaleFactory: () => async () => 'en',
       loadConfig: async () => ({

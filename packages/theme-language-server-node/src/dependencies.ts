@@ -54,12 +54,23 @@ export const findRootURI: Dependencies['findRootURI'] = async function findRootU
 
 export const fileExists: Dependencies['fileExists'] = async function fileExists(path) {
   try {
-    // This gets called from within theme-check-js which assumes
+    // This will get called within theme-check-common which assumes
     // forward-slashes. We need to denormalize those here.
     await fs.stat(asFsPath(path));
     return true;
   } catch (e) {
     return false;
+  }
+};
+
+export const fileSize: Dependencies['fileSize'] = async function fileSize(
+  absolutePath: string,
+): Promise<number> {
+  try {
+    const stats = await fs.stat(asFsPath(absolutePath));
+    return stats.size;
+  } catch (e) {
+    throw new Error(`Failed to get file size: ${e}`);
   }
 };
 
