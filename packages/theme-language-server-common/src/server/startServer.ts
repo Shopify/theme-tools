@@ -36,13 +36,14 @@ export function startServer(
   connection: Connection,
   {
     fileExists,
+    fileSize,
     findRootURI,
     getDefaultLocaleFactory,
     getDefaultTranslationsFactory,
     loadConfig,
-    themeDocset: remoteThemeDocset,
-    schemaValidators,
     log = defaultLogger,
+    schemaValidators,
+    themeDocset: remoteThemeDocset,
   }: Dependencies,
 ) {
   const clientCapabilities = new ClientCapabilities();
@@ -53,11 +54,12 @@ export function startServer(
   const themeDocset = new AugmentedThemeDocset(remoteThemeDocset);
   const runChecks = debounce(
     makeRunChecks(documentManager, diagnosticsManager, {
-      loadConfig,
-      findRootURI,
-      getDefaultTranslationsFactory,
-      getDefaultLocaleFactory,
       fileExists,
+      fileSize,
+      findRootURI,
+      getDefaultLocaleFactory,
+      getDefaultTranslationsFactory,
+      loadConfig,
       themeDocset,
       schemaValidators,
     }),

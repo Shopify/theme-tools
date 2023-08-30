@@ -1,9 +1,10 @@
 import { startServer as startCoreServer } from '@shopify/liquid-language-server-common';
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
-import { createConnection } from 'vscode-languageserver/node';
 import { stdin, stdout } from 'node:process';
+import { createConnection } from 'vscode-languageserver/node';
 import {
   fileExists,
+  fileSize,
   findRootURI,
   getDefaultLocaleFactory,
   getDefaultTranslationsFactory,
@@ -22,6 +23,7 @@ export function startServer() {
     getDefaultLocaleFactory,
     findRootURI,
     fileExists,
+    fileSize,
     loadConfig,
     themeDocset: themeLiquidDocsManager,
     schemaValidators: themeLiquidDocsManager,

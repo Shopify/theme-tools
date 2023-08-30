@@ -226,6 +226,7 @@ describe('Module: server', () => {
       fileExists: vi
         .fn()
         .mockImplementation(async (absolutePath: string) => fileTree.has(absolutePath)),
+      fileSize: vi.fn().mockResolvedValue(420),
       getDefaultTranslationsFactory: () => async () => ({}),
       getDefaultLocaleFactory: () => async () => 'en',
       loadConfig: async () => ({
