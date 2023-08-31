@@ -1,3 +1,0 @@
-set -ex
-
-yarn build:links
