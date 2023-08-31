@@ -32,3 +32,6 @@ jobs:
 
       - name: Publish updated package versions
         run: yarn changeset publish
+        env:
+          CLOUDSMITH_NPM_TOKEN_RO: ${{ secrets.CLOUDSMITH_NPM_TOKEN_RO }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
