@@ -1,23 +1,5 @@
 # @shopify/liquid-language-server-node
 
-## 1.7.0
-
-### Minor Changes
-
-- 5669466: Implemented `fileSize` dependency to enable asset size checks
-
-### Patch Changes
-
-- Updated dependencies [a395141]
-- Updated dependencies [5669466]
-- Updated dependencies [95abccc]
-- Updated dependencies [95abccc]
-- Updated dependencies [a395141]
-- Updated dependencies [1dc7848]
-- Updated dependencies [95abccc]
-  - @shopify/liquid-language-server-common@1.7.0
-  - @shopify/theme-check-docs-updater@1.12.0
-
 ## 1.6.0
 
 ### Minor Changes
