@@ -30,8 +30,12 @@ jobs:
         env:
           NODE_ENV: production
 
-      - name: Publish updated package versions
+      - name: Configure npm for public packages
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+    
+      - name: Configure npm for private packages
+        run: |
+          find . -name 'package.json' -execdir bash -c 'jq -e .publishConfig.access package.json && { echo "@shopify:registry=https://npm.shopify.io/node/" > .npmrc; echo "//npm.shopify.io/node/:_authToken=${{ secrets.CLOUDSMITH_NPM_TOKEN_RO }}" >> .npmrc; }' \; 2>/dev/null || true
+    
+      - name: Publish packages
         run: yarn changeset publish
-        env:
-          CLOUDSMITH_NPM_TOKEN_RO: ${{ secrets.CLOUDSMITH_NPM_TOKEN_RO }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
