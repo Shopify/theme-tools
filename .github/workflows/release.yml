@@ -35,7 +35,7 @@ jobs:
     
       - name: Configure npm for private packages
         run: |
-          find . -name 'package.json' -execdir bash -c 'jq -e .publishConfig.access package.json && { echo "@shopify:registry=https://npm.shopify.io/node/" > .npmrc; echo "//npm.shopify.io/node/:_authToken=${{ secrets.CLOUDSMITH_NPM_TOKEN_RO }}" >> .npmrc; }' \; 2>/dev/null || true
+          find ./packages/* -maxdepth 1 -name 'package.json' -execdir bash -c 'jq -e .publishConfig.access package.json > /dev/null && { echo "@shopify:registry=https://npm.shopify.io/node/" > .npmrc; echo "//npm.shopify.io/node/:_authToken=${{ secrets.CLOUDSMITH_NPM_TOKEN_RO }}" >> .npmrc; }' \; 2>/dev/null || true
     
       - name: Publish packages
         run: yarn changeset publish
