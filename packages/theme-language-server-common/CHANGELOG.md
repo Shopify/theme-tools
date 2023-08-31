@@ -1,5 +1,22 @@
 # @shopify/liquid-language-server-common
 
+## 1.7.0
+
+### Minor Changes
+
+- a395141: Add HtmlAttributeValueCompletionProvider
+- 5669466: Implemented `fileSize` dependency to enable asset size checks
+- a395141: Add documentation on hover for intelligent code completion
+
+### Patch Changes
+
+- Updated dependencies [95abccc]
+- Updated dependencies [95abccc]
+- Updated dependencies [1dc7848]
+- Updated dependencies [95abccc]
+- Updated dependencies [95abccc]
+  - @shopify/theme-check-common@1.12.0
+
 ## 1.6.0
 
 ### Minor Changes
