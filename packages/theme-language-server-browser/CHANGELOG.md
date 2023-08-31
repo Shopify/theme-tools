@@ -1,14 +1,5 @@
 # @shopify/liquid-language-server-browser
 
-## 1.7.0
-
-### Patch Changes
-
-- Updated dependencies [39a4efa]
-- Updated dependencies [39a4efa]
-- Updated dependencies [39a4efa]
-  - @shopify/liquid-language-server-common@1.7.0
-
 ## 1.6.0
 
 ### Minor Changes
