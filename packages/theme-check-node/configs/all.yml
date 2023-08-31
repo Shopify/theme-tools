@@ -17,6 +17,10 @@ AssetSizeAppBlockJavaScript:
   enabled: true
   severity: 1
   thresholdInBytes: 10000
+AssetSizeCSS:
+  enabled: true
+  severity: 1
+  thresholdInBytes: 100000
 AssetUrlFilters:
   enabled: true
   severity: 1
