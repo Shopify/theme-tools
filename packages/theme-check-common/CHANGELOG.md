@@ -1,15 +1,5 @@
 # @shopify/theme-check-common
 
-## 1.12.0
-
-### Minor Changes
-
-- 95abccc: Fixed bug for `AssetUrlFilters` check
-- 95abccc: Add `ContentForHeaderModification` check
-- 1dc7848: Add `AssetSizeCSS` check
-- 95abccc: Add `AssetSizeAppBlockJavascript` check
-- 95abccc: Add `AssetSizeAppBlockCSS` check
-
 ## 1.11.1
 
 ### Patch Changes

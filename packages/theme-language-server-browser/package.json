@@ -1,6 +1,6 @@
 {
   "name": "@shopify/liquid-language-server-browser",
-  "version": "1.7.0",
+  "version": "1.6.0",
   "main": "dist/index.js",
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "license": "MIT",
@@ -17,7 +17,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/liquid-language-server-common": "1.7.0",
+    "@shopify/liquid-language-server-common": "1.6.0",
     "vscode-languageserver": "^8.0.2"
   }
 }
