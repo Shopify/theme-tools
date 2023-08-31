@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 16
-          cache: "yarn"
+          cache: 'yarn'
 
       - name: Install the packages
         run: yarn install --frozen-lockfile --ignore-engines
@@ -32,11 +32,13 @@ jobs:
 
       - name: Configure npm for public packages
         run: |
-          find ./packages/* -maxdepth 1 -name 'package.json' -execdir bash -c 'jq -e .publishConfig.access package.json | grep -q public && echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc' \; 2>/dev/null || true
-    
+          npm config set '//registry.npmjs.org/:_authToken' "${{ secrets.NPM_TOKEN }}"
+          find ./packages/* -maxdepth 1 -name 'package.json' -execdir bash -c 'jq -e .publishConfig.access package.json | grep -q public && npm config set registry https://registry.npmjs.org/' \; 2>/dev/null || true
+
       - name: Configure npm for private packages
         run: |
-          find ./packages/* -maxdepth 1 -name 'package.json' -execdir bash -c 'jq -e .publishConfig.access package.json | grep -q restricted && { echo "@shopify:registry=https://npm.shopify.io/node/" > .npmrc; echo "//npm.shopify.io/node/:_authToken=${{ secrets.CLOUDSMITH_NPM_TOKEN_RO }}" >> .npmrc; }' \; 2>/dev/null || true
-    
+          npm config set '//npm.shopify.io/node/:_authToken' "${{ secrets.CLOUDSMITH_NPM_TOKEN_RO }}"
+          find ./packages/* -maxdepth 1 -name 'package.json' -execdir bash -c 'jq -e .publishConfig.access package.json | grep -q restricted && { npm config set registry https://npm.shopify.io/node/; npm config set '@shopify:registry' https://npm.shopify.io/node/; }' \; 2>/dev/null || true
+
       - name: Publish packages
         run: yarn changeset publish
