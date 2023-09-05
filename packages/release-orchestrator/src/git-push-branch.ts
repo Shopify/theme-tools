@@ -22,7 +22,7 @@ If this branch already exists remotely, this will overwrite the contents in the 
   const proceed = await confirmProceed();
 
   if (proceed) {
-    await run(`git push --force origin ${branchName}`);
+    await run(`git push --force --tags origin ${branchName}`);
   } else {
     console.log('You have chosen not to push the current branch. Operation cancelled.');
     process.exit();

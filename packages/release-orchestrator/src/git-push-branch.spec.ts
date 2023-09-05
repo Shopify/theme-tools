@@ -40,7 +40,7 @@ describe('gitPushBranch', () => {
     await gitPushBranch('test-branch')();
 
     expect(confirmProceed).toHaveBeenCalled();
-    expect(run).toHaveBeenCalledWith('git push --force origin test-branch');
+    expect(run).toHaveBeenCalledWith('git push --force --tags origin test-branch');
     expect(process.exit).not.toHaveBeenCalled();
   });
 });
