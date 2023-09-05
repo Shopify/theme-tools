@@ -5,39 +5,33 @@ on:
     types: [closed]
 
 jobs:
-  build:
+  publish-packages:
     runs-on: ubuntu-latest
 
     # This workflow only runs when a release pull request is merged into main
     if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/') && github.base_ref == 'main'
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: 16
-          cache: 'yarn'
-
-      - name: Install the packages
-        run: yarn install --frozen-lockfile --ignore-engines
-
-      - name: Build the code
-        run: yarn build:ci
-        env:
-          NODE_ENV: production
-
-      - name: Configure npm for public packages
+      - name: Placeholder
         run: |
-          npm config set '//registry.npmjs.org/:_authToken' "${{ secrets.NPM_TOKEN }}"
-          find ./packages/* -maxdepth 1 -name 'package.json' -execdir bash -c 'jq -e .publishConfig.access package.json | grep -q public && npm config set registry https://registry.npmjs.org/' \; 2>/dev/null || true
+          echo "This is a placeholder workflow. Once we open source the project, we can enable the workflow below."
+          echo "For more details, please refer to https://github.com/Shopify/theme-tools/issues/46"
+      # - uses: actions/checkout@v3
+      #   with:
+      #     submodules: true
 
-      - name: Configure npm for private packages
-        run: |
-          npm config set '//npm.shopify.io/node/:_authToken' "${{ secrets.CLOUDSMITH_NPM_TOKEN_RO }}"
-          find ./packages/* -maxdepth 1 -name 'package.json' -execdir bash -c 'jq -e .publishConfig.access package.json | grep -q restricted && { npm config set registry https://npm.shopify.io/node/; npm config set '@shopify:registry' https://npm.shopify.io/node/; }' \; 2>/dev/null || true
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v2
+      #   with:
+      #     node-version: 16
+      #     cache: 'yarn'
 
-      - name: Publish packages
-        run: yarn changeset publish
+      # - name: Install the packages
+      #   run: yarn install --frozen-lockfile --ignore-engines
+
+      # - name: Build the code
+      #   run: yarn build:ci
+      #   env:
+      #     NODE_ENV: production
+
+      # - name: Publish packages
+      #   run: yarn changeset publish
