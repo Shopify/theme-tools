@@ -1,5 +1,16 @@
 # @shopify/theme-check-browser
 
+## 1.12.1
+
+### Patch Changes
+
+- Patch bump because it depends on @shopify/prettier-plugin-liquid
+- Updated dependencies
+- Updated dependencies [5479a63]
+- Updated dependencies [5479a63]
+  - @shopify/theme-check-common@1.12.1
+  - @shopify/prettier-plugin-liquid@1.2.3
+
 ## 1.12.0
 
 ### Minor Changes

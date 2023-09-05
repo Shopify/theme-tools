@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-check-common",
-  "version": "1.12.0",
+  "version": "1.12.1",
   "main": "dist/index.js",
   "license": "MIT",
   "publishConfig": {
@@ -14,7 +14,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/prettier-plugin-liquid": "^1.2.1",
+    "@shopify/prettier-plugin-liquid": "^1.2.3",
     "cross-fetch": "^4.0.0",
     "json-to-ast": "^2.1.0",
     "line-column": "^1.0.2",

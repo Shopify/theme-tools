@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-check-node",
-  "version": "1.12.0",
+  "version": "1.12.1",
   "main": "dist/index.js",
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "license": "MIT",
@@ -17,8 +17,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/prettier-plugin-liquid": "^1.0.6",
-    "@shopify/theme-check-common": "1.12.0",
+    "@shopify/prettier-plugin-liquid": "^1.2.3",
+    "@shopify/theme-check-common": "1.12.1",
     "glob": "^8.0.3",
     "yaml": "^2.3.0"
   },

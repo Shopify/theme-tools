@@ -1,5 +1,16 @@
 # @shopify/liquid-language-server-common
 
+## 1.7.1
+
+### Patch Changes
+
+- e8d569d: Subscribe to open/close notifications
+- Updated dependencies
+- Updated dependencies [5479a63]
+- Updated dependencies [5479a63]
+  - @shopify/theme-check-common@1.12.1
+  - @shopify/prettier-plugin-liquid@1.2.3
+
 ## 1.7.0
 
 ### Minor Changes

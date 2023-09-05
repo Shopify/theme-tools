@@ -1,5 +1,14 @@
 # @shopify/liquid-language-server-node
 
+## 1.7.1
+
+### Patch Changes
+
+- e8d569d: Subscribe to open/close notifications
+- Updated dependencies [e8d569d]
+  - @shopify/liquid-language-server-common@1.7.1
+  - @shopify/theme-check-docs-updater@1.12.1
+
 ## 1.7.0
 
 ### Minor Changes
