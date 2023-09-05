@@ -21,7 +21,10 @@ Before doing this flow, please ensure you are on the `main` branch and have no u
     ```bash
     yarn release
     ```
-Once the release PR branch is approved, the merge job will automatically publish the updated packages.
+Once the PR is approved, please do the following:
+ - Merge with the '**Create a merge commit**' option. This will ensure that the git tags correspond to the release commit hash.
+ - Delete the release branch after the merge is complete.
+ - Deploy the updated packages on ShipIt: https://shipit.shopify.io/shopify/theme-tools/production
 
 ## Release Orchestrator FAQ
 ### What does this project do?

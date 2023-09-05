@@ -17,7 +17,10 @@ export const finalMessaging = (branchName: string, statusProperty: StatusPropert
   const message = `
 All local work is done for this release!
 
-Open the PR for reviews. Once the PR is approved and merged, all updated packages will be published to NPM.
+Once the PR is approved, please do the following:
+ - Merge with the 'Create a merge commit' option. This will ensure that the git tags correspond to the release commit hash.
+ - Delete the release branch '${branchName}' after the merge is complete.
+ - Deploy the updated packages on ShipIt: https://shipit.shopify.io/shopify/theme-tools/production
 You may use this link to create the PR:
 
 ${buildGithubPRLink(branchName, prTitle, prDescription)}
