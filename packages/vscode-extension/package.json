@@ -3,7 +3,7 @@
   "author": {
     "name": "charlespwd"
   },
-  "version": "1.10.1",
+  "version": "1.10.2",
   "publisher": "Shopify",
   "private": true,
   "license": "SEE LICENSE IN LICENSE.md",
@@ -58,8 +58,8 @@
     "vscode": "^1.74.0"
   },
   "dependencies": {
-    "@shopify/liquid-language-server-node": "^1.7.0",
-    "@shopify/prettier-plugin-liquid": "^1.1.0",
+    "@shopify/liquid-language-server-node": "^1.7.1",
+    "@shopify/prettier-plugin-liquid": "^1.2.3",
     "prettier": "^2.6.2",
     "vsce": "^1.87.0",
     "vscode-languageclient": "^8.1.0"

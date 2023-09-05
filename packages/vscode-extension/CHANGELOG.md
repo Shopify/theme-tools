@@ -1,5 +1,18 @@
 ## 1.10.1
 
+## 1.10.2
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/liquid-language-server-node
+  - @shopify/prettier-plugin-liquid
+- Updated dependencies [e8d569d]
+- Updated dependencies [5479a63]
+- Updated dependencies [5479a63]
+  - @shopify/liquid-language-server-node@1.7.1
+  - @shopify/prettier-plugin-liquid@1.2.3
+
 ### Patch Changes
 
 - Patch bump because it depends on @shopify/liquid-language-server-node
