@@ -93,6 +93,7 @@ export function startServer(
       capabilities: {
         textDocumentSync: {
           change: TextDocumentSyncKind.Full,
+          openClose: true,
         },
         codeActionProvider: {
           codeActionKinds: [...CodeActionKinds],
