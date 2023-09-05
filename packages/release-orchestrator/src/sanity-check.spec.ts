@@ -29,18 +29,26 @@ describe('sanityCheck', () => {
     vi.unstubAllGlobals();
   });
 
-  it('should skip sanity checks if skipSanityCheck is true', async () => {
+  it('should skip sanity checks when skipSanityCheck is true', async () => {
     const check = sanityCheck(true);
 
     await check();
 
     expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Skipping sanity checks'));
     expect(gitStatus).not.toHaveBeenCalled();
-    expect(run).not.toHaveBeenCalled();
     expect(process.exit).not.toHaveBeenCalled();
   });
 
-  it('should exit process if there are existing changes in the repository', async () => {
+  it('should still call git pull when skipSanityCheck is true', async () => {
+    const check = sanityCheck(true);
+
+    await check();
+
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(run).toHaveBeenCalledWith('git pull');
+  });
+
+  it('should exit process when there are existing changes in the repository', async () => {
     (gitStatus as Mock).mockResolvedValueOnce([{ status: 'M', filepath: 'file1.txt' }]);
     const check = sanityCheck(false);
 
@@ -52,7 +60,7 @@ describe('sanityCheck', () => {
     expect(process.exit).toHaveBeenCalledWith();
   });
 
-  it('should exit process if current branch is not main', async () => {
+  it('should exit process when current branch is not main', async () => {
     (gitStatus as Mock).mockResolvedValueOnce([]);
     (run as Mock).mockResolvedValueOnce('dev');
     const check = sanityCheck(false);
@@ -65,7 +73,7 @@ describe('sanityCheck', () => {
     expect(process.exit).toHaveBeenCalledWith();
   });
 
-  it('should proceed if there are no pre-existing changes and current branch is main', async () => {
+  it('should proceed when there are no pre-existing changes and current branch is main', async () => {
     (gitStatus as Mock).mockResolvedValueOnce([]);
     (run as Mock).mockResolvedValueOnce('main');
     const check = sanityCheck(false);
@@ -74,5 +82,15 @@ describe('sanityCheck', () => {
 
     expect(console.log).toHaveBeenCalledWith('No pre-existing changes found. Proceeding...');
     expect(process.exit).not.toHaveBeenCalled();
+  });
+
+  it('should pull latest changes from main when there are no pre-existing changes and current branch is main ', async () => {
+    (gitStatus as Mock).mockResolvedValueOnce([]);
+    (run as Mock).mockResolvedValueOnce('main');
+    const check = sanityCheck(false);
+
+    await check();
+
+    expect(run).toHaveBeenCalledWith('git pull');
   });
 });
