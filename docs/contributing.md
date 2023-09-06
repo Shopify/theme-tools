@@ -42,7 +42,13 @@ Before you can start contributing to theme-tools, you'll need to set up your dev
 5. **Start developing**: If you're developing changes to test against the vscode extension, all you need to do is add a breakpoint anywhere in a package used within the VSCode extension, hit `f5` in VSCode and your development instance of theme-check will automatically open.
 
 ### Developing for online-store-web
-This section has not been addressed since the unification effort that created this theme-tools repo. Please contact [Albert](https://github.com/albchu) if you have any questions here. He should be updating this section when he gets around to it. If you want to see what used to be documented for this section check out [the archives for theme-check-js](../archives/theme-check-js/CONTRIBUTING.md#setting-up-your-environment)
+It is strongly recommended that you use the spin constellation: `theme-tools:online-store` as your development environment for this.
+
+To set up the package links to online-store-web, within this repo root run: `yarn admin:init`
+
+This process has a small gotcha: online-store-web needs to use the built assets from theme-tools. This means that hot-reload is off the table.
+
+Once you've made some changes to your local theme-tools packages, to see those changes represented in online-store-web; within this repo root run: `yarn admin:build`
 
 ## Submitting a Pull Request
 
