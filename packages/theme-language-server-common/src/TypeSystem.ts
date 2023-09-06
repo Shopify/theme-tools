@@ -96,7 +96,11 @@ export class TypeSystem {
   private globalVariables = memo(async () => {
     const entries = await this.objectEntries();
     return entries.filter(
-      (entry) => !entry.access || entry.access.global === true || entry.access.template.length > 0,
+      (entry) =>
+        entry.name === 'section' ||
+        !entry.access ||
+        entry.access.global === true ||
+        entry.access.template.length > 0,
     );
   });
 }
