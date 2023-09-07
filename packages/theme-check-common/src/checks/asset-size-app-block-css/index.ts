@@ -36,6 +36,10 @@ export const AssetSizeAppBlockCSS: LiquidCheckDefinition<typeof schema> = {
           return;
         }
 
+        if (!filePath) {
+          return;
+        }
+
         const absolutePath = `assets/${filePath}`;
         const thresholdInBytes = context.settings.thresholdInBytes;
 
