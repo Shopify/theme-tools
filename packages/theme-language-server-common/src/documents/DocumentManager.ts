@@ -43,6 +43,12 @@ export class DocumentManager {
 
   private set(uri: URI, source: string, version: number | undefined) {
     const absolutePath = toAbsolutePath(uri);
+
+    // We only support json and liquid files.
+    if (!/\.(json|liquid)$/.test(absolutePath) || /\.(s?css|js).liquid$/.test(absolutePath)) {
+      return;
+    }
+
     const sourceCode = toSourceCode(absolutePath, source, version);
     this.sourceCodes.set(uri, {
       ...sourceCode,
