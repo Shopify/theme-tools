@@ -22,6 +22,17 @@ describe('Module: HtmlAttributeHoverProvider', async () => {
     await expect(provider).to.hover(`<img src█>`, expect.stringMatching(/##* src/));
   });
 
+  it('should return the hover description inside if statements', async () => {
+    await expect(provider).to.hover(
+      `{% if cond %}<a hr█ef="..."></a>{% endif %}`,
+      expect.stringMatching(/##* href/),
+    );
+    await expect(provider).to.hover(
+      `{% if cond %}{% else %}<a hr█ef="..."></a>{% endif %}`,
+      expect.stringMatching(/##* href/),
+    );
+  });
+
   it('should return nothing if the thing is unknown', async () => {
     await expect(provider).to.hover(`<a unkn█own></a>`, null);
   });

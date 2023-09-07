@@ -574,9 +574,30 @@ export function toLiquidHtmlAST(
   return root;
 }
 
+type LiquidCSTNode = LiquidCST[number];
+
 class ASTBuilder {
+  /** the AST is what we're building incrementally */
   ast: LiquidHtmlNode[];
+
+  /**
+   * The cursor represents the path to the array we would push nodes to.
+   *
+   * It evolves like this:
+   * - [0, 'children']
+   * - [0, 'children', 0, 'children']
+   * - [1, 'children']
+   * - [1, 'children', 0, 'children']
+   * - [1, 'children', 2, 'children']
+   * - ...
+   *
+   * This way, deepGet(cursor, ast) == array of nodes to push to.
+   *
+   * this.current.push(node);
+   */
   cursor: (string | number)[];
+
+  /** The source is the original string */
   source: string;
 
   constructor(source: string) {
@@ -615,17 +636,12 @@ class ASTBuilder {
 
   push(node: LiquidHtmlNode) {
     if (node.type === NodeTypes.LiquidTag && isLiquidBranchDisguisedAsTag(node)) {
-      this.cursor.pop();
-      this.cursor.pop();
+      this.closeParentWith(node);
       this.open(toNamedLiquidBranchBaseCase(node));
     } else if (node.type === NodeTypes.LiquidBranch) {
-      this.cursor.pop();
-      this.cursor.pop();
+      this.closeParentWith(node);
       this.open(node);
     } else {
-      if (this.parent?.type === NodeTypes.LiquidBranch) {
-        this.parent.position.end = node.position.end;
-      }
       this.current.push(node);
     }
   }
@@ -635,9 +651,7 @@ class ASTBuilder {
     nodeType: NodeTypes.LiquidTag | NodeTypes.HtmlElement,
   ) {
     if (isLiquidBranch(this.parent)) {
-      this.parent.position.end = node.locStart;
-      this.cursor.pop();
-      this.cursor.pop();
+      this.closeParentWith(node as LiquidCSTNode);
     }
 
     if (!this.parent) {
@@ -666,6 +680,18 @@ class ASTBuilder {
     if (this.parent.type == NodeTypes.LiquidTag && node.type == ConcreteNodeTypes.LiquidTagClose) {
       this.parent.delimiterWhitespaceStart = node.whitespaceStart ?? '';
       this.parent.delimiterWhitespaceEnd = node.whitespaceEnd ?? '';
+    }
+    this.cursor.pop();
+    this.cursor.pop();
+  }
+
+  closeParentWith(next: LiquidHtmlNode | LiquidCSTNode) {
+    if (isLiquidBranch(this.parent)) {
+      if ('locStart' in next) {
+        this.parent.position.end = next.locStart;
+      } else {
+        this.parent.position.end = next.position.start;
+      }
     }
     this.cursor.pop();
     this.cursor.pop();

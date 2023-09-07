@@ -635,7 +635,8 @@ describe('Unit: Stage 2 (AST)', () => {
 
     it(`should parse liquid ifs as branches`, () => {
       for (const { toAST, expectPath } of testCases) {
-        ast = toAST(`{% if A %}A{% elsif B %}B{% else %}C{% endif %}`);
+        const source = `{% if a %}A{% elsif b %}B{% else %}C{% endif %}`;
+        ast = toAST(source);
         expectPath(ast, 'children.0').to.exist;
         expectPath(ast, 'children.0.type').to.eql('LiquidTag');
         expectPath(ast, 'children.0.name').to.eql('if');
@@ -643,6 +644,8 @@ describe('Unit: Stage 2 (AST)', () => {
         expectPath(ast, 'children.0.children.0.type').to.eql('LiquidBranch');
         expectPath(ast, 'children.0.children.0.name').to.eql(null);
         expectPath(ast, 'children.0.children.0.markup').to.eql('');
+        expectPath(ast, 'children.0.children.0.position.start').to.eql(source.indexOf('A'));
+        expectPath(ast, 'children.0.children.0.position.end').to.eql(source.indexOf('A') + 1);
         expectPath(ast, 'children.0.children.0.children.0.type').to.eql('TextNode');
         expectPath(ast, 'children.0.children.0.children.0.value').to.eql('A');
 
@@ -656,6 +659,56 @@ describe('Unit: Stage 2 (AST)', () => {
         expectPath(ast, 'children.0.children.2.name').to.eql('else');
         expectPath(ast, 'children.0.children.2.children.0.type').to.eql('TextNode');
         expectPath(ast, 'children.0.children.2.children.0.value').to.eql('C');
+      }
+    });
+
+    it('should correctly report the position of branches', () => {
+      for (const { toAST, expectPath } of testCases) {
+        const branchA = ' <div>A</div> ';
+        const branchB = ' <span>B</span> ';
+        const branchC = ' {% if C %}{% endif %} ';
+        const source = `{% if a %}${branchA}{% elsif b %}${branchB}{% else %}${branchC}{% endif %}`;
+        ast = toAST(source);
+
+        expectPath(ast, 'children.0.children.0.type').to.equal('LiquidBranch');
+        expectPath(ast, 'children.0.children.0.position.start').to.equal(source.indexOf(branchA));
+        expectPath(ast, 'children.0.children.0.position.end').to.equal(
+          source.indexOf(branchA) + branchA.length,
+        );
+        expectPath(ast, 'children.0.children.0.blockStartPosition.start').to.equal(
+          source.indexOf(branchA),
+        );
+        expectPath(ast, 'children.0.children.0.blockStartPosition.end').to.equal(
+          source.indexOf(branchA),
+        );
+
+        expectPath(ast, 'children.0.children.1.type').to.equal('LiquidBranch');
+        expectPath(ast, 'children.0.children.1.position.start').to.equal(
+          source.indexOf('{% elsif b %}' + branchB),
+        );
+        expectPath(ast, 'children.0.children.1.position.end').to.equal(
+          source.indexOf(branchB) + branchB.length,
+        );
+        expectPath(ast, 'children.0.children.1.blockStartPosition.start').to.equal(
+          source.indexOf('{% elsif b %}'),
+        );
+        expectPath(ast, 'children.0.children.1.blockStartPosition.end').to.equal(
+          source.indexOf('{% elsif b %}') + '{% elsif b %}'.length,
+        );
+
+        expectPath(ast, 'children.0.children.2.type').to.equal('LiquidBranch');
+        expectPath(ast, 'children.0.children.2.position.start').to.equal(
+          source.indexOf('{% else %}' + branchC),
+        );
+        expectPath(ast, 'children.0.children.2.position.end').to.equal(
+          source.indexOf(branchC) + branchC.length,
+        );
+        expectPath(ast, 'children.0.children.2.blockStartPosition.start').to.equal(
+          source.indexOf('{% else %}'),
+        );
+        expectPath(ast, 'children.0.children.2.blockStartPosition.end').to.equal(
+          source.indexOf('{% else %}') + '{% else %}'.length,
+        );
       }
     });
 
