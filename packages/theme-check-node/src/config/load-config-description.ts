@@ -25,7 +25,7 @@ export async function loadConfigDescription(
 ): Promise<Config> {
   const nodeModuleRoot = await findNodeModuleRoot(root);
   const thirdPartyChecksPaths = await Promise.all([
-    findThirdPartyChecks(thisNodeModuleRoot), // global checks
+    findThirdPartyChecks(thisNodeModuleRoot()), // global checks
     findThirdPartyChecks(nodeModuleRoot),
   ]).then(flatten);
   const thirdPartyChecks = loadThirdPartyChecks([

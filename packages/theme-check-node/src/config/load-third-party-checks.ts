@@ -21,7 +21,7 @@ export function loadThirdPartyChecks(
   const checks = [];
   for (const modulePath of modulePaths) {
     try {
-      const moduleValue = require(modulePath);
+      const moduleValue = require(/* webpackIgnore: true */ modulePath);
       const moduleChecks = moduleValue.checks as unknown;
       if (!Array.isArray(moduleChecks)) {
         throw new Error(

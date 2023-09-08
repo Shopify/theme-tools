@@ -3,6 +3,7 @@ import { URI, Utils } from 'vscode-uri';
 import { basename } from 'node:path';
 import * as fs from 'node:fs/promises';
 import { allChecks, Translations } from '@shopify/theme-check-common';
+import { loadConfig as loadConfigFromPath } from '@shopify/theme-check-node';
 
 function parse(uri: string): URI {
   return URI.parse(uri);
@@ -74,13 +75,17 @@ export const fileSize: Dependencies['fileSize'] = async function fileSize(
   }
 };
 
-export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(uriString: string) {
-  const uri = parse(uriString);
-  return {
-    settings: {},
-    checks: allChecks,
-    root: asPath(await findRoot(uri)),
-  };
+export const loadConfig: Dependencies['loadConfig'] = async function (uriString: string) {
+  const fileUri = parse(uriString);
+  const rootUri = await findRoot(fileUri);
+  const rootPath = asPath(rootUri);
+  const configUri = Utils.joinPath(rootUri, '.theme-check.yml');
+  const configPath = asPath(configUri);
+  if (await fileExists(configPath)) {
+    return loadConfigFromPath(configPath, rootPath);
+  } else {
+    return loadConfigFromPath(undefined, rootPath);
+  }
 };
 
 export const getDefaultTranslationsFactory: Dependencies['getDefaultTranslationsFactory'] =

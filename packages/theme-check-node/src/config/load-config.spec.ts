@@ -112,7 +112,7 @@ describe('Unit: loadConfig', () => {
 
   it('does not automatically load a community-provided extensions that does not match the naming convention', async () => {
     const configPath = path.resolve(__dirname, 'fixtures/node-module-rec.yml');
-    await createMockNodeModule(thisNodeModuleRoot, 'not-conventional', mockNodeModuleCheck);
+    await createMockNodeModule(thisNodeModuleRoot(), 'not-conventional', mockNodeModuleCheck);
     const config = await loadConfig(configPath, tempDir);
     const nodeModuleCheck = config.checks.find((check) => check.meta.code === 'NodeModuleCheck');
     expect(nodeModuleCheck).not.to.exist;
@@ -121,7 +121,7 @@ describe('Unit: loadConfig', () => {
   it('loads a community-provided extension that is sibling to the installation of this node module (e.g. global install)', async () => {
     const configPath = path.resolve(__dirname, 'fixtures/node-module-rec.yml');
     const globalModulePath = await createMockNodeModule(
-      thisNodeModuleRoot,
+      thisNodeModuleRoot(),
       'theme-check-global-extension',
       mockNodeModuleCheck,
     );

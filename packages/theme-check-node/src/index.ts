@@ -21,6 +21,7 @@ const defaultLocale = 'en';
 const asyncGlob = promisify(glob);
 
 export * from '@shopify/theme-check-common';
+export { loadConfig };
 
 export type ThemeCheckRun = {
   theme: Theme;
