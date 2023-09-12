@@ -5,4 +5,4 @@
 '@shopify/theme-check-node': patch
 ---
 
-Bug fix for `AssetUrlFilters`
+Bug fix for `AssetUrlFilters`: Reports better messaging.

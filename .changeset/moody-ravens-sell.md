@@ -5,4 +5,4 @@
 '@shopify/theme-check-node': patch
 ---
 
-Bug fix for `AssetSizeAppBlockCSS`
+Bug fix for `AssetSizeAppBlockCSS`: Corrects underlining issues.

@@ -5,4 +5,4 @@
 '@shopify/theme-check-node': patch
 ---
 
-Bug fix for `AssetSizeCSS`
+Bug fix for `AssetSizeCSS`: Fixes redundant messages.
