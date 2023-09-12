@@ -48,7 +48,7 @@ describe('Module: AssetSizeAppBlockJavaScript', () => {
       message: "The file size for 'app.js' exceeds the configured threshold.",
       absolutePath: '/blocks/app.liquid',
       start: { index: 51 },
-      end: { index: 56 },
+      end: { index: 57 },
     });
   });
 
@@ -70,7 +70,7 @@ describe('Module: AssetSizeAppBlockJavaScript', () => {
       message: `'nonexistent.js' does not exist.`,
       absolutePath: '/blocks/app.liquid',
       start: { index: 57 },
-      end: { index: 70 },
+      end: { index: 71 },
     });
   });
 
