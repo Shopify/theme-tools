@@ -62,28 +62,6 @@ describe('Module: AssetSizeCSS', () => {
     });
   });
 
-  it('should report an offense if the CSS file does not exist', async () => {
-    const extensionFiles: MockTheme = {
-      'templates/index.liquid': `
-        <html>
-          <head>
-            <link href="{{ 'nonexistent.css' | asset_url }}" rel="stylesheet">
-          </head>
-        </html>
-      `,
-    };
-
-    const offenses = await check(extensionFiles, [AssetSizeCSS]);
-
-    expect(offenses).toHaveLength(1);
-    expect(offenses[0]).toMatchObject({
-      message: `'nonexistent.css' does not exist.`,
-      absolutePath: '/templates/index.liquid',
-      start: { index: 57 },
-      end: { index: 92 },
-    });
-  });
-
   it('should report a warning when the CSS file size exceeds the threshold', async () => {
     const CustomAssetSizeCSS = {
       ...AssetSizeCSS,

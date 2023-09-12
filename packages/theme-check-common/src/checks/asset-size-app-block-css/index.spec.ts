@@ -48,7 +48,7 @@ describe('Module: AssetSizeAppBlockCSS', () => {
       message: "The file size for 'app.css' exceeds the configured threshold.",
       absolutePath: '/blocks/app.liquid',
       start: { index: 51 },
-      end: { index: 57 },
+      end: { index: 58 },
     });
   });
 
@@ -70,7 +70,7 @@ describe('Module: AssetSizeAppBlockCSS', () => {
       message: `'nonexistent.css' does not exist.`,
       absolutePath: '/blocks/app.liquid',
       start: { index: 57 },
-      end: { index: 71 },
+      end: { index: 72 },
     });
   });
 

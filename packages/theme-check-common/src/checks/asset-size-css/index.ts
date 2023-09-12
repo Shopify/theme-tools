@@ -81,14 +81,7 @@ export const AssetSizeCSS: LiquidCheckDefinition = {
       const absolutePath = `assets/${hrefValue}`;
       const fileExists = await assertFileExists(context, absolutePath);
 
-      if (!fileExists) {
-        context.report({
-          message: `'${hrefValue}' does not exist.`,
-          startIndex: position.start,
-          endIndex: position.end,
-        });
-        return;
-      }
+      if (!fileExists) return;
 
       const fileExceedsThreshold = await assertFileSize(context, absolutePath, thresholdInBytes);
 

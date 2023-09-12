@@ -103,7 +103,9 @@ describe('Module: AssetUrlFilters', () => {
     expect(offenses).to.have.length(1);
 
     const offense = offenses[0];
-    expect(offense.message).to.equal('Use one of the asset_url filters to serve assets');
+    expect(offense.message).to.equal(
+      'Use one of the asset_url filters to serve assets for better performance',
+    );
     expect(offense.start.index).to.equal(5);
     expect(offense.end.index).to.equal(28);
 

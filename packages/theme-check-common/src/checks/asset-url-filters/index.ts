@@ -76,7 +76,7 @@ export const AssetUrlFilters: LiquidCheckDefinition = {
       if (hasShopifyHostedValue) return;
 
       context.report({
-        message: 'Use one of the asset_url filters to serve assets',
+        message: 'Use one of the asset_url filters to serve assets for better performance',
         startIndex: urlAttribute.position.start,
         endIndex: urlAttribute.position.end,
       });
@@ -101,7 +101,7 @@ export const AssetUrlFilters: LiquidCheckDefinition = {
       if (hasAsset) return;
 
       context.report({
-        message: `Use one of the asset_url filters to serve assets`,
+        message: `Use one of the asset_url filters to serve assets for better performance`,
         startIndex: parentNode.expression.position.start,
         endIndex: node.position.end,
       });

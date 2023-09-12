@@ -44,7 +44,7 @@ export const AssetSizeAppBlockCSS: LiquidCheckDefinition<typeof schema> = {
         const thresholdInBytes = context.settings.thresholdInBytes;
 
         const startIndex = node.body.position.start + node.body.value.indexOf(filePath);
-        const endIndex = startIndex + filePath.length - 1;
+        const endIndex = startIndex + filePath.length;
 
         const fileExists = await assertFileExists(context, absolutePath);
 
