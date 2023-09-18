@@ -12,7 +12,7 @@ import {
   HtmlElement,
   LiquidTag,
   AttributeNode,
-  LiquidDrop,
+  LiquidVariableOutput,
   HtmlDanglingMarkerOpen,
   HtmlDanglingMarkerClose,
 } from '~/types';
@@ -324,7 +324,10 @@ export function getLastDescendant(node: LiquidHtmlNode): LiquidHtmlNode {
   return node.lastChild ? getLastDescendant(node.lastChild) : node;
 }
 
-function isTagNameIncluded(collection: string[], name: (TextNode | LiquidDrop)[]): boolean {
+function isTagNameIncluded(
+  collection: string[],
+  name: (TextNode | LiquidVariableOutput)[],
+): boolean {
   if (name.length !== 1 || name[0].type !== NodeTypes.TextNode) return false;
   return collection.includes(name[0].value);
 }

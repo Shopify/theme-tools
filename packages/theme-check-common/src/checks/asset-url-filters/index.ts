@@ -32,7 +32,7 @@ function valueIsShopifyHosted(attr: ValuedHtmlAttribute): boolean {
   const ASSET_URL_OBJECT_NAMES = [LIQUID_OBJECT];
 
   return attr.value.some((node) => {
-    if (!isNodeOfType(NodeTypes.LiquidDrop, node)) return false;
+    if (!isNodeOfType(NodeTypes.LiquidVariableOutput, node)) return false;
     if (typeof node.markup === 'string') return false;
     if (!isNodeOfType(NodeTypes.LiquidVariable, node.markup)) return false;
 

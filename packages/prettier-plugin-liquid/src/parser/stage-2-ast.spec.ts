@@ -19,12 +19,12 @@ describe('Unit: Stage 2 (AST)', () => {
       },
     ];
 
-    describe('Unit: LiquidDrop', () => {
-      it('should transform a base case Liquid Drop into a LiquidDrop', () => {
+    describe('Unit: LiquidVariableOutput', () => {
+      it('should transform a base case Liquid Drop into a LiquidVariableOutput', () => {
         for (const { toAST, expectPath, expectPosition } of testCases) {
           ast = toAST('{{ !-asd }}');
           expectPath(ast, 'children.0').to.exist;
-          expectPath(ast, 'children.0.type').to.eql('LiquidDrop');
+          expectPath(ast, 'children.0.type').to.eql('LiquidVariableOutput');
           expectPath(ast, 'children.0.markup').to.eql('!-asd');
           expectPosition(ast, 'children.0');
         }
@@ -38,7 +38,7 @@ describe('Unit: Stage 2 (AST)', () => {
           for (const { toAST, expectPath, expectPosition } of testCases) {
             ast = toAST(`{{ ${expression} }}`);
             expectPath(ast, 'children.0').to.exist;
-            expectPath(ast, 'children.0.type').to.eql('LiquidDrop');
+            expectPath(ast, 'children.0.type').to.eql('LiquidVariableOutput');
             expectPath(ast, 'children.0.markup.type').to.eql('LiquidVariable');
             expectPath(ast, 'children.0.markup.rawSource').to.eql(expression);
             expectPath(ast, 'children.0.markup.expression.type').to.eql('String');
@@ -62,7 +62,7 @@ describe('Unit: Stage 2 (AST)', () => {
           for (const { toAST, expectPath, expectPosition } of testCases) {
             ast = toAST(`{{ ${expression} }}`);
             expectPath(ast, 'children.0').to.exist;
-            expectPath(ast, 'children.0.type').to.eql('LiquidDrop');
+            expectPath(ast, 'children.0.type').to.eql('LiquidVariableOutput');
             expectPath(ast, 'children.0.markup.type').to.eql('LiquidVariable');
             expectPath(ast, 'children.0.markup.rawSource').to.eql(expression);
             expectPath(ast, 'children.0.markup.expression.type').to.eql('Number');
@@ -85,7 +85,7 @@ describe('Unit: Stage 2 (AST)', () => {
           for (const { toAST, expectPath, expectPosition } of testCases) {
             ast = toAST(`{{ ${expression} }}`);
             expectPath(ast, 'children.0').to.exist;
-            expectPath(ast, 'children.0.type').to.eql('LiquidDrop');
+            expectPath(ast, 'children.0.type').to.eql('LiquidVariableOutput');
             expectPath(ast, 'children.0.markup.type').to.eql('LiquidVariable');
             expectPath(ast, 'children.0.markup.rawSource').to.eql(expression);
             expectPath(ast, 'children.0.markup.expression.type').to.eql('LiquidLiteral');
@@ -119,7 +119,7 @@ describe('Unit: Stage 2 (AST)', () => {
           for (const { toAST, expectPath, expectPosition } of testCases) {
             ast = toAST(`{{ ${expression} }}`);
             expectPath(ast, 'children.0').to.exist;
-            expectPath(ast, 'children.0.type').to.eql('LiquidDrop');
+            expectPath(ast, 'children.0.type').to.eql('LiquidVariableOutput');
             expectPath(ast, 'children.0.markup.type').to.eql('LiquidVariable');
             expectPath(ast, 'children.0.markup.rawSource').to.eql(expression);
             expectPath(ast, 'children.0.markup.expression.type').to.eql('Range');
@@ -167,7 +167,7 @@ describe('Unit: Stage 2 (AST)', () => {
           for (const { toAST, expectPath, expectPosition } of testCases) {
             ast = toAST(`{{ ${expression} }}`);
             expectPath(ast, 'children.0').to.exist;
-            expectPath(ast, 'children.0.type').to.eql('LiquidDrop');
+            expectPath(ast, 'children.0.type').to.eql('LiquidVariableOutput');
             expectPath(ast, 'children.0.markup.type').to.eql('LiquidVariable');
             expectPath(ast, 'children.0.markup.rawSource').to.eql(expression);
             expectPath(ast, 'children.0.markup.expression.type').to.eql('VariableLookup');
@@ -260,7 +260,7 @@ describe('Unit: Stage 2 (AST)', () => {
         ].forEach(({ expression, filters }) => {
           for (const { toAST, expectPath, expectPosition } of testCases) {
             ast = toAST(`{{ 'hello' ${expression} }}`);
-            expectPath(ast, 'children.0.type').to.equal('LiquidDrop');
+            expectPath(ast, 'children.0.type').to.equal('LiquidVariableOutput');
             expectPath(ast, 'children.0.markup.type').to.equal('LiquidVariable');
             expectPath(ast, 'children.0.markup.rawSource').to.equal(`'hello' ` + expression);
             expectPath(ast, 'children.0.markup.filters').to.have.lengthOf(filters.length);
@@ -781,7 +781,7 @@ describe('Unit: Stage 2 (AST)', () => {
         ast = toLiquidHtmlAST(testCase);
         expectPath(ast, 'children.0').to.exist;
         expectPath(ast, 'children.0.type').to.eql('HtmlElement');
-        expectPath(ast, 'children.0.name.0.type').to.eql('LiquidDrop');
+        expectPath(ast, 'children.0.name.0.type').to.eql('LiquidVariableOutput');
         expectPath(ast, 'children.0.name.0.markup.type').to.eql('LiquidVariable');
         expectPath(ast, 'children.0.name.0.markup.rawSource').to.eql('node_type');
         expectPath(ast, 'children.0.attributes.0.name.0.value').to.eql('src');
@@ -798,7 +798,7 @@ describe('Unit: Stage 2 (AST)', () => {
       ast = toLiquidHtmlAST(`<{{ node_type }}--header ></{{node_type}}--header>`);
       expectPath(ast, 'children.0').to.exist;
       expectPath(ast, 'children.0.type').to.eql('HtmlElement');
-      expectPath(ast, 'children.0.name.0.type').to.eql('LiquidDrop');
+      expectPath(ast, 'children.0.name.0.type').to.eql('LiquidVariableOutput');
       expectPath(ast, 'children.0.name.0.markup.type').to.eql('LiquidVariable');
       expectPath(ast, 'children.0.name.0.markup.rawSource').to.eql('node_type');
       expectPath(ast, 'children.0.name.1.value').to.eql('--header');
@@ -808,7 +808,7 @@ describe('Unit: Stage 2 (AST)', () => {
       ast = toLiquidHtmlAST(`<{{ node_type }}--header />`);
       expectPath(ast, 'children.0').to.exist;
       expectPath(ast, 'children.0.type').to.eql('HtmlSelfClosingElement');
-      expectPath(ast, 'children.0.name.0.type').to.eql('LiquidDrop');
+      expectPath(ast, 'children.0.name.0.type').to.eql('LiquidVariableOutput');
       expectPath(ast, 'children.0.name.0.markup.type').to.eql('LiquidVariable');
       expectPath(ast, 'children.0.name.0.markup.rawSource').to.eql('node_type');
       expectPath(ast, 'children.0.name.1.value').to.eql('--header');

@@ -93,7 +93,7 @@ function getCssDisplay(node: AugmentedNode<WithSiblings>, options: LiquidParserO
       }
 
     case NodeTypes.LiquidBranch:
-    case NodeTypes.LiquidDrop:
+    case NodeTypes.LiquidVariableOutput:
       return 'inline';
 
     case NodeTypes.AttrDoubleQuoted:
@@ -182,7 +182,7 @@ function getNodeCssStyleWhiteSpace(node: AugmentedNode<WithSiblings>): string {
       return CSS_WHITE_SPACE_LIQUID_TAGS[node.name] || CSS_WHITE_SPACE_DEFAULT;
 
     case NodeTypes.LiquidBranch:
-    case NodeTypes.LiquidDrop:
+    case NodeTypes.LiquidVariableOutput:
       return CSS_WHITE_SPACE_DEFAULT;
 
     case NodeTypes.AttrDoubleQuoted:

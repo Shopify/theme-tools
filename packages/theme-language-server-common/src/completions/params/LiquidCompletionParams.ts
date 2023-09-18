@@ -277,7 +277,7 @@ function findCurrentNode(
         break;
       }
 
-      case NodeTypes.LiquidDrop: {
+      case NodeTypes.LiquidVariableOutput: {
         if (typeof current.markup !== 'string') {
           finder.current = current.markup;
         }

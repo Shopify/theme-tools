@@ -54,7 +54,7 @@ export enum ConcreteNodeTypes {
   AttrDoubleQuoted = 'AttrDoubleQuoted',
   AttrUnquoted = 'AttrUnquoted',
   AttrEmpty = 'AttrEmpty',
-  LiquidDrop = 'LiquidDrop',
+  LiquidVariableOutput = 'LiquidVariableOutput',
   LiquidRawTag = 'LiquidRawTag',
   LiquidTag = 'LiquidTag',
   LiquidTagOpen = 'LiquidTagOpen',
@@ -127,17 +127,17 @@ export interface ConcreteHtmlVoidElement
 }
 export interface ConcreteHtmlSelfClosingElement
   extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlSelfClosingElement> {
-  name: (ConcreteTextNode | ConcreteLiquidDrop)[];
+  name: (ConcreteTextNode | ConcreteLiquidVariableOutput)[];
 }
 export interface ConcreteHtmlTagOpen extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlTagOpen> {
-  name: (ConcreteTextNode | ConcreteLiquidDrop)[];
+  name: (ConcreteTextNode | ConcreteLiquidVariableOutput)[];
 }
 export interface ConcreteHtmlTagClose extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlTagClose> {
-  name: (ConcreteTextNode | ConcreteLiquidDrop)[];
+  name: (ConcreteTextNode | ConcreteLiquidVariableOutput)[];
 }
 
 export interface ConcreteAttributeNodeBase<T> extends ConcreteBasicNode<T> {
-  name: (ConcreteLiquidDrop | ConcreteTextNode)[];
+  name: (ConcreteLiquidVariableOutput | ConcreteTextNode)[];
   value: (ConcreteLiquidNode | ConcreteTextNode)[];
 }
 
@@ -155,7 +155,7 @@ export interface ConcreteAttrDoubleQuoted
 export interface ConcreteAttrUnquoted
   extends ConcreteAttributeNodeBase<ConcreteNodeTypes.AttrUnquoted> {}
 export interface ConcreteAttrEmpty extends ConcreteBasicNode<ConcreteNodeTypes.AttrEmpty> {
-  name: (ConcreteLiquidDrop | ConcreteTextNode)[];
+  name: (ConcreteLiquidVariableOutput | ConcreteTextNode)[];
 }
 
 export type ConcreteLiquidNode =
@@ -163,7 +163,7 @@ export type ConcreteLiquidNode =
   | ConcreteLiquidTagOpen
   | ConcreteLiquidTagClose
   | ConcreteLiquidTag
-  | ConcreteLiquidDrop;
+  | ConcreteLiquidVariableOutput;
 
 interface ConcreteBasicLiquidNode<T> extends ConcreteBasicNode<T> {
   whitespaceStart: null | '-';
@@ -337,7 +337,8 @@ export interface ConcreteRenderVariableExpression
   name: ConcreteLiquidExpression;
 }
 
-export interface ConcreteLiquidDrop extends ConcreteBasicLiquidNode<ConcreteNodeTypes.LiquidDrop> {
+export interface ConcreteLiquidVariableOutput
+  extends ConcreteBasicLiquidNode<ConcreteNodeTypes.LiquidVariableOutput> {
   markup: ConcreteLiquidVariable | string;
 }
 
@@ -763,7 +764,7 @@ function toCST<T>(
     renderAliasExpression: 3,
 
     liquidDrop: {
-      type: ConcreteNodeTypes.LiquidDrop,
+      type: ConcreteNodeTypes.LiquidVariableOutput,
       markup: 3,
       whitespaceStart: 1,
       whitespaceEnd: 4,

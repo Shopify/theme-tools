@@ -3,7 +3,7 @@ import {
   AstPath,
   LiquidAstPath,
   LiquidBranch,
-  LiquidDrop,
+  LiquidVariableOutput,
   LiquidParserOptions,
   LiquidPrinter,
   LiquidPrinterArgs,
@@ -44,13 +44,13 @@ const { builders, utils } = doc;
 const { group, hardline, ifBreak, indent, join, line, softline, literalline } = builders;
 const { replaceEndOfLine } = doc.utils as any;
 
-export function printLiquidDrop(
+export function printLiquidVariableOutput(
   path: LiquidAstPath,
   _options: LiquidParserOptions,
   print: LiquidPrinter,
   { leadingSpaceGroupId, trailingSpaceGroupId }: LiquidPrinterArgs,
 ) {
-  const node: LiquidDrop = path.getValue() as LiquidDrop;
+  const node: LiquidVariableOutput = path.getValue() as LiquidVariableOutput;
   const whitespaceStart = getWhitespaceTrim(
     node.whitespaceStart,
     hasMeaningfulLackOfLeadingWhitespace(node),

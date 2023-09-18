@@ -46,7 +46,7 @@ describe('Module: ParserBlockingScript', () => {
   });
 
   describe('Case: LiquidFilter corrections', () => {
-    it('should suggest to replace a LiquidDrop with a script tag that has the expression as URL', async () => {
+    it('should suggest to replace a LiquidVariableOutput with a script tag that has the expression as URL', async () => {
       const file = "{{ 'asset' | script_tag }}";
       const offenses = await reportOffenses(
         {
@@ -73,7 +73,7 @@ describe('Module: ParserBlockingScript', () => {
       expect(suggestions).to.include(`<script src="{{ 'asset' }}" async></script>`);
     });
 
-    it('should suggest to replace a LiquidDrop with a script tag that has the expression and previous filters as URL', async () => {
+    it('should suggest to replace a LiquidVariableOutput with a script tag that has the expression and previous filters as URL', async () => {
       const file = "{{ 'asset' | asset_url | script_tag }}";
       const offenses = await reportOffenses(
         {

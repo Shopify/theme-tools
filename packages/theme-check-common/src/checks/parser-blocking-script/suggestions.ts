@@ -7,7 +7,7 @@ import { last } from '../../utils';
 
 type LiquidVariable = LiquidHtmlNodeOfType<NodeTypes.LiquidVariable>;
 type LiquidFilter = LiquidHtmlNodeOfType<NodeTypes.LiquidFilter>;
-type LiquidDrop = LiquidHtmlNodeOfType<NodeTypes.LiquidDrop>;
+type LiquidVariableOutput = LiquidHtmlNodeOfType<NodeTypes.LiquidVariableOutput>;
 type HtmlRawNode = LiquidHtmlNodeOfType<NodeTypes.HtmlRawNode>;
 
 const suggestionMessage = (attr: 'defer' | 'async') =>
@@ -17,7 +17,7 @@ export const liquidFilterSuggestion = (
   attr: 'defer' | 'async',
   node: LiquidFilter,
   parentNode: LiquidVariable,
-  grandParentNode: LiquidDrop,
+  grandParentNode: LiquidVariableOutput,
 ): LiquidHtmlSuggestion => ({
   message: suggestionMessage(attr),
   fix(corrector) {
