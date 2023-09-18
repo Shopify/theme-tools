@@ -2,7 +2,7 @@ import { Dependencies } from '@shopify/liquid-language-server-common';
 import { URI, Utils } from 'vscode-uri';
 import { basename } from 'node:path';
 import * as fs from 'node:fs/promises';
-import { allChecks, Translations } from '@shopify/theme-check-common';
+import { Config, Translations } from '@shopify/theme-check-common';
 import { loadConfig as loadConfigFromPath } from '@shopify/theme-check-node';
 
 function parse(uri: string): URI {
@@ -75,16 +75,16 @@ export const fileSize: Dependencies['fileSize'] = async function fileSize(
   }
 };
 
-export const loadConfig: Dependencies['loadConfig'] = async function (uriString: string) {
+export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(uriString: string) {
   const fileUri = parse(uriString);
   const rootUri = await findRoot(fileUri);
-  const rootPath = asPath(rootUri);
+  const rootPath = asFsPath(rootUri);
   const configUri = Utils.joinPath(rootUri, '.theme-check.yml');
-  const configPath = asPath(configUri);
+  const configPath = asFsPath(configUri);
   if (await fileExists(configPath)) {
-    return loadConfigFromPath(configPath, rootPath);
+    return loadConfigFromPath(configPath, rootPath).then(normalizeRoot);
   } else {
-    return loadConfigFromPath(undefined, rootPath);
+    return loadConfigFromPath(undefined, rootPath).then(normalizeRoot);
   }
 };
 
@@ -142,4 +142,9 @@ async function getDefaultLocale(rootURI: URI) {
   } catch (error) {
     return 'en';
   }
+}
+
+function normalizeRoot(config: Config) {
+  config.root = asPath(URI.file(config.root));
+  return config;
 }
