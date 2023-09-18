@@ -4,7 +4,13 @@ import { readYamlConfigDescription } from './read-yaml';
 import { mergeFragments } from './merge-fragments';
 import { ConfigDescription, ModernIdentifier, ModernIdentifiers } from '../types';
 
-const modernConfigsPath = path.resolve(__dirname, '../../../configs');
+const modernConfigsPath = () => {
+  if (process.env.WEBPACK_MODE) {
+    return path.resolve(__dirname, './configs');
+  } else {
+    return path.resolve(__dirname, '../../../configs');
+  }
+};
 
 /**
  * Given a modern identifier or absolute path, fully resolves and flattens
@@ -17,7 +23,7 @@ export async function resolveConfig(
 ): Promise<ConfigDescription> {
   if (isModernIdentifier(configPath)) {
     const modernConfigPath = path.join(
-      modernConfigsPath,
+      modernConfigsPath(),
       configPath.replace(/^theme-check:/, '') + '.yml',
     );
     return resolveConfig(modernConfigPath);

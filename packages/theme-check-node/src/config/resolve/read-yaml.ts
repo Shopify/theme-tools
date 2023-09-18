@@ -23,7 +23,7 @@ export async function readYamlConfigDescription(
 ): Promise<ConfigFragment> {
   const root = path.dirname(absolutePath);
   const contents = await fs.readFile(absolutePath, 'utf8');
-  const yamlFile = parse(contents);
+  const yamlFile = contents.trim() === '' ? {} : parse(contents);
 
   if (!isPlainObject(yamlFile)) {
     throw new Error(
