@@ -1,5 +1,5 @@
 {
-  "name": "@shopify/liquid-language-server-node",
+  "name": "@shopify/theme-language-server-node",
   "version": "1.7.1",
   "main": "dist/index.js",
   "author": "CP Clermont <cp.clermont@shopify.com>",
@@ -16,7 +16,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/liquid-language-server-common": "1.7.1",
+    "@shopify/theme-language-server-common": "1.7.1",
     "@shopify/theme-check-docs-updater": "^1.12.1",
     "node-fetch": "^2.6.11",
     "vscode-languageserver": "^8.0.2",

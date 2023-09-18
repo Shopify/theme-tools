@@ -120,7 +120,7 @@ export function startServer(
         },
       },
       serverInfo: {
-        name: 'liquid-language-server',
+        name: 'theme-language-server',
         version: VERSION,
       },
     };

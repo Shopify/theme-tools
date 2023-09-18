@@ -57,10 +57,10 @@ By that ommission, one might think we should not update these internal dependenc
 
 #### Consider the example:
 
-A react app uses `@shopify/liquid-language-server-browser` to drive theme-check on a web page.
+A react app uses `@shopify/theme-language-server-browser` to drive theme-check on a web page.
 We add 3 new checks to `@shopify/theme-check-common` but add no breaking changes. This would be a minor version bump.
 
-If we don't patch bump `@shopify/liquid-language-server-browser`, then the react app would never get any of the new checks until we end up updating `@shopify/liquid-language-server-browser` for unrelated reasons. We split out the different components of theme-check into separate packages for reusability but when it is used by a dependant package, we consider it as part of the functionality of that dependant package.
+If we don't patch bump `@shopify/theme-language-server-browser`, then the react app would never get any of the new checks until we end up updating `@shopify/theme-language-server-browser` for unrelated reasons. We split out the different components of theme-check into separate packages for reusability but when it is used by a dependant package, we consider it as part of the functionality of that dependant package.
 
 Our takeaway from this real usecase is that it is necessary to apply these patch version bumps in order to deliver updates consistently to end developers who depend on them.
 
@@ -70,10 +70,10 @@ For context, this refers to [the library's documented config option](https://git
 At the time of writing this doc; the end of that documentation states: `this is only applied for packages which are already released in the current release. If A depends on B and we only release B then A won't be bumped.`
 
 This affects an important case for us: Nested monorail dependencies relying on each other. Consider this actual relationship within the theme-tools repo:
-`@shopify/liquid-language-server-node` depends on `@shopify/liquid-language-server-common` which depends on `@shopify/theme-check-common`.
+`@shopify/theme-language-server-node` depends on `@shopify/theme-language-server-common` which depends on `@shopify/theme-check-common`.
 
 Please note we [already have `@changesets/cli` configured with `updateinternaldependencies: patch`](../.changeset/config.json) for its ability to patch bump internal dependencies once they are already in the release.
 
-When we perform a release where there is an update to the minor version of `@shopify/theme-check-common`, but no update to `@shopify/liquid-language-server-common`, then `changesets version`(the main command we use to apply a version bump) will not change `@shopify/liquid-language-server-common` or `@shopify/liquid-language-server-node`. So effectively we would have needed to manually bump those two packages within our monorepo before they could have access to the updates in `@shopify/theme-check-common`. Its high context, boring and repetitive dependency management work that's easy to miss which could result in outdated logic running under our noses. The `release-orchestrator` package enables us to automatically resolve any nested internal dependencies within the monorepo so that we don't need to worry about it.
+When we perform a release where there is an update to the minor version of `@shopify/theme-check-common`, but no update to `@shopify/theme-language-server-common`, then `changesets version`(the main command we use to apply a version bump) will not change `@shopify/theme-language-server-common` or `@shopify/theme-language-server-node`. So effectively we would have needed to manually bump those two packages within our monorepo before they could have access to the updates in `@shopify/theme-check-common`. Its high context, boring and repetitive dependency management work that's easy to miss which could result in outdated logic running under our noses. The `release-orchestrator` package enables us to automatically resolve any nested internal dependencies within the monorepo so that we don't need to worry about it.
 
 Should `@changesets/cli` ever consider changing `updateinternaldependencies: patch`to apply to all packages outside of the current release, we may scrap this package.

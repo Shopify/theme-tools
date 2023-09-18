@@ -1,4 +1,4 @@
-import { startServer as startCoreServer } from '@shopify/liquid-language-server-common';
+import { startServer as startCoreServer } from '@shopify/theme-language-server-common';
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
 import { stdin, stdout } from 'node:process';
 import { createConnection } from 'vscode-languageserver/node';

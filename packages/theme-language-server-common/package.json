@@ -1,5 +1,5 @@
 {
-  "name": "@shopify/liquid-language-server-common",
+  "name": "@shopify/theme-language-server-common",
   "version": "1.7.1",
   "main": "dist/index.js",
   "author": "CP Clermont <cp.clermont@shopify.com>",
