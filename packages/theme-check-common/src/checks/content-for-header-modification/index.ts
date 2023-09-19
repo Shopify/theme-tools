@@ -59,13 +59,13 @@ export const ContentForHeaderModification: LiquidCheckDefinition = {
           checkContentForHeader(node.markup.expression, node.position);
         } else if (isLiquidTagCapture(node) && node.children) {
           for (const child of node.children) {
-            if (child.type === NodeTypes.LiquidDrop && typeof child.markup !== 'string') {
+            if (child.type === NodeTypes.LiquidVariableOutput && typeof child.markup !== 'string') {
               checkContentForHeader(child.markup.expression, child.position);
             }
           }
         }
       },
-      async LiquidDrop(node) {
+      async LiquidVariableOutput(node) {
         if (typeof node.markup === 'string') return;
 
         if (node.markup.filters.length) {

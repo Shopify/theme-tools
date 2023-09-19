@@ -124,7 +124,11 @@ function isLeadingWhitespaceSensitiveNode(node: AugmentedAstNode | undefined): b
   }
 
   // <a data-{{ this }}="hi">
-  if (node.parentNode && isAttributeNode(node.parentNode) && node.type === NodeTypes.LiquidDrop) {
+  if (
+    node.parentNode &&
+    isAttributeNode(node.parentNode) &&
+    node.type === NodeTypes.LiquidVariableOutput
+  ) {
     return true;
   }
 
@@ -256,7 +260,11 @@ function isTrailingWhitespaceSensitiveNode(node: AugmentedAstNode): boolean {
   }
 
   // <a data-{{ this }}="hi">
-  if (node.parentNode && isAttributeNode(node.parentNode) && node.type === NodeTypes.LiquidDrop) {
+  if (
+    node.parentNode &&
+    isAttributeNode(node.parentNode) &&
+    node.type === NodeTypes.LiquidVariableOutput
+  ) {
     return true;
   }
 
@@ -407,7 +415,7 @@ export function isTrimmingOuterRight(node: AugmentedAstNode | undefined): boolea
       return (node.delimiterWhitespaceEnd ?? node.whitespaceEnd) === '-';
     case NodeTypes.LiquidBranch:
       return false;
-    case NodeTypes.LiquidDrop: // {{ foo -}}
+    case NodeTypes.LiquidVariableOutput: // {{ foo -}}
       return node.whitespaceEnd === '-';
     default:
       return false;
@@ -420,7 +428,7 @@ export function isTrimmingOuterLeft(node: AugmentedAstNode | undefined): boolean
     case NodeTypes.LiquidRawTag:
     case NodeTypes.LiquidTag: // {%- if a %}{% endif %}, {%- assign x = 1 %}
     case NodeTypes.LiquidBranch: // {%- else %}
-    case NodeTypes.LiquidDrop: // {{- 'val' }}
+    case NodeTypes.LiquidVariableOutput: // {{- 'val' }}
       return node.whitespaceStart === '-';
     default:
       return false;
@@ -447,7 +455,7 @@ export function isTrimmingInnerLeft(node: AugmentedAstNode | undefined): boolean
 
       // Otherwise gets it from the delimiter. e.g. {% else -%}
       return node.whitespaceEnd === '-';
-    case NodeTypes.LiquidDrop:
+    case NodeTypes.LiquidVariableOutput:
     default:
       return false;
   }
@@ -473,7 +481,7 @@ export function isTrimmingInnerRight(node: AugmentedAstNode | undefined): boolea
 
       // Otherwise gets it from the next branch
       return isTrimmingOuterLeft(node.next);
-    case NodeTypes.LiquidDrop:
+    case NodeTypes.LiquidVariableOutput:
     default:
       return false;
   }

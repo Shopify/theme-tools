@@ -24,13 +24,13 @@ describe('Module: LiquidCompletionParams', async () => {
           expectPath(partialAst, 'type').to.eql('Document');
           expectPath(partialAst, 'name').to.eql('#document');
 
-          expectPath(partialAst, 'children.0.type').to.eql('LiquidDrop');
+          expectPath(partialAst, 'children.0.type').to.eql('LiquidVariableOutput');
           expectPath(partialAst, 'children.0.markup.type').to.eql('LiquidVariable');
           expectPath(partialAst, 'children.0.markup.expression.type').to.eql('String');
           expectPath(partialAst, 'children.0.markup.expression.value').to.eql('hey');
           expectPath(partialAst, 'children.0.markup.rawSource').to.eql('"hey"');
 
-          expectPath(partialAst, 'children.1.type').to.eql('LiquidDrop');
+          expectPath(partialAst, 'children.1.type').to.eql('LiquidVariableOutput');
           expectPath(partialAst, 'children.1.markup.type').to.eql('LiquidVariable');
           expectPath(partialAst, 'children.1.markup.expression.type').to.eql('VariableLookup');
           expectPath(partialAst, 'children.1.markup.expression.name').to.eql('product');

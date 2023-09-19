@@ -19,15 +19,15 @@ describe('Unit: Stage 1 (CST)', () => {
 
     let cst: LiquidHtmlCST | LiquidCST;
 
-    describe('Case: LiquidDrop', () => {
+    describe('Case: LiquidVariableOutput', () => {
       it('should basically parse unparseables', () => {
         for (const { toCST, expectPath } of testCases) {
           cst = toCST('{{ !-asdl }}{{- !-asdl -}}');
-          expectPath(cst, '0.type').to.equal('LiquidDrop');
+          expectPath(cst, '0.type').to.equal('LiquidVariableOutput');
           expectPath(cst, '0.markup').to.equal('!-asdl');
           expectPath(cst, '0.whitespaceStart').to.equal(null);
           expectPath(cst, '0.whitespaceEnd').to.equal(null);
-          expectPath(cst, '1.type').to.equal('LiquidDrop');
+          expectPath(cst, '1.type').to.equal('LiquidVariableOutput');
           expectPath(cst, '1.markup').to.equal('!-asdl');
           expectPath(cst, '1.whitespaceStart').to.equal('-');
           expectPath(cst, '1.whitespaceEnd').to.equal('-');
@@ -41,7 +41,7 @@ describe('Unit: Stage 1 (CST)', () => {
         ].forEach(({ expression, value, single }) => {
           for (const { toCST, expectPath } of testCases) {
             cst = toCST(`{{ ${expression} }}`);
-            expectPath(cst, '0.type').to.equal('LiquidDrop');
+            expectPath(cst, '0.type').to.equal('LiquidVariableOutput');
             expectPath(cst, '0.markup.type').to.equal('LiquidVariable');
             expectPath(cst, '0.markup.rawSource').to.equal(expression);
             expectPath(cst, '0.markup.expression.type').to.equal('String');
@@ -63,7 +63,7 @@ describe('Unit: Stage 1 (CST)', () => {
         ].forEach(({ expression, value }) => {
           for (const { toCST, expectPath } of testCases) {
             cst = toCST(`{{ ${expression} }}`);
-            expectPath(cst, '0.type').to.equal('LiquidDrop');
+            expectPath(cst, '0.type').to.equal('LiquidVariableOutput');
             expectPath(cst, '0.markup.type').to.equal('LiquidVariable');
             expectPath(cst, '0.markup.rawSource').to.equal(expression);
             expectPath(cst, '0.markup.expression.type').to.equal('Number');
@@ -84,7 +84,7 @@ describe('Unit: Stage 1 (CST)', () => {
         ].forEach(({ expression, value }) => {
           for (const { toCST, expectPath } of testCases) {
             cst = toCST(`{{ ${expression} }}`);
-            expectPath(cst, '0.type').to.equal('LiquidDrop');
+            expectPath(cst, '0.type').to.equal('LiquidVariableOutput');
             expectPath(cst, '0.markup.type').to.equal('LiquidVariable', expression);
             expectPath(cst, '0.markup.rawSource').to.equal(expression);
             expectPath(cst, '0.markup.expression.type').to.equal('LiquidLiteral');
@@ -128,7 +128,7 @@ describe('Unit: Stage 1 (CST)', () => {
         ].forEach(({ expression, name, lookups }) => {
           for (const { toCST, expectPath } of testCases) {
             cst = toCST(`{{ ${expression} }}`);
-            expectPath(cst, '0.type').to.equal('LiquidDrop');
+            expectPath(cst, '0.type').to.equal('LiquidVariableOutput');
             expectPath(cst, '0.markup.type').to.equal('LiquidVariable', expression);
             expectPath(cst, '0.markup.rawSource').to.equal(expression);
             expectPath(cst, '0.markup.expression.type').to.equal('VariableLookup');
@@ -194,7 +194,7 @@ describe('Unit: Stage 1 (CST)', () => {
         ].forEach(({ expression, start, end }) => {
           for (const { toCST, expectPath } of testCases) {
             cst = toCST(`{{ ${expression} }}`);
-            expectPath(cst, '0.type').to.equal('LiquidDrop');
+            expectPath(cst, '0.type').to.equal('LiquidVariableOutput');
             expectPath(cst, '0.markup.type').to.equal('LiquidVariable', expression);
             expectPath(cst, '0.markup.rawSource').to.equal(expression);
             expectPath(cst, '0.markup.expression.type').to.equal('Range');
@@ -246,7 +246,7 @@ describe('Unit: Stage 1 (CST)', () => {
         ].forEach(({ expression, filters }) => {
           for (const { toCST, expectPath } of testCases) {
             cst = toCST(`{{ 'hello' ${expression} }}`);
-            expectPath(cst, '0.type').to.equal('LiquidDrop');
+            expectPath(cst, '0.type').to.equal('LiquidVariableOutput');
             expectPath(cst, '0.markup.type').to.equal('LiquidVariable');
             expectPath(cst, '0.markup.rawSource').to.equal((`'hello' ` + expression).trimEnd());
             expectPath(cst, '0.markup.filters').to.exist;
@@ -929,12 +929,12 @@ describe('Unit: Stage 1 (CST)', () => {
       it('should parse compound tag names', () => {
         cst = toLiquidHtmlCST('<{{header_type}}--header></{{header_type}}--header>');
         expectPath(cst, '0.type').to.eql('HtmlTagOpen');
-        expectPath(cst, '0.name.0.type').to.eql('LiquidDrop');
+        expectPath(cst, '0.name.0.type').to.eql('LiquidVariableOutput');
         expectPath(cst, '0.name.0.markup.type').to.eql('LiquidVariable');
         expectPath(cst, '0.name.0.markup.rawSource').to.eql('header_type');
         expectPath(cst, '0.name.1.value').to.eql('--header');
         expectPath(cst, '1.type').to.eql('HtmlTagClose');
-        expectPath(cst, '1.name.0.type').to.eql('LiquidDrop');
+        expectPath(cst, '1.name.0.type').to.eql('LiquidVariableOutput');
         expectPath(cst, '1.name.0.markup.type').to.eql('LiquidVariable');
         expectPath(cst, '0.name.0.markup.rawSource').to.eql('header_type');
         expectPath(cst, '1.name.1.value').to.eql('--header');
@@ -943,26 +943,26 @@ describe('Unit: Stage 1 (CST)', () => {
         expectPath(cst, '0.type').to.eql('HtmlTagOpen');
         expectPath(cst, '0.name.0.type').to.eql('TextNode');
         expectPath(cst, '0.name.0.value').to.eql('header--');
-        expectPath(cst, '0.name.1.type').to.eql('LiquidDrop');
+        expectPath(cst, '0.name.1.type').to.eql('LiquidVariableOutput');
         expectPath(cst, '0.name.1.markup.type').to.eql('LiquidVariable');
         expectPath(cst, '0.name.1.markup.rawSource').to.eql('header_type');
         expectPath(cst, '1.type').to.eql('HtmlTagClose');
         expectPath(cst, '1.name.0.type').to.eql('TextNode');
         expectPath(cst, '1.name.0.value').to.eql('header--');
-        expectPath(cst, '1.name.1.type').to.eql('LiquidDrop');
+        expectPath(cst, '1.name.1.type').to.eql('LiquidVariableOutput');
         expectPath(cst, '1.name.1.markup.type').to.eql('LiquidVariable');
         expectPath(cst, '0.name.1.markup.rawSource').to.eql('header_type');
       });
 
-      it('should parse liquid drop tag names', () => {
+      it('should parse liquid variable output tag names', () => {
         cst = toLiquidHtmlCST('<{{ node_type }}></{{ node_type }}>');
         expectPath(cst, '0.type').to.equal('HtmlTagOpen');
-        expectPath(cst, '0.name.0.type').to.equal('LiquidDrop');
+        expectPath(cst, '0.name.0.type').to.equal('LiquidVariableOutput');
         expectPath(cst, '0.name.0.markup.type').to.equal('LiquidVariable');
         expectPath(cst, '0.name.0.markup.expression.type').to.equal('VariableLookup');
         expectPath(cst, '0.name.0.markup.expression.name').to.equal('node_type');
         expectPath(cst, '1.type').to.equal('HtmlTagClose');
-        expectPath(cst, '1.name.0.type').to.equal('LiquidDrop');
+        expectPath(cst, '1.name.0.type').to.equal('LiquidVariableOutput');
         expectPath(cst, '1.name.0.markup.type').to.equal('LiquidVariable');
         expectPath(cst, '1.name.0.markup.expression.type').to.equal('VariableLookup');
         expectPath(cst, '1.name.0.markup.expression.name').to.equal('node_type');
@@ -1057,7 +1057,7 @@ describe('Unit: Stage 1 (CST)', () => {
               `<div\n${testConfig.name}=${testConfig.quote}https://{{ name }}${testConfig.quote}\n>`,
             ].forEach((text) => {
               cst = toLiquidHtmlCST(text);
-              expectPath(cst, '0.attrList.0.value.1.type').to.eql('LiquidDrop', text);
+              expectPath(cst, '0.attrList.0.value.1.type').to.eql('LiquidVariableOutput', text);
             });
           }
 
@@ -1172,20 +1172,20 @@ describe('Unit: Stage 1 (CST)', () => {
       expectPath(cst, '0.name').to.eql('█');
 
       cst = toCST('{{ █ }}');
-      expectPath(cst, '0.type').to.eql('LiquidDrop');
+      expectPath(cst, '0.type').to.eql('LiquidVariableOutput');
       expectPath(cst, '0.markup.type').to.eql('LiquidVariable');
       expectPath(cst, '0.markup.expression.type').to.eql('VariableLookup');
       expectPath(cst, '0.markup.expression.name').to.eql('█');
 
       cst = toCST('{{ var.█ }}');
-      expectPath(cst, '0.type').to.eql('LiquidDrop');
+      expectPath(cst, '0.type').to.eql('LiquidVariableOutput');
       expectPath(cst, '0.markup.type').to.eql('LiquidVariable');
       expectPath(cst, '0.markup.expression.type').to.eql('VariableLookup');
       expectPath(cst, '0.markup.expression.lookups.0.type').to.eql('String');
       expectPath(cst, '0.markup.expression.lookups.0.value').to.eql('█');
 
       cst = toCST('{{ var[█] }}');
-      expectPath(cst, '0.type').to.eql('LiquidDrop');
+      expectPath(cst, '0.type').to.eql('LiquidVariableOutput');
       expectPath(cst, '0.markup.type').to.eql('LiquidVariable');
       expectPath(cst, '0.markup.expression.type').to.eql('VariableLookup');
       expectPath(cst, '0.markup.expression.lookups.0.type').to.eql('VariableLookup');

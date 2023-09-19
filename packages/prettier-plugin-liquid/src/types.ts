@@ -17,7 +17,7 @@ export enum NodeTypes {
   LiquidRawTag = 'LiquidRawTag',
   LiquidTag = 'LiquidTag',
   LiquidBranch = 'LiquidBranch',
-  LiquidDrop = 'LiquidDrop',
+  LiquidVariableOutput = 'LiquidVariableOutput',
   HtmlSelfClosingElement = 'HtmlSelfClosingElement',
   HtmlVoidElement = 'HtmlVoidElement',
   HtmlDoctype = 'HtmlDoctype',
@@ -108,7 +108,7 @@ export const HtmlNodeTypes = [
 
 export const LiquidNodeTypes = [
   NodeTypes.LiquidTag,
-  NodeTypes.LiquidDrop,
+  NodeTypes.LiquidVariableOutput,
   NodeTypes.LiquidBranch,
   NodeTypes.LiquidRawTag,
 ] as const;
@@ -246,7 +246,7 @@ export type LiquidTag = Augmented<AST.LiquidTag, AllAugmentations>;
 export type LiquidTagNamed = Augmented<AST.LiquidTagNamed, AllAugmentations>;
 export type LiquidBranch = Augmented<AST.LiquidBranch, AllAugmentations>;
 export type LiquidBranchNamed = Augmented<AST.LiquidBranchNamed, AllAugmentations>;
-export type LiquidDrop = Augmented<AST.LiquidDrop, AllAugmentations>;
+export type LiquidVariableOutput = Augmented<AST.LiquidVariableOutput, AllAugmentations>;
 export type HtmlNode = Augmented<AST.HtmlNode, AllAugmentations>;
 export type HtmlTag = Exclude<HtmlNode, HtmlComment>;
 export type HtmlElement = Augmented<AST.HtmlElement, AllAugmentations>;

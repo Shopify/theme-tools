@@ -85,9 +85,9 @@ class Fixer {
    *   - < "       # (single quote is ignored)
    *   - <         # close quote
    *   - < "       # open new quote
-   *   - < " {{    # open liquid drop
-   *   - < " {{ '  # open liquid string in drop
-   *   - < " {{    # close liquid string in drop
+   *   - < " {{    # open liquid variable output
+   *   - < " {{ '  # open liquid string in variable output
+   *   - < " {{    # close liquid string in variable output
    *
    * then we pop the close characters of that stack onto the string and
    * have a fixed string

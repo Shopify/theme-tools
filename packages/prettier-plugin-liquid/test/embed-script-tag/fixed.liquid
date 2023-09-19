@@ -23,7 +23,7 @@ It should pretty print json inside a script tag
 It should pretty print typescript
 <script type="application/x-typescript">
   type Node = LiquidNode | HtmlNode | TextNode;
-  type LiquidNode = LiquidDrop | LiquidTag;
+  type LiquidNode = LiquidVariableOutput | LiquidTag;
   function print(node: Node) {
     return node.toString();
   }

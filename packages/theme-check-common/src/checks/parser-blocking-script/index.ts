@@ -41,7 +41,7 @@ export const ParserBlockingScript: LiquidCheckDefinition = {
           endIndex: node.position.end,
           suggest:
             grandParentNode &&
-            grandParentNode.type === NodeTypes.LiquidDrop &&
+            grandParentNode.type === NodeTypes.LiquidVariableOutput &&
             parentNode &&
             parentNode.type === NodeTypes.LiquidVariable &&
             last(parentNode.filters) === node

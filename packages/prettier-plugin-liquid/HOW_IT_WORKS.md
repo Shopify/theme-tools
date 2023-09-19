@@ -72,7 +72,7 @@ flowchart TB
       c2["LiquidTagOpen#for el in col"] --->
       c3["HtmlTagOpen#li"]
       c3 -->
-      c4["LiquidDrop#el"] -->
+      c4["LiquidVariableOutput#el"] -->
       c5["HtmlTagClose#li"] -->
       c6["LiquidTagClose#for"]
       c3 .- attributes .-
@@ -88,7 +88,7 @@ flowchart TB
       a2["LiquidTag#for el in col"] -- children -->
       a3["HtmlElement#li"]
       a3 -- children -->
-      a4["LiquidDrop#el"]
+      a4["LiquidVariableOutput#el"]
       a3 -- attributes -->
       a3a["HtmlAttribute"]
       a3a -- name --> a3an["class"]

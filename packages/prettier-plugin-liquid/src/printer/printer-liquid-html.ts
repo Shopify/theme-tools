@@ -15,7 +15,7 @@ import {
   HtmlVoidElement,
   LiquidAstPath,
   LiquidBranch,
-  LiquidDrop,
+  LiquidVariableOutput,
   LiquidExpression,
   LiquidHtmlNode,
   LiquidParserOptions,
@@ -37,7 +37,7 @@ import { printElement } from '~/printer/print/element';
 import { printClosingTagSuffix, printOpeningTagPrefix } from '~/printer/print/tag';
 import {
   printLiquidBranch,
-  printLiquidDrop,
+  printLiquidVariableOutput,
   printLiquidRawTag,
   printLiquidTag,
 } from '~/printer/print/liquid';
@@ -63,14 +63,14 @@ function printAttributeName(
   node.name;
   return join(
     '',
-    (path as any).map((part: AstPath<string | LiquidDrop>) => {
+    (path as any).map((part: AstPath<string | LiquidVariableOutput>) => {
       const value = part.getValue();
       if (typeof value === 'string') {
         return value;
       } else {
-        // We want to force the LiquidDrop to be on one line to avoid weird
+        // We want to force the LiquidVariableOutput to be on one line to avoid weird
         // shenanigans
-        return utils.removeLines(print(part as AstPath<LiquidDrop>));
+        return utils.removeLines(print(part as AstPath<LiquidVariableOutput>));
       }
     }, 'name'),
   );
@@ -239,8 +239,8 @@ function printNode(
         : softline;
     }
 
-    case NodeTypes.LiquidDrop: {
-      return printLiquidDrop(path as AstPath<LiquidDrop>, options, print, args);
+    case NodeTypes.LiquidVariableOutput: {
+      return printLiquidVariableOutput(path as AstPath<LiquidVariableOutput>, options, print, args);
     }
 
     case NodeTypes.LiquidRawTag: {

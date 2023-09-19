@@ -38,7 +38,7 @@ import {
   ConcreteHtmlTagClose,
   ConcreteHtmlTagOpen,
   ConcreteHtmlVoidElement,
-  ConcreteLiquidDrop,
+  ConcreteLiquidVariableOutput,
   ConcreteLiquidNode,
   ConcreteLiquidTagClose,
   ConcreteNodeTypes,
@@ -139,7 +139,7 @@ export interface YAMLFrontmatter extends ASTNode<NodeTypes.YAMLFrontmatter> {
   body: string;
 }
 
-export type LiquidNode = LiquidRawTag | LiquidTag | LiquidDrop | LiquidBranch;
+export type LiquidNode = LiquidRawTag | LiquidTag | LiquidVariableOutput | LiquidBranch;
 export type LiquidStatement = LiquidRawTag | LiquidTag | LiquidBranch;
 
 export interface HasChildren {
@@ -152,7 +152,7 @@ export interface HasValue {
   value: (TextNode | LiquidNode)[];
 }
 export interface HasName {
-  name: string | LiquidDrop;
+  name: string | LiquidVariableOutput;
 }
 export interface HasCompoundName {
   name: (TextNode | LiquidNode)[];
@@ -334,9 +334,10 @@ interface LiquidBranchNode<Name, Markup> extends ASTNode<NodeTypes.LiquidBranch>
 export interface LiquidBranchUnnamed extends LiquidBranchNode<null, string> {}
 export interface LiquidBranchBaseCase extends LiquidBranchNode<string, string> {}
 
-export interface LiquidDrop extends ASTNode<NodeTypes.LiquidDrop> {
+/** Represents {{ }} and its insides. Its position includes the braces. */
+export interface LiquidVariableOutput extends ASTNode<NodeTypes.LiquidVariableOutput> {
   /**
-   * The body of the drop. May contain filters. Not trimmed.
+   * The body of the variable output. May contain filters. Not trimmed.
    */
   markup: string | LiquidVariable;
   whitespaceStart: '-' | '';
@@ -406,17 +407,17 @@ export interface HtmlElement extends HtmlNodeBase<NodeTypes.HtmlElement> {
    * The name of the tag can be compound
    * @example <{{ header_type }}--header />
    */
-  name: (TextNode | LiquidDrop)[];
+  name: (TextNode | LiquidVariableOutput)[];
   children: LiquidHtmlNode[];
   blockEndPosition: Position;
 }
 
 export interface HtmlDanglingMarkerOpen extends HtmlNodeBase<NodeTypes.HtmlDanglingMarkerOpen> {
-  name: (TextNode | LiquidDrop)[];
+  name: (TextNode | LiquidVariableOutput)[];
 }
 
 export interface HtmlDanglingMarkerClose extends ASTNode<NodeTypes.HtmlDanglingMarkerClose> {
-  name: (TextNode | LiquidDrop)[];
+  name: (TextNode | LiquidVariableOutput)[];
   blockStartPosition: Position;
 }
 
@@ -425,7 +426,7 @@ export interface HtmlSelfClosingElement extends HtmlNodeBase<NodeTypes.HtmlSelfC
    * The name of the tag can be compound
    * @example <{{ header_type }}--header />
    */
-  name: (TextNode | LiquidDrop)[];
+  name: (TextNode | LiquidVariableOutput)[];
 }
 
 export interface HtmlVoidElement extends HtmlNodeBase<NodeTypes.HtmlVoidElement> {
@@ -480,13 +481,13 @@ export interface AttrSingleQuoted extends AttributeNodeBase<NodeTypes.AttrSingle
 export interface AttrDoubleQuoted extends AttributeNodeBase<NodeTypes.AttrDoubleQuoted> {}
 export interface AttrUnquoted extends AttributeNodeBase<NodeTypes.AttrUnquoted> {}
 export interface AttrEmpty extends ASTNode<NodeTypes.AttrEmpty> {
-  name: (TextNode | LiquidDrop)[];
+  name: (TextNode | LiquidVariableOutput)[];
 }
 
 export type ValueNode = TextNode | LiquidNode;
 
 export interface AttributeNodeBase<T> extends ASTNode<T> {
-  name: (TextNode | LiquidDrop)[];
+  name: (TextNode | LiquidVariableOutput)[];
   value: ValueNode[];
   attributePosition: Position;
 }
@@ -704,7 +705,7 @@ function isLiquidBranch(node: LiquidHtmlNode | undefined): node is LiquidBranchN
 
 function getName(
   node: ConcreteLiquidTagClose | ConcreteHtmlTagClose | ParentNode | undefined,
-): string | LiquidDrop | null {
+): string | LiquidVariableOutput | null {
   if (!node) return null;
   switch (node.type) {
     case NodeTypes.HtmlElement:
@@ -779,8 +780,8 @@ function buildAst(
         break;
       }
 
-      case ConcreteNodeTypes.LiquidDrop: {
-        builder.push(toLiquidDrop(node));
+      case ConcreteNodeTypes.LiquidVariableOutput: {
+        builder.push(toLiquidVariableOutput(node));
         break;
       }
 
@@ -894,7 +895,7 @@ function buildAst(
       case ConcreteNodeTypes.AttrEmpty: {
         builder.push({
           type: NodeTypes.AttrEmpty,
-          name: cstToAst(node.name, options) as (TextNode | LiquidDrop)[],
+          name: cstToAst(node.name, options) as (TextNode | LiquidVariableOutput)[],
           position: position(node),
           source: node.source,
         });
@@ -909,7 +910,7 @@ function buildAst(
             | NodeTypes.AttrSingleQuoted
             | NodeTypes.AttrDoubleQuoted
             | NodeTypes.AttrUnquoted,
-          name: cstToAst(node.name, options) as (TextNode | LiquidDrop)[],
+          name: cstToAst(node.name, options) as (TextNode | LiquidVariableOutput)[],
           position: position(node),
           source: node.source,
 
@@ -943,7 +944,7 @@ function buildAst(
   return builder;
 }
 
-function nameLength(names: (ConcreteLiquidDrop | ConcreteTextNode)[]) {
+function nameLength(names: (ConcreteLiquidVariableOutput | ConcreteTextNode)[]) {
   const start = names.at(0)!;
   const end = names.at(-1)!;
   return end.locEnd - start.locStart;
@@ -1428,9 +1429,9 @@ function toComparison(node: ConcreteLiquidComparison): LiquidComparison {
   };
 }
 
-function toLiquidDrop(node: ConcreteLiquidDrop): LiquidDrop {
+function toLiquidVariableOutput(node: ConcreteLiquidVariableOutput): LiquidVariableOutput {
   return {
-    type: NodeTypes.LiquidDrop,
+    type: NodeTypes.LiquidVariableOutput,
     markup: typeof node.markup === 'string' ? node.markup : toLiquidVariable(node.markup),
     whitespaceStart: node.whitespaceStart ?? '',
     whitespaceEnd: node.whitespaceEnd ?? '',
@@ -1536,7 +1537,7 @@ function toNamedArgument(node: ConcreteLiquidNamedArgument): LiquidNamedArgument
 function toHtmlElement(node: ConcreteHtmlTagOpen, options: ASTBuildOptions): HtmlElement {
   return {
     type: NodeTypes.HtmlElement,
-    name: cstToAst(node.name, options) as (TextNode | LiquidDrop)[],
+    name: cstToAst(node.name, options) as (TextNode | LiquidVariableOutput)[],
     attributes: toAttributes(node.attrList || [], options),
     position: position(node),
     blockStartPosition: position(node),
@@ -1552,7 +1553,7 @@ function toHtmlDanglingMarkerOpen(
 ): HtmlDanglingMarkerOpen {
   return {
     type: NodeTypes.HtmlDanglingMarkerOpen,
-    name: cstToAst(node.name, options) as (TextNode | LiquidDrop)[],
+    name: cstToAst(node.name, options) as (TextNode | LiquidVariableOutput)[],
     attributes: toAttributes(node.attrList || [], options),
     position: position(node),
     blockStartPosition: position(node),
@@ -1566,7 +1567,7 @@ function toHtmlDanglingMarkerClose(
 ): HtmlDanglingMarkerClose {
   return {
     type: NodeTypes.HtmlDanglingMarkerClose,
-    name: cstToAst(node.name, options) as (TextNode | LiquidDrop)[],
+    name: cstToAst(node.name, options) as (TextNode | LiquidVariableOutput)[],
     position: position(node),
     blockStartPosition: position(node),
     source: node.source,
@@ -1593,7 +1594,7 @@ function toHtmlSelfClosingElement(
 ): HtmlSelfClosingElement {
   return {
     type: NodeTypes.HtmlSelfClosingElement,
-    name: cstToAst(node.name, options) as (TextNode | LiquidDrop)[],
+    name: cstToAst(node.name, options) as (TextNode | LiquidVariableOutput)[],
     attributes: toAttributes(node.attrList || [], options),
     position: position(node),
     blockStartPosition: position(node),

@@ -16,7 +16,10 @@ import {
 } from '../utils';
 import { assertFileExists, assertFileSize, getFileSize } from '../../utils/file-utils';
 import { last } from '../../utils';
-import { LiquidDrop, TextNode } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
+import {
+  LiquidVariableOutput,
+  TextNode,
+} from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
 
 type LiquidVariable = NodeOfType<NodeTypes.LiquidVariable>;
 
@@ -28,8 +31,8 @@ function isTextNode(node: LiquidHtmlNode): node is TextNode {
   return node.type === NodeTypes.TextNode;
 }
 
-function isLiquidDrop(node: LiquidHtmlNode): node is LiquidDrop {
-  return node.type === NodeTypes.LiquidDrop;
+function isLiquidVariableOutput(node: LiquidHtmlNode): node is LiquidVariableOutput {
+  return node.type === NodeTypes.LiquidVariableOutput;
 }
 
 function isLiquidVariable(node: LiquidHtmlNode | string): node is LiquidVariable {
@@ -110,7 +113,7 @@ export const AssetSizeCSS: LiquidCheckDefinition = {
         if (!href) return;
         if (href.value.length !== 1) return;
 
-        /* This ensures that the link entered is a text and not anything else like http//..{} 
+        /* This ensures that the link entered is a text and not anything else like http//..{}
            This also checks if the value starts with 'http://', 'https://' or '//' to ensure its a valid link. */
         if (isTextNode(href.value[0]) && /(https?:)?\/\//.test(href.value[0].value)) {
           const url = href.value[0].value;
@@ -118,10 +121,10 @@ export const AssetSizeCSS: LiquidCheckDefinition = {
         }
 
         /* This code checks if we have a link with a liquid variable
-        and that its a string with one filter, `asset_url`. This is done to ensure our .css link is 
+        and that its a string with one filter, `asset_url`. This is done to ensure our .css link is
         entered with a 'asset_url' to produce valid output. */
         if (
-          isLiquidDrop(href.value[0]) &&
+          isLiquidVariableOutput(href.value[0]) &&
           isLiquidVariable(href.value[0].markup) &&
           isString(href.value[0].markup.expression) &&
           href.value[0].markup.filters.length === 1 &&
