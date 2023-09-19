@@ -29,26 +29,25 @@ export class LiquidTagsCompletionProvider implements Provider {
 
     const partial = node.name.replace(CURSOR, '');
     const blockParent = findParentNode(partial, ancestors);
-    if (partial.startsWith('end') && blockParent) {
-      return [
-        {
-          label: `end${blockParent.name}`,
-          kind: CompletionItemKind.Keyword,
-        },
-      ];
-    }
-
     const tags = await this.themeDocset.tags();
     return tags
       .filter(({ name }) => name.startsWith(partial))
       .sort(sortByName)
-      .map((tag) => createCompletionItem(tag, { kind: CompletionItemKind.Keyword }));
+      .map((tag) => createCompletionItem(tag, { kind: CompletionItemKind.Keyword }))
+      .concat(
+        blockParent && `end${blockParent.name}`.startsWith(partial)
+          ? {
+              label: `end${blockParent.name}`,
+              kind: CompletionItemKind.Keyword,
+              sortText: `!end${blockParent.name}`, // we want this first.
+            }
+          : [],
+      );
   }
 }
 
 function findParentNode(partial: string, ancestors: LiquidHtmlNode[]): LiquidTag | undefined {
-  if (!partial.startsWith('end')) return;
-
+  if (!'end'.startsWith(partial)) return;
   // This covers the scenario where we have a dangling conditional tag
   //
   // e.g.
@@ -66,7 +65,7 @@ function findParentNode(partial: string, ancestors: LiquidHtmlNode[]): LiquidTag
   //         children:
   //           - TextNode#hello
   //           - LiquidTag#end
-  const potentialParentName = partial.replace(/^end/, '');
+  const potentialParentName = partial.replace(/^e(nd?)?/, '');
   const parentNode = ancestors.at(-1);
   const grandParentNode = ancestors.at(-2);
   if (

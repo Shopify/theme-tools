@@ -1,7 +1,14 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
-import { tags } from './LiquidTagsCompletionProvider.spec.fixtures';
+
+export const tags = [
+  { name: 'render' },
+  { name: 'for' },
+  { name: 'comment' },
+  { name: 'if' },
+  { name: 'echo' },
+];
 
 describe('Module: LiquidTagsCompletionProvider', async () => {
   let provider: CompletionsProvider;
@@ -33,6 +40,20 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
     await expect(provider).to.complete('{% form "cart", cart %} ... {% end', ['endform']);
   });
 
+  it('should offer the proper end tags in context', async () => {
+    await expect(provider).to.complete('{% comment %} hello there {% e', ['echo', 'endcomment']);
+    await expect(provider).to.complete('{% if cond %} hello {% else %} then {% e', [
+      'echo',
+      'endif',
+    ]);
+    await expect(provider).to.complete('{% for i in (1..3) %}{% e', ['echo', 'endfor']);
+    await expect(provider).to.complete('{% javascript %} console.log("hi") {% e', [
+      'echo',
+      'endjavascript',
+    ]);
+    await expect(provider).to.complete('{% form "cart", cart %} ... {% e', ['echo', 'endform']);
+  });
+
   it('should not complete anything if the partial end tag does not match', async () => {
     await expect(provider).to.complete('{% comment %} hello there {% endz', []);
     await expect(provider).to.complete('{% if cond %} hello {% else %} then {% endz', []);
@@ -42,7 +63,25 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
   });
 
   it('should complete empty statements', async () => {
-    await expect(provider).to.complete('{% ', ['comment', 'for', 'render']);
+    const allTags = tags.map((x) => x.name).sort();
+    await expect(provider).to.complete('{% ', allTags);
+    await expect(provider).to.complete(
+      '{% comment %} hello there {% ',
+      allTags.concat('endcomment'),
+    );
+    await expect(provider).to.complete(
+      '{% if cond %} hello {% else %} then {% ',
+      allTags.concat('endif'),
+    );
+    await expect(provider).to.complete('{% for i in (1..3) %}{% ', allTags.concat('endfor'));
+    await expect(provider).to.complete(
+      '{% javascript %} console.log("hi") {% ',
+      allTags.concat('endjavascript'),
+    );
+    await expect(provider).to.complete(
+      '{% form "cart", cart %} ... {% ',
+      allTags.concat('endform'),
+    );
   });
 
   it('should not complete when the cursor position is not on the name', async () => {
