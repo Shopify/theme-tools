@@ -3,7 +3,7 @@ import {
   Translations,
   ValidateFunction,
 } from '@shopify/theme-check-common';
-import { startServer } from '@shopify/liquid-language-server-browser';
+import { startServer } from '@shopify/theme-language-server-browser';
 import { URI } from 'vscode-languageserver-types';
 import {
   isSetDefaultTranslationsNotification,

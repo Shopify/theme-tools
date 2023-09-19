@@ -32,7 +32,7 @@
       "@shopify/theme-check-common": [
         "./packages/theme-check-common/src/index"
       ],
-      "@shopify/liquid-language-server-common": [
+      "@shopify/theme-language-server-common": [
         "./packages/theme-language-server-common/src/index"
       ]
     },

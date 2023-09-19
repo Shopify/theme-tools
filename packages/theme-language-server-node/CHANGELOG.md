@@ -1,3 +1,5 @@
+# @shopify/theme-language-server-node
+
 # @shopify/liquid-language-server-node
 
 ## 1.7.1

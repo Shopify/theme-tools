@@ -1,3 +1,5 @@
+# @shopify/theme-language-server-browser
+
 # @shopify/liquid-language-server-browser
 
 ## 1.7.1

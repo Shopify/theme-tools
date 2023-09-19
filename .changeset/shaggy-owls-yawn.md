@@ -1,5 +1,5 @@
 ---
-'@shopify/liquid-language-server-node': minor
+'@shopify/theme-language-server-node': minor
 '@shopify/theme-check-node': minor
 'theme-check-vscode': minor
 ---

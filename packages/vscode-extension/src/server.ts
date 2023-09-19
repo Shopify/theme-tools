@@ -1,4 +1,4 @@
-import { startServer } from '@shopify/liquid-language-server-node';
+import { startServer } from '@shopify/theme-language-server-node';
 
 startServer();
 

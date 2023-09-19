@@ -1,4 +1,4 @@
-import { Dependencies } from '@shopify/liquid-language-server-common';
+import { Dependencies } from '@shopify/theme-language-server-common';
 import { URI, Utils } from 'vscode-uri';
 import { basename } from 'node:path';
 import * as fs from 'node:fs/promises';

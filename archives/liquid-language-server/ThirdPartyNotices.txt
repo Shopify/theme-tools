@@ -1,6 +1,6 @@
 THIRD-PARTY SOFTWARE NOTICES AND INFORMATION
 
-The liquid-language-server project incorporates third party material from the projects listed below. The original copyright notice and the license under which Shopify received such third party material are set forth below. Shopify reserves all other rights not expressly granted, whether by implication, estoppel or otherwise.
+The theme-language-server project incorporates third party material from the projects listed below. The original copyright notice and the license under which Shopify received such third party material are set forth below. Shopify reserves all other rights not expressly granted, whether by implication, estoppel or otherwise.
 
 1.	vscode-languageserver-node (https://github.com/microsoft/vscode-languageserver-node)
 

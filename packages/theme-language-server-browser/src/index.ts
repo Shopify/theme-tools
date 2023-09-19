@@ -1,7 +1,7 @@
 import {
   Dependencies,
   startServer as startCoreServer,
-} from '@shopify/liquid-language-server-common';
+} from '@shopify/theme-language-server-common';
 import {
   createConnection,
   Message,
@@ -12,7 +12,7 @@ import {
 
 const disposable = (dispose: () => void): Disposable => ({ dispose });
 
-export * from '@shopify/liquid-language-server-common';
+export * from '@shopify/theme-language-server-common';
 
 // This is where you do the worker.postMessage stuff?
 // Or is this where we accept the worker.postMessage stuff?
