@@ -35,3 +35,21 @@ export async function getFileSize(url: string): Promise<number> {
     return 0;
   }
 }
+
+export async function hasRemoteAssetSizeExceededThreshold(url: string, thresholdInBytes: number) {
+  const fileSize = await getFileSize(url);
+  return fileSize > thresholdInBytes;
+}
+
+export async function hasLocalAssetSizeExceededThreshold<
+  T extends SourceCodeType,
+  S extends Schema,
+>(context: Context<T, S>, path: string, thresholdInBytes: number) {
+  const absolutePath = `assets/${path}`;
+  const fileExists = await assertFileExists(context, absolutePath);
+
+  if (!fileExists) return;
+  const fileExceedsThreshold = await assertFileSize(context, absolutePath, thresholdInBytes);
+
+  return fileExceedsThreshold;
+}
