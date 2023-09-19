@@ -1,5 +1,5 @@
 ---
-'@shopify/liquid-language-server-common': minor
+'@shopify/theme-language-server-common': minor
 '@shopify/prettier-plugin-liquid': minor
 '@shopify/theme-check-common': minor
 ---
