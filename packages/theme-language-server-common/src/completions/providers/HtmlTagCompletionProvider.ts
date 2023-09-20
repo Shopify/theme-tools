@@ -1,7 +1,13 @@
+import {
+  HtmlDanglingMarkerClose,
+  HtmlElement,
+  NodeTypes,
+  TextNode,
+} from '@shopify/liquid-html-parser';
 import { LiquidHtmlNode } from '@shopify/theme-check-common';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { HtmlData, Tag, renderHtmlEntry } from '../../docset';
-import { HtmlDanglingMarkerClose, HtmlElement, NodeTypes, TextNode, isTextNode } from '../../utils';
+import { isTextNode } from '../../utils';
 import { CURSOR, LiquidCompletionParams } from '../params';
 import { Provider, sortByName } from './common';
 

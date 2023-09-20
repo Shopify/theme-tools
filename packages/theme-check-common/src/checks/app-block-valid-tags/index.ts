@@ -1,11 +1,5 @@
-import {
-  ConfigTarget,
-  LiquidCheckDefinition,
-  LiquidHtmlNodeOfType,
-  LiquidHtmlNodeTypes,
-  Severity,
-  SourceCodeType,
-} from '../../types';
+import { LiquidRawTag, LiquidTag } from '@shopify/liquid-html-parser';
+import { ConfigTarget, LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 export enum ForbiddenTag {
   JavaScript = 'javascript',
@@ -19,9 +13,6 @@ export enum ForbiddenTag {
 const isForbiddenTag = (value: string): value is ForbiddenTag => {
   return Object.values(ForbiddenTag).includes(value as ForbiddenTag);
 };
-
-type LiquidTagNode = LiquidHtmlNodeOfType<LiquidHtmlNodeTypes.LiquidTag>;
-type LiquidRawTagNode = LiquidHtmlNodeOfType<LiquidHtmlNodeTypes.LiquidRawTag>;
 
 const buildErrorMessage = (tag: ForbiddenTag) =>
   `Theme app extension blocks cannot contain '${tag}' tags`;
@@ -43,7 +34,7 @@ export const AppBlockValidTags: LiquidCheckDefinition = {
   },
 
   create(context) {
-    const handleForbiddenTags = async (node: LiquidTagNode | LiquidRawTagNode) => {
+    const handleForbiddenTags = async (node: LiquidTag | LiquidRawTag) => {
       if (isForbiddenTag(node.name)) {
         // When a forbidden tag is used to define a block section
         // with an end tag, highlight the whole section

@@ -1,5 +1,4 @@
-import { NodeTypes, Position } from '@shopify/prettier-plugin-liquid/dist/types';
-import { LiquidHtmlNodeOfType } from '../../types';
+import { LiquidRawTag, Position } from '@shopify/liquid-html-parser';
 
 /**
  * Parses the error message from a `SyntaxError`
@@ -42,9 +41,7 @@ export class JsonParseError extends SyntaxError {
  *
  * When the body is not valid JSON, returns an error message, and the indicies of the error.
  */
-export const parseJsonBody = (
-  node: LiquidHtmlNodeOfType<NodeTypes.LiquidRawTag>,
-): object | Error => {
+export const parseJsonBody = (node: LiquidRawTag): object | Error => {
   try {
     return JSON.parse(node.body.value);
   } catch (error) {

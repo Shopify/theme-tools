@@ -1,39 +1,38 @@
+import { NodeTypes, NamedTags, isBranchedTag } from '@shopify/liquid-html-parser';
 import { Doc, doc } from 'prettier';
+
 import {
   AstPath,
   LiquidAstPath,
   LiquidBranch,
-  LiquidVariableOutput,
+  LiquidBranchNamed,
   LiquidParserOptions,
   LiquidPrinter,
   LiquidPrinterArgs,
-  LiquidTag,
-  LiquidTagNamed,
-  LiquidBranchNamed,
-  NamedTags,
-  NodeTypes,
   LiquidRawTag,
   LiquidStatement,
+  LiquidTag,
+  LiquidTagNamed,
+  LiquidVariableOutput,
 } from '~/types';
-import { isBranchedTag } from '~/parser/stage-2-ast';
 import { assertNever } from '~/utils';
 
 import {
+  FORCE_FLAT_GROUP_ID,
   getWhitespaceTrim,
+  hasLineBreakInRange,
+  hasMeaningfulLackOfDanglingWhitespace,
   hasMeaningfulLackOfLeadingWhitespace,
   hasMeaningfulLackOfTrailingWhitespace,
-  hasMeaningfulLackOfDanglingWhitespace,
+  isAttributeNode,
   isDeeplyNested,
   isEmpty,
+  last,
   markupLines,
   originallyHadLineBreaks,
   reindent,
-  trim,
-  hasLineBreakInRange,
-  isAttributeNode,
   shouldPreserveContent,
-  FORCE_FLAT_GROUP_ID,
-  last,
+  trim,
 } from '~/printer/utils';
 
 import { printChildren } from '~/printer/print/children';

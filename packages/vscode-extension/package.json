@@ -59,6 +59,7 @@
   },
   "dependencies": {
     "@shopify/theme-language-server-node": "^1.7.1",
+    "@shopify/liquid-html-parser": "^0.0.1",
     "@shopify/prettier-plugin-liquid": "^1.2.3",
     "prettier": "^2.6.2",
     "vsce": "^1.87.0",

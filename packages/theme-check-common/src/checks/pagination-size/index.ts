@@ -1,15 +1,12 @@
 import {
-  LiquidHtmlNodeTypes as NodeTypes,
-  LiquidHtmlNodeOfType as NodeOfType,
-  Severity,
-  SourceCodeType,
-  LiquidCheckDefinition,
-  SchemaProp,
-} from '../../types';
+  LiquidRawTag,
+  LiquidTag,
+  LiquidVariableLookup,
+  NodeTypes,
+} from '@shopify/liquid-html-parser';
+import { LiquidCheckDefinition, SchemaProp, Severity, SourceCodeType } from '../../types';
 import { last } from '../../utils';
 import { isNodeOfType } from '../utils';
-
-type VariableLookup = NodeOfType<NodeTypes.VariableLookup>;
 
 const schema = {
   minSize: SchemaProp.number(1),
@@ -35,7 +32,7 @@ export const PaginationSize: LiquidCheckDefinition<typeof schema> = {
     const minSize = context.settings.minSize;
     const maxSize = context.settings.maxSize;
     let schemaSettings: any[] = [];
-    const collectedPaginateNodes: VariableLookup[] = [];
+    const collectedPaginateNodes: LiquidVariableLookup[] = [];
 
     function checkPageSize(
       pageSizeNode: any,
@@ -51,7 +48,7 @@ export const PaginationSize: LiquidCheckDefinition<typeof schema> = {
     }
 
     return {
-      async LiquidTag(node: NodeOfType<NodeTypes.LiquidTag>) {
+      async LiquidTag(node: LiquidTag) {
         if (typeof node.markup === 'string' || node.name !== 'paginate') return;
 
         const pageSizeNode = node.markup.pageSize;
@@ -63,7 +60,7 @@ export const PaginationSize: LiquidCheckDefinition<typeof schema> = {
         }
       },
 
-      async LiquidRawTag(node: NodeOfType<NodeTypes.LiquidRawTag>) {
+      async LiquidRawTag(node: LiquidRawTag) {
         if (node.name === 'schema') {
           try {
             const schema = JSON.parse(node.body.value);

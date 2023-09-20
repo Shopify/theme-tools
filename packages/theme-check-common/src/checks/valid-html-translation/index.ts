@@ -1,5 +1,5 @@
 import { SourceCodeType, JSONCheckDefinition, Severity, Problem, JSONNode } from '../../types';
-import { toLiquidHtmlAST } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
+import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
 import { Location, LiteralNode } from 'json-to-ast';
 
 export const ValidHTMLTranslation: JSONCheckDefinition = {

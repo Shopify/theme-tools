@@ -9,7 +9,7 @@ import {
 } from 'vscode';
 import * as prettier from 'prettier';
 import * as LiquidPrettierPlugin from '@shopify/prettier-plugin-liquid/standalone';
-import { LiquidHTMLASTParsingError } from '@shopify/prettier-plugin-liquid/dist/parser/errors';
+import { LiquidHTMLASTParsingError } from '@shopify/liquid-html-parser';
 
 export default class LiquidFormatter {
   constructor(

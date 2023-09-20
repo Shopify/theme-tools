@@ -1,9 +1,5 @@
-import {
-  LiquidHtmlNode,
-  LiquidHtmlNodeOfType,
-  LiquidHtmlNodeTypes,
-  SourceCodeType,
-} from '@shopify/theme-check-common';
+import { LiquidHtmlNode, LiquidString, NodeTypes } from '@shopify/liquid-html-parser';
+import { SourceCodeType } from '@shopify/theme-check-common';
 import { DocumentLink, Range } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI, Utils } from 'vscode-uri';
@@ -89,8 +85,6 @@ function range(textDocument: TextDocument, node: { position: LiquidHtmlNode['pos
   return Range.create(start, end);
 }
 
-function isLiquidString(
-  node: LiquidHtmlNode,
-): node is LiquidHtmlNodeOfType<LiquidHtmlNodeTypes.String> {
-  return node.type === LiquidHtmlNodeTypes.String;
+function isLiquidString(node: LiquidHtmlNode): node is LiquidString {
+  return node.type === NodeTypes.String;
 }

@@ -1,0 +1,33 @@
+{
+  "name": "@shopify/liquid-html-parser",
+  "version": "0.0.1",
+  "description": "Liquid HTML parser by Shopify",
+  "repository": "shopify/theme-tools",
+  "author": "CP Clermont <@charlespwd>",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "homepage": "https://github.com/Shopify/theme-tools/blob/main/packages/liquid-html-parser/README.md",
+  "bugs": {
+    "url": "https://github.com/shopify/theme-tools/issues"
+  },
+  "files": [
+    "grammar/*",
+    "dist/**/*.js",
+    "dist/**/*.ts"
+  ],
+  "scripts": {
+    "build": "yarn build:ts",
+    "build:ci": "yarn build",
+    "build:ts": "tsc -p tsconfig.build.json",
+    "prebuild:ts": "node build/shims.js",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "line-column": "^1.0.2",
+    "ohm-js": "^16.3.0"
+  },
+  "devDependencies": {
+    "@types/line-column": "^1.0.0"
+  }
+}

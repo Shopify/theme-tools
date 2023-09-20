@@ -1,8 +1,9 @@
+import { NodeTypes } from '@shopify/liquid-html-parser';
+import { ObjectEntry } from '@shopify/theme-check-common';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
-import { LiquidHtmlNodeTypes as NodeTypes, ObjectEntry } from '@shopify/theme-check-common';
-import { Provider, createCompletionItem, sortByName } from './common';
+import { TypeSystem, isArrayType } from '../../TypeSystem';
 import { CURSOR, LiquidCompletionParams } from '../params';
-import { isArrayType, TypeSystem } from '../../TypeSystem';
+import { Provider, createCompletionItem, sortByName } from './common';
 
 const ArrayCoreProperties = ['size', 'first', 'last'] as const;
 const StringCoreProperties = ['size'] as const;

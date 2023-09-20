@@ -16,7 +16,6 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/prettier-plugin-liquid": "^1.2.3",
     "@shopify/theme-check-common": "1.12.1"
   },
   "devDependencies": {

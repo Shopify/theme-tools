@@ -1,24 +1,22 @@
 import {
-  LiquidHtmlNode,
-  LiquidHtmlNodeTypes as NodeTypes,
-  LiquidHtmlNodeOfType as NodeOfType,
-  SourceCodeType,
-  ThemeDocset,
-  ObjectEntry,
-  ReturnType,
-  ArrayReturnType,
-  FilterEntry,
-} from '@shopify/theme-check-common';
-import { visit } from './visitor';
-import { findLast, memo } from './utils';
-import {
   AssignMarkup,
   LiquidExpression,
-} from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
-
-type LiquidTag = NodeOfType<NodeTypes.LiquidTag>;
-type LiquidVariable = NodeOfType<NodeTypes.LiquidVariable>;
-type LiquidVariableLookup = NodeOfType<NodeTypes.VariableLookup>;
+  LiquidHtmlNode,
+  LiquidTag,
+  LiquidVariable,
+  LiquidVariableLookup,
+  NodeTypes,
+} from '@shopify/liquid-html-parser';
+import {
+  ArrayReturnType,
+  FilterEntry,
+  ObjectEntry,
+  ReturnType,
+  SourceCodeType,
+  ThemeDocset,
+} from '@shopify/theme-check-common';
+import { findLast, memo } from './utils';
+import { visit } from './visitor';
 
 export class TypeSystem {
   constructor(private readonly themeDocset: ThemeDocset) {}

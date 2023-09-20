@@ -1,19 +1,19 @@
-import { Position } from '@shopify/prettier-plugin-liquid/dist/types';
 import {
+  Position,
+  NodeTypes,
+  HtmlElement,
+  TextNode,
+  AttrEmpty,
+  AttrSingleQuoted,
+  AttrDoubleQuoted,
+  AttrUnquoted,
   LiquidHtmlNode,
-  LiquidHtmlNodeTypes as NodeTypes,
-  LiquidHtmlNodeOfType as NodeOfType,
-} from '../types';
+} from '@shopify/liquid-html-parser';
+import { LiquidHtmlNodeOfType as NodeOfType } from '../types';
 
-type HtmlElement = NodeOfType<NodeTypes.HtmlElement>;
-type TextNode = NodeOfType<NodeTypes.TextNode>;
 type ElementType<T> = T extends (infer E)[] ? E : never;
 
-export type AttrEmpty = NodeOfType<NodeTypes.AttrEmpty>;
-export type ValuedHtmlAttribute =
-  | NodeOfType<NodeTypes.AttrSingleQuoted>
-  | NodeOfType<NodeTypes.AttrDoubleQuoted>
-  | NodeOfType<NodeTypes.AttrUnquoted>;
+export type ValuedHtmlAttribute = AttrSingleQuoted | AttrDoubleQuoted | AttrUnquoted;
 
 export function isNodeOfType<T extends NodeTypes>(
   type: T,

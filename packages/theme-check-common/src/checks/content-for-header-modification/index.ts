@@ -1,17 +1,12 @@
-import { Position } from '@shopify/prettier-plugin-liquid/dist/types';
-import {
-  LiquidCheckDefinition,
-  LiquidHtmlNodeTypes as NodeTypes,
-  Severity,
-  SourceCodeType,
-} from '../../types';
-
 import {
   LiquidTag,
   LiquidTagAssign,
   LiquidTagCapture,
   LiquidTagEcho,
-} from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
+  NodeTypes,
+  Position,
+} from '@shopify/liquid-html-parser';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { isNodeOfType } from '../utils';
 
 function isLiquidTagAssign(node: LiquidTag): node is LiquidTagAssign {

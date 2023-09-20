@@ -1,4 +1,4 @@
-import { Position } from '@shopify/prettier-plugin-liquid/dist/types';
+import { Position } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Offense } from '../types';
 
 type AbsolutePath = string;

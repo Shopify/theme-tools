@@ -1,3 +1,4 @@
+import { NodeTypes } from '@shopify/liquid-html-parser';
 import { doc } from 'prettier';
 import { locStart, locEnd } from '~/utils';
 import {
@@ -7,7 +8,6 @@ import {
   LiquidParserOptions,
   LiquidPrinter,
   LiquidPrinterArgs,
-  NodeTypes,
 } from '~/types';
 import {
   FORCE_BREAK_GROUP_ID,

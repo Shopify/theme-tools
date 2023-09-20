@@ -1,4 +1,4 @@
-import { nonTraversableProperties } from '@shopify/prettier-plugin-liquid/dist/types';
+import { nonTraversableProperties } from '@shopify/liquid-html-parser';
 import { LiquidHtmlNode, CheckNodeMethod, LiquidCheck, SourceCodeType } from '../types';
 
 function isLiquidHtmlNode(thing: unknown): thing is LiquidHtmlNode {

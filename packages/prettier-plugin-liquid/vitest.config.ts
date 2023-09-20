@@ -7,7 +7,7 @@ export default defineConfig({
     exclude: [...configDefaults.exclude],
     singleThread: true,
     globalSetup: ['./test/test-setup.js'],
-    setupFiles: ['./build/shims.js'],
+    setupFiles: ['../liquid-html-parser/build/shims.js'],
     alias: {
       '~': path.resolve(__dirname, './src'),
     },

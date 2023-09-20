@@ -1,3 +1,4 @@
+import { NodeTypes } from '@shopify/liquid-html-parser';
 import {
   CSS_DISPLAY_DEFAULT,
   CSS_DISPLAY_LIQUID_DEFAULT,
@@ -8,7 +9,6 @@ import {
   CSS_WHITE_SPACE_TAGS,
 } from '~/constants.evaluate';
 import {
-  NodeTypes,
   LiquidParserOptions,
   Augment,
   AugmentedNode,

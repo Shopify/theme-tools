@@ -1,15 +1,7 @@
 // src/checks/required-layout-theme-object/index.ts
-import {
-  ConfigTarget,
-  LiquidCheckDefinition,
-  LiquidHtmlNodeTypes as NodeTypes,
-  LiquidHtmlNodeOfType as NodeOfType,
-  Severity,
-  SourceCodeType,
-} from '../../types';
+import { LiquidVariableLookup } from '@shopify/liquid-html-parser';
+import { ConfigTarget, LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { isHtmlTag } from '../utils';
-
-type VariableLookup = NodeOfType<NodeTypes.VariableLookup>;
 
 export const RequiredLayoutThemeObject: LiquidCheckDefinition = {
   meta: {
@@ -37,7 +29,7 @@ export const RequiredLayoutThemeObject: LiquidCheckDefinition = {
     let headTagEndPosition: number | null = null;
     let bodyTagEndPosition: number | null = null;
 
-    function checkVariableUsage(node: VariableLookup) {
+    function checkVariableUsage(node: LiquidVariableLookup) {
       if (node.name && requiredObjects.includes(node.name)) {
         foundObjects.add(node.name);
       }

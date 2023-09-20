@@ -1,5 +1,4 @@
 import { Hover } from 'vscode-languageserver';
-import { LiquidHtmlNode } from '@shopify/theme-check-common';
 import { BaseHoverProvider } from '../BaseHoverProvider';
 import { HtmlData, renderHtmlEntry } from '../../docset';
 import {
@@ -9,6 +8,7 @@ import {
   isNamedHtmlElementNode,
   isTextNode,
 } from '../../utils';
+import { LiquidHtmlNode } from '@shopify/liquid-html-parser';
 
 export class HtmlAttributeHoverProvider implements BaseHoverProvider {
   async hover(currentNode: LiquidHtmlNode, ancestors: LiquidHtmlNode[]): Promise<Hover | null> {

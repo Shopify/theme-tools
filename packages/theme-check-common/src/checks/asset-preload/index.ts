@@ -1,14 +1,6 @@
-import { ValueNode } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
-import {
-  LiquidHtmlNodeTypes as NodeTypes,
-  LiquidHtmlNodeOfType as NodeOfType,
-  Severity,
-  SourceCodeType,
-  LiquidCheckDefinition,
-} from '../../types';
-import { isAttr, isNodeOfType, isValuedHtmlAttribute, ValuedHtmlAttribute } from '../utils';
-
-type TextNode = NodeOfType<NodeTypes.TextNode>;
+import { NodeTypes, TextNode } from '@shopify/liquid-html-parser';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
+import { ValuedHtmlAttribute, isAttr, isNodeOfType, isValuedHtmlAttribute } from '../utils';
 
 function isPreload(attr: ValuedHtmlAttribute): boolean {
   return (

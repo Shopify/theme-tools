@@ -1,17 +1,9 @@
+import { LiquidHtmlNode, LiquidTag, NodeTypes } from '@shopify/liquid-html-parser';
+import { DocsetEntry, SourceCodeType, ThemeDocset } from '@shopify/theme-check-common';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
-import {
-  DocsetEntry,
-  LiquidHtmlNode,
-  LiquidHtmlNodeTypes as NodeTypes,
-  LiquidHtmlNodeOfType as NodeOfType,
-  SourceCodeType,
-  ThemeDocset,
-} from '@shopify/theme-check-common';
-import { Provider, createCompletionItem, sortByName } from './common';
-import { CURSOR, LiquidCompletionParams } from '../params';
 import { visit } from '../../visitor';
-
-type LiquidTag = NodeOfType<NodeTypes.LiquidTag>;
+import { CURSOR, LiquidCompletionParams } from '../params';
+import { Provider, createCompletionItem, sortByName } from './common';
 
 export class ObjectCompletionProvider implements Provider {
   constructor(private readonly themeDocset: ThemeDocset) {}

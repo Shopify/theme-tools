@@ -1,10 +1,5 @@
-import { HtmlVoidElement } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
-import {
-  LiquidHtmlNodeTypes as NodeTypes,
-  Severity,
-  SourceCodeType,
-  LiquidCheckDefinition,
-} from '../../types';
+import { NodeTypes, HtmlVoidElement } from '@shopify/liquid-html-parser';
+import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
 import { isAttr, isValuedHtmlAttribute, isNodeOfType, ValuedHtmlAttribute } from '../utils';
 
 function getLoadingAttribute(node: HtmlVoidElement): ValuedHtmlAttribute {

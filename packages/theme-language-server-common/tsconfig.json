@@ -1,9 +1,18 @@
 {
   "extends": "../../tsconfig.json",
-  "files": ["package.json"],
+  "files": [
+    "package.json"
+  ],
   "compilerOptions": {
     "outDir": ".",
     "rootDir": "."
   },
-  "references": [{ "path": "../theme-check-common" }]
+  "references": [
+    {
+      "path": "../theme-check-common"
+    },
+    {
+      "path": "../liquid-html-parser"
+    }
+  ]
 }

@@ -1,4 +1,4 @@
-import { toLiquidHtmlAST } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
+import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
 import toJSON from 'json-to-ast';
 
 import { SourceCodeType, JSONSourceCode, LiquidSourceCode } from './types';

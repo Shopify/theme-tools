@@ -1,9 +1,5 @@
-import {
-  LiquidCheckDefinition,
-  LiquidHtmlNodeTypes as NodeTypes,
-  Severity,
-  SourceCodeType,
-} from '../../types';
+import { NodeTypes } from '@shopify/liquid-html-parser';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { last } from '../../utils';
 import { isAttr, isHtmlAttribute, isValuedHtmlAttribute } from '../utils';
 import { liquidFilterSuggestion, scriptTagSuggestion } from './suggestions';

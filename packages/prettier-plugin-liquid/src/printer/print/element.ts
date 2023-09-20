@@ -1,6 +1,7 @@
 'use strict';
 
 import { doc, Doc } from 'prettier';
+import { NodeTypes, RawMarkupKinds } from '@shopify/liquid-html-parser';
 import { shouldPreserveContent, forceBreakContent, hasNoCloseMarker } from '~/printer/utils';
 import {
   printOpeningTagPrefix,
@@ -14,14 +15,12 @@ import {
 import { printChildren } from '~/printer/print/children';
 import {
   AstPath,
-  NodeTypes,
   LiquidParserOptions,
   LiquidPrinter,
   HtmlNode,
   LiquidPrinterArgs,
   HtmlRawNode,
 } from '~/types';
-import { RawMarkupKinds } from '~/parser';
 
 const {
   builders: { breakParent, dedentToRoot, group, indent, hardline, line, softline },

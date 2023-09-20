@@ -1,7 +1,6 @@
+import { NodeTypes, toLiquidHtmlAST } from '@shopify/liquid-html-parser';
 import { expect, it, describe } from 'vitest';
 import { deepGet } from '~/utils';
-import { NodeTypes } from '~/types';
-import { toLiquidHtmlAST } from '~/parser';
 import { preprocess } from '~/printer/print-preprocess';
 import { DocumentNode, LiquidHtmlNode, LiquidParserOptions } from '~/types';
 
