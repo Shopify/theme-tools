@@ -1,15 +1,13 @@
-import { CompletionParams } from 'vscode-languageserver';
 import {
   LiquidHtmlNode,
-  LiquidHtmlNodeTypes as NodeTypes,
-  LiquidHtmlNodeOfType as NodeOfType,
-} from '@shopify/theme-check-common';
+  LiquidTag,
+  NodeTypes,
+  Position,
+  toLiquidHtmlAST,
+} from '@shopify/liquid-html-parser';
+import { CompletionParams } from 'vscode-languageserver';
 import { AugmentedSourceCode } from '../../documents';
-import { toLiquidHtmlAST } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
 import { fix } from './fix';
-import { Position } from '@shopify/prettier-plugin-liquid/dist/types';
-
-type LiquidTag = NodeOfType<NodeTypes.LiquidTag>;
 
 interface CompletionContext {
   /** The AST of the Liquid template up to the cursor position */

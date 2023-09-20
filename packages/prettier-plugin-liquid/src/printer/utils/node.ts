@@ -1,11 +1,9 @@
+import { NodeTypes, LiquidNodeTypes, HtmlNodeTypes } from '@shopify/liquid-html-parser';
 import {
   HtmlSelfClosingElement,
   LiquidHtmlNode,
-  NodeTypes,
   TextNode,
   LiquidNode,
-  LiquidNodeTypes,
-  HtmlNodeTypes,
   HtmlNode,
   HtmlVoidElement,
   HtmlComment,

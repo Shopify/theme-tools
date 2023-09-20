@@ -1,13 +1,5 @@
 // src/checks/unknown-filter/index.ts
-import {
-  LiquidHtmlNodeTypes as NodeTypes,
-  LiquidHtmlNodeOfType as NodeOfType,
-  Severity,
-  SourceCodeType,
-  LiquidCheckDefinition,
-} from '../../types';
-
-type LiquidFilter = NodeOfType<NodeTypes.LiquidFilter>;
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 export const UnknownFilter: LiquidCheckDefinition = {
   meta: {
@@ -30,7 +22,7 @@ export const UnknownFilter: LiquidCheckDefinition = {
     }
 
     return {
-      LiquidFilter: async (node: LiquidFilter) => {
+      async LiquidFilter(node) {
         const knownFilters = await context.themeDocset!.filters();
 
         if (!knownFilters.some((filter) => filter.name === node.name)) {

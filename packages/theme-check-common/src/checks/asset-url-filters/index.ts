@@ -1,17 +1,7 @@
-import {
-  HtmlRawNode,
-  HtmlVoidElement,
-} from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
-import {
-  LiquidHtmlNodeTypes as NodeTypes,
-  LiquidHtmlNodeOfType as NodeOfType,
-  Severity,
-  SourceCodeType,
-  LiquidCheckDefinition,
-  LiquidHtmlNode,
-} from '../../types';
-import { isAttr, isValuedHtmlAttribute, isNodeOfType, ValuedHtmlAttribute } from '../utils';
+import { HtmlRawNode, HtmlVoidElement, LiquidFilter, NodeTypes } from '@shopify/liquid-html-parser';
+import { LiquidCheckDefinition, LiquidHtmlNode, Severity, SourceCodeType } from '../../types';
 import { last } from '../../utils';
+import { ValuedHtmlAttribute, isAttr, isNodeOfType, isValuedHtmlAttribute } from '../utils';
 
 const TAGNAMES = ['stylesheet_tag', 'script_tag', 'image_tag', 'img_tag'];
 const DEPRECATED = ['product_img_url', 'article_img_url', 'collection_img_url', 'img_url'];
@@ -82,10 +72,7 @@ export const AssetUrlFilters: LiquidCheckDefinition = {
       });
     }
 
-    function checkLiquidFilter(
-      node: NodeOfType<NodeTypes.LiquidFilter>,
-      ancestors: LiquidHtmlNode[],
-    ) {
+    function checkLiquidFilter(node: LiquidFilter, ancestors: LiquidHtmlNode[]) {
       const tagName = node.name;
 
       if (!TAGNAMES.includes(tagName)) return;

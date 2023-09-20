@@ -33,14 +33,9 @@
 import { Parser } from 'prettier';
 import ohm, { Node } from 'ohm-js';
 import { toAST } from 'ohm-js/extras';
-import {
-  LiquidGrammars,
-  placeholderGrammars,
-  strictGrammars,
-  tolerantGrammars,
-} from '~/parser/grammar';
-import { LiquidHTMLCSTParsingError } from '~/parser/errors';
-import { Comparators, NamedTags } from '~/types';
+import { LiquidGrammars, placeholderGrammars, strictGrammars, tolerantGrammars } from './grammar';
+import { LiquidHTMLCSTParsingError } from './errors';
+import { Comparators, NamedTags } from './types';
 
 export enum ConcreteNodeTypes {
   HtmlDoctype = 'HtmlDoctype',

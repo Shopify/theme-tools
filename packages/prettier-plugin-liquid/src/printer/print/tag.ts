@@ -1,37 +1,37 @@
+import { NodeTypes, Position } from '@shopify/liquid-html-parser';
 import { Doc, doc } from 'prettier';
+
+import {
+  first,
+  getLastDescendant,
+  hasMeaningfulLackOfLeadingWhitespace,
+  hasMeaningfulLackOfTrailingWhitespace,
+  hasMoreThanOneNewLineBetweenNodes,
+  hasNoCloseMarker,
+  hasPrettierIgnore,
+  isHtmlComment,
+  isHtmlElement,
+  isHtmlNode,
+  isLiquidNode,
+  isPreLikeNode,
+  isPrettierIgnoreAttributeNode,
+  isSelfClosing,
+  isTextLikeNode,
+  isVoidElement,
+  last,
+  shouldPreserveContent,
+} from '~/printer/utils';
 import {
   AstPath,
-  HtmlDanglingMarkerOpen,
   HtmlDanglingMarkerClose,
+  HtmlDanglingMarkerOpen,
   HtmlElement,
   HtmlNode,
   HtmlSelfClosingElement,
   LiquidHtmlNode,
   LiquidParserOptions,
   LiquidPrinter,
-  NodeTypes,
-  Position,
 } from '~/types';
-import {
-  getLastDescendant,
-  hasPrettierIgnore,
-  isHtmlNode,
-  isVoidElement,
-  isHtmlElement,
-  isLiquidNode,
-  isPreLikeNode,
-  hasNoCloseMarker,
-  isTextLikeNode,
-  shouldPreserveContent,
-  isSelfClosing,
-  isHtmlComment,
-  hasMeaningfulLackOfLeadingWhitespace,
-  hasMeaningfulLackOfTrailingWhitespace,
-  last,
-  first,
-  isPrettierIgnoreAttributeNode,
-  hasMoreThanOneNewLineBetweenNodes,
-} from '~/printer/utils';
 
 const {
   builders: { breakParent, indent, join, line, softline, hardline },

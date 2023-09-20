@@ -1,5 +1,5 @@
 import { expect, it, describe } from 'vitest';
-import { placeholderGrammars, strictGrammars, tolerantGrammars } from '~/parser/grammar';
+import { placeholderGrammars, strictGrammars, tolerantGrammars } from './grammar';
 
 describe('Unit: liquidHtmlGrammar', () => {
   const grammars = [

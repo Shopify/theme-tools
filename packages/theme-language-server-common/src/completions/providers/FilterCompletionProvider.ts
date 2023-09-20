@@ -1,9 +1,10 @@
+import { NodeTypes } from '@shopify/liquid-html-parser';
+import { FilterEntry } from '@shopify/theme-check-common';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
-import { FilterEntry, LiquidHtmlNodeTypes as NodeTypes } from '@shopify/theme-check-common';
-import { Provider, createCompletionItem, sortByName } from './common';
-import { CURSOR, LiquidCompletionParams } from '../params';
-import { isArrayType, PseudoType, TypeSystem } from '../../TypeSystem';
+import { PseudoType, TypeSystem, isArrayType } from '../../TypeSystem';
 import { memoize } from '../../utils';
+import { CURSOR, LiquidCompletionParams } from '../params';
+import { Provider, createCompletionItem, sortByName } from './common';
 
 export class FilterCompletionProvider implements Provider {
   constructor(private readonly typeSystem: TypeSystem) {}

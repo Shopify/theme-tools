@@ -71,19 +71,12 @@ import {
   ConcreteHtmlRawTag,
   ConcreteLiquidRawTag,
   LiquidHtmlConcreteNode,
-} from '~/parser/stage-1-cst';
-import {
-  Comparators,
-  isLiquidHtmlNode,
-  NamedTags,
-  NodeTypes,
-  nonTraversableProperties,
-  Position,
-} from '~/types';
-import { assertNever, deepGet, dropLast } from '~/utils';
-import { LiquidHTMLASTParsingError } from '~/parser/errors';
-import { TAGS_WITHOUT_MARKUP } from '~/parser/grammar';
-import { toLiquidCST } from '~/parser/stage-1-cst';
+} from './stage-1-cst';
+import { Comparators, NamedTags, NodeTypes, nonTraversableProperties, Position } from './types';
+import { assertNever, deepGet, dropLast } from './utils';
+import { LiquidHTMLASTParsingError } from './errors';
+import { TAGS_WITHOUT_MARKUP } from './grammar';
+import { toLiquidCST } from './stage-1-cst';
 
 interface HasPosition {
   locStart: number;
@@ -344,7 +337,7 @@ export interface LiquidVariableOutput extends ASTNode<NodeTypes.LiquidVariableOu
   whitespaceEnd: '-' | '';
 }
 
-interface LiquidVariable extends ASTNode<NodeTypes.LiquidVariable> {
+export interface LiquidVariable extends ASTNode<NodeTypes.LiquidVariable> {
   expression: LiquidExpression;
   filters: LiquidFilter[];
   rawSource: string;
@@ -357,38 +350,38 @@ export type LiquidExpression =
   | LiquidRange
   | LiquidVariableLookup;
 
-interface LiquidFilter extends ASTNode<NodeTypes.LiquidFilter> {
+export interface LiquidFilter extends ASTNode<NodeTypes.LiquidFilter> {
   name: string;
   args: LiquidArgument[];
 }
 
-type LiquidArgument = LiquidExpression | LiquidNamedArgument;
+export type LiquidArgument = LiquidExpression | LiquidNamedArgument;
 
-interface LiquidNamedArgument extends ASTNode<NodeTypes.NamedArgument> {
+export interface LiquidNamedArgument extends ASTNode<NodeTypes.NamedArgument> {
   name: string;
   value: LiquidExpression;
 }
 
-interface LiquidString extends ASTNode<NodeTypes.String> {
+export interface LiquidString extends ASTNode<NodeTypes.String> {
   single: boolean;
   value: string;
 }
 
-interface LiquidNumber extends ASTNode<NodeTypes.Number> {
+export interface LiquidNumber extends ASTNode<NodeTypes.Number> {
   value: string;
 }
 
-interface LiquidRange extends ASTNode<NodeTypes.Range> {
+export interface LiquidRange extends ASTNode<NodeTypes.Range> {
   start: LiquidExpression;
   end: LiquidExpression;
 }
 
-interface LiquidLiteral extends ASTNode<NodeTypes.LiquidLiteral> {
+export interface LiquidLiteral extends ASTNode<NodeTypes.LiquidLiteral> {
   keyword: ConcreteLiquidLiteral['keyword'];
   value: ConcreteLiquidLiteral['value'];
 }
 
-interface LiquidVariableLookup extends ASTNode<NodeTypes.VariableLookup> {
+export interface LiquidVariableLookup extends ASTNode<NodeTypes.VariableLookup> {
   name: string | null;
   lookups: LiquidExpression[];
 }
@@ -1740,4 +1733,13 @@ export function walk(
   }
 
   fn(ast, parentNode);
+}
+
+export function isLiquidHtmlNode(value: any): value is LiquidHtmlNode {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    'type' in value &&
+    NodeTypes.hasOwnProperty(value.type)
+  );
 }

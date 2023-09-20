@@ -1,6 +1,6 @@
 import { expect, it, describe } from 'vitest';
-import { toLiquidHtmlAST, toLiquidAST, LiquidHtmlNode } from '~/parser/stage-2-ast';
-import { deepGet } from '~/utils';
+import { toLiquidHtmlAST, toLiquidAST, LiquidHtmlNode } from './stage-2-ast';
+import { deepGet } from './utils';
 
 describe('Unit: Stage 2 (AST)', () => {
   let ast: any;

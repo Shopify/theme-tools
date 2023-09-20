@@ -1,6 +1,12 @@
 // A lot in here is adapted from prettier/prettier.
 
-import { HtmlNodeTypes, LiquidNodeTypes, NodeTypes, WithFamily } from '~/types';
+import {
+  HtmlNodeTypes,
+  LiquidNodeTypes,
+  NodeTypes,
+  isBranchedTag,
+} from '@shopify/liquid-html-parser';
+import { WithFamily } from '~/types';
 import {
   CSS_WHITE_SPACE_DEFAULT,
   CSS_WHITE_SPACE_LIQUID_TAGS,
@@ -14,7 +20,6 @@ import {
   WithSiblings,
   WithWhitespaceHelpers,
 } from '~/types';
-import { isBranchedTag } from '~/parser';
 import { isAttributeNode, isPreLikeNode, isScriptLikeTag, isWhitespace } from '~/printer/utils';
 
 type RequiredAugmentations = WithParent & WithSiblings & WithFamily & WithCssProperties;

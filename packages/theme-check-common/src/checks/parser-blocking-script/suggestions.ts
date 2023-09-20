@@ -1,14 +1,11 @@
 import {
-  LiquidHtmlNodeOfType,
-  LiquidHtmlNodeTypes as NodeTypes,
-  LiquidHtmlSuggestion,
-} from '../../types';
+  HtmlRawNode,
+  LiquidFilter,
+  LiquidVariable,
+  LiquidVariableOutput,
+} from '@shopify/liquid-html-parser';
+import { LiquidHtmlSuggestion } from '../../types';
 import { last } from '../../utils';
-
-type LiquidVariable = LiquidHtmlNodeOfType<NodeTypes.LiquidVariable>;
-type LiquidFilter = LiquidHtmlNodeOfType<NodeTypes.LiquidFilter>;
-type LiquidVariableOutput = LiquidHtmlNodeOfType<NodeTypes.LiquidVariableOutput>;
-type HtmlRawNode = LiquidHtmlNodeOfType<NodeTypes.HtmlRawNode>;
 
 const suggestionMessage = (attr: 'defer' | 'async') =>
   `Use an HTML script tag with the ${attr} attribute instead`;

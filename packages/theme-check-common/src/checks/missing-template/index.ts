@@ -1,5 +1,10 @@
-import { LiquidTag, LiquidTagNamed } from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
-import { NamedTags, NodeTypes, Position } from '@shopify/prettier-plugin-liquid/dist/types';
+import {
+  LiquidTag,
+  LiquidTagNamed,
+  NamedTags,
+  NodeTypes,
+  Position,
+} from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, RelativePath, Severity, SourceCodeType } from '../../types';
 import { assertFileExists } from '../../utils/file-utils';
 

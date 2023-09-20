@@ -1,28 +1,20 @@
 {
-  "extends": "@tsconfig/node14/tsconfig.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
     "lib": ["es2020"],
-    "noImplicitAny": true,
-    "removeComments": true,
-    "declaration": true,
-    "preserveConstEnums": true,
     "outDir": "dist",
-    "emitDecoratorMetadata": true,
     "module": "commonjs",
-    "diagnostics": false,
-    "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
-    "inlineSourceMap": true,
     "target": "ES6",
-    "allowJs": true,
-    "jsx": "react",
-    "experimentalDecorators": true,
-    "allowUnusedLabels": true,
     "baseUrl": ".",
+    "rootDir": "src",
     "paths": {
       "~/*": ["src/*"]
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "references": [
+    { "path": "../liquid-html-parser" }
+  ]
 }

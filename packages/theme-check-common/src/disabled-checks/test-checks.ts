@@ -1,5 +1,5 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '..';
-import { NodeTypes } from '@shopify/prettier-plugin-liquid/dist/types';
+import { NodeTypes } from '@shopify/liquid-html-parser';
 
 export const LiquidFilter: LiquidCheckDefinition = {
   meta: {

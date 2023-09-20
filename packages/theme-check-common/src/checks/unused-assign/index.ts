@@ -1,13 +1,5 @@
-import {
-  LiquidTag,
-  LiquidTagAssign,
-} from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
-import {
-  LiquidCheckDefinition,
-  LiquidHtmlNodeTypes as NodeTypes,
-  Severity,
-  SourceCodeType,
-} from '../../types';
+import { LiquidTag, LiquidTagAssign, NodeTypes } from '@shopify/liquid-html-parser';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 export const UnusedAssign: LiquidCheckDefinition = {
   meta: {

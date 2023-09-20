@@ -1,27 +1,21 @@
 import {
-  LiquidHtmlNodeTypes as NodeTypes,
-  LiquidHtmlNodeOfType as NodeOfType,
-  Severity,
-  SourceCodeType,
-  LiquidCheckDefinition,
-  SchemaProp,
   LiquidHtmlNode,
-} from '../../types';
+  LiquidString,
+  LiquidVariable,
+  LiquidVariableOutput,
+  NodeTypes,
+  TextNode,
+} from '@shopify/liquid-html-parser';
+import { LiquidCheckDefinition, SchemaProp, Severity, SourceCodeType } from '../../types';
+import { last } from '../../utils';
+import { assertFileExists, assertFileSize, getFileSize } from '../../utils/file-utils';
 import {
-  isAttr,
-  isValuedHtmlAttribute,
-  isNodeOfType,
   ValuedHtmlAttribute,
+  isAttr,
+  isNodeOfType,
+  isValuedHtmlAttribute,
   valueIncludes,
 } from '../utils';
-import { assertFileExists, assertFileSize, getFileSize } from '../../utils/file-utils';
-import { last } from '../../utils';
-import {
-  LiquidVariableOutput,
-  TextNode,
-} from '@shopify/prettier-plugin-liquid/dist/parser/stage-2-ast';
-
-type LiquidVariable = NodeOfType<NodeTypes.LiquidVariable>;
 
 const schema = {
   thresholdInBytes: SchemaProp.number(100000),
@@ -39,7 +33,7 @@ function isLiquidVariable(node: LiquidHtmlNode | string): node is LiquidVariable
   return typeof node !== 'string' && node.type === NodeTypes.LiquidVariable;
 }
 
-function isString(node: LiquidHtmlNode): node is NodeOfType<NodeTypes.String> {
+function isString(node: LiquidHtmlNode): node is LiquidString {
   return node.type === NodeTypes.String;
 }
 

@@ -1,8 +1,8 @@
 import { expect, it, describe } from 'vitest';
-import { LiquidHtmlCST, toLiquidHtmlCST, toLiquidCST, LiquidCST } from '~/parser/stage-1-cst';
-import { BLOCKS, VOID_ELEMENTS } from '~/parser/grammar';
-import { NamedTags } from '~/types';
-import { deepGet } from '~/utils';
+import { LiquidHtmlCST, toLiquidHtmlCST, toLiquidCST, LiquidCST } from './stage-1-cst';
+import { BLOCKS, VOID_ELEMENTS } from './grammar';
+import { NamedTags } from './types';
+import { deepGet } from './utils';
 
 describe('Unit: Stage 1 (CST)', () => {
   describe('Unit: toLiquidHtmlCST(text) and toLiquidCST(text)', () => {

@@ -1,16 +1,15 @@
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
-import { BLOCKS, RAW_TAGS } from '@shopify/prettier-plugin-liquid/dist/parser/grammar';
 import {
+  BLOCKS,
   LiquidHtmlNode,
-  LiquidHtmlNodeOfType,
-  LiquidHtmlNodeTypes,
-  ThemeDocset,
-} from '@shopify/theme-check-common';
-import { Provider, createCompletionItem, sortByName } from './common';
-import { CURSOR, LiquidCompletionParams } from '../params';
+  LiquidTag,
+  NodeTypes,
+  RAW_TAGS,
+} from '@shopify/liquid-html-parser';
+import { ThemeDocset } from '@shopify/theme-check-common';
+import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { findLast } from '../../utils';
-
-type LiquidTag = LiquidHtmlNodeOfType<LiquidHtmlNodeTypes.LiquidTag>;
+import { CURSOR, LiquidCompletionParams } from '../params';
+import { Provider, createCompletionItem, sortByName } from './common';
 
 export class LiquidTagsCompletionProvider implements Provider {
   constructor(private readonly themeDocset: ThemeDocset) {}
@@ -19,7 +18,7 @@ export class LiquidTagsCompletionProvider implements Provider {
     if (!params.completionContext) return [];
 
     const { node, ancestors } = params.completionContext;
-    if (!node || node.type !== LiquidHtmlNodeTypes.LiquidTag) {
+    if (!node || node.type !== NodeTypes.LiquidTag) {
       return [];
     }
 

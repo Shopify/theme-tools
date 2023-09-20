@@ -1,14 +1,5 @@
-import {
-  LiquidHtmlNodeTypes as NodeTypes,
-  LiquidHtmlNodeOfType as NodeOfType,
-  LiquidHtmlNode,
-} from '@shopify/theme-check-common';
-
-export { NodeTypes, LiquidHtmlNode };
-export type HtmlElement = NodeOfType<NodeTypes.HtmlElement>;
-export type HtmlDanglingMarkerClose = NodeOfType<NodeTypes.HtmlDanglingMarkerClose>;
-export type TextNode = NodeOfType<NodeTypes.TextNode>;
-export type AttrEmpty = NodeOfType<NodeTypes.AttrEmpty>;
+import { AttrEmpty, LiquidHtmlNode, NodeTypes, TextNode } from '@shopify/liquid-html-parser';
+import { LiquidHtmlNodeOfType as NodeOfType } from '@shopify/theme-check-common';
 
 export type HtmlElementTypes = (typeof HtmlElementTypes)[number];
 export const HtmlElementTypes = [

@@ -1,8 +1,8 @@
 import { doc } from 'prettier';
 import type { Printer as Printer2 } from 'prettier';
 import type { Doc as Doc3, Printer as Printer3 } from 'prettier3';
-import { RawMarkupKinds } from '~/parser';
-import { LiquidHtmlNode, LiquidParserOptions, NodeTypes } from '~/types';
+import { NodeTypes, RawMarkupKinds } from '@shopify/liquid-html-parser';
+import { LiquidHtmlNode, LiquidParserOptions } from '~/types';
 
 // null will pass through
 export const ParserMap: { [key in RawMarkupKinds]: string | null } = {

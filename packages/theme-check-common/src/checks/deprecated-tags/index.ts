@@ -1,10 +1,4 @@
-import {
-  LiquidHtmlNodeTypes as NodeTypes,
-  LiquidHtmlNodeOfType as NodeOfType,
-  Severity,
-  SourceCodeType,
-  LiquidCheckDefinition,
-} from '../../types';
+import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
 
 export const DeprecatedTags: LiquidCheckDefinition = {
   meta: {

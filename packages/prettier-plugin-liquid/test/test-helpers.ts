@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as prettier from 'prettier';
 import * as plugin from '../src';
-import { parse } from '../src/parser/parser';
+import { parse } from '../src/parser';
 import { preprocess } from '../src/printer/print-preprocess';
 import { LiquidParserOptions } from '../src/types';
 

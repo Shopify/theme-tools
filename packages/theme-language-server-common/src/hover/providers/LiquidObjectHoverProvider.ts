@@ -1,14 +1,8 @@
+import { LiquidHtmlNode, LiquidVariableLookup, NodeTypes } from '@shopify/liquid-html-parser';
 import { Hover } from 'vscode-languageserver';
-import {
-  LiquidHtmlNode,
-  LiquidHtmlNodeTypes as NodeTypes,
-  LiquidHtmlNodeOfType as NodeOfType,
-} from '@shopify/theme-check-common';
-import { BaseHoverProvider } from '../BaseHoverProvider';
 import { TypeSystem, isArrayType } from '../../TypeSystem';
 import { render } from '../../docset';
-
-type LiquidVariableLookup = NodeOfType<NodeTypes.VariableLookup>;
+import { BaseHoverProvider } from '../BaseHoverProvider';
 
 export class LiquidObjectHoverProvider implements BaseHoverProvider {
   constructor(private typeSystem: TypeSystem) {}

@@ -1,6 +1,6 @@
 import { Doc, doc } from 'prettier';
+import { isBranchedTag } from '@shopify/liquid-html-parser';
 import { LiquidAstPath, LiquidHtmlNode, LiquidBranch } from '~/types';
-import { isBranchedTag } from '~/parser';
 import { isEmpty } from '~/printer/utils/array';
 
 export * from '~/printer/utils/array';

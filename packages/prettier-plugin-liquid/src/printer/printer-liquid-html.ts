@@ -1,7 +1,14 @@
+import {
+  getConditionalComment,
+  NodeTypes,
+  Position,
+  RawMarkupKinds,
+} from '@shopify/liquid-html-parser';
 import { doc, Doc } from 'prettier';
 import type { Printer as Printer2 } from 'prettier';
 import type { Printer as Printer3 } from 'prettier3';
 import {
+  AstPath,
   AttrDoubleQuoted,
   AttrEmpty,
   AttrSingleQuoted,
@@ -15,7 +22,6 @@ import {
   HtmlVoidElement,
   LiquidAstPath,
   LiquidBranch,
-  LiquidVariableOutput,
   LiquidExpression,
   LiquidHtmlNode,
   LiquidParserOptions,
@@ -23,28 +29,24 @@ import {
   LiquidPrinterArgs,
   LiquidRawTag,
   LiquidTag,
-  NodeTypes,
-  Position,
-  TextNode,
+  LiquidVariableOutput,
   nonTraversableProperties,
-  AstPath,
+  TextNode,
 } from '~/types';
 import { assertNever } from '~/utils';
 
+import { embed2, embed3 } from '~/printer/embed';
 import { preprocess } from '~/printer/print-preprocess';
-import { bodyLines, hasLineBreakInRange, isEmpty, isTextLikeNode, reindent } from '~/printer/utils';
+import { printChildren } from '~/printer/print/children';
 import { printElement } from '~/printer/print/element';
-import { printClosingTagSuffix, printOpeningTagPrefix } from '~/printer/print/tag';
 import {
   printLiquidBranch,
-  printLiquidVariableOutput,
   printLiquidRawTag,
   printLiquidTag,
+  printLiquidVariableOutput,
 } from '~/printer/print/liquid';
-import { printChildren } from '~/printer/print/children';
-import { embed2, embed3 } from '~/printer/embed';
-import { RawMarkupKinds } from '~/parser';
-import { getConditionalComment } from '~/parser/conditional-comment';
+import { printClosingTagSuffix, printOpeningTagPrefix } from '~/printer/print/tag';
+import { bodyLines, hasLineBreakInRange, isEmpty, isTextLikeNode, reindent } from '~/printer/utils';
 
 const { builders, utils } = doc;
 const { fill, group, hardline, indent, join, line, softline } = builders;
