@@ -1,5 +1,7 @@
 export interface Position {
+  /** 0-indexed offset in the string, included */
   start: number;
+  /** 0-indexed offset, excluded */
   end: number;
 }
 
