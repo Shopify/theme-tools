@@ -3,7 +3,6 @@
     <img src="https://github.com/Shopify/theme-check-vscode/blob/main/images/shopify_glyph.png?raw=true" alt="logo" width="141" height="160">
   <br>
   Liquid HTML parser
-  <br>
 </h1>
 
 <p align="center">
@@ -45,7 +44,7 @@ const ast: LiquidHtmlNode = toLiquidHtmlAST(`
 
 ## You should know
 
-Because Liquid is very permissive, things like the `name` of an HTML may have a surprising type: an array of `LiquidVariableOutput | TextNode`. 
+Because Liquid is very permissive, things like the `name` of an HTML tag may have a surprising type: an array of `LiquidVariableOutput | TextNode`. 
 
 This is because the following use cases are supported by the parser:
 

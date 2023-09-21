@@ -5,7 +5,7 @@ Thank you for your interest in contributing to theme-tools! Your contributions w
 ## Table of Contents
 
 - [Setting Up Your Environment](#setting-up-your-environment)
-- [Setup for the VSCode Extension](#setup-for-the-vscode-extension)
+- [Setup for the VS Code Extension](#setup-for-the-vscode-extension)
 - [Setup for the Online Store](#setup-for-the-online-store)
 - [Submitting a Pull Request](#submitting-a-pull-request)
 - [Reporting Issues](#reporting-issues)
@@ -39,7 +39,7 @@ Before you can start contributing to theme-tools, you'll need to set up your dev
    ```bash
    yarn test
    ```
-5. **Start developing**: If you're developing changes to test against the vscode extension, all you need to do is add a breakpoint anywhere in a package used within the VSCode extension, hit `f5` in VSCode and your development instance of theme-check will automatically open.
+5. **Start developing**: If you're developing changes to test against the vscode extension, all you need to do is add a breakpoint anywhere in a package used within the VS Code extension, hit `f5` in VS Code and your development instance of theme-check will automatically open.
 
 ### Developing for online-store-web
 It is strongly recommended that you use the spin constellation: `theme-tools:online-store` as your development environment for this.
