@@ -82,6 +82,42 @@ export async function check(
           { name: 'link_to_type' },
           { name: 'link_to_vendor' },
           { name: 'append' },
+          { name: 'color_to_rgb' },
+          {
+            name: 'hex_to_rgba',
+            deprecated: true,
+            deprecation_reason: '`hex_to_rgba` has been replaced by [`color_to_rgb`](/do...',
+          },
+          {
+            name: 'currency_selector',
+            deprecated: true,
+            deprecation_reason: 'Deprecated without a direct replacement because the [cur...',
+          },
+          {
+            name: 'article_img_url',
+            deprecated: true,
+            deprecation_reason: '`article_img_url` has been replaced by [`image_url`](/d...',
+          },
+          {
+            name: 'collection_img_url',
+            deprecated: true,
+            deprecation_reason: '`collection_img_url` has been replaced by [`image_url`](...',
+          },
+          {
+            name: 'img_tag',
+            deprecated: true,
+            deprecation_reason: '`img_tag` has been replaced by [`image_tag`](/docs/api/...',
+          },
+          {
+            name: 'img_url',
+            deprecated: true,
+            deprecation_reason: '`img_url` has been replaced by [`image_url`](/docs/api/...',
+          },
+          {
+            name: 'product_img_url',
+            deprecated: true,
+            deprecation_reason: '`product_img_url` has been replaced by [`image_url`](/d...',
+          },
         ];
       },
       async objects() {

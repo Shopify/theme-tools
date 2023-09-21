@@ -28,6 +28,7 @@ import { ContentForHeaderModification } from './content-for-header-modification'
 import { AssetSizeAppBlockCSS } from './asset-size-app-block-css';
 import { AssetSizeAppBlockJavaScript } from './asset-size-app-block-javascript';
 import { AssetSizeCSS } from './asset-size-css';
+import { DeprecatedFilters } from './deprecated-filters';
 import { DeprecatedTags } from './deprecated-tags';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
@@ -39,6 +40,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AssetUrlFilters,
   CdnPreconnect,
   ContentForHeaderModification,
+  DeprecatedFilters,
   DeprecatedTags,
   DeprecateBgsizes,
   DeprecateLazysizes,
