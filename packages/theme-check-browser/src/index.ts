@@ -11,7 +11,7 @@ import {
   Dependencies,
 } from '@shopify/theme-check-common';
 
-export { toSourceCode, allChecks, recommended, Config };
+export { toSourceCode, allChecks, recommended, Config, Dependencies };
 
 /**
  * @example

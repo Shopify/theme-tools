@@ -3,7 +3,6 @@
     <img src="https://github.com/Shopify/theme-check-vscode/blob/main/images/shopify_glyph.png?raw=true" alt="logo" width="141" height="160">
   <br>
   Shopify Liquid Prettier Plugin
-  <br>
 </h1>
 
 <p align="center">

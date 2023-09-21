@@ -3,7 +3,6 @@
     <img src="https://github.com/Shopify/theme-check-vscode/blob/main/images/shopify_glyph.png?raw=true" alt="logo" width="150" height="160">
   <br>
   Shopify Liquid
-  <br>
 </h1>
 
 <h4 align="center">A complete developer experience for Shopify themes</h4>

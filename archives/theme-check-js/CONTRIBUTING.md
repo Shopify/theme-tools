@@ -5,7 +5,7 @@ Thank you for your interest in contributing to theme-check-js! Your contribution
 ## Table of Contents
 
 - [Setting Up Your Environment](#setting-up-your-environment)
-- [Setup for the VSCode Extension](#setup-for-the-vscode-extension)
+- [Setup for the VS Code Extension](#setup-for-the-vscode-extension)
 - [Setup for the Online Store](#setup-for-the-online-store)
 - [Submitting a Pull Request](#submitting-a-pull-request)
 - [Reporting Issues](#reporting-issues)
@@ -36,12 +36,12 @@ Before you can start contributing to theme-check-js, you'll need to set up your 
 
 4. **Setup for your usecase**:
   
-   If you are a third party developer external to shopify, you will most likely be developing for the VSCode extension. You can find the next setup steps here: [Setup for the VSCode Extension](#setup-for-the-vscode-extension).
+   If you are a third party developer external to shopify, you will most likely be developing for the VS Code extension. You can find the next setup steps here: [Setup for the VS Code Extension](#setup-for-the-vscode-extension).
 
    For Shopify internal developers, you may wish to test your checks against the Admin Theme Code Editor. You can find the next setup steps here: [Setup for the Online Store](#setup-for-the-online-store).
 
-## Setup for the VSCode Extension
-To get started with developing checks for the VSCode extension, you will additionally need two more repos cloned. Those repos are:
+## Setup for the VS Code Extension
+To get started with developing checks for the VS Code extension, you will additionally need two more repos cloned. Those repos are:
 - [liquid-language-server](https://github.com/Shopify/liquid-language-server): A runtime-agnostic Liquid Language Server to interface with the checks in theme-check-js.
 - [theme-check-vscode](https://github.com/Shopify/theme-check-vscode): The official VS Code extension for Shopify Liquid.
 
@@ -60,7 +60,7 @@ Once your directory structure looks like this, run the following command to set 
    ```
 Once that is done, you're ready to start using your custom build of the theme-check extension!
 
-- Open the theme-check-vscode folder in VSCode:
+- Open the theme-check-vscode folder in VS Code:
 code ../theme-check-vscode
 
 - If prompted for recommended extensions, install them.
@@ -72,7 +72,7 @@ code ../theme-check-vscode
 "shopifyLiquid.themeCheckNextDevPreview": true,
 "shopifyLiquid.trace.server": "verbose",
 ```
-- Now simply open a theme directory in the VSCode window and you should see the checks running.
+- Now simply open a theme directory in the VS Code window and you should see the checks running.
 
 Now your development environment is set up, and you can start making changes to the codebase!
 

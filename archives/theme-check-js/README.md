@@ -3,7 +3,6 @@
     <img src="https://github.com/Shopify/theme-check-vscode/blob/main/images/shopify_glyph.png?raw=true" alt="logo" width="141" height="160">
   <br>
   Theme Check
-  <br>
 </h1>
 
 <h4 align="center">A linter for Shopify Themes</h4>
