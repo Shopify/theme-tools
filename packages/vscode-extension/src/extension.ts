@@ -50,7 +50,7 @@ export async function activate(extensionContext: ExtensionContext) {
   context.subscriptions.push(commands.registerCommand('shopifyLiquid.restart', restartServer));
   context.subscriptions.push(
     commands.registerCommand('shopifyLiquid.runChecks', () => {
-      const isRubyLanguageServer = !getConfig('shopifyLiquid.onlineStoreCodeEditorMode');
+      const isRubyLanguageServer = !getConfig('shopifyLiquid.themeCheckNextDevPreview');
       client!.sendRequest('workspace/executeCommand', {
         command: isRubyLanguageServer ? 'runChecks' : 'themeCheck/runChecks',
       });
@@ -140,7 +140,7 @@ function onConfigChange(event: { affectsConfiguration: (arg0: string) => any }) 
   const didChangeThemeCheck = event.affectsConfiguration('shopifyLiquid.languageServerPath');
   const didChangeShopifyCLI = event.affectsConfiguration('shopifyLiquid.shopifyCLIPath');
   const didChangeOnlineStoreCodeEditorMode = event.affectsConfiguration(
-    'shopifyLiquid.onlineStoreCodeEditorMode',
+    'shopifyLiquid.themeCheckNextDevPreview',
   );
   if (didChangeThemeCheck || didChangeShopifyCLI || didChangeOnlineStoreCodeEditorMode) {
     restartServer();
@@ -157,7 +157,7 @@ async function getServerOptions(): Promise<ServerOptions | undefined> {
     );
   }
 
-  if (getConfig('shopifyLiquid.onlineStoreCodeEditorMode')) {
+  if (getConfig('shopifyLiquid.themeCheckNextDevPreview')) {
     const serverModule = context!.asAbsolutePath(path.join('dist', 'server.js'));
     return {
       run: {

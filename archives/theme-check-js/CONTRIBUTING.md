@@ -69,7 +69,7 @@ code ../theme-check-vscode
 
 - In the Settings.json, set these setting:
 ```json
-"shopifyLiquid.onlineStoreCodeEditorMode": true,
+"shopifyLiquid.themeCheckNextDevPreview": true,
 "shopifyLiquid.trace.server": "verbose",
 ```
 - Now simply open a theme directory in the VSCode window and you should see the checks running.
