@@ -6,7 +6,8 @@
   "author": "Albert Chu <albert.chu@shopify.com>",
   "license": "MIT",
   "publishConfig": {
-    "access": "restricted"
+    "access": "public",
+    "@shopify:registry": "https://registry.npmjs.org"
   },
   "bin": {
     "theme-docs": "./scripts/cli.js"

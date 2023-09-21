@@ -4,7 +4,8 @@
   "main": "dist/index.js",
   "license": "MIT",
   "publishConfig": {
-    "access": "restricted"
+    "access": "public",
+    "@shopify:registry": "https://registry.npmjs.org"
   },
   "scripts": {
     "build": "yarn build:ts",

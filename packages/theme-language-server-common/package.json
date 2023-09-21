@@ -5,7 +5,8 @@
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "license": "MIT",
   "publishConfig": {
-    "access": "restricted"
+    "access": "public",
+    "@shopify:registry": "https://registry.npmjs.org"
   },
   "scripts": {
     "build": "yarn build:ts",
