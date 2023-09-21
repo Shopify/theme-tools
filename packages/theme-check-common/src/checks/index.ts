@@ -10,7 +10,6 @@ import { AssetUrlFilters } from './asset-url-filters';
 import { CdnPreconnect } from './cdn-preconnect';
 import { DeprecateBgsizes } from './deprecate-bgsizes';
 import { DeprecateLazysizes } from './deprecate-lazysizes';
-import { ImgLazyLoading } from './img-lazy-loading';
 import { ImgWidthAndHeight } from './img-width-and-height';
 import { JSONSyntaxError } from './json-syntax-error';
 import { LiquidHTMLSyntaxError } from './liquid-html-syntax-error';
@@ -43,7 +42,6 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   DeprecatedTags,
   DeprecateBgsizes,
   DeprecateLazysizes,
-  ImgLazyLoading,
   ImgWidthAndHeight,
   JSONSyntaxError,
   LiquidHTMLSyntaxError,
