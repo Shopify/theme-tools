@@ -3,6 +3,7 @@ import { LiquidCheckDefinition, LiquidHtmlNode, Severity, SourceCodeType } from 
 import { last } from '../../utils';
 import { ValuedHtmlAttribute, isAttr, isNodeOfType, isValuedHtmlAttribute } from '../utils';
 
+const RESOURCE_TAGS = ['img', 'link', 'source', 'script'];
 const TAGNAMES = ['stylesheet_tag', 'script_tag', 'image_tag', 'img_tag'];
 const DEPRECATED = ['product_img_url', 'article_img_url', 'collection_img_url', 'img_url'];
 const NON_DEPRECATED = [
@@ -54,7 +55,9 @@ export const AssetUrlFilters: LiquidCheckDefinition = {
   },
 
   create(context) {
-    function checkNode(node: HtmlVoidElement | HtmlRawNode) {
+    function checkHtmlNode(node: HtmlVoidElement | HtmlRawNode) {
+      if (!RESOURCE_TAGS.includes(node.name)) return;
+
       const urlAttribute: ValuedHtmlAttribute | undefined = node.attributes
         .filter(isValuedHtmlAttribute)
         .find((attr) => isAttr(attr, 'src') || isAttr(attr, 'href'));
@@ -96,10 +99,10 @@ export const AssetUrlFilters: LiquidCheckDefinition = {
 
     return {
       async HtmlVoidElement(node) {
-        checkNode(node);
+        checkHtmlNode(node);
       },
       async HtmlRawNode(node) {
-        checkNode(node);
+        checkHtmlNode(node);
       },
       async LiquidFilter(node, ancestors) {
         checkLiquidFilter(node, ancestors);

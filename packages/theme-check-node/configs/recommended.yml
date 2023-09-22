@@ -6,27 +6,15 @@ ignore:
 AssetPreload:
   enabled: true
   severity: 1
-AssetSizeAppBlockCSS:
-  enabled: true
-  severity: 1
-  thresholdInBytes: 100000
-AssetSizeAppBlockJavaScript:
-  enabled: true
-  severity: 1
-  thresholdInBytes: 10000
-AssetSizeCSS:
-  enabled: true
-  severity: 1
-  thresholdInBytes: 100000
 AssetUrlFilters:
   enabled: true
   severity: 1
 CdnPreconnect:
   enabled: true
-  severity: 1
+  severity: 0
 ContentForHeaderModification:
   enabled: true
-  severity: 1
+  severity: 0
 DeprecateBgsizes:
   enabled: true
   severity: 1
@@ -41,7 +29,7 @@ DeprecatedTags:
   severity: 1
 ImgWidthAndHeight:
   enabled: true
-  severity: 1
+  severity: 0
 JSONSyntaxError:
   enabled: true
   severity: 0

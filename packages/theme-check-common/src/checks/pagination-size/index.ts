@@ -32,7 +32,7 @@ export const PaginationSize: LiquidCheckDefinition<typeof schema> = {
     const minSize = context.settings.minSize;
     const maxSize = context.settings.maxSize;
     let schemaSettings: any[] = [];
-    const collectedPaginateNodes: LiquidVariableLookup[] = [];
+    const pageSizeLookups: LiquidVariableLookup[] = [];
 
     function checkPageSize(
       pageSizeNode: any,
@@ -54,7 +54,7 @@ export const PaginationSize: LiquidCheckDefinition<typeof schema> = {
         const pageSizeNode = node.markup.pageSize;
 
         if (isNodeOfType(NodeTypes.VariableLookup, pageSizeNode)) {
-          collectedPaginateNodes.push(pageSizeNode);
+          pageSizeLookups.push(pageSizeNode);
         } else if (isNodeOfType(NodeTypes.Number, pageSizeNode)) {
           checkPageSize(pageSizeNode, Number(pageSizeNode.value));
         }
@@ -74,10 +74,10 @@ export const PaginationSize: LiquidCheckDefinition<typeof schema> = {
       },
 
       async onCodePathEnd() {
-        collectedPaginateNodes.forEach((paginateNode) => {
-          const lastLookup = last(paginateNode.lookups);
+        pageSizeLookups.forEach((pageSizeVariableLookup) => {
+          // Kind of assumes that you're using settings of some sort.
+          const lastLookup = last(pageSizeVariableLookup.lookups);
           if (lastLookup === undefined) return;
-
           if (lastLookup.type !== NodeTypes.String) return;
 
           const settingId = lastLookup.value;
@@ -88,14 +88,14 @@ export const PaginationSize: LiquidCheckDefinition<typeof schema> = {
           if (setting.default === undefined) {
             context.report({
               message: `Default pagination size should be defined in the section settings.`,
-              startIndex: paginateNode.position.start,
-              endIndex: paginateNode.position.end,
+              startIndex: pageSizeVariableLookup.position.start,
+              endIndex: pageSizeVariableLookup.position.end,
             });
             return;
           }
 
           checkPageSize(
-            paginateNode,
+            pageSizeVariableLookup,
             setting.default,
             `This setting's default value should be between ${minSize} and ${maxSize} but is currently ${setting.default}.`,
           );

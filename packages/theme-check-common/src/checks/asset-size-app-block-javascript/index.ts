@@ -1,4 +1,10 @@
-import { LiquidCheckDefinition, SchemaProp, Severity, SourceCodeType } from '../../types';
+import {
+  ConfigTarget,
+  LiquidCheckDefinition,
+  SchemaProp,
+  Severity,
+  SourceCodeType,
+} from '../../types';
 import { assertFileExists, assertFileSize } from '../../utils/file-utils';
 
 const schema = {
@@ -16,9 +22,9 @@ export const AssetSizeAppBlockJavaScript: LiquidCheckDefinition<typeof schema> =
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,
-    severity: Severity.WARNING,
+    severity: Severity.ERROR,
     schema,
-    targets: [],
+    targets: [ConfigTarget.ThemeAppExtension],
   },
 
   create(context) {

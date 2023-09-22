@@ -8,6 +8,14 @@ ignore:
 AppBlockValidTags:
   enabled: true
   severity: 0
+AssetSizeAppBlockCSS:
+  enabled: true
+  severity: 0
+  thresholdInBytes: 100000
+AssetSizeAppBlockJavaScript:
+  enabled: true
+  severity: 0
+  thresholdInBytes: 10000
 RequiredLayoutThemeObject:
   enabled: false
   severity: 0

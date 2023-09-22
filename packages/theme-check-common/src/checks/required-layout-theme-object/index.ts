@@ -1,5 +1,5 @@
 // src/checks/required-layout-theme-object/index.ts
-import { LiquidVariableLookup } from '@shopify/liquid-html-parser';
+import { HtmlElement, LiquidVariableLookup } from '@shopify/liquid-html-parser';
 import { ConfigTarget, LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { isHtmlTag } from '../utils';
 
@@ -26,8 +26,8 @@ export const RequiredLayoutThemeObject: LiquidCheckDefinition = {
 
     const requiredObjects = ['content_for_header', 'content_for_layout'];
     const foundObjects: Set<string> = new Set();
-    let headTagEndPosition: number | null = null;
-    let bodyTagEndPosition: number | null = null;
+    let headTag: HtmlElement | undefined;
+    let bodyTag: HtmlElement | undefined;
 
     function checkVariableUsage(node: LiquidVariableLookup) {
       if (node.name && requiredObjects.includes(node.name)) {
@@ -42,9 +42,9 @@ export const RequiredLayoutThemeObject: LiquidCheckDefinition = {
 
       async HtmlElement(node) {
         if (isHtmlTag(node, 'head')) {
-          headTagEndPosition = node.blockEndPosition.start;
+          headTag = node;
         } else if (isHtmlTag(node, 'body')) {
-          bodyTagEndPosition = node.blockEndPosition.start;
+          bodyTag = node;
         }
       },
 
@@ -52,15 +52,15 @@ export const RequiredLayoutThemeObject: LiquidCheckDefinition = {
         for (const requiredObject of requiredObjects) {
           if (!foundObjects.has(requiredObject)) {
             const message = `The required object '{{ ${requiredObject} }}' is missing in layout/theme.liquid`;
-            const fixInsertPosition =
-              requiredObject === 'content_for_header' ? headTagEndPosition : bodyTagEndPosition;
+            const insertionNode = requiredObject === 'content_for_header' ? headTag : bodyTag;
+            const fixInsertPosition = insertionNode?.blockEndPosition.start;
 
             context.report({
               message,
-              startIndex: 0,
-              endIndex: 0,
+              startIndex: insertionNode?.position.start ?? 0,
+              endIndex: insertionNode?.position.end ?? 0,
               fix:
-                fixInsertPosition !== null
+                fixInsertPosition !== undefined
                   ? (corrector) => corrector.insert(fixInsertPosition, `{{ ${requiredObject} }}`)
                   : undefined,
             });
