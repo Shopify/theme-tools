@@ -1,5 +1,13 @@
 # @shopify/theme-language-server-browser
 
+## 1.0.1
+
+### Patch Changes
+
+- 14b9ee2: Fixup package.json configs
+- Updated dependencies [14b9ee2]
+  - @shopify/theme-language-server-common@1.0.1
+
 ## 1.0.0
 
 ### Major Changes
