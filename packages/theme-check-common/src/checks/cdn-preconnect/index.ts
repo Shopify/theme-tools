@@ -11,7 +11,7 @@ export const CdnPreconnect: LiquidCheckDefinition = {
       url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/cdn-preconnect',
     },
     type: SourceCodeType.LiquidHtml,
-    severity: Severity.WARNING,
+    severity: Severity.ERROR,
     schema: {},
     targets: [],
   },

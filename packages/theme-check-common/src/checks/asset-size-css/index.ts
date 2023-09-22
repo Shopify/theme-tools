@@ -44,10 +44,10 @@ export const AssetSizeCSS: LiquidCheckDefinition = {
     docs: {
       description: 'This check is aimed at preventing large CSS bundles for speed.',
       url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/asset-size-css',
-      recommended: true,
+      recommended: false,
     },
     type: SourceCodeType.LiquidHtml,
-    severity: Severity.WARNING,
+    severity: Severity.ERROR,
     schema,
     targets: [],
   },

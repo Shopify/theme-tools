@@ -30,7 +30,7 @@ export const ContentForHeaderModification: LiquidCheckDefinition = {
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,
-    severity: Severity.WARNING,
+    severity: Severity.ERROR,
     schema: {},
     targets: [],
   },

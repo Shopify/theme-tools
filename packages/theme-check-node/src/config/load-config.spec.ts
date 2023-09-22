@@ -5,6 +5,7 @@ import { loadConfig } from './load-config';
 import {
   allChecks,
   CheckDefinition,
+  ConfigTarget,
   recommended,
   Severity,
   SourceCodeType,
@@ -57,7 +58,14 @@ describe('Unit: loadConfig', () => {
   it('loads the all config', async () => {
     const configPath = await createMockConfigFile(tempDir, `extends: theme-check:all`);
     const config = await loadConfig(configPath, tempDir);
-    expect(config.checks).to.eql(allChecks);
+    expect(config.checks).to.eql(
+      allChecks.filter(
+        (check) =>
+          !check.meta.targets ||
+          check.meta.targets.length === 0 ||
+          check.meta.targets.includes(ConfigTarget.All),
+      ),
+    );
   });
 
   it('loads a compound config', async () => {

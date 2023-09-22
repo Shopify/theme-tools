@@ -12,7 +12,7 @@ export const ImgWidthAndHeight: LiquidCheckDefinition = {
       url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/img-width-and-height',
     },
     type: SourceCodeType.LiquidHtml,
-    severity: Severity.WARNING,
+    severity: Severity.ERROR,
     schema: {},
     targets: [],
   },

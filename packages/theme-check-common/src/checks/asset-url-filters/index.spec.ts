@@ -41,6 +41,24 @@ describe('Module: AssetUrlFilters', () => {
     expect(highlights).to.be.empty;
   });
 
+  it('should not report an offense for links, videos, iframes', async () => {
+    const sourceCode = `
+      <iframe
+        id="inlineFrameExample"
+        title="Inline Frame Example"
+        width="300"
+        height="200"
+        src="https://www.openstreetmap.org/export/embed.html?bbox=-0.004017949104309083%2C51.47612752641776%2C0.00030577182769775396%2C51.478569861898606&layer=mapnik"
+      >
+      </iframe>
+      <a href="https://google.com"></a>
+      <embed type="video/webm" src="https://google.com/..." width="250" height="200">
+    `;
+
+    const offenses = await runLiquidCheck(AssetUrlFilters, sourceCode);
+    expect(offenses).to.be.empty;
+  });
+
   it('should not report an offense when asset_url or img_url filters are used with other filters', async () => {
     const sourceCode = `
       <img src="{{ 'image.png' | asset_url | img_url }}" />
