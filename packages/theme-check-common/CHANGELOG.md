@@ -1,5 +1,27 @@
 # @shopify/theme-check-common
 
+## 1.13.0
+
+### Minor Changes
+
+- 441a8c5: Remove `ImgLazyLoading`
+- 972c26c: Introduce 'DeprecatedFilters' check (+ suggestions)
+- 25b79f0: Rename LiquidDrop -> LiquidVariableLookup
+- 12c794a: Add `DeprecatedTags` check
+
+### Patch Changes
+
+- c00e929: Bug fix for `AssetSizeCSS`: Fixes redundant messages.
+- f3cda64: Fixup AppBlock\*Checks to not throw errors on missing property
+- b1b8366: Fixup AssetUrlFilters node targeting
+- c00e929: Bug fix for `AssetSizeAppBlockCSS`: Corrects underlining issues.
+- c00e929: Bug fix for `AssetUrlFilters`: Reports better messaging.
+- b1b8366: Fix RequireThemeObject highlighting
+- b1b8366: Fix the recommended and severity values
+- c00e929: Bug fix for `AssetSizeAppBlockJavascript`: Corrects underlining issues.
+- Updated dependencies [02f4731]
+  - @shopify/liquid-html-parser@1.0.0
+
 ## 1.12.1
 
 ### Patch Changes

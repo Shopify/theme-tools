@@ -1,5 +1,25 @@
 # @shopify/theme-language-server-browser
 
+## 1.0.0
+
+### Major Changes
+
+- 319bcf1: `@shopify/theme-language-server` initial release
+
+### Minor Changes
+
+- acfac68: Rename `liquid-language-server-*` packages to `theme-language-server-*`
+
+### Patch Changes
+
+- Updated dependencies [8cd0b54]
+- Updated dependencies [25b79f0]
+- Updated dependencies [f3cda64]
+- Updated dependencies [acfac68]
+- Updated dependencies [319bcf1]
+- Updated dependencies [4bb4b8d]
+  - @shopify/theme-language-server-common@1.0.0
+
 # @shopify/liquid-language-server-browser
 
 ## 1.7.1
