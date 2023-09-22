@@ -1,5 +1,12 @@
 # @shopify/theme-language-server-node
 
+## 1.0.2
+
+### Patch Changes
+
+- da94dfe: Fixup missing dep
+  - @shopify/theme-language-server-common@1.0.2
+
 ## 1.0.1
 
 ### Patch Changes
