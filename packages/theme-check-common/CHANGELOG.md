@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 1.13.1
+
+### Patch Changes
+
+- 14b9ee2: Fixup package.json configs
+
 ## 1.13.0
 
 ### Minor Changes

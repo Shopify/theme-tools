@@ -1,5 +1,14 @@
 # @shopify/theme-language-server-node
 
+## 1.0.1
+
+### Patch Changes
+
+- 14b9ee2: Fixup package.json configs
+- Updated dependencies [14b9ee2]
+  - @shopify/theme-language-server-common@1.0.1
+  - @shopify/theme-check-docs-updater@1.13.1
+
 ## 1.0.0
 
 ### Major Changes

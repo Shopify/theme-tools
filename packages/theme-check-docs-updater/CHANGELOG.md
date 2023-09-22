@@ -1,5 +1,12 @@
 # @shopify/theme-check-docs-updater
 
+## 1.13.1
+
+### Patch Changes
+
+- Updated dependencies [14b9ee2]
+  - @shopify/theme-check-common@1.13.1
+
 ## 1.13.0
 
 ### Minor Changes

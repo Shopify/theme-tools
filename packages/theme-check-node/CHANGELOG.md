@@ -1,5 +1,13 @@
 # @shopify/theme-check-node
 
+## 1.13.1
+
+### Patch Changes
+
+- 14b9ee2: Fixup package.json configs
+- Updated dependencies [14b9ee2]
+  - @shopify/theme-check-common@1.13.1
+
 ## 1.13.0
 
 ### Minor Changes
