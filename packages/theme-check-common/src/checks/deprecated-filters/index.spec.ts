@@ -1,5 +1,5 @@
 import { expect, describe, it } from 'vitest';
-import { highlightedOffenses, applySuggestions, runLiquidCheck } from '../../test';
+import { highlightedOffenses, applySuggestions, runLiquidCheck, applyFix } from '../../test';
 import { DeprecatedFilters } from './index';
 import { Offense } from '../../types';
 
@@ -35,18 +35,18 @@ describe('Module: DeprecatedFilters', () => {
     const sourceCode = '{{ "#EA5AB9" | hex_to_rgba }}';
 
     const offenses = await runLiquidCheck(DeprecatedFilters, sourceCode);
-    const suggestions = applySuggestions(sourceCode, offenses[0]);
+    const fixedCode = applyFix(sourceCode, offenses[0]);
 
-    expect(suggestions).toEqual(['{{ "#EA5AB9" | color_to_rgb }}']);
+    expect(fixedCode).toEqual('{{ "#EA5AB9" | color_to_rgb }}');
   });
 
   it("should suggest a fix to replace the deprecated 'hex_to_rgba' filter when an alpha value is passed", async () => {
     const sourceCode = '{{ "#EA5AB9" | hex_to_rgba: 0.5 }}';
 
     const offenses = await runLiquidCheck(DeprecatedFilters, sourceCode);
-    const suggestions = applySuggestions(sourceCode, offenses[0]);
+    const fixedCode = applyFix(sourceCode, offenses[0]);
 
-    expect(suggestions).toEqual([`{{ "#EA5AB9" | color_to_rgb | color_modify: 'alpha', 0.5 }}`]);
+    expect(fixedCode).toEqual(`{{ "#EA5AB9" | color_to_rgb | color_modify: 'alpha', 0.5 }}`);
   });
 
   it("should suggest a fix to replace the deprecated 'img_url' filter", async () => {

@@ -5,13 +5,9 @@ import {
   LiquidCheckDefinition,
   LiquidHtmlSuggestion,
   FilterEntry,
+  Fixer,
 } from '../../types';
-import {
-  suggestHexToRgbaFix,
-  suggestImageUrlFix,
-  suggestImgTagFix,
-  suggestImgUrlFix,
-} from './suggestions';
+import { fixHexToRgba, suggestImageUrlFix, suggestImgTagFix, suggestImgUrlFix } from './fixes';
 
 export const DeprecatedFilters: LiquidCheckDefinition = {
   meta: {
@@ -50,10 +46,12 @@ export const DeprecatedFilters: LiquidCheckDefinition = {
 
         const message = deprecatedFilterMessage(deprecatedFilter, recommendedFilter);
         const suggest = deprecatedFilterSuggestion(node);
+        const fix = deprecatedFilterFix(node);
 
         context.report({
           message,
           suggest,
+          fix,
           startIndex: node.position.start + 1,
           endIndex: node.position.end,
         });
@@ -66,8 +64,6 @@ function deprecatedFilterSuggestion(node: LiquidFilter): LiquidHtmlSuggestion[] 
   const filter = node.name;
 
   switch (filter) {
-    case 'hex_to_rgba':
-      return suggestHexToRgbaFix(node);
     case 'img_tag':
       return suggestImgTagFix(node);
     case 'img_url':
@@ -89,6 +85,14 @@ function deprecatedFilterSuggestion(node: LiquidFilter): LiquidHtmlSuggestion[] 
        * form was replaced by the localization form.
        */
       return;
+  }
+}
+
+function deprecatedFilterFix(node: LiquidFilter): Fixer<SourceCodeType.LiquidHtml> | undefined {
+  const filter = node.name;
+
+  if (filter === 'hex_to_rgba') {
+    return fixHexToRgba(node);
   }
 }
 

@@ -8,7 +8,7 @@ import {
   LiquidVariableLookup,
   NodeTypes,
 } from '@shopify/liquid-html-parser';
-import { LiquidHtmlSuggestion } from '../../types';
+import { Fixer, LiquidHtmlSuggestion, SourceCodeType } from '../../types';
 import { isNodeOfType } from '../utils';
 
 type ImageSize = { width: number; height: number };
@@ -34,7 +34,12 @@ const NAMED_SIZES: Record<string, number> = {
   original: 1024,
 };
 
-export function suggestHexToRgbaFix(node: LiquidFilter): Suggestion {
+export function fixHexToRgba(node: LiquidFilter): Fixer<SourceCodeType.LiquidHtml> | undefined {
+  /**
+   * Cannot fix invalid usage.
+   *
+   * The `hex_to_rgba` filter is only valid with zero or one argument (`alpha`).
+   */
   if (node.args.length > 1) return;
 
   const { start, end } = getFilterSourceStartAndEnd(node);
@@ -48,12 +53,7 @@ export function suggestHexToRgbaFix(node: LiquidFilter): Suggestion {
     fixedFilter = ' color_to_rgb';
   }
 
-  return [
-    {
-      message: "Replace 'hex_to_rgba' with 'color_to_rgb'.",
-      fix: (corrector) => corrector.replace(start, end, fixedFilter),
-    },
-  ];
+  return (corrector) => corrector.replace(start, end, fixedFilter);
 }
 
 export function suggestImgTagFix(node: LiquidFilter): Suggestion {
