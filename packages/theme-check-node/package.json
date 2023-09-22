@@ -2,12 +2,19 @@
   "name": "@shopify/theme-check-node",
   "version": "1.13.0",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "author": "CP Clermont <cp.clermont@shopify.com>",
+  "homepage": "https://github.com/Shopify/theme-tools",
   "license": "MIT",
   "publishConfig": {
     "access": "public",
     "@shopify:registry": "https://registry.npmjs.org"
   },
+  "files": [
+    "configs/*",
+    "dist/**/*.js",
+    "dist/**/*.ts"
+  ],
   "scripts": {
     "build": "yarn build:ts",
     "build:ci": "yarn build",

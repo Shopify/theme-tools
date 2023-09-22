@@ -2,6 +2,11 @@
   "name": "@shopify/theme-language-server-common",
   "version": "1.0.0",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "homepage": "https://github.com/Shopify/theme-tools/blob/main/packages/theme-language-server-common/README.md",
+  "bugs": {
+    "url": "https://github.com/shopify/theme-tools/issues"
+  },
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "license": "MIT",
   "publishConfig": {
