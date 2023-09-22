@@ -1,5 +1,37 @@
 # @shopify/theme-language-server-common
 
+## 1.0.0
+
+### Major Changes
+
+- 319bcf1: `@shopify/theme-language-server` initial release
+
+### Minor Changes
+
+- 25b79f0: Rename LiquidDrop -> LiquidVariableLookup
+- acfac68: Rename `liquid-language-server-*` packages to `theme-language-server-*`
+
+### Patch Changes
+
+- 8cd0b54: Fix hover support for section objects
+- f3cda64: Fixup LSP linting non LiquidHTML | JSON files
+- 4bb4b8d: Fixup `end*` Liquid tag completion
+- Updated dependencies [441a8c5]
+- Updated dependencies [c00e929]
+- Updated dependencies [972c26c]
+- Updated dependencies [25b79f0]
+- Updated dependencies [f3cda64]
+- Updated dependencies [b1b8366]
+- Updated dependencies [02f4731]
+- Updated dependencies [c00e929]
+- Updated dependencies [c00e929]
+- Updated dependencies [12c794a]
+- Updated dependencies [b1b8366]
+- Updated dependencies [b1b8366]
+- Updated dependencies [c00e929]
+  - @shopify/theme-check-common@1.13.0
+  - @shopify/liquid-html-parser@1.0.0
+
 # @shopify/liquid-language-server-common
 
 ## 1.7.1

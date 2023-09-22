@@ -1,5 +1,35 @@
 # @shopify/theme-check-node
 
+## 1.13.0
+
+### Minor Changes
+
+- 441a8c5: Remove `ImgLazyLoading`
+- 12c794a: Add `DeprecatedTags` check
+- 38f549b: Add .theme-check.yml support to the new Language Server in VS Code
+
+### Patch Changes
+
+- c00e929: Bug fix for `AssetSizeCSS`: Fixes redundant messages.
+- 7838869: Remove unused dep in theme-check-node
+- c00e929: Bug fix for `AssetSizeAppBlockCSS`: Corrects underlining issues.
+- c00e929: Bug fix for `AssetUrlFilters`: Reports better messaging.
+- b1b8366: Fix the recommended and severity values
+- c00e929: Bug fix for `AssetSizeAppBlockJavascript`: Corrects underlining issues.
+- Updated dependencies [441a8c5]
+- Updated dependencies [c00e929]
+- Updated dependencies [972c26c]
+- Updated dependencies [25b79f0]
+- Updated dependencies [f3cda64]
+- Updated dependencies [b1b8366]
+- Updated dependencies [c00e929]
+- Updated dependencies [c00e929]
+- Updated dependencies [12c794a]
+- Updated dependencies [b1b8366]
+- Updated dependencies [b1b8366]
+- Updated dependencies [c00e929]
+  - @shopify/theme-check-common@1.13.0
+
 ## 1.12.1
 
 ### Patch Changes

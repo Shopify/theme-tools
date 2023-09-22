@@ -1,5 +1,32 @@
 # @shopify/theme-language-server-node
 
+## 1.0.0
+
+### Major Changes
+
+- 319bcf1: `@shopify/theme-language-server` initial release
+
+### Minor Changes
+
+- 38f549b: Add .theme-check.yml support to the new Language Server in VS Code
+- acfac68: Rename `liquid-language-server-*` packages to `theme-language-server-*`
+
+### Patch Changes
+
+- Updated dependencies [8cd0b54]
+- Updated dependencies [c00e929]
+- Updated dependencies [25b79f0]
+- Updated dependencies [f3cda64]
+- Updated dependencies [c00e929]
+- Updated dependencies [c00e929]
+- Updated dependencies [12c794a]
+- Updated dependencies [acfac68]
+- Updated dependencies [319bcf1]
+- Updated dependencies [4bb4b8d]
+- Updated dependencies [c00e929]
+  - @shopify/theme-language-server-common@1.0.0
+  - @shopify/theme-check-docs-updater@1.13.0
+
 # @shopify/liquid-language-server-node
 
 ## 1.7.1

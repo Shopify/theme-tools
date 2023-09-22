@@ -1,5 +1,17 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.3.0
+
+### Minor Changes
+
+- 25b79f0: Rename LiquidDrop -> LiquidVariableLookup
+
+### Patch Changes
+
+- f552d4d: Fixup the position of LiquidBranch nodes
+- Updated dependencies [02f4731]
+  - @shopify/liquid-html-parser@1.0.0
+
 ## 1.2.3
 
 ### Patch Changes

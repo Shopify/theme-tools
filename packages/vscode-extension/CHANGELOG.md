@@ -1,5 +1,25 @@
 ## theme-check-vscode
 
+## 1.11.0
+
+### Minor Changes
+
+- 38f549b: Add .theme-check.yml support to the new Language Server in VS Code
+
+### Patch Changes
+
+- f42c5ea: Rename flag to themeCheckNextDevPreview
+- acfac68: Rename `liquid-language-server-*` packages to `theme-language-server-*`
+- Updated dependencies [25b79f0]
+- Updated dependencies [02f4731]
+- Updated dependencies [38f549b]
+- Updated dependencies [acfac68]
+- Updated dependencies [319bcf1]
+- Updated dependencies [f552d4d]
+  - @shopify/prettier-plugin-liquid@1.3.0
+  - @shopify/liquid-html-parser@1.0.0
+  - @shopify/theme-language-server-node@1.0.0
+
 ## 1.10.2
 
 ### Patch Changes
@@ -23,8 +43,8 @@
 
 ## 1.10.0 / 2023-05-26
 
-* Add posix sh command existence compliance ([#126](https://github.com/shopify/theme-check-vscode/issues/126))
-* Bump to prettier-plugin-liquid v1.1.0 ([#129](https://github.com/shopify/theme-check-vscode/issues/129))
+- Add posix sh command existence compliance ([#126](https://github.com/shopify/theme-check-vscode/issues/126))
+- Bump to prettier-plugin-liquid v1.1.0 ([#129](https://github.com/shopify/theme-check-vscode/issues/129))
 
   Learn more in its [CHANGELOG](https://github.com/Shopify/prettier-plugin-liquid/blob/v1.1.0/CHANGELOG.md#110--2023-05-26).
 
