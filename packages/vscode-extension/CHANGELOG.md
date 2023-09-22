@@ -1,5 +1,13 @@
 ## theme-check-vscode
 
+## 1.11.2
+
+### Patch Changes
+
+- da94dfe: Fixup missing dep
+- Updated dependencies [da94dfe]
+  - @shopify/theme-language-server-node@1.0.2
+
 ## 1.11.1
 
 ### Patch Changes
