@@ -17,9 +17,9 @@ export type ValuedHtmlAttribute = AttrSingleQuoted | AttrDoubleQuoted | AttrUnqu
 
 export function isNodeOfType<T extends NodeTypes>(
   type: T,
-  node: LiquidHtmlNode,
+  node?: LiquidHtmlNode,
 ): node is NodeOfType<T> {
-  return node.type === type;
+  return node?.type === type;
 }
 
 export function isHtmlTag<T>(
