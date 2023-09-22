@@ -4,42 +4,14 @@
 
 ### Minor Changes
 
-- 38f549b: Add .theme-check.yml support to the new Language Server in VS Code
+- Added Theme Check 2.0 dev preview behind `shopifyLiquid.themeCheckNextDevPreview` setting.
 
 ### Patch Changes
 
-- f42c5ea: Rename flag to themeCheckNextDevPreview
-- acfac68: Rename `liquid-language-server-*` packages to `theme-language-server-*`
-- Updated dependencies [25b79f0]
-- Updated dependencies [02f4731]
-- Updated dependencies [38f549b]
-- Updated dependencies [acfac68]
-- Updated dependencies [319bcf1]
 - Updated dependencies [f552d4d]
   - @shopify/prettier-plugin-liquid@1.3.0
   - @shopify/liquid-html-parser@1.0.0
   - @shopify/theme-language-server-node@1.0.0
-
-## 1.10.2
-
-### Patch Changes
-
-- Patch bump because it depends on:
-  - @shopify/liquid-language-server-node
-  - @shopify/prettier-plugin-liquid
-- Updated dependencies [e8d569d]
-- Updated dependencies [5479a63]
-- Updated dependencies [5479a63]
-  - @shopify/liquid-language-server-node@1.7.1
-  - @shopify/prettier-plugin-liquid@1.2.3
-
-## 1.10.1
-
-### Patch Changes
-
-- Patch bump because it depends on @shopify/liquid-language-server-node
-- Updated dependencies [5ba20bd]
-  - @shopify/liquid-language-server-node@1.7.0
 
 ## 1.10.0 / 2023-05-26
 
