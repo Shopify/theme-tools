@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@shopify/theme-language-server-common": "1.0.1",
+    "@shopify/theme-check-node": "^1.13.1",
     "@shopify/theme-check-docs-updater": "^1.13.1",
     "node-fetch": "^2.6.11",
     "vscode-languageserver": "^8.0.2",
