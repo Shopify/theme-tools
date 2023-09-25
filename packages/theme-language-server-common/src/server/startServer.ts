@@ -19,6 +19,7 @@ import { HoverProvider } from '../hover';
 import { Commands, ExecuteCommandProvider } from '../commands';
 import { ClientCapabilities } from '../ClientCapabilities';
 import { AugmentedThemeDocset } from '../docset';
+import { useBufferOrInjectedTranslations } from '../diagnostics/useBufferOrInjectedTranslations';
 
 const defaultLogger = () => {};
 
@@ -66,7 +67,14 @@ export function startServer(
     100,
   );
   const completionsProvider = new CompletionsProvider(documentManager, themeDocset, log);
-  const hoverProvider = new HoverProvider(documentManager, themeDocset);
+
+  const getTranslationsForURI = async (uri: string) => {
+    const rootURI = await findRootURI(uri);
+    const theme = documentManager.theme(rootURI);
+    return useBufferOrInjectedTranslations(getDefaultTranslationsFactory, theme, rootURI);
+  };
+  const hoverProvider = new HoverProvider(documentManager, themeDocset, getTranslationsForURI);
+
   const executeCommandProvider = new ExecuteCommandProvider(
     documentManager,
     diagnosticsManager,

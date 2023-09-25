@@ -5,3 +5,4 @@ export { LiquidObjectAttributeHoverProvider } from './LiquidObjectAttributeHover
 export { HtmlTagHoverProvider } from './HtmlTagHoverProvider';
 export { HtmlAttributeHoverProvider } from './HtmlAttributeHoverProvider';
 export { HtmlAttributeValueHoverProvider } from './HtmlAttributeValueHoverProvider';
+export { TranslationHoverProvider } from './TranslationHoverProvider';

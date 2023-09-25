@@ -11,13 +11,19 @@ import {
   LiquidObjectAttributeHoverProvider,
   LiquidObjectHoverProvider,
   LiquidTagHoverProvider,
+  TranslationHoverProvider,
 } from './providers';
 import { HtmlAttributeValueHoverProvider } from './providers/HtmlAttributeValueHoverProvider';
+import { GetTranslationsForURI } from './providers/TranslationHoverProvider';
 
 export class HoverProvider {
   private providers: BaseHoverProvider[] = [];
 
-  constructor(readonly documentManager: DocumentManager, readonly themeDocset: ThemeDocset) {
+  constructor(
+    readonly documentManager: DocumentManager,
+    readonly themeDocset: ThemeDocset,
+    readonly getTranslationsForURI: GetTranslationsForURI = async () => ({}),
+  ) {
     const typeSystem = new TypeSystem(themeDocset);
     this.providers = [
       new LiquidTagHoverProvider(themeDocset),
@@ -27,6 +33,7 @@ export class HoverProvider {
       new HtmlTagHoverProvider(),
       new HtmlAttributeHoverProvider(),
       new HtmlAttributeValueHoverProvider(),
+      new TranslationHoverProvider(getTranslationsForURI, documentManager),
     ];
   }
 
@@ -44,7 +51,7 @@ export class HoverProvider {
       document.textDocument.offsetAt(params.position),
     );
 
-    const promises = this.providers.map((p) => p.hover(currentNode, ancestors));
+    const promises = this.providers.map((p) => p.hover(currentNode, ancestors, params));
     const results = await Promise.all(promises);
     return results.find(Boolean) ?? null;
   }
