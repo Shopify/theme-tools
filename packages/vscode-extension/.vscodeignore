@@ -18,6 +18,3 @@ yarn.lock
 
 syntaxes/
 !syntaxes/grammars
-
-node_modules/
-!node_modules/prettier

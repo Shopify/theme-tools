@@ -23,7 +23,7 @@ const config = {
   context: path.resolve(__dirname),
   externals: {
     vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded
-    prettier: 'commonjs prettier',
+    prettier: 'commonjs ./prettier',
   },
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
@@ -64,6 +64,10 @@ const config = {
           // This is also why we have __dirname as 'eval-only'.
           from: path.resolve(__dirname, '../theme-check-node/configs'),
           to: 'configs',
+        },
+        {
+          from: path.resolve(__dirname, '../../node_modules/prettier'),
+          to: 'prettier',
         },
       ],
     }),
