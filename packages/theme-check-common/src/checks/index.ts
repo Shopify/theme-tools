@@ -30,6 +30,7 @@ import { AssetSizeAppBlockJavaScript } from './asset-size-app-block-javascript';
 import { AssetSizeCSS } from './asset-size-css';
 import { DeprecatedFilters } from './deprecated-filters';
 import { DeprecatedTags } from './deprecated-tags';
+import { AssetSizeJavaScript } from './asset-size-javascript';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -37,6 +38,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AssetSizeAppBlockCSS,
   AssetSizeAppBlockJavaScript,
   AssetSizeCSS,
+  AssetSizeJavaScript,
   AssetUrlFilters,
   CdnPreconnect,
   ContentForHeaderModification,

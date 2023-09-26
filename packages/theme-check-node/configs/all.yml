@@ -21,6 +21,10 @@ AssetSizeCSS:
   enabled: true
   severity: 0
   thresholdInBytes: 100000
+AssetSizeJavaScript:
+  enabled: true
+  severity: 0
+  thresholdInBytes: 10000
 AssetUrlFilters:
   enabled: true
   severity: 1

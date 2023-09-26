@@ -8,7 +8,10 @@ import {
 } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, SchemaProp, Severity, SourceCodeType } from '../../types';
 import { last } from '../../utils';
-import { assertFileExists, assertFileSize, getFileSize } from '../../utils/file-utils';
+import {
+  hasRemoteAssetSizeExceededThreshold,
+  hasLocalAssetSizeExceededThreshold,
+} from '../../utils/file-utils';
 import {
   ValuedHtmlAttribute,
   isAttr,
@@ -37,7 +40,7 @@ function isString(node: LiquidHtmlNode): node is LiquidString {
   return node.type === NodeTypes.String;
 }
 
-export const AssetSizeCSS: LiquidCheckDefinition = {
+export const AssetSizeCSS: LiquidCheckDefinition<typeof schema> = {
   meta: {
     code: 'AssetSizeCSS',
     name: 'Prevent Large CSS bundles',
@@ -60,35 +63,22 @@ export const AssetSizeCSS: LiquidCheckDefinition = {
     const thresholdInBytes = context.settings.thresholdInBytes;
 
     async function checkRemoteAssetSize(url: string, position: { start: number; end: number }) {
-      const fileSize = await getFileSize(url);
-      if (fileSize && fileSize > thresholdInBytes) {
+      if (await hasRemoteAssetSizeExceededThreshold(url, thresholdInBytes)) {
         context.report({
           message: `The CSS file size exceeds the threshold of ${thresholdInBytes} bytes`,
           startIndex: position.start,
           endIndex: position.end,
         });
-        return;
       }
     }
 
-    async function checkThemeAssetSize(
-      hrefValue: string,
-      position: { start: number; end: number },
-    ) {
-      const absolutePath = `assets/${hrefValue}`;
-      const fileExists = await assertFileExists(context, absolutePath);
-
-      if (!fileExists) return;
-
-      const fileExceedsThreshold = await assertFileSize(context, absolutePath, thresholdInBytes);
-
-      if (fileExceedsThreshold) {
+    async function checkThemeAssetSize(srcValue: string, position: { start: number; end: number }) {
+      if (await hasLocalAssetSizeExceededThreshold(context, srcValue, thresholdInBytes)) {
         context.report({
           message: `The CSS file size exceeds the threshold of ${thresholdInBytes} bytes`,
           startIndex: position.start,
           endIndex: position.end,
         });
-        return;
       }
     }
 
