@@ -19,7 +19,7 @@ import { HoverProvider } from '../hover';
 import { Commands, ExecuteCommandProvider } from '../commands';
 import { ClientCapabilities } from '../ClientCapabilities';
 import { AugmentedThemeDocset } from '../docset';
-import { useBufferOrInjectedTranslations } from '../diagnostics/useBufferOrInjectedTranslations';
+import { GetTranslationsForURI, useBufferOrInjectedTranslations } from '../translations';
 
 const defaultLogger = () => {};
 
@@ -66,13 +66,18 @@ export function startServer(
     }),
     100,
   );
-  const completionsProvider = new CompletionsProvider(documentManager, themeDocset, log);
-
-  const getTranslationsForURI = async (uri: string) => {
+  const getTranslationsForURI: GetTranslationsForURI = async (uri) => {
     const rootURI = await findRootURI(uri);
     const theme = documentManager.theme(rootURI);
     return useBufferOrInjectedTranslations(getDefaultTranslationsFactory, theme, rootURI);
   };
+
+  const completionsProvider = new CompletionsProvider(
+    documentManager,
+    themeDocset,
+    getTranslationsForURI,
+    log,
+  );
   const hoverProvider = new HoverProvider(documentManager, themeDocset, getTranslationsForURI);
 
   const executeCommandProvider = new ExecuteCommandProvider(
@@ -107,7 +112,7 @@ export function startServer(
           codeActionKinds: [...CodeActionKinds],
         },
         completionProvider: {
-          triggerCharacters: ['.', '{{ ', '{% ', '<', '/', '['],
+          triggerCharacters: ['.', '{{ ', '{% ', '<', '/', '[', '"', "'"],
         },
         documentLinkProvider: {
           resolveProvider: false,

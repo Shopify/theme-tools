@@ -1,4 +1,10 @@
-import { AST, NodeOfType, NodeTypes, SourceCodeType } from '@shopify/theme-check-common';
+import {
+  AST,
+  LiquidHtmlNode,
+  NodeOfType,
+  NodeTypes,
+  SourceCodeType,
+} from '@shopify/theme-check-common';
 
 export type VisitorMethod<S extends SourceCodeType, T, R> = (
   node: NodeOfType<S, T>,
@@ -67,4 +73,36 @@ export function forEachChildNodes<S extends SourceCodeType>(
       execute(value, lineage);
     }
   }
+}
+export function findCurrentNode(
+  ast: LiquidHtmlNode,
+  cursorPosition: number,
+): [node: LiquidHtmlNode, ancestors: LiquidHtmlNode[]] {
+  let prev: LiquidHtmlNode | undefined;
+  let current: LiquidHtmlNode = ast;
+  let ancestors: LiquidHtmlNode[] = [];
+
+  while (current !== prev) {
+    prev = current;
+    forEachChildNodes<SourceCodeType.LiquidHtml>(
+      current,
+      ancestors.concat(current),
+      (child, lineage) => {
+        if (isCovered(child, cursorPosition) && size(child) <= size(current)) {
+          current = child;
+          ancestors = lineage;
+        }
+      },
+    );
+  }
+
+  return [current, ancestors];
+}
+
+function isCovered(node: LiquidHtmlNode, offset: number): boolean {
+  return node.position.start <= offset && offset <= node.position.end;
+}
+
+function size(node: LiquidHtmlNode): number {
+  return node.position.end - node.position.start;
 }

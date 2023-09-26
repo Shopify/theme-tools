@@ -1,10 +1,9 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
-import { LiquidHtmlNode, Translations } from '@shopify/theme-check-common';
+import { LiquidHtmlNode } from '@shopify/theme-check-common';
 import { Hover, HoverParams } from 'vscode-languageserver';
-import { BaseHoverProvider } from '../BaseHoverProvider';
 import { DocumentManager } from '../../documents';
-
-export type GetTranslationsForURI = (uri: string) => Promise<Translations>;
+import { GetTranslationsForURI, renderTranslation, translationValue } from '../../translations';
+import { BaseHoverProvider } from '../BaseHoverProvider';
 
 export class TranslationHoverProvider implements BaseHoverProvider {
   constructor(
@@ -48,51 +47,4 @@ export class TranslationHoverProvider implements BaseHoverProvider {
       },
     };
   }
-}
-
-type PluralizedTranslation = {
-  one?: string;
-  few?: string;
-  many?: string;
-  two?: string;
-  zero?: string;
-  other?: string;
-};
-
-function translationValue(
-  path: string,
-  translations: Translations,
-): undefined | string | PluralizedTranslation {
-  const parts = path.split('.');
-  let current: Translations | string | undefined = translations;
-  for (const key of parts) {
-    if (!current || typeof current === 'string') {
-      return undefined;
-    }
-    current = current[key];
-  }
-  return current;
-}
-
-function renderKey(
-  translation: PluralizedTranslation,
-  key: keyof PluralizedTranslation,
-): string | undefined {
-  if (translation[key]) {
-    return `\`${key}:\` ${translation[key]}`;
-  }
-}
-
-function renderTranslation(translation: string | PluralizedTranslation) {
-  if (typeof translation === 'string') return translation;
-  return [
-    renderKey(translation, 'zero'),
-    renderKey(translation, 'one'),
-    renderKey(translation, 'two'),
-    renderKey(translation, 'few'),
-    renderKey(translation, 'many'),
-    renderKey(translation, 'other'),
-  ]
-    .filter(Boolean)
-    .join('\n\n---\n\n');
 }
