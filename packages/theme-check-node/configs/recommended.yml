@@ -6,9 +6,6 @@ ignore:
 AssetPreload:
   enabled: true
   severity: 1
-AssetUrlFilters:
-  enabled: true
-  severity: 1
 CdnPreconnect:
   enabled: true
   severity: 0
@@ -53,6 +50,9 @@ PaginationSize:
 ParserBlockingScript:
   enabled: true
   severity: 0
+RemoteAsset:
+  enabled: true
+  severity: 1
 RequiredLayoutThemeObject:
   enabled: true
   severity: 0
