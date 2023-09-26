@@ -1,3 +1,7 @@
 deploy:
   override:
     - yarn publish:vsce
+  variables:
+    - name: npm_config_registry
+      title: "where to get the npm info from"
+      default: "https://registry.npmjs.org"
