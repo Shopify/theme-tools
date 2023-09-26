@@ -1,3 +1,4 @@
+import { expect } from 'vitest';
 import { AsyncExpectationResult, MatcherState, RawMatcherFn } from '@vitest/expect';
 import { HoverParams, MarkupContent } from 'vscode-languageserver-protocol';
 import { HoverProvider } from '../hover';
@@ -52,12 +53,15 @@ export const hover: RawMatcherFn<MatcherState> = async function (
   }
 
   return {
-    pass: equals(result, {
-      contents: {
-        kind: 'markdown',
-        value: expected,
-      },
-    }),
+    pass: equals(
+      result,
+      expect.objectContaining({
+        contents: {
+          kind: 'markdown',
+          value: expected,
+        },
+      }),
+    ),
     message: () =>
       `expected hover to${isNot ? ' not' : ''} match value ${utils.printExpected(
         expected,

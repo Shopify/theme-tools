@@ -1,97 +1,57 @@
-import { CompletionItem, Position } from 'vscode-languageserver';
+import { CompletionItem, Position } from 'vscode-languageserver-protocol';
 import { CompletionsProvider } from '../completions';
+import { expect } from 'vitest';
+import { AsyncExpectationResult, MatcherState, RawMatcherFn } from '@vitest/expect';
 
-declare global {
-  export namespace Chai {
-    interface Assertion {
-      /**
-       * @param source {string} - the source to complete
-       * @param message {CompletionItem[] | string[]} - the list of completion items or labels
-       *
-       * @example
-       * expect(provider).to.complete("{% end", ["endcomment"])
-       */
-      complete(source: string, completionItem: CompletionItem[] | string[]): Promise<void>;
-    }
-  }
+interface CustomMatchers<R = unknown> {
+  /**
+   * @param source {string} - the source to complete
+   * @param completionItem {CompletionItem[] | string[]} - the list of completion items or labels
+   *
+   * @example
+   * expect(provider).to.complete("{% end", ["endcomment"])
+   */
+  complete(source: string, completionItem: Partial<CompletionItem>[] | string[]): Promise<void>;
 }
 
-export const CompletionItemsAssertion = {
-  name: 'complete',
-  fn: async function (this: Chai.AssertionPrototype, ...args: any[]) {
-    const provider: CompletionsProvider = this._obj;
+declare module 'vitest' {
+  interface Assertion<T = any> extends CustomMatchers<T> {}
+  interface AsymmetricMatchersContaining extends CustomMatchers {}
+}
 
-    const context: string = args.at(0);
-    const expected: CompletionItem[] | string[] = args.at(1);
-    const source = createSourceCode(context);
-    const completionParams = createCompletionParams(context);
+export const complete: RawMatcherFn<MatcherState> = async function (
+  this: MatcherState,
+  provider: CompletionsProvider,
+  context: string,
+  expected: any[],
+): AsyncExpectationResult {
+  const { isNot, equals, utils } = this;
+  const source = createSourceCode(context);
+  const completionParams = createCompletionParams(context);
+  provider.documentManager.open(completionParams.textDocument.uri, source, 1);
+  const result = await provider.completions(completionParams);
 
-    provider.documentManager.open(completionParams.textDocument.uri, source, 1);
-
-    const actual = await provider.completions(completionParams);
-
-    const isEmptyListAssertion = expected.length === 0;
-    if (isEmptyListAssertion) {
-      emptyListAssertion(this, actual, expected);
-      return;
-    }
-
-    const isLabelAssertion = typeof expected.at(0) === 'string';
-    if (isLabelAssertion) {
-      labelAssertion(this, actual, expected);
-      return;
-    }
-
-    objectAssertion(this, actual, expected);
-  },
+  return {
+    pass:
+      result.length === expected.length &&
+      expected.every((expectation, i) =>
+        equals(
+          result[i],
+          typeof expectation === 'string'
+            ? expect.objectContaining({
+                label: expectation,
+              })
+            : expectation,
+        ),
+      ),
+    message: () =>
+      `expected hover to${isNot ? ' not' : ''} match value ${utils.printExpected(
+        expected,
+      )}\ncontext:\n${context}`,
+    actual: result,
+    expected: expected,
+  };
 };
-
-function emptyListAssertion(
-  chai: Chai.AssertionPrototype,
-  actual: CompletionItem[],
-  expected: CompletionItem[] | string[],
-) {
-  const actualJson = JSON.stringify(actual, null, 2);
-
-  chai.assert(
-    expected.length === actual.length,
-    `expected ${actualJson} to be empty`,
-    `expected ${actualJson} to not be empty`,
-    expected,
-    actual,
-    false, // show diff
-  );
-}
-
-function labelAssertion(
-  chai: Chai.AssertionPrototype,
-  actual: CompletionItem[],
-  expectedLabels: CompletionItem[] | string[],
-) {
-  objectAssertion(
-    chai,
-    actual.map((e) => e.label),
-    expectedLabels,
-  );
-}
-
-function objectAssertion(
-  chai: Chai.AssertionPrototype,
-  actual: CompletionItem[] | string[],
-  expected: CompletionItem[] | string[],
-) {
-  const actualJson = JSON.stringify(actual, null, 2);
-  const expectedJson = JSON.stringify(expected, null, 2);
-
-  chai.assert(
-    actualJson === expectedJson,
-    `expected ${actualJson} to be ${expectedJson}`,
-    `expected ${actualJson} to not be ${expectedJson}`,
-    expectedJson,
-    actualJson,
-    false, // show diff
-  );
-}
 
 function createSourceCode(context: string) {
   const regex = new RegExp('█', 'g');

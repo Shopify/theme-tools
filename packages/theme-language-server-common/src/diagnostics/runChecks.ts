@@ -3,7 +3,7 @@ import { check } from '@shopify/theme-check-common';
 import { Dependencies } from '../types';
 import { DocumentManager } from '../documents';
 import { DiagnosticsManager } from './DiagnosticsManager';
-import { useBufferOrInjectedTranslations } from './useBufferOrInjectedTranslations';
+import { useBufferOrInjectedTranslations } from '../translations';
 
 export function makeRunChecks(
   documentManager: DocumentManager,

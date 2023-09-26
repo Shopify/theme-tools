@@ -1,8 +1,8 @@
-import { LiquidHtmlNode, SourceCodeType, ThemeDocset } from '@shopify/theme-check-common';
+import { SourceCodeType, ThemeDocset } from '@shopify/theme-check-common';
 import { Hover, HoverParams } from 'vscode-languageserver';
 import { TypeSystem } from '../TypeSystem';
 import { DocumentManager } from '../documents';
-import { forEachChildNodes } from '../visitor';
+import { GetTranslationsForURI } from '../translations';
 import { BaseHoverProvider } from './BaseHoverProvider';
 import {
   HtmlAttributeHoverProvider,
@@ -11,13 +11,19 @@ import {
   LiquidObjectAttributeHoverProvider,
   LiquidObjectHoverProvider,
   LiquidTagHoverProvider,
+  TranslationHoverProvider,
 } from './providers';
 import { HtmlAttributeValueHoverProvider } from './providers/HtmlAttributeValueHoverProvider';
+import { findCurrentNode } from '../visitor';
 
 export class HoverProvider {
   private providers: BaseHoverProvider[] = [];
 
-  constructor(readonly documentManager: DocumentManager, readonly themeDocset: ThemeDocset) {
+  constructor(
+    readonly documentManager: DocumentManager,
+    readonly themeDocset: ThemeDocset,
+    readonly getTranslationsForURI: GetTranslationsForURI = async () => ({}),
+  ) {
     const typeSystem = new TypeSystem(themeDocset);
     this.providers = [
       new LiquidTagHoverProvider(themeDocset),
@@ -27,6 +33,7 @@ export class HoverProvider {
       new HtmlTagHoverProvider(),
       new HtmlAttributeHoverProvider(),
       new HtmlAttributeValueHoverProvider(),
+      new TranslationHoverProvider(getTranslationsForURI, documentManager),
     ];
   }
 
@@ -44,41 +51,8 @@ export class HoverProvider {
       document.textDocument.offsetAt(params.position),
     );
 
-    const promises = this.providers.map((p) => p.hover(currentNode, ancestors));
+    const promises = this.providers.map((p) => p.hover(currentNode, ancestors, params));
     const results = await Promise.all(promises);
     return results.find(Boolean) ?? null;
   }
-}
-
-function findCurrentNode(
-  ast: LiquidHtmlNode,
-  cursorPosition: number,
-): [node: LiquidHtmlNode, ancestors: LiquidHtmlNode[]] {
-  let prev: LiquidHtmlNode | undefined;
-  let current: LiquidHtmlNode = ast;
-  let ancestors: LiquidHtmlNode[] = [];
-
-  while (current !== prev) {
-    prev = current;
-    forEachChildNodes<SourceCodeType.LiquidHtml>(
-      current,
-      ancestors.concat(current),
-      (child, lineage) => {
-        if (isCovered(child, cursorPosition) && size(child) <= size(current)) {
-          current = child;
-          ancestors = lineage;
-        }
-      },
-    );
-  }
-
-  return [current, ancestors];
-}
-
-function isCovered(node: LiquidHtmlNode, offset: number): boolean {
-  return node.position.start <= offset && offset <= node.position.end;
-}
-
-function size(node: LiquidHtmlNode): number {
-  return node.position.end - node.position.start;
 }

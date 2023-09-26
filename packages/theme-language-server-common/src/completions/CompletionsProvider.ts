@@ -11,8 +11,10 @@ import {
   LiquidTagsCompletionProvider,
   ObjectAttributeCompletionProvider,
   ObjectCompletionProvider,
+  TranslationCompletionProvider,
   Provider,
 } from './providers';
+import { GetTranslationsForURI } from '../translations';
 
 export class CompletionsProvider {
   private providers: Provider[] = [];
@@ -20,6 +22,7 @@ export class CompletionsProvider {
   constructor(
     readonly documentManager: DocumentManager,
     readonly themeDocset: ThemeDocset,
+    readonly getTranslationsForURI: GetTranslationsForURI = async () => ({}),
     readonly log: (message: string) => void = (_m: string) => {},
   ) {
     const typeSystem = new TypeSystem(themeDocset);
@@ -32,7 +35,7 @@ export class CompletionsProvider {
       new ObjectCompletionProvider(themeDocset),
       new ObjectAttributeCompletionProvider(typeSystem),
       new FilterCompletionProvider(typeSystem),
-      // new AssignmentsCompletionProvider(themeDocset),
+      new TranslationCompletionProvider(documentManager, getTranslationsForURI),
       // new RenderSnippetCompletionProvider(themeDocset),
     ];
   }
