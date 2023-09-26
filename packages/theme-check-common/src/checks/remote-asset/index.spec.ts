@@ -1,19 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import { runLiquidCheck, highlightedOffenses } from '../../test';
-import { AssetUrlFilters } from './index';
+import { RemoteAsset } from './index';
 
-describe('Module: AssetUrlFilters', () => {
+describe('Module: RemoteAsset', () => {
   it('should report an offense when asset_url or img_url filters are not used', async () => {
     const sourceCode = `
       <img src="{{ 'image.png' }}" />
       <link href="{{ 'style.css' }}" />
       <script src="{{ 'script.js' }}" defer="defer"></script>
       {{ url | img_tag }}
-      {{ "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" | stylesheet_tag }}
       `;
 
-    const offenses = await runLiquidCheck(AssetUrlFilters, sourceCode);
-    expect(offenses).to.have.length(5);
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
+    expect(offenses).to.have.length(4);
 
     const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
     expect(highlights).to.eql([
@@ -21,7 +20,6 @@ describe('Module: AssetUrlFilters', () => {
       'href="{{ \'style.css\' }}"',
       'src="{{ \'script.js\' }}"',
       'url | img_tag',
-      '"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" | stylesheet_tag',
     ]);
   });
 
@@ -35,7 +33,7 @@ describe('Module: AssetUrlFilters', () => {
       {{ product | image_url: width: 450 | img_tag }}
     `;
 
-    const offenses = await runLiquidCheck(AssetUrlFilters, sourceCode);
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
     expect(offenses).to.be.empty;
     const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
     expect(highlights).to.be.empty;
@@ -55,7 +53,7 @@ describe('Module: AssetUrlFilters', () => {
       <embed type="video/webm" src="https://google.com/..." width="250" height="200">
     `;
 
-    const offenses = await runLiquidCheck(AssetUrlFilters, sourceCode);
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
     expect(offenses).to.be.empty;
   });
 
@@ -66,7 +64,7 @@ describe('Module: AssetUrlFilters', () => {
       <script src="{{ 'script.js' | img_url | asset_url}}" defer="defer"></script>
     `;
 
-    const offenses = await runLiquidCheck(AssetUrlFilters, sourceCode);
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
     expect(offenses).to.be.empty;
     const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
     expect(highlights).to.be.empty;
@@ -78,7 +76,7 @@ describe('Module: AssetUrlFilters', () => {
       <a href="{{ 'page.html' }}">Link</a>
     `;
 
-    const offenses = await runLiquidCheck(AssetUrlFilters, sourceCode);
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
     expect(offenses).to.be.empty;
     const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
     expect(highlights).to.be.empty;
@@ -92,7 +90,7 @@ describe('Module: AssetUrlFilters', () => {
     {{ 'image.png' | img_url }}
     `;
 
-    const offenses = await runLiquidCheck(AssetUrlFilters, sourceCode);
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
     expect(offenses).to.be.empty;
     const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
     expect(highlights).to.be.empty;
@@ -108,7 +106,7 @@ describe('Module: AssetUrlFilters', () => {
     {{ 'red-and-black-bramble-berries.jpg' | asset_img_url }}
     `;
 
-    const offenses = await runLiquidCheck(AssetUrlFilters, sourceCode);
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
     expect(offenses).to.be.empty;
     const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
     expect(highlights).to.be.empty;
@@ -117,12 +115,12 @@ describe('Module: AssetUrlFilters', () => {
   it('should report the correct message and index for a single offense', async () => {
     const sourceCode = `<img src="{{ 'image.png' }}" />`;
 
-    const offenses = await runLiquidCheck(AssetUrlFilters, sourceCode);
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
     expect(offenses).to.have.length(1);
 
     const offense = offenses[0];
     expect(offense.message).to.equal(
-      'Use one of the asset_url filters to serve assets for better performance',
+      'Use one of the asset_url filters to serve assets for better performance.',
     );
     expect(offense.start.index).to.equal(5);
     expect(offense.end.index).to.equal(28);
@@ -136,7 +134,77 @@ describe('Module: AssetUrlFilters', () => {
     <link href={{ canonical_url }}
     {{ 'example.js' | canonical_url }}`;
 
-    const offenses = await runLiquidCheck(AssetUrlFilters, sourceCode);
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
+    expect(offenses).to.be.empty;
+    const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
+    expect(highlights).to.be.empty;
+  });
+
+  it('should report an offense for scripts from remote domains', async () => {
+    const sourceCode = `<script src="https://example.com/jquery.js" defer></script>`;
+
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
+    expect(offenses).to.have.length(1);
+    expect(offenses[0].message).to.equal(
+      'Asset should be served by the Shopify CDN for better performance.',
+    );
+  });
+
+  it('should report an offense for remote stylesheets', async () => {
+    const sourceCode = `
+      <link href="https://example.com/bootstrap.css" rel="stylesheet">
+      <link href="{{ "https://example.com/bootstrap.css" | replace: 'bootstrap', 'tailwind' }}" rel="stylesheet">
+      <link href=“https://thisisbad.com/styles.css“>
+      `;
+
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
+
+    expect(offenses).to.have.length(3);
+    offenses.forEach((offense) => {
+      expect(offense.message).to.equal(
+        'Asset should be served by the Shopify CDN for better performance.',
+      );
+    });
+  });
+
+  it('should report an offense when a non shopify cdn is used as a liquid filter and when a asset_url filter is not used.', async () => {
+    const sourceCode = `
+    {{ "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" | stylesheet_tag }}
+    `;
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
+    expect(offenses).to.have.length(2);
+
+    expect(offenses[0].message).to.equal(
+      'Asset should be served by the Shopify CDN for better performance.',
+    );
+
+    expect(offenses[1].message).to.equal(
+      'Use one of the asset_url filters to serve assets for better performance.',
+    );
+  });
+
+  it('should report an offense for image drops without img_url filter', async () => {
+    const sourceCode = `
+      <img src="{{ image }}">
+      <img src="{{ image.src }}">
+    `;
+
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
+    expect(offenses).to.have.length(2);
+    offenses.forEach((offense) => {
+      expect(offense.message).to.equal(
+        'Use one of the asset_url filters to serve assets for better performance.',
+      );
+    });
+  });
+
+  it('should not report an offence if url is a shopify CDN', async () => {
+    const sourceCode = `
+    <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
+    <link id="ModelViewerStyle" rel="stylesheet" href="https://cdn.shopify.com/shopifycloud/model-viewer-ui/assets/v1.0/model-viewer-ui.css" media="print" onload="this.media='all'">
+    `;
+
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
     expect(offenses).to.be.empty;
     const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
     expect(highlights).to.be.empty;

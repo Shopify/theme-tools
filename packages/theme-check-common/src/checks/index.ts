@@ -6,7 +6,7 @@ import {
 
 import { AppBlockValidTags } from './app-block-valid-tags';
 import { AssetPreload } from './asset-preload';
-import { AssetUrlFilters } from './asset-url-filters';
+import { RemoteAsset } from './remote-asset';
 import { CdnPreconnect } from './cdn-preconnect';
 import { DeprecateBgsizes } from './deprecate-bgsizes';
 import { DeprecateLazysizes } from './deprecate-lazysizes';
@@ -40,12 +40,11 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AssetSizeAppBlockJavaScript,
   AssetSizeCSS,
   AssetSizeJavaScript,
-  AssetUrlFilters,
   CdnPreconnect,
   ContentForHeaderModification,
+  DeprecateBgsizes,
   DeprecatedFilters,
   DeprecatedTags,
-  DeprecateBgsizes,
   DeprecateLazysizes,
   ImgWidthAndHeight,
   JSONSyntaxError,
@@ -55,10 +54,11 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   MissingTemplate,
   PaginationSize,
   ParserBlockingScript,
+  RemoteAsset,
   RequiredLayoutThemeObject,
   TranslationKeyExists,
-  UnknownFilter,
   UndefinedObject,
+  UnknownFilter,
   UnusedAssign,
   ValidHTMLTranslation,
   ValidSchema,
