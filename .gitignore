@@ -17,3 +17,4 @@ tsconfig.builinfo
 tsconfig.tsbuildinfo
 yarn-error.log
 package-lock.json
+.npmrc

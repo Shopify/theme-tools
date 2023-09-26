@@ -50,6 +50,7 @@
     "postpublish:vsce": "rm -rf node_modules && yarn",
     "prebuild": "rimraf dist language-configuration.json",
     "preinstall": "sh scripts/fetch-syntaxes.sh",
+    "preprepublish:vsce": "scripts/public-registry.sh",
     "prepublish:vsce": "npm install --workspaces=false && yarn build",
     "pretest": "yarn run test:build && yarn run dev:build && yarn run lint",
     "publish:vsce": "vsce publish --no-yarn $npm_package_version",
