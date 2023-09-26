@@ -1,5 +1,12 @@
 # @shopify/theme-language-server-common
 
+## 1.1.0
+
+### Minor Changes
+
+- 7457f2c: Add `TranslationCompletionProvider`
+- 7457f2c: Add `TranslationHoverProvider`
+
 ## 1.0.2
 
 ## 1.0.1
