@@ -31,6 +31,7 @@ import { AssetSizeCSS } from './asset-size-css';
 import { DeprecatedFilters } from './deprecated-filters';
 import { DeprecatedTags } from './deprecated-tags';
 import { AssetSizeJavaScript } from './asset-size-javascript';
+import { UndefinedObject } from './undefined-object';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -57,6 +58,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   RequiredLayoutThemeObject,
   TranslationKeyExists,
   UnknownFilter,
+  UndefinedObject,
   UnusedAssign,
   ValidHTMLTranslation,
   ValidSchema,
