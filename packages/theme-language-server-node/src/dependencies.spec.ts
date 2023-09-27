@@ -1,11 +1,12 @@
 import { expect, describe, it, beforeAll, afterAll } from 'vitest';
 import {
   fileExists,
+  fileSize,
+  filesForURI,
   findRootURI,
   getDefaultLocaleFactory,
   getDefaultTranslationsFactory,
   loadConfig,
-  fileSize,
 } from './dependencies';
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
@@ -56,6 +57,9 @@ describe('Module: dependencies', () => {
         src: {
           '.theme-check.yml': '',
           ...theme,
+          layout: {
+            'theme.liquid': '',
+          },
         },
       },
       frenchDefault: {
@@ -88,6 +92,25 @@ describe('Module: dependencies', () => {
       );
       expect(await findRootURI(workspace.uri('multiRootTheme/src/snippets/header.liquid'))).to.eql(
         workspace.uri('multiRootTheme/src'),
+      );
+    });
+  });
+
+  describe('Unit: filesForURI', () => {
+    it('should return files in the format I expect them (even on windows)', async () => {
+      expect(await filesForURI(workspace.uri('gitRootTheme/snippets/header.liquid'))).to.eql([
+        'locales/en.default.json',
+        'locales/fr.json',
+        'snippets/header.liquid',
+      ]);
+      expect(await filesForURI(workspace.uri('multiRootTheme/src/snippets/header.liquid'))).to.eql([
+        'layout/theme.liquid',
+        'locales/en.default.json',
+        'locales/fr.json',
+        'snippets/header.liquid',
+      ]);
+      expect(await filesForURI(workspace.uri('multiRootTheme/dist/snippets/header.liquid'))).to.eql(
+        ['locales/en.default.json', 'locales/fr.json', 'snippets/header.liquid'],
       );
     });
   });

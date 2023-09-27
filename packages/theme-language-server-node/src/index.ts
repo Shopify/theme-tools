@@ -5,6 +5,7 @@ import { createConnection } from 'vscode-languageserver/node';
 import {
   fileExists,
   fileSize,
+  filesForURI,
   findRootURI,
   getDefaultLocaleFactory,
   getDefaultTranslationsFactory,
@@ -24,6 +25,7 @@ export function startServer() {
     findRootURI,
     fileExists,
     fileSize,
+    filesForURI,
     loadConfig,
     themeDocset: themeLiquidDocsManager,
     schemaValidators: themeLiquidDocsManager,

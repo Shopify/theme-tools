@@ -2,8 +2,12 @@ import { Dependencies } from '@shopify/theme-language-server-common';
 import { URI, Utils } from 'vscode-uri';
 import { basename } from 'node:path';
 import * as fs from 'node:fs/promises';
+import { promisify } from 'node:util';
+import { glob as callbackGlob } from 'glob';
 import { Config, Translations } from '@shopify/theme-check-common';
 import { loadConfig as loadConfigFromPath } from '@shopify/theme-check-node';
+
+const glob = promisify(callbackGlob);
 
 function parse(uri: string): URI {
   return URI.parse(uri);
@@ -46,6 +50,14 @@ async function findRoot(curr: URI): Promise<URI> {
 
   return findRoot(dirURI);
 }
+
+export const filesForURI: NonNullable<Dependencies['filesForURI']> = async function filesForURI(
+  uriString,
+) {
+  const config = await loadConfig(uriString);
+  const rootPath = asFsPath(config.root);
+  return glob(`**/*.{liquid,json}`, { cwd: rootPath, ignore: 'node_modules/**' });
+};
 
 export const findRootURI: Dependencies['findRootURI'] = async function findRootURI(uriString) {
   const uri = parse(uriString);

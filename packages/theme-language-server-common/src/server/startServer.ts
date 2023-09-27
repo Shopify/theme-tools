@@ -20,6 +20,7 @@ import { Commands, ExecuteCommandProvider } from '../commands';
 import { ClientCapabilities } from '../ClientCapabilities';
 import { AugmentedThemeDocset } from '../docset';
 import { GetTranslationsForURI, useBufferOrInjectedTranslations } from '../translations';
+import { GetSnippetNamesForURI } from '../completions/providers/RenderSnippetCompletionProvider';
 
 const defaultLogger = () => {};
 
@@ -38,6 +39,7 @@ export function startServer(
   {
     fileExists,
     fileSize,
+    filesForURI,
     findRootURI,
     getDefaultLocaleFactory,
     getDefaultTranslationsFactory,
@@ -66,16 +68,31 @@ export function startServer(
     }),
     100,
   );
+
   const getTranslationsForURI: GetTranslationsForURI = async (uri) => {
     const rootURI = await findRootURI(uri);
     const theme = documentManager.theme(rootURI);
     return useBufferOrInjectedTranslations(getDefaultTranslationsFactory, theme, rootURI);
   };
 
+  const getSnippetNamesForURI: GetSnippetNamesForURI = async (uri: string) => {
+    if (!filesForURI) return [];
+    const files = await filesForURI(uri);
+    return files
+      .filter((x) => x.startsWith('snippets'))
+      .map((x) =>
+        x
+          .replace(/\\/g, '/')
+          .replace(/^snippets\//, '')
+          .replace(/\..*$/, ''),
+      );
+  };
+
   const completionsProvider = new CompletionsProvider(
     documentManager,
     themeDocset,
     getTranslationsForURI,
+    getSnippetNamesForURI,
     log,
   );
   const hoverProvider = new HoverProvider(documentManager, themeDocset, getTranslationsForURI);
