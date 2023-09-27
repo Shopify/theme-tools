@@ -94,6 +94,17 @@ export interface RequiredDependencies {
    */
   getDefaultLocaleFactory(rootURI: URI): ThemeCheckDependencies['getDefaultLocale'];
 
+  /**
+   * filesForURI(uri: URI)
+   *
+   * Returns all the Liquid and JSON files as an array.
+   *
+   * Assumes an array of relative paths from root.
+   *
+   * Optional, used for snippet completion.
+   */
+  filesForURI?(uri: URI): Promise<string[]>;
+
   fileExists: ThemeCheckDependencies['fileExists'];
 
   fileSize: ThemeCheckDependencies['fileSize'];

@@ -12,9 +12,11 @@ import {
   ObjectAttributeCompletionProvider,
   ObjectCompletionProvider,
   TranslationCompletionProvider,
+  RenderSnippetCompletionProvider,
   Provider,
 } from './providers';
 import { GetTranslationsForURI } from '../translations';
+import { GetSnippetNamesForURI } from './providers/RenderSnippetCompletionProvider';
 
 export class CompletionsProvider {
   private providers: Provider[] = [];
@@ -23,6 +25,7 @@ export class CompletionsProvider {
     readonly documentManager: DocumentManager,
     readonly themeDocset: ThemeDocset,
     readonly getTranslationsForURI: GetTranslationsForURI = async () => ({}),
+    readonly getSnippetNamesForURI: GetSnippetNamesForURI = async () => [],
     readonly log: (message: string) => void = (_m: string) => {},
   ) {
     const typeSystem = new TypeSystem(themeDocset);
@@ -36,7 +39,7 @@ export class CompletionsProvider {
       new ObjectAttributeCompletionProvider(typeSystem),
       new FilterCompletionProvider(typeSystem),
       new TranslationCompletionProvider(documentManager, getTranslationsForURI),
-      // new RenderSnippetCompletionProvider(themeDocset),
+      new RenderSnippetCompletionProvider(getSnippetNamesForURI),
     ];
   }
 

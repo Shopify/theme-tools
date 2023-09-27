@@ -1,22 +1,14 @@
-import {
-  BLOCKS,
-  LiquidHtmlNode,
-  LiquidTag,
-  NodeTypes,
-  RAW_TAGS,
-} from '@shopify/liquid-html-parser';
-import { ThemeDocset, Translations } from '@shopify/theme-check-common';
+import { LiquidHtmlNode, NodeTypes } from '@shopify/liquid-html-parser';
+import { Translations } from '@shopify/theme-check-common';
 import { CompletionItem, CompletionItemKind, Range, TextEdit } from 'vscode-languageserver';
-import { findLast } from '../../utils';
-import { CURSOR, LiquidCompletionParams } from '../params';
-import { Provider, createCompletionItem, sortByName } from './common';
+import { LiquidCompletionParams } from '../params';
+import { Provider } from './common';
 import { DocumentManager } from '../../documents';
 import {
   GetTranslationsForURI,
   PluralizedTranslation,
   PluralizedTranslationKeys,
   renderTranslation,
-  translationValue,
 } from '../../translations';
 import { findCurrentNode } from '../../visitor';
 
