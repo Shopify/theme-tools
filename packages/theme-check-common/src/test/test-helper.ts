@@ -121,7 +121,7 @@ export async function check(
         ];
       },
       async objects() {
-        return [];
+        return [{ name: 'product' }, { name: 'collections' }];
       },
       async tags() {
         return [];

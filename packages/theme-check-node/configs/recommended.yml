@@ -59,6 +59,9 @@ RequiredLayoutThemeObject:
 TranslationKeyExists:
   enabled: true
   severity: 0
+UndefinedObject:
+  enabled: true
+  severity: 1
 UnknownFilter:
   enabled: true
   severity: 0
