@@ -1,5 +1,12 @@
 # @shopify/theme-check-common
 
+## 1.14.0
+
+### Minor Changes
+
+- beeb85f: Introduce 'UndefinedObject' check
+- a05aebb: Add `AssetSizeJavascript` check
+
 ## 1.13.1
 
 ### Patch Changes

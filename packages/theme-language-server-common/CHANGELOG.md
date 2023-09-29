@@ -1,5 +1,17 @@
 # @shopify/theme-language-server-common
 
+## 1.2.0
+
+### Minor Changes
+
+- 380b273: Add `RenderSnippetCompletionProvider`
+
+### Patch Changes
+
+- Updated dependencies [beeb85f]
+- Updated dependencies [a05aebb]
+  - @shopify/theme-check-common@1.14.0
+
 ## 1.1.0
 
 ### Minor Changes
