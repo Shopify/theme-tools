@@ -44,6 +44,7 @@ export default class LiquidFormatter {
 }
 
 async function toTextEdit(textDocument: TextDocument): Promise<TextEdit> {
+  prettier.clearConfigCache();
   const options = await prettier.resolveConfig(textDocument.uri.fsPath);
   const text = textDocument.getText();
   const formatted = prettier.format(text, {
