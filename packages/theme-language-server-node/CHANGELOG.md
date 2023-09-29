@@ -1,5 +1,17 @@
 # @shopify/theme-language-server-node
 
+## 1.2.0
+
+### Patch Changes
+
+- 380b273: Inject `filesForURI` dependency and add `glob` dependency
+- Updated dependencies [beeb85f]
+- Updated dependencies [a05aebb]
+- Updated dependencies [380b273]
+  - @shopify/theme-language-server-common@1.2.0
+  - @shopify/theme-check-node@1.14.0
+  - @shopify/theme-check-docs-updater@1.14.0
+
 ## 1.1.0
 
 ### Patch Changes
