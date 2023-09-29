@@ -24,7 +24,6 @@
     "format": "prettier --write \"packages/*/src/**/*.ts\"",
     "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
     "prebuild:ts": "rm -rf packages/*/dist",
-    "prepublish:vsce": "yarn build",
     "publish:vsce": "yarn --cwd packages/vscode-extension publish:vsce",
     "release": "yarn workspace release-orchestrator run start",
     "reset": "find . -name \"node_modules\" -type d -prune -exec rm -rf '{}' +",
