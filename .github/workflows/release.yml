@@ -41,7 +41,7 @@ jobs:
         run: yarn changeset publish
 
       - name: Push tags
-        run: git push --follow-tags
+        run: git push --tags
 
       - name: VS Code Marketplace publish
         run: yarn publish:vsce
