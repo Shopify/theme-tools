@@ -10,7 +10,7 @@ import {
   NodeTypes,
   Position,
 } from '@shopify/liquid-html-parser';
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
+import { LiquidCheckDefinition, Severity, SourceCodeType, ThemeDocset } from '../../types';
 import { last } from '../../utils';
 
 type Scope = { start?: number; end?: number };
@@ -54,7 +54,6 @@ export const UndefinedObject: LiquidCheckDefinition = {
         if (isLiquidTagAssign(node)) {
           indexVariableScope(node.markup.name, {
             start: node.blockStartPosition.end,
-            end: node.blockEndPosition?.start,
           });
         }
 
@@ -82,7 +81,8 @@ export const UndefinedObject: LiquidCheckDefinition = {
 
       async onCodePathEnd() {
         if (context.themeDocset) {
-          const objects = await context.themeDocset.objects();
+          const objects = await globalObjects(context.themeDocset);
+
           objects.forEach((obj) => variableScopes.set(obj.name, []));
         }
 
@@ -103,6 +103,16 @@ export const UndefinedObject: LiquidCheckDefinition = {
   },
 };
 
+async function globalObjects(themeDocset: ThemeDocset) {
+  const objects = await themeDocset.objects();
+
+  const globalObjects = objects.filter(({ access }) => {
+    return !access || access.global === true || access.template.length > 0;
+  });
+
+  return globalObjects;
+}
+
 function isDefined(
   variableName: string,
   variablePosition: Position,
@@ -115,12 +125,12 @@ function isDefined(
   if (!scopes) return false;
 
   /**
-   * If there are no scopes, the variable is globally defined.
+   * If there are zero scopes, the variable is globally defined.
    */
   if (scopes.length === 0) return true;
 
   /**
-   * Checks if a variable is defined within any of the given scopes.
+   * Checks if a variable is defined within any of the scopes.
    */
   return scopes.some((scope) => isDefinedInScope(variablePosition, scope));
 }

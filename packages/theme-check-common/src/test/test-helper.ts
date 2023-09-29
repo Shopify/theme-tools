@@ -121,7 +121,27 @@ export async function check(
         ];
       },
       async objects() {
-        return [{ name: 'product' }, { name: 'collections' }];
+        return [
+          {
+            name: 'collections',
+          },
+          {
+            name: 'product',
+            access: {
+              global: false,
+              parents: [],
+              template: ['product'],
+            },
+          },
+          {
+            name: 'image',
+            access: {
+              global: false,
+              parents: [],
+              template: [],
+            },
+          },
+        ];
       },
       async tags() {
         return [];
