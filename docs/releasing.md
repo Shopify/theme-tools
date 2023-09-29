@@ -16,15 +16,25 @@
    ```
 
 ## Releasing new package versions
-Before doing this flow, please ensure you are on the `main` branch and have no untracked changes present locally.
 
-    ```bash
-    yarn release
-    ```
-Once the PR is approved, please do the following:
- - Merge with the '**Create a merge commit**' option. This will ensure that the git tags correspond to the release commit hash.
- - Delete the release branch after the merge is complete.
- - Deploy the updated packages on ShipIt: https://shipit.shopify.io/shopify/theme-tools/production
+1. Start on main.
+
+   ```bash
+   git fetch origin main
+   git checkout main
+   git reset --hard origin/main
+   ```
+
+2. Run the release script.
+
+   ```sh
+   yarn release
+   ```
+
+3. Create a PR as per script says.
+4. Merge said PR.
+5. Run the [release GitHub workflow](https://github.com/Shopify/theme-tools/actions/workflows/release.yml) (requires manual dispatch).
+6. Done!
 
 ## Release Orchestrator FAQ
 ### What does this project do?

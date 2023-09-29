@@ -62,7 +62,7 @@ describe('buildReleasePipeline', () => {
     (getCurrentDateFormatted as Mock).mockReturnValueOnce('2022-01-01');
     const pipeline = buildReleasePipeline([]);
 
-    expect(pipeline).toHaveLength(12);
+    expect(pipeline).toHaveLength(11);
     expect(pipeline[0]).toBe(sanityCheck(false));
     expect(pipeline[1]).toBe(initialMessaging);
     expect(pipeline[2]).toBe(gitChangeBranch('release/2022-01-01'));
@@ -72,9 +72,8 @@ describe('buildReleasePipeline', () => {
     expect(pipeline[6]).toBeInstanceOf(Function); // setChangesetStatus
     expect(pipeline[7]).toBe(changesetVersion);
     expect(pipeline[8]).toBeInstanceOf(Function); // commitPackageVersionBumps
-    expect(pipeline[9]).toBe(changesetTag);
-    expect(pipeline[10]).toBe(gitPushBranch('release/2022-01-01'));
-    expect(pipeline[11]).toBeInstanceOf(Function); // finalMessaging
+    expect(pipeline[9]).toBe(gitPushBranch('release/2022-01-01'));
+    expect(pipeline[10]).toBeInstanceOf(Function); // finalMessaging
   });
 
   it('should skip sanity checks if --no-sanity flag is present', () => {

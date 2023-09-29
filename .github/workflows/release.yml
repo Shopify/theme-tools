@@ -1,37 +1,41 @@
 name: Release Workflow
 
-on:
-  pull_request:
-    types: [closed]
+on: workflow_dispatch
+
+env:
+  VSCE_PAT: ${{ secrets.VSCE_PAT }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   publish-packages:
     runs-on: ubuntu-latest
 
-    # This workflow only runs when a release pull request is merged into main
-    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/') && github.base_ref == 'main'
     steps:
-      - name: Placeholder
-        run: |
-          echo "This is a placeholder workflow. Once we open source the project, we can enable the workflow below."
-          echo "For more details, please refer to https://github.com/Shopify/theme-tools/issues/46"
-      # - uses: actions/checkout@v3
-      #   with:
-      #     submodules: true
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
 
-      # - name: Setup Node.js
-      #   uses: actions/setup-node@v2
-      #   with:
-      #     node-version: 16
-      #     cache: 'yarn'
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "yarn"
 
-      # - name: Install the packages
-      #   run: yarn install --frozen-lockfile --ignore-engines
+      - name: Install the packages
+        run: yarn install --frozen-lockfile --ignore-engines
 
-      # - name: Build the code
-      #   run: yarn build:ci
-      #   env:
-      #     NODE_ENV: production
+      - name: Build the code
+        run: yarn build:ci
+        env:
+          NODE_ENV: production
 
-      # - name: Publish packages
-      #   run: yarn changeset publish
+      - name: NPM publish
+        run: yarn changeset publish
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Push tags
+        run: git push --follow-tags
+
+      - name: VS Code Marketplace publish
+        run: yarn publish:vsce
