@@ -1,5 +1,11 @@
 ## theme-check-vscode
 
+## 1.11.5
+
+### Patch Changes
+
+- bcaf65c: Fixup prettier loadConfig cache problem
+
 ## 1.11.4
 
 ### Patch Changes
