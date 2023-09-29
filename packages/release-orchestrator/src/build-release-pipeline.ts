@@ -1,5 +1,5 @@
 import { buildPackageJsonMap } from './build-package-json-map';
-import { changesetStatus, changesetTag, changesetVersion } from './changeset';
+import { changesetStatus, changesetVersion } from './changeset';
 import { commitPackageVersionBumps } from './commit-package-version-changes';
 import { getCurrentDateFormatted } from './get-current-date-formatted';
 import { gitChangeBranch } from './git-change-branch';
@@ -62,7 +62,6 @@ export const buildReleasePipeline = (args: string[]) => {
     setChangesetStatus,
     changesetVersion,
     commitPackageVersionBumps(statusProperty),
-    changesetTag,
     pushReleaseBranch,
     finalMessaging(releaseBranchName, statusProperty),
   ] as StageFunction[];

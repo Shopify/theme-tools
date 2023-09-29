@@ -1,5 +1,0 @@
-deploy:
-  override:
-    - yarn install
-    - yarn build
-    - yarn publish:vsce
