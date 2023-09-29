@@ -1,5 +1,17 @@
 # @shopify/theme-check-browser
 
+## 1.14.0
+
+### Minor Changes
+
+- a05aebb: Add `AssetSizeJavascript` check
+
+### Patch Changes
+
+- Updated dependencies [beeb85f]
+- Updated dependencies [a05aebb]
+  - @shopify/theme-check-common@1.14.0
+
 ## 1.13.1
 
 ### Patch Changes
