@@ -4,7 +4,9 @@ on: workflow_dispatch
 
 env:
   VSCE_PAT: ${{ secrets.VSCE_PAT }}
+  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  npm_config_registry: "https://registry.npmjs.org"
 
 jobs:
   publish-packages:
@@ -29,10 +31,14 @@ jobs:
         env:
           NODE_ENV: production
 
+      - name: Creating .npmrc
+        run: |
+          cat << EOF > "$HOME/.npmrc"
+            //registry.npmjs.org/:_authToken=$NPM_TOKEN
+          EOF
+
       - name: NPM publish
         run: yarn changeset publish
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Push tags
         run: git push --follow-tags
