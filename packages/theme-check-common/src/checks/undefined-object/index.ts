@@ -46,9 +46,7 @@ export const UndefinedObject: LiquidCheckDefinition = {
       if (!variableName) return;
 
       const indexedScope = variableScopes.get(variableName) ?? [];
-      const currentScope = [...indexedScope, scope];
-
-      variableScopes.set(variableName, currentScope);
+      variableScopes.set(variableName, indexedScope.concat(scope));
     }
 
     return {
