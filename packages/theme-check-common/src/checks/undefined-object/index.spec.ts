@@ -202,4 +202,15 @@ describe('Module: UndefinedObject', () => {
 
     expect(offenses).toHaveLength(0);
   });
+
+  it('should report an offense when object is not global', async () => {
+    const sourceCode = `
+      {{ image }}
+    `;
+
+    const offenses = await runLiquidCheck(UndefinedObject, sourceCode);
+
+    expect(offenses).toHaveLength(1);
+    expect(offenses.map((e) => e.message)).toEqual(["Unknown object 'image' used."]);
+  });
 });
