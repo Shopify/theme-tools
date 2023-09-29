@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
-        node-version: [16.x, 18.x, 20.x]
+        node-version: [16, 18, 20]
 
     name: OS ${{ matrix.os }} / NodeJS ${{ matrix.node-version }}
 
@@ -20,7 +20,7 @@ jobs:
           submodules: true
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
