@@ -25,7 +25,7 @@ jobs:
         run: yarn install --frozen-lockfile --ignore-engines
 
       - name: Build the code
-        run: yarn build:ci
+        run: yarn build
         env:
           NODE_ENV: production
 
