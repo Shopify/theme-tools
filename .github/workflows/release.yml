@@ -47,4 +47,4 @@ jobs:
         run: yarn changeset tag
 
       - name: Push tags
-        run: git push --tags
+        run: git push origin --tags
