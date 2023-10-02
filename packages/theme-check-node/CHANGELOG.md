@@ -1,5 +1,13 @@
 # @shopify/theme-check-node
 
+## 1.14.1
+
+### Patch Changes
+
+- b7514f4: Fixup UndefinedObject for sections
+- Updated dependencies [b7514f4]
+  - @shopify/theme-check-common@1.14.1
+
 ## 1.14.0
 
 ### Minor Changes
