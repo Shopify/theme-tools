@@ -94,6 +94,7 @@ export interface Config {
   checks: CheckDefinition<SourceCodeType, Schema>[];
   root: AbsolutePath;
   ignore?: string[];
+  onError?: (error: Error) => void;
 }
 
 export type NodeOfType<T extends SourceCodeType, NT> = Extract<AST[T], { type: NT }>;

@@ -31,6 +31,10 @@ export * from './checks';
 export * from './to-source-code';
 export * from './ignore';
 
+const defaultErrorHandler = (_error: Error): void => {
+  // Silently ignores errors by default.
+};
+
 export async function check(
   sourceCodes: Theme,
   config: Config,
@@ -69,7 +73,8 @@ export async function check(
     }
   }
 
-  await Promise.all(pipelines);
+  const onRejected = config.onError || defaultErrorHandler;
+  await Promise.all(pipelines.map((pipeline) => pipeline.catch(onRejected)));
 
   return offenses.filter((offense) => !isDisabled(offense));
 }
