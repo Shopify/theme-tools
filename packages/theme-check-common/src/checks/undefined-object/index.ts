@@ -106,8 +106,8 @@ export const UndefinedObject: LiquidCheckDefinition = {
 async function globalObjects(themeDocset: ThemeDocset) {
   const objects = await themeDocset.objects();
 
-  const globalObjects = objects.filter(({ access }) => {
-    return !access || access.global === true || access.template.length > 0;
+  const globalObjects = objects.filter(({ access, name }) => {
+    return name === 'section' || !access || access.global === true || access.template.length > 0;
   });
 
   return globalObjects;
