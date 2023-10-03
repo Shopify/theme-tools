@@ -213,4 +213,16 @@ describe('Module: UndefinedObject', () => {
     expect(offenses).toHaveLength(1);
     expect(offenses.map((e) => e.message)).toEqual(["Unknown object 'image' used."]);
   });
+
+  it('should not report an offenses when definitions for global objects are unavailable', async () => {
+    const sourceCode = `
+      {{ my_var }}
+    `;
+
+    const offenses = await runLiquidCheck(UndefinedObject, sourceCode, 'file.liquid', {
+      themeDocset: null,
+    });
+
+    expect(offenses).toHaveLength(0);
+  });
 });
