@@ -1,3 +1,3 @@
 export { AugmentedThemeDocset } from './AugmentedThemeDocset';
-export { render, renderHtmlEntry } from './MarkdownRenderer';
+export { render, renderHtmlEntry, DocsetEntryType } from './MarkdownRenderer';
 export * from './HtmlDocset';

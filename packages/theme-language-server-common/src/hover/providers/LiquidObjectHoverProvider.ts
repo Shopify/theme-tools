@@ -46,6 +46,7 @@ export class LiquidObjectHoverProvider implements BaseHoverProvider {
               name: currentNode.name,
             },
             type,
+            'object',
           ),
         },
       };
@@ -54,7 +55,7 @@ export class LiquidObjectHoverProvider implements BaseHoverProvider {
     return {
       contents: {
         kind: 'markdown',
-        value: render({ ...entry, name: currentNode.name }, type),
+        value: render({ ...entry, name: currentNode.name }, type, 'object'),
       },
     };
   }

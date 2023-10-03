@@ -28,7 +28,7 @@ export class ObjectCompletionProvider implements Provider {
     return options
       .filter(({ name }) => name.startsWith(partial))
       .sort(sortByName)
-      .map((tag) => createCompletionItem(tag, { kind: CompletionItemKind.Variable }));
+      .map((tag) => createCompletionItem(tag, { kind: CompletionItemKind.Variable }, 'object'));
   }
 }
 

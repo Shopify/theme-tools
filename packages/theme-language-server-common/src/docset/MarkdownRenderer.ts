@@ -5,9 +5,16 @@ import { Attribute, Tag, Value } from './HtmlDocset';
 const HORIZONTAL_SEPARATOR = '\n\n---\n\n';
 
 type HtmlEntry = Tag | Attribute | Value;
+export type DocsetEntryType = 'filter' | 'tag' | 'object';
 
-export function render(entry: DocsetEntry, returnType?: PseudoType | ArrayType) {
-  return [title(entry, returnType), docsetEntryBody(entry)].filter(Boolean).join('\n');
+export function render(
+  entry: DocsetEntry,
+  returnType?: PseudoType | ArrayType,
+  docsetEntryType?: DocsetEntryType,
+) {
+  return [title(entry, returnType), docsetEntryBody(entry, returnType, docsetEntryType)]
+    .filter(Boolean)
+    .join('\n');
 }
 
 export function renderHtmlEntry(entry: HtmlEntry, parentEntry?: HtmlEntry) {
@@ -38,8 +45,17 @@ function sanitize(s: string | undefined) {
     .trim();
 }
 
-function docsetEntryBody(entry: DocsetEntry) {
-  return [entry.deprecation_reason, entry.summary, entry.description]
+function docsetEntryBody(
+  entry: DocsetEntry,
+  returnType?: PseudoType | ArrayType,
+  docsetEntryType?: DocsetEntryType,
+) {
+  return [
+    entry.deprecation_reason,
+    entry.summary,
+    entry.description,
+    shopifyDevReference(entry, returnType, docsetEntryType),
+  ]
     .map(sanitize)
     .filter(Boolean)
     .join(HORIZONTAL_SEPARATOR);
@@ -57,6 +73,50 @@ function description(entry: HtmlEntry) {
   }
 
   return entry.description.value;
+}
+
+const shopifyDevRoot = `https://shopify.dev/docs/api/liquid`;
+
+function shopifyDevReference(
+  entry: DocsetEntry,
+  returnType?: PseudoType | ArrayType,
+  docsetEntryType?: DocsetEntryType,
+) {
+  switch (docsetEntryType) {
+    case 'tag': {
+      if (entry.name === 'else' && 'category' in entry) {
+        return `[Shopify Reference](${shopifyDevRoot}/tags/${entry.category}-${entry.name})`;
+      } else if ('category' in entry) {
+        return `[Shopify Reference](${shopifyDevRoot}/tags/${entry.name})`;
+      } else {
+        return undefined;
+      }
+    }
+
+    case 'object': {
+      if (!returnType) {
+        return `[Shopify Reference](${shopifyDevRoot}/objects/${entry.name})`;
+      } else if (isArrayType(returnType)) {
+        return `[Shopify Reference](${shopifyDevRoot}/objects/${returnType.valueType})`;
+      } else if ('access' in entry) {
+        return `[Shopify Reference](${shopifyDevRoot}/objects/${returnType})`;
+      } else {
+        return undefined;
+      }
+    }
+
+    case 'filter': {
+      if ('category' in entry) {
+        return `[Shopify Reference](${shopifyDevRoot}/filters/${entry.name})`;
+      } else {
+        return undefined;
+      }
+    }
+
+    default: {
+      return undefined;
+    }
+  }
 }
 
 function references(entry: HtmlEntry | undefined) {
