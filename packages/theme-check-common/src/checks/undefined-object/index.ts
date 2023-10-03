@@ -39,6 +39,14 @@ export const UndefinedObject: LiquidCheckDefinition = {
       return {};
     }
 
+    /**
+     * Skip this check when definitions for global objects are unavailable.
+     */
+    if (!context.themeDocset) {
+      return {};
+    }
+
+    const themeDocset = context.themeDocset;
     const variableScopes: Map<string, Scope[]> = new Map();
     const variables: LiquidVariableLookup[] = [];
 
@@ -80,11 +88,9 @@ export const UndefinedObject: LiquidCheckDefinition = {
       },
 
       async onCodePathEnd() {
-        if (context.themeDocset) {
-          const objects = await globalObjects(context.themeDocset);
+        const objects = await globalObjects(themeDocset);
 
-          objects.forEach((obj) => variableScopes.set(obj.name, []));
-        }
+        objects.forEach((obj) => variableScopes.set(obj.name, []));
 
         variables.forEach((variable) => {
           if (!variable.name) return;
