@@ -22,7 +22,7 @@ export class LiquidTagHoverProvider implements BaseHoverProvider {
     return {
       contents: {
         kind: 'markdown',
-        value: render(entry),
+        value: render(entry, undefined, 'tag'),
       },
     };
   }

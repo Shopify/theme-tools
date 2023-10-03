@@ -22,7 +22,7 @@ export class LiquidFilterHoverProvider implements BaseHoverProvider {
     return {
       contents: {
         kind: 'markdown',
-        value: render(entry),
+        value: render(entry, undefined, 'filter'),
       },
     };
   }

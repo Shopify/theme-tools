@@ -32,7 +32,7 @@ export class LiquidTagsCompletionProvider implements Provider {
     return tags
       .filter(({ name }) => name.startsWith(partial))
       .sort(sortByName)
-      .map((tag) => createCompletionItem(tag, { kind: CompletionItemKind.Keyword }))
+      .map((tag) => createCompletionItem(tag, { kind: CompletionItemKind.Keyword }, 'tag'))
       .concat(
         blockParent && `end${blockParent.name}`.startsWith(partial)
           ? {

@@ -81,7 +81,11 @@ function completionItems(options: MaybeDeprioritisedFilterEntry[], partial: stri
 }
 
 function toPropertyCompletionItem(entry: MaybeDeprioritisedFilterEntry) {
-  return createCompletionItem(entry, {
-    kind: CompletionItemKind.Function,
-  });
+  return createCompletionItem(
+    entry,
+    {
+      kind: CompletionItemKind.Function,
+    },
+    'filter',
+  );
 }

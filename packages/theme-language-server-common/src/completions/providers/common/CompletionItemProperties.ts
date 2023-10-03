@@ -1,5 +1,5 @@
 import { CompletionItem, CompletionItemTag, MarkupContent } from 'vscode-languageserver';
-import { render } from '../../../docset';
+import { DocsetEntryType, render } from '../../../docset';
 import { DocsetEntry } from '@shopify/theme-check-common';
 
 // ASCII tokens that make a string appear lower in the list.
@@ -17,6 +17,7 @@ enum SortTokens {
 export function createCompletionItem(
   entry: DocsetEntry & { deprioritized?: boolean },
   extraProperties: Partial<CompletionItem> = {},
+  docsetEntryType?: DocsetEntryType,
 ): CompletionItem {
   // prettier-ignore
   const sortToken = entry.deprecated
@@ -29,16 +30,19 @@ export function createCompletionItem(
   return {
     label: entry.name,
     sortText: `${sortToken}${entry.name}`,
-    ...documentationProperties(entry),
+    ...documentationProperties(entry, docsetEntryType),
     ...deprecatedProperties(entry),
     ...extraProperties,
   };
 }
 
-function documentationProperties(entry: DocsetEntry): {
+function documentationProperties(
+  entry: DocsetEntry,
+  docsetEntryType?: DocsetEntryType,
+): {
   documentation: MarkupContent;
 } {
-  const value = render(entry);
+  const value = render(entry, undefined, docsetEntryType);
 
   return {
     documentation: {
