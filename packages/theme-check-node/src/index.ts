@@ -12,6 +12,7 @@ import { promisify } from 'node:util';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import glob = require('glob');
+import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
 
 import { fileExists, fileSize } from './file-utils';
 import { loadConfig, findConfigPath } from './config';
@@ -54,10 +55,13 @@ export async function themeCheckRun(root: string, configPath?: string): Promise<
   const { theme, config } = await getThemeAndConfig(root, configPath);
   const defaultTranslationsFile = theme.find((sc) => sc.absolutePath.endsWith('default.json'));
   const defaultTranslations = JSON.parse(defaultTranslationsFile?.source || '{}');
+  const themeLiquidDocsManager = new ThemeLiquidDocsManager();
 
   const offenses = await coreCheck(theme, config, {
     fileExists,
     fileSize,
+    themeDocset: themeLiquidDocsManager,
+    schemaValidators: themeLiquidDocsManager,
     async getDefaultTranslations() {
       return defaultTranslations;
     },

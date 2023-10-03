@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@shopify/theme-check-common": "1.14.1",
+    "@shopify/theme-check-docs-updater": "1.14.1",
     "glob": "^8.0.3",
     "yaml": "^2.3.0"
   },
