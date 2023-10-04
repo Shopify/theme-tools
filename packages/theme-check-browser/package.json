@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-check-browser",
-  "version": "1.14.1",
+  "version": "1.15.0",
   "homepage": "https://github.com/Shopify/theme-tools/blob/main/packages/theme-check-common/README.md",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,7 +22,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/theme-check-common": "1.14.1"
+    "@shopify/theme-check-common": "1.15.0"
   },
   "devDependencies": {
     "webpack": "^5.76.0",

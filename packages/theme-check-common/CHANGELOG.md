@@ -1,5 +1,12 @@
 # @shopify/theme-check-common
 
+## 1.15.0
+
+### Patch Changes
+
+- 6c2c00f: `UndefinedObject` should not show any offenses when themeDocset is not given
+- f1a642f: Improve resilience of theme check pipeline by preventing entire failure if an individual check fails
+
 ## 1.14.1
 
 ### Patch Changes

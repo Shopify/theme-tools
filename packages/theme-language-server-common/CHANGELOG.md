@@ -1,5 +1,17 @@
 # @shopify/theme-language-server-common
 
+## 1.3.0
+
+### Minor Changes
+
+- eb630b1: Add Shopify Reference links at the bottom of Liquid Hover and Completion items
+
+### Patch Changes
+
+- Updated dependencies [6c2c00f]
+- Updated dependencies [f1a642f]
+  - @shopify/theme-check-common@1.15.0
+
 ## 1.2.1
 
 ### Patch Changes

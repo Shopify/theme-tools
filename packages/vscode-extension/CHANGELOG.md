@@ -1,5 +1,13 @@
 ## theme-check-vscode
 
+## 1.11.7
+
+### Patch Changes
+
+- Patch bump because it depends on @shopify/theme-language-server-node
+  - @shopify/theme-language-server-node@1.3.0
+    - Adds Shopify Reference links at the bottom of Liquid Hover and Completion Items
+
 ## 1.11.6
 
 ### Patch Changes

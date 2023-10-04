@@ -1,5 +1,18 @@
 # @shopify/theme-check-node
 
+## 1.15.0
+
+### Minor Changes
+
+- f8b4e05: Runs theme check with external docs
+
+### Patch Changes
+
+- Updated dependencies [6c2c00f]
+- Updated dependencies [f1a642f]
+  - @shopify/theme-check-common@1.15.0
+  - @shopify/theme-check-docs-updater@1.15.0
+
 ## 1.14.1
 
 ### Patch Changes
