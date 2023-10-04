@@ -32,6 +32,7 @@ import { DeprecatedFilter } from './deprecated-filter';
 import { DeprecatedTag } from './deprecated-tag';
 import { AssetSizeJavaScript } from './asset-size-javascript';
 import { UndefinedObject } from './undefined-object';
+import { DeprecatedGlobalAppBlockType } from './deprecated-global-app-block-type';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -43,9 +44,10 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   CdnPreconnect,
   ContentForHeaderModification,
   DeprecateBgsizes,
-  DeprecateLazysizes,
   DeprecatedFilter,
+  DeprecatedGlobalAppBlockType,
   DeprecatedTag,
+  DeprecateLazysizes,
   ImgWidthAndHeight,
   JSONSyntaxError,
   LiquidHTMLSyntaxError,

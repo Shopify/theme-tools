@@ -94,3 +94,6 @@ ValidHTMLTranslation:
 ValidSchema:
   enabled: true
   severity: 0
+deprecated-global-app-block-type:
+  enabled: true
+  severity: 1
