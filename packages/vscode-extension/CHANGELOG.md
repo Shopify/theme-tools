@@ -1,5 +1,15 @@
 ## theme-check-vscode
 
+## 1.11.8
+
+### Patch Changes
+
+- Patch bump because it depends on @shopify/theme-language-server-node
+  - @shopify/theme-language-server-node@1.3.1
+    - Replace `AssetUrlFilters` check with `RemoteAsset` check
+    - Fix completion, hover and UndefinedObject reporting of `tablerowloop` and `forloop` variables
+    - Fix available object list of Liquid object completion provider.
+
 ## 1.11.7
 
 ### Patch Changes
