@@ -78,6 +78,7 @@ export function forEachChildNodes<S extends SourceCodeType>(
     }
   }
 }
+
 export function findCurrentNode(
   ast: LiquidHtmlNode,
   cursorPosition: number,

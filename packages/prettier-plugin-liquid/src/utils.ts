@@ -1,14 +1,16 @@
-import { Position } from '@shopify/liquid-html-parser';
+import { LiquidHtmlNode } from './types';
 
 export function assertNever(x: never): never {
   throw new Error(`Unexpected object: ${(x as any).type}`);
 }
 
-export function locStart(node: { position: Position }) {
+export function locStart(node: Pick<LiquidHtmlNode, 'position'> | string) {
+  if (typeof node === 'string') return -1;
   return node.position.start;
 }
 
-export function locEnd(node: { position: Position }) {
+export function locEnd(node: Pick<LiquidHtmlNode, 'position'> | string) {
+  if (typeof node === 'string') return -1;
   return node.position.end;
 }
 

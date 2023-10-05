@@ -536,7 +536,10 @@ export const printerLiquidHtml2: Printer2<LiquidHtmlNode> & {
   preprocess: preprocess as any,
   getVisitorKeys(node: any, nonTraversableKeys: Set<string>) {
     return Object.keys(node).filter(
-      (key) => !nonTraversableKeys.has(key) && !nonTraversableProperties.has(key),
+      (key) =>
+        !nonTraversableKeys.has(key) &&
+        !nonTraversableProperties.has(key) &&
+        hasOrIsNode(node, key as keyof LiquidHtmlNode),
     );
   },
 };
@@ -547,9 +550,23 @@ export const printerLiquidHtml3: Printer3<LiquidHtmlNode> & {
   print: printNode as any,
   embed: embed3,
   preprocess: preprocess as any,
-  getVisitorKeys(node: any, nonTraversableKeys: Set<string>) {
+  getVisitorKeys(node: LiquidHtmlNode, nonTraversableKeys: Set<string>) {
     return Object.keys(node).filter(
-      (key) => !nonTraversableKeys.has(key) && !nonTraversableProperties.has(key),
+      (key) =>
+        !nonTraversableKeys.has(key) &&
+        !nonTraversableProperties.has(key) &&
+        hasOrIsNode(node, key as keyof LiquidHtmlNode),
     );
   },
 };
+
+function hasOrIsNode<N extends LiquidHtmlNode, K extends keyof N>(node: N, key: K) {
+  const v = node[key];
+  // this works because there's no ()[] type that is string | Node, it only
+  // happens for singular nodes such as name: string | LiquidDrop, etc.
+  return Array.isArray(v) || isNode(v);
+}
+
+function isNode(x: unknown): x is LiquidHtmlNode {
+  return x !== null && typeof x === 'object' && 'type' in x && typeof x.type === 'string';
+}
