@@ -214,6 +214,31 @@ describe('Module: UndefinedObject', () => {
     expect(offenses.map((e) => e.message)).toEqual(["Unknown object 'image' used."]);
   });
 
+  it('should not report an offense for forloop/tablerowloop variables when in the correct context', async () => {
+    for (const tag of ['for', 'tablerow']) {
+      const sourceCode = `
+        {% ${tag} x in collections %}
+          {{ ${tag}loop }}
+        {% end${tag} %}
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode, 'file.liquid');
+
+      expect(offenses).toHaveLength(0);
+    }
+  });
+
+  it('should report an offense for forloop/tablerowloop used outside of context', async () => {
+    const sourceCode = `
+      {{ forloop }}
+      {{ tablerowloop }}
+    `;
+
+    const offenses = await runLiquidCheck(UndefinedObject, sourceCode, 'file.liquid');
+
+    expect(offenses).toHaveLength(2);
+  });
+
   it('should not report an offenses when definitions for global objects are unavailable', async () => {
     const sourceCode = `
       {{ my_var }}

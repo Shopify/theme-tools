@@ -9,7 +9,7 @@ import {
 export type VisitorMethod<S extends SourceCodeType, T, R> = (
   node: NodeOfType<S, T>,
   ancestors: AST[S][],
-) => R | undefined;
+) => R | R[] | undefined;
 
 export type Visitor<S extends SourceCodeType, R> = {
   /** Happens once per node, while going down the tree */
@@ -50,7 +50,11 @@ export function visit<S extends SourceCodeType, R>(node: AST[S], visitor: Visito
 
     const visitNode = visitor[node.type as any as NodeTypes[S]];
     const result = visitNode ? visitNode(node as NodeOfType<S, NodeTypes[S]>, lineage) : undefined;
-    if (result !== undefined) results.push(result);
+    if (Array.isArray(result)) {
+      results.push(...result);
+    } else if (result !== undefined) {
+      results.push(result);
+    }
 
     // Enqueue child nodes
     forEachChildNodes(node, lineage.concat(node), pushStack);

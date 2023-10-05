@@ -76,6 +76,10 @@ export const UndefinedObject: LiquidCheckDefinition = {
             start: node.blockStartPosition.end,
             end: node.blockEndPosition?.start,
           });
+          indexVariableScope(node.name === 'for' ? 'forloop' : 'tablerowloop', {
+            start: node.blockStartPosition.end,
+            end: node.blockEndPosition?.start,
+          });
         }
       },
 
