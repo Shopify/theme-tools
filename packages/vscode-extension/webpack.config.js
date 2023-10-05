@@ -29,6 +29,9 @@ const config = {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
     extensions: ['.ts', '.js'],
   },
+  optimization: {
+    minimize: false,
+  },
   module: {
     parser: {
       javascript: {
@@ -68,6 +71,9 @@ const config = {
         {
           from: path.resolve(__dirname, '../../node_modules/prettier'),
           to: 'prettier',
+          globOptions: {
+            ignore: ['**/esm/**'],
+          },
         },
       ],
     }),

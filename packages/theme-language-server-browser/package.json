@@ -14,10 +14,9 @@
     "@shopify:registry": "https://registry.npmjs.org"
   },
   "scripts": {
-    "build": "yarn build:ts && yarn build:standalone",
+    "build": "yarn build:ts",
     "build:ci": "yarn build",
     "build:ts": "tsc -b tsconfig.build.json",
-    "build:standalone": "webpack --mode production",
     "dev": "tsc --watch",
     "test": "vitest",
     "type-check": "tsc --noEmit"
