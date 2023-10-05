@@ -1,5 +1,13 @@
 ## theme-check-vscode
 
+## 1.11.9
+
+### Patch Changes
+
+- Patch bump because it depends on @shopify/prettier-plugin-liquid
+- Updated dependencies [328ba49]
+  - @shopify/prettier-plugin-liquid@1.3.1
+
 ## 1.11.8
 
 ### Patch Changes
