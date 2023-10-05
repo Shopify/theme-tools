@@ -1,5 +1,11 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.3.1
+
+### Patch Changes
+
+- 328ba49: Fix cursorOffset bug with prettier 3
+
 ## 1.3.0
 
 ### Minor Changes
