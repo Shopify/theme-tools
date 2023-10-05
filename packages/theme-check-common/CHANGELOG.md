@@ -1,5 +1,15 @@
 # @shopify/theme-check-common
 
+## 1.16.0
+
+### Minor Changes
+
+- 279a464: Replace `AssetUrlFilters` with `RemoteAsset`
+
+### Patch Changes
+
+- d71a5e2: Fix completion, hover and UndefinedObject reporting of tablerowloop and forloop variables
+
 ## 1.15.0
 
 ### Patch Changes

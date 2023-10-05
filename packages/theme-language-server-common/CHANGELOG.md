@@ -1,5 +1,15 @@
 # @shopify/theme-language-server-common
 
+## 1.3.1
+
+### Patch Changes
+
+- f35feb4: Fix available objects list of completion provider
+- d71a5e2: Fix completion, hover and UndefinedObject reporting of tablerowloop and forloop variables
+- Updated dependencies [279a464]
+- Updated dependencies [d71a5e2]
+  - @shopify/theme-check-common@1.16.0
+
 ## 1.3.0
 
 ### Minor Changes
