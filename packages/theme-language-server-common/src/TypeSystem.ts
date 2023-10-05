@@ -228,11 +228,19 @@ function buildSymbolsTable(
     ForMarkup(node, ancestors) {
       const parentNode = ancestors.at(-1)! as LiquidTag;
 
-      return {
-        identifier: node.variableName,
-        type: LazyDeconstructedExpression(node.collection, node.position.start),
-        range: [node.position.start, end(parentNode.blockEndPosition?.end)],
-      };
+      return [
+        {
+          identifier: node.variableName,
+          type: LazyDeconstructedExpression(node.collection, node.position.start),
+          range: [node.position.start, end(parentNode.blockEndPosition?.end)],
+        },
+        // Add the for/tablerow loop variables in the context of the tag.
+        {
+          identifier: parentNode.name === 'for' ? 'forloop' : 'tablerowloop',
+          type: parentNode.name === 'for' ? 'forloop' : 'tablerowloop',
+          range: [parentNode.blockStartPosition.end, end(parentNode.blockEndPosition?.end)],
+        },
+      ];
     },
 
     // {% capture foo %}
