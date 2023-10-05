@@ -9,6 +9,7 @@ import {
 } from '@shopify/liquid-html-parser';
 import {
   ArrayReturnType,
+  DocsetEntry,
   FilterEntry,
   ObjectEntry,
   ReturnType,
@@ -32,6 +33,34 @@ export class TypeSystem {
     ]);
 
     return inferType(thing, symbolsTable, objectMap, filtersMap);
+  }
+
+  async availableVariables(
+    partialAst: LiquidHtmlNode,
+    partial: string,
+    node: LiquidVariableLookup,
+  ): Promise<{ entry: DocsetEntry; type: PseudoType | ArrayType }[]> {
+    const [objectMap, filtersMap, symbolsTable] = await Promise.all([
+      this.objectMap(),
+      this.filtersMap(),
+      this.symbolsTable(partialAst),
+    ]);
+
+    return Object.entries(symbolsTable)
+      .filter(
+        ([key, typeRanges]) =>
+          key.startsWith(partial) &&
+          typeRanges.some((typeRange) => isCorrectTypeRange(typeRange, node)),
+      )
+      .map(([identifier, typeRanges]) => {
+        const typeRange = findLast(typeRanges, (typeRange) => isCorrectTypeRange(typeRange, node))!;
+        const type = resolveTypeRangeType(typeRange.type, symbolsTable, objectMap, filtersMap);
+        const entry = objectMap[isArrayType(type) ? type.valueType : type] ?? {};
+        return {
+          entry: { ...entry, name: identifier },
+          type,
+        };
+      });
   }
 
   /**
@@ -220,19 +249,18 @@ function buildSymbolsTable(
       return {
         identifier: node.name,
         type: lazyVariable(node.value, node.position.start),
-        range: [node.position.start],
+        range: [node.position.end],
       };
     },
 
     // This also covers tablerow
     ForMarkup(node, ancestors) {
       const parentNode = ancestors.at(-1)! as LiquidTag;
-
       return [
         {
           identifier: node.variableName,
           type: LazyDeconstructedExpression(node.collection, node.position.start),
-          range: [node.position.start, end(parentNode.blockEndPosition?.end)],
+          range: [parentNode.blockStartPosition.end, end(parentNode.blockEndPosition?.end)],
         },
         // Add the for/tablerow loop variables in the context of the tag.
         {

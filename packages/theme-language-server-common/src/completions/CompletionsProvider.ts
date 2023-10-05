@@ -35,7 +35,7 @@ export class CompletionsProvider {
       new HtmlAttributeCompletionProvider(),
       new HtmlAttributeValueCompletionProvider(),
       new LiquidTagsCompletionProvider(themeDocset),
-      new ObjectCompletionProvider(themeDocset),
+      new ObjectCompletionProvider(typeSystem),
       new ObjectAttributeCompletionProvider(typeSystem),
       new FilterCompletionProvider(typeSystem),
       new TranslationCompletionProvider(documentManager, getTranslationsForURI),
