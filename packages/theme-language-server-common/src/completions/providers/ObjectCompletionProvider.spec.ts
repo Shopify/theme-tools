@@ -8,7 +8,7 @@ describe('Module: ObjectCompletionProvider', async () => {
   beforeEach(async () => {
     provider = new CompletionsProvider(new DocumentManager(), {
       filters: async () => [],
-      objects: async () => [{ name: 'global' }, { name: 'all_products' }],
+      objects: async () => [{ name: 'all_products' }, { name: 'global' }],
       tags: async () => [],
     });
   });

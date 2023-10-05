@@ -51,6 +51,8 @@ describe('Module: LiquidObjectHoverProvider', async () => {
       '{% assign x = product %}{{ x█ }}',
       '{% for x in all_products %}{{ x█ }}{% endfor %}',
       '{% assign x = all_products[0] %}{{ x█ }}',
+      '{% assign x█ = all_products[0] %}',
+      // '{% for x█ in all_products %}{{ x }}{% endfor %}', // not supported yet...
     ];
     for (const context of contexts) {
       await expect(provider).to.hover(context, expect.stringContaining('product description'));
