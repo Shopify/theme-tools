@@ -3,4 +3,4 @@
 '@shopify/theme-check-common': patch
 ---
 
-Fix completion, hover and `UndefinedObject` reporting of `form` object
+Fix `form` object completion, hover and `UndefinedObject` reporting
