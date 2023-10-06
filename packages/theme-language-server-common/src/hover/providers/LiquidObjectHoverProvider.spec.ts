@@ -135,7 +135,7 @@ describe('Module: LiquidObjectHoverProvider', async () => {
   });
 
   it('should support contextual objects by relative path', async () => {
-    const contexts: [object: string, goodPath: string][] = [
+    const contexts: [string, string][] = [
       ['section', 'sections/my-section.liquid'],
       ['predictive_search', 'sections/predictive-search.liquid'],
       ['recommendations', 'sections/recommendations.liquid'],

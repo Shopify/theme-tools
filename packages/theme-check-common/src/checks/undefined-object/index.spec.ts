@@ -270,7 +270,7 @@ describe('Module: UndefinedObject', () => {
 
   it('should support contextual exceptions', async () => {
     let offenses: Offense[];
-    const contexts: [object: string, goodPath: string][] = [
+    const contexts: [string, string][] = [
       ['section', 'sections/section.liquid'],
       ['predictive_search', 'sections/predictive-search.liquid'],
       ['recommendations', 'sections/recommendations.liquid'],

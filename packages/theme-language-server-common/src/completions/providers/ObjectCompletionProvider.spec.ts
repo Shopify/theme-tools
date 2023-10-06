@@ -114,7 +114,7 @@ describe('Module: ObjectCompletionProvider', async () => {
   });
 
   it('should complete contextual variables', async () => {
-    const contexts: [context: string, expected: string][] = [
+    const contexts: [string, string][] = [
       ['{% paginate all_products by 5 %}{{ pagi█ }}{% endpaginate %}', 'paginate'],
       ['{% form "cart" %}{{ for█ }}{% endform %}', 'form'],
       ['{% for p in all_products %}{{ for█ }}{% endfor %}', 'forloop'],
@@ -129,7 +129,7 @@ describe('Module: ObjectCompletionProvider', async () => {
   });
 
   it('should complete relative-path-dependent contextual variables', async () => {
-    const contexts: [object: string, goodPath: string][] = [
+    const contexts: [string, string][] = [
       ['section', 'sections/main-product.liquid'],
       ['predictive_search', 'sections/predictive-search.liquid'],
       ['recommendations', 'sections/recommendations.liquid'],
