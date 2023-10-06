@@ -2,19 +2,16 @@
  * Shopify themes docset.
  */
 export interface ThemeDocset {
-  /**
-   * Returns Liquid filters available on themes.
-   */
+  /** Whether it was augmented prior to being passed. */
+  isAugmented?: boolean;
+
+  /** Returns Liquid filters available on themes. */
   filters(): Promise<FilterEntry[]>;
 
-  /**
-   * Returns objects (or Liquid variables) available on themes.
-   */
+  /** Returns objects (or Liquid variables) available on themes. */
   objects(): Promise<ObjectEntry[]>;
 
-  /**
-   * Returns Liquid tags available on themes.
-   */
+  /** Returns Liquid tags available on themes. */
   tags(): Promise<TagEntry[]>;
 }
 
@@ -22,9 +19,10 @@ export interface ThemeDocset {
  * JSON schemas resources for themes.
  */
 export interface JsonSchemaValidators {
-  /**
-   * Retrieves the JSON schema validator for theme sections.
-   */
+  /** Whether it was augmented prior to being passed. */
+  isAugmented?: boolean;
+
+  /** Retrieves the JSON schema validator for theme sections. */
   validateSectionSchema(): Promise<ValidateFunction>;
 }
 

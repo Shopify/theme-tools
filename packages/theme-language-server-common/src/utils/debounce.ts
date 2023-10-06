@@ -1,4 +1,4 @@
-import { ArgumentTypes } from './types';
+import { ArgumentTypes } from '@shopify/theme-check-common';
 
 export interface DebouncedFunction<F extends Function> {
   /**

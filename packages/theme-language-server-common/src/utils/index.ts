@@ -1,6 +1,11 @@
-export * from './types';
+export {
+  ArgumentTypes,
+  WithOptional,
+  WithRequired,
+  memo,
+  memoize,
+} from '@shopify/theme-check-common';
 export * from './debounce';
 export * from './paths';
-export * from './memo';
 export * from './array';
 export * from './node';

@@ -1,6 +1,6 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { AugmentedThemeDocset } from './AugmentedThemeDocset';
-import { ThemeDocset } from '@shopify/theme-check-common';
+import { ThemeDocset } from './types';
 
 describe('Module: AugmentedThemeDocset', async () => {
   let themeDocset: ThemeDocset;

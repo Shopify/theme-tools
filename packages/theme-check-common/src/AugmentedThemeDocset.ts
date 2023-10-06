@@ -1,5 +1,5 @@
-import { ThemeDocset, ObjectEntry, TagEntry, FilterEntry } from '@shopify/theme-check-common';
-import { memo } from '../utils';
+import { FilterEntry, ObjectEntry, TagEntry, ThemeDocset } from './types';
+import { memo } from './utils';
 
 const toFilterEntry = (name: string): FilterEntry => ({ name });
 const aliasedFilters = ['camelcase', 'handle', 't'];
@@ -48,6 +48,8 @@ const undocumentedTags = ['elsif', 'ifchanged', 'when', 'schema'];
 
 export class AugmentedThemeDocset implements ThemeDocset {
   constructor(private themeDocset: ThemeDocset) {}
+
+  public isAugmented = true;
 
   filters = memo(async (): Promise<FilterEntry[]> => {
     return [
