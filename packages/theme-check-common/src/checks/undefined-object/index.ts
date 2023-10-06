@@ -35,7 +35,8 @@ export const UndefinedObject: LiquidCheckDefinition = {
      * At present, snippet assets are not supported due to the inability of this
      * check to handle objects defined in other assets.
      */
-    if (context.relativePath(context.file.absolutePath).startsWith('snippets/')) {
+    const relativePath = context.relativePath(context.file.absolutePath);
+    if (relativePath.startsWith('snippets/')) {
       return {};
     }
 
@@ -118,7 +119,7 @@ export const UndefinedObject: LiquidCheckDefinition = {
       },
 
       async onCodePathEnd() {
-        const objects = await globalObjects(themeDocset);
+        const objects = await globalObjects(themeDocset, relativePath);
 
         objects.forEach((obj) => variableScopes.set(obj.name, []));
 
@@ -139,14 +140,28 @@ export const UndefinedObject: LiquidCheckDefinition = {
   },
 };
 
-async function globalObjects(themeDocset: ThemeDocset) {
+async function globalObjects(themeDocset: ThemeDocset, relativePath: string) {
   const objects = await themeDocset.objects();
+  const contextualObjects = getContextualObjects(relativePath);
 
   const globalObjects = objects.filter(({ access, name }) => {
-    return name === 'section' || !access || access.global === true || access.template.length > 0;
+    return (
+      contextualObjects.includes(name) ||
+      !access ||
+      access.global === true ||
+      access.template.length > 0
+    );
   });
 
   return globalObjects;
+}
+
+function getContextualObjects(relativePath: string): string[] {
+  if (relativePath.startsWith('sections/')) {
+    return ['section', 'predictive_search'];
+  }
+
+  return [];
 }
 
 function isDefined(

@@ -1,6 +1,6 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidHtmlNode } from '@shopify/theme-check-common';
-import { Hover } from 'vscode-languageserver';
+import { Hover, HoverParams } from 'vscode-languageserver';
 import { TypeSystem, isArrayType } from '../../TypeSystem';
 import { render } from '../../docset';
 import { BaseHoverProvider } from '../BaseHoverProvider';
@@ -8,7 +8,11 @@ import { BaseHoverProvider } from '../BaseHoverProvider';
 export class LiquidObjectAttributeHoverProvider implements BaseHoverProvider {
   constructor(private typeSystem: TypeSystem) {}
 
-  async hover(currentNode: LiquidHtmlNode, ancestors: LiquidHtmlNode[]): Promise<Hover | null> {
+  async hover(
+    currentNode: LiquidHtmlNode,
+    ancestors: LiquidHtmlNode[],
+    params: HoverParams,
+  ): Promise<Hover | null> {
     const parentNode = ancestors.at(-1);
     if (
       currentNode.type !== NodeTypes.String ||
@@ -25,7 +29,7 @@ export class LiquidObjectAttributeHoverProvider implements BaseHoverProvider {
       lookups: parentNode.lookups.slice(0, lookupIndex),
     };
 
-    const parentType = await this.typeSystem.inferType(node, ancestors[0]);
+    const parentType = await this.typeSystem.inferType(node, ancestors[0], params.textDocument.uri);
     if (isArrayType(parentType)) {
       return null;
     }

@@ -1,5 +1,5 @@
 import { LiquidHtmlNode, LiquidVariableLookup, NodeTypes } from '@shopify/liquid-html-parser';
-import { Hover } from 'vscode-languageserver';
+import { Hover, HoverParams } from 'vscode-languageserver';
 import { TypeSystem, isArrayType } from '../../TypeSystem';
 import { render } from '../../docset';
 import { BaseHoverProvider } from '../BaseHoverProvider';
@@ -7,7 +7,11 @@ import { BaseHoverProvider } from '../BaseHoverProvider';
 export class LiquidObjectHoverProvider implements BaseHoverProvider {
   constructor(private typeSystem: TypeSystem) {}
 
-  async hover(currentNode: LiquidHtmlNode, ancestors: LiquidHtmlNode[]): Promise<Hover | null> {
+  async hover(
+    currentNode: LiquidHtmlNode,
+    ancestors: LiquidHtmlNode[],
+    params: HoverParams,
+  ): Promise<Hover | null> {
     if (
       currentNode.type !== NodeTypes.VariableLookup &&
       currentNode.type !== NodeTypes.AssignMarkup
@@ -27,7 +31,7 @@ export class LiquidObjectHoverProvider implements BaseHoverProvider {
       } as LiquidVariableLookup;
     }
 
-    const type = await this.typeSystem.inferType(node, ancestors[0]);
+    const type = await this.typeSystem.inferType(node, ancestors[0], params.textDocument.uri);
     const objectMap = await this.typeSystem.objectMap();
     const entry = objectMap[isArrayType(type) ? type.valueType : type];
 

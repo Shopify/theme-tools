@@ -36,8 +36,11 @@ export class ObjectAttributeCompletionProvider implements Provider {
     const parentLookup = { ...node };
     parentLookup.lookups = [...parentLookup.lookups];
     parentLookup.lookups.pop();
-
-    const parentType = await this.typeSystem.inferType(parentLookup, partialAst);
+    const parentType = await this.typeSystem.inferType(
+      parentLookup,
+      partialAst,
+      params.textDocument.uri,
+    );
     if (isArrayType(parentType)) {
       return completionItems(
         ArrayCoreProperties.map((name) => ({ name })),
