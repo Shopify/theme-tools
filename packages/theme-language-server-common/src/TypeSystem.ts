@@ -285,6 +285,12 @@ function buildSymbolsTable(
           type: node.name + 'loop',
           range: [node.blockStartPosition.end, end(node.blockEndPosition?.end)],
         };
+      } else if (node.name === 'layout') {
+        return {
+          identifier: 'none',
+          type: 'keyword',
+          range: [node.position.start, node.position.end],
+        };
       }
     },
   });
