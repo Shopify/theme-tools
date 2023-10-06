@@ -241,6 +241,14 @@ describe('Unit: readYamlConfigDescription', () => {
     );
   });
 
+  it('does not complain over legacy settings', async () => {
+    const filePath = await createMockYamlFile(`
+include_categories: []
+exclude_categories: []
+    `);
+    await expect(readYamlConfigDescription(filePath)).resolves.toEqual(expect.anything());
+  });
+
   async function createMockYamlFile(content: string): Promise<string> {
     return createMockConfigFile(tempDir, content);
   }
