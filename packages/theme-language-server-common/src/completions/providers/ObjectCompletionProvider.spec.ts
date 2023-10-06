@@ -27,6 +27,14 @@ describe('Module: ObjectCompletionProvider', async () => {
             parents: [],
           },
         },
+        {
+          name: 'recommendations',
+          access: {
+            global: false,
+            template: [],
+            parents: [],
+          },
+        },
       ],
       tags: async () => [],
     });
@@ -124,6 +132,7 @@ describe('Module: ObjectCompletionProvider', async () => {
     const contexts: [object: string, goodPath: string][] = [
       ['section', 'sections/main-product.liquid'],
       ['predictive_search', 'sections/predictive-search.liquid'],
+      ['recommendations', 'sections/recommendations.liquid'],
     ];
     for (const [object, relativePath] of contexts) {
       const source = `{{ ${object}█ }}`;
