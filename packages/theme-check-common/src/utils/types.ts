@@ -32,6 +32,11 @@ export type ArgumentTypes<F extends Function> = F extends (...args: infer T) => 
 export type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 /**
+ * WithRequired<T, K> turns the optional properties K in keyof T as required.
+ */
+export type WithRequired<T, K extends keyof T> = Required<Pick<T, K>> & Omit<T, K>;
+
+/**
  * assertNever(x: never);
  *
  * You use this in the default case of switch statements to make sure you

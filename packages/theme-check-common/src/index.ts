@@ -24,12 +24,18 @@ import { createDisabledChecksModule } from './disabled-checks';
 import * as path from './path';
 import { getPosition } from './utils';
 import { isIgnored } from './ignore';
+import { AugmentedThemeDocset } from './AugmentedThemeDocset';
+import { AugmentedSchemaValidators } from './AugmentedSchemaValidators';
 
+export * from './AugmentedThemeDocset';
+export * from './AugmentedSchemaValidators';
 export * from './fixes';
 export * from './types';
 export * from './checks';
 export * from './to-source-code';
 export * from './ignore';
+export * from './utils/types';
+export * from './utils/memo';
 
 const defaultErrorHandler = (_error: Error): void => {
   // Silently ignores errors by default.
@@ -43,6 +49,15 @@ export async function check(
   const pipelines: Promise<void>[] = [];
   const offenses: Offense[] = [];
   const { DisabledChecksVisitor, isDisabled } = createDisabledChecksModule();
+
+  // We're memozing those deps here because they shouldn't change within a run.
+  if (dependencies.themeDocset && !dependencies.themeDocset.isAugmented) {
+    dependencies.themeDocset = new AugmentedThemeDocset(dependencies.themeDocset);
+  }
+
+  if (dependencies.schemaValidators && !dependencies.schemaValidators.isAugmented) {
+    dependencies.schemaValidators = new AugmentedSchemaValidators(dependencies.schemaValidators);
+  }
 
   for (const type of Object.values(SourceCodeType)) {
     switch (type) {

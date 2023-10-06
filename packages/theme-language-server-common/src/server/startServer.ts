@@ -1,3 +1,4 @@
+import { AugmentedSchemaValidators, AugmentedThemeDocset } from '@shopify/theme-check-common';
 import {
   Connection,
   DidCreateFilesNotification,
@@ -18,7 +19,6 @@ import { CompletionsProvider } from '../completions';
 import { HoverProvider } from '../hover';
 import { Commands, ExecuteCommandProvider } from '../commands';
 import { ClientCapabilities } from '../ClientCapabilities';
-import { AugmentedThemeDocset } from '../docset';
 import { GetTranslationsForURI, useBufferOrInjectedTranslations } from '../translations';
 import { GetSnippetNamesForURI } from '../completions/providers/RenderSnippetCompletionProvider';
 
@@ -45,7 +45,7 @@ export function startServer(
     getDefaultTranslationsFactory,
     loadConfig,
     log = defaultLogger,
-    schemaValidators,
+    schemaValidators: remoteSchemaValidators,
     themeDocset: remoteThemeDocset,
   }: Dependencies,
 ) {
@@ -54,7 +54,10 @@ export function startServer(
   const diagnosticsManager = new DiagnosticsManager(connection);
   const documentLinksProvider = new DocumentLinksProvider(documentManager);
   const codeActionsProvider = new CodeActionsProvider(documentManager, diagnosticsManager);
+
+  // These are augmented here so that the caching is maintained over different runs.
   const themeDocset = new AugmentedThemeDocset(remoteThemeDocset);
+  const schemaValidators = new AugmentedSchemaValidators(remoteSchemaValidators);
   const runChecks = debounce(
     makeRunChecks(documentManager, diagnosticsManager, {
       fileExists,
