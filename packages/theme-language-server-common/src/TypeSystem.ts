@@ -256,19 +256,11 @@ function buildSymbolsTable(
     // This also covers tablerow
     ForMarkup(node, ancestors) {
       const parentNode = ancestors.at(-1)! as LiquidTag;
-      return [
-        {
-          identifier: node.variableName,
-          type: LazyDeconstructedExpression(node.collection, node.position.start),
-          range: [parentNode.blockStartPosition.end, end(parentNode.blockEndPosition?.end)],
-        },
-        // Add the for/tablerow loop variables in the context of the tag.
-        {
-          identifier: parentNode.name === 'for' ? 'forloop' : 'tablerowloop',
-          type: parentNode.name === 'for' ? 'forloop' : 'tablerowloop',
-          range: [parentNode.blockStartPosition.end, end(parentNode.blockEndPosition?.end)],
-        },
-      ];
+      return {
+        identifier: node.variableName,
+        type: LazyDeconstructedExpression(node.collection, node.position.start),
+        range: [parentNode.blockStartPosition.end, end(parentNode.blockEndPosition?.end)],
+      };
     },
 
     // {% capture foo %}
@@ -280,6 +272,24 @@ function buildSymbolsTable(
           identifier: node.markup.name!,
           type: String,
           range: [node.position.end],
+        };
+      } else if (node.name === 'paginate') {
+        return {
+          identifier: 'paginate',
+          type: 'paginate',
+          range: [node.blockStartPosition.end, end(node.blockEndPosition?.end)],
+        };
+      } else if (node.name === 'for') {
+        return {
+          identifier: 'forloop',
+          type: 'forloop',
+          range: [node.blockStartPosition.end, end(node.blockEndPosition?.end)],
+        };
+      } else if (node.name === 'tablerow') {
+        return {
+          identifier: 'tablerowloop',
+          type: 'tablerowloop',
+          range: [node.blockStartPosition.end, end(node.blockEndPosition?.end)],
         };
       }
     },
