@@ -3,4 +3,4 @@
 '@shopify/theme-check-common': patch
 ---
 
-Fix `paginate` object completion, hover and UndefinedObject reporting
+Fix `paginate` object completion, hover and `UndefinedObject` reporting
