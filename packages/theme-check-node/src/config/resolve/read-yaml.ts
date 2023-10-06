@@ -64,6 +64,10 @@ export async function readYamlConfigDescription(
     config.extends = [resolveExtends(root, 'theme-check:recommended')!];
   }
 
+  // legacy settings that screw up assumptions
+  if (yamlFile.include_categories) delete yamlFile.include_categories;
+  if (yamlFile.exclude_categories) delete yamlFile.exclude_categories;
+
   for (const [checkName, settings] of Object.entries(yamlFile)) {
     if (!isPlainObject(settings)) {
       throw new Error(`Expected a plain object value for ${checkName} but got ${typeof settings}`);
