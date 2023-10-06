@@ -71,8 +71,8 @@ export const UndefinedObject: LiquidCheckDefinition = {
           });
         }
 
-        if (node.name === 'paginate') {
-          indexVariableScope('paginate', {
+        if (['form', 'paginate'].includes(node.name)) {
+          indexVariableScope(node.name, {
             start: node.blockStartPosition.end,
             end: node.blockEndPosition?.start,
           });
