@@ -35,7 +35,11 @@ export class FilterCompletionProvider implements Provider {
     // We'll infer the type of the variable up to the last filter (excluding this one)
     parentVariable = { ...parentVariable }; // soft clone
     parentVariable.filters = parentVariable.filters.slice(0, -1); // remove last one
-    const inputType = await this.typeSystem.inferType(parentVariable, partialAst);
+    const inputType = await this.typeSystem.inferType(
+      parentVariable,
+      partialAst,
+      params.textDocument.uri,
+    );
     const partial = node.name.replace(CURSOR, '');
     const options = await this.options(isArrayType(inputType) ? 'array' : inputType);
     return completionItems(options, partial);

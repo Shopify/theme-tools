@@ -21,7 +21,12 @@ export class ObjectCompletionProvider implements Provider {
     }
 
     const partial = node.name.replace(CURSOR, '');
-    const options = await this.typeSystem.availableVariables(partialAst, partial, node);
+    const options = await this.typeSystem.availableVariables(
+      partialAst,
+      partial,
+      node,
+      params.textDocument.uri,
+    );
     return options.map(({ entry, type }) =>
       createCompletionItem(entry, { kind: CompletionItemKind.Variable }, 'object', type),
     );

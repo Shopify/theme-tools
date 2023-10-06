@@ -1,6 +1,7 @@
 import { expect, describe, it } from 'vitest';
 import { UndefinedObject } from './index';
 import { runLiquidCheck, highlightedOffenses } from '../../test';
+import { Offense } from '../../types';
 
 describe('Module: UndefinedObject', () => {
   it('should report an offense when object is undefined', async () => {
@@ -264,6 +265,20 @@ describe('Module: UndefinedObject', () => {
       const offenses = await runLiquidCheck(UndefinedObject, sourceCode, 'file.liquid');
 
       expect(offenses).toHaveLength(0);
+    }
+  });
+
+  it('should support contextual exceptions', async () => {
+    let offenses: Offense[];
+    const contexts: [object: string, goodPath: string][] = [
+      ['section', 'sections/section.liquid'],
+      ['predictive_search', 'sections/predictive-search.liquid'],
+    ];
+    for (const [object, goodPath] of contexts) {
+      offenses = await runLiquidCheck(UndefinedObject, `{{ ${object} }}`, goodPath);
+      expect(offenses).toHaveLength(0);
+      offenses = await runLiquidCheck(UndefinedObject, `{{ ${object} }}`, 'file.liquid');
+      expect(offenses).toHaveLength(1);
     }
   });
 

@@ -16,7 +16,7 @@ import {
   SourceCodeType,
   ThemeDocset,
 } from '@shopify/theme-check-common';
-import { findLast, memo } from './utils';
+import { findLast, memo, toAbsolutePath } from './utils';
 import { visit } from './visitor';
 
 export class TypeSystem {
@@ -25,11 +25,12 @@ export class TypeSystem {
   async inferType(
     thing: Identifier | LiquidExpression | LiquidVariable | AssignMarkup,
     partialAst: LiquidHtmlNode,
+    uri: string,
   ): Promise<PseudoType | ArrayType> {
     const [objectMap, filtersMap, symbolsTable] = await Promise.all([
       this.objectMap(),
       this.filtersMap(),
-      this.symbolsTable(partialAst),
+      this.symbolsTable(partialAst, uri),
     ]);
 
     return inferType(thing, symbolsTable, objectMap, filtersMap);
@@ -39,11 +40,12 @@ export class TypeSystem {
     partialAst: LiquidHtmlNode,
     partial: string,
     node: LiquidVariableLookup,
+    uri: string,
   ): Promise<{ entry: DocsetEntry; type: PseudoType | ArrayType }[]> {
     const [objectMap, filtersMap, symbolsTable] = await Promise.all([
       this.objectMap(),
       this.filtersMap(),
-      this.symbolsTable(partialAst),
+      this.symbolsTable(partialAst, uri),
     ]);
 
     return Object.entries(symbolsTable)
@@ -93,8 +95,8 @@ export class TypeSystem {
     return this.themeDocset.objects();
   });
 
-  private async symbolsTable(partialAst: LiquidHtmlNode): Promise<SymbolsTable> {
-    const seedSymbolsTable = await this.seedSymbolsTable();
+  private async symbolsTable(partialAst: LiquidHtmlNode, uri: string): Promise<SymbolsTable> {
+    const seedSymbolsTable = await this.seedSymbolsTable(uri);
     return buildSymbolsTable(partialAst, seedSymbolsTable);
   }
 
@@ -107,9 +109,12 @@ export class TypeSystem {
    *
    * This is not memo'ed because we would otherwise need to clone the thing.
    */
-  private seedSymbolsTable = async () => {
-    const globalVariables = await this.globalVariables();
-    return globalVariables.reduce((table, objectEntry) => {
+  private seedSymbolsTable = async (uri: string) => {
+    const [globalVariables, contextualVariables] = await Promise.all([
+      this.globalVariables(),
+      this.contextualVariables(uri),
+    ]);
+    return globalVariables.concat(contextualVariables).reduce((table, objectEntry) => {
       table[objectEntry.name] ??= [];
       table[objectEntry.name].push({
         identifier: objectEntry.name,
@@ -123,13 +128,23 @@ export class TypeSystem {
   private globalVariables = memo(async () => {
     const entries = await this.objectEntries();
     return entries.filter(
-      (entry) =>
-        entry.name === 'section' ||
-        !entry.access ||
-        entry.access.global === true ||
-        entry.access.template.length > 0,
+      (entry) => !entry.access || entry.access.global === true || entry.access.template.length > 0,
     );
   });
+
+  private contextualVariables = async (uri: string) => {
+    const entries = await this.objectEntries();
+    const contextualEntries = getContextualEntries(uri);
+    return entries.filter((entry) => contextualEntries.includes(entry.name));
+  };
+}
+
+function getContextualEntries(uri: string): string[] {
+  const absolutePath = toAbsolutePath(uri);
+  if (/sections\/[^.\/]*\.liquid$/.test(absolutePath)) {
+    return ['section', 'predictive_search'];
+  }
+  return [];
 }
 
 /** An indexed representation on objects.json (by name) */

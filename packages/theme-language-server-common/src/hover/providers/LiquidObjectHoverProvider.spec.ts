@@ -48,6 +48,14 @@ describe('Module: LiquidObjectHoverProvider', async () => {
           description: 'image description',
           access: { global: false, parents: [], template: [] },
         },
+        {
+          name: 'section',
+          access: { global: false, parents: [], template: [] },
+        },
+        {
+          name: 'predictive_search',
+          access: { global: false, parents: [], template: [] },
+        },
       ],
       tags: async () => [],
     });
@@ -107,13 +115,34 @@ describe('Module: LiquidObjectHoverProvider', async () => {
         {{ tablerowloop█ }}
       {% endtablerow %}
     `;
-    await expect(provider).to.hover(context, expect.stringMatching(/##* tablerowloop: `tablerowloop`/));
+    await expect(provider).to.hover(
+      context,
+      expect.stringMatching(/##* tablerowloop: `tablerowloop`/),
+    );
     await expect(provider).to.hover('{{ tablerowloop█ }}', null);
   });
 
   it('should support {% layout none %}', async () => {
-    await expect(provider).to.hover(`{% layout none█ %}`, expect.stringMatching(/##* none: `keyword`/));
+    await expect(provider).to.hover(
+      `{% layout none█ %}`,
+      expect.stringMatching(/##* none: `keyword`/),
+    );
     await expect(provider).to.hover('{{ none█ }}', null);
+  });
+
+  it('should support contextual objects by relative path', async () => {
+    const contexts: [object: string, goodPath: string][] = [
+      ['section', 'sections/my-section.liquid'],
+      ['predictive_search', 'sections/predictive-search.liquid'],
+    ];
+    for (const [object, relativePath] of contexts) {
+      const source = `{{ ${object}█ }}`;
+      await expect(provider).to.hover(
+        { source, relativePath },
+        expect.stringContaining(`## ${object}`),
+      );
+      await expect(provider).to.hover({ source, relativePath: 'file.liquid' }, null);
+    }
   });
 
   it('should return nothing if the thing is untyped', async () => {

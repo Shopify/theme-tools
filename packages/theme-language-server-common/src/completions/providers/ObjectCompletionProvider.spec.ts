@@ -8,7 +8,26 @@ describe('Module: ObjectCompletionProvider', async () => {
   beforeEach(async () => {
     provider = new CompletionsProvider(new DocumentManager(), {
       filters: async () => [],
-      objects: async () => [{ name: 'all_products' }, { name: 'global' }],
+      objects: async () => [
+        { name: 'all_products' },
+        { name: 'global' },
+        {
+          name: 'section',
+          access: {
+            global: false,
+            template: [],
+            parents: [],
+          },
+        },
+        {
+          name: 'predictive_search',
+          access: {
+            global: false,
+            template: [],
+            parents: [],
+          },
+        },
+      ],
       tags: async () => [],
     });
   });
@@ -98,6 +117,18 @@ describe('Module: ObjectCompletionProvider', async () => {
       await expect(provider, context).to.complete(context, [expected]);
       const outOfContext = `{{ ${expected}█ }}`;
       await expect(provider, outOfContext).to.complete(outOfContext, []);
+    }
+  });
+
+  it('should complete relative-path-dependent contextual variables', async () => {
+    const contexts: [object: string, goodPath: string][] = [
+      ['section', 'sections/main-product.liquid'],
+      ['predictive_search', 'sections/predictive-search.liquid'],
+    ];
+    for (const [object, relativePath] of contexts) {
+      const source = `{{ ${object}█ }}`;
+      await expect(provider, source).to.complete({ source, relativePath }, [object]);
+      await expect(provider, source).to.complete({ source, relativePath: 'file.liquid' }, []);
     }
   });
 

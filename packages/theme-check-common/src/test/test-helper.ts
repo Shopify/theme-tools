@@ -141,6 +141,22 @@ export async function check(
               template: [],
             },
           },
+          {
+            name: 'section',
+            access: {
+              global: false,
+              parents: [],
+              template: [],
+            },
+          },
+          {
+            name: 'predictive_search',
+            access: {
+              global: false,
+              parents: [],
+              template: [],
+            },
+          },
         ];
       },
       async tags() {

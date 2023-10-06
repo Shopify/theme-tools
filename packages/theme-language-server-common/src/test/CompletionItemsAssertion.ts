@@ -3,15 +3,21 @@ import { CompletionsProvider } from '../completions';
 import { expect } from 'vitest';
 import { AsyncExpectationResult, MatcherState, RawMatcherFn } from '@vitest/expect';
 
+export type CompleteContext = { relativePath: string; source: string };
+
 interface CustomMatchers<R = unknown> {
   /**
-   * @param source {string} - the source to complete
+   * @param source {string | CompleteContext} - the source to complete
    * @param completionItem {CompletionItem[] | string[]} - the list of completion items or labels
    *
    * @example
    * expect(provider).to.complete("{% end", ["endcomment"])
+   * expect(provider).to.complete({ source: "{% end", relativePath: 'sections/foo.liquid' }, ["endcomment"])
    */
-  complete(source: string, completionItem: Partial<CompletionItem>[] | string[]): Promise<void>;
+  complete(
+    source: string | CompleteContext,
+    completionItem: Partial<CompletionItem>[] | string[],
+  ): Promise<void>;
 }
 
 declare module 'vitest' {
@@ -22,12 +28,13 @@ declare module 'vitest' {
 export const complete: RawMatcherFn<MatcherState> = async function (
   this: MatcherState,
   provider: CompletionsProvider,
-  context: string,
+  context: string | CompleteContext,
   expected: any[],
 ): AsyncExpectationResult {
   const { isNot, equals, utils } = this;
-  const source = createSourceCode(context);
-  const completionParams = createCompletionParams(context);
+  const completeContext = asCompleteContextObject(context);
+  const source = createSourceCode(completeContext);
+  const completionParams = createCompletionParams(completeContext);
   provider.documentManager.open(completionParams.textDocument.uri, source, 1);
   const result = await provider.completions(completionParams);
 
@@ -45,7 +52,7 @@ export const complete: RawMatcherFn<MatcherState> = async function (
         ),
       ),
     message: () =>
-      `expected hover to${isNot ? ' not' : ''} match value ${utils.printExpected(
+      `expected complete to${isNot ? ' not' : ''} match value ${utils.printExpected(
         expected,
       )}\ncontext:\n${context}`,
     actual: result,
@@ -53,14 +60,19 @@ export const complete: RawMatcherFn<MatcherState> = async function (
   };
 };
 
-function createSourceCode(context: string) {
-  const regex = new RegExp('█', 'g');
-  return context.replace(regex, '');
+function asCompleteContextObject(context: string | CompleteContext): CompleteContext {
+  if (typeof context === 'string') return { source: context, relativePath: 'file.liquid' };
+  return context;
 }
 
-function createCompletionParams(context: string) {
-  const position = createPosition(context);
-  const textDocument = { uri: '/path/to/file.liquid' };
+function createSourceCode(context: CompleteContext) {
+  const regex = new RegExp('█', 'g');
+  return context.source.replace(regex, '');
+}
+
+function createCompletionParams(context: CompleteContext) {
+  const position = createPosition(context.source);
+  const textDocument = { uri: `/path/to/${context.relativePath}` };
 
   return {
     position,
