@@ -56,6 +56,10 @@ describe('Module: LiquidObjectHoverProvider', async () => {
           name: 'predictive_search',
           access: { global: false, parents: [], template: [] },
         },
+        {
+          name: 'recommendations',
+          access: { global: false, parents: [], template: [] },
+        },
       ],
       tags: async () => [],
     });
@@ -134,6 +138,7 @@ describe('Module: LiquidObjectHoverProvider', async () => {
     const contexts: [object: string, goodPath: string][] = [
       ['section', 'sections/my-section.liquid'],
       ['predictive_search', 'sections/predictive-search.liquid'],
+      ['recommendations', 'sections/recommendations.liquid'],
     ];
     for (const [object, relativePath] of contexts) {
       const source = `{{ ${object}█ }}`;

@@ -142,7 +142,7 @@ export class TypeSystem {
 function getContextualEntries(uri: string): string[] {
   const absolutePath = toAbsolutePath(uri);
   if (/sections\/[^.\/]*\.liquid$/.test(absolutePath)) {
-    return ['section', 'predictive_search'];
+    return ['section', 'predictive_search', 'recommendations'];
   }
   return [];
 }

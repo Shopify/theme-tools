@@ -158,7 +158,7 @@ async function globalObjects(themeDocset: ThemeDocset, relativePath: string) {
 
 function getContextualObjects(relativePath: string): string[] {
   if (relativePath.startsWith('sections/')) {
-    return ['section', 'predictive_search'];
+    return ['section', 'predictive_search', 'recommendations'];
   }
 
   return [];

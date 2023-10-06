@@ -157,6 +157,14 @@ export async function check(
               template: [],
             },
           },
+          {
+            name: 'recommendations',
+            access: {
+              global: false,
+              parents: [],
+              template: [],
+            },
+          },
         ];
       },
       async tags() {
