@@ -273,22 +273,16 @@ function buildSymbolsTable(
           type: String,
           range: [node.position.end],
         };
-      } else if (node.name === 'paginate') {
+      } else if (['form', 'paginate'].includes(node.name)) {
         return {
-          identifier: 'paginate',
-          type: 'paginate',
+          identifier: node.name,
+          type: node.name,
           range: [node.blockStartPosition.end, end(node.blockEndPosition?.end)],
         };
-      } else if (node.name === 'for') {
+      } else if (['for', 'tablerow'].includes(node.name)) {
         return {
-          identifier: 'forloop',
-          type: 'forloop',
-          range: [node.blockStartPosition.end, end(node.blockEndPosition?.end)],
-        };
-      } else if (node.name === 'tablerow') {
-        return {
-          identifier: 'tablerowloop',
-          type: 'tablerowloop',
+          identifier: node.name + 'loop',
+          type: node.name + 'loop',
           range: [node.blockStartPosition.end, end(node.blockEndPosition?.end)],
         };
       }

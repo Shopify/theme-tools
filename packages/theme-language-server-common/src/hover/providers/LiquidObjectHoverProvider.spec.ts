@@ -81,6 +81,16 @@ describe('Module: LiquidObjectHoverProvider', async () => {
     await expect(provider).to.hover('{{ paginate█ }}', null);
   });
 
+  it('should support form inside form tags', async () => {
+    const context = `
+      {% form all_products by 5 %}
+        {{ form█ }}
+      {% endform %}
+    `;
+    await expect(provider).to.hover(context, expect.stringMatching(/##* form: `form`/));
+    await expect(provider).to.hover('{{ form█ }}', null);
+  });
+
   it('should support forloop inside for tags', async () => {
     const context = `
       {% for p in all_products %}

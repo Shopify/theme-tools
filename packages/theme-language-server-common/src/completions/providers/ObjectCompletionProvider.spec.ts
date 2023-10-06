@@ -89,6 +89,7 @@ describe('Module: ObjectCompletionProvider', async () => {
   it('should complete contextual variables', async () => {
     const contexts: [context: string, expected: string][] = [
       ['{% paginate all_products by 5 %}{{ pagi█ }}{% endpaginate %}', 'paginate'],
+      ['{% form "cart" %}{{ for█ }}{% endform %}', 'form'],
       ['{% for p in all_products %}{{ for█ }}{% endfor %}', 'forloop'],
       ['{% tablerow p in all_products %}{{ tablerow█ }}{% endtablerow %}', 'tablerowloop'],
     ];

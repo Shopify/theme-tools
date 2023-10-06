@@ -207,6 +207,19 @@ describe('Module: UndefinedObject', () => {
     expect(offenses.map((e) => e.message)).toEqual(["Unknown object 'paginate' used."]);
   });
 
+  it('should contextually report on the undefined nature of the form object (defined in form tag, undefined outside)', async () => {
+    const sourceCode = `
+      {% form "cart" %}
+        {{ form }}
+      {% endform %}{{ form }}
+    `;
+
+    const offenses = await runLiquidCheck(UndefinedObject, sourceCode);
+
+    expect(offenses).toHaveLength(1);
+    expect(offenses.map((e) => e.message)).toEqual(["Unknown object 'form' used."]);
+  });
+
   it('should not report an offense when object is undefined in a "snippet" file', async () => {
     const sourceCode = `
       {{ my_var }}
