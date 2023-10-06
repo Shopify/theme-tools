@@ -86,6 +86,19 @@ describe('Module: ObjectCompletionProvider', async () => {
     );
   });
 
+  it('should complete contextual variables', async () => {
+    const contexts: [context: string, expected: string][] = [
+      ['{% paginate all_products by 5 %}{{ pagi█ }}{% endpaginate %}', 'paginate'],
+      ['{% for p in all_products %}{{ for█ }}{% endfor %}', 'forloop'],
+      ['{% tablerow p in all_products %}{{ tablerow█ }}{% endtablerow %}', 'tablerowloop'],
+    ];
+    for (const [context, expected] of contexts) {
+      await expect(provider, context).to.complete(context, [expected]);
+      const outOfContext = `{{ ${expected}█ }}`;
+      await expect(provider, outOfContext).to.complete(outOfContext, []);
+    }
+  });
+
   it('should not complete anything if there is nothing to complete', async () => {
     await expect(provider).to.complete('{% assign x = "█" %}', []);
   });

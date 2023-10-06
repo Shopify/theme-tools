@@ -193,6 +193,20 @@ describe('Module: UndefinedObject', () => {
     expect(offenses.map((e) => e.message)).toEqual(["Unknown object 'c' used."]);
   });
 
+  it('should contextually report on the undefined nature of the paginate object (defined in paginate tag, undefined outside)', async () => {
+    const sourceCode = `
+      {% assign col = 'string' | split: '' %}
+      {% paginate col by 5 %}
+        {{ paginate }}
+      {% endpaginate %}{{ paginate }}
+    `;
+
+    const offenses = await runLiquidCheck(UndefinedObject, sourceCode);
+
+    expect(offenses).toHaveLength(1);
+    expect(offenses.map((e) => e.message)).toEqual(["Unknown object 'paginate' used."]);
+  });
+
   it('should not report an offense when object is undefined in a "snippet" file', async () => {
     const sourceCode = `
       {{ my_var }}

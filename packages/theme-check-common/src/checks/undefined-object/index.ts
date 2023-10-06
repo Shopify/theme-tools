@@ -71,6 +71,13 @@ export const UndefinedObject: LiquidCheckDefinition = {
           });
         }
 
+        if (node.name === 'paginate') {
+          indexVariableScope('paginate', {
+            start: node.blockStartPosition.end,
+            end: node.blockEndPosition?.start,
+          });
+        }
+
         if (isLiquidForTag(node) || isLiquidTableRowTag(node)) {
           indexVariableScope(node.markup.variableName, {
             start: node.blockStartPosition.end,

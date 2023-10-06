@@ -29,13 +29,24 @@ describe('Module: LiquidObjectHoverProvider', async () => {
           return_type: [{ type: 'array', array_value: 'product' }],
         },
         {
+          name: 'paginate',
+          access: { global: false, parents: [], template: [] },
+          return_type: [],
+        },
+        {
+          name: 'forloop',
+          access: { global: false, parents: [], template: [] },
+          return_type: [],
+        },
+        {
+          name: 'tablerowloop',
+          access: { global: false, parents: [], template: [] },
+          return_type: [],
+        },
+        {
           name: 'image',
           description: 'image description',
-          access: {
-            global: false,
-            parents: [],
-            template: [],
-          },
+          access: { global: false, parents: [], template: [] },
         },
       ],
       tags: async () => [],
@@ -58,6 +69,36 @@ describe('Module: LiquidObjectHoverProvider', async () => {
       await expect(provider).to.hover(context, expect.stringContaining('product description'));
       await expect(provider).to.hover(context, expect.stringMatching(/##* \w+: `product`/));
     }
+  });
+
+  it('should support paginate inside paginate tags', async () => {
+    const context = `
+      {% paginate all_products by 5 %}
+        {{ paginate█ }}
+      {% endpaginate %}
+    `;
+    await expect(provider).to.hover(context, expect.stringMatching(/##* paginate: `paginate`/));
+    await expect(provider).to.hover('{{ paginate█ }}', null);
+  });
+
+  it('should support forloop inside for tags', async () => {
+    const context = `
+      {% for p in all_products %}
+        {{ forloop█ }}
+      {% endfor %}
+    `;
+    await expect(provider).to.hover(context, expect.stringMatching(/##* forloop: `forloop`/));
+    await expect(provider).to.hover('{{ forloop█ }}', null);
+  });
+
+  it('should support tablerowloop inside tablerow tags', async () => {
+    const context = `
+      {% tablerow p in all_products %}
+        {{ tablerowloop█ }}
+      {% endtablerow %}
+    `;
+    await expect(provider).to.hover(context, expect.stringMatching(/##* tablerowloop: `tablerowloop`/));
+    await expect(provider).to.hover('{{ tablerowloop█ }}', null);
   });
 
   it('should return nothing if the thing is untyped', async () => {
