@@ -92,6 +92,7 @@ describe('Module: ObjectCompletionProvider', async () => {
       ['{% form "cart" %}{{ for█ }}{% endform %}', 'form'],
       ['{% for p in all_products %}{{ for█ }}{% endfor %}', 'forloop'],
       ['{% tablerow p in all_products %}{{ tablerow█ }}{% endtablerow %}', 'tablerowloop'],
+      ['{% layout non█ %}', 'none'],
     ];
     for (const [context, expected] of contexts) {
       await expect(provider, context).to.complete(context, [expected]);

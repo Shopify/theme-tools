@@ -71,6 +71,11 @@ export const UndefinedObject: LiquidCheckDefinition = {
           });
         }
 
+        /**
+         * {% form 'cart', cart %}
+         *   {{ form }}
+         * {% endform %}
+         */
         if (['form', 'paginate'].includes(node.name)) {
           indexVariableScope(node.name, {
             start: node.blockStartPosition.end,
@@ -78,6 +83,20 @@ export const UndefinedObject: LiquidCheckDefinition = {
           });
         }
 
+        /* {% layout none %} */
+        if (node.name === 'layout') {
+          indexVariableScope('none', {
+            start: node.position.start,
+            end: node.position.end,
+          });
+        }
+
+        /**
+         * {% for x in y %}
+         *   {{ forloop }}
+         *   {{ x }}
+         * {% endfor %}
+         */
         if (isLiquidForTag(node) || isLiquidTableRowTag(node)) {
           indexVariableScope(node.markup.variableName, {
             start: node.blockStartPosition.end,

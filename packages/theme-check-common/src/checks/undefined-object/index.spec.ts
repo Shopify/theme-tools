@@ -220,6 +220,18 @@ describe('Module: UndefinedObject', () => {
     expect(offenses.map((e) => e.message)).toEqual(["Unknown object 'form' used."]);
   });
 
+  it('should support {% layout none %}', async () => {
+    const sourceCode = `
+      {% layout none %}
+      {{ none }}
+    `;
+
+    const offenses = await runLiquidCheck(UndefinedObject, sourceCode);
+
+    expect(offenses).toHaveLength(1);
+    expect(offenses.map((e) => e.message)).toEqual(["Unknown object 'none' used."]);
+  });
+
   it('should not report an offense when object is undefined in a "snippet" file', async () => {
     const sourceCode = `
       {{ my_var }}

@@ -111,6 +111,11 @@ describe('Module: LiquidObjectHoverProvider', async () => {
     await expect(provider).to.hover('{{ tablerowloop█ }}', null);
   });
 
+  it('should support {% layout none %}', async () => {
+    await expect(provider).to.hover(`{% layout none█ %}`, expect.stringMatching(/##* none: `keyword`/));
+    await expect(provider).to.hover('{{ none█ }}', null);
+  });
+
   it('should return nothing if the thing is untyped', async () => {
     await expect(provider).to.hover(`{{ unknown█ }}`, null);
   });
