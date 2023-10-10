@@ -31,20 +31,15 @@ jobs:
         env:
           NODE_ENV: production
 
-      - name: Creating .npmrc
-        run: |
-          cat << EOF > "$HOME/.npmrc"
-            //registry.npmjs.org/:_authToken=$NPM_TOKEN
-          EOF
-
-      - name: NPM publish
-        run: yarn changeset publish --no-git-tag
+      - name: Publish to npm
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: yarn changeset publish
+          createGithubRelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: VS Code Marketplace publish
         run: yarn publish:vsce
-
-      - name: Create git tags
-        run: yarn changeset tag
-
-      - name: Push tags
-        run: git push origin --tags
