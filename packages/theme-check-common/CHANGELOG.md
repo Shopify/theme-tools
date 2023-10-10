@@ -1,5 +1,15 @@
 # @shopify/theme-check-common
 
+## 1.16.1
+
+### Patch Changes
+
+- 8d35241: Fix `paginate` object completion, hover and `UndefinedObject` reporting
+- 201f30c: Add support for `{% layout none %}`
+- c0298e7: Fix `recommendations` completion, hover and `UndefinedObject` reporting
+- 6fad756: Fix `predictive_search` completion, hover and `UndefinedObject` reporting
+- fc86c91: Fix `form` object completion, hover and `UndefinedObject` reporting
+
 ## 1.16.0
 
 ### Minor Changes
