@@ -37,14 +37,9 @@ export function printRawElement(
   const attrGroupId = Symbol('element-attr-group-id');
   let body: Doc = [];
   const hasEmptyBody = node.body.value.trim() === '';
-  const shouldIndentBody = node.body.kind !== RawMarkupKinds.markdown;
 
   if (!hasEmptyBody) {
-    if (shouldIndentBody) {
-      body = [indent([hardline, path.call((p: any) => print(p), 'body')]), hardline];
-    } else {
-      body = [dedentToRoot([hardline, path.call((p: any) => print(p), 'body')]), hardline];
-    }
+    body = [path.call((p: any) => print(p), 'body')];
   }
 
   return group([

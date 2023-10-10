@@ -454,7 +454,6 @@ export function printLiquidRawTag(
   let body: Doc = [];
   const node = path.getValue();
   const hasEmptyBody = node.body.value.trim() === '';
-  const shouldNotIndentBody = node.name === 'schema' && !options.indentSchema;
   const shouldPrintAsIs =
     node.isIndentationSensitive ||
     !hasLineBreakInRange(node.source, node.body.position.start, node.body.position.end);
@@ -478,10 +477,8 @@ export function printLiquidRawTag(
     body = [node.source.slice(node.blockStartPosition.end, node.blockEndPosition.start)];
   } else if (hasEmptyBody) {
     body = [hardline];
-  } else if (shouldNotIndentBody) {
-    body = [hardline, path.call((p) => print(p), 'body'), hardline];
   } else {
-    body = [indent([hardline, path.call((p: any) => print(p), 'body')]), hardline];
+    body = [path.call((p) => print(p), 'body')];
   }
 
   return [blockStart, ...body, blockEnd];

@@ -49,7 +49,7 @@ import { printClosingTagSuffix, printOpeningTagPrefix } from '~/printer/print/ta
 import { bodyLines, hasLineBreakInRange, isEmpty, isTextLikeNode, reindent } from '~/printer/utils';
 
 const { builders, utils } = doc;
-const { fill, group, hardline, indent, join, line, softline } = builders;
+const { fill, group, hardline, dedentToRoot, indent, join, line, softline } = builders;
 
 const oppositeQuotes = {
   '"': "'",
@@ -228,17 +228,30 @@ function printNode(
       };
 
       if (isRawMarkupIdentationSensitive()) {
-        return node.value;
+        return [node.value.trimEnd(), hardline];
       }
 
+      const parentNode = node.parentNode;
+      const shouldNotIndentBody =
+        parentNode &&
+        parentNode.type === NodeTypes.LiquidRawTag &&
+        parentNode.name === 'schema' &&
+        !options.indentSchema;
+      const shouldIndentBody = node.kind !== RawMarkupKinds.markdown && !shouldNotIndentBody;
       const lines = bodyLines(node.value);
-
       const rawFirstLineIsntIndented = !!node.value.split(/\r?\n/)[0]?.match(/\S/);
       const shouldSkipFirstLine = rawFirstLineIsntIndented;
 
-      return lines.length > 0 && lines.find((line) => line.trim() !== '')
-        ? join(hardline, reindent(lines, shouldSkipFirstLine))
-        : softline;
+      const body =
+        lines.length > 0 && lines.find((line) => line.trim() !== '')
+          ? join(hardline, reindent(lines, shouldSkipFirstLine))
+          : softline;
+
+      if (shouldIndentBody) {
+        return [indent([hardline, body]), hardline];
+      } else {
+        return [dedentToRoot([hardline, body]), hardline];
+      }
     }
 
     case NodeTypes.LiquidVariableOutput: {

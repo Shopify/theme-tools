@@ -1,8 +1,12 @@
-import { doc } from 'prettier';
+import { doc, Doc } from 'prettier';
 import type { Printer as Printer2 } from 'prettier';
 import type { Doc as Doc3, Printer as Printer3 } from 'prettier3';
 import { NodeTypes, RawMarkupKinds } from '@shopify/liquid-html-parser';
-import { LiquidHtmlNode, LiquidParserOptions } from '~/types';
+import { LiquidHtmlNode, LiquidParserOptions, RawMarkup } from '~/types';
+
+const {
+  builders: { dedentToRoot, indent, hardline },
+} = doc;
 
 // null will pass through
 export const ParserMap: { [key in RawMarkupKinds]: string | null } = {
@@ -24,7 +28,7 @@ export const embed2: Printer2<LiquidHtmlNode>['embed'] = (path, _print, textToDo
     case NodeTypes.RawMarkup: {
       const parser = ParserMap[node.kind];
       if (parser && node.value.trim() !== '') {
-        return doc.utils.stripTrailingHardline(
+        const body = doc.utils.stripTrailingHardline(
           textToDoc(node.value, {
             ...options,
             singleQuote: (options as any as LiquidParserOptions).embeddedSingleQuote,
@@ -32,6 +36,11 @@ export const embed2: Printer2<LiquidHtmlNode>['embed'] = (path, _print, textToDo
             __embeddedInHtml: true,
           }),
         );
+        if (shouldIndentBody(node, options as any)) {
+          return [indent([hardline, body]), hardline];
+        } else {
+          return [dedentToRoot([hardline, body]), hardline];
+        }
       }
     }
     default:
@@ -51,7 +60,14 @@ export const embed3: Printer3<LiquidHtmlNode>['embed'] = (path, options) => {
             singleQuote: (options as LiquidParserOptions).embeddedSingleQuote,
             parser,
             __embeddedInHtml: true,
-          }).then((document) => doc.utils.stripTrailingHardline(document)) as Promise<Doc3>;
+          }).then((document) => {
+            const body = doc.utils.stripTrailingHardline(document);
+            if (shouldIndentBody(node, options as any)) {
+              return [indent([hardline, body]), hardline];
+            } else {
+              return [dedentToRoot([hardline, body]), hardline];
+            }
+          }) as Promise<Doc3>;
         }
       }
       default:
@@ -59,3 +75,13 @@ export const embed3: Printer3<LiquidHtmlNode>['embed'] = (path, options) => {
     }
   };
 };
+
+function shouldIndentBody(node: RawMarkup, options: { indentSchema?: boolean }): boolean {
+  const parentNode = node.parentNode;
+  const shouldNotIndentBody =
+    parentNode &&
+    parentNode.type === NodeTypes.LiquidRawTag &&
+    parentNode.name === 'schema' &&
+    !options.indentSchema;
+  return node.kind !== RawMarkupKinds.markdown && !shouldNotIndentBody;
+}
