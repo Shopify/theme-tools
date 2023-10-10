@@ -4,6 +4,7 @@
     "baseUrl": "./",
     "module": "commonjs",
     "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
     "strictPropertyInitialization": false,
     "isolatedModules": false,
     "strict": false,

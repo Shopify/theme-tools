@@ -167,3 +167,4 @@ export type AttrUnquoted = Augmented<AST.AttrUnquoted, AllAugmentations>;
 export type AttrEmpty = Augmented<AST.AttrEmpty, AllAugmentations>;
 export type LiquidExpression = Augmented<AST.LiquidExpression, AllAugmentations>;
 export type TextNode = Augmented<AST.TextNode, AllAugmentations>;
+export type RawMarkup = Augmented<AST.RawMarkup, AllAugmentations>;

@@ -1,0 +1,35 @@
+When there's Liquid and no backticks, should reindent
+<div>
+  <script>
+    {% if cond %}
+      const x = '{{ product.featured_image}}'
+    {% endif %}
+  </script>
+</div>
+
+When there's Liquid and backticks, should not touch and be idempotent
+<div>
+  <script>
+  {% if cond %}
+    const x = `{{ product.featured_image}}`
+  {% endif %}
+  </script>
+</div>
+
+When there's Liquid and no backticks in Liquid JS tag, should reindent
+<div>
+  {% javascript %}
+    {% if cond %}
+      const x = '{{ product.featured_image}}'
+    {% endif %}
+  {% endjavascript %}
+</div>
+
+When there's Liquid and backticks in Liquid JS tag, should not touch and be idempotent
+<div>
+  {% javascript %}
+  {% if cond %}
+    const x = `{{ product.featured_image}}`
+  {% endif %}
+  {% endjavascript %}
+</div>
