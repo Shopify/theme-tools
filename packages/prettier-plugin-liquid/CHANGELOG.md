@@ -1,5 +1,11 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.3.2
+
+### Patch Changes
+
+- bec7ee0: Fix idempotence of script tag bodies with both backticks and Liquid in them
+
 ## 1.3.1
 
 ### Patch Changes
