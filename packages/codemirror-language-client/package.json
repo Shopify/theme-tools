@@ -1,0 +1,36 @@
+{
+  "name": "@shopify/code-mirror-language-client-monorepo",
+  "version": "0.0.0",
+  "description": "A Language Client for CodeMirror",
+  "repository": "https://github.com/Shopify/code-mirror-language-client",
+  "author": "CP Clermont <cp.clermont@shopify.com>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "yarn --cwd packages/language-client build",
+    "build:playground": "yarn --cwd packages/playground build",
+    "dev:client": "yarn --cwd packages/language-client dev",
+    "dev:playground": "yarn --cwd packages/playground dev",
+    "format": "prettier --write \"packages/*/src/**/*.ts\"",
+    "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
+    "playground": "npx http-server packages/playground/dist",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@changesets/cli": "^2.26.0",
+    "@codemirror/lint": "^6.2.0",
+    "@codemirror/state": "^6.2.0",
+    "@codemirror/view": "^6.9.2",
+    "chai": "^4.3.7",
+    "jsdom": "^21.1.1",
+    "prettier": "^2.8.4",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.3",
+    "vitest": "^0.29.7",
+    "vscode-languageserver-protocol": "^3.17.3",
+    "vscode-languageserver-textdocument": "^1.0.8"
+  }
+}
