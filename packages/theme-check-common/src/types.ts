@@ -131,6 +131,9 @@ export type CheckDefinition<
          */
         code: string;
 
+        /** For backwards compatibility, alternative code names for the check */
+        aliases?: string[];
+
         /** The severity determines the icon and color of diagnostics */
         severity: Severity.ERROR | Severity.WARNING | Severity.INFO;
 

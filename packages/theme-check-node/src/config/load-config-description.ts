@@ -36,10 +36,8 @@ export async function loadConfigDescription(
     .concat(thirdPartyChecks)
     .filter(isEnabledBy(configDescription));
 
-  const settings = configDescription.checkSettings;
-
   return {
-    settings,
+    settings: unaliasedSettings(configDescription.checkSettings, checks),
     checks,
     ignore: configDescription.ignore,
     root: resolveRoot(root, configDescription.root),
@@ -65,10 +63,39 @@ export function resolveRoot(root: AbsolutePath, pathLike: string | undefined): s
 
 const isEnabledBy =
   (config: ConfigDescription) => (checkDefinition: CheckDefinition<SourceCodeType>) => {
-    const checkSettings = config.checkSettings[checkDefinition.meta.code];
+    const checkSettings =
+      config.checkSettings[checkDefinition.meta.code] ?? aliasedSettings(config, checkDefinition);
     if (!checkSettings) return false;
     return checkSettings.enabled;
   };
+
+function aliasedSettings(
+  config: ConfigDescription,
+  checkDefinition: CheckDefinition<SourceCodeType>,
+) {
+  if (!checkDefinition.meta.aliases) return undefined;
+  const usedAlias = checkDefinition.meta.aliases.find((alias) => config.checkSettings[alias]);
+  if (!usedAlias) return undefined;
+  return config.checkSettings[usedAlias];
+}
+
+function unaliasedSettings(
+  settings: ConfigDescription['checkSettings'],
+  checks: CheckDefinition<SourceCodeType>[],
+): ConfigDescription['checkSettings'] {
+  return Object.fromEntries(
+    Object.entries(settings).map(([code, value]) => {
+      return [unaliasedCode(code, checks), value];
+    }),
+  );
+}
+
+function unaliasedCode(code: string, checks: CheckDefinition<SourceCodeType>[]) {
+  const check = checks.find(
+    (check) => check.meta.code === code || check.meta.aliases?.find((alias) => alias === code),
+  );
+  return check?.meta.code;
+}
 
 async function isNodeModuleRoot(root: AbsolutePath) {
   // is absolute absolute root

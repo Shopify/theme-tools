@@ -21,6 +21,7 @@ function cleanErrorMessage(message: string, highlight: string): string {
 export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
   meta: {
     code: 'LiquidHTMLSyntaxError',
+    aliases: ['SyntaxError', 'HtmlParsingError'],
     name: 'Prevent LiquidHTML Syntax Errors',
     docs: {
       description: 'This check exists to inform the user of Liquid HTML syntax errors.',

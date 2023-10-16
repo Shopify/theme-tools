@@ -99,6 +99,7 @@ function valueIsShopifyHosted(attr: ValuedHtmlAttribute): boolean {
 export const RemoteAsset: LiquidCheckDefinition = {
   meta: {
     code: 'RemoteAsset',
+    aliases: ['AssetUrlFilters'],
     name: 'Remote Asset',
     docs: {
       description: 'This check is aimed at eliminating unnecessary HTTP connections.',

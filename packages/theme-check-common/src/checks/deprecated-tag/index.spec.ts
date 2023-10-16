@@ -1,13 +1,13 @@
 import { expect, describe, it } from 'vitest';
 import { highlightedOffenses, runLiquidCheck } from '../../test';
-import { DeprecatedTags } from './index';
+import { DeprecatedTag } from './index';
 
-describe('Module: DeprecatedTags', () => {
+describe('Module: DeprecatedTag', () => {
   it('should report an offense when include tag is used', async () => {
     const sourceCode = `
       {% include 'templates/foo.liquid' %}
     `;
-    const offenses = await runLiquidCheck(DeprecatedTags, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedTag, sourceCode);
 
     expect(offenses).toHaveLength(1);
     expect(offenses[0].message).toEqual(`Use the 'render' tag instead of 'include'`);
@@ -20,7 +20,7 @@ describe('Module: DeprecatedTags', () => {
     const sourceCode = `
       {% render 'templates/foo.liquid' %}
     `;
-    const offenses = await runLiquidCheck(DeprecatedTags, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedTag, sourceCode);
 
     expect(offenses).toHaveLength(0);
 
@@ -34,7 +34,7 @@ describe('Module: DeprecatedTags', () => {
       {% assign greeting = "hello world" %}
       {% include 'greeting.liquid' %}
     `;
-    const offenses = await runLiquidCheck(DeprecatedTags, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedTag, sourceCode);
 
     expect(offenses).toHaveLength(2);
     if (!offenses[0].suggest || !offenses[1].suggest) return;
@@ -50,14 +50,14 @@ describe('Module: DeprecatedTags', () => {
 
   it('should report multiple offenses when multiple include tags are used in the same line', async () => {
     const sourceCode = "{% include 'foo.liquid' %} Some text {% include 'bar.liquid' %}";
-    const offenses = await runLiquidCheck(DeprecatedTags, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedTag, sourceCode);
 
     expect(offenses).toHaveLength(2);
   });
 
   it('should report offenses when include tags are nested', async () => {
     const sourceCode = "{% if true %} {% include 'foo.liquid' %} {% endif %}";
-    const offenses = await runLiquidCheck(DeprecatedTags, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedTag, sourceCode);
 
     expect(offenses).toHaveLength(1);
     expect(offenses[0].message).toEqual(`Use the 'render' tag instead of 'include'`);

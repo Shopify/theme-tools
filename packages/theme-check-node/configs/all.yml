@@ -37,10 +37,10 @@ DeprecateBgsizes:
 DeprecateLazysizes:
   enabled: true
   severity: 1
-DeprecatedFilters:
+DeprecatedFilter:
   enabled: true
   severity: 1
-DeprecatedTags:
+DeprecatedTag:
   enabled: true
   severity: 1
 ImgWidthAndHeight:

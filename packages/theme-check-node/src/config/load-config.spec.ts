@@ -187,6 +187,23 @@ NodeModuleCheck:
     expect(nodeModuleCheck).to.exist;
   });
 
+  it('loads an aliased check properly', async () => {
+    const configPath = await createMockConfigFile(
+      tempDir,
+      `
+extends: nothing
+SyntaxError:
+  enabled: true
+      `,
+    );
+    const config = await loadConfig(configPath, tempDir);
+    expect(config.settings).to.eql({
+      LiquidHTMLSyntaxError: {
+        enabled: true,
+      },
+    });
+  });
+
   function check(code: string) {
     return allChecks.find(isCheck(code));
   }

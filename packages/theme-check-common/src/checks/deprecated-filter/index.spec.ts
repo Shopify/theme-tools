@@ -1,16 +1,16 @@
 import { expect, describe, it } from 'vitest';
 import { highlightedOffenses, applySuggestions, runLiquidCheck, applyFix } from '../../test';
-import { DeprecatedFilters } from './index';
+import { DeprecatedFilter } from './index';
 import { Offense } from '../../types';
 
-describe('Module: DeprecatedFilters', () => {
+describe('Module: DeprecatedFilter', () => {
   it('should report an offense when a deprecated filter is used', async () => {
     const sourceCode = `
       {{ '#EA5AB9' | hex_to_rgba }}
       {{ '#EA5AB9' | hex_to_rgba: 0.5 }}
     `;
 
-    const offenses = await runLiquidCheck(DeprecatedFilters, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedFilter, sourceCode);
     expect(offenses.map((e) => e.message)).toEqual([
       "Deprecated filter 'hex_to_rgba', consider using 'color_to_rgb'.",
       "Deprecated filter 'hex_to_rgba', consider using 'color_to_rgb'.",
@@ -26,7 +26,7 @@ describe('Module: DeprecatedFilters', () => {
       {{ '#EA5AB9' | color_to_rgb | color_modify: 'alpha', 0.5 }}
     `;
 
-    const offenses = await runLiquidCheck(DeprecatedFilters, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedFilter, sourceCode);
 
     expect(offenses).toHaveLength(0);
   });
@@ -34,7 +34,7 @@ describe('Module: DeprecatedFilters', () => {
   it("should suggest a fix to replace the deprecated 'hex_to_rgba' filter", async () => {
     const sourceCode = '{{ "#EA5AB9" | hex_to_rgba }}';
 
-    const offenses = await runLiquidCheck(DeprecatedFilters, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedFilter, sourceCode);
     const fixedCode = applyFix(sourceCode, offenses[0]);
 
     expect(fixedCode).toEqual('{{ "#EA5AB9" | color_to_rgb }}');
@@ -43,7 +43,7 @@ describe('Module: DeprecatedFilters', () => {
   it("should suggest a fix to replace the deprecated 'hex_to_rgba' filter when an alpha value is passed", async () => {
     const sourceCode = '{{ "#EA5AB9" | hex_to_rgba: 0.5 }}';
 
-    const offenses = await runLiquidCheck(DeprecatedFilters, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedFilter, sourceCode);
     const fixedCode = applyFix(sourceCode, offenses[0]);
 
     expect(fixedCode).toEqual(`{{ "#EA5AB9" | color_to_rgb | color_modify: 'alpha', 0.5 }}`);
@@ -79,7 +79,7 @@ describe('Module: DeprecatedFilters', () => {
       {{ product.featured_image | img_url: '200x', scale: variable }}
     `;
 
-    const offenses = await runLiquidCheck(DeprecatedFilters, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedFilter, sourceCode);
     const fixedCode = fixSourceCode(sourceCode, offenses);
 
     const expected = `
@@ -146,7 +146,7 @@ describe('Module: DeprecatedFilters', () => {
       {{ product.featured_image | img_url: 'master' }}
     `;
 
-    const offenses = await runLiquidCheck(DeprecatedFilters, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedFilter, sourceCode);
     const fixedCode = fixSourceCode(sourceCode, offenses);
 
     const expected = `
@@ -187,7 +187,7 @@ describe('Module: DeprecatedFilters', () => {
   it("should suggest a fix to replace the deprecated 'article_img_url' filter", async () => {
     const sourceCode = '{{ article.image | article_img_url }}';
 
-    const offenses = await runLiquidCheck(DeprecatedFilters, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedFilter, sourceCode);
     const suggestions = applySuggestions(sourceCode, offenses[0]);
 
     expect(suggestions).toEqual(['{{ article.image | image_url: width: 100, height: 100 }}']);
@@ -196,7 +196,7 @@ describe('Module: DeprecatedFilters', () => {
   it("should suggest a fix to replace the deprecated 'article_img_url' filter with named sizes", async () => {
     const sourceCode = '{{ article.image | article_img_url: "grande" }}';
 
-    const offenses = await runLiquidCheck(DeprecatedFilters, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedFilter, sourceCode);
     const suggestions = applySuggestions(sourceCode, offenses[0]);
 
     expect(suggestions).toEqual(['{{ article.image | image_url: width: 600, height: 600 }}']);
@@ -205,7 +205,7 @@ describe('Module: DeprecatedFilters', () => {
   it("should suggest a fix to replace the deprecated 'collection_img_url' filter", async () => {
     const sourceCode = '{{ collection.image | collection_img_url }}';
 
-    const offenses = await runLiquidCheck(DeprecatedFilters, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedFilter, sourceCode);
     const suggestions = applySuggestions(sourceCode, offenses[0]);
 
     expect(suggestions).toEqual(['{{ collection.image | image_url: width: 100, height: 100 }}']);
@@ -214,7 +214,7 @@ describe('Module: DeprecatedFilters', () => {
   it("should suggest a fix to replace the deprecated 'collection_img_url' filter with named sizes", async () => {
     const sourceCode = '{{ collection.image | collection_img_url: "grande" }}';
 
-    const offenses = await runLiquidCheck(DeprecatedFilters, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedFilter, sourceCode);
     const suggestions = applySuggestions(sourceCode, offenses[0]);
 
     expect(suggestions).toEqual(['{{ collection.image | image_url: width: 600, height: 600 }}']);
@@ -223,7 +223,7 @@ describe('Module: DeprecatedFilters', () => {
   it("should suggest a fix to replace the deprecated 'product_img_url' filter", async () => {
     const sourceCode = '{{ p.featured_image | product_img_url }}';
 
-    const offenses = await runLiquidCheck(DeprecatedFilters, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedFilter, sourceCode);
     const suggestions = applySuggestions(sourceCode, offenses[0]);
 
     expect(suggestions).toEqual(['{{ p.featured_image | image_url: width: 100, height: 100 }}']);
@@ -232,7 +232,7 @@ describe('Module: DeprecatedFilters', () => {
   it("should suggest a fix to replace the deprecated 'product_img_url' filter with named sizes", async () => {
     const sourceCode = '{{ p.featured_image | product_img_url: "grande" }}';
 
-    const offenses = await runLiquidCheck(DeprecatedFilters, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedFilter, sourceCode);
     const suggestions = applySuggestions(sourceCode, offenses[0]);
 
     expect(suggestions).toEqual(['{{ p.featured_image | image_url: width: 600, height: 600 }}']);
@@ -247,7 +247,7 @@ describe('Module: DeprecatedFilters', () => {
       {{ product | img_tag: 'image alt text', 'my-css-class', 'grande' }}
     `;
 
-    const offenses = await runLiquidCheck(DeprecatedFilters, sourceCode);
+    const offenses = await runLiquidCheck(DeprecatedFilter, sourceCode);
     const fixedCode = fixSourceCode(sourceCode, offenses);
 
     const expected = `
