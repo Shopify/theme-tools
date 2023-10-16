@@ -9,10 +9,11 @@ import {
 } from '../../types';
 import { fixHexToRgba, suggestImageUrlFix, suggestImgTagFix, suggestImgUrlFix } from './fixes';
 
-export const DeprecatedFilters: LiquidCheckDefinition = {
+export const DeprecatedFilter: LiquidCheckDefinition = {
   meta: {
-    code: 'DeprecatedFilters',
-    name: 'Deprecated Filters',
+    code: 'DeprecatedFilter',
+    aliases: ['DeprecatedFilters'],
+    name: 'Deprecated Filter',
     docs: {
       description: 'Discourages using deprecated filters in themes.',
       url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/deprecated-filter',

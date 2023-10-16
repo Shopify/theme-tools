@@ -7,6 +7,7 @@ import { liquidFilterSuggestion, scriptTagSuggestion } from './suggestions';
 export const ParserBlockingScript: LiquidCheckDefinition = {
   meta: {
     code: 'ParserBlockingScript',
+    aliases: ['ParserBlockingScriptTag'],
     name: 'Avoid parser blocking scripts',
     docs: {
       description: 'They are bad ok?',

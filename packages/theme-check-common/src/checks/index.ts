@@ -28,8 +28,8 @@ import { ContentForHeaderModification } from './content-for-header-modification'
 import { AssetSizeAppBlockCSS } from './asset-size-app-block-css';
 import { AssetSizeAppBlockJavaScript } from './asset-size-app-block-javascript';
 import { AssetSizeCSS } from './asset-size-css';
-import { DeprecatedFilters } from './deprecated-filters';
-import { DeprecatedTags } from './deprecated-tags';
+import { DeprecatedFilter } from './deprecated-filter';
+import { DeprecatedTag } from './deprecated-tag';
 import { AssetSizeJavaScript } from './asset-size-javascript';
 import { UndefinedObject } from './undefined-object';
 
@@ -43,9 +43,9 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   CdnPreconnect,
   ContentForHeaderModification,
   DeprecateBgsizes,
-  DeprecatedFilters,
-  DeprecatedTags,
   DeprecateLazysizes,
+  DeprecatedFilter,
+  DeprecatedTag,
   ImgWidthAndHeight,
   JSONSyntaxError,
   LiquidHTMLSyntaxError,

@@ -43,6 +43,7 @@ function isString(node: LiquidHtmlNode): node is LiquidString {
 export const AssetSizeCSS: LiquidCheckDefinition<typeof schema> = {
   meta: {
     code: 'AssetSizeCSS',
+    aliases: ['AssetSizeCSSStylesheetTag'],
     name: 'Prevent Large CSS bundles',
     docs: {
       description: 'This check is aimed at preventing large CSS bundles for speed.',

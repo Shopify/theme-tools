@@ -62,7 +62,7 @@
 
 ### Minor Changes
 
-- 12c794a: Add `DeprecatedTags` check
+- 12c794a: Add `DeprecatedTag` check
 
 ### Patch Changes
 

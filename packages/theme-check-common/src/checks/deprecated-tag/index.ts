@@ -1,12 +1,13 @@
 import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
 
-export const DeprecatedTags: LiquidCheckDefinition = {
+export const DeprecatedTag: LiquidCheckDefinition = {
   meta: {
-    code: 'DeprecatedTags',
-    name: 'Deprecated Tags',
+    code: 'DeprecatedTag',
+    aliases: ['DeprecatedTags'],
+    name: 'Deprecated Tag',
     docs: {
       description: 'This check is aimed at eliminating the use of deprecated tags.',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/deprecated-tags',
+      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/deprecated-tag',
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,
