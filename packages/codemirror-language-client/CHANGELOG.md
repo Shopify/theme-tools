@@ -1,5 +1,11 @@
 # @shopify/codemirror-language-client
 
+## 0.1.0
+
+### Minor Changes
+
+- 962adac: Hello world
+
 # @shopify/code-mirror-language-client (private)
 
 ## 0.0.7
