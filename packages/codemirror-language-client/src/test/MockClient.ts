@@ -5,11 +5,7 @@ import {
   CancellationTokenSource,
   CancellationToken,
 } from 'vscode-languageserver-protocol';
-import {
-  PromiseCompletion,
-  AbstractLanguageClient,
-  disposable,
-} from '../LanguageClient';
+import { PromiseCompletion, AbstractLanguageClient, disposable } from '../LanguageClient';
 
 export class MockClient extends EventTarget implements AbstractLanguageClient {
   clientCapabilities: AbstractLanguageClient['clientCapabilities'];
@@ -25,11 +21,7 @@ export class MockClient extends EventTarget implements AbstractLanguageClient {
   private pendingRequest: Promise<any> | null;
   private promiseCompletion: PromiseCompletion | null;
 
-  constructor(
-    clientCapabilities = {},
-    serverCapabilities = null,
-    serverInfo = null,
-  ) {
+  constructor(clientCapabilities = {}, serverCapabilities = null, serverInfo = null) {
     super();
     this.clientCapabilities = clientCapabilities;
     this.serverCapabilities = serverCapabilities;
@@ -44,8 +36,7 @@ export class MockClient extends EventTarget implements AbstractLanguageClient {
     };
 
     this.onRequest = (type, handler) => {
-      const cancellationToken: CancellationToken = new CancellationTokenSource()
-        .token;
+      const cancellationToken: CancellationToken = new CancellationTokenSource().token;
       const callback = (e: any) => handler(e.detail.params, cancellationToken);
       this.addEventListener(type.method, callback);
       return disposable(() => this.removeEventListener(type.method, callback));
@@ -81,10 +72,7 @@ export class MockClient extends EventTarget implements AbstractLanguageClient {
     );
   }
 
-  triggerRequest<P, R, PR, E, RO>(
-    type: ProtocolRequestType<P, R, PR, E, RO>,
-    params: P,
-  ) {
+  triggerRequest<P, R, PR, E, RO>(type: ProtocolRequestType<P, R, PR, E, RO>, params: P) {
     this.dispatchEvent(
       new CustomEvent(type.method, {
         detail: {

@@ -2,12 +2,7 @@ import { Extension } from '@codemirror/state';
 import { ClientCapabilities } from 'vscode-languageserver-protocol';
 
 import { Dependencies, LanguageClient } from './LanguageClient';
-import {
-  clientFacet,
-  fileUriFacet,
-  textDocumentSync,
-  lspLinter,
-} from './extensions';
+import { clientFacet, fileUriFacet, textDocumentSync, lspLinter } from './extensions';
 
 /**
  * The client capabilities are how we tell the language server what
@@ -50,11 +45,6 @@ export class CodeMirrorLanguageClient {
   }
 
   public extension(fileUri: string): Extension[] {
-    return [
-      clientFacet.of(this.client),
-      fileUriFacet.of(fileUri),
-      textDocumentSync,
-      lspLinter,
-    ];
+    return [clientFacet.of(this.client), fileUriFacet.of(fileUri), textDocumentSync, lspLinter];
   }
 }

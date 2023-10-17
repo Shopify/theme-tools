@@ -46,10 +46,7 @@ export interface AbstractLanguageClient {
   sendNotification: LanguageClient['sendNotification'];
 }
 
-export class LanguageClient
-  extends EventTarget
-  implements AbstractLanguageClient
-{
+export class LanguageClient extends EventTarget implements AbstractLanguageClient {
   public readonly clientCapabilities: ClientCapabilities;
   public serverCapabilities: ServerCapabilities | null;
   public serverInfo: any;
@@ -145,8 +142,7 @@ export class LanguageClient
   ): Disposable {
     const callback = async (event: Event) => {
       const { params, id } = (event as CustomEvent<RequestMessage>).detail;
-      const cancellationToken: CancellationToken = new CancellationTokenSource()
-        .token;
+      const cancellationToken: CancellationToken = new CancellationTokenSource().token;
       const response = await handler(params as any as P, cancellationToken);
       if (response && typeof response === 'object' && 'code' in response) {
         this.sendResponse(id!, undefined, response as any as ResponseError);
@@ -156,9 +152,7 @@ export class LanguageClient
     };
 
     this.addEventListener(type.method, callback);
-    return this.disposable(() =>
-      this.removeEventListener(type.method, callback),
-    );
+    return this.disposable(() => this.removeEventListener(type.method, callback));
   }
 
   /**
@@ -183,9 +177,7 @@ export class LanguageClient
     };
 
     this.addEventListener(type.method, callback);
-    return this.disposable(() =>
-      this.removeEventListener(type.method, callback),
-    );
+    return this.disposable(() => this.removeEventListener(type.method, callback));
   }
 
   /**
@@ -203,17 +195,12 @@ export class LanguageClient
    *   params
    * );
    */
-  public sendRequest<R, PR, E, RO>(
-    type: ProtocolRequestType0<R, PR, E, RO>,
-  ): Promise<R>;
+  public sendRequest<R, PR, E, RO>(type: ProtocolRequestType0<R, PR, E, RO>): Promise<R>;
   public sendRequest<P, R, PR, E, RO>(
     type: ProtocolRequestType<P, R, PR, E, RO>,
     params?: P,
   ): Promise<R>;
-  public async sendRequest<R>(
-    type: string | MessageSignature,
-    params?: any,
-  ): Promise<R> {
+  public async sendRequest<R>(type: string | MessageSignature, params?: any): Promise<R> {
     this.requestId += 1;
     const requestId = this.requestId;
     const method = typeof type === 'string' ? type : type.method;
@@ -247,10 +234,7 @@ export class LanguageClient
    * );
    */
   public sendNotification<RO>(type: ProtocolNotificationType0<RO>): void;
-  public sendNotification<P, RO>(
-    type: ProtocolNotificationType<P, RO>,
-    params?: P,
-  ): void;
+  public sendNotification<P, RO>(type: ProtocolNotificationType<P, RO>, params?: P): void;
   public sendNotification(type: string | MessageSignature, params?: any): void {
     const method = typeof type === 'string' ? type : type.method;
     const notification: NotificationMessage = {
@@ -262,11 +246,7 @@ export class LanguageClient
     this.sendMessage(notification);
   }
 
-  private sendResponse(
-    id: number | string,
-    result: any,
-    error?: ResponseError,
-  ) {
+  private sendResponse(id: number | string, result: any, error?: ResponseError) {
     const response: ResponseMessage = { jsonrpc: '2.0', id };
     if (result !== undefined) response.result = result;
     if (error !== undefined) response.error = error;
@@ -295,13 +275,8 @@ export class LanguageClient
       }
       this.requests.delete(id);
     } else if (isRequest(message)) {
-      this.log(
-        `Server->Client ${message.method} request [${message.id}]`,
-        message,
-      );
-      this.dispatchEvent(
-        new CustomEvent<RequestMessage>(message.method, { detail: message }),
-      );
+      this.log(`Server->Client ${message.method} request [${message.id}]`, message);
+      this.dispatchEvent(new CustomEvent<RequestMessage>(message.method, { detail: message }));
     } else if (isNotification(message)) {
       this.log(`Server->Client ${message.method} notification`, message);
       this.dispatchEvent(

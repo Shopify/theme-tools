@@ -1,4 +1,6 @@
-# @shopify/code-mirror-language-client
+# @shopify/codemirror-language-client
+
+# @shopify/code-mirror-language-client (private)
 
 ## 0.0.7
 

@@ -1,10 +1,4 @@
-import {
-  StateEffect,
-  StateField,
-  Extension,
-  StateEffectType,
-  Facet,
-} from '@codemirror/state';
+import { StateEffect, StateField, Extension, StateEffectType, Facet } from '@codemirror/state';
 import { PluginValue, EditorView, ViewPlugin } from '@codemirror/view';
 import { linter, Diagnostic as CodeMirrorDiagnostic } from '@codemirror/lint';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -44,40 +38,31 @@ class DiagnosticsPlugin implements PluginValue {
 }
 
 export const setLSPDiagnosticsVersion = StateEffect.define<number | null>();
-export const lspDiagnosticsVersionField = simpleStateField(
-  setLSPDiagnosticsVersion,
-  null,
-);
+export const lspDiagnosticsVersionField = simpleStateField(setLSPDiagnosticsVersion, null);
 
 export const setLSPDiagnostics = StateEffect.define<LSPDiagnostic[]>();
 export const lspDiagnosticsField = simpleStateField(setLSPDiagnostics, []);
 
-export const diagnosticsFacet = Facet.define<
-  CodeMirrorDiagnostic[],
-  CodeMirrorDiagnostic[]
->({
+export const diagnosticsFacet = Facet.define<CodeMirrorDiagnostic[], CodeMirrorDiagnostic[]>({
   combine: (values) => values[0],
 });
 
-export const computedCodeMirrorDiagnosticsValueProvider =
-  diagnosticsFacet.compute(
-    [textDocumentField, lspDiagnosticsField, lspDiagnosticsVersionField],
-    (state) => {
-      const doc = state.field(textDocumentField);
-      const lspDiagnosticsVersion = state.field(lspDiagnosticsVersionField);
+export const computedCodeMirrorDiagnosticsValueProvider = diagnosticsFacet.compute(
+  [textDocumentField, lspDiagnosticsField, lspDiagnosticsVersionField],
+  (state) => {
+    const doc = state.field(textDocumentField);
+    const lspDiagnosticsVersion = state.field(lspDiagnosticsVersionField);
 
-      // If the diagnostics version and doc version don't match, it means
-      // the diagnostics are stale.
-      if (lspDiagnosticsVersion !== doc.version) {
-        return [];
-      }
+    // If the diagnostics version and doc version don't match, it means
+    // the diagnostics are stale.
+    if (lspDiagnosticsVersion !== doc.version) {
+      return [];
+    }
 
-      const lspDiagnostics = state.field(lspDiagnosticsField);
-      return lspDiagnostics.map((diagnostic) =>
-        lspToCodeMirrorDiagnostic(diagnostic, doc),
-      );
-    },
-  );
+    const lspDiagnostics = state.field(lspDiagnosticsField);
+    return lspDiagnostics.map((diagnostic) => lspToCodeMirrorDiagnostic(diagnostic, doc));
+  },
+);
 
 export const diagnosticsLinter = linter(
   (view) => {
@@ -115,9 +100,7 @@ export const lspLinter: Extension = [
 ];
 
 type CodeMirrorSeverity = 'info' | 'warning' | 'error';
-function lspToCodeMirrorSeverity(
-  severity: LSPSeverity | undefined,
-): CodeMirrorSeverity {
+function lspToCodeMirrorSeverity(severity: LSPSeverity | undefined): CodeMirrorSeverity {
   switch (severity) {
     case LSPSeverity.Error: {
       return 'error';
@@ -149,10 +132,7 @@ function lspToCodeMirrorDiagnostic(
   };
 }
 
-function simpleStateField<T>(
-  stateEffect: StateEffectType<T>,
-  defaultValue: T,
-): StateField<T> {
+function simpleStateField<T>(stateEffect: StateEffectType<T>, defaultValue: T): StateField<T> {
   return StateField.define<T>({
     create: () => defaultValue,
     update(value, tr) {

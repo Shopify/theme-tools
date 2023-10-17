@@ -5,12 +5,7 @@ import {
   DidOpenTextDocumentNotification,
 } from 'vscode-languageserver-protocol';
 import { Extension, StateField } from '@codemirror/state';
-import {
-  EditorView,
-  PluginValue,
-  ViewPlugin,
-  ViewUpdate,
-} from '@codemirror/view';
+import { EditorView, PluginValue, ViewPlugin, ViewUpdate } from '@codemirror/view';
 
 import { AbstractLanguageClient } from '../LanguageClient';
 
@@ -125,10 +120,7 @@ const textDocumentSyncPlugin = ViewPlugin.fromClass(TextDocumentSyncPlugin);
 
 // Implicitly depends on the fileUriFacet and clientFacet...
 // Don't know how that's typically handled yet...
-export const textDocumentSync: Extension = [
-  textDocumentField,
-  textDocumentSyncPlugin,
-];
+export const textDocumentSync: Extension = [textDocumentField, textDocumentSyncPlugin];
 
 function languageId(uri: string): string {
   const lowerCased = uri.toLowerCase();
