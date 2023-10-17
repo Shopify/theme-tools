@@ -29,8 +29,8 @@ class TextDocumentSyncPlugin implements PluginValue {
 
   update(update: ViewUpdate) {
     const doc = update.state.field(textDocumentField);
-    const prevFileUri = update.startState.facet(fileUriFacet);
-    const currFileUri = update.state.facet(fileUriFacet);
+    const prevFileUri = update.startState.facet(fileUriFacet.reader);
+    const currFileUri = update.state.facet(fileUriFacet.reader);
 
     if (prevFileUri !== currFileUri) {
       this.closeFile(prevFileUri);
@@ -87,7 +87,7 @@ class TextDocumentSyncPlugin implements PluginValue {
 
 export const textDocumentField = StateField.define<TextDocument>({
   create(state) {
-    const fileUri = state.facet(fileUriFacet);
+    const fileUri = state.facet(fileUriFacet.reader);
     const version = 0;
     return TextDocument.create(
       fileUri,
@@ -97,8 +97,8 @@ export const textDocumentField = StateField.define<TextDocument>({
     );
   },
   update(previousValue, tr) {
-    const prevFileUri = tr.startState.facet(fileUriFacet);
-    const currFileUri = tr.state.facet(fileUriFacet);
+    const prevFileUri = tr.startState.facet(fileUriFacet.reader);
+    const currFileUri = tr.state.facet(fileUriFacet.reader);
     const isNewFile = prevFileUri !== currFileUri;
     const doc = tr.newDoc;
     if (isNewFile) {

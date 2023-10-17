@@ -22,8 +22,8 @@ class DiagnosticsPlugin implements PluginValue {
   private handlers: Disposable[];
 
   constructor(view: EditorView) {
-    const client = view.state.facet(clientFacet);
-    const fileUri = view.state.facet(fileUriFacet);
+    const client = view.state.facet(clientFacet.reader);
+    const fileUri = view.state.facet(fileUriFacet.reader);
     this.handlers = [];
     this.handlers.push(
       client.onNotification(PublishDiagnosticsNotification.type, (params) => {
@@ -81,7 +81,7 @@ export const computedCodeMirrorDiagnosticsValueProvider =
 
 export const diagnosticsLinter = linter(
   (view) => {
-    const diagnostics = view.state.facet(diagnosticsFacet);
+    const diagnostics = view.state.facet(diagnosticsFacet.reader);
     return diagnostics;
   },
   {

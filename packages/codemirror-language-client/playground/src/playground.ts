@@ -4,7 +4,7 @@ import { EditorState } from '@codemirror/state';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { liquid, liquidHighLightStyle } from '@shopify/lang-liquid';
 
-import { CodeMirrorLanguageClient } from '@shopify/code-mirror-language-client';
+import { CodeMirrorLanguageClient } from '@shopify/codemirror-language-client';
 import * as SetFileTreeNotification from './SetFileTreeNotification';
 import * as SetDefaultTranslationsNotification from './SetDefaultTranslationsNotification';
 

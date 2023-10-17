@@ -1,17 +1,10 @@
-<h1 align="center" style="position: relative;" >
-  <br>
-    <img src="https://github.com/Shopify/theme-check-vscode/blob/main/images/shopify_glyph.png?raw=true" alt="logo" width="141" height="160">
-  <br>
-  CodeMirror Language Client
-  <br>
-</h1>
+**> **Warning**
+>
+> This package is open source but not open to contributions. It comes with little documentation but can serve as an example implementation of LSP features on the web.
 
-<p align="center">
-  <a href="https://cloudsmith.io/~shopify/repos/node/packages/detail/npm/@shopify%252Fcode-mirror-language-client/latest/"><img src="https://api-prd.cloudsmith.io/v1/badges/version/shopify/node/npm/@shopify/code-mirror-language-client/latest/x/?render=true&show_latest=true&badge_token=gAAAAABkHJtfR24VmfHwTug33VPxi_j-YKBj_ZaAbAzYYTLoxwQidbKukn7AgiydnvdC35Zp5jvtGwJ5etfqWlyojwzZflZS4t6I-vyVMeAbGlAr23VfRog%3D" alt="Latest version of '@shopify/code-mirror-language-client' @ Cloudsmith" /></a>
-  <a href="https://buildkite.com/shopify/code-mirror-language-client"><img src="https://badge.buildkite.com/7691c1730f5c62151a8c4ae39d21a70cabaa30582f599f7287.svg" alt="Build status"></a>
-</p>
+# CodeMirror Language Client
 
-[CodeMirror](https://codemirror.net/) is the open source library that powers the Online Store Code Editor in [online-store-web](https://github.com/Shopify/online-store-web).
+[CodeMirror](https://codemirror.net/) is the open source library that powers the [Online Store Code Editor](https://shopify.dev/docs/themes/tools/code-editor).
 
 The [Language Server Protocol](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/) empowers developers to write one language server that can run in all language clients. Write a client, and you gain access to all servers; write one server, and all clients can use it.
 
@@ -24,7 +17,7 @@ This repo serves as a CodeMirror Language Client. Feed it a Language Server and 
 ## Usage
 
 ```typescript
-import { CodeMirrorLanguageClient } from '@shopify/code-mirror-language-client';
+import { CodeMirrorLanguageClient } from '@shopify/codemirror-language-client';
 
 async function main() {
   // This doesn't have to be liquid-language-server, it
@@ -55,32 +48,6 @@ async function main() {
 
 main();
 ```
-
-## Development
-
-1. In a terminal tab, run the TypeScript watcher for the `language-client`.
-
-   ```bash
-   yarn dev:client
-   ```
-
-2. [Optional] In a different terminal tab, run the playground development server. You can use this to see a trimmed down version of the server/client interactions in action.
-
-   ```bash
-   yarn dev:playground
-   ```
-
-## Testing
-
-Testings is powered [vitest](https://vitest.dev/). Tests that must run in-browser are done with the `// @vitest-environment jsdom` directive (see [textDocumentSync.spec.ts](/src/extensions/textDocumentSync.spec.ts))
-
-Run tests with this command:
-
-```
-yarn test
-```
-
-Or use the recommended VS Code extensions to debug/run the tests.
 
 ## Learn more
 

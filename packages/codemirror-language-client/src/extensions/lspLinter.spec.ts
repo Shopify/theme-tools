@@ -54,7 +54,7 @@ describe('Module: lspLinter', () => {
     });
 
     it('should make them available in the diagnosticState', () => {
-      const codeMirrorDiagnostics = view.state.facet(diagnosticsFacet);
+      const codeMirrorDiagnostics = view.state.facet(diagnosticsFacet.reader);
       expect(codeMirrorDiagnostics).to.have.lengthOf(1);
       const expectedDiagnostic: CodeMirrorDiagnostic = {
         from: 0,
@@ -104,7 +104,7 @@ describe('Module: lspLinter', () => {
     });
 
     it('should discard the stale diagnostics', () => {
-      const codeMirrorDiagnostics = view.state.facet(diagnosticsFacet);
+      const codeMirrorDiagnostics = view.state.facet(diagnosticsFacet.reader);
       expect(codeMirrorDiagnostics).to.have.lengthOf(0);
     });
   });
@@ -148,7 +148,7 @@ describe('Module: lspLinter', () => {
     });
 
     it('should discard the stale diagnostics', () => {
-      const codeMirrorDiagnostics = view.state.facet(diagnosticsFacet);
+      const codeMirrorDiagnostics = view.state.facet(diagnosticsFacet.reader);
       expect(codeMirrorDiagnostics).to.have.lengthOf(0);
     });
   });

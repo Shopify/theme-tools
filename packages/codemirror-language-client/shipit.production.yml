@@ -1,8 +1,0 @@
-ci:
-  require:
-    - buildkite/code-mirror-language-client
-
-deploy:
-  override:
-    - yarn install
-    - yarn build && yarn changeset publish

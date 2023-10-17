@@ -8,6 +8,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 /** @type WebpackConfig */
 const config = {
+  context: __dirname,
   mode: 'development',
   entry: './src/playground.ts',
   output: {

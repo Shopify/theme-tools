@@ -1,0 +1,22 @@
+{
+  "extends": "../tsconfig.json",
+  "include": ["./src/**/*.ts"],
+  "exclude": ["./dist"],
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "allowJs": true,
+    "lib": ["dom"],
+    "module": "es2022",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
+    "paths": {
+      "@shopify/theme-language-server-browser": ["../../theme-language-server-browser"]
+    }
+  },
+  "references": [
+    {
+      "path": "../../theme-language-server-browser"
+    }
+  ]
+}
+
