@@ -30,6 +30,7 @@ This monorepo is home of all things dev tools for Shopify themes:
 - [`@shopify/theme-language-server-common`](./packages/theme-language-server-common) — Runtime agnostic [Language Server](https://microsoft.github.io/language-server-protocol/) that can run in browser or Node.js.  
 - [`@shopify/theme-language-server-browser`](./packages/theme-language-server-browser) — Browser specific wrapper over the common library.  
 - [`@shopify/theme-language-server-node`](./packages/theme-language-server-node) — Node.js specific wrapper over the common library.  
+- [`@shopify/codemirror-language-client`](./packages/codemirror-language-client) — A CodeMirror Language Client (batteries not included).  
 - [`theme-check-vscode`](./packages/vscode-extension) — The VS Code extension that uses it all.
 
 These tools are also integrated in the [Online Store Code Editor](https://shopify.dev/docs/themes/tools/code-editor) and the [Shopify CLI](https://shopify.dev/docs/themes/tools/cli).

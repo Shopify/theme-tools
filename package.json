@@ -8,6 +8,7 @@
   "license": "MIT",
   "private": true,
   "workspaces": [
+    "packages/codemirror-language-client",
     "packages/liquid-html-parser",
     "packages/prettier-plugin-liquid",
     "packages/theme-check-*",
@@ -23,6 +24,7 @@
     "build:ts": "yarn workspaces run build:ts",
     "format": "prettier --write \"packages/*/src/**/*.ts\"",
     "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
+    "playground": "yarn --cwd packages/codemirror-language-client run dev:playground",
     "prebuild:ts": "rm -rf packages/*/dist",
     "publish:vsce": "yarn --cwd packages/vscode-extension publish:vsce",
     "release": "yarn workspace release-orchestrator run start",
@@ -32,10 +34,19 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.0",
-    "chai": "^4.3.7",
+    "copy-webpack-plugin": "^11.0.0",
+    "css-loader": "^6.7.3",
+    "html-webpack-plugin": "^5.5.0",
+    "jsdom": "^22.1.0",
     "prettier": "^2.8.4",
+    "ts-loader": "^9.4.2",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.3",
-    "vitest": "^0.34.1"
+    "vitest": "^0.34.1",
+    "vscode-languageserver-protocol": "^3.17.3",
+    "vscode-languageserver-textdocument": "^1.0.8",
+    "webpack": "^5.76.0",
+    "webpack-cli": "^5.0.0",
+    "webpack-dev-server": "^4.11.1"
   }
 }

@@ -50,6 +50,14 @@ This process has a small gotcha: online-store-web needs to use the built assets 
 
 Once you've made some changes to your local theme-tools packages, to see those changes represented in online-store-web; within this repo root run: `yarn admin:build`
 
+### Developing for codemirror-language-client
+
+Run the following command to start a browser instance that runs `@shopify/theme-language-server-browser`.
+
+```
+yarn playground
+```
+
 ## Submitting a Pull Request
 
 Once you've made changes to the codebase and are ready to submit a pull request (PR), follow these steps:
