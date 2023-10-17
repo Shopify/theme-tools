@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-check-common",
-  "version": "1.16.1",
+  "version": "1.17.0",
   "license": "MIT",
   "homepage": "https://github.com/Shopify/theme-tools/blob/main/packages/theme-check-common/README.md",
   "main": "dist/index.js",

@@ -1,5 +1,25 @@
 # @shopify/theme-check-browser
 
+## 1.17.0
+
+### Minor Changes
+
+- 2cf7a11: Rename and alias a couple of checks
+
+  - `DeprecatedFilters` -> `DeprecatedFilter`
+  - `DeprecatedTags` -> `DeprecatedTag`
+  - Alias `LiquidHTMLSyntaxError` with `SyntaxError` and `HtmlParsingError`
+  - Alias `ParserBlockingJavaScript` with `ParserBlockingScriptTag`
+  - Alias `JSONSyntaxError` with `ValidJson`
+  - Alias `AssetSizeCSS` with `AssetSizeCSSStylesheetTag`
+  - Alias `RemoteAsset` with `AssetUrlFilters`
+
+### Patch Changes
+
+- Updated dependencies [2cf7a11]
+- Updated dependencies [2cf7a11]
+  - @shopify/theme-check-common@1.17.0
+
 ## 1.16.1
 
 ### Patch Changes
