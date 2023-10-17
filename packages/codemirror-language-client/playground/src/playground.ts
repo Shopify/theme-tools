@@ -2,7 +2,7 @@ import { basicSetup } from 'codemirror';
 import { EditorView } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { liquid, liquidHighLightStyle } from '@shopify/lang-liquid';
+// import { liquid, liquidHighLightStyle } from '@shopify/lang-liquid';
 
 import { CodeMirrorLanguageClient } from '@shopify/codemirror-language-client';
 import * as SetFileTreeNotification from './SetFileTreeNotification';
@@ -59,8 +59,8 @@ async function main() {
       doc: exampleTemplate,
       extensions: [
         basicSetup,
-        liquid(),
-        liquidHighLightStyle,
+        // liquid(),
+        // liquidHighLightStyle,
         oneDark,
         client.extension('browser:///input.liquid'),
       ],
