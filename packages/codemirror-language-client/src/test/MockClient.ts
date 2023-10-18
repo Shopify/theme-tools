@@ -46,7 +46,7 @@ export class MockClient extends EventTarget implements AbstractLanguageClient {
       this.pendingRequest = new Promise((resolve, reject) => {
         this.promiseCompletion = { resolve, reject };
       });
-      await this.pendingRequest;
+      return await this.pendingRequest;
     }) as any;
 
     this.sendNotification = vi.fn((_type, _params) => {}) as any;

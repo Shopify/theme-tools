@@ -1,12 +1,15 @@
 import { basicSetup } from 'codemirror';
 import { EditorView } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
-import { oneDark } from '@codemirror/theme-one-dark';
+import MarkdownIt from 'markdown-it';
+// import { oneDark } from '@codemirror/theme-one-dark';
 // import { liquid, liquidHighLightStyle } from '@shopify/lang-liquid';
 
 import { CodeMirrorLanguageClient } from '@shopify/codemirror-language-client';
 import * as SetFileTreeNotification from './SetFileTreeNotification';
 import * as SetDefaultTranslationsNotification from './SetDefaultTranslationsNotification';
+
+const md = new MarkdownIt();
 
 const exampleTemplate = `<!doctype html>
 <html class="no-js" lang="{{ request.locale.iso_code }}">
@@ -21,11 +24,23 @@ const exampleTemplate = `<!doctype html>
 </html>`;
 
 async function main() {
-  const worker = new Worker(
-    new URL('./language-server-worker.ts', import.meta.url),
-  );
+  const worker = new Worker(new URL('./language-server-worker.ts', import.meta.url));
 
-  const client = new CodeMirrorLanguageClient(worker);
+  const client = new CodeMirrorLanguageClient(
+    worker,
+    {},
+    {
+      infoRenderer: (completionItem) => {
+        if (!completionItem.documentation || typeof completionItem.documentation === 'string') {
+          return null;
+        }
+        const node = document.createElement('div');
+        const htmlString = md.render(completionItem.documentation.value);
+        node.innerHTML = htmlString;
+        return node;
+      },
+    },
+  );
   await client.start();
 
   // Mock "main-thread-provided" value for the filetree
@@ -61,7 +76,7 @@ async function main() {
         basicSetup,
         // liquid(),
         // liquidHighLightStyle,
-        oneDark,
+        // oneDark,
         client.extension('browser:///input.liquid'),
       ],
     }),
