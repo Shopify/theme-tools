@@ -3,20 +3,22 @@
   "include": ["./src/**/*.ts"],
   "exclude": ["./dist"],
   "compilerOptions": {
+    "baseUrl": ".",
     "outDir": "dist",
     "rootDir": "src",
     "allowJs": true,
     "lib": ["dom"],
     "module": "es2022",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
+    "resolveJsonModule": true,
     "paths": {
-      "@shopify/theme-language-server-browser": ["../../theme-language-server-browser"]
+      "@shopify/codemirror-language-client": ["../src"],
+      "@shopify/theme-language-server-browser": ["../../theme-language-server-browser/src"]
     }
   },
   "references": [
-    {
-      "path": "../../theme-language-server-browser"
-    }
+    { "path": ".." },
+    { "path": "../../theme-language-server-browser" }
   ]
 }
 

@@ -4,6 +4,20 @@ import {
 } from '@shopify/theme-language-server-browser';
 import { isDependencyInjectionMessage } from './messages';
 
+/**
+ * These are replaced at build time by the contents of
+ * @shopify/theme-check-docs-updater's DocsManager
+ */
+declare global {
+  export const WEBPACK_TAGS: any[];
+  export const WEBPACK_FILTERS: any[];
+  export const WEBPACK_OBJECTS: any[];
+}
+
+const tags = WEBPACK_TAGS;
+const filters = WEBPACK_FILTERS;
+const objects = WEBPACK_OBJECTS;
+
 const worker = self as any as Worker;
 
 // The file tree is provided from the main thread as an array of strings.
@@ -51,9 +65,9 @@ startServer(worker, {
   getDefaultTranslationsFactory,
   getDefaultLocaleFactory: (_: string) => async () => 'en',
   themeDocset: {
-    filters: async () => [],
-    tags: async () => [],
-    objects: async () => [],
+    filters: async () => filters,
+    tags: async () => tags,
+    objects: async () => objects,
   },
   schemaValidators: {
     validateSectionSchema: async () => () => true,

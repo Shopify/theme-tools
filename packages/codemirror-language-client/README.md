@@ -11,7 +11,7 @@ The [Language Server Protocol](https://microsoft.github.io/language-server-proto
 This repo serves as a CodeMirror Language Client. Feed it a Language Server and receive the following code editing features:
 
 - [x] [Diagnostics]() (aka Linting)
-- [ ] Completions
+- [x] Completions
 - [ ] Workspace Edits (aka Refactorings, Quickfix, etc.)
 
 ## Usage

@@ -785,6 +785,11 @@
   resolved "https://registry.npmjs.org/@types/line-column/-/line-column-1.0.0.tgz"
   integrity sha512-wbw+IDRw/xY/RGy+BL6f4Eey4jsUgHQrMuA4Qj0CSG3x/7C2Oc57pmRoM2z3M4DkylWRz+G1pfX06sCXQm0J+w==
 
+"@types/linkify-it@*":
+  version "3.0.4"
+  resolved "https://registry.npmjs.org/@types/linkify-it/-/linkify-it-3.0.4.tgz#def6a9bb0ce78140860602f16ace37a9997f086a"
+  integrity sha512-hPpIeeHb/2UuCw06kSNAOVWgehBLXEo0/fUs0mw3W2qhqX89PI2yvok83MnuctYGCPrabGIoi0fFso4DQ+sNUQ==
+
 "@types/lodash.set@^4.3.7":
   version "4.3.7"
   resolved "https://registry.npmjs.org/@types/lodash.set/-/lodash.set-4.3.7.tgz"
@@ -803,6 +808,19 @@
   version "4.14.196"
   resolved "https://registry.npmjs.org/@types/lodash/-/lodash-4.14.196.tgz"
   integrity sha512-22y3o88f4a94mKljsZcanlNWPzO0uBsBdzLAngf2tp533LzZcQzb6+eZPJ+vCTt+bqF2XnvT9gejTLsAcJAJyQ==
+
+"@types/markdown-it@^13.0.4":
+  version "13.0.4"
+  resolved "https://registry.npmjs.org/@types/markdown-it/-/markdown-it-13.0.4.tgz#33ede9fe0f23f62f39f83d7530ba69762b0bfd35"
+  integrity sha512-FAIUdEXrCDnQmAAmJC+UeW/3p0eCI4QZ/+W0lX/h83VD3v78IgTFYftjnAeXS8H0g4PFQCgipc51cQDA8tjgLw==
+  dependencies:
+    "@types/linkify-it" "*"
+    "@types/mdurl" "*"
+
+"@types/mdurl@*":
+  version "1.0.4"
+  resolved "https://registry.npmjs.org/@types/mdurl/-/mdurl-1.0.4.tgz#574bfbec51eb41ab5f444116c8555bc4347feba5"
+  integrity sha512-ARVxjAEX5TARFRzpDRVC6cEk0hUIXCCwaMhz8y7S1/PxU6zZS1UMjyobz7q4w/D/R552r4++EhwmXK1N2rAy0A==
 
 "@types/mime@*":
   version "3.0.2"
@@ -2355,7 +2373,7 @@ end-of-stream@^1.1.0, end-of-stream@^1.4.1:
   dependencies:
     once "^1.4.0"
 
-enhanced-resolve@^5.0.0, enhanced-resolve@^5.15.0:
+enhanced-resolve@^5.0.0, enhanced-resolve@^5.15.0, enhanced-resolve@^5.7.0:
   version "5.15.0"
   resolved "https://registry.npmjs.org/enhanced-resolve/-/enhanced-resolve-5.15.0.tgz"
   integrity sha512-LXYT42KJ7lpIKECr2mAXIaMldcNCh/7E0KBKOu4KSfkHmP+mZmSs+8V5gBAqisWBy0OO4W5Oyys0GO1Y8KtdKg==
@@ -2385,6 +2403,11 @@ entities@~2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/entities/-/entities-2.1.0.tgz#992d3129cf7df6870b96c57858c249a120f8b8b5"
   integrity sha512-hCx1oky9PFrJ611mf0ifBLBRW8lUUVRlFolb5gWRfIELabBlbp9xZvrqZLZAs+NxFnbfQoeGd8wDkygjg7U85w==
+
+entities@~3.0.1:
+  version "3.0.1"
+  resolved "https://registry.npmjs.org/entities/-/entities-3.0.1.tgz#2b887ca62585e96db3903482d336c1006c3001d4"
+  integrity sha512-WiyBqoomrwMdFG1e0kqvASYfnlb0lp8M5o5Fw2OFq1hNZxxcNk8Ik0Xm7LxzBhuidnZB/UtBqVCgUz3kBOP51Q==
 
 env-paths@^2.2.1:
   version "2.2.1"
@@ -3747,6 +3770,11 @@ json5@^1.0.2:
   dependencies:
     minimist "^1.2.0"
 
+json5@^2.2.2:
+  version "2.2.3"
+  resolved "https://registry.npmjs.org/json5/-/json5-2.2.3.tgz#78cd6f1a19bdc12b73db5ad0c61efd66c1e29283"
+  integrity sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==
+
 jsonc-parser@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/jsonc-parser/-/jsonc-parser-3.2.0.tgz#31ff3f4c2b9793f89c67212627c51c6394f88e76"
@@ -3832,6 +3860,13 @@ linkify-it@^3.0.1:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/linkify-it/-/linkify-it-3.0.3.tgz#a98baf44ce45a550efb4d49c769d07524cc2fa2e"
   integrity sha512-ynTsyrFSdE5oZ/O9GEf00kPngmOfVwazR5GKDq6EYfhlpFug3J2zybX56a2PRRpc9P+FuSoGNAwjlbDs9jJBPQ==
+  dependencies:
+    uc.micro "^1.0.1"
+
+linkify-it@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.npmjs.org/linkify-it/-/linkify-it-4.0.1.tgz#01f1d5e508190d06669982ba31a7d9f56a5751ec"
+  integrity sha512-C7bfi1UZmoj8+PQx22XyeXCuBlokoyWQL5pWSP+EI6nzRylyThouddufc2c1NDIcP9k5agmN9fLpA7VNJfIiqw==
   dependencies:
     uc.micro "^1.0.1"
 
@@ -3958,6 +3993,17 @@ markdown-it@^12.3.2:
     argparse "^2.0.1"
     entities "~2.1.0"
     linkify-it "^3.0.1"
+    mdurl "^1.0.1"
+    uc.micro "^1.0.5"
+
+markdown-it@^13.0.2:
+  version "13.0.2"
+  resolved "https://registry.npmjs.org/markdown-it/-/markdown-it-13.0.2.tgz#1bc22e23379a6952e5d56217fbed881e0c94d536"
+  integrity sha512-FtwnEuuK+2yVU7goGn/MJ0WBZMM9ZPgU9spqlFs7/A/pDIUNSOQZhUgOqYCficIuR2QaFnrt8LHqBWsbTAoI5w==
+  dependencies:
+    argparse "^2.0.1"
+    entities "~3.0.1"
+    linkify-it "^4.0.1"
     mdurl "^1.0.1"
     uc.micro "^1.0.5"
 
@@ -5691,6 +5737,15 @@ tsc-alias@^1.6.7:
     normalize-path "^3.0.0"
     plimit-lit "^1.2.6"
 
+tsconfig-paths-webpack-plugin@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.npmjs.org/tsconfig-paths-webpack-plugin/-/tsconfig-paths-webpack-plugin-4.1.0.tgz#3c6892c5e7319c146eee1e7302ed9e6f2be4f763"
+  integrity sha512-xWFISjviPydmtmgeUAuXp4N1fky+VCtfhOkDUFIv5ea7p4wuTomI4QTrXvFBX2S4jZsmyTSrStQl+E+4w+RzxA==
+  dependencies:
+    chalk "^4.1.0"
+    enhanced-resolve "^5.7.0"
+    tsconfig-paths "^4.1.2"
+
 tsconfig-paths@^3.14.1:
   version "3.14.2"
   resolved "https://registry.npmjs.org/tsconfig-paths/-/tsconfig-paths-3.14.2.tgz"
@@ -5698,6 +5753,15 @@ tsconfig-paths@^3.14.1:
   dependencies:
     "@types/json5" "^0.0.29"
     json5 "^1.0.2"
+    minimist "^1.2.6"
+    strip-bom "^3.0.0"
+
+tsconfig-paths@^4.1.2:
+  version "4.2.0"
+  resolved "https://registry.npmjs.org/tsconfig-paths/-/tsconfig-paths-4.2.0.tgz#ef78e19039133446d244beac0fd6a1632e2d107c"
+  integrity sha512-NoZ4roiN7LnbKn9QqE1amc9DJfzvZXxF4xDavcOWt1BPkdx+m+0gJuPM+S0vCe7zTJMYUP0R8pO2XMr+Y8oLIg==
+  dependencies:
+    json5 "^2.2.2"
     minimist "^1.2.6"
     strip-bom "^3.0.0"
 
