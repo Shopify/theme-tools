@@ -28,9 +28,9 @@ describe('Module: TranslationCompletionProvider', async () => {
 
   it('should complete translations correctly', async () => {
     await expect(provider).to.complete('{{ "genera', [
-      'general.username_html',
-      'general.password',
-      'general.comments',
+      '"general.username_html" | t',
+      '"general.password" | t',
+      '"general.comments" | t',
     ]);
     await expect(provider).to.complete('{{ "general.comments', [
       expect.objectContaining({
@@ -42,7 +42,7 @@ describe('Module: TranslationCompletionProvider', async () => {
     ]);
     await expect(provider).to.complete('{{ "general.passwo█" }}', [
       expect.objectContaining({
-        label: 'general.password',
+        label: '"general.password" | t',
         insertText: 'password',
         textEdit: expect.objectContaining({
           newText: 'general.password" | t',

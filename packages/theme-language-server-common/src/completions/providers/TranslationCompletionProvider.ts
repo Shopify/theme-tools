@@ -73,10 +73,12 @@ export class TranslationCompletionProvider implements Provider {
       };
     }
 
+    const insertTextStartIndex = partial.lastIndexOf('.') + 1;
+
     return options.map(
       (option): CompletionItem => ({
-        label: option.path.join('.'),
-        insertText: option.path.at(-1), // for editors that don't support textEdit
+        label: quote + option.path.join('.') + quote + ' | t',
+        insertText: option.path.join('.').slice(insertTextStartIndex), // for editors that don't support textEdit
         kind: CompletionItemKind.Field,
         textEdit: TextEdit.replace(replaceRange, option.path.join('.') + postFix),
         documentation: {

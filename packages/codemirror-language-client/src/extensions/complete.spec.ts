@@ -35,9 +35,29 @@ describe('Module: completeLiquidHTML', () => {
     const promise = completeLiquidHTML(context);
 
     client.resolveRequest([
-      { label: 'hello', kind: CompletionItemKind.Text },
+      {
+        label: 'hello | world',
+        insertText: 'hello',
+        kind: CompletionItemKind.Text,
+      },
       {
         label: 'echo',
+        kind: CompletionItemKind.Function,
+        documentation: {
+          kind: 'markdown',
+          value: '### echo',
+        },
+      },
+      {
+        label: '"general.greeting" | t',
+        insertText: 'greeting',
+        textEdit: {
+          newText: '"general.greeting" | t',
+          range: {
+            start: { line: 0, character: 0 },
+            end: { line: 0, character: 3 },
+          },
+        },
         kind: CompletionItemKind.Function,
         documentation: {
           kind: 'markdown',
@@ -50,8 +70,27 @@ describe('Module: completeLiquidHTML', () => {
     expect(results).toEqual({
       from: 0,
       options: [
-        { label: 'hello', type: 'text', info: expect.anything() },
-        { label: 'echo', type: 'function', info: expect.anything() },
+        {
+          label: 'hello',
+          displayLabel: 'hello | world',
+          type: 'text',
+          info: expect.any(Function),
+          apply: undefined,
+        },
+        {
+          label: 'echo',
+          displayLabel: 'echo',
+          type: 'function',
+          info: expect.any(Function),
+          apply: undefined,
+        },
+        {
+          displayLabel: '"general.greeting" | t',
+          label: 'greeting',
+          type: 'function',
+          info: expect.any(Function),
+          apply: expect.any(Function),
+        },
       ],
     });
   });

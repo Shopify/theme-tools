@@ -57,10 +57,7 @@ export class LanguageClient extends EventTarget implements AbstractLanguageClien
   private disposables: Disposable[];
   private log: Dependencies['log'];
 
-  constructor(
-    public readonly worker: Worker,
-    dependencies: Dependencies,
-  ) {
+  constructor(public readonly worker: Worker, dependencies: Dependencies) {
     super();
     this.requests = new Map();
     this.requestId = 0;
