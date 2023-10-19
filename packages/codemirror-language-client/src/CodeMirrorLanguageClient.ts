@@ -10,6 +10,10 @@ import {
   liquidHTMLCompletionExtension,
   InfoRenderer,
   infoRendererFacet,
+  AutocompleteOptions,
+  LinterOptions,
+  DiagnosticRenderer,
+  diagnosticRendererFacet,
 } from './extensions';
 
 /**
@@ -49,6 +53,25 @@ export interface CodeMirrorDependencies {
    * A function that takes a completion object and returns a DOM node.
    */
   infoRenderer?: InfoRenderer;
+
+  /**
+   * The diagnosticRenderer is a function that returns a DOM node that
+   * contains the content of a diagnostic. It overrides the default
+   * rendering logic for diagnostics.
+   */
+  diagnosticRenderer?: DiagnosticRenderer;
+
+  /**
+   * Say you wanted to change the settings of the `autocomplete` extension,
+   * you'd do it with that.
+   */
+  autocompleteOptions?: AutocompleteOptions;
+
+  /**
+   * Say you wanted to change the settings of the `linter` extension,
+   * you'd do it with that.
+   */
+  linterOptions?: LinterOptions;
 }
 
 // There is one LanguageClient
@@ -57,11 +80,19 @@ export interface CodeMirrorDependencies {
 export class CodeMirrorLanguageClient {
   private readonly client: LanguageClient;
   private readonly infoRenderer: InfoRenderer | undefined;
+  private readonly diagnosticRenderer: DiagnosticRenderer | undefined;
+  private readonly autocompleteExtension: Extension;
+  private readonly linterExtension: Extension;
 
   constructor(
     private readonly worker: Worker,
     { log = defaultLogger }: ClientDependencies = {},
-    { infoRenderer }: CodeMirrorDependencies = {},
+    {
+      infoRenderer,
+      diagnosticRenderer,
+      autocompleteOptions,
+      linterOptions,
+    }: CodeMirrorDependencies = {},
   ) {
     this.client = new LanguageClient(worker, {
       clientCapabilities,
@@ -69,6 +100,9 @@ export class CodeMirrorLanguageClient {
     });
     this.worker = worker;
     this.infoRenderer = infoRenderer;
+    this.diagnosticRenderer = diagnosticRenderer;
+    this.autocompleteExtension = liquidHTMLCompletionExtension(autocompleteOptions);
+    this.linterExtension = lspLinter(linterOptions);
   }
 
   public async start() {
@@ -92,8 +126,9 @@ export class CodeMirrorLanguageClient {
       fileUriFacet.of(fileUri),
       textDocumentSync,
       infoRendererFacet.of(this.infoRenderer),
+      diagnosticRendererFacet.of(this.diagnosticRenderer),
     ]
-      .concat(shouldLint ? lspLinter : [])
-      .concat(shouldComplete ? liquidHTMLCompletionExtension : []);
+      .concat(shouldLint ? this.linterExtension : [])
+      .concat(shouldComplete ? this.autocompleteExtension : []);
   }
 }

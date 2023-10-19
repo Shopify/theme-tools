@@ -47,6 +47,15 @@ export const diagnosticsFacet = Facet.define<CodeMirrorDiagnostic[], CodeMirrorD
   combine: (values) => values[0],
 });
 
+export type DiagnosticRenderer = (lspDiagnostic: LSPDiagnostic) => Node;
+
+export const diagnosticRendererFacet = Facet.define<
+  DiagnosticRenderer | undefined,
+  DiagnosticRenderer | undefined
+>({
+  combine: (values) => (values.length > 0 ? values[0] : undefined),
+});
+
 export const computedCodeMirrorDiagnosticsValueProvider = diagnosticsFacet.compute(
   [textDocumentField, lspDiagnosticsField, lspDiagnosticsVersionField],
   (state) => {
@@ -60,42 +69,51 @@ export const computedCodeMirrorDiagnosticsValueProvider = diagnosticsFacet.compu
     }
 
     const lspDiagnostics = state.field(lspDiagnosticsField);
-    return lspDiagnostics.map((diagnostic) => lspToCodeMirrorDiagnostic(diagnostic, doc));
+    const diagnosticRenderer = state.facet(diagnosticRendererFacet.reader);
+    return lspDiagnostics.map((diagnostic) =>
+      lspToCodeMirrorDiagnostic(diagnostic, doc, diagnosticRenderer),
+    );
   },
 );
 
-export const diagnosticsLinter = linter(
-  (view) => {
-    const diagnostics = view.state.facet(diagnosticsFacet.reader);
-    return diagnostics;
-  },
-  {
-    delay: 100,
-    needsRefresh(update) {
-      const currVersion = update.state.field(lspDiagnosticsVersionField);
-      const prevVersion = update.startState.field(lspDiagnosticsVersionField);
+type SecondArgType<F> = F extends (_: any, second: infer A) => any ? A : never;
 
-      // Checking against any kind of changes otherwise the squiggly line disappears!!
-      return (
-        update.geometryChanged ||
-        update.viewportChanged ||
-        update.heightChanged ||
-        update.focusChanged ||
-        update.docChanged ||
-        update.transactions[0]?.reconfigured ||
-        prevVersion !== currVersion
-      );
+export type LinterOptions = SecondArgType<typeof linter>;
+
+export const diagnosticsLinter = (overrides: LinterOptions) =>
+  linter(
+    (view) => {
+      const diagnostics = view.state.facet(diagnosticsFacet.reader);
+      return diagnostics;
     },
-  },
-);
+    {
+      delay: 100,
+      needsRefresh(update) {
+        const currVersion = update.state.field(lspDiagnosticsVersionField);
+        const prevVersion = update.startState.field(lspDiagnosticsVersionField);
+
+        // Checking against any kind of changes otherwise the squiggly line disappears!!
+        return (
+          update.geometryChanged ||
+          update.viewportChanged ||
+          update.heightChanged ||
+          update.focusChanged ||
+          update.docChanged ||
+          update.transactions[0]?.reconfigured ||
+          prevVersion !== currVersion
+        );
+      },
+      ...overrides,
+    },
+  );
 export const diagnosticsPlugin = ViewPlugin.fromClass(DiagnosticsPlugin);
 
-export const lspLinter: Extension = [
+export const lspLinter = (linterOptions: LinterOptions = {}): Extension => [
   textDocumentField,
   lspDiagnosticsField,
   lspDiagnosticsVersionField,
   computedCodeMirrorDiagnosticsValueProvider,
-  diagnosticsLinter,
+  diagnosticsLinter(linterOptions),
   diagnosticsPlugin,
 ];
 
@@ -121,6 +139,7 @@ function lspToCodeMirrorSeverity(severity: LSPSeverity | undefined): CodeMirrorS
 function lspToCodeMirrorDiagnostic(
   lspDiagnostic: LSPDiagnostic,
   textDocument: TextDocument,
+  diagnosticRenderer: DiagnosticRenderer | undefined,
 ): CodeMirrorDiagnostic {
   const { range, message, severity } = lspDiagnostic;
   const { start, end } = range;
@@ -129,6 +148,7 @@ function lspToCodeMirrorDiagnostic(
     to: textDocument.offsetAt(end),
     message,
     severity: lspToCodeMirrorSeverity(severity),
+    renderMessage: diagnosticRenderer ? () => diagnosticRenderer(lspDiagnostic) : undefined,
   };
 }
 

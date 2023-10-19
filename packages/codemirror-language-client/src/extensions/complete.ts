@@ -19,11 +19,16 @@ import { Facet } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
-export const liquidHTMLCompletionExtension = autocompletion({
-  activateOnTyping: true,
-  override: [completeLiquidHTML],
-  maxRenderedOptions: 20,
-});
+type FirstArgType<F> = F extends (arg: infer A) => any ? A : never;
+export type AutocompleteOptions = Partial<FirstArgType<typeof autocompletion>>;
+
+export const liquidHTMLCompletionExtension = (overrides: AutocompleteOptions = {}) =>
+  autocompletion({
+    activateOnTyping: true,
+    override: [completeLiquidHTML],
+    maxRenderedOptions: 20,
+    ...overrides,
+  });
 
 /**
  * An InfoRenderer would be equivalent to the Quick Info window in VS Code. It's the part of the completion
