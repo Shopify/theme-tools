@@ -1,5 +1,11 @@
 # @shopify/theme-language-server-common
 
+## 1.4.1
+
+### Patch Changes
+
+- 54a9075: Revert the detail info in completion items, this causes weird things in VS Code
+
 ## 1.4.0
 
 ### Minor Changes
