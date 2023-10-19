@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-language-server-node",
-  "version": "1.3.3",
+  "version": "1.4.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "homepage": "https://github.com/Shopify/theme-tools/blob/main/packages/theme-language-server-common/README.md",
@@ -22,7 +22,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/theme-language-server-common": "1.3.3",
+    "@shopify/theme-language-server-common": "1.4.0",
     "@shopify/theme-check-node": "^1.17.0",
     "@shopify/theme-check-docs-updater": "^1.17.0",
     "glob": "^8.0.3",

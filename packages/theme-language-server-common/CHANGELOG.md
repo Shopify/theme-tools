@@ -1,5 +1,16 @@
 # @shopify/theme-language-server-common
 
+## 1.4.0
+
+### Minor Changes
+
+- b27d8c7: Fixed type definition of fileSize
+
+### Patch Changes
+
+- 23c84af: Change the completion item label for translation keys to include the quotes and translation filter
+- 73a65e0: Add `detail` info to Liquid Completion Items
+
 ## 1.3.3
 
 ### Patch Changes
