@@ -43,13 +43,11 @@ function documentationProperties(
   docsetEntryType?: DocsetEntryType,
   entryType?: PseudoType | ArrayType,
 ): {
-  detail: string | undefined;
   documentation: MarkupContent;
 } {
   const value = render(entry, entryType, docsetEntryType);
 
   return {
-    detail: entry.summary,
     documentation: {
       kind: 'markdown',
       value,
