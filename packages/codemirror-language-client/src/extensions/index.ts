@@ -1,9 +1,17 @@
 export { clientFacet, fileUriFacet } from './client';
 export { textDocumentSync, textDocumentField } from './textDocumentSync';
 export {
-  liquidHTMLCompletionExtension,
+  AutocompleteOptions,
+  InfoRenderer,
   completeLiquidHTML,
   infoRendererFacet,
-  InfoRenderer,
+  liquidHTMLCompletionExtension,
 } from './complete';
-export { lspLinter, diagnosticsFacet, lspDiagnosticsField } from './lspLinter';
+export {
+  DiagnosticRenderer,
+  LinterOptions,
+  diagnosticRendererFacet,
+  diagnosticsFacet,
+  lspDiagnosticsField,
+  lspLinter,
+} from './lspLinter';

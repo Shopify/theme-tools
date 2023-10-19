@@ -16,7 +16,7 @@ describe('Module: lspLinter', () => {
 
   beforeEach(() => {
     client = new MockClient();
-    extensions = [clientFacet.of(client), fileUriFacet.of(fileUri), lspLinter];
+    extensions = [clientFacet.of(client), fileUriFacet.of(fileUri), lspLinter()];
     view = new EditorView({
       state: EditorState.create({
         doc: 'hello world',
@@ -60,6 +60,7 @@ describe('Module: lspLinter', () => {
         from: 0,
         to: 'hello'.length,
         message: 'hello not accepted',
+        renderMessage: undefined,
         severity: 'error',
       };
       expect(codeMirrorDiagnostics[0]).to.eql(expectedDiagnostic);

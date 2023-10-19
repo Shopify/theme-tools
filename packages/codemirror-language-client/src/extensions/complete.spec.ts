@@ -22,7 +22,7 @@ describe('Module: completeLiquidHTML', () => {
       fileUriFacet.of(fileUri),
       textDocumentSync,
       infoRendererFacet.of(infoRenderer),
-      liquidHTMLCompletionExtension,
+      liquidHTMLCompletionExtension(),
     ];
     state = EditorState.create({
       doc: 'hello world',
