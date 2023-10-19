@@ -1,5 +1,16 @@
 # @shopify/codemirror-language-client
 
+## 0.2.0
+
+### Minor Changes
+
+- 73a65e0: Add `{ shouldLint, shouldComplete }` optional params to CodeMirrorLanguageClient's .extension method
+
+  - This way linting and completions become optional features that can be turned off / experimented on
+
+- 0ca7963: Add `diagnosticRenderer` and option overrides to public API of CodeMirrorLanguageClient
+- 73a65e0: Add Completion Support
+
 ## 0.1.0
 
 ### Minor Changes
