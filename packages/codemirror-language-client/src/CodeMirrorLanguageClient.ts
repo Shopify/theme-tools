@@ -1,5 +1,5 @@
 import { Extension } from '@codemirror/state';
-import { ClientCapabilities } from 'vscode-languageserver-protocol';
+import { ClientCapabilities, MarkupKind } from 'vscode-languageserver-protocol';
 
 import { Dependencies, LanguageClient } from './LanguageClient';
 import {
@@ -21,10 +21,15 @@ import {
 const clientCapabilities: ClientCapabilities = {
   textDocument: {
     completion: {
-      completionItem: {},
+      completionItem: {
+        insertReplaceSupport: true,
+        documentationFormat: [MarkupKind.PlainText, MarkupKind.Markdown],
+        commitCharactersSupport: false,
+      },
     },
   },
 };
+
 const defaultLogger = console.log.bind(console);
 
 export { Dependencies };

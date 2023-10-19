@@ -68,7 +68,7 @@ describe('Module: runChecks', () => {
         tags: async () => [],
       },
       schemaValidators: {
-        validateSectionSchema: async () => ({}) as ValidateFunction,
+        validateSectionSchema: async () => ({} as ValidateFunction),
       },
     });
   });
@@ -221,7 +221,7 @@ describe('Module: runChecks', () => {
         tags: async () => [],
       },
       schemaValidators: {
-        validateSectionSchema: async () => ({}) as ValidateFunction,
+        validateSectionSchema: async () => ({} as ValidateFunction),
       },
     });
 

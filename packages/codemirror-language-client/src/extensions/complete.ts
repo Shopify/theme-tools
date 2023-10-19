@@ -2,17 +2,22 @@ import {
   autocompletion,
   CompletionContext,
   CompletionResult,
-  Completion,
   CompletionInfo,
+  pickedCompletion,
+  Completion,
 } from '@codemirror/autocomplete';
 import {
   CompletionItem,
   CompletionItemKind,
   CompletionRequest,
+  InsertReplaceEdit,
+  TextEdit,
 } from 'vscode-languageserver-protocol';
 import { clientFacet, fileUriFacet } from './client';
 import { textDocumentField } from './textDocumentSync';
 import { Facet } from '@codemirror/state';
+import { EditorView } from '@codemirror/view';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 
 export const liquidHTMLCompletionExtension = autocompletion({
   activateOnTyping: true,
@@ -61,12 +66,25 @@ export async function completeLiquidHTML(
     from: word.from,
     options: results.map(
       (completionItem): Completion => ({
-        label: completionItem.label,
+        label: completionItem.insertText ?? completionItem.label,
+        displayLabel: completionItem.label,
+        apply: hasApplicableTextEdit(completionItem)
+          ? (view, completion) => applyEdit(view, completion, completionItem, textDocument)
+          : undefined,
         type: convertLSPKindToCodeMirrorKind(completionItem.kind),
         info: infoRenderer ? (_) => infoRenderer(completionItem) : undefined,
       }),
     ),
   };
+}
+
+function hasApplicableTextEdit(
+  completionItem: CompletionItem,
+): completionItem is CompletionItem & { textEdit: NonNullable<CompletionItem['textEdit']> } {
+  return (
+    !!completionItem.textEdit &&
+    (TextEdit.is(completionItem.textEdit) || InsertReplaceEdit.is(completionItem.textEdit))
+  );
 }
 
 enum CMCompletionType {
@@ -137,4 +155,39 @@ function convertLSPKindToCodeMirrorKind(kind: CompletionItemKind | undefined): C
     default:
       return CMCompletionType.Text;
   }
+}
+
+function applyEdit(
+  view: EditorView,
+  completion: Completion,
+  item: CompletionItem & { textEdit: NonNullable<CompletionItem['textEdit']> },
+  textDocument: TextDocument,
+) {
+  const { textEdit } = item;
+  let start = 0;
+  let end = 0;
+  let newText = '';
+
+  if (TextEdit.is(textEdit)) {
+    start = textDocument.offsetAt(textEdit.range.start);
+    end = textDocument.offsetAt(textEdit.range.end);
+    newText = textEdit.newText;
+  } else if (InsertReplaceEdit.is(textEdit)) {
+    start = textDocument.offsetAt(textEdit.replace.start);
+    end = textDocument.offsetAt(textEdit.replace.end);
+    newText = textEdit.newText;
+  }
+
+  view.dispatch({
+    // Tell the completion engine which item we chose
+    annotations: [pickedCompletion.of(completion)],
+    // Move cursor to after the text
+    selection: { anchor: start + newText.length, head: start + newText.length },
+    // Apply the text edit
+    changes: view.state.changes({
+      from: start,
+      to: end,
+      insert: newText,
+    }),
+  });
 }
