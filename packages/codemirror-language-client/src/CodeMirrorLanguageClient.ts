@@ -7,14 +7,18 @@ import {
   fileUriFacet,
   textDocumentSync,
   lspLinter,
-  liquidHTMLCompletionExtension,
+  lspComplete,
   InfoRenderer,
   infoRendererFacet,
   AutocompleteOptions,
   LinterOptions,
   DiagnosticRenderer,
   diagnosticRendererFacet,
+  HoverRenderer,
+  HoverOptions,
+  lspHover,
 } from './extensions';
+import { hoverRendererFacet } from './extensions/hover';
 
 /**
  * The client capabilities are how we tell the language server what
@@ -41,6 +45,7 @@ export { Dependencies };
 export interface FeatureFlags {
   shouldComplete: boolean;
   shouldLint: boolean;
+  shouldHover: boolean;
 }
 
 export type ClientDependencies = Partial<Dependencies>;
@@ -55,13 +60,6 @@ export interface CodeMirrorDependencies {
   infoRenderer?: InfoRenderer;
 
   /**
-   * The diagnosticRenderer is a function that returns a DOM node that
-   * contains the content of a diagnostic. It overrides the default
-   * rendering logic for diagnostics.
-   */
-  diagnosticRenderer?: DiagnosticRenderer;
-
-  /**
    * Say you wanted to change the settings of the `autocomplete` extension,
    * you'd do it with that.
    */
@@ -72,6 +70,25 @@ export interface CodeMirrorDependencies {
    * you'd do it with that.
    */
   linterOptions?: LinterOptions;
+
+  /**
+   * The diagnosticRenderer is a function that returns a DOM node that
+   * contains the content of a diagnostic. It overrides the default
+   * rendering logic for diagnostics.
+   */
+  diagnosticRenderer?: DiagnosticRenderer;
+
+  /**
+   * The hoverRenderer is a function that returns a DOM node that contains the documentation
+   * for the item under the cursor. The documentation is provided by the Language Server.
+   */
+  hoverRenderer?: HoverRenderer;
+
+  /**
+   * Say you wanted to change the settings of the `hoverTooltip` extension,
+   * you'd do it with that.
+   */
+  hoverOptions?: HoverOptions;
 }
 
 // There is one LanguageClient
@@ -80,18 +97,22 @@ export interface CodeMirrorDependencies {
 export class CodeMirrorLanguageClient {
   private readonly client: LanguageClient;
   private readonly infoRenderer: InfoRenderer | undefined;
-  private readonly diagnosticRenderer: DiagnosticRenderer | undefined;
   private readonly autocompleteExtension: Extension;
+  private readonly diagnosticRenderer: DiagnosticRenderer | undefined;
   private readonly linterExtension: Extension;
+  private readonly hoverRenderer: HoverRenderer | undefined;
+  private readonly hoverExtension: Extension;
 
   constructor(
     private readonly worker: Worker,
     { log = defaultLogger }: ClientDependencies = {},
     {
       infoRenderer,
-      diagnosticRenderer,
       autocompleteOptions,
+      diagnosticRenderer,
       linterOptions,
+      hoverRenderer,
+      hoverOptions,
     }: CodeMirrorDependencies = {},
   ) {
     this.client = new LanguageClient(worker, {
@@ -100,9 +121,13 @@ export class CodeMirrorLanguageClient {
     });
     this.worker = worker;
     this.infoRenderer = infoRenderer;
+    this.autocompleteExtension = lspComplete(autocompleteOptions);
+
     this.diagnosticRenderer = diagnosticRenderer;
-    this.autocompleteExtension = liquidHTMLCompletionExtension(autocompleteOptions);
     this.linterExtension = lspLinter(linterOptions);
+
+    this.hoverRenderer = hoverRenderer;
+    this.hoverExtension = lspHover(hoverOptions);
   }
 
   public async start() {
@@ -119,7 +144,11 @@ export class CodeMirrorLanguageClient {
 
   public extension(
     fileUri: string,
-    { shouldLint, shouldComplete }: FeatureFlags = { shouldLint: true, shouldComplete: true },
+    { shouldLint, shouldComplete, shouldHover }: FeatureFlags = {
+      shouldLint: true,
+      shouldComplete: true,
+      shouldHover: true,
+    },
   ): Extension[] {
     return [
       clientFacet.of(this.client),
@@ -127,8 +156,10 @@ export class CodeMirrorLanguageClient {
       textDocumentSync,
       infoRendererFacet.of(this.infoRenderer),
       diagnosticRendererFacet.of(this.diagnosticRenderer),
+      hoverRendererFacet.of(this.hoverRenderer),
     ]
       .concat(shouldLint ? this.linterExtension : [])
-      .concat(shouldComplete ? this.autocompleteExtension : []);
+      .concat(shouldComplete ? this.autocompleteExtension : [])
+      .concat(shouldHover ? this.hoverExtension : []);
   }
 }

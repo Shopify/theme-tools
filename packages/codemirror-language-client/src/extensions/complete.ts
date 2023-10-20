@@ -22,10 +22,10 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 type FirstArgType<F> = F extends (arg: infer A) => any ? A : never;
 export type AutocompleteOptions = Partial<FirstArgType<typeof autocompletion>>;
 
-export const liquidHTMLCompletionExtension = (overrides: AutocompleteOptions = {}) =>
+export const lspComplete = (overrides: AutocompleteOptions = {}) =>
   autocompletion({
     activateOnTyping: true,
-    override: [completeLiquidHTML],
+    override: [complete],
     maxRenderedOptions: 20,
     ...overrides,
   });
@@ -44,9 +44,7 @@ export const infoRendererFacet = Facet.define<InfoRenderer | undefined, InfoRend
   combine: (values) => values[0] ?? undefined,
 });
 
-export async function completeLiquidHTML(
-  context: CompletionContext,
-): Promise<CompletionResult | null> {
+export async function complete(context: CompletionContext): Promise<CompletionResult | null> {
   // TODO does this work well with translations and stuff?
   const word = context.matchBefore(/\w*/);
   if (!word) return null;

@@ -1,13 +1,13 @@
-import { vi, expect, describe, it, beforeEach, afterEach } from 'vitest';
+import { vi, expect, describe, it, beforeEach } from 'vitest';
 import { EditorState, Extension } from '@codemirror/state';
 import { CompletionContext } from '@codemirror/autocomplete';
 import { clientFacet, fileUriFacet } from './client';
 import { MockClient } from '../test/MockClient';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-protocol';
 import { textDocumentSync } from './textDocumentSync';
-import { completeLiquidHTML, infoRendererFacet, liquidHTMLCompletionExtension } from './complete';
+import { complete, infoRendererFacet, lspComplete } from './complete';
 
-describe('Module: completeLiquidHTML', () => {
+describe('Module: complete', () => {
   const fileUri = 'browser://input.liquid';
   let client: MockClient;
   let extensions: Extension;
@@ -22,7 +22,7 @@ describe('Module: completeLiquidHTML', () => {
       fileUriFacet.of(fileUri),
       textDocumentSync,
       infoRendererFacet.of(infoRenderer),
-      liquidHTMLCompletionExtension(),
+      lspComplete(),
     ];
     state = EditorState.create({
       doc: 'hello world',
@@ -32,7 +32,7 @@ describe('Module: completeLiquidHTML', () => {
 
   it('should translate LSP completion responses into CodeMirror completion items', async () => {
     const context = new CompletionContext(state, /* does not matter for mock test */ 0, true);
-    const promise = completeLiquidHTML(context);
+    const promise = complete(context);
 
     client.resolveRequest([
       {
@@ -97,7 +97,7 @@ describe('Module: completeLiquidHTML', () => {
 
   it('should return null if nothing comes back', async () => {
     const context = new CompletionContext(state, /* does not matter for mock test */ 0, true);
-    const promise = completeLiquidHTML(context);
+    const promise = complete(context);
     client.resolveRequest(null);
     const results = await promise;
     expect(results).to.eql(null);
