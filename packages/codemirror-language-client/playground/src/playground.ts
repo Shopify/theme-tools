@@ -8,6 +8,7 @@ import MarkdownIt from 'markdown-it';
 import { CodeMirrorLanguageClient } from '@shopify/codemirror-language-client';
 import * as SetFileTreeNotification from './SetFileTreeNotification';
 import * as SetDefaultTranslationsNotification from './SetDefaultTranslationsNotification';
+import { MarkupContent } from 'vscode-languageserver-protocol';
 
 const md = new MarkdownIt();
 
@@ -39,8 +40,19 @@ async function main() {
         node.innerHTML = htmlString;
         return node;
       },
+      hoverRenderer: (_, hover) => {
+        const node = document.createElement('div');
+        if (MarkupContent.is(hover.contents)) {
+          const htmlString = md.render(hover.contents.value);
+          node.innerHTML = htmlString;
+        }
+        return {
+          dom: node,
+        };
+      },
     },
   );
+
   await client.start();
 
   // Mock "main-thread-provided" value for the filetree

@@ -3,10 +3,11 @@ export { textDocumentSync, textDocumentField } from './textDocumentSync';
 export {
   AutocompleteOptions,
   InfoRenderer,
-  completeLiquidHTML,
+  complete,
   infoRendererFacet,
-  liquidHTMLCompletionExtension,
+  lspComplete,
 } from './complete';
+export { HoverOptions, HoverRenderer, hover, lspHover } from './hover';
 export {
   DiagnosticRenderer,
   LinterOptions,
