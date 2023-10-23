@@ -8,15 +8,18 @@
       "group": "build",
       "label": "npm: build:extension:dev - packages/vscode-extension",
       "detail": "webpack --mode development",
-      "dependsOn": "npm: build:ts"
+      "dependsOrder": "parallel",
+      "dependsOn": ["parser pre build", "theme check build"],
     },
     {
-      "type": "npm",
-      "script": "build:ts",
-      "group": "build",
-      "problemMatcher": [],
-      "label": "npm: build:ts",
-      "detail": "yarn workspaces run build:ts"
+      "label": "parser pre build",
+      "type": "shell",
+      "command": "yarn --cwd packages/liquid-html-parser prebuild:ts"
+    },
+    {
+      "label": "theme check build",
+      "type": "shell",
+      "command": "yarn --cwd packages/theme-check-node build:ts"
     }
   ],
 }

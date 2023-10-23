@@ -14,8 +14,8 @@ import {
   LiquidTag,
   LiquidTagNamed,
   LiquidVariableOutput,
-} from '~/types';
-import { assertNever } from '~/utils';
+} from '../../types';
+import { assertNever } from '../../utils';
 
 import {
   FORCE_FLAT_GROUP_ID,
@@ -33,9 +33,9 @@ import {
   reindent,
   shouldPreserveContent,
   trim,
-} from '~/printer/utils';
+} from '../utils';
 
-import { printChildren } from '~/printer/print/children';
+import { printChildren } from './children';
 
 const LIQUID_TAGS_THAT_ALWAYS_BREAK = ['for', 'case'];
 

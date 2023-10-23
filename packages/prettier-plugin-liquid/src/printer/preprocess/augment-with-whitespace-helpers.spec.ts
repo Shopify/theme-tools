@@ -1,8 +1,8 @@
 import { NodeTypes, toLiquidHtmlAST } from '@shopify/liquid-html-parser';
 import { expect, it, describe } from 'vitest';
-import { deepGet } from '~/utils';
-import { preprocess } from '~/printer/print-preprocess';
-import { DocumentNode, LiquidHtmlNode, LiquidParserOptions } from '~/types';
+import { deepGet } from '../../utils';
+import { preprocess } from '../print-preprocess';
+import { DocumentNode, LiquidHtmlNode, LiquidParserOptions } from '../../types';
 
 describe('Module: augmentWithWhitespaceHelpers', () => {
   let ast: DocumentNode;

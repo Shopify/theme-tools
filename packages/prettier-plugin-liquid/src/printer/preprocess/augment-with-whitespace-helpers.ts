@@ -6,12 +6,12 @@ import {
   NodeTypes,
   isBranchedTag,
 } from '@shopify/liquid-html-parser';
-import { WithFamily } from '~/types';
+import { WithFamily } from '../../types';
 import {
   CSS_WHITE_SPACE_DEFAULT,
   CSS_WHITE_SPACE_LIQUID_TAGS,
   CSS_WHITE_SPACE_TAGS,
-} from '~/constants.evaluate';
+} from '../../constants.evaluate';
 import {
   Augment,
   AugmentedNode,
@@ -19,8 +19,8 @@ import {
   WithParent,
   WithSiblings,
   WithWhitespaceHelpers,
-} from '~/types';
-import { isAttributeNode, isPreLikeNode, isScriptLikeTag, isWhitespace } from '~/printer/utils';
+} from '../../types';
+import { isAttributeNode, isPreLikeNode, isScriptLikeTag, isWhitespace } from '../utils';
 
 type RequiredAugmentations = WithParent & WithSiblings & WithFamily & WithCssProperties;
 type AugmentedAstNode = AugmentedNode<RequiredAugmentations>;

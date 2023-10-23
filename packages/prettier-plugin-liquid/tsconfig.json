@@ -9,7 +9,7 @@
     "baseUrl": ".",
     "rootDir": "src",
     "paths": {
-      "~/*": ["src/*"]
+      "@shopify/liquid-html-parser": ["../liquid-html-parser/src"]
     }
   },
   "include": ["src/**/*"],

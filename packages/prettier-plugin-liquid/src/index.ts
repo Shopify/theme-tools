@@ -1,9 +1,9 @@
 import { SupportLanguage, SupportOptions, version } from 'prettier';
 import type { Plugin as Plugin2 } from 'prettier';
 import type { Plugin as Plugin3 } from 'prettier3';
-import { parsers, liquidHtmlLanguageName } from '~/parser';
-import { printers2, printers3 } from '~/printer';
-import { LiquidHtmlNode } from '~/types';
+import { parsers, liquidHtmlLanguageName } from './parser';
+import { printers2, printers3 } from './printer';
+import { LiquidHtmlNode } from './types';
 
 const languages: SupportLanguage[] = [
   {

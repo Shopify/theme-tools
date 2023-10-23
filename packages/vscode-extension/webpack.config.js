@@ -5,6 +5,7 @@
 
 const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
+const { default: TsconfigPathsPlugin } = require('tsconfig-paths-webpack-plugin');
 const path = require('path');
 
 /** @type WebpackConfig */
@@ -28,6 +29,7 @@ const config = {
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
     extensions: ['.ts', '.js'],
+    plugins: [new TsconfigPathsPlugin({})],
   },
   optimization: {
     minimize: false,
@@ -42,11 +44,12 @@ const config = {
       {
         test: /\.ts$/,
         exclude: /node_modules/,
-        use: [
-          {
-            loader: 'ts-loader',
+        use: {
+          loader: 'ts-loader',
+          options: {
+            projectReferences: true,
           },
-        ],
+        },
       },
     ],
   },

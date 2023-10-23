@@ -1,6 +1,6 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
 import { doc } from 'prettier';
-import { locStart, locEnd } from '~/utils';
+import { locStart, locEnd } from '../../utils';
 import {
   AstPath,
   LiquidAstPath,
@@ -8,7 +8,7 @@ import {
   LiquidParserOptions,
   LiquidPrinter,
   LiquidPrinterArgs,
-} from '~/types';
+} from '../../types';
 import {
   FORCE_BREAK_GROUP_ID,
   FORCE_FLAT_GROUP_ID,
@@ -20,7 +20,7 @@ import {
   hasNoCloseMarker,
   isTextLikeNode,
   preferHardlineAsLeadingSpaces,
-} from '~/printer/utils';
+} from '../utils';
 import {
   needsToBorrowNextOpeningTagStartMarker,
   needsToBorrowParentClosingTagStartMarker,
@@ -29,7 +29,7 @@ import {
   printClosingTagSuffix,
   printOpeningTagPrefix,
   printOpeningTagStartMarker,
-} from '~/printer/print/tag';
+} from './tag';
 
 const {
   builders: { breakParent, group, ifBreak, line, softline, hardline },

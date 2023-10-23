@@ -2,7 +2,7 @@ import { doc, Doc } from 'prettier';
 import type { Printer as Printer2 } from 'prettier';
 import type { Doc as Doc3, Printer as Printer3 } from 'prettier3';
 import { NodeTypes, RawMarkupKinds } from '@shopify/liquid-html-parser';
-import { LiquidHtmlNode, LiquidParserOptions, RawMarkup } from '~/types';
+import { LiquidHtmlNode, LiquidParserOptions, RawMarkup } from '../types';
 
 const {
   builders: { dedentToRoot, indent, hardline },

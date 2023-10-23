@@ -1,8 +1,8 @@
-import { augmentWithCSSProperties } from '~/printer/preprocess/augment-with-css-properties';
-import { augmentWithParent } from '~/printer/preprocess/augment-with-parent';
-import { augmentWithSiblings } from '~/printer/preprocess/augment-with-siblings';
-import { augmentWithWhitespaceHelpers } from '~/printer/preprocess/augment-with-whitespace-helpers';
-import { augmentWithFamily } from '~/printer/preprocess/augment-with-family';
+import { augmentWithCSSProperties } from './augment-with-css-properties';
+import { augmentWithParent } from './augment-with-parent';
+import { augmentWithSiblings } from './augment-with-siblings';
+import { augmentWithWhitespaceHelpers } from './augment-with-whitespace-helpers';
+import { augmentWithFamily } from './augment-with-family';
 
 export const AUGMENTATION_PIPELINE = [
   augmentWithParent,
