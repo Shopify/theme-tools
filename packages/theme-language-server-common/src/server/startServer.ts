@@ -21,6 +21,7 @@ import { Commands, ExecuteCommandProvider } from '../commands';
 import { ClientCapabilities } from '../ClientCapabilities';
 import { GetTranslationsForURI, useBufferOrInjectedTranslations } from '../translations';
 import { GetSnippetNamesForURI } from '../completions/providers/RenderSnippetCompletionProvider';
+import { URI } from 'vscode-uri';
 
 const defaultLogger = () => {};
 
@@ -186,7 +187,10 @@ export function startServer(
   connection.onDocumentLinks(async (params) => {
     const { uri } = params.textDocument;
     const rootUri = await findRootURI(uri);
-    return documentLinksProvider.documentLinks(uri, rootUri);
+    const config = await loadConfig(rootUri);
+    const root = URI.file(config.root);
+
+    return documentLinksProvider.documentLinks(uri, root.toString());
   });
 
   connection.onCodeAction(async (params) => {
