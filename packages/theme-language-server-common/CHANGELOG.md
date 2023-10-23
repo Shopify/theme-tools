@@ -1,5 +1,11 @@
 # @shopify/theme-language-server-common
 
+## 1.4.2
+
+### Patch Changes
+
+- dbd5fb0: Fix document links and translation reporting for setups with custom root
+
 ## 1.4.1
 
 ### Patch Changes
