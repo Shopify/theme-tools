@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- Patch bump because it depends on @shopify/theme-language-server-node
+- Fix snippet links and translation key exists reporting of repos with custom root
   - @shopify/theme-language-server-node@1.4.2
 
 ## 1.11.14
