@@ -53,6 +53,10 @@ describe('Module: LiquidObjectHoverProvider', async () => {
           access: { global: false, parents: [], template: [] },
         },
         {
+          name: 'block',
+          access: { global: false, parents: [], template: [] },
+        },
+        {
           name: 'predictive_search',
           access: { global: false, parents: [], template: [] },
         },
@@ -137,6 +141,7 @@ describe('Module: LiquidObjectHoverProvider', async () => {
   it('should support contextual objects by relative path', async () => {
     const contexts: [string, string][] = [
       ['section', 'sections/my-section.liquid'],
+      ['block', 'blocks/my-block.liquid'],
       ['predictive_search', 'sections/predictive-search.liquid'],
       ['recommendations', 'sections/recommendations.liquid'],
     ];

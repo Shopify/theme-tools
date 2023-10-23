@@ -150,6 +150,14 @@ export async function check(
             },
           },
           {
+            name: 'block',
+            access: {
+              global: false,
+              parents: [],
+              template: [],
+            },
+          },
+          {
             name: 'predictive_search',
             access: {
               global: false,

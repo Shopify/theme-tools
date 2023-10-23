@@ -161,6 +161,10 @@ function getContextualObjects(relativePath: string): string[] {
     return ['section', 'predictive_search', 'recommendations'];
   }
 
+  if (relativePath.startsWith('blocks/')) {
+    return ['section', 'block'];
+  }
+
   return [];
 }
 

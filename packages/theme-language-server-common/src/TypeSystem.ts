@@ -144,6 +144,9 @@ function getContextualEntries(uri: string): string[] {
   if (/sections\/[^.\/]*\.liquid$/.test(absolutePath)) {
     return ['section', 'predictive_search', 'recommendations'];
   }
+  if (/blocks\/[^.\/]*\.liquid$/.test(absolutePath)) {
+    return ['section', 'block'];
+  }
   return [];
 }
 

@@ -274,6 +274,7 @@ describe('Module: UndefinedObject', () => {
       ['section', 'sections/section.liquid'],
       ['predictive_search', 'sections/predictive-search.liquid'],
       ['recommendations', 'sections/recommendations.liquid'],
+      ['block', 'blocks/theme-app-extension.liquid'],
     ];
     for (const [object, goodPath] of contexts) {
       offenses = await runLiquidCheck(UndefinedObject, `{{ ${object} }}`, goodPath);
