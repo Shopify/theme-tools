@@ -52,7 +52,7 @@ describe('Module: runChecks', () => {
     documentManager = new DocumentManager();
     diagnosticsManager = new DiagnosticsManager(connection as any as Connection);
     runChecks = makeRunChecks(documentManager, diagnosticsManager, {
-      findRootURI: async () => 'browser:///',
+      findRootURI: async () => 'browser://',
       fileExists: async () => true,
       fileSize: async () => 420,
       getDefaultTranslationsFactory: () => async () => ({}),

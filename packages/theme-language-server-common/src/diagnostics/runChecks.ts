@@ -4,6 +4,7 @@ import { Dependencies } from '../types';
 import { DocumentManager } from '../documents';
 import { DiagnosticsManager } from './DiagnosticsManager';
 import { useBufferOrInjectedTranslations } from '../translations';
+import { URI } from 'vscode-uri';
 
 export function makeRunChecks(
   documentManager: DocumentManager,
@@ -45,19 +46,23 @@ export function makeRunChecks(
 
     return;
 
-    async function runChecksForRoot(rootURI: string) {
-      const config = await loadConfig(rootURI);
-      const theme = documentManager.theme(rootURI);
+    async function runChecksForRoot(configFileRoot: string) {
+      const configFileRootURI = URI.parse(configFileRoot);
+      const config = await loadConfig(configFileRoot);
+      const rootURI = configFileRootURI.with({
+        path: config.root,
+      });
+      const theme = documentManager.theme(rootURI.toString());
       const defaultTranslations = await useBufferOrInjectedTranslations(
         getDefaultTranslationsFactory,
         theme,
-        rootURI,
+        rootURI.toString(),
       );
 
       const offenses = await check(theme, config, {
         fileExists,
         fileSize,
-        getDefaultLocale: getDefaultLocaleFactory(rootURI),
+        getDefaultLocale: getDefaultLocaleFactory(rootURI.toString()),
         getDefaultTranslations: async () => defaultTranslations,
         themeDocset,
         schemaValidators,
