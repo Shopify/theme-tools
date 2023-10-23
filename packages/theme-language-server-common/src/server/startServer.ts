@@ -188,7 +188,9 @@ export function startServer(
     const { uri } = params.textDocument;
     const rootUri = await findRootURI(uri);
     const config = await loadConfig(rootUri);
-    const root = URI.file(config.root);
+    const root = URI.parse(rootUri).with({
+      path: config.root,
+    });
 
     return documentLinksProvider.documentLinks(uri, root.toString());
   });
