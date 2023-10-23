@@ -10,7 +10,7 @@ import { visit, Visitor } from '../visitor';
 export class DocumentLinksProvider {
   constructor(private documentManager: DocumentManager) {}
 
-  documentLinks(uriString: string, rootUri: string) {
+  async documentLinks(uriString: string, rootUri: string): Promise<DocumentLink[]> {
     const sourceCode = this.documentManager.get(uriString);
     if (
       !sourceCode ||

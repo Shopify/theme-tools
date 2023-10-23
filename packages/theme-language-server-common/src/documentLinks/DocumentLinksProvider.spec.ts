@@ -18,7 +18,7 @@ describe('DocumentLinksProvider', () => {
 
     documentManager.open(URI.parse(uriString).toString(), 'Sample plain text content', 1);
 
-    const result = documentLinksProvider.documentLinks(uriString, rootUri);
+    const result = await documentLinksProvider.documentLinks(uriString, rootUri);
     expect(result).toEqual([]);
   });
 
@@ -26,7 +26,7 @@ describe('DocumentLinksProvider', () => {
     const uriString = 'file:///path/to/non-existent-document.txt';
     const rootUri = 'file:///path/to/project';
 
-    const result = documentLinksProvider.documentLinks(uriString, rootUri);
+    const result = await documentLinksProvider.documentLinks(uriString, rootUri);
     expect(result).toEqual([]);
   });
 
@@ -45,7 +45,7 @@ describe('DocumentLinksProvider', () => {
 
     documentManager.open(URI.parse(uriString).toString(), liquidHtmlContent, 1);
 
-    const result = documentLinksProvider.documentLinks(uriString, rootUri);
+    const result = await documentLinksProvider.documentLinks(uriString, rootUri);
     const expectedUrls = [
       'file:///path/to/project/snippets/snippet1.liquid',
       'file:///path/to/project/snippets/snippet2.liquid',
