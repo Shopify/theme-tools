@@ -20,6 +20,14 @@ describe('Module: ObjectCompletionProvider', async () => {
           },
         },
         {
+          name: 'block',
+          access: {
+            global: false,
+            template: [],
+            parents: [],
+          },
+        },
+        {
           name: 'predictive_search',
           access: {
             global: false,
@@ -131,6 +139,7 @@ describe('Module: ObjectCompletionProvider', async () => {
   it('should complete relative-path-dependent contextual variables', async () => {
     const contexts: [string, string][] = [
       ['section', 'sections/main-product.liquid'],
+      ['block', 'blocks/my-block.liquid'],
       ['predictive_search', 'sections/predictive-search.liquid'],
       ['recommendations', 'sections/recommendations.liquid'],
     ];
