@@ -20,7 +20,7 @@ import {
   isVoidElement,
   last,
   shouldPreserveContent,
-} from '~/printer/utils';
+} from '../utils';
 import {
   AstPath,
   HtmlDanglingMarkerClose,
@@ -31,7 +31,7 @@ import {
   LiquidHtmlNode,
   LiquidParserOptions,
   LiquidPrinter,
-} from '~/types';
+} from '../../types';
 
 const {
   builders: { breakParent, indent, join, line, softline, hardline },

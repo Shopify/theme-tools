@@ -7,15 +7,15 @@ import {
   CSS_WHITE_SPACE_DEFAULT,
   CSS_WHITE_SPACE_LIQUID_TAGS,
   CSS_WHITE_SPACE_TAGS,
-} from '~/constants.evaluate';
+} from '../../constants.evaluate';
 import {
   LiquidParserOptions,
   Augment,
   AugmentedNode,
   WithCssProperties,
   WithSiblings,
-} from '~/types';
-import { assertNever } from '~/utils';
+} from '../../types';
+import { assertNever } from '../../utils';
 
 function getCssDisplayFromComment(body: string) {
   return body.match(/^\s*display:\s*([a-z]+)\s*$/)?.[1];

@@ -1,4 +1,4 @@
-import { Augment, ParentNode, WithParent } from '~/types';
+import { Augment, ParentNode, WithParent } from '../../types';
 
 export const augmentWithParent: Augment<{}> = (_options, node, parentNode) => {
   const augmentations: WithParent = {

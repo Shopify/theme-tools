@@ -13,8 +13,8 @@ import {
   LiquidVariableOutput,
   HtmlDanglingMarkerOpen,
   HtmlDanglingMarkerClose,
-} from '~/types';
-import { isEmpty } from '~/printer/utils/array';
+} from '../../types';
+import { isEmpty } from './array';
 
 export function isScriptLikeTag(node: { type: NodeTypes }) {
   return node.type === NodeTypes.HtmlRawNode;

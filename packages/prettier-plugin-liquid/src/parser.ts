@@ -1,6 +1,6 @@
 import { toLiquidHtmlAST, LiquidHtmlNode } from '@shopify/liquid-html-parser';
 
-import { locEnd, locStart } from '~/utils';
+import { locEnd, locStart } from './utils';
 
 export function parse(text: string): LiquidHtmlNode {
   return toLiquidHtmlAST(text);

@@ -1,4 +1,4 @@
-import { Augment, LiquidHtmlNode, WithFamily } from '~/types';
+import { Augment, LiquidHtmlNode, WithFamily } from '../../types';
 
 export const augmentWithFamily: Augment<{}> = (_options, node) => {
   const children: LiquidHtmlNode[] = (node as any).children || [];

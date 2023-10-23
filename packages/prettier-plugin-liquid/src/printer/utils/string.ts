@@ -1,5 +1,5 @@
 import { Position } from '@shopify/liquid-html-parser';
-import { LiquidAstPath, LiquidParserOptions } from '~/types';
+import { LiquidAstPath, LiquidParserOptions } from '../../types';
 
 export function isWhitespace(source: string, loc: number): boolean {
   if (loc < 0 || loc >= source.length) return false;

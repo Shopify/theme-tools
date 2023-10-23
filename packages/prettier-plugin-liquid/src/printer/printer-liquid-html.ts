@@ -32,21 +32,21 @@ import {
   LiquidVariableOutput,
   nonTraversableProperties,
   TextNode,
-} from '~/types';
-import { assertNever } from '~/utils';
+} from '../types';
+import { assertNever } from '../utils';
 
-import { embed2, embed3 } from '~/printer/embed';
-import { preprocess } from '~/printer/print-preprocess';
-import { printChildren } from '~/printer/print/children';
-import { printElement } from '~/printer/print/element';
+import { embed2, embed3 } from './embed';
+import { preprocess } from './print-preprocess';
+import { printChildren } from './print/children';
+import { printElement } from './print/element';
 import {
   printLiquidBranch,
   printLiquidRawTag,
   printLiquidTag,
   printLiquidVariableOutput,
-} from '~/printer/print/liquid';
-import { printClosingTagSuffix, printOpeningTagPrefix } from '~/printer/print/tag';
-import { bodyLines, hasLineBreakInRange, isEmpty, isTextLikeNode, reindent } from '~/printer/utils';
+} from './print/liquid';
+import { printClosingTagSuffix, printOpeningTagPrefix } from './print/tag';
+import { bodyLines, hasLineBreakInRange, isEmpty, isTextLikeNode, reindent } from './utils';
 
 const { builders, utils } = doc;
 const { fill, group, hardline, dedentToRoot, indent, join, line, softline } = builders;

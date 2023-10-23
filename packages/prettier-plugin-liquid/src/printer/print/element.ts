@@ -2,7 +2,7 @@
 
 import { doc, Doc } from 'prettier';
 import { NodeTypes, RawMarkupKinds } from '@shopify/liquid-html-parser';
-import { shouldPreserveContent, forceBreakContent, hasNoCloseMarker } from '~/printer/utils';
+import { shouldPreserveContent, forceBreakContent, hasNoCloseMarker } from '../utils';
 import {
   printOpeningTagPrefix,
   printOpeningTag,
@@ -11,8 +11,8 @@ import {
   needsToBorrowPrevClosingTagEndMarker,
   needsToBorrowLastChildClosingTagEndMarker,
   getNodeContent,
-} from '~/printer/print/tag';
-import { printChildren } from '~/printer/print/children';
+} from './tag';
+import { printChildren } from './children';
 import {
   AstPath,
   LiquidParserOptions,
@@ -20,7 +20,7 @@ import {
   HtmlNode,
   LiquidPrinterArgs,
   HtmlRawNode,
-} from '~/types';
+} from '../../types';
 
 const {
   builders: { breakParent, dedentToRoot, group, indent, hardline, line, softline },

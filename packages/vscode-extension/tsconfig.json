@@ -5,8 +5,15 @@
     "lib": ["ES2020"],
     "sourceMap": true,
     "rootDir": "src",
-    "strict": true
+    "strict": true,
+    "resolveJsonModule": true,
+    "paths": {
+      "@shopify/theme-language-server-node": ["../../theme-language-server-node/src"]
+    }
   },
   "include": ["src/**/*"],
-  "exclude": ["src/**/*.spec.ts", "node_modules"]
+  "exclude": ["src/**/*.spec.ts", "node_modules"],
+  "references": [
+    { "path": "../theme-language-server-node" }
+  ]
 }

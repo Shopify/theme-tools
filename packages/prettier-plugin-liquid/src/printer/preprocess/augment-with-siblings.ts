@@ -5,7 +5,7 @@ import {
   WithParent,
   WithSiblings,
   isLiquidHtmlNode,
-} from '~/types';
+} from '../../types';
 
 export function prev(node: AugmentedNode<WithParent>) {
   if (!node.parentNode) return;
