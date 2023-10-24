@@ -1,6 +1,6 @@
 ---
-'@shopify/theme-check-common': patch
-'@shopify/theme-check-node': patch
+'@shopify/theme-check-common': minor
+'@shopify/theme-check-node': minor
 ---
 
 Re-add `ignoreMissing` support to `MissingTemplate`
