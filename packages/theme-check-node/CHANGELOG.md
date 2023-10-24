@@ -1,5 +1,19 @@
 # @shopify/theme-check-node
 
+## 1.18.0
+
+### Minor Changes
+
+- 96d4d5e: Re-add `ignoreMissing` support to `MissingTemplate`
+
+### Patch Changes
+
+- 84aa24c: Superfluous settings as warnings not errors
+- Updated dependencies [96d4d5e]
+- Updated dependencies [dacdd9f]
+  - @shopify/theme-check-common@1.18.0
+  - @shopify/theme-check-docs-updater@1.18.0
+
 ## 1.17.0
 
 ### Minor Changes
