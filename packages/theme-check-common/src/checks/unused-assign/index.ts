@@ -1,4 +1,10 @@
-import { LiquidTag, LiquidTagAssign, NodeTypes } from '@shopify/liquid-html-parser';
+import {
+  LiquidHtmlNode,
+  LiquidTag,
+  LiquidTagAssign,
+  LiquidTagCapture,
+  NodeTypes,
+} from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 export const UnusedAssign: LiquidCheckDefinition = {
@@ -18,7 +24,7 @@ export const UnusedAssign: LiquidCheckDefinition = {
   },
 
   create(context) {
-    const assignedVariables: Map<string, LiquidTagAssign> = new Map();
+    const assignedVariables: Map<string, LiquidTagAssign | LiquidTagCapture> = new Map();
     const usedVariables: Set<string> = new Set();
 
     function checkVariableUsage(node: any) {
@@ -29,11 +35,18 @@ export const UnusedAssign: LiquidCheckDefinition = {
 
     return {
       async LiquidTag(node) {
-        if (!isLiquidTagAssign(node)) return;
-        assignedVariables.set(node.markup.name, node);
+        if (isLiquidTagAssign(node)) {
+          assignedVariables.set(node.markup.name, node);
+        } else if (isLiquidTagCapture(node) && node.markup.name) {
+          assignedVariables.set(node.markup.name, node);
+        }
       },
 
-      async VariableLookup(node) {
+      async VariableLookup(node, ancestors) {
+        const parentNode = ancestors.at(-1);
+        if (parentNode && isLiquidTagCapture(parentNode)) {
+          return;
+        }
         checkVariableUsage(node);
       },
 
@@ -60,4 +73,10 @@ export const UnusedAssign: LiquidCheckDefinition = {
 
 function isLiquidTagAssign(node: LiquidTag): node is LiquidTagAssign {
   return node.name === 'assign' && typeof node.markup !== 'string';
+}
+
+function isLiquidTagCapture(node: LiquidHtmlNode): node is LiquidTagCapture {
+  return (
+    node.type == NodeTypes.LiquidTag && node.name === 'capture' && typeof node.markup !== 'string'
+  );
 }
