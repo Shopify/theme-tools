@@ -4,8 +4,9 @@
 
 ### Patch Changes
 
-- Patch bump because it depends on @shopify/theme-language-server-node
-  - @shopify/theme-language-server-node@1.4.3
+- Re-add `ignoreMissing` support to `MissingTemplate`
+- Superfluous settings as warnings not errors
+- Add blocks/ files contextual completion, hover and UndefinedObject support
 
 ## 1.11.15
 
