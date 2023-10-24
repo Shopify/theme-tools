@@ -5,11 +5,16 @@ export function validateConfig(config: Config) {
   for (const check of config.checks) {
     const settings = config.settings[check.meta.code];
     assert(settings, `Unexpected missing settings for ${check.meta.code} in validateConfig call`);
-    validateSettings(check.meta.schema, settings, true);
+    validateSettings(check.meta.code, check.meta.schema, settings, true);
   }
 }
 
-function validateSettings(schema: Schema, settings: CheckSettings, isTopLevel: boolean) {
+function validateSettings(
+  checkCode: string,
+  schema: Schema,
+  settings: CheckSettings,
+  isTopLevel: boolean,
+) {
   for (const key in schema) {
     const schemaProp = schema[key];
     const settingValue = settings[key];
@@ -20,7 +25,7 @@ function validateSettings(schema: Schema, settings: CheckSettings, isTopLevel: b
     validateCommonCheckSettings(settings);
   }
 
-  validateSuperfluousSettings(schema, settings);
+  validateSuperfluousSettings(checkCode, schema, settings);
 }
 
 function validateCommonCheckSettings(settings: CheckSettings) {
@@ -30,11 +35,11 @@ function validateCommonCheckSettings(settings: CheckSettings) {
   ignore === undefined || assertArray('ignore', ignore);
 }
 
-function validateSuperfluousSettings(schema: Schema, settings: CheckSettings) {
+function validateSuperfluousSettings(checkCode: string, schema: Schema, settings: CheckSettings) {
   const commonCheckSettingsKeys = ['enabled', 'severity', 'ignore'];
   for (const key in settings) {
     if (!(key in schema) && !commonCheckSettingsKeys.includes(key)) {
-      assert.fail(`Unexpected setting: ${key}`);
+      console.error(`Unexpected setting: ${key} for check ${checkCode} found in configuration`);
     }
   }
 }
