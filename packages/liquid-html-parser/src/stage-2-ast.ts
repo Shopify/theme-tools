@@ -669,6 +669,8 @@ export interface RawMarkup extends ASTNode<NodeTypes.RawMarkup> {
   kind: RawMarkupKinds;
   /** string value of the contents */
   value: string;
+  /** parsed contents for when you want to visit the tree anyway! */
+  nodes: (LiquidNode | TextNode)[];
 }
 
 /** Used to represent the `<!doctype html>` nodes */
@@ -1073,7 +1075,7 @@ function buildAst(
           type: NodeTypes.LiquidRawTag,
           markup: markup(node.name, node.markup),
           name: node.name,
-          body: toRawMarkup(node),
+          body: toRawMarkup(node, options),
           whitespaceStart: node.whitespaceStart ?? '',
           whitespaceEnd: node.whitespaceEnd ?? '',
           delimiterWhitespaceStart: node.delimiterWhitespaceStart ?? '',
@@ -1144,7 +1146,7 @@ function buildAst(
         builder.push({
           type: NodeTypes.HtmlRawNode,
           name: node.name,
-          body: toRawMarkup(node),
+          body: toRawMarkup(node, options),
           attributes: toAttributes(node.attrList || [], options),
           position: position(node),
           source: node.source,
@@ -1533,10 +1535,14 @@ function toPaginateMarkup(node: ConcretePaginateMarkup): PaginateMarkup {
   };
 }
 
-function toRawMarkup(node: ConcreteHtmlRawTag | ConcreteLiquidRawTag): RawMarkup {
+function toRawMarkup(
+  node: ConcreteHtmlRawTag | ConcreteLiquidRawTag,
+  options: ASTBuildOptions,
+): RawMarkup {
   return {
     type: NodeTypes.RawMarkup,
     kind: toRawMarkupKind(node),
+    nodes: cstToAst(node.children, options) as (TextNode | LiquidNode)[],
     value: node.body,
     position: {
       start: node.blockStartLocEnd,

@@ -489,12 +489,12 @@ export function toLiquidCST(
 }
 
 function toCST<T>(
-  source: string, /* the original file */
+  source: string /* the original file */,
   grammars: LiquidGrammars,
   grammar: ohm.Grammar,
   cstMappings: ('HelperMappings' | 'LiquidMappings' | 'LiquidHTMLMappings' | 'LiquidStatement')[],
-  matchingSource: string = source, /* for subtree parsing */
-  offset: number = 0, /* for subtree parsing location offsets */
+  matchingSource: string = source /* for subtree parsing */,
+  offset: number = 0 /* for subtree parsing location offsets */,
 ): T {
   // When we switch parser, our locStart and locEnd functions must account
   // for the offset of the {% liquid %} markup
@@ -592,6 +592,16 @@ function toCST<T>(
       type: ConcreteNodeTypes.LiquidRawTag,
       name: 'comment',
       body: (tokens: Node[]) => tokens[1].sourceString,
+      children: (tokens: Node[]) => {
+        return toCST(
+          source,
+          grammars,
+          TextNodeGrammar,
+          ['HelperMappings'],
+          tokens[1].sourceString,
+          offset + tokens[1].source.startIdx,
+        );
+      },
       whitespaceStart: (tokens: Node[]) => tokens[0].children[1].sourceString,
       whitespaceEnd: (tokens: Node[]) => tokens[0].children[7].sourceString,
       delimiterWhitespaceStart: (tokens: Node[]) => tokens[2].children[1].sourceString,
@@ -971,6 +981,16 @@ function toCST<T>(
       type: ConcreteNodeTypes.LiquidRawTag,
       name: 0,
       body: 4,
+      children(nodes) {
+        return toCST(
+          source,
+          grammars,
+          TextNodeGrammar,
+          ['HelperMappings'],
+          nodes[4].sourceString,
+          offset + nodes[4].source.startIdx,
+        );
+      },
       whitespaceStart: null,
       whitespaceEnd: null,
       delimiterWhitespaceStart: null,
@@ -995,6 +1015,17 @@ function toCST<T>(
         // We're stripping the newline from the statementSep, that's why we
         // slice(1). Since statementSep = newline (space | newline)*
         tokens[1].sourceString.slice(1) + tokens[2].sourceString,
+      children(tokens) {
+        const commentSource = tokens[1].sourceString.slice(1) + tokens[2].sourceString;
+        return toCST(
+          source,
+          grammars,
+          TextNodeGrammar,
+          ['HelperMappings'],
+          commentSource,
+          offset + tokens[1].source.startIdx + 1,
+        );
+      },
       whitespaceStart: '',
       whitespaceEnd: '',
       delimiterWhitespaceStart: '',

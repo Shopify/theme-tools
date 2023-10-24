@@ -29,7 +29,8 @@
     "dev:playground": "webpack serve --open -c ./playground/webpack.config.js",
     "format": "prettier --write \"packages/*/src/**/*.ts\"",
     "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
-    "test": "vitest"
+    "test": "vitest",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "vscode-languageserver-protocol": "^3.17.3",

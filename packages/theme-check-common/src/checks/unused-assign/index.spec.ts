@@ -58,4 +58,72 @@ describe('Module: UnusedAssign', () => {
 
     expect(suggestions).to.include(expectedFixedCode);
   });
+
+  it('should not report unused assigns for things used in a capture tag', async () => {
+    const sourceCode = `
+      {% assign usedVar = "anotherValue" %}
+      {% capture foo %}
+        {{ usedVar }}
+      {% endcapture %}
+      {{ foo }}
+    `;
+
+    const offenses = await runLiquidCheck(UnusedAssign, sourceCode);
+    expect(offenses).to.be.empty;
+  });
+
+  it('should report unused capture', async () => {
+    const sourceCode = `
+      {% assign usedVar = "anotherValue" %}
+      {% capture foo %}
+        {{ usedVar }}
+      {% endcapture %}
+    `;
+
+    const offenses = await runLiquidCheck(UnusedAssign, sourceCode);
+    expect(offenses).not.to.be.empty;
+  });
+
+  it('should not report unused assigns for things used in a raw-like tag', async () => {
+    const tags = ['style', 'javascript', 'stylesheet'];
+    for (const tag of tags) {
+      const sourceCode = `
+        {% assign usedVar = 1 %}
+        {% ${tag} %}
+          {{ usedVar }}
+        {% end${tag} %}
+      `;
+
+      const offenses = await runLiquidCheck(UnusedAssign, sourceCode);
+      expect(offenses).to.be.empty;
+    }
+  });
+
+  it('should not report unused assigns for things used in a HTML raw-like tag', async () => {
+    const tags = ['style', 'script'];
+    for (const tag of tags) {
+      const sourceCode = `
+        {% assign usedVar = 1 %}
+        <${tag}>
+          {{ usedVar }}
+        </${tag}>
+      `;
+
+      const offenses = await runLiquidCheck(UnusedAssign, sourceCode);
+      expect(offenses).to.be.empty;
+    }
+  });
+
+  it('should report unused assign for things used in a {% raw %} tag', async () => {
+    const sourceCode = `
+        {% assign unusedVar = 1 %}
+        {% # It's a trap. It's not really used %}
+        {% raw %}
+          {{ unusedVar }}
+        {% endraw %}
+      `;
+
+    const offenses = await runLiquidCheck(UnusedAssign, sourceCode);
+    expect(offenses).to.have.lengthOf(1);
+  });
 });
