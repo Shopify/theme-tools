@@ -1,4 +1,4 @@
-**> **Warning**
+> **Warning**
 >
 > This package is open source but not open to contributions. It comes with little documentation but can serve as an example implementation of LSP features on the web.
 
