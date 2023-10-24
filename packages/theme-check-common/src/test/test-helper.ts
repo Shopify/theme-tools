@@ -16,6 +16,7 @@ import {
   FixApplicator,
   createCorrector,
   Dependencies,
+  ChecksSettings,
 } from '../index';
 
 export { StringCorrector, JSONCorrector };
@@ -47,10 +48,11 @@ export async function check(
   themeDesc: MockTheme,
   checks: CheckDefinition<SourceCodeType>[] = recommended,
   mockDependencies: Partial<Dependencies> = {},
+  checkSettings: ChecksSettings = {},
 ): Promise<Offense[]> {
   const theme = getTheme(themeDesc);
   const config: Config = {
-    settings: {},
+    settings: { ...checkSettings },
     checks: checks,
     root: '/',
   };

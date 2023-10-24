@@ -42,6 +42,7 @@ MissingAsset:
 MissingTemplate:
   enabled: true
   severity: 0
+  ignoreMissing: []
 PaginationSize:
   enabled: true
   severity: 1

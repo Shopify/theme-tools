@@ -62,4 +62,49 @@ describe('Module: MissingTemplate', () => {
       });
     }
   });
+
+  it('ignores missing files if ignored by ignore_missing pattern', async () => {
+    const contexts = [
+      {
+        file: '{% render "ignored" %}',
+        ignoreMissing: ['snippets/ignored.liquid'],
+      },
+      {
+        file: '{% render "ignored" %}',
+        ignoreMissing: ['snippets/*.liquid'],
+      },
+      {
+        file: '{% render "ignored" %}',
+        ignoreMissing: ['*/ignored.liquid'],
+      },
+      {
+        file: '{% section "ignored" %}',
+        ignoreMissing: ['sections/ignored.liquid'],
+      },
+      {
+        file: '{% section "ignored" %}',
+        ignoreMissing: ['sections/ignored.liquid'],
+      },
+      {
+        file: '{% section "ignored" %}',
+        ignoreMissing: ['*/ignored.liquid'],
+      },
+    ];
+
+    for (const { file, ignoreMissing } of contexts) {
+      MissingTemplate;
+      const offenses = await check(
+        { 'file.liquid': file },
+        [MissingTemplate],
+        {},
+        {
+          MissingTemplate: {
+            enabled: true,
+            ignoreMissing,
+          },
+        },
+      );
+      expect(offenses).to.be.empty;
+    }
+  });
 });

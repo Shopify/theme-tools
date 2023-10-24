@@ -9,10 +9,10 @@
 
 ## Before you deploy
 
-<!-- If a checklist is not applicable, you can delete it. -->
+<!-- Delete the checklists you don't need -->
 
-<!-- Include this check when updating anything within packages/theme-check-* -->
-- [ ] This PR includes a new checks
+<!-- Check changes -->
+- [ ] This PR includes a new checks or changes the configuration of a check
   - [ ] I included a minor bump `changeset`
   - [ ] It's in the `allChecks` array in `src/checks/index.ts`
   - [ ] I ran `yarn update-configs` and committed the updated configuration files
@@ -21,8 +21,9 @@
     <!-- see packages/node/configs/theme-app-extension.yml -->
     - [ ] If applicable, I've updated the `theme-app-extension.yml` config
 
-- [ ] This PR changes the public API
-  - [ ] I included a minor bump `changeset` titled `Breaking: ...`
+<!-- Public API changes, new features -->
+- [ ] I included a minor bump `changeset`
+- [ ] My feature is backward compatible
 
-- [ ] This PR fixes a bug
-  - [ ] I included a patch bump `changeset` to this PR
+<!-- Bug fixes -->
+- [ ] I included a patch bump `changeset`

@@ -5,10 +5,21 @@ import {
   NodeTypes,
   Position,
 } from '@shopify/liquid-html-parser';
-import { LiquidCheckDefinition, RelativePath, Severity, SourceCodeType } from '../../types';
+import { minimatch } from 'minimatch';
+import {
+  LiquidCheckDefinition,
+  RelativePath,
+  SchemaProp,
+  Severity,
+  SourceCodeType,
+} from '../../types';
 import { assertFileExists } from '../../utils/file-utils';
 
-export const MissingTemplate: LiquidCheckDefinition = {
+const schema = {
+  ignoreMissing: SchemaProp.array(SchemaProp.string(), []),
+};
+
+export const MissingTemplate: LiquidCheckDefinition<typeof schema> = {
   meta: {
     code: 'MissingTemplate',
     name: 'Avoid rendering missing templates',
@@ -19,7 +30,7 @@ export const MissingTemplate: LiquidCheckDefinition = {
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.ERROR,
-    schema: {},
+    schema,
     targets: [],
   },
 
@@ -27,12 +38,19 @@ export const MissingTemplate: LiquidCheckDefinition = {
     const isNamedLiquidTag = (tag: LiquidTag): tag is LiquidTagNamed =>
       typeof tag.markup !== 'string';
 
-    async function contextReport(requiredPath: RelativePath, { position }: { position: Position }) {
-      const fileExists = await assertFileExists(context, requiredPath);
-      if (fileExists) return;
+    function isIgnored(relativePath: string) {
+      return context.settings.ignoreMissing.some((pattern) => minimatch(relativePath, pattern));
+    }
+
+    async function maybeReportMissing(
+      relativePath: RelativePath,
+      { position }: { position: Position },
+    ) {
+      const fileExists = await assertFileExists(context, relativePath);
+      if (fileExists || isIgnored(relativePath)) return;
 
       context.report({
-        message: `'${requiredPath}' does not exist`,
+        message: `'${relativePath}' does not exist`,
         startIndex: position.start,
         endIndex: position.end,
       });
@@ -43,9 +61,9 @@ export const MissingTemplate: LiquidCheckDefinition = {
         if (node.snippet.type === NodeTypes.VariableLookup) return;
 
         const snippet = node.snippet;
-        const requiredPath = `snippets/${snippet.value}.liquid`;
+        const relativePath = `snippets/${snippet.value}.liquid`;
 
-        await contextReport(requiredPath, snippet);
+        await maybeReportMissing(relativePath, snippet);
       },
 
       async LiquidTag(node) {
@@ -53,9 +71,9 @@ export const MissingTemplate: LiquidCheckDefinition = {
         if (node.name !== NamedTags.section) return;
 
         const markup = node.markup;
-        const requiredPath = `sections/${markup.value}.liquid`;
+        const relativePath = `sections/${markup.value}.liquid`;
 
-        await contextReport(requiredPath, markup);
+        await maybeReportMissing(relativePath, markup);
       },
     };
   },
