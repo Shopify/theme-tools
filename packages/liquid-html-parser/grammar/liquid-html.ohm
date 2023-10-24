@@ -1,7 +1,7 @@
 Helpers {
   Node = TextNode*
   TextNode = AnyExceptPlus<openControl>
-  openControl = empty
+  openControl = end
 
   empty = /* nothing */
   anyExcept<lit> = (~ lit any)
