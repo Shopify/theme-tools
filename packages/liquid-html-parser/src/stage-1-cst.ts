@@ -33,7 +33,13 @@
 import { Parser } from 'prettier';
 import ohm, { Node } from 'ohm-js';
 import { toAST } from 'ohm-js/extras';
-import { LiquidGrammars, placeholderGrammars, strictGrammars, tolerantGrammars } from './grammar';
+import {
+  LiquidGrammars,
+  TextNodeGrammar,
+  placeholderGrammars,
+  strictGrammars,
+  tolerantGrammars,
+} from './grammar';
 import { LiquidHTMLCSTParsingError } from './errors';
 import { Comparators, NamedTags } from './types';
 
@@ -111,6 +117,7 @@ export interface ConcreteHtmlComment extends ConcreteBasicNode<ConcreteNodeTypes
 export interface ConcreteHtmlRawTag extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlRawTag> {
   name: string;
   body: string;
+  children: (ConcreteTextNode | ConcreteLiquidNode)[];
   blockStartLocStart: number;
   blockStartLocEnd: number;
   blockEndLocStart: number;
@@ -169,6 +176,7 @@ export interface ConcreteLiquidRawTag
   extends ConcreteBasicLiquidNode<ConcreteNodeTypes.LiquidRawTag> {
   name: string;
   body: string;
+  children: (ConcreteTextNode | ConcreteLiquidNode)[];
   markup: string;
   delimiterWhitespaceStart: null | '-';
   delimiterWhitespaceEnd: null | '-';
@@ -481,19 +489,18 @@ export function toLiquidCST(
 }
 
 function toCST<T>(
-  source: string,
+  source: string, /* the original file */
   grammars: LiquidGrammars,
   grammar: ohm.Grammar,
-  cstMappings: ('HelperMappings' | 'LiquidMappings' | 'LiquidHTMLMappings')[],
+  cstMappings: ('HelperMappings' | 'LiquidMappings' | 'LiquidHTMLMappings' | 'LiquidStatement')[],
+  matchingSource: string = source, /* for subtree parsing */
+  offset: number = 0, /* for subtree parsing location offsets */
 ): T {
   // When we switch parser, our locStart and locEnd functions must account
   // for the offset of the {% liquid %} markup
-  let liquidStatementOffset = 0;
-  const locStart = (tokens: Node[]) => liquidStatementOffset + tokens[0].source.startIdx;
-  const locEnd = (tokens: Node[]) =>
-    liquidStatementOffset + tokens[tokens.length - 1].source.endIdx;
-  const locEndSecondToLast = (tokens: Node[]) =>
-    liquidStatementOffset + tokens[tokens.length - 2].source.endIdx;
+  const locStart = (tokens: Node[]) => offset + tokens[0].source.startIdx;
+  const locEnd = (tokens: Node[]) => offset + tokens[tokens.length - 1].source.endIdx;
+  const locEndSecondToLast = (tokens: Node[]) => offset + tokens[tokens.length - 2].source.endIdx;
 
   const textNode = {
     type: ConcreteNodeTypes.TextNode,
@@ -505,7 +512,7 @@ function toCST<T>(
     source,
   };
 
-  const res = grammar.match(source, 'Node');
+  const res = grammar.match(matchingSource, 'Node');
   if (res.failed()) {
     throw new LiquidHTMLCSTParsingError(res);
   }
@@ -539,6 +546,35 @@ function toCST<T>(
       type: ConcreteNodeTypes.LiquidRawTag,
       name: 3,
       body: 9,
+      children: (tokens: Node[]) => {
+        const nameNode = tokens[3];
+        const rawMarkupStringNode = tokens[9];
+        switch (nameNode.sourceString) {
+          // {% raw %} accepts syntax errors, we shouldn't try to parse that
+          case 'raw': {
+            return toCST(
+              source,
+              grammars,
+              TextNodeGrammar,
+              ['HelperMappings'],
+              rawMarkupStringNode.sourceString,
+              offset + rawMarkupStringNode.source.startIdx,
+            );
+          }
+
+          // {% javascript %}, {% style %}
+          default: {
+            return toCST(
+              source,
+              grammars,
+              grammars.Liquid,
+              ['HelperMappings', 'LiquidMappings'],
+              rawMarkupStringNode.sourceString,
+              offset + rawMarkupStringNode.source.startIdx,
+            );
+          }
+        }
+      },
       markup: 6,
       whitespaceStart: 1,
       whitespaceEnd: 7,
@@ -697,22 +733,14 @@ function toCST<T>(
 
     liquidTagLiquid: 0,
     liquidTagLiquidMarkup(tagMarkup: Node) {
-      const res = grammars['LiquidStatement'].match(tagMarkup.sourceString, 'Node');
-
-      if (res.failed()) {
-        throw new LiquidHTMLCSTParsingError(res);
-      }
-
-      // We're reparsing with a different startIdx
-      liquidStatementOffset = tagMarkup.source.startIdx;
-      const subCST = toAST(res, {
-        ...HelperMappings,
-        ...LiquidMappings,
-        ...LiquidStatement,
-      });
-      liquidStatementOffset = 0;
-
-      return subCST;
+      return toCST(
+        source,
+        grammars,
+        grammars.LiquidStatement,
+        ['HelperMappings', 'LiquidMappings', 'LiquidStatement'],
+        tagMarkup.sourceString,
+        offset + tagMarkup.source.startIdx,
+      );
     },
 
     liquidTagEchoMarkup: 0,
@@ -882,8 +910,8 @@ function toCST<T>(
     dotLookup: {
       type: ConcreteNodeTypes.String,
       value: 3,
-      locStart: (nodes: Node[]) => liquidStatementOffset + nodes[2].source.startIdx,
-      locEnd: (nodes: Node[]) => liquidStatementOffset + nodes[nodes.length - 1].source.endIdx,
+      locStart: (nodes: Node[]) => offset + nodes[2].source.startIdx,
+      locEnd: (nodes: Node[]) => offset + nodes[nodes.length - 1].source.endIdx,
       source,
     },
 
@@ -950,10 +978,10 @@ function toCST<T>(
       locStart,
       locEnd: locEndSecondToLast,
       source,
-      blockStartLocStart: (tokens: Node[]) => liquidStatementOffset + tokens[0].source.startIdx,
-      blockStartLocEnd: (tokens: Node[]) => liquidStatementOffset + tokens[2].source.endIdx,
-      blockEndLocStart: (tokens: Node[]) => liquidStatementOffset + tokens[5].source.startIdx,
-      blockEndLocEnd: (tokens: Node[]) => liquidStatementOffset + tokens[5].source.endIdx,
+      blockStartLocStart: (tokens: Node[]) => offset + tokens[0].source.startIdx,
+      blockStartLocEnd: (tokens: Node[]) => offset + tokens[2].source.endIdx,
+      blockEndLocStart: (tokens: Node[]) => offset + tokens[5].source.startIdx,
+      blockEndLocEnd: (tokens: Node[]) => offset + tokens[5].source.endIdx,
     },
 
     liquidBlockComment: {
@@ -974,10 +1002,10 @@ function toCST<T>(
       locStart,
       locEnd,
       source,
-      blockStartLocStart: (tokens: Node[]) => liquidStatementOffset + tokens[0].source.startIdx,
-      blockStartLocEnd: (tokens: Node[]) => liquidStatementOffset + tokens[0].source.endIdx,
-      blockEndLocStart: (tokens: Node[]) => liquidStatementOffset + tokens[4].source.startIdx,
-      blockEndLocEnd: (tokens: Node[]) => liquidStatementOffset + tokens[4].source.endIdx,
+      blockStartLocStart: (tokens: Node[]) => offset + tokens[0].source.startIdx,
+      blockStartLocEnd: (tokens: Node[]) => offset + tokens[0].source.endIdx,
+      blockEndLocStart: (tokens: Node[]) => offset + tokens[4].source.startIdx,
+      blockEndLocEnd: (tokens: Node[]) => offset + tokens[4].source.endIdx,
     },
 
     liquidInlineComment: {
@@ -1033,6 +1061,17 @@ function toCST<T>(
         return tokens[0].children[2].toAST(mappings);
       },
       body: (tokens: Node[]) => source.slice(tokens[0].source.endIdx, tokens[2].source.startIdx),
+      children: (tokens: Node[]) => {
+        const rawMarkup = source.slice(tokens[0].source.endIdx, tokens[2].source.startIdx);
+        return toCST(
+          source,
+          grammars,
+          grammars.Liquid,
+          ['HelperMappings', 'LiquidMappings'],
+          rawMarkup,
+          tokens[0].source.endIdx,
+        );
+      },
       locStart,
       locEnd,
       source,
@@ -1135,6 +1174,7 @@ function toCST<T>(
     HelperMappings,
     LiquidMappings,
     LiquidHTMLMappings,
+    LiquidStatement,
   };
 
   const selectedMappings = cstMappings.reduce(

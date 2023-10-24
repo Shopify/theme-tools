@@ -2,6 +2,8 @@ import ohm from 'ohm-js';
 
 export const liquidHtmlGrammars = ohm.grammars(require('../grammar/liquid-html.ohm.js'));
 
+export const TextNodeGrammar = liquidHtmlGrammars['Helpers'];
+
 export interface LiquidGrammars {
   Liquid: ohm.Grammar;
   LiquidHTML: ohm.Grammar;
