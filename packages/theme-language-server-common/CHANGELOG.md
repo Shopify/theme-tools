@@ -1,5 +1,14 @@
 # @shopify/theme-language-server-common
 
+## 1.4.3
+
+### Patch Changes
+
+- dacdd9f: Add blocks/ files contextual completion, hover and UndefinedObject support
+- Updated dependencies [96d4d5e]
+- Updated dependencies [dacdd9f]
+  - @shopify/theme-check-common@1.18.0
+
 ## 1.4.2
 
 ### Patch Changes

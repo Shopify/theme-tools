@@ -1,5 +1,15 @@
 # @shopify/theme-check-common
 
+## 1.18.0
+
+### Minor Changes
+
+- 96d4d5e: Re-add `ignoreMissing` support to `MissingTemplate`
+
+### Patch Changes
+
+- dacdd9f: Add blocks/ files contextual completion, hover and UndefinedObject support
+
 ## 1.17.0
 
 ### Minor Changes
