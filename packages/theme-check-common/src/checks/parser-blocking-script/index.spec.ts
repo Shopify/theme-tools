@@ -207,5 +207,19 @@ describe('Module: ParserBlockingScript', () => {
       );
       expect(offenses).to.have.length(0);
     });
+
+    it('should not report any offense when using scripts of type module', async () => {
+      const file = `
+        <script src="https://foo.bar/baz.js" type="module"></script>
+        <script src="https://foo.bar/baz.js" type="importmap"></script>
+      `;
+      const offenses = await reportOffenses(
+        {
+          'code.liquid': file,
+        },
+        [ParserBlockingScript],
+      );
+      expect(offenses).to.have.length(0);
+    });
   });
 });
