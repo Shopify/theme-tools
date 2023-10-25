@@ -82,6 +82,7 @@ describe('Module: DeprecatedGlobalAppBlockType', () => {
 
   it('does not reject global string used outside liquid control flow statements', async () => {
     const sourceCode = `
+      {{ "@global" }}
       <p> This is "@global" </p>
       <script> var i = "@global" </script>
       {% schema %}
@@ -118,5 +119,22 @@ describe('Module: DeprecatedGlobalAppBlockType', () => {
     const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
 
     expect(highlights).toHaveLength(0);
+  });
+
+  it('rejects global string used in liquid control flow statements', async () => {
+    const sourceCode = `
+      {% if var = "@global" %}
+        <p> This is "@global" </p>
+      {% endif %}
+    `;
+
+    const offenses = await runLiquidCheck(DeprecatedGlobalAppBlockType, sourceCode);
+    expect(offenses).toHaveLength(1);
+    expect(offenses[0].message).toEqual(
+      'The global app block type `@global` is deprecated. Use `@app` instead.',
+    );
+
+    const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
+    expect(highlights).toEqual([`{% if var = "@global" %}`]);
   });
 });
