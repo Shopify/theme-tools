@@ -1,5 +1,16 @@
 # @shopify/theme-language-server-common
 
+## 1.4.4
+
+### Patch Changes
+
+- aa33c5f: Fix hover, completion and `UndefinedObject` reporting of `{% increment var %}` and `{% decrement var %}`
+- Updated dependencies [0d71145]
+- Updated dependencies [aa33c5f]
+- Updated dependencies [0d71145]
+  - @shopify/liquid-html-parser@1.1.0
+  - @shopify/theme-check-common@1.18.1
+
 ## 1.4.3
 
 ### Patch Changes
