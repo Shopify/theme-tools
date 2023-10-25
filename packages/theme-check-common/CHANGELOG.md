@@ -1,5 +1,14 @@
 # @shopify/theme-check-common
 
+## 1.18.1
+
+### Patch Changes
+
+- aa33c5f: Fix hover, completion and `UndefinedObject` reporting of `{% increment var %}` and `{% decrement var %}`
+- 0d71145: Fix UnusedAssign false positives in raw-like nodes
+- Updated dependencies [0d71145]
+  - @shopify/liquid-html-parser@1.1.0
+
 ## 1.18.0
 
 ### Minor Changes

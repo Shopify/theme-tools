@@ -1,5 +1,12 @@
 # @shopify/theme-language-server-browser
 
+## 1.4.4
+
+### Patch Changes
+
+- Updated dependencies [aa33c5f]
+  - @shopify/theme-language-server-common@1.4.4
+
 ## 1.4.3
 
 ### Patch Changes
