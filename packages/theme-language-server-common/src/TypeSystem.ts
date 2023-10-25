@@ -3,8 +3,11 @@ import {
   LiquidExpression,
   LiquidHtmlNode,
   LiquidTag,
+  LiquidTagDecrement,
+  LiquidTagIncrement,
   LiquidVariable,
   LiquidVariableLookup,
+  NamedTags,
   NodeTypes,
 } from '@shopify/liquid-html-parser';
 import {
@@ -302,6 +305,13 @@ function buildSymbolsTable(
           identifier: node.name + 'loop',
           type: node.name + 'loop',
           range: [node.blockStartPosition.end, end(node.blockEndPosition?.end)],
+        };
+      } else if (isLiquidTagIncrement(node) || isLiquidTagDecrement(node)) {
+        if (node.markup.name === null) return;
+        return {
+          identifier: node.markup.name,
+          type: 'number',
+          range: [node.position.start],
         };
       } else if (node.name === 'layout') {
         return {
@@ -619,4 +629,12 @@ function isCorrectTypeRange(typeRange: TypeRange, node: LiquidVariableLookup): b
 function end(offset: number | undefined): number | undefined {
   if (offset === -1) return undefined;
   return offset;
+}
+
+function isLiquidTagIncrement(node: LiquidTag): node is LiquidTagIncrement {
+  return node.name === NamedTags.increment && typeof node.markup !== 'string';
+}
+
+function isLiquidTagDecrement(node: LiquidTag): node is LiquidTagDecrement {
+  return node.name === NamedTags.decrement && typeof node.markup !== 'string';
 }

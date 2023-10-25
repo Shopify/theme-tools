@@ -233,6 +233,18 @@ describe('Module: UndefinedObject', () => {
     expect(offenses.map((e) => e.message)).toEqual(["Unknown object 'none' used."]);
   });
 
+  it('should support {% increment var %} and {% decrement var %}', async () => {
+    for (const tag of ['increment', 'decrement']) {
+      const sourceCode = `
+        {% ${tag} var %}
+        {{ var }}
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode);
+      expect(offenses).toHaveLength(0);
+    }
+  });
+
   it('should not report an offense when object is undefined in a "snippet" file', async () => {
     const sourceCode = `
       {{ my_var }}

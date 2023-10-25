@@ -3,7 +3,9 @@ import {
   LiquidTag,
   LiquidTagAssign,
   LiquidTagCapture,
+  LiquidTagDecrement,
   LiquidTagFor,
+  LiquidTagIncrement,
   LiquidTagTablerow,
   LiquidVariableLookup,
   NamedTags,
@@ -89,6 +91,16 @@ export const UndefinedObject: LiquidCheckDefinition = {
           indexVariableScope('none', {
             start: node.position.start,
             end: node.position.end,
+          });
+        }
+
+        /* {% increment var %} */
+        if (
+          (isLiquidTagIncrement(node) || isLiquidTagDecrement(node)) &&
+          node.markup.name !== null
+        ) {
+          indexVariableScope(node.markup.name, {
+            start: node.position.start,
           });
         }
 
@@ -216,4 +228,12 @@ function isLiquidForTag(node: LiquidTag): node is LiquidTagFor {
 
 function isLiquidTableRowTag(node: LiquidTag): node is LiquidTagTablerow {
   return node.name === NamedTags.tablerow && typeof node.markup !== 'string';
+}
+
+function isLiquidTagIncrement(node: LiquidTag): node is LiquidTagIncrement {
+  return node.name === NamedTags.increment && typeof node.markup !== 'string';
+}
+
+function isLiquidTagDecrement(node: LiquidTag): node is LiquidTagDecrement {
+  return node.name === NamedTags.decrement && typeof node.markup !== 'string';
 }

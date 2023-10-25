@@ -138,6 +138,22 @@ describe('Module: LiquidObjectHoverProvider', async () => {
     await expect(provider).to.hover('{{ none█ }}', null);
   });
 
+  it('should support {% increment var %}', async () => {
+    await expect(provider).to.hover(
+      `{% increment var█ %}`,
+      expect.stringMatching(/##* var: `number`/),
+    );
+    await expect(provider).to.hover('{{ var█ }}', null);
+  });
+
+  it('should support {% decrement var %}', async () => {
+    await expect(provider).to.hover(
+      `{% decrement var█ %}`,
+      expect.stringMatching(/##* var: `number`/),
+    );
+    await expect(provider).to.hover('{{ var█ }}', null);
+  });
+
   it('should support contextual objects by relative path', async () => {
     const contexts: [string, string][] = [
       ['section', 'sections/my-section.liquid'],
