@@ -1,7 +1,7 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { last } from '../../utils';
-import { isAttr, isHtmlAttribute, isValuedHtmlAttribute } from '../utils';
+import { hasAttributeValueOf, isAttr, isHtmlAttribute, isValuedHtmlAttribute } from '../utils';
 import { liquidFilterSuggestion, scriptTagSuggestion } from './suggestions';
 
 export const ParserBlockingScript: LiquidCheckDefinition = {
@@ -67,8 +67,15 @@ export const ParserBlockingScript: LiquidCheckDefinition = {
         const hasDeferOrAsync = node.attributes
           .filter(isHtmlAttribute)
           .some((attr) => isAttr(attr, 'async') || isAttr(attr, 'defer'));
+        const isTypeModule = node.attributes
+          .filter(isValuedHtmlAttribute)
+          .some(
+            (attr) =>
+              isAttr(attr, 'type') &&
+              (hasAttributeValueOf(attr, 'module') || hasAttributeValueOf(attr, 'importmap')),
+          );
 
-        if (hasDeferOrAsync) {
+        if (hasDeferOrAsync || isTypeModule) {
           return;
         }
 
