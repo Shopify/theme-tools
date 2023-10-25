@@ -26,13 +26,27 @@ export const MissingAsset: LiquidCheckDefinition = {
 
         if (!isLiquidString(node.expression)) return;
 
-        const expression = node.expression;
-        const assetPath = `assets/${expression.value}`;
-        const fileExists = await assertFileExists(context, assetPath);
+        let expression = node.expression;
+        let originalAssetPath = `assets/${expression.value}`;
+        let assetPath = originalAssetPath;
+
+        let fileExists = await assertFileExists(context, assetPath);
         if (fileExists) return;
 
+        if (assetPath.endsWith('.scss.css')) {
+          assetPath = assetPath.replace('.scss.css', '.scss.liquid');
+          fileExists = await assertFileExists(context, assetPath);
+          if (fileExists) return;
+        }
+
+        if (assetPath.endsWith('.js') || assetPath.endsWith('.css')) {
+          assetPath += '.liquid';
+          fileExists = await assertFileExists(context, assetPath);
+          if (fileExists) return;
+        }
+
         context.report({
-          message: `'${assetPath}' does not exist`,
+          message: `'${originalAssetPath}' does not exist`,
           startIndex: expression.position.start,
           endIndex: expression.position.end,
         });

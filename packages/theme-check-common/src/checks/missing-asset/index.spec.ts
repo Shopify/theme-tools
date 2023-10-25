@@ -68,4 +68,40 @@ describe('Module: MissingAsset', () => {
 
     expect(offenses).to.have.length(0);
   });
+
+  it('should not report for compiled .js.liquid files', async () => {
+    const file = `{{ 'foo.js' | asset_url }} `;
+    const files = {
+      'snippets/snippet.liquid': file,
+      'assets/foo.js.liquid': 'console.log("{{ "hi" }}");',
+    };
+
+    const offenses = await check(files, [MissingAsset]);
+
+    expect(offenses).to.have.length(0);
+  });
+
+  it('should not report for compiled .css.liquid files', async () => {
+    const file = `{{ 'foo.css' | asset_url }} `;
+    const files = {
+      'snippets/snippet.liquid': file,
+      'assets/foo.css.liquid': 'body { color: {{ "blue" }}; }',
+    };
+
+    const offenses = await check(files, [MissingAsset]);
+
+    expect(offenses).to.have.length(0);
+  });
+
+  it('should not report for compiled .scss.liquid files', async () => {
+    const file = `{{ 'foo.scss.css' | asset_url }} `;
+    const files = {
+      'snippets/snippet.liquid': file,
+      'assets/foo.scss.liquid': 'html { & body { color: {{ "blue" }}; } }',
+    };
+
+    const offenses = await check(files, [MissingAsset]);
+
+    expect(offenses).to.have.length(0);
+  });
 });
