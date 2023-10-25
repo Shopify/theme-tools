@@ -7,6 +7,8 @@
 - Patch bump because it depends on:
   - @shopify/liquid-html-parser
   - @shopify/theme-language-server-node
+    - Fix hover, completion and `UndefinedObject` reporting of `{% increment var %}` and `{% decrement var %}`
+    - Fix UnusedAssign false positives in raw-like nodes
 - Updated dependencies
 - Updated dependencies [0d71145]
   - @shopify/prettier-plugin-liquid@1.3.3
