@@ -128,6 +128,9 @@ describe('Module: ObjectCompletionProvider', async () => {
       ['{% for p in all_products %}{{ for█ }}{% endfor %}', 'forloop'],
       ['{% tablerow p in all_products %}{{ tablerow█ }}{% endtablerow %}', 'tablerowloop'],
       ['{% layout non█ %}', 'none'],
+      ['{% increment var %}{{ var█ }}', 'var'],
+      ['{% decrement var %}{{ var█ }}', 'var'],
+      ['{% assign var = 1 %}{{ var█ }}', 'var'],
     ];
     for (const [context, expected] of contexts) {
       await expect(provider, context).to.complete(context, [expected]);
