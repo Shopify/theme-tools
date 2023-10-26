@@ -1,5 +1,12 @@
 # @shopify/theme-check-common
 
+## 1.18.2
+
+### Patch Changes
+
+- fe54680: Fix `MissingAsset` false positives for .css.liquid, .js.liquid and .scss.liquid files
+- e00c319: Fix false ParserBlockingScript reports for scripts of type module
+
 ## 1.18.1
 
 ### Patch Changes

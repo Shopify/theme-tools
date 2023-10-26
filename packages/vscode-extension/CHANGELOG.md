@@ -1,5 +1,12 @@
 ## theme-check-vscode
 
+## 1.11.18
+
+### Patch Changes
+
+- fe54680: Fix `MissingAsset` false positives for .css.liquid, .js.liquid and .scss.liquid files
+  - @shopify/theme-language-server-node@1.4.5
+
 ## 1.11.17
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @shopify/theme-check-node
 
+## 1.18.2
+
+### Patch Changes
+
+- Updated dependencies [fe54680]
+- Updated dependencies [e00c319]
+  - @shopify/theme-check-common@1.18.2
+  - @shopify/theme-check-docs-updater@1.18.2
+
 ## 1.18.1
 
 ### Patch Changes

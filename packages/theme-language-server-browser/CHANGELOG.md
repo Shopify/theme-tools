@@ -1,5 +1,11 @@
 # @shopify/theme-language-server-browser
 
+## 1.4.5
+
+### Patch Changes
+
+- @shopify/theme-language-server-common@1.4.5
+
 ## 1.4.4
 
 ### Patch Changes
