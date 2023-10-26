@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 1.19.0
+
+### Minor Changes
+
+- d9f3063: Do not report UnusedAssign for variables starting with an underscore
+
 ## 1.18.2
 
 ### Patch Changes
