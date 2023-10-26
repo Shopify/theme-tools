@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- Patch bump because it depends on @shopify/theme-language-server-node
+-  Do not report `UnusedAssign` for variables starting with an underscore
   - @shopify/theme-language-server-node@1.4.6
 
 ## 1.11.18
