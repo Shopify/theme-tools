@@ -114,14 +114,30 @@ describe('Module: UnusedAssign', () => {
     }
   });
 
+  it('should not report unused assigns for variables starting with an underscore', async () => {
+    const sourceCode = `
+      {% assign _ = 1 %}
+      {% assign _unusedVar = 1 %}
+      {% capture _ %}
+        {% form "cart", cart %}
+          {% assign some_var = cart.successfully_posted? %}
+        {% endform %}
+      {% endcapture %}
+      {{ some_var }}
+    `;
+
+    const offenses = await runLiquidCheck(UnusedAssign, sourceCode);
+    expect(offenses).to.have.lengthOf(0);
+  });
+
   it('should report unused assign for things used in a {% raw %} tag', async () => {
     const sourceCode = `
-        {% assign unusedVar = 1 %}
-        {% # It's a trap. It's not really used %}
-        {% raw %}
-          {{ unusedVar }}
-        {% endraw %}
-      `;
+      {% assign unusedVar = 1 %}
+      {% # It's a trap. It's not really used %}
+      {% raw %}
+        {{ unusedVar }}
+      {% endraw %}
+    `;
 
     const offenses = await runLiquidCheck(UnusedAssign, sourceCode);
     expect(offenses).to.have.lengthOf(1);

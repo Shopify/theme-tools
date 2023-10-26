@@ -52,7 +52,7 @@ export const UnusedAssign: LiquidCheckDefinition = {
 
       async onCodePathEnd() {
         for (const [variable, node] of assignedVariables.entries()) {
-          if (!usedVariables.has(variable)) {
+          if (!usedVariables.has(variable) && !variable.startsWith('_')) {
             context.report({
               message: `The variable '${variable}' is assigned but not used`,
               startIndex: node.position.start,
