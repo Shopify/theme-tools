@@ -20,7 +20,7 @@
         "${workspaceRoot}/packages/theme-check-common/dist/**/*.js",
         "${workspaceRoot}/packages/theme-check-node/dist/**/*.js",
       ],
-			"preLaunchTask": "npm: build:extension:dev - packages/vscode-extension"
+			"preLaunchTask": "vscode dev watch"
 		},
 	]
 }

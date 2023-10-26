@@ -8,7 +8,7 @@ import {
   Position,
 } from 'vscode';
 import * as prettier from 'prettier';
-import * as LiquidPrettierPlugin from '@shopify/prettier-plugin-liquid/standalone';
+import * as LiquidPrettierPlugin from '@shopify/prettier-plugin-liquid';
 import { LiquidHTMLASTParsingError } from '@shopify/liquid-html-parser';
 
 export default class LiquidFormatter {

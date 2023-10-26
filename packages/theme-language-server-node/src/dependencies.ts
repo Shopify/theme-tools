@@ -4,8 +4,7 @@ import { basename } from 'node:path';
 import * as fs from 'node:fs/promises';
 import { promisify } from 'node:util';
 import { glob as callbackGlob } from 'glob';
-import { Config, Translations } from '@shopify/theme-check-common';
-import { loadConfig as loadConfigFromPath } from '@shopify/theme-check-node';
+import { Config, Translations, loadConfig as loadConfigFromPath } from '@shopify/theme-check-node';
 
 const glob = promisify(callbackGlob);
 
