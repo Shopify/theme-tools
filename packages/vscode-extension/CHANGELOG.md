@@ -4,7 +4,8 @@
 
 ### Patch Changes
 
-- fe54680: Fix `MissingAsset` false positives for .css.liquid, .js.liquid and .scss.liquid files
+- Fix `MissingAsset` false positives for .css.liquid, .js.liquid and .scss.liquid files
+- Fix false ParserBlockingScript reports for scripts of type module
   - @shopify/theme-language-server-node@1.4.5
 
 ## 1.11.17
