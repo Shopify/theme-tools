@@ -1,5 +1,11 @@
 # @shopify/codemirror-language-client
 
+## 0.3.0
+
+### Minor Changes
+
+- 16a3707: Add LSP Hover support
+
 ## 0.2.0
 
 ### Minor Changes
