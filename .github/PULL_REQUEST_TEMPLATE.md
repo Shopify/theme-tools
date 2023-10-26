@@ -1,4 +1,4 @@
-# What are you adding in this PR?
+## What are you adding in this PR?
 
 <!-- Describe your changes. Provide enough context so that someone new can understand the 'why' behind this change. -->
 <!-- Remember to use `fixes` or `solves` keywords to close issues automatically (https://help.github.com/articles/closing-issues-using-keywords/). -->
@@ -6,6 +6,10 @@
 ## What's next? Any followup issues?
 
 <!-- Outline follow up tasks with links to issues so they're tracked. -->
+
+## What did you learn?
+
+<!-- Totally optional. But... If you learned something interesting, why not share it? -->
 
 ## Before you deploy
 
