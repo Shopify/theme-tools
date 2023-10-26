@@ -3,12 +3,18 @@
   "include": ["./src/**/*.ts"],
   "exclude": ["./dist"],
   "compilerOptions": {
+    "baseUrl": ".",
     "outDir": "dist",
     "rootDir": "src",
-    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
+    "paths": {
+      "@shopify/theme-check-common": ["../theme-check-common/src"],
+      "@shopify/theme-check-docs-updater": ["../theme-check-docs-updater/src"]
+    }
   },
   "references": [
-    { "path": "../theme-check-common" }
+    { "path": "../theme-check-common" },
+    { "path": "../theme-check-docs-updater" }
   ]
 }
 

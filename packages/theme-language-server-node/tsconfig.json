@@ -3,13 +3,20 @@
   "include": ["./src/**/*.ts"],
   "exclude": ["./dist"],
   "compilerOptions": {
+    "baseUrl": ".",
     "outDir": "dist",
     "rootDir": "src",
-    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
+    "paths": {
+      "@shopify/theme-language-server-common": ["../theme-language-server-common/src"],
+      "@shopify/theme-check-docs-updater": ["../theme-check-docs-updater/src"],
+      "@shopify/theme-check-node": ["../theme-check-node/src"],
+    }
   },
   "references": [
     { "path": "../theme-language-server-common/src" },
-    { "path": "../theme-check-docs-updater" }
+    { "path": "../theme-check-docs-updater" },
+    { "path": "../theme-check-node" }
   ]
 }
 

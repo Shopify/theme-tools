@@ -6,13 +6,5 @@
   "compilerOptions": {
     "outDir": ".",
     "rootDir": "."
-  },
-  "references": [
-    {
-      "path": "../theme-check-common"
-    },
-    {
-      "path": "../liquid-html-parser"
-    }
-  ]
+  }
 }

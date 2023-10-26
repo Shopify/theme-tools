@@ -1,15 +1,16 @@
 {
-	"version": "2.0.0",
-	"tasks": [
+  "version": "2.0.0",
+  "tasks": [
     {
-      "type": "npm",
-      "script": "build:extension:dev",
-      "path": "packages/vscode-extension",
+      "type": "shell",
+      "command": "yarn --cwd packages/vscode-extension build:extension:dev",
       "group": "build",
-      "label": "npm: build:extension:dev - packages/vscode-extension",
-      "detail": "webpack --mode development",
+      "label": "vscode dev watch",
       "dependsOrder": "parallel",
-      "dependsOn": ["parser pre build", "theme check build"],
+      "dependsOn": [
+        "parser pre build",
+        "theme check build"
+      ],
     },
     {
       "label": "parser pre build",

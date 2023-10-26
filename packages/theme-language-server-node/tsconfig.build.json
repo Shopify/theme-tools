@@ -2,7 +2,8 @@
   "extends": "./tsconfig.json",
   "exclude": ["**/*.spec.ts"],
   "references": [
-    { "path": "../theme-language-server-common/src" },
-    { "path": "../theme-check-docs-updater" }
+    { "path": "../theme-language-server-common/src/tsconfig.build.json" },
+    { "path": "../theme-check-docs-updater/tsconfig.build.json" },
+    { "path": "../theme-check-node/tsconfig.build.json" },
   ]
 }

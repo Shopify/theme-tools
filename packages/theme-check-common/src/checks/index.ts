@@ -1,8 +1,4 @@
-import {
-  ConfigTarget,
-  JSONCheckDefinition,
-  LiquidCheckDefinition,
-} from '@shopify/theme-check-common';
+import { ConfigTarget, JSONCheckDefinition, LiquidCheckDefinition } from '../types';
 
 import { AppBlockValidTags } from './app-block-valid-tags';
 import { AssetPreload } from './asset-preload';

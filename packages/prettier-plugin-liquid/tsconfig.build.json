@@ -3,6 +3,6 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules", "src/**/*.spec.ts"],
   "references": [
-    { "path": "../liquid-html-parser" }
+    { "path": "../liquid-html-parser/tsconfig.build.json" }
   ]
 }
