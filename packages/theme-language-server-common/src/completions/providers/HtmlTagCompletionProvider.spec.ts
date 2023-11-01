@@ -10,10 +10,13 @@ describe('Module: HtmlTagCompletionProvider', async () => {
   let provider: CompletionsProvider;
 
   beforeEach(async () => {
-    provider = new CompletionsProvider(new DocumentManager(), {
-      filters: async () => [],
-      objects: async () => [],
-      tags: async () => [],
+    provider = new CompletionsProvider({
+      documentManager: new DocumentManager(),
+      themeDocset: {
+        filters: async () => [],
+        objects: async () => [],
+        tags: async () => [],
+      },
     });
   });
 

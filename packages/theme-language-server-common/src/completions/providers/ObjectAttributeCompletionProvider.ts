@@ -4,12 +4,16 @@ import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { TypeSystem, isArrayType } from '../../TypeSystem';
 import { CURSOR, LiquidCompletionParams } from '../params';
 import { Provider, createCompletionItem, sortByName } from './common';
+import { GetThemeSettingsSchemaForURI } from '../../settings';
 
 const ArrayCoreProperties = ['size', 'first', 'last'] as const;
 const StringCoreProperties = ['size'] as const;
 
 export class ObjectAttributeCompletionProvider implements Provider {
-  constructor(private readonly typeSystem: TypeSystem) {}
+  constructor(
+    private readonly typeSystem: TypeSystem,
+    private readonly getThemeSettingsSchema: GetThemeSettingsSchemaForURI,
+  ) {}
 
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
@@ -53,7 +57,7 @@ export class ObjectAttributeCompletionProvider implements Provider {
       );
     }
 
-    const objectMap = await this.typeSystem.objectMap();
+    const objectMap = await this.typeSystem.objectMap(params.textDocument.uri);
     const parentTypeProperties = objectMap[parentType]?.properties || [];
     return completionItems(parentTypeProperties, partial);
   }

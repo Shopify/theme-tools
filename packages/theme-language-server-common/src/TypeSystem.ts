@@ -21,9 +21,18 @@ import {
 } from '@shopify/theme-check-common';
 import { findLast, memo, toAbsolutePath } from './utils';
 import { visit } from './visitor';
+import {
+  GetThemeSettingsSchemaForURI,
+  InputSetting,
+  isInputSetting,
+  isSettingsCategory,
+} from './settings';
 
 export class TypeSystem {
-  constructor(private readonly themeDocset: ThemeDocset) {}
+  constructor(
+    private readonly themeDocset: ThemeDocset,
+    private readonly getThemeSettingsSchemaForURI: GetThemeSettingsSchemaForURI,
+  ) {}
 
   async inferType(
     thing: Identifier | LiquidExpression | LiquidVariable | AssignMarkup,
@@ -31,7 +40,7 @@ export class TypeSystem {
     uri: string,
   ): Promise<PseudoType | ArrayType> {
     const [objectMap, filtersMap, symbolsTable] = await Promise.all([
-      this.objectMap(),
+      this.objectMap(uri),
       this.filtersMap(),
       this.symbolsTable(partialAst, uri),
     ]);
@@ -46,7 +55,7 @@ export class TypeSystem {
     uri: string,
   ): Promise<{ entry: DocsetEntry; type: PseudoType | ArrayType }[]> {
     const [objectMap, filtersMap, symbolsTable] = await Promise.all([
-      this.objectMap(),
+      this.objectMap(uri),
       this.filtersMap(),
       this.symbolsTable(partialAst, uri),
     ]);
@@ -68,12 +77,49 @@ export class TypeSystem {
       });
   }
 
+  public async themeSettingProperties(uri: string): Promise<ObjectEntry[]> {
+    const themeSettingsSchema = await this.getThemeSettingsSchemaForURI(uri);
+    const categories = themeSettingsSchema.filter(isSettingsCategory);
+    const result: ObjectEntry[] = [];
+    for (const category of categories) {
+      const inputSettings = category.settings.filter(isInputSetting);
+      for (const setting of inputSettings) {
+        result.push({
+          name: setting.id,
+          summary: '', // TODO, this should lookup the locale file for settings... setting.label
+          description: '', // TODO , this should lookup the locale file as well... setting.info,
+          return_type: settingReturnType(setting),
+          access: {
+            global: false,
+            parents: [],
+            template: [],
+          },
+        });
+      }
+    }
+    return result;
+  }
+
   /**
    * An indexed representation of objects.json by name
    *
    * e.g. objectMap['product'] returns the product ObjectEntry.
    */
-  public objectMap = memo(async (): Promise<ObjectMap> => {
+  public objectMap = async (uri: string): Promise<ObjectMap> => {
+    const [objectMap, themeSettingProperties] = await Promise.all([
+      this._objectMap(),
+      this.themeSettingProperties(uri),
+    ]);
+
+    // Here we shallow mutate `settings.properties` to have the properties made
+    // available by settings_schema.json
+    return Object.assign({}, objectMap, {
+      settings: Object.assign({}, objectMap.settings, { properties: themeSettingProperties }),
+    });
+  };
+
+  // This is the big one we reuse (memoized)
+  private _objectMap = memo(async (): Promise<ObjectMap> => {
     const entries = await this.objectEntries();
     return entries.reduce((map, entry) => {
       map[entry.name] = entry;
@@ -559,7 +605,7 @@ function inferArrayTypeLookupType(curr: ArrayType, lookup: LiquidExpression) {
 }
 
 function inferPseudoTypePropertyType(
-  curr: PseudoType,
+  curr: PseudoType, // settings
   lookup: LiquidExpression,
   objectMap: ObjectMap,
 ) {
@@ -574,6 +620,7 @@ function inferPseudoTypePropertyType(
   }
 
   const propertyName = lookup.value;
+
   const property = parentEntry.properties?.find((property) => property.name === propertyName);
   if (!property) {
     return Untyped;
@@ -637,4 +684,93 @@ function isLiquidTagIncrement(node: LiquidTag): node is LiquidTagIncrement {
 
 function isLiquidTagDecrement(node: LiquidTag): node is LiquidTagDecrement {
   return node.name === NamedTags.decrement && typeof node.markup !== 'string';
+}
+
+function settingReturnType(setting: InputSetting): ObjectEntry['return_type'] {
+  switch (setting.type) {
+    // basic settings
+    case 'checkbox':
+      return [{ type: 'boolean', name: '' }];
+
+    case 'range':
+    case 'number':
+      return [{ type: 'number', name: '' }];
+
+    case 'radio':
+    case 'select':
+    case 'text':
+    case 'textarea':
+      return [{ type: 'string', name: '' }];
+
+    // specialized settings
+    case 'article':
+      return [{ type: 'article', name: '' }];
+
+    case 'blog':
+      return [{ type: 'blog', name: '' }];
+
+    case 'collection':
+      return [{ type: 'collection', name: '' }];
+
+    case 'collection_list':
+      return [{ type: 'array', array_value: 'collection' }];
+
+    case 'color':
+      return [{ type: 'color', name: '' }];
+
+    case 'color_background':
+      return [{ type: 'string', name: '' }];
+
+    case 'color_scheme':
+      return [{ type: 'color_scheme', name: '' }];
+
+    // TODO ??
+    case 'color_scheme_group':
+      return [];
+
+    case 'font_picker':
+      return [{ type: 'font', name: '' }];
+
+    case 'html':
+      return [{ type: 'string', name: '' }];
+
+    case 'image_picker':
+      return [{ type: 'image', name: '' }];
+
+    case 'inline_richtext':
+      return [{ type: 'string', name: '' }];
+
+    case 'link_list':
+      return [{ type: 'linklist', name: '' }];
+
+    case 'liquid':
+      return [{ type: 'string', name: '' }];
+
+    case 'page':
+      return [{ type: 'page', name: '' }];
+
+    case 'product':
+      return [{ type: 'product', name: '' }];
+
+    case 'product_list':
+      return [{ type: 'array', array_value: 'product' }];
+
+    case 'richtext':
+      return [{ type: 'string', name: '' }];
+
+    case 'text_alignment':
+      return [{ type: 'string', name: '' }];
+
+    case 'url':
+      return [{ type: 'string', name: '' }];
+
+    case 'video':
+      return [{ type: 'video', name: '' }];
+
+    case 'video_url':
+      return [{ type: 'string', name: '' }];
+
+    default:
+      return [];
+  }
 }

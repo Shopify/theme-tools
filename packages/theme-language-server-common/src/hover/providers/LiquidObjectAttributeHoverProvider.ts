@@ -34,7 +34,7 @@ export class LiquidObjectAttributeHoverProvider implements BaseHoverProvider {
       return null;
     }
 
-    const objectMap = await this.typeSystem.objectMap();
+    const objectMap = await this.typeSystem.objectMap(params.textDocument.uri);
     const parentEntry = objectMap[parentType];
     if (!parentEntry) {
       return null;

@@ -1,65 +1,76 @@
-import { describe, beforeEach, it, expect } from 'vitest';
+import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
+import { SettingsSchemaJSONFile } from '../../settings';
 
 describe('Module: ObjectAttributeCompletionProvider', async () => {
   let provider: CompletionsProvider;
+  let settingsProvider: any;
 
   beforeEach(async () => {
-    provider = new CompletionsProvider(new DocumentManager(), {
-      filters: async () => [
-        { name: 'split', return_type: [{ type: 'array', array_value: 'string' }] },
-        { name: 'upcase', return_type: [{ type: 'string', name: '' }] },
-        { name: 'downcase', return_type: [{ type: 'string', name: '' }] },
-      ],
-      objects: async () => [
-        {
-          name: 'global_default',
-          properties: [{ name: 'prop1' }, { name: 'prop2' }],
-        },
-        {
-          name: 'global_access',
-          access: {
-            global: true,
-            parents: [],
-            template: [],
+    settingsProvider = vi.fn().mockResolvedValue([]);
+    provider = new CompletionsProvider({
+      documentManager: new DocumentManager(),
+      themeDocset: {
+        filters: async () => [
+          { name: 'split', return_type: [{ type: 'array', array_value: 'string' }] },
+          { name: 'upcase', return_type: [{ type: 'string', name: '' }] },
+          { name: 'downcase', return_type: [{ type: 'string', name: '' }] },
+        ],
+        objects: async () => [
+          {
+            name: 'settings',
+            properties: [],
           },
-          properties: [{ name: 'prop3' }, { name: 'prop4' }],
-        },
-        {
-          name: 'product',
-          access: {
-            global: false,
-            parents: [],
-            template: ['product'],
+          {
+            name: 'global_default',
+            properties: [{ name: 'prop1' }, { name: 'prop2' }],
           },
-          properties: [
-            {
-              name: 'images',
-              return_type: [
-                {
-                  type: 'array',
-                  array_value: 'image',
-                },
-              ],
+          {
+            name: 'global_access',
+            access: {
+              global: true,
+              parents: [],
+              template: [],
             },
-          ],
-        },
-        {
-          name: 'image',
-          access: {
-            global: false, // image is a type, but not a global variable
-            parents: [],
-            template: [],
+            properties: [{ name: 'prop3' }, { name: 'prop4' }],
           },
-          properties: [
-            { name: 'src', return_type: [{ type: 'string', name: '' }] },
-            { name: 'width', return_type: [{ type: 'number', name: '' }] },
-            { name: 'height', return_type: [{ type: 'number', name: '' }] },
-          ],
-        },
-      ],
-      tags: async () => [],
+          {
+            name: 'product',
+            access: {
+              global: false,
+              parents: [],
+              template: ['product'],
+            },
+            properties: [
+              {
+                name: 'images',
+                return_type: [
+                  {
+                    type: 'array',
+                    array_value: 'image',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            name: 'image',
+            access: {
+              global: false, // image is a type, but not a global variable
+              parents: [],
+              template: [],
+            },
+            properties: [
+              { name: 'src', return_type: [{ type: 'string', name: '' }] },
+              { name: 'width', return_type: [{ type: 'number', name: '' }] },
+              { name: 'height', return_type: [{ type: 'number', name: '' }] },
+            ],
+          },
+        ],
+        tags: async () => [],
+      },
+      getThemeSettingsSchemaForURI: settingsProvider,
     });
   });
 
@@ -232,6 +243,29 @@ describe('Module: ObjectAttributeCompletionProvider', async () => {
         {{ x.█ }}
       `;
       await expect(provider).to.complete(source, ['first', 'last', 'size']);
+    });
+  });
+
+  describe('Case: global settings', () => {
+    it('should complete basic settings by id as expected', async () => {
+      const settings: SettingsSchemaJSONFile = [
+        {
+          name: 'Category',
+          settings: [
+            {
+              type: 'product',
+              id: 'my_product_setting',
+              label: 'Product',
+            },
+          ],
+        },
+      ];
+      settingsProvider.mockResolvedValue(settings);
+
+      const source = `
+        {{ settings.█ }}
+      `;
+      await expect(provider).to.complete(source, ['my_product_setting']);
     });
   });
 });

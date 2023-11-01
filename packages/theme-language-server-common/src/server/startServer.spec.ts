@@ -229,6 +229,7 @@ describe('Module: server', () => {
       fileSize: vi.fn().mockResolvedValue(420),
       getDefaultTranslationsFactory: () => async () => ({}),
       getDefaultLocaleFactory: () => async () => 'en',
+      getThemeSettingsSchemaForRootURI: async () => [],
       loadConfig: async () => ({
         settings: {},
         checks: MissingTemplate,

@@ -159,3 +159,20 @@ function normalizeRoot(config: Config) {
   config.root = asPath(URI.file(config.root));
   return config;
 }
+
+export const getThemeSettingsSchemaForRootURI: Dependencies['getThemeSettingsSchemaForRootURI'] =
+  async (rootUriString: string) => {
+    try {
+      const rootURI = parse(rootUriString);
+      const settingsSchemaFilePath = Utils.joinPath(rootURI, 'config/settings_schema.json');
+      const contents = await fs.readFile(asFsPath(settingsSchemaFilePath), 'utf8');
+      const json = JSON.parse(contents);
+      if (!Array.isArray(json)) {
+        throw new Error('Settings JSON file not in correct format');
+      }
+      return json;
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  };
