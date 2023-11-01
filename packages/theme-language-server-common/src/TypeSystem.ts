@@ -40,7 +40,7 @@ export class TypeSystem {
     uri: string,
   ): Promise<PseudoType | ArrayType> {
     const [objectMap, filtersMap, symbolsTable] = await Promise.all([
-      this.objectMap(uri),
+      this.objectMap(uri, partialAst),
       this.filtersMap(),
       this.symbolsTable(partialAst, uri),
     ]);
@@ -55,7 +55,7 @@ export class TypeSystem {
     uri: string,
   ): Promise<{ entry: DocsetEntry; type: PseudoType | ArrayType }[]> {
     const [objectMap, filtersMap, symbolsTable] = await Promise.all([
-      this.objectMap(uri),
+      this.objectMap(uri, partialAst),
       this.filtersMap(),
       this.symbolsTable(partialAst, uri),
     ]);
@@ -105,7 +105,7 @@ export class TypeSystem {
    *
    * e.g. objectMap['product'] returns the product ObjectEntry.
    */
-  public objectMap = async (uri: string): Promise<ObjectMap> => {
+  public objectMap = async (uri: string, ast: LiquidHtmlNode): Promise<ObjectMap> => {
     const [objectMap, themeSettingProperties] = await Promise.all([
       this._objectMap(),
       this.themeSettingProperties(uri),
@@ -113,9 +113,51 @@ export class TypeSystem {
 
     // Here we shallow mutate `settings.properties` to have the properties made
     // available by settings_schema.json
-    return Object.assign({}, objectMap, {
-      settings: Object.assign({}, objectMap.settings, { properties: themeSettingProperties }),
-    });
+    const result: ObjectMap = {
+      ...objectMap,
+      settings: {
+        ...(objectMap.settings ?? {}),
+        properties: themeSettingProperties,
+      },
+    };
+
+    // Deal with sections/file.liquid section.settings by infering the type from the {% schema %}
+    if (/[\/\\]sections[\/\\]/.test(uri) && result.section) {
+      result.section = JSON.parse(JSON.stringify(result.section)); // easy deep clone
+      const settings = result.section.properties?.find((x) => x.name === 'settings');
+      if (!settings || !settings.return_type) return result;
+      settings.return_type = [{ type: 'section_settings', name: '' }];
+      result.section_settings = {
+        name: 'section_settings',
+        access: {
+          global: false,
+          parents: [],
+          template: [],
+        },
+        properties: schemaSettingsAsProperties(ast),
+        return_type: [],
+      };
+    }
+
+    // Deal with blocks/files.liquid block.settings in a similar fashion
+    if (/[\/\\]blocks[\/\\]/.test(uri) && result.block) {
+      result.block = JSON.parse(JSON.stringify(result.block)); // easy deep clone
+      const settings = result.block.properties?.find((x) => x.name === 'settings');
+      if (!settings || !settings.return_type) return result;
+      settings.return_type = [{ type: 'block_settings', name: '' }];
+      result.block_settings = {
+        name: 'block_settings',
+        access: {
+          global: false,
+          parents: [],
+          template: [],
+        },
+        properties: schemaSettingsAsProperties(ast),
+        return_type: [],
+      };
+    }
+
+    return result;
   };
 
   // This is the big one we reuse (memoized)
@@ -772,5 +814,36 @@ function settingReturnType(setting: InputSetting): ObjectEntry['return_type'] {
 
     default:
       return [];
+  }
+}
+
+function schemaSettingsAsProperties(ast: LiquidHtmlNode): ObjectEntry[] {
+  if (ast.type !== NodeTypes.Document) return [];
+  try {
+    const source = ast._source; // (the unfixed source)
+    const start = /\{%\s*schema\s*%\}/m.exec(source);
+    const end = /\{%\s*endschema\s*%\}/m.exec(source);
+    if (!start || !end) return [];
+    const schema = source.slice(start.index + start[0].length, end.index);
+    const json = JSON.parse(schema);
+    if (!('settings' in json) || !Array.isArray(json.settings)) return [];
+    const result: ObjectEntry[] = [];
+    const inputSettings = json.settings.filter(isInputSetting);
+    for (const setting of inputSettings) {
+      result.push({
+        name: setting.id,
+        summary: '', // TODO, this should lookup the locale file for settings... setting.label
+        description: '', // TODO , this should lookup the locale file as well... setting.info,
+        return_type: settingReturnType(setting),
+        access: {
+          global: false,
+          parents: [],
+          template: [],
+        },
+      });
+    }
+    return result;
+  } catch (_) {
+    return [];
   }
 }

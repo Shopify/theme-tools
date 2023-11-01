@@ -57,7 +57,7 @@ export class ObjectAttributeCompletionProvider implements Provider {
       );
     }
 
-    const objectMap = await this.typeSystem.objectMap(params.textDocument.uri);
+    const objectMap = await this.typeSystem.objectMap(params.textDocument.uri, partialAst);
     const parentTypeProperties = objectMap[parentType]?.properties || [];
     return completionItems(parentTypeProperties, partial);
   }

@@ -32,7 +32,7 @@ export class LiquidObjectHoverProvider implements BaseHoverProvider {
     }
 
     const type = await this.typeSystem.inferType(node, ancestors[0], params.textDocument.uri);
-    const objectMap = await this.typeSystem.objectMap(params.textDocument.uri);
+    const objectMap = await this.typeSystem.objectMap(params.textDocument.uri, ancestors[0]);
     const entry = objectMap[isArrayType(type) ? type.valueType : type];
 
     if (type === 'untyped') {

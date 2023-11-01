@@ -1,6 +1,6 @@
 import { beforeEach, describe, vi, it, expect, assert } from 'vitest';
 import { SettingsSchemaJSONFile } from './settings';
-import { TypeSystem } from './TypeSystem';
+import { ArrayType, TypeSystem } from './TypeSystem';
 import {
   AssignMarkup,
   LiquidVariableOutput,
@@ -50,6 +50,26 @@ describe('Module: TypeSystem', () => {
             name: 'settings',
             return_type: [],
             properties: [], // these should be populated dynamically
+          },
+          {
+            name: 'section',
+            return_type: [],
+            properties: [
+              {
+                name: 'settings',
+                return_type: [{ type: 'untyped', name: '' }],
+              },
+            ],
+          },
+          {
+            name: 'block',
+            return_type: [],
+            properties: [
+              {
+                name: 'settings',
+                return_type: [{ type: 'untyped', name: '' }],
+              },
+            ],
           },
         ],
         filters: async () => [
@@ -164,6 +184,62 @@ describe('Module: TypeSystem', () => {
     }
   });
 
+  it('should support section settings in section files', async () => {
+    const sourceCode = `
+      {{ section.settings.my_list }}
+      {% schema %}
+      {
+        "name": "section-settings-example",
+        "tag": "section",
+        "settings": [
+          {
+            "id": "my_list",
+            "label": "t:my-setting.label",
+            "type": "product_list"
+          }
+        ]
+      }
+      {% endschema %}
+    `;
+    const ast = toLiquidHtmlAST(sourceCode);
+    const variableOutput = ast.children[0];
+    assert(isLiquidVariableOutput(variableOutput));
+    const inferredType = await typeSystem.inferType(
+      variableOutput.markup,
+      ast,
+      'file:///sections/my-section.liquid',
+    );
+    expect(inferredType).to.eql({ kind: 'array', valueType: 'product' } as ArrayType);
+  });
+
+  it('should support block settings in blocks files', async () => {
+    const sourceCode = `
+      {{ block.settings.my_list }}
+      {% schema %}
+      {
+        "name": "section-settings-example",
+        "tag": "section",
+        "settings": [
+          {
+            "id": "my_list",
+            "label": "t:my-setting.label",
+            "type": "product_list"
+          }
+        ]
+      }
+      {% endschema %}
+    `;
+    const ast = toLiquidHtmlAST(sourceCode);
+    const variableOutput = ast.children[0];
+    assert(isLiquidVariableOutput(variableOutput));
+    const inferredType = await typeSystem.inferType(
+      variableOutput.markup,
+      ast,
+      'file:///blocks/my-section.liquid',
+    );
+    expect(inferredType).to.eql({ kind: 'array', valueType: 'product' } as ArrayType);
+  });
+
   // TODO
   it.skip('should support narrowing the type of blocks', async () => {
     const sourceCode = `
@@ -199,7 +275,6 @@ describe('Module: TypeSystem', () => {
       }
       {% endschema %}
     `;
-
     const ast = toLiquidHtmlAST(sourceCode);
   });
 });

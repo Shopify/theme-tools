@@ -3,4 +3,4 @@
 '@shopify/theme-language-server-node': minor
 ---
 
-Add hover and completion support for global theme settings
+Add hover and completion support for theme, section and block settings
