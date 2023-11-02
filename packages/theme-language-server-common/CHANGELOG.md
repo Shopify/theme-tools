@@ -1,5 +1,18 @@
 # @shopify/theme-language-server-common
 
+## 1.5.0
+
+### Minor Changes
+
+- 78813ea: Add hover and completion support for theme, section and block settings
+
+### Patch Changes
+
+- 78813ea: Fix root finding for theme app extensions without a config file
+- Updated dependencies [78813ea]
+  - @shopify/liquid-html-parser@1.1.1
+  - @shopify/theme-check-common@1.20.0
+
 ## 1.4.6
 
 ### Patch Changes

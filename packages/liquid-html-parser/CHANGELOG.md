@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 1.1.1
+
+### Patch Changes
+
+- 78813ea: Add internal-use property to DocumentNode
+
 ## 1.1.0
 
 ### Minor Changes

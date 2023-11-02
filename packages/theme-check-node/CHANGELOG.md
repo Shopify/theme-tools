@@ -1,5 +1,17 @@
 # @shopify/theme-check-node
 
+## 1.20.0
+
+### Minor Changes
+
+- 78813ea: Export config types (modern identifiers, legacy identifiers, etc.)
+
+### Patch Changes
+
+- 78813ea: Fix root finding for theme app extensions without a config file
+  - @shopify/theme-check-common@1.20.0
+  - @shopify/theme-check-docs-updater@1.20.0
+
 ## 1.19.0
 
 ### Patch Changes

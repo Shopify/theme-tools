@@ -1,11 +1,27 @@
 ## theme-check-vscode
 
+## 1.12.0
+
+### Minor Changes
+
+- c6d9ef6: Add theme, section and block settings completion and hover support
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [78813ea]
+- Updated dependencies [78813ea]
+- Updated dependencies [78813ea]
+  - @shopify/prettier-plugin-liquid@1.3.4
+  - @shopify/theme-language-server-node@1.5.0
+  - @shopify/liquid-html-parser@1.1.1
+
 ## 1.11.19
 
 ### Patch Changes
 
--  Do not report `UnusedAssign` for variables starting with an underscore
-  - @shopify/theme-language-server-node@1.4.6
+- Do not report `UnusedAssign` for variables starting with an underscore
+- @shopify/theme-language-server-node@1.4.6
 
 ## 1.11.18
 
