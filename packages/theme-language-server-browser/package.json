@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-language-server-browser",
-  "version": "1.4.6",
+  "version": "1.5.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "homepage": "https://github.com/Shopify/theme-tools/blob/main/packages/theme-language-server-common/README.md",
@@ -22,7 +22,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/theme-language-server-common": "1.4.6",
+    "@shopify/theme-language-server-common": "1.5.0",
     "vscode-languageserver": "^8.0.2"
   }
 }

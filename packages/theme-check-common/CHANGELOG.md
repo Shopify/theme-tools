@@ -1,5 +1,12 @@
 # @shopify/theme-check-common
 
+## 1.20.0
+
+### Patch Changes
+
+- Updated dependencies [78813ea]
+  - @shopify/liquid-html-parser@1.1.1
+
 ## 1.19.0
 
 ### Minor Changes
