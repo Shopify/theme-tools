@@ -28,23 +28,13 @@ describe('file-utils', () => {
 
   describe('assertFileSize', () => {
     it('returns false if file size is less than or equal to threshold', async () => {
-      const context = {
-        absolutePath: (filePath: string) => `absolute/${filePath}`,
-        fileSize: async (filePath: string) => (filePath === 'absolute/test-file' ? 100 : 0),
-      };
-
-      const isOverThreshold = await assertFileSize(context as any, 'test-file', 100);
+      const isOverThreshold = await assertFileSize(100, 50);
 
       expect(isOverThreshold).toBe(false);
     });
 
     it('returns true if file size is greater than threshold', async () => {
-      const context = {
-        absolutePath: (filePath: string) => `absolute/${filePath}`,
-        fileSize: async (filePath: string) => (filePath === 'absolute/test-file' ? 200 : 0),
-      };
-
-      const isOverThreshold = await assertFileSize(context as any, 'test-file', 100);
+      const isOverThreshold = await assertFileSize(100, 200);
 
       expect(isOverThreshold).toBe(true);
     });

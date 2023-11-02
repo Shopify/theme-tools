@@ -10,12 +10,9 @@ export async function assertFileExists<T extends SourceCodeType, S extends Schem
 }
 
 export async function assertFileSize<T extends SourceCodeType, S extends Schema>(
-  context: Context<T, S>,
-  filePath: RelativePath,
   thresholdInBytes: number,
+  fileSize: number,
 ): Promise<boolean> {
-  const absolutePath = context.absolutePath(filePath);
-  const fileSize = await context.fileSize!(absolutePath);
   if (fileSize <= thresholdInBytes) return false;
   return true;
 }
@@ -49,7 +46,8 @@ export async function hasLocalAssetSizeExceededThreshold<
   const fileExists = await assertFileExists(context, absolutePath);
 
   if (!fileExists) return;
-  const fileExceedsThreshold = await assertFileSize(context, absolutePath, thresholdInBytes);
+  const fileSize = await context.fileSize!(absolutePath);
+  const fileExceedsThreshold = await assertFileSize(thresholdInBytes, fileSize);
 
   return fileExceedsThreshold;
 }

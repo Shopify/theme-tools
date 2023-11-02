@@ -62,11 +62,13 @@ export const AssetSizeAppBlockJavaScript: LiquidCheckDefinition<typeof schema> =
           });
           return;
         }
-        const fileExceedsThreshold = await assertFileSize(context, absolutePath, thresholdInBytes);
+
+        const fileSize = await context.fileSize!(absolutePath);
+        const fileExceedsThreshold = await assertFileSize(thresholdInBytes, fileSize);
 
         if (fileExceedsThreshold) {
           context.report({
-            message: `The file size for '${filePath}' exceeds the configured threshold.`,
+            message: `The file size for '${filePath}' (${fileSize} B) exceeds the configured threshold (${thresholdInBytes} B)`,
             startIndex: startIndex,
             endIndex: endIndex,
           });

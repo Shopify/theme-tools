@@ -45,7 +45,7 @@ describe('Module: AssetSizeAppBlockJavaScript', () => {
 
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
-      message: "The file size for 'app.js' exceeds the configured threshold.",
+      message: `The file size for 'app.js' (29 B) exceeds the configured threshold (1 B)`,
       absolutePath: '/blocks/app.liquid',
       start: { index: 51 },
       end: { index: 57 },
