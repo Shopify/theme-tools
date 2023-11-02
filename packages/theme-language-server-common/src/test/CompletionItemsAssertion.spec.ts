@@ -8,10 +8,13 @@ describe('Module: CompletionItemsAssertion', () => {
 
   beforeEach(async () => {
     documentManager = new DocumentManager();
-    provider = new CompletionsProvider(documentManager, {
-      filters: async () => [],
-      objects: async () => [],
-      tags: async () => [{ name: 'render' }],
+    provider = new CompletionsProvider({
+      documentManager,
+      themeDocset: {
+        filters: async () => [],
+        objects: async () => [],
+        tags: async () => [{ name: 'render' }],
+      },
     });
   });
 

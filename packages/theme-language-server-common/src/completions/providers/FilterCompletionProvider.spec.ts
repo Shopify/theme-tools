@@ -85,10 +85,13 @@ describe('Module: FilterCompletionProvider', async () => {
   let provider: CompletionsProvider;
 
   beforeEach(async () => {
-    provider = new CompletionsProvider(new DocumentManager(), {
-      filters: async () => filters,
-      objects: async () => objects,
-      tags: async () => [],
+    provider = new CompletionsProvider({
+      documentManager: new DocumentManager(),
+      themeDocset: {
+        filters: async () => filters,
+        objects: async () => objects,
+        tags: async () => [],
+      },
     });
   });
 

@@ -15,6 +15,7 @@ import {
 } from './providers';
 import { HtmlAttributeValueHoverProvider } from './providers/HtmlAttributeValueHoverProvider';
 import { findCurrentNode } from '../visitor';
+import { GetThemeSettingsSchemaForURI } from '../settings';
 
 export class HoverProvider {
   private providers: BaseHoverProvider[] = [];
@@ -23,8 +24,9 @@ export class HoverProvider {
     readonly documentManager: DocumentManager,
     readonly themeDocset: ThemeDocset,
     readonly getTranslationsForURI: GetTranslationsForURI = async () => ({}),
+    readonly getSettingsSchemaForURI: GetThemeSettingsSchemaForURI = async () => [],
   ) {
-    const typeSystem = new TypeSystem(themeDocset);
+    const typeSystem = new TypeSystem(themeDocset, getSettingsSchemaForURI);
     this.providers = [
       new LiquidTagHoverProvider(themeDocset),
       new LiquidFilterHoverProvider(themeDocset),

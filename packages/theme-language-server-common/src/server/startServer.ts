@@ -41,9 +41,10 @@ export function startServer(
     fileExists,
     fileSize,
     filesForURI,
-    findRootURI,
+    findRootURI: findConfigurationRootURI,
     getDefaultLocaleFactory,
     getDefaultTranslationsFactory,
+    getThemeSettingsSchemaForRootURI,
     loadConfig,
     log = defaultLogger,
     schemaValidators: remoteSchemaValidators,
@@ -56,6 +57,15 @@ export function startServer(
   const documentLinksProvider = new DocumentLinksProvider(documentManager);
   const codeActionsProvider = new CodeActionsProvider(documentManager, diagnosticsManager);
 
+  const findThemeRootURI = async (uri: string) => {
+    const rootUri = await findConfigurationRootURI(uri);
+    const config = await loadConfig(rootUri);
+    const root = URI.parse(rootUri).with({
+      path: config.root,
+    });
+    return root.toString();
+  };
+
   // These are augmented here so that the caching is maintained over different runs.
   const themeDocset = new AugmentedThemeDocset(remoteThemeDocset);
   const schemaValidators = new AugmentedSchemaValidators(remoteSchemaValidators);
@@ -63,7 +73,7 @@ export function startServer(
     makeRunChecks(documentManager, diagnosticsManager, {
       fileExists,
       fileSize,
-      findRootURI,
+      findRootURI: findConfigurationRootURI,
       getDefaultLocaleFactory,
       getDefaultTranslationsFactory,
       loadConfig,
@@ -74,7 +84,7 @@ export function startServer(
   );
 
   const getTranslationsForURI: GetTranslationsForURI = async (uri) => {
-    const rootURI = await findRootURI(uri);
+    const rootURI = await findThemeRootURI(uri);
     const theme = documentManager.theme(rootURI);
     return useBufferOrInjectedTranslations(getDefaultTranslationsFactory, theme, rootURI);
   };
@@ -92,14 +102,25 @@ export function startServer(
       );
   };
 
-  const completionsProvider = new CompletionsProvider(
+  const getThemeSettingsSchemaForURI = async (uri: string) => {
+    const rootUri = await findThemeRootURI(uri);
+    return getThemeSettingsSchemaForRootURI(rootUri);
+  };
+
+  const completionsProvider = new CompletionsProvider({
     documentManager,
     themeDocset,
     getTranslationsForURI,
     getSnippetNamesForURI,
+    getThemeSettingsSchemaForURI,
     log,
+  });
+  const hoverProvider = new HoverProvider(
+    documentManager,
+    themeDocset,
+    getTranslationsForURI,
+    getThemeSettingsSchemaForURI,
   );
-  const hoverProvider = new HoverProvider(documentManager, themeDocset, getTranslationsForURI);
 
   const executeCommandProvider = new ExecuteCommandProvider(
     documentManager,
@@ -186,13 +207,8 @@ export function startServer(
 
   connection.onDocumentLinks(async (params) => {
     const { uri } = params.textDocument;
-    const rootUri = await findRootURI(uri);
-    const config = await loadConfig(rootUri);
-    const root = URI.parse(rootUri).with({
-      path: config.root,
-    });
-
-    return documentLinksProvider.documentLinks(uri, root.toString());
+    const rootUri = await findThemeRootURI(uri);
+    return documentLinksProvider.documentLinks(uri, rootUri);
   });
 
   connection.onCodeAction(async (params) => {

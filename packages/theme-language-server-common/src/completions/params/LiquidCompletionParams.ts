@@ -105,10 +105,12 @@ function parsePartial(
   let fixedSource: string | undefined;
   try {
     fixedSource = fix(sourceCode.source, cursorPosition);
-    return toLiquidHtmlAST(fixedSource, {
+    const ast = toLiquidHtmlAST(fixedSource, {
       allowUnclosedDocumentNode: true,
       mode: 'completion',
     });
+    ast._source = sourceCode.source;
+    return ast;
   } catch (err: any) {
     // We swallow errors here, because we gracefully accept that and
     // simply don't offer completions when that happens.

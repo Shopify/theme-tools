@@ -6,45 +6,48 @@ describe('Module: ObjectCompletionProvider', async () => {
   let provider: CompletionsProvider;
 
   beforeEach(async () => {
-    provider = new CompletionsProvider(new DocumentManager(), {
-      filters: async () => [],
-      objects: async () => [
-        { name: 'all_products' },
-        { name: 'global' },
-        {
-          name: 'section',
-          access: {
-            global: false,
-            template: [],
-            parents: [],
+    provider = new CompletionsProvider({
+      documentManager: new DocumentManager(),
+      themeDocset: {
+        filters: async () => [],
+        objects: async () => [
+          { name: 'all_products' },
+          { name: 'global' },
+          {
+            name: 'section',
+            access: {
+              global: false,
+              template: [],
+              parents: [],
+            },
           },
-        },
-        {
-          name: 'block',
-          access: {
-            global: false,
-            template: [],
-            parents: [],
+          {
+            name: 'block',
+            access: {
+              global: false,
+              template: [],
+              parents: [],
+            },
           },
-        },
-        {
-          name: 'predictive_search',
-          access: {
-            global: false,
-            template: [],
-            parents: [],
+          {
+            name: 'predictive_search',
+            access: {
+              global: false,
+              template: [],
+              parents: [],
+            },
           },
-        },
-        {
-          name: 'recommendations',
-          access: {
-            global: false,
-            template: [],
-            parents: [],
+          {
+            name: 'recommendations',
+            access: {
+              global: false,
+              template: [],
+              parents: [],
+            },
           },
-        },
-      ],
-      tags: async () => [],
+        ],
+        tags: async () => [],
+      },
     });
   });
 

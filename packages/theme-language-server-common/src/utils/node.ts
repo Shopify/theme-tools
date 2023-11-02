@@ -1,4 +1,10 @@
-import { AttrEmpty, LiquidHtmlNode, NodeTypes, TextNode } from '@shopify/liquid-html-parser';
+import {
+  AttrEmpty,
+  LiquidHtmlNode,
+  NamedTags,
+  NodeTypes,
+  TextNode,
+} from '@shopify/liquid-html-parser';
 import { LiquidHtmlNodeOfType as NodeOfType } from '@shopify/theme-check-common';
 
 export type HtmlElementTypes = (typeof HtmlElementTypes)[number];
@@ -46,4 +52,19 @@ export function getCompoundName(node: NamedHtmlElementNode | HtmlAttribute): str
 
 export function isHtmlAttribute(node: LiquidHtmlNode): node is HtmlAttribute {
   return HtmlAttributeTypes.some((type) => node.type === type);
+}
+
+type ExcludeStringMarkup<T> = T extends { markup: string } ? never : T;
+
+export function isNamedLiquidTag<NT extends LiquidHtmlNode, T extends NamedTags>(
+  node: LiquidHtmlNode,
+  name: T,
+): node is ExcludeStringMarkup<Extract<NT, { type: NodeTypes.LiquidTag; name: T }>> {
+  return node.type === NodeTypes.LiquidTag && node.name === name && typeof node.markup !== 'string';
+}
+
+export function isLiquidVariableOutput<NT extends LiquidHtmlNode>(
+  node: LiquidHtmlNode,
+): node is ExcludeStringMarkup<Extract<NT, { type: NodeTypes.LiquidVariableOutput }>> {
+  return node.type === NodeTypes.LiquidVariableOutput && typeof node.markup !== 'string';
 }

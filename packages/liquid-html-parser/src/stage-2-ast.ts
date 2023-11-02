@@ -110,6 +110,9 @@ export type LiquidHtmlNode =
 export interface DocumentNode extends ASTNode<NodeTypes.Document> {
   children: LiquidHtmlNode[];
   name: '#document';
+  // only used internally where source could be different from _source...
+  // used for the fixed partial ASTs shenanigans...
+  _source: string;
 }
 
 export interface YAMLFrontmatter extends ASTNode<NodeTypes.YAMLFrontmatter> {
@@ -814,6 +817,7 @@ export function toLiquidAST(
   const root: DocumentNode = {
     type: NodeTypes.Document,
     source: source,
+    _source: source, // this can get replaced somewhere else...
     children: cstToAst(cst, options),
     name: '#document',
     position: {
@@ -835,6 +839,7 @@ export function toLiquidHtmlAST(
   const root: DocumentNode = {
     type: NodeTypes.Document,
     source: source,
+    _source: source,
     children: cstToAst(cst, options),
     name: '#document',
     position: {

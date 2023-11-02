@@ -2,6 +2,7 @@ import { URI } from 'vscode-languageserver';
 import { Config, Dependencies as ThemeCheckDependencies } from '@shopify/theme-check-common';
 
 import { WithOptional } from './utils';
+import { SettingsSchemaJSONFile } from './settings';
 
 export type Dependencies = WithOptional<RequiredDependencies, 'log'>;
 
@@ -93,6 +94,13 @@ export interface RequiredDependencies {
    * A factory because different repos have different default locales.
    */
   getDefaultLocaleFactory(rootURI: URI): ThemeCheckDependencies['getDefaultLocale'];
+
+  /**
+   * getThemeSettingsSchemaForRootURI(root: URI)
+   *
+   * Should return parsed contents of the config/settings_schema.json file.
+   */
+  getThemeSettingsSchemaForRootURI(rootURI: URI): Promise<SettingsSchemaJSONFile>;
 
   /**
    * filesForURI(uri: URI)

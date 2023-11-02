@@ -7,7 +7,6 @@
     "outDir": "../dist",
     "rootDir": ".",
     "tsBuildInfoFile": "../dist/tsconfig.tsbuildinfo",
-    "baseUrl": ".",
     "paths": {
       "@shopify/theme-check-common": ["../../theme-check-common/src"],
       "@shopify/liquid-html-parser": ["../../liquid-html-parser/src"]

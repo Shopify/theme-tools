@@ -6,14 +6,14 @@ describe('Module: TranslationCompletionProvider', async () => {
   let provider: CompletionsProvider;
 
   beforeEach(async () => {
-    provider = new CompletionsProvider(
-      new DocumentManager(),
-      {
+    provider = new CompletionsProvider({
+      documentManager: new DocumentManager(),
+      themeDocset: {
         filters: async () => [],
         objects: async () => [],
         tags: async () => [],
       },
-      async (_) => ({
+      getTranslationsForURI: async (_) => ({
         general: {
           username_html: '<b>username</b>',
           password: 'password',
@@ -23,7 +23,7 @@ describe('Module: TranslationCompletionProvider', async () => {
           },
         },
       }),
-    );
+    });
   });
 
   it('should complete translations correctly', async () => {

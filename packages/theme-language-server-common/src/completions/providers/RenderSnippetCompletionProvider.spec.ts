@@ -6,16 +6,16 @@ describe('Module: RenderSnippetCompletionProvider', async () => {
   let provider: CompletionsProvider;
 
   beforeEach(async () => {
-    provider = new CompletionsProvider(
-      new DocumentManager(),
-      {
+    provider = new CompletionsProvider({
+      documentManager: new DocumentManager(),
+      themeDocset: {
         filters: async () => [],
         objects: async () => [],
         tags: async () => [],
       },
-      async (_) => ({}),
-      async (_) => ['product-card', 'image'],
-    );
+      getTranslationsForURI: async (_) => ({}),
+      getSnippetNamesForURI: async (_) => ['product-card', 'image'],
+    });
   });
 
   it('should complete snippets correctly', async () => {
