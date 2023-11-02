@@ -69,6 +69,14 @@ describe('Module: dependencies', () => {
           'fr.default.json': JSON.stringify({ beverage: 'café' }),
         },
       },
+      appWithThemeAppExtension: {
+        extensions: {
+          myThemeAppExtension: {
+            ...theme,
+            'shopify.extension.toml': '',
+          },
+        },
+      },
     });
   });
 
@@ -93,6 +101,13 @@ describe('Module: dependencies', () => {
       expect(await findRootURI(workspace.uri('multiRootTheme/src/snippets/header.liquid'))).to.eql(
         workspace.uri('multiRootTheme/src'),
       );
+      expect(
+        await findRootURI(
+          workspace.uri(
+            'appWithThemeAppExtension/extensions/myThemeAppExtension/snippets/header.liquid',
+          ),
+        ),
+      ).to.eql(workspace.uri('appWithThemeAppExtension/extensions/myThemeAppExtension'));
     });
   });
 

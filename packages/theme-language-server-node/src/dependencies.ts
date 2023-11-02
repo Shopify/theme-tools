@@ -1,10 +1,10 @@
 import { Dependencies } from '@shopify/theme-language-server-common';
+import { Config, Translations, loadConfig as loadConfigFromPath } from '@shopify/theme-check-node';
 import { URI, Utils } from 'vscode-uri';
 import { basename } from 'node:path';
 import * as fs from 'node:fs/promises';
 import { promisify } from 'node:util';
 import { glob as callbackGlob } from 'glob';
-import { Config, Translations, loadConfig as loadConfigFromPath } from '@shopify/theme-check-node';
 
 const glob = promisify(callbackGlob);
 
@@ -28,11 +28,12 @@ function asFsPath(uriOrPath: string | URI) {
 }
 
 async function isRoot(dirURI: URI) {
-  const [configExists, gitExists] = await Promise.all([
+  const [shopifyExtensionConfigFileExists, configExists, gitExists] = await Promise.all([
+    fileExists(asPath(Utils.joinPath(dirURI, 'shopify.extension.toml'))), // for theme-app-extensions
     fileExists(asPath(Utils.joinPath(dirURI, '.theme-check.yml'))),
     fileExists(asPath(Utils.joinPath(dirURI, '.git'))),
   ]);
-  return configExists || gitExists;
+  return shopifyExtensionConfigFileExists || configExists || gitExists;
 }
 
 async function findRoot(curr: URI): Promise<URI> {
@@ -92,8 +93,16 @@ export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(
   const rootPath = asFsPath(rootUri);
   const configUri = Utils.joinPath(rootUri, '.theme-check.yml');
   const configPath = asFsPath(configUri);
-  if (await fileExists(configPath)) {
+  const extensionConfigPathUri = Utils.joinPath(rootUri, 'shopify.extension.toml');
+  const extensionConfigPath = asFsPath(extensionConfigPathUri);
+  const [configExists, extensionConfigExists] = await Promise.all([
+    fileExists(configPath),
+    fileExists(extensionConfigPath),
+  ]);
+  if (configExists) {
     return loadConfigFromPath(configPath, rootPath).then(normalizeRoot);
+  } else if (extensionConfigExists) {
+    return loadConfigFromPath('theme-check:theme-app-extension', rootPath).then(normalizeRoot);
   } else {
     return loadConfigFromPath(undefined, rootPath).then(normalizeRoot);
   }

@@ -3,6 +3,7 @@ import { AbsolutePath, Config } from '@shopify/theme-check-common';
 import { resolveConfig } from './resolve';
 import { loadConfigDescription } from './load-config-description';
 import { validateConfig } from './validation';
+import { ModernIdentifier, ModernIdentifiers } from './types';
 
 /**
  * Given an absolute path to a config file, this function returns
@@ -16,9 +17,11 @@ import { validateConfig } from './validation';
  */
 export async function loadConfig(
   /** The absolute path of config file */
-  configPath: AbsolutePath | undefined,
+  configPath: AbsolutePath | ModernIdentifier | undefined,
   /** The root of the theme */
-  root: AbsolutePath | undefined = configPath ? path.dirname(configPath) : undefined,
+  root: AbsolutePath | undefined = configPath && !ModernIdentifiers.includes(configPath as any)
+    ? path.dirname(configPath)
+    : undefined,
 ): Promise<Config> {
   if (!root) throw new Error('loadConfig cannot be called without a root argument');
   const configDescription = await resolveConfig(configPath ?? 'theme-check:recommended', true);
