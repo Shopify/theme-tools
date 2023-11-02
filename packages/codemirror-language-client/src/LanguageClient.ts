@@ -142,12 +142,13 @@ export class LanguageClient extends EventTarget implements AbstractLanguageClien
   ): Disposable {
     const callback = async (event: Event) => {
       const { params, id } = (event as CustomEvent<RequestMessage>).detail;
+      if (id === null || id === undefined) return;
       const cancellationToken: CancellationToken = new CancellationTokenSource().token;
       const response = await handler(params as any as P, cancellationToken);
       if (response && typeof response === 'object' && 'code' in response) {
-        this.sendResponse(id!, undefined, response as any as ResponseError);
+        this.sendResponse(id, undefined, response as any as ResponseError);
       } else {
-        this.sendResponse(id!, response, undefined);
+        this.sendResponse(id, response, undefined);
       }
     };
 
@@ -269,9 +270,9 @@ export class LanguageClient extends EventTarget implements AbstractLanguageClien
       this.log(`Server->Client response [${message.id}]`, message);
       const id = message.id!.toString();
       if ('result' in message) {
-        this.requests.get(id)!.resolve(message.result!);
+        this.requests.get(id)?.resolve(message.result);
       } else {
-        this.requests.get(id)!.reject(message.error);
+        this.requests.get(id)?.reject(message.error);
       }
       this.requests.delete(id);
     } else if (isRequest(message)) {
