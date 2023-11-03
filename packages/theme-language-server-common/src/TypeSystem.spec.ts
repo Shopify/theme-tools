@@ -3,12 +3,14 @@ import { SettingsSchemaJSONFile } from './settings';
 import { ArrayType, TypeSystem } from './TypeSystem';
 import {
   AssignMarkup,
+  LiquidHtmlNode,
   LiquidVariableOutput,
   NamedTags,
   NodeTypes,
   toLiquidHtmlAST,
 } from '@shopify/liquid-html-parser';
 import { isLiquidVariableOutput, isNamedLiquidTag } from './utils';
+import { URI } from 'vscode-uri';
 
 describe('Module: TypeSystem', () => {
   let typeSystem: TypeSystem;
@@ -52,7 +54,23 @@ describe('Module: TypeSystem', () => {
             properties: [], // these should be populated dynamically
           },
           {
+            name: 'predictive_search',
+            access: { global: false, parents: [], template: [] },
+            return_type: [],
+          },
+          {
+            name: 'recommendations',
+            access: { global: false, parents: [], template: [] },
+            return_type: [],
+          },
+          {
+            name: 'app',
+            access: { global: false, parents: [], template: [] },
+            return_type: [],
+          },
+          {
             name: 'section',
+            access: { global: false, parents: [], template: [] },
             return_type: [],
             properties: [
               {
@@ -63,6 +81,7 @@ describe('Module: TypeSystem', () => {
           },
           {
             name: 'block',
+            access: { global: false, parents: [], template: [] },
             return_type: [],
             properties: [
               {
@@ -276,5 +295,37 @@ describe('Module: TypeSystem', () => {
       {% endschema %}
     `;
     const ast = toLiquidHtmlAST(sourceCode);
+  });
+
+  it('should support path-contextual variable types', async () => {
+    let inferredType: string | ArrayType;
+    const contexts: [string, string][] = [
+      ['section', 'sections/my-section.liquid'],
+      ['block', 'blocks/my-block.liquid'],
+      ['predictive_search', 'sections/predictive-search.liquid'],
+      ['recommendations', 'sections/recommendations.liquid'],
+      ['app', 'blocks/recommendations.liquid'],
+      ['app', 'snippets/recommendations.liquid'],
+    ];
+    for (const [object, path] of contexts) {
+      const sourceCode = `{{ ${object} }}`;
+      const ast = toLiquidHtmlAST(sourceCode);
+      const variableOutput = ast.children[0];
+      assert(isLiquidVariableOutput(variableOutput));
+      inferredType = await typeSystem.inferType(
+        variableOutput.markup,
+        ast,
+        // This will be different on Windows ^^
+        URI.from({ scheme: 'file', path }).toString(),
+      );
+      expect(inferredType).to.eql(object);
+      inferredType = await typeSystem.inferType(
+        variableOutput.markup,
+        ast,
+        // This will be different on Windows ^^
+        URI.from({ scheme: 'file', path: 'file.liquid' }).toString(),
+      );
+      expect(inferredType).to.eql('untyped');
+    }
   });
 });

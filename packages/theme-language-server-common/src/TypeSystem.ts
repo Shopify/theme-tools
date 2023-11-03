@@ -230,13 +230,20 @@ export class TypeSystem {
   };
 }
 
+const SECTION_FILE_REGEX = /sections[\/\\][^.\\\/]*\.liquid$/;
+const BLOCK_FILE_REGEX = /blocks[\/\\][^.\\\/]*\.liquid$/;
+const SNIPPET_FILE_REGEX = /snippets[\/\\][^.\\\/]*\.liquid$/;
+
 function getContextualEntries(uri: string): string[] {
   const absolutePath = toAbsolutePath(uri);
-  if (/sections\/[^.\/]*\.liquid$/.test(absolutePath)) {
+  if (SECTION_FILE_REGEX.test(absolutePath)) {
     return ['section', 'predictive_search', 'recommendations'];
   }
-  if (/blocks\/[^.\/]*\.liquid$/.test(absolutePath)) {
-    return ['section', 'block'];
+  if (BLOCK_FILE_REGEX.test(absolutePath)) {
+    return ['app', 'section', 'block'];
+  }
+  if (SNIPPET_FILE_REGEX.test(absolutePath)) {
+    return ['app'];
   }
   return [];
 }
