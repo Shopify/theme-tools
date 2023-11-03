@@ -1,5 +1,14 @@
 # @shopify/theme-language-server-common
 
+## 1.5.1
+
+### Patch Changes
+
+- 79b0549: Add `app` object support for theme app extensions
+- Updated dependencies [79b0549]
+- Updated dependencies [ac1deb4]
+  - @shopify/theme-check-common@1.20.1
+
 ## 1.5.0
 
 ### Minor Changes

@@ -1,5 +1,12 @@
 ## theme-check-vscode
 
+## 1.12.1
+
+### Patch Changes
+
+- Patch bump because it depends on @shopify/theme-language-server-node
+  - @shopify/theme-language-server-node@1.5.1
+
 ## 1.12.0
 
 ### Minor Changes

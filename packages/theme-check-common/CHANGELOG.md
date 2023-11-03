@@ -1,5 +1,12 @@
 # @shopify/theme-check-common
 
+## 1.20.1
+
+### Patch Changes
+
+- 79b0549: Add `app` object support for theme app extensions
+- ac1deb4: Improved message reporting for `AssetSize*` checks
+
 ## 1.20.0
 
 ### Patch Changes
