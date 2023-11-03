@@ -174,7 +174,11 @@ function getContextualObjects(relativePath: string): string[] {
   }
 
   if (relativePath.startsWith('blocks/')) {
-    return ['section', 'block'];
+    return ['app', 'section', 'block'];
+  }
+
+  if (relativePath.startsWith('snippets/')) {
+    return ['app'];
   }
 
   return [];

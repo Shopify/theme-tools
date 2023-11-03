@@ -160,6 +160,14 @@ export async function check(
             },
           },
           {
+            name: 'app',
+            access: {
+              global: false,
+              parents: [],
+              template: [],
+            },
+          },
+          {
             name: 'predictive_search',
             access: {
               global: false,
