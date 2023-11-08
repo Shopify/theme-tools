@@ -8,6 +8,7 @@
       "label": "vscode dev watch",
       "dependsOrder": "parallel",
       "dependsOn": [
+        "language-config",
         "parser pre build",
         "theme check build"
       ],
@@ -16,6 +17,11 @@
       "label": "parser pre build",
       "type": "shell",
       "command": "yarn --cwd packages/liquid-html-parser prebuild:ts"
+    },
+    {
+      "label": "language-config",
+      "type": "shell",
+      "command": "yarn --cwd packages/vscode-extension build:language-config"
     },
     {
       "label": "theme check build",

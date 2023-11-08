@@ -1,6 +1,11 @@
-const { voidElements, openingLiquidTags } = require('./constants');
+import { voidElements, openingLiquidTags } from './constants';
 
 const closingLiquidTags = openingLiquidTags.map((name) => `end${name}`);
+
+export interface IndentationRulesJSON {
+  increaseIndentPattern: string;
+  decreaseIndentPattern: string;
+}
 
 // https://regex101.com/r/G4OYnb/1
 function increaseIndentPattern() {
@@ -73,9 +78,9 @@ function decreaseIndentPattern() {
   return String.raw`^\s*(${patterns.join('|')})`;
 }
 
-const indentationRules = {
-  increaseIndentPattern: increaseIndentPattern(),
-  decreaseIndentPattern: decreaseIndentPattern(),
-};
-
-module.exports = indentationRules;
+export async function indentationRules(): Promise<IndentationRulesJSON> {
+  return {
+    increaseIndentPattern: increaseIndentPattern(),
+    decreaseIndentPattern: decreaseIndentPattern(),
+  };
+}

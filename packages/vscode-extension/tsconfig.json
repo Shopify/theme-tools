@@ -7,6 +7,8 @@
     "rootDir": "src",
     "strict": true,
     "resolveJsonModule": true,
+    "composite": true,
+    "noImplicitAny": false,
     "paths": {
       "@shopify/theme-language-server-node": ["../../theme-language-server-node/src"],
       "@shopify/prettier-plugin-liquid": ["../../prettier-plugin-liquid/src"],
