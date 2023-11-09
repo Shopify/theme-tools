@@ -1,5 +1,23 @@
 ## theme-check-vscode
 
+## 1.13.0
+
+### Minor Changes
+
+- a120393: Add better auto-closing UX for Liquid pairs
+
+  - Type `{{` get `{{ | }}` (cursor at `|`)
+  - Type `{{-` get `{{- | -}}`
+  - Type `{%` get `{% | %}`
+  - Type `{%-` get `{%- | -%}`
+  - Add a `-` on one side, only that side is affected
+  - See [PR](https://github.com/Shopify/theme-tools/pull/242) for video
+  - Only for `shopifyLiquid.themeCheckNextDevPreview`
+
+### Patch Changes
+
+- @shopify/theme-language-server-node@1.6.0
+
 ## 1.12.1
 
 ### Patch Changes
