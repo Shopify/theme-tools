@@ -8,20 +8,21 @@ import {
   InitializeResult,
   TextDocumentSyncKind,
 } from 'vscode-languageserver';
-import { debounce } from '../utils';
-import { DiagnosticsManager, makeRunChecks } from '../diagnostics';
-import { DocumentManager } from '../documents';
-import { Dependencies } from '../types';
-import { VERSION } from '../version';
-import { DocumentLinksProvider } from '../documentLinks';
-import { CodeActionKinds, CodeActionsProvider } from '../codeActions';
-import { CompletionsProvider } from '../completions';
-import { HoverProvider } from '../hover';
-import { Commands, ExecuteCommandProvider } from '../commands';
-import { ClientCapabilities } from '../ClientCapabilities';
-import { GetTranslationsForURI, useBufferOrInjectedTranslations } from '../translations';
-import { GetSnippetNamesForURI } from '../completions/providers/RenderSnippetCompletionProvider';
 import { URI } from 'vscode-uri';
+import { ClientCapabilities } from '../ClientCapabilities';
+import { CodeActionKinds, CodeActionsProvider } from '../codeActions';
+import { Commands, ExecuteCommandProvider } from '../commands';
+import { CompletionsProvider } from '../completions';
+import { GetSnippetNamesForURI } from '../completions/providers/RenderSnippetCompletionProvider';
+import { DiagnosticsManager, makeRunChecks } from '../diagnostics';
+import { DocumentLinksProvider } from '../documentLinks';
+import { DocumentManager } from '../documents';
+import { OnTypeFormattingProvider } from '../formatting';
+import { HoverProvider } from '../hover';
+import { GetTranslationsForURI, useBufferOrInjectedTranslations } from '../translations';
+import { Dependencies } from '../types';
+import { debounce } from '../utils';
+import { VERSION } from '../version';
 
 const defaultLogger = () => {};
 
@@ -56,6 +57,7 @@ export function startServer(
   const diagnosticsManager = new DiagnosticsManager(connection);
   const documentLinksProvider = new DocumentLinksProvider(documentManager);
   const codeActionsProvider = new CodeActionsProvider(documentManager, diagnosticsManager);
+  const onTypeFormattingProvider = new OnTypeFormattingProvider(documentManager);
 
   const findThemeRootURI = async (uri: string) => {
     const rootUri = await findConfigurationRootURI(uri);
@@ -156,6 +158,10 @@ export function startServer(
         completionProvider: {
           triggerCharacters: ['.', '{{ ', '{% ', '<', '/', '[', '"', "'"],
         },
+        documentOnTypeFormattingProvider: {
+          firstTriggerCharacter: ' ',
+          moreTriggerCharacter: ['{', '%', '-'],
+        },
         documentLinkProvider: {
           resolveProvider: false,
           workDoneProgress: false,
@@ -225,6 +231,10 @@ export function startServer(
 
   connection.onHover(async (params) => {
     return hoverProvider.hover(params);
+  });
+
+  connection.onDocumentOnTypeFormatting(async (params) => {
+    return onTypeFormattingProvider.onTypeFormatting(params);
   });
 
   // These notifications could cause a MissingSnippet check to be invalidated

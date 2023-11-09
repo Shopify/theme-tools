@@ -1,0 +1,1 @@
+export { OnTypeFormattingProvider } from './OnTypeFormattingProvider';

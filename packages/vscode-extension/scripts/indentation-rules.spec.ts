@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { voidElements, openingLiquidTags } from './constants';
-import indentationRules from './indentation-rules';
+import { increaseIndentPattern, decreaseIndentPattern } from './indentation-rules';
 
 describe('Module: indentationRules', () => {
-  const increase = new RegExp(indentationRules.increaseIndentPattern, 'im');
-  const decrease = new RegExp(indentationRules.decreaseIndentPattern, 'im');
+  const increase = new RegExp(increaseIndentPattern(), 'im');
+  const decrease = new RegExp(decreaseIndentPattern(), 'im');
 
   it('should match non-void elements', () => {
     expect('<html>').to.match(increase);

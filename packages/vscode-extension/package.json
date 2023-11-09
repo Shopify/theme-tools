@@ -160,6 +160,11 @@
         }
       }
     },
+    "configurationDefaults": {
+      "[liquid]": {
+        "editor.formatOnType": true
+      }
+    },
     "languages": [
       {
         "id": "liquid",

@@ -1,12 +1,5 @@
-import { LanguageConfiguration } from 'vscode';
-import { indentationRules, IndentationRulesJSON } from './indentation-rules';
-import { onEnterRules, OnEnterRuleJSON } from './on-enter-actions';
-
-// interface LanguageConfigurationJSON
-//   extends Omit<LanguageConfiguration, 'onEnterRules' | 'indentationRules'> {
-//   onEnterRules?: OnEnterRuleJSON[];
-//   indentationRules?: IndentationRulesJSON;
-// }
+import { indentationRules } from './indentation-rules';
+import { onEnterRules } from './on-enter-actions';
 
 export async function makeConfig(): Promise<any> {
   return {
@@ -28,8 +21,8 @@ export async function makeConfig(): Promise<any> {
     ],
     autoClosingPairs: [
       ['{', '}'],
-      ['{{', '}}'],
-      ['{%', '%}'],
+      ['{{', ' }}'],
+      ['{%', ' %}'],
       ['[', ']'],
       ['(', ')'],
       ['"', '"'],
