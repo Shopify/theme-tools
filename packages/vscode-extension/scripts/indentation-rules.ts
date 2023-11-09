@@ -1,9 +1,14 @@
-const { voidElements, openingLiquidTags } = require('./constants');
+import { voidElements, openingLiquidTags } from './constants';
 
 const closingLiquidTags = openingLiquidTags.map((name) => `end${name}`);
 
+export interface IndentationRulesJSON {
+  increaseIndentPattern: string;
+  decreaseIndentPattern: string;
+}
+
 // https://regex101.com/r/G4OYnb/1
-function increaseIndentPattern() {
+export function increaseIndentPattern() {
   const patterns = [
     // Opening HTML tags that are not self closing. Here we use a negative
     // lookahead (?!) to make sure that the next character after < is not /
@@ -39,8 +44,7 @@ function increaseIndentPattern() {
   return String.raw`(${patterns.join('|')})$`;
 }
 
-//
-function decreaseIndentPattern() {
+export function decreaseIndentPattern() {
   const patterns = [
     // Closing HTML tags
     String.raw`<\/[^>]+>`,
@@ -73,9 +77,9 @@ function decreaseIndentPattern() {
   return String.raw`^\s*(${patterns.join('|')})`;
 }
 
-const indentationRules = {
-  increaseIndentPattern: increaseIndentPattern(),
-  decreaseIndentPattern: decreaseIndentPattern(),
-};
-
-module.exports = indentationRules;
+export async function indentationRules(): Promise<IndentationRulesJSON> {
+  return {
+    increaseIndentPattern: increaseIndentPattern(),
+    decreaseIndentPattern: decreaseIndentPattern(),
+  };
+}

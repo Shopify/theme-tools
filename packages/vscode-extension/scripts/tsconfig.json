@@ -1,0 +1,18 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "noEmit": true,
+    "rootDir": "../../..",
+    "resolveJsonModule": true,
+    "composite": true,
+    "declarationDir": "/tmp/vscode-extension-useless-declarations",
+    "paths": {
+      "@shopify/theme-check-docs-updater": ["../../theme-check-docs-updater/src"]
+    }
+  },
+  "include": ["**/*.ts"],
+  "references": [
+    { "path": "../../theme-check-docs-updater/tsconfig.build.json" }
+  ]
+}

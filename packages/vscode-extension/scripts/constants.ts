@@ -1,5 +1,5 @@
 // These HTML elements do not require to be closed (either via </tag> or <tag />)
-exports.voidElements = [
+export const voidElements = [
   'area',
   'base',
   'br',
@@ -18,12 +18,4 @@ exports.voidElements = [
   'wbr',
 ];
 
-exports.openingLiquidTags = [
-  'if',
-  'form',
-  'comment',
-  'case',
-  'when',
-  'for',
-  'unless',
-];
+export const openingLiquidTags = ['if', 'form', 'comment', 'case', 'when', 'for', 'unless'];
