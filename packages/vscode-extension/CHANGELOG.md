@@ -1,5 +1,11 @@
 ## theme-check-vscode
 
+## 1.13.1
+
+### Patch Changes
+
+- 55fb6b8: Include `<` in the autocloseBefore character set
+
 ## 1.13.0
 
 ### Minor Changes
