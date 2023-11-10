@@ -1,0 +1,1 @@
+export { DocumentHighlightsProvider } from './DocumentHighlightsProvider';

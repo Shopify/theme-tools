@@ -10,3 +10,4 @@ export * from './debounce';
 export * from './paths';
 export * from './array';
 export * from './node';
+export * from './isCovered';
