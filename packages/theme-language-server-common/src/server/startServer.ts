@@ -3,6 +3,7 @@ import {
   Connection,
   FileOperationRegistrationOptions,
   InitializeResult,
+  LinkedEditingRangeRequest,
   TextDocumentSyncKind,
 } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
@@ -22,6 +23,8 @@ import {
   useBufferOrInjectedTranslations,
   useBufferOrInjectedSchemaTranslations,
 } from '../translations';
+import { LinkedEditingRangesProvider } from '../linkedEditingRanges';
+import { GetTranslationsForURI, useBufferOrInjectedTranslations } from '../translations';
 import { Dependencies } from '../types';
 import { debounce } from '../utils';
 import { VERSION } from '../version';
@@ -64,6 +67,7 @@ export function startServer(
   const documentLinksProvider = new DocumentLinksProvider(documentManager);
   const codeActionsProvider = new CodeActionsProvider(documentManager, diagnosticsManager);
   const onTypeFormattingProvider = new OnTypeFormattingProvider(documentManager);
+  const linkedEditingRangesProvider = new LinkedEditingRangesProvider(documentManager);
 
   const findThemeRootURI = async (uri: string) => {
     const rootUri = await findConfigurationRootURI(uri);
@@ -204,12 +208,14 @@ export function startServer(
           resolveProvider: false,
           workDoneProgress: false,
         },
+        linkedEditingRangeProvider: true,
         executeCommandProvider: {
           commands: [...Commands],
         },
         hoverProvider: {
           workDoneProgress: false,
         },
+        renameProvider: true,
         workspace: {
           fileOperations: {
             didRename: fileOperationRegistrationOptions,
@@ -290,12 +296,23 @@ export function startServer(
     );
   });
 
+  connection.onRenameRequest(async (params) => {
+    debugger
+    // create a RenameRequestProvider
+    // return renameProvider.renameRequest(params)
+    return null;
+  });
+
   connection.onHover(async (params) => {
     return (await jsonLanguageService.hover(params)) ?? (await hoverProvider.hover(params));
   });
 
   connection.onDocumentOnTypeFormatting(async (params) => {
     return onTypeFormattingProvider.onTypeFormatting(params);
+  });
+
+  connection.onRequest(LinkedEditingRangeRequest.type, async (params) => {
+    return linkedEditingRangesProvider.linkedEditingRanges(params);
   });
 
   // These notifications could cause a MissingSnippet check to be invalidated

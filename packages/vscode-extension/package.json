@@ -161,7 +161,8 @@
     },
     "configurationDefaults": {
       "[liquid]": {
-        "editor.formatOnType": true
+        "editor.formatOnType": true,
+        "editor.linkedEditing": true
       }
     },
     "jsonValidation": [
