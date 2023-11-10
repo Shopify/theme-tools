@@ -1,5 +1,6 @@
 import { generateMarkdown } from './generate-markdown';
 import { getCurrentDateFormatted } from './get-current-date-formatted';
+import { run } from './utils';
 import type { StatusProperty } from './types';
 
 const buildGithubPRLink = (branchName: string, title: string, description: string): string => {
@@ -11,9 +12,12 @@ const buildGithubPRLink = (branchName: string, title: string, description: strin
   return url;
 };
 
+const noop = () => {};
+
 export const finalMessaging = (branchName: string, statusProperty: StatusProperty) => () => {
   const prTitle = `Theme Tools Release: ${getCurrentDateFormatted()}`;
   const prDescription = generateMarkdown(statusProperty.value);
+  const prLink = buildGithubPRLink(branchName, prTitle, prDescription);
   const message = `
 All local work is done for this release!
 
@@ -23,8 +27,12 @@ Once the PR is approved, please do the following:
  - Deploy the updated packages on ShipIt: https://shipit.shopify.io/shopify/theme-tools/production
 You may use this link to create the PR:
 
-${buildGithubPRLink(branchName, prTitle, prDescription)}
+${prLink}
 `;
+
+  // Open the page automatically in your default browser. Why copy/paste
+  // from terminal when you don't have to :)
+  run(`open '${prLink}'`).then(noop, noop);
 
   console.log(message);
 };
