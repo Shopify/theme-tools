@@ -3,8 +3,7 @@ import {
   Connection,
   FileOperationRegistrationOptions,
   InitializeResult,
-  LinkedEditingRangeRequest,
-  TextDocumentSyncKind,
+  TextDocumentSyncKind
 } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 import { ClientCapabilities } from '../ClientCapabilities';
@@ -13,23 +12,23 @@ import { Commands, ExecuteCommandProvider } from '../commands';
 import { CompletionsProvider } from '../completions';
 import { GetSnippetNamesForURI } from '../completions/providers/RenderSnippetCompletionProvider';
 import { DiagnosticsManager, makeRunChecks } from '../diagnostics';
+import { DocumentHighlightsProvider } from '../documentHighlights/DocumentHighlightsProvider';
 import { DocumentLinksProvider } from '../documentLinks';
 import { DocumentManager } from '../documents';
 import { OnTypeFormattingProvider } from '../formatting';
 import { HoverProvider } from '../hover';
 import { JSONLanguageService } from '../json/JSONLanguageService';
+import { LinkedEditingRangesProvider } from '../linkedEditingRanges/LinkedEditingRangesProvider';
+import { RenameProvider } from '../rename/RenameProvider';
 import {
   GetTranslationsForURI,
-  useBufferOrInjectedTranslations,
   useBufferOrInjectedSchemaTranslations,
+  useBufferOrInjectedTranslations,
 } from '../translations';
-import { LinkedEditingRangesProvider } from '../linkedEditingRanges';
-import { GetTranslationsForURI, useBufferOrInjectedTranslations } from '../translations';
 import { Dependencies } from '../types';
 import { debounce } from '../utils';
 import { VERSION } from '../version';
 import { Configuration } from './Configuration';
-import { DocumentHighlightsProvider } from '../documentHighlights/DocumentHighlightsProvider';
 
 const defaultLogger = () => {};
 
@@ -70,6 +69,7 @@ export function startServer(
   const onTypeFormattingProvider = new OnTypeFormattingProvider(documentManager);
   const linkedEditingRangesProvider = new LinkedEditingRangesProvider(documentManager);
   const documentHighlightProvider = new DocumentHighlightsProvider(documentManager);
+  const renameProvider = new RenameProvider(documentManager);
 
   const findThemeRootURI = async (uri: string) => {
     const rootUri = await findConfigurationRootURI(uri);
@@ -212,13 +212,13 @@ export function startServer(
         },
         documentHighlightProvider: true,
         linkedEditingRangeProvider: true,
+        renameProvider: true,
         executeCommandProvider: {
           commands: [...Commands],
         },
         hoverProvider: {
           workDoneProgress: false,
         },
-        renameProvider: true,
         workspace: {
           fileOperations: {
             didRename: fileOperationRegistrationOptions,
@@ -299,13 +299,6 @@ export function startServer(
     );
   });
 
-  connection.onRenameRequest(async (params) => {
-    debugger
-    // create a RenameRequestProvider
-    // return renameProvider.renameRequest(params)
-    return null;
-  });
-
   connection.onHover(async (params) => {
     return (await jsonLanguageService.hover(params)) ?? (await hoverProvider.hover(params));
   });
@@ -318,7 +311,11 @@ export function startServer(
     return documentHighlightProvider.documentHighlights(params);
   });
 
-  connection.onRequest(LinkedEditingRangeRequest.type, async (params) => {
+  connection.onRenameRequest(async (params) => {
+    return renameProvider.rename(params);
+  });
+
+  connection.languages.onLinkedEditingRange(async (params) => {
     return linkedEditingRangesProvider.linkedEditingRanges(params);
   });
 

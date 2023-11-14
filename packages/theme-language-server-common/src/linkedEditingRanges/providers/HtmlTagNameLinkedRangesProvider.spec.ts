@@ -1,5 +1,5 @@
 import { describe, beforeEach, it, expect, assert } from 'vitest';
-import { LinkedEditingRangesProvider } from '..';
+import { LinkedEditingRangesProvider } from '../LinkedEditingRangesProvider';
 import { DocumentManager } from '../../documents';
 import { LinkedEditingRangeParams } from 'vscode-languageserver';
 import { Position } from 'vscode-languageserver-protocol';

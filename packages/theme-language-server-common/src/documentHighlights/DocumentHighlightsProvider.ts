@@ -8,6 +8,13 @@ import {
   LiquidBlockTagDocumentHighlightsProvider,
 } from './providers';
 
+/**
+ * Informs the client to highlight ranges in a document.
+ *
+ * This is a pretty abstract concept, but you could use it to highlight all
+ * instances of a variable in a template, to highlight the matching
+ * opening/closing liquid tags, html tags, etc.
+ */
 export class DocumentHighlightsProvider {
   private providers: BaseDocumentHighlightsProvider[];
 
@@ -21,7 +28,7 @@ export class DocumentHighlightsProvider {
   async documentHighlights(params: DocumentHighlightParams): Promise<DocumentHighlight[] | null> {
     const document = this.documentManager.get(params.textDocument.uri);
     if (!document || document.type !== SourceCodeType.LiquidHtml || document.ast instanceof Error) {
-      return null;
+      return [];
     }
 
     const [currentNode, ancestors] = findCurrentNode(
@@ -33,6 +40,8 @@ export class DocumentHighlightsProvider {
       p.documentHighlights(currentNode, ancestors, params).catch(() => null),
     );
     const results = await Promise.all(promises);
-    return results.find(Boolean) ?? null;
+
+    // we don't want the default highlight behaviour to kick in, [] prevents that.
+    return results.find(Boolean) ?? [];
   }
 }
