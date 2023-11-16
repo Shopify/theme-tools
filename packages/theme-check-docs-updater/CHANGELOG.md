@@ -1,5 +1,17 @@
 # @shopify/theme-check-docs-updater
 
+## 1.21.0
+
+### Minor Changes
+
+- 772a1ce: Update `translation-key-exists` check and intelligent code completion to always stay up-to-date with Shopify translation keys
+
+### Patch Changes
+
+- Updated dependencies [772a1ce]
+- Updated dependencies [b05a6a8]
+  - @shopify/theme-check-common@1.21.0
+
 ## 1.20.1
 
 ### Patch Changes

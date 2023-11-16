@@ -1,5 +1,24 @@
 # @shopify/theme-language-server-common
 
+## 1.7.0
+
+### Minor Changes
+
+- 772a1ce: Update `translation-key-exists` check and intelligent code completion to always stay up-to-date with Shopify translation keys
+- b05a6a8: Add support for the following Language Server configurations:
+
+  - `themeCheck.checkOnOpen`
+  - `themeCheck.checkOnSave`
+  - `themeCheck.checkOnChange`
+
+  This is mostly for backward compatibility and to not be annoying :)
+
+### Patch Changes
+
+- Updated dependencies [772a1ce]
+- Updated dependencies [b05a6a8]
+  - @shopify/theme-check-common@1.21.0
+
 ## 1.6.0
 
 ### Minor Changes
