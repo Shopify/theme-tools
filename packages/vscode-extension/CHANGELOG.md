@@ -1,5 +1,21 @@
 ## theme-check-vscode
 
+## 1.14.0
+
+### Minor Changes
+
+- b05a6a8: Add support for the following Language Server configurations:
+
+  - `themeCheck.checkOnOpen`
+  - `themeCheck.checkOnSave`
+  - `themeCheck.checkOnChange`
+
+  This is mostly for backward compatibility and to not be annoying :)
+
+### Patch Changes
+
+- @shopify/theme-language-server-node@1.7.0
+
 ## 1.13.1
 
 ### Patch Changes
