@@ -32,7 +32,7 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonSchemaValidators
   });
 
   systemTranslations = memo(async (): Promise<Translations> => {
-    return this.loadResource('shopify_system_translations', []);
+    return this.loadResource('shopify_system_translations', {});
   });
 
   validateSectionSchema = memo(async (): Promise<ValidateFunction> => {
