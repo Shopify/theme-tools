@@ -2,46 +2,40 @@ import { vi } from 'vitest';
 import { EventEmitter } from 'node:events';
 import { createConnection } from 'vscode-languageserver/lib/common/server';
 import {
+  ClientCapabilities,
   DidChangeTextDocumentNotification,
   DidCloseTextDocumentNotification,
   DidOpenTextDocumentNotification,
+  DidSaveTextDocumentNotification,
   InitializedNotification,
+  InitializeParams,
   InitializeRequest,
   MessageSignature,
   ProtocolConnection,
   WatchDog,
-  _Connection,
 } from 'vscode-languageserver';
 
 type MockConnectionMethods = {
-  /**
-   * Trigger all appropriate onNotification handlers on the connection
-   */
+  /** Trigger all appropriate onNotification handlers on the connection */
   triggerNotification: ReturnType<typeof createConnection>['sendNotification'];
-  /**
-   * Trigger all appropriate onRequest handlers on the connection
-   */
+
+  /** Trigger all appropriate onRequest handlers on the connection */
   triggerRequest: ReturnType<typeof createConnection>['sendRequest'];
 
-  /**
-   * Perform the initialize/initialized lifecycle methods
-   */
-  setup(): void;
+  /** Perform the initialize/initialized lifecycle methods */
+  setup(capabilities?: ClientCapabilities, initializationOptions?: any): void;
 
-  /**
-   * Perform the textDocument/didOpen notification
-   */
+  /** Perform the textDocument/didOpen notification */
   openDocument(relativePath: string, contents: string): void;
 
-  /**
-   * Perform the textDocument/didChange notification
-   */
+  /** Perform the textDocument/didChange notification */
   changeDocument(relativePath: string, contents: string, version: number): void;
 
-  /**
-   * Perform the textDocument/didClose notification
-   */
+  /** Perform the textDocument/didClose notification */
   closeDocument(relativePath: string): void;
+
+  /** Perform the textDocument/didSave notification */
+  saveDocument(relativePath: string): void;
 
   spies: ReturnType<typeof protocolConnection>;
 };
@@ -109,8 +103,11 @@ export function mockConnection(): MockConnection {
     triggerRequest,
     spies,
 
-    setup() {
-      triggerRequest(InitializeRequest.method, { capabilities: {} });
+    setup(capabilities: ClientCapabilities = {}, initializationOptions = {}) {
+      triggerRequest(InitializeRequest.method, {
+        capabilities,
+        initializationOptions,
+      } as InitializeParams);
       triggerNotification(InitializedNotification.method);
     },
 
@@ -141,6 +138,14 @@ export function mockConnection(): MockConnection {
 
     closeDocument(relativePath) {
       triggerNotification(DidCloseTextDocumentNotification.type, {
+        textDocument: {
+          uri: `browser:///${relativePath}`,
+        },
+      });
+    },
+
+    saveDocument(relativePath) {
+      triggerNotification(DidSaveTextDocumentNotification.type, {
         textDocument: {
           uri: `browser:///${relativePath}`,
         },

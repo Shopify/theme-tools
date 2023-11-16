@@ -26,7 +26,7 @@ export class ApplySuggestionProvider extends BaseExecuteCommandProvider {
     anomalyId: number,
     suggestionIndex: number,
   ) {
-    if (!this.clientCapabilities.hasApplyEditSupport()) return;
+    if (!this.clientCapabilities.hasApplyEditSupport) return;
 
     const diagnostics = this.diagnosticsManager.get(uri);
     const document = this.documentManager.get(uri);

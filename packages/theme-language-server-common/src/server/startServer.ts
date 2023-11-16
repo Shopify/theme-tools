@@ -1,11 +1,13 @@
 import { AugmentedSchemaValidators, AugmentedThemeDocset } from '@shopify/theme-check-common';
 import {
+  ConfigurationRequest,
   Connection,
   DidCreateFilesNotification,
   DidDeleteFilesNotification,
   DidRenameFilesNotification,
   FileOperationRegistrationOptions,
   InitializeResult,
+  RegistrationRequest,
   TextDocumentSyncKind,
 } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
@@ -23,6 +25,7 @@ import { GetTranslationsForURI, useBufferOrInjectedTranslations } from '../trans
 import { Dependencies } from '../types';
 import { debounce } from '../utils';
 import { VERSION } from '../version';
+import { Configuration } from './Configuration';
 
 const defaultLogger = () => {};
 
@@ -53,6 +56,7 @@ export function startServer(
   }: Dependencies,
 ) {
   const clientCapabilities = new ClientCapabilities();
+  const configuration = new Configuration(connection, clientCapabilities);
   const documentManager = new DocumentManager();
   const diagnosticsManager = new DiagnosticsManager(connection);
   const documentLinksProvider = new DocumentLinksProvider(documentManager);
@@ -145,7 +149,8 @@ export function startServer(
   );
 
   connection.onInitialize((params) => {
-    clientCapabilities.setup(params.capabilities);
+    clientCapabilities.setup(params.capabilities, params.initializationOptions);
+    configuration.setup();
 
     const fileOperationRegistrationOptions: FileOperationRegistrationOptions = {
       filters: [
@@ -162,6 +167,7 @@ export function startServer(
       capabilities: {
         textDocumentSync: {
           change: TextDocumentSyncKind.Full,
+          save: true,
           openClose: true,
         },
         codeActionProvider: {
@@ -203,18 +209,38 @@ export function startServer(
 
   connection.onInitialized(() => {
     log(`[SERVER] Let's roll!`);
+    configuration.fetchConfiguration();
+    configuration.registerDidChangeCapability();
   });
 
-  connection.onDidOpenTextDocument((params) => {
+  connection.onDidChangeConfiguration((_params) => {
+    configuration.clearCache();
+  });
+
+  connection.onDidOpenTextDocument(async (params) => {
     const { uri, text, version } = params.textDocument;
     documentManager.open(uri, text, version);
-    runChecks([uri]);
+    if (await configuration.shouldCheckOnOpen()) {
+      runChecks([uri]);
+    }
   });
 
-  connection.onDidChangeTextDocument((params) => {
+  connection.onDidChangeTextDocument(async (params) => {
     const { uri, version } = params.textDocument;
     documentManager.change(uri, params.contentChanges[0].text, version);
-    runChecks([uri]);
+    if (await configuration.shouldCheckOnChange()) {
+      runChecks([uri]);
+    } else {
+      // The diagnostics may be stale! Clear em!
+      diagnosticsManager.clear(params.textDocument.uri);
+    }
+  });
+
+  connection.onDidSaveTextDocument(async (params) => {
+    const { uri } = params.textDocument;
+    if (await configuration.shouldCheckOnSave()) {
+      runChecks([uri]);
+    }
   });
 
   connection.onDidCloseTextDocument((params) => {
@@ -259,15 +285,15 @@ export function startServer(
   // ones we were after.
   //
   // So we're using runChecks.force for that.
-  connection.onNotification(DidCreateFilesNotification.type, (params) => {
+  connection.workspace.onDidCreateFiles((params) => {
     const triggerUris = params.files.map((fileCreate) => fileCreate.uri);
     runChecks.force(triggerUris);
   });
-  connection.onNotification(DidRenameFilesNotification.type, (params) => {
+  connection.workspace.onDidRenameFiles((params) => {
     const triggerUris = params.files.map((fileRename) => fileRename.newUri);
     runChecks.force(triggerUris);
   });
-  connection.onNotification(DidDeleteFilesNotification.type, (params) => {
+  connection.workspace.onDidDeleteFiles((params) => {
     const triggerUris = params.files.map((fileDelete) => fileDelete.uri);
     runChecks.force(triggerUris);
   });
