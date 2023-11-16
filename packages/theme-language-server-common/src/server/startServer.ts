@@ -91,8 +91,10 @@ export function startServer(
 
     const getTranslationsFactory = (rootUri: string) => {
       return async () => {
-        const defaultTranslations = await getDefaultTranslationsFactory(rootUri)();
-        const shopifyTranslations = await themeDocset.systemTranslations();
+        const [defaultTranslations, shopifyTranslations] = await Promise.all([
+          getDefaultTranslationsFactory(rootUri)(),
+          themeDocset.systemTranslations(),
+        ]);
 
         return { ...defaultTranslations, ...shopifyTranslations };
       };
