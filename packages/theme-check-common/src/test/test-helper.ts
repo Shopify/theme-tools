@@ -188,6 +188,9 @@ export async function check(
       async tags() {
         return [];
       },
+      async systemTranslations() {
+        return { 'shopify.sentence.words_connector': ', ' };
+      },
     },
   };
 

@@ -10,6 +10,7 @@ describe('Module: HtmlTagHoverProvider', async () => {
       filters: async () => [],
       objects: async () => [],
       tags: async () => [],
+      systemTranslations: async () => ({}),
     });
   });
 

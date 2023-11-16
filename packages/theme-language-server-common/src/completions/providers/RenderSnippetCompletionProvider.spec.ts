@@ -12,6 +12,7 @@ describe('Module: RenderSnippetCompletionProvider', async () => {
         filters: async () => [],
         objects: async () => [],
         tags: async () => [],
+        systemTranslations: async () => ({}),
       },
       getTranslationsForURI: async (_) => ({}),
       getSnippetNamesForURI: async (_) => ['product-card', 'image'],

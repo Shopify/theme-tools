@@ -10,6 +10,7 @@ describe('Module: AugmentedThemeDocset', async () => {
       filters: async () => [],
       objects: async () => [],
       tags: async () => [],
+      systemTranslations: async () => ({}),
     });
   });
 

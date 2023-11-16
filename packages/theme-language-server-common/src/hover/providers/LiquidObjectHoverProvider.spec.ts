@@ -70,6 +70,7 @@ describe('Module: LiquidObjectHoverProvider', async () => {
         },
       ],
       tags: async () => [],
+      systemTranslations: async () => ({}),
     });
   });
 

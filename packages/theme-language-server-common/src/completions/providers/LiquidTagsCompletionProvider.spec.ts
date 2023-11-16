@@ -20,6 +20,7 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
         filters: async () => [],
         objects: async () => [],
         tags: async () => tags,
+        systemTranslations: async () => ({}),
       },
     });
   });

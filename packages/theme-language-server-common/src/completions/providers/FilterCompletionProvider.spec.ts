@@ -91,6 +91,7 @@ describe('Module: FilterCompletionProvider', async () => {
         filters: async () => filters,
         objects: async () => objects,
         tags: async () => [],
+        systemTranslations: async () => ({}),
       },
     });
   });

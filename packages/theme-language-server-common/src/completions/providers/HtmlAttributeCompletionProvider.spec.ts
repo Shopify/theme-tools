@@ -18,6 +18,7 @@ describe('Module: HtmlAttributeCompletionProvider', async () => {
         filters: async () => [],
         objects: async () => [],
         tags: async () => [],
+        systemTranslations: async () => ({}),
       },
     });
   });

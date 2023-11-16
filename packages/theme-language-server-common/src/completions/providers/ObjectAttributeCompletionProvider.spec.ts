@@ -69,6 +69,7 @@ describe('Module: ObjectAttributeCompletionProvider', async () => {
           },
         ],
         tags: async () => [],
+        systemTranslations: async () => ({}),
       },
       getThemeSettingsSchemaForURI: settingsProvider,
     });

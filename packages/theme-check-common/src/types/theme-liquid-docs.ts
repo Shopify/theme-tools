@@ -1,3 +1,5 @@
+import { Translations } from 'src';
+
 /**
  * Shopify themes docset.
  */
@@ -13,6 +15,9 @@ export interface ThemeDocset {
 
   /** Returns Liquid tags available on themes. */
   tags(): Promise<TagEntry[]>;
+
+  /** Returns system translations available on themes. */
+  systemTranslations(): Promise<Translations>;
 }
 
 /**

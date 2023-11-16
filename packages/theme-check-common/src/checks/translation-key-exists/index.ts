@@ -1,5 +1,4 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import shopifyTranslationKeys from './shopify-translation-keys.json';
 
 function keyExists(key: string, pointer: any) {
   for (const token of key.split('.')) {
@@ -76,13 +75,16 @@ export const TranslationKeyExists: LiquidCheckDefinition = {
       async onCodePathEnd() {
         const defaultTranslations = await context.getDefaultTranslations();
         const defaultLocale = await context.getDefaultLocale();
-        if (!defaultTranslations) return;
+        const systemTranslations = await context.themeDocset?.systemTranslations();
+        const systemTranslationsKeys = Object.keys(systemTranslations ?? {});
+
+        if (!defaultTranslations && systemTranslationsKeys.length === 0) return;
 
         nodes.forEach(({ translationKey, startIndex, endIndex }) => {
           if (
             keyExists(translationKey, defaultTranslations) ||
             keyExists(translationKey, schemaLocales) ||
-            shopifyTranslationKeys.includes(translationKey)
+            systemTranslationsKeys.includes(translationKey)
           ) {
             return;
           }

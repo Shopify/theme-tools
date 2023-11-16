@@ -240,6 +240,7 @@ describe('Module: server', () => {
         filters: async () => [],
         objects: async () => [],
         tags: async () => [],
+        systemTranslations: async () => ({}),
       },
       schemaValidators: {
         validateSectionSchema: async () => ({} as ValidateFunction),

@@ -13,6 +13,7 @@ describe('Module: LiquidTagHoverProvider', async () => {
         { name: 'if', description: 'if statement description' },
         { name: 'echo', description: 'echo description' },
       ],
+      systemTranslations: async () => ({}),
     });
   });
 

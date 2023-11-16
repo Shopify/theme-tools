@@ -34,6 +34,8 @@ vi.mock('node:fs/promises', async () => {
     'MOCKED_CACHE/theme-liquid-docs/latest.json': '{"revision": "1"}',
     'MOCKED_CACHE/theme-liquid-docs/section_schema.json':
       '{"type":"object","properties":{"name":{"type":"string"},"age":{"type":"number"}},"required":["name","age"]}',
+    'MOCKED_CACHE/theme-liquid-docs/shopify_system_translations.json':
+      '{"shopify.checkout.general.cart": "Cart"}',
   };
 
   return {
@@ -93,6 +95,15 @@ describe('Module: ThemeLiquidDocsManager', async () => {
     it('should return an array', async () => {
       const tags = await manager.tags();
       expect(tags).to.eql([{ name: 'if' }]);
+    });
+  });
+
+  describe('Unit: systemTranslations', () => {
+    it('should return the parsed JSON content of the system translations', async () => {
+      const systemTranslations = await manager.systemTranslations();
+      expect(systemTranslations).to.eql({
+        'shopify.checkout.general.cart': 'Cart',
+      });
     });
   });
 

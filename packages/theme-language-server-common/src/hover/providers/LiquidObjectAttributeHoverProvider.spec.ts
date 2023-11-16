@@ -36,6 +36,7 @@ describe('Module: LiquidObjectAttributeHoverProvider', async () => {
         },
       ],
       tags: async () => [],
+      systemTranslations: async () => ({}),
     });
   });
 

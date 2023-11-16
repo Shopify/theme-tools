@@ -12,6 +12,7 @@ describe('Module: TranslationHoverProvider', async () => {
         filters: async () => [],
         objects: async () => [],
         tags: async () => [],
+        systemTranslations: async () => ({}),
       },
       async () => ({
         general: {
