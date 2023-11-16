@@ -218,6 +218,9 @@ export function startServer(
     documentManager.change(uri, params.contentChanges[0].text, version);
     if (await configuration.shouldCheckOnChange()) {
       runChecks([uri]);
+    } else {
+      // The diagnostics may be stale! Clear em!
+      diagnosticsManager.clear(params.textDocument.uri);
     }
   });
 

@@ -119,15 +119,23 @@ describe('Module: server', () => {
     );
     await flushAsync();
 
-    connection.openDocument(filePath, `{% echo 'hello' %}`);
-    connection.changeDocument(filePath, `{% echo 'helloo' %}`, 1);
+    connection.openDocument(filePath, fileContents);
+    connection.changeDocument(filePath, fileContents, 1);
     connection.saveDocument(filePath);
 
     await flushAsync(); // run the config check
     await advanceAndFlush(100); // advance by debounce time
 
-    // Make sure it wasn't called
-    expect(connection.spies.sendNotification).not.toHaveBeenCalled();
+    // Make sure it cleared
+    expect(connection.spies.sendNotification).toHaveBeenCalled();
+    expect(connection.spies.sendNotification).toHaveBeenCalledWith(
+      PublishDiagnosticsNotification.type,
+      {
+        uri: fileURI,
+        version: undefined, // < this is how we assert that it was cleared
+        diagnostics: [], // < empty array for clear
+      },
+    );
   });
 
   it('should react to configuration changes', async () => {
@@ -167,11 +175,19 @@ describe('Module: server', () => {
     // Make sure it wasn't called
     expect(connection.spies.sendNotification).not.toHaveBeenCalled();
 
-    connection.changeDocument(filePath, `{% echo 'hi' %}`, 1);
+    connection.changeDocument(filePath, fileContents, 1);
     await flushAsync(); // run the config check
     await advanceAndFlush(100); // advance by debounce time
 
     expect(connection.spies.sendNotification).toHaveBeenCalled();
+    expect(connection.spies.sendNotification).toHaveBeenCalledWith(
+      PublishDiagnosticsNotification.type,
+      {
+        uri: fileURI,
+        version: 1,
+        diagnostics: [missingTemplateDiagnostic()],
+      },
+    );
   });
 
   it('should trigger a re-check on did create files notifications', async () => {
