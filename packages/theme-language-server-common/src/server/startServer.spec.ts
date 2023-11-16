@@ -77,6 +77,7 @@ describe('Module: server', () => {
   it('should trigger a re-check on did create files notifications', async () => {
     // Setup & expectations
     connection.openDocument(filePath, fileContents);
+    await flushAsync(); // we need to flush the configuration check
     await advanceAndFlush(100);
     expect(connection.spies.sendNotification).toHaveBeenCalledWith(
       PublishDiagnosticsNotification.type,
@@ -121,6 +122,7 @@ describe('Module: server', () => {
     // Setup & expectations
     fileTree.add('/snippets/bar.liquid');
     connection.openDocument(filePath, fileContents);
+    await flushAsync(); // we need to flush the configuration check
     await advanceAndFlush(100);
     expect(connection.spies.sendNotification).toHaveBeenCalledWith(
       PublishDiagnosticsNotification.type,
@@ -168,6 +170,7 @@ describe('Module: server', () => {
     // Setup and expectations (no errors)
     fileTree.add('/snippets/foo.liquid');
     connection.openDocument(filePath, fileContents);
+    await flushAsync(); // we need to flush the configuration check
     await advanceAndFlush(100);
     expect(connection.spies.sendNotification).toHaveBeenCalledWith(
       PublishDiagnosticsNotification.type,

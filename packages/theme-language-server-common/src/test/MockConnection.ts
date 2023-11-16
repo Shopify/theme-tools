@@ -10,7 +10,6 @@ import {
   MessageSignature,
   ProtocolConnection,
   WatchDog,
-  _Connection,
 } from 'vscode-languageserver';
 
 type MockConnectionMethods = {
