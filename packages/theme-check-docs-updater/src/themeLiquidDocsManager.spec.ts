@@ -99,7 +99,7 @@ describe('Module: ThemeLiquidDocsManager', async () => {
   });
 
   describe('Unit: systemTranslations', () => {
-    it('should return an array', async () => {
+    it('should return the parsed JSON content of the system translations', async () => {
       const systemTranslations = await manager.systemTranslations();
       expect(systemTranslations).to.eql({
         'shopify.checkout.general.cart': 'Cart',
