@@ -4,6 +4,7 @@ import {
   TagEntry,
   ThemeDocset,
   JsonSchemaValidators,
+  Translations,
 } from '@shopify/theme-check-common';
 import { ValidateFunction } from 'ajv';
 import fs from 'node:fs/promises';
@@ -28,6 +29,10 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonSchemaValidators
 
   tags = memo(async (): Promise<TagEntry[]> => {
     return this.loadResource('tags', []);
+  });
+
+  systemTranslations = memo(async (): Promise<Translations> => {
+    return this.loadResource('shopify_system_translations', []);
   });
 
   validateSectionSchema = memo(async (): Promise<ValidateFunction> => {

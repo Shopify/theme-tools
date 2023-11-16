@@ -1,14 +1,7 @@
-import {
-  allChecks,
-  Translations,
-  ValidateFunction,
-} from '@shopify/theme-check-common';
+import { allChecks, Translations, ValidateFunction } from '@shopify/theme-check-common';
 import { startServer } from '@shopify/theme-language-server-browser';
 import { URI } from 'vscode-languageserver-types';
-import {
-  isSetDefaultTranslationsNotification,
-  isSetFileTreeNotificationMessage,
-} from './types';
+import { isSetDefaultTranslationsNotification, isSetFileTreeNotificationMessage } from './types';
 
 const worker = self as any as Worker;
 
@@ -42,6 +35,10 @@ function getDefaultLocaleFactory() {
   return async () => 'en';
 }
 
+function getThemeSettingsSchemaForRootURI(_rootURI: URI) {
+  return {} as any;
+}
+
 async function findRootURI(_uri: URI) {
   return 'browser:///';
 }
@@ -58,6 +55,7 @@ const themeDocset = {
   filters: async () => [],
   objects: async () => [],
   tags: async () => [],
+  systemTranslations: async () => ({}),
 };
 
 const schemaValidators = {
@@ -68,6 +66,7 @@ startServer(worker, {
   fileExists,
   findRootURI,
   getDefaultTranslationsFactory,
+  getThemeSettingsSchemaForRootURI,
   getDefaultLocaleFactory,
   loadConfig,
   themeDocset,

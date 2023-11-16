@@ -88,7 +88,17 @@ export function startServer(
   const getTranslationsForURI: GetTranslationsForURI = async (uri) => {
     const rootURI = await findThemeRootURI(uri);
     const theme = documentManager.theme(rootURI);
-    return useBufferOrInjectedTranslations(getDefaultTranslationsFactory, theme, rootURI);
+
+    const getTranslationsFactory = (rootUri: string) => {
+      return async () => {
+        const defaultTranslations = await getDefaultTranslationsFactory(rootUri)();
+        const shopifyTranslations = await themeDocset.systemTranslations();
+
+        return { ...defaultTranslations, ...shopifyTranslations };
+      };
+    };
+
+    return useBufferOrInjectedTranslations(getTranslationsFactory, theme, rootURI);
   };
 
   const getSnippetNamesForURI: GetSnippetNamesForURI = async (uri: string) => {

@@ -16,6 +16,7 @@ describe('Module: HtmlTagCompletionProvider', async () => {
         filters: async () => [],
         objects: async () => [],
         tags: async () => [],
+        systemTranslations: async () => ({}),
       },
     });
   });

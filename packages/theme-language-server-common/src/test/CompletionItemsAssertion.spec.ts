@@ -14,6 +14,7 @@ describe('Module: CompletionItemsAssertion', () => {
         filters: async () => [],
         objects: async () => [],
         tags: async () => [{ name: 'render' }],
+        systemTranslations: async () => ({}),
       },
     });
   });

@@ -97,6 +97,7 @@ describe('Module: TypeSystem', () => {
             return_type: [{ type: 'number', name: '' }],
           },
         ],
+        systemTranslations: async () => ({}),
       },
       settingsProvider,
     );

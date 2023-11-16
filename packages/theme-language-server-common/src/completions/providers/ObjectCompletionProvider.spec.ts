@@ -47,6 +47,7 @@ describe('Module: ObjectCompletionProvider', async () => {
           },
         ],
         tags: async () => [],
+        systemTranslations: async () => ({}),
       },
     });
   });

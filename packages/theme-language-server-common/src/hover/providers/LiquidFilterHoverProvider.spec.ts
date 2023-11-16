@@ -17,6 +17,7 @@ describe('Module: LiquidFilterHoverProvider', async () => {
       ],
       objects: async () => [],
       tags: async () => [],
+      systemTranslations: async () => ({}),
     });
   });
 

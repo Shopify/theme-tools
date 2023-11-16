@@ -1,8 +1,6 @@
-import {
-  startServer,
-  allChecks,
-} from '@shopify/theme-language-server-browser';
+import { startServer, allChecks } from '@shopify/theme-language-server-browser';
 import { isDependencyInjectionMessage } from './messages';
+import { URI } from 'vscode-languageserver-types';
 
 /**
  * These are replaced at build time by the contents of
@@ -12,11 +10,13 @@ declare global {
   export const WEBPACK_TAGS: any[];
   export const WEBPACK_FILTERS: any[];
   export const WEBPACK_OBJECTS: any[];
+  export const WEBPACK_SYSTEM_TRANSLATIONS: any;
 }
 
 const tags = WEBPACK_TAGS;
 const filters = WEBPACK_FILTERS;
 const objects = WEBPACK_OBJECTS;
+const systemTranslations = WEBPACK_SYSTEM_TRANSLATIONS;
 
 const worker = self as any as Worker;
 
@@ -46,6 +46,10 @@ function getDefaultTranslationsFactory(_uri: string) {
   return async () => defaultTranslations as any;
 }
 
+function getThemeSettingsSchemaForRootURI(_rootURI: URI) {
+  return {} as any;
+}
+
 async function findRootURI(_uri: string) {
   return 'browser:///';
 }
@@ -63,11 +67,13 @@ startServer(worker, {
   fileExists,
   findRootURI,
   getDefaultTranslationsFactory,
+  getThemeSettingsSchemaForRootURI,
   getDefaultLocaleFactory: (_: string) => async () => 'en',
   themeDocset: {
     filters: async () => filters,
     tags: async () => tags,
     objects: async () => objects,
+    systemTranslations: async () => systemTranslations,
   },
   schemaValidators: {
     validateSectionSchema: async () => () => true,

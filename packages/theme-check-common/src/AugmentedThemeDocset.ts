@@ -1,4 +1,4 @@
-import { FilterEntry, ObjectEntry, TagEntry, ThemeDocset } from './types';
+import { FilterEntry, ObjectEntry, TagEntry, ThemeDocset, Translations } from './types';
 import { memo } from './utils';
 
 const toFilterEntry = (name: string): FilterEntry => ({ name });
@@ -65,5 +65,9 @@ export class AugmentedThemeDocset implements ThemeDocset {
 
   tags = memo(async (): Promise<TagEntry[]> => {
     return [...(await this.themeDocset.tags()), ...undocumentedTags.map(toTagEntry)];
+  });
+
+  systemTranslations = memo(async (): Promise<Translations> => {
+    return this.themeDocset.systemTranslations();
   });
 }

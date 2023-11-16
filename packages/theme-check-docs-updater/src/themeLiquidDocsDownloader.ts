@@ -3,7 +3,13 @@ import fetch from 'node-fetch';
 import path from 'node:path';
 
 export type Resource = (typeof Resources)[number];
-export const Resources = ['filters', 'objects', 'tags', 'section_schema'] as const;
+export const Resources = [
+  'filters',
+  'objects',
+  'tags',
+  'section_schema',
+  'shopify_system_translations',
+] as const;
 
 const THEME_LIQUID_DOCS: Record<Resource | 'latest', string> = {
   filters: 'data/filters.json',
@@ -11,6 +17,7 @@ const THEME_LIQUID_DOCS: Record<Resource | 'latest', string> = {
   tags: 'data/tags.json',
   latest: 'data/latest.json',
   section_schema: 'schemas/theme/section_schema.json',
+  shopify_system_translations: 'data/shopify_system_translations.json',
 };
 
 export async function downloadFile(file: Resource | 'latest', destination: string) {
