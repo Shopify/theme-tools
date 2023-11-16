@@ -1,0 +1,35 @@
+name: VS Code Release Workflow in a pinch
+
+on: workflow_dispatch
+
+env:
+  VSCE_PAT: ${{ secrets.VSCE_PAT }}
+  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  npm_config_registry: "https://registry.npmjs.org"
+
+jobs:
+  publish-packages:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "yarn"
+
+      - name: Install the packages
+        run: yarn install --frozen-lockfile --ignore-engines
+
+      - name: Build the code
+        run: yarn build
+        env:
+          NODE_ENV: production
+
+      - name: VS Code Marketplace publish
+        run: yarn publish:vsce
