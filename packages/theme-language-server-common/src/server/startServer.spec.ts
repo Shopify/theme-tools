@@ -1,7 +1,8 @@
-import { vi, expect, describe, it, beforeEach, afterEach } from 'vitest';
+import { vi, expect, describe, it, beforeEach, afterEach, assert } from 'vitest';
 import { startServer } from './startServer';
 import { MockConnection, mockConnection } from '../test/MockConnection';
 import {
+  DidChangeConfigurationNotification,
   DidCreateFilesNotification,
   DidDeleteFilesNotification,
   DidRenameFilesNotification,
@@ -9,6 +10,7 @@ import {
 } from 'vscode-languageserver';
 import { ValidateFunction, allChecks } from '@shopify/theme-check-common';
 import { Dependencies } from '../types';
+import { CHECK_ON_CHANGE, CHECK_ON_OPEN, CHECK_ON_SAVE } from './Configuration';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -18,23 +20,50 @@ describe('Module: server', () => {
   const filePath = 'snippets/code.liquid';
   const fileURI = `browser:///${filePath}`;
   const fileContents = `{% render 'foo' %}`;
+  let checkOnChange: boolean | null = null;
+  let checkOnSave: boolean | null = null;
+  let checkOnOpen: boolean | null = null;
   let connection: MockConnection;
   let dependencies: ReturnType<typeof getDependencies>;
   let fileTree: Set<AbsolutePath>;
   let logger: any;
 
   beforeEach(() => {
+    checkOnChange = checkOnSave = checkOnOpen = null;
+
     // Initialize all ze mocks...
     connection = mockConnection();
+
+    // Mock answer to workspace/configuration requests
+    connection.spies.sendRequest.mockImplementation(async (method: any, params: any) => {
+      if (method === 'workspace/configuration') {
+        return params.items.map(({ section }: any) => {
+          switch (section) {
+            case CHECK_ON_CHANGE:
+              return checkOnChange;
+            case CHECK_ON_OPEN:
+              return checkOnOpen;
+            case CHECK_ON_SAVE:
+              return checkOnSave;
+            default:
+              return null;
+          }
+        });
+      } else if (method === 'client/registerCapability') {
+        return null;
+      } else {
+        throw new Error(
+          `Does not know how to mock response to '${method}' requests. Check your test.`,
+        );
+      }
+    });
+
     fileTree = new Set(['snippets/code.liquid']);
     logger = vi.fn();
     dependencies = getDependencies(logger, fileTree);
 
     // Start the server
     startServer(connection, dependencies);
-
-    // Perform the initialize/initialized setup steps
-    connection.setup();
 
     // Stop the time
     vi.useFakeTimers();
@@ -44,11 +73,16 @@ describe('Module: server', () => {
     vi.useRealTimers();
   });
 
-  it("should log Let's roll! on successful setup", () => {
+  it("should log Let's roll! on successful setup", async () => {
+    connection.setup();
+    await flushAsync();
     expect(logger).toHaveBeenCalledWith("[SERVER] Let's roll!");
   });
 
   it('should debounce calls to runChecks', async () => {
+    connection.setup();
+    await flushAsync();
+
     connection.openDocument(filePath, `{% echo 'hello' %}`);
     connection.changeDocument(filePath, `{% echo 'hello w' %}`, 1);
     connection.changeDocument(filePath, `{% echo 'hello wor' %}`, 2);
@@ -74,7 +108,76 @@ describe('Module: server', () => {
     );
   });
 
+  it('should not call runChecks on open, change or save if the configurations are false', async () => {
+    connection.setup(
+      {},
+      {
+        'themeCheck.checkOnOpen': false,
+        'themeCheck.checkOnChange': false,
+        'themeCheck.checkOnSave': false,
+      },
+    );
+    await flushAsync();
+
+    connection.openDocument(filePath, `{% echo 'hello' %}`);
+    connection.changeDocument(filePath, `{% echo 'helloo' %}`, 1);
+    connection.saveDocument(filePath);
+
+    await flushAsync(); // run the config check
+    await advanceAndFlush(100); // advance by debounce time
+
+    // Make sure it wasn't called
+    expect(connection.spies.sendNotification).not.toHaveBeenCalled();
+  });
+
+  it('should react to configuration changes', async () => {
+    connection.setup(
+      {
+        workspace: {
+          configuration: true,
+          didChangeConfiguration: {
+            dynamicRegistration: true,
+          },
+        },
+      },
+      {
+        'themeCheck.checkOnOpen': false,
+        'themeCheck.checkOnChange': false,
+        'themeCheck.checkOnSave': false,
+      },
+    );
+    await flushAsync();
+
+    checkOnChange = true;
+
+    // Invalidate cache
+    connection.triggerNotification(DidChangeConfigurationNotification.type, { settings: null });
+    await flushAsync();
+
+    // Those don't count!
+    connection.spies.sendNotification.mockClear();
+
+    // Those weren't changed
+    connection.openDocument(filePath, `{% echo 'hello' %}`);
+    connection.saveDocument(filePath);
+
+    await flushAsync(); // run the config check
+    await advanceAndFlush(100); // advance by debounce time
+
+    // Make sure it wasn't called
+    expect(connection.spies.sendNotification).not.toHaveBeenCalled();
+
+    connection.changeDocument(filePath, `{% echo 'hi' %}`, 1);
+    await flushAsync(); // run the config check
+    await advanceAndFlush(100); // advance by debounce time
+
+    expect(connection.spies.sendNotification).toHaveBeenCalled();
+  });
+
   it('should trigger a re-check on did create files notifications', async () => {
+    connection.setup();
+    await flushAsync();
+
     // Setup & expectations
     connection.openDocument(filePath, fileContents);
     await flushAsync(); // we need to flush the configuration check
@@ -119,6 +222,9 @@ describe('Module: server', () => {
   });
 
   it('should trigger a re-check on did file rename notifications', async () => {
+    connection.setup();
+    await flushAsync();
+
     // Setup & expectations
     fileTree.add('/snippets/bar.liquid');
     connection.openDocument(filePath, fileContents);
@@ -167,6 +273,9 @@ describe('Module: server', () => {
   });
 
   it('should trigger a re-check on did delete files notifications', async () => {
+    connection.setup();
+    await flushAsync();
+
     // Setup and expectations (no errors)
     fileTree.add('/snippets/foo.liquid');
     connection.openDocument(filePath, fileContents);
