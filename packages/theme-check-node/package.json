@@ -4,7 +4,15 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "CP Clermont <cp.clermont@shopify.com>",
-  "homepage": "https://github.com/Shopify/theme-tools",
+  "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/theme-check-node#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shopify/theme-tools.git",
+    "directory": "packages/theme-check-node"
+  },
+  "bugs": {
+    "url": "https://github.com/shopify/theme-tools/issues"
+  },
   "license": "MIT",
   "publishConfig": {
     "access": "public",

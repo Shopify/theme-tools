@@ -2,9 +2,16 @@
   "name": "@shopify/codemirror-language-client",
   "version": "0.3.0",
   "description": "A Language Client for CodeMirror",
-  "repository": "https://github.com/Shopify/theme-tools",
-  "homepage": "https://github.com/Shopify/theme-tools/blob/main/packages/codemirror-language-client/README.md",
   "author": "CP Clermont <cp.clermont@shopify.com>",
+  "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/codemirror-language-client#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shopify/theme-tools.git",
+    "directory": "packages/codemirror-language-client"
+  },
+  "bugs": {
+    "url": "https://github.com/shopify/theme-tools/issues"
+  },
   "license": "MIT",
   "main": "./dist/umd/index.js",
   "typings": "./dist/umd/index.js",
