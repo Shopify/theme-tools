@@ -1,16 +1,5 @@
-import { promisify } from 'util';
-import * as child_process from 'child_process';
 import * as path from 'node:path';
-
-import {
-  commands,
-  DocumentFilter,
-  ExtensionContext,
-  languages,
-  Uri,
-  window,
-  workspace,
-} from 'vscode';
+import { commands, DocumentFilter, ExtensionContext, languages, Uri, workspace } from 'vscode';
 import {
   LanguageClient,
   LanguageClientOptions,
@@ -18,7 +7,8 @@ import {
   TransportKind,
 } from 'vscode-languageclient/node';
 import LiquidFormatter from './formatter';
-const exec = promisify(child_process.exec);
+import { getLegacyModeServerOptions } from './legacyMode';
+import { getConfig } from './utils';
 
 const LIQUID: DocumentFilter[] = [
   {
@@ -31,43 +21,38 @@ const LIQUID: DocumentFilter[] = [
   },
 ];
 
-class CommandNotFoundError extends Error {}
-
-const isWin = process.platform === 'win32';
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 let client: LanguageClient | undefined;
-let context: ExtensionContext | undefined;
 
-function getConfig(path: string) {
-  const [namespace, key] = path.split('.');
-  return workspace.getConfiguration(namespace).get(key);
-}
+export async function activate(context: ExtensionContext) {
+  const isRubyLanguageServer = getConfig('shopifyLiquid.legacyMode');
+  const runChecksCommand = isRubyLanguageServer ? 'runChecks' : 'themeCheck/runChecks';
 
-export async function activate(extensionContext: ExtensionContext) {
-  context = extensionContext;
-
-  context.subscriptions.push(commands.registerCommand('shopifyLiquid.restart', restartServer));
+  context.subscriptions.push(
+    commands.registerCommand('shopifyLiquid.restart', () => restartServer(context)),
+  );
   context.subscriptions.push(
     commands.registerCommand('shopifyLiquid.runChecks', () => {
-      const isRubyLanguageServer = !getConfig('shopifyLiquid.themeCheckNextDevPreview');
-      client!.sendRequest('workspace/executeCommand', {
-        command: isRubyLanguageServer ? 'runChecks' : 'themeCheck/runChecks',
-      });
+      client!.sendRequest('workspace/executeCommand', { command: runChecksCommand });
     }),
   );
 
   const diagnosticTextDocumentVersion = new Map<Uri, number>();
   const diagnosticCollection = languages.createDiagnosticCollection('prettier-plugin-liquid');
-  context.subscriptions.push(diagnosticCollection);
+  if (isRubyLanguageServer) {
+    // The TS version doesn't need this, we have LiquidHTMLSyntaxError for that.
+    context.subscriptions.push(diagnosticCollection);
+  }
 
+  // TODO move this to language server (?) Might have issues with prettier import
   const formattingProvider = languages.registerDocumentFormattingEditProvider(
     LIQUID,
     new LiquidFormatter(diagnosticCollection, diagnosticTextDocumentVersion),
   );
   context.subscriptions.push(formattingProvider);
 
-  workspace.onDidChangeConfiguration(onConfigChange);
+  workspace.onDidChangeConfiguration(onConfigChange(context));
 
   // If you change the file, the prettier syntax error is no longer valid
   workspace.onDidChangeTextDocument(({ document }) => {
@@ -77,15 +62,15 @@ export async function activate(extensionContext: ExtensionContext) {
     }
   });
 
-  await startServer();
+  await startServer(context);
 }
 
 export function deactivate() {
   return stopServer();
 }
 
-async function startServer() {
-  const serverOptions = await getServerOptions();
+async function startServer(context: ExtensionContext) {
+  const serverOptions = await getServerOptions(context);
   console.info(
     'shopify.theme-check-vscode Server options %s',
     JSON.stringify(serverOptions, null, 2),
@@ -124,144 +109,45 @@ async function stopServer() {
   } catch (e) {
     console.error(e);
   } finally {
-    context = undefined;
     client = undefined;
   }
 }
 
-async function restartServer() {
+async function restartServer(context: ExtensionContext) {
   if (client) {
     await stopServer();
   }
-  await startServer();
+  await startServer(context);
 }
 
-function onConfigChange(event: { affectsConfiguration: (arg0: string) => any }) {
-  const didChangeThemeCheck = event.affectsConfiguration('shopifyLiquid.languageServerPath');
-  const didChangeShopifyCLI = event.affectsConfiguration('shopifyLiquid.shopifyCLIPath');
-  const didChangeOnlineStoreCodeEditorMode = event.affectsConfiguration(
-    'shopifyLiquid.themeCheckNextDevPreview',
-  );
-  if (didChangeThemeCheck || didChangeShopifyCLI || didChangeOnlineStoreCodeEditorMode) {
-    restartServer();
-  }
-}
-
-let hasShownWarning = false;
-async function getServerOptions(): Promise<ServerOptions | undefined> {
-  const disableWarning = getConfig('shopifyLiquid.disableWindowsWarning');
-  if (!disableWarning && isWin && !hasShownWarning) {
-    hasShownWarning = true;
-    window.showWarningMessage(
-      'Shopify Liquid support on Windows is experimental. Please report any issue.',
-    );
-  }
-
-  if (getConfig('shopifyLiquid.themeCheckNextDevPreview')) {
-    const serverModule = context!.asAbsolutePath(path.join('dist', 'server.js'));
-    return {
-      run: {
-        module: serverModule,
-        transport: TransportKind.stdio,
-      },
-      debug: {
-        module: serverModule,
-        transport: TransportKind.stdio,
-        options: {
-          // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
-          execArgv: ['--nolazy', '--inspect=6009'],
-        },
-      },
-    };
-  }
-
-  const themeCheckPath = getConfig('shopifyLiquid.languageServerPath') as string | undefined;
-  const shopifyCLIPath = getConfig('shopifyLiquid.shopifyCLIPath') as string | undefined;
-
-  try {
-    const executable: ServerOptions | undefined =
-      (themeCheckPath && (await themeCheckExecutable(themeCheckPath))) ||
-      (shopifyCLIPath && (await shopifyCLIExecutable(shopifyCLIPath))) ||
-      (await getThemeCheckExecutable()) ||
-      (await getShopifyCLIExecutable());
-    if (!executable) {
-      throw new Error('No executable found');
+const onConfigChange =
+  (context: ExtensionContext) => (event: { affectsConfiguration: (arg0: string) => any }) => {
+    const didChangeThemeCheck = event.affectsConfiguration('shopifyLiquid.languageServerPath');
+    const didChangeShopifyCLI = event.affectsConfiguration('shopifyLiquid.shopifyCLIPath');
+    const didChangeLegacyMode = event.affectsConfiguration('shopifyLiquid.legacyMode');
+    if (didChangeThemeCheck || didChangeShopifyCLI || didChangeLegacyMode) {
+      restartServer(context);
     }
-    return executable;
-  } catch (e) {
-    if (e instanceof CommandNotFoundError) {
-      window.showErrorMessage(e.message);
-    } else {
-      if (isWin) {
-        window.showWarningMessage(
-          `The 'theme-check-language-server' executable was not found on your $PATH. Was it installed? The path can also be changed via the "shopifyLiquid.languageServerPath" setting.`,
-        );
-      } else {
-        console.error(e);
-        window.showWarningMessage(
-          `The 'shopify' executable was not found on your $PATH. Was it installed? The path can also be changed via the "shopifyLiquid.shopifyCLIPath" setting.`,
-        );
-      }
-    }
-  }
-}
-
-async function which(command: string) {
-  if (isWin) {
-    const { stdout } = await exec(`where.exe ${command}`);
-    const executables = stdout
-      .replace(/\r/g, '')
-      .split('\n')
-      .filter((exe) => exe.endsWith('bat'));
-    return executables.length > 0 && executables[0];
-  } else {
-    const { stdout } = await exec(`which ${command}`);
-    return stdout.split('\n')[0].replace('\r', '');
-  }
-}
-
-async function getShopifyCLIExecutable(): Promise<ServerOptions | undefined> {
-  try {
-    const path = await which('shopify');
-    return shopifyCLIExecutable(path);
-  } catch (e) {
-    return undefined;
-  }
-}
-
-async function getThemeCheckExecutable(): Promise<ServerOptions | undefined> {
-  try {
-    const path = await which('theme-check-language-server');
-    return themeCheckExecutable(path);
-  } catch (e) {
-    return undefined;
-  }
-}
-
-async function shopifyCLIExecutable(command: string | boolean): Promise<ServerOptions | undefined> {
-  if (isWin || typeof command !== 'string' || command === '') {
-    return;
-  }
-  return {
-    command,
-    args: ['theme', 'language-server'],
   };
-}
 
-async function themeCheckExecutable(command: string | boolean): Promise<ServerOptions | undefined> {
-  if (typeof command !== 'string' || command === '') {
-    return undefined;
+async function getServerOptions(context: ExtensionContext): Promise<ServerOptions | undefined> {
+  if (getConfig('shopifyLiquid.legacyMode')) {
+    return getLegacyModeServerOptions();
   }
-  await commandExists(command);
+
+  const serverModule = context.asAbsolutePath(path.join('dist', 'server.js'));
   return {
-    command,
+    run: {
+      module: serverModule,
+      transport: TransportKind.stdio,
+    },
+    debug: {
+      module: serverModule,
+      transport: TransportKind.stdio,
+      options: {
+        // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
+        execArgv: ['--nolazy', '--inspect=6009'],
+      },
+    },
   };
-}
-
-async function commandExists(command: string): Promise<void> {
-  try {
-    !isWin && (await exec(`[ -f "${command}" ]`));
-  } catch (e) {
-    throw new CommandNotFoundError(`${command} not found, are you sure this is the correct path?`);
-  }
 }
