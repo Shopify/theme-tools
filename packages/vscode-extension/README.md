@@ -7,49 +7,49 @@
 
 <h4 align="center">A complete developer experience for Shopify themes</h4>
 
-Official VS Code extension for [Shopify Liquid](https://shopify.dev/docs/themes) powered by [Theme Check][tc] the Liquid linter and language server for online store themes.
+Official VS Code extension for [Shopify Liquid storefronts](https://shopify.dev/docs/themes) and [Theme App Extensions](https://shopify.dev/docs/apps/online-store/theme-app-extensions).
 
 ![](https://github.com/Shopify/theme-check-vscode/blob/feature/readme-revamp/images/demo.gif?raw=true)
 
-[Features](#features) |  [Installation](#installation) | [Configuration](#configuration) | [📦 VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=shopify.theme-check-vscode).
+[Features](#features) | [User guide](#user-guide) | [Installation](#installation) | [Configuration](#configuration) | [📦 VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=shopify.theme-check-vscode).
 
 ## Features
 
-- 🎨 Syntax highlighting
-- 💧 Liquid language server ([Theme Check][tc])
-  - 📗 Completions
-  - ✅ Linting
-  - 🔎 Go to source
-- 💅 Formatting ([Liquid Prettier plugin](https://github.com/shopify/prettier-plugin-liquid))
-- 📐 Automatic indentation
-- 🎎 Auto closing pairs
+* 🎨 Syntax highlighting
+* 💅 Code formatting
+* 💡 Code completion and documentation on hover
+  * 💧 Liquid tag, filter and object
+  * 🏷️ HTML tag, attribute and value
+  * 🖌️ Theme, section and block settings
+  * 🌐 Theme translation
+  * 🖼️ Render tag snippet
+* 🔎 Code navigation
+* 🎎 Auto-closing pairs
+* ✅ Theme checks and fixes
+
+## User guide
+
+Take a look at [our user guide](https://shopify.dev/docs/themes/tools/shopify-liquid-vscode) for an in-depth demonstration and explanation of all the features.
 
 ## Installation
 
-This VS Code extensions depends on the [Theme Check][tc] language server, which is bundled in the latest [Shopify CLI](https://shopify.dev/themes/tools/cli).
-
-To install the `shopify` CLI, follow these steps:
-
-1. Go to https://shopify.dev/themes/tools/cli/install
-2. Follow the instructions for your operating system
-
------
-
-⚠️ **Warning** Windows support is experimental. See [this issue](https://github.com/Shopify/theme-check-vscode/issues/5) for details.
-
------
+This VS Code extensions comes with batteries included.
 
 ## Configuration
 
-- `"shopifyLiquid.shopifyCLIPath": string`, (optional, Unix-only) a path to the `shopify` executable.
-- `"shopifyLiquid.languageServerPath": string`, (optional) a path to the `theme-check-language-server` executable.
-- `"shopifyLiquid.themeCheckNextDevPreview": boolean`, (optional) when true, will use `@shopify/theme-language-server-node` as the language server instead of the ruby version (aka batteries-included mode). Supercedes `shopifyCLIPath` and `languageServerPath`.
-- `"shopifyLiquid.disableWindowsWarning": boolean`, (default: `false`) When true, theme check won't bug you with the Windows warning anymore.
 - `"themeCheck.checkOnOpen": boolean`, (default: `true`) makes it so theme check runs on file open.
 - `"themeCheck.checkOnChange": boolean`, (default: `true`) makes it so theme check runs on file change.
 - `"themeCheck.checkOnSave": boolean`, (default: `true`) makes it so theme check runs on file save.
+
+### Deprecated configuration
+
+If you still want to use the Ruby `theme-check-language-server`, you may use the following deprecated settings:
+
+- `"shopifyLiquid.legacyMode": boolean`, (default: `false`) when true, will use the Ruby `theme-check-language-server`.
+- `"shopifyLiquid.languageServerPath": string`, (optional) a path to the `theme-check-language-server` executable. Has higher priority than `shopifyLiquid.shopifyCLIPath`.
+- `"shopifyLiquid.shopifyCLIPath": string`, (optional, Unix-only) a path to the `shopify` executable.
 - `"themeCheck.onlySingleFileChecks": boolean`, (default: `false`) makes it so theme check only runs single file checks for the files that are open.
 
-  Great for performance if can ignore checks that span multiple files during development and otherwise run full theme checks on the CLI or in CI.
+## License
 
-[tc]: https://github.com/Shopify/theme-check
+MIT.

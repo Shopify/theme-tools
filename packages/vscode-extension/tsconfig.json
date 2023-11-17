@@ -7,6 +7,7 @@
     "rootDir": "src",
     "strict": true,
     "resolveJsonModule": true,
+    "esModuleInterop": true,
     "declarationDir": "/tmp/vscode-extension-useless-declarations",
     "composite": true,
     "noImplicitAny": false,
