@@ -19,8 +19,6 @@ You may be interested by the sibling modules:
 
 ## Installation
 
-<!--
-
 ### CLI
 
 Theme Check is integrated in the [Shopify CLI](https://github.com/Shopify/cli).
@@ -28,8 +26,6 @@ Theme Check is integrated in the [Shopify CLI](https://github.com/Shopify/cli).
 ```bash
 shopify theme check
 ```
-
--->
 
 ### As a library
 
