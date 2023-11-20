@@ -71,6 +71,7 @@ import {
   ConcreteHtmlRawTag,
   ConcreteLiquidRawTag,
   LiquidHtmlConcreteNode,
+  ConcreteLiquidTagBaseCase,
 } from './stage-1-cst';
 import { Comparators, NamedTags, NodeTypes, nonTraversableProperties, Position } from './types';
 import { assertNever, deepGet, dropLast } from './utils';
@@ -795,14 +796,9 @@ export function isBranchedTag(node: LiquidHtmlNode) {
   return node.type === NodeTypes.LiquidTag && ['if', 'for', 'unless', 'case'].includes(node.name);
 }
 
-// Not exported because you can use node.type === NodeTypes.LiquidBranch.
-function isLiquidBranchDisguisedAsTag(node: LiquidHtmlNode): node is LiquidTagBaseCase {
-  return node.type === NodeTypes.LiquidTag && ['else', 'elsif', 'when'].includes(node.name);
-}
-
 function isConcreteLiquidBranchDisguisedAsTag(
   node: LiquidHtmlConcreteNode,
-): node is ConcreteLiquidNode & { name: 'else' | 'eslif' | 'when' } {
+): node is ConcreteLiquidTag & { name: 'else' | 'eslif' | 'when' } {
   return node.type === ConcreteNodeTypes.LiquidTag && ['else', 'eslif', 'when'].includes(node.name);
 }
 
@@ -911,10 +907,7 @@ class ASTBuilder {
   }
 
   push(node: LiquidHtmlNode) {
-    if (node.type === NodeTypes.LiquidTag && isLiquidBranchDisguisedAsTag(node)) {
-      this.closeParentWith(node);
-      this.open(toNamedLiquidBranchBaseCase(node));
-    } else if (node.type === NodeTypes.LiquidBranch) {
+    if (node.type === NodeTypes.LiquidBranch) {
       this.closeParentWith(node);
       this.open(node);
     } else {
@@ -961,6 +954,7 @@ class ASTBuilder {
     this.cursor.pop();
   }
 
+  // sets the parent's end position to the start of the next one.
   closeParentWith(next: LiquidHtmlNode | LiquidCSTNode) {
     if (isLiquidBranch(this.parent)) {
       if ('locStart' in next) {
@@ -1299,6 +1293,9 @@ function toLiquidTag(
 ): LiquidTag | LiquidBranch {
   if (typeof node.markup !== 'string') {
     return toNamedLiquidTag(node as ConcreteLiquidTagNamed, options);
+  } else if (isConcreteLiquidBranchDisguisedAsTag(node)) {
+    // `elsif`, `else`, `case`, but with unparseable markup.
+    return toNamedLiquidBranchBaseCase(node);
   } else if (options.isBlockTag) {
     return {
       name: node.name,
@@ -1463,16 +1460,16 @@ function toNamedLiquidTag(
   }
 }
 
-function toNamedLiquidBranchBaseCase(node: LiquidTagBaseCase): LiquidBranchBaseCase {
+function toNamedLiquidBranchBaseCase(node: ConcreteLiquidTagBaseCase): LiquidBranchBaseCase {
   return {
     name: node.name,
     type: NodeTypes.LiquidBranch,
     markup: node.markup,
-    position: { ...node.position },
+    position: { start: node.locStart, end: node.locEnd },
     children: [],
-    blockStartPosition: { ...node.position },
-    whitespaceStart: node.whitespaceStart,
-    whitespaceEnd: node.whitespaceEnd,
+    blockStartPosition: { start: node.locStart, end: node.locEnd },
+    whitespaceStart: node.whitespaceStart ?? '',
+    whitespaceEnd: node.whitespaceEnd ?? '',
     source: node.source,
   };
 }
