@@ -2,11 +2,7 @@
 
 import { doc, Doc } from 'prettier';
 import { NodeTypes } from '@shopify/liquid-html-parser';
-import {
-  shouldPreserveContent,
-  forceBreakContent,
-  hasNoChildren,
-} from '../utils';
+import { shouldPreserveContent, forceBreakContent, hasNoChildren } from '../utils';
 import {
   printOpeningTagPrefix,
   printOpeningTag,
@@ -142,7 +138,13 @@ export function printElement(
   };
 
   if (node.children.length === 0) {
-    return printTag(node.hasDanglingWhitespace && node.isDanglingWhitespaceSensitive ? line : '');
+    return printTag(
+      node.hasDanglingWhitespace &&
+        node.isDanglingWhitespaceSensitive &&
+        node.blockEndPosition.end !== node.blockEndPosition.start
+        ? line
+        : '',
+    );
   }
 
   return printTag([

@@ -117,7 +117,9 @@ function getTestSetup(sourceParagraph: string, index: number, expectedParagraph:
   const optionsParser = /(?<name>\w+): (?<value>[^\s]*)/g;
   let match: RegExpExecArray;
   while ((match = optionsParser.exec(message)!) !== null) {
-    prettierOptions[match.groups!.name as keyof LiquidParserOptions] = JSON.parse(match.groups!.value);
+    prettierOptions[match.groups!.name as keyof LiquidParserOptions] = JSON.parse(
+      match.groups!.value,
+    );
   }
 
   return {

@@ -78,6 +78,16 @@ printWidth: 1
   </details>
 {% endif %}
 
+It should not add superfluous spaces for dangling opens
+printWidth: 1
+{% if condition %}
+  <a>
+{% endif %}
+
+It should maintain space on dangling open without break
+printWidth: 80
+{% if condition %}<a> {% endif %}
+
 It should format as expected, Dawn example...
 printWidth: 80
 <div>

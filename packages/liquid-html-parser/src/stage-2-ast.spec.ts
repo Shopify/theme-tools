@@ -988,9 +988,7 @@ describe('Unit: Stage 2 (AST)', () => {
     });
 
     it('should throw when doing weird shit', () => {
-      const testCases = [
-        '{% if cond %}<a href="{% elsif cond %}">{% endif %}'
-      ];
+      const testCases = ['{% if cond %}<a href="{% elsif cond %}">{% endif %}'];
       for (const testCase of testCases) {
         try {
           toLiquidHtmlAST(testCase);
