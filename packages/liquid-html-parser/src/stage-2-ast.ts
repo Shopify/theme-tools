@@ -553,7 +553,6 @@ export interface LiquidVariableLookup extends ASTNode<NodeTypes.VariableLookup> 
 export type HtmlNode =
   | HtmlComment
   | HtmlElement
-  | HtmlDanglingMarkerOpen
   | HtmlDanglingMarkerClose
   | HtmlVoidElement
   | HtmlSelfClosingElement
@@ -572,25 +571,6 @@ export interface HtmlElement extends HtmlNodeBase<NodeTypes.HtmlElement> {
 
   /** The range covered by the end tag */
   blockEndPosition: Position;
-}
-
-/**
- * The node used to represent opening tags without its matching close tag, does not have children nor a close tag.
- *
- * Typically found inside if statements.
- *
- * ```
- * {% if cond %}
- *   <wrapper>
- * {% endif %}
- * ```
- */
-export interface HtmlDanglingMarkerOpen extends HtmlNodeBase<NodeTypes.HtmlDanglingMarkerOpen> {
-  /**
-   * The name of the tag can be compound
-   * e.g. `<{{ header_type }}--header />`
-   */
-  name: (TextNode | LiquidVariableOutput)[];
 }
 
 /**
@@ -777,9 +757,7 @@ export interface ASTNode<T> {
 }
 
 interface ASTBuildOptions {
-  /**
-   * Whether the parser should throw if the document node isn't closed
-   */
+  /** Whether the parser should throw if the document node isn't closed */
   allowUnclosedDocumentNode: boolean;
 
   /**
@@ -798,8 +776,8 @@ export function isBranchedTag(node: LiquidHtmlNode) {
 
 function isConcreteLiquidBranchDisguisedAsTag(
   node: LiquidHtmlConcreteNode,
-): node is ConcreteLiquidTag & { name: 'else' | 'eslif' | 'when' } {
-  return node.type === ConcreteNodeTypes.LiquidTag && ['else', 'eslif', 'when'].includes(node.name);
+): node is ConcreteLiquidTag & { name: 'else' | 'elsif' | 'when' } {
+  return node.type === ConcreteNodeTypes.LiquidTag && ['else', 'elsif', 'when'].includes(node.name);
 }
 
 export function toLiquidAST(
@@ -846,11 +824,14 @@ export function toLiquidHtmlAST(
   return root;
 }
 
-type LiquidCSTNode = LiquidCST[number];
+type ConcreteCloseNode = ConcreteLiquidTagClose | ConcreteHtmlTagClose;
 
 class ASTBuilder {
   /** the AST is what we're building incrementally */
   ast: LiquidHtmlNode[];
+
+  /** because we might be doing fun stuff */
+  options: ASTBuildOptions;
 
   /**
    * The cursor represents the path to the array we would push nodes to.
@@ -872,28 +853,31 @@ class ASTBuilder {
   /** The source is the original string */
   source: string;
 
-  constructor(source: string) {
+  constructor(source: string, options: ASTBuildOptions) {
     this.ast = [];
     this.cursor = [];
     this.source = source;
+    this.options = options;
   }
 
+  // Returns the array to push nodes to.
   get current() {
     return deepGet<LiquidHtmlNode[]>(this.cursor, this.ast) as LiquidHtmlNode[];
   }
 
+  // Returns the position of the current node in the array
   get currentPosition(): number {
     return (this.current || []).length - 1;
   }
 
   get parent(): ParentNode | undefined {
     if (this.cursor.length == 0) return undefined;
-    return deepGet<LiquidTag | HtmlElement>(dropLast(1, this.cursor), this.ast);
+    return deepGet<ParentNode>(dropLast(1, this.cursor), this.ast);
   }
 
   get grandparent(): ParentNode | undefined {
     if (this.cursor.length < 4) return undefined;
-    return deepGet<LiquidTag | HtmlElement>(dropLast(3, this.cursor), this.ast);
+    return deepGet<ParentNode>(dropLast(3, this.cursor), this.ast);
   }
 
   open(node: LiquidHtmlNode) {
@@ -908,19 +892,24 @@ class ASTBuilder {
 
   push(node: LiquidHtmlNode) {
     if (node.type === NodeTypes.LiquidBranch) {
-      this.closeParentWith(node);
+      const previousBranch = this.findCloseableParentBranch(node);
+      if (previousBranch) {
+        // close dangling open HTML nodes
+        while ((this.parent as ParentNode) !== previousBranch) {
+          this.closeParentWith(node);
+        }
+        // close the previous branch
+        this.closeParentWith(node);
+      }
       this.open(node);
     } else {
       this.current.push(node);
     }
   }
 
-  close(
-    node: ConcreteLiquidTagClose | ConcreteHtmlTagClose,
-    nodeType: NodeTypes.LiquidTag | NodeTypes.HtmlElement,
-  ) {
+  close(node: ConcreteCloseNode, nodeType: NodeTypes.LiquidTag | NodeTypes.HtmlElement) {
     if (isLiquidBranch(this.parent)) {
-      this.closeParentWith(node as LiquidCSTNode);
+      this.closeParentWith(node);
     }
 
     if (!this.parent) {
@@ -933,14 +922,27 @@ class ASTBuilder {
     }
 
     if (getName(this.parent) !== getName(node) || this.parent.type !== nodeType) {
-      throw new LiquidHTMLASTParsingError(
-        `Attempting to close ${nodeType} '${getName(node)}' before ${this.parent.type} '${getName(
-          this.parent,
-        )}' was closed`,
-        this.source,
-        this.parent.position.start,
-        node.locEnd,
-      );
+      const suitableParent = this.findCloseableParentNode(node);
+
+      if (this.parent.type === NodeTypes.HtmlElement && suitableParent) {
+        while ((this.parent as ParentNode) !== suitableParent) {
+          // 0-length end block position
+          this.parent.blockEndPosition = { start: node.locStart, end: node.locStart };
+          this.closeParentWith(node);
+        }
+        // we need to make sure that it's closeable (there's an if tag up the chain)
+        // we need to represent the unclosed open with position.end = this.locStart (aka this.closeParentWith(node))
+        // either the name or the type arent the same
+      } else {
+        throw new LiquidHTMLASTParsingError(
+          `Attempting to close ${nodeType} '${getName(node)}' before ${this.parent.type} '${getName(
+            this.parent,
+          )}' was closed`,
+          this.source,
+          this.parent.position.start,
+          node.locEnd,
+        );
+      }
     }
 
     // The parent end is the end of the outer tag.
@@ -954,9 +956,55 @@ class ASTBuilder {
     this.cursor.pop();
   }
 
+  // This function performs the following tasks:
+  // - Tries to find a parent branch to close when pushing a new branch.
+  // - This is necessary because we allow unclosed HTML element nodes.
+  // - The function traverses up the tree until it finds a LiquidBranch.
+  // - If it encounters anything other than an Unclosed HTML Element, it throws.
+  findCloseableParentBranch(next: LiquidBranch): LiquidBranch | null {
+    for (let index = this.cursor.length - 1; index > 0; index -= 2) {
+      const parent = deepGet<ParentNode>(this.cursor.slice(0, index), this.ast);
+      const parentProperty = this.cursor[index] as string;
+      const isUnclosedHtmlElement =
+        parent.type === NodeTypes.HtmlElement && parentProperty === 'children';
+      if (parent.type === NodeTypes.LiquidBranch) {
+        return parent;
+      } else if (!isUnclosedHtmlElement) {
+        throw new LiquidHTMLASTParsingError(
+          `Attempting to open LiquidBranch '${next.name}' before ${parent.type} '${getName(
+            parent,
+          )}' was closed`,
+          this.source,
+          parent.position.start,
+          next.position.end,
+        );
+      }
+    }
+    return null;
+  }
+
+  // Check if there's a parent in the ancestry that this node correctly closes
+  findCloseableParentNode(
+    current: ConcreteHtmlTagClose | ConcreteLiquidTagClose,
+  ): LiquidTag | null {
+    for (let index = this.cursor.length - 1; index > 0; index -= 2) {
+      const parent = deepGet<ParentNode>(this.cursor.slice(0, index), this.ast);
+      if (
+        getName(parent) === getName(current) &&
+        parent.type === NodeTypes.LiquidTag &&
+        ['if', 'unless', 'case'].includes(parent.name)
+      ) {
+        return parent;
+      } else if (parent.type === NodeTypes.LiquidTag) {
+        return null;
+      }
+    }
+    return null;
+  }
+
   // sets the parent's end position to the start of the next one.
-  closeParentWith(next: LiquidHtmlNode | LiquidCSTNode) {
-    if (isLiquidBranch(this.parent)) {
+  closeParentWith(next: LiquidHtmlNode | ConcreteCloseNode) {
+    if (this.parent) {
       if ('locStart' in next) {
         this.parent.position.end = next.locStart;
       } else {
@@ -978,7 +1026,6 @@ function getName(
   if (!node) return null;
   switch (node.type) {
     case NodeTypes.HtmlElement:
-    case NodeTypes.HtmlDanglingMarkerOpen:
     case NodeTypes.HtmlDanglingMarkerClose:
     case NodeTypes.HtmlSelfClosingElement:
     case ConcreteNodeTypes.HtmlTagClose:
@@ -1038,7 +1085,7 @@ function buildAst(
   cst: LiquidHtmlCST | LiquidCST | ConcreteAttributeNode[],
   options: ASTBuildOptions,
 ) {
-  const builder = new ASTBuilder(cst[0].source);
+  const builder = new ASTBuilder(cst[0].source, options);
 
   for (let i = 0; i < cst.length; i++) {
     const node = cst[i];
@@ -1094,11 +1141,7 @@ function buildAst(
       }
 
       case ConcreteNodeTypes.HtmlTagOpen: {
-        if (isAcceptableDanglingMarkerOpen(builder, cst as LiquidHtmlCST, i)) {
-          builder.push(toHtmlDanglingMarkerOpen(node, options));
-        } else {
-          builder.open(toHtmlElement(node, options));
-        }
+        builder.open(toHtmlElement(node, options));
         break;
       }
 
@@ -1464,7 +1507,7 @@ function toNamedLiquidBranchBaseCase(node: ConcreteLiquidTagBaseCase): LiquidBra
   return {
     name: node.name,
     type: NodeTypes.LiquidBranch,
-    markup: node.markup,
+    markup: node.name !== 'else' ? node.markup : '', // stripping superfluous else stuff...
     position: { start: node.locStart, end: node.locEnd },
     children: [],
     blockStartPosition: { start: node.locStart, end: node.locEnd },
@@ -1823,20 +1866,6 @@ function toHtmlElement(node: ConcreteHtmlTagOpen, options: ASTBuildOptions): Htm
   };
 }
 
-function toHtmlDanglingMarkerOpen(
-  node: ConcreteHtmlTagOpen,
-  options: ASTBuildOptions,
-): HtmlDanglingMarkerOpen {
-  return {
-    type: NodeTypes.HtmlDanglingMarkerOpen,
-    name: cstToAst(node.name, options) as (TextNode | LiquidVariableOutput)[],
-    attributes: toAttributes(node.attrList || [], options),
-    position: position(node),
-    blockStartPosition: position(node),
-    source: node.source,
-  };
-}
-
 function toHtmlDanglingMarkerClose(
   node: ConcreteHtmlTagClose,
   options: ASTBuildOptions,
@@ -1889,14 +1918,6 @@ function toTextNode(node: ConcreteTextNode): TextNode {
 
 const MAX_NUMBER_OF_SIBLING_DANGLING_NODES = 2;
 
-function isAcceptableDanglingMarkerOpen(
-  builder: ASTBuilder,
-  cst: LiquidHtmlCST,
-  currIndex: number,
-): boolean {
-  return isAcceptableDanglingMarker(builder, cst, currIndex, ConcreteNodeTypes.HtmlTagOpen);
-}
-
 function isAcceptableDanglingMarkerClose(
   builder: ASTBuilder,
   cst: LiquidHtmlCST,
@@ -1934,7 +1955,7 @@ function isAcceptableDanglingMarker(
   builder: ASTBuilder,
   cst: LiquidHtmlCST,
   currIndex: number,
-  nodeType: ConcreteNodeTypes.HtmlTagOpen | ConcreteNodeTypes.HtmlTagClose,
+  nodeType: ConcreteNodeTypes.HtmlTagClose,
 ): boolean {
   if (!isAcceptingDanglingMarkers(builder, nodeType)) {
     return false;
@@ -1958,14 +1979,10 @@ function isAcceptableDanglingMarker(
 }
 
 const DanglingMapping = {
-  [ConcreteNodeTypes.HtmlTagOpen]: NodeTypes.HtmlDanglingMarkerOpen,
   [ConcreteNodeTypes.HtmlTagClose]: NodeTypes.HtmlDanglingMarkerClose,
 } as const;
 
-function isAcceptingDanglingMarkers(
-  builder: ASTBuilder,
-  nodeType: ConcreteNodeTypes.HtmlTagOpen | ConcreteNodeTypes.HtmlTagClose,
-) {
+function isAcceptingDanglingMarkers(builder: ASTBuilder, nodeType: ConcreteNodeTypes.HtmlTagClose) {
   const { parent, grandparent } = builder;
   if (!parent || !grandparent) return false;
   return (

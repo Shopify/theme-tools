@@ -14,9 +14,21 @@ It should pretty print dangling close tags inside unless statements
 printWidth: 1
 {% unless condition %}</div>{% else %}</product-wrapper>{% endunless %}
 
-It should allow two nodes as well, without indenting
+It should allow two nodes as well, with indenting
 printWidth: 1
 {% if condition %}<div attr=value other="{{ product.id }}"><p attr=value>{% endif %}
+
+It should allow unclosed nodes + closed nodes, with indenting
+printWidth: 1
+{% if condition %}<details><summary>hello</summary>{% endif %}
+
+It should allow unclosed nodes + liquid, with indenting
+printWidth: 1
+{% if condition %}<details>{% render 'summary' %} {% endif %}
+
+skip It should allow dangling close nodes with flat nodes
+printWidth: 1
+{% if condition %}</details>{% render 'summary' %} {% endif %}
 
 It should format as expected, Dawn example...
 printWidth: 80

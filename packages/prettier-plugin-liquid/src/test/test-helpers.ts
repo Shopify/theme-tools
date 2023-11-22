@@ -2,10 +2,10 @@ import { expect } from 'vitest';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as prettier from 'prettier';
-import plugin from '..';
+import plugin from '../plugin';
 import { parse } from '../parser';
 import { preprocess } from '../printer/print-preprocess';
-import { LiquidParserOptions } from '../types';
+import { DocumentNode, LiquidParserOptions } from '../types';
 
 const PARAGRAPH_SPLITTER = /(?:\r?\n){2,}(?=\/\/|It|When|If|focus|debug|skip|<)/i;
 
@@ -117,7 +117,7 @@ function getTestSetup(sourceParagraph: string, index: number, expectedParagraph:
   const optionsParser = /(?<name>\w+): (?<value>[^\s]*)/g;
   let match: RegExpExecArray;
   while ((match = optionsParser.exec(message)!) !== null) {
-    prettierOptions[match.groups!.name] = JSON.parse(match.groups!.value);
+    prettierOptions[match.groups!.name as keyof LiquidParserOptions] = JSON.parse(match.groups!.value);
   }
 
   return {
@@ -176,7 +176,7 @@ export function printToDoc(content: string, options: any = {}) {
 
 export async function debug(content: string, options: any = {}) {
   const ast = parse(content);
-  const processedAST = preprocess(ast, options);
+  const processedAST = preprocess(ast as any as DocumentNode, options);
   const printed = await format(content, options);
   const doc = printToDoc(content, options);
   debugger;

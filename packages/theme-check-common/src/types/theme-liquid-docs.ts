@@ -1,4 +1,4 @@
-import { Translations } from 'src';
+import { Translations } from '..';
 
 /**
  * Shopify themes docset.
