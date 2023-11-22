@@ -73,6 +73,9 @@ printWidth: 1
 {% if condition %}
   </details>
   {% render 'summary' %}
+{% else %}
+  {% render 'summary' %}
+  </details>
 {% endif %}
 
 It should format as expected, Dawn example...

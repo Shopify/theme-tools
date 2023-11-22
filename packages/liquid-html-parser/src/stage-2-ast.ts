@@ -1933,7 +1933,7 @@ function isAcceptableDanglingMarkerClose(
     return !parentIsOfCorrectName;
   }
 
-  return isAcceptableDanglingMarker(builder, cst, currIndex, ConcreteNodeTypes.HtmlTagClose);
+  return isAcceptableDanglingMarker(builder);
 }
 
 // This function checks that the builder.current node accepts dangling nodes.
@@ -1941,7 +1941,7 @@ function isAcceptableDanglingMarkerClose(
 // The current logic is:
 //  - Grandparent node must be an if-like statement
 //  - Parent node must be a LiquidBranch
-//  - All sibling nodes must be of the same type (all close or all open)
+//  - All sibling nodes must be flat
 //
 // I want to extend that to pushing dangling close in completion mode...
 //
@@ -1951,45 +1951,13 @@ function isAcceptableDanglingMarkerClose(
 // <a>
 //   ...children
 //   </[cursor]>
-function isAcceptableDanglingMarker(
-  builder: ASTBuilder,
-  cst: LiquidHtmlCST,
-  currIndex: number,
-  nodeType: ConcreteNodeTypes.HtmlTagClose,
-): boolean {
-  if (!isAcceptingDanglingMarkers(builder, nodeType)) {
-    return false;
-  }
-
-  const maxIndex = Math.min(
-    cst.length,
-    currIndex + MAX_NUMBER_OF_SIBLING_DANGLING_NODES - builder.current.length,
-  );
-
-  for (let i = currIndex; i <= maxIndex; i++) {
-    if (isConcreteExceptionEnd(cst[i])) {
-      return true;
-    }
-    if (cst[i].type !== nodeType) {
-      return false;
-    }
-  }
-
-  return false;
-}
-
-const DanglingMapping = {
-  [ConcreteNodeTypes.HtmlTagClose]: NodeTypes.HtmlDanglingMarkerClose,
-} as const;
-
-function isAcceptingDanglingMarkers(builder: ASTBuilder, nodeType: ConcreteNodeTypes.HtmlTagClose) {
+function isAcceptableDanglingMarker(builder: ASTBuilder): boolean {
   const { parent, grandparent } = builder;
   if (!parent || !grandparent) return false;
   return (
     parent.type === NodeTypes.LiquidBranch &&
     grandparent.type === NodeTypes.LiquidTag &&
-    ['if', 'unless', 'case'].includes(grandparent.name) &&
-    builder.current.every((node) => node.type === DanglingMapping[nodeType])
+    ['if', 'unless', 'case'].includes(grandparent.name)
   );
 }
 

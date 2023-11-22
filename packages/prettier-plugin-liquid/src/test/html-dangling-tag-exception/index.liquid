@@ -26,9 +26,9 @@ It should allow unclosed nodes + liquid, with indenting
 printWidth: 1
 {% if condition %}<details>{% render 'summary' %} {% endif %}
 
-skip It should allow dangling close nodes with flat nodes
+It should allow dangling close nodes with flat nodes
 printWidth: 1
-{% if condition %}</details>{% render 'summary' %} {% endif %}
+{% if condition %}</details>{% render 'summary' %} {% else %} {% render 'summary' %}</details> {% endif %}
 
 It should format as expected, Dawn example...
 printWidth: 80
