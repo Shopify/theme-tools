@@ -2,10 +2,10 @@ import { expect } from 'vitest';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as prettier from 'prettier';
-import plugin from '../src';
-import { parse } from '../src/parser';
-import { preprocess } from '../src/printer/print-preprocess';
-import { LiquidParserOptions } from '../src/types';
+import plugin from '..';
+import { parse } from '../parser';
+import { preprocess } from '../printer/print-preprocess';
+import { LiquidParserOptions } from '../types';
 
 const PARAGRAPH_SPLITTER = /(?:\r?\n){2,}(?=\/\/|It|When|If|focus|debug|skip|<)/i;
 

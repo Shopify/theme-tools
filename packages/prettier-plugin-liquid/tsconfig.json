@@ -6,7 +6,6 @@
     "outDir": "dist",
     "module": "commonjs",
     "target": "ES6",
-    "baseUrl": ".",
     "rootDir": "src",
     "paths": {
       "@shopify/liquid-html-parser": ["../liquid-html-parser/src"]
