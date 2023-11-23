@@ -830,9 +830,6 @@ class ASTBuilder {
   /** the AST is what we're building incrementally */
   ast: LiquidHtmlNode[];
 
-  /** because we might be doing fun stuff */
-  options: ASTBuildOptions;
-
   /**
    * The cursor represents the path to the array we would push nodes to.
    *
@@ -853,11 +850,10 @@ class ASTBuilder {
   /** The source is the original string */
   source: string;
 
-  constructor(source: string, options: ASTBuildOptions) {
+  constructor(source: string) {
     this.ast = [];
     this.cursor = [];
     this.source = source;
-    this.options = options;
   }
 
   // Returns the array to push nodes to.
@@ -895,7 +891,13 @@ class ASTBuilder {
       const previousBranch = this.findCloseableParentBranch(node);
       if (previousBranch) {
         // close dangling open HTML nodes
-        while ((this.parent as ParentNode) !== previousBranch) {
+        while (
+          this.parent &&
+          (this.parent as ParentNode) !== previousBranch &&
+          this.parent.type === NodeTypes.HtmlElement
+        ) {
+          // 0-length blockEndPosition at the position of the next branch
+          this.parent.blockEndPosition = { start: node.position.start, end: node.position.start };
           this.closeParentWith(node);
         }
         // close the previous branch
@@ -925,14 +927,12 @@ class ASTBuilder {
       const suitableParent = this.findCloseableParentNode(node);
 
       if (this.parent.type === NodeTypes.HtmlElement && suitableParent) {
+        // close dangling open HTML nodes
         while ((this.parent as ParentNode) !== suitableParent) {
           // 0-length end block position
           this.parent.blockEndPosition = { start: node.locStart, end: node.locStart };
           this.closeParentWith(node);
         }
-        // we need to make sure that it's closeable (there's an if tag up the chain)
-        // we need to represent the unclosed open with position.end = this.locStart (aka this.closeParentWith(node))
-        // either the name or the type arent the same
       } else {
         throw new LiquidHTMLASTParsingError(
           `Attempting to close ${nodeType} '${getName(node)}' before ${this.parent.type} '${getName(
@@ -1085,7 +1085,7 @@ function buildAst(
   cst: LiquidHtmlCST | LiquidCST | ConcreteAttributeNode[],
   options: ASTBuildOptions,
 ) {
-  const builder = new ASTBuilder(cst[0].source, options);
+  const builder = new ASTBuilder(cst[0].source);
 
   for (let i = 0; i < cst.length; i++) {
     const node = cst[i];
@@ -1941,16 +1941,6 @@ function isAcceptableDanglingMarkerClose(
 // The current logic is:
 //  - Grandparent node must be an if-like statement
 //  - Parent node must be a LiquidBranch
-//  - All sibling nodes must be flat
-//
-// I want to extend that to pushing dangling close in completion mode...
-//
-// So that I can complete </[cursor]> and not have a broken AST.
-//
-// That would mean that the partial ast looks like this
-// <a>
-//   ...children
-//   </[cursor]>
 function isAcceptableDanglingMarker(builder: ASTBuilder): boolean {
   const { parent, grandparent } = builder;
   if (!parent || !grandparent) return false;

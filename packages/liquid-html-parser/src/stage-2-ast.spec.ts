@@ -930,6 +930,13 @@ describe('Unit: Stage 2 (AST)', () => {
           // Does not have a close tag so the slice of the end tag is empty string
           expectPosition(ast, `${detailsNodePath}`, 'blockEndPosition').toEqual('');
 
+          // making sure blockEndPosition isn't -1, -1 but adjusted to the child position
+          expect(
+            deepGet<number>(`${detailsNodePath}.blockEndPosition.start`.split('.'), ast),
+          ).toBeGreaterThan(
+            deepGet<number>(`${detailsNodePath}.blockStartPosition.end`.split('.'), ast),
+          );
+
           expectPosition(ast, `${detailsNodePath}.children.0`).toEqual('<summary>hello</summary>');
           expectPosition(ast, `${detailsNodePath}.children.0`, 'blockEndPosition').toEqual(
             '</summary>',
