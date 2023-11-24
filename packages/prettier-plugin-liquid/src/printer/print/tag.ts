@@ -379,13 +379,6 @@ export function printClosingTagEndMarker(
   }
 
   switch (node.type) {
-    // case 'ieConditionalComment':
-    // case 'ieConditionalEndComment':
-    //   return '[endif]-->';
-    // case 'ieConditionalStartComment':
-    //   return ']><!-->';
-    // case 'interpolation':
-    //   return '}}';
     case NodeTypes.HtmlSelfClosingElement: {
       // looks like it doesn't make sense because it should be part of
       // the printOpeningTagEndMarker but this is handled somewhere else.
@@ -403,8 +396,6 @@ export function printClosingTagEndMarker(
 export function printOpeningTagEndMarker(node: LiquidHtmlNode | undefined) {
   if (!node) return '';
   switch (node.type) {
-    // case 'ieConditionalComment':
-    //   return ']>';
     case NodeTypes.HtmlComment:
       return '-->';
     case NodeTypes.HtmlSelfClosingElement:
