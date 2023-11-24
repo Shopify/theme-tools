@@ -153,7 +153,6 @@ export type LiquidVariableOutput = Augmented<AST.LiquidVariableOutput, AllAugmen
 export type HtmlNode = Augmented<AST.HtmlNode, AllAugmentations>;
 export type HtmlTag = Exclude<HtmlNode, HtmlComment>;
 export type HtmlElement = Augmented<AST.HtmlElement, AllAugmentations>;
-export type HtmlDanglingMarkerOpen = Augmented<AST.HtmlDanglingMarkerOpen, AllAugmentations>;
 export type HtmlDanglingMarkerClose = Augmented<AST.HtmlDanglingMarkerClose, AllAugmentations>;
 export type HtmlVoidElement = Augmented<AST.HtmlVoidElement, AllAugmentations>;
 export type HtmlSelfClosingElement = Augmented<AST.HtmlSelfClosingElement, AllAugmentations>;

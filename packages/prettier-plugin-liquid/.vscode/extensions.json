@@ -1,9 +1,0 @@
-{
-  "recommendations": [
-    "ryanluker.vscode-coverage-gutters",
-    "hbenl.vscode-mocha-test-adapter",
-    "connorshea.vscode-test-explorer-status-bar",
-    "hbenl.vscode-test-explorer",
-    "esbenp.prettier-vscode"
-  ]
-}

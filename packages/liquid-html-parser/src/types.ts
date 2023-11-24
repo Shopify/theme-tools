@@ -16,7 +16,6 @@ export enum NodeTypes {
   HtmlDoctype = 'HtmlDoctype',
   HtmlComment = 'HtmlComment',
   HtmlElement = 'HtmlElement',
-  HtmlDanglingMarkerOpen = 'HtmlDanglingMarkerOpen',
   HtmlDanglingMarkerClose = 'HtmlDanglingMarkerClose',
   HtmlRawNode = 'HtmlRawNode',
   AttrSingleQuoted = 'AttrSingleQuoted',
@@ -83,7 +82,6 @@ export enum Comparators {
 
 export const HtmlNodeTypes = [
   NodeTypes.HtmlElement,
-  NodeTypes.HtmlDanglingMarkerOpen,
   NodeTypes.HtmlDanglingMarkerClose,
   NodeTypes.HtmlRawNode,
   NodeTypes.HtmlVoidElement,

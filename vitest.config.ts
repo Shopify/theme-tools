@@ -13,8 +13,5 @@ export default defineConfig({
       './packages/theme-check-common/src/test/test-setup.ts',
       './packages/theme-language-server-common/src/test/test-setup.ts',
     ],
-    alias: {
-      '~': path.resolve(__dirname, './packages/prettier-plugin-liquid/src'),
-    },
   },
 });

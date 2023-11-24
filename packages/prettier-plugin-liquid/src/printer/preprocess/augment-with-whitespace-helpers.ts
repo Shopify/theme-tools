@@ -6,7 +6,7 @@ import {
   NodeTypes,
   isBranchedTag,
 } from '@shopify/liquid-html-parser';
-import { WithFamily } from '../../types';
+import { HtmlElement, WithFamily } from '../../types';
 import {
   CSS_WHITE_SPACE_DEFAULT,
   CSS_WHITE_SPACE_LIQUID_TAGS,
@@ -236,8 +236,9 @@ function isTrailingWhitespaceSensitiveNode(node: AugmentedAstNode): boolean {
   if (node.type === NodeTypes.LiquidBranch) {
     const isLastBranch = node.parentNode && node.parentNode.lastChild === node;
     const hasNoLastChild = !node.lastChild;
+    const lastChild = node.lastChild;
     const isLastChildTrailingSensitive =
-      !!node.lastChild && isTrailingWhitespaceSensitiveNode(node.lastChild);
+      !!lastChild && isTrailingWhitespaceSensitiveNode(lastChild);
 
     // {% if %}{% elsif cond %}<emptythis>{% endif %}
     // {% if %}{% elsif cond %}this{% endif %}
@@ -257,6 +258,22 @@ function isTrailingWhitespaceSensitiveNode(node: AugmentedAstNode): boolean {
     // {% if %}this{% else %}{% endif %}
     // {% if %}{% elsif cond %}this{% else %}{% endif %}
     return hasNoLastChild || isLastChildTrailingSensitive;
+  }
+
+  // {% if cond %}<this>{% endif %}
+  // {% if cond %}<this><a>{% endif %}
+  // {% if cond %}<this><div>{% endif %}
+  // {% if cond %}<this><div></div>{% endif %}
+  // {% if cond %}<this>{% render 'icon' %}{% endif %}
+  if (isHtmlElementWithoutCloseTag(node)) {
+    if (!node.lastChild) {
+      return isInnerLeftSpaceSensitiveCssDisplay(node.cssDisplay);
+    }
+
+    return (
+      createsInlineFormattingContext(node.cssDisplay) &&
+      isTrailingWhitespaceSensitiveNode(node.lastChild)
+    );
   }
 
   // '{{ drop -}} text'
@@ -317,7 +334,7 @@ function isTrailingWhitespaceSensitiveNode(node: AugmentedAstNode): boolean {
       node.parentNode.type === NodeTypes.Document ||
       isPreLikeNode(node) ||
       isScriptLikeTag(node.parentNode) ||
-      !isInnerRightWhitespaceSensitiveCssDisplay(node.parentNode.cssDisplay) ||
+      (!isHtmlElementWithoutCloseTag(node.parentNode) && !isInnerRightWhitespaceSensitiveCssDisplay(node.parentNode.cssDisplay)) ||
       isTrimmingInnerRight(node.parentNode) ||
       isAttributeNode(node as any)
     )
@@ -386,7 +403,7 @@ function hasLeadingWhitespace(node: AugmentedAstNode): boolean {
 }
 
 function hasTrailingWhitespace(node: AugmentedAstNode): boolean {
-  if (node.type === NodeTypes.LiquidBranch) {
+  if (node.type === NodeTypes.LiquidBranch || isHtmlElementWithoutCloseTag(node)) {
     return node.lastChild ? hasTrailingWhitespace(node.lastChild) : hasDanglingWhitespace(node);
   }
   return isWhitespace(node.source, node.position.end);
@@ -492,6 +509,12 @@ export function isTrimmingInnerRight(node: AugmentedAstNode | undefined): boolea
   }
 }
 
+function createsInlineFormattingContext(cssDisplay: string) {
+  return (
+    isBlockLikeCssDisplay(cssDisplay) || cssDisplay === 'inline' || cssDisplay === 'inline-block'
+  );
+}
+
 function isBlockLikeCssDisplay(cssDisplay: string) {
   return cssDisplay === 'block' || cssDisplay === 'list-item' || cssDisplay.startsWith('table');
 }
@@ -524,5 +547,13 @@ function getNodeCssStyleWhiteSpace(node: AugmentedAstNode) {
       typeof node.name === 'string' &&
       CSS_WHITE_SPACE_LIQUID_TAGS[node.name]) ||
     CSS_WHITE_SPACE_DEFAULT
+  );
+}
+
+function isHtmlElementWithoutCloseTag(node: AugmentedAstNode | undefined): node is HtmlElement {
+  return (
+    !!node &&
+    node.type === NodeTypes.HtmlElement &&
+    node.blockEndPosition.start === node.blockEndPosition.end
   );
 }

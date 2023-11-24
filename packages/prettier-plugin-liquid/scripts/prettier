@@ -17,7 +17,7 @@ else
   cmd="../../node_modules/prettier2/bin-prettier.js --plugin . --parser=liquid-html"
 fi
 
-# format with prettier2
+# setup simlink of correct version in node_modules
 ln -s $prettier node_modules/prettier
 
 # cleanup when done

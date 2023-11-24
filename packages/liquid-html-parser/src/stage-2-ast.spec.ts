@@ -1,5 +1,5 @@
 import { expect, it, describe } from 'vitest';
-import { toLiquidHtmlAST, toLiquidAST, LiquidHtmlNode } from './stage-2-ast';
+import { toLiquidHtmlAST, toLiquidAST, LiquidHtmlNode, DocumentNode } from './stage-2-ast';
 import { deepGet } from './utils';
 
 describe('Unit: Stage 2 (AST)', () => {
@@ -842,38 +842,26 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.name.1.value').to.eql('--header');
     });
 
-    it('should allow for at most 2 unclosed nodes in a LiquidBranch', () => {
-      // two empty nodes = ok
+    it('should allow unclosed nodes inside conditional and case branches', () => {
       let testCases = [
+        // one unclosed
         '{% if cond %}<div>{% endif %}',
         '{% if cond %}{% else %}<div>{% endif %}',
         '{% if cond %}<div>{% else %}{% endif %}',
         '{% if cond %}{% elsif cond %}<div>{% endif %}',
+        // two unclosed
         '{% if cond %}<div><a>{% endif %}',
         '{% if cond %}{% else %}<div><a>{% endif %}',
         '{% if cond %}{% elsif cond %}<div><a>{% endif %}',
         '{% case cond %}{% when %}<div><a>{% endcase %}',
-      ];
-      for (const testCase of testCases) {
-        expect(() => toLiquidHtmlAST(testCase), testCase).not.to.throw();
-      }
-
-      // 3 nodes = not ok
-      testCases = [
+        // three unclosed
         '{% if cond %}<a><b><c>{% endif %}',
         '{% if cond %}{% else %}<a><b><c>{% endif %}',
         '{% if cond %}{% elsif cond %}<a><b><c>{% endif %}',
         '{% case cond %}{% when %}<a><b><c>{% endcase %}',
-      ];
-      for (const testCase of testCases) {
-        expect(() => toLiquidHtmlAST(testCase), testCase).to.throw(
-          /Attempting to close LiquidTag '[^']+' before HtmlElement 'c' was closed/,
-        );
-      }
-
-      // 2 nodes but with children = not ok
-      testCases = [
+        // 1 closed, last unclosed
         '{% if cond %}<a>hi</a><b>{% endif %}',
+        // last unclosed with closed child
         '{% if cond %}<b><a>hi</a>{% endif %}',
         '{% if cond %}{% else %}<a>hi</a><b>{% endif %}',
         '{% if cond %}{% else %}<b><a>hi</a>{% endif %}',
@@ -882,10 +870,104 @@ describe('Unit: Stage 2 (AST)', () => {
         '{% case cond %}{% when %}<a>hi</a><b>{% endcase %}',
       ];
       for (const testCase of testCases) {
-        expect(() => toLiquidHtmlAST(testCase), testCase).to.throw(
-          /Attempting to close LiquidTag '[^']+' before HtmlElement 'b' was closed/,
-        );
+        expect(() => toLiquidHtmlAST(testCase), testCase).not.to.throw();
       }
+    });
+
+    describe('Case: unclosed HTML nodes', () => {
+      it('should let me write unclosed nodes inside if statements', () => {
+        const unclosedDetailsSummary = '<details><summary>hello</summary>';
+        const testCases = [
+          {
+            testCase: `{% if cond %}${unclosedDetailsSummary}{% endif %}`,
+            detailsNodePath: 'children.0.children.0.children.0',
+          },
+          {
+            testCase: `{% if cond %}${unclosedDetailsSummary}{% else %}{% endif %}`,
+            detailsNodePath: 'children.0.children.0.children.0',
+          },
+          {
+            testCase: `{% if cond %}{% elsif other_cond %}${unclosedDetailsSummary}{% endif %}`,
+            detailsNodePath: 'children.0.children.1.children.0',
+          },
+          {
+            testCase: `{% if cond %}{% elsif other_cond %}{% else %}${unclosedDetailsSummary}{% endif %}`,
+            detailsNodePath: 'children.0.children.2.children.0',
+            extraExpectations: (ast: DocumentNode) => {
+              expectPosition(ast, 'children.0.children.0').toEqual('');
+              expectPosition(ast, 'children.0.children.1').toEqual('{% elsif other_cond %}');
+              expectPosition(ast, 'children.0.children.2').toEqual(
+                `{% else %}${unclosedDetailsSummary}`,
+              );
+            },
+          },
+          {
+            testCase: `{% unless cond %}${unclosedDetailsSummary}{% endunless %}`,
+            detailsNodePath: 'children.0.children.0.children.0',
+          },
+          {
+            testCase: `{% case thing %}{% when cond %}${unclosedDetailsSummary}{% endcase %}`,
+            detailsNodePath: 'children.0.children.1.children.0',
+          },
+          {
+            testCase: `{% case thing %}{% when cond %}${unclosedDetailsSummary}{% else %}{% endcase %}`,
+            detailsNodePath: 'children.0.children.1.children.0',
+          },
+          {
+            testCase: `{% case thing %}{% else %}${unclosedDetailsSummary}{% endcase %}`,
+            detailsNodePath: 'children.0.children.1.children.0',
+          },
+        ];
+        for (const { testCase, detailsNodePath, extraExpectations } of testCases) {
+          const ast = toLiquidHtmlAST(testCase, {
+            allowUnclosedDocumentNode: false,
+            mode: 'tolerant',
+          });
+          expectPath(ast, 'children.0.type').to.eql('LiquidTag');
+          expectPath(ast, 'children.0.children.0.type').to.eql('LiquidBranch');
+          expectPosition(ast, `${detailsNodePath}`).toEqual('<details><summary>hello</summary>');
+
+          // Does not have a close tag so the slice of the end tag is empty string
+          expectPosition(ast, `${detailsNodePath}`, 'blockEndPosition').toEqual('');
+
+          // making sure blockEndPosition isn't -1, -1 but adjusted to the child position
+          expect(
+            deepGet<number>(`${detailsNodePath}.blockEndPosition.start`.split('.'), ast),
+          ).toBeGreaterThan(
+            deepGet<number>(`${detailsNodePath}.blockStartPosition.end`.split('.'), ast),
+          );
+
+          expectPosition(ast, `${detailsNodePath}.children.0`).toEqual('<summary>hello</summary>');
+          expectPosition(ast, `${detailsNodePath}.children.0`, 'blockEndPosition').toEqual(
+            '</summary>',
+          );
+          if (extraExpectations) extraExpectations(ast);
+        }
+      });
+
+      it('should throw an error when writing an unclosed node inside any other tag', async () => {
+        const testCases = [
+          '{% for x in y %}<details>{% endfor %}',
+          '{% tablerow x in y %}<details>{% endtablerow %}',
+          '{% form "cart", cart %}<details>{% endform %}',
+        ];
+        for (const testCase of testCases) {
+          try {
+            toLiquidHtmlAST(testCase, {
+              allowUnclosedDocumentNode: false,
+              mode: 'tolerant',
+            });
+            expect(true, `expected ${testCase} to throw LiquidHTMLASTParsingError`).to.be.false;
+          } catch (e: any) {
+            expect(e.name, testCase).to.eql('LiquidHTMLParsingError');
+            expect(e.message, testCase).to.match(
+              /Attempting to close \w+ '[^']+' before \w+ '[^']+' was closed/,
+            );
+            expect(e.message).not.to.match(/undefined/i);
+            expect(e.loc, `expected ${e} to have location information`).not.to.be.undefined;
+          }
+        }
+      });
     });
 
     it('should throw when trying to close the wrong node', () => {
@@ -893,17 +975,52 @@ describe('Unit: Stage 2 (AST)', () => {
         '<a><div></a>',
         '{% for a in b %}<div>{% endfor %}',
         '{% for a in b %}{% if condition %}{% endfor %}',
+        '{% for a in b %}{% if condition %}<div>{% endfor %}',
         '<{{ node_type }}><div></{{ node_type }}>',
         '<{{ node_type }}></{{ wrong_end_node }}>',
       ];
       for (const testCase of testCases) {
         try {
           toLiquidHtmlAST(testCase);
-          expect(true, `expected ${testCase} to throw LiquidHTMLCSTParsingError`).to.be.false;
+          expect(true, `expected ${testCase} to throw LiquidHTMLParsingError`).to.be.false;
         } catch (e: any) {
           expect(e.name).to.eql('LiquidHTMLParsingError');
           expect(e.message, testCase).to.match(
-            /Attempting to close \w+ '[^']+' before \w+ '[^']+' was closed/,
+            /Attempting to (open|close) \w+ '[^']+' before \w+ '[^']+' was closed/,
+          );
+          expect(e.message).not.to.match(/undefined/i);
+          expect(e.loc, `expected ${e} to have location information`).not.to.be.undefined;
+        }
+      }
+    });
+
+    it('should throw when doing weird shit', () => {
+      const testCases = ['{% if cond %}<a href="{% elsif cond %}">{% endif %}'];
+      for (const testCase of testCases) {
+        try {
+          toLiquidHtmlAST(testCase);
+          expect(true, `expected ${testCase} to throw LiquidHTMLParsingError`).to.be.false;
+        } catch (e: any) {
+          expect(e.name).to.eql('LiquidHTMLParsingError');
+          expect(e.message).not.to.match(/undefined/i);
+          expect(e.loc, `expected ${e} to have location information`).not.to.be.undefined;
+        }
+      }
+    });
+
+    it('should throw when trying to open a new branch when a Liquid node was not closed', () => {
+      const testCases = [
+        '{% if cond %}{% form "cart", cart %}{% else %}{% endif %}',
+        '{% if cond %}{% form "cart", cart %}{% elsif cond %}{% endif %}',
+      ];
+      for (const testCase of testCases) {
+        try {
+          toLiquidHtmlAST(testCase);
+          expect(true, `expected ${testCase} to throw LiquidHTMLParsingError`).to.be.false;
+        } catch (e: any) {
+          expect(e.name).to.eql('LiquidHTMLParsingError');
+          expect(e.message, testCase).to.match(
+            /Attempting to open \w+ '[^']+' before \w+ '[^']+' was closed/,
           );
           expect(e.message).not.to.match(/undefined/i);
           expect(e.loc, `expected ${e} to have location information`).not.to.be.undefined;
@@ -1090,7 +1207,7 @@ describe('Unit: Stage 2 (AST)', () => {
         {% end${conditional} %}
       `);
         expectPath(ast, 'children.0.children.0.type').to.equal('LiquidBranch');
-        expectPath(ast, 'children.0.children.0.children.0.type').to.equal('HtmlDanglingMarkerOpen');
+        expectPath(ast, 'children.0.children.0.children.0.type').to.equal('HtmlElement');
         expectPath(ast, 'children.0.children.0.children.0.attributes.0.name.0.value').to.equal(
           'class',
         );
@@ -1106,7 +1223,7 @@ describe('Unit: Stage 2 (AST)', () => {
         {% end${conditional} %}
       `);
         expectPath(ast, 'children.0.children.0.type').to.equal('LiquidBranch');
-        expectPath(ast, 'children.0.children.0.children.0.type').to.equal('HtmlDanglingMarkerOpen');
+        expectPath(ast, 'children.0.children.0.children.0.type').to.equal('HtmlElement');
         expectPath(ast, 'children.0.children.0.children.0.attributes.0.name.0.value').to.equal(
           'class',
         );
@@ -1115,7 +1232,7 @@ describe('Unit: Stage 2 (AST)', () => {
         );
 
         expectPath(ast, 'children.0.children.1.type').to.equal('LiquidBranch');
-        expectPath(ast, 'children.0.children.1.children.0.type').to.equal('HtmlDanglingMarkerOpen');
+        expectPath(ast, 'children.0.children.1.children.0.type').to.equal('HtmlElement');
         expectPath(ast, 'children.0.children.1.children.0.attributes.0.name.0.value').to.equal(
           'class',
         );
@@ -1194,11 +1311,15 @@ describe('Unit: Stage 2 (AST)', () => {
 
   function makeExpectPosition(message: string) {
     const expectPath = makeExpectPath(message);
-    return function expectPosition(ast: LiquidHtmlNode, path: string) {
-      expectPath(ast, path + '.position.start').to.be.a('number');
-      expectPath(ast, path + '.position.end').to.be.a('number');
-      const start = deepGet((path + '.position.start').split('.'), ast);
-      const end = deepGet((path + '.position.end').split('.'), ast);
+    return function expectPosition(
+      ast: LiquidHtmlNode,
+      path: string,
+      positionProp: string = 'position',
+    ) {
+      expectPath(ast, path + `.${positionProp}.start`).to.be.a('number');
+      expectPath(ast, path + `.${positionProp}.end`).to.be.a('number');
+      const start = deepGet((path + `.${positionProp}.start`).split('.'), ast);
+      const end = deepGet((path + `.${positionProp}.end`).split('.'), ast);
       return expect(ast.source.slice(start, end));
     };
   }

@@ -1,4 +1,4 @@
-import { NodeTypes, LiquidNodeTypes, HtmlNodeTypes } from '@shopify/liquid-html-parser';
+import { NodeTypes, LiquidNodeTypes, HtmlNodeTypes, Position } from '@shopify/liquid-html-parser';
 import {
   HtmlSelfClosingElement,
   LiquidHtmlNode,
@@ -11,7 +11,6 @@ import {
   LiquidTag,
   AttributeNode,
   LiquidVariableOutput,
-  HtmlDanglingMarkerOpen,
   HtmlDanglingMarkerClose,
 } from '../../types';
 import { isEmpty } from './array';
@@ -32,19 +31,28 @@ export function hasNoCloseMarker(
   | HtmlComment
   | HtmlVoidElement
   | HtmlSelfClosingElement
-  | HtmlDanglingMarkerOpen
-  | HtmlDanglingMarkerClose {
+  | HtmlDanglingMarkerClose
+  | HtmlElement {
+  return hasNoChildren(node) || isHtmlDanglingMarkerOpen(node);
+}
+
+export function hasNoChildren(
+  node: LiquidHtmlNode,
+): node is HtmlComment | HtmlVoidElement | HtmlSelfClosingElement | HtmlDanglingMarkerClose {
   return (
     isSelfClosing(node) ||
     isVoidElement(node) ||
     isHtmlComment(node) ||
-    isHtmlDanglingMarkerOpen(node) ||
     isHtmlDanglingMarkerClose(node)
   );
 }
 
-export function isHtmlDanglingMarkerOpen(node: LiquidHtmlNode): node is HtmlDanglingMarkerOpen {
-  return node.type === NodeTypes.HtmlDanglingMarkerOpen;
+export function isHtmlDanglingMarkerOpen(
+  node: LiquidHtmlNode,
+): node is Omit<HtmlElement, 'blockEndPosition'> & { blockEndPosition: Position } {
+  return (
+    node.type === NodeTypes.HtmlElement && node.blockEndPosition.start === node.blockEndPosition.end
+  );
 }
 
 export function isHtmlDanglingMarkerClose(node: LiquidHtmlNode): node is HtmlDanglingMarkerClose {
