@@ -6,20 +6,12 @@ import {
   LiquidExpression,
   LiquidHtmlNode,
   LiquidTag,
-  LiquidTagIf,
   NamedTags,
   NodeTypes,
 } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { assertNever, findLast, findLastAndIndex, last } from '../../utils';
-import {
-  hasAttributeValueOf,
-  isAttr,
-  isHtmlAttribute,
-  isLiquidBranch,
-  isNodeOfType,
-  isValuedHtmlAttribute,
-} from '../utils';
+import { assertNever, findLastAndIndex } from '../../utils';
+import { isLiquidBranch } from '../utils';
 
 /** A string representation of a condition */
 type ConditionIdentifer = string;
@@ -77,8 +69,8 @@ export const UnclosedHTMLElement: LiquidCheckDefinition = {
             identifiers: new Set(),
           });
         }
-        const stacks = stacksByParent.get(grandparent)!;
 
+        const stacks = stacksByParent.get(grandparent)!;
         const identifier = getConditionIdentifier(branch, parent);
         stacks.identifiers.add(identifier);
 
@@ -89,9 +81,9 @@ export const UnclosedHTMLElement: LiquidCheckDefinition = {
       async HtmlDanglingMarkerClose(node, ancestors) {
         const [branch, index] = findLastAndIndex(ancestors, isLiquidBranch);
         if (!branch) return;
+
         const parent = ancestors[index - 1];
         const grandparent = ancestors[index - 2];
-        // To make typescript happy
         if (!parent || !grandparent || parent.type !== NodeTypes.LiquidTag) return;
 
         if (!stacksByParent.has(grandparent)) {
@@ -116,12 +108,18 @@ export const UnclosedHTMLElement: LiquidCheckDefinition = {
             const openNodes = stacks.open.get(identifier) ?? [];
             const closeNodes = stacks.close.get(identifier) ?? [];
 
-            // if everything is balanced, then open and close should match length and order
+            // We sort them in the order they are found in the file because we
+            // otherwise don't have an order guarantee with everything running
+            // async.
             const nodes = ([] as (HtmlElement | HtmlDanglingMarkerClose)[])
               .concat(openNodes, closeNodes)
               .sort((a, b) => a.position.start - b.position.start);
-            const stack = [] as (HtmlElement | HtmlDanglingMarkerClose)[];
 
+            // If everything is balanced,
+            //   Then we're going to push on open and pop when the close match.
+            // If a close doesn't match,
+            //   Then we'll push it onto the stack and everything after won't match.
+            const stack = [] as (HtmlElement | HtmlDanglingMarkerClose)[];
             for (const node of nodes) {
               if (node.type === NodeTypes.HtmlElement) {
                 stack.push(node);
@@ -132,6 +130,7 @@ export const UnclosedHTMLElement: LiquidCheckDefinition = {
               }
             }
 
+            // At the end, whatever is left in the stack is a reported offense.
             for (const node of stack) {
               if (node.type === NodeTypes.HtmlDanglingMarkerClose) {
                 context.report({
@@ -184,7 +183,7 @@ function getConditionIdentifier(branch: LiquidBranch, parent: LiquidTag): string
         case NamedTags.case:
           return `case ${getConditionIdentifierForMarkup(parent.markup)}`;
         default:
-          '??';
+          return '??';
       }
     case NamedTags.elsif:
       return getConditionIdentifierForMarkup(branch.markup);
@@ -209,12 +208,18 @@ function getConditionIdentifierForMarkup(condition: string | LiquidConditionalEx
     case NodeTypes.String:
       return `'` + condition.value + `'`;
     case NodeTypes.LiquidLiteral:
-      return condition.keyword;
+      if (condition.value === null) return 'null';
+      return condition.value.toString();
     case NodeTypes.Number:
       return condition.value;
     case NodeTypes.VariableLookup:
+      return `${condition.name ?? ''}${condition.lookups.map(
+        (expression) => `[${getConditionIdentifierForMarkup(expression)}]`,
+      )}`;
     case NodeTypes.Range:
-      return condition.source.slice(condition.position.start, condition.position.end);
+      return `(${getConditionIdentifierForMarkup(
+        condition.start,
+      )}..${getConditionIdentifierForMarkup(condition.end)})`;
     case NodeTypes.Comparison:
       return [
         getConditionIdentifierForMarkup(condition.left),
