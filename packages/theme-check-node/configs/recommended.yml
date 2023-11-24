@@ -60,6 +60,9 @@ RequiredLayoutThemeObject:
 TranslationKeyExists:
   enabled: true
   severity: 0
+UnclosedHTMLElement:
+  enabled: true
+  severity: 1
 UndefinedObject:
   enabled: true
   severity: 1
