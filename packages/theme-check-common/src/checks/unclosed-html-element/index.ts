@@ -50,7 +50,42 @@ export const UnclosedHTMLElement: LiquidCheckDefinition = {
   },
 
   create(context) {
-    const stacksByParent = new Map<LiquidHtmlNode, Stacks>();
+    /**
+     * Algorithm explanation:
+     *
+     * When we have unclosed nodes, we have something a bit like this:
+     *
+     * <grandparent>
+     *   {% if condition %}
+     *     <unclosed1>
+     *   {% else %}
+     *     <unclosed2>
+     *   {% endif %}
+     *
+     *   {% if condition %}
+     *     </unclosed1>
+     *   {% else %}
+     *     </unclosed2>
+     *   {% endif %}
+     * </grandparent>
+     *
+     * When things are proper, we can see the following:
+     *   - unclosed nodes must have the same parent condition,
+     *   - unclosed nodes must have the same grandparent node.
+     *
+     * So what we can do is create stacks of unclosed nodes grouped by
+     *   - parent condition, and
+     *   - grandparent node.
+     *
+     * Thus we have
+     *   - the stackByGrandparent Map which is the index by grandparent node
+     *   - the Stacks object which is a by-condition-identifier index of open/close nodes
+     *
+     * When we're done with the file, we verify that the stacks push and
+     * pop to the empty stack. When it isn't, then we have a problem to
+     * report.
+     */
+    const stacksByGrandparent = new Map<LiquidHtmlNode, Stacks>();
 
     return {
       async HtmlElement(node, ancestors) {
@@ -62,15 +97,15 @@ export const UnclosedHTMLElement: LiquidCheckDefinition = {
         const grandparent = ancestors[index - 2];
         if (!parent || !grandparent || parent.type !== NodeTypes.LiquidTag) return;
 
-        if (!stacksByParent.has(grandparent)) {
-          stacksByParent.set(grandparent, {
+        if (!stacksByGrandparent.has(grandparent)) {
+          stacksByGrandparent.set(grandparent, {
             open: new Map(),
             close: new Map(),
             identifiers: new Set(),
           });
         }
 
-        const stacks = stacksByParent.get(grandparent)!;
+        const stacks = stacksByGrandparent.get(grandparent)!;
         const identifier = getConditionIdentifier(branch, parent);
         stacks.identifiers.add(identifier);
 
@@ -86,15 +121,15 @@ export const UnclosedHTMLElement: LiquidCheckDefinition = {
         const grandparent = ancestors[index - 2];
         if (!parent || !grandparent || parent.type !== NodeTypes.LiquidTag) return;
 
-        if (!stacksByParent.has(grandparent)) {
-          stacksByParent.set(grandparent, {
+        if (!stacksByGrandparent.has(grandparent)) {
+          stacksByGrandparent.set(grandparent, {
             open: new Map(),
             close: new Map(),
             identifiers: new Set(),
           });
         }
 
-        const stacks = stacksByParent.get(grandparent)!;
+        const stacks = stacksByGrandparent.get(grandparent)!;
         const identifier = getConditionIdentifier(branch, parent);
         stacks.identifiers.add(identifier);
 
@@ -102,8 +137,8 @@ export const UnclosedHTMLElement: LiquidCheckDefinition = {
         stacks.close.get(identifier)!.push(node);
       },
 
-      async onCodePathEnd(file) {
-        for (const [parentNode, stacks] of stacksByParent) {
+      async onCodePathEnd() {
+        for (const [grandparent, stacks] of stacksByGrandparent) {
           for (const identifier of stacks.identifiers) {
             const openNodes = stacks.open.get(identifier) ?? [];
             const closeNodes = stacks.close.get(identifier) ?? [];
@@ -135,16 +170,16 @@ export const UnclosedHTMLElement: LiquidCheckDefinition = {
               if (node.type === NodeTypes.HtmlDanglingMarkerClose) {
                 context.report({
                   message: `Closing tag does not have a matching opening tag for condition \`${identifier}\` in ${
-                    parentNode.type
-                  } '${getName(parentNode)}'`,
+                    grandparent.type
+                  } '${getName(grandparent)}'`,
                   startIndex: node.position.start,
                   endIndex: node.position.end,
                 });
               } else {
                 context.report({
                   message: `Opening tag does not have a matching closing tag for condition \`${identifier}\` in ${
-                    parentNode.type
-                  } '${getName(parentNode)}'`,
+                    grandparent.type
+                  } '${getName(grandparent)}'`,
                   startIndex: node.blockStartPosition.start,
                   endIndex: node.blockStartPosition.end,
                 });
