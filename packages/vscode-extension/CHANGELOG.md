@@ -32,7 +32,7 @@
 
     ... body content ...
 
-    {% if accordion %}
+    {% if is_accordion %}
       </details>
     {% endif %}
   </div>
