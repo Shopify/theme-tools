@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-check-common",
-  "version": "1.21.0",
+  "version": "1.22.0",
   "license": "MIT",
   "homepage": "https://github.com/Shopify/theme-tools/blob/main/packages/theme-check-common/README.md",
   "main": "dist/index.js",
@@ -20,7 +20,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/liquid-html-parser": "1.1.1",
+    "@shopify/liquid-html-parser": "2.0.0",
     "cross-fetch": "^4.0.0",
     "json-to-ast": "^2.1.0",
     "line-column": "^1.0.2",
