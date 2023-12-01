@@ -1,5 +1,18 @@
 # @shopify/theme-check-browser
 
+## 1.22.0
+
+### Minor Changes
+
+- 636895f: Make LiquidHTMLSyntaxError more tolerant to unclosed nodes in branching code
+- aeb9b3f: Add `UnclosedHTMLElement` check
+
+### Patch Changes
+
+- Updated dependencies [636895f]
+- Updated dependencies [aeb9b3f]
+  - @shopify/theme-check-common@1.22.0
+
 ## 1.21.0
 
 ### Patch Changes

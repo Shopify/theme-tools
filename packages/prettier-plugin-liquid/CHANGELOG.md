@@ -1,5 +1,29 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.4.0
+
+### Minor Changes
+
+- 636895f: Allow 'HtmlDanglingMarkerClose' nodes to have non-dangling marker siblings
+- 636895f: Add support for unclosed HTML nodes inside branching code
+
+  The following code is now supported by the formatter:
+
+  ```liquid
+  {% if cond %}
+    <details>
+      <summary>...</summary>
+  {% endif %}
+  ```
+
+  To follow: a linting rule that warns you if the pairs are unbalanced.
+
+### Patch Changes
+
+- Updated dependencies [636895f]
+- Updated dependencies [636895f]
+  - @shopify/liquid-html-parser@2.0.0
+
 ## 1.3.4
 
 ### Patch Changes
