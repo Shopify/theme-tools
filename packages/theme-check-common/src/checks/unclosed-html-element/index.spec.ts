@@ -3,6 +3,94 @@ import { UnclosedHTMLElement } from '.';
 import { runLiquidCheck, highlightedOffenses } from '../../test';
 
 describe('Module: UnclosedHTMLElement', () => {
+  it('should not report for files without unbalanced tags', async () => {
+    const testCases = [
+      `
+        <div>
+          {% if cond %}
+            <details>
+              <summary>
+          {% else %}
+            <h2>
+          {% endif %}
+
+          {% if cond %}
+            </summary>
+          {% else %}
+            </h2>
+          {% endif %}
+
+          {% if cond %}
+            </details>
+          {% endif %}
+        </div>
+      `,
+      `
+        <div>
+          {% if cond %}
+          {% else %}
+            <h1>
+          {% endif %}
+
+          {% unless cond %}
+            </h1>
+          {% endunless %}
+        </div>
+      `,
+      `
+        <div>
+          {% case thing %}
+          {% when 'one', 'two' %}
+            <h1>
+          {% when 'three' %}
+            <h3>
+          {% else %}
+            <p>
+          {% endcase %}
+
+          {% case thing %}
+          {% when 'one','two' %}
+            </h1>
+          {% when 'three' %}
+            </h3>
+          {% else %}
+            </p>
+          {% endunless %}
+        </div>
+      `,
+    ];
+
+    for (const file of testCases) {
+      const offenses = await runLiquidCheck(UnclosedHTMLElement, file);
+
+      expect(offenses, file).to.have.length(0);
+    }
+  });
+
+  it('should not report offenses for similarly written, but not string-equal, conditions', async () => {
+    const testCases = [
+      ['number>10', 'number > 10'], // whitespace insensitive
+      ['"string"', `'string'`],
+      ['x == nil', 'x==null'], // nil == null
+      ['x.a', 'x["a"]'],
+      ['(0..a)', '( 0 .. a )'],
+      ['a or b', 'a     or     b'],
+    ];
+    for (const [cond1, cond2] of testCases) {
+      const file = `
+        {% if ${cond1} %}
+          <h1>
+        {% endif %}
+
+        {% if ${cond2} %}
+          </h1>
+        {% endif %}
+      `;
+      const offenses = await runLiquidCheck(UnclosedHTMLElement, file);
+      expect(offenses).to.be.empty;
+    }
+  });
+
   it('should report an offense for a branch open tag without its close tag', async () => {
     const file = `
       <div>
@@ -151,91 +239,22 @@ describe('Module: UnclosedHTMLElement', () => {
     expect(highlightedOffenses(file, offenses)).to.include('</h2>');
   });
 
-  it('should not report offenses for similarly written, but not string-equal, conditions', async () => {
-    const testCases = [
-      ['number>10', 'number > 10'], // whitespace insensitive
-      ['"string"', `'string'`],
-      ['x == nil', 'x==null'], // nil == null
-      ['x.a', 'x["a"]'],
-      ['(0..a)', '( 0 .. a )'],
-      ['a or b', 'a     or     b'],
-    ];
-    for (const [cond1, cond2] of testCases) {
-      const file = `
-        {% if ${cond1} %}
-          <h1>
-        {% endif %}
+  it('should report an offense for doubly unclosed of the same name', async () => {
+    const file = `
+    <div>
+      {% if thing %}
+        </h1>
+      {% endif %}
 
-        {% if ${cond2} %}
-          </h1>
-        {% endif %}
-      `;
-      const offenses = await runLiquidCheck(UnclosedHTMLElement, file);
-      expect(offenses).to.be.empty;
-    }
-  });
+      {% if thing %}
+        </h1>
+      {% endif %}
+    </div>
+  `;
 
-  it('should not report for files without unbalanced tags', async () => {
-    const testCases = [
-      `
-        <div>
-          {% if cond %}
-            <details>
-              <summary>
-          {% else %}
-            <h2>
-          {% endif %}
+    const offenses = await runLiquidCheck(UnclosedHTMLElement, file);
 
-          {% if cond %}
-            </summary>
-          {% else %}
-            </h2>
-          {% endif %}
-
-          {% if cond %}
-            </details>
-          {% endif %}
-        </div>
-      `,
-      `
-        <div>
-          {% if cond %}
-          {% else %}
-            <h1>
-          {% endif %}
-
-          {% unless cond %}
-            </h1>
-          {% endunless %}
-        </div>
-      `,
-      `
-        <div>
-          {% case thing %}
-          {% when 'one', 'two' %}
-            <h1>
-          {% when 'three' %}
-            <h3>
-          {% else %}
-            <p>
-          {% endcase %}
-
-          {% case thing %}
-          {% when 'one','two' %}
-            </h1>
-          {% when 'three' %}
-            </h3>
-          {% else %}
-            </p>
-          {% endunless %}
-        </div>
-      `,
-    ];
-
-    for (const file of testCases) {
-      const offenses = await runLiquidCheck(UnclosedHTMLElement, file);
-
-      expect(offenses, file).to.have.length(0);
-    }
+    expect(offenses).to.have.length(2);
+    expect(highlightedOffenses(file, offenses)).to.include('</h1>');
   });
 });

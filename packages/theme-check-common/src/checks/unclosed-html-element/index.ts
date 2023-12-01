@@ -158,7 +158,12 @@ export const UnclosedHTMLElement: LiquidCheckDefinition = {
             for (const node of nodes) {
               if (node.type === NodeTypes.HtmlElement) {
                 stack.push(node);
-              } else if (stack.length > 0 && getName(node) === getName(stack.at(-1)!)) {
+              } else if (
+                stack.length > 0 &&
+                getName(node) === getName(stack.at(-1)!) &&
+                stack.at(-1)!.type === NodeTypes.HtmlElement &&
+                node.type === NodeTypes.HtmlDanglingMarkerClose
+              ) {
                 stack.pop();
               } else {
                 stack.push(node);
