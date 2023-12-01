@@ -4,16 +4,22 @@
     "./src/**/*.ts",
     "./src/**/*.json"
   ],
-  "exclude": ["./dist"],
+  "exclude": [
+    "./dist"
+  ],
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
     "paths": {
-      "@shopify/liquid-html-parser": ["../liquid-html-parser/src"]
+      "@shopify/liquid-html-parser": [
+        "../liquid-html-parser/src"
+      ]
     }
   },
   "references": [
-    { "path": "../liquid-html-parser" }
+    {
+      "path": "../liquid-html-parser"
+    }
   ]
 }

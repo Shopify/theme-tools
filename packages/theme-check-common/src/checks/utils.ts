@@ -8,6 +8,7 @@ import {
   AttrDoubleQuoted,
   AttrUnquoted,
   LiquidHtmlNode,
+  LiquidBranch,
 } from '@shopify/liquid-html-parser';
 import { LiquidHtmlNodeOfType as NodeOfType } from '../types';
 
@@ -20,6 +21,10 @@ export function isNodeOfType<T extends NodeTypes>(
   node?: LiquidHtmlNode,
 ): node is NodeOfType<T> {
   return node?.type === type;
+}
+
+export function isLiquidBranch(node: LiquidHtmlNode): node is LiquidBranch {
+  return isNodeOfType(NodeTypes.LiquidBranch, node);
 }
 
 export function isHtmlTag<T>(
