@@ -1,6 +1,6 @@
 {
   "name": "@shopify/prettier-plugin-liquid",
-  "version": "1.3.4",
+  "version": "1.4.0",
   "description": "Prettier Liquid/HTML plugin by Shopify",
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/prettier-plugin-liquid#readme",
@@ -33,8 +33,8 @@
     "build:ci": "yarn build",
     "build:standalone": "webpack -c webpack.config.js",
     "build:ts": "tsc -p tsconfig.build.json",
-    "format": "prettier --write --ignore-unknown \"{src,test}/**/*.ts\"",
-    "format:check": "prettier --check --ignore-unknown \"{src,test}/**/*.ts\"",
+    "format": "prettier --write --ignore-unknown \"src/**/*.ts\"",
+    "format:check": "prettier --check --ignore-unknown \"src/**/*.ts\"",
     "playground": "npx http-server playground",
     "prerelease": "scripts/prerelease",
     "prettier": "scripts/prettier",
@@ -42,7 +42,7 @@
     "prettier3": "cross-env PRETTIER_MAJOR=3 scripts/prettier",
     "test": "vitest -c \"./vitest.config.ts\"",
     "test:3": "cross-env PRETTIER_MAJOR=3 yarn test",
-    "test:idempotence": "cross-env TEST_IDEMPOTENCE=true vitest run 'test/'",
+    "test:idempotence": "cross-env TEST_IDEMPOTENCE=true vitest run 'src/test/'",
     "test:idempotence:3": "cross-env PRETTIER_MAJOR=3 yarn test:idempotence",
     "type-check": "tsc --noEmit"
   },
@@ -59,7 +59,7 @@
     "tsconfig-paths": "^3.14.1"
   },
   "dependencies": {
-    "@shopify/liquid-html-parser": "^1.1.1",
+    "@shopify/liquid-html-parser": "^2.0.0",
     "html-styles": "^1.0.0"
   }
 }

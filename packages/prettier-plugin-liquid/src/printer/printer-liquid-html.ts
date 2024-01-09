@@ -15,7 +15,6 @@ import {
   AttrUnquoted,
   DocumentNode,
   HtmlDanglingMarkerClose,
-  HtmlDanglingMarkerOpen,
   HtmlElement,
   HtmlRawNode,
   HtmlSelfClosingElement,
@@ -192,10 +191,6 @@ function printNode(
 
     case NodeTypes.HtmlElement: {
       return printElement(path as AstPath<HtmlElement>, options, print, args);
-    }
-
-    case NodeTypes.HtmlDanglingMarkerOpen: {
-      return printElement(path as AstPath<HtmlDanglingMarkerOpen>, options, print, args);
     }
 
     case NodeTypes.HtmlDanglingMarkerClose: {

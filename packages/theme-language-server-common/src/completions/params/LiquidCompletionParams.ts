@@ -191,7 +191,6 @@ function findCurrentNode(
 
       case NodeTypes.HtmlRawNode:
       case NodeTypes.HtmlVoidElement:
-      case NodeTypes.HtmlDanglingMarkerOpen:
       case NodeTypes.HtmlDanglingMarkerClose:
       case NodeTypes.HtmlSelfClosingElement:
       case NodeTypes.HtmlElement: {

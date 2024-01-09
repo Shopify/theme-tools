@@ -10,7 +10,6 @@ import { LiquidHtmlNodeOfType as NodeOfType } from '@shopify/theme-check-common'
 export type HtmlElementTypes = (typeof HtmlElementTypes)[number];
 export const HtmlElementTypes = [
   NodeTypes.HtmlElement,
-  NodeTypes.HtmlDanglingMarkerOpen,
   NodeTypes.HtmlDanglingMarkerClose,
   NodeTypes.HtmlSelfClosingElement,
   NodeTypes.HtmlVoidElement,

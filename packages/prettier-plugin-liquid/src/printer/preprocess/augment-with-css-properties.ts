@@ -44,7 +44,6 @@ function getCssDisplay(node: AugmentedNode<WithSiblings>, options: LiquidParserO
 
   switch (node.type) {
     case NodeTypes.HtmlElement:
-    case NodeTypes.HtmlDanglingMarkerOpen:
     case NodeTypes.HtmlDanglingMarkerClose:
     case NodeTypes.HtmlSelfClosingElement: {
       switch (options.htmlWhitespaceSensitivity) {
@@ -154,7 +153,6 @@ function getNodeCssStyleWhiteSpace(node: AugmentedNode<WithSiblings>): string {
 
   switch (node.type) {
     case NodeTypes.HtmlElement:
-    case NodeTypes.HtmlDanglingMarkerOpen:
     case NodeTypes.HtmlDanglingMarkerClose:
     case NodeTypes.HtmlSelfClosingElement: {
       return (

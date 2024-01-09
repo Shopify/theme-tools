@@ -1,8 +1,8 @@
 'use strict';
 
 import { doc, Doc } from 'prettier';
-import { NodeTypes, RawMarkupKinds } from '@shopify/liquid-html-parser';
-import { shouldPreserveContent, forceBreakContent, hasNoCloseMarker } from '../utils';
+import { NodeTypes } from '@shopify/liquid-html-parser';
+import { shouldPreserveContent, forceBreakContent, hasNoChildren } from '../utils';
 import {
   printOpeningTagPrefix,
   printOpeningTag,
@@ -67,7 +67,7 @@ export function printElement(
     return printRawElement(path as AstPath<HtmlRawNode>, options, print, args);
   }
 
-  if (hasNoCloseMarker(node)) {
+  if (hasNoChildren(node)) {
     // TODO, broken for HtmlComment but this code path is not used (so far).
     return [
       group(printOpeningTag(path, options, print, attrGroupId), {
@@ -118,6 +118,10 @@ export function printElement(
   };
 
   const printLineAfterChildren = () => {
+    // does not have the closing tag
+    if (node.blockEndPosition.start === node.blockEndPosition.end) {
+      return '';
+    }
     const needsToBorrow = node.next
       ? needsToBorrowPrevClosingTagEndMarker(node.next)
       : needsToBorrowLastChildClosingTagEndMarker(node.parentNode!);
@@ -134,7 +138,13 @@ export function printElement(
   };
 
   if (node.children.length === 0) {
-    return printTag(node.hasDanglingWhitespace && node.isDanglingWhitespaceSensitive ? line : '');
+    return printTag(
+      node.hasDanglingWhitespace &&
+        node.isDanglingWhitespaceSensitive &&
+        node.blockEndPosition.end !== node.blockEndPosition.start
+        ? line
+        : '',
+    );
   }
 
   return printTag([

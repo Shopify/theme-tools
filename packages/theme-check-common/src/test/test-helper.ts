@@ -257,7 +257,9 @@ export function applySuggestions(
   });
 }
 
-export function highlightedOffenses(theme: MockTheme, offenses: Offense[]) {
+export function highlightedOffenses(themeOrSource: MockTheme | string, offenses: Offense[]) {
+  const theme =
+    typeof themeOrSource === 'string' ? { 'file.liquid': themeOrSource } : themeOrSource;
   return offenses.map((offense) => {
     const relativePath = offense.absolutePath.substring(1);
     const source = theme[relativePath];

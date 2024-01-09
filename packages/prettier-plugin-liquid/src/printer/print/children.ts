@@ -20,6 +20,7 @@ import {
   hasNoCloseMarker,
   isTextLikeNode,
   preferHardlineAsLeadingSpaces,
+  hasNoChildren,
 } from '../utils';
 import {
   needsToBorrowNextOpeningTagStartMarker,
@@ -109,7 +110,7 @@ function printBetweenLine(
          *            ~
          *     -->
          */
-        hasNoCloseMarker(nextNode) ||
+        hasNoChildren(nextNode) ||
         /**
          *     123<span
          *             ~

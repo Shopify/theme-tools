@@ -126,28 +126,30 @@ describe('Module: augmentWithWhitespaceHelpers', () => {
     it('should return true to the left of a outer leading whitespace sensitive dangling marker open', () => {
       ast = toAugmentedAst('{% if cond %}<a>{% endif %}');
       expectPath(ast, 'children.0.children.0.type').to.eql('LiquidBranch');
-      expectPath(ast, 'children.0.children.0.children.0.type').to.eql('HtmlDanglingMarkerOpen');
+      expectPath(ast, 'children.0.children.0.children.0.type').to.eql('HtmlElement');
       expectPath(ast, 'children.0.children.0.children.0.name.0.value').to.eql('a');
       expectPath(ast, 'children.0.children.0.children.0.isLeadingWhitespaceSensitive').to.be.true;
 
-      // second "a" tag is sensitive in this given context
+      // second "a" tag is a child of the first a tag in this context
       ast = toAugmentedAst('{% if cond %}<a><a>{% endif %}');
-      expectPath(ast, 'children.0.children.0.children.1.type').to.eql('HtmlDanglingMarkerOpen');
-      expectPath(ast, 'children.0.children.0.children.1.name.0.value').to.eql('a');
-      expectPath(ast, 'children.0.children.0.children.1.isLeadingWhitespaceSensitive').to.be.true;
+      expectPath(ast, 'children.0.children.0.children.0.children.0.type').to.eql('HtmlElement');
+      expectPath(ast, 'children.0.children.0.children.0.children.0.name.0.value').to.eql('a');
+      expectPath(ast, 'children.0.children.0.children.0.children.0.isLeadingWhitespaceSensitive').to
+        .be.true;
     });
 
     it('should return false to the left of a outer leading whitespace insensitive dangling marker open', () => {
       ast = toAugmentedAst('{% if cond %}<p>{% endif %}');
       expectPath(ast, 'children.0.children.0.isLeadingWhitespaceSensitive').to.be.false;
-      expectPath(ast, 'children.0.children.0.children.0.type').to.eql('HtmlDanglingMarkerOpen');
+      expectPath(ast, 'children.0.children.0.children.0.type').to.eql('HtmlElement');
       expectPath(ast, 'children.0.children.0.children.0.isLeadingWhitespaceSensitive').to.be.false;
 
       // "a" tag becomes insensitive because of the 'p' tag open
       ast = toAugmentedAst('{% if cond %}<p><a>{% endif %}');
-      expectPath(ast, 'children.0.children.0.children.1.type').to.eql('HtmlDanglingMarkerOpen');
-      expectPath(ast, 'children.0.children.0.children.1.name.0.value').to.eql('a');
-      expectPath(ast, 'children.0.children.0.children.1.isLeadingWhitespaceSensitive').to.be.false;
+      expectPath(ast, 'children.0.children.0.children.0.children.0.type').to.eql('HtmlElement');
+      expectPath(ast, 'children.0.children.0.children.0.children.0.name.0.value').to.eql('a');
+      expectPath(ast, 'children.0.children.0.children.0.children.0.isLeadingWhitespaceSensitive').to
+        .be.false;
     });
 
     it('should return true to the left of a inner trailing whitespace sensitive dangling marker close', () => {
@@ -182,14 +184,14 @@ describe('Module: augmentWithWhitespaceHelpers', () => {
           ast = toAugmentedAst('{% if cond %}<a>{% endif %}');
           expectPath(ast, 'children.0.children.0.type').to.eql('LiquidBranch');
           expectPath(ast, 'children.0.children.0.isLeadingWhitespaceSensitive').to.be.true;
-          expectPath(ast, 'children.0.children.0.children.0.type').to.eql('HtmlDanglingMarkerOpen');
+          expectPath(ast, 'children.0.children.0.children.0.type').to.eql('HtmlElement');
           expectPath(ast, 'children.0.children.0.children.0.isLeadingWhitespaceSensitive').to.be
             .true;
 
           ast = toAugmentedAst('{% if cond %}<p>{% endif %}');
           expectPath(ast, 'children.0.children.0.type').to.eql('LiquidBranch');
           expectPath(ast, 'children.0.children.0.isLeadingWhitespaceSensitive').to.be.false;
-          expectPath(ast, 'children.0.children.0.children.0.type').to.eql('HtmlDanglingMarkerOpen');
+          expectPath(ast, 'children.0.children.0.children.0.type').to.eql('HtmlElement');
           expectPath(ast, 'children.0.children.0.children.0.isLeadingWhitespaceSensitive').to.be
             .false;
         });
@@ -202,7 +204,7 @@ describe('Module: augmentWithWhitespaceHelpers', () => {
           expectPath(ast, 'children.0.children.0.isTrailingWhitespaceSensitive').to.be.true;
           expectPath(ast, 'children.0.children.1.type').to.eql('LiquidBranch');
           expectPath(ast, 'children.0.children.1.isLeadingWhitespaceSensitive').to.be.true;
-          expectPath(ast, 'children.0.children.1.children.0.type').to.eql('HtmlDanglingMarkerOpen');
+          expectPath(ast, 'children.0.children.1.children.0.type').to.eql('HtmlElement');
           expectPath(ast, 'children.0.children.1.children.0.isLeadingWhitespaceSensitive').to.be
             .true;
 
@@ -211,7 +213,7 @@ describe('Module: augmentWithWhitespaceHelpers', () => {
           expectPath(ast, 'children.0.children.0.isTrailingWhitespaceSensitive').to.be.true;
           expectPath(ast, 'children.0.children.1.type').to.eql('LiquidBranch');
           expectPath(ast, 'children.0.children.1.isLeadingWhitespaceSensitive').to.be.true;
-          expectPath(ast, 'children.0.children.1.children.0.type').to.eql('HtmlDanglingMarkerOpen');
+          expectPath(ast, 'children.0.children.1.children.0.type').to.eql('HtmlElement');
           expectPath(ast, 'children.0.children.1.children.0.isLeadingWhitespaceSensitive').to.be
             .false;
 
@@ -220,7 +222,7 @@ describe('Module: augmentWithWhitespaceHelpers', () => {
           expectPath(ast, 'children.0.children.0.isTrailingWhitespaceSensitive').to.be.false;
           expectPath(ast, 'children.0.children.1.type').to.eql('LiquidBranch');
           expectPath(ast, 'children.0.children.1.isLeadingWhitespaceSensitive').to.be.false;
-          expectPath(ast, 'children.0.children.1.children.0.type').to.eql('HtmlDanglingMarkerOpen');
+          expectPath(ast, 'children.0.children.1.children.0.type').to.eql('HtmlElement');
           expectPath(ast, 'children.0.children.1.children.0.isLeadingWhitespaceSensitive').to.be
             .true;
         });
@@ -366,43 +368,23 @@ describe('Module: augmentWithWhitespaceHelpers', () => {
     it('should return true to the right of a inner leading whitespace sensitive dangling marker open', () => {
       ast = toAugmentedAst('{% if cond %}<a>{% endif %}');
       expectPath(ast, 'children.0.children.0.type').to.eql('LiquidBranch');
-      expectPath(ast, 'children.0.children.0.children.0.type').to.eql('HtmlDanglingMarkerOpen');
+      expectPath(ast, 'children.0.children.0.children.0.type').to.eql('HtmlElement');
       expectPath(ast, 'children.0.children.0.children.0.name.0.value').to.eql('a');
       expectPath(ast, 'children.0.children.0.children.0.isTrailingWhitespaceSensitive').to.be.true;
 
       // first "a" tag is sensitive in this given context
       ast = toAugmentedAst('{% if cond %}<a><a>{% endif %}');
       expectPath(ast, 'children.0.children.0.type').to.eql('LiquidBranch');
-      expectPath(ast, 'children.0.children.0.children.0.type').to.eql('HtmlDanglingMarkerOpen');
+      expectPath(ast, 'children.0.children.0.children.0.type').to.eql('HtmlElement');
       expectPath(ast, 'children.0.children.0.children.0.name.0.value').to.eql('a');
       expectPath(ast, 'children.0.children.0.children.0.isTrailingWhitespaceSensitive').to.be.true;
 
       ast = toAugmentedAst('{% if cond %}{% else %}<a>{% endif %}');
       expectPath(ast, 'children.0.children.1.type').to.eql('LiquidBranch');
       expectPath(ast, 'children.0.children.1.isTrailingWhitespaceSensitive').to.be.true;
-      expectPath(ast, 'children.0.children.1.children.0.type').to.eql('HtmlDanglingMarkerOpen');
+      expectPath(ast, 'children.0.children.1.children.0.type').to.eql('HtmlElement');
       expectPath(ast, 'children.0.children.1.children.0.name.0.value').to.eql('a');
       expectPath(ast, 'children.0.children.1.children.0.isTrailingWhitespaceSensitive').to.be.true;
-    });
-
-    it('should return false to the right of a inner leading whitespace insensitive dangling marker open', () => {
-      ast = toAugmentedAst('{% if cond %}<p>{% endif %}');
-      expectPath(ast, 'children.0.children.0.type').to.eql('LiquidBranch');
-      expectPath(ast, 'children.0.children.0.children.0.type').to.eql('HtmlDanglingMarkerOpen');
-      expectPath(ast, 'children.0.children.0.children.0.isTrailingWhitespaceSensitive').to.be.false;
-
-      // "a" tag becomes insensitive because of the 'p' tag open
-      ast = toAugmentedAst('{% if cond %}<a><p>{% endif %}');
-      expectPath(ast, 'children.0.children.0.type').to.eql('LiquidBranch');
-      expectPath(ast, 'children.0.children.0.children.0.type').to.eql('HtmlDanglingMarkerOpen');
-      expectPath(ast, 'children.0.children.0.children.0.name.0.value').to.eql('a');
-      expectPath(ast, 'children.0.children.0.children.0.isTrailingWhitespaceSensitive').to.be.false;
-
-      ast = toAugmentedAst('{% if cond %}{% else %}<p>{% endif %}');
-      expectPath(ast, 'children.0.children.1.type').to.eql('LiquidBranch');
-      expectPath(ast, 'children.0.children.1.isTrailingWhitespaceSensitive').to.be.false;
-      expectPath(ast, 'children.0.children.1.children.0.type').to.eql('HtmlDanglingMarkerOpen');
-      expectPath(ast, 'children.0.children.1.children.0.isTrailingWhitespaceSensitive').to.be.false;
     });
 
     it('should return true to the right of a outer trailing whitespace sensitive dangling marker close', () => {
@@ -445,21 +427,90 @@ describe('Module: augmentWithWhitespaceHelpers', () => {
       expectPath(ast, 'children.0.children.1.children.0.isTrailingWhitespaceSensitive').to.be.false;
     });
 
+    describe('Case: HtmlElements without closing tags', () => {
+      describe('Case: without children', () => {
+        it('should return the innerRight trailing sensitivity of the node', () => {
+          const testCases = [
+            // a tags are inner sensitive
+            { testCase: '{% if cond %}<a>{% endif %}', trailingSensitive: true },
+            // p tags are inner insensitive
+            { testCase: '{% if cond %}<p>{% endif %}', trailingSensitive: false },
+          ];
+          for (const { testCase, trailingSensitive } of testCases) {
+            ast = toAugmentedAst(testCase);
+            expectPath(ast, 'children.0.children.0.children.0.type').toEqual('HtmlElement');
+            expectPath(
+              ast,
+              'children.0.children.0.children.0.isTrailingWhitespaceSensitive',
+            ).toEqual(trailingSensitive);
+          }
+        });
+      });
+
+      describe('Case: with closed children', () => {
+        it('should return the outerRight sensitivity of the node', () => {
+          const testCases = [
+            // a (inline), b (inline). creates inline formatting context & last child is senstive
+            { testCase: '{% if cond %}<a><b></b>{% endif %}', trailingSensitive: true },
+            // a (inline), p (inline). creates inline formatting context, but last child isn't sensitive; therefore, not sensitive
+            { testCase: '{% if cond %}<a><p></p>{% endif %}', trailingSensitive: false },
+            // p (block), b (inline). creates inline formatting context & last child is sensitive
+            { testCase: '{% if cond %}<p><b></b>{% endif %}', trailingSensitive: true },
+            // p (block), p (block). creates inline formatting context, but last child isn't sensitive; therefore, not sensitive.
+            { testCase: '{% if cond %}<p><p></p>{% endif %}', trailingSensitive: false },
+          ];
+          for (const { testCase, trailingSensitive } of testCases) {
+            ast = toAugmentedAst(testCase);
+            expectPath(ast, 'children.0.children.0.children.0.type').toEqual('HtmlElement');
+            expectPath(
+              ast,
+              'children.0.children.0.children.0.isTrailingWhitespaceSensitive',
+              testCase,
+            ).toEqual(trailingSensitive);
+          }
+        });
+      });
+
+      describe('Case: with unclosed children', () => {
+        it('should return the outerRight sensitivity of the node', () => {
+          const testCases = [
+            // a tags (inline), b (inline). b is inner sensitive
+            { testCase: '{% if cond %}<a><b>{% endif %}', trailingSensitive: true },
+            // a tags (inline), p (block). p is inner insensitive
+            { testCase: '{% if cond %}<a><p>{% endif %}', trailingSensitive: false },
+            // p tags (block), b (inline). b is inner sensitive
+            { testCase: '{% if cond %}<p><b>{% endif %}', trailingSensitive: true },
+            // p tags (block), p (block). p is inner insensitive
+            { testCase: '{% if cond %}<p><p>{% endif %}', trailingSensitive: false },
+          ];
+          for (const { testCase, trailingSensitive } of testCases) {
+            ast = toAugmentedAst(testCase);
+            expectPath(ast, 'children.0.children.0.children.0.type').toEqual('HtmlElement');
+            expectPath(
+              ast,
+              'children.0.children.0.children.0.isTrailingWhitespaceSensitive',
+              testCase,
+            ).toEqual(trailingSensitive);
+          }
+        });
+      });
+    });
+
     describe('Case: LiquidBranch', () => {
       describe('Case: default branch', () => {
         it('should return the trailingWhitespaceSensitivty of its last child', () => {
           ast = toAugmentedAst('{% if cond %}<p><a>{% endif %}');
           expectPath(ast, 'children.0.children.0.type').to.eql('LiquidBranch');
           expectPath(ast, 'children.0.children.0.isTrailingWhitespaceSensitive').to.be.true;
-          expectPath(ast, 'children.0.children.0.children.1.type').to.eql('HtmlDanglingMarkerOpen');
-          expectPath(ast, 'children.0.children.0.children.1.isTrailingWhitespaceSensitive').to.be
+          expectPath(ast, 'children.0.children.0.children.0.type').to.eql('HtmlElement');
+          expectPath(ast, 'children.0.children.0.children.0.isTrailingWhitespaceSensitive').to.be
             .true;
 
           ast = toAugmentedAst('{% if cond %}<a><p>{% endif %}');
           expectPath(ast, 'children.0.children.0.type').to.eql('LiquidBranch');
           expectPath(ast, 'children.0.children.0.isTrailingWhitespaceSensitive').to.be.false;
-          expectPath(ast, 'children.0.children.0.children.1.type').to.eql('HtmlDanglingMarkerOpen');
-          expectPath(ast, 'children.0.children.0.children.1.isTrailingWhitespaceSensitive').to.be
+          expectPath(ast, 'children.0.children.0.children.0.type').to.eql('HtmlElement');
+          expectPath(ast, 'children.0.children.0.children.0.isTrailingWhitespaceSensitive').to.be
             .false;
         });
       });
@@ -469,15 +520,15 @@ describe('Module: augmentWithWhitespaceHelpers', () => {
           ast = toAugmentedAst('{% if cond %}{% else %}<p><a>{% endif %}');
           expectPath(ast, 'children.0.children.1.type').to.eql('LiquidBranch');
           expectPath(ast, 'children.0.children.1.isTrailingWhitespaceSensitive').to.be.true;
-          expectPath(ast, 'children.0.children.1.children.1.type').to.eql('HtmlDanglingMarkerOpen');
-          expectPath(ast, 'children.0.children.1.children.1.isTrailingWhitespaceSensitive').to.be
+          expectPath(ast, 'children.0.children.1.children.0.type').to.eql('HtmlElement');
+          expectPath(ast, 'children.0.children.1.children.0.isTrailingWhitespaceSensitive').to.be
             .true;
 
           ast = toAugmentedAst('{% if cond %}{% else %}<a><p>{% endif %}');
           expectPath(ast, 'children.0.children.1.type').to.eql('LiquidBranch');
           expectPath(ast, 'children.0.children.1.isTrailingWhitespaceSensitive').to.be.false;
-          expectPath(ast, 'children.0.children.1.children.1.type').to.eql('HtmlDanglingMarkerOpen');
-          expectPath(ast, 'children.0.children.1.children.1.isTrailingWhitespaceSensitive').to.be
+          expectPath(ast, 'children.0.children.1.children.0.type').to.eql('HtmlElement');
+          expectPath(ast, 'children.0.children.1.children.0.isTrailingWhitespaceSensitive').to.be
             .false;
         });
       });
@@ -584,11 +635,19 @@ describe('Module: augmentWithWhitespaceHelpers', () => {
 
   describe('Unit: hasTrailingWhitespace', () => {
     it('should return true for branched LiquidTag', () => {
-      ast = toAugmentedAst('{% if A %} hello {% endif %}');
-      expectPath(ast, 'children.0.type').to.be.eql(NodeTypes.LiquidTag);
-      expectPath(ast, 'children.0.hasTrailingWhitespace').to.be.false;
-      expectPath(ast, 'children.0.children.0.type').to.be.eql(NodeTypes.LiquidBranch);
-      expectPath(ast, 'children.0.children.0.hasTrailingWhitespace').to.be.true;
+      const testCases = [
+        '{% if A %}hello {% endif %}',
+        '{% if A %}{{ "hi" }} {% endif %}',
+        '{% if A %}<details>{{ "hi" }} {% endif %}',
+        '{% if A %}<details>{% echo "hi" %} {% endif %}',
+      ];
+      for (const testCase of testCases) {
+        ast = toAugmentedAst(testCase);
+        expectPath(ast, 'children.0.type').to.be.eql(NodeTypes.LiquidTag);
+        expectPath(ast, 'children.0.hasTrailingWhitespace').to.be.false;
+        expectPath(ast, 'children.0.children.0.type').to.be.eql(NodeTypes.LiquidBranch);
+        expectPath(ast, 'children.0.children.0.hasTrailingWhitespace').to.be.true;
+      }
     });
 
     it('should return the correct value for LiquidBranches', () => {
