@@ -3,11 +3,16 @@
   "version": "1.7.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "homepage": "https://github.com/Shopify/theme-tools/blob/main/packages/theme-language-server-common/README.md",
+  "author": "CP Clermont <cp.clermont@shopify.com>",
+  "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/theme-language-server-browser#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shopify/theme-tools.git",
+    "directory": "packages/theme-language-server-browser"
+  },
   "bugs": {
     "url": "https://github.com/shopify/theme-tools/issues"
   },
-  "author": "CP Clermont <cp.clermont@shopify.com>",
   "license": "MIT",
   "publishConfig": {
     "access": "public",

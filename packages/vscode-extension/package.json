@@ -1,7 +1,14 @@
 {
   "name": "theme-check-vscode",
-  "author": {
-    "name": "charlespwd"
+  "author": "CP Clermont <cp.clermont@shopify.com>",
+  "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/vscode-extension#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shopify/theme-tools.git",
+    "directory": "packages/vscode-extension"
+  },
+  "bugs": {
+    "url": "https://github.com/shopify/theme-tools/issues"
   },
   "version": "1.15.0",
   "publisher": "Shopify",
@@ -21,14 +28,6 @@
   ],
   "preview": false,
   "icon": "images/shopify_glyph.png",
-  "homepage": "https://github.com/shopify/theme-check-vscode",
-  "bugs": {
-    "url": "https://github.com/shopify/theme-check-vscode/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/shopify/theme-check-vscode.git"
-  },
   "scripts": {
     "build": "yarn build:ci",
     "build:ci": "yarn build:extension && yarn build:language-config && yarn build:syntax",
@@ -82,8 +81,7 @@
     "vscode-test": "^1.3.0"
   },
   "activationEvents": [
-    "workspaceContains:**/.theme-check.yml",
-    "onLanguage:liquid"
+    "workspaceContains:**/.theme-check.yml"
   ],
   "main": "./dist/extension.js",
   "contributes": {

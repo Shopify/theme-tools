@@ -2,18 +2,22 @@
   "name": "@shopify/liquid-html-parser",
   "version": "2.0.0",
   "description": "Liquid HTML parser by Shopify",
-  "repository": "shopify/theme-tools",
-  "author": "CP Clermont <@charlespwd>",
-  "license": "MIT",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "homepage": "https://github.com/Shopify/theme-tools/blob/main/packages/liquid-html-parser/README.md",
-  "publishConfig": {
-    "access": "public",
-    "@shopify:registry": "https://registry.npmjs.org"
+  "author": "CP Clermont <cp.clermont@shopify.com>",
+  "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/liquid-html-parser#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shopify/theme-tools.git",
+    "directory": "packages/liquid-html-parser"
   },
   "bugs": {
     "url": "https://github.com/shopify/theme-tools/issues"
+  },
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "@shopify:registry": "https://registry.npmjs.org"
   },
   "files": [
     "grammar/*",

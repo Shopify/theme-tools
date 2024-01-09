@@ -2,18 +2,22 @@
   "name": "@shopify/prettier-plugin-liquid",
   "version": "1.4.0",
   "description": "Prettier Liquid/HTML plugin by Shopify",
-  "repository": "shopify/prettier-plugin-liquid",
-  "author": "CP Clermont <@charlespwd>",
+  "author": "CP Clermont <cp.clermont@shopify.com>",
+  "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/prettier-plugin-liquid#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shopify/theme-tools.git",
+    "directory": "packages/prettier-plugin-liquid"
+  },
+  "bugs": {
+    "url": "https://github.com/shopify/theme-tools/issues"
+  },
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "homepage": "https://github.com/shopify/prettier-plugin-liquid#readme",
   "publishConfig": {
     "access": "public",
     "@shopify:registry": "https://registry.npmjs.org"
-  },
-  "bugs": {
-    "url": "https://github.com/shopify/prettier-plugin-liquid/issues"
   },
   "files": [
     "grammar/*",
