@@ -1,5 +1,15 @@
 # @shopify/theme-language-server-common
 
+## 1.7.2
+
+### Patch Changes
+
+- 8451075: `package.json` and README cleanups
+- Updated dependencies [8451075]
+- Updated dependencies [8451075]
+  - @shopify/theme-check-common@2.0.0
+  - @shopify/liquid-html-parser@2.0.1
+
 ## 1.7.1
 
 ### Patch Changes

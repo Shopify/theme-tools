@@ -1,5 +1,14 @@
 # @shopify/theme-check-docs-updater
 
+## 2.0.0
+
+### Patch Changes
+
+- 8451075: `package.json` and README cleanups
+- Updated dependencies [8451075]
+- Updated dependencies [8451075]
+  - @shopify/theme-check-common@2.0.0
+
 ## 1.22.0
 
 ### Patch Changes

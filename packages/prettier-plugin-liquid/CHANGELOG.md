@@ -1,5 +1,13 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.4.1
+
+### Patch Changes
+
+- 8451075: `package.json` and README cleanups
+- Updated dependencies [8451075]
+  - @shopify/liquid-html-parser@2.0.1
+
 ## 1.4.0
 
 ### Minor Changes
