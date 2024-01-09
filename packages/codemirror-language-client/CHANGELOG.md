@@ -1,5 +1,11 @@
 # @shopify/codemirror-language-client
 
+## 0.3.1
+
+### Patch Changes
+
+- 8451075: `package.json` and README cleanups
+
 ## 0.3.0
 
 ### Minor Changes

@@ -1,5 +1,13 @@
 # @shopify/theme-language-server-browser
 
+## 1.7.2
+
+### Patch Changes
+
+- 8451075: `package.json` and README cleanups
+- Updated dependencies [8451075]
+  - @shopify/theme-language-server-common@1.7.2
+
 ## 1.7.1
 
 ### Patch Changes

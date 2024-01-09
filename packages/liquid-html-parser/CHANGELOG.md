@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.0.1
+
+### Patch Changes
+
+- 8451075: `package.json` and README cleanups
+
 ## 2.0.0
 
 ### Major Changes
