@@ -7,6 +7,7 @@
     "module": "commonjs",
     "target": "ES6",
     "rootDir": "src",
+    "esModuleInterop": true,
     "paths": {
       "@shopify/liquid-html-parser": ["../liquid-html-parser/src"]
     }

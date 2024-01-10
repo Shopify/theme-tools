@@ -98,36 +98,6 @@
     "configuration": {
       "title": "Shopify Liquid | Syntax Highlighting & Linter by Shopify",
       "properties": {
-        "shopifyLiquid.shopifyCLIPath": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "Path to shopify executable. Defaults to `which shopify` if available on `$PATH`."
-        },
-        "shopifyLiquid.languageServerPath": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "Path to theme-check-language-server. Defaults to `which theme-check-language-server` if available on `$PATH`."
-        },
-        "shopifyLiquid.themeCheckNextDevPreview": {
-          "type": [
-            "boolean"
-          ],
-          "description": "When true, will use @shopify/theme-language-server-node instead of the ruby version.",
-          "default": false
-        },
-        "shopifyLiquid.disableWindowsWarning": {
-          "type": [
-            "boolean"
-          ],
-          "description": "When true, theme check won't bug you with the Windows warning anymore.",
-          "default": false
-        },
         "themeCheck.checkOnOpen": {
           "type": [
             "boolean"
@@ -149,12 +119,43 @@
           "description": "When true, theme check runs on file save.",
           "default": true
         },
+        "shopifyLiquid.legacyMode": {
+          "order": 40,
+          "type": [
+            "boolean"
+          ],
+          "description": "When true, will use the language server specified by shopifyLiquid.languageServerPath or shopifyLiquid.shopifyCLIPath",
+          "default": false,
+          "deprecationMessage": "Deprecated: use only if you want to setup the Ruby theme-check-language-server."
+        },
+        "shopifyLiquid.languageServerPath": {
+          "order": 41,
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Path to theme-check-language-server. Defaults to `which theme-check-language-server` if available on `$PATH`.",
+          "deprecationMessage": "Deprecated: use only if you want to setup the Ruby theme-check-language-server with `shopifyLiquid.legacyMode` enabled."
+        },
+        "shopifyLiquid.shopifyCLIPath": {
+          "order": 42,
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Path to shopify executable. Defaults to `which shopify` if available on `$PATH`.",
+          "deprecationMessage": "Deprecated: use only if you want to setup the Ruby theme-check-language-server with `shopifyLiquid.legacyMode` enabled."
+        },
         "themeCheck.onlySingleFileChecks": {
+          "order": 43,
           "type": [
             "boolean"
           ],
           "description": "When true, disables whole theme checks. Can improve performance. (theme-check v1.10.0+)",
-          "default": false
+          "default": false,
+          "deprecationMessage": "Deprecated: only used by the Ruby theme-check-language-server with `shopifyLiquid.legacyMode` enabled"
         }
       }
     },
