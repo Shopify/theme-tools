@@ -8,7 +8,10 @@ To learn more about our release practices, please read [our releasing documentat
 - [Principles](./prettier-plugin-liquid/principles/index.md)
 - [Whitespace handling](./prettier-plugin-liquid/whitespace-handling.md)
 
-We encourage you to explore these documents to better understand the capabilities and usage of each tool. 
+## Theme Check
+- [Writing your own check](./theme-check-common/writing-your-own-check)
+
+We encourage you to explore these documents to better understand the capabilities and usage of each tool.
 
 ## Contributing
 
