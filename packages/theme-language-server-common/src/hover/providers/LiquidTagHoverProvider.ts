@@ -8,7 +8,11 @@ export class LiquidTagHoverProvider implements BaseHoverProvider {
   constructor(public themeDocset: ThemeDocset) {}
 
   async hover(currentNode: LiquidHtmlNode): Promise<Hover | null> {
-    if (currentNode.type !== NodeTypes.LiquidTag && currentNode.type !== NodeTypes.LiquidBranch) {
+    if (
+      currentNode.type !== NodeTypes.LiquidTag &&
+      currentNode.type !== NodeTypes.LiquidRawTag &&
+      currentNode.type !== NodeTypes.LiquidBranch
+    ) {
       return null;
     }
 
