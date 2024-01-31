@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-language-server-node",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "CP Clermont <cp.clermont@shopify.com>",
@@ -27,7 +27,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/theme-language-server-common": "1.7.2",
+    "@shopify/theme-language-server-common": "1.7.3",
     "@shopify/theme-check-node": "^2.0.0",
     "@shopify/theme-check-docs-updater": "^2.0.0",
     "glob": "^8.0.3",
