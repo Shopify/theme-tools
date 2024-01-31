@@ -1,5 +1,11 @@
 # @shopify/theme-language-server-common
 
+## 1.7.3
+
+### Patch Changes
+
+- 7459e14: Fix hover for liquid schema and style tags
+
 ## 1.7.2
 
 ### Patch Changes

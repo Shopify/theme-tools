@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-language-server-common",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "CP Clermont <cp.clermont@shopify.com>",
