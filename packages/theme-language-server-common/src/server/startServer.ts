@@ -298,5 +298,9 @@ export function startServer(
     runChecks.force(triggerUris);
   });
 
+  connection.onNotification("shopify/clearDocsetCache", (_) => {
+    themeDocset.objects.clearCache();
+  })
+
   connection.listen();
 }
