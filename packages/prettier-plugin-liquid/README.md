@@ -100,6 +100,42 @@ They target the next node in the tree. Unparseable code can't be ignored and wil
 ></div>
 ```
 
+## Whitespace handling
+
+You'll quickly notice that the default value for `--htmlWhitespaceSensitivity` is set to `css` (like [Prettier's](https://prettier.io/blog/2018/11/07/1.15.0#whitespace-sensitive-formatting)).
+
+If you want to change this behaviour for a specific tag that has a different default, you can use either the `display` or `white-space` comment to alter the behaviour.
+
+Examples:
+
+```liquid
+{% # this tag is whitespace sensitive by default, since the value of the string shouldn't change by formatting. %}
+{% capture value %}
+  Hello {% name %}
+{% endcapture %}
+
+{% # here we alter its white-space property so that we allow pretty printing of its body %}
+{% # white-space: normal %}
+{% capture _ %}
+  <div>
+    {% render 'snip' %}
+  </div>
+{% endcapture %}
+
+{% # a span is normally sensitive to whitespace on both ends %}
+<span
+  ><b
+    >hi</b
+  ></span
+>
+
+{% # with display: block, it isn't %}
+{% # display: block %}
+<span>
+  <b>hi</b>
+</span>
+```
+
 ## Known issues
 
 Take a look at our [known issues](./KNOWN_ISSUES.md) and [open issues](https://github.com/Shopify/prettier-plugin-liquid/issues).
