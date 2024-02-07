@@ -117,6 +117,11 @@ describe('Unit: liquidHtmlGrammar', () => {
             endfor
           endpaginate
         `).to.be.true;
+        expectMatchSucceeded(`
+          if shop.money.format contains "{{ abc }}"
+            echo "hi"
+          endif
+        `).to.be.true;
 
         function expectMatchSucceeded(text: string) {
           const match = grammar.LiquidStatement.match(text.trimStart(), 'Node');

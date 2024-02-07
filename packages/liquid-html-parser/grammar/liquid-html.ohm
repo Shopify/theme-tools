@@ -92,13 +92,13 @@ Liquid <: Helpers {
   liquidTagBaseCase = liquidTagRule<liquidTagName, tagMarkup>
 
   liquidTagEcho = liquidTagRule<"echo", liquidTagEchoMarkup>
-  liquidTagEchoMarkup = liquidVariable
+  liquidTagEchoMarkup = liquidVariable<delimTag>
 
   liquidTagAssign = liquidTagRule<"assign", liquidTagAssignMarkup>
-  liquidTagAssignMarkup = variableSegment space* "=" space* liquidVariable
+  liquidTagAssignMarkup = variableSegment space* "=" space* liquidVariable<delimTag>
 
   liquidTagCycle = liquidTagRule<"cycle", liquidTagCycleMarkup>
-  liquidTagCycleMarkup = (liquidExpression ":")? space* nonemptyListOf<liquidExpression, argumentSeparator> space*
+  liquidTagCycleMarkup = (liquidExpression<delimTag> ":")? space* nonemptyListOf<liquidExpression<delimTag>, argumentSeparator> space*
 
   liquidTagIncrement = liquidTagRule<"increment", variableSegmentAsLookupMarkup>
   liquidTagDecrement = liquidTagRule<"decrement", variableSegmentAsLookupMarkup>
@@ -106,13 +106,13 @@ Liquid <: Helpers {
   variableSegmentAsLookupMarkup = variableSegmentAsLookup space*
 
   liquidTagSection = liquidTagRule<"section", liquidTagSectionMarkup>
-  liquidTagSectionMarkup = liquidString space*
+  liquidTagSectionMarkup = liquidString<delimTag> space*
 
   liquidTagSections = liquidTagRule<"sections", liquidTagSectionsMarkup>
-  liquidTagSectionsMarkup = liquidString space*
+  liquidTagSectionsMarkup = liquidString<delimTag> space*
 
   liquidTagLayout = liquidTagRule<"layout", liquidTagLayoutMarkup>
-  liquidTagLayoutMarkup = liquidExpression space*
+  liquidTagLayoutMarkup = liquidExpression<delimTag> space*
 
   // We'll black hole the statement and switch parser in the cst builder
   // We do this because it's technically the same grammar (with minor redefinitions)
@@ -129,29 +129,29 @@ Liquid <: Helpers {
   liquidTagRender = liquidTagRule<"render", liquidTagRenderMarkup>
   liquidTagRenderMarkup =
     snippetExpression renderVariableExpression? renderAliasExpression? (argumentSeparatorOptionalComma tagArguments) space*
-  snippetExpression = liquidString | variableSegmentAsLookup
-  renderVariableExpression = space+ ("for" | "with") space+ liquidExpression
+  snippetExpression = liquidString<delimTag> | variableSegmentAsLookup
+  renderVariableExpression = space+ ("for" | "with") space+ liquidExpression<delimTag>
   renderAliasExpression = space+ "as" space+ variableSegment
 
   liquidTagOpenBaseCase = liquidTagOpenRule<blockName, tagMarkup>
 
   liquidTagOpenForm = liquidTagOpenRule<"form", liquidTagOpenFormMarkup>
-  liquidTagOpenFormMarkup = arguments space*
+  liquidTagOpenFormMarkup = arguments<delimTag> space*
 
   liquidTagOpenFor = liquidTagOpenRule<"for", liquidTagOpenForMarkup>
   liquidTagOpenForMarkup =
-    variableSegment space* "in" space* liquidExpression
+    variableSegment space* "in" space* liquidExpression<delimTag>
     (space* "reversed")? argumentSeparatorOptionalComma
     tagArguments space*
 
-  // It's the same, the difference is support for different named arguments
+  // It's the same, the difference is support for different named arguments<delim>
   liquidTagOpenTablerow = liquidTagOpenRule<"tablerow", liquidTagOpenForMarkup>
 
   liquidTagOpenCase = liquidTagOpenRule<"case", liquidTagOpenCaseMarkup>
-  liquidTagOpenCaseMarkup = liquidExpression space*
+  liquidTagOpenCaseMarkup = liquidExpression<delimTag> space*
 
   liquidTagWhen = liquidTagRule<"when", liquidTagWhenMarkup>
-  liquidTagWhenMarkup = nonemptyListOf<liquidExpression, whenMarkupSep> space*
+  liquidTagWhenMarkup = nonemptyListOf<liquidExpression<delimTag>, whenMarkupSep> space*
   whenMarkupSep = space* ("," | "or" ~identifier) space*
 
   liquidTagOpenIf = liquidTagOpenRule<"if", liquidTagOpenConditionalMarkup>
@@ -162,11 +162,11 @@ Liquid <: Helpers {
   liquidTagContinue = liquidTagRule<"continue", empty>
   liquidTagElse = liquidTagRule<"else", empty>
 
-  liquidTagOpenConditionalMarkup = nonemptyListOf<condition, conditionSeparator> space*
+  liquidTagOpenConditionalMarkup = nonemptyListOf<condition<delimTag>, conditionSeparator> space*
   conditionSeparator = &logicalOperator
-  condition = logicalOperator? space* (comparison | liquidExpression) space*
+  condition<delim> = logicalOperator? space* (comparison<delim> | liquidExpression<delim>) space*
   logicalOperator = ("and" | "or") ~identifier
-  comparison = liquidExpression space* comparator space* liquidExpression
+  comparison<delim> = liquidExpression<delim> space* comparator space* liquidExpression<delim>
   comparator =
     ( "=="
     | "!="
@@ -178,11 +178,11 @@ Liquid <: Helpers {
 
   liquidTagOpenPaginate = liquidTagOpenRule<"paginate", liquidTagOpenPaginateMarkup>
   liquidTagOpenPaginateMarkup =
-    liquidExpression space+ "by" space+ liquidExpression argumentSeparatorOptionalComma tagArguments space*
+    liquidExpression<delimTag> space+ "by" space+ liquidExpression<delimTag> argumentSeparatorOptionalComma tagArguments space*
 
   liquidDrop = "{{" "-"? space* liquidDropCases "-"? "}}"
-  liquidDropCases = liquidVariable | liquidDropBaseCase
-  liquidDropBaseCase = anyExceptStar<("-}}" | "}}")>
+  liquidDropCases = liquidVariable<delimVO> | liquidDropBaseCase
+  liquidDropBaseCase = anyExceptStar<delimVO>
   liquidInlineComment = "{%" "-"? space* "#" space? tagMarkup "-"? "%}"
 
   liquidRawTag =
@@ -212,19 +212,18 @@ Liquid <: Helpers {
   // because we'd otherwise positively match the following string
   // instead of falling back to the other rule:
   // {{ 'string' | some_filter }}
-  liquidVariable = liquidExpression liquidFilter* space* &liquidStatementEnd
-  liquidStatementEnd = ("-}}" | "}}" | "-%}" | "%}")
+  liquidVariable<delim> = liquidExpression<delim> liquidFilter<delim>* space* &delim
 
-  liquidExpression =
-    | liquidString
+  liquidExpression<delim> =
+    | liquidString<delim>
     | liquidNumber
     | liquidLiteral
-    | liquidRange
-    | liquidVariableLookup
+    | liquidRange<delim>
+    | liquidVariableLookup<delim>
 
-  liquidString = liquidSingleQuotedString | liquidDoubleQuotedString
-  liquidSingleQuotedString = "'" anyExceptStar<("'"| "%}" | "}}")> "'"
-  liquidDoubleQuotedString = "\"" anyExceptStar<("\""| "%}" | "}}")> "\""
+  liquidString<delim> = liquidSingleQuotedString<delim> | liquidDoubleQuotedString<delim>
+  liquidSingleQuotedString<delim> = "'" anyExceptStar<("'"| delim)> "'"
+  liquidDoubleQuotedString<delim> = "\"" anyExceptStar<("\""| delim)> "\""
 
   liquidNumber = liquidFloat | liquidInteger
   liquidInteger = "-"? digit+
@@ -239,32 +238,32 @@ Liquid <: Helpers {
     | "null"
     ) endOfIdentifier
 
-  liquidRange =
-    "(" space* liquidExpression space* ".." space* liquidExpression space* ")"
+  liquidRange<delim> =
+    "(" space* liquidExpression<delim> space* ".." space* liquidExpression<delim> space* ")"
 
-  liquidVariableLookup =
-    | variableSegment lookup*
-    | empty lookup+
-  lookup =
-    | indexLookup
+  liquidVariableLookup<delim> =
+    | variableSegment lookup<delim>*
+    | empty lookup<delim>+
+  lookup<delim> =
+    | indexLookup<delim>
     | dotLookup
-  indexLookup = space* "[" space* liquidExpression space* "]"
+  indexLookup<delim> = space* "[" space* liquidExpression<delim> space* "]"
   dotLookup = space* "." space* identifier
 
-  liquidFilter = space* "|" space* identifier (space* ":" space* arguments)?
+  liquidFilter<delim> = space* "|" space* identifier (space* ":" space* arguments<delim>)?
 
-  arguments = nonemptyOrderedListOf<positionalArgument, namedArgument, argumentSeparator>
+  arguments<delim> = nonemptyOrderedListOf<positionalArgument<delim>, namedArgument<delim>, argumentSeparator>
   argumentSeparator = space* "," space*
   argumentSeparatorOptionalComma = space* ","? space*
-  positionalArgument = liquidExpression ~(space* ":")
-  namedArgument = variableSegment space* ":" space* liquidExpression
-  tagArguments = listOf<namedArgument, argumentSeparatorOptionalComma>
+  positionalArgument<delim> = liquidExpression<delim> ~(space* ":")
+  namedArgument<delim> = variableSegment space* ":" space* liquidExpression<delim>
+  tagArguments = listOf<namedArgument<delimTag>, argumentSeparatorOptionalComma>
 
   variableSegment = (letter | "_") identifierCharacter*
   variableSegmentAsLookup = variableSegment
   identifier = variableSegment "?"?
 
-  tagMarkup = anyExceptStar<("-%}"| "%}")>
+  tagMarkup = anyExceptStar<delimTag>
 
   liquidTagName =
     letter (alnum | "_")*
@@ -282,6 +281,9 @@ Liquid <: Helpers {
     | "unless"
     | "tablerow"
     ) endOfIdentifier
+
+  delimTag = "-%}" | "%}"
+  delimVO = "-}}" | "}}"
 }
 
 LiquidStatement <: Liquid {
@@ -356,7 +358,8 @@ LiquidStatement <: Liquid {
   // trailing whitespace, newline, + anything else before the next tag
   statementSep = space* newline (space | newline)*
 
-  liquidStatementEnd := newline | end
+  liquidStatementEnd = newline | end
+  delimTag := liquidStatementEnd
 }
 
 LiquidHTML <: Liquid {
