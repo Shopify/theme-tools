@@ -1,4 +1,4 @@
-import lodashSet from 'lodash.set';
+import lodashSet from 'lodash/set';
 import { describe, expect, it } from 'vitest';
 import { runLiquidCheck, highlightedOffenses } from '../../test';
 import { ValidSchema } from './index';
@@ -65,7 +65,7 @@ describe('ValidSchema', () => {
     const sourceCode = `
     {% schema %}
     {
-     
+
     {% endschema %}
     `;
 
