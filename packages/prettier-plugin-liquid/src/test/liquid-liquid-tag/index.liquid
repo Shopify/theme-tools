@@ -142,3 +142,10 @@ It should keep leading whitespace in comments
 #      - d
 #   - c
 %}
+
+It should not freak out on variable output characters inside conditions
+{% liquid
+if shop.foo contains '{{cond}}'
+echo 'xxx'
+endif
+%}

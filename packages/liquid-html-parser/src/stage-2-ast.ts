@@ -1102,7 +1102,7 @@ function buildAst(
       }
 
       case ConcreteNodeTypes.LiquidTagOpen: {
-        builder.open(toLiquidTag(node, { isBlockTag: true, ...options }));
+        builder.open(toLiquidTag(node, { ...options, isBlockTag: true }));
         break;
       }
 
@@ -1112,7 +1112,7 @@ function buildAst(
       }
 
       case ConcreteNodeTypes.LiquidTag: {
-        builder.push(toLiquidTag(node, { isBlockTag: false, ...options }));
+        builder.push(toLiquidTag(node, { ...options, isBlockTag: false }));
         break;
       }
 
