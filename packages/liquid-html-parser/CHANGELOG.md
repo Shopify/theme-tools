@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.0.2
+
+### Patch Changes
+
+- fa02f1b: Fix parsing of `}}` inside `{% %}` and vice-versa
+
 ## 2.0.1
 
 ### Patch Changes

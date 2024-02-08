@@ -1,5 +1,12 @@
 ## theme-check-vscode
 
+## 2.0.1
+
+### Patch Changes
+
+- Fix parsing of `}}` inside `{% %}` and vice-versa
+- Bump lodash version
+
 ## 2.0.0
 
 ### Major Changes

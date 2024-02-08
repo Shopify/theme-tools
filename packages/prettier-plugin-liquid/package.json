@@ -1,6 +1,6 @@
 {
   "name": "@shopify/prettier-plugin-liquid",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Prettier Liquid/HTML plugin by Shopify",
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/prettier-plugin-liquid#readme",
@@ -59,7 +59,7 @@
     "tsconfig-paths": "^3.14.1"
   },
   "dependencies": {
-    "@shopify/liquid-html-parser": "^2.0.1",
+    "@shopify/liquid-html-parser": "^2.0.2",
     "html-styles": "^1.0.0"
   }
 }
