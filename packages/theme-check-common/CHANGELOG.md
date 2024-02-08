@@ -1,5 +1,12 @@
 # @shopify/theme-check-common
 
+## 2.0.1
+
+### Patch Changes
+
+- Fix parsing of `}}` inside `{% %}` and vice-versa
+- 8f19b87: Bump lodash deps
+
 ## 2.0.0
 
 ### Major Changes

@@ -1,5 +1,13 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.4.2
+
+### Patch Changes
+
+- fa02f1b: Fix parsing of `}}` inside `{% %}` and vice-versa
+- Updated dependencies [fa02f1b]
+  - @shopify/liquid-html-parser@2.0.2
+
 ## 1.4.1
 
 ### Patch Changes
