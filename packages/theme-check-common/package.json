@@ -30,14 +30,12 @@
     "cross-fetch": "^4.0.0",
     "json-to-ast": "^2.1.0",
     "line-column": "^1.0.2",
-    "lodash.set": "^4.3.2",
-    "lodash.unset": "^4.5.2",
+    "lodash-es": "^4.17.21",
     "minimatch": "^9.0.1"
   },
   "devDependencies": {
     "@types/json-to-ast": "^2.1.2",
     "@types/line-column": "^1.0.0",
-    "@types/lodash.set": "^4.3.7",
-    "@types/lodash.unset": "^4.5.7"
+    "@types/lodash-es": "^4.17.12"
   }
 }
