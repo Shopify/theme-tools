@@ -48,7 +48,7 @@ function validateValue(key: string, value: unknown, schemaProp: SchemaProp<any>)
   const { type, optional, defaultValue, properties, itemType } = schemaProp.options;
 
   if (value === undefined) {
-    if (optional !== true) {
+    if (optional !== true && defaultValue === undefined) {
       throw new Error(`Missing required setting: ${key}`);
     }
     return;

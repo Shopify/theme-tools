@@ -109,7 +109,11 @@ SomeCheck:
     for (const modernIdentifier of ModernIdentifiers) {
       const filePath = await createMockYamlFile(`extends: ${modernIdentifier}`);
       const config = await resolveConfig(filePath);
-      expect(config.checkSettings.ParserBlockingScript!.enabled).to.be.true;
+      if (modernIdentifier === 'theme-check:nothing') {
+        expect(config.checkSettings.ParserBlockingScript).not.to.exist;
+      } else {
+        expect(config.checkSettings.ParserBlockingScript!.enabled).to.be.true;
+      }
     }
   });
 
