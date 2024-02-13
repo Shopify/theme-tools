@@ -79,3 +79,6 @@ It should support all types of named arguments, and add spaces
 
 It should support spaces or lack of thereof erywhere
 {{ x | f: a: b, range: (a..b) }}
+
+It should strip trailing commas by default
+{{ x | split: '' }}

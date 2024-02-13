@@ -51,3 +51,8 @@ It should not require commas (as per syntax) but add them when pretty printed
 
 It should not require spaces (as per syntax) but add them when pretty printed
 {% render 'foo/bar', key1: val1, key2: (0..1) %}
+
+It should strip trailing commas by default
+{% render 'foo' %}
+{% render 'foo', product: product %}
+{% render 'foo' with foo as bar %}

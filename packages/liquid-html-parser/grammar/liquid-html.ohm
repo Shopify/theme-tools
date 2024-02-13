@@ -128,7 +128,7 @@ Liquid <: Helpers {
   liquidTagInclude = liquidTagRule<"include", liquidTagRenderMarkup>
   liquidTagRender = liquidTagRule<"render", liquidTagRenderMarkup>
   liquidTagRenderMarkup =
-    snippetExpression renderVariableExpression? renderAliasExpression? (argumentSeparatorOptionalComma tagArguments) space*
+    snippetExpression renderVariableExpression? renderAliasExpression? (argumentSeparatorOptionalComma tagArguments) (space* ",")? space*
   snippetExpression = liquidString<delimTag> | variableSegmentAsLookup
   renderVariableExpression = space+ ("for" | "with") space+ liquidExpression<delimTag>
   renderAliasExpression = space+ "as" space+ variableSegment
@@ -136,13 +136,13 @@ Liquid <: Helpers {
   liquidTagOpenBaseCase = liquidTagOpenRule<blockName, tagMarkup>
 
   liquidTagOpenForm = liquidTagOpenRule<"form", liquidTagOpenFormMarkup>
-  liquidTagOpenFormMarkup = arguments<delimTag> space*
+  liquidTagOpenFormMarkup = arguments<delimTag> (space* ",")? space*
 
   liquidTagOpenFor = liquidTagOpenRule<"for", liquidTagOpenForMarkup>
   liquidTagOpenForMarkup =
     variableSegment space* "in" space* liquidExpression<delimTag>
     (space* "reversed")? argumentSeparatorOptionalComma
-    tagArguments space*
+    tagArguments (space* ",")? space*
 
   // It's the same, the difference is support for different named arguments<delim>
   liquidTagOpenTablerow = liquidTagOpenRule<"tablerow", liquidTagOpenForMarkup>
@@ -178,7 +178,7 @@ Liquid <: Helpers {
 
   liquidTagOpenPaginate = liquidTagOpenRule<"paginate", liquidTagOpenPaginateMarkup>
   liquidTagOpenPaginateMarkup =
-    liquidExpression<delimTag> space+ "by" space+ liquidExpression<delimTag> argumentSeparatorOptionalComma tagArguments space*
+    liquidExpression<delimTag> space+ "by" space+ liquidExpression<delimTag> argumentSeparatorOptionalComma tagArguments (space* ",")? space*
 
   liquidDrop = "{{" "-"? space* liquidDropCases "-"? "}}"
   liquidDropCases = liquidVariable<delimVO> | liquidDropBaseCase
@@ -250,7 +250,7 @@ Liquid <: Helpers {
   indexLookup<delim> = space* "[" space* liquidExpression<delim> space* "]"
   dotLookup = space* "." space* identifier
 
-  liquidFilter<delim> = space* "|" space* identifier (space* ":" space* arguments<delim>)?
+  liquidFilter<delim> = space* "|" space* identifier (space* ":" space* arguments<delim> (space* ",")?)?
 
   arguments<delim> = nonemptyOrderedListOf<positionalArgument<delim>, namedArgument<delim>, argumentSeparator>
   argumentSeparator = space* "," space*
