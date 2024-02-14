@@ -79,7 +79,7 @@ describe('Unit: loadConfig', () => {
       tempDir,
       `extends: theme-check:theme-app-extension`,
     );
-    const config = await loadConfig(configPath);
+    const config = await loadConfig(configPath, path.dirname(configPath));
 
     const ParserBlockingScript = check('ParserBlockingScript')!;
     expect(config.checks).to.include(ParserBlockingScript);
@@ -90,7 +90,7 @@ describe('Unit: loadConfig', () => {
 
   it('loads a compound config, with overrides', async () => {
     const configPath = path.resolve(__dirname, 'fixtures/theme-app-extension-with-overrides.yml');
-    const config = await loadConfig(configPath);
+    const config = await loadConfig(configPath, path.dirname(configPath));
 
     const ParserBlockingScript = check('ParserBlockingScript')!;
     expect(config.checks).not.to.include(ParserBlockingScript);
@@ -102,7 +102,7 @@ describe('Unit: loadConfig', () => {
 
   it('loads a multi-compound config, with overrides', async () => {
     const configPath = path.resolve(__dirname, 'fixtures/multi-compound.yml');
-    const config = await loadConfig(configPath);
+    const config = await loadConfig(configPath, path.dirname(configPath));
 
     expect(config.settings.ImgWidthAndHeight!.ignore).to.eql(['snippets/**']);
 
@@ -119,7 +119,7 @@ describe('Unit: loadConfig', () => {
 
   it('merges the ignore attribute with the default one', async () => {
     const configPath = path.resolve(__dirname, 'fixtures/with-ignore.yml');
-    const config = await loadConfig(configPath);
+    const config = await loadConfig(configPath, path.dirname(configPath));
     expect(config.ignore).to.include('node_modules/**');
     expect(config.ignore).to.include('src/**');
   });
