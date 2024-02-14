@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-check-common",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,7 +26,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/liquid-html-parser": "2.0.2",
+    "@shopify/liquid-html-parser": "2.0.3",
     "cross-fetch": "^4.0.0",
     "json-to-ast": "^2.1.0",
     "line-column": "^1.0.2",

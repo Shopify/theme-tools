@@ -1,5 +1,16 @@
 # @shopify/theme-check-node
 
+## 2.0.2
+
+### Patch Changes
+
+- 0990c47: Fix config validation problem that required optional settings
+- 617b766: Add parser support for trailing commas at the end of Liquid tags and filters
+- Updated dependencies [0990c47]
+- Updated dependencies [617b766]
+  - @shopify/theme-check-common@2.0.2
+  - @shopify/theme-check-docs-updater@2.0.2
+
 ## 2.0.1
 
 ### Patch Changes

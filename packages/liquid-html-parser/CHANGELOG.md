@@ -1,5 +1,12 @@
 # @shopify/liquid-html-parser
 
+## 2.0.3
+
+### Patch Changes
+
+- 0990c47: Fix config validation problem that required optional settings
+- 617b766: Add parser support for trailing commas at the end of Liquid tags and filters
+
 ## 2.0.2
 
 ### Patch Changes
