@@ -1,5 +1,16 @@
 ## theme-check-vscode
 
+## 2.0.2
+
+### Patch Changes
+
+- 617b766: Add parser support for trailing commas at the end of Liquid tags and filters
+- Updated dependencies [0990c47]
+- Updated dependencies [617b766]
+  - @shopify/prettier-plugin-liquid@1.4.3
+  - @shopify/liquid-html-parser@2.0.3
+  - @shopify/theme-language-server-node@1.7.5
+
 ## 2.0.1
 
 ### Patch Changes

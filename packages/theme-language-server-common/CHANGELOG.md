@@ -1,5 +1,15 @@
 # @shopify/theme-language-server-common
 
+## 1.7.5
+
+### Patch Changes
+
+- 617b766: Add parser support for trailing commas at the end of Liquid tags and filters
+- Updated dependencies [0990c47]
+- Updated dependencies [617b766]
+  - @shopify/liquid-html-parser@2.0.3
+  - @shopify/theme-check-common@2.0.2
+
 ## 1.7.4
 
 ### Patch Changes

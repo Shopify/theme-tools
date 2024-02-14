@@ -1,5 +1,15 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.4.3
+
+### Patch Changes
+
+- 0990c47: Fix config validation problem that required optional settings
+- 617b766: Add parser support for trailing commas at the end of Liquid tags and filters
+- Updated dependencies [0990c47]
+- Updated dependencies [617b766]
+  - @shopify/liquid-html-parser@2.0.3
+
 ## 1.4.2
 
 ### Patch Changes
