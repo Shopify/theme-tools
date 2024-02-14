@@ -1,5 +1,13 @@
 # @shopify/theme-check-node
 
+## 2.0.3
+
+### Patch Changes
+
+- e5022ee: Fix loadConfig export to automatically select .theme-check.yml if present
+  - @shopify/theme-check-common@2.0.3
+  - @shopify/theme-check-docs-updater@2.0.3
+
 ## 2.0.2
 
 ### Patch Changes
