@@ -19,9 +19,7 @@ export async function loadConfig(
   /** The absolute path of config file */
   configPath: AbsolutePath | ModernIdentifier | undefined,
   /** The root of the theme */
-  root: AbsolutePath | undefined = configPath && !ModernIdentifiers.includes(configPath as any)
-    ? path.dirname(configPath)
-    : undefined,
+  root: AbsolutePath,
 ): Promise<Config> {
   if (!root) throw new Error('loadConfig cannot be called without a root argument');
   const configDescription = await resolveConfig(configPath ?? 'theme-check:recommended', true);

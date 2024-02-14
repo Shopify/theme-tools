@@ -15,7 +15,7 @@ import glob = require('glob');
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
 
 import { fileExists, fileSize } from './file-utils';
-import { loadConfig, findConfigPath } from './config';
+import { loadConfig as resolveConfig, findConfigPath } from './config';
 import { autofix } from './autofix';
 
 const defaultLocale = 'en';
@@ -23,7 +23,11 @@ const asyncGlob = promisify(glob);
 
 export * from '@shopify/theme-check-common';
 export * from './config/types';
-export { loadConfig };
+
+export const loadConfig: typeof resolveConfig = async (configPath, root) => {
+  configPath ??= await findConfigPath(root);
+  return resolveConfig(configPath, root);
+};
 
 export type ThemeCheckRun = {
   theme: Theme;
@@ -88,7 +92,6 @@ async function getThemeAndConfig(
   root: string,
   configPath?: string,
 ): Promise<{ theme: Theme; config: Config }> {
-  configPath = configPath ?? (await findConfigPath(root));
   const config = await loadConfig(configPath, root);
   const theme = await getTheme(config);
   return {
