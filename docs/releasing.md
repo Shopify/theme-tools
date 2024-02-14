@@ -36,6 +36,46 @@
 5. Run the [release GitHub workflow](https://github.com/Shopify/theme-tools/actions/workflows/release.yml) (requires manual dispatch).
 6. Done!
 
+## Upgrading projects that depend on this
+
+This section is intended for internal folks.
+
+### Shopify/CLI
+
+1. Upgrade deps and commit
+
+   ```sh
+   git fetch origin main
+   git checkout origin/main
+   branch="bump/theme-tools-$(date -u '+%Y-%m-%d')"
+   git checkout -b $branch
+   pnpm recursive --filter @shopify/theme update --latest @shopify/theme-language-server-node @shopify/theme-check-node
+   pnpm recursive --filter @shopify/app update --latest @shopify/theme-check-node
+   git checkout pnpm-lock.yaml
+   pnpm install
+   git add .
+   git commit -m 'Bump Shopify/theme-tools packages'
+   git push origin $branch
+   ```
+
+2. Make your PR
+
+### Online Store Code Editor
+
+1. Upgrade deps and bump fallback docsets
+
+   ```sh
+   yarn upgrade --latest @shopify/codemirror-language-client @shopify/theme-check-docs-updater @shopify/theme-language-server-browser @shopify/prettier-plugin-liquid
+   yarn theme-docs:fallback-update
+   branch="bump/theme-tools-$(date -u '+%Y-%m-%d')"
+   git checkout -b $branch
+   git add .
+   git commit -m 'Bump Shopify/theme-tools packages'
+   git push origin "$branch"
+   ```
+
+2. Make your PR
+
 ## Release Orchestrator FAQ
 ### What does this project do?
 This does the following tasks:
