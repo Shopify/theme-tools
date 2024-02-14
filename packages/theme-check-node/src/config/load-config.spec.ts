@@ -49,6 +49,12 @@ describe('Unit: loadConfig', () => {
     expect(config.checks).to.be.empty;
   });
 
+  it('loads the nothing config', async () => {
+    const configPath = await createMockConfigFile(tempDir, `extends: nothing`);
+    const config = await loadConfig(configPath, tempDir);
+    expect(config.checks).to.eql([]);
+  });
+
   it('loads the recommended config', async () => {
     const configPath = await createMockConfigFile(tempDir, `extends: theme-check:recommended`);
     const config = await loadConfig(configPath, tempDir);

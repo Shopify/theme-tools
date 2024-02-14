@@ -154,7 +154,7 @@ describe('Unit: readYamlConfigDescription', () => {
         {
           testCase: 'translates legacy [`:nothing`] to []',
           extendsValue: [':nothing'],
-          expected: [],
+          expected: ['theme-check:nothing'],
         },
       ];
 
