@@ -72,6 +72,11 @@ const config = {
           to: 'configs',
         },
         {
+          // Same deal but for the fallback docset and schema files.
+          from: path.resolve(__dirname, '../theme-check-docs-updater/data'),
+          to: 'data',
+        },
+        {
           from: path.resolve(__dirname, '../../node_modules/prettier'),
           to: 'prettier',
           globOptions: {

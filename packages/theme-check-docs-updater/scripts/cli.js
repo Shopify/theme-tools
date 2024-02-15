@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 const path = require('path');
-const { downloadThemeLiquidDocs, compileJsonSchemaToFile } = require(path.resolve(
+const fs = require('fs');
+const { downloadThemeLiquidDocs, compileJsonSchemaToFile, root } = require(path.resolve(
   __dirname,
   '../dist',
 ));
@@ -14,9 +15,11 @@ if (args.length === 0) {
   console.log(`
 Please provide a command.
 
-Acceptable values:
- download <DIR> \t\tDownloads all appropriate documentation and JSON Schemas from theme-liquid-docs.
- compile-json-schemas <DIR> \tCompiles JSON schemas in the specified directory. 
+Usage:
+ download <dir> \t\tDownloads all docsets and JSON Schemas to the specified directory.
+ compile-json-schemas <dir> \tCompiles JSON schemas in the specified directory.
+ root \tPrints the default docsets root directory.
+ clear-cache \tClears the default docsets root directory.
 `);
   process.exit(1);
 }
@@ -43,6 +46,16 @@ switch (args[0]) {
     compileJsonSchemaToFile(args[1]);
 
     break;
+
+  case 'root':
+    console.log(root);
+    break;
+
+  case 'clear-cache':
+    console.log(`Removing '${root}'`);
+    fs.rmSync(root, { recursive: true });
+    break;
+
   default:
     console.log(`Unknown command: ${args[0]}`);
     process.exit(1);

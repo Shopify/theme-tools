@@ -18,3 +18,4 @@ tsconfig.tsbuildinfo
 yarn-error.log
 package-lock.json
 .npmrc
+packages/theme-check-docs-updater/data

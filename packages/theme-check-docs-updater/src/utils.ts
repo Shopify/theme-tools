@@ -7,12 +7,12 @@ export const noop = () => {};
 const paths = envPaths('theme-liquid-docs');
 export const root = paths.cache;
 
-export function download(file: Resource | 'latest') {
-  return downloadFile(file, root);
+export function download(file: Resource | 'latest', destination: string = root) {
+  return downloadFile(file, destination);
 }
 
-export function filePath(file: Resource | 'latest') {
-  return path.join(root, `${file}.json`);
+export function filePath(file: Resource | 'latest', destination: string = root) {
+  return path.join(destination, `${file}.json`);
 }
 
 /** Returns a cached version of a function. Only caches one result. */
