@@ -1,5 +1,15 @@
 ## theme-check-vscode
 
+## 2.0.4
+
+### Patch Changes
+
+- 84f9eda: Include docset fallbacks in the theme-check-docs-updater package
+
+  For when a user’s Internet connection is down or https://raw.githubusercontent.com is not accessible.
+
+  - @shopify/theme-language-server-node@1.7.7
+
 ## 2.0.3
 
 ### Patch Changes
