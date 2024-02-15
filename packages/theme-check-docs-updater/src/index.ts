@@ -6,3 +6,4 @@ export {
   downloadFile,
   downloadThemeLiquidDocs,
 } from './themeLiquidDocsDownloader';
+export { root } from './utils';

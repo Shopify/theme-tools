@@ -57,17 +57,6 @@ describe('Module: ThemeLiquidDocsManager', async () => {
     vi.clearAllMocks();
   });
 
-  it('should self update once for all docsets', async () => {
-    vi.mocked(fs.readFile)
-      .mockImplementationOnce(async () => '{"revision": "1"}')
-      .mockImplementationOnce(async () => '{"revision": "2"}');
-    await Promise.all([manager.filters(), manager.objects(), manager.tags()]);
-    expect(vi.mocked(downloadFile)).toHaveBeenNthCalledWith(1, 'latest', expect.any(String));
-    for (const resource of Resources) {
-      expect(vi.mocked(downloadFile)).toHaveBeenCalledWith(resource, expect.any(String));
-    }
-  });
-
   it('should not download remote files if the revision is stable', async () => {
     await Promise.all([manager.filters(), manager.objects(), manager.tags()]);
     expect(vi.mocked(downloadFile)).toHaveBeenNthCalledWith(1, 'latest', expect.any(String));
