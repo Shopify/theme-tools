@@ -515,9 +515,9 @@ function printNode(
           case NodeTypes.String: {
             const value = lookup.value;
             // We prefer direct access
-            // (for everything but stuff with dashes)
+            // (for everything but stuff with dashes and stuff that starts with a number)
             const isGlobalStringLookup = index === 0 && !node.name;
-            if (!isGlobalStringLookup && /^[a-z0-9_]+\??$/i.test(value)) {
+            if (!isGlobalStringLookup && /^\D/.test(value) && /^[a-z0-9_]+\??$/i.test(value)) {
               return ['.', value];
             }
             return ['[', print(lookupPath), ']'];
