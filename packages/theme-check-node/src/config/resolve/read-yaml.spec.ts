@@ -236,8 +236,18 @@ describe('Unit: readYamlConfigDescription', () => {
 
   it('throws an error when a check setting value is not a plain object', async () => {
     const filePath = await createMockYamlFile('SomeCheck: not_an_object');
-    await expect(readYamlConfigDescription(filePath)).rejects.toThrow(
+    await expect(readYamlConfigDescription(filePath)).rejects.toThrowError(
       'Expected a plain object value for SomeCheck but got string',
+    );
+  });
+
+  it('throws a meaningful error message when the YAML alias error is thrown', async () => {
+    const filePath = await createMockYamlFile(`
+ignore:
+  - *.code-workspace
+`);
+    expect(readYamlConfigDescription(filePath)).rejects.toThrowError(
+      /YAML parsing error: Unresolved alias \*\.code-workspace/,
     );
   });
 

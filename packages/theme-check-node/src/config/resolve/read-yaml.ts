@@ -11,6 +11,41 @@ import {
   ConfigFragment,
 } from '../types';
 
+class UnresolvedAliasError extends Error {
+  constructor(message: string, alias: string) {
+    super(message);
+    this.name = 'UnresolvedAliasError';
+    this.message = `YAML parsing error: Unresolved alias *${alias}.
+Did you forget to wrap your ignore statement in quotes? '*${alias}'
+${message}`;
+  }
+}
+
+function parseYamlFile(absolutePath: string, contents: string): { [k in string]: any } {
+  try {
+    const result = contents.trim() === '' ? {} : parse(contents);
+    if (!isPlainObject(result)) {
+      throw new Error(
+        `Expecting parsed contents of config file at path '${absolutePath}' to be a plain object`,
+      );
+    }
+
+    return result;
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.name === 'ReferenceError' &&
+      error.message.includes('Unresolved alias') &&
+      /: .*$/m.test(error.message)
+    ) {
+      const alias = /: .*$/m.exec(error.message)![0].slice(2);
+      throw new UnresolvedAliasError(error.message, alias);
+    } else {
+      throw error;
+    }
+  }
+}
+
 /**
  * Takes an absolute path, parses the yaml at that path and turns it into a
  * ConfigFragment object.
@@ -23,13 +58,7 @@ export async function readYamlConfigDescription(
 ): Promise<ConfigFragment> {
   const root = path.dirname(absolutePath);
   const contents = await fs.readFile(absolutePath, 'utf8');
-  const yamlFile = contents.trim() === '' ? {} : parse(contents);
-
-  if (!isPlainObject(yamlFile)) {
-    throw new Error(
-      `Expecting parsed contents of config file at path '${absolutePath}' to be a plain object`,
-    );
-  }
+  const yamlFile = parseYamlFile(absolutePath, contents);
 
   const config: ConfigFragment = {
     checkSettings: {},
