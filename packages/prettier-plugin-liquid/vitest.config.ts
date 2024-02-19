@@ -5,7 +5,13 @@ import { configDefaults } from 'vitest/config';
 export default defineConfig({
   test: {
     exclude: [...configDefaults.exclude],
-    singleThread: true,
+    pool: 'threads',
+    poolOptions: {
+      threads: {
+        singleThread: true,
+        isolate: true,
+      },
+    },
     globalSetup: ['./src/test/test-setup.js'],
     setupFiles: ['../liquid-html-parser/build/shims.js'],
   },
