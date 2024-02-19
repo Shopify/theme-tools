@@ -64,7 +64,7 @@ export interface RequiredDependencies {
    * browser environments, json schemas must be precompiled into validators prior
    * to theme-check instantiation.
    */
-  schemaValidators: NonNullable<ThemeCheckDependencies['schemaValidators']>;
+  jsonValidationSet: NonNullable<ThemeCheckDependencies['jsonValidationSet']>;
 
   /**
    * findRootURI(uri: URI)

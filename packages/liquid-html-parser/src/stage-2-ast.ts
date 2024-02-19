@@ -1916,8 +1916,6 @@ function toTextNode(node: ConcreteTextNode): TextNode {
   };
 }
 
-const MAX_NUMBER_OF_SIBLING_DANGLING_NODES = 2;
-
 function isAcceptableDanglingMarkerClose(
   builder: ASTBuilder,
   cst: LiquidHtmlCST,

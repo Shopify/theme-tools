@@ -53,7 +53,7 @@ export const ValidSchema: LiquidCheckDefinition = {
           return;
         }
 
-        const validateSectionSchema = await context.schemaValidators?.validateSectionSchema();
+        const validateSectionSchema = await context.jsonValidationSet?.validateSectionSchema();
         if (!validateSectionSchema) {
           return;
         }

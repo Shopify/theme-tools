@@ -8,6 +8,7 @@ export const Resources = [
   'objects',
   'tags',
   'section_schema',
+  'translations_schema',
   'shopify_system_translations',
 ] as const;
 
@@ -17,6 +18,7 @@ const THEME_LIQUID_DOCS: Record<Resource | 'latest', string> = {
   tags: 'data/tags.json',
   latest: 'data/latest.json',
   section_schema: 'schemas/theme/section_schema.json',
+  translations_schema: 'schemas/theme/translations_schema.json',
   shopify_system_translations: 'data/shopify_system_translations.json',
 };
 

@@ -1,13 +1,8 @@
-import { AugmentedSchemaValidators, AugmentedThemeDocset } from '@shopify/theme-check-common';
+import { AugmentedJsonValidationSet, AugmentedThemeDocset } from '@shopify/theme-check-common';
 import {
-  ConfigurationRequest,
   Connection,
-  DidCreateFilesNotification,
-  DidDeleteFilesNotification,
-  DidRenameFilesNotification,
   FileOperationRegistrationOptions,
   InitializeResult,
-  RegistrationRequest,
   TextDocumentSyncKind,
 } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
@@ -21,6 +16,7 @@ import { DocumentLinksProvider } from '../documentLinks';
 import { DocumentManager } from '../documents';
 import { OnTypeFormattingProvider } from '../formatting';
 import { HoverProvider } from '../hover';
+import { JSONLanguageService } from '../json/JSONLanguageService';
 import { GetTranslationsForURI, useBufferOrInjectedTranslations } from '../translations';
 import { Dependencies } from '../types';
 import { debounce } from '../utils';
@@ -51,7 +47,7 @@ export function startServer(
     getThemeSettingsSchemaForRootURI,
     loadConfig,
     log = defaultLogger,
-    schemaValidators: remoteSchemaValidators,
+    jsonValidationSet: remoteSchemaValidators,
     themeDocset: remoteThemeDocset,
   }: Dependencies,
 ) {
@@ -74,7 +70,7 @@ export function startServer(
 
   // These are augmented here so that the caching is maintained over different runs.
   const themeDocset = new AugmentedThemeDocset(remoteThemeDocset);
-  const schemaValidators = new AugmentedSchemaValidators(remoteSchemaValidators);
+  const jsonValidationSet = new AugmentedJsonValidationSet(remoteSchemaValidators);
   const runChecks = debounce(
     makeRunChecks(documentManager, diagnosticsManager, {
       fileExists,
@@ -84,7 +80,7 @@ export function startServer(
       getDefaultTranslationsFactory,
       loadConfig,
       themeDocset,
-      schemaValidators,
+      jsonValidationSet,
     }),
     100,
   );
@@ -125,6 +121,7 @@ export function startServer(
     return getThemeSettingsSchemaForRootURI(rootUri);
   };
 
+  const jsonLanguageService = new JSONLanguageService(documentManager, jsonValidationSet);
   const completionsProvider = new CompletionsProvider({
     documentManager,
     themeDocset,
@@ -150,6 +147,7 @@ export function startServer(
 
   connection.onInitialize((params) => {
     clientCapabilities.setup(params.capabilities, params.initializationOptions);
+    jsonLanguageService.setup(params.capabilities);
     configuration.setup();
 
     const fileOperationRegistrationOptions: FileOperationRegistrationOptions = {
@@ -264,11 +262,14 @@ export function startServer(
   });
 
   connection.onCompletion(async (params) => {
-    return completionsProvider.completions(params);
+    return (
+      (await jsonLanguageService.completions(params)) ??
+      (await completionsProvider.completions(params))
+    );
   });
 
   connection.onHover(async (params) => {
-    return hoverProvider.hover(params);
+    return (await jsonLanguageService.hover(params)) ?? (await hoverProvider.hover(params));
   });
 
   connection.onDocumentOnTypeFormatting(async (params) => {

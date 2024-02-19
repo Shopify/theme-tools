@@ -75,8 +75,10 @@ startServer(worker, {
     objects: async () => objects,
     systemTranslations: async () => systemTranslations,
   },
-  schemaValidators: {
+  jsonValidationSet: {
     validateSectionSchema: async () => () => true,
+    sectionSchema: async () => '{}',
+    translationSchema: async () => '{}',
   },
   loadConfig,
   log(message) {
