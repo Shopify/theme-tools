@@ -32,13 +32,27 @@ describe('Module: AugmentedThemeDocset', async () => {
     it('should return objects with undocumented objects', async () => {
       const objects = await themeDocset.objects();
 
-      expect(objects).to.have.length.greaterThanOrEqual(2);
+      expect(objects).to.have.length.greaterThanOrEqual(15);
     });
 
     it('should return valid object entries', async () => {
       const objects = await themeDocset.objects();
 
       expect(objects).to.deep.include({ name: 'customer_address' });
+      expect(objects).to.deep.include({
+        name: 'locale',
+        access: {
+          global: false,
+          parents: [],
+          template: [],
+        },
+        return_type: [
+          {
+            type: 'string',
+            name: '',
+          },
+        ],
+      });
     });
   });
 

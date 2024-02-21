@@ -233,9 +233,27 @@ export class TypeSystem {
 const SECTION_FILE_REGEX = /sections[\/\\][^.\\\/]*\.liquid$/;
 const BLOCK_FILE_REGEX = /blocks[\/\\][^.\\\/]*\.liquid$/;
 const SNIPPET_FILE_REGEX = /snippets[\/\\][^.\\\/]*\.liquid$/;
+const LAYOUT_FILE_REGEX = /layout[\/\\]checkout\.liquid$/;
 
 function getContextualEntries(uri: string): string[] {
   const absolutePath = toAbsolutePath(uri);
+  if (LAYOUT_FILE_REGEX.test(absolutePath)) {
+    return [
+      'locale',
+      'direction',
+      'skip_to_content_link',
+      'checkout_html_classes',
+      'checkout_stylesheets',
+      'checkout_scripts',
+      'content_for_logo',
+      'breadcrumb',
+      'order_summary_toggle',
+      'content_for_order_summary',
+      'alternative_payment_methods',
+      'content_for_footer',
+      'tracking_code',
+    ];
+  }
   if (SECTION_FILE_REGEX.test(absolutePath)) {
     return ['section', 'predictive_search', 'recommendations'];
   }

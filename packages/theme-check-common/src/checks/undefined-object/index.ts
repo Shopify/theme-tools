@@ -169,6 +169,23 @@ async function globalObjects(themeDocset: ThemeDocset, relativePath: string) {
 }
 
 function getContextualObjects(relativePath: string): string[] {
+  if (relativePath.startsWith('layout/checkout.liquid')) {
+    return [
+      'locale',
+      'direction',
+      'skip_to_content_link',
+      'checkout_html_classes',
+      'checkout_stylesheets',
+      'checkout_scripts',
+      'content_for_logo',
+      'breadcrumb',
+      'order_summary_toggle',
+      'content_for_order_summary',
+      'alternative_payment_methods',
+      'content_for_footer',
+      'tracking_code',
+    ];
+  }
   if (relativePath.startsWith('sections/')) {
     return ['section', 'predictive_search', 'recommendations'];
   }

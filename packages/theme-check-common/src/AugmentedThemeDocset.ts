@@ -1,4 +1,12 @@
-import { FilterEntry, ObjectEntry, TagEntry, ThemeDocset, Translations } from './types';
+import {
+  Access,
+  FilterEntry,
+  ObjectEntry,
+  TagEntry,
+  ThemeDocset,
+  Translations,
+  ReturnType,
+} from './types';
 import { memo } from './utils';
 
 const toFilterEntry = (name: string): FilterEntry => ({ name });
@@ -40,8 +48,33 @@ const undocumentedFilters = [
   'weight',
 ];
 
-const toObjectEntry = (name: string): ObjectEntry => ({ name });
+const undocumentedObjectEntryKeys = [
+  'locale',
+  'direction',
+  'skip_to_content_link',
+  'checkout_html_classes',
+  'checkout_stylesheets',
+  'checkout_scripts',
+  'content_for_logo',
+  'breadcrumb',
+  'order_summary_toggle',
+  'content_for_order_summary',
+  'alternative_payment_methods',
+  'content_for_footer',
+  'tracking_code',
+];
+
+const toObjectEntry = (name: string, access?: Access, returnType?: ReturnType[]): ObjectEntry => ({
+  name,
+  ...(access && { access }),
+  ...(returnType && { return_type: returnType }),
+});
 const undocumentedObjects = ['customer_address', 'product_variant'];
+const legacyCheckoutEntries: ObjectEntry[] = undocumentedObjectEntryKeys.map((objectKey) =>
+  toObjectEntry(objectKey, { global: false, parents: [], template: [] }, [
+    { type: 'string', name: '' },
+  ]),
+);
 
 const toTagEntry = (name: string): TagEntry => ({ name });
 const undocumentedTags = ['elsif', 'ifchanged', 'when', 'schema'];
@@ -60,7 +93,11 @@ export class AugmentedThemeDocset implements ThemeDocset {
   });
 
   objects = memo(async (): Promise<ObjectEntry[]> => {
-    return [...(await this.themeDocset.objects()), ...undocumentedObjects.map(toObjectEntry)];
+    return [
+      ...(await this.themeDocset.objects()),
+      ...undocumentedObjects.map((obj) => toObjectEntry(obj)),
+      ...legacyCheckoutEntries,
+    ];
   });
 
   tags = memo(async (): Promise<TagEntry[]> => {
