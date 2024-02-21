@@ -33,6 +33,9 @@ jobs:
         env:
           NODE_ENV: production
 
+      - name: Type check (for tests)
+        run: yarn type-check
+
       - name: Check formatting
         run: yarn format:check
 
