@@ -69,6 +69,7 @@ const toObjectEntry = (name: string, access?: Access, returnType?: ReturnType[])
   ...(access && { access }),
   ...(returnType && { return_type: returnType }),
 });
+
 const undocumentedObjects = ['customer_address', 'product_variant'];
 const legacyCheckoutEntries: ObjectEntry[] = undocumentedObjectEntryKeys.map((objectKey) =>
   toObjectEntry(objectKey, { global: false, parents: [], template: [] }, [
