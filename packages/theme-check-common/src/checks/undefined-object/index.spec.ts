@@ -298,6 +298,31 @@ describe('Module: UndefinedObject', () => {
     }
   });
 
+  it('should support contextual exceptions for checkout.liquid', async () => {
+    let offenses: Offense[];
+    const contexts: [string, string][] = [
+      ['locale', 'layout/checkout.liquid'],
+      ['direction', 'layout/checkout.liquid'],
+      ['skip_to_content_link', 'layout/checkout.liquid'],
+      ['checkout_html_classes', 'layout/checkout.liquid'],
+      ['checkout_stylesheets', 'layout/checkout.liquid'],
+      ['checkout_scripts', 'layout/checkout.liquid'],
+      ['content_for_logo', 'layout/checkout.liquid'],
+      ['breadcrumb', 'layout/checkout.liquid'],
+      ['order_summary_toggle', 'layout/checkout.liquid'],
+      ['content_for_order_summary', 'layout/checkout.liquid'],
+      ['alternative_payment_methods', 'layout/checkout.liquid'],
+      ['content_for_footer', 'layout/checkout.liquid'],
+      ['tracking_code', 'layout/checkout.liquid'],
+    ];
+    for (const [object, goodPath] of contexts) {
+      offenses = await runLiquidCheck(UndefinedObject, `{{ ${object} }}`, goodPath);
+      expect(offenses).toHaveLength(0);
+      offenses = await runLiquidCheck(UndefinedObject, `{{ ${object} }}`, 'file.liquid');
+      expect(offenses).toHaveLength(1);
+    }
+  });
+
   it('should report an offense for forloop/tablerowloop used outside of context', async () => {
     const sourceCode = `
       {{ forloop }}

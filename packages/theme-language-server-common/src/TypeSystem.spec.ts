@@ -90,6 +90,11 @@ describe('Module: TypeSystem', () => {
               },
             ],
           },
+          {
+            name: 'locale',
+            access: { global: false, parents: [], template: [] },
+            return_type: [],
+          },
         ],
         filters: async () => [
           {
@@ -307,6 +312,7 @@ describe('Module: TypeSystem', () => {
       ['recommendations', 'sections/recommendations.liquid'],
       ['app', 'blocks/recommendations.liquid'],
       ['app', 'snippets/recommendations.liquid'],
+      ['locale', 'layout/checkout.liquid'],
     ];
     for (const [object, path] of contexts) {
       const sourceCode = `{{ ${object} }}`;
