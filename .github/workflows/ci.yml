@@ -8,15 +8,16 @@ jobs:
     runs-on: ubuntu-latest
     name: Code quality
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
+          cache-dependency-path: "yarn.lock"
 
       - name: Install the packages
         run: yarn install --frozen-lockfile --ignore-engines
@@ -41,15 +42,16 @@ jobs:
     name: Tests / OS ${{ matrix.os }} / NodeJS ${{ matrix.node-version }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
+          cache-dependency-path: "yarn.lock"
 
       - name: Install the packages
         run: yarn install --frozen-lockfile --ignore-engines
