@@ -3,7 +3,7 @@ import { EditorState, Extension } from '@codemirror/state';
 import { CompletionContext } from '@codemirror/autocomplete';
 import { clientFacet, fileUriFacet } from './client';
 import { MockClient } from '../test/MockClient';
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-protocol';
+import { CompletionItem, CompletionItemKind, CompletionList } from 'vscode-languageserver-protocol';
 import { textDocumentSync } from './textDocumentSync';
 import { complete, infoRendererFacet, lspComplete } from './complete';
 
@@ -65,6 +65,74 @@ describe('Module: complete', () => {
         },
       },
     ] as CompletionItem[]);
+    const results = await promise;
+
+    expect(results).toEqual({
+      from: 0,
+      options: [
+        {
+          label: 'hello',
+          displayLabel: 'hello | world',
+          type: 'text',
+          info: expect.any(Function),
+          apply: undefined,
+        },
+        {
+          label: 'echo',
+          displayLabel: 'echo',
+          type: 'function',
+          info: expect.any(Function),
+          apply: undefined,
+        },
+        {
+          displayLabel: '"general.greeting" | t',
+          label: 'greeting',
+          type: 'function',
+          info: expect.any(Function),
+          apply: expect.any(Function),
+        },
+      ],
+    });
+  });
+
+  it('should translate LSP completion list responses into CodeMirror completion items', async () => {
+    const context = new CompletionContext(state, /* does not matter for mock test */ 0, true);
+    const promise = complete(context);
+
+    client.resolveRequest({
+      isIncomplete: false,
+      items: [
+        {
+          label: 'hello | world',
+          insertText: 'hello',
+          kind: CompletionItemKind.Text,
+        },
+        {
+          label: 'echo',
+          kind: CompletionItemKind.Function,
+          documentation: {
+            kind: 'markdown',
+            value: '### echo',
+          },
+        },
+        {
+          label: '"general.greeting" | t',
+          insertText: 'greeting',
+          textEdit: {
+            newText: '"general.greeting" | t',
+            range: {
+              start: { line: 0, character: 0 },
+              end: { line: 0, character: 3 },
+            },
+          },
+          kind: CompletionItemKind.Function,
+          documentation: {
+            kind: 'markdown',
+            value: '### echo',
+          },
+        },
+      ],
+    } as CompletionList);
     const results = await promise;
 
     expect(results).toEqual({

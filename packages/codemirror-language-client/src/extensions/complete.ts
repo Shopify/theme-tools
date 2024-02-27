@@ -9,6 +9,7 @@ import {
 import {
   CompletionItem,
   CompletionItemKind,
+  CompletionList,
   CompletionRequest,
   InsertReplaceEdit,
   TextEdit,
@@ -62,12 +63,9 @@ export async function complete(context: CompletionContext): Promise<CompletionRe
   // No results
   if (results === null) return null;
 
-  // CompletionList not supported
-  if (!Array.isArray(results)) return null;
-
   return {
     from: word.from,
-    options: results.map(
+    options: items(results).map(
       (completionItem): Completion => ({
         label: completionItem.insertText ?? completionItem.label,
         displayLabel: completionItem.label,
@@ -193,4 +191,18 @@ function applyEdit(
       insert: newText,
     }),
   });
+}
+
+function isCompletionList(results: CompletionList | CompletionItem[]): results is CompletionList {
+  return (results as CompletionList).isIncomplete !== undefined;
+}
+
+function items(results: CompletionList | CompletionItem[]): CompletionItem[] {
+  if (isCompletionList(results)) {
+    return (results as CompletionList).items.map((item) => ({
+      ...results.itemDefaults,
+      ...item,
+    }));
+  }
+  return results;
 }
