@@ -1,5 +1,30 @@
 ## theme-check-vscode
 
+## 2.1.0
+
+### Minor Changes
+
+- 042f1e0: Add section schema and translation file JSON completion and hover support
+
+  JSON object authoring and editing should be better in the following contexts:
+
+  - `sections/*.liquid` `{% schema %}` bodies
+  - `locales/*.json` files
+
+  Hovering over any key in any translation file will show the path of the translation key (for easy copy and paste).
+
+  Pluralized strings and `_html` support is baked into the feature.
+
+- a9ae65f: Add Language Server and Theme Check support for checkout.liquid objects
+
+### Patch Changes
+
+- Updated dependencies [042f1e0]
+- Updated dependencies [042f1e0]
+- Updated dependencies [2a3bca1]
+  - @shopify/theme-language-server-node@1.8.0
+  - @shopify/prettier-plugin-liquid@1.4.4
+
 ## 2.0.4
 
 ### Patch Changes

@@ -1,5 +1,21 @@
 # @shopify/theme-check-docs-updater
 
+## 2.1.0
+
+### Minor Changes
+
+- 042f1e0: Breaking: internal rename of `schemaValidators` to `jsonValidationSet`
+
+  This breaks the browser dependencies public API (for `startServer` and `runChecks`) and will thus require some code changes in those contexts.
+
+  The node packages absorb the dependency injection and are not breaking.
+
+### Patch Changes
+
+- Updated dependencies [042f1e0]
+- Updated dependencies [a9ae65f]
+  - @shopify/theme-check-common@2.1.0
+
 ## 2.0.4
 
 ### Patch Changes

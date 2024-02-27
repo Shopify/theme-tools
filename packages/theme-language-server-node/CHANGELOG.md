@@ -1,5 +1,36 @@
 # @shopify/theme-language-server-node
 
+## 1.8.0
+
+### Minor Changes
+
+- 042f1e0: Breaking: internal rename of `schemaValidators` to `jsonValidationSet`
+
+  This breaks the browser dependencies public API (for `startServer` and `runChecks`) and will thus require some code changes in those contexts.
+
+  The node packages absorb the dependency injection and are not breaking.
+
+- 042f1e0: Add section schema and translation file JSON completion and hover support
+
+  JSON object authoring and editing should be better in the following contexts:
+
+  - `sections/*.liquid` `{% schema %}` bodies
+  - `locales/*.json` files
+
+  Hovering over any key in any translation file will show the path of the translation key (for easy copy and paste).
+
+  Pluralized strings and `_html` support is baked into the feature.
+
+### Patch Changes
+
+- Updated dependencies [042f1e0]
+- Updated dependencies [402f151]
+- Updated dependencies [042f1e0]
+- Updated dependencies [a9ae65f]
+  - @shopify/theme-language-server-common@1.8.0
+  - @shopify/theme-check-docs-updater@2.1.0
+  - @shopify/theme-check-node@2.1.0
+
 ## 1.7.7
 
 ### Patch Changes

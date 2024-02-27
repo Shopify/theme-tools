@@ -1,5 +1,11 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.4.4
+
+### Patch Changes
+
+- 2a3bca1: Fix pretty printing of keys that start with numbers
+
 ## 1.4.3
 
 ### Patch Changes
