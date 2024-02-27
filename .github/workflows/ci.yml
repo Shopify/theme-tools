@@ -4,7 +4,34 @@ name: CI
 on: [push]
 
 jobs:
-  lint:
+  code-quality:
+    runs-on: ubuntu-latest
+    name: Code quality
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "yarn"
+          cache-dependency-path: "yarn.lock"
+
+      - name: Install the packages
+        run: yarn install --frozen-lockfile --ignore-engines
+
+      - name: Build the code
+        run: yarn build:ci
+
+      - name: Type check (for tests)
+        run: yarn type-check
+
+      - name: Check formatting
+        run: yarn format:check
+
+  tests:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
@@ -12,32 +39,25 @@ jobs:
         os: [windows-latest, ubuntu-latest]
         node-version: [18, 20]
 
-    name: OS ${{ matrix.os }} / NodeJS ${{ matrix.node-version }}
+    name: Tests / OS ${{ matrix.os }} / NodeJS ${{ matrix.node-version }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
+          cache-dependency-path: "yarn.lock"
 
       - name: Install the packages
         run: yarn install --frozen-lockfile --ignore-engines
 
       - name: Build the code
-        run: yarn build:ci
-        env:
-          NODE_ENV: production
-
-      - name: Type check (for tests)
-        run: yarn type-check
-
-      - name: Check formatting
-        run: yarn format:check
+        run: yarn build:ts
 
       - name: Run the unit tests
         run: yarn test
