@@ -1,5 +1,17 @@
 # @shopify/theme-check-common
 
+## 2.1.0
+
+### Minor Changes
+
+- 042f1e0: Breaking: internal rename of `schemaValidators` to `jsonValidationSet`
+
+  This breaks the browser dependencies public API (for `startServer` and `runChecks`) and will thus require some code changes in those contexts.
+
+  The node packages absorb the dependency injection and are not breaking.
+
+- a9ae65f: Add Language Server and Theme Check support for checkout.liquid objects
+
 ## 2.0.4
 
 ## 2.0.3

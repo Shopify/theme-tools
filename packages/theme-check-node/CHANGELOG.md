@@ -1,5 +1,40 @@
 # @shopify/theme-check-node
 
+## 2.1.0
+
+### Minor Changes
+
+- 042f1e0: internal rename of `schemaValidators` to `jsonValidationSet`
+
+  The node packages absorbs this change and the dependency injection is not breaking.
+
+### Patch Changes
+
+- 402f151: Improve YAML parsing error messages caused by YAML aliases
+
+  ```yaml
+  ignore:
+    # this causes an error because * at the start of a statement in YAML
+    # is used for aliases to anchors such as `&.code-workspaces`
+    - *.code-workspaces
+
+    # what you want is this
+    - '*.code-worksapces'
+  ```
+
+  It’s a pretty obscure error for the non-initiated, so now we’ll
+  instead throw an error like this:
+
+  ```
+  YAML parsing error: Unresolved alias *.code-workspaces
+  Did you forget to wrap it in quotes? '*.code-workspaces'
+  ```
+
+- Updated dependencies [042f1e0]
+- Updated dependencies [a9ae65f]
+  - @shopify/theme-check-docs-updater@2.1.0
+  - @shopify/theme-check-common@2.1.0
+
 ## 2.0.4
 
 ### Patch Changes
