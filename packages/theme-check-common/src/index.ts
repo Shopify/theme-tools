@@ -25,10 +25,10 @@ import * as path from './path';
 import { getPosition } from './utils';
 import { isIgnored } from './ignore';
 import { AugmentedThemeDocset } from './AugmentedThemeDocset';
-import { AugmentedSchemaValidators } from './AugmentedSchemaValidators';
+import { AugmentedJsonValidationSet } from './AugmentedJsonValidationSet';
 
 export * from './AugmentedThemeDocset';
-export * from './AugmentedSchemaValidators';
+export * from './AugmentedJsonValidationSet';
 export * from './fixes';
 export * from './types';
 export * from './checks';
@@ -55,8 +55,8 @@ export async function check(
     dependencies.themeDocset = new AugmentedThemeDocset(dependencies.themeDocset);
   }
 
-  if (dependencies.schemaValidators && !dependencies.schemaValidators.isAugmented) {
-    dependencies.schemaValidators = new AugmentedSchemaValidators(dependencies.schemaValidators);
+  if (dependencies.jsonValidationSet && !dependencies.jsonValidationSet.isAugmented) {
+    dependencies.jsonValidationSet = new AugmentedJsonValidationSet(dependencies.jsonValidationSet);
   }
 
   for (const type of Object.values(SourceCodeType)) {

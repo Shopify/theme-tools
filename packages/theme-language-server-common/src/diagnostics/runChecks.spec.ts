@@ -68,8 +68,10 @@ describe('Module: runChecks', () => {
         tags: async () => [],
         systemTranslations: async () => ({}),
       },
-      schemaValidators: {
+      jsonValidationSet: {
         validateSectionSchema: async () => ({} as ValidateFunction),
+        sectionSchema: async () => '{}',
+        translationSchema: async () => '{}',
       },
     });
   });
@@ -222,8 +224,10 @@ describe('Module: runChecks', () => {
         tags: async () => [],
         systemTranslations: async () => ({}),
       },
-      schemaValidators: {
+      jsonValidationSet: {
         validateSectionSchema: async () => ({} as ValidateFunction),
+        sectionSchema: async () => '{}',
+        translationSchema: async () => '{}',
       },
     });
 

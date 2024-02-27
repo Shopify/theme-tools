@@ -44,7 +44,7 @@ lodashSet(INVALID_SECTION_SCHEMA, 'disabled_on', true);
 lodashSet(INVALID_SECTION_SCHEMA, 'max_blocks', 51);
 
 const buildMockDeps = (errors?: any[]): Partial<Dependencies> => ({
-  schemaValidators: {
+  jsonValidationSet: {
     async validateSectionSchema() {
       const mockValidator: ValidateFunction = () => {
         mockValidator.errors = errors ?? [
@@ -56,6 +56,14 @@ const buildMockDeps = (errors?: any[]): Partial<Dependencies> => ({
       };
 
       return mockValidator;
+    },
+
+    async sectionSchema() {
+      return JSON.stringify(VALID_SECTION_SCHEMA);
+    },
+
+    async translationSchema() {
+      return '{}';
     },
   },
 });

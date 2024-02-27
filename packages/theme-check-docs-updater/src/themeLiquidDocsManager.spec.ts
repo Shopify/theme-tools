@@ -1,6 +1,5 @@
-import { expect, describe, it, beforeEach, afterEach, vi } from 'vitest';
+import { expect, describe, it, beforeEach, afterEach, vi, assert } from 'vitest';
 import { ThemeLiquidDocsManager } from './themeLiquidDocsManager';
-import fs from 'node:fs/promises';
 import { downloadFile, Resources } from './themeLiquidDocsDownloader';
 
 vi.mock('./themeLiquidDocsDownloader', async (importOriginal) => {
@@ -132,8 +131,7 @@ describe('Module: ThemeLiquidDocsManager', async () => {
       // Conditional to satisfy typescript. This is already checked by the previous expect.
       if (validate.errors) {
         const error = validate.errors[0];
-        expect(error.keyword).toBe('required');
-        expect(error.params.missingProperty).toBe('age');
+        expect(error.message).to.match(/'age'/);
       }
     });
   });

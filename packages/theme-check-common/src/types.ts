@@ -12,7 +12,7 @@ import { Schema, Settings } from './types/schema-prop-factory';
 
 import { StringCorrector, JSONCorrector } from './fixes';
 
-import { ThemeDocset, JsonSchemaValidators } from './types/theme-liquid-docs';
+import { ThemeDocset, JsonValidationSet } from './types/theme-liquid-docs';
 
 export * from './types/theme-liquid-docs';
 export * from './types/schema-prop-factory';
@@ -261,7 +261,7 @@ export interface Dependencies {
   fileExists(absolutePath: string): Promise<boolean>;
   fileSize?(absolutePath: string): Promise<number>;
   themeDocset?: ThemeDocset;
-  schemaValidators?: JsonSchemaValidators;
+  jsonValidationSet?: JsonValidationSet;
 }
 
 type StaticContextProperties<T extends SourceCodeType> = T extends SourceCodeType

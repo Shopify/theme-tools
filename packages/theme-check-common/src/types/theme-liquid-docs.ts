@@ -23,12 +23,18 @@ export interface ThemeDocset {
 /**
  * JSON schemas resources for themes.
  */
-export interface JsonSchemaValidators {
+export interface JsonValidationSet {
   /** Whether it was augmented prior to being passed. */
   isAugmented?: boolean;
 
   /** Retrieves the JSON schema validator for theme sections. */
   validateSectionSchema(): Promise<ValidateFunction>;
+
+  /** Retrieves the JSON schema of the {% schema %} JSON blobs in sections/*.liquid files */
+  sectionSchema(): Promise<string>;
+
+  /** Retrieves the JSON schema of the locales/*.json files */
+  translationSchema(): Promise<string>;
 }
 
 /**

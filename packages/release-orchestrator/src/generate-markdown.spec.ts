@@ -1,16 +1,25 @@
 import { expect, it, describe } from 'vitest';
 import { generateMarkdown } from './generate-markdown';
+import { ChangesetStatus } from './types';
 
 describe('generateMarkdown', () => {
   it('should generate a markdown string detailing the changes made in each release', () => {
-    const status = {
+    const status: ChangesetStatus = {
       releases: [
         { name: 'package1', type: 'patch', oldVersion: '1.0.0', newVersion: '1.0.1' },
         { name: 'package2', type: 'minor', oldVersion: '2.0.0', newVersion: '2.1.0' },
       ],
       changesets: [
-        { summary: 'Fixed a bug in package1', releases: [{ name: 'package1', type: 'patch' }] },
-        { summary: 'Added a feature to package2', releases: [{ name: 'package2', type: 'minor' }] },
+        {
+          id: '0',
+          summary: 'Fixed a bug in package1',
+          releases: [{ name: 'package1', type: 'patch' }],
+        },
+        {
+          id: '1',
+          summary: 'Added a feature to package2',
+          releases: [{ name: 'package2', type: 'minor' }],
+        },
       ],
     };
 

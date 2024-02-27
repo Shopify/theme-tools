@@ -370,8 +370,10 @@ describe('Module: server', () => {
         tags: async () => [],
         systemTranslations: async () => ({}),
       },
-      schemaValidators: {
+      jsonValidationSet: {
         validateSectionSchema: async () => ({} as ValidateFunction),
+        sectionSchema: async () => '{}',
+        translationSchema: async () => '{}',
       },
     } as Dependencies;
   }

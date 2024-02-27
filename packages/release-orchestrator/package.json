@@ -10,6 +10,7 @@
     "build": "yarn build:ts",
     "build:ci": "yarn build",
     "build:ts": "tsc -b tsconfig.build.json",
-    "start": "yarn build && node dist/index.js"
+    "start": "yarn build && node dist/index.js",
+    "type-check": "tsc --noEmit"
   }
 }

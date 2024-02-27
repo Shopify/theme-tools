@@ -30,6 +30,6 @@ export function startServer() {
     filesForURI,
     loadConfig,
     themeDocset: themeLiquidDocsManager,
-    schemaValidators: themeLiquidDocsManager,
+    jsonValidationSet: themeLiquidDocsManager,
   });
 }

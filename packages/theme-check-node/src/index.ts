@@ -66,7 +66,7 @@ export async function themeCheckRun(root: string, configPath?: string): Promise<
     fileExists,
     fileSize,
     themeDocset: themeLiquidDocsManager,
-    schemaValidators: themeLiquidDocsManager,
+    jsonValidationSet: themeLiquidDocsManager,
     async getDefaultTranslations() {
       return defaultTranslations;
     },

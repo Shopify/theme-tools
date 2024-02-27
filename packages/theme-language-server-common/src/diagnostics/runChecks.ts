@@ -17,7 +17,7 @@ export function makeRunChecks(
     getDefaultTranslationsFactory,
     getDefaultLocaleFactory,
     themeDocset,
-    schemaValidators,
+    jsonValidationSet,
   }: Pick<
     Dependencies,
     | 'loadConfig'
@@ -27,7 +27,7 @@ export function makeRunChecks(
     | 'getDefaultTranslationsFactory'
     | 'getDefaultLocaleFactory'
     | 'themeDocset'
-    | 'schemaValidators'
+    | 'jsonValidationSet'
   >,
 ) {
   return async function runChecks(triggerURIs: string[]): Promise<void> {
@@ -64,8 +64,8 @@ export function makeRunChecks(
         fileSize,
         getDefaultLocale: getDefaultLocaleFactory(rootURI.toString()),
         getDefaultTranslations: async () => defaultTranslations,
+        jsonValidationSet,
         themeDocset,
-        schemaValidators,
       });
 
       // We iterate over the theme files (as opposed to offenses) because if

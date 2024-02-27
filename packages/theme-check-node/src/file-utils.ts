@@ -10,7 +10,7 @@ export async function fileExists(path: string) {
   }
 }
 
-export const fileSize: Dependencies['fileSize'] = async (path: string) => {
+export const fileSize: NonNullable<Dependencies['fileSize']> = async (path: string) => {
   try {
     const stats = await fs.stat(path);
     return stats.size;
