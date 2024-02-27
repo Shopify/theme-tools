@@ -1,5 +1,11 @@
 # @shopify/codemirror-language-client
 
+## 0.4.0
+
+### Minor Changes
+
+- a9ed3d7: Add `CompletionList` return type support in completion handler
+
 ## 0.3.1
 
 ### Patch Changes
