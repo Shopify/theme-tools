@@ -19,7 +19,17 @@ const config = async () => {
     docsManager.systemTranslations(),
   ]);
 
+  const devServerConfig = {
+    devServer: {
+      open: false,
+      devMiddleware: {
+        writeToDisk: true,
+      },
+    }
+  }
+
   return {
+    ...devServerConfig,
     context: __dirname,
     mode: 'development',
     entry: './src/playground.ts',
@@ -68,4 +78,5 @@ const config = async () => {
     },
   };
 };
+
 module.exports = [config];
