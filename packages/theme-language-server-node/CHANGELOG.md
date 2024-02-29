@@ -1,5 +1,27 @@
 # @shopify/theme-language-server-node
 
+## 1.8.1
+
+### Patch Changes
+
+- d66d49c: Improve root finding of theme app extensions and zipped themes
+
+  Folders for which all the following is true are considered a root:
+
+  - have a `snippets/` folder, and
+  - don't have a `../.theme-check.yml`,
+  - don't have a `../../.theme-check.yml`.
+
+  No config file or `.git` folder required.
+
+- d66d49c: Unify root finding algorithm for node LS and TC packages
+- Updated dependencies [d66d49c]
+- Updated dependencies [d66d49c]
+- Updated dependencies [d66d49c]
+  - @shopify/theme-check-node@2.2.0
+  - @shopify/theme-language-server-common@1.8.1
+  - @shopify/theme-check-docs-updater@2.2.0
+
 ## 1.8.0
 
 ### Minor Changes

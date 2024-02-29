@@ -1,5 +1,11 @@
 # @shopify/theme-language-server-common
 
+## 1.8.1
+
+### Patch Changes
+
+- @shopify/theme-check-common@2.2.0
+
 ## 1.8.0
 
 ### Minor Changes
