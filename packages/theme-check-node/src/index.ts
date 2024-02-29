@@ -4,25 +4,26 @@ import {
   LiquidSourceCode,
   Offense,
   Theme,
-  check as coreCheck,
   toSourceCode as commonToSourceCode,
+  check as coreCheck,
   isIgnored,
 } from '@shopify/theme-check-common';
-import { promisify } from 'node:util';
-import path from 'node:path';
-import fs from 'node:fs/promises';
-import glob = require('glob');
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { promisify } from 'node:util';
+import glob = require('glob');
 
-import { fileExists, fileSize } from './file-utils';
-import { loadConfig as resolveConfig, findConfigPath } from './config';
 import { autofix } from './autofix';
+import { findConfigPath, loadConfig as resolveConfig } from './config';
+import { fileExists, fileSize } from './file-utils';
 
 const defaultLocale = 'en';
 const asyncGlob = promisify(glob);
 
 export * from '@shopify/theme-check-common';
 export * from './config/types';
+export { PathHandler, findRoot, reusableFindRoot } from './find-root';
 
 export const loadConfig: typeof resolveConfig = async (configPath, root) => {
   configPath ??= await findConfigPath(root);

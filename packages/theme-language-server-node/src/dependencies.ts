@@ -1,5 +1,11 @@
 import { Dependencies } from '@shopify/theme-language-server-common';
-import { Config, Translations, loadConfig as loadConfigFromPath } from '@shopify/theme-check-node';
+import {
+  Config,
+  PathHandler,
+  Translations,
+  loadConfig as loadConfigFromPath,
+  reusableFindRoot,
+} from '@shopify/theme-check-node';
 import { URI, Utils } from 'vscode-uri';
 import { basename } from 'node:path';
 import * as fs from 'node:fs/promises';
@@ -27,28 +33,22 @@ function asFsPath(uriOrPath: string | URI) {
   }
 }
 
-async function isRoot(dirURI: URI) {
-  const [shopifyExtensionConfigFileExists, configExists, gitExists] = await Promise.all([
-    fileExists(asPath(Utils.joinPath(dirURI, 'shopify.extension.toml'))), // for theme-app-extensions
-    fileExists(asPath(Utils.joinPath(dirURI, '.theme-check.yml'))),
-    fileExists(asPath(Utils.joinPath(dirURI, '.git'))),
-  ]);
-  return shopifyExtensionConfigFileExists || configExists || gitExists;
-}
+const UriPathHandler: PathHandler<URI> = {
+  join(base: URI, ...paths: string[]): string {
+    return asFsPath(Utils.joinPath(base, ...paths));
+  },
+
+  dirname(uri: URI): URI {
+    return Utils.dirname(uri);
+  },
+
+  asPath(uri: URI): string {
+    return asFsPath(uri);
+  },
+};
 
 async function findRoot(curr: URI): Promise<URI> {
-  const currIsRoot = await isRoot(curr);
-  if (currIsRoot) {
-    return curr;
-  }
-
-  const dirURI = Utils.dirname(curr);
-  const currIsAbsoluteRoot = dirURI.fsPath === curr.fsPath;
-  if (currIsAbsoluteRoot) {
-    return curr;
-  }
-
-  return findRoot(dirURI);
+  return reusableFindRoot(curr, UriPathHandler);
 }
 
 export const filesForURI: NonNullable<Dependencies['filesForURI']> = async function filesForURI(

@@ -140,6 +140,27 @@ describe('Module: dependencies', () => {
     it('should return true for directories', async () => {
       expect(await fileExists(workspace.path('gitRootTheme/snippets'))).to.be.true;
     });
+
+    it('should accurately return whether a file exists in workspace', async () => {
+      // Create a temporary file
+      const tempFilePath = path.join(workspace.root, 'temp.txt');
+      await fs.writeFile(tempFilePath, 'Hello, world!', 'utf8');
+
+      // Use the fileExists function to check if the file exists
+      const exists = await fileExists(tempFilePath);
+
+      // Check that the file exists
+      expect(exists).to.be.true;
+
+      // Delete the file
+      await fs.unlink(tempFilePath);
+
+      // Use the fileExists function to check if the file exists
+      const notExists = await fileExists(tempFilePath);
+
+      // Check that the file does not exist
+      expect(notExists).to.be.false;
+    });
   });
 
   describe('Unit: getDefaultLocale', () => {
@@ -198,29 +219,6 @@ describe('Module: dependencies', () => {
         // If the function throws an error, pass the test
         expect(err.message).to.include('Failed to get file size');
       }
-    });
-  });
-
-  describe('Unit: fileExists', () => {
-    it('should accurately return whether a file exists', async () => {
-      // Create a temporary file
-      const tempFilePath = path.join(workspace.root, 'temp.txt');
-      await fs.writeFile(tempFilePath, 'Hello, world!', 'utf8');
-
-      // Use the fileExists function to check if the file exists
-      const exists = await fileExists(tempFilePath);
-
-      // Check that the file exists
-      expect(exists).to.be.true;
-
-      // Delete the file
-      await fs.unlink(tempFilePath);
-
-      // Use the fileExists function to check if the file exists
-      const notExists = await fileExists(tempFilePath);
-
-      // Check that the file does not exist
-      expect(notExists).to.be.false;
     });
   });
 });

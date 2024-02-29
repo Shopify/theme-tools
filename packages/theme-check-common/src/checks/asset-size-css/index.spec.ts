@@ -82,7 +82,8 @@ describe('Module: AssetSizeCSS', () => {
       end: { index: 122 },
     });
   });
-  it('should not report any offenses if CSS is smaller than threshold', async () => {
+
+  it('should not report any offenses if CSS is smaller than threshold 2', async () => {
     const extensionFiles: MockTheme = {
       'assets/theme.css': 'console.log("hello world");',
       'templates/index.liquid': `
@@ -100,7 +101,7 @@ describe('Module: AssetSizeCSS', () => {
     expect(offenses).toHaveLength(0);
   });
 
-  it('should report an offense if CSS is larger than threshold', async () => {
+  it('should report an offense if CSS is larger than threshold 2', async () => {
     const extensionFiles: MockTheme = {
       'assets/theme.css': 'console.log("hello world");',
       'templates/index.liquid': `

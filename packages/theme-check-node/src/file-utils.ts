@@ -15,7 +15,9 @@ export const fileSize: NonNullable<Dependencies['fileSize']> = async (path: stri
     const stats = await fs.stat(path);
     return stats.size;
   } catch (error) {
-    console.error(`Failed to get file size: ${error}`);
+    if (process.env.SHOPIFY_FLAG_VERBOSE || process.argv.includes('--verbose')) {
+      console.error(`Failed to get file size: ${error}`);
+    }
     return 0;
   }
 };
