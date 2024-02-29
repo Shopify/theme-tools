@@ -1,5 +1,23 @@
 ## theme-check-vscode
 
+## 2.1.1
+
+### Patch Changes
+
+- d66d49c: Improve root finding of theme app extensions and zipped themes
+
+  Folders for which all the following is true are considered a root:
+
+  - have a `snippets/` folder, and
+  - don't have a `../.theme-check.yml`,
+  - don't have a `../../.theme-check.yml`.
+
+  No config file or `.git` folder required.
+
+- d66d49c: Unify root finding algorithm for node LS and TC packages
+  - @shopify/theme-check-common@2.2.0
+  - @shopify/theme-check-docs-updater@2.2.0
+
 ## 2.1.0
 
 ### Minor Changes
