@@ -1,4 +1,3 @@
-import path from 'path';
 import { defineConfig } from 'vite';
 import { configDefaults } from 'vitest/config';
 
