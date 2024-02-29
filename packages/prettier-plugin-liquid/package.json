@@ -40,7 +40,7 @@
     "prettier": "scripts/prettier",
     "prettier2": "cross-env PRETTIER_MAJOR=2 scripts/prettier",
     "prettier3": "cross-env PRETTIER_MAJOR=3 scripts/prettier",
-    "test": "vitest -c \"./vitest.config.ts\"",
+    "test": "vitest -c \"./vitest.config.mjs\"",
     "test:3": "cross-env PRETTIER_MAJOR=3 yarn test",
     "test:idempotence": "cross-env TEST_IDEMPOTENCE=true vitest run 'src/test/'",
     "test:idempotence:3": "cross-env PRETTIER_MAJOR=3 yarn test:idempotence",

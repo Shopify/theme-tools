@@ -74,7 +74,9 @@ export const AssetSizeCSS: LiquidCheckDefinition<typeof schema> = {
     }
 
     async function checkThemeAssetSize(srcValue: string, position: { start: number; end: number }) {
-      if (await hasLocalAssetSizeExceededThreshold(context, srcValue, thresholdInBytes)) {
+      if (
+        await hasLocalAssetSizeExceededThreshold(context, `assets/${srcValue}`, thresholdInBytes)
+      ) {
         context.report({
           message: `The CSS file size exceeds the threshold of ${thresholdInBytes} bytes`,
           startIndex: position.start,

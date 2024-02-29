@@ -1,20 +1,23 @@
 import { Context, SourceCodeType, Schema, RelativePath } from '../types';
 import { fetch } from 'cross-fetch';
 
-export async function assertFileExists<T extends SourceCodeType, S extends Schema>(
+export async function doesFileExist<T extends SourceCodeType, S extends Schema>(
   context: Context<T, S>,
-  filePath: RelativePath,
+  relativePath: RelativePath,
 ): Promise<boolean> {
-  const absolutePath = context.absolutePath(filePath);
+  const absolutePath = context.absolutePath(relativePath);
   return await context.fileExists(absolutePath);
 }
 
-export async function assertFileSize<T extends SourceCodeType, S extends Schema>(
+export async function doesFileExceedThreshold<T extends SourceCodeType, S extends Schema>(
+  context: Context<T, S>,
+  relativePath: RelativePath,
   thresholdInBytes: number,
-  fileSize: number,
-): Promise<boolean> {
-  if (fileSize <= thresholdInBytes) return false;
-  return true;
+): Promise<[exceeds: boolean, fileSize: number]> {
+  const absolutePath = context.absolutePath(relativePath);
+  if (!context.fileSize) return [false, 0];
+  const fileSize = await context.fileSize(absolutePath);
+  return [fileSize > thresholdInBytes, fileSize];
 }
 
 export async function getFileSize(url: string): Promise<number> {
@@ -41,13 +44,15 @@ export async function hasRemoteAssetSizeExceededThreshold(url: string, threshold
 export async function hasLocalAssetSizeExceededThreshold<
   T extends SourceCodeType,
   S extends Schema,
->(context: Context<T, S>, path: string, thresholdInBytes: number) {
-  const absolutePath = `assets/${path}`;
-  const fileExists = await assertFileExists(context, absolutePath);
+>(context: Context<T, S>, relativePath: RelativePath, thresholdInBytes: number) {
+  const fileExists = await doesFileExist(context, relativePath);
+  if (!fileExists) return false;
 
-  if (!fileExists) return;
-  const fileSize = await context.fileSize!(absolutePath);
-  const fileExceedsThreshold = await assertFileSize(thresholdInBytes, fileSize);
+  const [fileExceedsThreshold, _fileSize] = await doesFileExceedThreshold(
+    context,
+    relativePath,
+    thresholdInBytes,
+  );
 
   return fileExceedsThreshold;
 }
