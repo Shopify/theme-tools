@@ -33,7 +33,7 @@
     "build:playground": "tsc -b playground/tsconfig.json",
     "dev": "yarn dev:client",
     "dev:client": "yarn build:esm --watch",
-    "dev:playground": "webpack serve --open -c ./playground/webpack.config.js",
+    "dev:playground": "webpack serve -c ./playground/webpack.config.js",
     "format": "prettier --write \"packages/*/src/**/*.ts\"",
     "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
     "test": "vitest",
