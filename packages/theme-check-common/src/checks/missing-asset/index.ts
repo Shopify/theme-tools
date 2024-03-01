@@ -1,5 +1,5 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { assertFileExists } from '../../utils/file-utils';
+import { doesFileExist } from '../../utils/file-utils';
 import { isLiquidString } from '../utils';
 
 export const MissingAsset: LiquidCheckDefinition = {
@@ -30,18 +30,18 @@ export const MissingAsset: LiquidCheckDefinition = {
         let originalAssetPath = `assets/${expression.value}`;
         let assetPath = originalAssetPath;
 
-        let fileExists = await assertFileExists(context, assetPath);
+        let fileExists = await doesFileExist(context, assetPath);
         if (fileExists) return;
 
         if (assetPath.endsWith('.scss.css')) {
           assetPath = assetPath.replace('.scss.css', '.scss.liquid');
-          fileExists = await assertFileExists(context, assetPath);
+          fileExists = await doesFileExist(context, assetPath);
           if (fileExists) return;
         }
 
         if (assetPath.endsWith('.js') || assetPath.endsWith('.css')) {
           assetPath += '.liquid';
-          fileExists = await assertFileExists(context, assetPath);
+          fileExists = await doesFileExist(context, assetPath);
           if (fileExists) return;
         }
 

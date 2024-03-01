@@ -5,7 +5,7 @@ import {
   Severity,
   SourceCodeType,
 } from '../../types';
-import { assertFileExists, assertFileSize } from '../../utils/file-utils';
+import { doesFileExist, doesFileExceedThreshold } from '../../utils/file-utils';
 
 const schema = {
   thresholdInBytes: SchemaProp.number(100000),
@@ -46,13 +46,13 @@ export const AssetSizeAppBlockCSS: LiquidCheckDefinition<typeof schema> = {
           return;
         }
 
-        const absolutePath = `assets/${filePath}`;
+        const relativePath = `assets/${filePath}`;
         const thresholdInBytes = context.settings.thresholdInBytes;
 
         const startIndex = node.body.position.start + node.body.value.indexOf(filePath);
         const endIndex = startIndex + filePath.length;
 
-        const fileExists = await assertFileExists(context, absolutePath);
+        const fileExists = await doesFileExist(context, relativePath);
 
         if (!fileExists) {
           context.report({
@@ -63,8 +63,11 @@ export const AssetSizeAppBlockCSS: LiquidCheckDefinition<typeof schema> = {
           return;
         }
 
-        const fileSize = await context.fileSize!(absolutePath);
-        const fileExceedsThreshold = await assertFileSize(thresholdInBytes, fileSize);
+        const [fileExceedsThreshold, fileSize] = await doesFileExceedThreshold(
+          context,
+          relativePath,
+          thresholdInBytes,
+        );
 
         if (fileExceedsThreshold) {
           context.report({

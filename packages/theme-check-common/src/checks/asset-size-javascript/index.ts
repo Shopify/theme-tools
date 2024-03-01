@@ -72,7 +72,9 @@ export const AssetSizeJavaScript: LiquidCheckDefinition<typeof schema> = {
     }
 
     async function checkThemeAssetSize(srcValue: string, position: { start: number; end: number }) {
-      if (await hasLocalAssetSizeExceededThreshold(context, srcValue, thresholdInBytes)) {
+      if (
+        await hasLocalAssetSizeExceededThreshold(context, `assets/${srcValue}`, thresholdInBytes)
+      ) {
         context.report({
           message: `JavaScript on every page load exceeds compressed size threshold (${thresholdInBytes} Bytes), consider using the import on interaction pattern.`,
           startIndex: position.start,

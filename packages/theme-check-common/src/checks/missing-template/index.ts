@@ -13,7 +13,7 @@ import {
   Severity,
   SourceCodeType,
 } from '../../types';
-import { assertFileExists } from '../../utils/file-utils';
+import { doesFileExist } from '../../utils/file-utils';
 
 const schema = {
   ignoreMissing: SchemaProp.array(SchemaProp.string(), []),
@@ -46,7 +46,7 @@ export const MissingTemplate: LiquidCheckDefinition<typeof schema> = {
       relativePath: RelativePath,
       { position }: { position: Position },
     ) {
-      const fileExists = await assertFileExists(context, relativePath);
+      const fileExists = await doesFileExist(context, relativePath);
       if (fileExists || isIgnored(relativePath)) return;
 
       context.report({
