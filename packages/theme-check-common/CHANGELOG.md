@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 2.2.1
+
+### Patch Changes
+
+- 8710bde: Fix AssetAppBlock{CSS,JavaScript} bug when cwd != project root
+
 ## 2.2.0
 
 ## 2.1.0

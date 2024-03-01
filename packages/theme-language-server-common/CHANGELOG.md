@@ -1,5 +1,12 @@
 # @shopify/theme-language-server-common
 
+## 1.8.2
+
+### Patch Changes
+
+- Updated dependencies [8710bde]
+  - @shopify/theme-check-common@2.2.1
+
 ## 1.8.1
 
 ### Patch Changes
