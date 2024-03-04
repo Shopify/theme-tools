@@ -88,6 +88,7 @@ async function startServer(context: ExtensionContext) {
       { scheme: 'file', language: 'css' },
       { scheme: 'file', language: 'scss' },
       { scheme: 'file', language: 'json' },
+      { scheme: 'file', language: 'jsonc' },
     ],
   };
 
