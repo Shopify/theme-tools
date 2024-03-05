@@ -12,11 +12,13 @@ const { ThemeLiquidDocsManager } = require('@shopify/theme-check-docs-updater');
 /** @type {() => Promise<WebpackConfig>} */
 const config = async () => {
   const docsManager = new ThemeLiquidDocsManager();
-  const [tags, filters, objects, systemTranslations] = await Promise.all([
+  const [tags, filters, objects, systemTranslations, sectionSchema, translationsSchema] = await Promise.all([
     docsManager.tags(),
     docsManager.filters(),
     docsManager.objects(),
     docsManager.systemTranslations(),
+    docsManager.sectionSchema(),
+    docsManager.translationSchema(),
   ]);
 
   const devServerConfig = {
@@ -44,6 +46,8 @@ const config = async () => {
         WEBPACK_FILTERS: JSON.stringify(filters),
         WEBPACK_OBJECTS: JSON.stringify(objects),
         WEBPACK_SYSTEM_TRANSLATIONS: JSON.stringify(systemTranslations),
+        WEBPACK_SECTION_SCHEMA: JSON.stringify(sectionSchema),
+        WEBPACK_TRANSLATIONS_SCHEMA: JSON.stringify(translationsSchema),
       }),
       new HtmlWebpackPlugin({
         title: 'Output Management',

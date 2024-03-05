@@ -8,7 +8,7 @@ import MarkdownIt from 'markdown-it';
 import { CodeMirrorLanguageClient } from '@shopify/codemirror-language-client';
 import * as SetFileTreeNotification from './SetFileTreeNotification';
 import * as SetDefaultTranslationsNotification from './SetDefaultTranslationsNotification';
-import { MarkupContent } from 'vscode-languageserver-protocol';
+import { MarkedString, MarkupContent } from 'vscode-languageserver-protocol';
 
 const md = new MarkdownIt();
 
@@ -24,6 +24,36 @@ const exampleTemplate = `<!doctype html>
   </body>
 </html>`;
 
+const exampleTranslations = {
+  product: {
+    price_html: '<b>{{ price }}$</b>',
+    size: 'Size',
+    count: {
+      one: '{{ count }} item',
+      other: '{{ count }} items',
+    },
+  },
+  footer: {
+    subscribe: 'Subscribe to our newsletter',
+  },
+};
+
+function asMarkdown(content: MarkupContent | MarkedString[] | MarkedString): string {
+  if (Array.isArray(content)) {
+    return content.map((c) => asMarkdown(c)).join('\n');
+  }
+
+  if (typeof content === 'string') {
+    return content;
+  }
+
+  if (MarkupContent.is(content)) {
+    return content.value;
+  }
+
+  return `\`\`\`${content.language}\n${content.value}\n\`\`\``;
+}
+
 async function main() {
   const worker = new Worker(new URL('./language-server-worker.ts', import.meta.url));
 
@@ -31,6 +61,11 @@ async function main() {
     worker,
     {},
     {
+      autocompleteOptions: {
+        activateOnTyping: true,
+        maxRenderedOptions: 20,
+        defaultKeymap: true,
+      },
       infoRenderer: (completionItem) => {
         if (!completionItem.documentation || typeof completionItem.documentation === 'string') {
           return null;
@@ -42,10 +77,8 @@ async function main() {
       },
       hoverRenderer: (_, hover) => {
         const node = document.createElement('div');
-        if (MarkupContent.is(hover.contents)) {
-          const htmlString = md.render(hover.contents.value);
-          node.innerHTML = htmlString;
-        }
+        const htmlString = md.render(asMarkdown(hover.contents));
+        node.innerHTML = htmlString;
         return {
           dom: node,
         };
@@ -70,15 +103,7 @@ async function main() {
   worker.postMessage({
     jsonrpc: '2.0',
     method: SetDefaultTranslationsNotification.method,
-    params: {
-      product: {
-        price: 'Price',
-        size: 'Size',
-      },
-      footer: {
-        subscribe: 'Subscribe to our newsletter',
-      },
-    },
+    params: exampleTranslations,
   } as SetDefaultTranslationsNotification.type);
 
   new EditorView({
@@ -89,10 +114,24 @@ async function main() {
         // liquid(),
         // liquidHighLightStyle,
         // oneDark,
-        client.extension('browser:///input.liquid'),
+        client.extension('browser:/input.liquid'),
       ],
     }),
-    parent: document.getElementById('editor')!,
+    parent: document.getElementById('liquid-editor')!,
+  });
+
+  new EditorView({
+    state: EditorState.create({
+      doc: JSON.stringify(exampleTranslations, null, 2),
+      extensions: [
+        basicSetup,
+        // liquid(),
+        // liquidHighLightStyle,
+        // oneDark,
+        client.extension('browser:/locales/en.default.json'),
+      ],
+    }),
+    parent: document.getElementById('json-editor')!,
   });
 }
 
