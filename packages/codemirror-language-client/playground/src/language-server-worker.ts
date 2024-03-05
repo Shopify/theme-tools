@@ -47,7 +47,7 @@ function getDefaultTranslationsFactory(_uri: string) {
 }
 
 function getThemeSettingsSchemaForRootURI(_rootURI: URI) {
-  return {} as any;
+  return [] as any;
 }
 
 async function findRootURI(_uri: string) {

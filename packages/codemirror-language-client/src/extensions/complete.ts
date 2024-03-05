@@ -61,7 +61,7 @@ export async function complete(context: CompletionContext): Promise<CompletionRe
   });
 
   // No results
-  if (results === null) return null;
+  if (results === null || (Array.isArray(results) && results.length === 0)) return null;
 
   return {
     from: word.from,
