@@ -11,12 +11,16 @@ declare global {
   export const WEBPACK_FILTERS: any[];
   export const WEBPACK_OBJECTS: any[];
   export const WEBPACK_SYSTEM_TRANSLATIONS: any;
+  export const WEBPACK_TRANSLATIONS_SCHEMA: string;
+  export const WEBPACK_SECTION_SCHEMA: string;
 }
 
 const tags = WEBPACK_TAGS;
 const filters = WEBPACK_FILTERS;
 const objects = WEBPACK_OBJECTS;
 const systemTranslations = WEBPACK_SYSTEM_TRANSLATIONS;
+const sectionSchema = WEBPACK_SECTION_SCHEMA;
+const translationsSchema = WEBPACK_TRANSLATIONS_SCHEMA;
 
 const worker = self as any as Worker;
 
@@ -51,7 +55,7 @@ function getThemeSettingsSchemaForRootURI(_rootURI: URI) {
 }
 
 async function findRootURI(_uri: string) {
-  return 'browser:///';
+  return 'browser:/';
 }
 
 async function loadConfig(_uri: string) {
@@ -77,8 +81,8 @@ startServer(worker, {
   },
   jsonValidationSet: {
     validateSectionSchema: async () => () => true,
-    sectionSchema: async () => '{}',
-    translationSchema: async () => '{}',
+    sectionSchema: async () => sectionSchema,
+    translationSchema: async () => translationsSchema,
   },
   loadConfig,
   log(message) {
