@@ -10,7 +10,7 @@
   <a href="https://github.com/Shopify/theme-tools/blob/main/LICENSE.md"><img src="https://img.shields.io/npm/l/@shopify/liquid-html-parser.svg?sanitize=true" alt="License"></a>
   <a href="https://github.com/Shopify/liquid-html-parser-prototype/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Shopify/prettier-plugin-liquid-prototype/actions/workflows/ci.yml/badge.svg"></a>
   <!--
-    <a href="https://npmcharts.com/compare/@shopify/liquid-html-parser?minimal=true"><img src="https://img.shields.io/npm/dm/@shopify/prettier-plugin-liquid.svg?sanitize=true" alt="Downloads"></a>
+    <a href="https://npmcharts.com/compare/@shopify/liquid-html-parser?minimal=true"><img src="https://img.shields.io/npm/dm/@shopify/liquid-html-parser.svg?sanitize=true" alt="Downloads"></a>
   -->
 </p>
 
@@ -31,7 +31,7 @@ yarn add @shopify/liquid-html-parser
 ## Usage
 
 ```ts
-import { toLiquidHtmlAST, LiquidHtmlNode, NodeTypes } from '@shopify/prettier-plugin-liquid';
+import { toLiquidHtmlAST, LiquidHtmlNode, NodeTypes } from '@shopify/liquid-html-parser';
 
 const ast: LiquidHtmlNode = toLiquidHtmlAST(`
 <body>
