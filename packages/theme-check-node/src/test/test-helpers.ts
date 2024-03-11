@@ -1,6 +1,7 @@
+import * as mktemp from 'mktemp';
 import fs from 'node:fs/promises';
-import path from 'node:path';
 import os from 'node:os';
+import path from 'node:path';
 
 export async function makeTmpFolder() {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'test-'));
@@ -60,4 +61,43 @@ export async function createMockNodeModule(
   );
   await fs.writeFile(path.join(nodeModuleRoot, 'index.js'), moduleContent);
   return nodeModuleRoot;
+}
+
+export type Tree = {
+  [k in string]: Tree | string;
+};
+
+export interface Workspace {
+  root: string;
+  path(relativePath: string): string;
+  clean(): Promise<any>;
+}
+
+export async function makeTempWorkspace(structure: Tree): Promise<Workspace> {
+  const root = await mktemp.createDir(path.join(__dirname, '..', '.XXXXX'));
+  if (!root) throw new Error('Could not create temp dir for temp workspace');
+
+  await createFiles(structure, [root]);
+
+  return {
+    root,
+    path: (relativePath) => path.join(root, ...relativePath.split('/')),
+    clean: async () => fs.rm(root, { recursive: true, force: true }),
+  };
+
+  function createFiles(tree: Tree, ancestors: string[]): Promise<any> {
+    const promises: Promise<any>[] = [];
+    for (const [pathEl, value] of Object.entries(tree)) {
+      if (typeof value === 'string') {
+        promises.push(fs.writeFile(path.join(...ancestors, pathEl), value, 'utf8'));
+      } else {
+        promises.push(
+          fs
+            .mkdir(path.join(...ancestors, pathEl))
+            .then(() => createFiles(value, ancestors.concat(pathEl))),
+        );
+      }
+    }
+    return Promise.all(promises);
+  }
 }

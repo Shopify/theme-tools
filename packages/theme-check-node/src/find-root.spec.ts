@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import { findRoot } from './find-root';
-import * as path from 'node:path';
-import * as fs from 'node:fs/promises';
-import * as mktemp from 'mktemp';
+import { Workspace } from './test/test-helpers';
+import { makeTempWorkspace } from './test/test-helpers';
 
 const theme = {
   locales: {
@@ -120,42 +119,3 @@ describe('Unit: findRoot', () => {
     expect(root).toBe(workspace.path('taeRootThemeCheckYML'));
   });
 });
-
-type Tree = {
-  [k in string]: Tree | string;
-};
-
-interface Workspace {
-  root: string;
-  path(relativePath: string): string;
-  clean(): Promise<any>;
-}
-
-async function makeTempWorkspace(structure: Tree): Promise<Workspace> {
-  const root = await mktemp.createDir(path.join(__dirname, '..', '.XXXXX'));
-  if (!root) throw new Error('Could not create temp dir for temp workspace');
-
-  await createFiles(structure, [root]);
-
-  return {
-    root,
-    path: (relativePath) => path.join(root, ...relativePath.split('/')),
-    clean: async () => fs.rm(root, { recursive: true, force: true }),
-  };
-
-  function createFiles(tree: Tree, ancestors: string[]): Promise<any> {
-    const promises: Promise<any>[] = [];
-    for (const [pathEl, value] of Object.entries(tree)) {
-      if (typeof value === 'string') {
-        promises.push(fs.writeFile(path.join(...ancestors, pathEl), value, 'utf8'));
-      } else {
-        promises.push(
-          fs
-            .mkdir(path.join(...ancestors, pathEl))
-            .then(() => createFiles(value, ancestors.concat(pathEl))),
-        );
-      }
-    }
-    return Promise.all(promises);
-  }
-}
