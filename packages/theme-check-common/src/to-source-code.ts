@@ -40,7 +40,7 @@ export function toSourceCode(
 
   if (isLiquid) {
     return {
-      absolutePath,
+      absolutePath: normalize(absolutePath),
       source,
       type: SourceCodeType.LiquidHtml,
       ast: parseLiquid(source),
@@ -48,11 +48,17 @@ export function toSourceCode(
     };
   } else {
     return {
-      absolutePath,
+      absolutePath: normalize(absolutePath),
       source,
       type: SourceCodeType.JSON,
       ast: parseJSON(source),
       version,
     };
   }
+}
+
+type MaybeWindowsPath = string;
+
+function normalize(path: MaybeWindowsPath): string {
+  return path.replace(/\\/g, '/');
 }

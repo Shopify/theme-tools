@@ -25,11 +25,16 @@ export type Theme = SourceCode<SourceCodeType>[];
 
 export type SourceCode<T = SourceCodeType> = T extends SourceCodeType
   ? {
-      absolutePath: string; // /path/to/snippet/foo.liquid
+      /** A normalized absolute path to the file. Assumes forwards slashes. */
+      absolutePath: string;
+      /** The type is used as a discriminant for type narrowing */
+      type: T;
+      /** The version is used by the Language Server to make sure the Client and Server are in sync */
       version?: number;
+      /** The contents of the file */
       source: string;
-      type: T; // Liquid | LiquidHtml | JSON
-      ast: AST[T] | Error; // LiquidAST | LiquidHtmlAST | JSON object | null when unparseable
+      /** The AST representation of the file, or an Error instance when the file is unparseable */
+      ast: AST[T] | Error;
     }
   : never;
 
@@ -74,7 +79,10 @@ export type NodeTypes = {
   }[T];
 };
 
+/** Assumes forward slashes for simplicity internally */
 export type AbsolutePath = string;
+
+/** Assumes forward slashes for simplicity internally */
 export type RelativePath = string;
 
 export type ChecksSettings = {

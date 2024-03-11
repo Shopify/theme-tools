@@ -75,6 +75,7 @@ export async function themeCheckRun(root: string, configPath?: string): Promise<
       if (!defaultTranslationsFile) {
         return defaultLocale;
       }
+      // assumes the path is normalized and '/' are used as separators
       const defaultTranslationsFileLocale = defaultTranslationsFile.absolutePath.match(
         /locales\/(.*)\.default\.json$/,
       )?.[1];
@@ -102,7 +103,15 @@ async function getThemeAndConfig(
 }
 
 export async function getTheme(config: Config): Promise<Theme> {
-  const paths = await asyncGlob(path.join(config.root, '**/*.{liquid,json}')).then((result) =>
+  // On windows machines - the separator provided by path.join is '\'
+  // however the glob function fails silently since '\' is used to escape glob charater
+  // as mentioned in the documentation of node-glob
+
+  // the path is normalised and '\' are replaced with '/' and then passed to the glob function
+  const normalizedGlob = path
+    .normalize(path.join(config.root, '**/*.{liquid,json}'))
+    .replace(/\\/g, '/');
+  const paths = await asyncGlob(normalizedGlob).then((result) =>
     // Global ignored paths should not be part of the theme
     result.filter((filePath) => !isIgnored(filePath, config)),
   );
