@@ -1,0 +1,33 @@
+# Line Comment
+
+{
+    // FIXME
+}
+
+==>
+
+JsoncText(Object("{",LineComment,"}"))
+
+# Block Comment
+
+{
+    /* I am a big old
+
+
+    "comment
+    */
+}
+
+==>
+
+JsoncText(Object("{",BlockComment,"}"))
+
+# Line comment as "string"
+
+{
+    // This is a "comment"
+}
+
+==>
+
+JsoncText(Object("{",LineComment,"}"))

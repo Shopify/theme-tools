@@ -1,6 +1,7 @@
 import { basicSetup } from 'codemirror';
 import { EditorView } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
+import { jsonc } from '@shopify/lang-jsonc';
 import MarkdownIt from 'markdown-it';
 // import { oneDark } from '@codemirror/theme-one-dark';
 // import { liquid, liquidHighLightStyle } from '@shopify/lang-liquid';
@@ -125,8 +126,7 @@ async function main() {
       doc: JSON.stringify(exampleTranslations, null, 2),
       extensions: [
         basicSetup,
-        // liquid(),
-        // liquidHighLightStyle,
+        jsonc(),
         // oneDark,
         client.extension('browser:/locales/en.default.json'),
       ],

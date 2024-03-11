@@ -8,6 +8,7 @@
   "license": "MIT",
   "private": true,
   "workspaces": [
+    "packages/lang-*",
     "packages/codemirror-language-client",
     "packages/liquid-html-parser",
     "packages/prettier-plugin-liquid",

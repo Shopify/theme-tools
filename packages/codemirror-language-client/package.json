@@ -51,6 +51,7 @@
     "@codemirror/view": "^6.9.2",
     "@shopify/theme-check-docs-updater": "^2.1.0",
     "@shopify/theme-language-server-browser": "^1.8.0",
+    "@shopify/lang-jsonc": "^0.0.0",
     "@types/markdown-it": "^13.0.4",
     "codemirror": "^6.0.1",
     "markdown-it": "^13.0.2"
