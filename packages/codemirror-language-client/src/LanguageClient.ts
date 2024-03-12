@@ -211,7 +211,7 @@ export class LanguageClient extends EventTarget implements AbstractLanguageClien
     };
     if (params) request.params = params;
 
-    this.log(`Client->Server ${request.method} request [${request.id}]`);
+    this.log(`Client->Server ${request.method} request [${request.id}]`, request);
     this.sendMessage(request);
 
     return new Promise((resolve, reject) => {
@@ -250,7 +250,7 @@ export class LanguageClient extends EventTarget implements AbstractLanguageClien
     const response: ResponseMessage = { jsonrpc: '2.0', id };
     if (result !== undefined) response.result = result;
     if (error !== undefined) response.error = error;
-    this.log(`Client->Server response [${id}]`);
+    this.log(`Client->Server response [${id}]`, response);
     this.sendMessage(response);
   }
 
