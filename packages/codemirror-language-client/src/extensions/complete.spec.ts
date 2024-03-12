@@ -1,7 +1,7 @@
-import { vi, expect, describe, it, beforeEach } from 'vitest';
+import { vi, expect, describe, it, beforeEach, assert } from 'vitest';
 import { EditorState, Extension } from '@codemirror/state';
 import { CompletionContext } from '@codemirror/autocomplete';
-import { clientFacet, fileUriFacet } from './client';
+import { clientFacet, fileUriFacet, serverCapabilitiesFacet } from './client';
 import { MockClient } from '../test/MockClient';
 import { CompletionItem, CompletionItemKind, CompletionList } from 'vscode-languageserver-protocol';
 import { textDocumentSync } from './textDocumentSync';
@@ -10,23 +10,28 @@ import { complete, infoRendererFacet, lspComplete } from './complete';
 describe('Module: complete', () => {
   const fileUri = 'browser://input.liquid';
   let client: MockClient;
-  let extensions: Extension;
   let state: EditorState;
   let infoRenderer: any;
+  let doc: string;
 
   beforeEach(() => {
+    doc = 'hello. ;';
     client = new MockClient();
     infoRenderer = vi.fn().mockReturnValue(null);
-    extensions = [
-      clientFacet.of(client),
-      fileUriFacet.of(fileUri),
-      textDocumentSync,
-      infoRendererFacet.of(infoRenderer),
-      lspComplete(),
-    ];
     state = EditorState.create({
-      doc: 'hello world',
-      extensions,
+      doc,
+      extensions: [
+        clientFacet.of(client),
+        serverCapabilitiesFacet.of({
+          completionProvider: {
+            triggerCharacters: ['.'],
+          },
+        }),
+        fileUriFacet.of(fileUri),
+        textDocumentSync,
+        infoRendererFacet.of(infoRenderer),
+        lspComplete(),
+      ],
     });
   });
 
@@ -161,6 +166,28 @@ describe('Module: complete', () => {
         },
       ],
     });
+  });
+
+  it('should return null if not on a trigger character nor inside a word', async () => {
+    const context = new CompletionContext(state, doc.indexOf(';'), true);
+    const promise = complete(context);
+    assert(!client.pendingRequest);
+    const result = await promise;
+    expect(result).to.be.null;
+  });
+
+  it('should make a request to the backend if after a trigger character', async () => {
+    const context = new CompletionContext(state, doc.indexOf('.') + 1, true);
+    complete(context);
+    assert(client.pendingRequest);
+    client.resolveRequest(null);
+  });
+
+  it('should make a request to the backend if after a word character', async () => {
+    const context = new CompletionContext(state, doc.indexOf('h') + 1, true);
+    complete(context);
+    assert(client.pendingRequest);
+    client.resolveRequest(null);
   });
 
   it('should return null if nothing comes back', async () => {

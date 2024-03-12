@@ -11,10 +11,13 @@ import {
   CompletionItemKind,
   CompletionList,
   CompletionRequest,
+  InsertTextFormat,
   InsertReplaceEdit,
   TextEdit,
+  CompletionTriggerKind,
+  CompletionContext as LSPCompletionContext,
 } from 'vscode-languageserver-protocol';
-import { clientFacet, fileUriFacet } from './client';
+import { clientFacet, fileUriFacet, serverCapabilitiesFacet } from './client';
 import { textDocumentField } from './textDocumentSync';
 import { Facet } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
@@ -46,25 +49,34 @@ export const infoRendererFacet = Facet.define<InfoRenderer | undefined, InfoRend
 });
 
 export async function complete(context: CompletionContext): Promise<CompletionResult | null> {
-  // TODO does this work well with translations and stuff?
-  const word = context.matchBefore(/\w*/);
-  if (!word) return null;
+  const word = context.matchBefore(/\w+/);
+  const serverCapabilities = context.state.facet(serverCapabilitiesFacet.reader);
+  const triggerCharacters = serverCapabilities.completionProvider?.triggerCharacters ?? [];
+  const previousChar = context.state.doc.sliceString(context.pos - 1, context.pos);
+  const isTriggerCharacter = triggerCharacters.includes(previousChar);
+  const canComplete = isTriggerCharacter || word || context.pos === 0;
+  if (!canComplete) return null;
 
   const client = context.state.facet(clientFacet.reader);
   const fileUri = context.state.facet(fileUriFacet.reader);
   const infoRenderer = context.state.facet(infoRendererFacet.reader);
   const textDocument = context.state.field(textDocumentField);
 
+  const lspContext: LSPCompletionContext = isTriggerCharacter
+    ? { triggerKind: CompletionTriggerKind.TriggerCharacter, triggerCharacter: previousChar }
+    : { triggerKind: CompletionTriggerKind.Invoked };
+
   const results = await client.sendRequest(CompletionRequest.type, {
     textDocument: { uri: fileUri },
     position: textDocument.positionAt(context.pos),
+    context: lspContext,
   });
 
   // No results
   if (results === null || (Array.isArray(results) && results.length === 0)) return null;
 
   return {
-    from: word.from,
+    from: word?.from ?? context.pos,
     options: items(results).map(
       (completionItem): Completion => ({
         label: completionItem.insertText ?? completionItem.label,

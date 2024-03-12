@@ -18,7 +18,7 @@ export class MockClient extends EventTarget implements AbstractLanguageClient {
   sendNotification: AbstractLanguageClient['sendNotification'];
   sendRequest: AbstractLanguageClient['sendRequest'];
 
-  private pendingRequest: Promise<any> | null;
+  public pendingRequest: Promise<any> | null;
   private promiseCompletion: PromiseCompletion | null;
 
   constructor(clientCapabilities = {}, serverCapabilities = null, serverInfo = null) {
@@ -53,11 +53,15 @@ export class MockClient extends EventTarget implements AbstractLanguageClient {
   }
 
   resolveRequest(value: any) {
-    this.promiseCompletion!.resolve(value);
+    if (!this.promiseCompletion) throw Error('Expecting a pending request');
+    this.promiseCompletion.resolve(value);
+    this.pendingRequest = null;
   }
 
   rejectRequest(error: any) {
-    this.promiseCompletion!.reject(error);
+    if (!this.promiseCompletion) throw Error('Expecting a pending request');
+    this.promiseCompletion.reject(error);
+    this.pendingRequest = null;
   }
 
   triggerNotification<P, RO>(type: ProtocolNotificationType<P, RO>, params: P) {
