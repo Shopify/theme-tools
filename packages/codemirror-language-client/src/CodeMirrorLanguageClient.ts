@@ -30,7 +30,10 @@ import { hoverRendererFacet } from './extensions/hover';
 const clientCapabilities: ClientCapabilities = {
   textDocument: {
     completion: {
+      // We send the completion context to the server
+      contextSupport: true,
       completionItem: {
+        snippetSupport: true,
         insertReplaceSupport: true,
         documentationFormat: [MarkupKind.PlainText, MarkupKind.Markdown],
         commitCharactersSupport: false,

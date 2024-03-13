@@ -5,6 +5,7 @@ import {
   CompletionInfo,
   pickedCompletion,
   Completion,
+  snippet,
 } from '@codemirror/autocomplete';
 import {
   CompletionItem,
@@ -22,6 +23,7 @@ import { textDocumentField } from './textDocumentSync';
 import { Facet } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { translateSnippet } from './snippet';
 
 type FirstArgType<F> = F extends (arg: infer A) => any ? A : never;
 export type AutocompleteOptions = Partial<FirstArgType<typeof autocompletion>>;
@@ -77,19 +79,37 @@ export async function complete(context: CompletionContext): Promise<CompletionRe
 
   return {
     from: word?.from ?? context.pos,
-    options: items(results).map(
-      (completionItem): Completion => ({
-        label: completionItem.insertText ?? completionItem.label,
-        displayLabel: completionItem.label,
-        apply: hasApplicableTextEdit(completionItem)
-          ? (view, completion) => applyEdit(view, completion, completionItem, textDocument)
-          : undefined,
-        type: convertLSPKindToCodeMirrorKind(completionItem.kind),
-        info: infoRenderer ? (_) => infoRenderer(completionItem) : undefined,
-      }),
-    ),
+    options: items(results).map(toCodeMirrorCompletion(infoRenderer, textDocument)),
   };
 }
+
+const toCodeMirrorCompletion =
+  (infoRenderer: InfoRenderer | undefined, textDocument: TextDocument) =>
+  (completionItem: CompletionItem): Completion => {
+    switch (completionItem.insertTextFormat) {
+      case InsertTextFormat.Snippet:
+        return {
+          label: completionItem.insertText ?? completionItem.label,
+          displayLabel: completionItem.label,
+          apply: applySnippet(completionItem as SnippetCompletionItem, textDocument),
+          type: convertLSPKindToCodeMirrorKind(completionItem.kind),
+          info: infoRenderer ? (_) => infoRenderer(completionItem) : undefined,
+        };
+
+      case InsertTextFormat.PlainText:
+      default: {
+        return {
+          label: completionItem.insertText ?? completionItem.label,
+          displayLabel: completionItem.label,
+          apply: hasApplicableTextEdit(completionItem)
+            ? (view, completion) => applyEdit(view, completion, completionItem, textDocument)
+            : undefined,
+          type: convertLSPKindToCodeMirrorKind(completionItem.kind),
+          info: infoRenderer ? (_) => infoRenderer(completionItem) : undefined,
+        };
+      }
+    }
+  };
 
 function hasApplicableTextEdit(
   completionItem: CompletionItem,
@@ -99,6 +119,40 @@ function hasApplicableTextEdit(
     (TextEdit.is(completionItem.textEdit) || InsertReplaceEdit.is(completionItem.textEdit))
   );
 }
+
+type SnippetCompletionItem = Omit<CompletionItem, 'insertTextFormat'> & {
+  insertTextFormat: typeof InsertTextFormat.Snippet;
+};
+
+const applySnippet = (item: SnippetCompletionItem, textDocument: TextDocument) => {
+  const { textEdit } = item;
+  let from: null | number = null;
+  let to: null | number = null;
+  let newText = '';
+
+  if (TextEdit.is(textEdit)) {
+    from = textDocument.offsetAt(textEdit.range.start);
+    to = textDocument.offsetAt(textEdit.range.end);
+    newText = textEdit.newText;
+  } else if (textEdit && InsertReplaceEdit.is(textEdit)) {
+    from = textDocument.offsetAt(textEdit.replace.start);
+    to = textDocument.offsetAt(textEdit.replace.end);
+    newText = textEdit.newText;
+  } else if (item.insertText) {
+    newText = item.insertText;
+  } else {
+    newText = item.label;
+  }
+
+  const template = translateSnippet(newText);
+
+  // Because we might replace text with textEdit, we can't use snippet as is.
+  // we'll need to infer the from/to from the textEdit.
+  const apply = snippet(template);
+  return (view: EditorView, completion: Completion, defaultFrom: number, defaultTo: number) => {
+    apply(view, completion, from ?? defaultFrom, to ?? defaultTo);
+  };
+};
 
 enum CMCompletionType {
   Class = 'class',
