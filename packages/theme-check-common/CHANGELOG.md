@@ -1,5 +1,7 @@
 # @shopify/theme-check-common
 
+## 2.2.2
+
 ## 2.2.1
 
 ### Patch Changes
