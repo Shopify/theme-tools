@@ -1,4 +1,4 @@
-export { clientFacet, fileUriFacet } from './client';
+export { clientFacet, fileUriFacet, serverCapabilitiesFacet } from './client';
 export { textDocumentSync, textDocumentField } from './textDocumentSync';
 export {
   AutocompleteOptions,

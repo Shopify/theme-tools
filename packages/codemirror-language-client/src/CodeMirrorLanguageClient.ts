@@ -3,20 +3,21 @@ import { ClientCapabilities, MarkupKind } from 'vscode-languageserver-protocol';
 
 import { Dependencies, LanguageClient } from './LanguageClient';
 import {
-  clientFacet,
-  fileUriFacet,
-  textDocumentSync,
-  lspLinter,
-  lspComplete,
-  InfoRenderer,
-  infoRendererFacet,
   AutocompleteOptions,
-  LinterOptions,
   DiagnosticRenderer,
-  diagnosticRendererFacet,
-  HoverRenderer,
   HoverOptions,
+  HoverRenderer,
+  InfoRenderer,
+  LinterOptions,
+  clientFacet,
+  diagnosticRendererFacet,
+  fileUriFacet,
+  infoRendererFacet,
+  lspComplete,
   lspHover,
+  lspLinter,
+  serverCapabilitiesFacet,
+  textDocumentSync,
 } from './extensions';
 import { hoverRendererFacet } from './extensions/hover';
 
@@ -29,7 +30,10 @@ import { hoverRendererFacet } from './extensions/hover';
 const clientCapabilities: ClientCapabilities = {
   textDocument: {
     completion: {
+      // We send the completion context to the server
+      contextSupport: true,
       completionItem: {
+        snippetSupport: true,
         insertReplaceSupport: true,
         documentationFormat: [MarkupKind.PlainText, MarkupKind.Markdown],
         commitCharactersSupport: false,
@@ -152,6 +156,7 @@ export class CodeMirrorLanguageClient {
   ): Extension[] {
     return [
       clientFacet.of(this.client),
+      serverCapabilitiesFacet.of(this.client.serverCapabilities),
       fileUriFacet.of(fileUri),
       textDocumentSync,
       infoRendererFacet.of(this.infoRenderer),
