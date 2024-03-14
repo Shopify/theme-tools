@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-language-server-common",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "CP Clermont <cp.clermont@shopify.com>",
@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@shopify/liquid-html-parser": "^2.0.3",
-    "@shopify/theme-check-common": "2.2.1",
+    "@shopify/theme-check-common": "2.2.2",
     "@vscode/web-custom-data": "^0.4.6",
     "vscode-json-languageservice": "^5.3.9",
     "vscode-languageserver": "^8.0.2",

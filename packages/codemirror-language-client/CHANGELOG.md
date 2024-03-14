@@ -1,5 +1,16 @@
 # @shopify/codemirror-language-client
 
+## 0.5.0
+
+### Minor Changes
+
+- d91e2e3: Add snippet completion support
+
+### Patch Changes
+
+- d91e2e3: Respect the trigger characters server capability
+- d91e2e3: Add completion context to the completion requests
+
 ## 0.4.0
 
 ### Minor Changes

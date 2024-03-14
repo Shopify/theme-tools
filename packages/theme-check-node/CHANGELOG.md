@@ -1,5 +1,13 @@
 # @shopify/theme-check-node
 
+## 2.2.2
+
+### Patch Changes
+
+- 08ca661: Fix theme file glob on Windows (CLI issue)
+  - @shopify/theme-check-common@2.2.2
+  - @shopify/theme-check-docs-updater@2.2.2
+
 ## 2.2.1
 
 ### Patch Changes
