@@ -108,18 +108,18 @@ export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(
   }
 };
 
-export const getDefaultTranslationsFactory: Dependencies['getDefaultTranslationsFactory'] =
-  function getDefaultTranslationsFactory(rootURI) {
+export const getDefaultTranslationsFactoryFactory =
+  (postfix: string = '.default.json') =>
+  (rootURI: string) => {
     const root = parse(rootURI);
-    let cachedPromise: Promise<Translations>;
 
-    async function getDefaultTranslations() {
+    return cached(async () => {
       try {
-        const defaultLocale = await getDefaultLocale(root);
+        const defaultLocale = await getDefaultLocale(root, postfix);
         const defaultTranslationsFileUri = Utils.joinPath(
           root,
           'locales',
-          `${defaultLocale}.default.json`,
+          `${defaultLocale}${postfix}`,
         );
         const defaultTranslationsFile = await fs.readFile(
           asFsPath(defaultTranslationsFileUri),
@@ -129,39 +129,48 @@ export const getDefaultTranslationsFactory: Dependencies['getDefaultTranslations
       } catch (error) {
         return {};
       }
-    }
+    });
+  };
 
-    return async () => {
-      if (!cachedPromise) cachedPromise = getDefaultTranslations();
-      return cachedPromise;
-    };
+export const getDefaultTranslationsFactory: Dependencies['getDefaultTranslationsFactory'] =
+  getDefaultTranslationsFactoryFactory('.default.json');
+
+export const getDefaultSchemaTranslationsFactory: Dependencies['getDefaultSchemaTranslationsFactory'] =
+  getDefaultTranslationsFactoryFactory('.default.schema.json');
+
+const getDefaultLocaleFactoryFactory =
+  (postfix: string = '.default.json') =>
+  (rootURI: string) => {
+    const root = parse(rootURI);
+    return cached(() => getDefaultLocale(root, postfix));
   };
 
 export const getDefaultLocaleFactory: Dependencies['getDefaultLocaleFactory'] =
-  function getDefaultLocaleFactory(rootURI: string) {
-    const root = parse(rootURI);
-    let cachedPromise: Promise<string>;
+  getDefaultLocaleFactoryFactory('.default.json');
 
-    return async () => {
-      if (!cachedPromise) cachedPromise = getDefaultLocale(root);
-      return cachedPromise;
-    };
-  };
+export const getDefaultSchemaLocaleFactory: Dependencies['getDefaultSchemaLocaleFactory'] =
+  getDefaultLocaleFactoryFactory('.default.schema.json');
 
-async function getDefaultLocale(rootURI: URI) {
+async function getDefaultLocale(rootURI: URI, postfix = '.default.json') {
   try {
     const localesFolder = Utils.joinPath(rootURI, 'locales');
     const files = await fs.readdir(asFsPath(localesFolder), {
       encoding: 'utf8',
       withFileTypes: true,
     });
-    const defaultLocaleEntry = files.find(
-      (dirent) => dirent.isFile() && dirent.name.endsWith('.default.json'),
-    );
-    return defaultLocaleEntry ? basename(defaultLocaleEntry.name, '.default.json') : 'en';
+    const file = files.find((dirent) => dirent.isFile() && dirent.name.endsWith(postfix));
+    return file ? basename(file.name, postfix) : 'en';
   } catch (error) {
     return 'en';
   }
+}
+
+function cached<T>(fn: (...args: any[]) => Promise<T>): (...args: any[]) => Promise<T> {
+  let cachedPromise: Promise<T>;
+  return async (...args) => {
+    if (!cachedPromise) cachedPromise = fn(...args);
+    return cachedPromise;
+  };
 }
 
 function normalizeRoot(config: Config) {

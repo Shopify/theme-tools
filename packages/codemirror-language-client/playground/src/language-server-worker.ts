@@ -50,6 +50,11 @@ function getDefaultTranslationsFactory(_uri: string) {
   return async () => defaultTranslations as any;
 }
 
+// pretending they are the same :upside_down_smile:
+function getDefaultSchemaTranslationsFactory(_uri: string) {
+  return async () => defaultTranslations as any;
+}
+
 function getThemeSettingsSchemaForRootURI(_rootURI: URI) {
   return [] as any;
 }
@@ -71,8 +76,10 @@ startServer(worker, {
   fileExists,
   findRootURI,
   getDefaultTranslationsFactory,
+  getDefaultSchemaTranslationsFactory,
   getThemeSettingsSchemaForRootURI,
   getDefaultLocaleFactory: (_: string) => async () => 'en',
+  getDefaultSchemaLocaleFactory: (_: string) => async () => 'en',
   themeDocset: {
     filters: async () => filters,
     tags: async () => tags,

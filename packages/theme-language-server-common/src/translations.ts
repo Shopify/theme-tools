@@ -27,6 +27,24 @@ export async function useBufferOrInjectedTranslations(
   );
 }
 
+export async function useBufferOrInjectedSchemaTranslations(
+  getDefaultTranslationsFactory: Dependencies['getDefaultSchemaTranslationsFactory'],
+  theme: AugmentedSourceCode[],
+  rootURI: string,
+) {
+  const injectedGetDefaultTranslations = getDefaultTranslationsFactory(rootURI);
+  const defaultTranslationsSourceCode = theme.find(
+    (sourceCode) =>
+      sourceCode.type === SourceCodeType.JSON &&
+      sourceCode.absolutePath.match(/locales/) &&
+      sourceCode.absolutePath.match(/default\.schema\.json/),
+  );
+  return (
+    parseDefaultTranslations(defaultTranslationsSourceCode) ||
+    (await injectedGetDefaultTranslations())
+  );
+}
+
 function parseDefaultTranslations(sourceCode: AugmentedSourceCode | undefined) {
   if (!sourceCode) return undefined;
   try {

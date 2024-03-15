@@ -9,6 +9,8 @@ import {
   findRootURI,
   getDefaultLocaleFactory,
   getDefaultTranslationsFactory,
+  getDefaultSchemaLocaleFactory,
+  getDefaultSchemaTranslationsFactory,
   getThemeSettingsSchemaForRootURI,
   loadConfig,
 } from './dependencies';
@@ -23,6 +25,8 @@ export function startServer() {
     log,
     getDefaultTranslationsFactory,
     getDefaultLocaleFactory,
+    getDefaultSchemaLocaleFactory,
+    getDefaultSchemaTranslationsFactory,
     getThemeSettingsSchemaForRootURI,
     findRootURI,
     fileExists,

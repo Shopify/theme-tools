@@ -57,6 +57,7 @@ export async function check(
     root: '/',
   };
   const defaultTranslationsFileRelativePath = 'locales/en.default.json';
+  const defaultSchemaTranslationsFileRelativePath = 'locales/en.default.schema.json';
   const defaultMockDependencies = {
     async fileSize(absolutePath: string) {
       const relativePath = absolutePath.replace(/^\//, '');
@@ -74,8 +75,21 @@ export async function check(
         throw e;
       }
     },
+    async getDefaultSchemaTranslations() {
+      try {
+        return JSON.parse(themeDesc[defaultSchemaTranslationsFileRelativePath] || '{}');
+      } catch (e) {
+        if (e instanceof SyntaxError) return {};
+        throw e;
+      }
+    },
     async getDefaultLocale() {
       return defaultTranslationsFileRelativePath.match(/locales\/(.*)\.default\.json$/)?.[1]!;
+    },
+    async getDefaultSchemaLocale() {
+      return defaultSchemaTranslationsFileRelativePath.match(
+        /locales\/(.*)\.default\.schema\.json$/,
+      )?.[1]!;
     },
     themeDocset: {
       async filters() {

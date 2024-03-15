@@ -3,7 +3,10 @@ import { check } from '@shopify/theme-check-common';
 import { Dependencies } from '../types';
 import { DocumentManager } from '../documents';
 import { DiagnosticsManager } from './DiagnosticsManager';
-import { useBufferOrInjectedTranslations } from '../translations';
+import {
+  useBufferOrInjectedTranslations,
+  useBufferOrInjectedSchemaTranslations,
+} from '../translations';
 import { URI } from 'vscode-uri';
 
 export function makeRunChecks(
@@ -16,6 +19,8 @@ export function makeRunChecks(
     fileExists,
     getDefaultTranslationsFactory,
     getDefaultLocaleFactory,
+    getDefaultSchemaTranslationsFactory,
+    getDefaultSchemaLocaleFactory,
     themeDocset,
     jsonValidationSet,
   }: Pick<
@@ -26,6 +31,8 @@ export function makeRunChecks(
     | 'fileSize'
     | 'getDefaultTranslationsFactory'
     | 'getDefaultLocaleFactory'
+    | 'getDefaultSchemaTranslationsFactory'
+    | 'getDefaultSchemaLocaleFactory'
     | 'themeDocset'
     | 'jsonValidationSet'
   >,
@@ -53,17 +60,22 @@ export function makeRunChecks(
         path: config.root,
       });
       const theme = documentManager.theme(rootURI.toString());
-      const defaultTranslations = await useBufferOrInjectedTranslations(
-        getDefaultTranslationsFactory,
-        theme,
-        rootURI.toString(),
-      );
+      const [defaultTranslations, defaultSchemaTranslations] = await Promise.all([
+        useBufferOrInjectedTranslations(getDefaultTranslationsFactory, theme, rootURI.toString()),
+        useBufferOrInjectedSchemaTranslations(
+          getDefaultSchemaTranslationsFactory,
+          theme,
+          rootURI.toString(),
+        ),
+      ]);
 
       const offenses = await check(theme, config, {
         fileExists,
         fileSize,
         getDefaultLocale: getDefaultLocaleFactory(rootURI.toString()),
+        getDefaultSchemaLocale: getDefaultSchemaLocaleFactory(rootURI.toString()),
         getDefaultTranslations: async () => defaultTranslations,
+        getDefaultSchemaTranslations: async () => defaultSchemaTranslations,
         jsonValidationSet,
         themeDocset,
       });

@@ -57,6 +57,8 @@ describe('Module: runChecks', () => {
       fileSize: async () => 420,
       getDefaultTranslationsFactory: () => async () => ({}),
       getDefaultLocaleFactory: () => async () => 'en',
+      getDefaultSchemaTranslationsFactory: () => async () => ({}),
+      getDefaultSchemaLocaleFactory: () => async () => 'en',
       loadConfig: async () => ({
         settings: {},
         checks: [LiquidFilter],
@@ -213,6 +215,8 @@ describe('Module: runChecks', () => {
       fileSize: async () => 420,
       getDefaultTranslationsFactory: () => async () => JSON.parse(files[defaultURI]),
       getDefaultLocaleFactory: () => async () => 'en',
+      getDefaultSchemaTranslationsFactory: () => async () => ({}),
+      getDefaultSchemaLocaleFactory: () => async () => 'en',
       loadConfig: async () => ({
         settings: {},
         checks: matchingTranslation,

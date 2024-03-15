@@ -96,6 +96,26 @@ export interface RequiredDependencies {
   getDefaultLocaleFactory(rootURI: URI): ThemeCheckDependencies['getDefaultLocale'];
 
   /**
+   * getDefaultSchemaTranslationsFactory(root: URI)
+   *
+   * Returns the theme-check-js getDefaultSchemaTranslations() dependency.
+   *
+   * A factory because different repos have different default schema translations.
+   */
+  getDefaultSchemaTranslationsFactory(
+    rootURI: URI,
+  ): ThemeCheckDependencies['getDefaultSchemaTranslations'];
+
+  /**
+   * getDefaultLocale(root: URI)
+   *
+   * Returns the theme-check-js getDefaultSchemaLocale() dependency.
+   *
+   * A factory because different repos have different default schema locales.
+   */
+  getDefaultSchemaLocaleFactory(rootURI: URI): ThemeCheckDependencies['getDefaultSchemaLocale'];
+
+  /**
    * getThemeSettingsSchemaForRootURI(root: URI)
    *
    * Should return parsed contents of the config/settings_schema.json file.

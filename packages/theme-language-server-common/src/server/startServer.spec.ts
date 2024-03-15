@@ -357,6 +357,8 @@ describe('Module: server', () => {
       fileSize: vi.fn().mockResolvedValue(420),
       getDefaultTranslationsFactory: () => async () => ({}),
       getDefaultLocaleFactory: () => async () => 'en',
+      getDefaultSchemaTranslationsFactory: () => async () => ({}),
+      getDefaultSchemaLocaleFactory: () => async () => 'en',
       getThemeSettingsSchemaForRootURI: async () => [],
       loadConfig: async () => ({
         settings: {},
