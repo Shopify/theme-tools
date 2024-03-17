@@ -164,6 +164,18 @@
         "editor.formatOnType": true
       }
     },
+    "jsonValidation": [
+      {
+        "fileMatch": [
+          "assets/*.json",
+          "config/*.json",
+          "locales/*.json",
+          "sections/*.json",
+          "templates/**/*.json"
+        ],
+        "url": "./allowCommentsSchema.json"
+      }
+    ],
     "languages": [
       {
         "id": "liquid",
@@ -195,6 +207,16 @@
         "extensions": [
           ".scss.liquid",
           ".sass.liquid"
+        ]
+      },
+      {
+        "id": "jsonc",
+        "filenamePatterns": [
+          "**/assets/*.json",
+          "**/config/*.json",
+          "**/locales/*.json",
+          "**/sections/*.json",
+          "**/templates/**/*.json"
         ]
       }
     ],
