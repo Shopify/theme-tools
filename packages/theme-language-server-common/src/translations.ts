@@ -109,10 +109,6 @@ export function toOptions(prefix: string[], translations: Translations): Transla
   });
 }
 
-export function translationOptions(
-  translations: Translations,
-  partial: string,
-): TranslationOption[] {
-  const options = toOptions([], translations);
-  return options.filter((option) => option.path.join('.').startsWith(partial));
+export function translationOptions(translations: Translations): TranslationOption[] {
+  return toOptions([], translations);
 }

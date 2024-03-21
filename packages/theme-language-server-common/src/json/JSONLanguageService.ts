@@ -13,6 +13,8 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DocumentManager } from '../documents';
 import { findCurrentNode } from '../visitor';
 import { TranslationFileContributions } from './TranslationFileContributions';
+import { SchemaTranslationContributions } from './SchemaTranslationContributions';
+import { GetTranslationsForURI } from '../translations';
 
 const SectionSchemaURI =
   'https://raw.githubusercontent.com/Shopify/theme-liquid-docs/main/schemas/theme/section_schema.json';
@@ -26,12 +28,16 @@ export class JSONLanguageService {
   constructor(
     private documentManager: DocumentManager,
     private jsonValidationSet: JsonValidationSet,
+    private getDefaultSchemaTranslations: GetTranslationsForURI,
   ) {}
 
   setup(clientCapabilities: LSPClientCapabilities) {
     this.service = getLanguageService({
       schemaRequestService: this.getSchemaForURI.bind(this),
-      contributions: [new TranslationFileContributions(this.documentManager)],
+      contributions: [
+        new TranslationFileContributions(this.documentManager),
+        new SchemaTranslationContributions(this.documentManager, this.getDefaultSchemaTranslations),
+      ],
       clientCapabilities,
     });
     this.service.configure({

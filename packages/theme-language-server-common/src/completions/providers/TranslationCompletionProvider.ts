@@ -34,7 +34,12 @@ export class TranslationCompletionProvider implements Provider {
 
     const translations = await this.getTranslationsForURI(params.textDocument.uri);
     const partial = node.value;
-    const options = translationOptions(translations, partial);
+
+    // We only want to show standard translations to complete if the translation
+    // is prefixed by shopify. Otherwise it's too noisy.
+    const options = translationOptions(translations).filter(
+      (option) => !option.path[0]?.startsWith('shopify') || partial.startsWith('shopify'),
+    );
 
     const [_currentNode, realAncestors] =
       ast instanceof Error
