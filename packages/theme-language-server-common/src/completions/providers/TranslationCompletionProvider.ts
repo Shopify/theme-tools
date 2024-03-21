@@ -1,16 +1,10 @@
 import { LiquidHtmlNode, NodeTypes } from '@shopify/liquid-html-parser';
-import { Translations } from '@shopify/theme-check-common';
 import { CompletionItem, CompletionItemKind, Range, TextEdit } from 'vscode-languageserver';
+import { DocumentManager } from '../../documents';
+import { GetTranslationsForURI, renderTranslation, translationOptions } from '../../translations';
+import { findCurrentNode } from '../../visitor';
 import { LiquidCompletionParams } from '../params';
 import { Provider } from './common';
-import { DocumentManager } from '../../documents';
-import {
-  GetTranslationsForURI,
-  PluralizedTranslation,
-  PluralizedTranslationKeys,
-  renderTranslation,
-} from '../../translations';
-import { findCurrentNode } from '../../visitor';
 
 export class TranslationCompletionProvider implements Provider {
   constructor(
@@ -88,28 +82,4 @@ export class TranslationCompletionProvider implements Provider {
       }),
     );
   }
-}
-
-type Translation = string | PluralizedTranslation;
-type TranslationOption = { path: string[]; translation: Translation };
-
-function isPluralizedTranslation(
-  translations: Translations,
-): translations is PluralizedTranslation {
-  return PluralizedTranslationKeys.some((key) => key in translations);
-}
-
-function toOptions(prefix: string[], translations: Translations): TranslationOption[] {
-  return Object.entries(translations).flatMap(([path, translation]) => {
-    if (typeof translation === 'string' || isPluralizedTranslation(translation)) {
-      return [{ path: prefix.concat(path), translation }];
-    } else {
-      return toOptions(prefix.concat(path), translation);
-    }
-  });
-}
-
-function translationOptions(translations: Translations, partial: string): TranslationOption[] {
-  const options = toOptions([], translations);
-  return options.filter((option) => option.path.join('.').startsWith(partial));
 }

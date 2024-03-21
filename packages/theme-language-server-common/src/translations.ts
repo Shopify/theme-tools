@@ -3,6 +3,8 @@ import { AugmentedSourceCode } from './documents';
 import { Dependencies } from './types';
 
 export type GetTranslationsForURI = (uri: string) => Promise<Translations>;
+export type Translation = string | PluralizedTranslation;
+export type TranslationOption = { path: string[]; translation: Translation };
 
 export const PluralizedTranslationKeys = ['one', 'few', 'many', 'two', 'zero', 'other'] as const;
 export type PluralizedTranslation = {
@@ -89,4 +91,28 @@ export function translationValue(
     current = current[key];
   }
   return current;
+}
+
+export function isPluralizedTranslation(
+  translations: Translations,
+): translations is PluralizedTranslation {
+  return PluralizedTranslationKeys.some((key) => key in translations);
+}
+
+export function toOptions(prefix: string[], translations: Translations): TranslationOption[] {
+  return Object.entries(translations).flatMap(([path, translation]) => {
+    if (typeof translation === 'string' || isPluralizedTranslation(translation)) {
+      return [{ path: prefix.concat(path), translation }];
+    } else {
+      return toOptions(prefix.concat(path), translation);
+    }
+  });
+}
+
+export function translationOptions(
+  translations: Translations,
+  partial: string,
+): TranslationOption[] {
+  const options = toOptions([], translations);
+  return options.filter((option) => option.path.join('.').startsWith(partial));
 }
