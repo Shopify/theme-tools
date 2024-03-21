@@ -1,3 +1,4 @@
+import { JSONNode, SourceCodeType } from '@shopify/theme-check-common';
 import {
   CompletionsCollector,
   JSONPath,
@@ -5,7 +6,7 @@ import {
   MarkedString,
 } from 'vscode-json-languageservice';
 import { DocumentManager } from '../documents';
-import { JSONNode, SourceCodeType } from '@shopify/theme-check-common';
+import { extractParams, paramsString } from '../translations';
 
 function nodeAtLocation(ast: JSONNode, location: JSONPath): JSONNode | undefined {
   return location.reduce((value: JSONNode | undefined, segment: string | number) => {
@@ -114,21 +115,6 @@ export function contextualizedLabel(
     const params = extractParams(value);
     return marked(`{{ '${str.join('.')}' | t${paramsString(params)} }}`, 'liquid');
   }
-}
-
-function extractParams(value: string) {
-  const regex = /\{\{([^}]+?)\}\}/g;
-  const results = [];
-  let current;
-  while ((current = regex.exec(value)) !== null) {
-    results.push(current[1].trim());
-  }
-  return results;
-}
-
-function paramsString(params: string[]) {
-  if (params.length === 0) return '';
-  return `: ` + params.map((param) => `${param}: ${param}`).join(', ');
 }
 
 function marked(value: string, language = 'liquid'): { language: string; value: string } {

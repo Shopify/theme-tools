@@ -96,7 +96,7 @@ export function translationValue(
 export function isPluralizedTranslation(
   translations: Translations,
 ): translations is PluralizedTranslation {
-  return PluralizedTranslationKeys.some((key) => key in translations);
+  return Object.keys(translations).every((key) => PluralizedTranslationKeys.includes(key as any));
 }
 
 export function toOptions(prefix: string[], translations: Translations): TranslationOption[] {
@@ -111,4 +111,19 @@ export function toOptions(prefix: string[], translations: Translations): Transla
 
 export function translationOptions(translations: Translations): TranslationOption[] {
   return toOptions([], translations);
+}
+
+export function extractParams(value: string) {
+  const regex = /\{\{([^}]+?)\}\}/g;
+  const results = [];
+  let current;
+  while ((current = regex.exec(value)) !== null) {
+    results.push(current[1].trim());
+  }
+  return results;
+}
+
+export function paramsString(params: string[]) {
+  if (params.length === 0) return '';
+  return `: ` + params.map((param) => `${param}: ${param}`).join(', ');
 }

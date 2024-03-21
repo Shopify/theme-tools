@@ -1,7 +1,13 @@
 import { LiquidHtmlNode, NodeTypes } from '@shopify/liquid-html-parser';
 import { CompletionItem, CompletionItemKind, Range, TextEdit } from 'vscode-languageserver';
 import { DocumentManager } from '../../documents';
-import { GetTranslationsForURI, renderTranslation, translationOptions } from '../../translations';
+import {
+  GetTranslationsForURI,
+  extractParams,
+  paramsString,
+  renderTranslation,
+  translationOptions,
+} from '../../translations';
 import { findCurrentNode } from '../../visitor';
 import { LiquidCompletionParams } from '../params';
 import { Provider } from './common';
@@ -74,17 +80,24 @@ export class TranslationCompletionProvider implements Provider {
 
     const insertTextStartIndex = partial.lastIndexOf('.') + 1;
 
-    return options.map(
-      (option): CompletionItem => ({
-        label: quote + option.path.join('.') + quote + ' | t',
-        insertText: option.path.join('.').slice(insertTextStartIndex), // for editors that don't support textEdit
+    return options.map(({ path, translation }): CompletionItem => {
+      const params = extractParams(
+        typeof translation === 'string' ? translation : Object.values(translation)[0] ?? '',
+      );
+      const parameters = paramsString(params);
+      return {
+        label: quote + path.join('.') + quote + ' | t', // don't want the count here because it feels noisy(?)
+        insertText: path.join('.').slice(insertTextStartIndex), // for editors that don't support textEdit
         kind: CompletionItemKind.Field,
-        textEdit: TextEdit.replace(replaceRange, option.path.join('.') + postFix),
+        textEdit: TextEdit.replace(
+          replaceRange,
+          path.join('.') + postFix + (shouldAppendTranslateFilter ? parameters : ''),
+        ),
         documentation: {
           kind: 'markdown',
-          value: renderTranslation(option.translation),
+          value: renderTranslation(translation),
         },
-      }),
-    );
+      };
+    });
   }
 }
