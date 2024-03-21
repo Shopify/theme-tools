@@ -5,8 +5,9 @@
       "type": "shell",
       "command": "yarn --cwd packages/vscode-extension build:extension:dev",
       "group": "build",
-      "label": "vscode dev watch",
+      "label": "vscode dev",
       "dependsOrder": "parallel",
+      "problemMatcher": "$ts-checker-webpack",
       "dependsOn": [
         "language-config",
         "parser pre build",
