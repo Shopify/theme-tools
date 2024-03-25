@@ -1,5 +1,20 @@
 # @shopify/theme-check-common
 
+## 2.3.0
+
+### Minor Changes
+
+- 8e3c7e2: Add Schema translation checking to `MatchingTranslations`
+- 8e3c7e2: Breaking: add `getDefaultSchema{Locale,Translations}(Factory)?` dependencies
+
+  To be used to power `MatchingTranslations` for [Schema translations](https://shopify.dev/docs/themes/architecture/locales/schema-locale-files).
+
+  To be used to power Schema translations code completion and hover in section and theme block `{% schema %}` JSON blobs.
+
+### Patch Changes
+
+- 8e3c7e2: Unify parseJSON usage
+
 ## 2.2.2
 
 ## 2.2.1

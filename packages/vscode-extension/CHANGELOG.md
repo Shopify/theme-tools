@@ -1,5 +1,43 @@
 ## theme-check-vscode
 
+## 2.2.0
+
+### Minor Changes
+
+- 8e3c7e2: Add `t:` translation completion and hover support in section and theme block `{% schema %}` tags
+- 8e3c7e2: Add Schema translation checking to `MatchingTranslations`
+
+### Patch Changes
+
+- 8e3c7e2: Make translation completion fuzzy
+- 8e3c7e2: Theme translation completion now appends parameters
+
+  For example, if your translation look like this:
+
+  ```json
+  {
+    "items": {
+      "one": "{{ count }} item",
+      "other": "{{ count }} items"
+    }
+  }
+  ```
+
+  Then we’ll complete like this:
+
+  ```liquid
+  {{ 'items' | t: count: count }}
+  ```
+
+- 8e3c7e2: Add `:` as a completion trigger character
+- 8e3c7e2: Fix offering of standard translations options when the default translation file is open
+- Updated dependencies [8e3c7e2]
+- Updated dependencies [8e3c7e2]
+- Updated dependencies [8e3c7e2]
+- Updated dependencies [8e3c7e2]
+- Updated dependencies [8e3c7e2]
+  - @shopify/theme-language-server-node@1.9.0
+
 ## 2.1.3
 
 ### Patch Changes
