@@ -13,17 +13,26 @@ import { MarkedString, MarkupContent } from 'vscode-languageserver-protocol';
 
 const md = new MarkdownIt();
 
-const exampleTemplate = `<!doctype html>
-<html class="no-js" lang="{{ request.locale.iso_code }}">
-  <head>
-    {{ 'theme.js' | asset_url | script_tag }}
-    {{ content_for_header }}
-  </head>
+const exampleTemplate = `{% # sections/title.liquid %}
+<section>
+  <h2>{{ section.settings.title }}</h2>
+  {% echo 'hi' | upcase %}
+</section>
 
-  <body class="gradient">
-    {{ content_for_layout }}
-  </body>
-</html>`;
+{% schema %}
+{
+  "name": "t:sections.title.name",
+  "limit": 1,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "t:sections.title.settings.title.label"
+    }
+  ]
+}
+{% endschema %}
+`;
 
 const exampleTranslations = {
   product: {
@@ -50,6 +59,10 @@ function asMarkdown(content: MarkupContent | MarkedString[] | MarkedString): str
 
   if (MarkupContent.is(content)) {
     return content.value;
+  }
+
+  if (!content) {
+    return '';
   }
 
   return `\`\`\`${content.language}\n${content.value}\n\`\`\``;
@@ -115,7 +128,7 @@ async function main() {
         // liquid(),
         // liquidHighLightStyle,
         // oneDark,
-        client.extension('browser:/input.liquid'),
+        client.extension('browser:/sections/section.liquid'),
       ],
     }),
     parent: document.getElementById('liquid-editor')!,
@@ -132,7 +145,35 @@ async function main() {
         client.extension('browser:/locales/en.default.json'),
       ],
     }),
-    parent: document.getElementById('json-editor')!,
+    parent: document.getElementById('theme-translations-editor')!,
+  });
+
+  new EditorView({
+    state: EditorState.create({
+      doc: JSON.stringify(
+        {
+          sections: {
+            title: {
+              name: 'Title section name',
+              settings: { title: { label: 'Title section title setting' } },
+            },
+            other: {
+              name: 'Other section name',
+            },
+          },
+        },
+        null,
+        2,
+      ),
+      extensions: [
+        basicSetup,
+        json(),
+        // liquidHighLightStyle,
+        // oneDark,
+        client.extension('browser:/locales/en.default.schema.json'),
+      ],
+    }),
+    parent: document.getElementById('schema-translations-editor')!,
   });
 }
 

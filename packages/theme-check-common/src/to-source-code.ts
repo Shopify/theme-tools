@@ -2,20 +2,9 @@ import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
 import toJSON from 'json-to-ast';
 
 import { SourceCodeType, JSONSourceCode, LiquidSourceCode } from './types';
+import { asError } from './utils/error';
 
-function asError(error: unknown): Error {
-  if (error instanceof Error) {
-    return error;
-  } else if (typeof error === 'string') {
-    return new Error(error);
-  } else if (error && typeof error.toString === 'function') {
-    return new Error(error.toString());
-  } else {
-    return new Error('An unknown error occurred');
-  }
-}
-
-function parseLiquid(source: string) {
+export function toLiquidHTMLAST(source: string) {
   try {
     return toLiquidHtmlAST(source);
   } catch (error) {
@@ -23,7 +12,7 @@ function parseLiquid(source: string) {
   }
 }
 
-function parseJSON(source: string) {
+export function toJSONAST(source: string) {
   try {
     return toJSON(source);
   } catch (error) {
@@ -43,7 +32,7 @@ export function toSourceCode(
       absolutePath: normalize(absolutePath),
       source,
       type: SourceCodeType.LiquidHtml,
-      ast: parseLiquid(source),
+      ast: toLiquidHTMLAST(source),
       version,
     };
   } else {
@@ -51,7 +40,7 @@ export function toSourceCode(
       absolutePath: normalize(absolutePath),
       source,
       type: SourceCodeType.JSON,
-      ast: parseJSON(source),
+      ast: toJSONAST(source),
       version,
     };
   }

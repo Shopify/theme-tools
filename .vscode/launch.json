@@ -25,7 +25,7 @@
         "${workspaceRoot}/packages/prettier-plugin-liquid/dist/**/*.js",
         "${workspaceRoot}/packages/liquid-html-parser/dist/**/*.js",
       ],
-      "preLaunchTask": "vscode dev watch"
+      "preLaunchTask": "vscode dev"
     },
     {
       "type": "chrome",

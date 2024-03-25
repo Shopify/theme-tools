@@ -33,7 +33,12 @@ describe('Module: TranslationCompletionProvider', async () => {
       '"general.password" | t',
       '"general.comments" | t',
     ]);
+
+    // Why all three you ask? Because we want to support fuzzy matching.
+    // We leave filtering up to the client.
     await expect(provider).to.complete('{{ "general.comments', [
+      '"general.username_html" | t',
+      '"general.password" | t',
       expect.objectContaining({
         documentation: {
           kind: 'markdown',
@@ -42,6 +47,7 @@ describe('Module: TranslationCompletionProvider', async () => {
       }),
     ]);
     await expect(provider).to.complete('{{ "general.passwo█" }}', [
+      '"general.username_html" | t',
       expect.objectContaining({
         label: '"general.password" | t',
         insertText: 'password',
@@ -49,6 +55,7 @@ describe('Module: TranslationCompletionProvider', async () => {
           newText: 'general.password" | t',
         }),
       }),
+      '"general.comments" | t',
     ]);
   });
 });

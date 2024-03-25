@@ -1,4 +1,6 @@
 import { LiquidRawTag, Position } from '@shopify/liquid-html-parser';
+import { isError } from '../../utils';
+import { parseJSON } from '../../json';
 
 /**
  * Parses the error message from a `SyntaxError`
@@ -42,35 +44,34 @@ export class JsonParseError extends SyntaxError {
  * When the body is not valid JSON, returns an error message, and the indicies of the error.
  */
 export const parseJsonBody = (node: LiquidRawTag): object | Error => {
-  try {
-    return JSON.parse(node.body.value);
-  } catch (error) {
-    const defaultPosition = {
-      start: node.blockStartPosition.end,
-      end: node.blockEndPosition.start,
-    };
+  const body = parseJSON(node.body.value);
+  if (!isError(body)) return body;
+  const error = body;
+  const defaultPosition = {
+    start: node.blockStartPosition.end,
+    end: node.blockEndPosition.start,
+  };
 
-    if (error instanceof SyntaxError) {
-      const schemaCharIndex = getErrorPositionFromSyntaxError(error);
+  if (error instanceof SyntaxError) {
+    const schemaCharIndex = getErrorPositionFromSyntaxError(error);
 
-      const offset = node.blockStartPosition.end;
-      const position = schemaCharIndex
-        ? {
-            /**
-             * Offset the error indicies by the position where the syntax error occurred.
-             * A single character position can be hard to see it or hover for details.
-             * A position length of 3 characters makes a good balance between visibility and accuracy.
-             */
-            start: offset + schemaCharIndex - 1,
-            end: offset + schemaCharIndex + 1,
-          }
-        : defaultPosition;
+    const offset = node.blockStartPosition.end;
+    const position = schemaCharIndex
+      ? {
+          /**
+           * Offset the error indicies by the position where the syntax error occurred.
+           * A single character position can be hard to see it or hover for details.
+           * A position length of 3 characters makes a good balance between visibility and accuracy.
+           */
+          start: offset + schemaCharIndex - 1,
+          end: offset + schemaCharIndex + 1,
+        }
+      : defaultPosition;
 
-      const sanitizedMessage = substringBefore(error.message, ' in JSON at position');
+    const sanitizedMessage = substringBefore(error.message, ' in JSON at position');
 
-      return new JsonParseError(sanitizedMessage, position);
-    }
-
-    return new JsonParseError((error as Error)?.message ?? 'Unknown error', defaultPosition);
+    return new JsonParseError(sanitizedMessage, position);
   }
+
+  return new JsonParseError((error as Error)?.message ?? 'Unknown error', defaultPosition);
 };

@@ -1,6 +1,6 @@
-import { JsonValidationSet, ValidateFunction } from '@shopify/theme-check-common';
+import { Translations, ValidateFunction } from '@shopify/theme-check-common';
 import { assert, beforeEach, describe, expect, it } from 'vitest';
-import { CompletionParams, HoverParams, ClientCapabilities } from 'vscode-languageserver';
+import { CompletionParams, HoverParams } from 'vscode-languageserver';
 import { DocumentManager } from '../documents';
 import { JSONLanguageService } from './JSONLanguageService';
 
@@ -58,26 +58,32 @@ const simplifiedTranslationSchema = JSON.stringify({
 describe('Module: JSONLanguageService', () => {
   let jsonLanguageService: JSONLanguageService;
   let documentManager: DocumentManager;
+  let schemaTranslations: Translations;
 
   beforeEach(() => {
+    schemaTranslations = {};
     documentManager = new DocumentManager();
-    jsonLanguageService = new JSONLanguageService(documentManager, {
-      async validateSectionSchema() {
-        const mockValidator: ValidateFunction = () => {
-          mockValidator.errors = [];
-          return false;
-        };
-        return mockValidator;
-      },
+    jsonLanguageService = new JSONLanguageService(
+      documentManager,
+      {
+        async validateSectionSchema() {
+          const mockValidator: ValidateFunction = () => {
+            mockValidator.errors = [];
+            return false;
+          };
+          return mockValidator;
+        },
 
-      async sectionSchema() {
-        return simplifiedSectionSchema;
-      },
+        async sectionSchema() {
+          return simplifiedSectionSchema;
+        },
 
-      async translationSchema() {
-        return simplifiedTranslationSchema;
+        async translationSchema() {
+          return simplifiedTranslationSchema;
+        },
       },
-    });
+      () => Promise.resolve(schemaTranslations),
+    );
 
     jsonLanguageService.setup({
       textDocument: {
@@ -151,6 +157,39 @@ describe('Module: JSONLanguageService', () => {
         expect(completions.items[0].documentation).to.eql('Translation for the singular form');
       }
     });
+
+    it('should complete t:translations', async () => {
+      schemaTranslations = {
+        general: {
+          hello: 'hello world',
+          hi: 'hi world',
+        },
+      };
+
+      const params = getParams(
+        documentManager,
+        'sections/section.liquid',
+        `
+          <div>hello world</div>
+          {% schema %}
+            {
+              "name": "t:█"
+            }
+          {% endschema %}
+        `,
+      );
+
+      const completions = await jsonLanguageService.completions(params);
+      assert(
+        typeof completions === 'object' && completions !== null && !Array.isArray(completions),
+      );
+      expect(completions.items).to.have.lengthOf(2);
+      expect(completions.items[0].label).to.equal('t:general.hello');
+      expect(completions.items[0].documentation).to.eql({
+        kind: 'markdown',
+        value: 'hello world',
+      });
+    });
   });
 
   describe('hover', () => {
@@ -170,6 +209,29 @@ describe('Module: JSONLanguageService', () => {
       const hover = await jsonLanguageService.hover(params);
       assert(hover !== null);
       expect(hover.contents).to.eql(['The section title shown in the theme editor']);
+    });
+
+    it('should return the translation value of a t:translation', async () => {
+      schemaTranslations = {
+        general: {
+          hello: 'hello world',
+        },
+      };
+      const params = getParams(
+        documentManager,
+        'sections/section.liquid',
+        `
+          <div>hello world</div>
+          {% schema %}
+            {
+              "name": "t:general.hello█"
+            }
+          {% endschema %}
+        `,
+      );
+      const hover = await jsonLanguageService.hover(params);
+      assert(hover !== null);
+      expect(hover.contents).to.eql(['hello world']);
     });
 
     it('should return the path of a translation key in a theme translation file', async () => {

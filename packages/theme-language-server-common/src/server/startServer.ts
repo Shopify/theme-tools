@@ -17,7 +17,11 @@ import { DocumentManager } from '../documents';
 import { OnTypeFormattingProvider } from '../formatting';
 import { HoverProvider } from '../hover';
 import { JSONLanguageService } from '../json/JSONLanguageService';
-import { GetTranslationsForURI, useBufferOrInjectedTranslations } from '../translations';
+import {
+  GetTranslationsForURI,
+  useBufferOrInjectedTranslations,
+  useBufferOrInjectedSchemaTranslations,
+} from '../translations';
 import { Dependencies } from '../types';
 import { debounce } from '../utils';
 import { VERSION } from '../version';
@@ -44,6 +48,8 @@ export function startServer(
     findRootURI: findConfigurationRootURI,
     getDefaultLocaleFactory,
     getDefaultTranslationsFactory,
+    getDefaultSchemaLocaleFactory,
+    getDefaultSchemaTranslationsFactory,
     getThemeSettingsSchemaForRootURI,
     loadConfig,
     log = defaultLogger,
@@ -78,6 +84,8 @@ export function startServer(
       findRootURI: findConfigurationRootURI,
       getDefaultLocaleFactory,
       getDefaultTranslationsFactory,
+      getDefaultSchemaLocaleFactory,
+      getDefaultSchemaTranslationsFactory,
       loadConfig,
       themeDocset,
       jsonValidationSet,
@@ -88,19 +96,23 @@ export function startServer(
   const getTranslationsForURI: GetTranslationsForURI = async (uri) => {
     const rootURI = await findThemeRootURI(uri);
     const theme = documentManager.theme(rootURI);
+    const [defaultTranslations, shopifyTranslations] = await Promise.all([
+      useBufferOrInjectedTranslations(getDefaultTranslationsFactory, theme, rootURI),
+      themeDocset.systemTranslations(),
+    ]);
 
-    const getTranslationsFactory = (rootUri: string) => {
-      return async () => {
-        const [defaultTranslations, shopifyTranslations] = await Promise.all([
-          getDefaultTranslationsFactory(rootUri)(),
-          themeDocset.systemTranslations(),
-        ]);
+    return { ...shopifyTranslations, ...defaultTranslations };
+  };
 
-        return { ...defaultTranslations, ...shopifyTranslations };
-      };
-    };
+  const getSchemaTranslationsForURI: GetTranslationsForURI = async (uri) => {
+    const rootURI = await findThemeRootURI(uri);
+    const theme = documentManager.theme(rootURI);
 
-    return useBufferOrInjectedTranslations(getTranslationsFactory, theme, rootURI);
+    return useBufferOrInjectedSchemaTranslations(
+      getDefaultSchemaTranslationsFactory,
+      theme,
+      rootURI,
+    );
   };
 
   const getSnippetNamesForURI: GetSnippetNamesForURI = async (uri: string) => {
@@ -121,7 +133,11 @@ export function startServer(
     return getThemeSettingsSchemaForRootURI(rootUri);
   };
 
-  const jsonLanguageService = new JSONLanguageService(documentManager, jsonValidationSet);
+  const jsonLanguageService = new JSONLanguageService(
+    documentManager,
+    jsonValidationSet,
+    getSchemaTranslationsForURI,
+  );
   const completionsProvider = new CompletionsProvider({
     documentManager,
     themeDocset,
@@ -172,7 +188,7 @@ export function startServer(
           codeActionKinds: [...CodeActionKinds],
         },
         completionProvider: {
-          triggerCharacters: ['.', '{{ ', '{% ', '<', '/', '[', '"', "'"],
+          triggerCharacters: ['.', '{{ ', '{% ', '<', '/', '[', '"', "'", ':'],
         },
         documentOnTypeFormattingProvider: {
           firstTriggerCharacter: ' ',

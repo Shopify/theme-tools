@@ -1,16 +1,18 @@
-import { Dependencies } from '@shopify/theme-language-server-common';
 import {
   Config,
   PathHandler,
   Translations,
+  isError,
   loadConfig as loadConfigFromPath,
+  parseJSON,
   reusableFindRoot,
 } from '@shopify/theme-check-node';
-import { URI, Utils } from 'vscode-uri';
-import { basename } from 'node:path';
-import * as fs from 'node:fs/promises';
-import { promisify } from 'node:util';
+import { Dependencies } from '@shopify/theme-language-server-common';
 import { glob as callbackGlob } from 'glob';
+import * as fs from 'node:fs/promises';
+import { basename } from 'node:path';
+import { promisify } from 'node:util';
+import { URI, Utils } from 'vscode-uri';
 
 const glob = promisify(callbackGlob);
 
@@ -108,60 +110,70 @@ export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(
   }
 };
 
-export const getDefaultTranslationsFactory: Dependencies['getDefaultTranslationsFactory'] =
-  function getDefaultTranslationsFactory(rootURI) {
+export const getDefaultTranslationsFactoryFactory =
+  (postfix: string = '.default.json') =>
+  (rootURI: string) => {
     const root = parse(rootURI);
-    let cachedPromise: Promise<Translations>;
 
-    async function getDefaultTranslations() {
+    return cached(async () => {
       try {
-        const defaultLocale = await getDefaultLocale(root);
+        const defaultLocale = await getDefaultLocale(root, postfix);
         const defaultTranslationsFileUri = Utils.joinPath(
           root,
           'locales',
-          `${defaultLocale}.default.json`,
+          `${defaultLocale}${postfix}`,
         );
         const defaultTranslationsFile = await fs.readFile(
           asFsPath(defaultTranslationsFileUri),
           'utf8',
         );
-        return JSON.parse(defaultTranslationsFile) as Translations;
+        const translations = parseJSON(defaultTranslationsFile) as Translations;
+        return isError(translations) ? {} : translations;
       } catch (error) {
         return {};
       }
-    }
+    });
+  };
 
-    return async () => {
-      if (!cachedPromise) cachedPromise = getDefaultTranslations();
-      return cachedPromise;
-    };
+export const getDefaultTranslationsFactory: Dependencies['getDefaultTranslationsFactory'] =
+  getDefaultTranslationsFactoryFactory('.default.json');
+
+export const getDefaultSchemaTranslationsFactory: Dependencies['getDefaultSchemaTranslationsFactory'] =
+  getDefaultTranslationsFactoryFactory('.default.schema.json');
+
+const getDefaultLocaleFactoryFactory =
+  (postfix: string = '.default.json') =>
+  (rootURI: string) => {
+    const root = parse(rootURI);
+    return cached(() => getDefaultLocale(root, postfix));
   };
 
 export const getDefaultLocaleFactory: Dependencies['getDefaultLocaleFactory'] =
-  function getDefaultLocaleFactory(rootURI: string) {
-    const root = parse(rootURI);
-    let cachedPromise: Promise<string>;
+  getDefaultLocaleFactoryFactory('.default.json');
 
-    return async () => {
-      if (!cachedPromise) cachedPromise = getDefaultLocale(root);
-      return cachedPromise;
-    };
-  };
+export const getDefaultSchemaLocaleFactory: Dependencies['getDefaultSchemaLocaleFactory'] =
+  getDefaultLocaleFactoryFactory('.default.schema.json');
 
-async function getDefaultLocale(rootURI: URI) {
+async function getDefaultLocale(rootURI: URI, postfix = '.default.json') {
   try {
     const localesFolder = Utils.joinPath(rootURI, 'locales');
     const files = await fs.readdir(asFsPath(localesFolder), {
       encoding: 'utf8',
       withFileTypes: true,
     });
-    const defaultLocaleEntry = files.find(
-      (dirent) => dirent.isFile() && dirent.name.endsWith('.default.json'),
-    );
-    return defaultLocaleEntry ? basename(defaultLocaleEntry.name, '.default.json') : 'en';
+    const file = files.find((dirent) => dirent.isFile() && dirent.name.endsWith(postfix));
+    return file ? basename(file.name, postfix) : 'en';
   } catch (error) {
     return 'en';
   }
+}
+
+function cached<T>(fn: (...args: any[]) => Promise<T>): (...args: any[]) => Promise<T> {
+  let cachedPromise: Promise<T>;
+  return async (...args) => {
+    if (!cachedPromise) cachedPromise = fn(...args);
+    return cachedPromise;
+  };
 }
 
 function normalizeRoot(config: Config) {
@@ -175,8 +187,8 @@ export const getThemeSettingsSchemaForRootURI: Dependencies['getThemeSettingsSch
       const rootURI = parse(rootUriString);
       const settingsSchemaFilePath = Utils.joinPath(rootURI, 'config/settings_schema.json');
       const contents = await fs.readFile(asFsPath(settingsSchemaFilePath), 'utf8');
-      const json = JSON.parse(contents);
-      if (!Array.isArray(json)) {
+      const json = parseJSON(contents);
+      if (isError(json) || !Array.isArray(json)) {
         throw new Error('Settings JSON file not in correct format');
       }
       return json;

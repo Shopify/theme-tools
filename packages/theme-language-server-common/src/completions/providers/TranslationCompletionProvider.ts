@@ -1,16 +1,16 @@
 import { LiquidHtmlNode, NodeTypes } from '@shopify/liquid-html-parser';
-import { Translations } from '@shopify/theme-check-common';
 import { CompletionItem, CompletionItemKind, Range, TextEdit } from 'vscode-languageserver';
-import { LiquidCompletionParams } from '../params';
-import { Provider } from './common';
 import { DocumentManager } from '../../documents';
 import {
   GetTranslationsForURI,
-  PluralizedTranslation,
-  PluralizedTranslationKeys,
+  extractParams,
+  paramsString,
   renderTranslation,
+  translationOptions,
 } from '../../translations';
 import { findCurrentNode } from '../../visitor';
+import { LiquidCompletionParams } from '../params';
+import { Provider } from './common';
 
 export class TranslationCompletionProvider implements Provider {
   constructor(
@@ -40,7 +40,12 @@ export class TranslationCompletionProvider implements Provider {
 
     const translations = await this.getTranslationsForURI(params.textDocument.uri);
     const partial = node.value;
-    const options = translationOptions(translations, partial);
+
+    // We only want to show standard translations to complete if the translation
+    // is prefixed by shopify. Otherwise it's too noisy.
+    const options = translationOptions(translations).filter(
+      (option) => !option.path[0]?.startsWith('shopify') || partial.startsWith('shopify'),
+    );
 
     const [_currentNode, realAncestors] =
       ast instanceof Error
@@ -75,41 +80,24 @@ export class TranslationCompletionProvider implements Provider {
 
     const insertTextStartIndex = partial.lastIndexOf('.') + 1;
 
-    return options.map(
-      (option): CompletionItem => ({
-        label: quote + option.path.join('.') + quote + ' | t',
-        insertText: option.path.join('.').slice(insertTextStartIndex), // for editors that don't support textEdit
+    return options.map(({ path, translation }): CompletionItem => {
+      const params = extractParams(
+        typeof translation === 'string' ? translation : Object.values(translation)[0] ?? '',
+      );
+      const parameters = paramsString(params);
+      return {
+        label: quote + path.join('.') + quote + ' | t', // don't want the count here because it feels noisy(?)
+        insertText: path.join('.').slice(insertTextStartIndex), // for editors that don't support textEdit
         kind: CompletionItemKind.Field,
-        textEdit: TextEdit.replace(replaceRange, option.path.join('.') + postFix),
+        textEdit: TextEdit.replace(
+          replaceRange,
+          path.join('.') + postFix + (shouldAppendTranslateFilter ? parameters : ''),
+        ),
         documentation: {
           kind: 'markdown',
-          value: renderTranslation(option.translation),
+          value: renderTranslation(translation),
         },
-      }),
-    );
+      };
+    });
   }
-}
-
-type Translation = string | PluralizedTranslation;
-type TranslationOption = { path: string[]; translation: Translation };
-
-function isPluralizedTranslation(
-  translations: Translations,
-): translations is PluralizedTranslation {
-  return PluralizedTranslationKeys.some((key) => key in translations);
-}
-
-function toOptions(prefix: string[], translations: Translations): TranslationOption[] {
-  return Object.entries(translations).flatMap(([path, translation]) => {
-    if (typeof translation === 'string' || isPluralizedTranslation(translation)) {
-      return [{ path: prefix.concat(path), translation }];
-    } else {
-      return toOptions(prefix.concat(path), translation);
-    }
-  });
-}
-
-function translationOptions(translations: Translations, partial: string): TranslationOption[] {
-  const options = toOptions([], translations);
-  return options.filter((option) => option.path.join('.').startsWith(partial));
 }

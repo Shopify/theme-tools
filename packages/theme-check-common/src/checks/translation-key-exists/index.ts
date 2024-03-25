@@ -1,4 +1,6 @@
+import { parseJSON } from '../../json';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
+import { isError } from '../../utils';
 
 function keyExists(key: string, pointer: any) {
   for (const token of key.split('.')) {
@@ -62,14 +64,9 @@ export const TranslationKeyExists: LiquidCheckDefinition = {
         }
 
         const defaultLocale = await context.getDefaultLocale();
-        try {
-          schemaLocales = JSON.parse(node.body.value).locales?.[defaultLocale];
-        } catch (error) {
-          if (error instanceof SyntaxError) {
-            return;
-          }
-          throw error;
-        }
+        const schema = parseJSON(node.body.value);
+        if (isError(schema) && schema instanceof SyntaxError) return;
+        schemaLocales = schema.locales?.[defaultLocale];
       },
 
       async onCodePathEnd() {

@@ -17,6 +17,7 @@ import {
   createCorrector,
   Dependencies,
   ChecksSettings,
+  parseJSON,
 } from '../index';
 
 export { StringCorrector, JSONCorrector };
@@ -57,6 +58,7 @@ export async function check(
     root: '/',
   };
   const defaultTranslationsFileRelativePath = 'locales/en.default.json';
+  const defaultSchemaTranslationsFileRelativePath = 'locales/en.default.schema.json';
   const defaultMockDependencies = {
     async fileSize(absolutePath: string) {
       const relativePath = absolutePath.replace(/^\//, '');
@@ -67,15 +69,18 @@ export async function check(
       return themeDesc[relativePath] !== undefined;
     },
     async getDefaultTranslations() {
-      try {
-        return JSON.parse(themeDesc[defaultTranslationsFileRelativePath] || '{}');
-      } catch (e) {
-        if (e instanceof SyntaxError) return {};
-        throw e;
-      }
+      return parseJSON(themeDesc[defaultTranslationsFileRelativePath] || '{}', {});
+    },
+    async getDefaultSchemaTranslations() {
+      return parseJSON(themeDesc[defaultSchemaTranslationsFileRelativePath] || '{}', {});
     },
     async getDefaultLocale() {
       return defaultTranslationsFileRelativePath.match(/locales\/(.*)\.default\.json$/)?.[1]!;
+    },
+    async getDefaultSchemaLocale() {
+      return defaultSchemaTranslationsFileRelativePath.match(
+        /locales\/(.*)\.default\.schema\.json$/,
+      )?.[1]!;
     },
     themeDocset: {
       async filters() {

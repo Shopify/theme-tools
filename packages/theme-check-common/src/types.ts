@@ -266,6 +266,8 @@ export type Translations = {
 export interface Dependencies {
   getDefaultTranslations(): Promise<Translations>;
   getDefaultLocale(): Promise<string>;
+  getDefaultSchemaLocale(): Promise<string>;
+  getDefaultSchemaTranslations(): Promise<Translations>;
   fileExists(absolutePath: string): Promise<boolean>;
   fileSize?(absolutePath: string): Promise<number>;
   themeDocset?: ThemeDocset;

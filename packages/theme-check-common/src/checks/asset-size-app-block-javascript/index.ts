@@ -1,3 +1,4 @@
+import { parseJSON } from '../../json';
 import {
   ConfigTarget,
   LiquidCheckDefinition,
@@ -5,6 +6,7 @@ import {
   Severity,
   SourceCodeType,
 } from '../../types';
+import { isError } from '../../utils';
 import { doesFileExist, doesFileExceedThreshold } from '../../utils/file-utils';
 
 const schema = {
@@ -35,28 +37,22 @@ export const AssetSizeAppBlockJavaScript: LiquidCheckDefinition<typeof schema> =
     return {
       async LiquidRawTag(node) {
         if (node.name !== 'schema') return;
-        let filePath;
-        try {
-          filePath = JSON.parse(node.body.value).javascript;
-        } catch (error) {
-          return;
-        }
+        const schema = parseJSON(node.body.value);
+        if (isError(schema)) return;
+        const javascript = schema.javascript;
+        if (!javascript) return;
 
-        if (!filePath) {
-          return;
-        }
-
-        const relativePath = `assets/${filePath}`;
+        const relativePath = `assets/${javascript}`;
         const thresholdInBytes = context.settings.thresholdInBytes;
 
-        const startIndex = node.body.position.start + node.body.value.indexOf(filePath);
-        const endIndex = startIndex + filePath.length;
+        const startIndex = node.body.position.start + node.body.value.indexOf(javascript);
+        const endIndex = startIndex + javascript.length;
 
         const fileExists = await doesFileExist(context, relativePath);
 
         if (!fileExists) {
           context.report({
-            message: `'${filePath}' does not exist.`,
+            message: `'${javascript}' does not exist.`,
             startIndex: startIndex,
             endIndex: endIndex,
           });
@@ -71,7 +67,7 @@ export const AssetSizeAppBlockJavaScript: LiquidCheckDefinition<typeof schema> =
 
         if (fileExceedsThreshold) {
           context.report({
-            message: `The file size for '${filePath}' (${fileSize} B) exceeds the configured threshold (${thresholdInBytes} B)`,
+            message: `The file size for '${javascript}' (${fileSize} B) exceeds the configured threshold (${thresholdInBytes} B)`,
             startIndex: startIndex,
             endIndex: endIndex,
           });

@@ -7,6 +7,7 @@ import {
   toSourceCode as commonToSourceCode,
   check as coreCheck,
   isIgnored,
+  parseJSON,
 } from '@shopify/theme-check-common';
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
 import fs from 'node:fs/promises';
@@ -60,7 +61,11 @@ export async function checkAndAutofix(root: string, configPath?: string) {
 export async function themeCheckRun(root: string, configPath?: string): Promise<ThemeCheckRun> {
   const { theme, config } = await getThemeAndConfig(root, configPath);
   const defaultTranslationsFile = theme.find((sc) => sc.absolutePath.endsWith('default.json'));
-  const defaultTranslations = JSON.parse(defaultTranslationsFile?.source || '{}');
+  const defaultTranslations = parseJSON(defaultTranslationsFile?.source ?? '{}', {});
+  const defaultSchemaTranslationsFile = theme.find((sc) =>
+    sc.absolutePath.endsWith('default.schema.json'),
+  );
+  const defaultSchemaTranslations = parseJSON(defaultSchemaTranslationsFile?.source ?? '{}', {});
   const themeLiquidDocsManager = new ThemeLiquidDocsManager();
 
   const offenses = await coreCheck(theme, config, {
@@ -68,16 +73,25 @@ export async function themeCheckRun(root: string, configPath?: string): Promise<
     fileSize,
     themeDocset: themeLiquidDocsManager,
     jsonValidationSet: themeLiquidDocsManager,
-    async getDefaultTranslations() {
-      return defaultTranslations;
-    },
-    async getDefaultLocale() {
+    getDefaultTranslations: async () => defaultTranslations,
+    getDefaultLocale: async () => {
       if (!defaultTranslationsFile) {
         return defaultLocale;
       }
       // assumes the path is normalized and '/' are used as separators
       const defaultTranslationsFileLocale = defaultTranslationsFile.absolutePath.match(
         /locales\/(.*)\.default\.json$/,
+      )?.[1];
+      return defaultTranslationsFileLocale || defaultLocale;
+    },
+    getDefaultSchemaTranslations: async () => defaultSchemaTranslations,
+    getDefaultSchemaLocale: async () => {
+      if (!defaultSchemaTranslationsFile) {
+        return defaultLocale;
+      }
+      // assumes the path is normalized and '/' are used as separators
+      const defaultTranslationsFileLocale = defaultSchemaTranslationsFile.absolutePath.match(
+        /locales\/(.*)\.default\.schema\.json$/,
       )?.[1];
       return defaultTranslationsFileLocale || defaultLocale;
     },

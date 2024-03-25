@@ -29,6 +29,20 @@ export const MatchingTranslations: JSONCheckDefinition = {
     const defaultTranslations = new Set<string>();
     const missingTranslations = new Set<string>();
     const nodesByPath = new Map<string, PropertyNode>();
+    const file = context.file;
+    const absolutePath = file.absolutePath;
+    const relativePath = context.relativePath(absolutePath);
+    const ast = file.ast;
+    const isLocaleFile = relativePath.startsWith('locales/');
+    const isDefaultTranslationsFile =
+      absolutePath.endsWith('.default.json') || absolutePath.endsWith('.default.schema.json');
+    const isSchemaTranslationFile = absolutePath.endsWith('.schema.json');
+
+    if (!isLocaleFile || isDefaultTranslationsFile || ast instanceof Error) {
+      // No need to lint a file that isn't a translation file, we return an
+      // empty object as the check for those.
+      return {};
+    }
 
     // Helpers
     const hasDefaultTranslations = () => defaultTranslations.size > 0;
@@ -39,17 +53,8 @@ export const MatchingTranslations: JSONCheckDefinition = {
     const hasDefaultTranslation = (translationPath: string) =>
       defaultTranslations.has(translationPath) ?? false;
 
-    const isDefaultTranslationsFile = ({ absolutePath }: JSONSourceCode) =>
-      absolutePath.endsWith('.default.json');
-
     const isPluralizationPath = (path: string) =>
       [...PLURALIZATION_KEYS].some((key) => path.endsWith(key));
-
-    const isLocaleFile = ({ absolutePath }: JSONSourceCode) => {
-      const relativePath = context.relativePath(absolutePath);
-
-      return relativePath.startsWith('locales/') && !relativePath.endsWith('schema.json');
-    };
 
     const jsonPaths = (json: any): string[] => {
       const keys = Object.keys(json);
@@ -85,14 +90,6 @@ export const MatchingTranslations: JSONCheckDefinition = {
       return minLength;
     };
 
-    const file = context.file;
-    const ast = file.ast;
-    if (!isLocaleFile(file) || isDefaultTranslationsFile(file) || ast instanceof Error) {
-      // No need to lint a file that isn't a translation file, we return an
-      // empty object as the check for those.
-      return {};
-    }
-
     const closestTranslationKey = (translationKey: string) => {
       const translationKeyParts = translationKey.split('.');
       let closestMatch = '';
@@ -113,7 +110,10 @@ export const MatchingTranslations: JSONCheckDefinition = {
 
     return {
       async onCodePathStart() {
-        const defaultTranslationPaths = await context.getDefaultTranslations().then(jsonPaths);
+        const getDefaultTranslations = isSchemaTranslationFile
+          ? context.getDefaultSchemaTranslations
+          : context.getDefaultTranslations;
+        const defaultTranslationPaths = await getDefaultTranslations().then(jsonPaths);
         defaultTranslationPaths.forEach(Set.prototype.add, defaultTranslations);
 
         // At the `onCodePathStart`, we assume that all translations are missing,

@@ -18,15 +18,17 @@ import {
   ReturnType,
   SourceCodeType,
   ThemeDocset,
+  isError,
+  parseJSON,
 } from '@shopify/theme-check-common';
-import { findLast, memo, toAbsolutePath } from './utils';
-import { visit } from './visitor';
 import {
   GetThemeSettingsSchemaForURI,
   InputSetting,
   isInputSetting,
   isSettingsCategory,
 } from './settings';
+import { findLast, memo, toAbsolutePath } from './utils';
+import { visit } from './visitor';
 
 export class TypeSystem {
   constructor(
@@ -850,8 +852,8 @@ function schemaSettingsAsProperties(ast: LiquidHtmlNode): ObjectEntry[] {
     const end = /\{%\s*endschema\s*%\}/m.exec(source);
     if (!start || !end) return [];
     const schema = source.slice(start.index + start[0].length, end.index);
-    const json = JSON.parse(schema);
-    if (!('settings' in json) || !Array.isArray(json.settings)) return [];
+    const json = parseJSON(schema);
+    if (isError(json) || !('settings' in json) || !Array.isArray(json.settings)) return [];
     const result: ObjectEntry[] = [];
     const inputSettings = json.settings.filter(isInputSetting);
     for (const setting of inputSettings) {
