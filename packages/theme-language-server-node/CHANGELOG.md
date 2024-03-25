@@ -1,5 +1,50 @@
 # @shopify/theme-language-server-node
 
+## 1.9.0
+
+### Minor Changes
+
+- 8e3c7e2: Make translation completion fuzzy
+- 8e3c7e2: Breaking: add `getDefaultSchema{Locale,Translations}(Factory)?` dependencies
+
+  To be used to power `MatchingTranslations` for [Schema translations](https://shopify.dev/docs/themes/architecture/locales/schema-locale-files).
+
+  To be used to power Schema translations code completion and hover in section and theme block `{% schema %}` JSON blobs.
+
+### Patch Changes
+
+- 8e3c7e2: Theme translation completion now appends parameters
+
+  For example, if your translation look like this:
+
+  ```json
+  {
+    "items": {
+      "one": "{{ count }} item",
+      "other": "{{ count }} items"
+    }
+  }
+  ```
+
+  Then we’ll complete like this:
+
+  ```liquid
+  {{ 'items' | t: count: count }}
+  ```
+
+- 8e3c7e2: Unify parseJSON usage
+- 8e3c7e2: Fix offering of standard translations options when the default translation file is open
+- Updated dependencies [8e3c7e2]
+- Updated dependencies [8e3c7e2]
+- Updated dependencies [8e3c7e2]
+- Updated dependencies [8e3c7e2]
+- Updated dependencies [8e3c7e2]
+- Updated dependencies [8e3c7e2]
+- Updated dependencies [8e3c7e2]
+  - @shopify/theme-language-server-common@1.9.0
+  - @shopify/theme-check-node@2.3.0
+  - @shopify/theme-check-docs-updater@2.3.0
+
 ## 1.8.3
 
 ### Patch Changes
