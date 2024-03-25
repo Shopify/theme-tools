@@ -673,14 +673,6 @@ function cleanDoc(doc: Doc[]): Doc[] {
   return doc.filter((x) => x !== '');
 }
 
-function getSchema(contents: string, options: LiquidParserOptions) {
-  try {
-    return [JSON.stringify(JSON.parse(contents), null, options.tabWidth), true];
-  } catch (e) {
-    return [contents, false];
-  }
-}
-
 function getSpaceBetweenLines(prev: LiquidStatement | null, curr: LiquidStatement): Doc {
   if (!prev) return '';
   const source = curr.source;

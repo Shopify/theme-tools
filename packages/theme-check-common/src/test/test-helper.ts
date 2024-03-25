@@ -17,6 +17,7 @@ import {
   createCorrector,
   Dependencies,
   ChecksSettings,
+  parseJSON,
 } from '../index';
 
 export { StringCorrector, JSONCorrector };
@@ -68,20 +69,10 @@ export async function check(
       return themeDesc[relativePath] !== undefined;
     },
     async getDefaultTranslations() {
-      try {
-        return JSON.parse(themeDesc[defaultTranslationsFileRelativePath] || '{}');
-      } catch (e) {
-        if (e instanceof SyntaxError) return {};
-        throw e;
-      }
+      return parseJSON(themeDesc[defaultTranslationsFileRelativePath] || '{}', {});
     },
     async getDefaultSchemaTranslations() {
-      try {
-        return JSON.parse(themeDesc[defaultSchemaTranslationsFileRelativePath] || '{}');
-      } catch (e) {
-        if (e instanceof SyntaxError) return {};
-        throw e;
-      }
+      return parseJSON(themeDesc[defaultSchemaTranslationsFileRelativePath] || '{}', {});
     },
     async getDefaultLocale() {
       return defaultTranslationsFileRelativePath.match(/locales\/(.*)\.default\.json$/)?.[1]!;

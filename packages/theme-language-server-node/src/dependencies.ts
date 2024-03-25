@@ -1,16 +1,18 @@
-import { Dependencies } from '@shopify/theme-language-server-common';
 import {
   Config,
   PathHandler,
   Translations,
+  isError,
   loadConfig as loadConfigFromPath,
+  parseJSON,
   reusableFindRoot,
 } from '@shopify/theme-check-node';
-import { URI, Utils } from 'vscode-uri';
-import { basename } from 'node:path';
-import * as fs from 'node:fs/promises';
-import { promisify } from 'node:util';
+import { Dependencies } from '@shopify/theme-language-server-common';
 import { glob as callbackGlob } from 'glob';
+import * as fs from 'node:fs/promises';
+import { basename } from 'node:path';
+import { promisify } from 'node:util';
+import { URI, Utils } from 'vscode-uri';
 
 const glob = promisify(callbackGlob);
 
@@ -125,7 +127,8 @@ export const getDefaultTranslationsFactoryFactory =
           asFsPath(defaultTranslationsFileUri),
           'utf8',
         );
-        return JSON.parse(defaultTranslationsFile) as Translations;
+        const translations = parseJSON(defaultTranslationsFile) as Translations;
+        return isError(translations) ? {} : translations;
       } catch (error) {
         return {};
       }
@@ -184,8 +187,8 @@ export const getThemeSettingsSchemaForRootURI: Dependencies['getThemeSettingsSch
       const rootURI = parse(rootUriString);
       const settingsSchemaFilePath = Utils.joinPath(rootURI, 'config/settings_schema.json');
       const contents = await fs.readFile(asFsPath(settingsSchemaFilePath), 'utf8');
-      const json = JSON.parse(contents);
-      if (!Array.isArray(json)) {
+      const json = parseJSON(contents);
+      if (isError(json) || !Array.isArray(json)) {
         throw new Error('Settings JSON file not in correct format');
       }
       return json;

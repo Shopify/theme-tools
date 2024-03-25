@@ -5,8 +5,9 @@ import {
   NodeTypes,
 } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, SchemaProp, Severity, SourceCodeType } from '../../types';
-import { last } from '../../utils';
+import { isError, last } from '../../utils';
 import { isNodeOfType } from '../utils';
+import { parseJSON } from '../../json';
 
 const schema = {
   minSize: SchemaProp.number(1),
@@ -62,13 +63,10 @@ export const PaginationSize: LiquidCheckDefinition<typeof schema> = {
 
       async LiquidRawTag(node: LiquidRawTag) {
         if (node.name === 'schema') {
-          try {
-            const schema = JSON.parse(node.body.value);
-            if (schema.settings && Array.isArray(schema.settings)) {
-              schemaSettings = schema.settings;
-            }
-          } catch (error) {
-            // Ignore JSON parsing errors
+          const schema = parseJSON(node.body.value);
+          if (isError(schema)) return;
+          if (schema.settings && Array.isArray(schema.settings)) {
+            schemaSettings = schema.settings;
           }
         }
       },

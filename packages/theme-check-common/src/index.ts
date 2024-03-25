@@ -33,7 +33,9 @@ export * from './fixes';
 export * from './types';
 export * from './checks';
 export * from './to-source-code';
+export * from './json';
 export * from './ignore';
+export * from './utils/error';
 export * from './utils/types';
 export * from './utils/memo';
 

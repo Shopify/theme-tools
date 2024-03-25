@@ -1,4 +1,4 @@
-import { SourceCodeType, Translations } from '@shopify/theme-check-common';
+import { SourceCodeType, Translations, isError, parseJSON } from '@shopify/theme-check-common';
 import { AugmentedSourceCode } from './documents';
 import { Dependencies } from './types';
 
@@ -49,12 +49,10 @@ export async function useBufferOrInjectedSchemaTranslations(
 
 function parseDefaultTranslations(sourceCode: AugmentedSourceCode | undefined) {
   if (!sourceCode) return undefined;
-  try {
-    return JSON.parse(sourceCode.source);
-  } catch (e) {
-    return undefined;
-  }
+  const translations = parseJSON(sourceCode.source);
+  return isError(translations) ? undefined : translations;
 }
+
 export function renderKey(
   translation: PluralizedTranslation,
   key: keyof PluralizedTranslation,

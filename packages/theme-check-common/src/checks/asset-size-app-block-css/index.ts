@@ -1,3 +1,4 @@
+import { parseJSON } from '../../json';
 import {
   ConfigTarget,
   LiquidCheckDefinition,
@@ -5,7 +6,8 @@ import {
   Severity,
   SourceCodeType,
 } from '../../types';
-import { doesFileExist, doesFileExceedThreshold } from '../../utils/file-utils';
+import { isError } from '../../utils';
+import { doesFileExceedThreshold, doesFileExist } from '../../utils/file-utils';
 
 const schema = {
   thresholdInBytes: SchemaProp.number(100000),
@@ -35,28 +37,22 @@ export const AssetSizeAppBlockCSS: LiquidCheckDefinition<typeof schema> = {
     return {
       async LiquidRawTag(node) {
         if (node.name !== 'schema') return;
-        let filePath;
-        try {
-          filePath = JSON.parse(node.body.value).stylesheet;
-        } catch (error) {
-          return;
-        }
+        const schema = parseJSON(node.body.value);
+        if (isError(schema)) return;
+        const stylesheet = schema.stylesheet;
+        if (!stylesheet) return;
 
-        if (!filePath) {
-          return;
-        }
-
-        const relativePath = `assets/${filePath}`;
+        const relativePath = `assets/${stylesheet}`;
         const thresholdInBytes = context.settings.thresholdInBytes;
 
-        const startIndex = node.body.position.start + node.body.value.indexOf(filePath);
-        const endIndex = startIndex + filePath.length;
+        const startIndex = node.body.position.start + node.body.value.indexOf(stylesheet);
+        const endIndex = startIndex + stylesheet.length;
 
         const fileExists = await doesFileExist(context, relativePath);
 
         if (!fileExists) {
           context.report({
-            message: `'${filePath}' does not exist.`,
+            message: `'${stylesheet}' does not exist.`,
             startIndex: startIndex,
             endIndex: endIndex,
           });
@@ -71,7 +67,7 @@ export const AssetSizeAppBlockCSS: LiquidCheckDefinition<typeof schema> = {
 
         if (fileExceedsThreshold) {
           context.report({
-            message: `The file size for '${filePath}' (${fileSize} B) exceeds the configured threshold (${thresholdInBytes} B)`,
+            message: `The file size for '${stylesheet}' (${fileSize} B) exceeds the configured threshold (${thresholdInBytes} B)`,
             startIndex: startIndex,
             endIndex: endIndex,
           });

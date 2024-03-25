@@ -1,5 +1,5 @@
 import { LiquidRawTag } from '@shopify/liquid-html-parser';
-import { LiquidHtmlNode, SourceCodeType } from '@shopify/theme-check-common';
+import { LiquidHtmlNode, SourceCodeType, isError, parseJSON } from '@shopify/theme-check-common';
 import {
   CompletionsCollector,
   JSONPath,
@@ -52,8 +52,8 @@ export class SchemaTranslationContributions implements JSONWorkerContribution {
       schema.blockStartPosition.end,
       schema.blockEndPosition.start,
     );
-    const jsonDocument = safeParse(jsonString);
-    if (!jsonDocument) return undefined as any;
+    const jsonDocument = parseJSON(jsonString);
+    if (isError(jsonDocument)) return undefined as any;
 
     const label = location.reduce((acc: any, val: any) => acc?.[val], jsonDocument);
     if (!label || typeof label !== 'string' || !label.startsWith('t:')) return undefined as any;
@@ -86,7 +86,7 @@ export class SchemaTranslationContributions implements JSONWorkerContribution {
       schema.blockStartPosition.end,
       schema.blockEndPosition.start,
     );
-    const jsonDocument = safeParse(jsonString);
+    const jsonDocument = parseJSON(jsonString);
     if (!jsonDocument) return;
 
     const label = location
@@ -134,14 +134,6 @@ export class SchemaTranslationContributions implements JSONWorkerContribution {
         },
       };
     });
-  }
-}
-
-export function safeParse(json: string): any {
-  try {
-    return JSON.parse(json);
-  } catch {
-    return undefined;
   }
 }
 

@@ -7,6 +7,7 @@ import {
   toSourceCode as commonToSourceCode,
   check as coreCheck,
   isIgnored,
+  parseJSON,
 } from '@shopify/theme-check-common';
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
 import fs from 'node:fs/promises';
@@ -60,11 +61,11 @@ export async function checkAndAutofix(root: string, configPath?: string) {
 export async function themeCheckRun(root: string, configPath?: string): Promise<ThemeCheckRun> {
   const { theme, config } = await getThemeAndConfig(root, configPath);
   const defaultTranslationsFile = theme.find((sc) => sc.absolutePath.endsWith('default.json'));
-  const defaultTranslations = safeParse(defaultTranslationsFile?.source) ?? {};
+  const defaultTranslations = parseJSON(defaultTranslationsFile?.source ?? '{}', {});
   const defaultSchemaTranslationsFile = theme.find((sc) =>
     sc.absolutePath.endsWith('default.schema.json'),
   );
-  const defaultSchemaTranslations = safeParse(defaultSchemaTranslationsFile?.source) ?? {};
+  const defaultSchemaTranslations = parseJSON(defaultSchemaTranslationsFile?.source ?? '{}', {});
   const themeLiquidDocsManager = new ThemeLiquidDocsManager();
 
   const offenses = await coreCheck(theme, config, {
@@ -130,13 +131,4 @@ export async function getTheme(config: Config): Promise<Theme> {
   );
   const sourceCodes = await Promise.all(paths.map(toSourceCode));
   return sourceCodes.filter((x): x is LiquidSourceCode | JSONSourceCode => x !== undefined);
-}
-
-function safeParse(source: string | undefined) {
-  try {
-    if (!source) return undefined;
-    return JSON.parse(source);
-  } catch {
-    return undefined;
-  }
 }
