@@ -340,7 +340,7 @@ describe('Module: UndefinedObject', () => {
     `;
 
     const offenses = await runLiquidCheck(UndefinedObject, sourceCode, 'file.liquid', {
-      themeDocset: null,
+      themeDocset: undefined,
     });
 
     expect(offenses).toHaveLength(0);

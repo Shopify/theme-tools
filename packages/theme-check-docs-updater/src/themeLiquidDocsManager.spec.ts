@@ -94,45 +94,4 @@ describe('Module: ThemeLiquidDocsManager', async () => {
       });
     });
   });
-
-  describe('Unit: validateSectionSchema', () => {
-    it('should return a validator for the given json schema', async () => {
-      const validate = await manager.validateSectionSchema();
-
-      expect(validate).to.be.a('function');
-    });
-
-    it('should return a validator that approves valid data', async () => {
-      const data = {
-        name: 'John Doe',
-        age: 42,
-      };
-      const validate = await manager.validateSectionSchema();
-
-      const valid = validate(data);
-
-      expect(valid).toBe(true);
-      expect(validate.errors).toBeNull();
-    });
-
-    it('should return a validator that catches data violations', async () => {
-      const data = {
-        name: 'John Doe',
-      };
-      const validate = await manager.validateSectionSchema();
-
-      const valid = validate(data);
-
-      // Check if the data is not valid
-      expect(valid).toBe(false);
-      expect(validate.errors).to.be.an('array');
-      expect(validate.errors).to.have.lengthOf(1);
-
-      // Conditional to satisfy typescript. This is already checked by the previous expect.
-      if (validate.errors) {
-        const error = validate.errors[0];
-        expect(error.message).to.match(/'age'/);
-      }
-    });
-  });
 });

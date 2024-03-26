@@ -206,7 +206,7 @@ export async function runLiquidCheck(
   checkDef: CheckDefinition<SourceCodeType.LiquidHtml>,
   sourceCode: string,
   fileName: string = 'file.liquid',
-  mockDependencies: any = {},
+  mockDependencies: Partial<Dependencies> = {},
 ): Promise<Offense[]> {
   const offenses = await check({ [fileName]: sourceCode }, [checkDef], mockDependencies);
   return offenses.filter((offense) => offense.absolutePath === `/${fileName}`);
@@ -216,8 +216,9 @@ export async function runJSONCheck(
   checkDef: CheckDefinition<SourceCodeType.JSON>,
   sourceCode: string,
   fileName: string = 'file.json',
+  mockDependencies: Partial<Dependencies> = {},
 ): Promise<Offense[]> {
-  const offenses = await check({ [fileName]: sourceCode }, [checkDef]);
+  const offenses = await check({ [fileName]: sourceCode }, [checkDef], mockDependencies);
   return offenses.filter((offense) => offense.absolutePath === `/${fileName}`);
 }
 

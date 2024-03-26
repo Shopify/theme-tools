@@ -31,7 +31,8 @@
     "json-to-ast": "^2.1.0",
     "line-column": "^1.0.2",
     "lodash-es": "^4.17.21",
-    "minimatch": "^9.0.1"
+    "minimatch": "^9.0.1",
+    "vscode-json-languageservice": "^5.3.10"
   },
   "devDependencies": {
     "@types/json-to-ast": "^2.1.2",

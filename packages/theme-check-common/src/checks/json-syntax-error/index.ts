@@ -9,7 +9,6 @@ function cleanErrorMessage(error: Error) {
 export const JSONSyntaxError: JSONCheckDefinition = {
   meta: {
     code: 'JSONSyntaxError',
-    aliases: ['ValidJson'],
     name: 'Enforce valid JSON',
     docs: {
       description: 'This check exists to prevent invalid JSON files in themes.',
@@ -20,9 +19,12 @@ export const JSONSyntaxError: JSONCheckDefinition = {
     severity: Severity.ERROR,
     schema: {},
     targets: [],
+    deprecated: true,
   },
 
   create(context) {
+    if (context.validateJSON) return {}; // If available, we'll use the JSON validator instead
+
     const error = context.file.ast;
     if (!isError(error)) return {};
 

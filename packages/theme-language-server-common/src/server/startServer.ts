@@ -1,4 +1,4 @@
-import { AugmentedJsonValidationSet, AugmentedThemeDocset } from '@shopify/theme-check-common';
+import { AugmentedThemeDocset } from '@shopify/theme-check-common';
 import {
   Connection,
   FileOperationRegistrationOptions,
@@ -53,7 +53,7 @@ export function startServer(
     getThemeSettingsSchemaForRootURI,
     loadConfig,
     log = defaultLogger,
-    jsonValidationSet: remoteSchemaValidators,
+    jsonValidationSet,
     themeDocset: remoteThemeDocset,
   }: Dependencies,
 ) {
@@ -76,7 +76,6 @@ export function startServer(
 
   // These are augmented here so that the caching is maintained over different runs.
   const themeDocset = new AugmentedThemeDocset(remoteThemeDocset);
-  const jsonValidationSet = new AugmentedJsonValidationSet(remoteSchemaValidators);
   const runChecks = debounce(
     makeRunChecks(documentManager, diagnosticsManager, {
       fileExists,

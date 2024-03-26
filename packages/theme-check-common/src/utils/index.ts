@@ -3,3 +3,4 @@ export * from './position';
 export * from './error';
 export * from './types';
 export * from './memo';
+export * from './indexBy';

@@ -1,5 +1,4 @@
 export { ThemeLiquidDocsManager } from './themeLiquidDocsManager';
-export { compileJsonSchemaToFile } from './jsonSchemaCompiler';
 export {
   Resource,
   Resources,

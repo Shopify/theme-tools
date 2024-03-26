@@ -20,32 +20,29 @@ export interface ThemeDocset {
   systemTranslations(): Promise<Translations>;
 }
 
-/**
- * JSON schemas resources for themes.
- */
-export interface JsonValidationSet {
-  /** Whether it was augmented prior to being passed. */
-  isAugmented?: boolean;
+/** A URI that will uniquely describe the schema */
+export type JSONSchemaURI = string;
 
-  /** Retrieves the JSON schema validator for theme sections. */
-  validateSectionSchema(): Promise<ValidateFunction>;
+export interface SchemaDefinition {
+  /** A URI that will uniquely describe the schema */
+  uri: JSONSchemaURI;
 
-  /** Retrieves the JSON schema of the {% schema %} JSON blobs in sections/*.liquid files */
-  sectionSchema(): Promise<string>;
+  /** A promise that returns a JSON Schema as string */
+  schema: Promise<string>;
 
-  /** Retrieves the JSON schema of the locales/*.json files */
-  translationSchema(): Promise<string>;
+  /**
+   * When absent, does not match on file. Assumed to be used by other
+   * schemas.
+   *
+   * e.g. '\*\*\/sections\/\*.liquid', '\*\*\/locales\/*.json'
+   */
+  fileMatch?: string[];
 }
 
-/**
- * This is a shallow redefinition of the ajv ValidateFunction.
- *
- * While theme-check was written with ajv validators in mind, you can
- * use any other validator as long as it implements this interface
- */
-export interface ValidateFunction<T = unknown> {
-  (data: T): boolean | Promise<boolean>;
-  errors?: null | { instancePath: string; message?: string }[];
+/** Source of JSON schemas for themes. */
+export interface JsonValidationSet {
+  /** All relevant SchemaDefinitions. */
+  schemas: SchemaDefinition[];
 }
 
 export interface DocsetEntry {

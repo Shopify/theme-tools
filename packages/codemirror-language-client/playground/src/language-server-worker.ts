@@ -87,9 +87,18 @@ startServer(worker, {
     systemTranslations: async () => systemTranslations,
   },
   jsonValidationSet: {
-    validateSectionSchema: async () => () => true,
-    sectionSchema: async () => sectionSchema,
-    translationSchema: async () => translationsSchema,
+    schemas: [
+      {
+        uri: 'https://shopify.dev/section-schema.json',
+        fileMatch: ['**/sections/*.liquid'],
+        schema: Promise.resolve(sectionSchema),
+      },
+      {
+        uri: 'https://shopify.dev/translations-schema.json',
+        fileMatch: ['**/locales/*.json'],
+        schema: Promise.resolve(translationsSchema),
+      },
+    ],
   },
   loadConfig,
   log(message) {

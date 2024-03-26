@@ -1,20 +1,24 @@
 import {
   FilterEntry,
+  JsonValidationSet,
   ObjectEntry,
   TagEntry,
   ThemeDocset,
-  JsonValidationSet,
   Translations,
-  ValidateFunction,
+  indexBy,
 } from '@shopify/theme-check-common';
-import path from 'node:path';
 import fs from 'node:fs/promises';
-import { compileJsonSchema } from './jsonSchemaCompiler';
+import path from 'node:path';
 import { Resource, Resources, exists } from './themeLiquidDocsDownloader';
 import { download, filePath, memo, noop, root } from './utils';
-import { pipe } from 'lodash/fp';
 
 type Logger = (message: string) => void;
+
+const SectionSchemaURI =
+  'https://raw.githubusercontent.com/Shopify/theme-liquid-docs/main/schemas/theme/section_schema.json';
+
+const TranslationFileURI =
+  'https://raw.githubusercontent.com/Shopify/theme-liquid-docs/main/schemas/theme/translations_schema.json';
 
 export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
   constructor(private log: Logger = noop) {}
@@ -35,21 +39,23 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
     return findSuitableResource(this.loaders('shopify_system_translations'), JSON.parse, {});
   });
 
-  sectionSchema = memo(async (): Promise<string> => {
-    return findSuitableResource(this.loaders('section_schema'), identity, '{}');
-  });
-
-  validateSectionSchema = memo(async (): Promise<ValidateFunction> => {
-    return findSuitableResource(
-      [this.sectionSchema],
-      pipe(JSON.parse, compileJsonSchema),
-      alwaysValid(),
-    );
-  });
-
-  translationSchema = memo(async (): Promise<string> => {
-    return findSuitableResource(this.loaders('translations_schema'), identity, '{}');
-  });
+  schemas = [
+    {
+      uri: SectionSchemaURI,
+      fileMatch: ['**/sections/*.liquid'],
+      schema: findSuitableResource(this.loaders('section_schema'), identity, '{}'),
+    },
+    {
+      uri: TranslationFileURI,
+      fileMatch: [
+        '**/locales/*.json',
+        '**/locales/*.default.json',
+        '**/locales/*.schema.json',
+        '**/locales/*.default.schema.json',
+      ],
+      schema: findSuitableResource(this.loaders('translations_schema'), identity, '{}'),
+    },
+  ];
 
   /**
    * The setup method checks that the latest revision matches the one from
@@ -88,7 +94,7 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
     return this.load(name);
   }
 
-  private async load<T>(name: Resource | 'latest') {
+  private async load(name: Resource | 'latest') {
     return fs.readFile(filePath(name), 'utf8');
   }
 
@@ -140,10 +146,4 @@ function dataRoot() {
 /** Returns the at-build-time path to the fallback data file. */
 async function fallback(name: Resource): Promise<string> {
   return fs.readFile(path.resolve(dataRoot(), `${name}.json`), 'utf8');
-}
-
-function alwaysValid(): ValidateFunction {
-  const validate: ValidateFunction = () => true;
-  validate.errors = null;
-  return validate;
 }

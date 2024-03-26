@@ -18,6 +18,7 @@ import {
   SourceCode,
   SourceCodeType,
   Theme,
+  ValidateJSON,
 } from './types';
 import { visitLiquid, visitJSON } from './visitors';
 import { createDisabledChecksModule } from './disabled-checks';
@@ -25,10 +26,9 @@ import * as path from './path';
 import { getPosition } from './utils';
 import { isIgnored } from './ignore';
 import { AugmentedThemeDocset } from './AugmentedThemeDocset';
-import { AugmentedJsonValidationSet } from './AugmentedJsonValidationSet';
+import { JSONValidator } from './JSONValidator';
 
 export * from './AugmentedThemeDocset';
-export * from './AugmentedJsonValidationSet';
 export * from './fixes';
 export * from './types';
 export * from './checks';
@@ -38,6 +38,7 @@ export * from './ignore';
 export * from './utils/error';
 export * from './utils/types';
 export * from './utils/memo';
+export * from './utils/indexBy';
 
 const defaultErrorHandler = (_error: Error): void => {
   // Silently ignores errors by default.
@@ -51,14 +52,16 @@ export async function check(
   const pipelines: Promise<void>[] = [];
   const offenses: Offense[] = [];
   const { DisabledChecksVisitor, isDisabled } = createDisabledChecksModule();
+  let validateJSON: ValidateJSON<SourceCodeType> | undefined;
 
   // We're memozing those deps here because they shouldn't change within a run.
   if (dependencies.themeDocset && !dependencies.themeDocset.isAugmented) {
     dependencies.themeDocset = new AugmentedThemeDocset(dependencies.themeDocset);
   }
 
-  if (dependencies.jsonValidationSet && !dependencies.jsonValidationSet.isAugmented) {
-    dependencies.jsonValidationSet = new AugmentedJsonValidationSet(dependencies.jsonValidationSet);
+  if (dependencies.jsonValidationSet) {
+    const jsonValidator = new JSONValidator(dependencies.jsonValidationSet);
+    validateJSON = jsonValidator.validate.bind(jsonValidator);
   }
 
   for (const type of Object.values(SourceCodeType)) {
@@ -69,7 +72,7 @@ export async function check(
         for (const file of files) {
           for (const checkDef of checkDefs) {
             if (isIgnored(file.absolutePath, config, checkDef)) continue;
-            const check = createCheck(checkDef, file, config, offenses, dependencies);
+            const check = createCheck(checkDef, file, config, offenses, dependencies, validateJSON);
             pipelines.push(checkJSONFile(check, file));
           }
         }
@@ -81,7 +84,7 @@ export async function check(
         for (const file of files) {
           for (const checkDef of checkDefs) {
             if (isIgnored(file.absolutePath, config, checkDef)) continue;
-            const check = createCheck(checkDef, file, config, offenses, dependencies);
+            const check = createCheck(checkDef, file, config, offenses, dependencies, validateJSON);
             pipelines.push(checkLiquidFile(check, file));
           }
         }
@@ -102,10 +105,12 @@ function createContext<T extends SourceCodeType, S extends Schema>(
   offenses: Offense[],
   config: Config,
   dependencies: Dependencies,
+  validateJSON?: ValidateJSON<SourceCodeType>,
 ): Context<T, S> {
   const checkSettings = config.settings[check.meta.code];
   return {
     ...dependencies,
+    validateJSON,
     settings: createSettings(checkSettings, check.meta.schema),
     absolutePath: (relativePath) => path.join(config.root, relativePath),
     relativePath: (absolutePath) => path.relative(absolutePath, config.root),
@@ -152,8 +157,9 @@ function createCheck<S extends SourceCodeType>(
   config: Config,
   offenses: Offense[],
   dependencies: Dependencies,
+  validateJSON?: ValidateJSON<SourceCodeType>,
 ): Check<S> {
-  const context = createContext(check, file, offenses, config, dependencies);
+  const context = createContext(check, file, offenses, config, dependencies, validateJSON);
   return check.create(context as any) as Check<S>;
 }
 

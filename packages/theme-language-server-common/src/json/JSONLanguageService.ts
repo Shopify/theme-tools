@@ -1,5 +1,10 @@
 import { LiquidRawTag, NodeTypes } from '@shopify/liquid-html-parser';
-import { JsonValidationSet, SourceCodeType } from '@shopify/theme-check-common';
+import {
+  JsonValidationSet,
+  SchemaDefinition,
+  SourceCodeType,
+  indexBy,
+} from '@shopify/theme-check-common';
 import { JSONDocument, LanguageService, getLanguageService } from 'vscode-json-languageservice';
 import {
   CompletionItem,
@@ -16,20 +21,17 @@ import { TranslationFileContributions } from './TranslationFileContributions';
 import { SchemaTranslationContributions } from './SchemaTranslationContributions';
 import { GetTranslationsForURI } from '../translations';
 
-const SectionSchemaURI =
-  'https://raw.githubusercontent.com/Shopify/theme-liquid-docs/main/schemas/theme/section_schema.json';
-
-const TranslationFileURI =
-  'https://raw.githubusercontent.com/Shopify/theme-liquid-docs/main/schemas/theme/translations_schema.json';
-
 export class JSONLanguageService {
   private service: LanguageService | null = null;
+  private schemas: Record<string, SchemaDefinition>;
 
   constructor(
     private documentManager: DocumentManager,
     private jsonValidationSet: JsonValidationSet,
     private getDefaultSchemaTranslations: GetTranslationsForURI,
-  ) {}
+  ) {
+    this.schemas = indexBy((x) => x.uri, this.jsonValidationSet.schemas);
+  }
 
   setup(clientCapabilities: LSPClientCapabilities) {
     this.service = getLanguageService({
@@ -41,21 +43,10 @@ export class JSONLanguageService {
       clientCapabilities,
     });
     this.service.configure({
-      schemas: [
-        {
-          uri: SectionSchemaURI,
-          fileMatch: ['**/sections/*.liquid'],
-        },
-        {
-          uri: TranslationFileURI,
-          fileMatch: [
-            '**/locales/*.json',
-            '**/locales/*.default.json',
-            '**/locales/*.schema.json',
-            '**/locales/*.default.schema.json',
-          ],
-        },
-      ],
+      schemas: this.jsonValidationSet.schemas.map((schemaDefinition) => ({
+        uri: schemaDefinition.uri,
+        fileMatch: schemaDefinition.fileMatch,
+      })),
     });
   }
 
@@ -121,13 +112,8 @@ export class JSONLanguageService {
   }
 
   private async getSchemaForURI(uri: string): Promise<string> {
-    switch (uri) {
-      case SectionSchemaURI:
-        return this.jsonValidationSet.sectionSchema();
-      case TranslationFileURI:
-        return this.jsonValidationSet.translationSchema();
-      default:
-        throw new Error(`No schema for ${uri}`);
-    }
+    const promise = this.schemas[uri]?.schema;
+    if (!promise) return `Could not get schema for '${uri}'`;
+    return promise;
   }
 }
