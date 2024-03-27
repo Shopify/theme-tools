@@ -1,5 +1,11 @@
 ## theme-check-vscode
 
+## 2.2.1
+
+### Patch Changes
+
+- Add `ValidJSON` check and improve error reporting of JSON schema offenses
+
 ## 2.2.0
 
 ### Minor Changes
