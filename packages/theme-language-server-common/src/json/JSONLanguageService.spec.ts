@@ -1,4 +1,4 @@
-import { Translations, ValidateFunction } from '@shopify/theme-check-common';
+import { Translations } from '@shopify/theme-check-common';
 import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { CompletionParams, HoverParams } from 'vscode-languageserver';
 import { DocumentManager } from '../documents';
@@ -66,21 +66,18 @@ describe('Module: JSONLanguageService', () => {
     jsonLanguageService = new JSONLanguageService(
       documentManager,
       {
-        async validateSectionSchema() {
-          const mockValidator: ValidateFunction = () => {
-            mockValidator.errors = [];
-            return false;
-          };
-          return mockValidator;
-        },
-
-        async sectionSchema() {
-          return simplifiedSectionSchema;
-        },
-
-        async translationSchema() {
-          return simplifiedTranslationSchema;
-        },
+        schemas: [
+          {
+            uri: 'https://shopify.dev/section-schema.json',
+            schema: Promise.resolve(simplifiedSectionSchema),
+            fileMatch: ['**/sections/*.liquid'],
+          },
+          {
+            uri: 'https://shopify.dev/translation-schema.json',
+            schema: Promise.resolve(simplifiedTranslationSchema),
+            fileMatch: ['**/locales/*.json'],
+          },
+        ],
       },
       () => Promise.resolve(schemaTranslations),
     );

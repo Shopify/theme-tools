@@ -94,6 +94,9 @@ UnusedAssign:
 ValidHTMLTranslation:
   enabled: true
   severity: 1
+ValidJSON:
+  enabled: true
+  severity: 0
 ValidSchema:
   enabled: true
   severity: 0

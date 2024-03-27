@@ -4,7 +4,6 @@ import {
   LiquidCheckDefinition,
   Severity,
   SourceCodeType,
-  ValidateFunction,
 } from '@shopify/theme-check-common';
 import { Connection } from 'vscode-languageserver';
 import { DocumentManager } from '../documents';
@@ -71,9 +70,7 @@ describe('Module: runChecks', () => {
         systemTranslations: async () => ({}),
       },
       jsonValidationSet: {
-        validateSectionSchema: async () => ({} as ValidateFunction),
-        sectionSchema: async () => '{}',
-        translationSchema: async () => '{}',
+        schemas: [],
       },
     });
   });
@@ -229,9 +226,7 @@ describe('Module: runChecks', () => {
         systemTranslations: async () => ({}),
       },
       jsonValidationSet: {
-        validateSectionSchema: async () => ({} as ValidateFunction),
-        sectionSchema: async () => '{}',
-        translationSchema: async () => '{}',
+        schemas: [],
       },
     });
 

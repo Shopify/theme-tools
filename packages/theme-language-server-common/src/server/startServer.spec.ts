@@ -8,7 +8,7 @@ import {
   DidRenameFilesNotification,
   PublishDiagnosticsNotification,
 } from 'vscode-languageserver';
-import { ValidateFunction, allChecks } from '@shopify/theme-check-common';
+import { allChecks } from '@shopify/theme-check-common';
 import { Dependencies } from '../types';
 import { CHECK_ON_CHANGE, CHECK_ON_OPEN, CHECK_ON_SAVE } from './Configuration';
 
@@ -373,9 +373,7 @@ describe('Module: server', () => {
         systemTranslations: async () => ({}),
       },
       jsonValidationSet: {
-        validateSectionSchema: async () => ({} as ValidateFunction),
-        sectionSchema: async () => '{}',
-        translationSchema: async () => '{}',
+        schemas: [],
       },
     } as Dependencies;
   }

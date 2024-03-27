@@ -274,12 +274,18 @@ export interface Dependencies {
   jsonValidationSet?: JsonValidationSet;
 }
 
+export type ValidateJSON<T extends SourceCodeType> = (
+  file: SourceCode<T>,
+  jsonString: string,
+) => Promise<{ message: string; startIndex: number; endIndex: number }[]>;
+
 type StaticContextProperties<T extends SourceCodeType> = T extends SourceCodeType
   ? {
       report(problem: Problem<T>): void;
       relativePath(absolutePath: AbsolutePath): RelativePath;
       absolutePath(relativePath: RelativePath): AbsolutePath;
       file: SourceCode<T>;
+      validateJSON?: ValidateJSON<T>;
     }
   : never;
 
