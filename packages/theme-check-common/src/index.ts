@@ -60,7 +60,9 @@ export async function check(
   }
 
   if (dependencies.jsonValidationSet) {
-    const jsonValidator = new JSONValidator(dependencies.jsonValidationSet);
+    const jsonValidator = new JSONValidator(
+      await dependencies.jsonValidationSet.schemas(config.context),
+    );
     validateJSON = jsonValidator.validate.bind(jsonValidator);
   }
 

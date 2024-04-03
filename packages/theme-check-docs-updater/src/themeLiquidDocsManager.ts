@@ -1,24 +1,29 @@
 import {
   FilterEntry,
   JsonValidationSet,
+  Mode,
   ObjectEntry,
+  SchemaDefinition,
   TagEntry,
   ThemeDocset,
   Translations,
-  indexBy,
 } from '@shopify/theme-check-common';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { Resource, Resources, exists } from './themeLiquidDocsDownloader';
-import { download, filePath, memo, noop, root } from './utils';
+import {
+  Manifests,
+  Resource,
+  ThemeLiquidDocsSchemaRoot,
+  downloadResource,
+  downloadThemeLiquidDocs,
+  exists,
+  resourcePath,
+  root,
+  schemaPath,
+} from './themeLiquidDocsDownloader';
+import { memo, memoize, noop } from './utils';
 
 type Logger = (message: string) => void;
-
-const SectionSchemaURI =
-  'https://raw.githubusercontent.com/Shopify/theme-liquid-docs/main/schemas/theme/section_schema.json';
-
-const TranslationFileURI =
-  'https://raw.githubusercontent.com/Shopify/theme-liquid-docs/main/schemas/theme/translations_schema.json';
 
 export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
   constructor(private log: Logger = noop) {}
@@ -39,23 +44,21 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
     return findSuitableResource(this.loaders('shopify_system_translations'), JSON.parse, {});
   });
 
-  schemas = [
-    {
-      uri: SectionSchemaURI,
-      fileMatch: ['**/sections/*.liquid'],
-      schema: findSuitableResource(this.loaders('section_schema'), identity, '{}'),
-    },
-    {
-      uri: TranslationFileURI,
-      fileMatch: [
-        '**/locales/*.json',
-        '**/locales/*.default.json',
-        '**/locales/*.schema.json',
-        '**/locales/*.default.schema.json',
-      ],
-      schema: findSuitableResource(this.loaders('translations_schema'), identity, '{}'),
-    },
-  ];
+  schemas = memoize(
+    (mode: Mode) =>
+      findSuitableResource(this.loaders(Manifests[mode]), JSON.parse, { schemas: [] }).then(
+        (manifest): SchemaDefinition[] => {
+          return manifest.schemas.map(
+            (schemaDefinition: { uri: string; fileMatch?: string[] }): SchemaDefinition => ({
+              uri: `${ThemeLiquidDocsSchemaRoot}/${schemaDefinition.uri}`,
+              fileMatch: schemaDefinition.fileMatch,
+              schema: findSuitableResource(this.schemaLoaders(schemaDefinition.uri), identity, ''),
+            }),
+          );
+        },
+      ),
+    identity<Mode>,
+  );
 
   /**
    * The setup method checks that the latest revision matches the one from
@@ -71,10 +74,10 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
       }
 
       const local = await this.latestRevision();
-      await download('latest');
+      await downloadResource('latest');
       const remote = await this.latestRevision();
       if (local !== remote) {
-        await Promise.all(Resources.map((resource) => download(resource)));
+        await downloadThemeLiquidDocs();
       }
     } catch (error) {
       if (error instanceof Error) this.log(error.message);
@@ -95,11 +98,19 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
   }
 
   private async load(name: Resource | 'latest') {
-    return fs.readFile(filePath(name), 'utf8');
+    return fs.readFile(resourcePath(name), 'utf8');
+  }
+
+  private async loadSchema(relativeUri: string) {
+    return fs.readFile(schemaPath(relativeUri), 'utf8');
   }
 
   private loaders(name: Resource) {
-    return [() => this.loadResource(name), () => fallback(name)];
+    return [() => this.loadResource(name), () => fallbackResource(name)];
+  }
+
+  private schemaLoaders(relativeUri: string) {
+    return [() => this.loadSchema(relativeUri), () => fallbackSchema(relativeUri)];
   }
 }
 
@@ -144,6 +155,13 @@ function dataRoot() {
 }
 
 /** Returns the at-build-time path to the fallback data file. */
-async function fallback(name: Resource): Promise<string> {
+async function fallbackResource(name: Resource): Promise<string> {
   return fs.readFile(path.resolve(dataRoot(), `${name}.json`), 'utf8');
+}
+
+/** Returns the at-build-time path to the fallback schema file. */
+async function fallbackSchema(
+  /** e.g. themes/section.json */ relativeUri: string,
+): Promise<string> {
+  return fs.readFile(path.resolve(dataRoot(), path.basename(relativeUri)), 'utf8');
 }

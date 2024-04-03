@@ -1,8 +1,8 @@
 # WARNING:
 # This file was generated automatically by running "scripts/generate-factory-configs"
 # Do not modify manually. Your changes will be overwritten.
-
 extends: theme-check:recommended
+context: app
 ignore:
   - node_modules/**
 AppBlockValidTags:

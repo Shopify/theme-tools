@@ -35,6 +35,7 @@ SomeCheck:
       extends: [],
       ignore: ['assets', 'config'],
       require: [],
+      context: 'theme',
       checkSettings: {
         SomeCheck: {
           enabled: false,
@@ -87,6 +88,7 @@ SomeCheck:
       extends: [],
       ignore: ['base_assets', 'base_config', 'assets', 'config'],
       require: [],
+      context: 'theme',
       checkSettings: {
         BaseCheck: {
           enabled: true,
@@ -115,6 +117,12 @@ SomeCheck:
         expect(config.checkSettings.ParserBlockingScript!.enabled).to.be.true;
       }
     }
+  });
+
+  it('correctly resolves the theme app extension context', async () => {
+    const filePath = await createMockYamlFile(`extends: theme-check:theme-app-extension`);
+    const config = await resolveConfig(filePath);
+    expect(config.context).to.equal('app');
   });
 
   async function createMockYamlFile(content: string): Promise<string> {

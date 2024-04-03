@@ -23,6 +23,7 @@ describe('Unit: getTheme', () => {
 
   it('should correctly get theme on all platforms', async () => {
     const config: Config = {
+      context: 'theme',
       checks: [],
       root: workspace.root,
       settings: {},

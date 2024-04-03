@@ -1,6 +1,6 @@
-import { startServer, allChecks } from '@shopify/theme-language-server-browser';
-import { isDependencyInjectionMessage } from './messages';
+import { Dependencies, allChecks, startServer } from '@shopify/theme-language-server-browser';
 import { URI } from 'vscode-languageserver-types';
+import { isDependencyInjectionMessage } from './messages';
 
 /**
  * These are replaced at build time by the contents of
@@ -63,13 +63,12 @@ async function findRootURI(_uri: string) {
   return 'browser:/';
 }
 
-async function loadConfig(_uri: string) {
-  return {
-    settings: {},
-    checks: allChecks,
-    root: '/',
-  };
-}
+const loadConfig: Dependencies['loadConfig'] = async (_uri) => ({
+  context: 'theme',
+  settings: {},
+  checks: allChecks,
+  root: '/',
+});
 
 startServer(worker, {
   fileSize: async (_: string) => 42,
@@ -87,7 +86,7 @@ startServer(worker, {
     systemTranslations: async () => systemTranslations,
   },
   jsonValidationSet: {
-    schemas: [
+    schemas: async () => [
       {
         uri: 'https://shopify.dev/section-schema.json',
         fileMatch: ['**/sections/*.liquid'],

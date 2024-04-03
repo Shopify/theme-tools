@@ -1,4 +1,4 @@
-import { Translations } from '..';
+import { Mode, Translations } from '..';
 
 /**
  * Shopify themes docset.
@@ -42,7 +42,7 @@ export interface SchemaDefinition {
 /** Source of JSON schemas for themes. */
 export interface JsonValidationSet {
   /** All relevant SchemaDefinitions. */
-  schemas: SchemaDefinition[];
+  schemas: (mode: Mode) => Promise<SchemaDefinition[]>;
 }
 
 export interface DocsetEntry {

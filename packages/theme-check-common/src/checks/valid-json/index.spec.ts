@@ -10,7 +10,7 @@ describe('Module: ValidJSON', () => {
     }`;
 
     const offenses = await runJSONCheck(ValidJSON, invalidJson, 'file.json', {
-      jsonValidationSet: { schemas: [] },
+      jsonValidationSet: { schemas: async () => [] },
     });
 
     expect(offenses).to.have.length(1);
@@ -28,7 +28,7 @@ describe('Module: ValidJSON', () => {
     `;
 
     const offenses = await runJSONCheck(ValidJSON, invalidJson, 'file.json', {
-      jsonValidationSet: { schemas: [] },
+      jsonValidationSet: { schemas: async () => [] },
     });
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).to.equal('Expected comma or closing brace');
@@ -45,7 +45,7 @@ describe('Module: ValidJSON', () => {
     }`;
 
     const offenses = await runJSONCheck(ValidJSON, invalidJson, 'file.json', {
-      jsonValidationSet: { schemas: [] },
+      jsonValidationSet: { schemas: async () => [] },
     });
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).to.equal('Property keys must be doublequoted');
@@ -72,7 +72,7 @@ describe('Module: ValidJSON', () => {
 
     const offenses = await runJSONCheck(ValidJSON, invalidJson, 'file.json', {
       jsonValidationSet: {
-        schemas: [
+        schemas: async () => [
           {
             uri: 'https://shopify.dev/some-schema.json',
             schema: Promise.resolve(basicJsonSchema),

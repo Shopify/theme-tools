@@ -34,6 +34,13 @@ export function mergeFragments(
       .map((b) => b.checkSettings)
       .concat(config.checkSettings)
       .reduce(mergeDeep),
+
+    // We use the last one defined, or default to 'theme'
+    context:
+      selectLatest(
+        baseConfigs.map((b) => b.context),
+        config.context,
+      ) ?? 'theme',
   };
 }
 

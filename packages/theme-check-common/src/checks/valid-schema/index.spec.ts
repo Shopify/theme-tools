@@ -38,7 +38,7 @@ const MockSectionSchemaJsonSchema = {
 
 const buildMockDeps = (): Partial<Dependencies> => ({
   jsonValidationSet: {
-    schemas: [
+    schemas: async () => [
       {
         uri: 'https://shopify.dev/some-schema.json',
         schema: Promise.resolve(JSON.stringify(MockSectionSchemaJsonSchema)),

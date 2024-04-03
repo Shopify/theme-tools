@@ -132,10 +132,17 @@ export function startServer(
     return getThemeSettingsSchemaForRootURI(rootUri);
   };
 
+  const getModeForURI = async (uri: string) => {
+    const rootUri = await findConfigurationRootURI(uri);
+    const config = await loadConfig(rootUri);
+    return config.context;
+  };
+
   const jsonLanguageService = new JSONLanguageService(
     documentManager,
     jsonValidationSet,
     getSchemaTranslationsForURI,
+    getModeForURI,
   );
   const completionsProvider = new CompletionsProvider({
     documentManager,

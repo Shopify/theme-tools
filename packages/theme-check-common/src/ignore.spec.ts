@@ -188,6 +188,7 @@ function config({
   globalIgnore?: string[];
 }): Config {
   return {
+    context: 'theme',
     settings: {
       MockCheck: {
         enabled: true,

@@ -1,44 +1,76 @@
-import fs from 'node:fs/promises';
+import { Mode } from '@shopify/theme-check-common';
+import envPaths from 'env-paths';
 import fetch from 'node-fetch';
+import fs from 'node:fs/promises';
 import path from 'node:path';
+
+const paths = envPaths('theme-liquid-docs');
+export const root = paths.cache;
+
+export const ThemeLiquidDocsRoot =
+  'https://raw.githubusercontent.com/Shopify/theme-liquid-docs/main';
+export const ThemeLiquidDocsSchemaRoot = `${ThemeLiquidDocsRoot}/schemas`;
 
 export type Resource = (typeof Resources)[number];
 export const Resources = [
   'filters',
   'objects',
   'tags',
-  'section_schema',
-  'translations_schema',
   'shopify_system_translations',
+  'manifest_theme',
+  'manifest_theme_app_extension',
 ] as const;
+
+export const Manifests = {
+  app: 'manifest_theme_app_extension',
+  theme: 'manifest_theme',
+} as const satisfies Record<Mode, Resource>;
 
 const THEME_LIQUID_DOCS: Record<Resource | 'latest', string> = {
   filters: 'data/filters.json',
   objects: 'data/objects.json',
   tags: 'data/tags.json',
   latest: 'data/latest.json',
-  section_schema: 'schemas/theme/section_schema.json',
-  translations_schema: 'schemas/theme/translations_schema.json',
   shopify_system_translations: 'data/shopify_system_translations.json',
+  manifest_theme: 'schemas/manifest_theme.json',
+  manifest_theme_app_extension: 'schemas/manifest_theme_app_extension.json',
 };
 
-export async function downloadFile(file: Resource | 'latest', destination: string) {
-  const remotePath = buildRemotePath(file);
-  const localPath = buildLocalPath(file, destination);
+export async function downloadSchema(relativeUri: string, destination: string = root) {
+  const remotePath = schemaUrl(relativeUri);
+  const localPath = schemaPath(relativeUri, destination);
+  const res = await fetch(remotePath);
+  const text = await res.text();
+  fs.writeFile(localPath, text, 'utf8');
+  return text;
+}
+
+export async function downloadResource(resource: Resource | 'latest', destination: string = root) {
+  const remotePath = resourceUrl(resource);
+  const localPath = resourcePath(resource, destination);
 
   const res = await fetch(remotePath);
   const text = await res.text();
 
-  return fs.writeFile(localPath, text, 'utf8');
+  fs.writeFile(localPath, text, 'utf8');
+  return text;
 }
 
-function buildRemotePath(file: Resource | 'latest') {
-  const relativePath = THEME_LIQUID_DOCS[file];
-  return `https://raw.githubusercontent.com/Shopify/theme-liquid-docs/main/${relativePath}`;
+export function resourcePath(resource: Resource | 'latest', destination: string = root) {
+  return path.join(destination, `${resource}.json`);
 }
 
-function buildLocalPath(file: string, destination: string) {
-  return path.join(destination, `${file}.json`);
+export function resourceUrl(resource: Resource | 'latest') {
+  const relativePath = THEME_LIQUID_DOCS[resource];
+  return `${ThemeLiquidDocsRoot}/${relativePath}`;
+}
+
+export function schemaPath(relativeUri: string, destination: string = root) {
+  return path.resolve(destination, path.basename(relativeUri));
+}
+
+export function schemaUrl(relativeUri: string) {
+  return `${ThemeLiquidDocsSchemaRoot}/${relativeUri}`;
 }
 
 export async function exists(path: string) {
@@ -50,14 +82,30 @@ export async function exists(path: string) {
   }
 }
 
-export async function downloadThemeLiquidDocs(outputDir: string) {
-  if (!(await exists(outputDir))) {
-    await fs.mkdir(outputDir);
+export async function downloadThemeLiquidDocs(destination = root) {
+  if (!(await exists(destination))) {
+    await fs.mkdir(destination);
   }
 
-  const promises = ['latest'].concat(Resources).map((file) => {
-    return downloadFile(file as Resource | 'latest', outputDir);
-  });
+  const resources = ['latest'].concat(Resources);
+  const resourceContents = await Promise.all(
+    resources.map((file) => {
+      return downloadResource(file as Resource | 'latest', destination);
+    }),
+  );
 
-  await Promise.all(promises);
+  const manifests = Object.values(Manifests)
+    .map((resource) => resources.indexOf(resource))
+    .map((index) => resourceContents[index])
+    .map((manifest) => JSON.parse(manifest));
+
+  const relativeUris = manifests.flatMap((manifest) =>
+    manifest.schemas.map((schema: { uri: string }) => schema.uri),
+  );
+
+  await Promise.all(unique(relativeUris).map((uri) => downloadSchema(uri, destination)));
+}
+
+function unique<T>(array: T[]): T[] {
+  return [...new Set(array).values()];
 }

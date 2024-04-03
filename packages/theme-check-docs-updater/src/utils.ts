@@ -1,19 +1,7 @@
-import envPaths from 'env-paths';
-import path from 'node:path';
-import { Resource, downloadFile } from './themeLiquidDocsDownloader';
+import { Resource, downloadResource } from './themeLiquidDocsDownloader';
+import { root } from './themeLiquidDocsDownloader';
 
 export const noop = () => {};
-
-const paths = envPaths('theme-liquid-docs');
-export const root = paths.cache;
-
-export function download(file: Resource | 'latest', destination: string = root) {
-  return downloadFile(file, destination);
-}
-
-export function filePath(file: Resource | 'latest', destination: string = root) {
-  return path.join(destination, `${file}.json`);
-}
 
 /** Returns a cached version of a function. Only caches one result. */
 export function memo<F extends (...args: any[]) => any>(
@@ -26,6 +14,23 @@ export function memo<F extends (...args: any[]) => any>(
       cachedValue = fn(...args);
     }
     return cachedValue;
+  };
+}
+
+export function memoize<AT, F extends (arg: AT) => any, RT extends ReturnType<F>>(
+  fn: F,
+  keyFn: (arg: AT) => string,
+) {
+  const cache: Record<string, RT> = {};
+
+  return (arg: AT): RT => {
+    const key = keyFn(arg);
+
+    if (!cache[key]) {
+      cache[key] = fn(arg);
+    }
+
+    return cache[key];
   };
 }
 
