@@ -1,7 +1,8 @@
 import { basicSetup } from 'codemirror';
-import { EditorView } from '@codemirror/view';
-import { EditorState } from '@codemirror/state';
+import { EditorView, keymap } from '@codemirror/view';
+import { Compartment, EditorState, Extension } from '@codemirror/state';
 import { json } from '@codemirror/lang-json';
+import { vim } from '@replit/codemirror-vim';
 import MarkdownIt from 'markdown-it';
 // import { oneDark } from '@codemirror/theme-one-dark';
 // import { liquid, liquidHighLightStyle } from '@shopify/lang-liquid';
@@ -120,6 +121,19 @@ async function main() {
     params: exampleTranslations,
   } as SetDefaultTranslationsNotification.type);
 
+  function toggleVim(keybind: string, extension: Extension) {
+    let vimCompartment = new Compartment();
+    let vimEnabled = false;
+    function toggle(view: EditorView) {
+      view.dispatch({
+        effects: vimCompartment.reconfigure(vimEnabled ? [] : vim()),
+      });
+      vimEnabled = !vimEnabled;
+      return true;
+    }
+    return [vimCompartment.of([]), keymap.of([{ key: keybind, run: toggle }])];
+  }
+
   new EditorView({
     state: EditorState.create({
       doc: exampleTemplate,
@@ -129,6 +143,7 @@ async function main() {
         // liquidHighLightStyle,
         // oneDark,
         client.extension('browser:/sections/section.liquid'),
+        toggleVim('Mod-Alt-v', vim()),
       ],
     }),
     parent: document.getElementById('liquid-editor')!,
