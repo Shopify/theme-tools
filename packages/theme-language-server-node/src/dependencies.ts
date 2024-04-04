@@ -4,6 +4,7 @@ import {
   Translations,
   isError,
   loadConfig as loadConfigFromPath,
+  memoize,
   parseJSON,
   reusableFindRoot,
 } from '@shopify/theme-check-node';
@@ -89,21 +90,27 @@ export const fileSize: Dependencies['fileSize'] = async function fileSize(
   }
 };
 
+const hasThemeAppExtensionConfig = memoize(
+  async (rootPath: string) => {
+    const files = await glob('*.extension.toml', { cwd: rootPath });
+    return files.length > 0;
+  },
+  (x: string) => x,
+);
+
 export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(uriString: string) {
   const fileUri = parse(uriString);
   const rootUri = await findRoot(fileUri);
   const rootPath = asFsPath(rootUri);
   const configUri = Utils.joinPath(rootUri, '.theme-check.yml');
   const configPath = asFsPath(configUri);
-  const extensionConfigPathUri = Utils.joinPath(rootUri, 'shopify.extension.toml');
-  const extensionConfigPath = asFsPath(extensionConfigPathUri);
-  const [configExists, extensionConfigExists] = await Promise.all([
+  const [configExists, isDefinitelyThemeAppExtension] = await Promise.all([
     fileExists(configPath),
-    fileExists(extensionConfigPath),
+    hasThemeAppExtensionConfig(rootPath),
   ]);
   if (configExists) {
     return loadConfigFromPath(configPath, rootPath).then(normalizeRoot);
-  } else if (extensionConfigExists) {
+  } else if (isDefinitelyThemeAppExtension) {
     return loadConfigFromPath('theme-check:theme-app-extension', rootPath).then(normalizeRoot);
   } else {
     return loadConfigFromPath(undefined, rootPath).then(normalizeRoot);
