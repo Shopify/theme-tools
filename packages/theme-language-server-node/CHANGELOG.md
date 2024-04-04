@@ -1,5 +1,34 @@
 # @shopify/theme-language-server-node
 
+## 1.11.0
+
+### Minor Changes
+
+- e0031bb: Fix Theme App Extension context inference
+- 03b41e1: Breaking: `jsonValidationSet`'s schemas public API change
+
+  Now takes a function of the following signature:
+
+  ```ts
+  interface JsonValidationSet = {
+    schemas: (context: 'theme' | 'app') => Promise<SchemaDefinition[]>
+  }
+  ```
+
+  Reason being we want to support `fileMatch` overloading of `blocks/*.liquid` files and we needed a way to identify which context you're in.
+
+  Unfortunately, the JSON schema for `blocks/*.liquid` files in theme app extensions isn't the same one we have in themes. There doesn't seem to be a way to unify them either.
+
+### Patch Changes
+
+- Updated dependencies [03b41e1]
+- Updated dependencies [03b41e1]
+- Updated dependencies [03b41e1]
+- Updated dependencies [03b41e1]
+  - @shopify/theme-language-server-common@1.11.0
+  - @shopify/theme-check-docs-updater@2.5.0
+  - @shopify/theme-check-node@2.5.0
+
 ## 1.10.0
 
 ### Patch Changes

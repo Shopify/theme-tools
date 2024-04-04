@@ -1,5 +1,45 @@
 # @shopify/theme-check-browser
 
+## 2.5.0
+
+### Minor Changes
+
+- 03b41e1: Breaking: `jsonValidationSet`'s schemas public API change
+
+  Now takes a function of the following signature:
+
+  ```ts
+  interface JsonValidationSet = {
+    schemas: (context: 'theme' | 'app') => Promise<SchemaDefinition[]>
+  }
+  ```
+
+  Reason being we want to support `fileMatch` overloading of `blocks/*.liquid` files and we needed a way to identify which context you're in.
+
+  Unfortunately, the JSON schema for `blocks/*.liquid` files in theme app extensions isn't the same one we have in themes. There doesn't seem to be a way to unify them either.
+
+- 03b41e1: Theme Check Config files now accept the `context` property
+
+  In your `.theme-check.yml` files, you can set the `context` property to `theme` or `app`. By default, it's `theme`. The `theme-check:theme-app-extension` config sets it to `app`.
+
+  You shouldn't need to care about this. It's there so we can do contextual things internally.
+
+- 03b41e1: Add support for the schemas manifest on Shopify/theme-liquid-docs
+
+  Shopify/theme-liquid-docs now supports composable JSON schemas (with relative paths). To solve the `blocks/*.liquid` file match JSON schema overload depending on the context (`app` or `theme`), we defined two manifests that describe the schemas required by your solution and define the fileMatch rules:
+
+  - [manifest_theme.json](https://github.com/Shopify/theme-liquid-docs/blob/main/schemas/manifest_theme.json)
+  - [manifest_theme_app_extension.json](https://github.com/Shopify/theme-liquid-docs/blob/main/schemas/manifest_theme.json)
+
+  `@shopify/theme-check-docs-updater` now reads those manifests and downloads the tree of dependency that they require. We will no longer need to make new theme-tools releases whenever we add new schemas. We'll be able to dev them and their file associations directly from Shopify/theme-liquid-docs and have downstream consumers updated automatically (the same way docs are automatically updated).
+
+### Patch Changes
+
+- Updated dependencies [03b41e1]
+- Updated dependencies [03b41e1]
+- Updated dependencies [03b41e1]
+  - @shopify/theme-check-common@2.5.0
+
 ## 2.4.0
 
 ### Patch Changes
