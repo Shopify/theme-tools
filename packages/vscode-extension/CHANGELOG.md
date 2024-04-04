@@ -1,5 +1,18 @@
 ## theme-check-vscode
 
+## 2.3.0
+
+### Minor Changes
+
+- Add support for Shopify/theme-liquid-docs JSON Schema manifests for automatically updated JSON schemas for various part of themes and theme app extensions
+
+### Patch Changes
+
+- e0031bb: Fix Theme App Extension context inference
+- Updated dependencies [e0031bb]
+- Updated dependencies [03b41e1]
+  - @shopify/theme-language-server-node@1.11.0
+
 ## 2.2.1
 
 ### Patch Changes
