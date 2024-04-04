@@ -53,6 +53,7 @@ This section is intended for internal folks.
    pnpm recursive --filter @shopify/app update --latest @shopify/theme-check-node
    git checkout pnpm-lock.yaml
    pnpm install
+   pnpm changeset add
    git add .
    git commit -m 'Bump Shopify/theme-tools packages'
    git push origin $branch
