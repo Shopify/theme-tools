@@ -1,4 +1,4 @@
-import { AbsolutePath, CheckSettings, Severity } from '@shopify/theme-check-common';
+import { AbsolutePath, CheckSettings, Modes, Severity } from '@shopify/theme-check-common';
 import { parse } from 'yaml';
 import path from 'node:path';
 import fs from 'node:fs/promises';
@@ -91,6 +91,13 @@ export async function readYamlConfigDescription(
     delete yamlFile.extends;
   } else if (isRootConfig) {
     config.extends = [resolveExtends(root, 'theme-check:recommended')!];
+  }
+
+  if (yamlFile.context) {
+    if (Modes.includes(yamlFile.context)) {
+      config.context = yamlFile.context;
+    }
+    delete yamlFile.context;
   }
 
   // legacy settings that screw up assumptions

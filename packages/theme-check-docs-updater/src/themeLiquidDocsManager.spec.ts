@@ -1,12 +1,12 @@
 import { expect, describe, it, beforeEach, afterEach, vi, assert } from 'vitest';
 import { ThemeLiquidDocsManager } from './themeLiquidDocsManager';
-import { downloadFile, Resources } from './themeLiquidDocsDownloader';
+import { downloadResource, Resources } from './themeLiquidDocsDownloader';
 
 vi.mock('./themeLiquidDocsDownloader', async (importOriginal) => {
   const actual: any = await importOriginal();
   return {
     ...actual,
-    downloadFile: vi.fn(),
+    downloadResource: vi.fn(),
   };
 });
 
@@ -58,10 +58,10 @@ describe('Module: ThemeLiquidDocsManager', async () => {
 
   it('should not download remote files if the revision is stable', async () => {
     await Promise.all([manager.filters(), manager.objects(), manager.tags()]);
-    expect(vi.mocked(downloadFile)).toHaveBeenNthCalledWith(1, 'latest', expect.any(String));
-    expect(vi.mocked(downloadFile)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(downloadResource)).toHaveBeenNthCalledWith(1, 'latest');
+    expect(vi.mocked(downloadResource)).toHaveBeenCalledTimes(1);
     for (const resource of Resources) {
-      expect(vi.mocked(downloadFile)).not.toHaveBeenCalledWith(resource, expect.any(String));
+      expect(vi.mocked(downloadResource)).not.toHaveBeenCalledWith(resource, expect.any(String));
     }
   });
 

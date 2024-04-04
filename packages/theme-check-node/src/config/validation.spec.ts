@@ -14,6 +14,7 @@ describe('Unit: validateConfig', () => {
 
   it('validates a valid config', () => {
     const config: Config = {
+      context: 'theme',
       checks: [ParserBlockingScript],
       settings: {
         ParserBlockingScript: {
@@ -47,6 +48,7 @@ describe('Unit: validateConfig', () => {
       create: () => ({}),
     };
     const config: Config = {
+      context: 'theme',
       settings: {
         MockCheck: {
           enabled: true,
@@ -64,6 +66,7 @@ describe('Unit: validateConfig', () => {
 
   it('throws an error for invalid setting type', () => {
     const config: Config = {
+      context: 'theme',
       settings: {
         ParserBlockingScript: {
           enabled: true,
@@ -83,6 +86,7 @@ describe('Unit: validateConfig', () => {
 
   it('throws an error for unexpected setting', () => {
     const config: Config = {
+      context: 'theme',
       settings: {
         ParserBlockingScript: {
           enabled: true,
@@ -121,6 +125,7 @@ describe('Unit: validateConfig', () => {
     };
 
     const config: Config = {
+      context: 'theme',
       settings: {
         NestedCheck: {
           enabled: true,
@@ -158,7 +163,8 @@ describe('Unit: validateConfig', () => {
       create: () => ({}),
     };
 
-    const config = {
+    const config: Config = {
+      context: 'theme',
       settings: {
         NestedCheck: {
           enabled: true,
@@ -197,6 +203,7 @@ describe('Unit: validateConfig', () => {
     };
 
     const config: Config = {
+      context: 'theme',
       settings: {
         OptionalCheck: {
           enabled: true,
@@ -232,6 +239,7 @@ describe('Unit: validateConfig', () => {
     };
 
     const config: Config = {
+      context: 'theme',
       settings: {
         ArrayCheck: {
           enabled: true,
@@ -267,6 +275,7 @@ describe('Unit: validateConfig', () => {
     };
 
     const config: Config = {
+      context: 'theme',
       settings: {
         ArrayCheck: {
           enabled: true,

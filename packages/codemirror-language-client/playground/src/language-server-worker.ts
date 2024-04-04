@@ -1,6 +1,6 @@
-import { startServer, allChecks } from '@shopify/theme-language-server-browser';
-import { isDependencyInjectionMessage } from './messages';
+import { Dependencies, allChecks, startServer } from '@shopify/theme-language-server-browser';
 import { URI } from 'vscode-languageserver-types';
+import { isDependencyInjectionMessage } from './messages';
 
 /**
  * These are replaced at build time by the contents of
@@ -11,16 +11,14 @@ declare global {
   export const WEBPACK_FILTERS: any[];
   export const WEBPACK_OBJECTS: any[];
   export const WEBPACK_SYSTEM_TRANSLATIONS: any;
-  export const WEBPACK_TRANSLATIONS_SCHEMA: string;
-  export const WEBPACK_SECTION_SCHEMA: string;
+  export const WEBPACK_SCHEMAS: any;
 }
 
 const tags = WEBPACK_TAGS;
 const filters = WEBPACK_FILTERS;
 const objects = WEBPACK_OBJECTS;
 const systemTranslations = WEBPACK_SYSTEM_TRANSLATIONS;
-const sectionSchema = WEBPACK_SECTION_SCHEMA;
-const translationsSchema = WEBPACK_TRANSLATIONS_SCHEMA;
+const schemas = WEBPACK_SCHEMAS;
 
 const worker = self as any as Worker;
 
@@ -63,13 +61,12 @@ async function findRootURI(_uri: string) {
   return 'browser:/';
 }
 
-async function loadConfig(_uri: string) {
-  return {
-    settings: {},
-    checks: allChecks,
-    root: '/',
-  };
-}
+const loadConfig: Dependencies['loadConfig'] = async (_uri) => ({
+  context: 'theme',
+  settings: {},
+  checks: allChecks,
+  root: '/',
+});
 
 startServer(worker, {
   fileSize: async (_: string) => 42,
@@ -87,18 +84,7 @@ startServer(worker, {
     systemTranslations: async () => systemTranslations,
   },
   jsonValidationSet: {
-    schemas: [
-      {
-        uri: 'https://shopify.dev/section-schema.json',
-        fileMatch: ['**/sections/*.liquid'],
-        schema: Promise.resolve(sectionSchema),
-      },
-      {
-        uri: 'https://shopify.dev/translations-schema.json',
-        fileMatch: ['**/locales/*.json'],
-        schema: Promise.resolve(translationsSchema),
-      },
-    ],
+    schemas: async () => schemas,
   },
   loadConfig,
   log(message) {

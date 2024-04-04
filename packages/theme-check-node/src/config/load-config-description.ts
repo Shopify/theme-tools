@@ -38,6 +38,7 @@ export async function loadConfigDescription(
 
   return {
     settings: unaliasedSettings(configDescription.checkSettings, checks),
+    context: configDescription.context ?? 'theme',
     checks,
     ignore: configDescription.ignore,
     root: resolveRoot(root, configDescription.root),

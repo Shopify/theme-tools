@@ -1,4 +1,4 @@
-import { Translations } from '@shopify/theme-check-common';
+import { Mode, Translations } from '@shopify/theme-check-common';
 import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { CompletionParams, HoverParams } from 'vscode-languageserver';
 import { DocumentManager } from '../documents';
@@ -16,6 +16,29 @@ const simplifiedSectionSchema = JSON.stringify({
     class: {
       type: 'string',
       description: 'Additional CSS class for the section',
+    },
+    disabled_on: {
+      type: 'string',
+    },
+  },
+});
+
+const simplifiedTaeBlockSchema = JSON.stringify({
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    name: {
+      type: 'string',
+      description: 'The section title shown in the theme editor',
+    },
+    class: {
+      type: 'string',
+      description: 'Additional CSS class for the section',
+    },
+    javascript: {
+      type: 'string',
+      description: 'Haha this one is different',
     },
   },
 });
@@ -66,20 +89,29 @@ describe('Module: JSONLanguageService', () => {
     jsonLanguageService = new JSONLanguageService(
       documentManager,
       {
-        schemas: [
+        schemas: async (mode: Mode) => [
           {
             uri: 'https://shopify.dev/section-schema.json',
-            schema: Promise.resolve(simplifiedSectionSchema),
+            schema: simplifiedSectionSchema,
             fileMatch: ['**/sections/*.liquid'],
           },
           {
             uri: 'https://shopify.dev/translation-schema.json',
-            schema: Promise.resolve(simplifiedTranslationSchema),
+            schema: simplifiedTranslationSchema,
             fileMatch: ['**/locales/*.json'],
+          },
+          {
+            uri:
+              mode === 'theme'
+                ? 'https://shopify.dev/block-schema.json'
+                : 'https://shopify.dev/block-tae-schema.json',
+            schema: mode === 'theme' ? simplifiedSectionSchema : simplifiedTaeBlockSchema,
+            fileMatch: ['**/blocks/*.liquid'],
           },
         ],
       },
       () => Promise.resolve(schemaTranslations),
+      (uri: string) => Promise.resolve(uri.includes('tae') ? 'app' : 'theme'),
     );
 
     jsonLanguageService.setup({
@@ -118,7 +150,7 @@ describe('Module: JSONLanguageService', () => {
       assert(
         typeof completions === 'object' && completions !== null && !Array.isArray(completions),
       );
-      expect(completions.items).to.have.lengthOf(1);
+      expect(completions.items).to.have.lengthOf(2);
       expect(completions.items[0].label).to.equal('class');
       expect(completions.items[0].documentation).to.equal('Additional CSS class for the section');
     });
@@ -152,6 +184,39 @@ describe('Module: JSONLanguageService', () => {
         expect(completions.items).to.have.lengthOf(1);
         expect(completions.items[0].label).to.equal('one');
         expect(completions.items[0].documentation).to.eql('Translation for the singular form');
+      }
+    });
+
+    it('should be possible to offer theme app extension completions in app contexts, and theme completions in theme contexts for blocks', async () => {
+      const testContexts: [Mode, string, string[]][] = [
+        ['theme', 'theme/blocks/block.liquid', ['class', 'disabled_on']],
+        ['app', 'tae/blocks/block.liquid', ['class', 'javascript']],
+      ];
+      for (const [mode, path, expectedRecommendations] of testContexts) {
+        const params = getParams(
+          documentManager,
+          path,
+          `
+          <div>hello world</div>
+          {% schema %}
+            {
+              "name": "My section",
+              "█"
+            }
+          {% endschema %}
+        `,
+        );
+
+        const completions = await jsonLanguageService.completions(params);
+        assert(
+          typeof completions === 'object' && completions !== null && !Array.isArray(completions),
+        );
+        expect(completions.items).to.have.lengthOf(expectedRecommendations.length);
+        expect(completions.items).toEqual(
+          expectedRecommendations.map((recommendation) =>
+            expect.objectContaining({ label: recommendation }),
+          ),
+        );
       }
     });
 

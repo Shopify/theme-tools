@@ -24,7 +24,7 @@
     "build:ts": "tsc -b src/tsconfig.build.json",
     "dev": "tsc -b src --watch",
     "test": "vitest",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit -p src/tsconfig.json"
   },
   "dependencies": {
     "@shopify/liquid-html-parser": "^2.0.3",

@@ -53,6 +53,7 @@ export async function check(
 ): Promise<Offense[]> {
   const theme = getTheme(themeDesc);
   const config: Config = {
+    context: 'theme',
     settings: { ...checkSettings },
     checks: checks,
     root: '/',

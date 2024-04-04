@@ -361,6 +361,7 @@ describe('Module: server', () => {
       getDefaultSchemaLocaleFactory: () => async () => 'en',
       getThemeSettingsSchemaForRootURI: async () => [],
       loadConfig: async () => ({
+        context: 'theme',
         settings: {},
         checks: MissingTemplate,
         root: '/',
@@ -373,7 +374,7 @@ describe('Module: server', () => {
         systemTranslations: async () => ({}),
       },
       jsonValidationSet: {
-        schemas: [],
+        schemas: async () => [],
       },
     } as Dependencies;
   }

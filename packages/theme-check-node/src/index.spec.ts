@@ -1,5 +1,4 @@
-import { describe, it, expect, assert, beforeEach, afterEach } from 'vitest';
-import * as path from 'node:path';
+import { afterEach, assert, beforeEach, describe, expect, it } from 'vitest';
 import { Config, SourceCodeType, getTheme } from './index';
 import { Workspace, makeTempWorkspace } from './test/test-helpers';
 
@@ -23,6 +22,7 @@ describe('Unit: getTheme', () => {
 
   it('should correctly get theme on all platforms', async () => {
     const config: Config = {
+      context: 'theme',
       checks: [],
       root: workspace.root,
       settings: {},

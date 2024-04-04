@@ -59,6 +59,7 @@ describe('Module: runChecks', () => {
       getDefaultSchemaTranslationsFactory: () => async () => ({}),
       getDefaultSchemaLocaleFactory: () => async () => 'en',
       loadConfig: async () => ({
+        context: 'theme',
         settings: {},
         checks: [LiquidFilter],
         root: '/',
@@ -70,7 +71,7 @@ describe('Module: runChecks', () => {
         systemTranslations: async () => ({}),
       },
       jsonValidationSet: {
-        schemas: [],
+        schemas: async () => [],
       },
     });
   });
@@ -215,6 +216,7 @@ describe('Module: runChecks', () => {
       getDefaultSchemaTranslationsFactory: () => async () => ({}),
       getDefaultSchemaLocaleFactory: () => async () => 'en',
       loadConfig: async () => ({
+        context: 'theme',
         settings: {},
         checks: matchingTranslation,
         root: '/',
@@ -226,7 +228,7 @@ describe('Module: runChecks', () => {
         systemTranslations: async () => ({}),
       },
       jsonValidationSet: {
-        schemas: [],
+        schemas: async () => [],
       },
     });
 

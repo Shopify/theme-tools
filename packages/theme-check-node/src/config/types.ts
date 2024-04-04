@@ -1,4 +1,4 @@
-import { ChecksSettings, Severity } from '@shopify/theme-check-common';
+import { ChecksSettings, Mode, Severity } from '@shopify/theme-check-common';
 
 /**
  * The pipeline goes like this:
@@ -21,10 +21,14 @@ export interface ConfigFragment {
   extends: string[];
   require: string[];
   checkSettings: ChecksSettings;
+  context?: Mode;
 }
 
 /** A ConfigDescription is a ConfigFragment that doesn't extend anything. */
-export type ConfigDescription = Omit<ConfigFragment, 'extends'> & { extends: [] };
+export type ConfigDescription = Omit<ConfigFragment, 'extends' | 'context'> & {
+  extends: [];
+  context: Mode;
+};
 
 export const ModernIdentifiers = [
   'theme-check:nothing',

@@ -46,7 +46,10 @@ export function memo<F extends (...args: any[]) => any>(fn: F): MemoedFunction<F
  * fastOnSubsequentCalls(thing1);
  * fastOnSubsequentCalls(thing1);
  */
-export function memoize<AT, RT, F extends (arg: AT) => RT>(fn: F, keyFn: (arg: AT) => string) {
+export function memoize<AT, F extends (arg: AT) => any, RT extends ReturnType<F>>(
+  fn: F,
+  keyFn: (arg: AT) => string,
+) {
   const cache: Record<string, RT> = {};
 
   return (arg: AT): RT => {

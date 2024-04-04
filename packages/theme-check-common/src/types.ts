@@ -21,6 +21,8 @@ export const isObjectNode = (node?: ASTNode): node is ObjectNode => node?.type =
 export const isArrayNode = (node?: ASTNode): node is ArrayNode => node?.type === 'Array';
 export const isPropertyNode = (node?: ASTNode): node is PropertyNode => node?.type === 'Property';
 
+export const Modes = ['theme', 'app'] as const;
+export type Mode = (typeof Modes)[number];
 export type Theme = SourceCode<SourceCodeType>[];
 
 export type SourceCode<T = SourceCodeType> = T extends SourceCodeType
@@ -98,6 +100,12 @@ export type CheckSettings = {
 };
 
 export interface Config {
+  // I know, it's `context` in the config and `Mode` in the code...
+  // We already have something named "Context" internally when you're writing a check.
+  // I don't like "Mode" as a public API in the configs. Context sounds more Shopify-y.
+  // So we have `context: theme` and `context: app` as valid .theme-check.yml configs.
+  // I think it's rather obvious what they mean.
+  context: Mode;
   settings: ChecksSettings;
   checks: CheckDefinition<SourceCodeType, Schema>[];
   root: AbsolutePath;

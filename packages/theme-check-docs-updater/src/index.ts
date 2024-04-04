@@ -2,7 +2,7 @@ export { ThemeLiquidDocsManager } from './themeLiquidDocsManager';
 export {
   Resource,
   Resources,
-  downloadFile,
+  downloadResource,
   downloadThemeLiquidDocs,
+  root,
 } from './themeLiquidDocsDownloader';
-export { root } from './utils';

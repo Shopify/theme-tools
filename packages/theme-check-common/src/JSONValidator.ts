@@ -1,19 +1,24 @@
 import { LanguageService, TextDocument, getLanguageService } from 'vscode-json-languageservice';
-import { JsonValidationSet, SchemaDefinition, SourceCodeType, ValidateJSON } from './types';
+import { SchemaDefinition, SourceCodeType, ValidateJSON } from './types';
 import { indexBy } from './utils';
 
 export class JSONValidator {
   private service: LanguageService;
   private schemas: Record<string, SchemaDefinition>;
 
-  constructor(private jsonValidationSet: JsonValidationSet) {
-    this.jsonValidationSet = jsonValidationSet;
-    this.schemas = indexBy((x) => x.uri, this.jsonValidationSet.schemas);
+  constructor(schemas: SchemaDefinition[]) {
+    this.schemas = indexBy((x) => x.uri, schemas);
     this.service = getLanguageService({
       schemaRequestService: this.getSchemaForURI.bind(this),
+      workspaceContext: {
+        resolveRelativePath: (relativePath, resource) => {
+          const url = new URL(relativePath, resource);
+          return url.toString();
+        },
+      },
     });
     this.service.configure({
-      schemas: this.jsonValidationSet.schemas.map((schemaDefinition) => ({
+      schemas: schemas.map((schemaDefinition) => ({
         uri: schemaDefinition.uri,
         fileMatch: schemaDefinition.fileMatch,
       })),
@@ -47,8 +52,8 @@ export class JSONValidator {
   };
 
   private async getSchemaForURI(uri: string): Promise<string> {
-    const promise = this.schemas[uri]?.schema;
-    if (!promise) return `No schema for '${uri}' found`;
-    return promise;
+    const schema = this.schemas[uri]?.schema;
+    if (!schema) return `No schema for '${uri}' found`;
+    return schema;
   }
 }

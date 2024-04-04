@@ -1,6 +1,8 @@
 import { LiquidRawTag, NodeTypes } from '@shopify/liquid-html-parser';
 import {
   JsonValidationSet,
+  Mode,
+  Modes,
   SchemaDefinition,
   SourceCodeType,
   indexBy,
@@ -22,62 +24,108 @@ import { SchemaTranslationContributions } from './SchemaTranslationContributions
 import { GetTranslationsForURI } from '../translations';
 
 export class JSONLanguageService {
-  private service: LanguageService | null = null;
+  // We index by Mode here because I don't want to reconfigure the service depending on the URI.
+  // This is because you may be in a "app" context in one folder, and in a "theme" context in another one.
+  // Because theme app extensions and themes do not share a common JSON schema for blocks/*.liquid files,
+  // we need to do this switch on mode here to figure out which language service we will use to power
+  // completions/hover. The mode comes from the theme check config.
+  private services: Record<Mode, LanguageService | null>;
+
+  // One record for all modes since collisions on URIs should point to the same schema
   private schemas: Record<string, SchemaDefinition>;
 
   constructor(
     private documentManager: DocumentManager,
     private jsonValidationSet: JsonValidationSet,
     private getDefaultSchemaTranslations: GetTranslationsForURI,
+    private getModeForURI: (uri: string) => Promise<Mode>,
   ) {
-    this.schemas = indexBy((x) => x.uri, this.jsonValidationSet.schemas);
+    this.services = Object.fromEntries(Modes.map((mode) => [mode, null])) as typeof this.services;
+    this.schemas = {};
   }
 
-  setup(clientCapabilities: LSPClientCapabilities) {
-    this.service = getLanguageService({
-      schemaRequestService: this.getSchemaForURI.bind(this),
-      contributions: [
-        new TranslationFileContributions(this.documentManager),
-        new SchemaTranslationContributions(this.documentManager, this.getDefaultSchemaTranslations),
-      ],
-      clientCapabilities,
-    });
-    this.service.configure({
-      schemas: this.jsonValidationSet.schemas.map((schemaDefinition) => ({
-        uri: schemaDefinition.uri,
-        fileMatch: schemaDefinition.fileMatch,
-      })),
-    });
+  async setup(clientCapabilities: LSPClientCapabilities) {
+    await Promise.all(
+      Modes.map(async (mode) => {
+        const schemas = await this.jsonValidationSet.schemas(mode);
+        for (const schema of schemas) {
+          this.schemas[schema.uri] = schema;
+        }
+
+        if (!schemas.length) return;
+
+        const service = getLanguageService({
+          clientCapabilities,
+
+          // Map URIs to schemas without making network requests. Removes the
+          // network dependency.
+          schemaRequestService: this.getSchemaForURI.bind(this),
+
+          // This is how we make sure that our "$ref": "./inputSettings.json" in
+          // our JSON schemas resolve correctly.
+          workspaceContext: {
+            resolveRelativePath: (relativePath, resource) => {
+              const url = new URL(relativePath, resource);
+              return url.toString();
+            },
+          },
+
+          // Custom non-JSON schema completion & hover contributions
+          contributions: [
+            new TranslationFileContributions(this.documentManager),
+            new SchemaTranslationContributions(
+              this.documentManager,
+              this.getDefaultSchemaTranslations,
+            ),
+          ],
+        });
+
+        service.configure({
+          // This is what we use to map file names to JSON schemas. Without
+          // this, we'd need folks to use the `$schema` field in their JSON
+          // blobs. That ain't fun nor is going to happen.
+          schemas: schemas.map((schemaDefinition) => ({
+            uri: schemaDefinition.uri,
+            fileMatch: schemaDefinition.fileMatch,
+          })),
+        });
+
+        this.services[mode] = service;
+      }),
+    );
   }
 
   async completions(params: CompletionParams): Promise<null | CompletionList | CompletionItem[]> {
-    if (!this.service) return null;
-    const documents = this.getDocuments(params);
+    const mode = await this.getModeForURI(params.textDocument.uri);
+    const service = this.services[mode];
+    if (!service) return null;
+    const documents = this.getDocuments(params, service);
     if (!documents) return null;
     const [jsonTextDocument, jsonDocument] = documents;
-    return this.service.doComplete(jsonTextDocument, params.position, jsonDocument);
+    return service.doComplete(jsonTextDocument, params.position, jsonDocument);
   }
 
   async hover(params: HoverParams): Promise<Hover | null> {
-    if (!this.service) return null;
-    const documents = this.getDocuments(params);
+    const mode = await this.getModeForURI(params.textDocument.uri);
+    const service = this.services[mode];
+    if (!service) return null;
+    const documents = this.getDocuments(params, service);
     if (!documents) return null;
     const [jsonTextDocument, jsonDocument] = documents;
-    return this.service.doHover(jsonTextDocument, params.position, jsonDocument);
+    return service.doHover(jsonTextDocument, params.position, jsonDocument);
   }
 
   private getDocuments(
     params: HoverParams | CompletionParams,
+    service: LanguageService,
   ): [TextDocument, JSONDocument] | null {
-    if (!this.service) return null;
-
     const document = this.documentManager.get(params.textDocument.uri);
     if (!document) return null;
 
     switch (document.type) {
       case SourceCodeType.JSON: {
         const jsonTextDocument = document.textDocument;
-        const jsonDocument = this.service.parseJSONDocument(jsonTextDocument);
+        const jsonDocument = service.parseJSONDocument(jsonTextDocument);
         return [jsonTextDocument, jsonDocument];
       }
 
@@ -105,15 +153,15 @@ export class JSONLanguageService {
           textDocument.version,
           jsonString,
         );
-        const jsonDocument = this.service.parseJSONDocument(jsonTextDocument);
+        const jsonDocument = service.parseJSONDocument(jsonTextDocument);
         return [jsonTextDocument, jsonDocument];
       }
     }
   }
 
   private async getSchemaForURI(uri: string): Promise<string> {
-    const promise = this.schemas[uri]?.schema;
-    if (!promise) return `Could not get schema for '${uri}'`;
-    return promise;
+    const schema = this.schemas[uri]?.schema;
+    if (!schema) return `Could not get schema for '${uri}'`;
+    return schema;
   }
 }
