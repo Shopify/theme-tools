@@ -1,6 +1,6 @@
 import { LanguageService, TextDocument, getLanguageService } from 'vscode-json-languageservice';
-import { JsonValidationSet, SchemaDefinition, SourceCodeType, ValidateJSON } from './types';
-import { indexBy, memo } from './utils';
+import { SchemaDefinition, SourceCodeType, ValidateJSON } from './types';
+import { indexBy } from './utils';
 
 export class JSONValidator {
   private service: LanguageService;
@@ -52,8 +52,8 @@ export class JSONValidator {
   };
 
   private async getSchemaForURI(uri: string): Promise<string> {
-    const promise = this.schemas[uri]?.schema;
-    if (!promise) return `No schema for '${uri}' found`;
-    return promise;
+    const schema = this.schemas[uri]?.schema;
+    if (!schema) return `No schema for '${uri}' found`;
+    return schema;
   }
 }

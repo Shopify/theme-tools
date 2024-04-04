@@ -75,7 +75,7 @@ describe('Module: ValidJSON', () => {
         schemas: async () => [
           {
             uri: 'https://shopify.dev/some-schema.json',
-            schema: Promise.resolve(basicJsonSchema),
+            schema: basicJsonSchema,
             fileMatch: ['file.json'],
           },
         ],

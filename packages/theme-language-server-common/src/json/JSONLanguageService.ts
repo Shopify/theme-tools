@@ -160,8 +160,8 @@ export class JSONLanguageService {
   }
 
   private async getSchemaForURI(uri: string): Promise<string> {
-    const promise = this.schemas[uri]?.schema;
-    if (!promise) return `Could not get schema for '${uri}'`;
-    return promise;
+    const schema = this.schemas[uri]?.schema;
+    if (!schema) return `Could not get schema for '${uri}'`;
+    return schema;
   }
 }

@@ -25,6 +25,8 @@ import { memo, memoize, noop } from './utils';
 
 type Logger = (message: string) => void;
 
+type JSONSchemaManifest = { schemas: { uri: string; fileMatch?: string[] }[] };
+
 export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
   constructor(private log: Logger = noop) {}
 
@@ -46,17 +48,23 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
 
   schemas = memoize(
     (mode: Mode) =>
-      findSuitableResource(this.loaders(Manifests[mode]), JSON.parse, { schemas: [] }).then(
-        (manifest): SchemaDefinition[] => {
-          return manifest.schemas.map(
-            (schemaDefinition: { uri: string; fileMatch?: string[] }): SchemaDefinition => ({
+      findSuitableResource<JSONSchemaManifest>(this.loaders(Manifests[mode]), JSON.parse, {
+        schemas: [],
+      }).then((manifest) => {
+        return Promise.all(
+          manifest.schemas.map(
+            async (schemaDefinition): Promise<SchemaDefinition> => ({
               uri: `${ThemeLiquidDocsSchemaRoot}/${schemaDefinition.uri}`,
               fileMatch: schemaDefinition.fileMatch,
-              schema: findSuitableResource(this.schemaLoaders(schemaDefinition.uri), identity, ''),
+              schema: await findSuitableResource(
+                this.schemaLoaders(schemaDefinition.uri),
+                identity,
+                '',
+              ),
             }),
-          );
-        },
-      ),
+          ),
+        );
+      }),
     identity<Mode>,
   );
 

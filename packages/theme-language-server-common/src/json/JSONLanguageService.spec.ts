@@ -92,12 +92,12 @@ describe('Module: JSONLanguageService', () => {
         schemas: async (mode: Mode) => [
           {
             uri: 'https://shopify.dev/section-schema.json',
-            schema: Promise.resolve(simplifiedSectionSchema),
+            schema: simplifiedSectionSchema,
             fileMatch: ['**/sections/*.liquid'],
           },
           {
             uri: 'https://shopify.dev/translation-schema.json',
-            schema: Promise.resolve(simplifiedTranslationSchema),
+            schema: simplifiedTranslationSchema,
             fileMatch: ['**/locales/*.json'],
           },
           {
@@ -105,10 +105,7 @@ describe('Module: JSONLanguageService', () => {
               mode === 'theme'
                 ? 'https://shopify.dev/block-schema.json'
                 : 'https://shopify.dev/block-tae-schema.json',
-            schema:
-              mode === 'theme'
-                ? Promise.resolve(simplifiedSectionSchema)
-                : Promise.resolve(simplifiedTaeBlockSchema),
+            schema: mode === 'theme' ? simplifiedSectionSchema : simplifiedTaeBlockSchema,
             fileMatch: ['**/blocks/*.liquid'],
           },
         ],

@@ -27,8 +27,8 @@ export interface SchemaDefinition {
   /** A URI that will uniquely describe the schema */
   uri: JSONSchemaURI;
 
-  /** A promise that returns a JSON Schema as string */
-  schema: Promise<string>;
+  /** A JSON Schema as string */
+  schema: string;
 
   /**
    * When absent, does not match on file. Assumed to be used by other
