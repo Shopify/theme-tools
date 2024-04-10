@@ -1,21 +1,12 @@
 import { basicSetup } from 'codemirror';
-import { EditorView, keymap } from '@codemirror/view';
-import {
-  Compartment,
-  EditorState,
-  Extension,
-  Facet,
-  StateEffect,
-  StateField,
-  Transaction,
-} from '@codemirror/state';
+import { EditorView } from '@codemirror/view';
+import { EditorState } from '@codemirror/state';
 import { json } from '@codemirror/lang-json';
-import { vim } from '@replit/codemirror-vim';
 import MarkdownIt from 'markdown-it';
 // import { oneDark } from '@codemirror/theme-one-dark';
 // import { liquid, liquidHighLightStyle } from '@shopify/lang-liquid';
 
-import { CodeMirrorLanguageClient } from '@shopify/codemirror-language-client';
+import { CodeMirrorLanguageClient, vimFacet, vimConfig } from '@shopify/codemirror-language-client';
 import * as SetFileTreeNotification from './SetFileTreeNotification';
 import * as SetDefaultTranslationsNotification from './SetDefaultTranslationsNotification';
 import {
@@ -133,63 +124,6 @@ async function main() {
     params: exampleTranslations,
   } as SetDefaultTranslationsNotification.type);
 
-  const vimStateEffect = StateEffect.define<boolean>();
-  // create a statefield that's a boolean
-  const vimStateField = StateField.define<boolean>({
-    create: () => {
-      return false;
-    },
-    update: (value: boolean, transaction: Transaction) => {
-      let updatedValue = value;
-      for (const effect of transaction.effects) {
-        if (effect.is(vimStateEffect)) {
-          updatedValue = effect.value;
-        }
-      }
-      return updatedValue;
-    },
-  });
-
-  function vimFacet() {
-    const vimEnabledFacet = Facet.define<boolean, boolean>({
-      combine: (values) => values.some((x) => x),
-    });
-    let vimCompartment = new Compartment();
-
-    function toggle(view: EditorView) {
-      const vimEnabled = view.state.facet(vimEnabledFacet);
-      let vimFacetExtension = vimEnabledFacet.of(!vimEnabled);
-      view.dispatch({
-        effects: [vimCompartment.reconfigure([vimEnabled ? [] : vim(), vimFacetExtension])],
-      });
-      return true;
-    }
-
-    return [vimCompartment.of([]), keymap.of([{ key: 'Mod-Alt-v', run: toggle }])];
-  }
-
-  function vimConfig() {
-    let vimCompartment = new Compartment();
-
-    const vimStateFieldKeyBind = keymap.of([
-      {
-        key: 'Mod-Alt-v',
-        run: function toggle(view: EditorView) {
-          const vimEnabled = view.state.field(vimStateField);
-          view.dispatch({
-            effects: [
-              vimCompartment.reconfigure([vimEnabled ? [] : vim()]),
-              vimStateEffect.of(!vimEnabled),
-            ],
-          });
-          return true;
-        },
-      },
-    ]);
-
-    return [vimCompartment.of([]), vimStateField, vimStateFieldKeyBind];
-  }
-
   new EditorView({
     state: EditorState.create({
       doc: exampleTemplate,
@@ -214,6 +148,7 @@ async function main() {
         // liquidHighLightStyle,
         // oneDark,
         client.extension('browser:/locales/en.default.json'),
+        vimFacet(),
       ],
     }),
     parent: document.getElementById('theme-translations-editor')!,
@@ -242,6 +177,7 @@ async function main() {
         // liquidHighLightStyle,
         // oneDark,
         client.extension('browser:/locales/en.default.schema.json'),
+        vimConfig(),
       ],
     }),
     parent: document.getElementById('schema-translations-editor')!,

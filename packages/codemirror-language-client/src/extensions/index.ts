@@ -16,3 +16,4 @@ export {
   lspDiagnosticsField,
   lspLinter,
 } from './lspLinter';
+export { vimFacet, vimConfig } from './vim';
