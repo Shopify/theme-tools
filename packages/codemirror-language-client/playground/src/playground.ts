@@ -1,6 +1,6 @@
 import { basicSetup } from 'codemirror';
 import { EditorView, keymap } from '@codemirror/view';
-import { Compartment, EditorState, Extension } from '@codemirror/state';
+import { Compartment, EditorState, Extension, Facet } from '@codemirror/state';
 import { json } from '@codemirror/lang-json';
 import { vim } from '@replit/codemirror-vim';
 import MarkdownIt from 'markdown-it';
@@ -10,7 +10,11 @@ import MarkdownIt from 'markdown-it';
 import { CodeMirrorLanguageClient } from '@shopify/codemirror-language-client';
 import * as SetFileTreeNotification from './SetFileTreeNotification';
 import * as SetDefaultTranslationsNotification from './SetDefaultTranslationsNotification';
-import { MarkedString, MarkupContent } from 'vscode-languageserver-protocol';
+import {
+  CodeLensResolveRequest,
+  MarkedString,
+  MarkupContent,
+} from 'vscode-languageserver-protocol';
 
 const md = new MarkdownIt();
 
@@ -134,6 +138,24 @@ async function main() {
     return [vimCompartment.of([]), keymap.of([{ key: keybind, run: toggle }])];
   }
 
+  function testFacet() {
+    const vimEnabledFacet = Facet.define<boolean, boolean>({
+      combine: (values) => values.some((x) => x),
+    });
+    let vimCompartment = new Compartment();
+
+    function toggle(view: EditorView) {
+      const vimEnabled = view.state.facet(vimEnabledFacet);
+      let vimFacetExtension = vimEnabledFacet.of(!vimEnabled);
+      view.dispatch({
+        effects: [vimCompartment.reconfigure([vimEnabled ? [] : vim(), vimFacetExtension])],
+      });
+      return true;
+    }
+
+    return [vimCompartment.of([]), keymap.of([{ key: 'Mod-Alt-v', run: toggle }])];
+  }
+
   new EditorView({
     state: EditorState.create({
       doc: exampleTemplate,
@@ -143,7 +165,8 @@ async function main() {
         // liquidHighLightStyle,
         // oneDark,
         client.extension('browser:/sections/section.liquid'),
-        toggleVim('Mod-Alt-v', vim()),
+        // toggleVim('Mod-Alt-v', vim()),
+        testFacet(),
       ],
     }),
     parent: document.getElementById('liquid-editor')!,
