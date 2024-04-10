@@ -1,6 +1,14 @@
 import { basicSetup } from 'codemirror';
 import { EditorView, keymap } from '@codemirror/view';
-import { Compartment, EditorState, Extension, Facet } from '@codemirror/state';
+import {
+  Compartment,
+  EditorState,
+  Extension,
+  Facet,
+  StateEffect,
+  StateField,
+  Transaction,
+} from '@codemirror/state';
 import { json } from '@codemirror/lang-json';
 import { vim } from '@replit/codemirror-vim';
 import MarkdownIt from 'markdown-it';
@@ -125,20 +133,24 @@ async function main() {
     params: exampleTranslations,
   } as SetDefaultTranslationsNotification.type);
 
-  function toggleVim(keybind: string, extension: Extension) {
-    let vimCompartment = new Compartment();
-    let vimEnabled = false;
-    function toggle(view: EditorView) {
-      view.dispatch({
-        effects: vimCompartment.reconfigure(vimEnabled ? [] : vim()),
-      });
-      vimEnabled = !vimEnabled;
-      return true;
-    }
-    return [vimCompartment.of([]), keymap.of([{ key: keybind, run: toggle }])];
-  }
+  const vimStateEffect = StateEffect.define<boolean>();
+  // create a statefield that's a boolean
+  const vimStateField = StateField.define<boolean>({
+    create: () => {
+      return false;
+    },
+    update: (value: boolean, transaction: Transaction) => {
+      let updatedValue = value;
+      for (const effect of transaction.effects) {
+        if (effect.is(vimStateEffect)) {
+          updatedValue = effect.value;
+        }
+      }
+      return updatedValue;
+    },
+  });
 
-  function testFacet() {
+  function vimFacet() {
     const vimEnabledFacet = Facet.define<boolean, boolean>({
       combine: (values) => values.some((x) => x),
     });
@@ -156,6 +168,28 @@ async function main() {
     return [vimCompartment.of([]), keymap.of([{ key: 'Mod-Alt-v', run: toggle }])];
   }
 
+  function vimConfig() {
+    let vimCompartment = new Compartment();
+
+    const vimStateFieldKeyBind = keymap.of([
+      {
+        key: 'Mod-Alt-v',
+        run: function toggle(view: EditorView) {
+          const vimEnabled = view.state.field(vimStateField);
+          view.dispatch({
+            effects: [
+              vimCompartment.reconfigure([vimEnabled ? [] : vim()]),
+              vimStateEffect.of(!vimEnabled),
+            ],
+          });
+          return true;
+        },
+      },
+    ]);
+
+    return [vimCompartment.of([]), vimStateField, vimStateFieldKeyBind];
+  }
+
   new EditorView({
     state: EditorState.create({
       doc: exampleTemplate,
@@ -165,8 +199,7 @@ async function main() {
         // liquidHighLightStyle,
         // oneDark,
         client.extension('browser:/sections/section.liquid'),
-        // toggleVim('Mod-Alt-v', vim()),
-        testFacet(),
+        vimConfig(),
       ],
     }),
     parent: document.getElementById('liquid-editor')!,
