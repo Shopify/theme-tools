@@ -1,5 +1,5 @@
 import { Compartment, Facet, StateEffect, StateField, Transaction } from '@codemirror/state';
-import { EditorView, keymap } from '@codemirror/view';
+import { EditorView, Panel, keymap } from '@codemirror/view';
 import { vim } from '@replit/codemirror-vim';
 
 const vimStateEffect = StateEffect.define<boolean>();
@@ -57,4 +57,18 @@ export function vimConfig() {
   ]);
 
   return [vimCompartment.of([]), vimStateField, vimStateFieldKeyBind];
+}
+
+export function vimStatePanel(view: EditorView): Panel {
+  let dom = document.createElement('div');
+  const vimEnabled = view.state.field(vimStateField);
+  dom.textContent = `Vim Mode: ${vimEnabled}`;
+  return {
+    top: false,
+    dom,
+    update(update) {
+      const value = update.state.field(vimStateField);
+      dom.textContent = `Vim Mode: ${value}`;
+    },
+  };
 }

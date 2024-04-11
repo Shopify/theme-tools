@@ -1,12 +1,17 @@
 import { basicSetup } from 'codemirror';
-import { EditorView, GutterMarker, gutter } from '@codemirror/view';
+import { EditorView, GutterMarker, showPanel } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { json } from '@codemirror/lang-json';
 import MarkdownIt from 'markdown-it';
 // import { oneDark } from '@codemirror/theme-one-dark';
 // import { liquid, liquidHighLightStyle } from '@shopify/lang-liquid';
 
-import { CodeMirrorLanguageClient, vimFacet, vimConfig } from '@shopify/codemirror-language-client';
+import {
+  CodeMirrorLanguageClient,
+  vimFacet,
+  vimConfig,
+  vimStatePanel,
+} from '@shopify/codemirror-language-client';
 import * as SetFileTreeNotification from './SetFileTreeNotification';
 import * as SetDefaultTranslationsNotification from './SetDefaultTranslationsNotification';
 import {
@@ -140,17 +145,7 @@ async function main() {
         // oneDark,
         client.extension('browser:/sections/section.liquid'),
         vimConfig(),
-        gutter({ class: 'cm-vimgutter', initialSpacer: () => emptyMarker }),
-        EditorView.baseTheme({
-          '.cm-vimgutter': {
-            backgroundColor: 'teal',
-            position: 'absolute',
-            bottom: '0',
-            width: '100%',
-            height: '30px', // Adjust this value as needed
-            paddingLeft: '5px',
-          },
-        }),
+        showPanel.of(vimStatePanel),
       ],
     }),
     parent: document.getElementById('liquid-editor')!,
