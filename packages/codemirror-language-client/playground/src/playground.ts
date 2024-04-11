@@ -1,5 +1,5 @@
 import { basicSetup } from 'codemirror';
-import { EditorView } from '@codemirror/view';
+import { EditorView, GutterMarker, gutter } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { json } from '@codemirror/lang-json';
 import MarkdownIt from 'markdown-it';
@@ -124,6 +124,12 @@ async function main() {
     params: exampleTranslations,
   } as SetDefaultTranslationsNotification.type);
 
+  const emptyMarker = new (class extends GutterMarker {
+    toDOM() {
+      return document.createTextNode('ø');
+    }
+  })();
+
   new EditorView({
     state: EditorState.create({
       doc: exampleTemplate,
@@ -134,6 +140,17 @@ async function main() {
         // oneDark,
         client.extension('browser:/sections/section.liquid'),
         vimConfig(),
+        gutter({ class: 'cm-vimgutter', initialSpacer: () => emptyMarker }),
+        EditorView.baseTheme({
+          '.cm-vimgutter': {
+            backgroundColor: 'teal',
+            position: 'absolute',
+            bottom: '0',
+            width: '100%',
+            height: '30px', // Adjust this value as needed
+            paddingLeft: '5px',
+          },
+        }),
       ],
     }),
     parent: document.getElementById('liquid-editor')!,
