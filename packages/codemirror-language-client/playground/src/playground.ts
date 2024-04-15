@@ -1,7 +1,8 @@
 import { basicSetup } from 'codemirror';
-import { EditorView } from '@codemirror/view';
-import { EditorState } from '@codemirror/state';
+import { EditorView, keymap } from '@codemirror/view';
+import { Compartment, EditorState } from '@codemirror/state';
 import { json } from '@codemirror/lang-json';
+import { vim } from '@replit/codemirror-vim';
 import MarkdownIt from 'markdown-it';
 // import { oneDark } from '@codemirror/theme-one-dark';
 // import { liquid, liquidHighLightStyle } from '@shopify/lang-liquid';
@@ -68,6 +69,9 @@ function asMarkdown(content: MarkupContent | MarkedString[] | MarkedString): str
   return `\`\`\`${content.language}\n${content.value}\n\`\`\``;
 }
 
+let vimEnabled = false;
+const vimCompartment = new Compartment();
+
 async function main() {
   const worker = new Worker(new URL('./language-server-worker.ts', import.meta.url));
 
@@ -120,10 +124,29 @@ async function main() {
     params: exampleTranslations,
   } as SetDefaultTranslationsNotification.type);
 
-  new EditorView({
+  const vimConfig = [
+    vimCompartment.of([]),
+    keymap.of([
+      {
+        key: 'Mod-Alt-v',
+        run: () => {
+          [liquidEditor, themeTranslationsEditor, schemaTranslationEditor].forEach((view) => {
+            view.dispatch({
+              effects: vimCompartment.reconfigure([vimEnabled ? [] : vim({ status: true })]),
+            });
+          });
+          vimEnabled = !vimEnabled;
+          return true;
+        },
+      },
+    ]),
+  ];
+
+  const liquidEditor = new EditorView({
     state: EditorState.create({
       doc: exampleTemplate,
       extensions: [
+        vimConfig,
         basicSetup,
         // liquid(),
         // liquidHighLightStyle,
@@ -134,10 +157,11 @@ async function main() {
     parent: document.getElementById('liquid-editor')!,
   });
 
-  new EditorView({
+  const themeTranslationsEditor = new EditorView({
     state: EditorState.create({
       doc: JSON.stringify(exampleTranslations, null, 2),
       extensions: [
+        vimConfig,
         basicSetup,
         json(),
         // liquidHighLightStyle,
@@ -148,7 +172,7 @@ async function main() {
     parent: document.getElementById('theme-translations-editor')!,
   });
 
-  new EditorView({
+  const schemaTranslationEditor = new EditorView({
     state: EditorState.create({
       doc: JSON.stringify(
         {
@@ -166,6 +190,7 @@ async function main() {
         2,
       ),
       extensions: [
+        vimConfig,
         basicSetup,
         json(),
         // liquidHighLightStyle,
