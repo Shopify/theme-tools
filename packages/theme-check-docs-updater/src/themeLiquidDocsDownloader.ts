@@ -39,8 +39,7 @@ const THEME_LIQUID_DOCS: Record<Resource | 'latest', string> = {
 export async function downloadSchema(relativeUri: string, destination: string = root) {
   const remotePath = schemaUrl(relativeUri);
   const localPath = schemaPath(relativeUri, destination);
-  const res = await fetch(remotePath);
-  const text = await res.text();
+  const text = await download(remotePath);
   fs.writeFile(localPath, text, 'utf8');
   return text;
 }
@@ -48,12 +47,18 @@ export async function downloadSchema(relativeUri: string, destination: string = 
 export async function downloadResource(resource: Resource | 'latest', destination: string = root) {
   const remotePath = resourceUrl(resource);
   const localPath = resourcePath(resource, destination);
-
-  const res = await fetch(remotePath);
-  const text = await res.text();
-
+  const text = await download(remotePath);
   fs.writeFile(localPath, text, 'utf8');
   return text;
+}
+
+export async function download(path: string) {
+  if (path.startsWith('file:')) {
+    return await fs.readFile(path.replace(/^file:/, ''), 'utf8');
+  } else {
+    const res = await fetch(path);
+    return res.text();
+  }
 }
 
 export function resourcePath(resource: Resource | 'latest', destination: string = root) {
@@ -62,7 +67,10 @@ export function resourcePath(resource: Resource | 'latest', destination: string 
 
 export function resourceUrl(resource: Resource | 'latest') {
   const relativePath = THEME_LIQUID_DOCS[resource];
-  return `${ThemeLiquidDocsRoot}/${relativePath}`;
+  const resourceRoot = process.env.SHOPIFY_TLD_ROOT
+    ? `file:${process.env.SHOPIFY_TLD_ROOT}`
+    : ThemeLiquidDocsRoot;
+  return `${resourceRoot}/${relativePath}`;
 }
 
 export function schemaPath(relativeUri: string, destination: string = root) {
@@ -70,7 +78,10 @@ export function schemaPath(relativeUri: string, destination: string = root) {
 }
 
 export function schemaUrl(relativeUri: string) {
-  return `${ThemeLiquidDocsSchemaRoot}/${relativeUri}`;
+  const schemaRoot = process.env.SHOPIFY_TLD_ROOT
+    ? `file:${process.env.SHOPIFY_TLD_ROOT}`
+    : ThemeLiquidDocsRoot;
+  return `${schemaRoot}/schemas/${relativeUri}`;
 }
 
 export async function exists(path: string) {

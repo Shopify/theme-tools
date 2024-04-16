@@ -58,6 +58,54 @@ Run the following command to start a browser instance that runs `@shopify/theme-
 yarn playground
 ```
 
+### Testing JSON Schema changes on Shopify/theme-liquid-docs
+
+If ever you want to see how the VS Code extension or playground would behave before merging a PR to Shopify/theme-liquid-docs, you can do the following:
+
+1. In a terminal, with VS Code closed, go to the Shopify/theme-liquid-docs directory.
+
+    ```sh
+    # Shopifolk
+    dev cd theme-liquid-docs
+
+    # External
+    cd /path/to/theme-liquid-docs
+    ```
+
+2. Export the root of that repository in the `SHOPIFY_TLD_ROOT` environment variable
+
+    ```sh
+    export SHOPIFY_TLD_ROOT=$(pwd)
+    ```
+
+3. Go to the Shopify/theme-tools directory.
+
+    ```sh
+    # Shopifolk
+    dev cd theme-tools
+
+    # External
+    cd /path/to/theme-tools
+    ```
+
+4. Update the docs and start VS Code from that directory.
+
+    ```sh
+    # update the docs
+    theme-docs download
+
+    # start vscode
+    code .
+    ```
+
+5. (Repeat) You can repeat the `theme-docs download` command to have updated changes.
+
+    ```sh
+    theme-docs download
+    ```
+
+6. Proceed to debug the VS Code extension or playground as usual.
+
 ## Submitting a Pull Request
 
 Once you've made changes to the codebase and are ready to submit a pull request (PR), follow these steps:
