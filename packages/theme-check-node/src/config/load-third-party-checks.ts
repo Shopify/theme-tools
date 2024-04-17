@@ -18,7 +18,7 @@ export function loadThirdPartyChecks(
    * */
   modulePaths: ModulePath[] = [],
 ): CheckDefinition<SourceCodeType>[] {
-  const checks = [];
+  const checks = new Set<CheckDefinition<SourceCodeType>>();
   for (const modulePath of modulePaths) {
     try {
       const moduleValue = require(/* webpackIgnore: true */ modulePath);
@@ -31,7 +31,7 @@ export function loadThirdPartyChecks(
 
       for (const check of moduleChecks) {
         if (isCheckDefinition(check)) {
-          checks.push(check);
+          checks.add(check);
         } else {
           console.error(`Expected ${check} to be a CheckDefinition, but it looks like it isn't`);
         }
@@ -40,7 +40,7 @@ export function loadThirdPartyChecks(
       console.error(`Error loading ${modulePath}, ignoring it.\n${e}`);
     }
   }
-  return checks;
+  return [...checks];
 }
 
 export async function findThirdPartyChecks(nodeModuleRoot: AbsolutePath): Promise<ModulePath[]> {
