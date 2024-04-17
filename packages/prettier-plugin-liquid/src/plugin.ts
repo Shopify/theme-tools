@@ -15,6 +15,13 @@ const languages: SupportLanguage[] = [
 ];
 
 const options: SupportOptions = {
+  captureWhitespace: {
+    type: 'string',
+    category: 'LIQUID',
+    default: 'strict',
+    description: 'Use single quotes instead of double quotes in Liquid tags and objects.',
+    since: '0.2.0',
+  },
   liquidSingleQuote: {
     type: 'boolean',
     category: 'LIQUID',
