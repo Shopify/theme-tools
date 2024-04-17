@@ -134,7 +134,10 @@ function getCssDisplay(node: AugmentedNode<WithSiblings>, options: LiquidParserO
   }
 }
 
-function getNodeCssStyleWhiteSpace(node: AugmentedNode<WithSiblings>): string {
+function getNodeCssStyleWhiteSpace(
+  node: AugmentedNode<WithSiblings>,
+  options: LiquidParserOptions,
+): string {
   if (node.prev && node.prev.type === NodeTypes.HtmlComment) {
     // <!-- white-space: normal -->
     const whitespace = getCssWhitespaceFromComment(node.prev.body);
@@ -177,7 +180,13 @@ function getNodeCssStyleWhiteSpace(node: AugmentedNode<WithSiblings>): string {
       return 'pre';
 
     case NodeTypes.LiquidTag:
-      return CSS_WHITE_SPACE_LIQUID_TAGS[node.name] || CSS_WHITE_SPACE_DEFAULT;
+      console.log(options.captureWhitespace);
+      switch (options.captureWhitespace) {
+        case 'strict':
+          return CSS_WHITE_SPACE_LIQUID_TAGS[node.name] || 'pre';
+        case 'ignore':
+          return CSS_WHITE_SPACE_LIQUID_TAGS[node.name] || 'normal';
+      }
 
     case NodeTypes.LiquidBranch:
     case NodeTypes.LiquidVariableOutput:
@@ -222,7 +231,7 @@ function getNodeCssStyleWhiteSpace(node: AugmentedNode<WithSiblings>): string {
 export const augmentWithCSSProperties: Augment<WithSiblings> = (options, node) => {
   const augmentations: WithCssProperties = {
     cssDisplay: getCssDisplay(node, options),
-    cssWhitespace: getNodeCssStyleWhiteSpace(node),
+    cssWhitespace: getNodeCssStyleWhiteSpace(node, options),
   };
 
   Object.assign(node, augmentations);
