@@ -19,7 +19,7 @@ const options: SupportOptions = {
     type: 'string',
     category: 'LIQUID',
     default: 'strict',
-    description: 'Use single quotes instead of double quotes in Liquid tags and objects.',
+    description: 'Specify the global whitespace sensitivity for the capture tag.',
     since: '0.2.0',
   },
   liquidSingleQuote: {

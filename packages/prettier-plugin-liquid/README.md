@@ -75,6 +75,7 @@ Prettier for Liquid supports the following options.
 | `liquidSingleQuote`         | `true`    | Use single quotes instead of double quotes in Liquid tag and objects (since v0.2.0).                                                                                     |
 | `embeddedSingleQuote`       | `true`    | Use single quotes instead of double quotes in embedded languages (JavaScript, CSS, TypeScript inside `<script>`, `<style>` or Liquid equivalent) (since v0.4.0).         |
 | `htmlWhitespaceSensitivity` | `css`     | Same as in Prettier ([see prettier docs](https://prettier.io/docs/en/options.html#html-whitespace-sensitivity))                                                          |
+| `captureWhitespace`         | `strict`  | Specify the global whitespace sensitivity for the capture tag                                                          |
 | `singleLineLinkTags`        | `false`   | If set to `true`, will print `<link>` tags on a single line to remove clutter                                                                                            |
 | `indentSchema`              | `false`   | If set to `true`, will indent the contents of the `{% schema %}` tag                                                                                                     |
 
@@ -116,6 +117,14 @@ Examples:
 
 {% # here we alter its white-space property so that we allow pretty printing of its body %}
 {% # white-space: normal %}
+{% capture _ %}
+  <div>
+    {% render 'snip' %}
+  </div>
+{% endcapture %}
+
+{% # this will prevent prettier from formatting it %}
+{% # white-space: pre %}
 {% capture _ %}
   <div>
     {% render 'snip' %}
