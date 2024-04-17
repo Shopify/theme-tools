@@ -20,7 +20,6 @@ export function isScriptLikeTag(node: { type: NodeTypes }) {
 }
 
 export function isPreLikeNode(node: { cssWhitespace: string }) {
-  // console.log('cssWhitespace', node.cssWhitespace);
   return node.cssWhitespace.startsWith('pre');
 }
 
