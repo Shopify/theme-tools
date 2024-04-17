@@ -180,7 +180,10 @@ function getNodeCssStyleWhiteSpace(
       return 'pre';
 
     case NodeTypes.LiquidTag:
-      console.log(options.captureWhitespace);
+      console.log('LiquidTag', NodeTypes.LiquidTag);
+      console.log('captureWhitespace', options.captureWhitespace);
+      console.log(node.name, CSS_WHITE_SPACE_LIQUID_TAGS[node.name]);
+      console.log('---');
       switch (options.captureWhitespace) {
         case 'strict':
           return CSS_WHITE_SPACE_LIQUID_TAGS[node.name] || 'pre';
