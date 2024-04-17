@@ -23,6 +23,7 @@ export type LiquidParserOptions = ParserOptions<LiquidHtmlNode> & {
   liquidSingleQuote: boolean;
   embeddedSingleQuote: boolean;
   indentSchema: boolean;
+  captureWhitespace: string;
 };
 export type LiquidPrinterArgs = {
   leadingSpaceGroupId?: symbol[] | symbol;
