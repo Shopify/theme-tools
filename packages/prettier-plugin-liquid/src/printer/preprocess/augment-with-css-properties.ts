@@ -180,12 +180,22 @@ function getNodeCssStyleWhiteSpace(
       return 'pre';
 
     case NodeTypes.LiquidTag:
-      switch (options.captureWhitespace) {
-        case 'strict':
-          return (node.name === 'capture') ? 'pre' : 'normal';
-        case 'ignore':
-          return (node.name === 'capture') ? 'normal' : 'pre';
-      }
+      switch (node.name) {
+        case NamedTags.capture: {
+          switch (options.captureWhitespace) {
+            case 'strict':
+              return 'pre';
+            case 'ignore':
+              return 'normal';
+            default: {
+              throw assertNever(options.captureWhitespace);
+            }
+          }
+        }
+
+        default: {
+          return CSS_WHITE_SPACE_LIQUID_TAGS[node.name] || CSS_WHITE_SPACE_DEFAULT;
+        }
 
     case NodeTypes.LiquidBranch:
     case NodeTypes.LiquidVariableOutput:
