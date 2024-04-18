@@ -15,12 +15,22 @@ const languages: SupportLanguage[] = [
 ];
 
 const options: SupportOptions = {
-  captureWhitespace: {
-    type: 'string',
+captureWhitespace: {
+    type: 'choice',
+    description: 'Specify the global whitespace sensitivity for the capture Liquid tag.',
+    choices: [
+      {
+        value: 'strict',
+        description: 'Whitespace inside {% capture var %} tags is considered significant.',
+      },
+      {
+        value: 'ignore',
+        description: 'Whitespace inside {% capture var %} tags is considered insignificant.',
+      },
+    ],
     category: 'LIQUID',
     default: 'strict',
-    description: 'Specify the global whitespace sensitivity for the capture tag.',
-    since: '0.2.0',
+    since: 'SINCE_VERSION',
   },
   liquidSingleQuote: {
     type: 'boolean',
