@@ -1,37 +1,17 @@
-It should never break on capture var name
+It should pretty print the contents of a capture tag with captureWhitespace ignore
 printWidth: 1
-{% capture varName %}{% endcapture %}
-{%   capture   varName   %}{% endcapture %}
-{%capture varName %}{% endcapture %}
-{%- capture
-varName
--%}{% endcapture %}
+captureWhitespace: "ignore"
+{% capture _ %}
+{%for element in col%}
+{{element}}
+{%endfor%}
+{% endcapture %}  
 
-It should be indentation sensitive
-<p>{% capture var %}
-    # heading
-
-    - list
-      * elem
-  {% endcapture %}
-</p>
-
-It should behave like a pre tag if the capture tag is set white-space pre
+It should print as is when strict
 printWidth: 1
-<!-- white-space: pre -->
-{% capture var %}
-      <div>{{ x }}</div>
-{% endcapture %}
-
-It should behave like a pre tag if the capture tag is set white-space pre (Liquid)
-printWidth: 1
-{% # white-space: pre %}
-{% capture var %}
-      <div>{{ x }}</div>
-{% endcapture %}
-
-It should print as is without the white-space pre comment
-printWidth: 1
-{% capture var %}
-      <div>{{ x }}</div>
+captureWhitespace: "strict"
+{% capture _ %}
+{%for element in col%}
+{{element}}
+{%endfor%}
 {% endcapture %}
