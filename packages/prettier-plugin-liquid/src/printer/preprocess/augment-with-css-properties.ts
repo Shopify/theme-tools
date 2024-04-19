@@ -181,7 +181,7 @@ function getNodeCssStyleWhiteSpace(
 
     case NodeTypes.LiquidTag:
       switch (node.name) {
-        case NamedTags.capture: {
+        case 'capture': {
           switch (options.captureWhitespace) {
             case 'strict':
               return 'pre';
@@ -196,6 +196,7 @@ function getNodeCssStyleWhiteSpace(
         default: {
           return CSS_WHITE_SPACE_LIQUID_TAGS[node.name] || CSS_WHITE_SPACE_DEFAULT;
         }
+      }
 
     case NodeTypes.LiquidBranch:
     case NodeTypes.LiquidVariableOutput:
