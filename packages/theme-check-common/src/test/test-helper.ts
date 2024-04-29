@@ -189,6 +189,14 @@ export async function check(
               template: [],
             },
           },
+          {
+            name: 'comment',
+            access: {
+              global: false,
+              parents: [],
+              template: [],
+            },
+          },
         ];
       },
       async tags() {

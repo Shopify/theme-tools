@@ -257,7 +257,7 @@ function getContextualEntries(uri: string): string[] {
     ];
   }
   if (SECTION_FILE_REGEX.test(absolutePath)) {
-    return ['section', 'predictive_search', 'recommendations'];
+    return ['section', 'predictive_search', 'recommendations', 'comment'];
   }
   if (BLOCK_FILE_REGEX.test(absolutePath)) {
     return ['app', 'section', 'block'];

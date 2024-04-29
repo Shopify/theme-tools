@@ -286,6 +286,7 @@ describe('Module: UndefinedObject', () => {
       ['section', 'sections/section.liquid'],
       ['predictive_search', 'sections/predictive-search.liquid'],
       ['recommendations', 'sections/recommendations.liquid'],
+      ['comment', 'sections/main-article.liquid'],
       ['block', 'blocks/theme-app-extension.liquid'],
       ['app', 'blocks/theme-app-extension.liquid'],
       ['app', 'snippets/theme-app-extension.liquid'],
