@@ -59,6 +59,11 @@ describe('Module: TypeSystem', () => {
             return_type: [],
           },
           {
+            name: 'comment',
+            access: { global: false, parents: [], template: [] },
+            return_type: [],
+          },
+          {
             name: 'recommendations',
             access: { global: false, parents: [], template: [] },
             return_type: [],
@@ -307,6 +312,7 @@ describe('Module: TypeSystem', () => {
     let inferredType: string | ArrayType;
     const contexts: [string, string][] = [
       ['section', 'sections/my-section.liquid'],
+      ['comment', 'sections/main-article.liquid'],
       ['block', 'blocks/my-block.liquid'],
       ['predictive_search', 'sections/predictive-search.liquid'],
       ['recommendations', 'sections/recommendations.liquid'],
