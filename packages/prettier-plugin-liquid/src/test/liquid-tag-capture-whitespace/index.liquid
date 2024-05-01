@@ -5,7 +5,21 @@ captureWhitespace: "ignore"
 {%for element in col%}
 {{element}}
 {%endfor%}
-{% endcapture %}  
+{% endcapture %}
+
+{% # white-space: normal %}
+{% capture _ %}
+{% for element in col %}
+{{ element }}
+{% endfor %}
+{% endcapture %}
+
+{% # white-space: pre %}
+{% capture _ %}
+{% for element in col %}
+{{ element }}
+{% endfor %}
+{% endcapture %}
 
 It should print as is when strict
 printWidth: 1
@@ -14,4 +28,18 @@ captureWhitespace: "strict"
 {%for element in col%}
 {{element}}
 {%endfor%}
+{% endcapture %}
+
+{% # white-space: normal %}
+{% capture _ %}
+{% for element in col %}
+{{ element }}
+{% endfor %}
+{% endcapture %}
+
+{% # white-space: pre %}
+{% capture _ %}
+{% for element in col %}
+{{ element }}
+{% endfor %}
 {% endcapture %}
