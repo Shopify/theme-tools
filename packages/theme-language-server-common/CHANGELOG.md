@@ -1,5 +1,13 @@
 # @shopify/theme-language-server-common
 
+## 1.11.1
+
+### Patch Changes
+
+- ec1fbd7: The comment object should be available to section files
+- Updated dependencies [ec1fbd7]
+  - @shopify/theme-check-common@2.5.1
+
 ## 1.11.0
 
 ### Minor Changes

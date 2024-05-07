@@ -1,5 +1,16 @@
 # @shopify/theme-check-node
 
+## 2.5.1
+
+### Patch Changes
+
+- 0dc03a9: Prevent loading the same plugin more than once
+- 312d804: Add logging support to the docs loader
+- Updated dependencies [ec1fbd7]
+- Updated dependencies [312d804]
+  - @shopify/theme-check-common@2.5.1
+  - @shopify/theme-check-docs-updater@2.5.1
+
 ## 2.5.0
 
 ### Minor Changes

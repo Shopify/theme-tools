@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 2.5.1
+
+### Patch Changes
+
+- ec1fbd7: The comment object should be available to section files
+
 ## 2.5.0
 
 ### Minor Changes
