@@ -58,7 +58,11 @@ export async function checkAndAutofix(root: string, configPath?: string) {
   await autofix(theme, offenses);
 }
 
-export async function themeCheckRun(root: string, configPath?: string): Promise<ThemeCheckRun> {
+export async function themeCheckRun(
+  root: string,
+  configPath?: string,
+  log: (message: string) => void = () => {},
+): Promise<ThemeCheckRun> {
   const { theme, config } = await getThemeAndConfig(root, configPath);
   const defaultTranslationsFile = theme.find((sc) => sc.absolutePath.endsWith('default.json'));
   const defaultTranslations = parseJSON(defaultTranslationsFile?.source ?? '{}', {});
@@ -66,7 +70,7 @@ export async function themeCheckRun(root: string, configPath?: string): Promise<
     sc.absolutePath.endsWith('default.schema.json'),
   );
   const defaultSchemaTranslations = parseJSON(defaultSchemaTranslationsFile?.source ?? '{}', {});
-  const themeLiquidDocsManager = new ThemeLiquidDocsManager();
+  const themeLiquidDocsManager = new ThemeLiquidDocsManager(log);
 
   const offenses = await coreCheck(theme, config, {
     fileExists,

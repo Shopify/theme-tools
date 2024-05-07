@@ -1,7 +1,16 @@
-import { expect, describe, it } from 'vitest';
+import { expect, describe, it, afterEach, vi } from 'vitest';
 import { AssetSizeJavaScript } from '.';
 import { check, MockTheme } from '../../test';
 import { SchemaProp } from '../../types';
+import { hasRemoteAssetSizeExceededThreshold } from '../../utils/file-utils';
+
+vi.mock('../../utils/file-utils', async (importOriginal) => {
+  const actual: any = await importOriginal();
+  return {
+    ...actual,
+    hasRemoteAssetSizeExceededThreshold: vi.fn(),
+  };
+});
 
 describe('Module: AssetSizeJavaScript', () => {
   const theme: MockTheme = {
@@ -25,6 +34,10 @@ describe('Module: AssetSizeJavaScript', () => {
     `,
   };
 
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('should not find file size for invalid URLs', async () => {
     const invalidUrls = [
       'https://{{ settings.url }}',
@@ -42,6 +55,7 @@ describe('Module: AssetSizeJavaScript', () => {
   });
 
   it('should report a warning when the JavaScript http request exceeds the threshold', async () => {
+    vi.mocked(hasRemoteAssetSizeExceededThreshold).mockReturnValue(Promise.resolve(true));
     const CustomAssetSizeJavaScript = {
       ...AssetSizeJavaScript,
       meta: {

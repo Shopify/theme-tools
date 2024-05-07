@@ -1,7 +1,16 @@
 import { Resource, downloadResource } from './themeLiquidDocsDownloader';
 import { root } from './themeLiquidDocsDownloader';
 
+export type Logger = (message: string) => void;
 export const noop = () => {};
+
+export const identity = <T>(x: T): T => x;
+export const tap = <T>(tappingFunction: (x: T) => void) => {
+  return (x: T) => {
+    tappingFunction(x);
+    return x;
+  };
+};
 
 /** Returns a cached version of a function. Only caches one result. */
 export function memo<F extends (...args: any[]) => any>(
