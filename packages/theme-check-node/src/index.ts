@@ -66,7 +66,8 @@ export async function themeCheckRun(root: string, configPath?: string): Promise<
     sc.absolutePath.endsWith('default.schema.json'),
   );
   const defaultSchemaTranslations = parseJSON(defaultSchemaTranslationsFile?.source ?? '{}', {});
-  const themeLiquidDocsManager = new ThemeLiquidDocsManager();
+  const logger = process.env.SHOPIFY_FLAG_VERBOSE ? console.error.bind(console) : () => {};
+  const themeLiquidDocsManager = new ThemeLiquidDocsManager(logger);
 
   const offenses = await coreCheck(theme, config, {
     fileExists,

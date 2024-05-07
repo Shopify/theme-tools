@@ -21,9 +21,7 @@ import {
   root,
   schemaPath,
 } from './themeLiquidDocsDownloader';
-import { memo, memoize, noop } from './utils';
-
-type Logger = (message: string) => void;
+import { Logger, identity, memo, memoize, noop, tap } from './utils';
 
 type JSONSchemaManifest = { schemas: { uri: string; fileMatch?: string[] }[] };
 
@@ -31,26 +29,36 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
   constructor(private log: Logger = noop) {}
 
   filters = memo(async (): Promise<FilterEntry[]> => {
-    return findSuitableResource(this.loaders('filters'), JSON.parse, []);
+    return findSuitableResource(this.loaders('filters'), JSON.parse, [], this.log);
   });
 
   objects = memo(async (): Promise<ObjectEntry[]> => {
-    return findSuitableResource(this.loaders('objects'), JSON.parse, []);
+    return findSuitableResource(this.loaders('objects'), JSON.parse, [], this.log);
   });
 
   tags = memo(async (): Promise<TagEntry[]> => {
-    return findSuitableResource(this.loaders('tags'), JSON.parse, []);
+    return findSuitableResource(this.loaders('tags'), JSON.parse, [], this.log);
   });
 
   systemTranslations = memo(async (): Promise<Translations> => {
-    return findSuitableResource(this.loaders('shopify_system_translations'), JSON.parse, {});
+    return findSuitableResource(
+      this.loaders('shopify_system_translations'),
+      JSON.parse,
+      {},
+      this.log,
+    );
   });
 
   schemas = memoize(
     (mode: Mode) =>
-      findSuitableResource<JSONSchemaManifest>(this.loaders(Manifests[mode]), JSON.parse, {
-        schemas: [],
-      }).then((manifest) => {
+      findSuitableResource<JSONSchemaManifest>(
+        this.loaders(Manifests[mode]),
+        JSON.parse,
+        {
+          schemas: [],
+        },
+        this.log,
+      ).then((manifest) => {
         return Promise.all(
           manifest.schemas.map(
             async (schemaDefinition): Promise<SchemaDefinition> => ({
@@ -60,6 +68,7 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
                 this.schemaLoaders(schemaDefinition.uri),
                 identity,
                 '',
+                this.log,
               ),
             }),
           ),
@@ -82,19 +91,26 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
       }
 
       const local = await this.latestRevision();
-      await downloadResource('latest');
+      await downloadResource('latest', root, this.log);
       const remote = await this.latestRevision();
       if (local !== remote) {
-        await downloadThemeLiquidDocs();
+        await downloadThemeLiquidDocs(root, this.log);
       }
     } catch (error) {
-      if (error instanceof Error) this.log(error.message);
+      if (error instanceof Error) {
+        this.log(`Failed to setup with the following error: ${error.message}`);
+      }
       return;
     }
   });
 
   private async latestRevision(): Promise<string> {
-    const latest = await findSuitableResource([() => this.load('latest')], JSON.parse, {});
+    const latest = await findSuitableResource(
+      [loader(() => this.load('latest'), 'loadLatestRevision')],
+      JSON.parse,
+      {},
+      this.log,
+    );
     return latest['revision'] ?? '';
   }
 
@@ -102,7 +118,7 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
     // Always wait for setup first. Since it's memoized, this will always
     // be the same promise.
     await this.setup();
-    return this.load(name);
+    return this.load(name).then(tap(() => this.log(`Loaded resource from ${resourcePath(name)}`)));
   }
 
   private async load(name: Resource | 'latest') {
@@ -110,19 +126,34 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
   }
 
   private async loadSchema(relativeUri: string) {
-    return fs.readFile(schemaPath(relativeUri), 'utf8');
+    return fs
+      .readFile(schemaPath(relativeUri), 'utf8')
+      .then(tap(() => this.log(`Loaded schema from ${schemaPath(relativeUri)}`)));
   }
 
-  private loaders(name: Resource) {
-    return [() => this.loadResource(name), () => fallbackResource(name)];
+  private loaders(name: Resource): Loader<string>[] {
+    return [
+      loader(() => this.loadResource(name), `loadResource(${name})`),
+      loader(() => fallbackResource(name, this.log), `fallbackResource(${name})`),
+    ];
   }
 
-  private schemaLoaders(relativeUri: string) {
-    return [() => this.loadSchema(relativeUri), () => fallbackSchema(relativeUri)];
+  private schemaLoaders(relativeUri: string): Loader<string>[] {
+    return [
+      loader(() => this.loadSchema(relativeUri), `loadSchema(${relativeUri})`),
+      loader(() => fallbackSchema(relativeUri, this.log), `fallbackSchema(${relativeUri})`),
+    ];
   }
 }
 
-const identity = <T>(x: T): T => x;
+interface Loader<A> {
+  (): Promise<A>;
+  loaderName: string;
+}
+
+function loader<A>(fn: () => Promise<A>, loaderName: string): Loader<A> {
+  return Object.assign(fn, { loaderName });
+}
 
 /**
  * Find the first resource that can be loaded and transformed.
@@ -136,14 +167,21 @@ const identity = <T>(x: T): T => x;
  * work, we'll just return the default value.
  */
 async function findSuitableResource<B, A = string>(
-  dataLoaders: (() => Promise<A>)[],
+  dataLoaders: Loader<A>[],
   transform: (x: A) => B,
   defaultValue: B,
+  log: Logger,
 ): Promise<B> {
   for (const loader of dataLoaders) {
     try {
       return transform(await loader());
-    } catch (_) {
+    } catch (e) {
+      log(
+        `Failed to load or transform ${loader.loaderName} with the following error:\n${
+          e instanceof Error ? e.message : e
+        }`,
+      );
+
       continue;
     }
   }
@@ -163,13 +201,21 @@ function dataRoot() {
 }
 
 /** Returns the at-build-time path to the fallback data file. */
-async function fallbackResource(name: Resource): Promise<string> {
-  return fs.readFile(path.resolve(dataRoot(), `${name}.json`), 'utf8');
+async function fallbackResource(name: Resource, log: Logger): Promise<string> {
+  const sourcePath = path.resolve(dataRoot(), `${name}.json`);
+  return fs
+    .readFile(sourcePath, 'utf8')
+    .then(tap(() => log(`Loaded fallback resource\n\t${name} from\n\t${sourcePath}`)));
 }
 
 /** Returns the at-build-time path to the fallback schema file. */
 async function fallbackSchema(
-  /** e.g. themes/section.json */ relativeUri: string,
+  /** e.g. themes/section.json */
+  relativeUri: string,
+  log: Logger,
 ): Promise<string> {
-  return fs.readFile(path.resolve(dataRoot(), path.basename(relativeUri)), 'utf8');
+  const sourcePath = path.resolve(dataRoot(), path.basename(relativeUri));
+  return fs
+    .readFile(sourcePath, 'utf8')
+    .then(tap(() => log(`Loaded fallback schema\n\t${relativeUri} from\n\t${sourcePath}`)));
 }
