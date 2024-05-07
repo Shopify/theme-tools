@@ -58,6 +58,8 @@ export async function checkAndAutofix(root: string, configPath?: string) {
   await autofix(theme, offenses);
 }
 
+const useDebugLogging = () => process.env.SHOPIFY_FLAG_VERBOSE || process.env.ACTIONS_RUNNER_DEBUG;
+
 export async function themeCheckRun(root: string, configPath?: string): Promise<ThemeCheckRun> {
   const { theme, config } = await getThemeAndConfig(root, configPath);
   const defaultTranslationsFile = theme.find((sc) => sc.absolutePath.endsWith('default.json'));
@@ -66,7 +68,7 @@ export async function themeCheckRun(root: string, configPath?: string): Promise<
     sc.absolutePath.endsWith('default.schema.json'),
   );
   const defaultSchemaTranslations = parseJSON(defaultSchemaTranslationsFile?.source ?? '{}', {});
-  const logger = process.env.SHOPIFY_FLAG_VERBOSE ? console.error.bind(console) : () => {};
+  const logger = useDebugLogging() ? console.error.bind(console) : () => {};
   const themeLiquidDocsManager = new ThemeLiquidDocsManager(logger);
 
   const offenses = await coreCheck(theme, config, {

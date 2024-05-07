@@ -1,7 +1,16 @@
-import { expect, describe, it } from 'vitest';
+import { vi, expect, describe, it, afterEach } from 'vitest';
 import { AssetSizeCSS } from '.';
 import { check, MockTheme } from '../../test';
 import { SchemaProp } from '../../types';
+import { hasRemoteAssetSizeExceededThreshold } from '../../utils/file-utils';
+
+vi.mock('../../utils/file-utils', async (importOriginal) => {
+  const actual: any = await importOriginal();
+  return {
+    ...actual,
+    hasRemoteAssetSizeExceededThreshold: vi.fn(),
+  };
+});
 
 describe('Module: AssetSizeCSS', () => {
   const extensionFiles: MockTheme = {
@@ -24,6 +33,10 @@ describe('Module: AssetSizeCSS', () => {
       </html>
     `,
   };
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
 
   it('should not report any offenses if CSS is smaller than threshold', async () => {
     const offenses = await check(extensionFiles, [AssetSizeCSS]);
@@ -63,6 +76,7 @@ describe('Module: AssetSizeCSS', () => {
   });
 
   it('should report a warning when the CSS file size exceeds the threshold', async () => {
+    vi.mocked(hasRemoteAssetSizeExceededThreshold).mockReturnValue(Promise.resolve(true));
     const CustomAssetSizeCSS = {
       ...AssetSizeCSS,
       meta: {
@@ -84,6 +98,7 @@ describe('Module: AssetSizeCSS', () => {
   });
 
   it('should not report any offenses if CSS is smaller than threshold 2', async () => {
+    vi.mocked(hasRemoteAssetSizeExceededThreshold).mockResolvedValue(false);
     const extensionFiles: MockTheme = {
       'assets/theme.css': 'console.log("hello world");',
       'templates/index.liquid': `
@@ -102,6 +117,7 @@ describe('Module: AssetSizeCSS', () => {
   });
 
   it('should report an offense if CSS is larger than threshold 2', async () => {
+    vi.mocked(hasRemoteAssetSizeExceededThreshold).mockResolvedValue(true);
     const extensionFiles: MockTheme = {
       'assets/theme.css': 'console.log("hello world");',
       'templates/index.liquid': `
