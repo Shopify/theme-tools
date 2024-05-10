@@ -27,7 +27,7 @@
   {% endcapture %}
   ```
 
-  Thank you @stinjs96 for this feature!
+  Thank you @stijns96 for this feature!
 
 ## 1.4.4
 
