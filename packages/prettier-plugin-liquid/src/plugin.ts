@@ -15,6 +15,23 @@ const languages: SupportLanguage[] = [
 ];
 
 const options: SupportOptions = {
+  captureWhitespaceSensitivity: {
+    type: 'choice',
+    description: 'Specify the global whitespace sensitivity for the capture Liquid tag.',
+    choices: [
+      {
+        value: 'strict',
+        description: 'Whitespace inside {% capture var %} tags is considered significant.',
+      },
+      {
+        value: 'ignore',
+        description: 'Whitespace inside {% capture var %} tags is considered insignificant.',
+      },
+    ],
+    category: 'LIQUID',
+    default: 'strict',
+    since: '0.0.0',
+  },
   liquidSingleQuote: {
     type: 'boolean',
     category: 'LIQUID',

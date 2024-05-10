@@ -1,0 +1,45 @@
+It should pretty print the contents of a capture tag with captureWhitespaceSensitivity ignore
+printWidth: 1
+captureWhitespaceSensitivity: "ignore"
+{% capture _ %}
+{%for element in col%}
+{{element}}
+{%endfor%}
+{% endcapture %}
+
+{% # white-space: normal %}
+{% capture _ %}
+{% for element in col %}
+{{ element }}
+{% endfor %}
+{% endcapture %}
+
+{% # white-space: pre %}
+{% capture _ %}
+{% for element in col %}
+{{ element }}
+{% endfor %}
+{% endcapture %}
+
+It should print as is when strict
+printWidth: 1
+captureWhitespaceSensitivity: "strict"
+{% capture _ %}
+{%for element in col%}
+{{element}}
+{%endfor%}
+{% endcapture %}
+
+{% # white-space: normal %}
+{% capture _ %}
+{% for element in col %}
+{{ element }}
+{% endfor %}
+{% endcapture %}
+
+{% # white-space: pre %}
+{% capture _ %}
+{% for element in col %}
+{{ element }}
+{% endfor %}
+{% endcapture %}

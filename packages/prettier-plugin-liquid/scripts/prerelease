@@ -21,9 +21,9 @@ async function run() {
 }
 
 async function updateSinceVersion(version) {
-  const fileToBeModified = path.join(__dirname, '../src/index.ts');
+  const fileToBeModified = path.join(__dirname, '../src/plugin.ts');
   const index = await fs.readFile(fileToBeModified, 'utf8');
-  const modified = index.replace(/SINCE_VERSION/g, version);
+  const modified = index.replace(/0\.0\.0/g, version);
   await fs.writeFile(fileToBeModified, modified, 'utf8');
 }
 
