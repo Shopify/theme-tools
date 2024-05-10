@@ -30,7 +30,7 @@ const options: SupportOptions = {
     ],
     category: 'LIQUID',
     default: 'strict',
-    since: '0.0.0',
+    since: '1.5.0',
   },
   liquidSingleQuote: {
     type: 'boolean',

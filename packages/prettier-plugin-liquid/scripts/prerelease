@@ -3,21 +3,16 @@
 const fs = require('fs').promises;
 const path = require('path');
 const packageJson = require('../package.json');
-const previousVersion = packageJson.version;
 
 async function run() {
-  const VERSION = process.env.VERSION;
+  const VERSION = packageJson.version;
   if (!VERSION) {
-    throw new Error('VERSION environment variable required');
+    throw new Error('VERSION required');
   }
   if (!/^\d+\.\d+\.\d+/.test(VERSION)) {
-    throw new Error('VERSION environment variable must match "X.X.X[-.*]"');
+    throw new Error('VERSION must match "X.X.X[-.*]"');
   }
-  await Promise.all([
-    updateSinceVersion(VERSION),
-    updatePackageJson(VERSION),
-    updateGhPageVersion(VERSION),
-  ]);
+  await Promise.all([updateSinceVersion(VERSION)]);
 }
 
 async function updateSinceVersion(version) {
@@ -25,26 +20,6 @@ async function updateSinceVersion(version) {
   const index = await fs.readFile(fileToBeModified, 'utf8');
   const modified = index.replace(/0\.0\.0/g, version);
   await fs.writeFile(fileToBeModified, modified, 'utf8');
-}
-
-async function updatePackageJson(version) {
-  const packageJsonPath = path.join(__dirname, '../package.json');
-  packageJson.version = version;
-  await fs.writeFile(
-    packageJsonPath,
-    JSON.stringify(packageJson, null, 2) + '\n',
-    'utf8',
-  );
-}
-
-async function updateGhPageVersion(version) {
-  const indexHtml = path.join(__dirname, '../playground/index.html');
-  const contents = await fs.readFile(indexHtml, 'utf8');
-  await fs.writeFile(
-    indexHtml,
-    contents.replaceAll('v' + previousVersion, 'v' + version),
-    'utf8',
-  );
 }
 
 async function main() {
