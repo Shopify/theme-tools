@@ -1,6 +1,6 @@
-It should pretty print the contents of a capture tag with captureWhitespace ignore
+It should pretty print the contents of a capture tag with captureWhitespaceSensitivity ignore
 printWidth: 1
-captureWhitespace: "ignore"
+captureWhitespaceSensitivity: "ignore"
 {% capture _ %}
 {%for element in col%}
 {{element}}
@@ -23,7 +23,7 @@ captureWhitespace: "ignore"
 
 It should print as is when strict
 printWidth: 1
-captureWhitespace: "strict"
+captureWhitespaceSensitivity: "strict"
 {% capture _ %}
 {%for element in col%}
 {{element}}

@@ -65,19 +65,19 @@ You can try it out in your browser in the [playground](https://shopify.github.io
 
 Prettier for Liquid supports the following options.
 
-| Name                        | Default   | Description                                                                                                                                                              |
-| ------------------          | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `printWidth`                | `120`     | Changed from Prettier's default (`80`) ([see prettier docs](https://prettier.io/docs/en/options.html#print-width))                                                       |
-| `tabWidth`                  | `2`       | Same as in Prettier ([see prettier docs](https://prettier.io/docs/en/options.html#tab-width))                                                                            |
-| `useTabs`                   | `false`   | Same as in Prettier ([see prettier docs](https://prettier.io/docs/en/options.html#tabs))                                                                                 |
-| `singleQuote`               | `false`   | Same as in Prettier ([see prettier docs](https://prettier.io/docs/en/options.html#quotes))                                                                               |
-| `bracketSameLine`           | `false`   | Same as in Prettier ([see prettier docs](https://prettier.io/docs/en/options.html#bracket-line))                                                                         |
-| `liquidSingleQuote`         | `true`    | Use single quotes instead of double quotes in Liquid tag and objects (since v0.2.0).                                                                                     |
-| `embeddedSingleQuote`       | `true`    | Use single quotes instead of double quotes in embedded languages (JavaScript, CSS, TypeScript inside `<script>`, `<style>` or Liquid equivalent) (since v0.4.0).         |
-| `htmlWhitespaceSensitivity` | `css`     | Same as in Prettier ([see prettier docs](https://prettier.io/docs/en/options.html#html-whitespace-sensitivity))                                                          |
-| `captureWhitespace`         | `strict`  | Specify the global whitespace sensitivity of the `capture` Liquid tag. Valid options: `"strict"` \| `"ignore"`.                                                          |
-| `singleLineLinkTags`        | `false`   | If set to `true`, will print `<link>` tags on a single line to remove clutter                                                                                            |
-| `indentSchema`              | `false`   | If set to `true`, will indent the contents of the `{% schema %}` tag                                                                                                     |
+| Name                           | Default  | Description                                                                                                                                                      |
+| ------------------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `printWidth`                   | `120`    | Changed from Prettier's default (`80`) ([see prettier docs](https://prettier.io/docs/en/options.html#print-width))                                               |
+| `tabWidth`                     | `2`      | Same as in Prettier ([see prettier docs](https://prettier.io/docs/en/options.html#tab-width))                                                                    |
+| `useTabs`                      | `false`  | Same as in Prettier ([see prettier docs](https://prettier.io/docs/en/options.html#tabs))                                                                         |
+| `singleQuote`                  | `false`  | Same as in Prettier ([see prettier docs](https://prettier.io/docs/en/options.html#quotes))                                                                       |
+| `bracketSameLine`              | `false`  | Same as in Prettier ([see prettier docs](https://prettier.io/docs/en/options.html#bracket-line))                                                                 |
+| `liquidSingleQuote`            | `true`   | Use single quotes instead of double quotes in Liquid tag and objects (since v0.2.0).                                                                             |
+| `embeddedSingleQuote`          | `true`   | Use single quotes instead of double quotes in embedded languages (JavaScript, CSS, TypeScript inside `<script>`, `<style>` or Liquid equivalent) (since v0.4.0). |
+| `htmlWhitespaceSensitivity`    | `css`    | Same as in Prettier ([see prettier docs](https://prettier.io/docs/en/options.html#html-whitespace-sensitivity))                                                  |
+| `captureWhitespaceSensitivity` | `strict` | Specify the default whitespace sensitivity of the `capture` Liquid tag. Valid options: `"strict"` \| `"ignore"`.                                                 |
+| `singleLineLinkTags`           | `false`  | If set to `true`, will print `<link>` tags on a single line to remove clutter                                                                                    |
+| `indentSchema`                 | `false`  | If set to `true`, will indent the contents of the `{% schema %}` tag                                                                                             |
 
 ## Ignoring code
 

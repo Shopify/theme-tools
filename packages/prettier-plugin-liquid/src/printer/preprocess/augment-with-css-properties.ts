@@ -182,13 +182,13 @@ function getNodeCssStyleWhiteSpace(
     case NodeTypes.LiquidTag:
       switch (node.name) {
         case 'capture': {
-          switch (options.captureWhitespace) {
+          switch (options.captureWhitespaceSensitivity) {
             case 'strict':
               return 'pre';
             case 'ignore':
               return 'normal';
             default: {
-              throw assertNever(options.captureWhitespace);
+              throw assertNever(options.captureWhitespaceSensitivity);
             }
           }
         }
