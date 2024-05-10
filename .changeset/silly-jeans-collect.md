@@ -24,3 +24,5 @@ Add `captureWhitespaceSensitivity` configuration option.
   {% endfor %}
 {% endcapture %}
 ```
+
+Thank you @stinjs96 for this feature!
