@@ -30,6 +30,7 @@ import { UnusedAssign } from './unused-assign';
 import { ValidHTMLTranslation } from './valid-html-translation';
 import { ValidSchema } from './valid-schema';
 import { ValidJSON } from './valid-json';
+import { VariableName } from './variable-name';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -62,6 +63,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidHTMLTranslation,
   ValidSchema,
   ValidJSON,
+  VariableName,
 ];
 
 /**
