@@ -74,12 +74,34 @@ describe('Module: AssetSizeAppBlockCSS', () => {
     });
   });
 
+  it('should reports offense if the CSS file does not exist and the asset has a trailing comma', async () => {
+    const extensionFiles: MockTheme = {
+      'blocks/app.liquid': `
+        {% schema %}
+        {
+          "stylesheet": "nonexistent.css",
+        }
+        {% endschema %}
+      `,
+    };
+
+    const offenses = await check(extensionFiles, [AssetSizeAppBlockCSS]);
+
+    expect(offenses).toHaveLength(1);
+    expect(offenses[0]).toMatchObject({
+      message: `'nonexistent.css' does not exist.`,
+      absolutePath: '/blocks/app.liquid',
+      start: { index: 57 },
+      end: { index: 72 },
+    });
+  });
+
   it('should not report an offense if the schema is malformed JSON', async () => {
     const extensionFiles: MockTheme = {
       'blocks/app.liquid': `
         {% schema %}
         {
-          "stylesheet": "app.css",
+          "stylesheet": "app.css
         {% endschema %}
       `,
     };

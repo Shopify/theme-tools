@@ -41,8 +41,8 @@ export class JSONValidator {
     const jsonDocument = this.service.parseJSONDocument(jsonTextDocument);
     const diagnostics = await this.service.doValidation(jsonTextDocument, jsonDocument, {
       schemaValidation: 'error',
-      trailingCommas: 'error', // TODO, change this when we support commas
-      comments: 'error', // TODO, change this when we support comments
+      trailingCommas: 'ignore',
+      comments: 'ignore',
     });
     return diagnostics.map((diagnostic) => ({
       message: diagnostic.message,
