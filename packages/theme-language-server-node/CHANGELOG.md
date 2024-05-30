@@ -1,5 +1,13 @@
 # @shopify/theme-language-server-node
 
+## 1.11.2
+
+### Patch Changes
+
+- @shopify/theme-check-node@2.6.0
+- @shopify/theme-language-server-common@1.11.2
+- @shopify/theme-check-docs-updater@2.6.0
+
 ## 1.11.1
 
 ### Patch Changes

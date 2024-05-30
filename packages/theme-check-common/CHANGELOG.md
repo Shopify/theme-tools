@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 2.6.0
+
+### Minor Changes
+
+- ff78229: Update 'theme-check-common/src/json.ts' to use 'jsonc-parser'
+
 ## 2.5.1
 
 ### Patch Changes
