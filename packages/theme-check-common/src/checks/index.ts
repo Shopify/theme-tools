@@ -22,14 +22,15 @@ import { PaginationSize } from './pagination-size';
 import { ParserBlockingScript } from './parser-blocking-script';
 import { RemoteAsset } from './remote-asset';
 import { RequiredLayoutThemeObject } from './required-layout-theme-object';
+import { SettingsId } from './settings-id';
 import { TranslationKeyExists } from './translation-key-exists';
 import { UnclosedHTMLElement } from './unclosed-html-element';
 import { UndefinedObject } from './undefined-object';
 import { UnknownFilter } from './unknown-filter';
 import { UnusedAssign } from './unused-assign';
 import { ValidHTMLTranslation } from './valid-html-translation';
-import { ValidSchema } from './valid-schema';
 import { ValidJSON } from './valid-json';
+import { ValidSchema } from './valid-schema';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -41,9 +42,9 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   CdnPreconnect,
   ContentForHeaderModification,
   DeprecateBgsizes,
-  DeprecateLazysizes,
   DeprecatedFilter,
   DeprecatedTag,
+  DeprecateLazysizes,
   ImgWidthAndHeight,
   JSONSyntaxError,
   LiquidHTMLSyntaxError,
@@ -54,14 +55,15 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ParserBlockingScript,
   RemoteAsset,
   RequiredLayoutThemeObject,
+  SettingsId,
   TranslationKeyExists,
   UnclosedHTMLElement,
   UndefinedObject,
   UnknownFilter,
   UnusedAssign,
   ValidHTMLTranslation,
-  ValidSchema,
   ValidJSON,
+  ValidSchema,
 ];
 
 /**
