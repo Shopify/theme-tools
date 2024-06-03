@@ -30,7 +30,6 @@
     "cross-fetch": "^4.0.0",
     "json-to-ast": "^2.1.0",
     "line-column": "^1.0.2",
-    "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
     "minimatch": "^9.0.1",
     "vscode-json-languageservice": "^5.3.10"

@@ -7,11 +7,26 @@ import {
 } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, SchemaProp, Severity, SourceCodeType } from '../../types';
 
-import { camelCase, kebabCase, snakeCase } from 'lodash';
+import { camelCase, kebabCase, snakeCase } from 'lodash-es';
 
 const pascalCase = (string: string) => {
   const camelCased = camelCase(string);
   return camelCased.charAt(0).toUpperCase() + camelCased.slice(1);
+};
+
+const stringGetStartEnd = (str: string, sub: string) => [
+  str.indexOf(sub),
+  str.indexOf(sub) + sub.length,
+];
+
+const isLiquidTagAssign = (node: LiquidTag): node is LiquidTagAssign => {
+  return node.name === 'assign' && typeof node.markup !== 'string';
+};
+
+const isLiquidTagCapture = (node: LiquidHtmlNode): node is LiquidTagCapture => {
+  return (
+    node.type == NodeTypes.LiquidTag && node.name === 'capture' && typeof node.markup !== 'string'
+  );
 };
 
 const formatTypes = {
@@ -86,7 +101,7 @@ export const VariableName: LiquidCheckDefinition<typeof schema> = {
               {
                 message: `Change variable '${variable}' to '${formatter(node).suggestion}'`,
                 fix: (corrector) => {
-                  const [_, end] = getStartEnd(node.markup.source, node.markup.name!);
+                  const [_, end] = stringGetStartEnd(node.markup.source, node.markup.name!);
 
                   return corrector.replace(
                     node.markup.position.start,
@@ -102,15 +117,3 @@ export const VariableName: LiquidCheckDefinition<typeof schema> = {
     };
   },
 };
-
-const getStartEnd = (str: string, sub: string) => [str.indexOf(sub), str.indexOf(sub) + sub.length];
-
-function isLiquidTagAssign(node: LiquidTag): node is LiquidTagAssign {
-  return node.name === 'assign' && typeof node.markup !== 'string';
-}
-
-function isLiquidTagCapture(node: LiquidHtmlNode): node is LiquidTagCapture {
-  return (
-    node.type == NodeTypes.LiquidTag && node.name === 'capture' && typeof node.markup !== 'string'
-  );
-}
