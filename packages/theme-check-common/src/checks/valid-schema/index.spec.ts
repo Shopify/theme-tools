@@ -75,7 +75,7 @@ describe('ValidSchema', () => {
     });
   });
 
-  it('should report a syntax error when the schema json has a trailing comma', async () => {
+  it('should not report a syntax error when the schema json has a trailing comma', async () => {
     const sourceCode = `
     {% schema %}
     {
@@ -91,16 +91,7 @@ describe('ValidSchema', () => {
       buildMockDeps(),
     );
 
-    const highlights = highlightedOffenses({ [DEFAULT_FILE_NAME]: sourceCode }, offenses);
-    expect(highlights).to.have.length(1);
-    expect(highlights[0]).to.equal(',');
-
-    expect(offenses).to.have.length(1);
-    expect(offenses).to.containOffense({
-      check: ValidSchema.meta.code,
-      message: expect.stringContaining('Trailing comma'),
-      absolutePath: `/${DEFAULT_FILE_NAME}`,
-    });
+    expect(offenses).to.have.length(0);
   });
 
   it('should complain appropriately when a section schema contains errors', async () => {
