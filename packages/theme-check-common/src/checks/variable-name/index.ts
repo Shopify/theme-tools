@@ -16,10 +16,6 @@ const pascalCase = (string: string) => {
   return camelCased.charAt(0).toUpperCase() + camelCased.slice(1);
 };
 
-const stringGetStartEnd = (str: string, sub: string) => {
-  return [str.indexOf(sub), str.indexOf(sub) + sub.length];
-};
-
 const isLiquidTagAssign = (node: LiquidTag): node is LiquidTagAssign => {
   return node.name === 'assign' && typeof node.markup !== 'string';
 };
