@@ -16,10 +16,12 @@ const pascalCase = (string: string) => {
   return camelCased.charAt(0).toUpperCase() + camelCased.slice(1);
 };
 
-const stringGetStartEnd = (str: string, sub: string) => [
-  str.indexOf(sub),
-  str.indexOf(sub) + sub.length,
-];
+const stringGetStartEnd = (str: string, sub: string) => {
+  return [
+    str.indexOf(sub),
+    str.indexOf(sub) + sub.length
+  ]
+};
 
 const isLiquidTagAssign = (node: LiquidTag): node is LiquidTagAssign => {
   return node.name === 'assign' && typeof node.markup !== 'string';
@@ -60,8 +62,6 @@ export const VariableName: LiquidCheckDefinition<typeof schema> = {
   },
 
   create(context) {
-    const wronglyFormattedVariables: Map<string, LiquidTagAssign | LiquidTagCapture> = new Map();
-
     const formatter = (node: LiquidTagAssign | LiquidTagCapture) => {
       if (!node.markup.name) {
         return {
@@ -80,40 +80,38 @@ export const VariableName: LiquidCheckDefinition<typeof schema> = {
       };
     };
 
+    const reportHandler = (node: LiquidTagAssign | LiquidTagCapture) => {
+      return context.report({
+        message: `The variable '${node.markup.name}' uses wrong naming format`,
+        startIndex: node.markup.position.start,
+        endIndex: node.markup.position.end,
+        suggest: [
+          {
+            message: `Change variable '${node.markup.name}' to '${formatter(node).suggestion}'`,
+            fix: (corrector) => {
+              const { position, name, source } = node.markup;
+
+              return corrector.replace(
+                position.start,
+                position.end,
+                source.slice(position.start, position.end).replace(name!, formatter(node).suggestion!),
+              );
+            },
+          },
+        ],
+      });
+    }
+
     return {
       async LiquidTag(node) {
         if (isLiquidTagAssign(node)) {
           if (!formatter(node).valid) {
-            wronglyFormattedVariables.set(node.markup.name, node);
+            reportHandler(node);
           }
         } else if (isLiquidTagCapture(node) && node.markup.name) {
           if (!formatter(node).valid) {
-            wronglyFormattedVariables.set(node.markup.name, node);
+            reportHandler(node);
           }
-        }
-      },
-
-      async onCodePathEnd() {
-        for (const [variable, node] of wronglyFormattedVariables.entries()) {
-          context.report({
-            message: `The variable '${variable}' uses wrong naming format`,
-            startIndex: node.markup.position.start,
-            endIndex: node.markup.position.end,
-            suggest: [
-              {
-                message: `Change variable '${variable}' to '${formatter(node).suggestion}'`,
-                fix: (corrector) => {
-                  const [_, end] = stringGetStartEnd(node.markup.source, node.markup.name!);
-
-                  return corrector.replace(
-                    node.markup.position.start,
-                    end,
-                    formatter(node).suggestion!,
-                  );
-                },
-              },
-            ],
-          });
         }
       },
     };
