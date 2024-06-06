@@ -17,10 +17,7 @@ const pascalCase = (string: string) => {
 };
 
 const stringGetStartEnd = (str: string, sub: string) => {
-  return [
-    str.indexOf(sub),
-    str.indexOf(sub) + sub.length
-  ]
+  return [str.indexOf(sub), str.indexOf(sub) + sub.length];
 };
 
 const isLiquidTagAssign = (node: LiquidTag): node is LiquidTagAssign => {
@@ -94,13 +91,15 @@ export const VariableName: LiquidCheckDefinition<typeof schema> = {
               return corrector.replace(
                 position.start,
                 position.end,
-                source.slice(position.start, position.end).replace(name!, formatter(node).suggestion!),
+                source
+                  .slice(position.start, position.end)
+                  .replace(name!, formatter(node).suggestion!),
               );
             },
           },
         ],
       });
-    }
+    };
 
     return {
       async LiquidTag(node) {
