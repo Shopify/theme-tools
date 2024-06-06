@@ -100,3 +100,7 @@ ValidJSON:
 ValidSchema:
   enabled: true
   severity: 0
+VariableName:
+  enabled: true
+  severity: 1
+  format: snake_case
