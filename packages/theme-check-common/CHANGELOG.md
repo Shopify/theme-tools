@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 2.7.0
+
+### Minor Changes
+
+- bb79d83: Add VariableName check
+
 ## 2.6.0
 
 ### Minor Changes

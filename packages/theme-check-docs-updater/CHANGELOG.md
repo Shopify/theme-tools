@@ -1,5 +1,12 @@
 # @shopify/theme-check-docs-updater
 
+## 2.7.0
+
+### Patch Changes
+
+- Updated dependencies [bb79d83]
+  - @shopify/theme-check-common@2.7.0
+
 ## 2.6.0
 
 ### Patch Changes
