@@ -1,5 +1,17 @@
 # @shopify/theme-check-node
 
+## 2.7.0
+
+### Minor Changes
+
+- bb79d83: Add VariableName check
+
+### Patch Changes
+
+- Updated dependencies [bb79d83]
+  - @shopify/theme-check-common@2.7.0
+  - @shopify/theme-check-docs-updater@2.7.0
+
 ## 2.6.0
 
 ### Patch Changes

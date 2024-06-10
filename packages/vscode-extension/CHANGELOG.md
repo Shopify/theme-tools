@@ -1,5 +1,15 @@
 ## theme-check-vscode
 
+## 2.4.0
+
+### Minor Changes
+
+- f6b0a20: Remove the trailing comma warning in those files, and associate theme JSON files with JSONC
+
+### Patch Changes
+
+- @shopify/theme-language-server-node@1.11.3
+
 ## 2.3.3
 
 ### Patch Changes
