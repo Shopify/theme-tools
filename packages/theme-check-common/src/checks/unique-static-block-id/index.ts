@@ -7,7 +7,7 @@ export const UniqueStaticBlockId: LiquidCheckDefinition = {
     docs: {
       description:
         'This check is aimed at preventing the use of duplicated ids for blocks rendered statically.',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks',
+      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/unique-static-block-id',
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,
@@ -17,7 +17,8 @@ export const UniqueStaticBlockId: LiquidCheckDefinition = {
   },
 
   create(context) {
-    const usedIds: string[] = [];
+    const usedIds: Set<string> = new Set();
+    const idRegex = /id:\s*["'](\S+)["']/;
     return {
       async LiquidTag(node) {
         if (node.name !== 'content_for') {
@@ -30,22 +31,20 @@ export const UniqueStaticBlockId: LiquidCheckDefinition = {
           return;
         }
 
-        const idRegex = /id: ["'](\S+)["']/;
-
         const idValueMatch = idRegex.exec(node.markup);
 
         if (idValueMatch == null) {
           return;
         }
 
-        const filteredIdValue = idValueMatch[1];
+        const [entireIdTerm, filteredIdValue] = idValueMatch;
 
-        if (usedIds.includes(filteredIdValue)) {
+        if (usedIds.has(filteredIdValue)) {
           const nodeInSource = node.source.substring(node.position.start);
           const contentForBlockStartIndex = nodeInSource.indexOf(blockType);
 
           const idParamIndex = idValueMatch.index + contentForBlockStartIndex;
-          const idParamValueLength = idValueMatch[0].length;
+          const idParamValueLength = entireIdTerm.length;
 
           const idParamValueEndIndex = idParamIndex + idParamValueLength;
 
@@ -56,7 +55,7 @@ export const UniqueStaticBlockId: LiquidCheckDefinition = {
             suggest: [],
           });
         } else {
-          usedIds.push(filteredIdValue);
+          usedIds.add(filteredIdValue);
         }
       },
     };
