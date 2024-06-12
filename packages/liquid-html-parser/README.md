@@ -31,7 +31,7 @@ yarn add @shopify/liquid-html-parser
 ## Usage
 
 ```ts
-import { toLiquidHtmlAST, LiquidHtmlNode, NodeTypes } from '@shopify/prettier-plugin-liquid';
+import { toLiquidHtmlAST, LiquidHtmlNode, NodeTypes } from '@shopify/liquid-html-parser';
 
 const ast: LiquidHtmlNode = toLiquidHtmlAST(`
 <body>
