@@ -66,6 +66,9 @@ UnclosedHTMLElement:
 UndefinedObject:
   enabled: true
   severity: 1
+UniqueStaticBlockId:
+  enabled: true
+  severity: 0
 UnknownFilter:
   enabled: true
   severity: 0

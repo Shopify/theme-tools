@@ -32,6 +32,7 @@ import { ValidSchema } from './valid-schema';
 import { ValidJSON } from './valid-json';
 import { VariableName } from './variable-name';
 import { ValidStaticBlockType } from './valid-static-block-type';
+import { UniqueStaticBlockId } from './unique-static-block-id';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -66,6 +67,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidJSON,
   VariableName,
   ValidStaticBlockType,
+  UniqueStaticBlockId,
 ];
 
 /**
