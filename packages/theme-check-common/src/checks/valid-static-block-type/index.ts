@@ -8,7 +8,7 @@ export const ValidStaticBlockType: LiquidCheckDefinition = {
     docs: {
       description:
         'This check is aimed at preventing the use of an invalid type for blocks rendered statically.',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks',
+      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/valid-static-block-type',
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,
