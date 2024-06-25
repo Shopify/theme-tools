@@ -1,5 +1,6 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { doesFileExist } from '../../utils/file-utils';
+import { isContentForBlock } from '../../utils/markup';
 
 export const ValidStaticBlockType: LiquidCheckDefinition = {
   meta: {
@@ -26,9 +27,7 @@ export const ValidStaticBlockType: LiquidCheckDefinition = {
           return;
         }
 
-        const [blockType] = node.markup.split(',');
-
-        if (blockType.replace(/["']/g, '') !== 'block') {
+        if(!isContentForBlock(node.markup)) {
           return;
         }
 
@@ -43,6 +42,7 @@ export const ValidStaticBlockType: LiquidCheckDefinition = {
         const fileExists = await doesFileExist(context, relativePath);
 
         if (!fileExists) {
+          const [blockType] = node.markup.split(',')
           const nodeInSource = node.source.substring(node.position.start);
           const contentForBlockStartIndex = nodeInSource.indexOf(blockType);
 
