@@ -27,7 +27,7 @@ export const ValidStaticBlockType: LiquidCheckDefinition = {
           return;
         }
 
-        if(!isContentForBlock(node.markup)) {
+        if (!isContentForBlock(node.markup)) {
           return;
         }
 
@@ -42,7 +42,7 @@ export const ValidStaticBlockType: LiquidCheckDefinition = {
         const fileExists = await doesFileExist(context, relativePath);
 
         if (!fileExists) {
-          const [blockType] = node.markup.split(',')
+          const [blockType] = node.markup.split(',');
           const nodeInSource = node.source.substring(node.position.start);
           const contentForBlockStartIndex = nodeInSource.indexOf(blockType);
 
