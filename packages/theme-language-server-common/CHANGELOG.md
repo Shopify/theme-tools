@@ -1,5 +1,11 @@
 # @shopify/theme-language-server-common
 
+## 1.12.0
+
+### Minor Changes
+
+- d7c6204: Expose the `parseJSON` API in `@shopify/theme-language-server-common`
+
 ## 1.11.3
 
 ### Patch Changes
