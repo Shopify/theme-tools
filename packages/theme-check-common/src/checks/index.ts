@@ -7,6 +7,7 @@ import { AssetSizeAppBlockJavaScript } from './asset-size-app-block-javascript';
 import { AssetSizeCSS } from './asset-size-css';
 import { AssetSizeJavaScript } from './asset-size-javascript';
 import { CdnPreconnect } from './cdn-preconnect';
+import { CaptureOnContentForBlock } from './capture-on-content-for-block';
 import { ContentForHeaderModification } from './content-for-header-modification';
 import { DeprecateBgsizes } from './deprecate-bgsizes';
 import { DeprecateLazysizes } from './deprecate-lazysizes';
@@ -41,12 +42,13 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AssetSizeAppBlockJavaScript,
   AssetSizeCSS,
   AssetSizeJavaScript,
+  CaptureOnContentForBlock,
   CdnPreconnect,
   ContentForHeaderModification,
   DeprecateBgsizes,
-  DeprecateLazysizes,
   DeprecatedFilter,
   DeprecatedTag,
+  DeprecateLazysizes,
   ImgWidthAndHeight,
   JSONSyntaxError,
   LiquidHTMLSyntaxError,
@@ -60,14 +62,14 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   TranslationKeyExists,
   UnclosedHTMLElement,
   UndefinedObject,
+  UniqueStaticBlockId,
   UnknownFilter,
   UnusedAssign,
   ValidHTMLTranslation,
-  ValidSchema,
   ValidJSON,
-  VariableName,
+  ValidSchema,
   ValidStaticBlockType,
-  UniqueStaticBlockId,
+  VariableName,
 ];
 
 /**
