@@ -4,6 +4,7 @@ export {
   WithRequired,
   memo,
   memoize,
+  parseJSON,
 } from '@shopify/theme-check-common';
 export * from './debounce';
 export * from './paths';
