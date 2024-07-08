@@ -33,7 +33,7 @@ This monorepo is home of all things dev tools for Shopify themes:
 - [`@shopify/codemirror-language-client`](./packages/codemirror-language-client) — A CodeMirror Language Client (batteries not included).  
 - [`theme-check-vscode`](./packages/vscode-extension) — The VS Code extension that uses it all.
 
-These tools are also integrated in the [Online Store Code Editor](https://shopify.dev/docs/themes/tools/code-editor) and the [Shopify CLI](https://shopify.dev/docs/themes/tools/cli).
+These tools are also integrated in the [Online Store Code Editor](https://shopify.dev/docs/themes/tools/code-editor) and the [Shopify CLI](https://shopify.dev/docs/api/shopify-cli/theme).
 
 They can be used individually or collectively, catering to varied use cases and offering flexibility in their application.
 
