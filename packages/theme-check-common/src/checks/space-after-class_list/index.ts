@@ -1,6 +1,4 @@
-import {
-  NodeTypes,
-} from '@shopify/liquid-html-parser';
+import { NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 export const SpaceAfterClassList: LiquidCheckDefinition = {
@@ -21,19 +19,24 @@ export const SpaceAfterClassList: LiquidCheckDefinition = {
 
   create(context) {
     return {
-
       async LiquidFilter(node, ancestors) {
         if (node.name !== 'class_list') {
           return;
         }
 
-        const classAttribute = ancestors.find((ancestor) => ancestor.type === NodeTypes.AttrDoubleQuoted || ancestor.type === NodeTypes.AttrSingleQuoted);
+        const classAttribute = ancestors.find(
+          (ancestor) =>
+            ancestor.type === NodeTypes.AttrDoubleQuoted ||
+            ancestor.type === NodeTypes.AttrSingleQuoted,
+        );
 
         if (!classAttribute) {
           return;
         }
 
-        const classAttributeContent = classAttribute.source.slice(classAttribute.position.start, classAttribute.position.end) || '';
+        const classAttributeContent =
+          classAttribute.source.slice(classAttribute.position.start, classAttribute.position.end) ||
+          '';
 
         const regex = /([a-zA-Z0-9._-]+)\s*\|\s*class_list\s*}}([a-zA-Z0-9._-]+)/gm;
 
@@ -44,10 +47,16 @@ export const SpaceAfterClassList: LiquidCheckDefinition = {
             continue;
           }
 
-          const liquidVariable = ancestors.find((ancestor) => ancestor.type === NodeTypes.LiquidVariable);
-          const liquidVariableContent = liquidVariable?.source.slice(liquidVariable.position.start, liquidVariable.position.end) || '';
+          const liquidVariable = ancestors.find(
+            (ancestor) => ancestor.type === NodeTypes.LiquidVariable,
+          );
+          const liquidVariableContent =
+            liquidVariable?.source.slice(
+              liquidVariable.position.start,
+              liquidVariable.position.end,
+            ) || '';
           const styleSetting = liquidVariableContent.split('|')[0]?.trim();
-          
+
           if (styleSetting !== match[1]) {
             continue;
           }
@@ -63,7 +72,7 @@ export const SpaceAfterClassList: LiquidCheckDefinition = {
               {
                 message: 'Add a space after the class_list filter',
                 fix(corrector) {
-                  corrector.insert(errorPosition, ' ')
+                  corrector.insert(errorPosition, ' ');
                 },
               },
             ],

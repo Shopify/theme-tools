@@ -3,7 +3,6 @@ import { SpaceAfterClassList } from '.';
 import { runLiquidCheck, highlightedOffenses } from '../../test';
 
 describe('Module: SpaceAfterClassList', () => {
-
   it('allows the happy path', async () => {
     const file = `<div class="{{ block.settings | class_list }}">
       content  
@@ -24,7 +23,9 @@ describe('Module: SpaceAfterClassList', () => {
     const offenses = await runLiquidCheck(SpaceAfterClassList, file);
 
     expect(offenses).to.have.length(1);
-    expect(offenses[0].message).toEqual(`Missing a space after using the class_list filter: 'block.settings | class_list }}other-class'`);
+    expect(offenses[0].message).toEqual(
+      `Missing a space after using the class_list filter: 'block.settings | class_list }}other-class'`,
+    );
 
     const highlights = highlightedOffenses({ 'file.liquid': file }, offenses);
     expect(highlights).toEqual(['o']);
@@ -40,7 +41,9 @@ describe('Module: SpaceAfterClassList', () => {
     const offenses = await runLiquidCheck(SpaceAfterClassList, file);
 
     expect(offenses).to.have.length(1);
-    expect(offenses[0].message).toEqual(`Missing a space after using the class_list filter: 'block.settings | class_list }}other-class'`);
+    expect(offenses[0].message).toEqual(
+      `Missing a space after using the class_list filter: 'block.settings | class_list }}other-class'`,
+    );
 
     const highlights = highlightedOffenses({ 'file.liquid': file }, offenses);
     expect(highlights).toEqual(['o']);
@@ -55,7 +58,9 @@ describe('Module: SpaceAfterClassList', () => {
     const offenses = await runLiquidCheck(SpaceAfterClassList, file);
 
     expect(offenses).to.have.length(1);
-    expect(offenses[0].message).toEqual(`Missing a space after using the class_list filter: 'block.settings|    class_list}}other-class'`);
+    expect(offenses[0].message).toEqual(
+      `Missing a space after using the class_list filter: 'block.settings|    class_list}}other-class'`,
+    );
 
     const highlights = highlightedOffenses({ 'file.liquid': file }, offenses);
     expect(highlights).toEqual(['o']);
@@ -72,7 +77,9 @@ describe('Module: SpaceAfterClassList', () => {
     const offenses = await runLiquidCheck(SpaceAfterClassList, file);
     expect(offenses).to.have.length(1);
 
-    expect(offenses[0].message).toEqual(`Missing a space after using the class_list filter: 'block.settings.spacing | class_list }}oh-no'`);
+    expect(offenses[0].message).toEqual(
+      `Missing a space after using the class_list filter: 'block.settings.spacing | class_list }}oh-no'`,
+    );
 
     const highlights = highlightedOffenses({ 'file.liquid': file }, offenses);
     expect(highlights).toEqual(['o']);
