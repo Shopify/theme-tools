@@ -1,10 +1,10 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
-export const SpaceAfterClassList: LiquidCheckDefinition = {
+export const SpaceAroundClassList: LiquidCheckDefinition = {
   meta: {
-    code: 'SpaceAfterClassList',
-    aliases: ['SpaceAfterClassList'],
+    code: 'SpaceAroundClassList',
+    aliases: ['SpaceAroundClassList'],
     name: 'Space After Class List',
     docs: {
       description: 'Warns you when there is no space after using the class_list filter',

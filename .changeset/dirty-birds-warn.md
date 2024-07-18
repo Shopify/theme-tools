@@ -3,4 +3,4 @@
 '@shopify/theme-check-node': minor
 ---
 
-Add SpaceAfterClassList check
+Add SpaceAroundClassList check

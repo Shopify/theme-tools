@@ -23,7 +23,7 @@ import { PaginationSize } from './pagination-size';
 import { ParserBlockingScript } from './parser-blocking-script';
 import { RemoteAsset } from './remote-asset';
 import { RequiredLayoutThemeObject } from './required-layout-theme-object';
-import { SpaceAfterClassList } from './space-after-class_list';
+import { SpaceAroundClassList } from './space-around-class_list';
 import { TranslationKeyExists } from './translation-key-exists';
 import { UnclosedHTMLElement } from './unclosed-html-element';
 import { UndefinedObject } from './undefined-object';
@@ -60,7 +60,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ParserBlockingScript,
   RemoteAsset,
   RequiredLayoutThemeObject,
-  SpaceAfterClassList,
+  SpaceAroundClassList,
   TranslationKeyExists,
   UnclosedHTMLElement,
   UndefinedObject,

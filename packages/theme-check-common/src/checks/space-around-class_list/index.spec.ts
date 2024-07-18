@@ -1,15 +1,15 @@
 import { expect, describe, it } from 'vitest';
-import { SpaceAfterClassList } from '.';
+import { SpaceAroundClassList } from '.';
 import { runLiquidCheck, highlightedOffenses } from '../../test';
 
-describe('Module: SpaceAfterClassList', () => {
+describe('Module: SpaceAroundClassList', () => {
   it('allows the happy path', async () => {
     const file = `<div class="{{ block.settings | class_list }}">
       content  
     </div>
     `;
 
-    const offenses = await runLiquidCheck(SpaceAfterClassList, file);
+    const offenses = await runLiquidCheck(SpaceAroundClassList, file);
 
     expect(offenses).to.have.length(0);
   });
@@ -20,7 +20,7 @@ describe('Module: SpaceAfterClassList', () => {
     </div>
     `;
 
-    const offenses = await runLiquidCheck(SpaceAfterClassList, file);
+    const offenses = await runLiquidCheck(SpaceAroundClassList, file);
 
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).toEqual(
@@ -38,7 +38,7 @@ describe('Module: SpaceAfterClassList', () => {
     </div>
     `;
 
-    const offenses = await runLiquidCheck(SpaceAfterClassList, file);
+    const offenses = await runLiquidCheck(SpaceAroundClassList, file);
 
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).toEqual(
@@ -55,7 +55,7 @@ describe('Module: SpaceAfterClassList', () => {
     </div>
     `;
 
-    const offenses = await runLiquidCheck(SpaceAfterClassList, file);
+    const offenses = await runLiquidCheck(SpaceAroundClassList, file);
 
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).toEqual(
@@ -74,7 +74,7 @@ describe('Module: SpaceAfterClassList', () => {
     </div>
     `;
 
-    const offenses = await runLiquidCheck(SpaceAfterClassList, file);
+    const offenses = await runLiquidCheck(SpaceAroundClassList, file);
     expect(offenses).to.have.length(1);
 
     expect(offenses[0].message).toEqual(
