@@ -72,3 +72,7 @@ available at [http://contributor-covenant.org/version/1/4][version]
 
 [homepage]: http://contributor-covenant.org
 [version]: http://contributor-covenant.org/version/1/4/
+
+[![Contributor License Agreement (CLA)](https://github.com/Shopify/theme-tools/actions/workflows/cla.yml/badge.svg?event=deployment)](https://github.com/Shopify/theme-tools/actions/workflows/cla.yml)
+
+
