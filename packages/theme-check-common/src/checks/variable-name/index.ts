@@ -62,10 +62,9 @@ export const VariableName: LiquidCheckDefinition<typeof schema> = {
         };
       }
 
-      const suggestion = formatTypes[context.settings.format as FormatTypes].call(
-        null,
-        node.markup.name,
-      );
+      const suggestion = formatTypes[context.settings.format as FormatTypes]
+        .call(null, node.markup.name)
+        .replace(/(\d+)[-_]((?=[a-z]))/g, '$1');
 
       return {
         valid: node.markup.name === suggestion,
