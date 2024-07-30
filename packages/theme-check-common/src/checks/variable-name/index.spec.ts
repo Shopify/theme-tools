@@ -42,4 +42,21 @@ describe('Module: VariableName', () => {
 
     expect(suggestions).to.include(expectedFixedCode);
   });
+
+  it('should report an error when a variable containing numbers uses wrong format', async () => {
+    const sourceCode = `{% assign first_3_d_model = "value" %}`;
+
+    const offenses = await runLiquidCheck(VariableName, sourceCode);
+
+    expect(offenses).to.have.length(1);
+    expect(offenses[0].message).to.equal("The variable 'first_3_d_model' uses wrong naming format");
+  });
+
+  it('should not report an error when a variable containing numbers is using correct format', async () => {
+    const sourceCode = `{% assign first_3d_model = "value" %}`;
+
+    const offenses = await runLiquidCheck(VariableName, sourceCode);
+
+    expect(offenses).to.be.empty;
+  });
 });
