@@ -79,6 +79,9 @@ RemoteAsset:
 RequiredLayoutThemeObject:
   enabled: true
   severity: 0
+SpaceAroundClassList:
+  enabled: true
+  severity: 0
 TranslationKeyExists:
   enabled: true
   severity: 0
