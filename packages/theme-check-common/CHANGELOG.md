@@ -1,5 +1,12 @@
 # @shopify/theme-check-common
 
+## 2.9.0
+
+### Minor Changes
+
+- 457f9cb: Add CaptureOnContentForBlock check
+- edb7f2e: Standardized variable number formatting
+
 ## 2.7.0
 
 ### Minor Changes
