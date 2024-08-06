@@ -1,7 +1,7 @@
 import { basicSetup } from 'codemirror';
 import { EditorView, keymap } from '@codemirror/view';
 import { Compartment, EditorState } from '@codemirror/state';
-import { json } from '@codemirror/lang-json';
+import { jsonc } from '@shopify/lang-jsonc';
 import { vim } from '@replit/codemirror-vim';
 import MarkdownIt from 'markdown-it';
 // import { oneDark } from '@codemirror/theme-one-dark';
@@ -163,8 +163,7 @@ async function main() {
       extensions: [
         vimConfig,
         basicSetup,
-        json(),
-        // liquidHighLightStyle,
+        jsonc(),
         // oneDark,
         client.extension('browser:/locales/en.default.json'),
       ],
@@ -192,7 +191,7 @@ async function main() {
       extensions: [
         vimConfig,
         basicSetup,
-        json(),
+        jsonc(),
         // liquidHighLightStyle,
         // oneDark,
         client.extension('browser:/locales/en.default.schema.json'),

@@ -1,5 +1,18 @@
 # @shopify/theme-check-node
 
+## 2.9.0
+
+### Minor Changes
+
+- 457f9cb: Add CaptureOnContentForBlock check
+
+### Patch Changes
+
+- Updated dependencies [457f9cb]
+- Updated dependencies [edb7f2e]
+  - @shopify/theme-check-common@2.9.0
+  - @shopify/theme-check-docs-updater@2.9.0
+
 ## 2.7.0
 
 ### Minor Changes
