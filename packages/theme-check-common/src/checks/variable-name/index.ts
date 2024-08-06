@@ -45,7 +45,7 @@ export const VariableName: LiquidCheckDefinition<typeof schema> = {
     name: 'Invalid variable naming format',
     docs: {
       description: 'This check is aimed at using certain variable naming conventions',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/variable-name',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/variable-name',
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,
