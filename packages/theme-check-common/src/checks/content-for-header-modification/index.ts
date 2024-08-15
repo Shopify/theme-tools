@@ -26,7 +26,7 @@ export const ContentForHeaderModification: LiquidCheckDefinition = {
     docs: {
       description:
         'Do not rely on the content of content_for_header as it might change in the future, which could cause your Liquid code behavior to change.',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/content-for-header-modification',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/content-for-header-modification',
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,

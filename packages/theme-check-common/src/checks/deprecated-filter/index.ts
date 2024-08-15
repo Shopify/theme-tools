@@ -16,7 +16,7 @@ export const DeprecatedFilter: LiquidCheckDefinition = {
     name: 'Deprecated Filter',
     docs: {
       description: 'Discourages using deprecated filters in themes.',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/deprecated-filter',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/deprecated-filter',
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,

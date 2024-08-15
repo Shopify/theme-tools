@@ -24,7 +24,7 @@ export const UndefinedObject: LiquidCheckDefinition = {
     docs: {
       description: 'This check exists to identify references to undefined Liquid objects.',
       recommended: true,
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/undefined-object',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/undefined-object',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,

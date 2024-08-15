@@ -9,7 +9,7 @@ export const MissingAsset: LiquidCheckDefinition = {
     docs: {
       description: 'Reports missing asset files',
       recommended: true,
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/missing-asset',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/missing-asset',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.ERROR,

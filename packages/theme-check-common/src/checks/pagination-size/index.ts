@@ -20,7 +20,7 @@ export const PaginationSize: LiquidCheckDefinition<typeof schema> = {
     name: 'Ensure paginate tags are used with performant sizes',
     docs: {
       description: 'This check is aimed at keeping response times low.',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/pagination-size',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/pagination-size',
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,

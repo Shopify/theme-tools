@@ -7,7 +7,7 @@ export const DeprecatedTag: LiquidCheckDefinition = {
     name: 'Deprecated Tag',
     docs: {
       description: 'This check is aimed at eliminating the use of deprecated tags.',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/deprecated-tag',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/deprecated-tag',
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,

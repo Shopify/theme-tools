@@ -103,7 +103,7 @@ export const RemoteAsset: LiquidCheckDefinition = {
     name: 'Remote Asset',
     docs: {
       description: 'This check is aimed at eliminating unnecessary HTTP connections.',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/remote-asset',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/remote-asset',
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,

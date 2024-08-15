@@ -41,7 +41,7 @@ export const UnclosedHTMLElement: LiquidCheckDefinition = {
     docs: {
       description: 'Warns you of unbalanced HTML tags in branching code',
       recommended: true,
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/unclosed-html-element',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/unclosed-html-element',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,

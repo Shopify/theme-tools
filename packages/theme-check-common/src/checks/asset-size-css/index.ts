@@ -47,7 +47,7 @@ export const AssetSizeCSS: LiquidCheckDefinition<typeof schema> = {
     name: 'Prevent Large CSS bundles',
     docs: {
       description: 'This check is aimed at preventing large CSS bundles for speed.',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/asset-size-css',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/asset-size-css',
       recommended: false,
     },
     type: SourceCodeType.LiquidHtml,
