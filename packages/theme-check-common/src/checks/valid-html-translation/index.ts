@@ -8,7 +8,7 @@ export const ValidHTMLTranslation: JSONCheckDefinition = {
     name: 'Valid HTML Translation',
     docs: {
       description: 'This check exists to prevent invalid HTML inside translations.',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/valid-html-translation',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-html-translation',
       recommended: true,
     },
     type: SourceCodeType.JSON,

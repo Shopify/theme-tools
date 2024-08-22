@@ -41,7 +41,7 @@ yarn add @shopify/theme-check-browser
 
 This repo only contains the library over the functionality. The CLI is implemented in [Shopify/cli](https://github.com/shopify/cli).
 
-For CLI usage documentation, refer to [shopify.dev](https://shopify.dev/docs/themes/tools/theme-check).
+For CLI usage documentation, refer to [shopify.dev](https://shopify.dev/docs/storefronts/themes/tools/theme-check).
 
 ### Node
 

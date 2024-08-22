@@ -16,7 +16,7 @@ export const AssetPreload: LiquidCheckDefinition = {
     docs: {
       description:
         'This check is aimed at discouraging the manual preloading of assets and encourages the use of appropriate Shopify filters.',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/asset-preload',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/asset-preload',
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,

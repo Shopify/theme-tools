@@ -15,7 +15,7 @@ export const ValidJSON: JSONCheckDefinition = {
       description:
         'This check exists to prevent invalid JSON files in themes. Will check against schema if available.',
       recommended: true,
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/valid-json',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/json-syntax-error',
     },
     type: SourceCodeType.JSON,
     severity: Severity.ERROR,

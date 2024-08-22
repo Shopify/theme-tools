@@ -20,7 +20,7 @@ export const AssetSizeAppBlockJavaScript: LiquidCheckDefinition<typeof schema> =
     docs: {
       description:
         'This check is aimed at preventing large JavaScript bundles from being included via Theme App Extensions.',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/asset-size-app-block-javascript',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/asset-size-app-block-javascript',
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,

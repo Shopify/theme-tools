@@ -29,7 +29,7 @@ Official VS Code extension for [Shopify Liquid storefronts](https://shopify.dev/
 
 ## User guide
 
-Take a look at [our user guide](https://shopify.dev/docs/themes/tools/shopify-liquid-vscode) for an in-depth demonstration and explanation of all the features.
+Take a look at [our user guide](https://shopify.dev/docs/storefronts/themes/tools/shopify-liquid-vscode) for an in-depth demonstration and explanation of all the features.
 
 ## Installation
 

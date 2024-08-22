@@ -12,7 +12,7 @@ export const ParserBlockingScript: LiquidCheckDefinition = {
     docs: {
       description: 'They are bad ok?',
       recommended: true,
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/parser-blocking-javascript',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/parser-blocking-javascript',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.ERROR,

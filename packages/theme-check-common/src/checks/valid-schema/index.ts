@@ -7,7 +7,7 @@ export const ValidSchema: LiquidCheckDefinition = {
     docs: {
       description: 'This check is aimed at eliminating JSON errors in schema tags.',
       recommended: true,
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/valid-schema',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-schema',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.ERROR,

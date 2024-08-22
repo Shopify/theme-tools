@@ -14,7 +14,7 @@ export const CaptureOnContentForBlock: LiquidCheckDefinition = {
     docs: {
       description:
         'Capture of content_for "block" is restricted to enforce static block rendering at its expected location.',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/content_for_block',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/content_for_block',
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,

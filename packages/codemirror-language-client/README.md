@@ -4,7 +4,7 @@
 
 # CodeMirror Language Client
 
-[CodeMirror](https://codemirror.net/) is the open source library that powers the [Online Store Code Editor](https://shopify.dev/docs/themes/tools/code-editor).
+[CodeMirror](https://codemirror.net/) is the open source library that powers the [Online Store Code Editor](https://shopify.dev/docs/storefronts/themes/tools/code-editor).
 
 The [Language Server Protocol](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/) empowers developers to write one language server that can run in all language clients. Write a client, and you gain access to all servers; write one server, and all clients can use it.
 

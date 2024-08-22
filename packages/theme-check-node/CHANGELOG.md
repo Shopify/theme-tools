@@ -101,7 +101,7 @@
 
 - 8e3c7e2: Breaking: add `getDefaultSchema{Locale,Translations}(Factory)?` dependencies
 
-  To be used to power `MatchingTranslations` for [Schema translations](https://shopify.dev/docs/themes/architecture/locales/schema-locale-files).
+  To be used to power `MatchingTranslations` for [Schema translations](https://shopify.dev/docs/storefronts/themes/architecture/locales/schema-locale-files).
 
   To be used to power Schema translations code completion and hover in section and theme block `{% schema %}` JSON blobs.
 

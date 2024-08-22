@@ -7,7 +7,7 @@ export const UniqueStaticBlockId: LiquidCheckDefinition = {
     docs: {
       description:
         'This check is aimed at preventing the use of duplicated ids for blocks rendered statically.',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/unique-static-block-id',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/unique-static-block-id',
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,

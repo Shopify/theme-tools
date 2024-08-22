@@ -8,7 +8,7 @@ export const CdnPreconnect: LiquidCheckDefinition = {
     docs: {
       description: "This check is aimed at signaling the redundant preconnect to Shopify's CDN",
       recommended: true,
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/cdn-preconnect',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/cdn-preconnect',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.ERROR,

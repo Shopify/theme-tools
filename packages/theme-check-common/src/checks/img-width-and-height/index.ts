@@ -9,7 +9,7 @@ export const ImgWidthAndHeight: LiquidCheckDefinition = {
       description:
         'This check is aimed at eliminating content layout shift in themes by enforcing the use of the width and height attributes on img tags.',
       recommended: true,
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/img-width-and-height',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/img-width-and-height',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.ERROR,

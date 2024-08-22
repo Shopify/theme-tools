@@ -45,7 +45,7 @@ export const AssetSizeJavaScript: LiquidCheckDefinition<typeof schema> = {
     name: 'Prevent Large JavaScript bundles',
     docs: {
       description: 'This check is aimed at preventing large JavaScript bundles for speed.',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/asset-size-javascript',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/asset-size-javascript',
       recommended: false,
     },
     type: SourceCodeType.LiquidHtml,

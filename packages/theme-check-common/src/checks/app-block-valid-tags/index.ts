@@ -24,7 +24,7 @@ export const AppBlockValidTags: LiquidCheckDefinition = {
     docs: {
       description:
         'Identifies forbidden Liquid tags in theme app extension app block and app embed block code.',
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/app-block-valid-tags',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/app-block-valid-tags',
       recommended: false,
     },
     type: SourceCodeType.LiquidHtml,
