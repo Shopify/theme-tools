@@ -45,9 +45,13 @@ function getOptions(partial: string, parentNodeName: string): Attribute[] {
 }
 
 function toCompletionItem(tag: Attribute): CompletionItem {
+  const plainText = !tag.valueSet || tag.valueSet !== 'v';
+
   return {
     label: tag.name,
     kind: CompletionItemKind.Value,
+    insertText: plainText ? `${tag.name}="$1"` : tag.name,
+    insertTextFormat: plainText ? 2 : 1,
     documentation: {
       kind: 'markdown',
       value: renderHtmlEntry(tag),
