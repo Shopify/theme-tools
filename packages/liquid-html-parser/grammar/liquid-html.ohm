@@ -430,7 +430,7 @@ LiquidHTML <: Liquid {
   AttrList = Attr*
 
   Attr =
-    liquidNode | AttrSingleQuoted | AttrDoubleQuoted | AttrUnquoted | attrEmpty
+    AttrSingleQuoted | AttrDoubleQuoted | AttrUnquoted | liquidNode | attrEmpty
 
   attrEmpty = attrName
 

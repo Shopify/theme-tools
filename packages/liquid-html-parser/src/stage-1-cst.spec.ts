@@ -1107,6 +1107,19 @@ describe('Unit: Stage 1 (CST)', () => {
         });
       });
 
+      it('should parse liquid attribute names', () => {
+        cst = toLiquidHtmlCST('<img {{ data-name }}="{{ data-value }}"/>');
+        expectPath(cst, '0.name').to.equal('img');
+        expectPath(cst, '0.type').to.equal('HtmlVoidElement');
+        expectPath(cst, '0.attrList.0.type').to.equal('AttrDoubleQuoted');
+        expectPath(cst, '0.attrList.0.name.0.type').to.equal('LiquidVariableOutput');
+        expectPath(cst, '0.attrList.0.name.0.markup.expression.type').to.equal('VariableLookup');
+        expectPath(cst, '0.attrList.0.name.0.markup.expression.name').to.equal('data-name');
+        expectPath(cst, '0.attrList.0.value.0.type').to.equal('LiquidVariableOutput');
+        expectPath(cst, '0.attrList.0.value.0.markup.expression.type').to.equal('VariableLookup');
+        expectPath(cst, '0.attrList.0.value.0.markup.expression.name').to.equal('data-value');
+      });
+
       it(`should parse quoted attributes`, () => {
         [
           { type: 'AttrSingleQuoted', name: 'single', quote: "'" },
