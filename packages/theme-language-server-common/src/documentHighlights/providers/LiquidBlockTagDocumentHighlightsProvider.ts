@@ -40,7 +40,7 @@ export class LiquidBlockTagDocumentHighlightsProvider implements BaseDocumentHig
 
     // highlighting the elsif/else branches as well
     if (node.children && node.children.every(isLiquidBranch)) {
-      for (const branch of node.children.filter(x => x.name !== null)) {
+      for (const branch of node.children.filter((x) => x.name !== null)) {
         const branchNameOffset = node.source.indexOf(branch.name!, branch.blockStartPosition.start);
         ranges.push(
           Range.create(

@@ -3,7 +3,7 @@ import {
   Connection,
   FileOperationRegistrationOptions,
   InitializeResult,
-  TextDocumentSyncKind
+  TextDocumentSyncKind,
 } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 import { ClientCapabilities } from '../ClientCapabilities';
@@ -212,7 +212,9 @@ export function startServer(
         },
         documentHighlightProvider: true,
         linkedEditingRangeProvider: true,
-        renameProvider: true,
+        renameProvider: {
+          prepareProvider: true,
+        },
         executeCommandProvider: {
           commands: [...Commands],
         },
@@ -311,6 +313,12 @@ export function startServer(
     return documentHighlightProvider.documentHighlights(params);
   });
 
+  // Can you rename this thing?
+  connection.onPrepareRename(async (params) => {
+    return renameProvider.prepare(params);
+  });
+
+  // Rename this thing
   connection.onRenameRequest(async (params) => {
     return renameProvider.rename(params);
   });
