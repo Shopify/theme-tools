@@ -219,8 +219,9 @@ function findCurrentNode(
 
       case NodeTypes.LiquidTag: {
         if (
-          isLiquidLiquidTag(finder.parent) ||
-          isCoveredExcluded(cursor, current.blockStartPosition)
+          isLiquidLiquidTag(finder.current) ||
+          isCoveredExcluded(cursor, current.blockStartPosition) || // wouldn't want to complete {% if cond %} after the }.
+          (isInLiquidLiquidTagContext(finder) && isCovered(cursor, current.blockStartPosition))
         ) {
           if (hasNonNullProperty(current, 'markup') && typeof current.markup !== 'string') {
             finder.current = Array.isArray(current.markup) ? current.markup.at(-1) : current.markup;
@@ -433,6 +434,10 @@ function hasNonEmptyArrayProperty<K extends PropertyKey>(
     Array.isArray(thing[property]) &&
     !isEmpty(thing[property])
   );
+}
+
+function isInLiquidLiquidTagContext(finder: Finder): boolean {
+  return finder.stack.some(isLiquidLiquidTag);
 }
 
 function isLiquidLiquidTag(

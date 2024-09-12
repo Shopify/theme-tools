@@ -177,6 +177,11 @@ describe('Module: LiquidCompletionParams', async () => {
           `{% liquid
             echo a█
            %}`,
+          `{% liquid
+            if x == 'string'
+              echo a█
+            endif
+           %}`,
           `{% for x in (1..a█) %}`,
           // `{% paginate a█ by 50 %}`,
           `<a-{{ a█ }}`,
