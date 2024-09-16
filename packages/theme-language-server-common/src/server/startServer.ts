@@ -19,6 +19,7 @@ import { OnTypeFormattingProvider } from '../formatting';
 import { HoverProvider } from '../hover';
 import { JSONLanguageService } from '../json/JSONLanguageService';
 import { LinkedEditingRangesProvider } from '../linkedEditingRanges/LinkedEditingRangesProvider';
+import { RenameProvider } from '../rename/RenameProvider';
 import {
   GetTranslationsForURI,
   useBufferOrInjectedSchemaTranslations,
@@ -68,6 +69,7 @@ export function startServer(
   const onTypeFormattingProvider = new OnTypeFormattingProvider(documentManager);
   const linkedEditingRangesProvider = new LinkedEditingRangesProvider(documentManager);
   const documentHighlightProvider = new DocumentHighlightsProvider(documentManager);
+  const renameProvider = new RenameProvider(documentManager);
 
   const findThemeRootURI = async (uri: string) => {
     const rootUri = await findConfigurationRootURI(uri);
@@ -210,6 +212,9 @@ export function startServer(
         },
         documentHighlightProvider: true,
         linkedEditingRangeProvider: true,
+        renameProvider: {
+          prepareProvider: true,
+        },
         executeCommandProvider: {
           commands: [...Commands],
         },
@@ -306,6 +311,16 @@ export function startServer(
 
   connection.onDocumentHighlight(async (params) => {
     return documentHighlightProvider.documentHighlights(params);
+  });
+
+  // Can you rename this thing?
+  connection.onPrepareRename(async (params) => {
+    return renameProvider.prepare(params);
+  });
+
+  // Rename this thing
+  connection.onRenameRequest(async (params) => {
+    return renameProvider.rename(params);
   });
 
   connection.languages.onLinkedEditingRange(async (params) => {
