@@ -9,6 +9,14 @@ import {
 } from './providers';
 
 /**
+ * The default behaviour for documentHighlights is to highlight every occurence
+ * of the word under the cursor. We want to prevent that since it doesn't really
+ * make sense in our context. We don't want to highlight every occurence of
+ * `assign` when you put your cursor over it.
+ */
+export const PREVENT_DEFAULT: DocumentHighlight[] = [];
+
+/**
  * Informs the client to highlight ranges in a document.
  *
  * This is a pretty abstract concept, but you could use it to highlight all
@@ -28,7 +36,7 @@ export class DocumentHighlightsProvider {
   async documentHighlights(params: DocumentHighlightParams): Promise<DocumentHighlight[] | null> {
     const document = this.documentManager.get(params.textDocument.uri);
     if (!document || document.type !== SourceCodeType.LiquidHtml || document.ast instanceof Error) {
-      return [];
+      return PREVENT_DEFAULT;
     }
 
     const [currentNode, ancestors] = findCurrentNode(
@@ -41,7 +49,6 @@ export class DocumentHighlightsProvider {
     );
     const results = await Promise.all(promises);
 
-    // we don't want the default highlight behaviour to kick in, [] prevents that.
-    return results.find(Boolean) ?? [];
+    return results.find(Boolean) ?? PREVENT_DEFAULT;
   }
 }

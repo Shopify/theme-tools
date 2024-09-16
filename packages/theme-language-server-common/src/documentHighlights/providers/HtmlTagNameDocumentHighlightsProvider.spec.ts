@@ -1,7 +1,7 @@
 import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { DocumentHighlightParams } from 'vscode-languageserver';
 import { Position } from 'vscode-languageserver-protocol';
-import { DocumentHighlightsProvider } from '..';
+import { DocumentHighlightsProvider, PREVENT_DEFAULT } from '../DocumentHighlightsProvider';
 import { DocumentManager } from '../../documents';
 
 describe('Module: HtmlTagNameDocumentHighlightsProvider', () => {
@@ -13,17 +13,17 @@ describe('Module: HtmlTagNameDocumentHighlightsProvider', () => {
     provider = new DocumentHighlightsProvider(documentManager);
   });
 
-  it('should return null for non-existent documents', async () => {
+  it('should return [] for non-existent documents', async () => {
     const params: DocumentHighlightParams = {
       textDocument: { uri: 'file:///path/to/non-existent-document.liquid' },
       position: Position.create(0, 0),
     };
 
     const result = await provider.documentHighlights(params);
-    expect(result).toBeNull();
+    expect(result).to.equal(PREVENT_DEFAULT);
   });
 
-  it('should return null for non-HTML documents', async () => {
+  it('should return [] for non-HTML documents', async () => {
     const params: DocumentHighlightParams = {
       textDocument: { uri: 'file:///path/to/document.liquid' },
       position: Position.create(0, 0),
@@ -32,7 +32,7 @@ describe('Module: HtmlTagNameDocumentHighlightsProvider', () => {
     documentManager.open(params.textDocument.uri, 'Sample text content', 1);
 
     const result = await provider.documentHighlights(params);
-    expect(result).toBeNull();
+    expect(result).to.equal(PREVENT_DEFAULT);
   });
 
   it('should return document highlight ranges for HTML tag names', async () => {
@@ -80,7 +80,7 @@ describe('Module: HtmlTagNameDocumentHighlightsProvider', () => {
     expect(endTagName).toBe('div');
   });
 
-  it('should return null for positions not within HTML tag names', async () => {
+  it('return [] for positions not within HTML tag names', async () => {
     const params: DocumentHighlightParams = {
       textDocument: { uri: 'file:///path/to/document.liquid' },
       position: Position.create(0, 0), // position outside the tag name
@@ -89,6 +89,6 @@ describe('Module: HtmlTagNameDocumentHighlightsProvider', () => {
     documentManager.open(params.textDocument.uri, '<div></div>', 1);
 
     const result = await provider.documentHighlights(params);
-    expect(result).toBeNull();
+    expect(result).to.equal(PREVENT_DEFAULT)
   });
 });

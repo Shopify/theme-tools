@@ -1,1 +1,1 @@
-export { DocumentHighlightsProvider } from './DocumentHighlightsProvider';
+export { DocumentHighlightsProvider, PREVENT_DEFAULT } from './DocumentHighlightsProvider';
