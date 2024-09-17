@@ -259,7 +259,7 @@ Liquid <: Helpers {
   namedArgument<delim> = variableSegment space* ":" space* liquidExpression<delim>
   tagArguments = listOf<namedArgument<delimTag>, argumentSeparatorOptionalComma>
 
-  variableSegment = (letter | "_") identifierCharacter*
+  variableSegment = (letter | "_") (~endOfTagName identifierCharacter)*
   variableSegmentAsLookup = variableSegment
   identifier = variableSegment "?"?
 

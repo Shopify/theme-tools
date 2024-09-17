@@ -108,6 +108,32 @@ describe('Unit: Stage 1 (CST)', () => {
         name: string | undefined;
       }
 
+      it('correctly parses the whitespace stripping behaviour as part of LiquidVariableOutput and not the variable name', () => {
+        for (const { toCST, expectPath } of testCases) {
+          cst = toCST(`{{somevarname-}}`);
+          expectPath(cst, '0.type').to.equal('LiquidVariableOutput');
+          expectPath(cst, '0.whitespaceEnd').to.equal('-');
+          expectPath(cst, '0.whitespaceStart').to.equal(null);
+          expectPath(cst, '0.markup.type').to.equal('LiquidVariable');
+          expectPath(cst, '0.markup.expression.type').to.equal('VariableLookup');
+          expectPath(cst, '0.markup.expression.name').to.equal('somevarname');
+          expectPath(cst, '0.markup.expression.lookups').to.eql([]);
+        }
+      });
+
+      it('correctly parses whitespace stripping character as part of LiquidTag and not the variable name', () => {
+        for (const { toCST, expectPath } of testCases) {
+          cst = toCST(`{%echo somevarname-%}`);
+          expectPath(cst, '0.type').to.equal('LiquidTag');
+          expectPath(cst, '0.whitespaceEnd').to.equal('-');
+          expectPath(cst, '0.whitespaceStart').to.equal(null);
+          expectPath(cst, '0.markup.type').to.equal('LiquidVariable');
+          expectPath(cst, '0.markup.expression.type').to.equal('VariableLookup');
+          expectPath(cst, '0.markup.expression.name').to.equal('somevarname');
+          expectPath(cst, '0.markup.expression.lookups').to.eql([]);
+        }
+      });
+
       it('should parse variable lookups', () => {
         const v = (name: string, lookups: (string | number | Lookup)[] = []): Lookup => ({
           type: 'VariableLookup',
