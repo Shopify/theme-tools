@@ -123,7 +123,7 @@ export function startServer(
         x
           .replace(/\\/g, '/')
           .replace(/^snippets\//, '')
-          .replace(/\..*$/, ''),
+          .replace(/\.liquid$/, ''),
       );
   };
 
