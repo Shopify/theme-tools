@@ -1,0 +1,1 @@
+export { LinkedEditingRangesProvider } from './LinkedEditingRangesProvider';
