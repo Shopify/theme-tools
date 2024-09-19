@@ -13,6 +13,7 @@ This repo serves as a CodeMirror Language Client. Feed it a Language Server and 
 - [x] Diagnostics (aka Linting)
 - [x] Completions
 - [x] Hover
+- [x] Document Highlights
 - [ ] Document Links
 - [ ] Workspace Edits (aka Refactorings, Quickfix, etc.)
 
@@ -84,7 +85,7 @@ main();
 
    -  [`vscode-languageserver-types`](https://github.com/microsoft/vscode-languageserver-node/tree/main/types)
 
-      This library is useful to get the types of specific parts of the Protocol. 
+      This library is useful to get the types of specific parts of the Protocol.
 
       Examples: `Diagnostic`, `URI`, `TextDocument`, `Position`, `Range`, `LocationLink`, etc.
 

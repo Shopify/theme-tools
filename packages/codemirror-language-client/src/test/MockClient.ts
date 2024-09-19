@@ -4,6 +4,7 @@ import {
   ProtocolNotificationType,
   CancellationTokenSource,
   CancellationToken,
+  ServerCapabilities,
 } from 'vscode-languageserver-protocol';
 import { PromiseCompletion, AbstractLanguageClient, disposable } from '../LanguageClient';
 
@@ -21,7 +22,11 @@ export class MockClient extends EventTarget implements AbstractLanguageClient {
   public pendingRequest: Promise<any> | null;
   private promiseCompletion: PromiseCompletion | null;
 
-  constructor(clientCapabilities = {}, serverCapabilities = null, serverInfo = null) {
+  constructor(
+    clientCapabilities = {},
+    serverCapabilities: AbstractLanguageClient['serverCapabilities'] = null,
+    serverInfo = null,
+  ) {
     super();
     this.clientCapabilities = clientCapabilities;
     this.serverCapabilities = serverCapabilities;

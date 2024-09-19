@@ -1,14 +1,15 @@
-import { StateEffect, StateField, Extension, StateEffectType, Facet } from '@codemirror/state';
-import { PluginValue, EditorView, ViewPlugin } from '@codemirror/view';
-import { linter, Diagnostic as CodeMirrorDiagnostic } from '@codemirror/lint';
-import { TextDocument } from 'vscode-languageserver-textdocument';
+import { Diagnostic as CodeMirrorDiagnostic, linter } from '@codemirror/lint';
+import { Extension, Facet, StateEffect } from '@codemirror/state';
+import { EditorView, PluginValue, ViewPlugin } from '@codemirror/view';
 import {
-  Diagnostic as LSPDiagnostic,
   Disposable,
-  PublishDiagnosticsNotification,
+  Diagnostic as LSPDiagnostic,
   DiagnosticSeverity as LSPSeverity,
+  PublishDiagnosticsNotification,
 } from 'vscode-languageserver-protocol';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 
+import { simpleStateField } from '../utils/simpleStateField';
 import { clientFacet, fileUriFacet } from './client';
 import { textDocumentField } from './textDocumentSync';
 
@@ -150,21 +151,4 @@ function lspToCodeMirrorDiagnostic(
     severity: lspToCodeMirrorSeverity(severity),
     renderMessage: diagnosticRenderer ? () => diagnosticRenderer(lspDiagnostic) : undefined,
   };
-}
-
-function simpleStateField<T>(stateEffect: StateEffectType<T>, defaultValue: T): StateField<T> {
-  return StateField.define<T>({
-    create: () => defaultValue,
-    update(value, tr) {
-      let updatedValue = value;
-
-      for (const effect of tr.effects) {
-        if (effect.is(stateEffect)) {
-          updatedValue = effect.value;
-        }
-      }
-
-      return updatedValue;
-    },
-  });
 }
