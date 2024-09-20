@@ -204,7 +204,7 @@ export function startServer(
         },
         documentOnTypeFormattingProvider: {
           firstTriggerCharacter: ' ',
-          moreTriggerCharacter: ['{', '%', '-'],
+          moreTriggerCharacter: ['{', '%', '-', '>'],
         },
         documentLinkProvider: {
           resolveProvider: false,

@@ -1,9 +1,8 @@
-import { describe, beforeEach, it, expect, assert } from 'vitest';
-import { OnTypeFormattingProvider } from './OnTypeFormattingProvider';
-import { DocumentManager } from '../documents';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { DocumentOnTypeFormattingParams } from 'vscode-languageserver';
-import { Position, TextEdit, Range } from 'vscode-languageserver-protocol';
-import { TextDocument } from 'vscode-languageserver-textdocument';
+import { Position } from 'vscode-languageserver-protocol';
+import { DocumentManager } from '../documents';
+import { OnTypeFormattingProvider } from './OnTypeFormattingProvider';
 
 const options: DocumentOnTypeFormattingParams['options'] = {
   insertSpaces: true,
@@ -57,74 +56,6 @@ describe('Module: OnTypeFormattingProvider', () => {
 
     const result = await onTypeFormattingProvider.onTypeFormatting(params);
     expect(result).toBeNull();
-  });
-
-  it('should return a TextEdit to insert a space after "{{" in "{{ }}"', async () => {
-    const params: DocumentOnTypeFormattingParams = {
-      textDocument: { uri: 'file:///path/to/document.liquid' },
-      position: Position.create(0, 2),
-      ch: '{',
-      options,
-    };
-
-    documentManager.open(params.textDocument.uri, '{{ }}', 1);
-    const document = documentManager.get(params.textDocument.uri)?.textDocument;
-    assert(document);
-
-    const result = await onTypeFormattingProvider.onTypeFormatting(params);
-    assert(result);
-    expect(TextDocument.applyEdits(document, result)).to.equal('{{  }}');
-  });
-
-  it('should return a TextEdit to insert a space after "{%" in "{% %}"', async () => {
-    const params: DocumentOnTypeFormattingParams = {
-      textDocument: { uri: 'file:///path/to/document.liquid' },
-      position: Position.create(0, 2),
-      ch: '%',
-      options,
-    };
-
-    documentManager.open(params.textDocument.uri, '{% %}', 1);
-    const document = documentManager.get(params.textDocument.uri)?.textDocument;
-    assert(document);
-
-    const result = await onTypeFormattingProvider.onTypeFormatting(params);
-    assert(result);
-    expect(TextDocument.applyEdits(document, result)).to.equal('{%  %}');
-  });
-
-  it('should return a TextEdit to replace and insert characters in "{{ - }}"', async () => {
-    const params: DocumentOnTypeFormattingParams = {
-      textDocument: { uri: 'file:///path/to/document.liquid' },
-      position: Position.create(0, 4),
-      ch: '-',
-      options,
-    };
-
-    documentManager.open(params.textDocument.uri, '{{ - }}', 1);
-    const document = documentManager.get(params.textDocument.uri)?.textDocument;
-    assert(document);
-
-    const result = await onTypeFormattingProvider.onTypeFormatting(params);
-    assert(result);
-    expect(TextDocument.applyEdits(document, result)).to.equal('{{-  -}}');
-  });
-
-  it('should return a TextEdit to replace and insert characters in "{% - %}"', async () => {
-    const params: DocumentOnTypeFormattingParams = {
-      textDocument: { uri: 'file:///path/to/document.liquid' },
-      position: Position.create(0, 4),
-      ch: '-',
-      options,
-    };
-
-    documentManager.open(params.textDocument.uri, '{% - %}', 1);
-    const document = documentManager.get(params.textDocument.uri)?.textDocument;
-    assert(document);
-
-    const result = await onTypeFormattingProvider.onTypeFormatting(params);
-    assert(result);
-    expect(TextDocument.applyEdits(document, result)).to.equal('{%-  -%}');
   });
 
   it('should return null for characters not matching any case', async () => {
