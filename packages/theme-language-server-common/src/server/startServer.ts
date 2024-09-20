@@ -12,6 +12,7 @@ import { Commands, ExecuteCommandProvider } from '../commands';
 import { CompletionsProvider } from '../completions';
 import { GetSnippetNamesForURI } from '../completions/providers/RenderSnippetCompletionProvider';
 import { DiagnosticsManager, makeRunChecks } from '../diagnostics';
+import { DocumentHighlightsProvider } from '../documentHighlights/DocumentHighlightsProvider';
 import { DocumentLinksProvider } from '../documentLinks';
 import { DocumentManager } from '../documents';
 import { OnTypeFormattingProvider } from '../formatting';
@@ -66,6 +67,7 @@ export function startServer(
   const codeActionsProvider = new CodeActionsProvider(documentManager, diagnosticsManager);
   const onTypeFormattingProvider = new OnTypeFormattingProvider(documentManager);
   const linkedEditingRangesProvider = new LinkedEditingRangesProvider(documentManager);
+  const documentHighlightProvider = new DocumentHighlightsProvider(documentManager);
 
   const findThemeRootURI = async (uri: string) => {
     const rootUri = await findConfigurationRootURI(uri);
@@ -206,6 +208,7 @@ export function startServer(
           resolveProvider: false,
           workDoneProgress: false,
         },
+        documentHighlightProvider: true,
         linkedEditingRangeProvider: true,
         executeCommandProvider: {
           commands: [...Commands],
@@ -299,6 +302,10 @@ export function startServer(
 
   connection.onDocumentOnTypeFormatting(async (params) => {
     return onTypeFormattingProvider.onTypeFormatting(params);
+  });
+
+  connection.onDocumentHighlight(async (params) => {
+    return documentHighlightProvider.documentHighlights(params);
   });
 
   connection.languages.onLinkedEditingRange(async (params) => {
