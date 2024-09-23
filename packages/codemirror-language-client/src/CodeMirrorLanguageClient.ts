@@ -14,6 +14,7 @@ import {
   fileUriFacet,
   infoRendererFacet,
   lspComplete,
+  lspDocumentHighlights,
   lspHover,
   lspLinter,
   serverCapabilitiesFacet,
@@ -29,6 +30,9 @@ import { hoverRendererFacet } from './extensions/hover';
  */
 const clientCapabilities: ClientCapabilities = {
   textDocument: {
+    documentHighlight: {
+      dynamicRegistration: false,
+    },
     completion: {
       // We send the completion context to the server
       contextSupport: true,
@@ -106,6 +110,7 @@ export class CodeMirrorLanguageClient {
   private readonly linterExtension: Extension;
   private readonly hoverRenderer: HoverRenderer | undefined;
   private readonly hoverExtension: Extension;
+  private readonly documentHighlightsExtension: Extension;
 
   constructor(
     private readonly worker: Worker,
@@ -132,6 +137,8 @@ export class CodeMirrorLanguageClient {
 
     this.hoverRenderer = hoverRenderer;
     this.hoverExtension = lspHover(hoverOptions);
+
+    this.documentHighlightsExtension = lspDocumentHighlights();
   }
 
   public async start() {
@@ -162,6 +169,7 @@ export class CodeMirrorLanguageClient {
       infoRendererFacet.of(this.infoRenderer),
       diagnosticRendererFacet.of(this.diagnosticRenderer),
       hoverRendererFacet.of(this.hoverRenderer),
+      this.documentHighlightsExtension,
     ]
       .concat(shouldLint ? this.linterExtension : [])
       .concat(shouldComplete ? this.autocompleteExtension : [])

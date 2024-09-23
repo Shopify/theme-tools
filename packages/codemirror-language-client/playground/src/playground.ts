@@ -15,6 +15,7 @@ import { MarkedString, MarkupContent } from 'vscode-languageserver-protocol';
 const md = new MarkdownIt();
 
 const exampleTemplate = `{% # sections/title.liquid %}
+{% # mod-alt-v for vim mode %}
 <section>
   <h2>{{ section.settings.title }}</h2>
   {% echo 'hi' | upcase %}

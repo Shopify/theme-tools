@@ -1,5 +1,4 @@
 export { clientFacet, fileUriFacet, serverCapabilitiesFacet } from './client';
-export { textDocumentSync, textDocumentField } from './textDocumentSync';
 export {
   AutocompleteOptions,
   InfoRenderer,
@@ -7,6 +6,7 @@ export {
   infoRendererFacet,
   lspComplete,
 } from './complete';
+export { documentHighlightsClass, lspDocumentHighlights } from './documentHighlights';
 export { HoverOptions, HoverRenderer, hover, lspHover } from './hover';
 export {
   DiagnosticRenderer,
@@ -16,3 +16,4 @@ export {
   lspDiagnosticsField,
   lspLinter,
 } from './lspLinter';
+export { textDocumentField, textDocumentSync } from './textDocumentSync';
