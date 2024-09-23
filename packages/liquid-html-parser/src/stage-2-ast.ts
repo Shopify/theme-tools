@@ -75,7 +75,7 @@ import {
 } from './stage-1-cst';
 import { Comparators, NamedTags, NodeTypes, nonTraversableProperties, Position } from './types';
 import { assertNever, deepGet, dropLast } from './utils';
-import { LiquidHTMLASTParsingError } from './errors';
+import { LiquidHTMLASTParsingError, UnclosedNode } from './errors';
 import { TAGS_WITHOUT_MARKUP } from './grammar';
 import { toLiquidCST } from './stage-1-cst';
 
@@ -941,6 +941,7 @@ class ASTBuilder {
           this.source,
           this.parent.position.start,
           node.locEnd,
+          getUnclosed(this.parent),
         );
       }
     }
@@ -1020,9 +1021,9 @@ function isLiquidBranch(node: LiquidHtmlNode | undefined): node is LiquidBranchN
   return !!node && node.type === NodeTypes.LiquidBranch;
 }
 
-function getName(
+export function getName(
   node: ConcreteLiquidTagClose | ConcreteHtmlTagClose | ParentNode | undefined,
-): string | LiquidVariableOutput | null {
+): string | null {
   if (!node) return null;
   switch (node.type) {
     case NodeTypes.HtmlElement:
@@ -1075,6 +1076,7 @@ export function cstToAst(
       builder.source,
       builder.source.length - 1,
       builder.source.length,
+      getUnclosed(builder.parent, builder.grandparent),
     );
   }
 
@@ -1460,6 +1462,7 @@ function toNamedLiquidTag(
         ...liquidTagBaseAttributes(node),
         name: node.name,
         markup: toConditionalExpression(node.markup),
+        blockEndPosition: { start: -1, end: -1 },
         children: [],
       };
     }
@@ -1998,4 +2001,16 @@ export function isLiquidHtmlNode(value: any): value is LiquidHtmlNode {
     'type' in value &&
     NodeTypes.hasOwnProperty(value.type)
   );
+}
+
+function getUnclosed(node?: ParentNode, parentNode?: ParentNode): UnclosedNode | undefined {
+  if (!node) return undefined;
+  if (getName(node) === null && parentNode) {
+    node = parentNode;
+  }
+  return {
+    type: node.type,
+    name: getName(node) ?? '',
+    blockStartPosition: 'blockStartPosition' in node ? node.blockStartPosition : node.position,
+  };
 }

@@ -3,6 +3,7 @@ import {
   Connection,
   FileOperationRegistrationOptions,
   InitializeResult,
+  ShowDocumentRequest,
   TextDocumentSyncKind,
 } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
@@ -66,7 +67,20 @@ export function startServer(
   const diagnosticsManager = new DiagnosticsManager(connection);
   const documentLinksProvider = new DocumentLinksProvider(documentManager);
   const codeActionsProvider = new CodeActionsProvider(documentManager, diagnosticsManager);
-  const onTypeFormattingProvider = new OnTypeFormattingProvider(documentManager);
+  const onTypeFormattingProvider = new OnTypeFormattingProvider(
+    documentManager,
+    async function setCursorPosition(textDocument, position) {
+      if (!clientCapabilities.hasShowDocumentSupport) return;
+      connection.sendRequest(ShowDocumentRequest.type, {
+        uri: textDocument.uri,
+        takeFocus: true,
+        selection: {
+          start: position,
+          end: position,
+        },
+      });
+    },
+  );
   const linkedEditingRangesProvider = new LinkedEditingRangesProvider(documentManager);
   const documentHighlightProvider = new DocumentHighlightsProvider(documentManager);
   const renameProvider = new RenameProvider(documentManager);

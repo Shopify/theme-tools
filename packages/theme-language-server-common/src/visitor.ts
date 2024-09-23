@@ -93,7 +93,10 @@ export function findCurrentNode(
       current,
       ancestors.concat(current),
       (child, lineage) => {
-        if (isCovered(child, cursorPosition) && size(child) <= size(current)) {
+        if (
+          isUnclosed(child) ||
+          (isCovered(child, cursorPosition) && size(child) <= size(current))
+        ) {
           current = child;
           ancestors = lineage;
         }
@@ -110,4 +113,13 @@ function isCovered(node: LiquidHtmlNode, offset: number): boolean {
 
 function size(node: LiquidHtmlNode): number {
   return node.position.end - node.position.start;
+}
+
+function isUnclosed(node: LiquidHtmlNode): boolean {
+  if ('blockEndPosition' in node) {
+    return node.blockEndPosition?.end === -1;
+  } else if ('children' in node) {
+    return node.children!.length > 0;
+  }
+  return false;
 }

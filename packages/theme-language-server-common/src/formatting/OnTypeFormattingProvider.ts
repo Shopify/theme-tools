@@ -1,13 +1,20 @@
 import { DocumentOnTypeFormattingParams } from 'vscode-languageserver';
 import { DocumentManager } from '../documents';
-import { BaseOnTypeFormattingProvider } from './types';
 import { BracketsAutoclosingOnTypeFormattingProvider } from './providers/BracketsAutoclosingOnTypeFormattingProvider';
+import { HtmlElementAutoclosingOnTypeFormattingProvider } from './providers/HtmlElementAutoclosingOnTypeFormattingProvider';
+import { BaseOnTypeFormattingProvider, SetCursorPosition } from './types';
 
 export class OnTypeFormattingProvider {
   private providers: BaseOnTypeFormattingProvider[];
 
-  constructor(public documentManager: DocumentManager) {
-    this.providers = [new BracketsAutoclosingOnTypeFormattingProvider()];
+  constructor(
+    public documentManager: DocumentManager,
+    public setCursorPosition: SetCursorPosition = async () => {},
+  ) {
+    this.providers = [
+      new BracketsAutoclosingOnTypeFormattingProvider(),
+      new HtmlElementAutoclosingOnTypeFormattingProvider(setCursorPosition),
+    ];
   }
 
   async onTypeFormatting(params: DocumentOnTypeFormattingParams) {
