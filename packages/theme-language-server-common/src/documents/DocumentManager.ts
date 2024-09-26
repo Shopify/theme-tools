@@ -3,7 +3,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-languageserver-types';
 import { toAbsolutePath } from '../utils';
 
-export type AugmentedSourceCode = SourceCode<SourceCodeType> & {
+export type AugmentedSourceCode<SCT extends SourceCodeType = SourceCodeType> = SourceCode<SCT> & {
   textDocument: TextDocument;
   uri: URI;
 };

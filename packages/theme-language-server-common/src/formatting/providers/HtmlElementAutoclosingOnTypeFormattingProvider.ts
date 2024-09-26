@@ -1,21 +1,22 @@
 import {
   getName,
+  HtmlElement,
   LiquidHTMLASTParsingError,
   LiquidHtmlNode,
   NodeTypes,
   toLiquidHtmlAST,
 } from '@shopify/liquid-html-parser';
+import { SourceCodeType } from '@shopify/theme-check-common';
 import {
   DocumentOnTypeFormattingParams,
   Position,
   Range,
   TextEdit,
 } from 'vscode-languageserver-protocol';
-import { AugmentedSourceCode } from '../../documents';
-import { BaseOnTypeFormattingProvider } from '../types';
-import { findCurrentNode } from '../../visitor';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { SetCursorPosition } from '../types';
+import { AugmentedSourceCode } from '../../documents';
+import { findCurrentNode } from '../../visitor';
+import { BaseOnTypeFormattingProvider, SetCursorPosition } from '../types';
 
 const defer = (fn: () => void) => setTimeout(fn, 10);
 
@@ -58,7 +59,7 @@ export class HtmlElementAutoclosingOnTypeFormattingProvider
   constructor(private setCursorPosition: SetCursorPosition) {}
 
   onTypeFormatting(
-    document: AugmentedSourceCode,
+    document: AugmentedSourceCode<SourceCodeType.LiquidHtml>,
     params: DocumentOnTypeFormattingParams,
   ): TextEdit[] | null {
     const textDocument = document.textDocument;
@@ -70,7 +71,6 @@ export class HtmlElementAutoclosingOnTypeFormattingProvider
       case '>': {
         const ast = document.ast;
         if (
-          ch === '>' &&
           ast instanceof LiquidHTMLASTParsingError &&
           ast.unclosed &&
           ast.unclosed.type === NodeTypes.HtmlElement &&
@@ -79,6 +79,13 @@ export class HtmlElementAutoclosingOnTypeFormattingProvider
         ) {
           defer(() => this.setCursorPosition(textDocument, params.position));
           return [TextEdit.insert(Position.create(line, character), `</${ast.unclosed.name}>`)];
+        } else if (!(ast instanceof Error)) {
+          // Even though we accept dangling <div>s inside {% if condition %}, we prefer to auto-insert the </div>
+          const [node] = findCurrentNode(ast, textDocument.offsetAt(params.position));
+          if (isDanglingHtmlElement(node)) {
+            defer(() => this.setCursorPosition(textDocument, params.position));
+            return [TextEdit.insert(Position.create(line, character), `</${getName(node)}>`)];
+          }
         }
       }
     }
@@ -109,5 +116,13 @@ function shouldClose(unclosed: any, node: LiquidHtmlNode | null) {
   return (
     [NodeTypes.HtmlElement, NodeTypes.LiquidTag, NodeTypes.HtmlRawNode].includes(unclosed.type) &&
     getName(node) === unclosed.name
+  );
+}
+
+function isDanglingHtmlElement(node: LiquidHtmlNode): node is HtmlElement {
+  return (
+    node !== null &&
+    node.type === NodeTypes.HtmlElement &&
+    node.blockEndPosition.start === node.blockEndPosition.end
   );
 }

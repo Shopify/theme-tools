@@ -124,6 +124,37 @@ describe('Module: HtmlElementAutoclosingOnTypeFormattingProvider', () => {
     expect(setCursorPositionSpy).toHaveBeenCalledWith(document, document.positionAt(indexOfCursor));
   });
 
+  it('should try to close dangling html open tags inside liquid branches', async () => {
+    const CURSOR = '█';
+    const scenarios = [
+      '{% if cond %}<div>█{% endif %}',
+      '{% if cond %}{% else %}<div>█{% endif %}',
+      '{% unless cond %}<div>█{% endunless %}',
+      '{% case thing %}{% when thing %}<div>█{% endif %}',
+    ];
+    for (const source of scenarios) {
+      documentManager.open(uri, source.replace(CURSOR, ''), 1);
+      const document = documentManager.get(uri)?.textDocument!;
+      const indexOfCursor = source.indexOf(CURSOR);
+      const params: DocumentOnTypeFormattingParams = {
+        textDocument: { uri },
+        position: document.positionAt(indexOfCursor),
+        ch: '>',
+        options,
+      };
+      assert(document);
+      const result = await onTypeFormattingProvider.onTypeFormatting(params);
+      assert(result);
+      expect(TextDocument.applyEdits(document, result)).to.equal(source.replace(CURSOR, '</div>'));
+
+      vi.advanceTimersByTime(10);
+      expect(setCursorPositionSpy).toHaveBeenCalledWith(
+        document,
+        document.positionAt(indexOfCursor),
+      );
+    }
+  });
+
   it('should not try to close the tag when pressing > inside a Liquid tag if condition (what HTML would do)', async () => {
     const CURSOR = '█';
     const scenarios = ['<div {% if cond >█', '<div {% if cond >█ %}>', '<div {% if cond >█ 2 %}>'];
