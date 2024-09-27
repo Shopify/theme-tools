@@ -35,7 +35,7 @@ export function getHtmlElementNameRanges(
     htmlElementNode = node;
   }
 
-  if (!htmlElementNode) return null;
+  if (!htmlElementNode || isDanglingOpenHtmlElement(htmlElementNode)) return null;
 
   const nameNodes = htmlElementNode.name;
   const firstNode = nameNodes.at(0)!;
@@ -44,6 +44,7 @@ export function getHtmlElementNameRanges(
     textDocument.positionAt(firstNode.position.start),
     textDocument.positionAt(lastNode.position.end),
   );
+
   const endRange = Range.create(
     // </ means offset 2 characters
     textDocument.positionAt(htmlElementNode.blockEndPosition.start + 2),
@@ -51,4 +52,10 @@ export function getHtmlElementNameRanges(
   );
 
   return [startRange, endRange];
+}
+
+export function isDanglingOpenHtmlElement(node: LiquidHtmlNode) {
+  return (
+    node.type === NodeTypes.HtmlElement && node.blockEndPosition.start === node.blockEndPosition.end
+  );
 }
