@@ -1,5 +1,6 @@
-import { MatchResult } from 'ohm-js';
 import lineColumn from 'line-column';
+import { MatchResult } from 'ohm-js';
+import { NodeTypes, Position } from './types';
 
 interface LineColPosition {
   line: number;
@@ -35,12 +36,22 @@ export class LiquidHTMLCSTParsingError extends SyntaxError {
   }
 }
 
+export type UnclosedNode = { type: NodeTypes; name: string; blockStartPosition: Position };
+
 export class LiquidHTMLASTParsingError extends SyntaxError {
   loc?: { start: LineColPosition; end: LineColPosition };
+  unclosed: UnclosedNode | null;
 
-  constructor(message: string, source: string, startIndex: number, endIndex: number) {
+  constructor(
+    message: string,
+    source: string,
+    startIndex: number,
+    endIndex: number,
+    unclosed?: UnclosedNode,
+  ) {
     super(message);
     this.name = 'LiquidHTMLParsingError';
+    this.unclosed = unclosed ?? null;
 
     const lc = lineColumn(source);
     const start = lc.fromIndex(startIndex);
