@@ -44,6 +44,22 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
     await expect(provider).to.complete('{% form "cart", cart %} ... {% end', ['endform']);
   });
 
+  it('should not complete literal `liquid` tag', async () => {
+    await expect(provider).to.complete(
+      `{% liquid
+        echo 'hello'
+        e`,
+      ['echo'],
+    );
+
+    await expect(provider).not.to.complete(
+      `{% liquid
+        echo 'hello'
+        e`,
+      ['endliquid'],
+    );
+  });
+
   it('should offer the proper end tags in context', async () => {
     await expect(provider).to.complete('{% comment %} hello there {% e', ['echo', 'endcomment']);
     await expect(provider).to.complete('{% if cond %} hello {% else %} then {% e', [

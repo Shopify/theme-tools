@@ -2,6 +2,7 @@ import {
   BLOCKS,
   LiquidHtmlNode,
   LiquidTag,
+  NamedTags,
   NodeTypes,
   RAW_TAGS,
 } from '@shopify/liquid-html-parser';
@@ -47,6 +48,27 @@ export class LiquidTagsCompletionProvider implements Provider {
 
 function findParentNode(partial: string, ancestors: LiquidHtmlNode[]): LiquidTag | undefined {
   if (!'end'.startsWith(partial)) return;
+
+  const potentialParentName = partial.replace(/^e(nd?)?/, '');
+  const parentNode = ancestors.at(-1);
+  const grandParentNode = ancestors.at(-2);
+
+  // This covers the scenario where we have an open liquid tag as a parent
+  //
+  // e.g.
+  // {% liquid
+  //   echo 'hello'
+  // %}
+  //
+  // In that scenario, we have the following tree:
+  //
+  // type: Document
+  // children:
+  //   - LiquidTag#liquid
+  if (parentNode && parentNode.type === 'LiquidTag' && parentNode.name === NamedTags.liquid) {
+    return;
+  }
+
   // This covers the scenario where we have a dangling conditional tag
   //
   // e.g.
@@ -64,9 +86,6 @@ function findParentNode(partial: string, ancestors: LiquidHtmlNode[]): LiquidTag
   //         children:
   //           - TextNode#hello
   //           - LiquidTag#end
-  const potentialParentName = partial.replace(/^e(nd?)?/, '');
-  const parentNode = ancestors.at(-1);
-  const grandParentNode = ancestors.at(-2);
   if (
     parentNode &&
     parentNode.type === 'LiquidBranch' &&
