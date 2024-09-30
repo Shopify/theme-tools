@@ -1,14 +1,14 @@
-import { DocsetEntry, FilterEntry, ObjectEntry } from '@shopify/theme-check-common';
+import { DocsetEntry, FilterEntry, ObjectEntry, TagEntry } from '@shopify/theme-check-common';
 import { ArrayType, PseudoType, docsetEntryReturnType, isArrayType } from '../TypeSystem';
 import { Attribute, Tag, Value } from './HtmlDocset';
 
 const HORIZONTAL_SEPARATOR = '\n\n---\n\n';
 
-type HtmlEntry = Tag | Attribute | Value;
+export type HtmlEntry = Tag | Attribute | Value;
 export type DocsetEntryType = 'filter' | 'tag' | 'object';
 
 export function render(
-  entry: DocsetEntry,
+  entry: DocsetEntry | FilterEntry | TagEntry,
   returnType?: PseudoType | ArrayType,
   docsetEntryType?: DocsetEntryType,
 ) {
@@ -51,6 +51,7 @@ function docsetEntryBody(
   docsetEntryType?: DocsetEntryType,
 ) {
   return [
+    syntax(entry),
     entry.deprecation_reason,
     entry.summary,
     entry.description,
@@ -65,6 +66,22 @@ function htmlEntryBody(entry: HtmlEntry, parentEntry?: HtmlEntry) {
   return [description(entry), references(entry), references(parentEntry)]
     .filter(Boolean)
     .join(HORIZONTAL_SEPARATOR);
+}
+
+function syntax(entry: DocsetEntry | FilterEntry | TagEntry) {
+  if (!('syntax' in entry) || !entry.syntax) {
+    return undefined;
+  }
+
+  // TagEntry entries already have liquid tags as a part of the syntax
+  // explanation so we can return them directly.
+  if (entry.syntax.startsWith('{%')) {
+    return `\`\`\`liquid\n${entry.syntax}\n\`\`\``;
+  }
+
+  // Wrap the syntax in liquid tags to ensure we get proper syntax highlighting
+  // if it's available.
+  return `\`\`\`liquid\n{{ ${entry.syntax} }}\n\`\`\``;
 }
 
 function description(entry: HtmlEntry) {
