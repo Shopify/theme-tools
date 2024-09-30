@@ -32,9 +32,9 @@
     "@lezer/lr": "^1.3.7"
   },
   "scripts": {
-    "build": "yarn build:esm && yarn build:umd",
+    "build": "yarn build:ts",
     "build:ci": "yarn build",
-    "build:ts": "true",
+    "build:ts": "yarn build:esm && yarn build:umd",
     "build:esm": "tsc -b tsconfig.json",
     "build:umd": "tsc -b tsconfig.umd.json",
     "prebuild:esm": "yarn generate",

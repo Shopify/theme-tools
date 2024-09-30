@@ -1,0 +1,87 @@
+# Simple Integer
+
+42
+
+==>
+
+JsoncText(Number)
+
+# Zero By Itself Is Ok
+
+0
+
+==>
+
+JsoncText(Number)
+
+# Leading Zeros Aren't Ok
+
+[0123]
+
+==>
+
+JsoncText(Array(Number, ⚠(Number)))
+
+# Optional Minus Sign
+
+-53
+
+==>
+
+JsoncText(Number)
+
+# Decimal Digits
+
+123.4
+
+==>
+
+JsoncText(Number)
+
+# Must Have Digits After Decimal
+
+123.
+
+==>
+
+JsoncText(Number, ⚠)
+
+# Exponent: Lowercase e
+
+1e5
+
+==>
+
+JsoncText(Number)
+
+# Exponent: Uppercase E
+
+1E5
+
+==>
+
+JsoncText(Number)
+
+# Exponent: Optional Plus Sign
+
+1e+5
+
+==>
+
+JsoncText(Number)
+
+# Exponent: Optional Minus Sign
+
+1E-5
+
+==>
+
+JsoncText(Number)
+
+# Exponent Without Digit Is Not Ok
+
+42e
+
+==>
+
+JsoncText(Number, ⚠)
