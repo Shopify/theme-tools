@@ -1,5 +1,12 @@
 # @shopify/theme-check-node
 
+## 2.9.1
+
+### Patch Changes
+
+- @shopify/theme-check-common@2.9.1
+- @shopify/theme-check-docs-updater@2.9.1
+
 ## 2.9.0
 
 ### Minor Changes

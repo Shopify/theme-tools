@@ -1,5 +1,11 @@
 # @shopify/codemirror-language-client
 
+## 0.6.0
+
+### Minor Changes
+
+- 42c76d9: Add support for LSP Document Highlight requests
+
 ## 0.5.1
 
 ### Patch Changes

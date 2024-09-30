@@ -1,5 +1,93 @@
 ## theme-check-vscode
 
+## 2.5.0
+
+### Minor Changes
+
+- d1f9fef: Add support for HTML Element close tag auto-insertion
+
+  ```liquid
+  {% # type this %}
+  <div>
+  {% # get this, with cursor at | %}
+  <div>|</div>
+  ```
+
+- d1f9fef: Add proper HTML tag `onEnterRules`
+
+  ```liquid
+  {% # type this, then press enter %}
+  <div>|</div>
+
+  {% # you get this, with cursor at | %}
+  <div>
+    |
+  </div>
+  ```
+
+- b5a2fbc: Add HTML element name rename support
+
+  Press `F2` on an HTML element name to rename its open/close pairs in a safe manner. No setting required.
+
+  ```liquid
+  {% # before rename %}
+  <div><!-- press F2 on this `div` and have both the open and close parts be renamed at the same time -->
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+
+  {% # after rename %}
+  <section>
+    <div></div>
+    <div></div>
+    <div></div>
+  </section>
+  ```
+
+- a946a4e: Add tupled highlighting of HTML element names and Liquid blocks
+
+  When you hover over a HTML tag open, the close tag is highlighted and vice-versa.
+
+  ```html
+  <div><!-- this div gets highlighted -->
+    <div></div>
+  </div><!-- with this one-->
+  ```
+
+  When you hover over a Liquid block open, the close block is highlighted (and branches if any).
+
+  ```liquid
+  {% # this if, elsif, else, endif all get highlighted together %}
+  {% if cond %}
+
+  {% elsif cond %}
+
+  {% else %}
+
+  {% endif %}
+  ```
+
+- 474b859: Add linked editing support for HTML element names
+
+  Just like for [HTML in VS Code](https://code.visualstudio.com/updates/v1_52#_html), this feature is enabled by the `editor.linkedEditing` VS Code setting:
+
+  ```json
+  "editor.linkedEditing": true
+  ```
+
+  When enabled, this will make it so you can rename open/close pairs as you are typing.
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [1c73710]
+- Updated dependencies [d1f9fef]
+- Updated dependencies [70e2241]
+  - @shopify/prettier-plugin-liquid@1.5.1
+  - @shopify/liquid-html-parser@2.0.4
+  - @shopify/theme-language-server-node@1.13.0
+
 ## 2.4.3
 
 ### Patch Changes
