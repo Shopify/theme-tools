@@ -129,7 +129,11 @@ describe('Module: HtmlElementAutoclosingOnTypeFormattingProvider', () => {
     const scenarios = [
       '{% if cond %}<div>█{% endif %}',
       '{% if cond %}{% else %}<div>█{% endif %}',
+      '{% if cond %}<div></div>{% else %}<div>█{% endif %}',
+      '{% if cond %}<div></div>{% elsif cond %}<div>█{% else %}<div>{% endif %}',
+      '{% if cond %}<div></div>{% elsif cond %}<div>█ {% else %}<div>{% endif %}',
       '{% unless cond %}<div>█{% endunless %}',
+      '{% unless cond %}<div><div>█{% endunless %}',
       '{% case thing %}{% when thing %}<div>█{% endif %}',
     ];
     for (const source of scenarios) {
@@ -144,7 +148,7 @@ describe('Module: HtmlElementAutoclosingOnTypeFormattingProvider', () => {
       };
       assert(document);
       const result = await onTypeFormattingProvider.onTypeFormatting(params);
-      assert(result);
+      assert(result, 'expected results for source:\n' + source);
       expect(TextDocument.applyEdits(document, result)).to.equal(source.replace(CURSOR, '</div>'));
 
       vi.advanceTimersByTime(10);

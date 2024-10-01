@@ -441,6 +441,8 @@ interface LiquidBranchNode<Name, Markup> extends ASTNode<NodeTypes.LiquidBranch>
   whitespaceEnd: '-' | '';
   /** Range of the LiquidTag that delimits the branch (does not include children) */
   blockStartPosition: Position;
+  /** 0-size range that delimits where the branch ends, (-1, -1) when unclosed */
+  blockEndPosition: Position;
 }
 
 /**
@@ -577,7 +579,7 @@ export interface HtmlElement extends HtmlNodeBase<NodeTypes.HtmlElement> {
  * The node used to represent close tags without its matching opening tag.
  *
  * Typically found inside if statements.
- *
+
  * ```
  * {% if cond %}
  *   </wrapper>
@@ -890,6 +892,7 @@ class ASTBuilder {
     if (node.type === NodeTypes.LiquidBranch) {
       const previousBranch = this.findCloseableParentBranch(node);
       if (previousBranch) {
+        previousBranch.blockEndPosition = { start: node.position.start, end: node.position.start };
         // close dangling open HTML nodes
         while (
           this.parent &&
@@ -911,6 +914,7 @@ class ASTBuilder {
 
   close(node: ConcreteCloseNode, nodeType: NodeTypes.LiquidTag | NodeTypes.HtmlElement) {
     if (isLiquidBranch(this.parent)) {
+      this.parent.blockEndPosition = { start: node.locStart, end: node.locStart };
       this.closeParentWith(node);
     }
 
@@ -1328,6 +1332,7 @@ function liquidBranchBaseAttributes(
     whitespaceStart: node.whitespaceStart ?? '',
     whitespaceEnd: node.whitespaceEnd ?? '',
     blockStartPosition: position(node),
+    blockEndPosition: { start: -1, end: -1 },
     source: node.source,
   };
 }
@@ -1514,6 +1519,7 @@ function toNamedLiquidBranchBaseCase(node: ConcreteLiquidTagBaseCase): LiquidBra
     position: { start: node.locStart, end: node.locEnd },
     children: [],
     blockStartPosition: { start: node.locStart, end: node.locEnd },
+    blockEndPosition: { start: -1, end: -1 },
     whitespaceStart: node.whitespaceStart ?? '',
     whitespaceEnd: node.whitespaceEnd ?? '',
     source: node.source,
@@ -1525,14 +1531,9 @@ function toUnnamedLiquidBranch(parentNode: LiquidHtmlNode): LiquidBranchUnnamed 
     type: NodeTypes.LiquidBranch,
     name: null,
     markup: '',
-    position: {
-      start: parentNode.position.end,
-      end: parentNode.position.end, // tmp value
-    },
-    blockStartPosition: {
-      start: parentNode.position.end,
-      end: parentNode.position.end,
-    },
+    position: { start: parentNode.position.end, end: parentNode.position.end },
+    blockStartPosition: { start: parentNode.position.end, end: parentNode.position.end },
+    blockEndPosition: { start: -1, end: -1 },
     children: [],
     whitespaceStart: '',
     whitespaceEnd: '',

@@ -681,6 +681,12 @@ describe('Unit: Stage 2 (AST)', () => {
         expectPath(ast, 'children.0.children.0.blockStartPosition.end').to.equal(
           source.indexOf(branchA),
         );
+        expectPath(ast, 'children.0.children.0.blockEndPosition.start').to.equal(
+          source.indexOf('{% elsif b %}'),
+        );
+        expectPath(ast, 'children.0.children.0.blockEndPosition.end').to.equal(
+          source.indexOf('{% elsif b %}'),
+        );
 
         expectPath(ast, 'children.0.children.1.type').to.equal('LiquidBranch');
         expectPath(ast, 'children.0.children.1.position.start').to.equal(
@@ -695,6 +701,12 @@ describe('Unit: Stage 2 (AST)', () => {
         expectPath(ast, 'children.0.children.1.blockStartPosition.end').to.equal(
           source.indexOf('{% elsif b %}') + '{% elsif b %}'.length,
         );
+        expectPath(ast, 'children.0.children.1.blockEndPosition.start').to.equal(
+          source.indexOf('{% else %}'),
+        );
+        expectPath(ast, 'children.0.children.1.blockEndPosition.end').to.equal(
+          source.indexOf('{% else %}'),
+        );
 
         expectPath(ast, 'children.0.children.2.type').to.equal('LiquidBranch');
         expectPath(ast, 'children.0.children.2.position.start').to.equal(
@@ -708,6 +720,12 @@ describe('Unit: Stage 2 (AST)', () => {
         );
         expectPath(ast, 'children.0.children.2.blockStartPosition.end').to.equal(
           source.indexOf('{% else %}') + '{% else %}'.length,
+        );
+        expectPath(ast, 'children.0.children.2.blockEndPosition.start').to.equal(
+          source.indexOf('{% endif %}', source.indexOf(branchC) + branchC.length),
+        );
+        expectPath(ast, 'children.0.children.2.blockEndPosition.end').to.equal(
+          source.indexOf('{% endif %}', source.indexOf(branchC) + branchC.length),
         );
       }
     });
