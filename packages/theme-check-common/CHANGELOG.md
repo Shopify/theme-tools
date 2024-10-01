@@ -1,5 +1,12 @@
 # @shopify/theme-check-common
 
+## 2.9.2
+
+### Patch Changes
+
+- Updated dependencies [c664d52]
+  - @shopify/liquid-html-parser@2.0.5
+
 ## 2.9.1
 
 ### Patch Changes

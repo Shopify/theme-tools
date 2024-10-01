@@ -1,5 +1,14 @@
 # @shopify/theme-language-server-common
 
+## 1.13.1
+
+### Patch Changes
+
+- c664d52: Fix HTML element close tag auto-insertion inside Liquid branches
+- Updated dependencies [c664d52]
+  - @shopify/liquid-html-parser@2.0.5
+  - @shopify/theme-check-common@2.9.2
+
 ## 1.13.0
 
 ### Minor Changes
