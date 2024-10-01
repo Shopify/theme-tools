@@ -18,16 +18,17 @@ describe('Module: LiquidTagHoverProvider', async () => {
   });
 
   it('should return the hover description of the correct tag', async () => {
+    // cursor always points at character before █
     await expect(provider).to.hover(`{%█ if cond %}{% endif %}`, expect.stringContaining('if'));
     await expect(provider).to.hover(`{% i█f cond %}{% endif %}`, expect.stringContaining('if'));
     await expect(provider).to.hover(`{% if█ cond %}{% endif %}`, expect.stringContaining('if'));
+    await expect(provider).to.hover(`{% if █cond %}{% endif %}`, expect.stringContaining('if'));
     await expect(provider).to.hover(`{% if cond █%}{% endif %}`, expect.stringContaining('if'));
     await expect(provider).to.hover(`{% if cond %}{% █ endif %}`, expect.stringContaining('if'));
     await expect(provider).to.hover(`{% echo█ 'hi' %}`, expect.stringContaining('echo'));
   });
 
   it('should not return the tag hover description when hovering over anything else in the tag', async () => {
-    await expect(provider).to.not.hover(`{% if █cond %}{% endif %}`, expect.stringContaining('if'));
     await expect(provider).to.not.hover(`{% if c█ond %}{% endif %}`, expect.stringContaining('if'));
     await expect(provider).to.not.hover(
       `{% if cond %} █ {%  endif %}`,

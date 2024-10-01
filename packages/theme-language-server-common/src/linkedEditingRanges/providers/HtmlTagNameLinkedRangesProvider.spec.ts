@@ -29,7 +29,7 @@ describe('Module: HtmlTagNameLinkedRangesProvider', () => {
     it('should return linked editing ranges for HTML tag names', async () => {
       params = {
         textDocument: { uri },
-        position: document.positionAt(1), // position within the opening div#main tag name
+        position: document.positionAt(2), // position within the opening div#main tag name
       };
 
       const result = await provider.linkedEditingRanges(params);

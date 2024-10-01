@@ -2,8 +2,8 @@ import {
   AST,
   LiquidHtmlNode,
   NodeOfType,
-  NodeTypes,
   SourceCodeType,
+  NodeTypes,
 } from '@shopify/theme-check-common';
 
 export type VisitorMethod<S extends SourceCodeType, T, R> = (
@@ -108,7 +108,7 @@ export function findCurrentNode(
 }
 
 function isCovered(node: LiquidHtmlNode, offset: number): boolean {
-  return node.position.start <= offset && offset <= node.position.end;
+  return node.position.start < offset && offset <= node.position.end;
 }
 
 function size(node: LiquidHtmlNode): number {
