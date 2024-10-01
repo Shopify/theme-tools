@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.0.5
+
+### Patch Changes
+
+- c664d52: LiquidBranch nodes should always report a blockEndPosition of 0 length
+
 ## 2.0.4
 
 ### Patch Changes

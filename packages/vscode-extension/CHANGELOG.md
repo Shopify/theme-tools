@@ -1,5 +1,18 @@
 ## theme-check-vscode
 
+## 2.5.1
+
+### Patch Changes
+
+- Fix missing close tag auto-insertion inside Liquid else branches
+  - @shopify/liquid-html-parser
+  - @shopify/theme-language-server-node
+- Updated dependencies
+- Updated dependencies [c664d52]
+  - @shopify/prettier-plugin-liquid@1.5.2
+  - @shopify/liquid-html-parser@2.0.5
+  - @shopify/theme-language-server-node@1.13.1
+
 ## 2.5.0
 
 ### Minor Changes
@@ -20,9 +33,7 @@
   <div>|</div>
 
   {% # you get this, with cursor at | %}
-  <div>
-    |
-  </div>
+  <div>|</div>
   ```
 
 - b5a2fbc: Add HTML element name rename support
@@ -31,7 +42,8 @@
 
   ```liquid
   {% # before rename %}
-  <div><!-- press F2 on this `div` and have both the open and close parts be renamed at the same time -->
+  <div>
+    {% # press F2 on this `div` and have both the open and close parts be renamed at the same time %}
     <div></div>
     <div></div>
     <div></div>
@@ -49,10 +61,10 @@
 
   When you hover over a HTML tag open, the close tag is highlighted and vice-versa.
 
-  ```html
-  <div><!-- this div gets highlighted -->
+  ```liquid
+  <div>{% # this div gets highlighted %}
     <div></div>
-  </div><!-- with this one-->
+  </div>{% # with this one %}
   ```
 
   When you hover over a Liquid block open, the close block is highlighted (and branches if any).
@@ -60,7 +72,6 @@
   ```liquid
   {% # this if, elsif, else, endif all get highlighted together %}
   {% if cond %}
-
   {% elsif cond %}
 
   {% else %}
