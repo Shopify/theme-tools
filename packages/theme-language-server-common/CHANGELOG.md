@@ -1,5 +1,91 @@
 # @shopify/theme-language-server-common
 
+## 1.13.0
+
+### Minor Changes
+
+- b5a2fbc: Add HTML element name rename support
+
+  Press `F2` on an HTML element name to rename its open/close pairs in a safe manner. No setting required.
+
+  ```liquid
+  {% # before rename %}
+  <div>
+    <!--
+      press F2 on this `div` and have both the open and close parts be renamed at the same time
+    -->
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+
+  {% # after rename %}
+  <section>
+    <div></div>
+    <div></div>
+    <div></div>
+  </section>
+  ```
+
+- 474b859: Add linked editing support for HTML element names
+
+  Just like for [HTML in VS Code](https://code.visualstudio.com/updates/v1_52#_html), this feature is enabled by the `editor.linkedEditing` VS Code setting:
+
+  ```json
+  "editor.linkedEditing": true
+  ```
+
+  When enabled, this will make it so you can rename open/close pairs as you are typing.
+
+- d1f9fef: Add support for HTML Element close tag auto-insertion
+
+  ```liquid
+  {% # type this %}
+  <div>
+  {% # get this, with cursor at | %}
+  <div>|</div>
+  ```
+
+- a946a4e: Add tupled highlighting of HTML element names and Liquid blocks
+
+  When you hover over a HTML tag open, the close tag is highlighted and vice-versa.
+
+  ```html
+  <div>
+    <!-- this div gets highlighted -->
+    <div></div>
+  </div>
+  <!-- with this one-->
+  ```
+
+  When you hover over a Liquid block open, the close block is highlighted (and branches if any).
+
+  ```liquid
+  {% # this if, elsif, else, endif all get highlighted together %}
+  {% if cond %}
+  {% elsif cond %}
+
+  {% else %}
+
+  {% endif %}
+  ```
+
+### Patch Changes
+
+- 28a5d31: Fix completion of variables inside `{% liquid %}` tag expressions
+- 264321f: Remove `endliquid` as suggested auto-completion
+- f0f9ec2: Add syntax to hover definitions
+
+  Now when hovering over a liquid tag or filter we'll show syntax information if
+  we have it available.
+
+- f96425e: Fixed autocomplete for snippets where the file contained multiple periods
+- Updated dependencies [1c73710]
+- Updated dependencies [d1f9fef]
+- Updated dependencies [70e2241]
+  - @shopify/liquid-html-parser@2.0.4
+  - @shopify/theme-check-common@2.9.1
+
 ## 1.12.1
 
 ### Patch Changes

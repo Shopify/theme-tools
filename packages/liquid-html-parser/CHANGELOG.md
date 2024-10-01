@@ -1,5 +1,13 @@
 # @shopify/liquid-html-parser
 
+## 2.0.4
+
+### Patch Changes
+
+- 1c73710: Fix bug where whitespace stripping character was assigned to variable
+- d1f9fef: (Internal) Add `unclosed` node information to LiquidHTMLASTError
+- 70e2241: Fix broken parsing of liquid attribute names
+
 ## 2.0.3
 
 ### Patch Changes
