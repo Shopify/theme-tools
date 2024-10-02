@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { voidElements, openingLiquidTags } from './constants';
+import { voidElements, blockStartTags } from './constants';
 import { increaseIndentPattern, decreaseIndentPattern } from './indentation-rules';
 
 describe('Module: indentationRules', () => {
@@ -32,7 +32,7 @@ describe('Module: indentationRules', () => {
   });
 
   it('should match opening liquid tags', () => {
-    openingLiquidTags.forEach((tag: any) => {
+    blockStartTags.forEach((tag: any) => {
       expect(`{% ${tag} %}`).to.match(increase);
       expect(`{% end${tag} %}`).to.match(decrease);
       expect(`{% ${tag} in collection %}`).to.match(increase);
