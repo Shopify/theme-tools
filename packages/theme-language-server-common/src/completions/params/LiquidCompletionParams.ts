@@ -5,6 +5,7 @@ import {
   Position,
   toLiquidHtmlAST,
 } from '@shopify/liquid-html-parser';
+import { SourceCodeType } from '@shopify/theme-check-common';
 import { CompletionParams } from 'vscode-languageserver';
 import { AugmentedSourceCode } from '../../documents';
 import { fix } from './fix';
@@ -28,10 +29,13 @@ export interface LiquidCompletionParams extends CompletionParams {
    * If undefined, then the file is unparseable.
    */
   readonly completionContext: CompletionContext | undefined;
+
+  /** The document from the document manager */
+  readonly document: AugmentedSourceCode<SourceCodeType.LiquidHtml>;
 }
 
 export function createLiquidCompletionParams(
-  sourceCode: AugmentedSourceCode,
+  sourceCode: AugmentedSourceCode<SourceCodeType.LiquidHtml>,
   params: CompletionParams,
 ): LiquidCompletionParams {
   const { textDocument } = sourceCode;
@@ -41,6 +45,7 @@ export function createLiquidCompletionParams(
   return {
     ...params,
     completionContext,
+    document: sourceCode,
   };
 }
 
