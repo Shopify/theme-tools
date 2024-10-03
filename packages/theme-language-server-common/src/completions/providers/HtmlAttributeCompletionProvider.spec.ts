@@ -36,4 +36,83 @@ describe('Module: HtmlAttributeCompletionProvider', async () => {
     const expected = [...aTagAttributeNames, ...globalAttributeNames].sort();
     await expect(provider).to.complete('<a {% if cond %}█', expected);
   });
+
+  it('should replace the existing attribute partial with the full attribute tag', async () => {
+    await expect(provider).to.complete('<text titl█', [
+      expect.objectContaining({
+        label: 'title',
+        textEdit: {
+          newText: 'title="$1"$0',
+          range: {
+            start: { line: 0, character: 6 },
+            end: { line: 0, character: 10 },
+          },
+        },
+      }),
+    ]);
+  });
+
+  it('should replace the existing attribute partial with the full attribute tag when cursor is in the middle of attribute partial', async () => {
+    await expect(provider).to.complete('<text ti█tl', [
+      expect.objectContaining({
+        label: 'title',
+        textEdit: {
+          newText: 'title="$1"$0',
+          range: {
+            start: { line: 0, character: 6 },
+            end: { line: 0, character: 10 },
+          },
+        },
+      }),
+    ]);
+  });
+
+  it('should replace the existing attribute partial with the full attribute tag without value', async () => {
+    await expect(provider).to.complete('<button disab█', [
+      expect.objectContaining({
+        label: 'disabled',
+        textEdit: {
+          newText: 'disabled',
+          range: {
+            start: { line: 0, character: 8 },
+            end: { line: 0, character: 13 },
+          },
+        },
+      }),
+    ]);
+  });
+
+  it('should not replace any character if autocomplate is triggered with no attribute partial', async () => {
+    await expect(provider).to.complete(
+      '<a █',
+      [...aTagAttributeNames, ...globalAttributeNames].sort().map((attr) => {
+        return expect.objectContaining({
+          textEdit: {
+            newText: expect.stringContaining(attr),
+            range: {
+              start: { line: 0, character: 3 },
+              end: { line: 0, character: 3 },
+            },
+          },
+        });
+      }),
+    );
+  });
+
+  it('should not replace attribute tags containing liquid code', async () => {
+    await expect(provider).to.complete(
+      '<a d█ata--{{ echo "coolstuff" }}',
+      ['dir', 'download', 'draggable', 'dropzone'].map((attr) => {
+        return expect.objectContaining({
+          textEdit: {
+            newText: expect.stringContaining(attr),
+            range: {
+              start: { line: 0, character: 3 },
+              end: { line: 0, character: 9 },
+            },
+          },
+        });
+      }),
+    );
+  });
 });

@@ -49,7 +49,7 @@ export class CompletionsProvider {
 
     this.providers = [
       new HtmlTagCompletionProvider(),
-      new HtmlAttributeCompletionProvider(),
+      new HtmlAttributeCompletionProvider(documentManager),
       new HtmlAttributeValueCompletionProvider(),
       new LiquidTagsCompletionProvider(themeDocset),
       new ObjectCompletionProvider(typeSystem),
