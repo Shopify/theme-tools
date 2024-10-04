@@ -2,7 +2,7 @@
 '@shopify/theme-language-server-common': minor
 ---
 
-Support HTML attribute auto-completion
+Improve HTML attribute auto-completion
 
-- Add `=""` to attributes that have values
-- Override whole attribute even if cursor is in the middle of it
+- Add `=""` to attributes that should have a value when relevant
+- Override entire attribute even if the cursor was in the middle of it

@@ -76,9 +76,9 @@ export class HtmlAttributeCompletionProvider implements Provider {
       };
     }
 
-    let attributeEndOffset =
-      document.source.slice(node.position.end).match(/[\s=]|{%|{{|>/)?.index ??
-      document.source.length;
+    const sourcePartialPastCursor = document.source.slice(node.position.end);
+    const attributeEndOffset =
+      sourcePartialPastCursor.match(/[\s=]|\{%|\{\{|>/)?.index ?? sourcePartialPastCursor.length;
 
     return {
       start: document.textDocument.positionAt(node.position.start),
