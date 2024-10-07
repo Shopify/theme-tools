@@ -1383,6 +1383,16 @@ describe('Unit: Stage 1 (CST)', () => {
       expectPath(cst, '0.markup.filters.0.args.1.value.type').to.eql('VariableLookup');
       expectPath(cst, '0.markup.filters.0.args.1.value.name').to.eql('█');
     });
+
+    it('should parse incomplete parameters for filters', () => {
+      const toCST = (source: string) => toLiquidHtmlCST(source, { mode: 'completion' });
+
+      cst = toCST(`{{ a[1].foo | image_url: 200, width: 100, h█ }}`);
+
+      expectPath(cst, '0.markup.filters.0.args.0.type').to.equal('Number');
+      expectPath(cst, '0.markup.filters.0.args.1.type').to.equal('NamedArgument');
+      expectPath(cst, '0.markup.filters.0.args.2.type').to.equal('VariableLookup');
+    });
   });
 
   function makeExpectPath(message: string) {
