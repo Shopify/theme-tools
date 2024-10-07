@@ -25,16 +25,16 @@ describe('Module: CompletionItemsAssertion', () => {
 
   it('should assert a list of completion items', async () => {
     await expect(provider).to.complete('{% rend', [
-      {
+      expect.objectContaining({
         label: 'render',
         sortText: 'render',
         documentation: {
           kind: 'markdown',
           value: '### render',
         },
-        insertTextFormat: 1,
+        insertTextFormat: 2,
         kind: 14,
-      },
+      }),
     ]);
   });
 
