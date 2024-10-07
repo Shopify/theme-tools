@@ -19,12 +19,12 @@ describe('Module: CompletionItemsAssertion', () => {
     });
   });
 
-  it('should assert a list of labels', () => {
-    expect(provider).to.complete('{% rend', ['render']);
+  it('should assert a list of labels', async () => {
+    await expect(provider).to.complete('{% rend', ['render']);
   });
 
-  it('should assert a list of completion items', () => {
-    expect(provider).to.complete('{% rend', [
+  it('should assert a list of completion items', async () => {
+    await expect(provider).to.complete('{% rend', [
       {
         label: 'render',
         sortText: 'render',
@@ -38,7 +38,7 @@ describe('Module: CompletionItemsAssertion', () => {
     ]);
   });
 
-  it('should assert an empty list', () => {
-    expect(provider).to.complete('{% something', []);
+  it('should assert an empty list', async () => {
+    await expect(provider).to.complete('{% something', []);
   });
 });
