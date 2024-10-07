@@ -32,6 +32,7 @@ describe('Module: CompletionItemsAssertion', () => {
           kind: 'markdown',
           value: '### render',
         },
+        insertTextFormat: 1,
         kind: 14,
       },
     ]);

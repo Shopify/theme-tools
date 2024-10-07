@@ -29,7 +29,7 @@ export const complete: RawMatcherFn<MatcherState> = async function (
   this: MatcherState,
   provider: CompletionsProvider,
   context: string | CompleteContext,
-  expected: any[],
+  expected: any[] | ReturnType<typeof expect.arrayContaining>,
 ): AsyncExpectationResult {
   const { isNot, equals, utils } = this;
   const completeContext = asCompleteContextObject(context);
@@ -38,8 +38,11 @@ export const complete: RawMatcherFn<MatcherState> = async function (
   provider.documentManager.open(completionParams.textDocument.uri, source, 1);
   const result = await provider.completions(completionParams);
 
-  return {
-    pass:
+  let pass = false;
+  if ('asymmetricMatch' in expected) {
+    pass = equals(result, expected);
+  } else if (Array.isArray(expected)) {
+    pass =
       result.length === expected.length &&
       expected.every((expectation, i) =>
         equals(
@@ -50,7 +53,13 @@ export const complete: RawMatcherFn<MatcherState> = async function (
               })
             : expectation,
         ),
-      ),
+      );
+  } else {
+    throw new Error('Expecting array or expect.arrayContaining');
+  }
+
+  return {
+    pass,
     message: () =>
       `expected complete to${isNot ? ' not' : ''} match value ${utils.printExpected(
         expected,

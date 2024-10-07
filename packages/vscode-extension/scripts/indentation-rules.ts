@@ -1,6 +1,5 @@
-import { voidElements, openingLiquidTags } from './constants';
-
-const closingLiquidTags = openingLiquidTags.map((name) => `end${name}`);
+import { BLOCKS } from '@shopify/liquid-html-parser';
+import { decreaseIndentTags, increaseIndentTags, voidElements } from './constants';
 
 export interface IndentationRulesJSON {
   increaseIndentPattern: string;
@@ -16,7 +15,7 @@ export function increaseIndentPattern() {
     String.raw`<(?!\/|${voidElements.join('|')}|!--)[^>\n]+>`,
 
     // Opening liquid tags that have a corresponding end$name tag.
-    String.raw`{%-?\s+(?:${openingLiquidTags.join('|')})[^}%]*?-?%}`, // opening liquid tags
+    String.raw`{%-?\s+(?:${increaseIndentTags.join('|')})[^}%]*?-?%}`, // opening liquid tags
 
     // Multiline HTML comment open
     String.raw`<!--[^>\n]*`,
@@ -50,7 +49,7 @@ export function decreaseIndentPattern() {
     String.raw`<\/[^>]+>`,
 
     // Closing liquid tags
-    String.raw`{%-?\s+(?:${closingLiquidTags.join('|')}).*?-?%}`, // opening liquid tags
+    String.raw`{%-?\s+(?:${decreaseIndentTags.join('|')}).*?-?%}`, // opening liquid tags
 
     // Multiline tag closed
     String.raw`%}`,

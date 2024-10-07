@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { LiquidHtmlNode } from '@shopify/theme-check-common';
+import { LiquidHtmlNode, SourceCodeType } from '@shopify/theme-check-common';
 import { CompletionParams, Position } from 'vscode-languageserver';
 import { createLiquidCompletionParams } from './LiquidCompletionParams';
-import { DocumentManager } from '../../documents';
+import { AugmentedSourceCode, DocumentManager } from '../../documents';
 
 describe('Module: LiquidCompletionParams', async () => {
   describe('createLiquidCompletionParams', async () => {
@@ -266,7 +266,10 @@ function createLiquidParamsFromContext(
   const uri = 'file:///path/to/file.liquid';
   documentManager.open(uri, context.replace(regex, ''), 1);
   const params = mockCompletionParams({ position: cursorPosition });
-  return createLiquidCompletionParams(documentManager.get(uri)!, params);
+  return createLiquidCompletionParams(
+    documentManager.get(uri)! as AugmentedSourceCode<SourceCodeType.LiquidHtml>,
+    params,
+  );
 }
 
 function calculatePosition(context: string): Position {
