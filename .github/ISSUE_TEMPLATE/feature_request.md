@@ -18,7 +18,7 @@ A clear and concise description of any alternative solutions or features you've 
 
 **Checklist** 
 <!-- Include this check when updating anything within packages/prettier-plugin-liquid -->
-- [ ] I have checked and made sure that the proposal adheres to this plugin's [principles](../../docs/prettier-plugin-liquid/principles/index.md)
+- [ ] I have checked and made sure that the proposal adheres to this plugin's [principles](/docs/prettier-plugin-liquid/principles/index.md)
 
 **Additional context**
 Add any other context or screenshots about the feature request here.
