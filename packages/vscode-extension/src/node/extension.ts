@@ -6,9 +6,9 @@ import {
   ServerOptions,
   TransportKind,
 } from 'vscode-languageclient/node';
-import LiquidFormatter from './formatter';
+import LiquidFormatter from '../formatter';
 import { getLegacyModeServerOptions } from './legacyMode';
-import { getConfig } from './utils';
+import { getConfig } from '../utils';
 
 const LIQUID: DocumentFilter[] = [
   {
@@ -136,7 +136,7 @@ async function getServerOptions(context: ExtensionContext): Promise<ServerOption
     return getLegacyModeServerOptions();
   }
 
-  const serverModule = context.asAbsolutePath(path.join('dist', 'server.js'));
+  const serverModule = context.asAbsolutePath(path.join('dist', 'node', 'server.js'));
   return {
     run: {
       module: serverModule,

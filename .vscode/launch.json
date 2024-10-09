@@ -28,6 +28,28 @@
       "preLaunchTask": "vscode dev"
     },
     {
+      "name": "Run Web Extension",
+      "type": "extensionHost",
+      "debugWebWorkerHost": true,
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode-extension",
+        "--extensionDevelopmentKind=web"
+      ],
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/packages/vscode-extension/dist/**/*.js",
+        "${workspaceRoot}/packages/theme-language-server-common/dist/**/*.js",
+        "${workspaceRoot}/packages/theme-language-server-node/dist/**/*.js",
+        "${workspaceRoot}/packages/theme-check-common/dist/**/*.js",
+        "${workspaceRoot}/packages/theme-check-node/dist/**/*.js",
+        "${workspaceRoot}/packages/theme-check-docs-updater/dist/**/*.js",
+        "${workspaceRoot}/packages/prettier-plugin-liquid/dist/**/*.js",
+        "${workspaceRoot}/packages/liquid-html-parser/dist/**/*.js",
+      ],
+      "preLaunchTask": "vscode dev"
+    },
+    {
       "type": "chrome",
       "request": "launch",
       "name": "Debug playground",

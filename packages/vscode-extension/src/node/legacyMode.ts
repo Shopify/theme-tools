@@ -2,7 +2,7 @@ import * as child_process from 'child_process';
 import { promisify } from 'util';
 import { window } from 'vscode';
 import { ServerOptions } from 'vscode-languageclient/node';
-import { getConfig } from './utils';
+import { getConfig } from '../utils';
 
 const exec = promisify(child_process.exec);
 

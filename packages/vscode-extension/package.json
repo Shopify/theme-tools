@@ -40,6 +40,7 @@
     "dev:build": "webpack --mode development",
     "dev:syntax": "yarn --cwd ./syntaxes dev",
     "dev:watch": "webpack --mode development --watch",
+    "dev:web": "yarn build && vscode-test-web --permission=clipboard-read --permission=clipboard-write --browserType=chromium --extensionDevelopmentPath=.",
     "format": "prettier --write 'src/**/*.{ts,js}'",
     "format:check": "prettier --check 'src/**/*.{js,ts}'",
     "lint": "eslint src --ext ts",
@@ -55,7 +56,7 @@
     "type-check": "tsc --noEmit"
   },
   "engines": {
-    "vscode": "^1.74.0"
+    "vscode": "^1.85.0"
   },
   "dependencies": {
     "@shopify/liquid-html-parser": "^2.0.5",
@@ -69,10 +70,11 @@
     "@types/glob": "^8.0.0",
     "@types/node": "16.x",
     "@types/prettier": "^2.4.2",
-    "@types/vscode": "^1.74.0",
+    "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^5.45.0",
     "@typescript-eslint/parser": "^5.45.0",
     "@vscode/test-electron": "^2.2.0",
+    "@vscode/test-web": "^0.0.62",
     "@vscode/vsce": "^2.21.0",
     "chai": "^4.3.4",
     "eslint": "^8.28.0",
@@ -83,7 +85,8 @@
   "activationEvents": [
     "workspaceContains:**/.theme-check.yml"
   ],
-  "main": "./dist/extension.js",
+  "main": "./dist/node/extension.js",
+  "browser": "./dist/browser/extension.js",
   "contributes": {
     "commands": [
       {
@@ -98,6 +101,18 @@
     "configuration": {
       "title": "Shopify Liquid | Syntax Highlighting & Linter by Shopify",
       "properties": {
+        "shopifyLiquid.trace.server": {
+          "type": [
+            "string"
+          ],
+          "description": "Traces the communication between the client and the server.",
+          "default": "off",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ]
+        },
         "themeCheck.checkOnOpen": {
           "type": [
             "boolean"
