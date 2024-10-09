@@ -41,15 +41,6 @@ This VS Code extensions comes with batteries included.
 - `"themeCheck.checkOnChange": boolean`, (default: `true`) makes it so theme check runs on file change.
 - `"themeCheck.checkOnSave": boolean`, (default: `true`) makes it so theme check runs on file save.
 
-### Deprecated configuration
-
-If you still want to use the Ruby `theme-check-language-server`, you may use the following deprecated settings:
-
-- `"shopifyLiquid.legacyMode": boolean`, (default: `false`) when true, will use the Ruby `theme-check-language-server`.
-- `"shopifyLiquid.languageServerPath": string`, (optional) a path to the `theme-check-language-server` executable. Has higher priority than `shopifyLiquid.shopifyCLIPath`.
-- `"shopifyLiquid.shopifyCLIPath": string`, (optional, Unix-only) a path to the `shopify` executable.
-- `"themeCheck.onlySingleFileChecks": boolean`, (default: `false`) makes it so theme check only runs single file checks for the files that are open.
-
 ## License
 
 MIT.

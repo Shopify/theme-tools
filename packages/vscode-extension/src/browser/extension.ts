@@ -33,8 +33,6 @@ export async function activate(context: ExtensionContext) {
   // );
   // context.subscriptions.push(formattingProvider);
 
-  // workspace.onDidChangeConfiguration(onConfigChange(context));
-
   // // If you change the file, the prettier syntax error is no longer valid
   // workspace.onDidChangeTextDocument(({ document }) => {
   //   const bufferVersionOfDiagnostic = diagnosticTextDocumentVersion.get(document.uri);
@@ -101,13 +99,3 @@ async function restartServer(context: ExtensionContext) {
   }
   await startServer(context);
 }
-
-const onConfigChange =
-  (context: ExtensionContext) => (event: { affectsConfiguration: (arg0: string) => any }) => {
-    const didChangeThemeCheck = event.affectsConfiguration('shopifyLiquid.languageServerPath');
-    const didChangeShopifyCLI = event.affectsConfiguration('shopifyLiquid.shopifyCLIPath');
-    const didChangeLegacyMode = event.affectsConfiguration('shopifyLiquid.legacyMode');
-    if (didChangeThemeCheck || didChangeShopifyCLI || didChangeLegacyMode) {
-      restartServer(context);
-    }
-  };
