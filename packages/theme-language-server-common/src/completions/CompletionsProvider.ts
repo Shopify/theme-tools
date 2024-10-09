@@ -16,6 +16,7 @@ import {
   Provider,
   RenderSnippetCompletionProvider,
   TranslationCompletionProvider,
+  FilterNamedParameterCompletionProvider,
 } from './providers';
 import { GetSnippetNamesForURI } from './providers/RenderSnippetCompletionProvider';
 
@@ -57,6 +58,7 @@ export class CompletionsProvider {
       new FilterCompletionProvider(typeSystem),
       new TranslationCompletionProvider(documentManager, getTranslationsForURI),
       new RenderSnippetCompletionProvider(getSnippetNamesForURI),
+      new FilterNamedParameterCompletionProvider(themeDocset),
     ];
   }
 

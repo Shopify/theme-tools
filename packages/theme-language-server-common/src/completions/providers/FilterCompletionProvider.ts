@@ -1,6 +1,6 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
-import { FilterEntry } from '@shopify/theme-check-common';
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { FilterEntry, Parameter } from '@shopify/theme-check-common';
+import { CompletionItem, CompletionItemKind, InsertTextFormat } from 'vscode-languageserver';
 import { PseudoType, TypeSystem, isArrayType } from '../../TypeSystem';
 import { memoize } from '../../utils';
 import { CURSOR, LiquidCompletionParams } from '../params';
@@ -85,11 +85,46 @@ function completionItems(options: MaybeDeprioritisedFilterEntry[], partial: stri
 }
 
 function toPropertyCompletionItem(entry: MaybeDeprioritisedFilterEntry) {
+  const requiredPositionalParams = entry.parameters
+    ?.filter((p) => p.required && p.positional)
+    .map(formatParameter);
+  const requiredNamedParams = entry.parameters
+    ?.filter((p) => p.required && !p.positional)
+    .map(formatParameter);
+
+  let insertText = entry.name;
+  let snippetStyleInsert = false;
+  if (requiredPositionalParams?.length) {
+    insertText += `: ${requiredPositionalParams.join(', ')}`;
+    snippetStyleInsert = true;
+  } else if (requiredNamedParams?.length) {
+    insertText += `: ${requiredNamedParams.join(', ')}`;
+    snippetStyleInsert = true;
+  }
+
   return createCompletionItem(
     entry,
     {
       kind: CompletionItemKind.Function,
+      insertText,
+      insertTextFormat: snippetStyleInsert ? InsertTextFormat.Snippet : InsertTextFormat.PlainText,
     },
     'filter',
   );
+}
+
+function formatParameter(parameter: Parameter, index: number) {
+  let cursorLocation = '';
+
+  if (parameter.positional) {
+    cursorLocation = `$\{${index + 1}:${parameter.name}\}`;
+  } else {
+    cursorLocation = `$${index + 1}`;
+  }
+
+  if (parameter.types[0] === 'string') {
+    cursorLocation = `'${cursorLocation}'`;
+  }
+
+  return parameter.positional ? cursorLocation : `${parameter.name}: ${cursorLocation}`;
 }
