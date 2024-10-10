@@ -17,13 +17,15 @@ import glob = require('glob');
 
 import { autofix } from './autofix';
 import { findConfigPath, loadConfig as resolveConfig } from './config';
-import { fileExists, fileSize } from './file-utils';
+import { fileSize } from './file-utils';
+import { NodeFileSystem } from './NodeFileSystem';
 
 const defaultLocale = 'en';
 const asyncGlob = promisify(glob);
 
 export * from '@shopify/theme-check-common';
 export * from './config/types';
+export { NodeFileSystem };
 export { PathHandler, findRoot, reusableFindRoot } from './find-root';
 
 export const loadConfig: typeof resolveConfig = async (configPath, root) => {
@@ -73,7 +75,7 @@ export async function themeCheckRun(
   const themeLiquidDocsManager = new ThemeLiquidDocsManager(log);
 
   const offenses = await coreCheck(theme, config, {
-    fileExists,
+    fs: NodeFileSystem,
     fileSize,
     themeDocset: themeLiquidDocsManager,
     jsonValidationSet: themeLiquidDocsManager,
@@ -127,7 +129,7 @@ export async function getTheme(config: Config): Promise<Theme> {
 
   // the path is normalised and '\' are replaced with '/' and then passed to the glob function
   const normalizedGlob = path
-    .normalize(path.join(config.root, '**/*.{liquid,json}'))
+    .normalize(path.join(config.rootUri.replace(/^file:/, ''), '**/*.{liquid,json}'))
     .replace(/\\/g, '/');
   const paths = await asyncGlob(normalizedGlob).then((result) =>
     // Global ignored paths should not be part of the theme

@@ -115,7 +115,7 @@ export function mockConnection(): MockConnection {
       triggerNotification(DidOpenTextDocumentNotification.type, {
         textDocument: {
           languageId: 'liquid',
-          uri: `browser:///${relativePath}`,
+          uri: `browser:/${relativePath}`,
           version: 0,
           text,
         },
@@ -125,7 +125,7 @@ export function mockConnection(): MockConnection {
     changeDocument(relativePath, text, version) {
       triggerNotification(DidChangeTextDocumentNotification.type, {
         textDocument: {
-          uri: `browser:///${relativePath}`,
+          uri: `browser:/${relativePath}`,
           version,
         },
         contentChanges: [
@@ -139,7 +139,7 @@ export function mockConnection(): MockConnection {
     closeDocument(relativePath) {
       triggerNotification(DidCloseTextDocumentNotification.type, {
         textDocument: {
-          uri: `browser:///${relativePath}`,
+          uri: `browser:/${relativePath}`,
         },
       });
     },
@@ -147,7 +147,7 @@ export function mockConnection(): MockConnection {
     saveDocument(relativePath) {
       triggerNotification(DidSaveTextDocumentNotification.type, {
         textDocument: {
-          uri: `browser:///${relativePath}`,
+          uri: `browser:/${relativePath}`,
         },
       });
     },
