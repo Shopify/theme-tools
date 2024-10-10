@@ -20,7 +20,7 @@ const config = {
     path: path.resolve(__dirname, 'dist', 'node'),
     filename: '[name].js',
     libraryTarget: 'commonjs2',
-    devtoolModuleFilenameTemplate: '../[resource-path]',
+    devtoolModuleFilenameTemplate: '../../[resource-path]',
   },
   context: path.resolve(__dirname),
   externals: {
@@ -105,7 +105,7 @@ const browserConfig = {
     path: path.resolve(__dirname, 'dist', 'browser'),
     filename: '[name].js',
     libraryTarget: 'commonjs',
-    devtoolModuleFilenameTemplate: '../[resource-path]',
+    devtoolModuleFilenameTemplate: '../../[resource-path]',
   },
   context: path.resolve(__dirname),
   externals: {
@@ -175,7 +175,7 @@ const browserServerConfig = async () => {
       filename: '[name].js',
       libraryTarget: 'var',
       library: 'serverExportVar',
-      devtoolModuleFilenameTemplate: '../[resource-path]',
+      devtoolModuleFilenameTemplate: '../../[resource-path]',
     },
     context: path.resolve(__dirname),
     externals: {

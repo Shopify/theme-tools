@@ -6,7 +6,7 @@ import {
   ServerOptions,
   TransportKind,
 } from 'vscode-languageclient/node';
-import LiquidFormatter from '../formatter';
+import LiquidFormatter from './formatter';
 
 const LIQUID: DocumentFilter[] = [
   {
