@@ -8,7 +8,6 @@ import {
   TextEdit,
   WorkspaceEdit,
 } from 'vscode-languageserver-protocol';
-import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DocumentManager } from '../../documents';
 import { getHtmlElementNameRanges } from '../../utils/htmlTagNames';
 import { BaseRenameProvider } from '../BaseRenameProvider';

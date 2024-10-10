@@ -11,6 +11,7 @@ import { DocumentManager } from '../documents';
 import { findCurrentNode } from '../visitor';
 import { BaseRenameProvider } from './BaseRenameProvider';
 import { HtmlTagNameRenameProvider } from './providers/HtmlTagNameRenameProvider';
+import { LiquidVariableRenameProvider } from './providers/LiquidVariableRenameProvider';
 
 /**
  * RenameProvider is responsible for providing rename support for the theme language server.
@@ -21,7 +22,10 @@ export class RenameProvider {
   private providers: BaseRenameProvider[];
 
   constructor(private documentManager: DocumentManager) {
-    this.providers = [new HtmlTagNameRenameProvider(documentManager)];
+    this.providers = [
+      new HtmlTagNameRenameProvider(documentManager),
+      new LiquidVariableRenameProvider(documentManager),
+    ];
   }
 
   /** Prepare is for telling if you can rename this thing or not, and what text to rename */
