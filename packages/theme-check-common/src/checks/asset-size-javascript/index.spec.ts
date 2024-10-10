@@ -56,16 +56,17 @@ describe('Module: AssetSizeJavaScript', () => {
 
   it('should report a warning when the JavaScript http request exceeds the threshold', async () => {
     vi.mocked(hasRemoteAssetSizeExceededThreshold).mockReturnValue(Promise.resolve(true));
-    const CustomAssetSizeJavaScript = {
-      ...AssetSizeJavaScript,
-      meta: {
-        ...AssetSizeJavaScript.meta,
-        schema: {
-          thresholdInBytes: SchemaProp.number(1),
+    const offenses = await check(
+      httpTest,
+      [AssetSizeJavaScript],
+      {},
+      {
+        AssetSizeJavaScript: {
+          enabled: true,
+          thresholdInBytes: 1,
         },
       },
-    };
-    const offenses = await check(httpTest, [CustomAssetSizeJavaScript]);
+    );
 
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
@@ -84,17 +85,17 @@ describe('Module: AssetSizeJavaScript', () => {
   });
 
   it('should report an offense if JavaScript is larger than threshold', async () => {
-    const CustomAssetSizeJavaScript = {
-      ...AssetSizeJavaScript,
-      meta: {
-        ...AssetSizeJavaScript.meta,
-        schema: {
-          thresholdInBytes: SchemaProp.number(2),
+    const offenses = await check(
+      theme,
+      [AssetSizeJavaScript],
+      {},
+      {
+        AssetSizeJavaScript: {
+          enabled: true,
+          thresholdInBytes: 2,
         },
       },
-    };
-
-    const offenses = await check(theme, [CustomAssetSizeJavaScript]);
+    );
 
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
@@ -137,17 +138,17 @@ describe('Module: AssetSizeJavaScript', () => {
       `,
     };
 
-    const CustomAssetSizeCSS = {
-      ...AssetSizeJavaScript,
-      meta: {
-        ...AssetSizeJavaScript.meta,
-        schema: {
-          thresholdInBytes: SchemaProp.number(2),
+    const offenses = await check(
+      extensionFiles,
+      [AssetSizeJavaScript],
+      {},
+      {
+        AssetSizeJavaScript: {
+          enabled: true,
+          thresholdInBytes: 2,
         },
       },
-    };
-
-    const offenses = await check(extensionFiles, [CustomAssetSizeCSS]);
+    );
 
     expect(offenses).toHaveLength(2);
     expect(offenses[0]).toMatchObject({

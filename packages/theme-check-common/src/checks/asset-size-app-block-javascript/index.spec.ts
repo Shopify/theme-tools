@@ -31,17 +31,17 @@ describe('Module: AssetSizeAppBlockJavaScript', () => {
   });
 
   it('should report an offense if JavaScript is larger than threshold', async () => {
-    const CustomAssetSizeAppBlockJavaScript = {
-      ...AssetSizeAppBlockJavaScript,
-      meta: {
-        ...AssetSizeAppBlockJavaScript.meta,
-        schema: {
-          thresholdInBytes: SchemaProp.number(1),
+    const offenses = await check(
+      extensionFiles,
+      [AssetSizeAppBlockJavaScript],
+      {},
+      {
+        AssetSizeAppBlockJavaScript: {
+          enabled: true,
+          thresholdInBytes: 1,
         },
       },
-    };
-
-    const offenses = await check(extensionFiles, [CustomAssetSizeAppBlockJavaScript]);
+    );
 
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
