@@ -11,6 +11,7 @@ import {
 import { Schema, Settings } from './types/schema-prop-factory';
 
 import { StringCorrector, JSONCorrector } from './fixes';
+import { FileSystem } from './FileSystem';
 
 import { ThemeDocset, JsonValidationSet } from './types/theme-liquid-docs';
 
@@ -108,7 +109,7 @@ export interface Config {
   context: Mode;
   settings: ChecksSettings;
   checks: CheckDefinition<SourceCodeType, Schema>[];
-  root: AbsolutePath;
+  rootUri: string; // e.g. file:///path-to-root
   ignore?: string[];
   onError?: (error: Error) => void;
 }
@@ -276,8 +277,8 @@ export interface Dependencies {
   getDefaultLocale(): Promise<string>;
   getDefaultSchemaLocale(): Promise<string>;
   getDefaultSchemaTranslations(): Promise<Translations>;
-  fileExists(absolutePath: string): Promise<boolean>;
   fileSize?(absolutePath: string): Promise<number>;
+  fs: FileSystem;
   themeDocset?: ThemeDocset;
   jsonValidationSet?: JsonValidationSet;
 }
@@ -293,6 +294,7 @@ type StaticContextProperties<T extends SourceCodeType> = T extends SourceCodeTyp
       relativePath(absolutePath: AbsolutePath): RelativePath;
       absolutePath(relativePath: RelativePath): AbsolutePath;
       file: SourceCode<T>;
+      fileExists: (absolutePath: AbsolutePath) => Promise<boolean>;
       validateJSON?: ValidateJSON<T>;
     }
   : never;

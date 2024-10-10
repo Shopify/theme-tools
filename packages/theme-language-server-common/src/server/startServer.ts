@@ -46,7 +46,7 @@ const defaultLogger = () => {};
 export function startServer(
   connection: Connection,
   {
-    fileExists,
+    fs,
     fileSize,
     filesForURI,
     findRootURI: findConfigurationRootURI,
@@ -88,17 +88,14 @@ export function startServer(
   const findThemeRootURI = async (uri: string) => {
     const rootUri = await findConfigurationRootURI(uri);
     const config = await loadConfig(rootUri);
-    const root = URI.parse(rootUri).with({
-      path: config.root,
-    });
-    return root.toString();
+    return config.rootUri;
   };
 
   // These are augmented here so that the caching is maintained over different runs.
   const themeDocset = new AugmentedThemeDocset(remoteThemeDocset);
   const runChecks = debounce(
     makeRunChecks(documentManager, diagnosticsManager, {
-      fileExists,
+      fs,
       fileSize,
       findRootURI: findConfigurationRootURI,
       getDefaultLocaleFactory,

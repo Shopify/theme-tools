@@ -185,8 +185,12 @@ describe('Module: dependencies', () => {
 
   describe('Unit: loadConfig', () => {
     it('should have a path normalized root', async () => {
-      expect((await loadConfig(workspace.uri('gitRootTheme/snippets'))).root).not.to.include(`\\`);
-      expect((await loadConfig(workspace.uri('frenchDefault/snippets'))).root).not.to.include(`\\`);
+      expect((await loadConfig(workspace.uri('gitRootTheme/snippets'))).rootUri).not.to.include(
+        `\\`,
+      );
+      expect((await loadConfig(workspace.uri('frenchDefault/snippets'))).rootUri).not.to.include(
+        `\\`,
+      );
     });
   });
 

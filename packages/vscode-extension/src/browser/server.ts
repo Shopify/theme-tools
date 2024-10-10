@@ -22,29 +22,29 @@ const schemas = WEBPACK_SCHEMAS;
 
 console.log(self);
 
-startServer(self as any as Worker, {
-  findRootURI: async (_: string) => 'file:///dawn',
-  fileExists: async () => true,
-  fileSize: async () => 10,
-  getDefaultTranslationsFactory: () => async () => ({}),
-  getDefaultLocaleFactory: () => async () => 'en',
-  getDefaultSchemaTranslationsFactory: () => async () => ({}),
-  getDefaultSchemaLocaleFactory: () => async () => 'en',
-  getThemeSettingsSchemaForRootURI: async () => [],
-  loadConfig: async () => ({
-    context: 'theme',
-    settings: {},
-    checks: recommendedChecks,
-    root: '/dawn',
-  }),
-  log: console.info.bind(console),
-  themeDocset: {
-    filters: async () => filters,
-    objects: async () => objects,
-    tags: async () => tags,
-    systemTranslations: async () => systemTranslations,
-  },
-  jsonValidationSet: {
-    schemas: async () => schemas,
-  },
-});
+// startServer(self as any as Worker, {
+//   findRootURI: async (_: string) => 'file:///dawn',
+//   fs: new MockFileSystem(),
+//   fileSize: async () => 10,
+//   getDefaultTranslationsFactory: () => async () => ({}),
+//   getDefaultLocaleFactory: () => async () => 'en',
+//   getDefaultSchemaTranslationsFactory: () => async () => ({}),
+//   getDefaultSchemaLocaleFactory: () => async () => 'en',
+//   getThemeSettingsSchemaForRootURI: async () => [],
+//   loadConfig: async () => ({
+//     context: 'theme',
+//     settings: {},
+//     checks: recommendedChecks,
+//     rootUri: 'file:///dawn',
+//   }),
+//   log: console.info.bind(console),
+//   themeDocset: {
+//     filters: async () => filters,
+//     objects: async () => objects,
+//     tags: async () => tags,
+//     systemTranslations: async () => systemTranslations,
+//   },
+//   jsonValidationSet: {
+//     schemas: async () => schemas,
+//   },
+// });

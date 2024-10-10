@@ -1,6 +1,6 @@
-import { vi, expect, describe, it, beforeEach, afterEach, assert } from 'vitest';
-import { startServer } from './startServer';
-import { MockConnection, mockConnection } from '../test/MockConnection';
+import { allChecks } from '@shopify/theme-check-common';
+import { MockFileSystem, MockTheme } from '@shopify/theme-check-common/dist/test';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   DidChangeConfigurationNotification,
   DidCreateFilesNotification,
@@ -8,24 +8,23 @@ import {
   DidRenameFilesNotification,
   PublishDiagnosticsNotification,
 } from 'vscode-languageserver';
-import { allChecks } from '@shopify/theme-check-common';
+import { MockConnection, mockConnection } from '../test/MockConnection';
 import { Dependencies } from '../types';
 import { CHECK_ON_CHANGE, CHECK_ON_OPEN, CHECK_ON_SAVE } from './Configuration';
+import { startServer } from './startServer';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-type AbsolutePath = string;
-
 describe('Module: server', () => {
   const filePath = 'snippets/code.liquid';
-  const fileURI = `browser:///${filePath}`;
+  const fileURI = `browser:/${filePath}`;
   const fileContents = `{% render 'foo' %}`;
   let checkOnChange: boolean | null = null;
   let checkOnSave: boolean | null = null;
   let checkOnOpen: boolean | null = null;
   let connection: MockConnection;
   let dependencies: ReturnType<typeof getDependencies>;
-  let fileTree: Set<AbsolutePath>;
+  let fileTree: MockTheme;
   let logger: any;
 
   beforeEach(() => {
@@ -58,7 +57,7 @@ describe('Module: server', () => {
       }
     });
 
-    fileTree = new Set(['snippets/code.liquid']);
+    fileTree = { 'snippets/code.liquid': fileContents };
     logger = vi.fn();
     dependencies = getDependencies(logger, fileTree);
 
@@ -210,19 +209,21 @@ describe('Module: server', () => {
     // Clear mocks for future use
     connection.spies.sendNotification.mockClear();
 
+    // Update mock FS with new existing files
+    fileTree['snippets/foo.liquid'] = '...';
+    fileTree['snippets/bar.liquid'] = '...';
+
     // Trigger create files notification & update mocks
     connection.triggerNotification(DidCreateFilesNotification.type, {
       files: [
         {
-          uri: 'browser:///snippets/foo.liquid',
+          uri: 'browser:/snippets/foo.liquid',
         },
         {
-          uri: 'browser:///snippets/bar.liquid',
+          uri: 'browser:/snippets/bar.liquid',
         },
       ],
     });
-    fileTree.add('/snippets/foo.liquid');
-    fileTree.add('/snippets/bar.liquid');
     await advanceAndFlush(100);
 
     // Verify that we re-check'ed filePath to remove the linting error
@@ -242,7 +243,7 @@ describe('Module: server', () => {
     await flushAsync();
 
     // Setup & expectations
-    fileTree.add('/snippets/bar.liquid');
+    fileTree['snippets/bar.liquid'] = '...';
     connection.openDocument(filePath, fileContents);
     await flushAsync(); // we need to flush the configuration check
     await advanceAndFlush(100);
@@ -262,15 +263,15 @@ describe('Module: server', () => {
     connection.triggerNotification(DidRenameFilesNotification.type, {
       files: [
         {
-          oldUri: 'browser:///snippets/bar.liquid',
-          newUri: 'browser:///snippets/foo.liquid',
+          oldUri: 'browser:/snippets/bar.liquid',
+          newUri: 'browser:/snippets/foo.liquid',
         },
       ],
     });
 
     // Adjust mocks
-    fileTree.delete('/snippets/bar.liquid');
-    fileTree.add('/snippets/foo.liquid');
+    delete fileTree['snippets/bar.liquid'];
+    fileTree['snippets/foo.liquid'] = '...';
 
     // Advance time
     await advanceAndFlush(100);
@@ -293,7 +294,7 @@ describe('Module: server', () => {
     await flushAsync();
 
     // Setup and expectations (no errors)
-    fileTree.add('/snippets/foo.liquid');
+    fileTree['snippets/foo.liquid'] = '...';
     connection.openDocument(filePath, fileContents);
     await flushAsync(); // we need to flush the configuration check
     await advanceAndFlush(100);
@@ -313,11 +314,11 @@ describe('Module: server', () => {
     connection.triggerNotification(DidDeleteFilesNotification.type, {
       files: [
         {
-          uri: 'browser:///snippets/foo.liquid',
+          uri: 'browser:/snippets/foo.liquid',
         },
       ],
     });
-    fileTree.delete('/snippets/foo.liquid');
+    delete fileTree['snippets/foo.liquid'];
     await advanceAndFlush(100);
 
     // Make sure there's an error now that the file no longer exists
@@ -346,14 +347,12 @@ describe('Module: server', () => {
     return flushAsync();
   }
 
-  function getDependencies(logger: any, fileTree: Set<AbsolutePath>) {
+  function getDependencies(logger: any, fileTree: MockTheme) {
     const MissingTemplate = allChecks.filter((c) => c.meta.code === 'MissingTemplate');
 
     return {
-      findRootURI: async (_: string) => 'browser:///',
-      fileExists: vi
-        .fn()
-        .mockImplementation(async (absolutePath: string) => fileTree.has(absolutePath)),
+      fs: new MockFileSystem(fileTree, 'browser:/'),
+      findRootURI: async (_: string) => 'browser:/',
       fileSize: vi.fn().mockResolvedValue(420),
       getDefaultTranslationsFactory: () => async () => ({}),
       getDefaultLocaleFactory: () => async () => 'en',
@@ -364,7 +363,7 @@ describe('Module: server', () => {
         context: 'theme',
         settings: {},
         checks: MissingTemplate,
-        root: '/',
+        rootUri: 'browser:/',
       }),
       log: logger,
       themeDocset: {
