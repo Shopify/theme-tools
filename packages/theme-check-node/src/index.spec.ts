@@ -24,7 +24,7 @@ describe('Unit: getTheme', () => {
     const config: Config = {
       context: 'theme',
       checks: [],
-      root: workspace.root,
+      rootUri: workspace.rootUri,
       settings: {},
     };
 

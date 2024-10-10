@@ -33,7 +33,7 @@ describe('Unit: loadConfig', () => {
   it('loads the recommended config by default', async () => {
     const config = await loadConfig(undefined, __dirname);
     expect(config.checks).to.eql(recommended);
-    expect(config.root).to.eql(__dirname);
+    expect(config.rootUri).to.eql('file:' + __dirname);
   });
 
   it('extends the recommended config by default', async () => {

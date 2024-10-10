@@ -13,10 +13,10 @@ export function makeRunChecks(
   documentManager: DocumentManager,
   diagnosticsManager: DiagnosticsManager,
   {
+    fs,
     loadConfig,
     findRootURI,
     fileSize,
-    fileExists,
     getDefaultTranslationsFactory,
     getDefaultLocaleFactory,
     getDefaultSchemaTranslationsFactory,
@@ -25,9 +25,9 @@ export function makeRunChecks(
     jsonValidationSet,
   }: Pick<
     Dependencies,
+    | 'fs'
     | 'loadConfig'
     | 'findRootURI'
-    | 'fileExists'
     | 'fileSize'
     | 'getDefaultTranslationsFactory'
     | 'getDefaultLocaleFactory'
@@ -53,27 +53,20 @@ export function makeRunChecks(
 
     return;
 
-    async function runChecksForRoot(configFileRoot: string) {
-      const configFileRootURI = URI.parse(configFileRoot);
-      const config = await loadConfig(configFileRoot);
-      const rootURI = configFileRootURI.with({
-        path: config.root,
-      });
-      const theme = documentManager.theme(rootURI.toString());
+    async function runChecksForRoot(configFileRootUri: string) {
+      const config = await loadConfig(configFileRootUri);
+      const rootURI = config.rootUri;
+      const theme = documentManager.theme(rootURI);
       const [defaultTranslations, defaultSchemaTranslations] = await Promise.all([
-        useBufferOrInjectedTranslations(getDefaultTranslationsFactory, theme, rootURI.toString()),
-        useBufferOrInjectedSchemaTranslations(
-          getDefaultSchemaTranslationsFactory,
-          theme,
-          rootURI.toString(),
-        ),
+        useBufferOrInjectedTranslations(getDefaultTranslationsFactory, theme, rootURI),
+        useBufferOrInjectedSchemaTranslations(getDefaultSchemaTranslationsFactory, theme, rootURI),
       ]);
 
       const offenses = await check(theme, config, {
-        fileExists,
+        fs,
         fileSize,
-        getDefaultLocale: getDefaultLocaleFactory(rootURI.toString()),
-        getDefaultSchemaLocale: getDefaultSchemaLocaleFactory(rootURI.toString()),
+        getDefaultLocale: getDefaultLocaleFactory(rootURI),
+        getDefaultSchemaLocale: getDefaultSchemaLocaleFactory(rootURI),
         getDefaultTranslations: async () => defaultTranslations,
         getDefaultSchemaTranslations: async () => defaultSchemaTranslations,
         jsonValidationSet,

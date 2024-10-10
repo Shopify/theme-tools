@@ -196,7 +196,7 @@ function config({
       },
     },
     checks: [],
-    root: '/path/to',
+    rootUri: 'file:/path/to',
     ignore: globalIgnore,
   };
 }

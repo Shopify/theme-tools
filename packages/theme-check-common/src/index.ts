@@ -27,7 +27,9 @@ import { getPosition } from './utils';
 import { isIgnored } from './ignore';
 import { AugmentedThemeDocset } from './AugmentedThemeDocset';
 import { JSONValidator } from './JSONValidator';
+import { makeFileExists } from './FileSystem';
 
+export * from './FileSystem';
 export * from './AugmentedThemeDocset';
 export * from './fixes';
 export * from './types';
@@ -112,10 +114,11 @@ function createContext<T extends SourceCodeType, S extends Schema>(
   const checkSettings = config.settings[check.meta.code];
   return {
     ...dependencies,
+    fileExists: makeFileExists(dependencies.fs),
     validateJSON,
     settings: createSettings(checkSettings, check.meta.schema),
-    absolutePath: (relativePath) => path.join(config.root, relativePath),
-    relativePath: (absolutePath) => path.relative(absolutePath, config.root),
+    absolutePath: (relativePath) => path.join(config.rootUri, relativePath),
+    relativePath: (absolutePath) => path.relative(absolutePath, config.rootUri),
     report(problem: Problem<T>): void {
       offenses.push({
         type: check.meta.type,

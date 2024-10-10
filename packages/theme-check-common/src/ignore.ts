@@ -9,7 +9,7 @@ export function isIgnored(
   const ignorePatterns = [...checkIgnorePatterns(checkDef, config), ...asArray(config.ignore)].map(
     (pattern) =>
       pattern
-        .replace(/^\//, config.root + '/') // "absolute patterns" are config.root matches
+        .replace(/^\//, config.rootUri + '/') // "absolute patterns" are config.rootUri matches
         .replace(/^([^\/])/, '**/$1') // "relative patterns" are "**/${pattern}"
         .replace(/\/\*$/, '/**'), // "/*" patterns are really "/**"
   );

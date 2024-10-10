@@ -1,43 +1,28 @@
 import {
-  check as coreCheck,
-  autofix as coreAutofix,
   applyFixToString,
-  toSourceCode,
-  Offense,
-  Config,
-  SourceCodeType,
-  Theme,
-  JSONSourceCode,
-  LiquidSourceCode,
   CheckDefinition,
-  recommended,
-  StringCorrector,
-  JSONCorrector,
-  FixApplicator,
+  ChecksSettings,
+  Config,
+  autofix as coreAutofix,
+  check as coreCheck,
   createCorrector,
   Dependencies,
-  ChecksSettings,
+  FixApplicator,
+  JSONCorrector,
+  JSONSourceCode,
+  LiquidSourceCode,
+  Offense,
   parseJSON,
+  recommended,
+  SourceCodeType,
+  StringCorrector,
+  Theme,
+  toSourceCode,
 } from '../index';
+import { MockFileSystem } from './MockFileSystem';
+import { MockTheme } from './MockTheme';
 
-export { StringCorrector, JSONCorrector };
-
-/**
- * @example
- * {
- *   'theme/layout.liquid': `
- *     <html>
- *       {{ content_for_page }}
- *     </html>
- *   `,
- *   'snippets/snip.liquid': `
- *     <b>'hello world'</b>
- *   `,
- * }
- */
-export type MockTheme = {
-  [relativePath in string]: string;
-};
+export { JSONCorrector, StringCorrector };
 
 export function getTheme(themeDesc: MockTheme): Theme {
   return Object.entries(themeDesc)
@@ -56,18 +41,16 @@ export async function check(
     context: 'theme',
     settings: { ...checkSettings },
     checks: checks,
-    root: '/',
+    rootUri: 'file:/',
   };
   const defaultTranslationsFileRelativePath = 'locales/en.default.json';
   const defaultSchemaTranslationsFileRelativePath = 'locales/en.default.schema.json';
+
   const defaultMockDependencies = {
+    fs: new MockFileSystem(themeDesc),
     async fileSize(absolutePath: string) {
-      const relativePath = absolutePath.replace(/^\//, '');
+      const relativePath = absolutePath.replace('file:/', '');
       return themeDesc[relativePath].length;
-    },
-    async fileExists(absolutePath: string) {
-      const relativePath = absolutePath.replace(/^\//, '');
-      return themeDesc[relativePath] !== undefined;
     },
     async getDefaultTranslations() {
       return parseJSON(themeDesc[defaultTranslationsFileRelativePath] || '{}', {});

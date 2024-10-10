@@ -1,10 +1,11 @@
-import { vi, expect, describe, it, beforeEach } from 'vitest';
 import {
   allChecks,
   LiquidCheckDefinition,
   Severity,
   SourceCodeType,
 } from '@shopify/theme-check-common';
+import { MockFileSystem } from '@shopify/theme-check-common/src/test';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Connection } from 'vscode-languageserver';
 import { DocumentManager } from '../documents';
 import { DiagnosticsManager } from './DiagnosticsManager';
@@ -51,8 +52,8 @@ describe('Module: runChecks', () => {
     documentManager = new DocumentManager();
     diagnosticsManager = new DiagnosticsManager(connection as any as Connection);
     runChecks = makeRunChecks(documentManager, diagnosticsManager, {
-      findRootURI: async () => 'browser://',
-      fileExists: async () => true,
+      findRootURI: async () => 'browser:/',
+      fs: new MockFileSystem({}, 'browser:/'),
       fileSize: async () => 420,
       getDefaultTranslationsFactory: () => async () => ({}),
       getDefaultLocaleFactory: () => async () => 'en',
@@ -62,7 +63,7 @@ describe('Module: runChecks', () => {
         context: 'theme',
         settings: {},
         checks: [LiquidFilter],
-        root: '/',
+        rootUri: 'browser:/',
       }),
       themeDocset: {
         filters: async () => [],
@@ -208,8 +209,8 @@ describe('Module: runChecks', () => {
     const matchingTranslation = allChecks.filter((c) => c.meta.code === 'MatchingTranslations');
     expect(matchingTranslation).to.have.lengthOf(1);
     runChecks = makeRunChecks(documentManager, diagnosticsManager, {
-      findRootURI: async () => 'browser:///',
-      fileExists: async () => true,
+      findRootURI: async () => 'browser:/',
+      fs: new MockFileSystem(files, 'browser:/'),
       fileSize: async () => 420,
       getDefaultTranslationsFactory: () => async () => JSON.parse(files[defaultURI]),
       getDefaultLocaleFactory: () => async () => 'en',
@@ -219,7 +220,7 @@ describe('Module: runChecks', () => {
         context: 'theme',
         settings: {},
         checks: matchingTranslation,
-        root: '/',
+        rootUri: 'browser:/',
       }),
       themeDocset: {
         filters: async () => [],
