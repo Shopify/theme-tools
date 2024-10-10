@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "exclude": ["**/*.spec.ts", "**/test/*.ts"],
+  "exclude": ["**/*.spec.ts"],
   "references": [
     { "path": "../liquid-html-parser/tsconfig.build.json" }
   ]
