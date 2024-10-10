@@ -54,17 +54,17 @@ describe('Module: AssetSizeCSS', () => {
   });
 
   it('should report an offense if CSS is larger than threshold', async () => {
-    const CustomAssetSizeCSS = {
-      ...AssetSizeCSS,
-      meta: {
-        ...AssetSizeCSS.meta,
-        schema: {
-          thresholdInBytes: SchemaProp.number(1),
+    const offenses = await check(
+      extensionFiles,
+      [AssetSizeCSS],
+      {},
+      {
+        AssetSizeCSS: {
+          enabled: true,
+          thresholdInBytes: 1,
         },
       },
-    };
-
-    const offenses = await check(extensionFiles, [CustomAssetSizeCSS]);
+    );
 
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
@@ -77,16 +77,17 @@ describe('Module: AssetSizeCSS', () => {
 
   it('should report a warning when the CSS file size exceeds the threshold', async () => {
     vi.mocked(hasRemoteAssetSizeExceededThreshold).mockReturnValue(Promise.resolve(true));
-    const CustomAssetSizeCSS = {
-      ...AssetSizeCSS,
-      meta: {
-        ...AssetSizeCSS.meta,
-        schema: {
-          thresholdInBytes: SchemaProp.number(1),
+    const offenses = await check(
+      httpTest,
+      [AssetSizeCSS],
+      {},
+      {
+        AssetSizeCSS: {
+          enabled: true,
+          thresholdInBytes: 1,
         },
       },
-    };
-    const offenses = await check(httpTest, [CustomAssetSizeCSS]);
+    );
 
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
@@ -130,17 +131,17 @@ describe('Module: AssetSizeCSS', () => {
       `,
     };
 
-    const CustomAssetSizeCSS = {
-      ...AssetSizeCSS,
-      meta: {
-        ...AssetSizeCSS.meta,
-        schema: {
-          thresholdInBytes: SchemaProp.number(2),
+    const offenses = await check(
+      extensionFiles,
+      [AssetSizeCSS],
+      {},
+      {
+        AssetSizeCSS: {
+          enabled: true,
+          thresholdInBytes: 2,
         },
       },
-    };
-
-    const offenses = await check(extensionFiles, [CustomAssetSizeCSS]);
+    );
 
     expect(offenses).toHaveLength(2);
     expect(offenses[0]).toMatchObject({

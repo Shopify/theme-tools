@@ -1,7 +1,6 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { AssetSizeAppBlockCSS } from '.';
 import { check, MockTheme } from '../../test';
-import { SchemaProp } from '../../types';
 
 describe('Module: AssetSizeAppBlockCSS', () => {
   const extensionFiles: MockTheme = {
@@ -31,17 +30,17 @@ describe('Module: AssetSizeAppBlockCSS', () => {
   });
 
   it('should report an offense if CSS is larger than threshold', async () => {
-    const CustomAssetSizeAppBlockCSS = {
-      ...AssetSizeAppBlockCSS,
-      meta: {
-        ...AssetSizeAppBlockCSS.meta,
-        schema: {
-          thresholdInBytes: SchemaProp.number(1),
+    const offenses = await check(
+      extensionFiles,
+      [AssetSizeAppBlockCSS],
+      {},
+      {
+        AssetSizeAppBlockCSS: {
+          enabled: true,
+          thresholdInBytes: 1,
         },
       },
-    };
-
-    const offenses = await check(extensionFiles, [CustomAssetSizeAppBlockCSS]);
+    );
 
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
