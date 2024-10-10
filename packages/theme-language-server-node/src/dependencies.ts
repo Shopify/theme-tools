@@ -31,6 +31,8 @@ function asPath(uri: URI) {
 function asFsPath(uriOrPath: string | URI) {
   if (URI.isUri(uriOrPath)) {
     return uriOrPath.fsPath;
+  } else if (/^file:/i.test(uriOrPath)) {
+    return URI.parse(uriOrPath).fsPath;
   } else {
     return URI.file(uriOrPath).fsPath;
   }
@@ -58,7 +60,7 @@ export const filesForURI: NonNullable<Dependencies['filesForURI']> = async funct
   uriString,
 ) {
   const config = await loadConfig(uriString);
-  const rootPath = asFsPath(config.root);
+  const rootPath = asFsPath(config.rootUri);
   return glob(`**/*.{liquid,json}`, { cwd: rootPath, ignore: 'node_modules/**' });
 };
 
@@ -68,7 +70,7 @@ export const findRootURI: Dependencies['findRootURI'] = async function findRootU
   return root.toString();
 };
 
-export const fileExists: Dependencies['fileExists'] = async function fileExists(path) {
+export async function fileExists(path: string): Promise<boolean> {
   try {
     // This will get called within theme-check-common which assumes
     // forward-slashes. We need to denormalize those here.
@@ -77,7 +79,7 @@ export const fileExists: Dependencies['fileExists'] = async function fileExists(
   } catch (e) {
     return false;
   }
-};
+}
 
 export const fileSize: Dependencies['fileSize'] = async function fileSize(
   absolutePath: string,
@@ -184,7 +186,7 @@ function cached<T>(fn: (...args: any[]) => Promise<T>): (...args: any[]) => Prom
 }
 
 function normalizeRoot(config: Config) {
-  config.root = asPath(URI.file(config.root));
+  config.rootUri = URI.parse(config.rootUri).toString();
   return config;
 }
 

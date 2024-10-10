@@ -68,7 +68,7 @@ export type Tree = {
 };
 
 export interface Workspace {
-  root: string;
+  rootUri: string;
   path(relativePath: string): string;
   clean(): Promise<any>;
 }
@@ -80,7 +80,7 @@ export async function makeTempWorkspace(structure: Tree): Promise<Workspace> {
   await createFiles(structure, [root]);
 
   return {
-    root,
+    rootUri: 'file:' + root,
     path: (relativePath) => path.join(root, ...relativePath.split('/')),
     clean: async () => fs.rm(root, { recursive: true, force: true }),
   };

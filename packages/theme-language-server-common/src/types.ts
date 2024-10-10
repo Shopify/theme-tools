@@ -1,5 +1,9 @@
 import { URI } from 'vscode-languageserver';
-import { Config, Dependencies as ThemeCheckDependencies } from '@shopify/theme-check-common';
+import {
+  Config,
+  FileSystem,
+  Dependencies as ThemeCheckDependencies,
+} from '@shopify/theme-check-common';
 
 import { WithOptional } from './utils';
 import { SettingsSchemaJSONFile } from './settings';
@@ -150,5 +154,14 @@ export interface RequiredDependencies {
    */
   fileSize?: ThemeCheckDependencies['fileSize'];
 
-  fileExists: ThemeCheckDependencies['fileExists'];
+  /**
+   * A file system abstraction that allows the Language Server to read files by URI.
+   *
+   * In Node.js, this is a wrapper around node:fs/promises.
+   *
+   * In VS Code, this is a wrapper around the VS Code API.
+   *
+   * The browser accepts a custom implementation.
+   */
+  fs: FileSystem;
 }
