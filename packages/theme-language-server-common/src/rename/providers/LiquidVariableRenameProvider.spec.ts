@@ -2,13 +2,17 @@ import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { Position, TextDocumentEdit } from 'vscode-languageserver-protocol';
 import { DocumentManager } from '../../documents';
 import { RenameProvider } from '../RenameProvider';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 
-describe('HtmlTagNameRenameProvider', () => {
-  let documentManager: DocumentManager;
-  let provider: RenameProvider;
+describe('LiquidVariableRenameProvider', () => {
+  const textDocumentUri = 'file:///path/to/document.liquid';
 
-  const textDocument = { uri: 'file:///path/to/document.liquid' };
-  const documentSource = `{% assign animal = 'dog' %}
+  describe('unscoped variable', async () => {
+    let documentManager: DocumentManager;
+    let provider: RenameProvider;
+    let textDocument: TextDocument;
+
+    const documentSource = `{% assign animal = 'dog' %}
 {% assign plant = 'cactus' %}
 {% liquid
   echo plant
@@ -17,119 +21,212 @@ describe('HtmlTagNameRenameProvider', () => {
 {% assign paintings = 'starry night, sunday afternoon, the scream' %}
 <p>I have a cool animal and a great plant</p>`;
 
-  beforeEach(() => {
-    documentManager = new DocumentManager();
-    provider = new RenameProvider(documentManager);
+    beforeEach(() => {
+      documentManager = new DocumentManager();
+      provider = new RenameProvider(documentManager);
 
-    documentManager.open(textDocument.uri, documentSource, 1);
+      textDocument = TextDocument.create(textDocumentUri, 'liquid', 1, documentSource);
+      documentManager.open(textDocument.uri, documentSource, 1);
+    });
+
+    it('returns null when the cursor is not over a liquid variable', async () => {
+      const params = {
+        textDocument,
+        position: Position.create(0, 3),
+        newName: 'pet',
+      };
+
+      const result = await provider.rename(params);
+      expect(result).to.be.null;
+    });
+
+    it('returns new name after liquid variable is renamed from assign tag', async () => {
+      const params = {
+        textDocument,
+        position: Position.create(0, 11),
+        newName: 'pet',
+      };
+
+      const result = await provider.rename(params);
+      assert(result);
+      assert(result.documentChanges);
+      expect(
+        TextDocument.applyEdits(
+          textDocument,
+          (result.documentChanges[0] as TextDocumentEdit).edits,
+        ),
+      ).to.eql(`{% assign pet = 'dog' %}
+{% assign plant = 'cactus' %}
+{% liquid
+  echo plant
+%}
+{% assign painting = 'mona lisa' %}
+{% assign paintings = 'starry night, sunday afternoon, the scream' %}
+<p>I have a cool animal and a great plant</p>`);
+    });
+
+    it('returns new name after liquid variable is renamed on variable usage', async () => {
+      const params = {
+        textDocument,
+        position: Position.create(3, 11),
+        newName: 'fauna',
+      };
+
+      const result = await provider.rename(params);
+      assert(result);
+      assert(result.documentChanges);
+      expect(
+        TextDocument.applyEdits(
+          textDocument,
+          (result.documentChanges[0] as TextDocumentEdit).edits,
+        ),
+      ).to.eql(`{% assign animal = 'dog' %}
+{% assign fauna = 'cactus' %}
+{% liquid
+  echo fauna
+%}
+{% assign painting = 'mona lisa' %}
+{% assign paintings = 'starry night, sunday afternoon, the scream' %}
+<p>I have a cool animal and a great plant</p>`);
+    });
+
+    it("doesn't rename variables where the name of the one being changed contains within it", async () => {
+      const params = {
+        textDocument,
+        position: Position.create(5, 11),
+        newName: 'famous_painting',
+      };
+
+      const result = await provider.rename(params);
+      assert(result);
+      assert(result.documentChanges);
+      expect(
+        TextDocument.applyEdits(
+          textDocument,
+          (result.documentChanges[0] as TextDocumentEdit).edits,
+        ),
+      ).to.eql(`{% assign animal = 'dog' %}
+{% assign plant = 'cactus' %}
+{% liquid
+  echo plant
+%}
+{% assign famous_painting = 'mona lisa' %}
+{% assign paintings = 'starry night, sunday afternoon, the scream' %}
+<p>I have a cool animal and a great plant</p>`);
+    });
   });
 
-  it('returns null when the cursor is not over a liquid variable', async () => {
-    const params = {
-      textDocument,
-      position: Position.create(0, 3),
-      newName: 'pet',
-    };
+  describe('scoped variable', async () => {
+    let documentManager: DocumentManager;
+    let provider: RenameProvider;
+    let textDocument: TextDocument;
 
-    const result = await provider.rename(params);
-    expect(result).to.be.null;
-  });
+    const documentSource = `{% assign counter = 0 %}
+{% assign prod = 'some product' %}
+{% liquid
+  LOOP prod in products
+    echo prod.title
+    increment counter
+  endLOOP
+%}`;
 
-  it('returns new name after liquid variable is renamed from assign tag', async () => {
-    const params = {
-      textDocument,
-      position: Position.create(0, 11),
-      newName: 'pet',
-    };
-
-    const result = await provider.rename(params);
-    assert(result);
-    assert(result.documentChanges);
-    expect(result.documentChanges).to.have.lengthOf(1);
-    assert(result.documentChanges[0]);
-    assert(TextDocumentEdit.is(result.documentChanges[0]));
-
-    // Should not try to rename the variable in HTML
-    expect(result.documentChanges[0]!.edits).to.have.lengthOf(1);
-    expect(result.documentChanges[0]!.edits[0].newText).to.equal('pet');
-
-    const range = result.documentChanges[0]!.edits[0].range;
-    expect(range.start).to.deep.equal({
-      line: 0,
-      character: 10,
-    });
-    expect(range.end).to.deep.equal({
-      line: 0,
-      character: 16,
-    });
-  });
-
-  it('returns new name after liquid variable is renamed on variable usage', async () => {
-    const params = {
-      textDocument,
-      position: Position.create(3, 11),
-      newName: 'fauna',
-    };
-
-    const result = await provider.rename(params);
-    assert(result);
-    assert(result.documentChanges);
-    expect(result.documentChanges).to.have.lengthOf(1);
-    assert(result.documentChanges[0]);
-    assert(TextDocumentEdit.is(result.documentChanges[0]));
-
-    // Should not try to rename the variable in HTML
-    expect(result.documentChanges[0]!.edits).to.have.lengthOf(2);
-    expect(result.documentChanges[0]!.edits[0].newText).to.equal('fauna');
-    expect(result.documentChanges[0]!.edits[1].newText).to.equal('fauna');
-
-    const range1 = result.documentChanges[0]!.edits[0].range;
-    expect(range1.start).to.deep.equal({
-      line: 1,
-      character: 10,
-    });
-    expect(range1.end).to.deep.equal({
-      line: 1,
-      character: 15,
+    beforeEach(() => {
+      documentManager = new DocumentManager();
+      provider = new RenameProvider(documentManager);
     });
 
-    const range2 = result.documentChanges[0]!.edits[1].range;
-    expect(range2.start).to.deep.equal({
-      line: 3,
-      character: 7,
+    ['for', 'tablerow'].forEach((tag) => {
+      [
+        { placement: 'at loop definition', position: Position.create(3, tag.length + 4) },
+        { placement: 'at variable usage', position: Position.create(4, 10) },
+      ].forEach(async ({ placement, position }) => {
+        it(`returns new name after variable is renamed within "${tag}" block (${placement})`, async () => {
+          const source = documentSource.replace(/LOOP/g, tag);
+
+          textDocument = TextDocument.create(textDocumentUri, 'liquid', 1, source);
+          documentManager.open(textDocument.uri, source, 1);
+
+          const params = {
+            textDocument,
+            position,
+            newName: 'item',
+          };
+          const result = await provider.rename(params);
+          assert(result);
+          assert(result.documentChanges);
+          expect(
+            TextDocument.applyEdits(
+              textDocument,
+              (result.documentChanges[0] as TextDocumentEdit).edits,
+            ),
+          ).to.eql(`{% assign counter = 0 %}
+{% assign prod = 'some product' %}
+{% liquid
+  ${tag} item in products
+    echo item.title
+    increment counter
+  end${tag}
+%}`);
+        });
+      });
     });
-    expect(range2.end).to.deep.equal({
-      line: 3,
-      character: 12,
+
+    it('returns new name after variable is renamed outside loop', async () => {
+      const source = documentSource.replace(/LOOP/g, 'for');
+
+      textDocument = TextDocument.create(textDocumentUri, 'liquid', 1, source);
+      documentManager.open(textDocument.uri, source, 1);
+
+      const params = {
+        textDocument,
+        position: Position.create(1, 11),
+        newName: 'item',
+      };
+      const result = await provider.rename(params);
+      assert(result);
+      assert(result.documentChanges);
+      expect(
+        TextDocument.applyEdits(
+          textDocument,
+          (result.documentChanges[0] as TextDocumentEdit).edits,
+        ),
+      ).to.eql(`{% assign counter = 0 %}
+{% assign item = 'some product' %}
+{% liquid
+  for prod in products
+    echo prod.title
+    increment counter
+  endfor
+%}`);
     });
-  });
 
-  it("doesn't rename variables where the name of the one being changed contains within it", async () => {
-    const params = {
-      textDocument,
-      position: Position.create(5, 11),
-      newName: 'famous_painting',
-    };
+    it('returns new name after variable is renamed inside loop, but is scoped outside it', async () => {
+      const source = documentSource.replace(/LOOP/g, 'for');
 
-    const result = await provider.rename(params);
-    assert(result);
-    assert(result.documentChanges);
-    expect(result.documentChanges).to.have.lengthOf(1);
-    assert(result.documentChanges[0]);
-    assert(TextDocumentEdit.is(result.documentChanges[0]));
+      textDocument = TextDocument.create(textDocumentUri, 'liquid', 1, source);
+      documentManager.open(textDocument.uri, source, 1);
 
-    // Should not try to rename "paintings" variable
-    expect(result.documentChanges[0]!.edits).to.have.lengthOf(1);
-    expect(result.documentChanges[0]!.edits[0].newText).to.equal('famous_painting');
-
-    const range = result.documentChanges[0]!.edits[0].range;
-    expect(range.start).to.deep.equal({
-      line: 5,
-      character: 10,
-    });
-    expect(range.end).to.deep.equal({
-      line: 5,
-      character: 18,
+      const params = {
+        textDocument,
+        position: Position.create(0, 11),
+        newName: 'x',
+      };
+      const result = await provider.rename(params);
+      assert(result);
+      assert(result.documentChanges);
+      expect(
+        TextDocument.applyEdits(
+          textDocument,
+          (result.documentChanges[0] as TextDocumentEdit).edits,
+        ),
+      ).to.eql(`{% assign x = 0 %}
+{% assign prod = 'some product' %}
+{% liquid
+  for prod in products
+    echo prod.title
+    increment x
+  endfor
+%}`);
     });
   });
 });
