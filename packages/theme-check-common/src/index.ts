@@ -27,7 +27,7 @@ import { getPosition } from './utils';
 import { isIgnored } from './ignore';
 import { AugmentedThemeDocset } from './AugmentedThemeDocset';
 import { JSONValidator } from './JSONValidator';
-import { makeFileExists } from './FileSystem';
+import { makeFileExists, makeFileSize } from './FileSystem';
 
 export * from './FileSystem';
 export * from './AugmentedThemeDocset';
@@ -115,6 +115,7 @@ function createContext<T extends SourceCodeType, S extends Schema>(
   return {
     ...dependencies,
     fileExists: makeFileExists(dependencies.fs),
+    fileSize: makeFileSize(dependencies.fs),
     validateJSON,
     settings: createSettings(checkSettings, check.meta.schema),
     absolutePath: (relativePath) => path.join(config.rootUri, relativePath),
