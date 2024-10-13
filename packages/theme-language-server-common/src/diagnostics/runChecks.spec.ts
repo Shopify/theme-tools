@@ -54,7 +54,6 @@ describe('Module: runChecks', () => {
     runChecks = makeRunChecks(documentManager, diagnosticsManager, {
       findRootURI: async () => 'browser:/',
       fs: new MockFileSystem({}, 'browser:/'),
-      fileSize: async () => 420,
       getDefaultTranslationsFactory: () => async () => ({}),
       getDefaultLocaleFactory: () => async () => 'en',
       getDefaultSchemaTranslationsFactory: () => async () => ({}),
@@ -211,7 +210,6 @@ describe('Module: runChecks', () => {
     runChecks = makeRunChecks(documentManager, diagnosticsManager, {
       findRootURI: async () => 'browser:/',
       fs: new MockFileSystem(files, 'browser:/'),
-      fileSize: async () => 420,
       getDefaultTranslationsFactory: () => async () => JSON.parse(files[defaultURI]),
       getDefaultLocaleFactory: () => async () => 'en',
       getDefaultSchemaTranslationsFactory: () => async () => ({}),

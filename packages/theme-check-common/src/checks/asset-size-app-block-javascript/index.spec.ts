@@ -21,15 +21,6 @@ describe('Module: AssetSizeAppBlockJavaScript', () => {
     expect(offenses).toHaveLength(0);
   });
 
-  it('should skip the check if context.fileSize is undefined', async () => {
-    const context = {
-      fileSize: undefined,
-    };
-
-    const offenses = await check(extensionFiles, [AssetSizeAppBlockJavaScript], context);
-    expect(offenses).toHaveLength(0);
-  });
-
   it('should report an offense if JavaScript is larger than threshold', async () => {
     const offenses = await check(
       extensionFiles,

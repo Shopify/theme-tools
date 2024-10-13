@@ -277,7 +277,6 @@ export interface Dependencies {
   getDefaultLocale(): Promise<string>;
   getDefaultSchemaLocale(): Promise<string>;
   getDefaultSchemaTranslations(): Promise<Translations>;
-  fileSize?(absolutePath: string): Promise<number>;
   fs: FileSystem;
   themeDocset?: ThemeDocset;
   jsonValidationSet?: JsonValidationSet;
@@ -295,6 +294,7 @@ type StaticContextProperties<T extends SourceCodeType> = T extends SourceCodeTyp
       absolutePath(relativePath: RelativePath): AbsolutePath;
       file: SourceCode<T>;
       fileExists: (absolutePath: AbsolutePath) => Promise<boolean>;
+      fileSize: (absolutePath: string) => Promise<number>;
       validateJSON?: ValidateJSON<T>;
     }
   : never;

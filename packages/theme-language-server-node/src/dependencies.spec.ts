@@ -1,7 +1,6 @@
 import { expect, describe, it, beforeAll, afterAll } from 'vitest';
 import {
   fileExists,
-  fileSize,
   filesForURI,
   findRootURI,
   getDefaultLocaleFactory,
@@ -191,38 +190,6 @@ describe('Module: dependencies', () => {
       expect((await loadConfig(workspace.uri('frenchDefault/snippets'))).rootUri).not.to.include(
         `\\`,
       );
-    });
-  });
-
-  describe('Unit: fileSize', () => {
-    it('should accurately return the size of a file', async () => {
-      // Create a temporary file and write some data to it
-      const tempFilePath = path.join(workspace.root, 'temp.txt');
-      const fileData = 'Hello, world!';
-      await fs.writeFile(tempFilePath, fileData, 'utf8');
-
-      // Use the fileSize function to get the size of the file
-      // Note the ! is necessary because the type is optional at the moment
-      const size = await fileSize!(tempFilePath);
-
-      // Check that the size is correct
-      expect(size).to.equal(Buffer.byteLength(fileData, 'utf8'));
-    });
-
-    it('should throw an error when the file does not exist', async () => {
-      // Path to a file that does not exist
-      const nonExistentFilePath = path.join(workspace.root, 'nonexistent.txt');
-
-      // Use the fileSize function to try to get the size of the file
-      try {
-        // Note the ! is necessary because the type is optional at the moment
-        await fileSize!(nonExistentFilePath);
-        // If the function does not throw an error, fail the test
-        expect.fail('Expected fileSize to throw an error, but it did not');
-      } catch (err: any) {
-        // If the function throws an error, pass the test
-        expect(err.message).to.include('Failed to get file size');
-      }
     });
   });
 });

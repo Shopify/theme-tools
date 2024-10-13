@@ -47,7 +47,6 @@ export function startServer(
   connection: Connection,
   {
     fs,
-    fileSize,
     filesForURI,
     findRootURI: findConfigurationRootURI,
     getDefaultLocaleFactory,
@@ -96,7 +95,6 @@ export function startServer(
   const runChecks = debounce(
     makeRunChecks(documentManager, diagnosticsManager, {
       fs,
-      fileSize,
       findRootURI: findConfigurationRootURI,
       getDefaultLocaleFactory,
       getDefaultTranslationsFactory,

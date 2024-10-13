@@ -35,8 +35,8 @@ export const makeFileSize = (fs: FileSystem) =>
     try {
       const stats = await fs.stat(uri);
       return stats.size;
-    } catch (e) {
-      throw new Error(`Failed to get file size: ${e}`);
+    } catch (error) {
+      return 0;
     }
   };
 

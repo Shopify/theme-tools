@@ -138,23 +138,6 @@ export interface RequiredDependencies {
   filesForURI?(uri: URI): Promise<string[]>;
 
   /**
-   * Asynchronously computes the file size for a given file. This function is only
-   * utilized in a subset of checks. Depending upon the specific use case, initialization
-   * complexity can vary. By making this function optional, it allows for flexibility
-   * in its invocation, particularly recommended for scenarios where the resulting file
-   * size information will be actioned upon.
-   *
-   * @param {string} absolutePath - The absolute path of the file for which the size is to be computed.
-   * @returns {Promise<number>} - A Promise that resolves with the size of the file in bytes.
-   *
-   * @example
-   * fileSize("/absolute/path/to/file")
-   *  .then(size => console.log(`File size: ${size} bytes`))
-   *  .catch(error => console.error(`Error computing file size: ${error}`));
-   */
-  fileSize?: ThemeCheckDependencies['fileSize'];
-
-  /**
    * A file system abstraction that allows the Language Server to read files by URI.
    *
    * In Node.js, this is a wrapper around node:fs/promises.

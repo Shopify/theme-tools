@@ -4,7 +4,6 @@ import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
 import { stdin, stdout } from 'node:process';
 import { createConnection } from 'vscode-languageserver/node';
 import {
-  fileSize,
   filesForURI,
   findRootURI,
   getDefaultLocaleFactory,
@@ -30,7 +29,6 @@ export function startServer(fs: FileSystem = NodeFileSystem) {
     getDefaultSchemaTranslationsFactory,
     getThemeSettingsSchemaForRootURI,
     findRootURI,
-    fileSize,
     filesForURI,
     loadConfig,
     themeDocset: themeLiquidDocsManager,

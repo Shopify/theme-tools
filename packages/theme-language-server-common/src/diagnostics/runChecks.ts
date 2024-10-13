@@ -16,7 +16,6 @@ export function makeRunChecks(
     fs,
     loadConfig,
     findRootURI,
-    fileSize,
     getDefaultTranslationsFactory,
     getDefaultLocaleFactory,
     getDefaultSchemaTranslationsFactory,
@@ -28,7 +27,6 @@ export function makeRunChecks(
     | 'fs'
     | 'loadConfig'
     | 'findRootURI'
-    | 'fileSize'
     | 'getDefaultTranslationsFactory'
     | 'getDefaultLocaleFactory'
     | 'getDefaultSchemaTranslationsFactory'
@@ -64,7 +62,6 @@ export function makeRunChecks(
 
       const offenses = await check(theme, config, {
         fs,
-        fileSize,
         getDefaultLocale: getDefaultLocaleFactory(rootURI),
         getDefaultSchemaLocale: getDefaultSchemaLocaleFactory(rootURI),
         getDefaultTranslations: async () => defaultTranslations,

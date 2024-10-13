@@ -17,7 +17,6 @@ import glob = require('glob');
 
 import { autofix } from './autofix';
 import { findConfigPath, loadConfig as resolveConfig } from './config';
-import { fileSize } from './file-utils';
 import { NodeFileSystem } from './NodeFileSystem';
 
 const defaultLocale = 'en';
@@ -76,7 +75,6 @@ export async function themeCheckRun(
 
   const offenses = await coreCheck(theme, config, {
     fs: NodeFileSystem,
-    fileSize,
     themeDocset: themeLiquidDocsManager,
     jsonValidationSet: themeLiquidDocsManager,
     getDefaultTranslations: async () => defaultTranslations,

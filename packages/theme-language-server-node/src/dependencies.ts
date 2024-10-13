@@ -76,21 +76,10 @@ export async function fileExists(path: string): Promise<boolean> {
     // forward-slashes. We need to denormalize those here.
     await fs.stat(asFsPath(path));
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
-
-export const fileSize: Dependencies['fileSize'] = async function fileSize(
-  absolutePath: string,
-): Promise<number> {
-  try {
-    const stats = await fs.stat(asFsPath(absolutePath));
-    return stats.size;
-  } catch (e) {
-    throw new Error(`Failed to get file size: ${e}`);
-  }
-};
 
 const hasThemeAppExtensionConfig = memoize(
   async (rootPath: string) => {
