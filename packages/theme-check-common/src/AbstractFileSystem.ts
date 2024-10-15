@@ -1,10 +1,11 @@
 /**
- * The FileSystem interface is used to abstract file system operations.
+ * The AbstractFileSystem interface is used to abstract file system operations.
  *
  * This way, the Theme Check library can be used in different environments,
- * such as a browser or a Node.js environment.
+ * such as the browser, node.js or VS Code (which works with local files, remote
+ * files and on the web)
  */
-export interface FileSystem {
+export interface AbstractFileSystem {
   stat(uri: string): Promise<FileStat>;
   readFile(uri: string): Promise<string>;
   readDirectory(uri: string): Promise<FileTuple[]>;

@@ -1,11 +1,11 @@
-import { FileStat, FileSystem, FileTuple, FileType } from '@shopify/theme-check-common';
+import { FileStat, AbstractFileSystem, FileTuple, FileType } from '@shopify/theme-check-common';
 import fs from 'node:fs/promises';
 
 function asAbsolutePath(uri: string): string {
   return uri.replace('file://', '');
 }
 
-export const NodeFileSystem: FileSystem = {
+export const NodeFileSystem: AbstractFileSystem = {
   async readFile(uri: string): Promise<string> {
     return fs.readFile(asAbsolutePath(uri), 'utf8');
   },

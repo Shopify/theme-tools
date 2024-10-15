@@ -8,7 +8,7 @@ import {
   filesForURI,
   findRootURI,
   getDefaultTranslationsFactory,
-  loadConfig
+  loadConfig,
 } from './dependencies';
 
 type Tree = {
