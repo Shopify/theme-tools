@@ -11,7 +11,7 @@ import {
 import { Schema, Settings } from './types/schema-prop-factory';
 
 import { StringCorrector, JSONCorrector } from './fixes';
-import { AbstractFileSystem } from './AbstractFileSystem';
+import { AbstractFileSystem, UriString } from './AbstractFileSystem';
 
 import { ThemeDocset, JsonValidationSet } from './types/theme-liquid-docs';
 
@@ -83,7 +83,7 @@ export type NodeTypes = {
 };
 
 /** A vscode-uri string. */
-export type Uri = string;
+export type { UriString };
 
 /** Assumes forward slashes for simplicity internally */
 export type RelativePath = string;
@@ -288,11 +288,11 @@ export type ValidateJSON<T extends SourceCodeType> = (
 type StaticContextProperties<T extends SourceCodeType> = T extends SourceCodeType
   ? {
       report(problem: Problem<T>): void;
-      toRelativePath(uri: Uri): RelativePath;
-      toUri(relativePath: RelativePath): Uri;
+      toRelativePath(uri: UriString): RelativePath;
+      toUri(relativePath: RelativePath): UriString;
       file: SourceCode<T>;
-      fileExists: (uri: Uri) => Promise<boolean>;
-      fileSize: (uri: Uri) => Promise<number>;
+      fileExists: (uri: UriString) => Promise<boolean>;
+      fileSize: (uri: UriString) => Promise<number>;
       getDefaultLocale: () => Promise<string>;
       getDefaultSchemaLocale: () => Promise<string>;
       validateJSON?: ValidateJSON<T>;

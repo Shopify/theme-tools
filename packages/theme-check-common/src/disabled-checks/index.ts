@@ -1,8 +1,8 @@
 import { Position } from '@shopify/liquid-html-parser';
-import { LiquidCheckDefinition, Offense, Uri } from '../types';
+import { LiquidCheckDefinition, Offense, UriString } from '../types';
 
 type CheckName = string;
-type DisabledChecksMap = Map<Uri, Map<CheckName, { from: number; to?: number }[]>>;
+type DisabledChecksMap = Map<UriString, Map<CheckName, { from: number; to?: number }[]>>;
 
 export function createDisabledChecksModule() {
   const SPECIFIC_CHECK_NOT_DEFINED = '@all';

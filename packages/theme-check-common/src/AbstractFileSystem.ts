@@ -23,6 +23,7 @@ export interface FileStat {
   size: number;
 }
 
+/** A vscode-uri string */
 export type UriString = string;
 
 export type FileTuple = [uri: UriString, fileType: FileType];

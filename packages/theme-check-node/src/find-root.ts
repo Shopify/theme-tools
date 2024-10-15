@@ -1,15 +1,15 @@
-import { Uri, makeFileExists, path } from '@shopify/theme-check-common';
+import { UriString, makeFileExists, path } from '@shopify/theme-check-common';
 import { NodeFileSystem } from './NodeFileSystem';
 
 export interface PathHandler<T> {
-  join(base: T, ...paths: (T | string)[]): Uri;
+  join(base: T, ...paths: (T | string)[]): UriString;
   dirname(path: T): T;
   asPath(path: T): string;
 }
 
 type FileExists = (uri: string) => Promise<boolean>;
 
-async function isRoot(dir: Uri, fileExists: FileExists) {
+async function isRoot(dir: UriString, fileExists: FileExists) {
   return or(
     fileExists(path.join(dir, 'shopify.extension.toml')), // for theme-app-extensions
     fileExists(path.join(dir, '.theme-check.yml')),
@@ -45,7 +45,10 @@ async function not(ap: Promise<boolean>) {
  * This more complex version of findRoot is used in the language server so that we can
  * use URIs instead of strings. It's also used in the CLI.
  */
-export async function reusableFindRoot(curr: Uri, fileExists: FileExists): Promise<Uri> {
+export async function reusableFindRoot(
+  curr: UriString,
+  fileExists: FileExists,
+): Promise<UriString> {
   const currIsRoot = await isRoot(curr, fileExists);
   if (currIsRoot) {
     return curr;
@@ -71,7 +74,7 @@ export async function reusableFindRoot(curr: Uri, fileExists: FileExists): Promi
  * So you can think of this function as the function that infers where a .theme-check.yml
  * should be.
  */
-export async function findRoot(curr: Uri): Promise<Uri> {
+export async function findRoot(curr: UriString): Promise<UriString> {
   const fileExists = makeFileExists(NodeFileSystem);
   return reusableFindRoot(curr, fileExists);
 }
