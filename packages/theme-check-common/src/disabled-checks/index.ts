@@ -1,23 +1,22 @@
 import { Position } from '@shopify/liquid-html-parser';
-import { LiquidCheckDefinition, Offense } from '../types';
+import { LiquidCheckDefinition, Offense, Uri } from '../types';
 
-type AbsolutePath = string;
 type CheckName = string;
-type DisabledChecksMap = Map<AbsolutePath, Map<CheckName, { from: number; to?: number }[]>>;
+type DisabledChecksMap = Map<Uri, Map<CheckName, { from: number; to?: number }[]>>;
 
 export function createDisabledChecksModule() {
   const SPECIFIC_CHECK_NOT_DEFINED = '@all';
   const INLINE_COMMENT_TAG = '#';
   const disabledChecks: DisabledChecksMap = new Map();
 
-  function determineRanges(absolutePath: string, value: string, position: Position) {
+  function determineRanges(uri: string, value: string, position: Position) {
     const [_, command, checksJoined] =
       value.trim().match(/^(?:theme\-check\-(disable|enable)) ?(.*)/) || [];
 
     const checks = checksJoined ? checksJoined.split(/,[ ]*/) : [SPECIFIC_CHECK_NOT_DEFINED];
 
     checks.forEach((check) => {
-      const disabledRanges = disabledChecks.get(absolutePath)!;
+      const disabledRanges = disabledChecks.get(uri)!;
 
       if (command === 'disable') {
         if (!disabledRanges.has(check)) {
@@ -49,7 +48,7 @@ export function createDisabledChecksModule() {
     meta: { schema: {} } as any,
     create: ({ file }) => ({
       async onCodePathStart() {
-        disabledChecks.set(file.absolutePath, new Map());
+        disabledChecks.set(file.uri, new Map());
       },
 
       async LiquidRawTag(node) {
@@ -57,7 +56,7 @@ export function createDisabledChecksModule() {
           return;
         }
 
-        determineRanges(file.absolutePath, node.body.value, node.position);
+        determineRanges(file.uri, node.body.value, node.position);
       },
 
       async LiquidTag(node) {
@@ -65,20 +64,20 @@ export function createDisabledChecksModule() {
           return;
         }
 
-        determineRanges(file.absolutePath, node.markup, node.position);
+        determineRanges(file.uri, node.markup, node.position);
       },
     }),
   };
 
   function isDisabled(offense: Offense) {
     const ranges = [SPECIFIC_CHECK_NOT_DEFINED, offense.check].flatMap((check) => {
-      if (!disabledChecks.has(offense.absolutePath)) {
+      if (!disabledChecks.has(offense.uri)) {
         return [];
       }
-      if (!disabledChecks.get(offense.absolutePath)!.has(check)) {
+      if (!disabledChecks.get(offense.uri)!.has(check)) {
         return [];
       }
-      return disabledChecks.get(offense.absolutePath)!.get(check)!;
+      return disabledChecks.get(offense.uri)!.get(check)!;
     });
 
     return ranges.some(

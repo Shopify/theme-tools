@@ -2,6 +2,7 @@ import * as mktemp from 'mktemp';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { path as pathUtils } from '@shopify/theme-check-common';
 
 export async function makeTmpFolder() {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'test-'));
@@ -69,7 +70,7 @@ export type Tree = {
 
 export interface Workspace {
   rootUri: string;
-  path(relativePath: string): string;
+  uri(relativePath: string): string;
   clean(): Promise<any>;
 }
 
@@ -79,9 +80,11 @@ export async function makeTempWorkspace(structure: Tree): Promise<Workspace> {
 
   await createFiles(structure, [root]);
 
+  const rootUri = pathUtils.normalize('file:' + root);
+
   return {
     rootUri: 'file:' + root,
-    path: (relativePath) => path.join(root, ...relativePath.split('/')),
+    uri: (relativePath) => pathUtils.join(rootUri, ...relativePath.split('/')),
     clean: async () => fs.rm(root, { recursive: true, force: true }),
   };
 

@@ -32,12 +32,7 @@ export class JSONValidator {
    * (presumably by doing some offset logic)
    */
   public validate: ValidateJSON<SourceCodeType> = async (sourceCode, jsonString) => {
-    const jsonTextDocument = TextDocument.create(
-      'file:' + sourceCode.absolutePath,
-      'json',
-      0,
-      jsonString,
-    );
+    const jsonTextDocument = TextDocument.create('file:' + sourceCode.uri, 'json', 0, jsonString);
     const jsonDocument = this.service.parseJSONDocument(jsonTextDocument);
     const diagnostics = await this.service.doValidation(jsonTextDocument, jsonDocument, {
       schemaValidation: 'error',

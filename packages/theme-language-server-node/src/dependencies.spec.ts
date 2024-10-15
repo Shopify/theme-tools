@@ -130,22 +130,23 @@ describe('Module: dependencies', () => {
 
   describe('Unit: fileExists', () => {
     it('should tell you if a file exists by path', async () => {
-      expect(await fileExists(workspace.path('gitRootTheme/snippets/header.liquid'))).to.be.true;
-      expect(await fileExists(workspace.path('gitRootTheme/snippets/does-not-exist.liquid'))).to.be
+      expect(await fileExists(workspace.uri('gitRootTheme/snippets/header.liquid'))).to.be.true;
+      expect(await fileExists(workspace.uri('gitRootTheme/snippets/does-not-exist.liquid'))).to.be
         .false;
     });
 
     it('should return true for directories', async () => {
-      expect(await fileExists(workspace.path('gitRootTheme/snippets'))).to.be.true;
+      expect(await fileExists(workspace.uri('gitRootTheme/snippets'))).to.be.true;
     });
 
     it('should accurately return whether a file exists in workspace', async () => {
       // Create a temporary file
       const tempFilePath = path.join(workspace.root, 'temp.txt');
+      const tempFileUri = URI.file(tempFilePath).toString();
       await fs.writeFile(tempFilePath, 'Hello, world!', 'utf8');
 
       // Use the fileExists function to check if the file exists
-      const exists = await fileExists(tempFilePath);
+      const exists = await fileExists(tempFileUri);
 
       // Check that the file exists
       expect(exists).to.be.true;
@@ -154,7 +155,7 @@ describe('Module: dependencies', () => {
       await fs.unlink(tempFilePath);
 
       // Use the fileExists function to check if the file exists
-      const notExists = await fileExists(tempFilePath);
+      const notExists = await fileExists(tempFileUri);
 
       // Check that the file does not exist
       expect(notExists).to.be.false;

@@ -10,6 +10,7 @@ import {
   parseJSON,
 } from '@shopify/theme-check-common';
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
+import { URI } from 'vscode-uri';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -43,7 +44,7 @@ export async function toSourceCode(
 ): Promise<LiquidSourceCode | JSONSourceCode | undefined> {
   try {
     const source = await fs.readFile(absolutePath, 'utf8');
-    return commonToSourceCode(absolutePath, source);
+    return commonToSourceCode(URI.file(absolutePath).toString(), source);
   } catch (e) {
     return undefined;
   }
@@ -65,11 +66,9 @@ export async function themeCheckRun(
   log: (message: string) => void = () => {},
 ): Promise<ThemeCheckRun> {
   const { theme, config } = await getThemeAndConfig(root, configPath);
-  const defaultTranslationsFile = theme.find((sc) => sc.absolutePath.endsWith('default.json'));
+  const defaultTranslationsFile = theme.find((sc) => sc.uri.endsWith('default.json'));
   const defaultTranslations = parseJSON(defaultTranslationsFile?.source ?? '{}', {});
-  const defaultSchemaTranslationsFile = theme.find((sc) =>
-    sc.absolutePath.endsWith('default.schema.json'),
-  );
+  const defaultSchemaTranslationsFile = theme.find((sc) => sc.uri.endsWith('default.schema.json'));
   const defaultSchemaTranslations = parseJSON(defaultSchemaTranslationsFile?.source ?? '{}', {});
   const themeLiquidDocsManager = new ThemeLiquidDocsManager(log);
 

@@ -20,8 +20,8 @@ export async function useBufferOrInjectedTranslations(
   const defaultTranslationsSourceCode = theme.find(
     (sourceCode) =>
       sourceCode.type === SourceCodeType.JSON &&
-      sourceCode.absolutePath.match(/locales/) &&
-      sourceCode.absolutePath.match(/default\.json/),
+      sourceCode.uri.match(/locales/) &&
+      sourceCode.uri.match(/default\.json/),
   );
   return (
     parseDefaultTranslations(defaultTranslationsSourceCode) ||
@@ -38,8 +38,8 @@ export async function useBufferOrInjectedSchemaTranslations(
   const defaultTranslationsSourceCode = theme.find(
     (sourceCode) =>
       sourceCode.type === SourceCodeType.JSON &&
-      sourceCode.absolutePath.match(/locales/) &&
-      sourceCode.absolutePath.match(/default\.schema\.json/),
+      sourceCode.uri.match(/locales/) &&
+      sourceCode.uri.match(/default\.schema\.json/),
   );
   return (
     parseDefaultTranslations(defaultTranslationsSourceCode) ||

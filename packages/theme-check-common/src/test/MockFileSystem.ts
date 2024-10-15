@@ -1,4 +1,5 @@
-import { FileStat, AbstractFileSystem, FileTuple, FileType } from '../AbstractFileSystem';
+import { AbstractFileSystem, FileStat, FileTuple, FileType } from '../AbstractFileSystem';
+import { normalize, relative } from '../path';
 import { MockTheme } from './MockTheme';
 
 interface FileTree {
@@ -6,8 +7,10 @@ interface FileTree {
 }
 
 export class MockFileSystem implements AbstractFileSystem {
-  constructor(private mockTheme: MockTheme, private rootUri = 'file:') {
-    this.rootUri = rootUri.replace(/\/+$/, '');
+  private rootUri: string;
+
+  constructor(private mockTheme: MockTheme, rootUri = 'file:///') {
+    this.rootUri = normalize(rootUri);
   }
 
   async readFile(uri: string): Promise<string> {
@@ -23,7 +26,9 @@ export class MockFileSystem implements AbstractFileSystem {
     uri = uri.replace(/\/$/, '');
     const relativePath = this.rootRelative(uri);
     const tree =
-      uri === this.rootUri ? this.fileTree : deepGet(this.fileTree, relativePath.split('/'));
+      normalize(uri) === this.rootUri
+        ? this.fileTree
+        : deepGet(this.fileTree, relativePath.split('/'));
     if (tree === undefined) {
       throw new Error('Directory not found');
     }
@@ -69,7 +74,7 @@ export class MockFileSystem implements AbstractFileSystem {
   }
 
   private rootRelative(uri: string) {
-    return uri.replace(this.rootUri + '/', '');
+    return relative(normalize(uri), this.rootUri);
   }
 }
 

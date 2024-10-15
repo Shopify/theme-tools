@@ -1,6 +1,7 @@
 import {
   allChecks,
   LiquidCheckDefinition,
+  path,
   Severity,
   SourceCodeType,
 } from '@shopify/theme-check-common';
@@ -75,12 +76,12 @@ describe('Module: runChecks', () => {
   });
 
   it('should send diagnostics when there are errors', async () => {
-    const fileURI = 'browser:///input.liquid';
+    const fileURI = 'browser:/input.liquid';
     const fileContents = `{{ 'any' | filter }}`;
     const fileVersion = 0;
     documentManager.open(fileURI, fileContents, fileVersion);
 
-    await runChecks(['browser:///input.liquid']);
+    await runChecks(['browser:/input.liquid']);
     expect(connection.sendDiagnostics).toBeCalled();
     expect(connection.sendDiagnostics).toBeCalledWith({
       uri: fileURI,
@@ -107,19 +108,19 @@ describe('Module: runChecks', () => {
   });
 
   it('should send an empty array when the errors were cleared', async () => {
-    const fileURI = 'browser:///input.liquid';
+    const fileURI = 'browser:/input.liquid';
     const fileContentsWithError = `{{ 'any' | filter }}`;
     const fileContentsWithoutError = `{{ 'any' }}`;
     let fileVersion = 1;
 
     // Open and have errors
     documentManager.open(fileURI, fileContentsWithError, fileVersion);
-    await runChecks(['browser:///input.liquid']);
+    await runChecks(['browser:/input.liquid']);
 
     // Change doc to fix errors
     fileVersion = 2;
     documentManager.change(fileURI, fileContentsWithoutError, fileVersion);
-    await runChecks(['browser:///input.liquid']);
+    await runChecks(['browser:/input.liquid']);
 
     expect(connection.sendDiagnostics).toBeCalledTimes(2);
     expect(connection.sendDiagnostics).toHaveBeenLastCalledWith({
@@ -132,7 +133,7 @@ describe('Module: runChecks', () => {
   it('should send diagnostics per URI when there are errors', async () => {
     const files = [
       {
-        fileURI: 'browser:///input1.liquid',
+        fileURI: 'browser:/input1.liquid',
         fileContents: `{{ 'any' | filter }}`,
         fileVersion: 0,
         diagnostics: [
@@ -155,7 +156,7 @@ describe('Module: runChecks', () => {
         ],
       },
       {
-        fileURI: 'browser:///input2.liquid',
+        fileURI: 'browser:/input2.liquid',
         // same but on a new line
         fileContents: `\n{{ 'any' | filter }}`,
         fileVersion: 0,
@@ -184,7 +185,7 @@ describe('Module: runChecks', () => {
       documentManager.open(fileURI, fileContents, fileVersion);
     });
 
-    await runChecks(['browser:///input1.liquid']);
+    await runChecks(['browser:/input1.liquid']);
 
     files.forEach(({ fileURI, fileVersion, diagnostics }) => {
       expect(connection.sendDiagnostics).toBeCalledWith({
@@ -196,8 +197,8 @@ describe('Module: runChecks', () => {
   });
 
   it('should use the contents of the default translations file buffer (if any) instead of the result of the factory', async () => {
-    const defaultURI = 'browser:///locales/en.default.json';
-    const frURI = 'browser:///locales/fr.json';
+    const defaultURI = 'browser:/locales/en.default.json';
+    const frURI = 'browser:/locales/fr.json';
     const files = {
       [defaultURI]: JSON.stringify({ hello: 'hello' }),
       [frURI]: JSON.stringify({ hello: 'bonjour', hi: 'salut' }),
@@ -206,15 +207,15 @@ describe('Module: runChecks', () => {
     const matchingTranslation = allChecks.filter((c) => c.meta.code === 'MatchingTranslations');
     expect(matchingTranslation).to.have.lengthOf(1);
     runChecks = makeRunChecks(documentManager, diagnosticsManager, {
-      findRootURI: async () => 'browser:/',
-      fs: new MockFileSystem(files, 'browser:/'),
+      findRootURI: async () => path.normalize('browser:/'),
+      fs: new MockFileSystem(files, path.normalize('browser:/')),
       getDefaultTranslationsFactory: () => async () => JSON.parse(files[defaultURI]),
       getDefaultSchemaTranslationsFactory: () => async () => ({}),
       loadConfig: async () => ({
         context: 'theme',
         settings: {},
         checks: matchingTranslation,
-        rootUri: 'browser:/',
+        rootUri: path.normalize('browser:/'),
       }),
       themeDocset: {
         filters: async () => [],

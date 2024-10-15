@@ -71,7 +71,7 @@ describe('ValidSchema', () => {
     expect(offenses).to.containOffense({
       check: ValidSchema.meta.code,
       message: expect.stringContaining('Expected comma or closing brace'),
-      absolutePath: `/${DEFAULT_FILE_NAME}`,
+      uri: `file:///${DEFAULT_FILE_NAME}`,
     });
   });
 
@@ -112,17 +112,17 @@ describe('ValidSchema', () => {
     expect(offenses).to.containOffense({
       check: ValidSchema.meta.code,
       message: 'Incorrect type. Expected "string".',
-      absolutePath: `/${DEFAULT_FILE_NAME}`,
+      uri: `file:///${DEFAULT_FILE_NAME}`,
     });
     expect(offenses).to.containOffense({
       check: ValidSchema.meta.code,
       message: 'Incorrect type. Expected "number".',
-      absolutePath: `/${DEFAULT_FILE_NAME}`,
+      uri: `file:///${DEFAULT_FILE_NAME}`,
     });
     expect(offenses).to.containOffense({
       check: ValidSchema.meta.code,
       message: 'Value is above the maximum of 50.',
-      absolutePath: `/${DEFAULT_FILE_NAME}`,
+      uri: `file:///${DEFAULT_FILE_NAME}`,
     });
   });
 
