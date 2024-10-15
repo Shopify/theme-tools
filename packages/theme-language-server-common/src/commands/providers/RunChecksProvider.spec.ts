@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { URI } from 'vscode-uri';
+import { path } from '@shopify/theme-check-common';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Connection } from 'vscode-languageserver';
+import { URI } from 'vscode-uri';
 import { ClientCapabilities } from '../../ClientCapabilities';
 import { DiagnosticsManager, makeRunChecks } from '../../diagnostics';
 import { DocumentManager } from '../../documents';
@@ -8,8 +9,8 @@ import { DebouncedFunction } from '../../utils';
 import { RunChecksProvider } from './RunChecksProvider';
 
 describe('Unit: RunChecksProvider', () => {
-  const uri1 = URI.file('/path/to/file1.liquid').toString();
-  const uri2 = URI.file('/path/to/file2.liquid').toString();
+  const uri1 = path.normalize(URI.file('/path/to/file1.liquid'));
+  const uri2 = path.normalize(URI.file('/path/to/file2.liquid'));
   const contents1 = `
     {% assign x = 1 %}
     <script src="2.js"></script>

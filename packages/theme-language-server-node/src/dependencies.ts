@@ -63,7 +63,7 @@ export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(
   const configUri = Utils.joinPath(rootUri, '.theme-check.yml');
   const configPath = asFsPath(configUri);
   const [configExists, isDefinitelyThemeAppExtension] = await Promise.all([
-    fileExists(configUri.toString()),
+    fileExists(path.normalize(configUri)),
     hasThemeAppExtensionConfig(rootUri.fsPath),
   ]);
   if (configExists) {
@@ -129,7 +129,7 @@ function cached<T>(fn: (...args: any[]) => Promise<T>): (...args: any[]) => Prom
 }
 
 function normalizeRoot(config: Config) {
-  config.rootUri = URI.parse(config.rootUri).toString();
+  config.rootUri = path.normalize(config.rootUri);
   return config;
 }
 

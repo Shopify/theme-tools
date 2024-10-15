@@ -1,14 +1,14 @@
-import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
+import { Offense, path, Position, Severity, SourceCodeType } from '@shopify/theme-check-common';
+import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
-import { Offense, SourceCodeType, Severity, Position } from '@shopify/theme-check-common';
 import { DiagnosticsManager } from '../../diagnostics';
+import { offenseToDiagnostic } from '../../diagnostics/offenseToDiagnostic';
 import { DocumentManager } from '../../documents';
 import { ApplyFixesProvider } from './ApplyFixesProvider';
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import { offenseToDiagnostic } from '../../diagnostics/offenseToDiagnostic';
 
 describe('Unit: ApplyFixesProvider', () => {
-  const uri = URI.file('/path/to/file.liquid').toString();
+  const uri = path.normalize(URI.file('/path/to/file.liquid'));
   const contents = `
     {% assign x = 1 %}
     <script src="2.js"></script>

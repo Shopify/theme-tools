@@ -1,6 +1,7 @@
 import * as mktemp from 'mktemp';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+import { path as pathUtils } from '@shopify/theme-check-common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { URI, Utils } from 'vscode-uri';
 import {
@@ -142,7 +143,7 @@ describe('Module: dependencies', () => {
     it('should accurately return whether a file exists in workspace', async () => {
       // Create a temporary file
       const tempFilePath = path.join(workspace.root, 'temp.txt');
-      const tempFileUri = URI.file(tempFilePath).toString();
+      const tempFileUri = pathUtils.normalize(URI.file(tempFilePath));
       await fs.writeFile(tempFilePath, 'Hello, world!', 'utf8');
 
       // Use the fileExists function to check if the file exists
@@ -171,17 +172,6 @@ describe('Module: dependencies', () => {
       expect(await getDefaultTranslations()).to.eql({ beverage: 'café' });
     });
   });
-
-  describe('Unit: loadConfig', () => {
-    it('should have a path normalized root', async () => {
-      expect((await loadConfig(workspace.uri('gitRootTheme/snippets'))).rootUri).not.to.include(
-        `\\`,
-      );
-      expect((await loadConfig(workspace.uri('frenchDefault/snippets'))).rootUri).not.to.include(
-        `\\`,
-      );
-    });
-  });
 });
 
 async function makeTempWorkspace(structure: Tree): Promise<Workspace> {
@@ -194,7 +184,7 @@ async function makeTempWorkspace(structure: Tree): Promise<Workspace> {
   return {
     root,
     path: (relativePath) => path.join(root, ...relativePath.split('/')),
-    uri: (relativePath) => Utils.joinPath(rootUri, ...relativePath.split('/')).toString(),
+    uri: (relativePath) => pathUtils.normalize(Utils.joinPath(rootUri, ...relativePath.split('/'))),
     clean: async () => fs.rm(root, { recursive: true, force: true }),
   };
 

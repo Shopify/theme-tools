@@ -1,4 +1,4 @@
-import { SourceCode, SourceCodeType, Theme, toSourceCode } from '@shopify/theme-check-common';
+import { path, SourceCode, SourceCodeType, Theme, toSourceCode } from '@shopify/theme-check-common';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-languageserver-types';
 
@@ -37,10 +37,11 @@ export class DocumentManager {
   }
 
   public get(uri: URI) {
-    return this.sourceCodes.get(uri);
+    return this.sourceCodes.get(path.normalize(uri));
   }
 
   private set(uri: URI, source: string, version: number | undefined) {
+    uri = path.normalize(uri);
     // We only support json and liquid files.
     if (!/\.(json|liquid)$/.test(uri) || /\.(s?css|js).liquid$/.test(uri)) {
       return;
