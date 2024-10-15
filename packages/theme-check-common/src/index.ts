@@ -1,10 +1,6 @@
 import { AugmentedThemeDocset } from './AugmentedThemeDocset';
 import { JSONValidator } from './JSONValidator';
-import {
-  getDefaultLocaleFactory,
-  makeFileExists,
-  makeFileSize
-} from './context-utils';
+import { getDefaultLocaleFactory, makeFileExists, makeFileSize } from './context-utils';
 import { createDisabledChecksModule } from './disabled-checks';
 import { isIgnored } from './ignore';
 import * as path from './path';
@@ -34,7 +30,7 @@ import { getPosition } from './utils';
 import { visitJSON, visitLiquid } from './visitors';
 
 export * from './AugmentedThemeDocset';
-export * from './FileSystem';
+export * from './AbstractFileSystem';
 export * from './checks';
 export * from './fixes';
 export * from './ignore';

@@ -1,11 +1,11 @@
-import { FileStat, FileSystem, FileTuple, FileType } from '../FileSystem';
+import { FileStat, AbstractFileSystem, FileTuple, FileType } from '../AbstractFileSystem';
 import { MockTheme } from './MockTheme';
 
 interface FileTree {
   [fileName: string]: string | FileTree;
 }
 
-export class MockFileSystem implements FileSystem {
+export class MockFileSystem implements AbstractFileSystem {
   constructor(private mockTheme: MockTheme, private rootUri = 'file:') {
     this.rootUri = rootUri.replace(/\/+$/, '');
   }

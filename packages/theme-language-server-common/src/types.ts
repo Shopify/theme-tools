@@ -1,7 +1,7 @@
 import { URI } from 'vscode-languageserver';
 import {
   Config,
-  FileSystem,
+  AbstractFileSystem,
   Dependencies as ThemeCheckDependencies,
 } from '@shopify/theme-check-common';
 
@@ -128,5 +128,5 @@ export interface RequiredDependencies {
    *
    * The browser accepts a custom implementation.
    */
-  fs: FileSystem;
+  fs: AbstractFileSystem;
 }

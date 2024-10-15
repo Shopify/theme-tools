@@ -1,7 +1,7 @@
 import { URI, Utils } from 'vscode-uri';
-import { FileSystem, FileTuple, FileType, UriString } from './FileSystem';
+import { AbstractFileSystem, FileTuple, FileType, UriString } from './AbstractFileSystem';
 
-export const makeFileExists = (fs: FileSystem) =>
+export const makeFileExists = (fs: AbstractFileSystem) =>
   async function fileExists(uri: string) {
     try {
       await fs.stat(uri);
@@ -11,7 +11,7 @@ export const makeFileExists = (fs: FileSystem) =>
     }
   };
 
-export const makeFileSize = (fs: FileSystem) =>
+export const makeFileSize = (fs: AbstractFileSystem) =>
   async function fileSize(uri: string) {
     try {
       const stats = await fs.stat(uri);
@@ -22,7 +22,7 @@ export const makeFileSize = (fs: FileSystem) =>
   };
 
 export function getDefaultLocaleFactory(
-  fs: FileSystem,
+  fs: AbstractFileSystem,
   rootUri: string,
   postfix: string = '.default.json',
 ) {
@@ -30,7 +30,11 @@ export function getDefaultLocaleFactory(
   return cached(() => getDefaultLocale(fs, rootUri, postfix));
 }
 
-async function getDefaultLocale(fs: FileSystem, rootUri: string, postfix: string): Promise<string> {
+async function getDefaultLocale(
+  fs: AbstractFileSystem,
+  rootUri: string,
+  postfix: string,
+): Promise<string> {
   const root = URI.parse(rootUri);
   try {
     const files = await fs.readDirectory(Utils.joinPath(root, 'locales').toString());
@@ -56,7 +60,7 @@ function cached<T>(fn: (...args: any[]) => Promise<T>): (...args: any[]) => Prom
 }
 
 export async function recursiveReadDirectory(
-  fs: FileSystem,
+  fs: AbstractFileSystem,
   uri: string,
   filter: (fileTuple: FileTuple) => boolean,
 ): Promise<UriString[]> {

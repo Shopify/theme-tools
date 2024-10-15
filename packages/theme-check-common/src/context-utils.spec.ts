@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { getDefaultLocaleFactory } from './context-utils';
 import { MockFileSystem } from './test';
-import { FileSystem } from './FileSystem';
+import { AbstractFileSystem } from './AbstractFileSystem';
 
 describe('Unit: getDefaultLocale', () => {
-  let fs: FileSystem;
+  let fs: AbstractFileSystem;
   beforeEach(() => {
     fs = new MockFileSystem(
       {

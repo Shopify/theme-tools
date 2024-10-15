@@ -11,7 +11,7 @@ import {
 import { Schema, Settings } from './types/schema-prop-factory';
 
 import { StringCorrector, JSONCorrector } from './fixes';
-import { FileSystem } from './FileSystem';
+import { AbstractFileSystem } from './AbstractFileSystem';
 
 import { ThemeDocset, JsonValidationSet } from './types/theme-liquid-docs';
 
@@ -275,7 +275,7 @@ export type Translations = {
 export interface Dependencies {
   getDefaultTranslations(): Promise<Translations>;
   getDefaultSchemaTranslations(): Promise<Translations>;
-  fs: FileSystem;
+  fs: AbstractFileSystem;
   themeDocset?: ThemeDocset;
   jsonValidationSet?: JsonValidationSet;
 }
