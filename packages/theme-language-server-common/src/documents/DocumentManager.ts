@@ -1,7 +1,6 @@
 import { SourceCode, SourceCodeType, Theme, toSourceCode } from '@shopify/theme-check-common';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-languageserver-types';
-import { toAbsolutePath } from '../utils';
 
 export type AugmentedSourceCode<SCT extends SourceCodeType = SourceCodeType> = SourceCode<SCT> & {
   textDocument: TextDocument;
@@ -42,14 +41,12 @@ export class DocumentManager {
   }
 
   private set(uri: URI, source: string, version: number | undefined) {
-    const absolutePath = toAbsolutePath(uri);
-
     // We only support json and liquid files.
-    if (!/\.(json|liquid)$/.test(absolutePath) || /\.(s?css|js).liquid$/.test(absolutePath)) {
+    if (!/\.(json|liquid)$/.test(uri) || /\.(s?css|js).liquid$/.test(uri)) {
       return;
     }
 
-    const sourceCode = toSourceCode(absolutePath, source, version);
+    const sourceCode = toSourceCode(uri, source, version);
     this.sourceCodes.set(uri, {
       ...sourceCode,
       textDocument: TextDocument.create(
@@ -58,7 +55,6 @@ export class DocumentManager {
         sourceCode.version ?? 0,
         sourceCode.source,
       ),
-      uri,
     });
   }
 }

@@ -1,11 +1,13 @@
 import {
   Config,
-  PathHandler,
+  NodeFileSystem,
   Translations,
   isError,
   loadConfig as loadConfigFromPath,
+  makeFileExists,
   memoize,
   parseJSON,
+  path,
   reusableFindRoot,
 } from '@shopify/theme-check-node';
 import { Dependencies } from '@shopify/theme-language-server-common';
@@ -32,23 +34,7 @@ function asFsPath(uriOrPath: string | URI) {
   }
 }
 
-const UriPathHandler: PathHandler<URI> = {
-  join(base: URI, ...paths: string[]): string {
-    return asFsPath(Utils.joinPath(base, ...paths));
-  },
-
-  dirname(uri: URI): URI {
-    return Utils.dirname(uri);
-  },
-
-  asPath(uri: URI): string {
-    return asFsPath(uri);
-  },
-};
-
-async function findRoot(curr: URI): Promise<URI> {
-  return reusableFindRoot(curr, UriPathHandler);
-}
+export const fileExists = makeFileExists(NodeFileSystem);
 
 export const filesForURI: NonNullable<Dependencies['filesForURI']> = async function filesForURI(
   uriString,
@@ -59,21 +45,8 @@ export const filesForURI: NonNullable<Dependencies['filesForURI']> = async funct
 };
 
 export const findRootURI: Dependencies['findRootURI'] = async function findRootURI(uriString) {
-  const uri = parse(uriString);
-  const root = await findRoot(uri);
-  return root.toString();
+  return reusableFindRoot(uriString, fileExists);
 };
-
-export async function fileExists(path: string): Promise<boolean> {
-  try {
-    // This will get called within theme-check-common which assumes
-    // forward-slashes. We need to denormalize those here.
-    await fs.stat(asFsPath(path));
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 const hasThemeAppExtensionConfig = memoize(
   async (rootPath: string) => {
@@ -84,14 +57,14 @@ const hasThemeAppExtensionConfig = memoize(
 );
 
 export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(uriString: string) {
-  const fileUri = parse(uriString);
-  const rootUri = await findRoot(fileUri);
-  const rootPath = asFsPath(rootUri);
+  const fileUri = path.normalize(uriString);
+  const rootUri = URI.parse(await findRootURI(fileUri));
+  const rootPath = rootUri.fsPath;
   const configUri = Utils.joinPath(rootUri, '.theme-check.yml');
   const configPath = asFsPath(configUri);
   const [configExists, isDefinitelyThemeAppExtension] = await Promise.all([
-    fileExists(configPath),
-    hasThemeAppExtensionConfig(rootPath),
+    fileExists(configUri.toString()),
+    hasThemeAppExtensionConfig(rootUri.fsPath),
   ]);
   if (configExists) {
     return loadConfigFromPath(configPath, rootPath).then(normalizeRoot);

@@ -19,7 +19,7 @@ export const ValidHTMLTranslation: JSONCheckDefinition = {
 
   create(context) {
     // We ignore non-`locales/` json files.
-    const relativePath = context.relativePath(context.file.absolutePath);
+    const relativePath = context.toRelativePath(context.file.uri);
     if (!relativePath.startsWith('locales/')) return {};
 
     return {

@@ -67,9 +67,7 @@ export function makeRunChecks(
       // there were offenses before, we need to send an empty array to clear
       // them.
       for (const sourceCode of theme) {
-        const sourceCodeOffenses = offenses.filter(
-          (offense) => offense.absolutePath === sourceCode.absolutePath,
-        );
+        const sourceCodeOffenses = offenses.filter((offense) => offense.uri === sourceCode.uri);
         diagnosticsManager.set(sourceCode.uri, sourceCode.version, sourceCodeOffenses);
       }
     }

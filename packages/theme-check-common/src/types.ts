@@ -28,8 +28,8 @@ export type Theme = SourceCode<SourceCodeType>[];
 
 export type SourceCode<T = SourceCodeType> = T extends SourceCodeType
   ? {
-      /** A normalized absolute path to the file. Assumes forwards slashes. */
-      absolutePath: string;
+      /** A normalized uri the file. */
+      uri: string;
       /** The type is used as a discriminant for type narrowing */
       type: T;
       /** The version is used by the Language Server to make sure the Client and Server are in sync */
@@ -82,8 +82,8 @@ export type NodeTypes = {
   }[T];
 };
 
-/** Assumes forward slashes for simplicity internally */
-export type AbsolutePath = string;
+/** A vscode-uri string. */
+export type Uri = string;
 
 /** Assumes forward slashes for simplicity internally */
 export type RelativePath = string;
@@ -288,11 +288,11 @@ export type ValidateJSON<T extends SourceCodeType> = (
 type StaticContextProperties<T extends SourceCodeType> = T extends SourceCodeType
   ? {
       report(problem: Problem<T>): void;
-      relativePath(absolutePath: AbsolutePath): RelativePath;
-      absolutePath(relativePath: RelativePath): AbsolutePath;
+      toRelativePath(uri: Uri): RelativePath;
+      toUri(relativePath: RelativePath): Uri;
       file: SourceCode<T>;
-      fileExists: (absolutePath: AbsolutePath) => Promise<boolean>;
-      fileSize: (absolutePath: string) => Promise<number>;
+      fileExists: (uri: Uri) => Promise<boolean>;
+      fileSize: (uri: Uri) => Promise<number>;
       getDefaultLocale: () => Promise<string>;
       getDefaultSchemaLocale: () => Promise<string>;
       validateJSON?: ValidateJSON<T>;
@@ -427,7 +427,7 @@ export type Offense<T extends SourceCodeType = SourceCodeType> = T extends Sourc
       type: T;
       check: string;
       message: string;
-      absolutePath: string;
+      uri: string;
       severity: Severity;
       start: Position;
       end: Position;

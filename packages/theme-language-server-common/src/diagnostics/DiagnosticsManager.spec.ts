@@ -20,7 +20,7 @@ describe('Module: DiagnosticsManager', () => {
     const fileVersion = 0;
     const offenses: Offense[] = [
       {
-        absolutePath: '/input.liquid',
+        uri: 'file:///input.liquid',
         message: 'Test',
         check: 'TestCheck',
         start: {
@@ -51,7 +51,7 @@ describe('Module: DiagnosticsManager', () => {
     const fileVersion = 0;
     const offenses: Offense[] = [
       {
-        absolutePath: '/input.liquid',
+        uri: 'file:///input.liquid',
         message: 'Test',
         check: 'TestCheck',
         start: {

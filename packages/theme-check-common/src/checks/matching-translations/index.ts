@@ -30,13 +30,13 @@ export const MatchingTranslations: JSONCheckDefinition = {
     const missingTranslations = new Set<string>();
     const nodesByPath = new Map<string, PropertyNode>();
     const file = context.file;
-    const absolutePath = file.absolutePath;
-    const relativePath = context.relativePath(absolutePath);
+    const fileUri = file.uri;
+    const relativePath = context.toRelativePath(fileUri);
     const ast = file.ast;
     const isLocaleFile = relativePath.startsWith('locales/');
     const isDefaultTranslationsFile =
-      absolutePath.endsWith('.default.json') || absolutePath.endsWith('.default.schema.json');
-    const isSchemaTranslationFile = absolutePath.endsWith('.schema.json');
+      fileUri.endsWith('.default.json') || fileUri.endsWith('.default.schema.json');
+    const isSchemaTranslationFile = fileUri.endsWith('.schema.json');
 
     if (!isLocaleFile || isDefaultTranslationsFile || ast instanceof Error) {
       // No need to lint a file that isn't a translation file, we return an

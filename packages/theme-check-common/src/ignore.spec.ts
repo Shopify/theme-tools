@@ -1,6 +1,6 @@
 import { expect, describe, it } from 'vitest';
 import { isIgnored } from './ignore';
-import { AbsolutePath, CheckDefinition, Config, SourceCodeType } from './types';
+import { Uri, CheckDefinition, Config, SourceCodeType } from './types';
 
 const checkDef: CheckDefinition = {
   meta: {
@@ -20,7 +20,7 @@ const checkDef: CheckDefinition = {
 describe('Function: isIgnored', () => {
   it('should return false when no ignore patterns are provided', () => {
     const result = isIgnored(
-      absolutePath('snippets/foo.liquid'),
+      toUri('snippets/foo.liquid'),
       config({
         checkIgnore: [],
         globalIgnore: [],
@@ -32,7 +32,7 @@ describe('Function: isIgnored', () => {
 
   it('should return true when the file matches a base ignore pattern', () => {
     const result = isIgnored(
-      absolutePath('snippets/foo.liquid'),
+      toUri('snippets/foo.liquid'),
       config({
         checkIgnore: ['*.liquid'],
         globalIgnore: [],
@@ -45,7 +45,7 @@ describe('Function: isIgnored', () => {
 
   it('should return false when the file does not matches a negative pattern', () => {
     const result = isIgnored(
-      absolutePath('snippets/foo.liquid'),
+      toUri('snippets/foo.liquid'),
       config({
         checkIgnore: ['!snippets/*'],
         globalIgnore: [],
@@ -58,7 +58,7 @@ describe('Function: isIgnored', () => {
 
   it('should return true when the file matches an ignore pattern', () => {
     const result = isIgnored(
-      absolutePath('snippets/foo.liquid'),
+      toUri('snippets/foo.liquid'),
       config({
         checkIgnore: ['snippets/*.liquid'],
         globalIgnore: [],
@@ -71,7 +71,7 @@ describe('Function: isIgnored', () => {
 
   it('should return false when the file does not match any ignore patterns', () => {
     const result = isIgnored(
-      absolutePath('snippets/foo.liquid'),
+      toUri('snippets/foo.liquid'),
       config({
         checkIgnore: ['other-snippets/*.liquid'],
         globalIgnore: [],
@@ -84,7 +84,7 @@ describe('Function: isIgnored', () => {
 
   it('should return true when the file matches a global ignore pattern', () => {
     const result = isIgnored(
-      absolutePath('snippets/foo.liquid'),
+      toUri('snippets/foo.liquid'),
       config({
         checkIgnore: [],
         globalIgnore: ['snippets/*.liquid'],
@@ -97,7 +97,7 @@ describe('Function: isIgnored', () => {
 
   it('should return true when the file matches both check-specific and global ignore patterns', () => {
     const result = isIgnored(
-      absolutePath('snippets/foo.liquid'),
+      toUri('snippets/foo.liquid'),
       config({
         checkIgnore: ['snippets/*.liquid'],
         globalIgnore: ['snippets/*.liquid'],
@@ -110,7 +110,7 @@ describe('Function: isIgnored', () => {
 
   it('should return true when the file partially matches an ignore pattern', () => {
     const result = isIgnored(
-      absolutePath('node_modules/some-library/foo.liquid'),
+      toUri('node_modules/some-library/foo.liquid'),
       config({
         checkIgnore: ['node_modules/*'],
         globalIgnore: [],
@@ -123,7 +123,7 @@ describe('Function: isIgnored', () => {
 
   it('should return true when the file partially matches a non-root ignore pattern', () => {
     const result = isIgnored(
-      absolutePath('some-library/node_modules/foo.liquid'),
+      toUri('some-library/node_modules/foo.liquid'),
       config({
         // any kind of node_modules are ignored
         checkIgnore: ['node_modules/*'],
@@ -137,7 +137,7 @@ describe('Function: isIgnored', () => {
 
   it('should return true when the file matches a non-root /** pattern', () => {
     const result = isIgnored(
-      absolutePath('some-library/node_modules/foo.liquid'),
+      toUri('some-library/node_modules/foo.liquid'),
       config({
         // any kind of node_modules are ignored
         checkIgnore: ['node_modules/**'],
@@ -151,7 +151,7 @@ describe('Function: isIgnored', () => {
 
   it('should return false when the file partially matches a root ignore pattern', () => {
     const result = isIgnored(
-      absolutePath('some-library/node_modules/foo.liquid'),
+      toUri('some-library/node_modules/foo.liquid'),
       config({
         // only /root/node_modules/* is ignored, other ones aren't
         checkIgnore: ['/node_modules/*'],
@@ -165,7 +165,7 @@ describe('Function: isIgnored', () => {
 
   it('should work with only global ignore as well', () => {
     const result = isIgnored(
-      absolutePath('layout/theme.liquid'),
+      toUri('layout/theme.liquid'),
       config({
         checkIgnore: [],
         globalIgnore: ['layout/theme.liquid'],
@@ -176,8 +176,8 @@ describe('Function: isIgnored', () => {
   });
 });
 
-function absolutePath(relativePath: string): AbsolutePath {
-  return `/path/to/${relativePath}`;
+function toUri(relativePath: string): Uri {
+  return `file:/path/to/${relativePath}`;
 }
 
 function config({

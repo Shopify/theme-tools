@@ -5,11 +5,12 @@ import {
   autofix as coreAutofix,
   FixApplicator,
   applyFixToString,
+  path,
 } from '@shopify/theme-check-common';
 
 export const saveToDiskFixApplicator: FixApplicator = async (sourceCode, fix) => {
   const updatedSource = applyFixToString(sourceCode.source, fix);
-  await writeFile(sourceCode.absolutePath, updatedSource, 'utf8');
+  await writeFile(path.fsPath(sourceCode.uri), updatedSource, 'utf8');
 };
 
 /**

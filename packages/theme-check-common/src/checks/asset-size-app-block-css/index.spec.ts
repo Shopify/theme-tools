@@ -36,7 +36,7 @@ describe('Module: AssetSizeAppBlockCSS', () => {
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
       message: `The file size for 'app.css' (19 B) exceeds the configured threshold (1 B)`,
-      absolutePath: '/blocks/app.liquid',
+      uri: 'file:///blocks/app.liquid',
       start: { index: 51 },
       end: { index: 58 },
     });
@@ -58,7 +58,7 @@ describe('Module: AssetSizeAppBlockCSS', () => {
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
       message: `'nonexistent.css' does not exist.`,
-      absolutePath: '/blocks/app.liquid',
+      uri: 'file:///blocks/app.liquid',
       start: { index: 57 },
       end: { index: 72 },
     });
@@ -80,7 +80,7 @@ describe('Module: AssetSizeAppBlockCSS', () => {
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
       message: `'nonexistent.css' does not exist.`,
-      absolutePath: '/blocks/app.liquid',
+      uri: 'file:///blocks/app.liquid',
       start: { index: 57 },
       end: { index: 72 },
     });

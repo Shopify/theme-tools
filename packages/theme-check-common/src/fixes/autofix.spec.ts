@@ -13,7 +13,7 @@ describe('Module: autofix', () => {
       {
         type: SourceCodeType.LiquidHtml,
         fix: (corrector) => corrector.insert(2, 'nanana'),
-        absolutePath: '/a.liquid',
+        uri: 'file:///a.liquid',
         check: 'Mock Check',
         message: 'Mock check message',
         severity: 0,
@@ -30,7 +30,7 @@ describe('Module: autofix', () => {
             },
           },
         ],
-        absolutePath: '/a.liquid',
+        uri: 'file:///a.liquid',
         check: 'Mock Check',
         message: 'Mock check message',
         severity: 0,
@@ -43,7 +43,7 @@ describe('Module: autofix', () => {
           corrector.add('a.b.c', 'c');
           corrector.add('a.b.d', 'd');
         },
-        absolutePath: '/b.json',
+        uri: 'file:///b.json',
         check: 'Mock Check',
         message: 'Mock check message',
         severity: 0,
@@ -60,7 +60,7 @@ describe('Module: autofix', () => {
             },
           },
         ],
-        absolutePath: '/b.json',
+        uri: 'file:///b.json',
         check: 'Mock Check',
         message: 'Mock check message',
         severity: 0,

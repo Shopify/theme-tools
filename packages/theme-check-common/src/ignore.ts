@@ -1,11 +1,7 @@
-import { AbsolutePath, CheckDefinition, Config } from './types';
+import { Uri, CheckDefinition, Config } from './types';
 import { minimatch } from 'minimatch';
 
-export function isIgnored(
-  absolutePath: AbsolutePath,
-  config: Config,
-  checkDef?: CheckDefinition,
-): boolean {
+export function isIgnored(uri: Uri, config: Config, checkDef?: CheckDefinition): boolean {
   const ignorePatterns = [...checkIgnorePatterns(checkDef, config), ...asArray(config.ignore)].map(
     (pattern) =>
       pattern
@@ -14,7 +10,7 @@ export function isIgnored(
         .replace(/\/\*$/, '/**'), // "/*" patterns are really "/**"
   );
 
-  return ignorePatterns.some((pattern) => minimatch(absolutePath, pattern));
+  return ignorePatterns.some((pattern) => minimatch(uri, pattern));
 }
 
 function checkIgnorePatterns(checkDef: CheckDefinition | undefined, config: Config) {

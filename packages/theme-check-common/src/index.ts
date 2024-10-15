@@ -29,12 +29,14 @@ import {
 import { getPosition } from './utils';
 import { visitJSON, visitLiquid } from './visitors';
 
-export * from './AugmentedThemeDocset';
 export * from './AbstractFileSystem';
+export * from './AugmentedThemeDocset';
 export * from './checks';
+export { makeFileExists, makeFileSize } from './context-utils';
 export * from './fixes';
 export * from './ignore';
 export * from './json';
+export * as path from './path';
 export * from './to-source-code';
 export * from './types';
 export * from './utils/error';
@@ -75,7 +77,7 @@ export async function check(
         const checkDefs = checksOfType(type, config.checks);
         for (const file of files) {
           for (const checkDef of checkDefs) {
-            if (isIgnored(file.absolutePath, config, checkDef)) continue;
+            if (isIgnored(file.uri, config, checkDef)) continue;
             const check = createCheck(checkDef, file, config, offenses, dependencies, validateJSON);
             pipelines.push(checkJSONFile(check, file));
           }
@@ -87,7 +89,7 @@ export async function check(
         const checkDefs = [DisabledChecksVisitor, ...checksOfType(type, config.checks)];
         for (const file of files) {
           for (const checkDef of checkDefs) {
-            if (isIgnored(file.absolutePath, config, checkDef)) continue;
+            if (isIgnored(file.uri, config, checkDef)) continue;
             const check = createCheck(checkDef, file, config, offenses, dependencies, validateJSON);
             pipelines.push(checkLiquidFile(check, file));
           }
@@ -124,14 +126,14 @@ function createContext<T extends SourceCodeType, S extends Schema>(
     ),
     validateJSON,
     settings: createSettings(checkSettings, check.meta.schema),
-    absolutePath: (relativePath) => path.join(config.rootUri, relativePath),
-    relativePath: (absolutePath) => path.relative(absolutePath, config.rootUri),
+    toUri: (relativePath) => path.join(config.rootUri, relativePath),
+    toRelativePath: (uri) => path.relative(uri, config.rootUri),
     report(problem: Problem<T>): void {
       offenses.push({
         type: check.meta.type,
         check: check.meta.code,
         message: problem.message,
-        absolutePath: file.absolutePath,
+        uri: file.uri,
         severity: checkSettings?.severity ?? check.meta.severity,
         start: getPosition(file.source, problem.startIndex),
         end: getPosition(file.source, problem.endIndex),

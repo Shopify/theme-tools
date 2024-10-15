@@ -88,7 +88,7 @@ export const TranslationKeyExists: LiquidCheckDefinition = {
 
           let message = `'${translationKey}' does not have a matching entry in 'locales/${defaultLocale}.default.json'`;
           if (schemaLocales) {
-            message += ` or '${context.relativePath(context.file.absolutePath)}'`;
+            message += ` or '${context.toRelativePath(context.file.uri)}'`;
           }
 
           context.report({

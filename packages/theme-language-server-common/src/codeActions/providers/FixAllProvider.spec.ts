@@ -31,7 +31,7 @@ describe('Unit: FixAllProvider', () => {
       type: SourceCodeType.LiquidHtml,
       check: checkName,
       message: 'Parser blocking script detected',
-      absolutePath: '/path/to/file.liquid',
+      uri: 'file:///path/to/file.liquid',
       severity: Severity.ERROR,
       start: { ...document.positionAt(start), index: start },
       end: { ...document.positionAt(end), index: end },

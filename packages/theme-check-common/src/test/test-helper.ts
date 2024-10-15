@@ -19,14 +19,17 @@ import {
   Theme,
   toSourceCode,
 } from '../index';
+import * as path from '../path';
 import { MockFileSystem } from './MockFileSystem';
 import { MockTheme } from './MockTheme';
 
 export { JSONCorrector, StringCorrector };
 
+const rootUri = path.normalize('file:/');
+
 export function getTheme(themeDesc: MockTheme): Theme {
   return Object.entries(themeDesc)
-    .map(([relativePath, source]) => toSourceCode(asAbsolutePath(relativePath), source))
+    .map(([relativePath, source]) => toSourceCode(toUri(relativePath), source))
     .filter((x): x is LiquidSourceCode | JSONSourceCode => x !== undefined);
 }
 
@@ -48,10 +51,6 @@ export async function check(
 
   const defaultMockDependencies = {
     fs: new MockFileSystem(themeDesc),
-    async fileSize(absolutePath: string) {
-      const relativePath = absolutePath.replace('file:/', '');
-      return themeDesc[relativePath].length;
-    },
     async getDefaultTranslations() {
       return parseJSON(themeDesc[defaultTranslationsFileRelativePath] || '{}', {});
     },
@@ -193,7 +192,7 @@ export async function runLiquidCheck(
   mockDependencies: Partial<Dependencies> = {},
 ): Promise<Offense[]> {
   const offenses = await check({ [fileName]: sourceCode }, [checkDef], mockDependencies);
-  return offenses.filter((offense) => offense.absolutePath === `/${fileName}`);
+  return offenses.filter((offense) => offense.uri === path.join(rootUri, fileName));
 }
 
 export async function runJSONCheck(
@@ -203,7 +202,7 @@ export async function runJSONCheck(
   mockDependencies: Partial<Dependencies> = {},
 ): Promise<Offense[]> {
   const offenses = await check({ [fileName]: sourceCode }, [checkDef], mockDependencies);
-  return offenses.filter((offense) => offense.absolutePath === `/${fileName}`);
+  return offenses.filter((offense) => offense.uri === path.join(rootUri, fileName));
 }
 
 export async function autofix(themeDesc: MockTheme, offenses: Offense[]) {
@@ -211,7 +210,7 @@ export async function autofix(themeDesc: MockTheme, offenses: Offense[]) {
   const fixed = { ...themeDesc };
 
   const stringApplicator: FixApplicator = async (sourceCode, fixes) => {
-    fixed[asRelative(sourceCode.absolutePath)] = applyFixToString(sourceCode.source, fixes);
+    fixed[asRelative(sourceCode.uri)] = applyFixToString(sourceCode.source, fixes);
   };
 
   await coreAutofix(theme, offenses, stringApplicator);
@@ -226,7 +225,7 @@ export function applyFix(
   const source =
     typeof themeDescOrSource === 'string'
       ? themeDescOrSource
-      : themeDescOrSource[asRelative(offense.absolutePath)];
+      : themeDescOrSource[asRelative(offense.uri)];
   const corrector = createCorrector(offense.type, source);
   offense.fix?.(corrector as any);
   return applyFixToString(source, corrector.fix);
@@ -239,7 +238,7 @@ export function applySuggestions(
   const source =
     typeof themeDescOrSource === 'string'
       ? themeDescOrSource
-      : themeDescOrSource[asRelative(offense.absolutePath)];
+      : themeDescOrSource[asRelative(offense.uri)];
   return offense.suggest?.map((suggestion) => {
     const corrector = createCorrector(offense.type, source);
     suggestion.fix(corrector as any);
@@ -251,7 +250,7 @@ export function highlightedOffenses(themeOrSource: MockTheme | string, offenses:
   const theme =
     typeof themeOrSource === 'string' ? { 'file.liquid': themeOrSource } : themeOrSource;
   return offenses.map((offense) => {
-    const relativePath = offense.absolutePath.substring(1);
+    const relativePath = path.relative(offense.uri, rootUri);
     const source = theme[relativePath];
     const {
       start: { index: startIndex },
@@ -262,12 +261,12 @@ export function highlightedOffenses(themeOrSource: MockTheme | string, offenses:
   });
 }
 
-function asAbsolutePath(relativePath: string) {
-  return '/' + relativePath;
+function toUri(relativePath: string) {
+  return path.join(rootUri, relativePath);
 }
 
-function asRelative(absolutePath: string) {
-  return absolutePath.replace(/^\//, '');
+function asRelative(uri: string) {
+  return path.relative(path.normalize(uri), rootUri);
 }
 
 export function prettyJSON(obj: any): string {

@@ -1,9 +1,9 @@
-import path from 'node:path';
-import { AbsolutePath, Config } from '@shopify/theme-check-common';
-import { resolveConfig } from './resolve';
+import { Config } from '@shopify/theme-check-common';
+import { AbsolutePath } from '../temp';
 import { loadConfigDescription } from './load-config-description';
+import { resolveConfig } from './resolve';
+import { ModernIdentifier } from './types';
 import { validateConfig } from './validation';
-import { ModernIdentifier, ModernIdentifiers } from './types';
 
 /**
  * Given an absolute path to a config file, this function returns

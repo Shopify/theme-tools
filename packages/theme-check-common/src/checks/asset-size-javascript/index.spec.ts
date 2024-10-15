@@ -72,7 +72,7 @@ describe('Module: AssetSizeJavaScript', () => {
     expect(offenses[0]).toMatchObject({
       message:
         'JavaScript on every page load exceeds compressed size threshold (1 Bytes), consider using the import on interaction pattern.',
-      absolutePath: '/templates/index.liquid',
+      uri: 'file:///templates/index.liquid',
       start: { index: 52 },
       end: { index: 121 },
     });
@@ -101,7 +101,7 @@ describe('Module: AssetSizeJavaScript', () => {
     expect(offenses[0]).toMatchObject({
       message:
         'JavaScript on every page load exceeds compressed size threshold (2 Bytes), consider using the import on interaction pattern.',
-      absolutePath: '/templates/index.liquid',
+      uri: 'file:///templates/index.liquid',
       start: { index: 52 },
       end: { index: 80 },
     });
@@ -154,14 +154,14 @@ describe('Module: AssetSizeJavaScript', () => {
     expect(offenses[0]).toMatchObject({
       message:
         'JavaScript on every page load exceeds compressed size threshold (2 Bytes), consider using the import on interaction pattern.',
-      absolutePath: '/templates/index.liquid',
+      uri: 'file:///templates/index.liquid',
       start: { index: 48 },
       end: { index: 84 },
     });
     expect(offenses[1]).toMatchObject({
       message:
         'JavaScript on every page load exceeds compressed size threshold (2 Bytes), consider using the import on interaction pattern.',
-      absolutePath: '/templates/index.liquid',
+      uri: 'file:///templates/index.liquid',
       start: { index: 102 },
       end: { index: 123 },
     });

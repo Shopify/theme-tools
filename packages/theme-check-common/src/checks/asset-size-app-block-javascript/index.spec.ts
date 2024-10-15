@@ -1,7 +1,6 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { AssetSizeAppBlockJavaScript } from '.';
 import { check, MockTheme } from '../../test';
-import { SchemaProp } from '../../types';
 
 describe('Module: AssetSizeAppBlockJavaScript', () => {
   const extensionFiles: MockTheme = {
@@ -37,7 +36,7 @@ describe('Module: AssetSizeAppBlockJavaScript', () => {
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
       message: `The file size for 'app.js' (29 B) exceeds the configured threshold (1 B)`,
-      absolutePath: '/blocks/app.liquid',
+      uri: 'file:///blocks/app.liquid',
       start: { index: 51 },
       end: { index: 57 },
     });
@@ -59,7 +58,7 @@ describe('Module: AssetSizeAppBlockJavaScript', () => {
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
       message: `'nonexistent.js' does not exist.`,
-      absolutePath: '/blocks/app.liquid',
+      uri: 'file:///blocks/app.liquid',
       start: { index: 57 },
       end: { index: 71 },
     });

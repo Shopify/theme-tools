@@ -19,9 +19,9 @@ describe('Module: DocumentManager', () => {
     documentManager.open(fileUri.toString(), '{{ "hi" }}', 0);
     const theme = documentManager.theme(rootUri.toString());
     expect(theme).to.have.lengthOf(1);
-    expect(theme[0].absolutePath).not.to.include('\\');
+    expect(theme[0].uri).not.to.include('\\');
     // `fileURI.toString()` lowercases c: in 'C:\dir\path'
     // Without the URI.parse().path, this test was failing for a dumb reason
-    expect(theme[0].absolutePath).to.equal(URI.parse(fileUri.toString()).path);
+    expect(theme[0].uri).to.equal(fileUri.toString());
   });
 });

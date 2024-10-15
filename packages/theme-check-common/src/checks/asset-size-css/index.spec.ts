@@ -60,7 +60,7 @@ describe('Module: AssetSizeCSS', () => {
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
       message: 'The CSS file size exceeds the threshold of 1 bytes',
-      absolutePath: '/templates/index.liquid',
+      uri: 'file:///templates/index.liquid',
       start: { index: 51 },
       end: { index: 80 },
     });
@@ -83,7 +83,7 @@ describe('Module: AssetSizeCSS', () => {
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
       message: 'The CSS file size exceeds the threshold of 1 bytes',
-      absolutePath: '/templates/index.liquid',
+      uri: 'file:///templates/index.liquid',
       start: { index: 51 },
       end: { index: 122 },
     });
@@ -137,13 +137,13 @@ describe('Module: AssetSizeCSS', () => {
     expect(offenses).toHaveLength(2);
     expect(offenses[0]).toMatchObject({
       message: 'The CSS file size exceeds the threshold of 2 bytes',
-      absolutePath: '/templates/index.liquid',
+      uri: 'file:///templates/index.liquid',
       start: { index: 48 },
       end: { index: 89 },
     });
     expect(offenses[1]).toMatchObject({
       message: 'The CSS file size exceeds the threshold of 2 bytes',
-      absolutePath: '/templates/index.liquid',
+      uri: 'file:///templates/index.liquid',
       start: { index: 107 },
       end: { index: 128 },
     });

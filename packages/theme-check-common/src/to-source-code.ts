@@ -1,7 +1,8 @@
 import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
 import toJSON from 'json-to-ast';
 
-import { SourceCodeType, JSONSourceCode, LiquidSourceCode } from './types';
+import * as path from './path';
+import { JSONSourceCode, LiquidSourceCode, SourceCodeType } from './types';
 import { asError } from './utils/error';
 
 export function toLiquidHTMLAST(source: string) {
@@ -21,15 +22,15 @@ export function toJSONAST(source: string) {
 }
 
 export function toSourceCode(
-  absolutePath: string,
+  uri: string,
   source: string,
   version?: number,
 ): LiquidSourceCode | JSONSourceCode {
-  const isLiquid = absolutePath.endsWith('.liquid');
+  const isLiquid = uri.endsWith('.liquid');
 
   if (isLiquid) {
     return {
-      absolutePath: normalize(absolutePath),
+      uri: path.normalize(uri),
       source,
       type: SourceCodeType.LiquidHtml,
       ast: toLiquidHTMLAST(source),
@@ -37,7 +38,7 @@ export function toSourceCode(
     };
   } else {
     return {
-      absolutePath: normalize(absolutePath),
+      uri: path.normalize(uri),
       source,
       type: SourceCodeType.JSON,
       ast: toJSONAST(source),
@@ -47,7 +48,3 @@ export function toSourceCode(
 }
 
 type MaybeWindowsPath = string;
-
-function normalize(path: MaybeWindowsPath): string {
-  return path.replace(/\\/g, '/');
-}

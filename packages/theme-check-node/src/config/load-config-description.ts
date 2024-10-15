@@ -1,12 +1,7 @@
-import {
-  AbsolutePath,
-  CheckDefinition,
-  Config,
-  SourceCodeType,
-  allChecks,
-} from '@shopify/theme-check-common';
+import { CheckDefinition, Config, SourceCodeType, allChecks } from '@shopify/theme-check-common';
 import path from 'node:path';
 import { fileExists } from '../file-utils';
+import { AbsolutePath } from '../temp';
 import { thisNodeModuleRoot } from './installation-location';
 import { findThirdPartyChecks, loadThirdPartyChecks } from './load-third-party-checks';
 import { ConfigDescription } from './types';
