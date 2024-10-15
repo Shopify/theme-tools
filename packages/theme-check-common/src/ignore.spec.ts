@@ -1,6 +1,6 @@
 import { expect, describe, it } from 'vitest';
 import { isIgnored } from './ignore';
-import { Uri, CheckDefinition, Config, SourceCodeType } from './types';
+import { UriString, CheckDefinition, Config, SourceCodeType } from './types';
 
 const checkDef: CheckDefinition = {
   meta: {
@@ -176,7 +176,7 @@ describe('Function: isIgnored', () => {
   });
 });
 
-function toUri(relativePath: string): Uri {
+function toUri(relativePath: string): UriString {
   return `file:/path/to/${relativePath}`;
 }
 

@@ -21,7 +21,6 @@ import { autofix } from './autofix';
 import { findConfigPath, loadConfig as resolveConfig } from './config';
 import { NodeFileSystem } from './NodeFileSystem';
 
-const defaultLocale = 'en';
 const asyncGlob = promisify(glob);
 
 export * from '@shopify/theme-check-common';
