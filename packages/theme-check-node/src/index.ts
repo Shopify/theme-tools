@@ -78,27 +78,7 @@ export async function themeCheckRun(
     themeDocset: themeLiquidDocsManager,
     jsonValidationSet: themeLiquidDocsManager,
     getDefaultTranslations: async () => defaultTranslations,
-    getDefaultLocale: async () => {
-      if (!defaultTranslationsFile) {
-        return defaultLocale;
-      }
-      // assumes the path is normalized and '/' are used as separators
-      const defaultTranslationsFileLocale = defaultTranslationsFile.absolutePath.match(
-        /locales\/(.*)\.default\.json$/,
-      )?.[1];
-      return defaultTranslationsFileLocale || defaultLocale;
-    },
     getDefaultSchemaTranslations: async () => defaultSchemaTranslations,
-    getDefaultSchemaLocale: async () => {
-      if (!defaultSchemaTranslationsFile) {
-        return defaultLocale;
-      }
-      // assumes the path is normalized and '/' are used as separators
-      const defaultTranslationsFileLocale = defaultSchemaTranslationsFile.absolutePath.match(
-        /locales\/(.*)\.default\.schema\.json$/,
-      )?.[1];
-      return defaultTranslationsFileLocale || defaultLocale;
-    },
   });
 
   return {

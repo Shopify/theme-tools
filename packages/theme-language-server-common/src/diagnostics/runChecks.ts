@@ -1,13 +1,12 @@
 import { check } from '@shopify/theme-check-common';
 
-import { Dependencies } from '../types';
 import { DocumentManager } from '../documents';
-import { DiagnosticsManager } from './DiagnosticsManager';
 import {
-  useBufferOrInjectedTranslations,
   useBufferOrInjectedSchemaTranslations,
+  useBufferOrInjectedTranslations,
 } from '../translations';
-import { URI } from 'vscode-uri';
+import { Dependencies } from '../types';
+import { DiagnosticsManager } from './DiagnosticsManager';
 
 export function makeRunChecks(
   documentManager: DocumentManager,
@@ -17,9 +16,7 @@ export function makeRunChecks(
     loadConfig,
     findRootURI,
     getDefaultTranslationsFactory,
-    getDefaultLocaleFactory,
     getDefaultSchemaTranslationsFactory,
-    getDefaultSchemaLocaleFactory,
     themeDocset,
     jsonValidationSet,
   }: Pick<
@@ -28,9 +25,7 @@ export function makeRunChecks(
     | 'loadConfig'
     | 'findRootURI'
     | 'getDefaultTranslationsFactory'
-    | 'getDefaultLocaleFactory'
     | 'getDefaultSchemaTranslationsFactory'
-    | 'getDefaultSchemaLocaleFactory'
     | 'themeDocset'
     | 'jsonValidationSet'
   >,
@@ -62,8 +57,6 @@ export function makeRunChecks(
 
       const offenses = await check(theme, config, {
         fs,
-        getDefaultLocale: getDefaultLocaleFactory(rootURI),
-        getDefaultSchemaLocale: getDefaultSchemaLocaleFactory(rootURI),
         getDefaultTranslations: async () => defaultTranslations,
         getDefaultSchemaTranslations: async () => defaultSchemaTranslations,
         jsonValidationSet,

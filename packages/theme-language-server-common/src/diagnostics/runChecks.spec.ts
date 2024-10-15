@@ -55,9 +55,7 @@ describe('Module: runChecks', () => {
       findRootURI: async () => 'browser:/',
       fs: new MockFileSystem({}, 'browser:/'),
       getDefaultTranslationsFactory: () => async () => ({}),
-      getDefaultLocaleFactory: () => async () => 'en',
       getDefaultSchemaTranslationsFactory: () => async () => ({}),
-      getDefaultSchemaLocaleFactory: () => async () => 'en',
       loadConfig: async () => ({
         context: 'theme',
         settings: {},
@@ -211,9 +209,7 @@ describe('Module: runChecks', () => {
       findRootURI: async () => 'browser:/',
       fs: new MockFileSystem(files, 'browser:/'),
       getDefaultTranslationsFactory: () => async () => JSON.parse(files[defaultURI]),
-      getDefaultLocaleFactory: () => async () => 'en',
       getDefaultSchemaTranslationsFactory: () => async () => ({}),
-      getDefaultSchemaLocaleFactory: () => async () => 'en',
       loadConfig: async () => ({
         context: 'theme',
         settings: {},

@@ -6,7 +6,6 @@ import {
   ShowDocumentRequest,
   TextDocumentSyncKind,
 } from 'vscode-languageserver';
-import { URI } from 'vscode-uri';
 import { ClientCapabilities } from '../ClientCapabilities';
 import { CodeActionKinds, CodeActionsProvider } from '../codeActions';
 import { Commands, ExecuteCommandProvider } from '../commands';
@@ -49,9 +48,7 @@ export function startServer(
     fs,
     filesForURI,
     findRootURI: findConfigurationRootURI,
-    getDefaultLocaleFactory,
     getDefaultTranslationsFactory,
-    getDefaultSchemaLocaleFactory,
     getDefaultSchemaTranslationsFactory,
     getThemeSettingsSchemaForRootURI,
     loadConfig,
@@ -96,9 +93,7 @@ export function startServer(
     makeRunChecks(documentManager, diagnosticsManager, {
       fs,
       findRootURI: findConfigurationRootURI,
-      getDefaultLocaleFactory,
       getDefaultTranslationsFactory,
-      getDefaultSchemaLocaleFactory,
       getDefaultSchemaTranslationsFactory,
       loadConfig,
       themeDocset,

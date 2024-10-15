@@ -1,3 +1,13 @@
+import { AugmentedThemeDocset } from './AugmentedThemeDocset';
+import { JSONValidator } from './JSONValidator';
+import {
+  getDefaultLocaleFactory,
+  makeFileExists,
+  makeFileSize
+} from './context-utils';
+import { createDisabledChecksModule } from './disabled-checks';
+import { isIgnored } from './ignore';
+import * as path from './path';
 import {
   Check,
   CheckDefinition,
@@ -20,27 +30,21 @@ import {
   Theme,
   ValidateJSON,
 } from './types';
-import { visitLiquid, visitJSON } from './visitors';
-import { createDisabledChecksModule } from './disabled-checks';
-import * as path from './path';
 import { getPosition } from './utils';
-import { isIgnored } from './ignore';
-import { AugmentedThemeDocset } from './AugmentedThemeDocset';
-import { JSONValidator } from './JSONValidator';
-import { makeFileExists, makeFileSize } from './FileSystem';
+import { visitJSON, visitLiquid } from './visitors';
 
-export * from './FileSystem';
 export * from './AugmentedThemeDocset';
-export * from './fixes';
-export * from './types';
+export * from './FileSystem';
 export * from './checks';
-export * from './to-source-code';
-export * from './json';
+export * from './fixes';
 export * from './ignore';
+export * from './json';
+export * from './to-source-code';
+export * from './types';
 export * from './utils/error';
-export * from './utils/types';
-export * from './utils/memo';
 export * from './utils/indexBy';
+export * from './utils/memo';
+export * from './utils/types';
 
 const defaultErrorHandler = (_error: Error): void => {
   // Silently ignores errors by default.
@@ -116,6 +120,12 @@ function createContext<T extends SourceCodeType, S extends Schema>(
     ...dependencies,
     fileExists: makeFileExists(dependencies.fs),
     fileSize: makeFileSize(dependencies.fs),
+    getDefaultLocale: getDefaultLocaleFactory(dependencies.fs, config.rootUri, '.default.json'),
+    getDefaultSchemaLocale: getDefaultLocaleFactory(
+      dependencies.fs,
+      config.rootUri,
+      '.default.schema.json',
+    ),
     validateJSON,
     settings: createSettings(checkSettings, check.meta.schema),
     absolutePath: (relativePath) => path.join(config.rootUri, relativePath),

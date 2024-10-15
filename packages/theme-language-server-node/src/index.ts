@@ -6,9 +6,7 @@ import { createConnection } from 'vscode-languageserver/node';
 import {
   filesForURI,
   findRootURI,
-  getDefaultLocaleFactory,
   getDefaultTranslationsFactory,
-  getDefaultSchemaLocaleFactory,
   getDefaultSchemaTranslationsFactory,
   getThemeSettingsSchemaForRootURI,
   loadConfig,
@@ -24,8 +22,6 @@ export function startServer(fs: FileSystem = NodeFileSystem) {
     fs,
     log,
     getDefaultTranslationsFactory,
-    getDefaultLocaleFactory,
-    getDefaultSchemaLocaleFactory,
     getDefaultSchemaTranslationsFactory,
     getThemeSettingsSchemaForRootURI,
     findRootURI,
