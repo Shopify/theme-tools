@@ -274,8 +274,6 @@ export type Translations = {
 
 export interface Dependencies {
   getDefaultTranslations(): Promise<Translations>;
-  getDefaultLocale(): Promise<string>;
-  getDefaultSchemaLocale(): Promise<string>;
   getDefaultSchemaTranslations(): Promise<Translations>;
   fs: FileSystem;
   themeDocset?: ThemeDocset;
@@ -295,6 +293,8 @@ type StaticContextProperties<T extends SourceCodeType> = T extends SourceCodeTyp
       file: SourceCode<T>;
       fileExists: (absolutePath: AbsolutePath) => Promise<boolean>;
       fileSize: (absolutePath: string) => Promise<number>;
+      getDefaultLocale: () => Promise<string>;
+      getDefaultSchemaLocale: () => Promise<string>;
       validateJSON?: ValidateJSON<T>;
     }
   : never;

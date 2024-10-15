@@ -58,14 +58,6 @@ export async function check(
     async getDefaultSchemaTranslations() {
       return parseJSON(themeDesc[defaultSchemaTranslationsFileRelativePath] || '{}', {});
     },
-    async getDefaultLocale() {
-      return defaultTranslationsFileRelativePath.match(/locales\/(.*)\.default\.json$/)?.[1]!;
-    },
-    async getDefaultSchemaLocale() {
-      return defaultSchemaTranslationsFileRelativePath.match(
-        /locales\/(.*)\.default\.schema\.json$/,
-      )?.[1]!;
-    },
     themeDocset: {
       async filters() {
         return [

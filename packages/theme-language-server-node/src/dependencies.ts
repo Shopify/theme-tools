@@ -21,12 +21,6 @@ function parse(uri: string): URI {
   return URI.parse(uri);
 }
 
-// uri.path is normalized to forward slashes and is an assumption we use
-// inside theme-check-js
-function asPath(uri: URI) {
-  return uri.path;
-}
-
 // Calls to `fs` should be done with this
 function asFsPath(uriOrPath: string | URI) {
   if (URI.isUri(uriOrPath)) {
@@ -138,19 +132,6 @@ export const getDefaultTranslationsFactory: Dependencies['getDefaultTranslations
 
 export const getDefaultSchemaTranslationsFactory: Dependencies['getDefaultSchemaTranslationsFactory'] =
   getDefaultTranslationsFactoryFactory('.default.schema.json');
-
-const getDefaultLocaleFactoryFactory =
-  (postfix: string = '.default.json') =>
-  (rootURI: string) => {
-    const root = parse(rootURI);
-    return cached(() => getDefaultLocale(root, postfix));
-  };
-
-export const getDefaultLocaleFactory: Dependencies['getDefaultLocaleFactory'] =
-  getDefaultLocaleFactoryFactory('.default.json');
-
-export const getDefaultSchemaLocaleFactory: Dependencies['getDefaultSchemaLocaleFactory'] =
-  getDefaultLocaleFactoryFactory('.default.schema.json');
 
 async function getDefaultLocale(rootURI: URI, postfix = '.default.json') {
   try {

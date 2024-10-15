@@ -1,16 +1,15 @@
-import { expect, describe, it, beforeAll, afterAll } from 'vitest';
+import * as mktemp from 'mktemp';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { URI, Utils } from 'vscode-uri';
 import {
   fileExists,
   filesForURI,
   findRootURI,
-  getDefaultLocaleFactory,
   getDefaultTranslationsFactory,
-  loadConfig,
+  loadConfig
 } from './dependencies';
-import * as path from 'node:path';
-import * as fs from 'node:fs/promises';
-import { URI, Utils } from 'vscode-uri';
-import * as mktemp from 'mktemp';
 
 type Tree = {
   [k in string]: Tree | string;
@@ -159,16 +158,6 @@ describe('Module: dependencies', () => {
 
       // Check that the file does not exist
       expect(notExists).to.be.false;
-    });
-  });
-
-  describe('Unit: getDefaultLocale', () => {
-    it('should return the correct translations depending on the root', async () => {
-      let getDefaultLocale = getDefaultLocaleFactory(workspace.uri('gitRootTheme'));
-      expect(await getDefaultLocale()).to.eql('en');
-
-      getDefaultLocale = getDefaultLocaleFactory(workspace.uri('frenchDefault'));
-      expect(await getDefaultLocale()).to.eql('fr');
     });
   });
 
