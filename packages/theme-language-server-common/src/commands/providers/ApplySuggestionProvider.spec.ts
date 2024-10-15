@@ -6,6 +6,7 @@ import {
   Severity,
   Position,
   Suggestion,
+  path,
 } from '@shopify/theme-check-common';
 import { DiagnosticsManager } from '../../diagnostics';
 import { DocumentManager } from '../../documents';
@@ -14,7 +15,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { offenseToDiagnostic } from '../../diagnostics/offenseToDiagnostic';
 
 describe('Unit: ApplySuggestionProvider', () => {
-  const uri = URI.file('/path/to/file.liquid').toString();
+  const uri = path.normalize(URI.file('/path/to/file.liquid'));
   const contents = `
     {% assign x = 1 %}
     <script src="2.js"></script>

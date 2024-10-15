@@ -1,13 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { Offense, Severity, SourceCodeType, Suggestion, path } from '@shopify/theme-check-common';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
-import { Offense, SourceCodeType, Severity, Suggestion } from '@shopify/theme-check-common';
 import { DiagnosticsManager } from '../../diagnostics';
 import { DocumentManager } from '../../documents';
 import { SuggestionProvider } from './SuggestionProvider';
-import { TextDocument } from 'vscode-languageserver-textdocument';
 
 describe('Unit: SuggestionProvider', () => {
-  const uri = URI.file('/path/to/file.liquid').toString();
+  const uri = path.normalize(URI.file('/path/to/file.liquid'));
   const contents = `
     {% assign x = 1 %}
     <script src="2.js"></script>

@@ -6,6 +6,7 @@ import {
   Theme,
   toSourceCode as commonToSourceCode,
   check as coreCheck,
+  path as pathUtils,
   isIgnored,
   parseJSON,
 } from '@shopify/theme-check-common';
@@ -44,7 +45,7 @@ export async function toSourceCode(
 ): Promise<LiquidSourceCode | JSONSourceCode | undefined> {
   try {
     const source = await fs.readFile(absolutePath, 'utf8');
-    return commonToSourceCode(URI.file(absolutePath).toString(), source);
+    return commonToSourceCode(pathUtils.normalize(URI.file(absolutePath)), source);
   } catch (e) {
     return undefined;
   }
