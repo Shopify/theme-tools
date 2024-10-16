@@ -40,10 +40,9 @@
       "outFiles": [
         "${workspaceRoot}/packages/vscode-extension/dist/browser/**/*.js",
         "${workspaceRoot}/packages/theme-language-server-common/dist/**/*.js",
-        "${workspaceRoot}/packages/theme-language-server-node/dist/**/*.js",
+        "${workspaceRoot}/packages/theme-language-server-browser/dist/**/*.js",
         "${workspaceRoot}/packages/theme-check-common/dist/**/*.js",
-        "${workspaceRoot}/packages/theme-check-node/dist/**/*.js",
-        "${workspaceRoot}/packages/theme-check-docs-updater/dist/**/*.js",
+        "${workspaceRoot}/packages/theme-check-browser/dist/**/*.js",
         "${workspaceRoot}/packages/prettier-plugin-liquid/dist/**/*.js",
         "${workspaceRoot}/packages/liquid-html-parser/dist/**/*.js",
       ],

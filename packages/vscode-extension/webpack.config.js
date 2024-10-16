@@ -139,7 +139,7 @@ const browserConfig = {
       },
     ],
   },
-  devtool: 'source-map',
+  devtool: 'nosources-source-map',
   plugins: [
     new webpack.DefinePlugin({
       // A flag that lets us do fun webpack-only shenanigans...
@@ -166,7 +166,9 @@ const browserServerConfig = async () => {
   ]);
 
   return {
+    context: path.resolve(__dirname),
     target: 'webworker',
+    mode: 'none',
     entry: {
       server: './src/browser/server.ts',
     },
@@ -176,11 +178,6 @@ const browserServerConfig = async () => {
       libraryTarget: 'var',
       library: 'serverExportVar',
       devtoolModuleFilenameTemplate: '../../[resource-path]',
-    },
-    context: path.resolve(__dirname),
-    externals: {
-      vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded
-      prettier: 'commonjs ./prettier',
     },
     resolve: {
       // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
@@ -209,7 +206,7 @@ const browserServerConfig = async () => {
         },
       ],
     },
-    devtool: 'source-map',
+    devtool: 'nosources-source-map',
     plugins: [
       new webpack.DefinePlugin({
         // A flag that lets us do fun webpack-only shenanigans...
@@ -221,9 +218,8 @@ const browserServerConfig = async () => {
         WEBPACK_SCHEMAS: JSON.stringify(schemas),
       }),
     ],
-    node: {
-      __filename: 'eval-only', // this means that __filename will eval to the output file name
-      __dirname: 'eval-only', // this means that __dirname will eval to the dist folder
+    performance: {
+      hints: false,
     },
     infrastructureLogging: {
       level: 'log', // enables logging required for problem matchers

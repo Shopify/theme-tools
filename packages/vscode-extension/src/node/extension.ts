@@ -7,6 +7,7 @@ import {
   TransportKind,
 } from 'vscode-languageclient/node';
 import LiquidFormatter from './formatter';
+import { FileStat, FileTuple, path as pathUtils } from '@shopify/theme-check-common';
 
 const LIQUID: DocumentFilter[] = [
   {
@@ -72,14 +73,14 @@ async function startServer(context: ExtensionContext) {
 
   const clientOptions: LanguageClientOptions = {
     documentSelector: [
-      { scheme: 'file', language: 'liquid' },
-      { scheme: 'file', language: 'plaintext' },
-      { scheme: 'file', language: 'html' },
-      { scheme: 'file', language: 'javascript' },
-      { scheme: 'file', language: 'css' },
-      { scheme: 'file', language: 'scss' },
-      { scheme: 'file', language: 'json' },
-      { scheme: 'file', language: 'jsonc' },
+      { language: 'liquid' },
+      { language: 'plaintext' },
+      { language: 'html' },
+      { language: 'javascript' },
+      { language: 'css' },
+      { language: 'scss' },
+      { language: 'json' },
+      { language: 'jsonc' },
     ],
   };
 
@@ -89,6 +90,20 @@ async function startServer(context: ExtensionContext) {
     serverOptions,
     clientOptions,
   );
+
+  client.onRequest('fs/readDirectory', async (uriString: string): Promise<FileTuple[]> => {
+    const results = await workspace.fs.readDirectory(Uri.parse(uriString));
+    return results.map(([name, type]) => [pathUtils.join(uriString, name), type]);
+  });
+
+  client.onRequest('fs/readFile', async (uriString: string): Promise<string> => {
+    const bytes = await workspace.fs.readFile(Uri.parse(uriString));
+    return Buffer.from(bytes).toString('utf8');
+  });
+
+  client.onRequest('fs/stat', async (uriString: string): Promise<FileStat> => {
+    return workspace.fs.stat(Uri.parse(uriString));
+  });
 
   client.start();
 }

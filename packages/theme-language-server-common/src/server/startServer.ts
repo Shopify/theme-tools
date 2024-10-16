@@ -193,7 +193,6 @@ export function startServer(
     const fileOperationRegistrationOptions: FileOperationRegistrationOptions = {
       filters: [
         {
-          scheme: 'file',
           pattern: {
             glob: '**/*.{liquid,json}',
           },

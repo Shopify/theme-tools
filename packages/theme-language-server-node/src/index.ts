@@ -5,8 +5,11 @@ import { stdin, stdout } from 'node:process';
 import { createConnection } from 'vscode-languageserver/node';
 import { loadConfig } from './dependencies';
 
-export function startServer(fs: AbstractFileSystem = NodeFileSystem) {
-  const connection = createConnection(stdin, stdout);
+export { AbstractFileSystem, NodeFileSystem, FileStat, FileTuple } from '@shopify/theme-check-node';
+
+export const getConnection = () => createConnection(stdin, stdout);
+
+export function startServer(connection = getConnection(), fs: AbstractFileSystem = NodeFileSystem) {
   // Using console.error to not interfere with messages sent on STDIN/OUT
   const log = (message: string) => console.error(message);
   const themeLiquidDocsManager = new ThemeLiquidDocsManager(log);

@@ -61,9 +61,12 @@
   "dependencies": {
     "@shopify/liquid-html-parser": "^2.0.5",
     "@shopify/prettier-plugin-liquid": "^1.5.2",
+    "@shopify/theme-language-server-browser": "^1.14.0",
     "@shopify/theme-language-server-node": "^1.14.0",
+    "@shopify/theme-check-common": "^2.9.2",
     "prettier": "^2.6.2",
-    "vscode-languageclient": "^8.1.0"
+    "vscode-languageclient": "^8.1.0",
+    "vscode-uri": "^3.0.8"
   },
   "devDependencies": {
     "@shopify/theme-check-docs-updater": "^2.9.2",
