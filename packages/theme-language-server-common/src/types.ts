@@ -82,13 +82,6 @@ export interface RequiredDependencies {
   findRootURI(uri: URI): Promise<URI>;
 
   /**
-   * getThemeSettingsSchemaForRootURI(root: URI)
-   *
-   * Should return parsed contents of the config/settings_schema.json file.
-   */
-  getThemeSettingsSchemaForRootURI(rootURI: URI): Promise<SettingsSchemaJSONFile>;
-
-  /**
    * A file system abstraction that allows the Language Server to read files by URI.
    *
    * In Node.js, this is a wrapper around node:fs/promises.

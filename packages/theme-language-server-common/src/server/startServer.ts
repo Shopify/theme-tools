@@ -1,8 +1,10 @@
 import {
   AugmentedThemeDocset,
   FileTuple,
+  isError,
   makeGetDefaultSchemaTranslations,
   makeGetDefaultTranslations,
+  parseJSON,
   path,
   recursiveReadDirectory,
 } from '@shopify/theme-check-common';
@@ -50,7 +52,6 @@ export function startServer(
   {
     fs,
     findRootURI: findConfigurationRootURI,
-    getThemeSettingsSchemaForRootURI,
     loadConfig,
     log = defaultLogger,
     jsonValidationSet,
@@ -133,8 +134,19 @@ export function startServer(
   };
 
   const getThemeSettingsSchemaForURI = async (uri: string) => {
-    const rootUri = await findThemeRootURI(uri);
-    return getThemeSettingsSchemaForRootURI(rootUri);
+    try {
+      const rootUri = await findThemeRootURI(uri);
+      const settingsSchemaUri = path.join(rootUri, 'config', 'settings_schema.json');
+      const contents = await fs.readFile(settingsSchemaUri);
+      const json = parseJSON(contents);
+      if (isError(json) || !Array.isArray(json)) {
+        throw new Error('Settings JSON file not in correct format');
+      }
+      return json;
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
   };
 
   const getModeForURI = async (uri: string) => {
