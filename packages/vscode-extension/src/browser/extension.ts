@@ -1,4 +1,5 @@
 /// <reference lib="webworker" />
+import { FileStat, FileTuple, path } from '@shopify/theme-check-common';
 import { commands, ExtensionContext, Uri, workspace } from 'vscode';
 import { LanguageClient, LanguageClientOptions } from 'vscode-languageclient/browser';
 
@@ -52,18 +53,33 @@ async function startServer(context: ExtensionContext) {
   console.log('Starting Theme Check Language Server');
   const clientOptions: LanguageClientOptions = {
     documentSelector: [
-      { scheme: 'file', language: 'liquid' },
-      { scheme: 'file', language: 'plaintext' },
-      { scheme: 'file', language: 'html' },
-      { scheme: 'file', language: 'javascript' },
-      { scheme: 'file', language: 'css' },
-      { scheme: 'file', language: 'scss' },
-      { scheme: 'file', language: 'json' },
-      { scheme: 'file', language: 'jsonc' },
+      { language: 'liquid' },
+      { language: 'plaintext' },
+      { language: 'html' },
+      { language: 'javascript' },
+      { language: 'css' },
+      { language: 'scss' },
+      { language: 'json' },
+      { language: 'jsonc' },
     ],
   };
 
   client = createWorkerLanguageClient(context, clientOptions);
+
+  client.onRequest('fs/readDirectory', async (uriString: string): Promise<FileTuple[]> => {
+    const results = await workspace.fs.readDirectory(Uri.parse(uriString));
+    return results.map(([name, type]) => [path.join(uriString, name), type]);
+  });
+
+  const textDecoder = new TextDecoder();
+  client.onRequest('fs/readFile', async (uriString: string): Promise<string> => {
+    const bytes = await workspace.fs.readFile(Uri.parse(uriString));
+    return textDecoder.decode(bytes);
+  });
+
+  client.onRequest('fs/stat', async (uriString: string): Promise<FileStat> => {
+    return workspace.fs.stat(Uri.parse(uriString));
+  });
 
   client.start();
   console.log('Theme Check Language Server started');

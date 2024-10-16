@@ -1,6 +1,11 @@
-import { recommendedChecks, startServer } from '@shopify/theme-language-server-browser';
-
-console.log('running server lsp-web-extension-sample');
+import { findRoot, makeFileExists } from '@shopify/theme-check-common';
+import {
+  Dependencies,
+  getConnection,
+  recommendedChecks,
+  startServer,
+} from '@shopify/theme-language-server-browser';
+import { VsCodeFileSystem } from '../common/VsCodeFileSystem';
 
 /**
  * These are replaced at build time by the contents of
@@ -20,31 +25,31 @@ const objects = WEBPACK_OBJECTS;
 const systemTranslations = WEBPACK_SYSTEM_TRANSLATIONS;
 const schemas = WEBPACK_SCHEMAS;
 
-console.log(self);
+const worker = self as any as Worker;
+const connection = getConnection(worker);
+const fileSystem = new VsCodeFileSystem(connection, {});
+const fileExists = makeFileExists(fileSystem);
+const dependencies: Dependencies = {
+  fs: fileSystem,
+  log: console.info.bind(console),
+  loadConfig: async (uri) => {
+    const rootUri = await findRoot(uri, fileExists);
+    return {
+      context: 'theme',
+      settings: {},
+      checks: recommendedChecks,
+      rootUri,
+    };
+  },
+  themeDocset: {
+    filters: async () => filters,
+    objects: async () => objects,
+    tags: async () => tags,
+    systemTranslations: async () => systemTranslations,
+  },
+  jsonValidationSet: {
+    schemas: async () => schemas,
+  },
+};
 
-// startServer(self as any as Worker, {
-//   findRootURI: async (_: string) => 'file:///dawn',
-//   fs: new MockFileSystem(),
-//   fileSize: async () => 10,
-//   getDefaultTranslationsFactory: () => async () => ({}),
-//   getDefaultLocaleFactory: () => async () => 'en',
-//   getDefaultSchemaTranslationsFactory: () => async () => ({}),
-//   getDefaultSchemaLocaleFactory: () => async () => 'en',
-//   getThemeSettingsSchemaForRootURI: async () => [],
-//   loadConfig: async () => ({
-//     context: 'theme',
-//     settings: {},
-//     checks: recommendedChecks,
-//     rootUri: 'file:///dawn',
-//   }),
-//   log: console.info.bind(console),
-//   themeDocset: {
-//     filters: async () => filters,
-//     objects: async () => objects,
-//     tags: async () => tags,
-//     systemTranslations: async () => systemTranslations,
-//   },
-//   jsonValidationSet: {
-//     schemas: async () => schemas,
-//   },
-// });
+startServer(worker, dependencies, connection);
