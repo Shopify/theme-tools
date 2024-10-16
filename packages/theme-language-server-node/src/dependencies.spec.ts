@@ -4,7 +4,7 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { URI, Utils } from 'vscode-uri';
-import { fileExists, filesForURI, findRootURI } from './dependencies';
+import { fileExists, findRootURI } from './dependencies';
 
 type Tree = {
   [k in string]: Tree | string;
@@ -101,25 +101,6 @@ describe('Module: dependencies', () => {
           ),
         ),
       ).to.eql(workspace.uri('appWithThemeAppExtension/extensions/myThemeAppExtension'));
-    });
-  });
-
-  describe('Unit: filesForURI', () => {
-    it('should return files in the format I expect them (even on windows)', async () => {
-      expect(await filesForURI(workspace.uri('gitRootTheme/snippets/header.liquid'))).to.eql([
-        'locales/en.default.json',
-        'locales/fr.json',
-        'snippets/header.liquid',
-      ]);
-      expect(await filesForURI(workspace.uri('multiRootTheme/src/snippets/header.liquid'))).to.eql([
-        'layout/theme.liquid',
-        'locales/en.default.json',
-        'locales/fr.json',
-        'snippets/header.liquid',
-      ]);
-      expect(await filesForURI(workspace.uri('multiRootTheme/dist/snippets/header.liquid'))).to.eql(
-        ['locales/en.default.json', 'locales/fr.json', 'snippets/header.liquid'],
-      );
     });
   });
 

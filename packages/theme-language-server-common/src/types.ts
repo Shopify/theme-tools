@@ -89,17 +89,6 @@ export interface RequiredDependencies {
   getThemeSettingsSchemaForRootURI(rootURI: URI): Promise<SettingsSchemaJSONFile>;
 
   /**
-   * filesForURI(uri: URI)
-   *
-   * Returns all the Liquid and JSON files as an array.
-   *
-   * Assumes an array of relative paths from root.
-   *
-   * Optional, used for snippet completion.
-   */
-  filesForURI?(uri: URI): Promise<string[]>;
-
-  /**
    * A file system abstraction that allows the Language Server to read files by URI.
    *
    * In Node.js, this is a wrapper around node:fs/promises.

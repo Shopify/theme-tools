@@ -1,6 +1,7 @@
 import {
   Config,
   NodeFileSystem,
+  Translations,
   isError,
   loadConfig as loadConfigFromPath,
   makeFileExists,
@@ -12,6 +13,7 @@ import {
 import { Dependencies } from '@shopify/theme-language-server-common';
 import { glob as callbackGlob } from 'glob';
 import * as fs from 'node:fs/promises';
+import { basename } from 'node:path';
 import { promisify } from 'node:util';
 import { URI, Utils } from 'vscode-uri';
 
@@ -33,14 +35,6 @@ function asFsPath(uriOrPath: string | URI) {
 }
 
 export const fileExists = makeFileExists(NodeFileSystem);
-
-export const filesForURI: NonNullable<Dependencies['filesForURI']> = async function filesForURI(
-  uriString,
-) {
-  const config = await loadConfig(uriString);
-  const rootPath = asFsPath(config.rootUri);
-  return glob(`**/*.{liquid,json}`, { cwd: rootPath, ignore: 'node_modules/**' });
-};
 
 export const findRootURI: Dependencies['findRootURI'] = async function findRootURI(uriString) {
   return reusableFindRoot(uriString, fileExists);

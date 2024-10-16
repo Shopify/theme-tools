@@ -1,14 +1,9 @@
-import { startServer as startCoreServer } from '@shopify/theme-language-server-common';
-import { AbstractFileSystem, NodeFileSystem } from '@shopify/theme-check-node';
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
+import { AbstractFileSystem, NodeFileSystem } from '@shopify/theme-check-node';
+import { startServer as startCoreServer } from '@shopify/theme-language-server-common';
 import { stdin, stdout } from 'node:process';
 import { createConnection } from 'vscode-languageserver/node';
-import {
-  filesForURI,
-  findRootURI,
-  getThemeSettingsSchemaForRootURI,
-  loadConfig,
-} from './dependencies';
+import { findRootURI, getThemeSettingsSchemaForRootURI, loadConfig } from './dependencies';
 
 export function startServer(fs: AbstractFileSystem = NodeFileSystem) {
   const connection = createConnection(stdin, stdout);
@@ -21,7 +16,6 @@ export function startServer(fs: AbstractFileSystem = NodeFileSystem) {
     log,
     getThemeSettingsSchemaForRootURI,
     findRootURI,
-    filesForURI,
     loadConfig,
     themeDocset: themeLiquidDocsManager,
     jsonValidationSet: themeLiquidDocsManager,

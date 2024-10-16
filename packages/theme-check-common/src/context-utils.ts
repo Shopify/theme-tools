@@ -116,7 +116,7 @@ export async function recursiveReadDirectory(
   filter: (fileTuple: FileTuple) => boolean,
 ): Promise<UriString[]> {
   const allFiles = await fs.readDirectory(uri);
-  const files = allFiles.filter((ft) => isDirectory(ft) || filter(ft));
+  const files = allFiles.filter((ft) => !isIgnored(ft) && (isDirectory(ft) || filter(ft)));
 
   const results = await Promise.all(
     files.map((ft) => {
@@ -133,4 +133,8 @@ export async function recursiveReadDirectory(
 
 export function isDirectory([_, type]: FileTuple) {
   return type === FileType.Directory;
+}
+
+function isIgnored([uri, type]: FileTuple) {
+  return uri.endsWith('node_modules') && type === FileType.Directory;
 }
