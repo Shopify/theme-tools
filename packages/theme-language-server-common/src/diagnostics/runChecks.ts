@@ -1,14 +1,6 @@
-import {
-  check,
-  makeGetDefaultSchemaTranslations,
-  makeGetDefaultTranslations,
-} from '@shopify/theme-check-common';
+import { check } from '@shopify/theme-check-common';
 
 import { DocumentManager } from '../documents';
-import {
-  useBufferOrInjectedSchemaTranslations,
-  useBufferOrInjectedTranslations,
-} from '../translations';
 import { Dependencies } from '../types';
 import { DiagnosticsManager } from './DiagnosticsManager';
 
@@ -43,17 +35,10 @@ export function makeRunChecks(
       const config = await loadConfig(configFileRootUri);
       const rootURI = config.rootUri;
       const theme = documentManager.theme(rootURI);
-      const [defaultTranslations, defaultSchemaTranslations] = await Promise.all([
-        useBufferOrInjectedTranslations(makeGetDefaultTranslations(fs, rootURI), theme),
-        useBufferOrInjectedSchemaTranslations(makeGetDefaultSchemaTranslations(fs, rootURI), theme),
-      ]);
-
       const offenses = await check(theme, config, {
-        fs,
-        getDefaultTranslations: async () => defaultTranslations,
-        getDefaultSchemaTranslations: async () => defaultSchemaTranslations,
         jsonValidationSet,
         themeDocset,
+        fs,
       });
 
       // We iterate over the theme files (as opposed to offenses) because if

@@ -24,11 +24,7 @@ import { HoverProvider } from '../hover';
 import { JSONLanguageService } from '../json/JSONLanguageService';
 import { LinkedEditingRangesProvider } from '../linkedEditingRanges/LinkedEditingRangesProvider';
 import { RenameProvider } from '../rename/RenameProvider';
-import {
-  GetTranslationsForURI,
-  useBufferOrInjectedSchemaTranslations,
-  useBufferOrInjectedTranslations,
-} from '../translations';
+import { GetTranslationsForURI } from '../translations';
 import { Dependencies } from '../types';
 import { debounce } from '../utils';
 import { VERSION } from '../version';
@@ -105,8 +101,9 @@ export function startServer(
   const getTranslationsForURI: GetTranslationsForURI = async (uri) => {
     const rootURI = await findThemeRootURI(uri);
     const theme = documentManager.theme(rootURI);
+    const getDefaultTranslations = makeGetDefaultTranslations(fs, theme, rootURI);
     const [defaultTranslations, shopifyTranslations] = await Promise.all([
-      useBufferOrInjectedTranslations(makeGetDefaultTranslations(fs, rootURI), theme),
+      getDefaultTranslations(),
       themeDocset.systemTranslations(),
     ]);
 
@@ -116,11 +113,8 @@ export function startServer(
   const getSchemaTranslationsForURI: GetTranslationsForURI = async (uri) => {
     const rootURI = await findThemeRootURI(uri);
     const theme = documentManager.theme(rootURI);
-
-    return useBufferOrInjectedSchemaTranslations(
-      makeGetDefaultSchemaTranslations(fs, rootURI),
-      theme,
-    );
+    const getDefaultSchemaTranslations = makeGetDefaultSchemaTranslations(fs, theme, rootURI);
+    return getDefaultSchemaTranslations();
   };
 
   const getSnippetNamesForURI: GetSnippetNamesForURI = async (uri: string) => {

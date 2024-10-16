@@ -28,10 +28,10 @@ describe('Unit: getDefaultLocale', () => {
 
   describe('Unit: getDefaultTranslationsFactory', () => {
     it('should return the correct translations depending on the root', async () => {
-      let getDefaultTranslations = makeGetDefaultTranslations(fs, 'shopify-vfs:/gitRootTheme');
+      let getDefaultTranslations = makeGetDefaultTranslations(fs, [], 'shopify-vfs:/gitRootTheme');
       expect(await getDefaultTranslations()).to.eql({ beverage: 'coffee' });
 
-      getDefaultTranslations = makeGetDefaultTranslations(fs, 'shopify-vfs:/frenchDefault');
+      getDefaultTranslations = makeGetDefaultTranslations(fs, [], 'shopify-vfs:/frenchDefault');
       expect(await getDefaultTranslations()).to.eql({ beverage: 'café' });
     });
   });

@@ -1,17 +1,18 @@
 import { AugmentedThemeDocset } from './AugmentedThemeDocset';
 import { JSONValidator } from './JSONValidator';
 import {
+  makeFileExists,
+  makeFileSize,
   makeGetDefaultLocale,
   makeGetDefaultSchemaLocale,
   makeGetDefaultSchemaTranslations,
   makeGetDefaultTranslations,
-  makeFileExists,
-  makeFileSize,
 } from './context-utils';
 import { createDisabledChecksModule } from './disabled-checks';
 import { isIgnored } from './ignore';
 import * as path from './path';
 import {
+  AugmentedDependencies,
   Check,
   CheckDefinition,
   CheckSettings,
@@ -56,12 +57,24 @@ const defaultErrorHandler = (_error: Error): void => {
 };
 
 export async function check(
-  sourceCodes: Theme,
+  theme: Theme,
   config: Config,
-  dependencies: Dependencies,
+  injectedDependencies: Dependencies,
 ): Promise<Offense[]> {
   const pipelines: Promise<void>[] = [];
   const offenses: Offense[] = [];
+  const { fs } = injectedDependencies;
+  const { rootUri } = config;
+  const dependencies: AugmentedDependencies = {
+    ...injectedDependencies,
+    fileExists: makeFileExists(fs),
+    fileSize: makeFileSize(fs),
+    getDefaultLocale: makeGetDefaultLocale(fs, rootUri),
+    getDefaultTranslations: makeGetDefaultTranslations(fs, theme, rootUri),
+    getDefaultSchemaLocale: makeGetDefaultSchemaLocale(fs, rootUri),
+    getDefaultSchemaTranslations: makeGetDefaultSchemaTranslations(fs, theme, rootUri),
+  };
+
   const { DisabledChecksVisitor, isDisabled } = createDisabledChecksModule();
   let validateJSON: ValidateJSON<SourceCodeType> | undefined;
 
@@ -80,7 +93,7 @@ export async function check(
   for (const type of Object.values(SourceCodeType)) {
     switch (type) {
       case SourceCodeType.JSON: {
-        const files = filesOfType(type, sourceCodes);
+        const files = filesOfType(type, theme);
         const checkDefs = checksOfType(type, config.checks);
         for (const file of files) {
           for (const checkDef of checkDefs) {
@@ -92,7 +105,7 @@ export async function check(
         break;
       }
       case SourceCodeType.LiquidHtml: {
-        const files = filesOfType(type, sourceCodes);
+        const files = filesOfType(type, theme);
         const checkDefs = [DisabledChecksVisitor, ...checksOfType(type, config.checks)];
         for (const file of files) {
           for (const checkDef of checkDefs) {
@@ -123,16 +136,6 @@ function createContext<T extends SourceCodeType, S extends Schema>(
   const checkSettings = config.settings[check.meta.code];
   return {
     ...dependencies,
-    fileExists: makeFileExists(dependencies.fs),
-    fileSize: makeFileSize(dependencies.fs),
-    getDefaultLocale: makeGetDefaultLocale(dependencies.fs, config.rootUri),
-    getDefaultTranslations:
-      dependencies.getDefaultTranslations ??
-      makeGetDefaultTranslations(dependencies.fs, config.rootUri),
-    getDefaultSchemaLocale: makeGetDefaultSchemaLocale(dependencies.fs, config.rootUri),
-    getDefaultSchemaTranslations:
-      dependencies.getDefaultSchemaTranslations ??
-      makeGetDefaultSchemaTranslations(dependencies.fs, config.rootUri),
     validateJSON,
     settings: createSettings(checkSettings, check.meta.schema),
     toUri: (relativePath) => path.join(config.rootUri, relativePath),
