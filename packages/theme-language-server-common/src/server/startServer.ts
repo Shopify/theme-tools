@@ -1,7 +1,10 @@
 import {
   AugmentedThemeDocset,
+  FileTuple,
   makeGetDefaultSchemaTranslations,
   makeGetDefaultTranslations,
+  path,
+  recursiveReadDirectory,
 } from '@shopify/theme-check-common';
 import {
   Connection,
@@ -46,7 +49,6 @@ export function startServer(
   connection: Connection,
   {
     fs,
-    filesForURI,
     findRootURI: findConfigurationRootURI,
     getThemeSettingsSchemaForRootURI,
     loadConfig,
@@ -117,17 +119,17 @@ export function startServer(
     return getDefaultSchemaTranslations();
   };
 
+  const snippetFilter = ([uri]: FileTuple) => /\.liquid$/.test(uri) && /snippets/.test(uri);
   const getSnippetNamesForURI: GetSnippetNamesForURI = async (uri: string) => {
-    if (!filesForURI) return [];
-    const files = await filesForURI(uri);
-    return files
-      .filter((x) => x.startsWith('snippets'))
-      .map((x) =>
-        x
-          .replace(/\\/g, '/')
-          .replace(/^snippets\//, '')
-          .replace(/\.liquid$/, ''),
-      );
+    const rootUri = await findThemeRootURI(uri);
+    const files = await recursiveReadDirectory(fs, rootUri, snippetFilter);
+    return files.map((uri) =>
+      path
+        .relative(uri, rootUri)
+        .replace(/\\\\/g, '/')
+        .replace(/^snippets\//, '')
+        .replace(/\.liquid$/, ''),
+    );
   };
 
   const getThemeSettingsSchemaForURI = async (uri: string) => {
