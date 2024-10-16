@@ -1,19 +1,14 @@
 import {
   Config,
   NodeFileSystem,
-  Translations,
-  isError,
   loadConfig as loadConfigFromPath,
   makeFileExists,
   memoize,
-  parseJSON,
   path,
   reusableFindRoot,
 } from '@shopify/theme-check-node';
 import { Dependencies } from '@shopify/theme-language-server-common';
 import { glob as callbackGlob } from 'glob';
-import * as fs from 'node:fs/promises';
-import { basename } from 'node:path';
 import { promisify } from 'node:util';
 import { URI, Utils } from 'vscode-uri';
 
@@ -71,20 +66,3 @@ function normalizeRoot(config: Config) {
   config.rootUri = path.normalize(config.rootUri);
   return config;
 }
-
-export const getThemeSettingsSchemaForRootURI: Dependencies['getThemeSettingsSchemaForRootURI'] =
-  async (rootUriString: string) => {
-    try {
-      const rootURI = parse(rootUriString);
-      const settingsSchemaFilePath = Utils.joinPath(rootURI, 'config/settings_schema.json');
-      const contents = await fs.readFile(asFsPath(settingsSchemaFilePath), 'utf8');
-      const json = parseJSON(contents);
-      if (isError(json) || !Array.isArray(json)) {
-        throw new Error('Settings JSON file not in correct format');
-      }
-      return json;
-    } catch (error) {
-      console.error(error);
-      return [];
-    }
-  };

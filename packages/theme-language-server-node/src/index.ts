@@ -3,7 +3,7 @@ import { AbstractFileSystem, NodeFileSystem } from '@shopify/theme-check-node';
 import { startServer as startCoreServer } from '@shopify/theme-language-server-common';
 import { stdin, stdout } from 'node:process';
 import { createConnection } from 'vscode-languageserver/node';
-import { findRootURI, getThemeSettingsSchemaForRootURI, loadConfig } from './dependencies';
+import { findRootURI, loadConfig } from './dependencies';
 
 export function startServer(fs: AbstractFileSystem = NodeFileSystem) {
   const connection = createConnection(stdin, stdout);
@@ -14,7 +14,6 @@ export function startServer(fs: AbstractFileSystem = NodeFileSystem) {
   startCoreServer(connection, {
     fs,
     log,
-    getThemeSettingsSchemaForRootURI,
     findRootURI,
     loadConfig,
     themeDocset: themeLiquidDocsManager,
