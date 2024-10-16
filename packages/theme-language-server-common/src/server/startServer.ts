@@ -1,7 +1,9 @@
 import {
   AugmentedThemeDocset,
   FileTuple,
+  findRoot,
   isError,
+  makeFileExists,
   makeGetDefaultSchemaTranslations,
   makeGetDefaultTranslations,
   parseJSON,
@@ -51,13 +53,13 @@ export function startServer(
   connection: Connection,
   {
     fs,
-    findRootURI: findConfigurationRootURI,
     loadConfig,
     log = defaultLogger,
     jsonValidationSet,
     themeDocset: remoteThemeDocset,
   }: Dependencies,
 ) {
+  const fileExists = makeFileExists(fs);
   const clientCapabilities = new ClientCapabilities();
   const configuration = new Configuration(connection, clientCapabilities);
   const documentManager = new DocumentManager();
@@ -83,7 +85,7 @@ export function startServer(
   const renameProvider = new RenameProvider(documentManager);
 
   const findThemeRootURI = async (uri: string) => {
-    const rootUri = await findConfigurationRootURI(uri);
+    const rootUri = await findRoot(uri, fileExists);
     const config = await loadConfig(rootUri);
     return config.rootUri;
   };
@@ -93,7 +95,6 @@ export function startServer(
   const runChecks = debounce(
     makeRunChecks(documentManager, diagnosticsManager, {
       fs,
-      findRootURI: findConfigurationRootURI,
       loadConfig,
       themeDocset,
       jsonValidationSet,
@@ -150,7 +151,7 @@ export function startServer(
   };
 
   const getModeForURI = async (uri: string) => {
-    const rootUri = await findConfigurationRootURI(uri);
+    const rootUri = await findRoot(uri, fileExists);
     const config = await loadConfig(rootUri);
     return config.context;
   };

@@ -24,7 +24,6 @@ const asyncGlob = promisify(glob);
 
 export * from '@shopify/theme-check-common';
 export * from './config/types';
-export { PathHandler, findRoot, reusableFindRoot } from './find-root';
 export { NodeFileSystem };
 
 export const loadConfig: typeof resolveConfig = async (configPath, root) => {

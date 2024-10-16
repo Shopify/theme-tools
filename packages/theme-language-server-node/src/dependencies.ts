@@ -1,11 +1,11 @@
 import {
   Config,
   NodeFileSystem,
+  findRoot,
   loadConfig as loadConfigFromPath,
   makeFileExists,
   memoize,
   path,
-  reusableFindRoot,
 } from '@shopify/theme-check-node';
 import { Dependencies } from '@shopify/theme-language-server-common';
 import { glob as callbackGlob } from 'glob';
@@ -13,10 +13,6 @@ import { promisify } from 'node:util';
 import { URI, Utils } from 'vscode-uri';
 
 const glob = promisify(callbackGlob);
-
-function parse(uri: string): URI {
-  return URI.parse(uri);
-}
 
 // Calls to `fs` should be done with this
 function asFsPath(uriOrPath: string | URI) {
@@ -29,11 +25,7 @@ function asFsPath(uriOrPath: string | URI) {
   }
 }
 
-export const fileExists = makeFileExists(NodeFileSystem);
-
-export const findRootURI: Dependencies['findRootURI'] = async function findRootURI(uriString) {
-  return reusableFindRoot(uriString, fileExists);
-};
+const fileExists = makeFileExists(NodeFileSystem);
 
 const hasThemeAppExtensionConfig = memoize(
   async (rootPath: string) => {
@@ -45,7 +37,7 @@ const hasThemeAppExtensionConfig = memoize(
 
 export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(uriString: string) {
   const fileUri = path.normalize(uriString);
-  const rootUri = URI.parse(await findRootURI(fileUri));
+  const rootUri = URI.parse(await findRoot(fileUri, fileExists));
   const rootPath = rootUri.fsPath;
   const configUri = Utils.joinPath(rootUri, '.theme-check.yml');
   const configPath = asFsPath(configUri);

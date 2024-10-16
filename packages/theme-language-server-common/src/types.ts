@@ -71,17 +71,6 @@ export interface RequiredDependencies {
   jsonValidationSet: NonNullable<ThemeCheckDependencies['jsonValidationSet']>;
 
   /**
-   * findRootURI(uri: URI)
-   *
-   * A function that asynchronously returns the "root" of a theme.
-   *
-   * Injected because it's different in browser vs in Node.js
-   * - In Node.js, we might do a .theme-check.yml algorithm with fs.exists
-   * - In browser, we might statically return 'browser:///'
-   */
-  findRootURI(uri: URI): Promise<URI>;
-
-  /**
    * A file system abstraction that allows the Language Server to read files by URI.
    *
    * In Node.js, this is a wrapper around node:fs/promises.

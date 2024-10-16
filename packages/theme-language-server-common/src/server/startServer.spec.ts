@@ -347,20 +347,18 @@ describe('Module: server', () => {
     return flushAsync();
   }
 
-  function getDependencies(logger: any, fileTree: MockTheme) {
+  function getDependencies(logger: any, fileTree: MockTheme): Dependencies {
     const MissingTemplate = allChecks.filter((c) => c.meta.code === 'MissingTemplate');
 
     return {
       fs: new MockFileSystem(fileTree, 'browser:/'),
-      findRootURI: async (_: string) => 'browser:/',
-      getThemeSettingsSchemaForRootURI: async () => [],
+      log: logger,
       loadConfig: async () => ({
         context: 'theme',
         settings: {},
         checks: MissingTemplate,
         rootUri: 'browser:/',
       }),
-      log: logger,
       themeDocset: {
         filters: async () => [],
         objects: async () => [],
@@ -370,7 +368,7 @@ describe('Module: server', () => {
       jsonValidationSet: {
         schemas: async () => [],
       },
-    } as Dependencies;
+    };
   }
 
   function missingTemplateDiagnostic() {

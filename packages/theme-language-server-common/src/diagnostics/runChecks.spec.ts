@@ -53,7 +53,6 @@ describe('Module: runChecks', () => {
     documentManager = new DocumentManager();
     diagnosticsManager = new DiagnosticsManager(connection as any as Connection);
     runChecks = makeRunChecks(documentManager, diagnosticsManager, {
-      findRootURI: async () => 'browser:/',
       fs: new MockFileSystem({}, 'browser:/'),
       loadConfig: async () => ({
         context: 'theme',
@@ -207,7 +206,6 @@ describe('Module: runChecks', () => {
     const matchingTranslation = allChecks.filter((c) => c.meta.code === 'MatchingTranslations');
     expect(matchingTranslation).to.have.lengthOf(1);
     runChecks = makeRunChecks(documentManager, diagnosticsManager, {
-      findRootURI: async () => path.normalize('browser:/'),
       fs: new MockFileSystem(files, path.normalize('browser:/')),
       loadConfig: async () => ({
         context: 'theme',
