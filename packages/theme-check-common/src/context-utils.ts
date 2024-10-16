@@ -1,8 +1,9 @@
 import { URI, Utils } from 'vscode-uri';
 import { AbstractFileSystem, FileTuple, FileType, UriString } from './AbstractFileSystem';
 import { parseJSON } from './json';
-import { Translations } from './types';
-import { join, normalize } from './path';
+import { join } from './path';
+import { SourceCodeType, Theme, Translations } from './types';
+import { isError } from './utils';
 
 export const makeFileExists = (fs: AbstractFileSystem) =>
   async function fileExists(uri: string) {
@@ -35,9 +36,10 @@ function getDefaultLocaleFactoryFactory(postfix = '.default.json') {
 export const makeGetDefaultTranslations = getDefaultTranslationsFactoryFactory('.default.json');
 export const makeGetDefaultSchemaTranslations =
   getDefaultTranslationsFactoryFactory('.default.schema.json');
+// prettier-ignore
 function getDefaultTranslationsFactoryFactory(postfix = '.default.json') {
-  return function getDefaultTranslationsFactory(fs: AbstractFileSystem, rootUri: string) {
-    return cached(() => getDefaultTranslations(fs, rootUri, postfix));
+  return function getDefaultTranslationsFactory(fs: AbstractFileSystem, theme: Theme, rootUri: string) {
+    return cached(() => getDefaultTranslations(fs, theme, rootUri, postfix));
   };
 }
 
@@ -68,18 +70,35 @@ async function getDefaultLocale(
 
 async function getDefaultTranslations(
   fs: AbstractFileSystem,
+  theme: Theme,
   rootUri: string,
   postfix: string,
 ): Promise<Translations> {
   try {
+    const bufferTranslations = getDefaultTranslationsFromBuffer(theme, postfix);
+    if (bufferTranslations) return bufferTranslations;
     const defaultLocaleFile = await getDefaultLocaleFile(fs, rootUri, postfix);
     if (!defaultLocaleFile) return {};
     const defaultTranslationsFile = await fs.readFile(defaultLocaleFile);
-    return parseJSON(defaultTranslationsFile);
+    return parseJSON(defaultTranslationsFile, {});
   } catch (error) {
     console.error(error);
     return {};
   }
+}
+
+/** It might be that you have an open buffer, we prefer translations from there if available */
+function getDefaultTranslationsFromBuffer(theme: Theme, postfix: string): Translations | undefined {
+  const defaultTranslationsSourceCode = theme.find(
+    (sourceCode) =>
+      sourceCode.type === SourceCodeType.JSON &&
+      sourceCode.uri.match(/locales/) &&
+      sourceCode.uri.endsWith(postfix),
+  );
+  if (!defaultTranslationsSourceCode) return undefined;
+  const translations = parseJSON(defaultTranslationsSourceCode.source);
+  if (isError(translations)) return undefined;
+  return translations;
 }
 
 function cached<T>(fn: () => Promise<T>): () => Promise<T>;

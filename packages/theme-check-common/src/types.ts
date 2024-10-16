@@ -276,8 +276,6 @@ export interface Dependencies {
   fs: AbstractFileSystem;
   themeDocset?: ThemeDocset;
   jsonValidationSet?: JsonValidationSet;
-  getDefaultTranslations?(): Promise<Translations>;
-  getDefaultSchemaTranslations?(): Promise<Translations>;
 }
 
 export type ValidateJSON<T extends SourceCodeType> = (
@@ -285,24 +283,27 @@ export type ValidateJSON<T extends SourceCodeType> = (
   jsonString: string,
 ) => Promise<{ message: string; startIndex: number; endIndex: number }[]>;
 
+export interface AugmentedDependencies extends Dependencies {
+  fileExists: (uri: UriString) => Promise<boolean>;
+  fileSize: (uri: UriString) => Promise<number>;
+  getDefaultLocale: () => Promise<string>;
+  getDefaultSchemaLocale: () => Promise<string>;
+  getDefaultTranslations(): Promise<Translations>;
+  getDefaultSchemaTranslations(): Promise<Translations>;
+}
+
 type StaticContextProperties<T extends SourceCodeType> = T extends SourceCodeType
   ? {
       report(problem: Problem<T>): void;
       toRelativePath(uri: UriString): RelativePath;
       toUri(relativePath: RelativePath): UriString;
       file: SourceCode<T>;
-      fileExists: (uri: UriString) => Promise<boolean>;
-      fileSize: (uri: UriString) => Promise<number>;
-      getDefaultLocale: () => Promise<string>;
-      getDefaultSchemaLocale: () => Promise<string>;
-      getDefaultTranslations(): Promise<Translations>;
-      getDefaultSchemaTranslations(): Promise<Translations>;
       validateJSON?: ValidateJSON<T>;
     }
   : never;
 
 export type Context<T extends SourceCodeType, S extends Schema = Schema> = T extends SourceCodeType
-  ? StaticContextProperties<T> & Dependencies & { settings: Settings<S> }
+  ? StaticContextProperties<T> & AugmentedDependencies & { settings: Settings<S> }
   : never;
 
 export type Corrector<T extends SourceCodeType> = T extends SourceCodeType

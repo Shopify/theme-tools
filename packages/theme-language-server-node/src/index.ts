@@ -12,11 +12,11 @@ import {
 
 export function startServer(fs: AbstractFileSystem = NodeFileSystem) {
   const connection = createConnection(stdin, stdout);
+  // Using console.error to not interfere with messages sent on STDIN/OUT
   const log = (message: string) => console.error(message);
   const themeLiquidDocsManager = new ThemeLiquidDocsManager(log);
 
   startCoreServer(connection, {
-    // Using console.error to not interfere with messages sent on STDIN/OUT
     fs,
     log,
     getThemeSettingsSchemaForRootURI,
