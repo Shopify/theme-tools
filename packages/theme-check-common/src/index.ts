@@ -1,6 +1,13 @@
 import { AugmentedThemeDocset } from './AugmentedThemeDocset';
 import { JSONValidator } from './JSONValidator';
-import { getDefaultLocaleFactory, makeFileExists, makeFileSize } from './context-utils';
+import {
+  makeGetDefaultLocale,
+  makeGetDefaultSchemaLocale,
+  makeGetDefaultSchemaTranslations,
+  makeGetDefaultTranslations,
+  makeFileExists,
+  makeFileSize,
+} from './context-utils';
 import { createDisabledChecksModule } from './disabled-checks';
 import { isIgnored } from './ignore';
 import * as path from './path';
@@ -32,7 +39,7 @@ import { visitJSON, visitLiquid } from './visitors';
 export * from './AbstractFileSystem';
 export * from './AugmentedThemeDocset';
 export * from './checks';
-export { makeFileExists, makeFileSize } from './context-utils';
+export * from './context-utils';
 export * from './fixes';
 export * from './ignore';
 export * from './json';
@@ -118,12 +125,14 @@ function createContext<T extends SourceCodeType, S extends Schema>(
     ...dependencies,
     fileExists: makeFileExists(dependencies.fs),
     fileSize: makeFileSize(dependencies.fs),
-    getDefaultLocale: getDefaultLocaleFactory(dependencies.fs, config.rootUri, '.default.json'),
-    getDefaultSchemaLocale: getDefaultLocaleFactory(
-      dependencies.fs,
-      config.rootUri,
-      '.default.schema.json',
-    ),
+    getDefaultLocale: makeGetDefaultLocale(dependencies.fs, config.rootUri),
+    getDefaultTranslations:
+      dependencies.getDefaultTranslations ??
+      makeGetDefaultTranslations(dependencies.fs, config.rootUri),
+    getDefaultSchemaLocale: makeGetDefaultSchemaLocale(dependencies.fs, config.rootUri),
+    getDefaultSchemaTranslations:
+      dependencies.getDefaultSchemaTranslations ??
+      makeGetDefaultSchemaTranslations(dependencies.fs, config.rootUri),
     validateJSON,
     settings: createSettings(checkSettings, check.meta.schema),
     toUri: (relativePath) => path.join(config.rootUri, relativePath),

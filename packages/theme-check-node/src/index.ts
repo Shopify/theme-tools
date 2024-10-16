@@ -6,15 +6,14 @@ import {
   Theme,
   toSourceCode as commonToSourceCode,
   check as coreCheck,
-  path as pathUtils,
   isIgnored,
-  parseJSON,
+  path as pathUtils,
 } from '@shopify/theme-check-common';
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
-import { URI } from 'vscode-uri';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
+import { URI } from 'vscode-uri';
 import glob = require('glob');
 
 import { autofix } from './autofix';
@@ -25,8 +24,8 @@ const asyncGlob = promisify(glob);
 
 export * from '@shopify/theme-check-common';
 export * from './config/types';
-export { NodeFileSystem };
 export { PathHandler, findRoot, reusableFindRoot } from './find-root';
+export { NodeFileSystem };
 
 export const loadConfig: typeof resolveConfig = async (configPath, root) => {
   configPath ??= await findConfigPath(root);
@@ -66,18 +65,12 @@ export async function themeCheckRun(
   log: (message: string) => void = () => {},
 ): Promise<ThemeCheckRun> {
   const { theme, config } = await getThemeAndConfig(root, configPath);
-  const defaultTranslationsFile = theme.find((sc) => sc.uri.endsWith('default.json'));
-  const defaultTranslations = parseJSON(defaultTranslationsFile?.source ?? '{}', {});
-  const defaultSchemaTranslationsFile = theme.find((sc) => sc.uri.endsWith('default.schema.json'));
-  const defaultSchemaTranslations = parseJSON(defaultSchemaTranslationsFile?.source ?? '{}', {});
   const themeLiquidDocsManager = new ThemeLiquidDocsManager(log);
 
   const offenses = await coreCheck(theme, config, {
     fs: NodeFileSystem,
     themeDocset: themeLiquidDocsManager,
     jsonValidationSet: themeLiquidDocsManager,
-    getDefaultTranslations: async () => defaultTranslations,
-    getDefaultSchemaTranslations: async () => defaultSchemaTranslations,
   });
 
   return {

@@ -353,11 +353,6 @@ describe('Module: server', () => {
     return {
       fs: new MockFileSystem(fileTree, 'browser:/'),
       findRootURI: async (_: string) => 'browser:/',
-      fileSize: vi.fn().mockResolvedValue(420),
-      getDefaultTranslationsFactory: () => async () => ({}),
-      getDefaultLocaleFactory: () => async () => 'en',
-      getDefaultSchemaTranslationsFactory: () => async () => ({}),
-      getDefaultSchemaLocaleFactory: () => async () => 'en',
       getThemeSettingsSchemaForRootURI: async () => [],
       loadConfig: async () => ({
         context: 'theme',

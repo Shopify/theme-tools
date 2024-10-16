@@ -82,26 +82,6 @@ export interface RequiredDependencies {
   findRootURI(uri: URI): Promise<URI>;
 
   /**
-   * getDefaultTranslationsFactory(root: URI)
-   *
-   * Returns the theme-check-js getDefaultTranslations() dependency.
-   *
-   * A factory because different repos have different default translations.
-   */
-  getDefaultTranslationsFactory(rootURI: URI): ThemeCheckDependencies['getDefaultTranslations'];
-
-  /**
-   * getDefaultSchemaTranslationsFactory(root: URI)
-   *
-   * Returns the theme-check-js getDefaultSchemaTranslations() dependency.
-   *
-   * A factory because different repos have different default schema translations.
-   */
-  getDefaultSchemaTranslationsFactory(
-    rootURI: URI,
-  ): ThemeCheckDependencies['getDefaultSchemaTranslations'];
-
-  /**
    * getThemeSettingsSchemaForRootURI(root: URI)
    *
    * Should return parsed contents of the config/settings_schema.json file.

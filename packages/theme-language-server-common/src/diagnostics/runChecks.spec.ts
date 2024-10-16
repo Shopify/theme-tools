@@ -55,8 +55,6 @@ describe('Module: runChecks', () => {
     runChecks = makeRunChecks(documentManager, diagnosticsManager, {
       findRootURI: async () => 'browser:/',
       fs: new MockFileSystem({}, 'browser:/'),
-      getDefaultTranslationsFactory: () => async () => ({}),
-      getDefaultSchemaTranslationsFactory: () => async () => ({}),
       loadConfig: async () => ({
         context: 'theme',
         settings: {},
@@ -197,11 +195,13 @@ describe('Module: runChecks', () => {
   });
 
   it('should use the contents of the default translations file buffer (if any) instead of the result of the factory', async () => {
-    const defaultURI = 'browser:/locales/en.default.json';
-    const frURI = 'browser:/locales/fr.json';
+    const defaultPath = 'locales/en.default.json';
+    const defaultURI = `browser:/${defaultPath}`;
+    const frPath = 'locales/fr.json';
+    const frURI = `browser:/${frPath}`;
     const files = {
-      [defaultURI]: JSON.stringify({ hello: 'hello' }),
-      [frURI]: JSON.stringify({ hello: 'bonjour', hi: 'salut' }),
+      [defaultPath]: JSON.stringify({ hello: 'hello' }),
+      [frPath]: JSON.stringify({ hello: 'bonjour', hi: 'salut' }),
     };
 
     const matchingTranslation = allChecks.filter((c) => c.meta.code === 'MatchingTranslations');
@@ -209,8 +209,6 @@ describe('Module: runChecks', () => {
     runChecks = makeRunChecks(documentManager, diagnosticsManager, {
       findRootURI: async () => path.normalize('browser:/'),
       fs: new MockFileSystem(files, path.normalize('browser:/')),
-      getDefaultTranslationsFactory: () => async () => JSON.parse(files[defaultURI]),
-      getDefaultSchemaTranslationsFactory: () => async () => ({}),
       loadConfig: async () => ({
         context: 'theme',
         settings: {},
@@ -229,7 +227,7 @@ describe('Module: runChecks', () => {
     });
 
     // Open and have errors
-    documentManager.open(frURI, files[frURI], 0);
+    documentManager.open(frURI, files[frPath], 0);
     await runChecks([frURI]);
     expect(connection.sendDiagnostics).toHaveBeenCalledWith({
       uri: frURI,
@@ -256,7 +254,7 @@ describe('Module: runChecks', () => {
     });
 
     // Change the contents of the defaultURI buffer, expect frURI to be fixed
-    documentManager.open(defaultURI, files[defaultURI], 0);
+    documentManager.open(defaultURI, files[defaultPath], 0);
     documentManager.change(defaultURI, JSON.stringify({ hello: 'hello', hi: 'hi' }), 1);
     connection.sendDiagnostics.mockClear();
     await runChecks([frURI]);

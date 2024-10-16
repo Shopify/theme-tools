@@ -6,8 +6,6 @@ import { createConnection } from 'vscode-languageserver/node';
 import {
   filesForURI,
   findRootURI,
-  getDefaultTranslationsFactory,
-  getDefaultSchemaTranslationsFactory,
   getThemeSettingsSchemaForRootURI,
   loadConfig,
 } from './dependencies';
@@ -21,8 +19,6 @@ export function startServer(fs: AbstractFileSystem = NodeFileSystem) {
     // Using console.error to not interfere with messages sent on STDIN/OUT
     fs,
     log,
-    getDefaultTranslationsFactory,
-    getDefaultSchemaTranslationsFactory,
     getThemeSettingsSchemaForRootURI,
     findRootURI,
     filesForURI,

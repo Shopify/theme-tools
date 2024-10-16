@@ -1,16 +1,10 @@
+import { path as pathUtils } from '@shopify/theme-check-common';
 import * as mktemp from 'mktemp';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { path as pathUtils } from '@shopify/theme-check-common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { URI, Utils } from 'vscode-uri';
-import {
-  fileExists,
-  filesForURI,
-  findRootURI,
-  getDefaultTranslationsFactory,
-  loadConfig,
-} from './dependencies';
+import { fileExists, filesForURI, findRootURI } from './dependencies';
 
 type Tree = {
   [k in string]: Tree | string;
@@ -160,16 +154,6 @@ describe('Module: dependencies', () => {
 
       // Check that the file does not exist
       expect(notExists).to.be.false;
-    });
-  });
-
-  describe('Unit: getDefaultTranslationsFactory', () => {
-    it('should return the correct translations depending on the root', async () => {
-      let getDefaultTranslations = getDefaultTranslationsFactory(workspace.uri('gitRootTheme'));
-      expect(await getDefaultTranslations()).to.eql({ beverage: 'coffee' });
-
-      getDefaultTranslations = getDefaultTranslationsFactory(workspace.uri('frenchDefault'));
-      expect(await getDefaultTranslations()).to.eql({ beverage: 'café' });
     });
   });
 });

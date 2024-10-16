@@ -273,11 +273,11 @@ export type Translations = {
 };
 
 export interface Dependencies {
-  getDefaultTranslations(): Promise<Translations>;
-  getDefaultSchemaTranslations(): Promise<Translations>;
   fs: AbstractFileSystem;
   themeDocset?: ThemeDocset;
   jsonValidationSet?: JsonValidationSet;
+  getDefaultTranslations?(): Promise<Translations>;
+  getDefaultSchemaTranslations?(): Promise<Translations>;
 }
 
 export type ValidateJSON<T extends SourceCodeType> = (
@@ -295,6 +295,8 @@ type StaticContextProperties<T extends SourceCodeType> = T extends SourceCodeTyp
       fileSize: (uri: UriString) => Promise<number>;
       getDefaultLocale: () => Promise<string>;
       getDefaultSchemaLocale: () => Promise<string>;
+      getDefaultTranslations(): Promise<Translations>;
+      getDefaultSchemaTranslations(): Promise<Translations>;
       validateJSON?: ValidateJSON<T>;
     }
   : never;

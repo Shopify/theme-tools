@@ -1,4 +1,8 @@
-import { AugmentedThemeDocset } from '@shopify/theme-check-common';
+import {
+  AugmentedThemeDocset,
+  makeGetDefaultSchemaTranslations,
+  makeGetDefaultTranslations,
+} from '@shopify/theme-check-common';
 import {
   Connection,
   FileOperationRegistrationOptions,
@@ -48,8 +52,6 @@ export function startServer(
     fs,
     filesForURI,
     findRootURI: findConfigurationRootURI,
-    getDefaultTranslationsFactory,
-    getDefaultSchemaTranslationsFactory,
     getThemeSettingsSchemaForRootURI,
     loadConfig,
     log = defaultLogger,
@@ -93,8 +95,6 @@ export function startServer(
     makeRunChecks(documentManager, diagnosticsManager, {
       fs,
       findRootURI: findConfigurationRootURI,
-      getDefaultTranslationsFactory,
-      getDefaultSchemaTranslationsFactory,
       loadConfig,
       themeDocset,
       jsonValidationSet,
@@ -106,7 +106,7 @@ export function startServer(
     const rootURI = await findThemeRootURI(uri);
     const theme = documentManager.theme(rootURI);
     const [defaultTranslations, shopifyTranslations] = await Promise.all([
-      useBufferOrInjectedTranslations(getDefaultTranslationsFactory, theme, rootURI),
+      useBufferOrInjectedTranslations(makeGetDefaultTranslations(fs, rootURI), theme),
       themeDocset.systemTranslations(),
     ]);
 
@@ -118,9 +118,8 @@ export function startServer(
     const theme = documentManager.theme(rootURI);
 
     return useBufferOrInjectedSchemaTranslations(
-      getDefaultSchemaTranslationsFactory,
+      makeGetDefaultSchemaTranslations(fs, rootURI),
       theme,
-      rootURI,
     );
   };
 
