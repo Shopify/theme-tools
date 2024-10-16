@@ -1,4 +1,4 @@
-import { check } from '@shopify/theme-check-common';
+import { check, findRoot, makeFileExists } from '@shopify/theme-check-common';
 
 import { DocumentManager } from '../documents';
 import { Dependencies } from '../types';
@@ -10,10 +10,9 @@ export function makeRunChecks(
   {
     fs,
     loadConfig,
-    findRootURI,
     themeDocset,
     jsonValidationSet,
-  }: Pick<Dependencies, 'fs' | 'loadConfig' | 'findRootURI' | 'themeDocset' | 'jsonValidationSet'>,
+  }: Pick<Dependencies, 'fs' | 'loadConfig' | 'themeDocset' | 'jsonValidationSet'>,
 ) {
   return async function runChecks(triggerURIs: string[]): Promise<void> {
     // This function takes an array of triggerURIs so that we can correctly
@@ -25,7 +24,8 @@ export function makeRunChecks(
     //  theme1/snippets/b.liquid
     //
     // then we recheck theme1
-    const rootURIs = await Promise.all(triggerURIs.map(findRootURI));
+    const fileExists = makeFileExists(fs);
+    const rootURIs = await Promise.all(triggerURIs.map((uri) => findRoot(uri, fileExists)));
     const deduplicatedRootURIs = new Set(rootURIs);
     await Promise.all([...deduplicatedRootURIs].map(runChecksForRoot));
 

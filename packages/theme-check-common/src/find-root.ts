@@ -1,11 +1,5 @@
-import { UriString, makeFileExists, path } from '@shopify/theme-check-common';
-import { NodeFileSystem } from './NodeFileSystem';
-
-export interface PathHandler<T> {
-  join(base: T, ...paths: (T | string)[]): UriString;
-  dirname(path: T): T;
-  asPath(path: T): string;
-}
+import { UriString } from './AbstractFileSystem';
+import * as path from './path';
 
 type FileExists = (uri: string) => Promise<boolean>;
 
@@ -42,13 +36,17 @@ async function not(ap: Promise<boolean>) {
 }
 
 /**
- * This more complex version of findRoot is used in the language server so that we can
- * use URIs instead of strings. It's also used in the CLI.
+ * Returns the "root" of a theme or theme app extension. The root is the
+ * directory that contains a `.theme-check.yml` file, a `.git` directory, or a
+ * `shopify.extension.toml` file.
+ *
+ * There are cases where .theme-check.yml is not defined and we have to infer the root.
+ * We'll assume that the root is the directory that contains a `snippets` directory.
+ *
+ * So you can think of this function as the function that infers where a .theme-check.yml
+ * should be.
  */
-export async function reusableFindRoot(
-  curr: UriString,
-  fileExists: FileExists,
-): Promise<UriString> {
+export async function findRoot(curr: UriString, fileExists: FileExists): Promise<UriString> {
   const currIsRoot = await isRoot(curr, fileExists);
   if (currIsRoot) {
     return curr;
@@ -60,21 +58,5 @@ export async function reusableFindRoot(
     return curr;
   }
 
-  return reusableFindRoot(dir, fileExists);
-}
-
-/**
- * Returns the "root" of a theme or theme app extension. The root is the
- * directory that contains a `.theme-check.yml` file, a `.git` directory, or a
- * `shopify.extension.toml` file.
- *
- * There are cases where .theme-check.yml is not defined and we have to infer the root.
- * We'll assume that the root is the directory that contains a `snippets` directory.
- *
- * So you can think of this function as the function that infers where a .theme-check.yml
- * should be.
- */
-export async function findRoot(curr: UriString): Promise<UriString> {
-  const fileExists = makeFileExists(NodeFileSystem);
-  return reusableFindRoot(curr, fileExists);
+  return findRoot(dir, fileExists);
 }

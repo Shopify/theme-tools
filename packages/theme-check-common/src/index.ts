@@ -41,6 +41,7 @@ export * from './AbstractFileSystem';
 export * from './AugmentedThemeDocset';
 export * from './checks';
 export * from './context-utils';
+export * from './find-root';
 export * from './fixes';
 export * from './ignore';
 export * from './json';
