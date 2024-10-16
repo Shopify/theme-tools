@@ -1,4 +1,11 @@
-import { SourceCodeType, Translations, isError, parseJSON } from '@shopify/theme-check-common';
+import {
+  SourceCodeType,
+  Translations,
+  isError,
+  makeGetDefaultSchemaTranslations,
+  makeGetDefaultTranslations,
+  parseJSON,
+} from '@shopify/theme-check-common';
 import { AugmentedSourceCode } from './documents';
 import { Dependencies } from './types';
 
@@ -12,11 +19,9 @@ export type PluralizedTranslation = {
 };
 
 export async function useBufferOrInjectedTranslations(
-  getDefaultTranslationsFactory: Dependencies['getDefaultTranslationsFactory'],
+  getDefaultTranslations: ReturnType<typeof makeGetDefaultTranslations>,
   theme: AugmentedSourceCode[],
-  rootURI: string,
 ) {
-  const injectedGetDefaultTranslations = getDefaultTranslationsFactory(rootURI);
   const defaultTranslationsSourceCode = theme.find(
     (sourceCode) =>
       sourceCode.type === SourceCodeType.JSON &&
@@ -24,17 +29,14 @@ export async function useBufferOrInjectedTranslations(
       sourceCode.uri.match(/default\.json/),
   );
   return (
-    parseDefaultTranslations(defaultTranslationsSourceCode) ||
-    (await injectedGetDefaultTranslations())
+    parseDefaultTranslations(defaultTranslationsSourceCode) || (await getDefaultTranslations())
   );
 }
 
 export async function useBufferOrInjectedSchemaTranslations(
-  getDefaultTranslationsFactory: Dependencies['getDefaultSchemaTranslationsFactory'],
+  getDefaultSchemaTranslations: ReturnType<typeof makeGetDefaultSchemaTranslations>,
   theme: AugmentedSourceCode[],
-  rootURI: string,
 ) {
-  const injectedGetDefaultTranslations = getDefaultTranslationsFactory(rootURI);
   const defaultTranslationsSourceCode = theme.find(
     (sourceCode) =>
       sourceCode.type === SourceCodeType.JSON &&
@@ -43,7 +45,7 @@ export async function useBufferOrInjectedSchemaTranslations(
   );
   return (
     parseDefaultTranslations(defaultTranslationsSourceCode) ||
-    (await injectedGetDefaultTranslations())
+    (await getDefaultSchemaTranslations())
   );
 }
 

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { getDefaultLocaleFactory } from './context-utils';
+import { makeGetDefaultLocale, makeGetDefaultTranslations } from './context-utils';
 import { MockFileSystem } from './test';
 import { AbstractFileSystem } from './AbstractFileSystem';
 
@@ -19,10 +19,20 @@ describe('Unit: getDefaultLocale', () => {
   });
 
   it('should return the correct translations depending on the root', async () => {
-    let getDefaultLocale = getDefaultLocaleFactory(fs, 'shopify-vfs:/gitRootTheme');
+    let getDefaultLocale = makeGetDefaultLocale(fs, 'shopify-vfs:/gitRootTheme');
     expect(await getDefaultLocale()).to.eql('en');
 
-    getDefaultLocale = getDefaultLocaleFactory(fs, 'shopify-vfs:/frenchDefault');
+    getDefaultLocale = makeGetDefaultLocale(fs, 'shopify-vfs:/frenchDefault');
     expect(await getDefaultLocale()).to.eql('fr');
+  });
+
+  describe('Unit: getDefaultTranslationsFactory', () => {
+    it('should return the correct translations depending on the root', async () => {
+      let getDefaultTranslations = makeGetDefaultTranslations(fs, 'shopify-vfs:/gitRootTheme');
+      expect(await getDefaultTranslations()).to.eql({ beverage: 'coffee' });
+
+      getDefaultTranslations = makeGetDefaultTranslations(fs, 'shopify-vfs:/frenchDefault');
+      expect(await getDefaultTranslations()).to.eql({ beverage: 'café' });
+    });
   });
 });

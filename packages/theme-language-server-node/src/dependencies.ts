@@ -1,7 +1,6 @@
 import {
   Config,
   NodeFileSystem,
-  Translations,
   isError,
   loadConfig as loadConfigFromPath,
   makeFileExists,
@@ -13,7 +12,6 @@ import {
 import { Dependencies } from '@shopify/theme-language-server-common';
 import { glob as callbackGlob } from 'glob';
 import * as fs from 'node:fs/promises';
-import { basename } from 'node:path';
 import { promisify } from 'node:util';
 import { URI, Utils } from 'vscode-uri';
 
@@ -74,59 +72,6 @@ export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(
     return loadConfigFromPath(undefined, rootPath).then(normalizeRoot);
   }
 };
-
-export const getDefaultTranslationsFactoryFactory =
-  (postfix: string = '.default.json') =>
-  (rootURI: string) => {
-    const root = parse(rootURI);
-
-    return cached(async () => {
-      try {
-        const defaultLocale = await getDefaultLocale(root, postfix);
-        const defaultTranslationsFileUri = Utils.joinPath(
-          root,
-          'locales',
-          `${defaultLocale}${postfix}`,
-        );
-        const defaultTranslationsFile = await fs.readFile(
-          asFsPath(defaultTranslationsFileUri),
-          'utf8',
-        );
-        const translations = parseJSON(defaultTranslationsFile) as Translations;
-        return isError(translations) ? {} : translations;
-      } catch (error) {
-        return {};
-      }
-    });
-  };
-
-export const getDefaultTranslationsFactory: Dependencies['getDefaultTranslationsFactory'] =
-  getDefaultTranslationsFactoryFactory('.default.json');
-
-export const getDefaultSchemaTranslationsFactory: Dependencies['getDefaultSchemaTranslationsFactory'] =
-  getDefaultTranslationsFactoryFactory('.default.schema.json');
-
-async function getDefaultLocale(rootURI: URI, postfix = '.default.json') {
-  try {
-    const localesFolder = Utils.joinPath(rootURI, 'locales');
-    const files = await fs.readdir(asFsPath(localesFolder), {
-      encoding: 'utf8',
-      withFileTypes: true,
-    });
-    const file = files.find((dirent) => dirent.isFile() && dirent.name.endsWith(postfix));
-    return file ? basename(file.name, postfix) : 'en';
-  } catch (error) {
-    return 'en';
-  }
-}
-
-function cached<T>(fn: (...args: any[]) => Promise<T>): (...args: any[]) => Promise<T> {
-  let cachedPromise: Promise<T>;
-  return async (...args) => {
-    if (!cachedPromise) cachedPromise = fn(...args);
-    return cachedPromise;
-  };
-}
 
 function normalizeRoot(config: Config) {
   config.rootUri = path.normalize(config.rootUri);

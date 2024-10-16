@@ -1,4 +1,8 @@
-import { check } from '@shopify/theme-check-common';
+import {
+  check,
+  makeGetDefaultSchemaTranslations,
+  makeGetDefaultTranslations,
+} from '@shopify/theme-check-common';
 
 import { DocumentManager } from '../documents';
 import {
@@ -15,20 +19,9 @@ export function makeRunChecks(
     fs,
     loadConfig,
     findRootURI,
-    getDefaultTranslationsFactory,
-    getDefaultSchemaTranslationsFactory,
     themeDocset,
     jsonValidationSet,
-  }: Pick<
-    Dependencies,
-    | 'fs'
-    | 'loadConfig'
-    | 'findRootURI'
-    | 'getDefaultTranslationsFactory'
-    | 'getDefaultSchemaTranslationsFactory'
-    | 'themeDocset'
-    | 'jsonValidationSet'
-  >,
+  }: Pick<Dependencies, 'fs' | 'loadConfig' | 'findRootURI' | 'themeDocset' | 'jsonValidationSet'>,
 ) {
   return async function runChecks(triggerURIs: string[]): Promise<void> {
     // This function takes an array of triggerURIs so that we can correctly
@@ -51,8 +44,8 @@ export function makeRunChecks(
       const rootURI = config.rootUri;
       const theme = documentManager.theme(rootURI);
       const [defaultTranslations, defaultSchemaTranslations] = await Promise.all([
-        useBufferOrInjectedTranslations(getDefaultTranslationsFactory, theme, rootURI),
-        useBufferOrInjectedSchemaTranslations(getDefaultSchemaTranslationsFactory, theme, rootURI),
+        useBufferOrInjectedTranslations(makeGetDefaultTranslations(fs, rootURI), theme),
+        useBufferOrInjectedSchemaTranslations(makeGetDefaultSchemaTranslations(fs, rootURI), theme),
       ]);
 
       const offenses = await check(theme, config, {

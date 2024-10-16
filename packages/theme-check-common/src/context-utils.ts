@@ -1,5 +1,8 @@
 import { URI, Utils } from 'vscode-uri';
 import { AbstractFileSystem, FileTuple, FileType, UriString } from './AbstractFileSystem';
+import { parseJSON } from './json';
+import { Translations } from './types';
+import { join, normalize } from './path';
 
 export const makeFileExists = (fs: AbstractFileSystem) =>
   async function fileExists(uri: string) {
@@ -21,13 +24,30 @@ export const makeFileSize = (fs: AbstractFileSystem) =>
     }
   };
 
-export function getDefaultLocaleFactory(
+export const makeGetDefaultLocale = getDefaultLocaleFactoryFactory('.default.json');
+export const makeGetDefaultSchemaLocale = getDefaultLocaleFactoryFactory('.default.schema.json');
+function getDefaultLocaleFactoryFactory(postfix = '.default.json') {
+  return function getDefaultLocaleFactory(fs: AbstractFileSystem, rootUri: string) {
+    return cached(() => getDefaultLocale(fs, rootUri, postfix));
+  };
+}
+
+export const makeGetDefaultTranslations = getDefaultTranslationsFactoryFactory('.default.json');
+export const makeGetDefaultSchemaTranslations =
+  getDefaultTranslationsFactoryFactory('.default.schema.json');
+function getDefaultTranslationsFactoryFactory(postfix = '.default.json') {
+  return function getDefaultTranslationsFactory(fs: AbstractFileSystem, rootUri: string) {
+    return cached(() => getDefaultTranslations(fs, rootUri, postfix));
+  };
+}
+
+async function getDefaultLocaleFile(
   fs: AbstractFileSystem,
   rootUri: string,
-  postfix: string = '.default.json',
+  postfix = '.default.json',
 ) {
-  /** These things are cached per run, not across runs */
-  return cached(() => getDefaultLocale(fs, rootUri, postfix));
+  const files = await fs.readDirectory(join(rootUri, 'locales'));
+  return files.find(([uri]) => uri.endsWith(postfix))?.[0];
 }
 
 async function getDefaultLocale(
@@ -35,18 +55,30 @@ async function getDefaultLocale(
   rootUri: string,
   postfix: string,
 ): Promise<string> {
-  const root = URI.parse(rootUri);
   try {
-    const files = await fs.readDirectory(Utils.joinPath(root, 'locales').toString());
-    const defaultLocaleFile = files.find(([uri]) => uri.endsWith(postfix));
-    const defaultLocaleFileName = Utils.basename(
-      URI.parse(defaultLocaleFile?.[0] ?? 'en.default.json'),
-    );
-    const defaultLocale = defaultLocaleFileName.split('.')[0];
-    return defaultLocale ?? 'en';
+    const defaultLocaleFile = await getDefaultLocaleFile(fs, rootUri, postfix);
+    if (!defaultLocaleFile) return 'en';
+    const defaultLocaleFileName = Utils.basename(URI.parse(defaultLocaleFile));
+    return defaultLocaleFileName.split('.')[0];
   } catch (error) {
     console.error(error);
     return 'en';
+  }
+}
+
+async function getDefaultTranslations(
+  fs: AbstractFileSystem,
+  rootUri: string,
+  postfix: string,
+): Promise<Translations> {
+  try {
+    const defaultLocaleFile = await getDefaultLocaleFile(fs, rootUri, postfix);
+    if (!defaultLocaleFile) return {};
+    const defaultTranslationsFile = await fs.readFile(defaultLocaleFile);
+    return parseJSON(defaultTranslationsFile);
+  } catch (error) {
+    console.error(error);
+    return {};
   }
 }
 
