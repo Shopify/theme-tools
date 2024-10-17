@@ -9,10 +9,13 @@ import fs from 'node:fs/promises';
 
 export const NodeFileSystem: AbstractFileSystem = {
   async readFile(uri: string): Promise<string> {
+    // I'm intentionally leaving these comments here for debugging purposes :)
+    // console.error('fs/readFile', uri);
     return fs.readFile(path.fsPath(uri), 'utf8');
   },
 
   async readDirectory(uri: string): Promise<FileTuple[]> {
+    // console.error('fs/readDirectory', uri);
     const files = await fs.readdir(path.fsPath(uri), { withFileTypes: true });
     return files.map((file) => {
       return [`${uri}/${file.name}`, file.isDirectory() ? FileType.Directory : FileType.File];
@@ -20,6 +23,7 @@ export const NodeFileSystem: AbstractFileSystem = {
   },
 
   async stat(uri: string): Promise<FileStat> {
+    // console.error('fs/stat', uri);
     try {
       const stats = await fs.stat(path.fsPath(uri));
       return {

@@ -25,8 +25,6 @@ function asFsPath(uriOrPath: string | URI) {
   }
 }
 
-const fileExists = makeFileExists(NodeFileSystem);
-
 const hasThemeAppExtensionConfig = memoize(
   async (rootPath: string) => {
     const files = await glob('*.extension.toml', { cwd: rootPath });
@@ -35,7 +33,10 @@ const hasThemeAppExtensionConfig = memoize(
   (x: string) => x,
 );
 
-export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(uriString: string) {
+export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(
+  uriString,
+  fileExists,
+) {
   const fileUri = path.normalize(uriString);
   const rootUri = URI.parse(await findRoot(fileUri, fileExists));
   const rootPath = rootUri.fsPath;

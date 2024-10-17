@@ -28,11 +28,10 @@ const schemas = WEBPACK_SCHEMAS;
 const worker = self as any as Worker;
 const connection = getConnection(worker);
 const fileSystem = new VsCodeFileSystem(connection, {});
-const fileExists = makeFileExists(fileSystem);
 const dependencies: Dependencies = {
   fs: fileSystem,
   log: console.info.bind(console),
-  loadConfig: async (uri) => {
+  loadConfig: async (uri, fileExists) => {
     const rootUri = await findRoot(uri, fileExists);
     return {
       context: 'theme',

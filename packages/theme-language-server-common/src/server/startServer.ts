@@ -36,6 +36,7 @@ import { Dependencies } from '../types';
 import { debounce } from '../utils';
 import { VERSION } from '../version';
 import { Configuration } from './Configuration';
+import { CachedFileSystem } from './CachedFileSystem';
 
 const defaultLogger = () => {};
 
@@ -52,13 +53,14 @@ const defaultLogger = () => {};
 export function startServer(
   connection: Connection,
   {
-    fs,
+    fs: injectedFs,
     loadConfig,
     log = defaultLogger,
     jsonValidationSet,
     themeDocset: remoteThemeDocset,
   }: Dependencies,
 ) {
+  const fs = new CachedFileSystem(injectedFs);
   const fileExists = makeFileExists(fs);
   const clientCapabilities = new ClientCapabilities();
   const configuration = new Configuration(connection, clientCapabilities);
@@ -86,7 +88,7 @@ export function startServer(
 
   const findThemeRootURI = async (uri: string) => {
     const rootUri = await findRoot(uri, fileExists);
-    const config = await loadConfig(rootUri);
+    const config = await loadConfig(rootUri, fileExists);
     return config.rootUri;
   };
 
@@ -152,7 +154,7 @@ export function startServer(
 
   const getModeForURI = async (uri: string) => {
     const rootUri = await findRoot(uri, fileExists);
-    const config = await loadConfig(rootUri);
+    const config = await loadConfig(rootUri, fileExists);
     return config.context;
   };
 
@@ -280,6 +282,8 @@ export function startServer(
 
   connection.onDidSaveTextDocument(async (params) => {
     const { uri } = params.textDocument;
+    fs.readFile.invalidate(uri);
+    fs.stat.invalidate(uri);
     if (await configuration.shouldCheckOnSave()) {
       runChecks([uri]);
     }
@@ -351,14 +355,32 @@ export function startServer(
   connection.workspace.onDidCreateFiles((params) => {
     const triggerUris = params.files.map((fileCreate) => fileCreate.uri);
     runChecks.force(triggerUris);
+    for (const { uri } of params.files) {
+      fs.readDirectory.invalidate(path.dirname(uri));
+      fs.readFile.invalidate(uri);
+      fs.stat.invalidate(uri);
+    }
   });
   connection.workspace.onDidRenameFiles((params) => {
     const triggerUris = params.files.map((fileRename) => fileRename.newUri);
     runChecks.force(triggerUris);
+    for (const { oldUri, newUri } of params.files) {
+      fs.readDirectory.invalidate(path.dirname(oldUri));
+      fs.readDirectory.invalidate(path.dirname(newUri));
+      fs.readFile.invalidate(oldUri);
+      fs.readFile.invalidate(newUri);
+      fs.stat.invalidate(oldUri);
+      fs.stat.invalidate(newUri);
+    }
   });
   connection.workspace.onDidDeleteFiles((params) => {
     const triggerUris = params.files.map((fileDelete) => fileDelete.uri);
     runChecks.force(triggerUris);
+    for (const { uri } of params.files) {
+      fs.readDirectory.invalidate(path.dirname(uri));
+      fs.readFile.invalidate(uri);
+      fs.stat.invalidate(uri);
+    }
   });
 
   connection.listen();
