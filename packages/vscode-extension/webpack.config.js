@@ -10,25 +10,9 @@ const path = require('path');
 const { ThemeLiquidDocsManager } = require('@shopify/theme-check-docs-updater');
 
 /** @type WebpackConfig */
-const config = {
-  target: 'node',
-  entry: {
-    extension: './src/node/extension.ts',
-    server: './src/node/server.ts',
-  },
-  output: {
-    path: path.resolve(__dirname, 'dist', 'node'),
-    filename: '[name].js',
-    libraryTarget: 'commonjs2',
-    devtoolModuleFilenameTemplate: '../../[resource-path]',
-  },
+const baseConfig = {
   context: path.resolve(__dirname),
-  externals: {
-    vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded
-    prettier: 'commonjs ./prettier',
-  },
   resolve: {
-    // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
     extensions: ['.ts', '.js'],
     plugins: [new TsconfigPathsPlugin({})],
   },
@@ -55,6 +39,33 @@ const config = {
     ],
   },
   devtool: 'source-map',
+  node: {
+    __filename: 'eval-only', // this means that __filename will eval to the output file name
+    __dirname: 'eval-only', // this means that __dirname will eval to the dist folder
+  },
+  infrastructureLogging: {
+    level: 'log', // enables logging required for problem matchers
+  },
+}
+
+/** @type WebpackConfig */
+const desktopConfig = {
+  ...baseConfig,
+  target: 'node',
+  entry: {
+    extension: './src/node/extension.ts',
+    server: './src/node/server.ts',
+  },
+  output: {
+    path: path.resolve(__dirname, 'dist', 'node'),
+    filename: '[name].js',
+    libraryTarget: 'commonjs2',
+    devtoolModuleFilenameTemplate: '../../[resource-path]',
+  },
+  externals: {
+    vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded
+    prettier: 'commonjs ./prettier',
+  },
   plugins: [
     new webpack.DefinePlugin({
       // A flag that lets us do fun webpack-only shenanigans...
@@ -87,72 +98,28 @@ const config = {
       ],
     }),
   ],
-  node: {
-    __filename: 'eval-only', // this means that __filename will eval to the output file name
-    __dirname: 'eval-only', // this means that __dirname will eval to the dist folder
-  },
-  infrastructureLogging: {
-    level: 'log', // enables logging required for problem matchers
-  },
 };
 
-const browserConfig = {
+/** @type WebpackConfig */
+const browserClientConfig = {
+  ...baseConfig,
   target: 'webworker',
-  entry: {
-    extension: './src/browser/extension.ts',
-  },
+  entry: { extension: './src/browser/extension.ts', },
   output: {
     path: path.resolve(__dirname, 'dist', 'browser'),
     filename: '[name].js',
     libraryTarget: 'commonjs',
     devtoolModuleFilenameTemplate: '../../[resource-path]',
   },
-  context: path.resolve(__dirname),
   externals: {
     vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded
-    prettier: 'commonjs ./prettier',
   },
-  resolve: {
-    // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
-    extensions: ['.ts', '.js'],
-    plugins: [new TsconfigPathsPlugin({})],
-  },
-  optimization: {
-    minimize: false,
-  },
-  module: {
-    parser: {
-      javascript: {
-        commonjsMagicComments: true,
-      },
-    },
-    rules: [
-      {
-        test: /\.ts$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'ts-loader',
-          options: {
-            projectReferences: true,
-          },
-        },
-      },
-    ],
-  },
-  devtool: 'nosources-source-map',
   plugins: [
     new webpack.DefinePlugin({
       // A flag that lets us do fun webpack-only shenanigans...
       'process.env.WEBPACK_MODE': true,
     }),
   ],
-  node: {
-    __filename: 'eval-only', // this means that __filename will eval to the output file name
-    __dirname: 'eval-only', // this means that __dirname will eval to the dist folder
-  },
-  infrastructureLogging: {
-    level: 'log', // enables logging required for problem matchers
-  },
 };
 
 const browserServerConfig = async () => {
@@ -166,12 +133,9 @@ const browserServerConfig = async () => {
   ]);
 
   return {
-    context: path.resolve(__dirname),
+    ...baseConfig,
     target: 'webworker',
-    mode: 'none',
-    entry: {
-      server: './src/browser/server.ts',
-    },
+    entry: { server: './src/browser/server.ts', },
     output: {
       path: path.resolve(__dirname, 'dist', 'browser'),
       filename: '[name].js',
@@ -179,34 +143,6 @@ const browserServerConfig = async () => {
       library: 'serverExportVar',
       devtoolModuleFilenameTemplate: '../../[resource-path]',
     },
-    resolve: {
-      // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
-      extensions: ['.ts', '.js'],
-      plugins: [new TsconfigPathsPlugin({})],
-    },
-    optimization: {
-      minimize: false,
-    },
-    module: {
-      parser: {
-        javascript: {
-          commonjsMagicComments: true,
-        },
-      },
-      rules: [
-        {
-          test: /\.ts$/,
-          exclude: /node_modules/,
-          use: {
-            loader: 'ts-loader',
-            options: {
-              projectReferences: true,
-            },
-          },
-        },
-      ],
-    },
-    devtool: 'nosources-source-map',
     plugins: [
       new webpack.DefinePlugin({
         // A flag that lets us do fun webpack-only shenanigans...
@@ -218,13 +154,7 @@ const browserServerConfig = async () => {
         WEBPACK_SCHEMAS: JSON.stringify(schemas),
       }),
     ],
-    performance: {
-      hints: false,
-    },
-    infrastructureLogging: {
-      level: 'log', // enables logging required for problem matchers
-    },
   };
 };
 
-module.exports = [config, browserConfig, browserServerConfig];
+module.exports = [desktopConfig, browserClientConfig, browserServerConfig];
