@@ -135,6 +135,8 @@ export function isDirectory([_, type]: FileTuple) {
   return type === FileType.Directory;
 }
 
+const ignoredFolders = ['.git', 'node_modules', 'dist', 'build', 'tmp', 'vendor'];
+
 function isIgnored([uri, type]: FileTuple) {
-  return uri.endsWith('node_modules') && type === FileType.Directory;
+  return type === FileType.Directory && ignoredFolders.some((folder) => uri.endsWith(folder));
 }

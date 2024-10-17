@@ -1,12 +1,11 @@
-import { URI } from 'vscode-languageserver';
 import {
-  Config,
   AbstractFileSystem,
+  Config,
   Dependencies as ThemeCheckDependencies,
 } from '@shopify/theme-check-common';
+import { URI } from 'vscode-languageserver';
 
 import { WithOptional } from './utils';
-import { SettingsSchemaJSONFile } from './settings';
 
 export type Dependencies = WithOptional<RequiredDependencies, 'log'>;
 
@@ -52,7 +51,7 @@ export interface RequiredDependencies {
    * @param uri - a file path
    * @returns {Promise<Config>}
    */
-  loadConfig(uri: URI): Promise<Config>;
+  loadConfig(uri: URI, fileExists: (uri: string) => Promise<boolean>): Promise<Config>;
 
   /**
    * In local environments, the Language Server can download the latest versions
