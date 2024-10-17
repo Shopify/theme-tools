@@ -139,20 +139,30 @@ export class LanguageClient extends EventTarget implements AbstractLanguageClien
   onRequest<P, R, PR, E, RO>(
     type: ProtocolRequestType<P, R, PR, E, RO>,
     handler: RequestHandler<P, R, E>,
-  ): Disposable {
+  ): Disposable;
+  onRequest<P>(type: string | MessageSignature, handler: RequestHandler<P, any, any>): Disposable {
+    const method = typeof type === 'string' ? type : type.method;
     const callback = async (event: Event) => {
       const { params, id } = (event as CustomEvent<RequestMessage>).detail;
       const cancellationToken: CancellationToken = new CancellationTokenSource().token;
-      const response = await handler(params as any as P, cancellationToken);
-      if (response && typeof response === 'object' && 'code' in response) {
-        this.sendResponse(id!, undefined, response as any as ResponseError);
-      } else {
-        this.sendResponse(id!, response, undefined);
+      try {
+        const response = await handler(params as any as P, cancellationToken);
+        if (response && typeof response === 'object' && 'code' in response) {
+          this.sendResponse(id!, undefined, response as any as ResponseError);
+        } else {
+          this.sendResponse(id!, response, undefined);
+        }
+      } catch (error) {
+        this.sendResponse(
+          id!,
+          undefined,
+          new ResponseError(1, error instanceof Error ? error.message : (error as string)),
+        );
       }
     };
 
-    this.addEventListener(type.method, callback);
-    return this.disposable(() => this.removeEventListener(type.method, callback));
+    this.addEventListener(method, callback);
+    return this.disposable(() => this.removeEventListener(method, callback));
   }
 
   /**
@@ -170,14 +180,16 @@ export class LanguageClient extends EventTarget implements AbstractLanguageClien
   onNotification<P, RO>(
     type: ProtocolNotificationType<P, RO>,
     handler: NotificationHandler<P>,
-  ): Disposable {
+  ): Disposable;
+  onNotification<P>(type: string | MessageSignature, handler: NotificationHandler<P>): Disposable {
+    const method = typeof type === 'string' ? type : type.method;
     const callback = (event: Event) => {
       const { params } = (event as CustomEvent<NotificationMessage>).detail;
       handler(params as any as P);
     };
 
-    this.addEventListener(type.method, callback);
-    return this.disposable(() => this.removeEventListener(type.method, callback));
+    this.addEventListener(method, callback);
+    return this.disposable(() => this.removeEventListener(method, callback));
   }
 
   /**
