@@ -5,7 +5,8 @@ import { stdin, stdout } from 'node:process';
 import { createConnection } from 'vscode-languageserver/node';
 import { loadConfig } from './dependencies';
 
-export { AbstractFileSystem, NodeFileSystem, FileStat, FileTuple } from '@shopify/theme-check-node';
+export { NodeFileSystem } from '@shopify/theme-check-node';
+export * from '@shopify/theme-language-server-common';
 
 export const getConnection = () => createConnection(stdin, stdout);
 

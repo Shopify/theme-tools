@@ -9,9 +9,23 @@ import {
   toSourceCode,
   recommended,
   Dependencies,
+  AbstractFileSystem,
+  FileStat,
+  FileTuple,
+  FileType,
 } from '@shopify/theme-check-common';
 
-export { toSourceCode, allChecks, recommended, Config, Dependencies };
+export {
+  toSourceCode,
+  allChecks,
+  recommended,
+  Config,
+  Dependencies,
+  AbstractFileSystem,
+  FileStat,
+  FileTuple,
+  FileType,
+};
 
 /**
  * @example
