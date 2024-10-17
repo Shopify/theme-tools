@@ -11,6 +11,7 @@ import {
 import { Schema, Settings } from './types/schema-prop-factory';
 
 import { StringCorrector, JSONCorrector } from './fixes';
+import { AbstractFileSystem, UriString } from './AbstractFileSystem';
 
 import { ThemeDocset, JsonValidationSet } from './types/theme-liquid-docs';
 
@@ -27,8 +28,8 @@ export type Theme = SourceCode<SourceCodeType>[];
 
 export type SourceCode<T = SourceCodeType> = T extends SourceCodeType
   ? {
-      /** A normalized absolute path to the file. Assumes forwards slashes. */
-      absolutePath: string;
+      /** A normalized uri the file. */
+      uri: string;
       /** The type is used as a discriminant for type narrowing */
       type: T;
       /** The version is used by the Language Server to make sure the Client and Server are in sync */
@@ -81,8 +82,8 @@ export type NodeTypes = {
   }[T];
 };
 
-/** Assumes forward slashes for simplicity internally */
-export type AbsolutePath = string;
+/** A vscode-uri string. */
+export type { UriString };
 
 /** Assumes forward slashes for simplicity internally */
 export type RelativePath = string;
@@ -108,7 +109,7 @@ export interface Config {
   context: Mode;
   settings: ChecksSettings;
   checks: CheckDefinition<SourceCodeType, Schema>[];
-  root: AbsolutePath;
+  rootUri: string; // e.g. file:///path-to-root
   ignore?: string[];
   onError?: (error: Error) => void;
 }
@@ -272,12 +273,7 @@ export type Translations = {
 };
 
 export interface Dependencies {
-  getDefaultTranslations(): Promise<Translations>;
-  getDefaultLocale(): Promise<string>;
-  getDefaultSchemaLocale(): Promise<string>;
-  getDefaultSchemaTranslations(): Promise<Translations>;
-  fileExists(absolutePath: string): Promise<boolean>;
-  fileSize?(absolutePath: string): Promise<number>;
+  fs: AbstractFileSystem;
   themeDocset?: ThemeDocset;
   jsonValidationSet?: JsonValidationSet;
 }
@@ -287,18 +283,27 @@ export type ValidateJSON<T extends SourceCodeType> = (
   jsonString: string,
 ) => Promise<{ message: string; startIndex: number; endIndex: number }[]>;
 
+export interface AugmentedDependencies extends Dependencies {
+  fileExists: (uri: UriString) => Promise<boolean>;
+  fileSize: (uri: UriString) => Promise<number>;
+  getDefaultLocale: () => Promise<string>;
+  getDefaultSchemaLocale: () => Promise<string>;
+  getDefaultTranslations(): Promise<Translations>;
+  getDefaultSchemaTranslations(): Promise<Translations>;
+}
+
 type StaticContextProperties<T extends SourceCodeType> = T extends SourceCodeType
   ? {
       report(problem: Problem<T>): void;
-      relativePath(absolutePath: AbsolutePath): RelativePath;
-      absolutePath(relativePath: RelativePath): AbsolutePath;
+      toRelativePath(uri: UriString): RelativePath;
+      toUri(relativePath: RelativePath): UriString;
       file: SourceCode<T>;
       validateJSON?: ValidateJSON<T>;
     }
   : never;
 
 export type Context<T extends SourceCodeType, S extends Schema = Schema> = T extends SourceCodeType
-  ? StaticContextProperties<T> & Dependencies & { settings: Settings<S> }
+  ? StaticContextProperties<T> & AugmentedDependencies & { settings: Settings<S> }
   : never;
 
 export type Corrector<T extends SourceCodeType> = T extends SourceCodeType
@@ -425,7 +430,7 @@ export type Offense<T extends SourceCodeType = SourceCodeType> = T extends Sourc
       type: T;
       check: string;
       message: string;
-      absolutePath: string;
+      uri: string;
       severity: Severity;
       start: Position;
       end: Position;

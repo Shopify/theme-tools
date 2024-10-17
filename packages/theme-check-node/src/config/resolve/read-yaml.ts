@@ -1,14 +1,15 @@
-import { AbsolutePath, CheckSettings, Modes, Severity } from '@shopify/theme-check-common';
-import { parse } from 'yaml';
-import path from 'node:path';
-import fs from 'node:fs/promises';
+import { CheckSettings, Modes, Severity } from '@shopify/theme-check-common';
 import { realpathSync } from 'node:fs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { parse } from 'yaml';
+import { AbsolutePath } from '../../temp';
 import {
-  LegacyIdentifiers,
+  ConfigFragment,
   ConvenienceSeverities,
   ConvenienceSeverity,
+  LegacyIdentifiers,
   ModernIdentifier,
-  ConfigFragment,
 } from '../types';
 
 class UnresolvedAliasError extends Error {

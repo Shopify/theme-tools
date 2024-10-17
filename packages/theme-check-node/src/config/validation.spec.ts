@@ -23,7 +23,7 @@ describe('Unit: validateConfig', () => {
           ignore: ['src/**'],
         },
       },
-      root: '/path/to/root',
+      rootUri: 'file:/path/to/root',
       ignore: ['node_modules/**'],
     };
 
@@ -57,7 +57,7 @@ describe('Unit: validateConfig', () => {
         },
       },
       checks: [checkWithRequiredConfig],
-      root: '/path/to/root',
+      rootUri: 'file:/path/to/root',
       ignore: ['node_modules/**'],
     };
 
@@ -75,7 +75,7 @@ describe('Unit: validateConfig', () => {
         },
       },
       checks: [ParserBlockingScript],
-      root: '/path/to/root',
+      rootUri: 'file:/path/to/root',
       ignore: ['node_modules/**'],
     };
 
@@ -96,7 +96,7 @@ describe('Unit: validateConfig', () => {
         },
       },
       checks: [ParserBlockingScript],
-      root: '/path/to/root',
+      rootUri: 'file:/path/to/root',
       ignore: ['node_modules/**'],
     };
 
@@ -136,7 +136,7 @@ describe('Unit: validateConfig', () => {
         },
       },
       checks: [nestedCheck],
-      root: '/path/to/root',
+      rootUri: 'file:/path/to/root',
       ignore: ['node_modules/**'],
     };
 
@@ -175,7 +175,7 @@ describe('Unit: validateConfig', () => {
         },
       },
       checks: [nestedCheck],
-      root: '/path/to/root',
+      rootUri: 'file:/path/to/root',
       ignore: ['node_modules/**'],
     };
 
@@ -212,7 +212,7 @@ describe('Unit: validateConfig', () => {
         },
       },
       checks: [optionalCheck],
-      root: '/path/to/root',
+      rootUri: 'file:/path/to/root',
       ignore: ['node_modules/**'],
     };
 
@@ -249,7 +249,7 @@ describe('Unit: validateConfig', () => {
         },
       },
       checks: [arrayCheck],
-      root: '/path/to/root',
+      rootUri: 'file:/path/to/root',
       ignore: ['node_modules/**'],
     };
 
@@ -284,7 +284,7 @@ describe('Unit: validateConfig', () => {
         },
       },
       checks: [arrayCheck],
-      root: '/path/to/root',
+      rootUri: 'file:/path/to/root',
       ignore: ['node_modules/**'],
     };
 

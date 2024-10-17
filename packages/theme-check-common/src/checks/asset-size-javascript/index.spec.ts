@@ -56,22 +56,23 @@ describe('Module: AssetSizeJavaScript', () => {
 
   it('should report a warning when the JavaScript http request exceeds the threshold', async () => {
     vi.mocked(hasRemoteAssetSizeExceededThreshold).mockReturnValue(Promise.resolve(true));
-    const CustomAssetSizeJavaScript = {
-      ...AssetSizeJavaScript,
-      meta: {
-        ...AssetSizeJavaScript.meta,
-        schema: {
-          thresholdInBytes: SchemaProp.number(1),
+    const offenses = await check(
+      httpTest,
+      [AssetSizeJavaScript],
+      {},
+      {
+        AssetSizeJavaScript: {
+          enabled: true,
+          thresholdInBytes: 1,
         },
       },
-    };
-    const offenses = await check(httpTest, [CustomAssetSizeJavaScript]);
+    );
 
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
       message:
         'JavaScript on every page load exceeds compressed size threshold (1 Bytes), consider using the import on interaction pattern.',
-      absolutePath: '/templates/index.liquid',
+      uri: 'file:///templates/index.liquid',
       start: { index: 52 },
       end: { index: 121 },
     });
@@ -84,23 +85,23 @@ describe('Module: AssetSizeJavaScript', () => {
   });
 
   it('should report an offense if JavaScript is larger than threshold', async () => {
-    const CustomAssetSizeJavaScript = {
-      ...AssetSizeJavaScript,
-      meta: {
-        ...AssetSizeJavaScript.meta,
-        schema: {
-          thresholdInBytes: SchemaProp.number(2),
+    const offenses = await check(
+      theme,
+      [AssetSizeJavaScript],
+      {},
+      {
+        AssetSizeJavaScript: {
+          enabled: true,
+          thresholdInBytes: 2,
         },
       },
-    };
-
-    const offenses = await check(theme, [CustomAssetSizeJavaScript]);
+    );
 
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
       message:
         'JavaScript on every page load exceeds compressed size threshold (2 Bytes), consider using the import on interaction pattern.',
-      absolutePath: '/templates/index.liquid',
+      uri: 'file:///templates/index.liquid',
       start: { index: 52 },
       end: { index: 80 },
     });
@@ -137,30 +138,30 @@ describe('Module: AssetSizeJavaScript', () => {
       `,
     };
 
-    const CustomAssetSizeCSS = {
-      ...AssetSizeJavaScript,
-      meta: {
-        ...AssetSizeJavaScript.meta,
-        schema: {
-          thresholdInBytes: SchemaProp.number(2),
+    const offenses = await check(
+      extensionFiles,
+      [AssetSizeJavaScript],
+      {},
+      {
+        AssetSizeJavaScript: {
+          enabled: true,
+          thresholdInBytes: 2,
         },
       },
-    };
-
-    const offenses = await check(extensionFiles, [CustomAssetSizeCSS]);
+    );
 
     expect(offenses).toHaveLength(2);
     expect(offenses[0]).toMatchObject({
       message:
         'JavaScript on every page load exceeds compressed size threshold (2 Bytes), consider using the import on interaction pattern.',
-      absolutePath: '/templates/index.liquid',
+      uri: 'file:///templates/index.liquid',
       start: { index: 48 },
       end: { index: 84 },
     });
     expect(offenses[1]).toMatchObject({
       message:
         'JavaScript on every page load exceeds compressed size threshold (2 Bytes), consider using the import on interaction pattern.',
-      absolutePath: '/templates/index.liquid',
+      uri: 'file:///templates/index.liquid',
       start: { index: 102 },
       end: { index: 123 },
     });

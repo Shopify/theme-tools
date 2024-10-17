@@ -1,16 +1,16 @@
-import { beforeEach, describe, vi, it, expect, assert } from 'vitest';
-import { SettingsSchemaJSONFile } from './settings';
-import { ArrayType, TypeSystem } from './TypeSystem';
 import {
   AssignMarkup,
-  LiquidHtmlNode,
   LiquidVariableOutput,
   NamedTags,
   NodeTypes,
   toLiquidHtmlAST,
 } from '@shopify/liquid-html-parser';
-import { isLiquidVariableOutput, isNamedLiquidTag } from './utils';
+import { path as pathUtils } from '@shopify/theme-check-common';
+import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { URI } from 'vscode-uri';
+import { SettingsSchemaJSONFile } from './settings';
+import { ArrayType, TypeSystem } from './TypeSystem';
+import { isLiquidVariableOutput, isNamedLiquidTag } from './utils';
 
 describe('Module: TypeSystem', () => {
   let typeSystem: TypeSystem;
@@ -329,14 +329,14 @@ describe('Module: TypeSystem', () => {
         variableOutput.markup,
         ast,
         // This will be different on Windows ^^
-        URI.from({ scheme: 'file', path }).toString(),
+        pathUtils.normalize(URI.from({ scheme: 'file', path })),
       );
       expect(inferredType).to.eql(object);
       inferredType = await typeSystem.inferType(
         variableOutput.markup,
         ast,
         // This will be different on Windows ^^
-        URI.from({ scheme: 'file', path: 'file.liquid' }).toString(),
+        pathUtils.normalize(URI.from({ scheme: 'file', path: 'file.liquid' })),
       );
       expect(inferredType).to.eql('untyped');
     }
