@@ -65,7 +65,6 @@ yarn playground
 Run the following command to start a `@vscode/test-web` instance in Chrome with the Shopify Liquid extension loaded.
 
 ```bash
-cd packages/vscode-extension
 yarn dev:web
 ```
 
