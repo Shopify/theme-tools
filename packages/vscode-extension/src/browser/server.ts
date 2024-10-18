@@ -1,4 +1,4 @@
-import { findRoot, makeFileExists } from '@shopify/theme-check-common';
+import { findRoot } from '@shopify/theme-check-common';
 import {
   Dependencies,
   getConnection,

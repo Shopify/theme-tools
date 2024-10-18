@@ -1,6 +1,6 @@
-import { startServer, getConnection, NodeFileSystem } from '@shopify/theme-language-server-node';
-import { VsCodeFileSystem } from '../common/VsCodeFileSystem';
 import type { AbstractFileSystem } from '@shopify/theme-check-common';
+import { getConnection, NodeFileSystem, startServer } from '@shopify/theme-language-server-node';
+import { VsCodeFileSystem } from '../common/VsCodeFileSystem';
 
 const connection = getConnection();
 

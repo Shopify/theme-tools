@@ -1,3 +1,4 @@
+import { FileStat, FileTuple, path as pathUtils } from '@shopify/theme-check-common';
 import * as path from 'node:path';
 import { commands, DocumentFilter, ExtensionContext, languages, Uri, workspace } from 'vscode';
 import {
@@ -7,7 +8,6 @@ import {
   TransportKind,
 } from 'vscode-languageclient/node';
 import LiquidFormatter from './formatter';
-import { FileStat, FileTuple, path as pathUtils } from '@shopify/theme-check-common';
 
 const LIQUID: DocumentFilter[] = [
   {

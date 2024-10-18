@@ -8,7 +8,7 @@
     {
       "type": "extensionHost",
       "request": "launch",
-      "name": "Launch Client",
+      "name": "Debug Node Extension",
       "runtimeExecutable": "${execPath}",
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}/packages/vscode-extension"
@@ -28,7 +28,7 @@
       "preLaunchTask": "vscode dev"
     },
     {
-      "name": "Run Web Extension",
+      "name": "Debug Web Extension",
       "type": "extensionHost",
       "debugWebWorkerHost": true,
       "request": "launch",
@@ -51,7 +51,7 @@
     {
       "type": "chrome",
       "request": "launch",
-      "name": "Debug playground",
+      "name": "Debug CodeMirror playground",
       "url": "http://localhost:8080",
       "webRoot": "${workspaceFolder}/packages/codemirror-language-client/playground",
       "outFiles": [
