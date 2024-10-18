@@ -151,4 +151,22 @@ export interface RequiredDependencies {
   fileSize?: ThemeCheckDependencies['fileSize'];
 
   fileExists: ThemeCheckDependencies['fileExists'];
+
+  fetchMetafields?: (uri: string) => Promise<MetafieldDefinitions | undefined>;
+}
+export type MetafieldDefinitionGroups = 'product' | 'collection' | 'order' | 'blog' | 'article' | 'page' | 'shop';
+
+export type MetafieldDefinitions = {
+  [key in MetafieldDefinitionGroups]: MetafieldDefinition[];
+}
+
+export interface MetafieldDefinition {
+  name: string,
+  namespace: string,
+  type: MetafieldDefinitionType,
+}
+
+interface MetafieldDefinitionType {
+  category: string,
+  name: string,
 }

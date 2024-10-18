@@ -3,6 +3,7 @@ import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
 import { stdin, stdout } from 'node:process';
 import { createConnection } from 'vscode-languageserver/node';
 import {
+  fetchMetafields,
   fileExists,
   fileSize,
   filesForURI,
@@ -35,5 +36,6 @@ export function startServer() {
     loadConfig,
     themeDocset: themeLiquidDocsManager,
     jsonValidationSet: themeLiquidDocsManager,
+    fetchMetafields,
   });
 }

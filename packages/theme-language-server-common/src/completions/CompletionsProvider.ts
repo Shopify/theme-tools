@@ -18,6 +18,7 @@ import {
   TranslationCompletionProvider,
 } from './providers';
 import { GetSnippetNamesForURI } from './providers/RenderSnippetCompletionProvider';
+import { MetafieldDefinitions } from '../types';
 
 export interface CompletionProviderDependencies {
   documentManager: DocumentManager;
@@ -26,6 +27,7 @@ export interface CompletionProviderDependencies {
   getSnippetNamesForURI?: GetSnippetNamesForURI;
   getThemeSettingsSchemaForURI?: GetThemeSettingsSchemaForURI;
   log?: (message: string) => void;
+  fetchMetafields?: (uri: string) => Promise<MetafieldDefinitions | undefined>;
 }
 
 export class CompletionsProvider {
@@ -40,12 +42,13 @@ export class CompletionsProvider {
     getTranslationsForURI = async () => ({}),
     getSnippetNamesForURI = async () => [],
     getThemeSettingsSchemaForURI = async () => [],
+    fetchMetafields,
     log = () => {},
   }: CompletionProviderDependencies) {
     this.documentManager = documentManager;
     this.themeDocset = themeDocset;
     this.log = log;
-    const typeSystem = new TypeSystem(themeDocset, getThemeSettingsSchemaForURI);
+    const typeSystem = new TypeSystem(themeDocset, getThemeSettingsSchemaForURI, fetchMetafields);
 
     this.providers = [
       new HtmlTagCompletionProvider(),
