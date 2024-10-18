@@ -59,6 +59,7 @@ export function startServer(
     log = defaultLogger,
     jsonValidationSet,
     themeDocset: remoteThemeDocset,
+    fetchMetafields,
   }: Dependencies,
 ) {
   const clientCapabilities = new ClientCapabilities();
@@ -170,6 +171,7 @@ export function startServer(
     getTranslationsForURI,
     getSnippetNamesForURI,
     getThemeSettingsSchemaForURI,
+    fetchMetafields,
     log,
   });
   const hoverProvider = new HoverProvider(

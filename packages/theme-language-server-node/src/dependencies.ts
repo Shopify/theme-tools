@@ -8,7 +8,7 @@ import {
   parseJSON,
   reusableFindRoot,
 } from '@shopify/theme-check-node';
-import { Dependencies } from '@shopify/theme-language-server-common';
+import { Dependencies, MetafieldDefinitionGroups, MetafieldDefinitions } from '@shopify/theme-language-server-common';
 import { glob as callbackGlob } from 'glob';
 import * as fs from 'node:fs/promises';
 import { basename } from 'node:path';
@@ -172,6 +172,51 @@ async function getDefaultLocale(rootURI: URI, postfix = '.default.json') {
     return file ? basename(file.name, postfix) : 'en';
   } catch (error) {
     return 'en';
+  }
+}
+
+// TODO: Fetch the list of metafields from the file system
+// TODO: Memoize the result
+// TODO: If the file has been modified since the last fetch, re-fetch it
+export async function fetchMetafields(uri: string): Promise<MetafieldDefinitions | undefined> {
+  try {
+    const rootURI = await findRoot(parse(uri));
+    const metafieldsFilePath = Utils.joinPath(rootURI, 'config/metafields.json');
+
+    if (!(await fileExists(asFsPath(metafieldsFilePath)))) {
+      return;
+    }
+
+    const contents = await fs.readFile(asFsPath(metafieldsFilePath), 'utf8');
+    const json = parseJSON(contents);
+
+    if (isError(json)) {
+      throw new Error('Metafields JSON file not in correct format');
+    }
+
+    return (['product', 'collection', 'order', 'blog', 'article', 'page', 'shop'] as MetafieldDefinitionGroups[]).reduce((definitions, group) => {
+      definitions[group] = json[`${group}MetafieldDefinitions`].nodes.map((node: any) => ({
+        name: node.name,
+        namespace: node.namespace,
+        type: {
+          category: node.type.category,
+          name: node.type.name,
+        },
+      }));
+
+      return definitions;
+    }, {
+      product: [],
+      collection: [],
+      order: [],
+      blog: [],
+      article: [],
+      page: [],
+      shop: [],
+    } as MetafieldDefinitions);
+  } catch (error) {
+    console.error(error);
+    return;
   }
 }
 
