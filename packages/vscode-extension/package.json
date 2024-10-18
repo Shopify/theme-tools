@@ -10,7 +10,7 @@
   "bugs": {
     "url": "https://github.com/shopify/theme-tools/issues"
   },
-  "version": "2.5.1",
+  "version": "2.6.0",
   "publisher": "Shopify",
   "private": true,
   "license": "SEE LICENSE IN LICENSE.md",
@@ -60,7 +60,7 @@
   "dependencies": {
     "@shopify/liquid-html-parser": "^2.0.5",
     "@shopify/prettier-plugin-liquid": "^1.5.2",
-    "@shopify/theme-language-server-node": "^1.13.1",
+    "@shopify/theme-language-server-node": "^1.14.0",
     "prettier": "^2.6.2",
     "vscode-languageclient": "^8.1.0"
   },
