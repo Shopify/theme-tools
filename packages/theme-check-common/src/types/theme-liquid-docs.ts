@@ -131,6 +131,7 @@ export interface Parent {
 export interface Parameter {
   description: string;
   name: string;
+  positional: boolean;
   required: boolean;
   types: string[];
 }

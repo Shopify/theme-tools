@@ -401,6 +401,13 @@ describe('Unit: Stage 1 (CST)', () => {
         }
       });
 
+      it('should parse incomplete parameters for filters', () => {
+        for (const { toCST, expectPath } of testCases) {
+          cst = toCST(`{{ a[1].foo | filtername: 10, myvar.foo, a1: 2, a2 }}`);
+          expectPath(cst, '0.type').to.equal('LiquidVariableOutput');
+        }
+      });
+
       it('should parse the echo tag as variables', () => {
         [
           { expression: `"hi"`, expressionType: 'String', expressionValue: 'hi', filters: [] },

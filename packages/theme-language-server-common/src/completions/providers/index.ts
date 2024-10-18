@@ -1,10 +1,11 @@
-export { HtmlTagCompletionProvider } from './HtmlTagCompletionProvider';
+export { Provider } from './common/Provider';
+export { FilterCompletionProvider } from './FilterCompletionProvider';
+export { FilterNamedParameterCompletionProvider } from './FilterNamedParameterCompletionProvider';
 export { HtmlAttributeCompletionProvider } from './HtmlAttributeCompletionProvider';
 export { HtmlAttributeValueCompletionProvider } from './HtmlAttributeValueCompletionProvider';
-export { FilterCompletionProvider } from './FilterCompletionProvider';
+export { HtmlTagCompletionProvider } from './HtmlTagCompletionProvider';
 export { LiquidTagsCompletionProvider } from './LiquidTagsCompletionProvider';
 export { ObjectAttributeCompletionProvider } from './ObjectAttributeCompletionProvider';
 export { ObjectCompletionProvider } from './ObjectCompletionProvider';
-export { TranslationCompletionProvider } from './TranslationCompletionProvider';
 export { RenderSnippetCompletionProvider } from './RenderSnippetCompletionProvider';
-export { Provider } from './common/Provider';
+export { TranslationCompletionProvider } from './TranslationCompletionProvider';

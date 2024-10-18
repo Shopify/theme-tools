@@ -838,7 +838,18 @@ function toCST<T>(
         }
       },
     },
+    filterArguments: 0,
     arguments: 0,
+    complexArguments: function (completeParams, _space1, _comma, _space2, incompleteParam) {
+      const self = this as any;
+
+      return completeParams
+        .toAST(self.args.mapping)
+        .concat(
+          incompleteParam.sourceString === '' ? [] : incompleteParam.toAST(self.args.mapping),
+        );
+    },
+    simpleArgument: 0,
     tagArguments: 0,
     positionalArgument: 0,
     namedArgument: {

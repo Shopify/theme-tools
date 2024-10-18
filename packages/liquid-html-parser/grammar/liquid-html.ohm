@@ -258,6 +258,11 @@ Liquid <: Helpers {
   positionalArgument<delim> = liquidExpression<delim> ~(space* ":")
   namedArgument<delim> = variableSegment space* ":" space* liquidExpression<delim>
   tagArguments = listOf<namedArgument<delimTag>, argumentSeparatorOptionalComma>
+  filterArguments<delim> =
+    | complexArguments<delim>
+    | simpleArgument<delim>
+  complexArguments<delim> = arguments<delim> (space* "," space* simpleArgument<delim>)?
+  simpleArgument<delim> = liquidVariableLookup<delim>
 
   variableSegment = (letter | "_") (~endOfTagName identifierCharacter)*
   variableSegmentAsLookup = variableSegment
@@ -489,16 +494,19 @@ StrictLiquidHTML <: LiquidHTML {
 }
 
 WithPlaceholderLiquid <: Liquid {
+  liquidFilter<delim> := space* "|" space* identifier (space* ":" space* filterArguments<delim>)?
   liquidTagName := (letter | "█") (alnum | "_")*
   variableSegment := (letter | "_" | "█") identifierCharacter*
 }
 
 WithPlaceholderLiquidStatement <: LiquidStatement {
+  liquidFilter<delim> := space* "|" space* identifier (space* ":" space* filterArguments<delim>)?
   liquidTagName := (letter | "█") (alnum | "_")*
   variableSegment := (letter | "_" | "█") identifierCharacter*
 }
 
 WithPlaceholderLiquidHTML <: LiquidHTML {
+  liquidFilter<delim> := space* "|" space* identifier (space* ":" space* filterArguments<delim>)?
   liquidTagName := (letter | "█") (alnum | "_")*
   variableSegment := (letter | "_" | "█") identifierCharacter*
   leadingTagNameTextNode := (letter | "█") (alnum | "-" | ":" | "█")*
