@@ -1,5 +1,8 @@
 import { expect, describe, it } from 'vitest';
 import { Offense, SourceCodeType } from '../types';
+import { path } from '..';
+
+const rootUri = 'file:///';
 
 describe('Module: containOffense', () => {
   const offenses: Offense[] = [
@@ -42,7 +45,7 @@ describe('Module: containOffense', () => {
       it(`should contain the Offense when their all properties match`, () => {
         expect(offenses).to.containOffense({
           message: `The translation for 'hello.world' is missing`,
-          absolutePath: 'locales/en.json',
+          uri: 'file:///locales/en.json',
           severity: 0,
         });
       });
@@ -50,18 +53,18 @@ describe('Module: containOffense', () => {
       it(`should not contain the Offense when their messages and absolute paths match, but severity doesn't match`, () => {
         expect(offenses).to.not.containOffense({
           message: `The translation for 'hello.world' is missing`,
-          absolutePath: 'locales/en.json',
+          uri: 'file:///locales/en.json',
           severity: 1,
         });
       });
     });
   });
 
-  function buildOffense(message: string, absolutePath: string): Offense {
+  function buildOffense(message: string, relativePath: string): Offense {
     return {
       type: SourceCodeType.LiquidHtml,
       message,
-      absolutePath,
+      uri: path.join(rootUri, relativePath),
       check: '',
       severity: 0,
       start: { index: 0, line: 0, character: 0 },

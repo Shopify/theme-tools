@@ -14,7 +14,7 @@ describe('Module: MissingTemplate', () => {
       `,
         expected: {
           message: "'snippets/missing.liquid' does not exist",
-          absolutePath: '/snippets/snippet.liquid',
+          uri: 'file:///snippets/snippet.liquid',
           start: { index: 51, line: 2, character: 18 },
           end: { index: 60, line: 2, character: 27 },
         },
@@ -28,7 +28,7 @@ describe('Module: MissingTemplate', () => {
         file: "{% include 'missing' %}",
         expected: {
           message: "'snippets/missing.liquid' does not exist",
-          absolutePath: '/snippets/snippet.liquid',
+          uri: 'file:///snippets/snippet.liquid',
           start: { index: 11, line: 0, character: 11 },
           end: { index: 20, line: 0, character: 20 },
         },
@@ -42,7 +42,7 @@ describe('Module: MissingTemplate', () => {
         file: "{% section 'missing' %}",
         expected: {
           message: "'sections/missing.liquid' does not exist",
-          absolutePath: '/sections/section.liquid',
+          uri: 'file:///sections/section.liquid',
           start: { index: 11, line: 0, character: 11 },
           end: { index: 20, line: 0, character: 20 },
         },

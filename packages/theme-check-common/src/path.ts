@@ -1,13 +1,29 @@
-import { RelativePath, AbsolutePath } from './types';
+import { RelativePath, UriString } from './types';
+import { URI, Utils } from 'vscode-uri';
 
-export function relative(absolutePath: AbsolutePath, root: AbsolutePath): RelativePath {
-  return absolutePath.replace(root, '').replace(/^\//, '');
+export function relative(uri: UriString, rootUri: UriString): RelativePath {
+  return uri
+    .replace(rootUri, '')
+    .replace(/\\\\/g, '/') // We expect forward slash paths (windows path get normalized)
+    .replace(/^\/+/, '');
 }
 
-export function join(...paths: string[]): string {
-  return paths.map(removeTrailingSlash).join('/');
+export function join(rootUri: UriString, ...paths: string[]): string {
+  const root = URI.parse(rootUri);
+  return normalize(Utils.joinPath(root, ...paths));
 }
 
-function removeTrailingSlash(path: string): string {
-  return path.replace(/\/+$/, '');
+export function normalize(uri: UriString | URI): UriString {
+  if (!URI.isUri(uri)) {
+    uri = URI.parse(uri);
+  }
+  return uri.toString(true);
+}
+
+export function dirname(uri: UriString): UriString {
+  return normalize(Utils.dirname(URI.parse(uri)));
+}
+
+export function fsPath(uri: UriString): string {
+  return URI.parse(uri).fsPath;
 }

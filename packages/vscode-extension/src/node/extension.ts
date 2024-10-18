@@ -1,3 +1,4 @@
+import { FileStat, FileTuple, path as pathUtils } from '@shopify/theme-check-common';
 import * as path from 'node:path';
 import { commands, DocumentFilter, ExtensionContext, languages, Uri, workspace } from 'vscode';
 import {
@@ -7,8 +8,6 @@ import {
   TransportKind,
 } from 'vscode-languageclient/node';
 import LiquidFormatter from './formatter';
-import { getLegacyModeServerOptions } from './legacyMode';
-import { getConfig } from './utils';
 
 const LIQUID: DocumentFilter[] = [
   {
@@ -26,8 +25,7 @@ const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 let client: LanguageClient | undefined;
 
 export async function activate(context: ExtensionContext) {
-  const isRubyLanguageServer = getConfig('shopifyLiquid.legacyMode');
-  const runChecksCommand = isRubyLanguageServer ? 'runChecks' : 'themeCheck/runChecks';
+  const runChecksCommand = 'themeCheck/runChecks';
 
   context.subscriptions.push(
     commands.registerCommand('shopifyLiquid.restart', () => restartServer(context)),
@@ -40,10 +38,6 @@ export async function activate(context: ExtensionContext) {
 
   const diagnosticTextDocumentVersion = new Map<Uri, number>();
   const diagnosticCollection = languages.createDiagnosticCollection('prettier-plugin-liquid');
-  if (isRubyLanguageServer) {
-    // The TS version doesn't need this, we have LiquidHTMLSyntaxError for that.
-    context.subscriptions.push(diagnosticCollection);
-  }
 
   // TODO move this to language server (?) Might have issues with prettier import
   const formattingProvider = languages.registerDocumentFormattingEditProvider(
@@ -51,8 +45,6 @@ export async function activate(context: ExtensionContext) {
     new LiquidFormatter(diagnosticCollection, diagnosticTextDocumentVersion),
   );
   context.subscriptions.push(formattingProvider);
-
-  workspace.onDidChangeConfiguration(onConfigChange(context));
 
   // If you change the file, the prettier syntax error is no longer valid
   workspace.onDidChangeTextDocument(({ document }) => {
@@ -81,14 +73,14 @@ async function startServer(context: ExtensionContext) {
 
   const clientOptions: LanguageClientOptions = {
     documentSelector: [
-      { scheme: 'file', language: 'liquid' },
-      { scheme: 'file', language: 'plaintext' },
-      { scheme: 'file', language: 'html' },
-      { scheme: 'file', language: 'javascript' },
-      { scheme: 'file', language: 'css' },
-      { scheme: 'file', language: 'scss' },
-      { scheme: 'file', language: 'json' },
-      { scheme: 'file', language: 'jsonc' },
+      { language: 'liquid' },
+      { language: 'plaintext' },
+      { language: 'html' },
+      { language: 'javascript' },
+      { language: 'css' },
+      { language: 'scss' },
+      { language: 'json' },
+      { language: 'jsonc' },
     ],
   };
 
@@ -98,6 +90,20 @@ async function startServer(context: ExtensionContext) {
     serverOptions,
     clientOptions,
   );
+
+  client.onRequest('fs/readDirectory', async (uriString: string): Promise<FileTuple[]> => {
+    const results = await workspace.fs.readDirectory(Uri.parse(uriString));
+    return results.map(([name, type]) => [pathUtils.join(uriString, name), type]);
+  });
+
+  client.onRequest('fs/readFile', async (uriString: string): Promise<string> => {
+    const bytes = await workspace.fs.readFile(Uri.parse(uriString));
+    return Buffer.from(bytes).toString('utf8');
+  });
+
+  client.onRequest('fs/stat', async (uriString: string): Promise<FileStat> => {
+    return workspace.fs.stat(Uri.parse(uriString));
+  });
 
   client.start();
 }
@@ -121,22 +127,8 @@ async function restartServer(context: ExtensionContext) {
   await startServer(context);
 }
 
-const onConfigChange =
-  (context: ExtensionContext) => (event: { affectsConfiguration: (arg0: string) => any }) => {
-    const didChangeThemeCheck = event.affectsConfiguration('shopifyLiquid.languageServerPath');
-    const didChangeShopifyCLI = event.affectsConfiguration('shopifyLiquid.shopifyCLIPath');
-    const didChangeLegacyMode = event.affectsConfiguration('shopifyLiquid.legacyMode');
-    if (didChangeThemeCheck || didChangeShopifyCLI || didChangeLegacyMode) {
-      restartServer(context);
-    }
-  };
-
 async function getServerOptions(context: ExtensionContext): Promise<ServerOptions | undefined> {
-  if (getConfig('shopifyLiquid.legacyMode')) {
-    return getLegacyModeServerOptions();
-  }
-
-  const serverModule = context.asAbsolutePath(path.join('dist', 'server.js'));
+  const serverModule = context.asAbsolutePath(path.join('dist', 'node', 'server.js'));
   return {
     run: {
       module: serverModule,

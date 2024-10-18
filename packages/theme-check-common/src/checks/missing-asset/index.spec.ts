@@ -19,7 +19,7 @@ describe('Module: MissingAsset', () => {
     expect(offenses).to.containOffense({
       check: MissingAsset.meta.code,
       message: "'assets/logo.png' does not exist",
-      absolutePath: '/snippets/snippet.liquid',
+      uri: 'file:///snippets/snippet.liquid',
     });
   });
 
@@ -36,7 +36,7 @@ describe('Module: MissingAsset', () => {
     expect(offenses).to.containOffense({
       check: MissingAsset.meta.code,
       message: "'assets/styles.css' does not exist",
-      absolutePath: '/snippets/snippet.liquid',
+      uri: 'file:///snippets/snippet.liquid',
     });
   });
 
@@ -53,7 +53,7 @@ describe('Module: MissingAsset', () => {
     expect(offenses).to.containOffense({
       check: MissingAsset.meta.code,
       message: "'assets/styles.css' does not exist",
-      absolutePath: '/snippets/snippet.liquid',
+      uri: 'file:///snippets/snippet.liquid',
     });
   });
 

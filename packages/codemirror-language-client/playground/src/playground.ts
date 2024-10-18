@@ -8,8 +8,6 @@ import MarkdownIt from 'markdown-it';
 // import { liquid, liquidHighLightStyle } from '@shopify/lang-liquid';
 
 import { CodeMirrorLanguageClient } from '@shopify/codemirror-language-client';
-import * as SetFileTreeNotification from './SetFileTreeNotification';
-import * as SetDefaultTranslationsNotification from './SetDefaultTranslationsNotification';
 import { MarkedString, MarkupContent } from 'vscode-languageserver-protocol';
 
 const md = new MarkdownIt();
@@ -47,6 +45,18 @@ const exampleTranslations = {
   },
   footer: {
     subscribe: 'Subscribe to our newsletter',
+  },
+};
+
+const exampleSchemaTranslations = {
+  sections: {
+    title: {
+      name: 'Title section name',
+      settings: { title: { label: 'Title section title setting' } },
+    },
+    other: {
+      name: 'Other section name',
+    },
   },
 };
 
@@ -107,23 +117,58 @@ async function main() {
 
   await client.start();
 
-  // Mock "main-thread-provided" value for the filetree
-  worker.postMessage({
-    jsonrpc: '2.0',
-    method: SetFileTreeNotification.method,
-    params: [
-      '/snippets/article-card.liquid',
-      '/snippets/product-card.liquid',
-      '/snippets/product.liquid',
-    ],
-  } as SetFileTreeNotification.type);
+  client.client.onRequest('fs/readFile' as any, ([uri]: string) => {
+    switch (uri) {
+      case 'browser:/sections/section.liquid':
+        return exampleTemplate;
+      case 'browser:/locales/en.default.json':
+        return JSON.stringify(exampleTranslations, null, 2);
+      case 'browser:/locales/en.default.schema.json':
+        return JSON.stringify(exampleSchemaTranslations, null, 2);
+      default:
+        throw new Error(`File does not exist ${uri}`);
+    }
+  });
 
-  // Mock "main-thread-provided" value for the default translations
-  worker.postMessage({
-    jsonrpc: '2.0',
-    method: SetDefaultTranslationsNotification.method,
-    params: exampleTranslations,
-  } as SetDefaultTranslationsNotification.type);
+  client.client.onRequest('fs/stat' as any, ([uri]: string) => {
+    switch (uri) {
+      case 'browser:/sections/section.liquid':
+      case 'browser:/locales/en.default.json':
+      case 'browser:/locales/en.schema.default.json':
+        return { fileType: 1, size: 1 };
+      default:
+        throw new Error(`File does not exist: ${uri}`);
+    }
+  });
+
+  client.client.onRequest('fs/readDirectory' as any, ([uri]: string) => {
+    switch (uri) {
+      case 'browser:/': {
+        return [
+          ['browser:/sections', 2],
+          ['browser:/snippets', 2],
+          ['browser:/locales', 2],
+          ['browser:/.theme-check.yml', 1],
+        ];
+      }
+      case 'browser:/snippets': {
+        return [
+          ['browser:/snippets/article-card.liquid', 1],
+          ['browser:/snippets/product-card.liquid', 1],
+          ['browser:/snippets/product.liquid', 1],
+        ];
+      }
+      case 'browser:/locales': {
+        return [
+          ['browser:/locales/en.default.json', 1],
+          ['browser:/locales/en.default.schema.json', 1],
+        ];
+      }
+      default: {
+        throw new Error(`directory does not exist: '${uri}'`);
+      }
+    }
+  });
 
   const vimConfig = [
     vimCompartment.of([]),
@@ -174,21 +219,7 @@ async function main() {
 
   const schemaTranslationEditor = new EditorView({
     state: EditorState.create({
-      doc: JSON.stringify(
-        {
-          sections: {
-            title: {
-              name: 'Title section name',
-              settings: { title: { label: 'Title section title setting' } },
-            },
-            other: {
-              name: 'Other section name',
-            },
-          },
-        },
-        null,
-        2,
-      ),
+      doc: JSON.stringify(exampleSchemaTranslations, null, 2),
       extensions: [
         vimConfig,
         basicSetup,
