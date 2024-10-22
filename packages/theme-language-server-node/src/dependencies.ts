@@ -7,6 +7,8 @@ import {
   memoize,
   parseJSON,
   reusableFindRoot,
+  type MetafieldDefinitionGroups,
+  type MetafieldDefinitions,
 } from '@shopify/theme-check-node';
 import { Dependencies } from '@shopify/theme-language-server-common';
 import { glob as callbackGlob } from 'glob';
@@ -174,6 +176,49 @@ async function getDefaultLocale(rootURI: URI, postfix = '.default.json') {
     return 'en';
   }
 }
+
+export const fetchMetafields = async (uri: string): Promise<MetafieldDefinitions | undefined> => {
+  try {
+    const rootURI = await findRoot(parse(uri));
+    const metafieldsFilePath = Utils.joinPath(rootURI, '.shopify/metafields.json');
+
+    if (!(await fileExists(asFsPath(metafieldsFilePath)))) {
+      return;
+    }
+
+    const contents = await fs.readFile(asFsPath(metafieldsFilePath), 'utf8');
+    const json = parseJSON(contents);
+
+    if (isError(json)) {
+      return;
+    }
+
+    return (['product', 'collection', 'order', 'blog', 'article', 'page', 'shop'] as MetafieldDefinitionGroups[]).reduce((definitions, group) => {
+      definitions[group] = json[`${group}MetafieldDefinitions`].nodes.map((node: any) => ({
+        name: node.name,
+        namespace: node.namespace,
+        description: node.description,
+        type: {
+          category: node.type.category,
+          name: node.type.name,
+        },
+      }));
+
+      return definitions;
+    }, {
+      product: [],
+      collection: [],
+      order: [],
+      blog: [],
+      article: [],
+      page: [],
+      shop: [],
+    } as MetafieldDefinitions);
+  } catch (error) {
+    console.error(error);
+    return;
+  }
+};
 
 function cached<T>(fn: (...args: any[]) => Promise<T>): (...args: any[]) => Promise<T> {
   let cachedPromise: Promise<T>;
