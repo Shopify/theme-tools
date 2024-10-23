@@ -35,6 +35,13 @@
       "command": "yarn playground",
       "isBackground": true,
       "problemMatcher": "$ts-webpack-watch"
+    },
+    {
+      "label": "vscode-test-web",
+      "type": "shell",
+      "command": "yarn dev:web",
+      "isBackground": true,
+      "problemMatcher": "$ts-webpack-watch"
     }
   ],
 }

@@ -49,6 +49,13 @@
       "preLaunchTask": "vscode dev"
     },
     {
+      "name": "Debug Web Extension in Chromium",
+      "type": "chrome",
+      "request": "attach",
+      "url": "http://localhost:3000",
+      "preLaunchTask": "vscode-test-web"
+    },
+    {
       "type": "chrome",
       "request": "launch",
       "name": "Debug CodeMirror playground",
