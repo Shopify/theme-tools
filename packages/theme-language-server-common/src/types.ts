@@ -151,4 +151,6 @@ export interface RequiredDependencies {
   fileSize?: ThemeCheckDependencies['fileSize'];
 
   fileExists: ThemeCheckDependencies['fileExists'];
+
+  fetchMetafields?: ThemeCheckDependencies['fetchMetafields'];
 }

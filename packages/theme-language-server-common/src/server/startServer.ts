@@ -1,4 +1,4 @@
-import { AugmentedThemeDocset } from '@shopify/theme-check-common';
+import { AugmentedThemeDocset, memo } from '@shopify/theme-check-common';
 import {
   Connection,
   FileOperationRegistrationOptions,
@@ -59,6 +59,7 @@ export function startServer(
     log = defaultLogger,
     jsonValidationSet,
     themeDocset: remoteThemeDocset,
+    fetchMetafields,
   }: Dependencies,
 ) {
   const clientCapabilities = new ClientCapabilities();
@@ -93,6 +94,8 @@ export function startServer(
     });
     return root.toString();
   };
+
+  const memoizedFetchMetafields = fetchMetafields ? memo(fetchMetafields): undefined;
 
   // These are augmented here so that the caching is maintained over different runs.
   const themeDocset = new AugmentedThemeDocset(remoteThemeDocset);
@@ -170,6 +173,7 @@ export function startServer(
     getTranslationsForURI,
     getSnippetNamesForURI,
     getThemeSettingsSchemaForURI,
+    fetchMetafields: memoizedFetchMetafields,
     log,
   });
   const hoverProvider = new HoverProvider(
@@ -285,6 +289,9 @@ export function startServer(
     const { uri } = params.textDocument;
     if (await configuration.shouldCheckOnSave()) {
       runChecks([uri]);
+    }
+    if (uri.endsWith('.shopify/metafields.json')) {
+      memoizedFetchMetafields?.clearCache();
     }
   });
 
