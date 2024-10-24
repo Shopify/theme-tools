@@ -1,24 +1,14 @@
 import { FileStat, FileTuple, path as pathUtils } from '@shopify/theme-check-common';
 import * as path from 'node:path';
-import { commands, DocumentFilter, ExtensionContext, languages, Uri, workspace } from 'vscode';
+import { commands, ExtensionContext, languages, Uri, workspace } from 'vscode';
 import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
   TransportKind,
 } from 'vscode-languageclient/node';
-import LiquidFormatter from './formatter';
-
-const LIQUID: DocumentFilter[] = [
-  {
-    language: 'liquid',
-    scheme: 'file',
-  },
-  {
-    language: 'liquid',
-    scheme: 'untitled',
-  },
-];
+import LiquidFormatter from '../common/formatter';
+import { vscodePrettierFormat } from './formatter';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -35,24 +25,12 @@ export async function activate(context: ExtensionContext) {
       client!.sendRequest('workspace/executeCommand', { command: runChecksCommand });
     }),
   );
-
-  const diagnosticTextDocumentVersion = new Map<Uri, number>();
-  const diagnosticCollection = languages.createDiagnosticCollection('prettier-plugin-liquid');
-
-  // TODO move this to language server (?) Might have issues with prettier import
-  const formattingProvider = languages.registerDocumentFormattingEditProvider(
-    LIQUID,
-    new LiquidFormatter(diagnosticCollection, diagnosticTextDocumentVersion),
+  context.subscriptions.push(
+    languages.registerDocumentFormattingEditProvider(
+      [{ language: 'liquid' }],
+      new LiquidFormatter(vscodePrettierFormat),
+    ),
   );
-  context.subscriptions.push(formattingProvider);
-
-  // If you change the file, the prettier syntax error is no longer valid
-  workspace.onDidChangeTextDocument(({ document }) => {
-    const bufferVersionOfDiagnostic = diagnosticTextDocumentVersion.get(document.uri);
-    if (bufferVersionOfDiagnostic !== document.version) {
-      diagnosticCollection.delete(document.uri);
-    }
-  });
 
   await startServer(context);
 }

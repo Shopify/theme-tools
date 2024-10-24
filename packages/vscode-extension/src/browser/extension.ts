@@ -1,7 +1,9 @@
 /// <reference lib="webworker" />
 import { FileStat, FileTuple, path } from '@shopify/theme-check-common';
-import { commands, ExtensionContext, Uri, workspace } from 'vscode';
+import { commands, ExtensionContext, languages, Uri, workspace } from 'vscode';
 import { LanguageClient, LanguageClientOptions } from 'vscode-languageclient/browser';
+import LiquidFormatter from '../common/formatter';
+import { vscodePrettierFormat } from './formatter';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -20,27 +22,12 @@ export async function activate(context: ExtensionContext) {
     }),
   );
 
-  // const diagnosticTextDocumentVersion = new Map<Uri, number>();
-  // const diagnosticCollection = languages.createDiagnosticCollection('prettier-plugin-liquid');
-  // if (isRubyLanguageServer) {
-  //   // The TS version doesn't need this, we have LiquidHTMLSyntaxError for that.
-  //   context.subscriptions.push(diagnosticCollection);
-  // }
-
-  // TODO move this to language server (?) Might have issues with prettier import
-  // const formattingProvider = languages.registerDocumentFormattingEditProvider(
-  //   LIQUID,
-  //   new LiquidFormatter(diagnosticCollection, diagnosticTextDocumentVersion),
-  // );
-  // context.subscriptions.push(formattingProvider);
-
-  // // If you change the file, the prettier syntax error is no longer valid
-  // workspace.onDidChangeTextDocument(({ document }) => {
-  //   const bufferVersionOfDiagnostic = diagnosticTextDocumentVersion.get(document.uri);
-  //   if (bufferVersionOfDiagnostic !== document.version) {
-  //     diagnosticCollection.delete(document.uri);
-  //   }
-  // });
+  context.subscriptions.push(
+    languages.registerDocumentFormattingEditProvider(
+      [{ language: 'liquid' }],
+      new LiquidFormatter(vscodePrettierFormat),
+    ),
+  );
 
   await startServer(context);
 }
