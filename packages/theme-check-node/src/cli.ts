@@ -13,7 +13,7 @@ async function main(): Promise<void> {
   console.log(JSON.stringify(config, null, 2));
   console.log(
     JSON.stringify(
-      theme.map((x) => x.absolutePath),
+      theme.map((x) => x.uri),
       null,
       2,
     ),

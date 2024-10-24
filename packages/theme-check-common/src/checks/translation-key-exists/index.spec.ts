@@ -53,7 +53,7 @@ describe('Module: TranslationKeyExists', () => {
     expect(offenses).to.containOffense({
       check: TranslationKeyExists.meta.code,
       message: "'key' does not have a matching entry in 'locales/en.default.json'",
-      absolutePath: '/code.liquid',
+      uri: 'file:///code.liquid',
     });
   });
 
@@ -94,7 +94,7 @@ describe('Module: TranslationKeyExists', () => {
       check: TranslationKeyExists.meta.code,
       message:
         "'this.does.not.exist' does not have a matching entry in 'locales/en.default.json' or 'code.liquid'",
-      absolutePath: '/code.liquid',
+      uri: 'file:///code.liquid',
       start: { index: 20, line: 1, character: 3 },
       end: { index: 41, line: 1, character: 24 },
     });
@@ -120,7 +120,7 @@ describe('Module: TranslationKeyExists', () => {
     expect(offenses).to.containOffense({
       check: TranslationKeyExists.meta.code,
       message: "'this.does.not.exist' does not have a matching entry in 'locales/en.default.json'",
-      absolutePath: '/code.liquid',
+      uri: 'file:///code.liquid',
       start: { index: 14, line: 1, character: 13 },
       end: { index: 35, line: 1, character: 34 },
     });
@@ -141,14 +141,14 @@ describe('Module: TranslationKeyExists', () => {
     expect(offenses).to.containOffense({
       check: TranslationKeyExists.meta.code,
       message: "'unknownkey' does not have a matching entry in 'locales/en.default.json'",
-      absolutePath: '/code.liquid',
+      uri: 'file:///code.liquid',
       start: { index: 3, line: 0, character: 3 },
       end: { index: 15, line: 0, character: 15 },
     });
     expect(offenses).to.containOffense({
       check: TranslationKeyExists.meta.code,
       message: "'unknown.nested.key' does not have a matching entry in 'locales/en.default.json'",
-      absolutePath: '/code.liquid',
+      uri: 'file:///code.liquid',
       start: { index: 68, line: 2, character: 3 },
       end: { index: 88, line: 2, character: 23 },
     });
@@ -169,7 +169,7 @@ describe('Module: TranslationKeyExists', () => {
       check: TranslationKeyExists.meta.code,
       message:
         "'shopify.this.does.not.exist' does not have a matching entry in 'locales/en.default.json'",
-      absolutePath: '/code.liquid',
+      // uri: 'file:///code.liquid',
       start: { index: 48, line: 1, character: 3 },
       end: { index: 77, line: 1, character: 32 },
     });

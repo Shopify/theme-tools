@@ -7,24 +7,24 @@ import {
   toSourceCode as commonToSourceCode,
   check as coreCheck,
   isIgnored,
-  parseJSON,
+  path as pathUtils,
 } from '@shopify/theme-check-common';
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
+import { URI } from 'vscode-uri';
 import glob = require('glob');
 
 import { autofix } from './autofix';
 import { findConfigPath, loadConfig as resolveConfig } from './config';
-import { fileExists, fileSize } from './file-utils';
+import { NodeFileSystem } from './NodeFileSystem';
 
-const defaultLocale = 'en';
 const asyncGlob = promisify(glob);
 
 export * from '@shopify/theme-check-common';
 export * from './config/types';
-export { PathHandler, findRoot, reusableFindRoot } from './find-root';
+export { NodeFileSystem };
 
 export const loadConfig: typeof resolveConfig = async (configPath, root) => {
   configPath ??= await findConfigPath(root);
@@ -42,7 +42,7 @@ export async function toSourceCode(
 ): Promise<LiquidSourceCode | JSONSourceCode | undefined> {
   try {
     const source = await fs.readFile(absolutePath, 'utf8');
-    return commonToSourceCode(absolutePath, source);
+    return commonToSourceCode(pathUtils.normalize(URI.file(absolutePath)), source);
   } catch (e) {
     return undefined;
   }
@@ -64,41 +64,12 @@ export async function themeCheckRun(
   log: (message: string) => void = () => {},
 ): Promise<ThemeCheckRun> {
   const { theme, config } = await getThemeAndConfig(root, configPath);
-  const defaultTranslationsFile = theme.find((sc) => sc.absolutePath.endsWith('default.json'));
-  const defaultTranslations = parseJSON(defaultTranslationsFile?.source ?? '{}', {});
-  const defaultSchemaTranslationsFile = theme.find((sc) =>
-    sc.absolutePath.endsWith('default.schema.json'),
-  );
-  const defaultSchemaTranslations = parseJSON(defaultSchemaTranslationsFile?.source ?? '{}', {});
   const themeLiquidDocsManager = new ThemeLiquidDocsManager(log);
 
   const offenses = await coreCheck(theme, config, {
-    fileExists,
-    fileSize,
+    fs: NodeFileSystem,
     themeDocset: themeLiquidDocsManager,
     jsonValidationSet: themeLiquidDocsManager,
-    getDefaultTranslations: async () => defaultTranslations,
-    getDefaultLocale: async () => {
-      if (!defaultTranslationsFile) {
-        return defaultLocale;
-      }
-      // assumes the path is normalized and '/' are used as separators
-      const defaultTranslationsFileLocale = defaultTranslationsFile.absolutePath.match(
-        /locales\/(.*)\.default\.json$/,
-      )?.[1];
-      return defaultTranslationsFileLocale || defaultLocale;
-    },
-    getDefaultSchemaTranslations: async () => defaultSchemaTranslations,
-    getDefaultSchemaLocale: async () => {
-      if (!defaultSchemaTranslationsFile) {
-        return defaultLocale;
-      }
-      // assumes the path is normalized and '/' are used as separators
-      const defaultTranslationsFileLocale = defaultSchemaTranslationsFile.absolutePath.match(
-        /locales\/(.*)\.default\.schema\.json$/,
-      )?.[1];
-      return defaultTranslationsFileLocale || defaultLocale;
-    },
   });
 
   return {
@@ -127,7 +98,7 @@ export async function getTheme(config: Config): Promise<Theme> {
 
   // the path is normalised and '\' are replaced with '/' and then passed to the glob function
   const normalizedGlob = path
-    .normalize(path.join(config.root, '**/*.{liquid,json}'))
+    .normalize(path.join(config.rootUri.replace(/^file:/, ''), '**/*.{liquid,json}'))
     .replace(/\\/g, '/');
   const paths = await asyncGlob(normalizedGlob).then((result) =>
     // Global ignored paths should not be part of the theme

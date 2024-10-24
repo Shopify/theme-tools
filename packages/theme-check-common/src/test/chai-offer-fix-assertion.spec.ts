@@ -42,7 +42,7 @@ describe('Module: SuggestAssertion', () => {
     return {
       type: SourceCodeType.LiquidHtml,
       message: 'Coffee is better',
-      absolutePath: '/snippets/cookies.liquid',
+      uri: 'file:///snippets/cookies.liquid',
       check: '',
       severity: 0,
       start: { index: 0, line: 0, character: 0 },

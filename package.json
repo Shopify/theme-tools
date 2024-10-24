@@ -23,6 +23,7 @@
     "build": "yarn workspaces run build",
     "build:ci": "yarn workspaces run build:ci",
     "build:ts": "yarn workspaces run build:ts",
+    "dev:web": "yarn --cwd packages/vscode-extension dev:web",
     "format": "prettier --write \"packages/*/src/**/*.ts\"",
     "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
     "playground": "yarn --cwd packages/codemirror-language-client run dev:playground",

@@ -1,8 +1,8 @@
 import path from 'node:path';
-import { AbsolutePath } from '@shopify/theme-check-common';
 import { readYamlConfigDescription } from './read-yaml';
 import { mergeFragments } from './merge-fragments';
 import { ConfigDescription, ModernIdentifier, ModernIdentifiers } from '../types';
+import { AbsolutePath } from '../../temp';
 
 const modernConfigsPath = () => {
   if (process.env.WEBPACK_MODE) {

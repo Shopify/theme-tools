@@ -20,7 +20,7 @@ export const RequiredLayoutThemeObject: LiquidCheckDefinition = {
   },
 
   create(context) {
-    if (context.relativePath(context.file.absolutePath) !== 'layout/theme.liquid') {
+    if (context.toRelativePath(context.file.uri) !== 'layout/theme.liquid') {
       return {};
     }
 

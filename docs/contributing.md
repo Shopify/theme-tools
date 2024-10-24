@@ -58,6 +58,22 @@ Run the following command to start a browser instance that runs `@shopify/theme-
 yarn playground
 ```
 
+### Developing for VS Code for Web
+
+#### In Chrome
+
+Run the following command to start a `@vscode/test-web` instance in Chrome with the Shopify Liquid extension loaded.
+
+```bash
+yarn dev:web
+```
+
+#### In the desktop app
+
+Because the Chrome version doesn't have great debugging, you can also use the `Run Web Extension` Launch configuration to debug the extension.
+
+This starts a Extension Host window like the normal `F5` flow, but instead of running the node extension, it's running the browser extension.
+
 ### Testing JSON Schema changes on Shopify/theme-liquid-docs
 
 If ever you want to see how the VS Code extension or playground would behave before merging a PR to Shopify/theme-liquid-docs, you can do the following:

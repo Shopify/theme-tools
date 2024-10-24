@@ -1,4 +1,18 @@
+import { AugmentedThemeDocset } from './AugmentedThemeDocset';
+import { JSONValidator } from './JSONValidator';
 import {
+  makeFileExists,
+  makeFileSize,
+  makeGetDefaultLocale,
+  makeGetDefaultSchemaLocale,
+  makeGetDefaultSchemaTranslations,
+  makeGetDefaultTranslations,
+} from './context-utils';
+import { createDisabledChecksModule } from './disabled-checks';
+import { isIgnored } from './ignore';
+import * as path from './path';
+import {
+  AugmentedDependencies,
   Check,
   CheckDefinition,
   CheckSettings,
@@ -20,37 +34,48 @@ import {
   Theme,
   ValidateJSON,
 } from './types';
-import { visitLiquid, visitJSON } from './visitors';
-import { createDisabledChecksModule } from './disabled-checks';
-import * as path from './path';
 import { getPosition } from './utils';
-import { isIgnored } from './ignore';
-import { AugmentedThemeDocset } from './AugmentedThemeDocset';
-import { JSONValidator } from './JSONValidator';
+import { visitJSON, visitLiquid } from './visitors';
 
+export * from './AbstractFileSystem';
 export * from './AugmentedThemeDocset';
-export * from './fixes';
-export * from './types';
 export * from './checks';
-export * from './to-source-code';
-export * from './json';
+export * from './context-utils';
+export * from './find-root';
+export * from './fixes';
 export * from './ignore';
+export * from './json';
+export * as path from './path';
+export * from './to-source-code';
+export * from './types';
 export * from './utils/error';
-export * from './utils/types';
-export * from './utils/memo';
 export * from './utils/indexBy';
+export * from './utils/memo';
+export * from './utils/types';
 
 const defaultErrorHandler = (_error: Error): void => {
   // Silently ignores errors by default.
 };
 
 export async function check(
-  sourceCodes: Theme,
+  theme: Theme,
   config: Config,
-  dependencies: Dependencies,
+  injectedDependencies: Dependencies,
 ): Promise<Offense[]> {
   const pipelines: Promise<void>[] = [];
   const offenses: Offense[] = [];
+  const { fs } = injectedDependencies;
+  const { rootUri } = config;
+  const dependencies: AugmentedDependencies = {
+    ...injectedDependencies,
+    fileExists: makeFileExists(fs),
+    fileSize: makeFileSize(fs),
+    getDefaultLocale: makeGetDefaultLocale(fs, rootUri),
+    getDefaultTranslations: makeGetDefaultTranslations(fs, theme, rootUri),
+    getDefaultSchemaLocale: makeGetDefaultSchemaLocale(fs, rootUri),
+    getDefaultSchemaTranslations: makeGetDefaultSchemaTranslations(fs, theme, rootUri),
+  };
+
   const { DisabledChecksVisitor, isDisabled } = createDisabledChecksModule();
   let validateJSON: ValidateJSON<SourceCodeType> | undefined;
 
@@ -69,11 +94,11 @@ export async function check(
   for (const type of Object.values(SourceCodeType)) {
     switch (type) {
       case SourceCodeType.JSON: {
-        const files = filesOfType(type, sourceCodes);
+        const files = filesOfType(type, theme);
         const checkDefs = checksOfType(type, config.checks);
         for (const file of files) {
           for (const checkDef of checkDefs) {
-            if (isIgnored(file.absolutePath, config, checkDef)) continue;
+            if (isIgnored(file.uri, config, checkDef)) continue;
             const check = createCheck(checkDef, file, config, offenses, dependencies, validateJSON);
             pipelines.push(checkJSONFile(check, file));
           }
@@ -81,11 +106,11 @@ export async function check(
         break;
       }
       case SourceCodeType.LiquidHtml: {
-        const files = filesOfType(type, sourceCodes);
+        const files = filesOfType(type, theme);
         const checkDefs = [DisabledChecksVisitor, ...checksOfType(type, config.checks)];
         for (const file of files) {
           for (const checkDef of checkDefs) {
-            if (isIgnored(file.absolutePath, config, checkDef)) continue;
+            if (isIgnored(file.uri, config, checkDef)) continue;
             const check = createCheck(checkDef, file, config, offenses, dependencies, validateJSON);
             pipelines.push(checkLiquidFile(check, file));
           }
@@ -114,14 +139,14 @@ function createContext<T extends SourceCodeType, S extends Schema>(
     ...dependencies,
     validateJSON,
     settings: createSettings(checkSettings, check.meta.schema),
-    absolutePath: (relativePath) => path.join(config.root, relativePath),
-    relativePath: (absolutePath) => path.relative(absolutePath, config.root),
+    toUri: (relativePath) => path.join(config.rootUri, relativePath),
+    toRelativePath: (uri) => path.relative(uri, config.rootUri),
     report(problem: Problem<T>): void {
       offenses.push({
         type: check.meta.type,
         check: check.meta.code,
         message: problem.message,
-        absolutePath: file.absolutePath,
+        uri: file.uri,
         severity: checkSettings?.severity ?? check.meta.severity,
         start: getPosition(file.source, problem.startIndex),
         end: getPosition(file.source, problem.endIndex),

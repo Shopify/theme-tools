@@ -12,7 +12,9 @@
     "composite": true,
     "noImplicitAny": false,
     "paths": {
+      "@shopify/theme-language-server-browser": ["../../theme-language-server-browser/src"],
       "@shopify/theme-language-server-node": ["../../theme-language-server-node/src"],
+      "@shopify/theme-check-common": ["../../theme-check-common/src"],
       "@shopify/prettier-plugin-liquid": ["../../prettier-plugin-liquid/src"],
       "@shopify/liquid-html-parser": ["../../theme-language-server-node/src"]
     }
@@ -20,7 +22,9 @@
   "include": ["src/**/*"],
   "exclude": ["src/**/*.spec.ts", "node_modules"],
   "references": [
+    { "path": "../theme-language-server-browser/tsconfig.build.json" },
     { "path": "../theme-language-server-node/tsconfig.build.json" },
+    { "path": "../theme-check-common/tsconfig.build.json" },
     { "path": "../prettier-plugin-liquid/tsconfig.build.json" },
     { "path": "../liquid-html-parser/tsconfig.build.json" },
   ]

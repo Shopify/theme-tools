@@ -22,9 +22,7 @@ export async function autofix(sourceCodes: Theme, offenses: Offense[], applyFixe
   const promises = [];
 
   for (const sourceCode of sourceCodes) {
-    const sourceCodeOffenses = fixableOffenses.filter(
-      (offense) => offense.absolutePath === sourceCode.absolutePath,
-    );
+    const sourceCodeOffenses = fixableOffenses.filter((offense) => offense.uri === sourceCode.uri);
 
     if (sourceCodeOffenses.length === 0) {
       continue;

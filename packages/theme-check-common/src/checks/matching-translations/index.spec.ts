@@ -70,7 +70,7 @@ describe('Module: MatchingTranslations', async () => {
       expect(offenses).to.be.of.length(1);
       expect(offenses).to.containOffense({
         message: "The translation for 'hello.world' is missing",
-        absolutePath: `/locales/pt-BR${prefix}.json`,
+        uri: `file:///locales/pt-BR${prefix}.json`,
       });
 
       const fixed = await autofix(theme, offenses);
@@ -100,11 +100,11 @@ describe('Module: MatchingTranslations', async () => {
       expect(offenses).to.be.of.length(2);
       expect(offenses).to.containOffense({
         message: "A default translation for 'hello' does not exist",
-        absolutePath: `/locales/pt-BR${prefix}.json`,
+        uri: `file:///locales/pt-BR${prefix}.json`,
       });
       expect(offenses).to.containOffense({
         message: "The translation for 'hello.world' is missing",
-        absolutePath: `/locales/pt-BR${prefix}.json`,
+        uri: `file:///locales/pt-BR${prefix}.json`,
       });
 
       const fixed = await autofix(theme, offenses);
@@ -136,15 +136,15 @@ describe('Module: MatchingTranslations', async () => {
       expect(offenses).to.be.of.length(3);
       expect(offenses).to.containOffense({
         message: "A default translation for 'hello.monde' does not exist",
-        absolutePath: `/locales/fr${prefix}.json`,
+        uri: `file:///locales/fr${prefix}.json`,
       });
       expect(offenses).to.containOffense({
         message: "A default translation for 'hello.mundo.hola' does not exist",
-        absolutePath: `/locales/es-ES${prefix}.json`,
+        uri: `file:///locales/es-ES${prefix}.json`,
       });
       expect(offenses).to.containOffense({
         message: "The translation for 'hello.world' is missing",
-        absolutePath: `/locales/fr${prefix}.json`,
+        uri: `file:///locales/fr${prefix}.json`,
       });
 
       const fixed = await autofix(theme, offenses);
