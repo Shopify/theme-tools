@@ -12,6 +12,9 @@ const { ThemeLiquidDocsManager } = require('@shopify/theme-check-docs-updater');
 /** @type WebpackConfig */
 const baseConfig = {
   context: path.resolve(__dirname),
+  devServer: {
+    port: 3000,
+  },
   resolve: {
     extensions: ['.ts', '.js'],
     plugins: [new TsconfigPathsPlugin({})],

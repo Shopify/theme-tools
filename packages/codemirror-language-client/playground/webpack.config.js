@@ -22,6 +22,7 @@ const config = async () => {
 
   const devServerConfig = {
     devServer: {
+      port: 3000,
       open: false,
       devMiddleware: {
         writeToDisk: true,
