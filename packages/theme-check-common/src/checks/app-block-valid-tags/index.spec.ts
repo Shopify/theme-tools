@@ -35,7 +35,7 @@ describe('Module: AppBlockValidTags', () => {
       expect(offenses).to.containOffense({
         check: AppBlockValidTags.meta.code,
         message: `Theme app extension blocks cannot contain '${tag}' tags`,
-        absolutePath: '/blocks/app.liquid',
+        uri: 'file:///blocks/app.liquid',
         severity: 0,
         start: expectedStart,
         end: expectedEnd,
@@ -71,7 +71,7 @@ describe('Module: AppBlockValidTags', () => {
       expect(offenses).to.containOffense({
         check: AppBlockValidTags.meta.code,
         message: `Theme app extension blocks cannot contain '${tag}' tags`,
-        absolutePath: '/blocks/app.liquid',
+        uri: 'file:///blocks/app.liquid',
         severity: 0,
         start: expectedStart,
         end: expectedEnd,

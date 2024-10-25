@@ -1,7 +1,6 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { AssetSizeAppBlockCSS } from '.';
 import { check, MockTheme } from '../../test';
-import { SchemaProp } from '../../types';
 
 describe('Module: AssetSizeAppBlockCSS', () => {
   const extensionFiles: MockTheme = {
@@ -21,32 +20,23 @@ describe('Module: AssetSizeAppBlockCSS', () => {
     expect(offenses).toHaveLength(0);
   });
 
-  it('should skip the check if context.fileSize is undefined', async () => {
-    const context = {
-      fileSize: undefined,
-    };
-
-    const offenses = await check(extensionFiles, [AssetSizeAppBlockCSS], context);
-    expect(offenses).toHaveLength(0);
-  });
-
   it('should report an offense if CSS is larger than threshold', async () => {
-    const CustomAssetSizeAppBlockCSS = {
-      ...AssetSizeAppBlockCSS,
-      meta: {
-        ...AssetSizeAppBlockCSS.meta,
-        schema: {
-          thresholdInBytes: SchemaProp.number(1),
+    const offenses = await check(
+      extensionFiles,
+      [AssetSizeAppBlockCSS],
+      {},
+      {
+        AssetSizeAppBlockCSS: {
+          enabled: true,
+          thresholdInBytes: 1,
         },
       },
-    };
-
-    const offenses = await check(extensionFiles, [CustomAssetSizeAppBlockCSS]);
+    );
 
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
       message: `The file size for 'app.css' (19 B) exceeds the configured threshold (1 B)`,
-      absolutePath: '/blocks/app.liquid',
+      uri: 'file:///blocks/app.liquid',
       start: { index: 51 },
       end: { index: 58 },
     });
@@ -68,7 +58,7 @@ describe('Module: AssetSizeAppBlockCSS', () => {
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
       message: `'nonexistent.css' does not exist.`,
-      absolutePath: '/blocks/app.liquid',
+      uri: 'file:///blocks/app.liquid',
       start: { index: 57 },
       end: { index: 72 },
     });
@@ -90,7 +80,7 @@ describe('Module: AssetSizeAppBlockCSS', () => {
     expect(offenses).toHaveLength(1);
     expect(offenses[0]).toMatchObject({
       message: `'nonexistent.css' does not exist.`,
-      absolutePath: '/blocks/app.liquid',
+      uri: 'file:///blocks/app.liquid',
       start: { index: 57 },
       end: { index: 72 },
     });

@@ -1,6 +1,4 @@
-import { SourceCodeType, Translations, isError, parseJSON } from '@shopify/theme-check-common';
-import { AugmentedSourceCode } from './documents';
-import { Dependencies } from './types';
+import { Translations } from '@shopify/theme-check-common';
 
 export type GetTranslationsForURI = (uri: string) => Promise<Translations>;
 export type Translation = string | PluralizedTranslation;
@@ -10,48 +8,6 @@ export const PluralizedTranslationKeys = ['one', 'few', 'many', 'two', 'zero', '
 export type PluralizedTranslation = {
   [key in (typeof PluralizedTranslationKeys)[number]]?: string;
 };
-
-export async function useBufferOrInjectedTranslations(
-  getDefaultTranslationsFactory: Dependencies['getDefaultTranslationsFactory'],
-  theme: AugmentedSourceCode[],
-  rootURI: string,
-) {
-  const injectedGetDefaultTranslations = getDefaultTranslationsFactory(rootURI);
-  const defaultTranslationsSourceCode = theme.find(
-    (sourceCode) =>
-      sourceCode.type === SourceCodeType.JSON &&
-      sourceCode.absolutePath.match(/locales/) &&
-      sourceCode.absolutePath.match(/default\.json/),
-  );
-  return (
-    parseDefaultTranslations(defaultTranslationsSourceCode) ||
-    (await injectedGetDefaultTranslations())
-  );
-}
-
-export async function useBufferOrInjectedSchemaTranslations(
-  getDefaultTranslationsFactory: Dependencies['getDefaultSchemaTranslationsFactory'],
-  theme: AugmentedSourceCode[],
-  rootURI: string,
-) {
-  const injectedGetDefaultTranslations = getDefaultTranslationsFactory(rootURI);
-  const defaultTranslationsSourceCode = theme.find(
-    (sourceCode) =>
-      sourceCode.type === SourceCodeType.JSON &&
-      sourceCode.absolutePath.match(/locales/) &&
-      sourceCode.absolutePath.match(/default\.schema\.json/),
-  );
-  return (
-    parseDefaultTranslations(defaultTranslationsSourceCode) ||
-    (await injectedGetDefaultTranslations())
-  );
-}
-
-function parseDefaultTranslations(sourceCode: AugmentedSourceCode | undefined) {
-  if (!sourceCode) return undefined;
-  const translations = parseJSON(sourceCode.source);
-  return isError(translations) ? undefined : translations;
-}
 
 export function renderKey(
   translation: PluralizedTranslation,

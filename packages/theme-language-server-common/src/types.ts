@@ -1,8 +1,11 @@
+import {
+  AbstractFileSystem,
+  Config,
+  Dependencies as ThemeCheckDependencies,
+} from '@shopify/theme-check-common';
 import { URI } from 'vscode-languageserver';
-import { Config, Dependencies as ThemeCheckDependencies } from '@shopify/theme-check-common';
 
 import { WithOptional } from './utils';
-import { SettingsSchemaJSONFile } from './settings';
 
 export type Dependencies = WithOptional<RequiredDependencies, 'log'>;
 
@@ -48,7 +51,7 @@ export interface RequiredDependencies {
    * @param uri - a file path
    * @returns {Promise<Config>}
    */
-  loadConfig(uri: URI): Promise<Config>;
+  loadConfig(uri: URI, fileExists: (uri: string) => Promise<boolean>): Promise<Config>;
 
   /**
    * In local environments, the Language Server can download the latest versions
@@ -67,88 +70,13 @@ export interface RequiredDependencies {
   jsonValidationSet: NonNullable<ThemeCheckDependencies['jsonValidationSet']>;
 
   /**
-   * findRootURI(uri: URI)
+   * A file system abstraction that allows the Language Server to read files by URI.
    *
-   * A function that asynchronously returns the "root" of a theme.
+   * In Node.js, this is a wrapper around node:fs/promises.
    *
-   * Injected because it's different in browser vs in Node.js
-   * - In Node.js, we might do a .theme-check.yml algorithm with fs.exists
-   * - In browser, we might statically return 'browser:///'
+   * In VS Code, this is a wrapper around the VS Code API.
+   *
+   * The browser accepts a custom implementation.
    */
-  findRootURI(uri: URI): Promise<URI>;
-
-  /**
-   * getDefaultTranslationsFactory(root: URI)
-   *
-   * Returns the theme-check-js getDefaultTranslations() dependency.
-   *
-   * A factory because different repos have different default translations.
-   */
-  getDefaultTranslationsFactory(rootURI: URI): ThemeCheckDependencies['getDefaultTranslations'];
-
-  /**
-   * getDefaultLocale(root: URI)
-   *
-   * Returns the theme-check-js getDefaultLocale() dependency.
-   *
-   * A factory because different repos have different default locales.
-   */
-  getDefaultLocaleFactory(rootURI: URI): ThemeCheckDependencies['getDefaultLocale'];
-
-  /**
-   * getDefaultSchemaTranslationsFactory(root: URI)
-   *
-   * Returns the theme-check-js getDefaultSchemaTranslations() dependency.
-   *
-   * A factory because different repos have different default schema translations.
-   */
-  getDefaultSchemaTranslationsFactory(
-    rootURI: URI,
-  ): ThemeCheckDependencies['getDefaultSchemaTranslations'];
-
-  /**
-   * getDefaultLocale(root: URI)
-   *
-   * Returns the theme-check-js getDefaultSchemaLocale() dependency.
-   *
-   * A factory because different repos have different default schema locales.
-   */
-  getDefaultSchemaLocaleFactory(rootURI: URI): ThemeCheckDependencies['getDefaultSchemaLocale'];
-
-  /**
-   * getThemeSettingsSchemaForRootURI(root: URI)
-   *
-   * Should return parsed contents of the config/settings_schema.json file.
-   */
-  getThemeSettingsSchemaForRootURI(rootURI: URI): Promise<SettingsSchemaJSONFile>;
-
-  /**
-   * filesForURI(uri: URI)
-   *
-   * Returns all the Liquid and JSON files as an array.
-   *
-   * Assumes an array of relative paths from root.
-   *
-   * Optional, used for snippet completion.
-   */
-  filesForURI?(uri: URI): Promise<string[]>;
-
-  /**
-   * Asynchronously computes the file size for a given file. This function is only
-   * utilized in a subset of checks. Depending upon the specific use case, initialization
-   * complexity can vary. By making this function optional, it allows for flexibility
-   * in its invocation, particularly recommended for scenarios where the resulting file
-   * size information will be actioned upon.
-   *
-   * @param {string} absolutePath - The absolute path of the file for which the size is to be computed.
-   * @returns {Promise<number>} - A Promise that resolves with the size of the file in bytes.
-   *
-   * @example
-   * fileSize("/absolute/path/to/file")
-   *  .then(size => console.log(`File size: ${size} bytes`))
-   *  .catch(error => console.error(`Error computing file size: ${error}`));
-   */
-  fileSize?: ThemeCheckDependencies['fileSize'];
-
-  fileExists: ThemeCheckDependencies['fileExists'];
+  fs: AbstractFileSystem;
 }

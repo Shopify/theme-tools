@@ -288,7 +288,7 @@ function mockCompletionParams(params: Partial<CompletionParams> = {}): Completio
       line: 0,
     },
     textDocument: {
-      uri: '/path/to/file.liquid',
+      uri: 'file:///path/to/file.liquid',
     },
     ...params,
   };

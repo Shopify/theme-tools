@@ -1,4 +1,15 @@
-import { AugmentedThemeDocset } from '@shopify/theme-check-common';
+import {
+  AugmentedThemeDocset,
+  FileTuple,
+  findRoot,
+  isError,
+  makeFileExists,
+  makeGetDefaultSchemaTranslations,
+  makeGetDefaultTranslations,
+  parseJSON,
+  path,
+  recursiveReadDirectory,
+} from '@shopify/theme-check-common';
 import {
   Connection,
   FileOperationRegistrationOptions,
@@ -6,7 +17,6 @@ import {
   ShowDocumentRequest,
   TextDocumentSyncKind,
 } from 'vscode-languageserver';
-import { URI } from 'vscode-uri';
 import { ClientCapabilities } from '../ClientCapabilities';
 import { CodeActionKinds, CodeActionsProvider } from '../codeActions';
 import { Commands, ExecuteCommandProvider } from '../commands';
@@ -21,15 +31,12 @@ import { HoverProvider } from '../hover';
 import { JSONLanguageService } from '../json/JSONLanguageService';
 import { LinkedEditingRangesProvider } from '../linkedEditingRanges/LinkedEditingRangesProvider';
 import { RenameProvider } from '../rename/RenameProvider';
-import {
-  GetTranslationsForURI,
-  useBufferOrInjectedSchemaTranslations,
-  useBufferOrInjectedTranslations,
-} from '../translations';
+import { GetTranslationsForURI } from '../translations';
 import { Dependencies } from '../types';
 import { debounce } from '../utils';
 import { VERSION } from '../version';
 import { Configuration } from './Configuration';
+import { CachedFileSystem } from './CachedFileSystem';
 
 const defaultLogger = () => {};
 
@@ -46,21 +53,15 @@ const defaultLogger = () => {};
 export function startServer(
   connection: Connection,
   {
-    fileExists,
-    fileSize,
-    filesForURI,
-    findRootURI: findConfigurationRootURI,
-    getDefaultLocaleFactory,
-    getDefaultTranslationsFactory,
-    getDefaultSchemaLocaleFactory,
-    getDefaultSchemaTranslationsFactory,
-    getThemeSettingsSchemaForRootURI,
+    fs: injectedFs,
     loadConfig,
     log = defaultLogger,
     jsonValidationSet,
     themeDocset: remoteThemeDocset,
   }: Dependencies,
 ) {
+  const fs = new CachedFileSystem(injectedFs);
+  const fileExists = makeFileExists(fs);
   const clientCapabilities = new ClientCapabilities();
   const configuration = new Configuration(connection, clientCapabilities);
   const documentManager = new DocumentManager();
@@ -86,25 +87,16 @@ export function startServer(
   const renameProvider = new RenameProvider(documentManager);
 
   const findThemeRootURI = async (uri: string) => {
-    const rootUri = await findConfigurationRootURI(uri);
-    const config = await loadConfig(rootUri);
-    const root = URI.parse(rootUri).with({
-      path: config.root,
-    });
-    return root.toString();
+    const rootUri = await findRoot(uri, fileExists);
+    const config = await loadConfig(rootUri, fileExists);
+    return config.rootUri;
   };
 
   // These are augmented here so that the caching is maintained over different runs.
   const themeDocset = new AugmentedThemeDocset(remoteThemeDocset);
   const runChecks = debounce(
     makeRunChecks(documentManager, diagnosticsManager, {
-      fileExists,
-      fileSize,
-      findRootURI: findConfigurationRootURI,
-      getDefaultLocaleFactory,
-      getDefaultTranslationsFactory,
-      getDefaultSchemaLocaleFactory,
-      getDefaultSchemaTranslationsFactory,
+      fs,
       loadConfig,
       themeDocset,
       jsonValidationSet,
@@ -115,8 +107,9 @@ export function startServer(
   const getTranslationsForURI: GetTranslationsForURI = async (uri) => {
     const rootURI = await findThemeRootURI(uri);
     const theme = documentManager.theme(rootURI);
+    const getDefaultTranslations = makeGetDefaultTranslations(fs, theme, rootURI);
     const [defaultTranslations, shopifyTranslations] = await Promise.all([
-      useBufferOrInjectedTranslations(getDefaultTranslationsFactory, theme, rootURI),
+      getDefaultTranslations(),
       themeDocset.systemTranslations(),
     ]);
 
@@ -126,35 +119,41 @@ export function startServer(
   const getSchemaTranslationsForURI: GetTranslationsForURI = async (uri) => {
     const rootURI = await findThemeRootURI(uri);
     const theme = documentManager.theme(rootURI);
+    const getDefaultSchemaTranslations = makeGetDefaultSchemaTranslations(fs, theme, rootURI);
+    return getDefaultSchemaTranslations();
+  };
 
-    return useBufferOrInjectedSchemaTranslations(
-      getDefaultSchemaTranslationsFactory,
-      theme,
-      rootURI,
+  const snippetFilter = ([uri]: FileTuple) => /\.liquid$/.test(uri) && /snippets/.test(uri);
+  const getSnippetNamesForURI: GetSnippetNamesForURI = async (uri: string) => {
+    const rootUri = await findThemeRootURI(uri);
+    const files = await recursiveReadDirectory(fs, rootUri, snippetFilter);
+    return files.map((uri) =>
+      path
+        .relative(uri, rootUri)
+        .replace(/^snippets\//, '')
+        .replace(/\.liquid$/, ''),
     );
   };
 
-  const getSnippetNamesForURI: GetSnippetNamesForURI = async (uri: string) => {
-    if (!filesForURI) return [];
-    const files = await filesForURI(uri);
-    return files
-      .filter((x) => x.startsWith('snippets'))
-      .map((x) =>
-        x
-          .replace(/\\/g, '/')
-          .replace(/^snippets\//, '')
-          .replace(/\.liquid$/, ''),
-      );
-  };
-
   const getThemeSettingsSchemaForURI = async (uri: string) => {
-    const rootUri = await findThemeRootURI(uri);
-    return getThemeSettingsSchemaForRootURI(rootUri);
+    try {
+      const rootUri = await findThemeRootURI(uri);
+      const settingsSchemaUri = path.join(rootUri, 'config', 'settings_schema.json');
+      const contents = await fs.readFile(settingsSchemaUri);
+      const json = parseJSON(contents);
+      if (isError(json) || !Array.isArray(json)) {
+        throw new Error('Settings JSON file not in correct format');
+      }
+      return json;
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
   };
 
   const getModeForURI = async (uri: string) => {
-    const rootUri = await findConfigurationRootURI(uri);
-    const config = await loadConfig(rootUri);
+    const rootUri = await findRoot(uri, fileExists);
+    const config = await loadConfig(rootUri, fileExists);
     return config.context;
   };
 
@@ -195,7 +194,6 @@ export function startServer(
     const fileOperationRegistrationOptions: FileOperationRegistrationOptions = {
       filters: [
         {
-          scheme: 'file',
           pattern: {
             glob: '**/*.{liquid,json}',
           },
@@ -283,6 +281,8 @@ export function startServer(
 
   connection.onDidSaveTextDocument(async (params) => {
     const { uri } = params.textDocument;
+    fs.readFile.invalidate(uri);
+    fs.stat.invalidate(uri);
     if (await configuration.shouldCheckOnSave()) {
       runChecks([uri]);
     }
@@ -354,14 +354,32 @@ export function startServer(
   connection.workspace.onDidCreateFiles((params) => {
     const triggerUris = params.files.map((fileCreate) => fileCreate.uri);
     runChecks.force(triggerUris);
+    for (const { uri } of params.files) {
+      fs.readDirectory.invalidate(path.dirname(uri));
+      fs.readFile.invalidate(uri);
+      fs.stat.invalidate(uri);
+    }
   });
   connection.workspace.onDidRenameFiles((params) => {
     const triggerUris = params.files.map((fileRename) => fileRename.newUri);
     runChecks.force(triggerUris);
+    for (const { oldUri, newUri } of params.files) {
+      fs.readDirectory.invalidate(path.dirname(oldUri));
+      fs.readDirectory.invalidate(path.dirname(newUri));
+      fs.readFile.invalidate(oldUri);
+      fs.readFile.invalidate(newUri);
+      fs.stat.invalidate(oldUri);
+      fs.stat.invalidate(newUri);
+    }
   });
   connection.workspace.onDidDeleteFiles((params) => {
     const triggerUris = params.files.map((fileDelete) => fileDelete.uri);
     runChecks.force(triggerUris);
+    for (const { uri } of params.files) {
+      fs.readDirectory.invalidate(path.dirname(uri));
+      fs.readFile.invalidate(uri);
+      fs.stat.invalidate(uri);
+    }
   });
 
   connection.listen();

@@ -24,7 +24,7 @@ describe('Unit: getTheme', () => {
     const config: Config = {
       context: 'theme',
       checks: [],
-      root: workspace.root,
+      rootUri: workspace.rootUri,
       settings: {},
     };
 
@@ -34,8 +34,6 @@ describe('Unit: getTheme', () => {
     assert(jsonFile);
 
     // internally we expect the path to be normalized
-    expect(jsonFile.absolutePath).to.equal(
-      workspace.path('locales/en.default.json').replace(/\\/g, '/'),
-    );
+    expect(jsonFile.uri).to.equal(workspace.uri('locales/en.default.json').replace(/\\/g, '/'));
   });
 });

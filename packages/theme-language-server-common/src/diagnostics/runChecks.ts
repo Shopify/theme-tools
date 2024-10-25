@@ -1,41 +1,18 @@
-import { check } from '@shopify/theme-check-common';
+import { check, findRoot, makeFileExists } from '@shopify/theme-check-common';
 
-import { Dependencies } from '../types';
 import { DocumentManager } from '../documents';
+import { Dependencies } from '../types';
 import { DiagnosticsManager } from './DiagnosticsManager';
-import {
-  useBufferOrInjectedTranslations,
-  useBufferOrInjectedSchemaTranslations,
-} from '../translations';
-import { URI } from 'vscode-uri';
 
 export function makeRunChecks(
   documentManager: DocumentManager,
   diagnosticsManager: DiagnosticsManager,
   {
+    fs,
     loadConfig,
-    findRootURI,
-    fileSize,
-    fileExists,
-    getDefaultTranslationsFactory,
-    getDefaultLocaleFactory,
-    getDefaultSchemaTranslationsFactory,
-    getDefaultSchemaLocaleFactory,
     themeDocset,
     jsonValidationSet,
-  }: Pick<
-    Dependencies,
-    | 'loadConfig'
-    | 'findRootURI'
-    | 'fileExists'
-    | 'fileSize'
-    | 'getDefaultTranslationsFactory'
-    | 'getDefaultLocaleFactory'
-    | 'getDefaultSchemaTranslationsFactory'
-    | 'getDefaultSchemaLocaleFactory'
-    | 'themeDocset'
-    | 'jsonValidationSet'
-  >,
+  }: Pick<Dependencies, 'fs' | 'loadConfig' | 'themeDocset' | 'jsonValidationSet'>,
 ) {
   return async function runChecks(triggerURIs: string[]): Promise<void> {
     // This function takes an array of triggerURIs so that we can correctly
@@ -47,46 +24,27 @@ export function makeRunChecks(
     //  theme1/snippets/b.liquid
     //
     // then we recheck theme1
-    const rootURIs = await Promise.all(triggerURIs.map(findRootURI));
+    const fileExists = makeFileExists(fs);
+    const rootURIs = await Promise.all(triggerURIs.map((uri) => findRoot(uri, fileExists)));
     const deduplicatedRootURIs = new Set(rootURIs);
     await Promise.all([...deduplicatedRootURIs].map(runChecksForRoot));
 
     return;
 
-    async function runChecksForRoot(configFileRoot: string) {
-      const configFileRootURI = URI.parse(configFileRoot);
-      const config = await loadConfig(configFileRoot);
-      const rootURI = configFileRootURI.with({
-        path: config.root,
-      });
-      const theme = documentManager.theme(rootURI.toString());
-      const [defaultTranslations, defaultSchemaTranslations] = await Promise.all([
-        useBufferOrInjectedTranslations(getDefaultTranslationsFactory, theme, rootURI.toString()),
-        useBufferOrInjectedSchemaTranslations(
-          getDefaultSchemaTranslationsFactory,
-          theme,
-          rootURI.toString(),
-        ),
-      ]);
-
+    async function runChecksForRoot(configFileRootUri: string) {
+      const config = await loadConfig(configFileRootUri, fileExists);
+      const theme = documentManager.theme(config.rootUri);
       const offenses = await check(theme, config, {
-        fileExists,
-        fileSize,
-        getDefaultLocale: getDefaultLocaleFactory(rootURI.toString()),
-        getDefaultSchemaLocale: getDefaultSchemaLocaleFactory(rootURI.toString()),
-        getDefaultTranslations: async () => defaultTranslations,
-        getDefaultSchemaTranslations: async () => defaultSchemaTranslations,
         jsonValidationSet,
         themeDocset,
+        fs,
       });
 
       // We iterate over the theme files (as opposed to offenses) because if
       // there were offenses before, we need to send an empty array to clear
       // them.
       for (const sourceCode of theme) {
-        const sourceCodeOffenses = offenses.filter(
-          (offense) => offense.absolutePath === sourceCode.absolutePath,
-        );
+        const sourceCodeOffenses = offenses.filter((offense) => offense.uri === sourceCode.uri);
         diagnosticsManager.set(sourceCode.uri, sourceCode.version, sourceCodeOffenses);
       }
     }

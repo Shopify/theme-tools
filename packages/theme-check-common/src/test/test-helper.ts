@@ -1,47 +1,35 @@
 import {
-  check as coreCheck,
-  autofix as coreAutofix,
   applyFixToString,
-  toSourceCode,
-  Offense,
-  Config,
-  SourceCodeType,
-  Theme,
-  JSONSourceCode,
-  LiquidSourceCode,
   CheckDefinition,
-  recommended,
-  StringCorrector,
-  JSONCorrector,
-  FixApplicator,
+  ChecksSettings,
+  Config,
+  autofix as coreAutofix,
+  check as coreCheck,
   createCorrector,
   Dependencies,
-  ChecksSettings,
+  FixApplicator,
+  JSONCorrector,
+  JSONSourceCode,
+  LiquidSourceCode,
+  Offense,
   parseJSON,
+  recommended,
+  SourceCodeType,
+  StringCorrector,
+  Theme,
+  toSourceCode,
 } from '../index';
+import * as path from '../path';
+import { MockFileSystem } from './MockFileSystem';
+import { MockTheme } from './MockTheme';
 
-export { StringCorrector, JSONCorrector };
+export { JSONCorrector, StringCorrector };
 
-/**
- * @example
- * {
- *   'theme/layout.liquid': `
- *     <html>
- *       {{ content_for_page }}
- *     </html>
- *   `,
- *   'snippets/snip.liquid': `
- *     <b>'hello world'</b>
- *   `,
- * }
- */
-export type MockTheme = {
-  [relativePath in string]: string;
-};
+const rootUri = path.normalize('file:/');
 
 export function getTheme(themeDesc: MockTheme): Theme {
   return Object.entries(themeDesc)
-    .map(([relativePath, source]) => toSourceCode(asAbsolutePath(relativePath), source))
+    .map(([relativePath, source]) => toSourceCode(toUri(relativePath), source))
     .filter((x): x is LiquidSourceCode | JSONSourceCode => x !== undefined);
 }
 
@@ -56,32 +44,18 @@ export async function check(
     context: 'theme',
     settings: { ...checkSettings },
     checks: checks,
-    root: '/',
+    rootUri: 'file:/',
   };
   const defaultTranslationsFileRelativePath = 'locales/en.default.json';
   const defaultSchemaTranslationsFileRelativePath = 'locales/en.default.schema.json';
+
   const defaultMockDependencies = {
-    async fileSize(absolutePath: string) {
-      const relativePath = absolutePath.replace(/^\//, '');
-      return themeDesc[relativePath].length;
-    },
-    async fileExists(absolutePath: string) {
-      const relativePath = absolutePath.replace(/^\//, '');
-      return themeDesc[relativePath] !== undefined;
-    },
+    fs: new MockFileSystem(themeDesc),
     async getDefaultTranslations() {
       return parseJSON(themeDesc[defaultTranslationsFileRelativePath] || '{}', {});
     },
     async getDefaultSchemaTranslations() {
       return parseJSON(themeDesc[defaultSchemaTranslationsFileRelativePath] || '{}', {});
-    },
-    async getDefaultLocale() {
-      return defaultTranslationsFileRelativePath.match(/locales\/(.*)\.default\.json$/)?.[1]!;
-    },
-    async getDefaultSchemaLocale() {
-      return defaultSchemaTranslationsFileRelativePath.match(
-        /locales\/(.*)\.default\.schema\.json$/,
-      )?.[1]!;
     },
     themeDocset: {
       async filters() {
@@ -218,7 +192,7 @@ export async function runLiquidCheck(
   mockDependencies: Partial<Dependencies> = {},
 ): Promise<Offense[]> {
   const offenses = await check({ [fileName]: sourceCode }, [checkDef], mockDependencies);
-  return offenses.filter((offense) => offense.absolutePath === `/${fileName}`);
+  return offenses.filter((offense) => offense.uri === path.join(rootUri, fileName));
 }
 
 export async function runJSONCheck(
@@ -228,7 +202,7 @@ export async function runJSONCheck(
   mockDependencies: Partial<Dependencies> = {},
 ): Promise<Offense[]> {
   const offenses = await check({ [fileName]: sourceCode }, [checkDef], mockDependencies);
-  return offenses.filter((offense) => offense.absolutePath === `/${fileName}`);
+  return offenses.filter((offense) => offense.uri === path.join(rootUri, fileName));
 }
 
 export async function autofix(themeDesc: MockTheme, offenses: Offense[]) {
@@ -236,7 +210,7 @@ export async function autofix(themeDesc: MockTheme, offenses: Offense[]) {
   const fixed = { ...themeDesc };
 
   const stringApplicator: FixApplicator = async (sourceCode, fixes) => {
-    fixed[asRelative(sourceCode.absolutePath)] = applyFixToString(sourceCode.source, fixes);
+    fixed[asRelative(sourceCode.uri)] = applyFixToString(sourceCode.source, fixes);
   };
 
   await coreAutofix(theme, offenses, stringApplicator);
@@ -251,7 +225,7 @@ export function applyFix(
   const source =
     typeof themeDescOrSource === 'string'
       ? themeDescOrSource
-      : themeDescOrSource[asRelative(offense.absolutePath)];
+      : themeDescOrSource[asRelative(offense.uri)];
   const corrector = createCorrector(offense.type, source);
   offense.fix?.(corrector as any);
   return applyFixToString(source, corrector.fix);
@@ -264,7 +238,7 @@ export function applySuggestions(
   const source =
     typeof themeDescOrSource === 'string'
       ? themeDescOrSource
-      : themeDescOrSource[asRelative(offense.absolutePath)];
+      : themeDescOrSource[asRelative(offense.uri)];
   return offense.suggest?.map((suggestion) => {
     const corrector = createCorrector(offense.type, source);
     suggestion.fix(corrector as any);
@@ -276,7 +250,7 @@ export function highlightedOffenses(themeOrSource: MockTheme | string, offenses:
   const theme =
     typeof themeOrSource === 'string' ? { 'file.liquid': themeOrSource } : themeOrSource;
   return offenses.map((offense) => {
-    const relativePath = offense.absolutePath.substring(1);
+    const relativePath = path.relative(offense.uri, rootUri);
     const source = theme[relativePath];
     const {
       start: { index: startIndex },
@@ -287,12 +261,12 @@ export function highlightedOffenses(themeOrSource: MockTheme | string, offenses:
   });
 }
 
-function asAbsolutePath(relativePath: string) {
-  return '/' + relativePath;
+function toUri(relativePath: string) {
+  return path.join(rootUri, relativePath);
 }
 
-function asRelative(absolutePath: string) {
-  return absolutePath.replace(/^\//, '');
+function asRelative(uri: string) {
+  return path.relative(path.normalize(uri), rootUri);
 }
 
 export function prettyJSON(obj: any): string {

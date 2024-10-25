@@ -8,7 +8,7 @@
     {
       "type": "extensionHost",
       "request": "launch",
-      "name": "Launch Client",
+      "name": "Debug Node Extension",
       "runtimeExecutable": "${execPath}",
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}/packages/vscode-extension"
@@ -16,7 +16,7 @@
       "autoAttachChildProcesses": true,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/packages/vscode-extension/dist/**/*.js",
+        "${workspaceRoot}/packages/vscode-extension/dist/node/**/*.js",
         "${workspaceRoot}/packages/theme-language-server-common/dist/**/*.js",
         "${workspaceRoot}/packages/theme-language-server-node/dist/**/*.js",
         "${workspaceRoot}/packages/theme-check-common/dist/**/*.js",
@@ -28,20 +28,46 @@
       "preLaunchTask": "vscode dev"
     },
     {
+      "name": "Debug Web Extension",
+      "type": "extensionHost",
+      "debugWebWorkerHost": true,
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode-extension",
+        "--extensionDevelopmentKind=web"
+      ],
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/packages/vscode-extension/dist/browser/**/*.js",
+        "${workspaceRoot}/packages/theme-language-server-common/dist/**/*.js",
+        "${workspaceRoot}/packages/theme-language-server-browser/dist/**/*.js",
+        "${workspaceRoot}/packages/theme-check-common/dist/**/*.js",
+        "${workspaceRoot}/packages/theme-check-browser/dist/**/*.js",
+        "${workspaceRoot}/packages/prettier-plugin-liquid/dist/**/*.js",
+        "${workspaceRoot}/packages/liquid-html-parser/dist/**/*.js",
+      ],
+      "preLaunchTask": "vscode dev"
+    },
+    {
+      "name": "Debug Web Extension in Chromium",
+      "type": "chrome",
+      "request": "attach",
+      "url": "http://localhost:3000",
+      "preLaunchTask": "vscode-test-web"
+    },
+    {
       "type": "chrome",
       "request": "launch",
-      "name": "Debug playground",
-      "url": "http://localhost:8080",
+      "name": "Debug CodeMirror playground",
+      "url": "http://localhost:3000",
       "webRoot": "${workspaceFolder}/packages/codemirror-language-client/playground",
       "outFiles": [
         "${workspaceRoot}/packages/codemirror-language-client/playground/dist/**/*.js",
         "${workspaceRoot}/packages/codemirror-language-client/dist/**/*.js",
-        "${workspaceRoot}/packages/vscode-extension/dist/**/*.js",
         "${workspaceRoot}/packages/theme-language-server-common/dist/**/*.js",
-        "${workspaceRoot}/packages/theme-language-server-node/dist/**/*.js",
+        "${workspaceRoot}/packages/theme-language-server-browser/dist/**/*.js",
         "${workspaceRoot}/packages/theme-check-common/dist/**/*.js",
-        "${workspaceRoot}/packages/theme-check-node/dist/**/*.js",
-        "${workspaceRoot}/packages/theme-check-docs-updater/dist/**/*.js",
+        "${workspaceRoot}/packages/theme-check-browser/dist/**/*.js",
         "${workspaceRoot}/packages/prettier-plugin-liquid/dist/**/*.js",
         "${workspaceRoot}/packages/liquid-html-parser/dist/**/*.js",
       ],

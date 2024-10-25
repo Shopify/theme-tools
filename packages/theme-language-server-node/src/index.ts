@@ -1,37 +1,23 @@
-import { startServer as startCoreServer } from '@shopify/theme-language-server-common';
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
+import { AbstractFileSystem, NodeFileSystem } from '@shopify/theme-check-node';
+import { startServer as startCoreServer } from '@shopify/theme-language-server-common';
 import { stdin, stdout } from 'node:process';
 import { createConnection } from 'vscode-languageserver/node';
-import {
-  fileExists,
-  fileSize,
-  filesForURI,
-  findRootURI,
-  getDefaultLocaleFactory,
-  getDefaultTranslationsFactory,
-  getDefaultSchemaLocaleFactory,
-  getDefaultSchemaTranslationsFactory,
-  getThemeSettingsSchemaForRootURI,
-  loadConfig,
-} from './dependencies';
+import { loadConfig } from './dependencies';
 
-export function startServer() {
-  const connection = createConnection(stdin, stdout);
+export { NodeFileSystem } from '@shopify/theme-check-node';
+export * from '@shopify/theme-language-server-common';
+
+export const getConnection = () => createConnection(stdin, stdout);
+
+export function startServer(connection = getConnection(), fs: AbstractFileSystem = NodeFileSystem) {
+  // Using console.error to not interfere with messages sent on STDIN/OUT
   const log = (message: string) => console.error(message);
   const themeLiquidDocsManager = new ThemeLiquidDocsManager(log);
 
   startCoreServer(connection, {
-    // Using console.error to not interfere with messages sent on STDIN/OUT
+    fs,
     log,
-    getDefaultTranslationsFactory,
-    getDefaultLocaleFactory,
-    getDefaultSchemaLocaleFactory,
-    getDefaultSchemaTranslationsFactory,
-    getThemeSettingsSchemaForRootURI,
-    findRootURI,
-    fileExists,
-    fileSize,
-    filesForURI,
     loadConfig,
     themeDocset: themeLiquidDocsManager,
     jsonValidationSet: themeLiquidDocsManager,

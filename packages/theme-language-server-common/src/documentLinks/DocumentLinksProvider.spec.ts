@@ -1,7 +1,6 @@
-import { describe, beforeEach, it, expect } from 'vitest';
-import { DocumentLinksProvider } from './DocumentLinksProvider';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { DocumentManager } from '../documents';
-import { URI } from 'vscode-uri';
+import { DocumentLinksProvider } from './DocumentLinksProvider';
 
 describe('DocumentLinksProvider', () => {
   let documentManager: DocumentManager;
@@ -16,7 +15,7 @@ describe('DocumentLinksProvider', () => {
     const uriString = 'file:///path/to/non-liquid-html-document.txt';
     const rootUri = 'file:///path/to/project';
 
-    documentManager.open(URI.parse(uriString).toString(), 'Sample plain text content', 1);
+    documentManager.open(uriString, 'Sample plain text content', 1);
 
     const result = await documentLinksProvider.documentLinks(uriString, rootUri);
     expect(result).toEqual([]);
@@ -43,7 +42,7 @@ describe('DocumentLinksProvider', () => {
       {{ 'asset.js' | asset_url }}
     `;
 
-    documentManager.open(URI.parse(uriString).toString(), liquidHtmlContent, 1);
+    documentManager.open(uriString, liquidHtmlContent, 1);
 
     const result = await documentLinksProvider.documentLinks(uriString, rootUri);
     const expectedUrls = [

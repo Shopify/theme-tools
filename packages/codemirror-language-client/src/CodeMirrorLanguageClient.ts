@@ -103,7 +103,7 @@ export interface CodeMirrorDependencies {
 // There is one LanguageServer
 // There are many CodeMirror instances
 export class CodeMirrorLanguageClient {
-  private readonly client: LanguageClient;
+  readonly client: LanguageClient;
   private readonly infoRenderer: InfoRenderer | undefined;
   private readonly autocompleteExtension: Extension;
   private readonly diagnosticRenderer: DiagnosticRenderer | undefined;

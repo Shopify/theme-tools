@@ -1,12 +1,7 @@
-import {
-  AbsolutePath,
-  CheckDefinition,
-  Config,
-  SourceCodeType,
-  allChecks,
-} from '@shopify/theme-check-common';
+import { CheckDefinition, Config, SourceCodeType, allChecks } from '@shopify/theme-check-common';
 import path from 'node:path';
 import { fileExists } from '../file-utils';
+import { AbsolutePath } from '../temp';
 import { thisNodeModuleRoot } from './installation-location';
 import { findThirdPartyChecks, loadThirdPartyChecks } from './load-third-party-checks';
 import { ConfigDescription } from './types';
@@ -41,25 +36,25 @@ export async function loadConfigDescription(
     context: configDescription.context ?? 'theme',
     checks,
     ignore: configDescription.ignore,
-    root: resolveRoot(root, configDescription.root),
+    rootUri: resolveRoot(root, configDescription.root),
   };
 }
 
 /**
  * @param root - absolute path of the config file
  * @param pathLike - resolved textual value of the `root` property from the config files
- * @returns {string} resolved absolute path of the root property
+ * @returns {string} resolved URI of the root property
  */
 export function resolveRoot(root: AbsolutePath, pathLike: string | undefined): string {
   if (pathLike === undefined) {
-    return root;
+    return 'file:' + root;
   }
 
   if (path.isAbsolute(pathLike)) {
     throw new Error('the "root" property can only be relative');
   }
 
-  return path.resolve(root, pathLike);
+  return 'file:' + path.resolve(root, pathLike);
 }
 
 const isEnabledBy =

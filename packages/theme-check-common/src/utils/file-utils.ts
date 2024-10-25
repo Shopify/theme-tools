@@ -5,8 +5,8 @@ export async function doesFileExist<T extends SourceCodeType, S extends Schema>(
   context: Context<T, S>,
   relativePath: RelativePath,
 ): Promise<boolean> {
-  const absolutePath = context.absolutePath(relativePath);
-  return await context.fileExists(absolutePath);
+  const uri = context.toUri(relativePath);
+  return await context.fileExists(uri);
 }
 
 export async function doesFileExceedThreshold<T extends SourceCodeType, S extends Schema>(
@@ -14,9 +14,9 @@ export async function doesFileExceedThreshold<T extends SourceCodeType, S extend
   relativePath: RelativePath,
   thresholdInBytes: number,
 ): Promise<[exceeds: boolean, fileSize: number]> {
-  const absolutePath = context.absolutePath(relativePath);
+  const uri = context.toUri(relativePath);
   if (!context.fileSize) return [false, 0];
-  const fileSize = await context.fileSize(absolutePath);
+  const fileSize = await context.fileSize(uri);
   return [fileSize > thresholdInBytes, fileSize];
 }
 

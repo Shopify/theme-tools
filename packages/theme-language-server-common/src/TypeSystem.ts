@@ -20,6 +20,7 @@ import {
   ThemeDocset,
   isError,
   parseJSON,
+  path,
 } from '@shopify/theme-check-common';
 import {
   GetThemeSettingsSchemaForURI,
@@ -27,7 +28,7 @@ import {
   isInputSetting,
   isSettingsCategory,
 } from './settings';
-import { findLast, memo, toAbsolutePath } from './utils';
+import { findLast, memo } from './utils';
 import { visit } from './visitor';
 
 export class TypeSystem {
@@ -238,8 +239,8 @@ const SNIPPET_FILE_REGEX = /snippets[\/\\][^.\\\/]*\.liquid$/;
 const LAYOUT_FILE_REGEX = /layout[\/\\]checkout\.liquid$/;
 
 function getContextualEntries(uri: string): string[] {
-  const absolutePath = toAbsolutePath(uri);
-  if (LAYOUT_FILE_REGEX.test(absolutePath)) {
+  const normalizedUri = path.normalize(uri);
+  if (LAYOUT_FILE_REGEX.test(normalizedUri)) {
     return [
       'locale',
       'direction',
@@ -256,13 +257,13 @@ function getContextualEntries(uri: string): string[] {
       'tracking_code',
     ];
   }
-  if (SECTION_FILE_REGEX.test(absolutePath)) {
+  if (SECTION_FILE_REGEX.test(normalizedUri)) {
     return ['section', 'predictive_search', 'recommendations', 'comment'];
   }
-  if (BLOCK_FILE_REGEX.test(absolutePath)) {
+  if (BLOCK_FILE_REGEX.test(normalizedUri)) {
     return ['app', 'section', 'block'];
   }
-  if (SNIPPET_FILE_REGEX.test(absolutePath)) {
+  if (SNIPPET_FILE_REGEX.test(normalizedUri)) {
     return ['app'];
   }
   return [];

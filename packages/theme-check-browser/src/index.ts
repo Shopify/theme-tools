@@ -9,9 +9,23 @@ import {
   toSourceCode,
   recommended,
   Dependencies,
+  AbstractFileSystem,
+  FileStat,
+  FileTuple,
+  FileType,
 } from '@shopify/theme-check-common';
 
-export { toSourceCode, allChecks, recommended, Config, Dependencies };
+export {
+  toSourceCode,
+  allChecks,
+  recommended,
+  Config,
+  Dependencies,
+  AbstractFileSystem,
+  FileStat,
+  FileTuple,
+  FileType,
+};
 
 /**
  * @example
@@ -32,7 +46,7 @@ export type ThemeData = {
 
 export function getTheme(themeDesc: ThemeData): Theme {
   return Object.entries(themeDesc)
-    .map(([relativePath, source]) => toSourceCode(asAbsolutePath(relativePath), source))
+    .map(([relativePath, source]) => toSourceCode(toUri(relativePath), source))
     .filter((x): x is LiquidSourceCode | JSONSourceCode => x !== undefined);
 }
 
@@ -53,6 +67,6 @@ export async function simpleCheck(
 
 export { coreCheck };
 
-function asAbsolutePath(relativePath: string) {
-  return '/' + relativePath;
+function toUri(relativePath: string) {
+  return 'browser:/' + relativePath;
 }

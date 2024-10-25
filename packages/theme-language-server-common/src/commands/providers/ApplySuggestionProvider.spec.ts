@@ -6,6 +6,7 @@ import {
   Severity,
   Position,
   Suggestion,
+  path,
 } from '@shopify/theme-check-common';
 import { DiagnosticsManager } from '../../diagnostics';
 import { DocumentManager } from '../../documents';
@@ -14,7 +15,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { offenseToDiagnostic } from '../../diagnostics/offenseToDiagnostic';
 
 describe('Unit: ApplySuggestionProvider', () => {
-  const uri = URI.file('/path/to/file.liquid').toString();
+  const uri = path.normalize(URI.file('/path/to/file.liquid'));
   const contents = `
     {% assign x = 1 %}
     <script src="2.js"></script>
@@ -43,7 +44,7 @@ describe('Unit: ApplySuggestionProvider', () => {
       type: SourceCodeType.LiquidHtml,
       check: checkName,
       message: 'Parser blocking script detected',
-      absolutePath: '/path/to/file.liquid',
+      uri: 'file:///path/to/file.liquid',
       severity: Severity.ERROR,
       start: { ...document.positionAt(start), index: start },
       end: { ...document.positionAt(end), index: end },

@@ -7,27 +7,15 @@ const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const { default: TsconfigPathsPlugin } = require('tsconfig-paths-webpack-plugin');
 const path = require('path');
+const { ThemeLiquidDocsManager } = require('@shopify/theme-check-docs-updater');
 
 /** @type WebpackConfig */
-const config = {
-  target: 'node',
-  entry: {
-    extension: './src/extension.ts',
-    server: './src/server.ts',
-  },
-  output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: '[name].js',
-    libraryTarget: 'commonjs2',
-    devtoolModuleFilenameTemplate: '../[resource-path]',
-  },
+const baseConfig = {
   context: path.resolve(__dirname),
-  externals: {
-    vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded
-    prettier: 'commonjs ./prettier',
+  devServer: {
+    port: 3000,
   },
   resolve: {
-    // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
     extensions: ['.ts', '.js'],
     plugins: [new TsconfigPathsPlugin({})],
   },
@@ -54,6 +42,33 @@ const config = {
     ],
   },
   devtool: 'source-map',
+  node: {
+    __filename: 'eval-only', // this means that __filename will eval to the output file name
+    __dirname: 'eval-only', // this means that __dirname will eval to the dist folder
+  },
+  infrastructureLogging: {
+    level: 'log', // enables logging required for problem matchers
+  },
+}
+
+/** @type WebpackConfig */
+const desktopConfig = {
+  ...baseConfig,
+  target: 'node',
+  entry: {
+    extension: './src/node/extension.ts',
+    server: './src/node/server.ts',
+  },
+  output: {
+    path: path.resolve(__dirname, 'dist', 'node'),
+    filename: '[name].js',
+    libraryTarget: 'commonjs2',
+    devtoolModuleFilenameTemplate: '../../[resource-path]',
+  },
+  externals: {
+    vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded
+    prettier: 'commonjs ./prettier',
+  },
   plugins: [
     new webpack.DefinePlugin({
       // A flag that lets us do fun webpack-only shenanigans...
@@ -86,12 +101,63 @@ const config = {
       ],
     }),
   ],
-  node: {
-    __filename: 'eval-only', // this means that __filename will eval to the output file name
-    __dirname: 'eval-only', // this means that __dirname will eval to the dist folder
-  },
-  infrastructureLogging: {
-    level: 'log', // enables logging required for problem matchers
-  },
 };
-module.exports = [config];
+
+/** @type WebpackConfig */
+const browserClientConfig = {
+  ...baseConfig,
+  target: 'webworker',
+  entry: { extension: './src/browser/extension.ts', },
+  output: {
+    path: path.resolve(__dirname, 'dist', 'browser'),
+    filename: '[name].js',
+    libraryTarget: 'commonjs',
+    devtoolModuleFilenameTemplate: '../../[resource-path]',
+  },
+  externals: {
+    vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded
+  },
+  plugins: [
+    new webpack.DefinePlugin({
+      // A flag that lets us do fun webpack-only shenanigans...
+      'process.env.WEBPACK_MODE': true,
+    }),
+  ],
+};
+
+const browserServerConfig = async () => {
+  const docsManager = new ThemeLiquidDocsManager();
+  const [tags, filters, objects, systemTranslations, schemas] = await Promise.all([
+    docsManager.tags(),
+    docsManager.filters(),
+    docsManager.objects(),
+    docsManager.systemTranslations(),
+    docsManager.schemas('theme'),
+  ]);
+
+  return {
+    ...baseConfig,
+    target: 'webworker',
+    entry: { server: './src/browser/server.ts', },
+    output: {
+      path: path.resolve(__dirname, 'dist', 'browser'),
+      filename: '[name].js',
+      libraryTarget: 'var',
+      library: 'serverExportVar',
+      devtoolModuleFilenameTemplate: '../../[resource-path]',
+    },
+    plugins: [
+      new webpack.DefinePlugin({
+        // A flag that lets us do fun webpack-only shenanigans...
+        'process.env.WEBPACK_MODE': true,
+        WEBPACK_TAGS: JSON.stringify(tags),
+        WEBPACK_FILTERS: JSON.stringify(filters),
+        WEBPACK_OBJECTS: JSON.stringify(objects),
+        WEBPACK_SYSTEM_TRANSLATIONS: JSON.stringify(systemTranslations),
+        WEBPACK_SCHEMAS: JSON.stringify(schemas),
+      }),
+    ],
+  };
+};
+
+module.exports = [desktopConfig, browserClientConfig, browserServerConfig];
