@@ -169,7 +169,7 @@ describe('Module: TranslationKeyExists', () => {
       check: TranslationKeyExists.meta.code,
       message:
         "'shopify.this.does.not.exist' does not have a matching entry in 'locales/en.default.json'",
-      // uri: 'file:///code.liquid',
+      uri: 'file:///code.liquid',
       start: { index: 48, line: 1, character: 3 },
       end: { index: 77, line: 1, character: 32 },
     });

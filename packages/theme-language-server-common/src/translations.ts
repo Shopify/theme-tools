@@ -1,12 +1,4 @@
-import {
-  SourceCodeType,
-  Translations,
-  isError,
-  makeGetDefaultSchemaTranslations,
-  makeGetDefaultTranslations,
-  parseJSON,
-} from '@shopify/theme-check-common';
-import { AugmentedSourceCode } from './documents';
+import { Translations } from '@shopify/theme-check-common';
 
 export type GetTranslationsForURI = (uri: string) => Promise<Translations>;
 export type Translation = string | PluralizedTranslation;

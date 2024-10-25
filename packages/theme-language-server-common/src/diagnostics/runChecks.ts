@@ -33,8 +33,7 @@ export function makeRunChecks(
 
     async function runChecksForRoot(configFileRootUri: string) {
       const config = await loadConfig(configFileRootUri, fileExists);
-      const rootURI = config.rootUri;
-      const theme = documentManager.theme(rootURI);
+      const theme = documentManager.theme(config.rootUri);
       const offenses = await check(theme, config, {
         jsonValidationSet,
         themeDocset,

@@ -130,7 +130,6 @@ export function startServer(
     return files.map((uri) =>
       path
         .relative(uri, rootUri)
-        .replace(/\\\\/g, '/')
         .replace(/^snippets\//, '')
         .replace(/\.liquid$/, ''),
     );
