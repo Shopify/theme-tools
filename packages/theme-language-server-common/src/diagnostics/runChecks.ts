@@ -12,7 +12,11 @@ export function makeRunChecks(
     loadConfig,
     themeDocset,
     jsonValidationSet,
-  }: Pick<Dependencies, 'fs' | 'loadConfig' | 'themeDocset' | 'jsonValidationSet'>,
+    getMetafieldDefinitions,
+  }: Pick<
+    Dependencies,
+    'fs' | 'loadConfig' | 'themeDocset' | 'jsonValidationSet' | 'getMetafieldDefinitions'
+  >,
 ) {
   return async function runChecks(triggerURIs: string[]): Promise<void> {
     // This function takes an array of triggerURIs so that we can correctly
@@ -38,6 +42,7 @@ export function makeRunChecks(
         jsonValidationSet,
         themeDocset,
         fs,
+        getMetafieldDefinitions,
       });
 
       // We iterate over the theme files (as opposed to offenses) because if

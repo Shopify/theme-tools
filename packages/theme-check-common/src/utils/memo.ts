@@ -52,7 +52,7 @@ export function memoize<AT, F extends (arg: AT) => any, RT extends ReturnType<F>
 ) {
   const cache: Record<string, RT> = {};
 
-  return (arg: AT): RT => {
+  const memoedFunction = (arg: AT): RT => {
     const key = keyFn(arg);
 
     if (!cache[key]) {
@@ -61,4 +61,16 @@ export function memoize<AT, F extends (arg: AT) => any, RT extends ReturnType<F>
 
     return cache[key];
   };
+
+  memoedFunction.force = (arg: AT): RT => {
+    memoedFunction.invalidate(arg);
+    return memoedFunction(arg);
+  };
+
+  memoedFunction.invalidate = (arg: AT): void => {
+    const key = keyFn(arg);
+    delete cache[key];
+  };
+
+  return memoedFunction;
 }

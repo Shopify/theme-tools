@@ -27,6 +27,10 @@ export class ClientCapabilities {
     return !!this.capabilities?.workspace?.didChangeConfiguration?.dynamicRegistration;
   }
 
+  get hasDidChangeWatchedFilesDynamicRegistrationSupport() {
+    return !!this.capabilities?.workspace?.didChangeWatchedFiles?.dynamicRegistration;
+  }
+
   get hasShowDocumentSupport() {
     return !!this.capabilities?.window?.showDocument;
   }

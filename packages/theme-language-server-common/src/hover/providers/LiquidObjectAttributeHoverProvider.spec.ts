@@ -1,43 +1,48 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { HoverProvider } from '../HoverProvider';
+import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 
 describe('Module: LiquidObjectAttributeHoverProvider', async () => {
   let provider: HoverProvider;
 
   beforeEach(async () => {
-    provider = new HoverProvider(new DocumentManager(), {
-      filters: async () => [],
-      objects: async () => [
-        {
-          name: 'product',
-          description: 'product description',
-          return_type: [],
-          properties: [
-            {
-              name: 'featured_image',
-              description: 'featured_image description',
-              return_type: [{ type: 'image', name: '' }],
-            },
-            {
-              name: 'title',
-              return_type: [{ type: 'string', name: '' }],
-            },
-          ],
-        },
-        {
-          name: 'image',
-          description: 'image description',
-          access: {
-            global: false,
-            parents: [],
-            template: [],
+    provider = new HoverProvider(
+      new DocumentManager(),
+      {
+        filters: async () => [],
+        objects: async () => [
+          {
+            name: 'product',
+            description: 'product description',
+            return_type: [],
+            properties: [
+              {
+                name: 'featured_image',
+                description: 'featured_image description',
+                return_type: [{ type: 'image', name: '' }],
+              },
+              {
+                name: 'title',
+                return_type: [{ type: 'string', name: '' }],
+              },
+            ],
           },
-        },
-      ],
-      tags: async () => [],
-      systemTranslations: async () => ({}),
-    });
+          {
+            name: 'image',
+            description: 'image description',
+            access: {
+              global: false,
+              parents: [],
+              template: [],
+            },
+          },
+        ],
+        tags: async () => [],
+        systemTranslations: async () => ({}),
+      },
+      async (_rootUri: string) => ({} as MetafieldDefinitionMap),
+    );
   });
 
   it('should return the hover description of the object property', async () => {

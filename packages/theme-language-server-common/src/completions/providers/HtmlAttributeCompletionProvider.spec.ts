@@ -3,6 +3,7 @@ import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
 import { HtmlData } from '../../docset';
 import { sortByName } from './common';
+import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 
 const globalAttributeNames = [...HtmlData.globalAttributes].sort(sortByName).map((x) => x.name);
 const aTag = HtmlData.tags.find((x) => x.name === 'a')!;
@@ -20,6 +21,7 @@ describe('Module: HtmlAttributeCompletionProvider', async () => {
         tags: async () => [],
         systemTranslations: async () => ({}),
       },
+      getMetafieldDefinitions: async (_rootUri: string) => ({} as MetafieldDefinitionMap),
     });
   });
 

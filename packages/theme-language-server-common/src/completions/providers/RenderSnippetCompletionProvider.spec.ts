@@ -1,6 +1,7 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
+import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 
 describe('Module: RenderSnippetCompletionProvider', async () => {
   let provider: CompletionsProvider;
@@ -16,6 +17,7 @@ describe('Module: RenderSnippetCompletionProvider', async () => {
       },
       getTranslationsForURI: async (_) => ({}),
       getSnippetNamesForURI: async (_) => ['product-card', 'image'],
+      getMetafieldDefinitions: async (_rootUri: string) => ({} as MetafieldDefinitionMap),
     });
   });
 

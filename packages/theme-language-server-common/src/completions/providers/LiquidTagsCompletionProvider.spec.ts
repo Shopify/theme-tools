@@ -1,7 +1,7 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
-import { TagEntry } from '@shopify/theme-check-common';
+import { MetafieldDefinitionMap, TagEntry } from '@shopify/theme-check-common';
 import { InsertTextFormat, InsertTextMode, TextEdit } from 'vscode-languageserver-protocol';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { CURSOR } from '../params';
@@ -90,6 +90,7 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
         tags: async () => tags,
         systemTranslations: async () => ({}),
       },
+      getMetafieldDefinitions: async (_rootUri: string) => ({} as MetafieldDefinitionMap),
     });
   });
 

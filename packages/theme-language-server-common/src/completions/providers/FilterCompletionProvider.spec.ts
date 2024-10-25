@@ -1,4 +1,4 @@
-import { FilterEntry, ObjectEntry } from '@shopify/theme-check-common';
+import { FilterEntry, MetafieldDefinitionMap, ObjectEntry } from '@shopify/theme-check-common';
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
@@ -93,6 +93,7 @@ describe('Module: FilterCompletionProvider', async () => {
         tags: async () => [],
         systemTranslations: async () => ({}),
       },
+      getMetafieldDefinitions: async (_rootUri: string) => ({} as MetafieldDefinitionMap),
     });
   });
 

@@ -2,7 +2,13 @@ import { URI, Utils } from 'vscode-uri';
 import { AbstractFileSystem, FileTuple, FileType, UriString } from './AbstractFileSystem';
 import { parseJSON } from './json';
 import { join } from './path';
-import { SourceCodeType, Theme, Translations } from './types';
+import {
+  MetafieldCategory,
+  MetafieldDefinitionMap,
+  SourceCodeType,
+  Theme,
+  Translations,
+} from './types';
 import { isError } from './utils';
 
 export type FileExists = (uri: string) => Promise<boolean>;
@@ -142,3 +148,65 @@ const ignoredFolders = ['.git', 'node_modules', 'dist', 'build', 'tmp', 'vendor'
 function isIgnored([uri, type]: FileTuple) {
   return type === FileType.Directory && ignoredFolders.some((folder) => uri.endsWith(folder));
 }
+
+export const FETCHED_METAFIELD_CATEGORIES: MetafieldCategory[] = [
+  'article',
+  'blog',
+  'brand',
+  'collection',
+  'company',
+  'company_location',
+  'location',
+  'market',
+  'order',
+  'page',
+  'product',
+  'variant',
+  'shop',
+];
+
+export const makeGetMetafieldDefinitions = (fs: AbstractFileSystem) =>
+  async function (rootUri: string): Promise<MetafieldDefinitionMap> {
+    const definitions = {
+      article: [],
+      blog: [],
+      brand: [],
+      collection: [],
+      company: [],
+      company_location: [],
+      location: [],
+      market: [],
+      order: [],
+      page: [],
+      product: [],
+      variant: [],
+      shop: [],
+    } as MetafieldDefinitionMap;
+
+    try {
+      const content = await fs.readFile(join(rootUri, '.shopify', 'metafields.json'));
+      const json = parseJSON(content);
+
+      if (isError(json)) return definitions;
+
+      return FETCHED_METAFIELD_CATEGORIES.reduce((definitions, group) => {
+        try {
+          definitions[group] = json[group].map((definition: any) => ({
+            name: definition.name,
+            namespace: definition.namespace,
+            description: definition.description,
+            type: {
+              category: definition.type.category,
+              name: definition.type.name,
+            },
+          }));
+        } catch (error) {
+          // If there are errors in the file, we ignore it
+        }
+
+        return definitions;
+      }, definitions);
+    } catch (err) {
+      return definitions;
+    }
+  };

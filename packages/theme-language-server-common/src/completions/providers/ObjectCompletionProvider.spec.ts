@@ -1,6 +1,7 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
+import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 
 describe('Module: ObjectCompletionProvider', async () => {
   let provider: CompletionsProvider;
@@ -45,9 +46,64 @@ describe('Module: ObjectCompletionProvider', async () => {
               parents: [],
             },
           },
+          {
+            name: 'product',
+            properties: [
+              {
+                name: 'metafields',
+              },
+            ],
+          },
+          {
+            name: 'metafield',
+            access: {
+              global: false,
+              template: [],
+              parents: [],
+            },
+            properties: [
+              {
+                name: 'type',
+                description: 'the type of the metafield',
+                return_type: [{ type: 'string', name: '' }],
+              },
+              {
+                name: 'value',
+                description: 'the value of the metafield',
+                return_type: [{ type: 'untyped', name: '' }],
+              },
+            ],
+          },
         ],
         tags: async () => [],
         systemTranslations: async () => ({}),
+      },
+      getMetafieldDefinitions: async (_rootUri: string) => {
+        return {
+          article: [],
+          blog: [],
+          brand: [],
+          collection: [],
+          company: [],
+          company_location: [],
+          location: [],
+          market: [],
+          order: [],
+          page: [],
+          product: [
+            {
+              name: 'color',
+              namespace: 'custom',
+              description: 'the color of the product',
+              type: {
+                category: 'COLOR',
+                name: 'color',
+              },
+            },
+          ],
+          variant: [],
+          shop: [],
+        } as MetafieldDefinitionMap;
       },
     });
   });
@@ -120,7 +176,7 @@ describe('Module: ObjectCompletionProvider', async () => {
 
     await Promise.all(
       contexts.map((context) =>
-        expect(provider, context).to.complete(context, ['all_products', 'global']),
+        expect(provider, context).to.complete(context, ['all_products', 'global', 'product']),
       ),
     );
   });
@@ -159,5 +215,14 @@ describe('Module: ObjectCompletionProvider', async () => {
 
   it('should not complete anything if there is nothing to complete', async () => {
     await expect(provider).to.complete('{% assign x = "█" %}', []);
+  });
+
+  it('should complete metafields defined by getMetafieldDefinitions', async () => {
+    await expect(provider).to.complete('{% echo product.metafields.█ %}', ['custom']);
+    await expect(provider).to.complete('{% echo product.metafields.custom.█ %}', ['color']);
+    await expect(provider).to.complete('{% echo product.metafields.custom.color.█ %}', [
+      'type',
+      'value',
+    ]);
   });
 });

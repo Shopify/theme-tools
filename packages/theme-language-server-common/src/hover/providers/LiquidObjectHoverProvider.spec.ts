@@ -1,77 +1,129 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { HoverProvider } from '../HoverProvider';
+import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 
 describe('Module: LiquidObjectHoverProvider', async () => {
   let provider: HoverProvider;
 
   beforeEach(async () => {
-    provider = new HoverProvider(new DocumentManager(), {
-      filters: async () => [],
-      objects: async () => [
-        {
-          name: 'product',
-          description: 'product description',
-          return_type: [],
-          properties: [
-            {
-              name: 'featured_image',
-              return_type: [{ type: 'image', name: '' }],
+    provider = new HoverProvider(
+      new DocumentManager(),
+      {
+        filters: async () => [],
+        objects: async () => [
+          {
+            name: 'product',
+            description: 'product description',
+            return_type: [],
+            properties: [
+              {
+                name: 'featured_image',
+                return_type: [{ type: 'image', name: '' }],
+              },
+              {
+                name: 'title',
+                return_type: [{ type: 'string', name: '' }],
+              },
+              { name: 'metafields' },
+            ],
+          },
+          {
+            name: 'all_products',
+            return_type: [{ type: 'array', array_value: 'product' }],
+          },
+          {
+            name: 'paginate',
+            access: { global: false, parents: [], template: [] },
+            return_type: [],
+          },
+          {
+            name: 'forloop',
+            access: { global: false, parents: [], template: [] },
+            return_type: [],
+          },
+          {
+            name: 'tablerowloop',
+            access: { global: false, parents: [], template: [] },
+            return_type: [],
+          },
+          {
+            name: 'image',
+            description: 'image description',
+            access: { global: false, parents: [], template: [] },
+          },
+          {
+            name: 'section',
+            access: { global: false, parents: [], template: [] },
+          },
+          {
+            name: 'block',
+            access: { global: false, parents: [], template: [] },
+          },
+          {
+            name: 'app',
+            access: { global: false, parents: [], template: [] },
+          },
+          {
+            name: 'predictive_search',
+            access: { global: false, parents: [], template: [] },
+          },
+          {
+            name: 'recommendations',
+            access: { global: false, parents: [], template: [] },
+          },
+          {
+            name: 'metafield',
+            access: {
+              global: false,
+              template: [],
+              parents: [],
             },
+            properties: [
+              {
+                name: 'type',
+                description: 'the type of the metafield',
+                return_type: [{ type: 'string', name: '' }],
+              },
+              {
+                name: 'value',
+                description: 'the value of the metafield',
+                return_type: [{ type: 'untyped', name: '' }],
+              },
+            ],
+          },
+        ],
+        tags: async () => [],
+        systemTranslations: async () => ({}),
+      },
+      async (_uri: string) => {
+        return {
+          article: [],
+          blog: [],
+          brand: [],
+          collection: [],
+          company: [],
+          company_location: [],
+          location: [],
+          market: [],
+          order: [],
+          page: [],
+          product: [
             {
-              name: 'title',
-              return_type: [{ type: 'string', name: '' }],
+              name: 'color',
+              namespace: 'custom',
+              description: 'the color of the product',
+              type: {
+                category: 'COLOR',
+                name: 'color',
+              },
             },
           ],
-        },
-        {
-          name: 'all_products',
-          return_type: [{ type: 'array', array_value: 'product' }],
-        },
-        {
-          name: 'paginate',
-          access: { global: false, parents: [], template: [] },
-          return_type: [],
-        },
-        {
-          name: 'forloop',
-          access: { global: false, parents: [], template: [] },
-          return_type: [],
-        },
-        {
-          name: 'tablerowloop',
-          access: { global: false, parents: [], template: [] },
-          return_type: [],
-        },
-        {
-          name: 'image',
-          description: 'image description',
-          access: { global: false, parents: [], template: [] },
-        },
-        {
-          name: 'section',
-          access: { global: false, parents: [], template: [] },
-        },
-        {
-          name: 'block',
-          access: { global: false, parents: [], template: [] },
-        },
-        {
-          name: 'app',
-          access: { global: false, parents: [], template: [] },
-        },
-        {
-          name: 'predictive_search',
-          access: { global: false, parents: [], template: [] },
-        },
-        {
-          name: 'recommendations',
-          access: { global: false, parents: [], template: [] },
-        },
-      ],
-      tags: async () => [],
-      systemTranslations: async () => ({}),
-    });
+          variant: [],
+          shop: [],
+        } as MetafieldDefinitionMap;
+      },
+    );
   });
 
   it('should return the hover description of the object', async () => {
@@ -176,6 +228,17 @@ describe('Module: LiquidObjectHoverProvider', async () => {
       );
       await expect(provider).to.hover({ source, relativePath: 'file.liquid' }, null);
     }
+  });
+
+  it('should support metafields', async () => {
+    await expect(provider).to.hover(
+      '{{ product.metafields.custom█ }}',
+      '### custom: `product_metafield_custom`',
+    );
+    await expect(provider).to.hover(
+      '{{ product.metafields.custom.color█ }}',
+      '### color: `metafield_color`\nthe color of the product',
+    );
   });
 
   it('should return nothing if the thing is untyped', async () => {

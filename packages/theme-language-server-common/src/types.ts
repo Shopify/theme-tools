@@ -7,7 +7,7 @@ import { URI } from 'vscode-languageserver';
 
 import { WithOptional } from './utils';
 
-export type Dependencies = WithOptional<RequiredDependencies, 'log'>;
+export type Dependencies = WithOptional<RequiredDependencies, 'log' | 'getMetafieldDefinitions'>;
 
 export interface RequiredDependencies {
   /**
@@ -79,4 +79,11 @@ export interface RequiredDependencies {
    * The browser accepts a custom implementation.
    */
   fs: AbstractFileSystem;
+
+  /**
+   * In local environments, the Language Server can download the metafield definitions
+   * and provide a set of memoized definitions. In other environments, we rely on dynamically
+   * fetching the set of metafield definitions every time.
+   */
+  getMetafieldDefinitions: ThemeCheckDependencies['getMetafieldDefinitions'];
 }

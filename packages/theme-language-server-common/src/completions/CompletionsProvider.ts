@@ -1,4 +1,4 @@
-import { SourceCodeType, ThemeDocset } from '@shopify/theme-check-common';
+import { MetafieldDefinitionMap, SourceCodeType, ThemeDocset } from '@shopify/theme-check-common';
 import { CompletionItem, CompletionParams } from 'vscode-languageserver';
 import { TypeSystem } from '../TypeSystem';
 import { DocumentManager } from '../documents';
@@ -25,6 +25,7 @@ export interface CompletionProviderDependencies {
   getTranslationsForURI?: GetTranslationsForURI;
   getSnippetNamesForURI?: GetSnippetNamesForURI;
   getThemeSettingsSchemaForURI?: GetThemeSettingsSchemaForURI;
+  getMetafieldDefinitions: (rootUri: string) => Promise<MetafieldDefinitionMap>;
   log?: (message: string) => void;
 }
 
@@ -37,6 +38,7 @@ export class CompletionsProvider {
   constructor({
     documentManager,
     themeDocset,
+    getMetafieldDefinitions,
     getTranslationsForURI = async () => ({}),
     getSnippetNamesForURI = async () => [],
     getThemeSettingsSchemaForURI = async () => [],
@@ -45,7 +47,11 @@ export class CompletionsProvider {
     this.documentManager = documentManager;
     this.themeDocset = themeDocset;
     this.log = log;
-    const typeSystem = new TypeSystem(themeDocset, getThemeSettingsSchemaForURI);
+    const typeSystem = new TypeSystem(
+      themeDocset,
+      getThemeSettingsSchemaForURI,
+      getMetafieldDefinitions,
+    );
 
     this.providers = [
       new HtmlTagCompletionProvider(),

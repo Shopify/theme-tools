@@ -1,6 +1,7 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
+import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 
 describe('Module: TranslationCompletionProvider', async () => {
   let provider: CompletionsProvider;
@@ -14,6 +15,7 @@ describe('Module: TranslationCompletionProvider', async () => {
         tags: async () => [],
         systemTranslations: async () => ({}),
       },
+      getMetafieldDefinitions: async (_rootUri: string) => ({} as MetafieldDefinitionMap),
       getTranslationsForURI: async (_) => ({
         general: {
           username_html: '<b>username</b>',
