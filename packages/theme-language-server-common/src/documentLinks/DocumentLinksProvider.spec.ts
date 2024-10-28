@@ -5,33 +5,35 @@ import { DocumentLinksProvider } from './DocumentLinksProvider';
 describe('DocumentLinksProvider', () => {
   let documentManager: DocumentManager;
   let documentLinksProvider: DocumentLinksProvider;
+  let rootUri: string;
+  let uriString: string;
 
   beforeEach(() => {
     documentManager = new DocumentManager();
-    documentLinksProvider = new DocumentLinksProvider(documentManager);
+    documentLinksProvider = new DocumentLinksProvider(documentManager, async () => rootUri);
   });
 
   it('should return an empty array for non-LiquidHtml documents', async () => {
-    const uriString = 'file:///path/to/non-liquid-html-document.txt';
-    const rootUri = 'file:///path/to/project';
+    uriString = 'file:///path/to/non-liquid-html-document.txt';
+    rootUri = 'file:///path/to/project';
 
     documentManager.open(uriString, 'Sample plain text content', 1);
 
-    const result = await documentLinksProvider.documentLinks(uriString, rootUri);
+    const result = await documentLinksProvider.documentLinks(uriString);
     expect(result).toEqual([]);
   });
 
   it('should return an empty array for non-existent documents', async () => {
-    const uriString = 'file:///path/to/non-existent-document.txt';
-    const rootUri = 'file:///path/to/project';
+    uriString = 'file:///path/to/non-existent-document.txt';
+    rootUri = 'file:///path/to/project';
 
-    const result = await documentLinksProvider.documentLinks(uriString, rootUri);
+    const result = await documentLinksProvider.documentLinks(uriString);
     expect(result).toEqual([]);
   });
 
   it('should return a list of document links with correct URLs for a LiquidHtml document', async () => {
-    const uriString = 'file:///path/to/liquid-html-document.liquid';
-    const rootUri = 'file:///path/to/project';
+    uriString = 'file:///path/to/liquid-html-document.liquid';
+    rootUri = 'file:///path/to/project';
 
     const liquidHtmlContent = `
       {% render 'snippet1' %}
@@ -44,7 +46,7 @@ describe('DocumentLinksProvider', () => {
 
     documentManager.open(uriString, liquidHtmlContent, 1);
 
-    const result = await documentLinksProvider.documentLinks(uriString, rootUri);
+    const result = await documentLinksProvider.documentLinks(uriString);
     const expectedUrls = [
       'file:///path/to/project/snippets/snippet1.liquid',
       'file:///path/to/project/snippets/snippet2.liquid',
