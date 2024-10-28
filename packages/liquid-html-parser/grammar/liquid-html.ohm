@@ -59,6 +59,7 @@ Liquid <: Helpers {
     | liquidTagLayout
     | liquidTagLiquid
     | liquidTagRender
+    | liquidTagContentFor
     | liquidTagSection
     | liquidTagSections
     | liquidTagWhen
@@ -132,6 +133,12 @@ Liquid <: Helpers {
   snippetExpression = liquidString<delimTag> | variableSegmentAsLookup
   renderVariableExpression = space+ ("for" | "with") space+ liquidExpression<delimTag>
   renderAliasExpression = space+ "as" space+ variableSegment
+
+  liquidTagContentFor = liquidTagRule<"content_for", liquidTagContentForMarkup>
+  liquidTagContentForMarkup = blockExpression blockIdExpression? blockTypeExpression? space*
+  blockExpression = (("'"|"\"")"block"("'"|"\"") | ("'"|"\"")"blocks"("'"|"\""))
+  blockIdExpression = space+ "id:" liquidString<delimTag>
+  blockTypeExpression = space+ "type:" liquidString<delimTag>
 
   liquidTagOpenBaseCase = liquidTagOpenRule<blockName, tagMarkup>
 

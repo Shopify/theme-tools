@@ -78,8 +78,10 @@ export enum ConcreteNodeTypes {
   CycleMarkup = 'CycleMarkup',
   ForMarkup = 'ForMarkup',
   RenderMarkup = 'RenderMarkup',
+  ContentForMarkup = 'ContentForMarkup',
   PaginateMarkup = 'PaginateMarkup',
   RenderVariableExpression = 'RenderVariableExpression',
+  ContentForBlockExpression = 'ContentForBlockExpression',
 }
 
 export const LiquidLiteralValues = {
@@ -273,6 +275,7 @@ export type ConcreteLiquidTagNamed =
   | ConcreteLiquidTagLayout
   | ConcreteLiquidTagLiquid
   | ConcreteLiquidTagRender
+  | ConcreteLiquidTagContentFor
   | ConcreteLiquidTagSection
   | ConcreteLiquidTagSections
   | ConcreteLiquidTagWhen;
@@ -344,6 +347,17 @@ export interface ConcreteLiquidVariableOutput
   extends ConcreteBasicLiquidNode<ConcreteNodeTypes.LiquidVariableOutput> {
   markup: ConcreteLiquidVariable | string;
 }
+
+export interface ConcreteLiquidTagContentFor
+  extends ConcreteLiquidTagNode<NamedTags.content_for, ConcreteLiquidTagContentForMarkup> {}
+
+export interface ConcreteLiquidTagContentForMarkup
+  extends ConcreteBasicNode<ConcreteNodeTypes.ContentForMarkup> {
+  block_or_blocks: '"block"' | '"blocks"'; // but what about the quotations?
+  block_id: string;
+  block_type: string;
+}
+
 
 // The variable is the name + filters, like shopify/liquid.
 export interface ConcreteLiquidVariable
@@ -720,6 +734,7 @@ function toCST<T>(
     liquidTagDecrement: 0,
     liquidTagRender: 0,
     liquidTagInclude: 0,
+    liquidTagContentFor: 0,
     liquidTagSection: 0,
     liquidTagSections: 0,
     liquidTagLayout: 0,

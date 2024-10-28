@@ -493,6 +493,24 @@ describe('Unit: Stage 2 (AST)', () => {
         );
       });
 
+      it('should parse content_for tags', () => {
+        [
+          {
+            expression: 'content_for "block" id: "bleep" type: "bloop"',
+            // markup: {
+            //   type: 'ContentForMarkup'
+            // },
+          },
+        ].forEach(({ expression }) => {
+          for (const { toAST, expectPath, expectPosition } of testCases) {
+            ast = toAST(`{% ${expression} -%}`);
+            expectPath(ast, 'children.0.type').to.equal('LiquidTag');
+            expectPath(ast, 'children.0.name').to.equal('content_for');
+            expectPath(ast, 'children.0.markup.type').to.equal('ContentForMarkup');
+          }
+        });
+      });
+
       it('should parse conditional tags into conditional expressions', () => {
         ['if', 'unless'].forEach((tagName) => {
           [

@@ -9,6 +9,7 @@ import {
 import { BLOCKS, VOID_ELEMENTS } from './grammar';
 import { NamedTags } from './types';
 import { deepGet } from './utils';
+import { isLiquidHtmlNode } from './stage-2-ast';
 
 describe('Unit: Stage 1 (CST)', () => {
   describe('Unit: toLiquidHtmlCST(text) and toLiquidCST(text)', () => {
@@ -554,6 +555,39 @@ describe('Unit: Stage 1 (CST)', () => {
                 expectPath(cst, `0.markup.args.${i}.name`).to.equal(name);
                 expectPath(cst, `0.markup.args.${i}.value.type`).to.equal(valueType);
               });
+              expectPath(cst, '0.whitespaceStart').to.equal(null);
+              expectPath(cst, '0.whitespaceEnd').to.equal('-');
+            }
+          },
+        );
+      });
+
+      it('should parse the content_for tag', () => {
+        [
+          {
+            expression: `"blocks"`,
+            block_or_blocks: 'blocks',
+            block_id: null,
+            block_type: null,
+          },
+        ].forEach(
+          ({ expression, block_or_blocks, block_id, block_type }) => {
+            for (const { toCST, expectPath } of testCases) {
+              cst = toCST(`{% content_for ${expression} -%}`);
+              expectPath(cst, '0.type').to.equal('LiquidTag');
+              expectPath(cst, '0.name').to.equal('content_for');
+              expectPath(cst, '0.markup.type').to.equal('ContentForMarkup');
+              // expectPath(cst, '0.markup.snippet.type').to.equal(snippetType);
+              // if (renderVariableExpression) {
+              //   expectPath(cst, '0.markup.variable.type').to.equal('RenderVariableExpression');
+              //   expectPath(cst, '0.markup.variable.kind').to.equal(renderVariableExpression.kind);
+              //   expectPath(cst, '0.markup.variable.name.type').to.equal(
+              //     renderVariableExpression.name.type,
+              //   );
+              // } else {
+              //   expectPath(cst, '0.markup.variable').to.equal(null);
+              // }
+              expectPath(cst, '0.markup.block_or_blocks').to.equal(block_or_blocks);
               expectPath(cst, '0.whitespaceStart').to.equal(null);
               expectPath(cst, '0.whitespaceEnd').to.equal('-');
             }

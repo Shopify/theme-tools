@@ -43,6 +43,7 @@ export enum NodeTypes {
   RawMarkup = 'RawMarkup',
   RenderMarkup = 'RenderMarkup',
   RenderVariableExpression = 'RenderVariableExpression',
+  ContentForMarkup = 'ContentForMarkup'
 }
 
 // These are officially supported with special node types
@@ -63,6 +64,7 @@ export enum NamedTags {
   liquid = 'liquid',
   paginate = 'paginate',
   render = 'render',
+  content_for = 'content_for',
   section = 'section',
   sections = 'sections',
   tablerow = 'tablerow',
