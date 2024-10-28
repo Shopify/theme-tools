@@ -35,10 +35,27 @@ import { GetTranslationsForURI } from '../translations';
 import { Dependencies } from '../types';
 import { debounce } from '../utils';
 import { VERSION } from '../version';
-import { Configuration } from './Configuration';
 import { CachedFileSystem } from './CachedFileSystem';
+import { Configuration } from './Configuration';
 
 const defaultLogger = () => {};
+
+/**
+ * The `git:` VFS does not support the `fs.readDirectory` call and makes most things break.
+ * `git` URIs are the ones you'd encounter when doing a git diff in VS Code. They're not
+ * real files, they're just a way to represent changes in a git repository. As such, I don't
+ * think we want to sync those in our document manager or try to offer document links, etc.
+ *
+ * A middleware would be nice but it'd be a bit of a pain to implement.
+ */
+const hasUnsupportedDocument = (params: any) => {
+  return (
+    'textDocument' in params &&
+    'uri' in params.textDocument &&
+    typeof params.textDocument.uri === 'string' &&
+    params.textDocument.uri.startsWith('git:')
+  );
+};
 
 /**
  * This code runs in node and the browser, it can't talk to the file system
@@ -66,7 +83,7 @@ export function startServer(
   const configuration = new Configuration(connection, clientCapabilities);
   const documentManager = new DocumentManager();
   const diagnosticsManager = new DiagnosticsManager(connection);
-  const documentLinksProvider = new DocumentLinksProvider(documentManager);
+  const documentLinksProvider = new DocumentLinksProvider(documentManager, findThemeRootURI);
   const codeActionsProvider = new CodeActionsProvider(documentManager, diagnosticsManager);
   const onTypeFormattingProvider = new OnTypeFormattingProvider(
     documentManager,
@@ -86,11 +103,11 @@ export function startServer(
   const documentHighlightProvider = new DocumentHighlightsProvider(documentManager);
   const renameProvider = new RenameProvider(documentManager);
 
-  const findThemeRootURI = async (uri: string) => {
+  async function findThemeRootURI(uri: string) {
     const rootUri = await findRoot(uri, fileExists);
     const config = await loadConfig(rootUri, fileExists);
     return config.rootUri;
-  };
+  }
 
   // These are augmented here so that the caching is maintained over different runs.
   const themeDocset = new AugmentedThemeDocset(remoteThemeDocset);
@@ -261,6 +278,7 @@ export function startServer(
   });
 
   connection.onDidOpenTextDocument(async (params) => {
+    if (hasUnsupportedDocument(params)) return;
     const { uri, text, version } = params.textDocument;
     documentManager.open(uri, text, version);
     if (await configuration.shouldCheckOnOpen()) {
@@ -269,6 +287,7 @@ export function startServer(
   });
 
   connection.onDidChangeTextDocument(async (params) => {
+    if (hasUnsupportedDocument(params)) return;
     const { uri, version } = params.textDocument;
     documentManager.change(uri, params.contentChanges[0].text, version);
     if (await configuration.shouldCheckOnChange()) {
@@ -280,6 +299,7 @@ export function startServer(
   });
 
   connection.onDidSaveTextDocument(async (params) => {
+    if (hasUnsupportedDocument(params)) return;
     const { uri } = params.textDocument;
     fs.readFile.invalidate(uri);
     fs.stat.invalidate(uri);
@@ -289,15 +309,15 @@ export function startServer(
   });
 
   connection.onDidCloseTextDocument((params) => {
+    if (hasUnsupportedDocument(params)) return;
     const { uri } = params.textDocument;
     documentManager.close(uri);
     diagnosticsManager.clear(uri);
   });
 
   connection.onDocumentLinks(async (params) => {
-    const { uri } = params.textDocument;
-    const rootUri = await findThemeRootURI(uri);
-    return documentLinksProvider.documentLinks(uri, rootUri);
+    if (hasUnsupportedDocument(params)) return [];
+    return documentLinksProvider.documentLinks(params.textDocument.uri);
   });
 
   connection.onCodeAction(async (params) => {
@@ -309,6 +329,7 @@ export function startServer(
   });
 
   connection.onCompletion(async (params) => {
+    if (hasUnsupportedDocument(params)) return [];
     return (
       (await jsonLanguageService.completions(params)) ??
       (await completionsProvider.completions(params))
@@ -316,28 +337,32 @@ export function startServer(
   });
 
   connection.onHover(async (params) => {
+    if (hasUnsupportedDocument(params)) return null;
     return (await jsonLanguageService.hover(params)) ?? (await hoverProvider.hover(params));
   });
 
   connection.onDocumentOnTypeFormatting(async (params) => {
+    if (hasUnsupportedDocument(params)) return null;
     return onTypeFormattingProvider.onTypeFormatting(params);
   });
 
   connection.onDocumentHighlight(async (params) => {
+    if (hasUnsupportedDocument(params)) return [];
     return documentHighlightProvider.documentHighlights(params);
   });
 
-  // Can you rename this thing?
   connection.onPrepareRename(async (params) => {
+    if (hasUnsupportedDocument(params)) return null;
     return renameProvider.prepare(params);
   });
 
-  // Rename this thing
   connection.onRenameRequest(async (params) => {
+    if (hasUnsupportedDocument(params)) return null;
     return renameProvider.rename(params);
   });
 
   connection.languages.onLinkedEditingRange(async (params) => {
+    if (hasUnsupportedDocument(params)) return null;
     return linkedEditingRangesProvider.linkedEditingRanges(params);
   });
 

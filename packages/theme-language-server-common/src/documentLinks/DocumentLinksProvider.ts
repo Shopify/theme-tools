@@ -8,9 +8,12 @@ import { DocumentManager } from '../documents';
 import { visit, Visitor } from '../visitor';
 
 export class DocumentLinksProvider {
-  constructor(private documentManager: DocumentManager) {}
+  constructor(
+    private documentManager: DocumentManager,
+    private findThemeRootURI: (uri: string) => Promise<string>,
+  ) {}
 
-  async documentLinks(uriString: string, rootUri: string): Promise<DocumentLink[]> {
+  async documentLinks(uriString: string): Promise<DocumentLink[]> {
     const sourceCode = this.documentManager.get(uriString);
     if (
       !sourceCode ||
@@ -20,8 +23,8 @@ export class DocumentLinksProvider {
       return [];
     }
 
+    const rootUri = await this.findThemeRootURI(uriString);
     const visitor = documentLinksVisitor(sourceCode.textDocument, URI.parse(rootUri));
-
     return visit(sourceCode.ast, visitor);
   }
 }
