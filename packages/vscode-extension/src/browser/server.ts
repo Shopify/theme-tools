@@ -1,4 +1,4 @@
-import { findRoot } from '@shopify/theme-check-common';
+import { findRoot, makeFileExists } from '@shopify/theme-check-common';
 import {
   Dependencies,
   getConnection,
@@ -31,7 +31,8 @@ const fileSystem = new VsCodeFileSystem(connection, {});
 const dependencies: Dependencies = {
   fs: fileSystem,
   log: console.info.bind(console),
-  loadConfig: async (uri, fileExists) => {
+  loadConfig: async (uri, fs) => {
+    const fileExists = makeFileExists(fs);
     const rootUri = await findRoot(uri, fileExists);
     return {
       context: 'theme',

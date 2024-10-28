@@ -51,7 +51,7 @@ export interface RequiredDependencies {
    * @param uri - a file path
    * @returns {Promise<Config>}
    */
-  loadConfig(uri: URI, fileExists: (uri: string) => Promise<boolean>): Promise<Config>;
+  loadConfig(uri: URI, fs: AbstractFileSystem): Promise<Config>;
 
   /**
    * In local environments, the Language Server can download the latest versions
