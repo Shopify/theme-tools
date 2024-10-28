@@ -1,18 +1,14 @@
 import {
+  AbstractFileSystem,
   Config,
-  NodeFileSystem,
   findRoot,
-  loadConfig as loadConfigFromPath,
+  loadConfig as nodeLoadConfig,
   makeFileExists,
-  memoize,
   path,
+  recursiveReadDirectory,
 } from '@shopify/theme-check-node';
-import { Dependencies } from '@shopify/theme-language-server-common';
-import { glob as callbackGlob } from 'glob';
-import { promisify } from 'node:util';
+import { Dependencies, recommendedChecks } from '@shopify/theme-language-server-common';
 import { URI, Utils } from 'vscode-uri';
-
-const glob = promisify(callbackGlob);
 
 // Calls to `fs` should be done with this
 function asFsPath(uriOrPath: string | URI) {
@@ -25,33 +21,43 @@ function asFsPath(uriOrPath: string | URI) {
   }
 }
 
-const hasThemeAppExtensionConfig = memoize(
-  async (rootPath: string) => {
-    const files = await glob('*.extension.toml', { cwd: rootPath });
-    return files.length > 0;
-  },
-  (x: string) => x,
-);
+const hasThemeAppExtensionConfig = async (rootUri: string, fs: AbstractFileSystem) => {
+  const files = await recursiveReadDirectory(fs, rootUri, ([uri]) =>
+    uri.endsWith('.extension.toml'),
+  );
+  return files.length > 0;
+};
 
-export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(
-  uriString,
-  fileExists,
-) {
+export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(uriString, fs) {
   const fileUri = path.normalize(uriString);
+  const fileExists = makeFileExists(fs);
   const rootUri = URI.parse(await findRoot(fileUri, fileExists));
-  const rootPath = rootUri.fsPath;
+  const scheme = rootUri.scheme;
   const configUri = Utils.joinPath(rootUri, '.theme-check.yml');
-  const configPath = asFsPath(configUri);
   const [configExists, isDefinitelyThemeAppExtension] = await Promise.all([
     fileExists(path.normalize(configUri)),
-    hasThemeAppExtensionConfig(rootUri.fsPath),
+    hasThemeAppExtensionConfig(path.normalize(rootUri), fs),
   ]);
-  if (configExists) {
-    return loadConfigFromPath(configPath, rootPath).then(normalizeRoot);
-  } else if (isDefinitelyThemeAppExtension) {
-    return loadConfigFromPath('theme-check:theme-app-extension', rootPath).then(normalizeRoot);
+  if (scheme === 'file') {
+    const configPath = asFsPath(configUri);
+    const rootPath = asFsPath(rootUri);
+    if (configExists) {
+      return nodeLoadConfig(configPath, rootPath).then(normalizeRoot);
+    } else if (isDefinitelyThemeAppExtension) {
+      return nodeLoadConfig('theme-check:theme-app-extension', rootPath).then(normalizeRoot);
+    } else {
+      return nodeLoadConfig(undefined, rootPath).then(normalizeRoot);
+    }
   } else {
-    return loadConfigFromPath(undefined, rootPath).then(normalizeRoot);
+    // We can't load configs properly in remote environments.
+    // Reading and parsing YAML files is possible, but resolving `extends` and `require` fields isn't.
+    // We'll do the same thing prettier does, we just won't load configs.
+    return {
+      checks: recommendedChecks,
+      settings: {},
+      context: isDefinitelyThemeAppExtension ? 'app' : 'theme',
+      rootUri: path.normalize(rootUri),
+    };
   }
 };
 

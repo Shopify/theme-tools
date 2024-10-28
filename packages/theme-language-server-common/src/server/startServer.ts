@@ -105,7 +105,7 @@ export function startServer(
 
   async function findThemeRootURI(uri: string) {
     const rootUri = await findRoot(uri, fileExists);
-    const config = await loadConfig(rootUri, fileExists);
+    const config = await loadConfig(rootUri, fs);
     return config.rootUri;
   }
 
@@ -170,7 +170,7 @@ export function startServer(
 
   const getModeForURI = async (uri: string) => {
     const rootUri = await findRoot(uri, fileExists);
-    const config = await loadConfig(rootUri, fileExists);
+    const config = await loadConfig(rootUri, fs);
     return config.context;
   };
 
