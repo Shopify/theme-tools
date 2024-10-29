@@ -98,7 +98,7 @@ describe('Module: SnippetRenameHandler', () => {
       {
         'sections/section.liquid': `<div>{% render 'newName', foo: 'bar' %}oldName</div>`,
         'blocks/block.liquid': `<div>{% render 'newName', foo: 'baz' %}</div>`,
-        'snippets/oldName.liquid': `<div>oldName</div>`,
+        'snippets/newName.liquid': `<div>oldName{%</div>`,
         'snippets/other.liquid': `<div>{% render 'newName' %}{% render 'other' %}</div>`,
       },
       'mock-fs:',

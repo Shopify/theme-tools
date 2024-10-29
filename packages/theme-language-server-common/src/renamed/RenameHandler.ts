@@ -3,6 +3,7 @@ import { Connection } from 'vscode-languageserver';
 import { RenameFilesParams } from 'vscode-languageserver-protocol';
 import { DocumentManager } from '../documents';
 import { BaseRenameHandler } from './BaseRenameHandler';
+import { AssetRenameHandler } from './handlers/AssetRenameHandler';
 import { SnippetRenameHandler } from './handlers/SnippetRenameHandler';
 
 /**
@@ -20,7 +21,7 @@ export class RenameHandler {
     private documentManager: DocumentManager,
     private fileExists: FileExists,
   ) {
-    this.handlers = [new SnippetRenameHandler(connection)];
+    this.handlers = [new SnippetRenameHandler(connection), new AssetRenameHandler(connection)];
   }
 
   async onDidRenameFiles(params: RenameFilesParams) {
