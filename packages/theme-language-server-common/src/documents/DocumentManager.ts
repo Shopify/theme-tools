@@ -7,6 +7,9 @@ export type AugmentedSourceCode<SCT extends SourceCodeType = SourceCodeType> = S
   uri: URI;
 };
 
+export type AugmentedLiquidSourceCode = AugmentedSourceCode<SourceCodeType.LiquidHtml>;
+export type AugmentedJsonSourceCode = AugmentedSourceCode<SourceCodeType.JSON>;
+
 export class DocumentManager {
   private sourceCodes: Map<URI, AugmentedSourceCode>;
 

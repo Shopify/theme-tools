@@ -1,8 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import { LiquidHtmlNode, SourceCodeType } from '@shopify/theme-check-common';
+import { LiquidHtmlNode } from '@shopify/theme-check-common';
+import { describe, expect, it } from 'vitest';
 import { CompletionParams, Position } from 'vscode-languageserver';
+import { DocumentManager } from '../../documents';
+import { AugmentedLiquidSourceCode } from '../../documents/DocumentManager';
 import { createLiquidCompletionParams } from './LiquidCompletionParams';
-import { AugmentedSourceCode, DocumentManager } from '../../documents';
 
 describe('Module: LiquidCompletionParams', async () => {
   describe('createLiquidCompletionParams', async () => {
@@ -267,7 +268,7 @@ function createLiquidParamsFromContext(
   documentManager.open(uri, context.replace(regex, ''), 1);
   const params = mockCompletionParams({ position: cursorPosition });
   return createLiquidCompletionParams(
-    documentManager.get(uri)! as AugmentedSourceCode<SourceCodeType.LiquidHtml>,
+    documentManager.get(uri)! as AugmentedLiquidSourceCode,
     params,
   );
 }

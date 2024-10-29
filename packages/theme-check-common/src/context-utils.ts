@@ -5,7 +5,9 @@ import { join } from './path';
 import { SourceCodeType, Theme, Translations } from './types';
 import { isError } from './utils';
 
-export const makeFileExists = (fs: AbstractFileSystem) =>
+export type FileExists = (uri: string) => Promise<boolean>;
+
+export const makeFileExists = (fs: AbstractFileSystem): FileExists =>
   async function fileExists(uri: string) {
     try {
       await fs.stat(uri);

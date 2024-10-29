@@ -6,7 +6,6 @@ import {
   NodeTypes,
   toLiquidHtmlAST,
 } from '@shopify/liquid-html-parser';
-import { SourceCodeType } from '@shopify/theme-check-common';
 import {
   DocumentOnTypeFormattingParams,
   Position,
@@ -14,7 +13,7 @@ import {
   TextEdit,
 } from 'vscode-languageserver-protocol';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { AugmentedSourceCode } from '../../documents';
+import { AugmentedLiquidSourceCode } from '../../documents';
 import { findCurrentNode } from '../../visitor';
 import { BaseOnTypeFormattingProvider, SetCursorPosition } from '../types';
 
@@ -59,7 +58,7 @@ export class HtmlElementAutoclosingOnTypeFormattingProvider
   constructor(private setCursorPosition: SetCursorPosition) {}
 
   onTypeFormatting(
-    document: AugmentedSourceCode<SourceCodeType.LiquidHtml>,
+    document: AugmentedLiquidSourceCode,
     params: DocumentOnTypeFormattingParams,
   ): TextEdit[] | null {
     const textDocument = document.textDocument;
