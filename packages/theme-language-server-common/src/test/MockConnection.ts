@@ -65,7 +65,7 @@ function protocolConnection(requests: EventEmitter, notifications: EventEmitter)
     onUnhandledNotification: vi.fn(),
     sendNotification: vi.fn().mockReturnValue(Promise.resolve()),
     sendProgress: vi.fn(),
-    sendRequest: vi.fn() as any,
+    sendRequest: vi.fn(),
     trace: vi.fn().mockReturnValue(Promise.resolve()),
   } satisfies ProtocolConnection;
 }
