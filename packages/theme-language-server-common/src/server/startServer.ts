@@ -213,6 +213,11 @@ export function startServer(
             glob: '**/*.{liquid,json}',
           },
         },
+        {
+          pattern: {
+            glob: '**/assets/*',
+          },
+        },
       ],
     };
 
