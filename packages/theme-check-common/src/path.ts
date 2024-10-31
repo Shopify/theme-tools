@@ -24,6 +24,13 @@ export function dirname(uri: UriString): UriString {
   return normalize(Utils.dirname(URI.parse(uri)));
 }
 
+export function basename(uri: UriString, ext?: string): string {
+  return URI.parse(uri)
+    .path.split(/(\\|\/)/g)
+    .pop()!
+    .replace(ext ? new RegExp(`${ext}$`) : '', '');
+}
+
 export function fsPath(uri: UriString): string {
   return URI.parse(uri).fsPath;
 }

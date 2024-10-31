@@ -1,4 +1,12 @@
-import { path, SourceCode, SourceCodeType, Theme, toSourceCode } from '@shopify/theme-check-common';
+import {
+  AbstractFileSystem,
+  path,
+  recursiveReadDirectory,
+  SourceCode,
+  SourceCodeType,
+  Theme,
+  toSourceCode,
+} from '@shopify/theme-check-common';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-languageserver-types';
 
@@ -7,11 +15,24 @@ export type AugmentedSourceCode<SCT extends SourceCodeType = SourceCodeType> = S
   uri: URI;
 };
 
-export class DocumentManager {
-  private sourceCodes: Map<URI, AugmentedSourceCode>;
+export type AugmentedLiquidSourceCode = AugmentedSourceCode<SourceCodeType.LiquidHtml>;
+export type AugmentedJsonSourceCode = AugmentedSourceCode<SourceCodeType.JSON>;
 
-  constructor() {
+export class DocumentManager {
+  /**
+   * The sourceCodes map is a map of URIs to SourceCodes. It is used to keep
+   * track of all the open documents in the workspace as well as caching the ASTs
+   * of the documents.
+   *
+   * Files that are opened in the editor have a defined version, while files that
+   * are preloaded have a version of `undefined`.
+   */
+  private sourceCodes: Map<URI, AugmentedSourceCode>;
+  private readonly fs: AbstractFileSystem | undefined;
+
+  constructor(fs?: AbstractFileSystem) {
     this.sourceCodes = new Map();
+    this.fs = fs;
   }
 
   public open(uri: URI, source: string, version: number | undefined) {
@@ -26,14 +47,20 @@ export class DocumentManager {
     return this.sourceCodes.delete(uri);
   }
 
-  public theme(root: URI): AugmentedSourceCode[] {
-    return [...this.sourceCodes.entries()]
-      .filter(([uri]) => uri.startsWith(root))
-      .map(([, sourceCode]) => sourceCode) satisfies Theme;
+  public delete(uri: URI) {
+    return this.sourceCodes.delete(uri);
+  }
+
+  public theme(root: URI, includeFilesFromDisk = false): AugmentedSourceCode[] {
+    return [...this.sourceCodes.values()]
+      .filter((sourceCode) => sourceCode.uri.startsWith(root))
+      .filter(
+        (sourceCode) => includeFilesFromDisk || sourceCode.version !== undefined,
+      ) satisfies Theme;
   }
 
   public get openDocuments(): AugmentedSourceCode[] {
-    return [...this.sourceCodes.values()];
+    return [...this.sourceCodes.values()].filter((sourceCode) => sourceCode.version !== undefined);
   }
 
   public get(uri: URI) {
@@ -53,9 +80,28 @@ export class DocumentManager {
       textDocument: TextDocument.create(
         uri,
         sourceCode.type,
-        sourceCode.version ?? 0,
+        sourceCode.version ?? 0, // create doesn't let us put undefined here.
         sourceCode.source,
       ),
     });
+  }
+
+  /**
+   * The preload method is used to pre-load and pre-parse all the files in the
+   * theme. It is smart and only will load files that are not already in the
+   * DocumentManager.
+   *
+   * Files that are loaded from the AbstractFileSystem will have a version of `undefined`.
+   */
+  public async preload(rootUri: URI) {
+    if (!this.fs) throw new Error('Cannot call preload without a FileSystem');
+    const missingFiles = await recursiveReadDirectory(
+      this.fs,
+      rootUri,
+      ([uri]) => /.(liquid|json)$/.test(uri) && !this.sourceCodes.has(uri),
+    );
+    await Promise.all(
+      missingFiles.map(async (file) => this.set(file, await this.fs!.readFile(file), undefined)),
+    );
   }
 }

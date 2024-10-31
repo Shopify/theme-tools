@@ -31,9 +31,11 @@ import { HoverProvider } from '../hover';
 import { JSONLanguageService } from '../json/JSONLanguageService';
 import { LinkedEditingRangesProvider } from '../linkedEditingRanges/LinkedEditingRangesProvider';
 import { RenameProvider } from '../rename/RenameProvider';
+import { RenameHandler } from '../renamed/RenameHandler';
 import { GetTranslationsForURI } from '../translations';
 import { Dependencies } from '../types';
 import { debounce } from '../utils';
+import { snippetName } from '../utils/uri';
 import { VERSION } from '../version';
 import { CachedFileSystem } from './CachedFileSystem';
 import { Configuration } from './Configuration';
@@ -81,7 +83,7 @@ export function startServer(
   const fileExists = makeFileExists(fs);
   const clientCapabilities = new ClientCapabilities();
   const configuration = new Configuration(connection, clientCapabilities);
-  const documentManager = new DocumentManager();
+  const documentManager = new DocumentManager(fs);
   const diagnosticsManager = new DiagnosticsManager(connection);
   const documentLinksProvider = new DocumentLinksProvider(documentManager, findThemeRootURI);
   const codeActionsProvider = new CodeActionsProvider(documentManager, diagnosticsManager);
@@ -102,6 +104,7 @@ export function startServer(
   const linkedEditingRangesProvider = new LinkedEditingRangesProvider(documentManager);
   const documentHighlightProvider = new DocumentHighlightsProvider(documentManager);
   const renameProvider = new RenameProvider(documentManager);
+  const renameHandler = new RenameHandler(connection, documentManager, fileExists);
 
   async function findThemeRootURI(uri: string) {
     const rootUri = await findRoot(uri, fileExists);
@@ -143,13 +146,8 @@ export function startServer(
   const snippetFilter = ([uri]: FileTuple) => /\.liquid$/.test(uri) && /snippets/.test(uri);
   const getSnippetNamesForURI: GetSnippetNamesForURI = async (uri: string) => {
     const rootUri = await findThemeRootURI(uri);
-    const files = await recursiveReadDirectory(fs, rootUri, snippetFilter);
-    return files.map((uri) =>
-      path
-        .relative(uri, rootUri)
-        .replace(/^snippets\//, '')
-        .replace(/\.liquid$/, ''),
-    );
+    const snippetUris = await recursiveReadDirectory(fs, rootUri, snippetFilter);
+    return snippetUris.map(snippetName);
   };
 
   const getThemeSettingsSchemaForURI = async (uri: string) => {
@@ -213,6 +211,11 @@ export function startServer(
         {
           pattern: {
             glob: '**/*.{liquid,json}',
+          },
+        },
+        {
+          pattern: {
+            glob: '**/assets/*',
           },
         },
       ],
@@ -387,8 +390,10 @@ export function startServer(
   });
   connection.workspace.onDidRenameFiles((params) => {
     const triggerUris = params.files.map((fileRename) => fileRename.newUri);
+    renameHandler.onDidRenameFiles(params);
     runChecks.force(triggerUris);
     for (const { oldUri, newUri } of params.files) {
+      documentManager.delete(oldUri);
       fs.readDirectory.invalidate(path.dirname(oldUri));
       fs.readDirectory.invalidate(path.dirname(newUri));
       fs.readFile.invalidate(oldUri);
@@ -401,6 +406,7 @@ export function startServer(
     const triggerUris = params.files.map((fileDelete) => fileDelete.uri);
     runChecks.force(triggerUris);
     for (const { uri } of params.files) {
+      documentManager.delete(uri);
       fs.readDirectory.invalidate(path.dirname(uri));
       fs.readFile.invalidate(uri);
       fs.stat.invalidate(uri);

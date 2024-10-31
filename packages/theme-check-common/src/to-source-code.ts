@@ -46,5 +46,3 @@ export function toSourceCode(
     };
   }
 }
-
-type MaybeWindowsPath = string;

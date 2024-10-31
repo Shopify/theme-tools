@@ -1,1 +1,6 @@
-export { DocumentManager, AugmentedSourceCode } from './DocumentManager';
+export {
+  DocumentManager,
+  AugmentedSourceCode,
+  AugmentedJsonSourceCode,
+  AugmentedLiquidSourceCode,
+} from './DocumentManager';
