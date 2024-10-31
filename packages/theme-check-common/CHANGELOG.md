@@ -1,5 +1,41 @@
 # @shopify/theme-check-common
 
+## 3.0.0
+
+### Major Changes
+
+- 4b574c1: [Breaking] Replace absolute path concerns with URIs
+
+  This implies a couple of changes:
+
+  - `Config` now holds a `rootUri` instead of `root` path.
+  - `loadConfig` injections needs to change their return value accordingly
+  - In checks,
+    - The context helper `absolutePath` has been replaced by `toUri`
+    - The context helper `relativePath` has been replaced by `toRelativePath`
+  - `SourceCode` objects now hold a `uri` instead of a `path`
+  - `toSourceCode` now accepts a `uri` instead of a `path`
+
+- 4b574c1: [Breaking] Replace fs-based dependency injections with AbstractFileSystem injection
+
+  ```diff
+  runChecks(theme, {
+  - getDefaultTranslations,
+  - getDefaultLocale,
+  - getDefaultSchemaLocale,
+  - getDefaultSchemaTranslations,
+  - fileExists,
+  - fileSize,
+  + fs: new FileSystemImpl(),
+    themeDocset,
+    jsonValidationSet,
+  })
+  ```
+
+### Patch Changes
+
+- 5fab0e9: (Internal) Add path.basename util
+
 ## 2.9.2
 
 ### Patch Changes

@@ -1,5 +1,33 @@
 # @shopify/theme-check-node
 
+## 3.0.0
+
+### Major Changes
+
+- 4b574c1: [Breaking] Replace fs-based dependency injections with AbstractFileSystem injection
+
+  ```diff
+  runChecks(theme, {
+  - getDefaultTranslations,
+  - getDefaultLocale,
+  - getDefaultSchemaLocale,
+  - getDefaultSchemaTranslations,
+  - fileExists,
+  - fileSize,
+  + fs: new FileSystemImpl(),
+    themeDocset,
+    jsonValidationSet,
+  })
+  ```
+
+### Patch Changes
+
+- Updated dependencies [4b574c1]
+- Updated dependencies [4b574c1]
+- Updated dependencies [5fab0e9]
+  - @shopify/theme-check-common@3.0.0
+  - @shopify/theme-check-docs-updater@3.0.0
+
 ## 2.9.2
 
 ### Patch Changes

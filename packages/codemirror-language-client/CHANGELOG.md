@@ -1,5 +1,11 @@
 # @shopify/codemirror-language-client
 
+## 0.7.0
+
+### Minor Changes
+
+- 4b574c1: Expose language client in CodeMirrorLanguageClient
+
 ## 0.6.0
 
 ### Minor Changes

@@ -1,5 +1,70 @@
 # @shopify/theme-language-server-common
 
+## 2.0.0
+
+### Major Changes
+
+- 4b574c1: [Breaking] Replace absolute path concerns with URIs
+
+  This implies a couple of changes:
+
+  - `Config` now holds a `rootUri` instead of `root` path.
+  - `loadConfig` injections needs to change their return value accordingly
+  - In checks,
+    - The context helper `absolutePath` has been replaced by `toUri`
+    - The context helper `relativePath` has been replaced by `toRelativePath`
+  - `SourceCode` objects now hold a `uri` instead of a `path`
+  - `toSourceCode` now accepts a `uri` instead of a `path`
+
+- 4b574c1: [Breaking] Replace fs-based dependency injection by an AbstractFileSystem injection
+
+  ```diff
+  + class FileSystemImpl implements AbstractFileSystem {
+  +   /* ... */
+  + }
+
+  startServer(worker, {
+  - findRootURI,
+  - fileExists,
+  - fileSize,
+  - getDefaultTranslationsFactory,
+  - getDefaultLocaleFactory,
+  - getDefaultSchemaTranslationsFactory,
+  - getDefaultSchemaLocaleFactory,
+  - getThemeSettingsSchemaForRootURI,
+  + fs: new FileSystemImpl(),
+    loadConfig,
+    log,
+    themeDocset,
+    jsonValidationSet,
+  })
+  ```
+
+### Minor Changes
+
+- 5fab0e9: Add on snippet rename automatic refactor support
+
+  When `snippets/*.liquid` files are renamed, we'll change all the old references to point to the new files:
+
+  - `{% render 'oldName' %}` -> `{% render 'newName' %}`
+  - `{% include 'oldName' %}` -> `{% include 'newName' %}`
+
+- 5fab0e9: Add on asset rename automatic refactor support
+
+  When `assets/*` files are renamed, we'll change all the old references to point to the new files:
+
+  - `{{ 'oldName.js' | asset_url }}` -> `{{ 'newName.js' | asset_url }}`
+  - `{% echo 'oldName.js' | asset_url %}` -> `{% echo 'newName.js' | asset_url %}`
+
+  Works with `.(js|css).liquid` asset files as well.
+
+### Patch Changes
+
+- Updated dependencies [4b574c1]
+- Updated dependencies [4b574c1]
+- Updated dependencies [5fab0e9]
+  - @shopify/theme-check-common@3.0.0
+
 ## 1.14.0
 
 ### Minor Changes
