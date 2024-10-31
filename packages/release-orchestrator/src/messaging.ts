@@ -1,3 +1,4 @@
+import { spawn } from 'node:child_process';
 import { generateMarkdown } from './generate-markdown';
 import { getCurrentDateFormatted } from './get-current-date-formatted';
 import { run } from './utils';
@@ -6,10 +7,14 @@ import type { StatusProperty } from './types';
 const buildGithubPRLink = (branchName: string, title: string, description: string): string => {
   const encodedTitle = encodeURIComponent(title);
   const encodedDescription = encodeURIComponent(description);
-
-  const url = `https://github.com/Shopify/theme-tools/compare/${branchName}?expand=1&title=${encodedTitle}&body=${encodedDescription}`;
-
-  return url;
+  if (encodedDescription.length > 2083) {
+    console.log(
+      'The PR description is too long to be included in the URL. The PR description has been placed in your clipboard.',
+    );
+    return `https://github.com/Shopify/theme-tools/compare/${branchName}?expand=1&title=${encodedTitle}`;
+  } else {
+    return `https://github.com/Shopify/theme-tools/compare/${branchName}?expand=1&title=${encodedTitle}&body=${encodedDescription}`;
+  }
 };
 
 const noop = () => {};
@@ -33,6 +38,9 @@ ${prLink}
   // Open the page automatically in your default browser. Why copy/paste
   // from terminal when you don't have to :)
   run(`open '${prLink}'`).then(noop, noop);
+
+  // Copy the pr description to clipboard in case the pr description is too long
+  spawn('pbcopy').stdin.end(prDescription);
 
   console.log(message);
 };

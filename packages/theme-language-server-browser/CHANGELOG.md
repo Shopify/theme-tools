@@ -1,5 +1,75 @@
 # @shopify/theme-language-server-browser
 
+## 2.0.0
+
+### Major Changes
+
+- 4b574c1: [Breaking] Replace fs-based dependency injection by an AbstractFileSystem injection
+
+  ```diff
+  + class FileSystemImpl implements AbstractFileSystem {
+  +   /* ... */
+  + }
+
+  startServer(worker, {
+  - findRootURI,
+  - fileExists,
+  - fileSize,
+  - getDefaultTranslationsFactory,
+  - getDefaultLocaleFactory,
+  - getDefaultSchemaTranslationsFactory,
+  - getDefaultSchemaLocaleFactory,
+  - getThemeSettingsSchemaForRootURI,
+  + fs: new FileSystemImpl(),
+    loadConfig,
+    log,
+    themeDocset,
+    jsonValidationSet,
+  })
+  ```
+
+- 4b574c1: Expose language server connection in Public API
+
+  This lets you send non-standard LSP messages to the client.
+
+  ```ts
+  import {
+    getConnection,
+    startServer,
+    AbstractFileSystem,
+  } from '@shopify/theme-language-server-browser';
+
+  class MainThreadFileSystem implements AbstractFileSystem {
+    constructor(private connection) {}
+    readFile(uri) {
+      return this.connection.sendRequest('fs/readFile', uri);
+    }
+    readDirectory(uri) {
+      return this.connection.sendRequest('fs/readDirectory', uri);
+    }
+    readFile(uri) {
+      return this.connection.sendRequest('fs/stat', uri);
+    }
+  }
+
+  const worker = self as any as Worker;
+  const connection = getConnection(worker);
+  const fs = new MainThreadFileSystem(connection);
+  const dependencies = {
+    /* ... */
+  };
+
+  startServer(worker, dependencies, connection);
+  ```
+
+### Patch Changes
+
+- Updated dependencies [5fab0e9]
+- Updated dependencies [4b574c1]
+- Updated dependencies [5fab0e9]
+- Updated dependencies [4b574c1]
+  - @shopify/theme-language-server-common@2.0.0
+
 ## 1.14.0
 
 ### Patch Changes

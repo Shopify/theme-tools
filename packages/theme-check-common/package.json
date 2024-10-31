@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-check-common",
-  "version": "2.9.2",
+  "version": "3.0.0",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

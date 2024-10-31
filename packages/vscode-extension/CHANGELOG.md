@@ -1,5 +1,48 @@
 ## theme-check-vscode
 
+## 3.0.0
+
+### Major Changes
+
+- 4b574c1: Add support for virtual file systems
+
+  The Shopify Liquid VS Code extension now works in a large set of new environments:
+
+  - Remote files
+  - Git backed files
+  - VS Code for the Web
+
+- 4b574c1: [BREAKING] Remove support for ruby language server
+
+### Minor Changes
+
+- 5fab0e9: Add on snippet rename automatic refactor support
+
+  When `snippets/*.liquid` files are renamed, we'll change all the old references to point to the new files:
+
+  - `{% render 'oldName' %}` -> `{% render 'newName' %}`
+  - `{% include 'oldName' %}` -> `{% include 'newName' %}`
+
+- 5fab0e9: Add on asset rename automatic refactor support
+
+  When `assets/*` files are renamed, we'll change all the old references to point to the new files:
+
+  - `{{ 'oldName.js' | asset_url }}` -> `{{ 'newName.js' | asset_url }}`
+  - `{% echo 'oldName.js' | asset_url %}` -> `{% echo 'newName.js' | asset_url %}`
+
+  Works with `.(js|css).liquid` asset files as well.
+
+### Patch Changes
+
+- Updated dependencies [4b574c1]
+- Updated dependencies [4b574c1]
+- Updated dependencies [4b574c1]
+- Updated dependencies [5fab0e9]
+- Updated dependencies [4b574c1]
+  - @shopify/theme-check-common@3.0.0
+  - @shopify/theme-language-server-browser@2.0.0
+  - @shopify/theme-language-server-node@2.0.0
+
 ## 2.6.0
 
 ### Minor Changes
