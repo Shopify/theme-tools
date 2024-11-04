@@ -55,11 +55,7 @@ export const TranslationKeyExists: LiquidCheckDefinition = {
       },
 
       async LiquidRawTag(node) {
-        if (node.name !== 'schema') {
-          return;
-        }
-
-        if (node.body.kind !== 'json') {
+        if (node.name !== 'schema' || node.body.kind !== 'json') {
           return;
         }
 
