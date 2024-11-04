@@ -79,7 +79,7 @@ export async function themeCheckRun(
   };
 }
 
-async function getThemeAndConfig(
+export async function getThemeAndConfig(
   root: string,
   configPath?: string,
 ): Promise<{ theme: Theme; config: Config }> {
