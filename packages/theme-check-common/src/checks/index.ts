@@ -6,6 +6,7 @@ import { AssetSizeAppBlockCSS } from './asset-size-app-block-css';
 import { AssetSizeAppBlockJavaScript } from './asset-size-app-block-javascript';
 import { AssetSizeCSS } from './asset-size-css';
 import { AssetSizeJavaScript } from './asset-size-javascript';
+import { BlockTargeting } from './block-targeting';
 import { CdnPreconnect } from './cdn-preconnect';
 import { CaptureOnContentForBlock } from './capture-on-content-for-block';
 import { ContentForHeaderModification } from './content-for-header-modification';
@@ -42,6 +43,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AssetSizeAppBlockJavaScript,
   AssetSizeCSS,
   AssetSizeJavaScript,
+  BlockTargeting,
   CaptureOnContentForBlock,
   CdnPreconnect,
   ContentForHeaderModification,
