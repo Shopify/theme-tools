@@ -78,6 +78,9 @@ UnknownFilter:
 UnusedAssign:
   enabled: true
   severity: 1
+ValidBlock:
+  enabled: true
+  severity: 1
 ValidHTMLTranslation:
   enabled: true
   severity: 1
