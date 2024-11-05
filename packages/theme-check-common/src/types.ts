@@ -1,4 +1,5 @@
 import { NodeTypes as LiquidHtmlNodeTypes, LiquidHtmlNode } from '@shopify/liquid-html-parser';
+import { JSONDocument } from 'vscode-json-languageservice';
 
 import {
   ArrayNode,
@@ -310,6 +311,11 @@ export interface Dependencies {
   getMetafieldDefinitions?: (rootUri: UriString) => Promise<MetafieldDefinitionMap>;
 }
 
+export type ParseJSON<T extends SourceCodeType> = (
+  sourceCode: SourceCode<T>,
+  jsonString: string,
+) => JSONDocument;
+
 export type ValidateJSON<T extends SourceCodeType> = (
   file: SourceCode<T>,
   jsonString: string,
@@ -331,6 +337,7 @@ type StaticContextProperties<T extends SourceCodeType> = T extends SourceCodeTyp
       toUri(relativePath: RelativePath): UriString;
       file: SourceCode<T>;
       validateJSON?: ValidateJSON<T>;
+      parseJSON?: ParseJSON<T>;
     }
   : never;
 
