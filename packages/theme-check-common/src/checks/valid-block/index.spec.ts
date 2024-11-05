@@ -113,8 +113,10 @@ describe('Module: ValidBlock', () => {
 
     const offenses = await check(theme, [ValidBlock]);
     expect(offenses).to.have.length(1);
-    expect(offenses[0].message).to.equal("Block file 'blocks/invalid_preset_block.liquid' does not exist");
-  }); 
+    expect(offenses[0].message).to.equal(
+      "Block file 'blocks/invalid_preset_block.liquid' does not exist",
+    );
+  });
 
   it('should ignore @app and @theme block types', async () => {
     const theme: MockTheme = {
