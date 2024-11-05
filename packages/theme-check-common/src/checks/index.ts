@@ -6,7 +6,6 @@ import { AssetSizeAppBlockCSS } from './asset-size-app-block-css';
 import { AssetSizeAppBlockJavaScript } from './asset-size-app-block-javascript';
 import { AssetSizeCSS } from './asset-size-css';
 import { AssetSizeJavaScript } from './asset-size-javascript';
-import { BlockTargeting } from './block-targeting';
 import { CdnPreconnect } from './cdn-preconnect';
 import { CaptureOnContentForBlock } from './capture-on-content-for-block';
 import { ContentForHeaderModification } from './content-for-header-modification';
@@ -29,6 +28,7 @@ import { UnclosedHTMLElement } from './unclosed-html-element';
 import { UndefinedObject } from './undefined-object';
 import { UnknownFilter } from './unknown-filter';
 import { UnusedAssign } from './unused-assign';
+import { ValidBlockTarget } from './valid-block-target';
 import { ValidHTMLTranslation } from './valid-html-translation';
 import { ValidSchema } from './valid-schema';
 import { ValidJSON } from './valid-json';
@@ -43,7 +43,6 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AssetSizeAppBlockJavaScript,
   AssetSizeCSS,
   AssetSizeJavaScript,
-  BlockTargeting,
   CaptureOnContentForBlock,
   CdnPreconnect,
   ContentForHeaderModification,
@@ -67,6 +66,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   UniqueStaticBlockId,
   UnknownFilter,
   UnusedAssign,
+  ValidBlockTarget,
   ValidHTMLTranslation,
   ValidJSON,
   ValidSchema,
