@@ -59,10 +59,11 @@ export const BlockTargeting: LiquidCheckDefinition = {
         const validatePresetBlocks = (blocks: any[]) => {
           for (const block of blocks) {
             if (block.type) {
-              // Check if block type is valid (either in schema blocks or @app/@theme)
+              // Check if block type is valid (either in schema blocks or @theme)
+              const isPrivateBlockType = block.type.startsWith('_');
               if (
                 !validBlockTypes.has(block.type) &&
-                !validBlockTypes.has('@theme') &&
+                (isPrivateBlockType || !validBlockTypes.has('@theme')) &&
                 !reportedTypes.has(block.type)
               ) {
                 const occurrences = findBlockTypes(jsonString);

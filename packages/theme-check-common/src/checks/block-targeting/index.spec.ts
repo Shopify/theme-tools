@@ -179,4 +179,116 @@ describe('Module: BlockTargeting', () => {
     const offenses = await check(theme, [BlockTargeting]);
     expect(offenses).to.be.empty;
   });
+
+  it('should report errors for private blocks even without @theme', async () => {
+    const theme: MockTheme = {
+      'sections/private-blocks.liquid': `
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "@theme",
+              "name": "Theme"
+            }
+          ],
+          "presets": [
+            {
+              "name": "Default",
+              "blocks": [
+                {
+                  "type": "_private_block"
+                }
+              ]
+            }
+          ]
+        }
+        {% endschema %}
+      `,
+    };
+
+    const offenses = await check(theme, [BlockTargeting]);
+    expect(offenses).to.have.length(1);
+    expect(offenses[0].message).to.equal("Preset block type '_private_block' is not valid");
+  });
+
+  it('should not report errors for private blocks when listed at root level', async () => {
+    const theme: MockTheme = {
+      'sections/private-blocks.liquid': `
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "@theme",
+              "name": "Theme"
+            },
+            {
+              "type": "_private_block",
+              "name": "Private"
+            }
+          ],
+          "presets": [
+            {
+              "name": "Default",
+              "blocks": [
+                {
+                  "type": "_private_block"
+                }
+              ]
+            }
+          ]
+        }
+        {% endschema %}
+      `,
+    };
+
+    const offenses = await check(theme, [BlockTargeting]);
+    expect(offenses).to.be.empty;
+  });
+
+  it('should handle mixed private and public blocks correctly', async () => {
+    const theme: MockTheme = {
+      'sections/mixed-blocks.liquid': `
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "@theme",
+              "name": "Theme"
+            },
+            {
+              "type": "_private_block",
+              "name": "Private"
+            },
+            {
+              "type": "_another_private",
+              "name": "Another Private"
+            }
+          ],
+          "presets": [
+            {
+              "name": "Default",
+              "blocks": [
+                {
+                  "type": "_private_block"
+                },
+                {
+                  "type": "invalid_public_block"
+                },
+                {
+                  "type": "_another_private"
+                }
+              ]
+            }
+          ]
+        }
+        {% endschema %}
+      `,
+    };
+
+    const offenses = await check(theme, [BlockTargeting]);
+    expect(offenses).to.be.empty;
+  });
 });
