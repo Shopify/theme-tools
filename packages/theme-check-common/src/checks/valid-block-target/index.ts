@@ -37,7 +37,7 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
 
         async function checkBlockFileExistence(blockType: string, locations: Location[]) {
           // Skip check for theme/app blocks
-          if (blockType.startsWith('@')) {
+          if (blockType === '@theme' || blockType === '@app') {
             return;
           }
 
@@ -121,7 +121,7 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
             // Iterate through all locations for this preset type
             for (const [startIndex, length] of presetLocations) {
               context.report({
-                message: `Preset block type "${presetType}" does not reference a valid root-level block type`,
+                message: `Preset block type '${presetType}' does not reference a valid root-level block type`,
                 startIndex: node.blockStartPosition.end + startIndex,
                 endIndex: node.blockStartPosition.end + startIndex + length,
               });
