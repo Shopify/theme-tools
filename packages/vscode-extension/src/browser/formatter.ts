@@ -11,9 +11,6 @@ export const vscodePrettierFormat: Format = async (textDocument) => {
   const text = textDocument.getText();
   return prettier.format(text, {
     parser: 'liquid-html',
-    plugins: [
-      LiquidPrettierPlugin as any,
-      babelPrettierPlugin as any,
-    ],
+    plugins: [LiquidPrettierPlugin as any, babelPrettierPlugin as any],
   });
 };
