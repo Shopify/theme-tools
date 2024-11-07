@@ -586,6 +586,45 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.markup.expression.lookups').to.eql([]);
         }
       });
+
+      it('should parse content_for "blocks"', () => {
+        for (const { toCST, expectPath } of testCases) {
+          cst = toCST(`{% content_for "blocks" -%}`);
+          expectPath(cst, '0.type').to.equal('LiquidTag');
+          expectPath(cst, '0.name').to.equal('content_for');
+          expectPath(cst, '0.markup.type').to.equal('ContentForMarkup');
+          expectPath(cst, '0.markup.contentForType.type').to.equal('String');
+          expectPath(cst, '0.markup.contentForType.value').to.equal('blocks');
+          expectPath(cst, '0.markup.contentForType.single').to.equal(false);
+          expectPath(cst, '0.markup.args').to.have.lengthOf(0);
+          expectPath(cst, '0.whitespaceStart').to.equal(null);
+          expectPath(cst, '0.whitespaceEnd').to.equal('-');
+        }
+      });
+
+      it('should parse content_for "block", id: "my-id", type: "my-block"', () => {
+        for (const { toCST, expectPath } of testCases) {
+          cst = toCST(`{% content_for "block", id: "block-id", type: "block-type" -%}`);
+          expectPath(cst, '0.type').to.equal('LiquidTag');
+          expectPath(cst, '0.name').to.equal('content_for');
+          expectPath(cst, '0.markup.type').to.equal('ContentForMarkup');
+          expectPath(cst, '0.markup.contentForType.type').to.equal('String');
+          expectPath(cst, '0.markup.contentForType.value').to.equal('block');
+          expectPath(cst, '0.markup.contentForType.single').to.equal(false);
+          expectPath(cst, '0.markup.args').to.have.lengthOf(2);
+          const namedArguments = [
+            { name: 'id', valueType: 'String' },
+            { name: 'type', valueType: 'String' },
+          ];
+          namedArguments.forEach(({ name, valueType }, i) => {
+            expectPath(cst, `0.markup.args.${i}.type`).to.equal('NamedArgument');
+            expectPath(cst, `0.markup.args.${i}.name`).to.equal(name);
+            expectPath(cst, `0.markup.args.${i}.value.type`).to.equal(valueType);
+          });
+          expectPath(cst, '0.whitespaceStart').to.equal(null);
+          expectPath(cst, '0.whitespaceEnd').to.equal('-');
+        }
+      });
     });
 
     describe('Case: LiquidTagOpen', () => {

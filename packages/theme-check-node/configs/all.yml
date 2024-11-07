@@ -97,6 +97,9 @@ UnknownFilter:
 UnusedAssign:
   enabled: true
   severity: 1
+ValidContentForArguments:
+  enabled: true
+  severity: 0
 ValidHTMLTranslation:
   enabled: true
   severity: 1

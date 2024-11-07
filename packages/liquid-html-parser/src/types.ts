@@ -37,6 +37,7 @@ export enum NodeTypes {
   LogicalExpression = 'LogicalExpression',
 
   AssignMarkup = 'AssignMarkup',
+  ContentForMarkup = 'ContentForMarkup',
   CycleMarkup = 'CycleMarkup',
   ForMarkup = 'ForMarkup',
   PaginateMarkup = 'PaginateMarkup',
@@ -50,6 +51,7 @@ export enum NamedTags {
   assign = 'assign',
   capture = 'capture',
   case = 'case',
+  content_for = 'content_for',
   cycle = 'cycle',
   decrement = 'decrement',
   echo = 'echo',

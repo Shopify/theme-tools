@@ -11,14 +11,20 @@ export class RenderSnippetCompletionProvider implements Provider {
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
 
-    const { node } = params.completionContext;
+    const { node, ancestors } = params.completionContext;
+    const parentNode = ancestors.at(-1);
 
-    if (!node || node.type !== NodeTypes.RenderMarkup || node.snippet.type !== NodeTypes.String) {
+    if (
+      !node ||
+      !parentNode ||
+      node.type !== NodeTypes.String ||
+      parentNode.type !== NodeTypes.RenderMarkup
+    ) {
       return [];
     }
 
     const options = await this.getSnippetNamesForURI(params.textDocument.uri);
-    const partial = node.snippet.value;
+    const partial = node.value;
 
     return options
       .filter((option) => option.startsWith(partial))

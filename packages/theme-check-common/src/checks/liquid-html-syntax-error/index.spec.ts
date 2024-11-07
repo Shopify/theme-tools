@@ -86,7 +86,7 @@ describe('Module: LiquidHTMLSyntaxError', () => {
     const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).to.equal(
-      `SyntaxError: expected "#", a letter, "when", "sections", "section", "render", "liquid", "layout", "increment", "include", "elsif", "else", "echo", "decrement", "cycle", "continue", "break", "assign", "tablerow", "unless", "if", "ifchanged", "for", "case", "capture", "paginate", "form", "end", "style", "stylesheet", "schema", "javascript", "raw", or "comment"`,
+      `SyntaxError: expected "#", a letter, "when", "sections", "section", "render", "liquid", "layout", "increment", "include", "elsif", "else", "echo", "decrement", "content_for", "cycle", "continue", "break", "assign", "tablerow", "unless", "if", "ifchanged", "for", "case", "capture", "paginate", "form", "end", "style", "stylesheet", "schema", "javascript", "raw", or "comment"`,
     );
   });
 

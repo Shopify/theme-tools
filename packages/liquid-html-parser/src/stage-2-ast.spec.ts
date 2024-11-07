@@ -579,6 +579,47 @@ describe('Unit: Stage 2 (AST)', () => {
           });
         });
       });
+
+      describe('Case: content_for', () => {
+        it('should parse content_for tags with no arguments', () => {
+          for (const { toAST, expectPath, expectPosition } of testCases) {
+            ast = toAST(`{% content_for "blocks" %}`);
+            expectPath(ast, 'children.0.type').to.equal('LiquidTag');
+            expectPath(ast, 'children.0.name').to.equal('content_for');
+            expectPath(ast, 'children.0.markup.type').to.equal('ContentForMarkup');
+            expectPath(ast, 'children.0.markup.contentForType.type').to.equal('String');
+            expectPath(ast, 'children.0.markup.contentForType.value').to.equal('blocks');
+            expectPosition(ast, 'children.0');
+            expectPosition(ast, 'children.0.markup');
+          }
+        });
+
+        it('should parse content_for named expression arguments', () => {
+          for (const { toAST, expectPath, expectPosition } of testCases) {
+            ast = toAST(`{% content_for "snippet", s: 'string', n: 10, r: (1..2), v: variable %}`);
+            expectPath(ast, 'children.0.type').to.equal('LiquidTag');
+            expectPath(ast, 'children.0.name').to.equal('content_for');
+            expectPath(ast, 'children.0.markup.type').to.equal('ContentForMarkup');
+            expectPath(ast, 'children.0.markup.contentForType.type').to.equal('String');
+            expectPath(ast, 'children.0.markup.contentForType.value').to.equal('snippet');
+            expectPath(ast, 'children.0.markup.args').to.have.lengthOf(4);
+            expectPath(ast, 'children.0.markup.args.0.type').to.equal('NamedArgument');
+            expectPath(ast, 'children.0.markup.args.0.name').to.equal('s');
+            expectPath(ast, 'children.0.markup.args.0.value.type').to.equal('String');
+            expectPath(ast, 'children.0.markup.args.1.type').to.equal('NamedArgument');
+            expectPath(ast, 'children.0.markup.args.1.name').to.equal('n');
+            expectPath(ast, 'children.0.markup.args.1.value.type').to.equal('Number');
+            expectPath(ast, 'children.0.markup.args.2.type').to.equal('NamedArgument');
+            expectPath(ast, 'children.0.markup.args.2.name').to.equal('r');
+            expectPath(ast, 'children.0.markup.args.2.value.type').to.equal('Range');
+            expectPath(ast, 'children.0.markup.args.3.type').to.equal('NamedArgument');
+            expectPath(ast, 'children.0.markup.args.3.name').to.equal('v');
+            expectPath(ast, 'children.0.markup.args.3.value.type').to.equal('VariableLookup');
+            expectPosition(ast, 'children.0');
+            expectPosition(ast, 'children.0.markup');
+          }
+        });
+      });
     });
 
     it(`should parse liquid inline comments`, () => {

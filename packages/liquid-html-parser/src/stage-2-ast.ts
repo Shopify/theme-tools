@@ -72,6 +72,7 @@ import {
   ConcreteLiquidRawTag,
   LiquidHtmlConcreteNode,
   ConcreteLiquidTagBaseCase,
+  ConcreteLiquidTagContentForMarkup,
 } from './stage-1-cst';
 import { Comparators, NamedTags, NodeTypes, nonTraversableProperties, Position } from './types';
 import { assertNever, deepGet, dropLast } from './utils';
@@ -97,6 +98,7 @@ export type LiquidHtmlNode =
   | LiquidFilter
   | LiquidNamedArgument
   | AssignMarkup
+  | ContentForMarkup
   | CycleMarkup
   | ForMarkup
   | RenderMarkup
@@ -188,6 +190,7 @@ export type LiquidTagNamed =
   | LiquidTagAssign
   | LiquidTagCase
   | LiquidTagCapture
+  | LiquidTagContentFor
   | LiquidTagCycle
   | LiquidTagDecrement
   | LiquidTagEcho
@@ -359,6 +362,10 @@ export interface PaginateMarkup extends ASTNode<NodeTypes.PaginateMarkup> {
   args: LiquidNamedArgument[];
 }
 
+/** https://shopify.dev/docs/api/liquid/tags#content_for */
+export interface LiquidTagContentFor
+  extends LiquidTagNode<NamedTags.content_for, ContentForMarkup> {}
+
 /** https://shopify.dev/docs/api/liquid/tags#render */
 export interface LiquidTagRender extends LiquidTagNode<NamedTags.render, RenderMarkup> {}
 
@@ -376,6 +383,14 @@ export interface LiquidTagLayout extends LiquidTagNode<NamedTags.layout, LiquidE
 
 /** https://shopify.dev/docs/api/liquid/tags#liquid */
 export interface LiquidTagLiquid extends LiquidTagNode<NamedTags.liquid, LiquidStatement[]> {}
+
+/** {% content_for 'contentForType' [...namedArguments] %} */
+export interface ContentForMarkup extends ASTNode<NodeTypes.ContentForMarkup> {
+  /** {% content_for 'contentForType' %} */
+  contentForType: LiquidString;
+  /** {% content_for 'contentForType', arg1: value1, arg2: value2 %} */
+  args: LiquidNamedArgument[];
+}
 
 /** {% render 'snippet' [(with|for) variable [as alias]], [...namedArguments] %} */
 export interface RenderMarkup extends ASTNode<NodeTypes.RenderMarkup> {
@@ -1408,6 +1423,14 @@ function toNamedLiquidTag(
       };
     }
 
+    case NamedTags.content_for: {
+      return {
+        ...liquidTagBaseAttributes(node),
+        name: node.name,
+        markup: toContentForMarkup(node.markup),
+      };
+    }
+
     case NamedTags.include:
     case NamedTags.render: {
       return {
@@ -1682,6 +1705,16 @@ function toRawMarkupKindFromLiquidNode(node: ConcreteLiquidRawTag): RawMarkupKin
     default:
       return RawMarkupKinds.text;
   }
+}
+
+function toContentForMarkup(node: ConcreteLiquidTagContentForMarkup): ContentForMarkup {
+  return {
+    type: NodeTypes.ContentForMarkup,
+    contentForType: toExpression(node.contentForType) as LiquidString,
+    args: node.args.map(toNamedArgument),
+    position: position(node),
+    source: node.source,
+  };
 }
 
 function toRenderMarkup(node: ConcreteLiquidTagRenderMarkup): RenderMarkup {

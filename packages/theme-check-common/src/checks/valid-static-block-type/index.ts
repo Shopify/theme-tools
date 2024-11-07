@@ -1,3 +1,4 @@
+import { NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { doesFileExist } from '../../utils/file-utils';
 import { isContentForBlock } from '../../utils/markup';
@@ -19,8 +20,6 @@ export const ValidStaticBlockType: LiquidCheckDefinition = {
   },
 
   create(context) {
-    const typeRegex = /type:\s*["'](\S+)["']/;
-
     return {
       async LiquidTag(node) {
         if (node.name !== 'content_for') {
@@ -31,30 +30,25 @@ export const ValidStaticBlockType: LiquidCheckDefinition = {
           return;
         }
 
-        const typeValueMatch = typeRegex.exec(node.markup);
-
-        if (typeValueMatch == null) {
-          return;
+        const typeArg = node.markup.args.find((arg) => arg.name === 'type');
+        if (!typeArg) {
+          return; // covered by VariableContentForArguments
         }
-        const [entireTypeTerm, filteredTypeValue] = typeValueMatch;
 
-        const relativePath = `blocks/${filteredTypeValue}.liquid`;
+        const typeArgValueNode = typeArg.value;
+        if (typeArgValueNode.type !== NodeTypes.String) {
+          return; // covered by VariableContentForArguments
+        }
+
+        const blockName = typeArgValueNode.value;
+        const relativePath = `blocks/${blockName}.liquid`;
         const fileExists = await doesFileExist(context, relativePath);
 
         if (!fileExists) {
-          const [blockType] = node.markup.split(',');
-          const nodeInSource = node.source.substring(node.position.start);
-          const contentForBlockStartIndex = nodeInSource.indexOf(blockType);
-
-          const typeParamIndex = typeValueMatch.index + contentForBlockStartIndex;
-          const typeParamValueLength = entireTypeTerm.length;
-
-          const typeParamValueEndIndex = typeParamIndex + typeParamValueLength;
-
           context.report({
-            message: `The type '${filteredTypeValue}' is not valid, use a type that exists in the blocks directory`,
-            startIndex: node.position.start + typeParamIndex,
-            endIndex: node.position.start + typeParamValueEndIndex,
+            message: `'blocks/${blockName}.liquid' does not exist`,
+            startIndex: typeArgValueNode.position.start,
+            endIndex: typeArgValueNode.position.end,
             suggest: [],
           });
         }

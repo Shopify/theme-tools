@@ -363,11 +363,23 @@ function findCurrentNode(
         break;
       }
 
+      case NodeTypes.ContentForMarkup: {
+        if (isNotEmpty(current.args)) {
+          finder.current = last(current.args);
+        } else if (isCovered(cursor, current.contentForType.position)) {
+          finder.current = current.contentForType;
+        }
+
+        break;
+      }
+
       case NodeTypes.RenderMarkup: {
         if (isNotEmpty(current.args)) {
           finder.current = last(current.args);
         } else if (current.variable && isCovered(cursor, current.variable.position)) {
           finder.current = current.variable;
+        } else if (current.snippet && isCovered(cursor, current.snippet.position)) {
+          finder.current = current.snippet;
         }
 
         break;
