@@ -1,5 +1,15 @@
 ## theme-check-vscode
 
+## 3.0.1
+
+### Patch Changes
+
+- 4a875bb: Add babel prettier plugin manually to fix the formatting in web version of the extension
+- Updated dependencies [6014dfd]
+  - @shopify/theme-check-common@3.1.0
+  - @shopify/theme-language-server-browser@2.1.0
+  - @shopify/theme-language-server-node@2.1.0
+
 ## 3.0.0
 
 ### Major Changes
