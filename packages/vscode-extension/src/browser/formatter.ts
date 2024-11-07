@@ -1,5 +1,6 @@
 import { Format } from '../common/formatter';
 import LiquidPrettierPlugin from '@shopify/prettier-plugin-liquid';
+import babelPrettierPlugin from 'prettier/parser-babel';
 import * as prettier from 'prettier/standalone';
 
 export const vscodePrettierFormat: Format = async (textDocument) => {
@@ -10,6 +11,9 @@ export const vscodePrettierFormat: Format = async (textDocument) => {
   const text = textDocument.getText();
   return prettier.format(text, {
     parser: 'liquid-html',
-    plugins: [LiquidPrettierPlugin as any],
+    plugins: [
+      LiquidPrettierPlugin as any,
+      babelPrettierPlugin as any,
+    ],
   });
 };
