@@ -268,6 +268,37 @@ type CheckLifecycleMethods<T extends SourceCodeType> = {
   onCodePathEnd(file: SourceCode<T> & { ast: AST[T] }): Promise<void>;
 };
 
+export type MetafieldCategory =
+  | 'article'
+  | 'blog'
+  | 'brand'
+  | 'collection'
+  | 'company'
+  | 'company_location'
+  | 'location'
+  | 'market'
+  | 'order'
+  | 'page'
+  | 'product'
+  | 'variant'
+  | 'shop';
+
+export type MetafieldDefinitionMap = {
+  [key in MetafieldCategory]: MetafieldDefinition[];
+};
+
+export type MetafieldDefinition = {
+  name: string;
+  namespace: string;
+  description: string;
+  type: MetafieldDefinitionType;
+};
+
+type MetafieldDefinitionType = {
+  category: string;
+  name: string;
+};
+
 export type Translations = {
   [k in string]: string | Translations;
 };
@@ -276,6 +307,7 @@ export interface Dependencies {
   fs: AbstractFileSystem;
   themeDocset?: ThemeDocset;
   jsonValidationSet?: JsonValidationSet;
+  getMetafieldDefinitions?: (rootUri: UriString) => Promise<MetafieldDefinitionMap>;
 }
 
 export type ValidateJSON<T extends SourceCodeType> = (

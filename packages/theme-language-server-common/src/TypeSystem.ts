@@ -14,6 +14,8 @@ import {
   ArrayReturnType,
   DocsetEntry,
   FilterEntry,
+  MetafieldDefinitionMap,
+  MetafieldDefinition,
   ObjectEntry,
   ReturnType,
   SourceCodeType,
@@ -21,6 +23,7 @@ import {
   isError,
   parseJSON,
   path,
+  FETCHED_METAFIELD_CATEGORIES,
 } from '@shopify/theme-check-common';
 import {
   GetThemeSettingsSchemaForURI,
@@ -35,6 +38,7 @@ export class TypeSystem {
   constructor(
     private readonly themeDocset: ThemeDocset,
     private readonly getThemeSettingsSchemaForURI: GetThemeSettingsSchemaForURI,
+    private readonly getMetafieldDefinitions: (rootUri: string) => Promise<MetafieldDefinitionMap>,
   ) {}
 
   async inferType(
@@ -109,9 +113,10 @@ export class TypeSystem {
    * e.g. objectMap['product'] returns the product ObjectEntry.
    */
   public objectMap = async (uri: string, ast: LiquidHtmlNode): Promise<ObjectMap> => {
-    const [objectMap, themeSettingProperties] = await Promise.all([
+    const [objectMap, themeSettingProperties, metafieldDefinitionsObjectMap] = await Promise.all([
       this._objectMap(),
       this.themeSettingProperties(uri),
+      this.metafieldDefinitionsObjectMap(uri),
     ]);
 
     // Here we shallow mutate `settings.properties` to have the properties made
@@ -122,7 +127,26 @@ export class TypeSystem {
         ...(objectMap.settings ?? {}),
         properties: themeSettingProperties,
       },
+      ...customMetafieldTypeEntries(objectMap['metafield']),
+      ...metafieldDefinitionsObjectMap,
     };
+
+    // For each metafield definition fetched, we need to override existing types with `metafields` property
+    // to `${category}_metafield`.
+    //
+    // WARNING: Since we aren't cloning the object, we are mutating the original type for all themes in
+    // the workspace. However, this is fine since these changes are not unique to a theme.
+    for (let category of FETCHED_METAFIELD_CATEGORIES) {
+      if (!result[category]) continue;
+
+      let metafieldsProperty = result[category].properties?.find(
+        (prop) => prop.name === 'metafields',
+      );
+
+      if (!metafieldsProperty) continue;
+
+      metafieldsProperty.return_type = [{ type: `${category}_metafields`, name: '' }];
+    }
 
     // Deal with sections/file.liquid section.settings by infering the type from the {% schema %}
     if (/[\/\\]sections[\/\\]/.test(uri) && result.section) {
@@ -162,6 +186,71 @@ export class TypeSystem {
 
     return result;
   };
+
+  public async metafieldDefinitionsObjectMap(uri: string): Promise<ObjectMap> {
+    let result: ObjectMap = {};
+
+    const metafieldDefinitionMap = await this.getMetafieldDefinitions(uri);
+
+    for (let [category, definitions] of Object.entries(metafieldDefinitionMap)) {
+      // Metafield definitions need to be grouped by their namespace
+      let metafieldNamespaces = new Map<string, ObjectEntry[]>();
+
+      for (let definition of definitions as MetafieldDefinition[]) {
+        if (!metafieldNamespaces.has(definition.namespace)) {
+          metafieldNamespaces.set(definition.namespace, []);
+        }
+
+        metafieldNamespaces.get(definition.namespace)!.push({
+          name: definition.name,
+          description: definition.description,
+          return_type: metafieldReturnType(definition.type.name),
+        });
+      }
+
+      let metafieldGroupProperties: ObjectEntry[] = [];
+
+      for (let [namespace, namespaceProperties] of metafieldNamespaces) {
+        const metafieldCategoryNamespaceHandle = `${category}_metafield_${namespace}`;
+
+        // Since the namespace can be shared by multiple categories, we need to make sure the return_type
+        // handle is unique across all categories
+        metafieldGroupProperties.push({
+          name: namespace,
+          return_type: [{ type: metafieldCategoryNamespaceHandle, name: '' }],
+          access: {
+            global: false,
+            parents: [],
+            template: [],
+          },
+        });
+
+        result[metafieldCategoryNamespaceHandle] = {
+          name: metafieldCategoryNamespaceHandle,
+          properties: namespaceProperties,
+          access: {
+            global: false,
+            parents: [],
+            template: [],
+          },
+        };
+      }
+
+      const metafieldCategoryHandle = `${category}_metafields`;
+
+      result[metafieldCategoryHandle] = {
+        name: metafieldCategoryHandle,
+        properties: metafieldGroupProperties,
+        access: {
+          global: false,
+          parents: [],
+          template: [],
+        },
+      };
+    }
+
+    return result;
+  }
 
   // This is the big one we reuse (memoized)
   private _objectMap = memo(async (): Promise<ObjectMap> => {
@@ -844,6 +933,101 @@ function settingReturnType(setting: InputSetting): ObjectEntry['return_type'] {
       return [];
   }
 }
+
+const METAFIELD_TYPE_TO_TYPE = Object.freeze({
+  single_line_text_field: String,
+  multi_line_text_field: String,
+  url_reference: String,
+  date: String,
+  date_time: String,
+  number_integer: 'number',
+  number_decimal: 'number',
+  product_reference: 'product',
+  collection_reference: 'collection',
+  variant_reference: 'variant',
+  page_reference: 'page',
+  boolean: 'boolean',
+  color: 'color',
+  weight: 'measurement',
+  volume: 'measurement',
+  dimension: 'measurement',
+  rating: 'rating',
+  money: 'money',
+  json: Untyped,
+  metaobject_reference: 'metaobject',
+  mixed_reference: Untyped,
+  rich_text_field: Untyped,
+  file_reference: Untyped,
+});
+
+const REFERENCE_TYPE_METAFIELDS = Object.entries(METAFIELD_TYPE_TO_TYPE)
+  .filter(([metafieldType, _type]) => metafieldType.endsWith('_reference'))
+  .map(([_metafieldType, type]) => type);
+
+function metafieldReturnType(metafieldType: string): ObjectEntry['return_type'] {
+  let isArray = metafieldType.startsWith('list.');
+
+  if (isArray) {
+    metafieldType = metafieldType.split('.')[1];
+  }
+
+  let type = 'metafield_' + ((METAFIELD_TYPE_TO_TYPE as any)[metafieldType] ?? Untyped);
+
+  if (isArray) {
+    return [{ type: `${type}_array`, name: '' }];
+  }
+
+  return [{ type: type, name: '' }];
+}
+
+// The default `metafield` type has an untyped `value` property.
+// We need to create new metafield types with the labels `metafield_x` and `metafield_x_array`
+// where x is the type of metafield inside the `value` property. The metafields ending with `x_array`
+// is where the value is an array of type x.
+const customMetafieldTypeEntries = memo((baseMetafieldEntry: ObjectEntry) => {
+  if (!baseMetafieldEntry) return {} as ObjectMap;
+
+  return [
+    ...new Set([...Object.values(METAFIELD_TYPE_TO_TYPE), ...FETCHED_METAFIELD_CATEGORIES]),
+  ].reduce((map, type) => {
+    {
+      const metafieldEntry = JSON.parse(JSON.stringify(baseMetafieldEntry)); // easy deep clone
+      const metafieldValueProp = metafieldEntry.properties?.find(
+        (prop: any) => prop.name === 'value',
+      );
+
+      if (metafieldValueProp) {
+        metafieldValueProp.return_type = [{ type: type, name: '' }];
+        metafieldValueProp.description = '';
+        metafieldEntry.name = `metafield_${type}`;
+        map[metafieldEntry.name] = metafieldEntry;
+      }
+    }
+
+    {
+      const metafieldArrayEntry = JSON.parse(JSON.stringify(baseMetafieldEntry)); // easy deep clone
+      const metafieldArrayValueProp = metafieldArrayEntry.properties?.find(
+        (prop: any) => prop.name === 'value',
+      );
+
+      if (metafieldArrayValueProp) {
+        // A metafield definition using a list of references does not use an array, but a separate type of collection.
+        // For auto-completion purposes, we can't use the array type
+        // https://shopify.dev/docs/api/liquid/objects/metafield#metafield-determining-the-length-of-a-list-metafield
+        if (REFERENCE_TYPE_METAFIELDS.includes(type as any)) {
+          metafieldArrayValueProp.return_type = [{ type: 'untyped', name: '' }];
+        } else {
+          metafieldArrayValueProp.return_type = [{ type: 'array', name: '', array_value: type }];
+        }
+        metafieldArrayValueProp.description = '';
+        metafieldArrayEntry.name = `metafield_${type}_array`;
+        map[metafieldArrayEntry.name] = metafieldArrayEntry;
+      }
+    }
+
+    return map;
+  }, {} as ObjectMap);
+});
 
 function schemaSettingsAsProperties(ast: LiquidHtmlNode): ObjectEntry[] {
   if (ast.type !== NodeTypes.Document) return [];

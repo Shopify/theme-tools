@@ -1,4 +1,4 @@
-import { SourceCodeType, ThemeDocset } from '@shopify/theme-check-common';
+import { MetafieldDefinitionMap, SourceCodeType, ThemeDocset } from '@shopify/theme-check-common';
 import { Hover, HoverParams } from 'vscode-languageserver';
 import { TypeSystem } from '../TypeSystem';
 import { DocumentManager } from '../documents';
@@ -23,10 +23,15 @@ export class HoverProvider {
   constructor(
     readonly documentManager: DocumentManager,
     readonly themeDocset: ThemeDocset,
+    readonly getMetafieldDefinitions: (rootUri: string) => Promise<MetafieldDefinitionMap>,
     readonly getTranslationsForURI: GetTranslationsForURI = async () => ({}),
     readonly getSettingsSchemaForURI: GetThemeSettingsSchemaForURI = async () => [],
   ) {
-    const typeSystem = new TypeSystem(themeDocset, getSettingsSchemaForURI);
+    const typeSystem = new TypeSystem(
+      themeDocset,
+      getSettingsSchemaForURI,
+      getMetafieldDefinitions,
+    );
     this.providers = [
       new LiquidTagHoverProvider(themeDocset),
       new LiquidFilterHoverProvider(themeDocset),

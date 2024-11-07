@@ -1,20 +1,25 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { HoverProvider } from '../HoverProvider';
+import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 
 describe('Module: LiquidTagHoverProvider', async () => {
   let provider: HoverProvider;
 
   beforeEach(async () => {
-    provider = new HoverProvider(new DocumentManager(), {
-      filters: async () => [],
-      objects: async () => [],
-      tags: async () => [
-        { name: 'if', description: 'if statement description' },
-        { name: 'echo', description: 'echo description' },
-      ],
-      systemTranslations: async () => ({}),
-    });
+    provider = new HoverProvider(
+      new DocumentManager(),
+      {
+        filters: async () => [],
+        objects: async () => [],
+        tags: async () => [
+          { name: 'if', description: 'if statement description' },
+          { name: 'echo', description: 'echo description' },
+        ],
+        systemTranslations: async () => ({}),
+      },
+      async (_rootUri: string) => ({} as MetafieldDefinitionMap),
+    );
   });
 
   it('should return the hover description of the correct tag', async () => {

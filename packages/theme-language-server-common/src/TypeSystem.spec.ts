@@ -5,7 +5,7 @@ import {
   NodeTypes,
   toLiquidHtmlAST,
 } from '@shopify/liquid-html-parser';
-import { path as pathUtils } from '@shopify/theme-check-common';
+import { MetafieldDefinitionMap, path as pathUtils } from '@shopify/theme-check-common';
 import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { URI } from 'vscode-uri';
 import { SettingsSchemaJSONFile } from './settings';
@@ -45,6 +45,25 @@ describe('Module: TypeSystem', () => {
                 name: 'featured_image',
                 description: 'ze best image for ze product',
                 return_type: [{ type: 'image', name: '' }],
+              },
+              {
+                name: 'metafields',
+                return_type: [{ type: 'untyped', name: '' }],
+              },
+            ],
+          },
+          {
+            name: 'metafield',
+            properties: [
+              {
+                name: 'type',
+                description: 'the type of the metafield',
+                return_type: [{ type: 'string', name: '' }],
+              },
+              {
+                name: 'value',
+                description: 'the value of the metafield',
+                return_type: [{ type: 'untyped', name: '' }],
               },
             ],
           },
@@ -110,6 +129,61 @@ describe('Module: TypeSystem', () => {
         systemTranslations: async () => ({}),
       },
       settingsProvider,
+      async (_uri: string) => {
+        return {
+          article: [],
+          blog: [],
+          brand: [],
+          collection: [],
+          company: [],
+          company_location: [],
+          location: [],
+          market: [],
+          order: [
+            {
+              name: 'products',
+              namespace: 'related',
+              description: 'related products',
+              type: {
+                category: 'REFERENCE',
+                name: 'list.product_reference',
+              },
+            },
+          ],
+          page: [],
+          product: [
+            {
+              name: 'code',
+              namespace: 'manufacturer',
+              description: 'the code provided by the manufacturer',
+              type: {
+                category: 'TEXT',
+                name: 'single_line_text_field',
+              },
+            },
+            {
+              name: 'id',
+              namespace: 'manufacturer',
+              description: 'the id provided by the manufacturer',
+              type: {
+                category: 'INTEGER',
+                name: 'number_integer',
+              },
+            },
+            {
+              name: 'is_rare',
+              namespace: 'custom',
+              description: 'is this product rare?',
+              type: {
+                category: 'BOOLEAN',
+                name: 'boolean',
+              },
+            },
+          ],
+          variant: [],
+          shop: [],
+        } as MetafieldDefinitionMap;
+      },
     );
   });
 
@@ -340,5 +414,87 @@ describe('Module: TypeSystem', () => {
       );
       expect(inferredType).to.eql('untyped');
     }
+  });
+
+  describe('metafieldDefinitionsObjectMap', async () => {
+    it('should convert metafield definitions into types', async () => {
+      const metafieldObjectMap = await typeSystem.metafieldDefinitionsObjectMap(
+        'file:///any/file.liquid',
+      );
+
+      assert(metafieldObjectMap['product_metafields']);
+      assert(metafieldObjectMap['product_metafield_custom']);
+      assert(metafieldObjectMap['product_metafield_manufacturer']);
+    });
+
+    it('should group metafield definitions by namespace', async () => {
+      const metafieldObjectMap = await typeSystem.metafieldDefinitionsObjectMap(
+        'file:///any/file.liquid',
+      );
+      const properties = metafieldObjectMap['product_metafields'].properties;
+
+      assert(properties);
+      expect(properties).toHaveLength(2);
+      expect(properties).toContainEqual(
+        expect.objectContaining({
+          name: 'custom',
+          return_type: [{ type: 'product_metafield_custom', name: '' }],
+        }),
+      );
+      expect(metafieldObjectMap['product_metafields'].properties).toContainEqual(
+        expect.objectContaining({
+          name: 'manufacturer',
+          return_type: [{ type: 'product_metafield_manufacturer', name: '' }],
+        }),
+      );
+
+      const manufacturerProperties =
+        metafieldObjectMap['product_metafield_manufacturer'].properties;
+
+      assert(manufacturerProperties);
+      expect(manufacturerProperties).toHaveLength(2);
+
+      expect(manufacturerProperties).toContainEqual(
+        expect.objectContaining({
+          name: 'code',
+          return_type: [{ type: 'metafield_string', name: '' }],
+        }),
+      );
+      expect(manufacturerProperties).toContainEqual(
+        expect.objectContaining({
+          name: 'id',
+          return_type: [{ type: 'metafield_number', name: '' }],
+        }),
+      );
+
+      const customProperties = metafieldObjectMap['product_metafield_custom'].properties;
+
+      assert(customProperties);
+      expect(customProperties).toHaveLength(1);
+
+      expect(customProperties).toContainEqual(
+        expect.objectContaining({
+          name: 'is_rare',
+          return_type: [{ type: 'metafield_boolean', name: '' }],
+        }),
+      );
+    });
+
+    it('should have `metafield_x_array` return_type for array of references', async () => {
+      const metafieldObjectMap = await typeSystem.metafieldDefinitionsObjectMap(
+        'file:///any/file.liquid',
+      );
+      const relatedProperties = metafieldObjectMap['order_metafield_related'].properties;
+
+      assert(relatedProperties);
+      expect(relatedProperties).toHaveLength(1);
+
+      expect(relatedProperties).toContainEqual(
+        expect.objectContaining({
+          name: 'products',
+          return_type: [{ type: 'metafield_product_array', name: '' }],
+        }),
+      );
+    });
   });
 });

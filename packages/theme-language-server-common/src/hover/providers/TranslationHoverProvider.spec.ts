@@ -1,6 +1,7 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { HoverProvider } from '../HoverProvider';
+import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 
 describe('Module: TranslationHoverProvider', async () => {
   let provider: HoverProvider;
@@ -14,6 +15,7 @@ describe('Module: TranslationHoverProvider', async () => {
         tags: async () => [],
         systemTranslations: async () => ({}),
       },
+      async (_rootUri: string) => ({} as MetafieldDefinitionMap),
       async () => ({
         general: {
           password: 'password',

@@ -2,6 +2,7 @@ import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
 import { SettingsSchemaJSONFile } from '../../settings';
+import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 
 describe('Module: ObjectAttributeCompletionProvider', async () => {
   let provider: CompletionsProvider;
@@ -72,6 +73,7 @@ describe('Module: ObjectAttributeCompletionProvider', async () => {
         systemTranslations: async () => ({}),
       },
       getThemeSettingsSchemaForURI: settingsProvider,
+      getMetafieldDefinitions: async (_rootUri: string) => ({} as MetafieldDefinitionMap),
     });
   });
 

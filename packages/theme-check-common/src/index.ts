@@ -7,6 +7,7 @@ import {
   makeGetDefaultSchemaLocale,
   makeGetDefaultSchemaTranslations,
   makeGetDefaultTranslations,
+  makeGetMetafieldDefinitions,
 } from './context-utils';
 import { createDisabledChecksModule } from './disabled-checks';
 import { isIgnored } from './ignore';
@@ -74,6 +75,8 @@ export async function check(
     getDefaultTranslations: makeGetDefaultTranslations(fs, theme, rootUri),
     getDefaultSchemaLocale: makeGetDefaultSchemaLocale(fs, rootUri),
     getDefaultSchemaTranslations: makeGetDefaultSchemaTranslations(fs, theme, rootUri),
+    getMetafieldDefinitions:
+      injectedDependencies.getMetafieldDefinitions ?? makeGetMetafieldDefinitions(fs),
   };
 
   const { DisabledChecksVisitor, isDisabled } = createDisabledChecksModule();

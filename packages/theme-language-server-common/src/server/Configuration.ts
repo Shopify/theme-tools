@@ -1,5 +1,10 @@
 import { memo } from '@shopify/theme-check-common';
-import { Connection, DidChangeConfigurationNotification } from 'vscode-languageserver';
+import {
+  Connection,
+  DidChangeConfigurationNotification,
+  DidChangeWatchedFilesNotification,
+  DidChangeWatchedFilesRegistrationOptions,
+} from 'vscode-languageserver';
 import { ClientCapabilities } from '../ClientCapabilities';
 
 export const CHECK_ON_OPEN = 'themeCheck.checkOnOpen' as const;
@@ -61,4 +66,11 @@ export class Configuration {
     if (!this.capabilities.hasDidChangeConfigurationDynamicRegistrationSupport) return;
     return this.connection.client.register(DidChangeConfigurationNotification.type);
   });
+
+  registerDidChangeWatchedFilesNotification = async (
+    options?: DidChangeWatchedFilesRegistrationOptions,
+  ) => {
+    if (!this.capabilities.hasDidChangeWatchedFilesDynamicRegistrationSupport) return;
+    return this.connection.client.register(DidChangeWatchedFilesNotification.type, options);
+  };
 }

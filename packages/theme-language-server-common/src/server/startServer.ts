@@ -6,6 +6,8 @@ import {
   makeFileExists,
   makeGetDefaultSchemaTranslations,
   makeGetDefaultTranslations,
+  makeGetMetafieldDefinitions,
+  memoize,
   parseJSON,
   path,
   recursiveReadDirectory,
@@ -112,6 +114,17 @@ export function startServer(
     return config.rootUri;
   }
 
+  const getMetafieldDefinitionsForRootUri = memoize(
+    makeGetMetafieldDefinitions(fs),
+    (rootUri: string) => rootUri,
+  );
+
+  const getMetafieldDefinitions = async (uri: string) => {
+    const rootUri = await findThemeRootURI(uri);
+
+    return getMetafieldDefinitionsForRootUri(rootUri);
+  };
+
   // These are augmented here so that the caching is maintained over different runs.
   const themeDocset = new AugmentedThemeDocset(remoteThemeDocset);
   const runChecks = debounce(
@@ -120,6 +133,7 @@ export function startServer(
       loadConfig,
       themeDocset,
       jsonValidationSet,
+      getMetafieldDefinitions,
     }),
     100,
   );
@@ -185,10 +199,12 @@ export function startServer(
     getSnippetNamesForURI,
     getThemeSettingsSchemaForURI,
     log,
+    getMetafieldDefinitions,
   });
   const hoverProvider = new HoverProvider(
     documentManager,
     themeDocset,
+    getMetafieldDefinitions,
     getTranslationsForURI,
     getThemeSettingsSchemaForURI,
   );
@@ -274,6 +290,13 @@ export function startServer(
     log(`[SERVER] Let's roll!`);
     configuration.fetchConfiguration();
     configuration.registerDidChangeCapability();
+    configuration.registerDidChangeWatchedFilesNotification({
+      watchers: [
+        {
+          globPattern: '**/.shopify/*',
+        },
+      ],
+    });
   });
 
   connection.onDidChangeConfiguration((_params) => {
@@ -367,6 +390,21 @@ export function startServer(
   connection.languages.onLinkedEditingRange(async (params) => {
     if (hasUnsupportedDocument(params)) return null;
     return linkedEditingRangesProvider.linkedEditingRanges(params);
+  });
+
+  connection.onDidChangeWatchedFiles(async (params) => {
+    if (params.changes.length === 0) return;
+
+    for (const change of params.changes) {
+      fs.readDirectory.invalidate(path.dirname(change.uri));
+      fs.readFile.invalidate(change.uri);
+      fs.stat.invalidate(change.uri);
+
+      if (change.uri.endsWith('metafields.json')) {
+        const rootUri = await findThemeRootURI(change.uri);
+        getMetafieldDefinitionsForRootUri.invalidate(rootUri);
+      }
+    }
   });
 
   // These notifications could cause a MissingSnippet check to be invalidated
