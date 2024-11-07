@@ -1,5 +1,7 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { doesFileExist } from '../../utils/file-utils';
+import { hasLocalBlocks, collectBlockTypes, validateBlockFileExistence } from './block-utils';
+
+type Location = [number, number]; // [offset, length]
 
 export const ValidBlockTarget: LiquidCheckDefinition = {
   meta: {
@@ -18,6 +20,10 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
   },
 
   create(context) {
+    const relativePath = context.toRelativePath(context.file.uri);
+    const isSection = relativePath.startsWith('sections/');
+    const isThemeBlock = relativePath.startsWith('blocks/');
+
     return {
       async LiquidRawTag(node) {
         if (node.name !== 'schema' || node.body.kind !== 'json' || !context.parseJSON) {
@@ -29,111 +35,112 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
           node.blockEndPosition.start,
         );
 
-        const json = JSON.parse(jsonString);
         const jsonDocument = context.parseJSON(context.file, jsonString);
         if (!jsonDocument || !jsonDocument.root) {
           return;
         }
 
-        async function checkBlockFileExistence(blockType: string, locations: Location[]) {
-          // Skip check for theme/app blocks
-          if (blockType === '@theme' || blockType === '@app') {
-            return;
-          }
+        // Check for local blocks
+        const { found: localBlocksExist, locations: localBlockLocations } = hasLocalBlocks(
+          jsonDocument.root,
+        );
 
-          const blockPath = `blocks/${blockType}.liquid`;
-          const exists = await doesFileExist(context, blockPath);
+        // Skip validation for section files with local blocks
+        if (isSection && localBlocksExist) {
+          return;
+        }
+
+        // Check for local blocks in theme blocks
+        if (isThemeBlock && localBlocksExist) {
+          for (const [startIndex, length] of localBlockLocations) {
+            context.report({
+              message: `Local scoped blocks are not supported in theme blocks.`,
+              startIndex: node.blockStartPosition.end + startIndex,
+              endIndex: node.blockStartPosition.end + startIndex + length,
+            });
+          }
+          return;
+        }
+
+        // Collect root level block types
+        const rootLevelBlockTypes: { [key: string]: Location[] } = {};
+        if (jsonDocument.root?.type === 'object') {
+          const blocksProperty = jsonDocument.root.properties.find(
+            (p) => p.keyNode?.value === 'blocks',
+          );
+
+          if (blocksProperty?.valueNode?.type === 'array') {
+            for (const block of blocksProperty.valueNode.items || []) {
+              collectBlockTypes(block, rootLevelBlockTypes);
+            }
+          }
+        }
+
+        // Validate existence of root level block types
+        let errorsInRootLevelBlocks = false;
+        for (const blockType in rootLevelBlockTypes) {
+          const locations = rootLevelBlockTypes[blockType];
+          const exists = await validateBlockFileExistence(blockType, context);
           if (!exists) {
             for (const [startIndex, length] of locations) {
               context.report({
-                message: `Block file '${blockPath}' does not exist`,
+                message: `Theme block 'blocks/${blockType}.liquid' does not exist.`,
                 startIndex: node.blockStartPosition.end + startIndex,
                 endIndex: node.blockStartPosition.end + startIndex + length,
               });
             }
+            errorsInRootLevelBlocks = true;
           }
         }
 
-        function collectBlockTypes(node: any, typeMap: BlockTypeMap) {
-          // Base case: if node isn't an object or doesn't have properties, return
-          if (!node || node.type !== 'object' || !node.properties) {
-            return;
-          }
+        // If no errors in root level blocks, proceed to collect preset block types
+        if (!errorsInRootLevelBlocks) {
+          const presetBlockTypes: { [key: string]: Location[] } = {};
+          if (jsonDocument.root?.type === 'object') {
+            const presetsProperty = jsonDocument.root.properties.find(
+              (p) => p.keyNode?.value === 'presets',
+            );
 
-          // Check for type property
-          for (const prop of node.properties) {
-            if (prop.keyNode?.value === 'type' && prop.valueNode?.value) {
-              const blockType = prop.valueNode.value;
-              if (typeof blockType === 'string') {
-                const existingLocations = typeMap.get(blockType) || [];
-                typeMap.set(blockType, [
-                  ...existingLocations,
-                  [prop.valueNode.offset, prop.valueNode.length],
-                ]);
-              }
-            }
-
-            // Recursively check blocks property
-            if (
-              prop.keyNode?.value === 'blocks' &&
-              prop.valueNode?.type === 'array' &&
-              prop.valueNode.items
-            ) {
-              for (const block of prop.valueNode.items) {
-                collectBlockTypes(block, typeMap);
-              }
-            }
-          }
-        }
-
-        // Get root level blocks and preset blocks
-        type Location = [number, number]; // [offset, length]
-        type BlockTypeMap = Map<string, Location[]>;
-        const rootLevelBlockTypes: BlockTypeMap = new Map();
-        const presetBlockTypes: BlockTypeMap = new Map();
-
-        if (jsonDocument.root && jsonDocument.root.type === 'object') {
-          for (const property of jsonDocument.root.properties) {
-            // Collect root-level blocks
-            if (property.keyNode?.value === 'blocks' && property.valueNode?.type === 'array') {
-              for (const block of property.valueNode.items || []) {
-                collectBlockTypes(block, rootLevelBlockTypes);
-              }
-            }
-
-            // Collect preset blocks
-            if (property.keyNode?.value === 'presets' && property.valueNode?.type === 'array') {
-              for (const preset of property.valueNode.items || []) {
+            if (presetsProperty?.valueNode?.type === 'array') {
+              for (const preset of presetsProperty.valueNode.items || []) {
                 collectBlockTypes(preset, presetBlockTypes);
               }
             }
           }
-        }
 
-        // Ensure blocks are targeting valid root-level blocks or private blocks
-        for (const [presetType, presetLocations] of presetBlockTypes.entries()) {
-          const isPrivateBlockType = presetType.startsWith('_');
-          // Check if preset block types reference valid root-level blocks
-          if (
-            !rootLevelBlockTypes.has(presetType) &&
-            (isPrivateBlockType || !rootLevelBlockTypes.has('@theme'))
-          ) {
-            // Iterate through all locations for this preset type
-            for (const [startIndex, length] of presetLocations) {
-              context.report({
-                message: `Preset block type '${presetType}' does not reference a valid root-level block type`,
-                startIndex: node.blockStartPosition.end + startIndex,
-                endIndex: node.blockStartPosition.end + startIndex + length,
+          // Validate existence of preset block types
+          for (const presetType in presetBlockTypes) {
+            const presetLocations = presetBlockTypes[presetType];
+            const isPrivateBlockType = presetType.startsWith('_');
+            const isPresetInRootLevel = presetType in rootLevelBlockTypes;
+            const isThemeInRootLevel = '@theme' in rootLevelBlockTypes;
+            const needsExplicitRootBlock = isPrivateBlockType || !isThemeInRootLevel;
+
+            if (!isPresetInRootLevel && needsExplicitRootBlock) {
+              const errorMessage = isPrivateBlockType
+                ? `Theme block type "${presetType}" is a private block so it must be explicitly allowed in "blocks" at the root of this schema.`
+                : `Theme block type "${presetType}" must be allowed in "blocks" at the root of this schema.`;
+
+              presetLocations.forEach(([startIndex, length]) => {
+                context.report({
+                  message: errorMessage,
+                  startIndex: node.blockStartPosition.end + startIndex,
+                  endIndex: node.blockStartPosition.end + startIndex + length,
+                });
               });
+            } else {
+              const exists = await validateBlockFileExistence(presetType, context);
+              if (!exists) {
+                for (const [startIndex, length] of presetLocations) {
+                  context.report({
+                    message: `Theme block 'blocks/${presetType}.liquid' does not exist.`,
+                    startIndex: node.blockStartPosition.end + startIndex,
+                    endIndex: node.blockStartPosition.end + startIndex + length,
+                  });
+                }
+              }
             }
-          } else {
-            await checkBlockFileExistence(presetType, presetLocations);
           }
-        }
-
-        // Ensure that block liquid file exists
-        for (const [blockType, locations] of rootLevelBlockTypes) {
-          await checkBlockFileExistence(blockType, locations);
         }
       },
     };

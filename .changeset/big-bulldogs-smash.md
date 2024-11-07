@@ -3,4 +3,4 @@
 '@shopify/theme-check-node': minor
 ---
 
-Add ValidBlockTaget Check
+Add ValidBlockTarget Check
