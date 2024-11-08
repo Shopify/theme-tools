@@ -1,4 +1,6 @@
+import { NamedTags, NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
+import { isContentForBlock } from '../../utils/markup';
 
 export const UniqueStaticBlockId: LiquidCheckDefinition = {
   meta: {
@@ -21,41 +23,36 @@ export const UniqueStaticBlockId: LiquidCheckDefinition = {
     const idRegex = /id:\s*["'](\S+)["']/;
     return {
       async LiquidTag(node) {
-        if (node.name !== 'content_for') {
+        if (node.name !== NamedTags.content_for) {
           return;
         }
 
-        const [blockType] = node.markup.split(',');
-
-        if (blockType.replace(/["']/g, '') !== 'block') {
+        if (!isContentForBlock(node.markup)) {
           return;
         }
 
-        const idValueMatch = idRegex.exec(node.markup);
+        const idNode = node.markup.args.find((arg) => arg.name === 'id');
 
-        if (idValueMatch == null) {
-          return;
+        if (!idNode) {
+          return; // covered by VariableContentForArguments
         }
 
-        const [entireIdTerm, filteredIdValue] = idValueMatch;
+        const idValueNode = idNode.value;
+        if (idValueNode.type !== NodeTypes.String) {
+          return; // covered by VariableContentForArguments
+        }
 
-        if (usedIds.has(filteredIdValue)) {
-          const nodeInSource = node.source.substring(node.position.start);
-          const contentForBlockStartIndex = nodeInSource.indexOf(blockType);
+        const id = idValueNode.value;
 
-          const idParamIndex = idValueMatch.index + contentForBlockStartIndex;
-          const idParamValueLength = entireIdTerm.length;
-
-          const idParamValueEndIndex = idParamIndex + idParamValueLength;
-
+        if (usedIds.has(id)) {
           context.report({
-            message: `The id '${filteredIdValue}' is already being used by another static block`,
-            startIndex: node.position.start + idParamIndex,
-            endIndex: node.position.start + idParamValueEndIndex,
+            message: `The id '${id}' is already being used by another static block`,
+            startIndex: idValueNode.position.start,
+            endIndex: idValueNode.position.end,
             suggest: [],
           });
         } else {
-          usedIds.add(filteredIdValue);
+          usedIds.add(id);
         }
       },
     };

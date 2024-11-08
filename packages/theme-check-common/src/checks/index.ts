@@ -6,8 +6,8 @@ import { AssetSizeAppBlockCSS } from './asset-size-app-block-css';
 import { AssetSizeAppBlockJavaScript } from './asset-size-app-block-javascript';
 import { AssetSizeCSS } from './asset-size-css';
 import { AssetSizeJavaScript } from './asset-size-javascript';
-import { CdnPreconnect } from './cdn-preconnect';
 import { CaptureOnContentForBlock } from './capture-on-content-for-block';
+import { CdnPreconnect } from './cdn-preconnect';
 import { ContentForHeaderModification } from './content-for-header-modification';
 import { DeprecateBgsizes } from './deprecate-bgsizes';
 import { DeprecateLazysizes } from './deprecate-lazysizes';
@@ -26,14 +26,15 @@ import { RequiredLayoutThemeObject } from './required-layout-theme-object';
 import { TranslationKeyExists } from './translation-key-exists';
 import { UnclosedHTMLElement } from './unclosed-html-element';
 import { UndefinedObject } from './undefined-object';
+import { UniqueStaticBlockId } from './unique-static-block-id';
 import { UnknownFilter } from './unknown-filter';
 import { UnusedAssign } from './unused-assign';
+import { ValidContentForArguments } from './valid-content-for-arguments';
 import { ValidHTMLTranslation } from './valid-html-translation';
-import { ValidSchema } from './valid-schema';
 import { ValidJSON } from './valid-json';
-import { VariableName } from './variable-name';
+import { ValidSchema } from './valid-schema';
 import { ValidStaticBlockType } from './valid-static-block-type';
-import { UniqueStaticBlockId } from './unique-static-block-id';
+import { VariableName } from './variable-name';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -66,6 +67,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   UnknownFilter,
   UnusedAssign,
   ValidHTMLTranslation,
+  ValidContentForArguments,
   ValidJSON,
   ValidSchema,
   ValidStaticBlockType,

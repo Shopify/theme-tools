@@ -1,0 +1,18 @@
+It should never break a name
+printWidth: 1
+{% content_for "block" %}
+{%- content_for "blocks" -%}
+
+It should break on named args
+printWidth: 1
+{% content_for "block", key1: val1, key2: (0..1) %}
+
+It should not require commas (as per syntax) but add them when pretty printed
+{% content_for "block" key1: val1 key2: (0..1) %}
+
+It should not require spaces (as per syntax) but add them when pretty printed
+{%content_for "block",key1:val1,key2:(0..1)%}
+
+It should strip trailing commas by default
+{% content_for "foo", %}
+{% content_for "foo",product:product, %}

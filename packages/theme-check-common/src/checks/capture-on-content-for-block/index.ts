@@ -1,4 +1,10 @@
-import { LiquidTag, LiquidTagCapture, NodeTypes, Position } from '@shopify/liquid-html-parser';
+import {
+  LiquidTag,
+  LiquidTagCapture,
+  NamedTags,
+  NodeTypes,
+  Position,
+} from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { isContentForBlock } from '../../utils/markup';
 import { isNodeOfType } from '../utils';
@@ -27,7 +33,7 @@ export const CaptureOnContentForBlock: LiquidCheckDefinition = {
     function checkContentForBlock(node: any, position: Position) {
       if (
         isNodeOfType(NodeTypes.LiquidTag, node) &&
-        node.name === 'content_for' &&
+        node.name === NamedTags.content_for &&
         isContentForBlock(node.markup)
       ) {
         context.report({
@@ -42,7 +48,7 @@ export const CaptureOnContentForBlock: LiquidCheckDefinition = {
       async LiquidTag(node) {
         if (isLiquidTagCapture(node) && node.children) {
           for (const child of node.children) {
-            if (child.type === NodeTypes.LiquidTag && typeof child.markup == 'string') {
+            if (child.type === NodeTypes.LiquidTag) {
               checkContentForBlock(child, child.position);
             }
           }

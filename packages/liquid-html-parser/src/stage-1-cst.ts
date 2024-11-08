@@ -75,6 +75,7 @@ export enum ConcreteNodeTypes {
   Condition = 'Condition',
 
   AssignMarkup = 'AssignMarkup',
+  ContentForMarkup = 'ContentForMarkup',
   CycleMarkup = 'CycleMarkup',
   ForMarkup = 'ForMarkup',
   RenderMarkup = 'RenderMarkup',
@@ -265,6 +266,7 @@ export type ConcreteLiquidTag = ConcreteLiquidTagNamed | ConcreteLiquidTagBaseCa
 export type ConcreteLiquidTagNamed =
   | ConcreteLiquidTagAssign
   | ConcreteLiquidTagCycle
+  | ConcreteLiquidTagContentFor
   | ConcreteLiquidTagEcho
   | ConcreteLiquidTagIncrement
   | ConcreteLiquidTagDecrement
@@ -321,10 +323,19 @@ export interface ConcreteLiquidTagCycleMarkup
   args: ConcreteLiquidExpression[];
 }
 
+export interface ConcreteLiquidTagContentFor
+  extends ConcreteLiquidTagNode<NamedTags.content_for, ConcreteLiquidTagContentForMarkup> {}
+
 export interface ConcreteLiquidTagRender
   extends ConcreteLiquidTagNode<NamedTags.render, ConcreteLiquidTagRenderMarkup> {}
 export interface ConcreteLiquidTagInclude
   extends ConcreteLiquidTagNode<NamedTags.include, ConcreteLiquidTagRenderMarkup> {}
+
+export interface ConcreteLiquidTagContentForMarkup
+  extends ConcreteBasicNode<ConcreteNodeTypes.ContentForMarkup> {
+  contentForType: ConcreteStringLiteral;
+  args: ConcreteLiquidNamedArgument[];
+}
 
 export interface ConcreteLiquidTagRenderMarkup
   extends ConcreteBasicNode<ConcreteNodeTypes.RenderMarkup> {
@@ -715,6 +726,7 @@ function toCST<T>(
     liquidTagBaseCase: 0,
     liquidTagAssign: 0,
     liquidTagEcho: 0,
+    liquidTagContentFor: 0,
     liquidTagCycle: 0,
     liquidTagIncrement: 0,
     liquidTagDecrement: 0,
@@ -774,6 +786,16 @@ function toCST<T>(
       locEnd,
       source,
     },
+
+    liquidTagContentForMarkup: {
+      type: ConcreteNodeTypes.ContentForMarkup,
+      contentForType: 0,
+      args: 2,
+      locStart,
+      locEnd,
+      source,
+    },
+    contentForType: 0,
 
     liquidTagRenderMarkup: {
       type: ConcreteNodeTypes.RenderMarkup,

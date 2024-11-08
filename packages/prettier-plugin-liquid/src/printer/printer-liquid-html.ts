@@ -378,6 +378,23 @@ function printNode(
       return doc;
     }
 
+    case NodeTypes.ContentForMarkup: {
+      const contentForType = path.call((p: any) => print(p), 'contentForType');
+      const doc: Doc = [contentForType];
+      if (node.args.length > 0) {
+        doc.push(
+          ',',
+          line,
+          join(
+            [',', line],
+            path.map((p) => print(p), 'args'),
+          ),
+        );
+      }
+
+      return doc;
+    }
+
     case NodeTypes.RenderMarkup: {
       const snippet = path.call((p: any) => print(p), 'snippet');
       const doc: Doc = [snippet];

@@ -50,6 +50,7 @@ Liquid <: Helpers {
     | liquidTagBreak
     | liquidTagContinue
     | liquidTagCycle
+    | liquidTagContentFor
     | liquidTagDecrement
     | liquidTagEcho
     | liquidTagElse
@@ -124,6 +125,11 @@ Liquid <: Helpers {
   // redefines liquidTagOpenRule, liquidTagRule, and space.
   liquidTagLiquid = liquidTagRule<"liquid", liquidTagLiquidMarkup>
   liquidTagLiquidMarkup = tagMarkup
+
+  liquidTagContentFor = liquidTagRule<"content_for", liquidTagContentForMarkup>
+  liquidTagContentForMarkup =
+    contentForType (argumentSeparatorOptionalComma tagArguments) (space* ",")? space*
+  contentForType = liquidString<delimTag>
 
   liquidTagInclude = liquidTagRule<"include", liquidTagRenderMarkup>
   liquidTagRender = liquidTagRule<"render", liquidTagRenderMarkup>
