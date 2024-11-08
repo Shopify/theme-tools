@@ -27,7 +27,6 @@ import {
   LiquidHtmlNode,
   LiquidSourceCode,
   Offense,
-  ParseJSON,
   Problem,
   Schema,
   Settings,
@@ -82,7 +81,6 @@ export async function check(
 
   const { DisabledChecksVisitor, isDisabled } = createDisabledChecksModule();
   let validateJSON: ValidateJSON<SourceCodeType> | undefined;
-  let parseJSON: ParseJSON<SourceCodeType> | undefined;
 
   // We're memozing those deps here because they shouldn't change within a run.
   if (dependencies.themeDocset && !dependencies.themeDocset.isAugmented) {
@@ -94,7 +92,6 @@ export async function check(
       await dependencies.jsonValidationSet.schemas(config.context),
     );
     validateJSON = jsonValidator.validate.bind(jsonValidator);
-    parseJSON = jsonValidator.parse.bind(jsonValidator);
   }
 
   for (const type of Object.values(SourceCodeType)) {
@@ -105,15 +102,7 @@ export async function check(
         for (const file of files) {
           for (const checkDef of checkDefs) {
             if (isIgnored(file.uri, config, checkDef)) continue;
-            const check = createCheck(
-              checkDef,
-              file,
-              config,
-              offenses,
-              dependencies,
-              validateJSON,
-              parseJSON,
-            );
+            const check = createCheck(checkDef, file, config, offenses, dependencies, validateJSON);
             pipelines.push(checkJSONFile(check, file));
           }
         }
@@ -125,15 +114,7 @@ export async function check(
         for (const file of files) {
           for (const checkDef of checkDefs) {
             if (isIgnored(file.uri, config, checkDef)) continue;
-            const check = createCheck(
-              checkDef,
-              file,
-              config,
-              offenses,
-              dependencies,
-              validateJSON,
-              parseJSON,
-            );
+            const check = createCheck(checkDef, file, config, offenses, dependencies, validateJSON);
             pipelines.push(checkLiquidFile(check, file));
           }
         }
@@ -155,13 +136,11 @@ function createContext<T extends SourceCodeType, S extends Schema>(
   config: Config,
   dependencies: Dependencies,
   validateJSON?: ValidateJSON<SourceCodeType>,
-  parseJSON?: ParseJSON<SourceCodeType>,
 ): Context<T, S> {
   const checkSettings = config.settings[check.meta.code];
   return {
     ...dependencies,
     validateJSON,
-    parseJSON,
     settings: createSettings(checkSettings, check.meta.schema),
     toUri: (relativePath) => path.join(config.rootUri, relativePath),
     toRelativePath: (uri) => path.relative(uri, config.rootUri),
@@ -209,17 +188,8 @@ function createCheck<S extends SourceCodeType>(
   offenses: Offense[],
   dependencies: Dependencies,
   validateJSON?: ValidateJSON<SourceCodeType>,
-  parseJSON?: ParseJSON<SourceCodeType>,
 ): Check<S> {
-  const context = createContext(
-    check,
-    file,
-    offenses,
-    config,
-    dependencies,
-    validateJSON,
-    parseJSON,
-  );
+  const context = createContext(check, file, offenses, config, dependencies, validateJSON);
   return check.create(context as any) as Check<S>;
 }
 

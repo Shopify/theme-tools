@@ -1,72 +1,82 @@
-import { parseJSON } from '../../json';
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { isError } from '../../utils';
-import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
+import { JSONNode, LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
+import { toJSONAST } from '../../to-source-code';
+import { visit } from '../../visitor';
+import { LiteralNode } from 'json-to-ast';
+import { ValueNode } from 'json-to-ast';
 
 const MAX_SCHEMA_NAME_LENGTH = 25;
+const ROOT_NODE_ANCESTORS_COUNT = 1;
 
 export const ValidSchemaName: LiquidCheckDefinition = {
-    meta: {
-        code: 'ValidSchemaName',
-        name: 'Enforce valid schema name',
-        docs: {
-            description: 'This check is aimed at ensuring a valid schema name.',
-            recommended: true,
-            url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-schema-name',
-        },
-        type: SourceCodeType.LiquidHtml,
-        severity: Severity.ERROR,
-        schema: {},
-        targets: [],
+  meta: {
+    code: 'ValidSchemaName',
+    name: 'Enforce valid schema name',
+    docs: {
+      description: 'This check is aimed at ensuring a valid schema name.',
+      recommended: true,
+      url: 'https://shopify.dev/docs/storefronts/thesadmes/tools/theme-check/checks/valid-schema-name',
     },
+    type: SourceCodeType.LiquidHtml,
+    severity: Severity.ERROR,
+    schema: {},
+    targets: [],
+  },
 
-    create(context) {
-        return {
-            async LiquidRawTag(node) {
-                if (node.name !== 'schema' || node.body.kind !== 'json' || !context.parseJSON) {
-                    return;
-                }
+  create(context) {
+    return {
+      async LiquidRawTag(node) {
+        if (node.name !== 'schema' || node.body.kind !== 'json') {
+          return;
+        }
 
-                const schema = parseJSON(node.body.value); // TODO: replace with just the one parsing using content.parseJSON
-                if (isError(schema) && schema instanceof SyntaxError) return;
+        const jsonSchemaString = node.source.slice(
+          node.blockStartPosition.end,
+          node.blockEndPosition.start,
+        );
 
-                if (!schema.name.startsWith('t:') && schema.name.length > MAX_SCHEMA_NAME_LENGTH) {
-                    const jsonString = node.source.slice(
-                        node.blockStartPosition.end,
-                        node.blockEndPosition.start,
-                    );
+        const jsonSchemaAst = toJSONAST(jsonSchemaString);
+        visit<SourceCodeType.JSON, void>(jsonSchemaAst as JSONNode, {
+          Property(nameNode, ancestors) {
+            if (
+              nameNode.key.value === 'name' &&
+              ancestors.length === ROOT_NODE_ANCESTORS_COUNT &&
+              isLiteralNode(nameNode.value)
+            ) {
+              const name = getLiteralValue(nameNode.value);
 
-                    const json = JSON.parse(jsonString);
-                    const jsonDocument = context.parseJSON(context.file, jsonString);
-                    if (!jsonDocument || !jsonDocument.root) {
-                        return;
-                    }
-                    const jsonDocRoot = jsonDocument.root;
-                    if (rootIsObjectAst(jsonDocRoot)) {
-                        const nameProperty = jsonDocRoot.properties.find(property => property.keyNode.value === "name");
-
-                        if (nameProperty) { //TODO: find returns -1, check docs
-                            // const nameLength = nameProperty.keyNode.value.length;
-                            // const nameOffset = nameProperty.keyNode.offset;
-                            const nameLength = 4;
-                            const nameOffset = 4;
-
-                            console.log("Starts at ", node.blockStartPosition.end + nameOffset);
-                            console.log("Ends at ", node.blockStartPosition.end + nameOffset + nameLength);
-
-                            context.report({
-                                message: 'Schema name is too long (max 25 characters)',
-                                startIndex: node.blockStartPosition.end + nameOffset,
-                                endIndex: node.blockStartPosition.end + nameOffset + nameLength,
-                            });
-                        }
-                    }
-                }
-            },
-        };
-    },
+              if (!name.startsWith('t:') && name.length > MAX_SCHEMA_NAME_LENGTH) {
+                const startIndex = node.blockStartPosition.end + getLiteralLocStart(nameNode.value);
+                const endIndex = node.blockStartPosition.end + getLiteralLocEnd(nameNode.value);
+                context.report({
+                  message: 'Schema name is too long (max 25 characters)',
+                  startIndex: startIndex,
+                  endIndex: endIndex,
+                });
+              }
+              return;
+            }
+          },
+        });
+      },
+    };
+  },
 };
 
-function rootIsObjectAst(root: ASTNode): root is ObjectASTNode {
-    return root.type === 'object' && 'properties' in root;
+function isLiteralNode(node: ValueNode): node is LiteralNode {
+  return node.type === 'Literal';
+}
+
+function getLiteralValue(node: LiteralNode): string {
+  if (typeof node.value === 'string') {
+    return node.value;
+  }
+  return '';
+}
+
+function getLiteralLocStart(node: LiteralNode): number {
+  return node.loc?.start.offset ?? 0;
+}
+
+function getLiteralLocEnd(node: LiteralNode): number {
+  return node.loc?.end.offset ?? 0;
 }

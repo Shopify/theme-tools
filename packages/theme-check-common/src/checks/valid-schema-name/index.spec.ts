@@ -20,5 +20,6 @@ describe('Module: ValidSchemaName', () => {
 
     const highlights = highlightedOffenses({ [DEFAULT_FILE_NAME]: sourceCode }, offenses);
     expect(highlights).to.have.length(1);
+    expect(highlights[0]).toBe('"test-schema-name-that-is-too-long"');
   });
 });
