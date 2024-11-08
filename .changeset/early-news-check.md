@@ -1,6 +1,7 @@
 ---
+'@shopify/theme-language-server-common': minor
 '@shopify/theme-check-common': minor
 '@shopify/theme-check-node': minor
 ---
 
-Add ValidSchemaName check
+Add ValidateSchemaName check

@@ -44,6 +44,7 @@ export const ValidSchemaName: LiquidCheckDefinition = {
             ) {
               const name = getLiteralValue(nameNode.value);
 
+              // We will be handling the translation length in a follow up
               if (!name.startsWith('t:') && name.length > MAX_SCHEMA_NAME_LENGTH) {
                 const startIndex = node.blockStartPosition.end + getLiteralLocStart(nameNode.value);
                 const endIndex = node.blockStartPosition.end + getLiteralLocEnd(nameNode.value);
@@ -53,7 +54,6 @@ export const ValidSchemaName: LiquidCheckDefinition = {
                   endIndex: endIndex,
                 });
               }
-              return;
             }
           },
         });

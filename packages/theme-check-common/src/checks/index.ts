@@ -32,6 +32,7 @@ import { ValidContentForArguments } from './valid-content-for-arguments';
 import { ValidHTMLTranslation } from './valid-html-translation';
 import { ValidJSON } from './valid-json';
 import { ValidSchema } from './valid-schema';
+import { ValidStaticBlockType } from './valid-static-block-type';
 import { VariableName } from './variable-name';
 import { ValidSchemaName } from './valid-schema-name';
 import { UniqueStaticBlockId } from './unique-static-block-id';
