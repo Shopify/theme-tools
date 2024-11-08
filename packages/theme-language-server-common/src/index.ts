@@ -9,7 +9,7 @@ import {
 } from '@shopify/theme-check-common';
 
 export * from './types';
-export { visit } from './visitor';
+export { visit } from '@shopify/theme-check-common';
 export { debounce, memo, parseJSON, ArgumentTypes } from './utils';
 export { startServer } from './server';
 export {

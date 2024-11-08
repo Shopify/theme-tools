@@ -5,7 +5,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI, Utils } from 'vscode-uri';
 
 import { DocumentManager } from '../documents';
-import { visit, Visitor } from '../visitor';
+import { visit, Visitor } from '@shopify/theme-check-common';
 
 export class DocumentLinksProvider {
   constructor(

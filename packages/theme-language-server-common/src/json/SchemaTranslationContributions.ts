@@ -13,7 +13,7 @@ import {
   translationOptions,
   translationValue,
 } from '../translations';
-import { Visitor, visit } from '../visitor';
+import { Visitor, visit } from '@shopify/theme-check-common';
 import { uriMatch } from './fileMatch';
 
 /**
