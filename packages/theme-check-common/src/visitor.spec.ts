@@ -1,8 +1,4 @@
-import {
-  LiquidHtmlNode,
-  LiquidHtmlNodeTypes,
-  SourceCodeType,
-} from './types';
+import { LiquidHtmlNode, LiquidHtmlNodeTypes, SourceCodeType } from './types';
 import { toSourceCode } from './to-source-code';
 import { expect, describe, it } from 'vitest';
 import { Visitor, visit } from './visitor';

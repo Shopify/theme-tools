@@ -4,4 +4,4 @@
 '@shopify/theme-check-node': minor
 ---
 
-Add ValidateSchemaName check
+Add `ValidateSchemaName` check
