@@ -1,8 +1,4 @@
-import {
-  LanguageService,
-  TextDocument,
-  getLanguageService,
-} from 'vscode-json-languageservice';
+import { LanguageService, TextDocument, getLanguageService } from 'vscode-json-languageservice';
 import { SchemaDefinition, SourceCodeType, ValidateJSON } from './types';
 import { indexBy } from './utils';
 
