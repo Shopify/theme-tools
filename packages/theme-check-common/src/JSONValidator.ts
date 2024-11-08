@@ -1,5 +1,4 @@
 import {
-  JSONDocument,
   LanguageService,
   TextDocument,
   getLanguageService,
