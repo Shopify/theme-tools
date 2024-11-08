@@ -1,51 +1,103 @@
-import { Context, SourceCodeType, Schema } from '../../types';
+import { LiquidRawTag } from '@shopify/liquid-html-parser';
+import { Context, SourceCodeType, Schema, JSONNode } from '../../types';
 import { doesFileExist } from '../../utils/file-utils';
-import { ASTNode } from 'vscode-json-languageservice';
+import { visit } from '../../visitor';
+import { LiteralNode } from 'json-to-ast';
 
-type Location = [number, number]; // [offset, length]
+type BlockTypeMap = { [key: string]: Location[] };
 
-export function hasLocalBlocks(root: ASTNode): { found: boolean; locations: Location[] } {
-  const locations: Location[] = [];
-  if (root.type !== 'object' || !root.properties) return { found: false, locations };
+type Location = {
+  startIndex: number;
+  endIndex: number;
+};
 
-  const blocksProperty = root.properties.find((p) => p.keyNode?.value === 'blocks');
-  if (!blocksProperty || blocksProperty.valueNode?.type !== 'array')
-    return { found: false, locations };
+type BlockValidationResult = {
+  rootBlockTypes: BlockTypeMap;
+  presetBlockTypes: BlockTypeMap;
+  hasLocalBlocks: boolean;
+  hasThemeBlocks: boolean;
+  localBlockLocations: Location[];
+  themeBlockLocations: Location[];
+};
 
-  for (const block of blocksProperty.valueNode.items || []) {
-    if (block.type !== 'object' || !block.properties) continue;
-
-    const typeProperty = block.properties.find((p) => p.keyNode?.value === 'type');
-    const nameProperty = block.properties.find((p) => p.keyNode?.value === 'name');
-
-    if (typeProperty && nameProperty?.valueNode) {
-      locations.push([nameProperty.valueNode.offset, nameProperty.valueNode.length]);
-    }
-  }
-
-  return { found: locations.length > 0, locations };
+function isLiteralNode(node: JSONNode): node is LiteralNode {
+  return node.type === 'Literal';
 }
 
-export function collectBlockTypes(block: ASTNode, typeMap: { [key: string]: Location[] }) {
-  if (!block || block.type !== 'object' || !block.properties) return;
+// Function to determine if a node is in an array with a specific parent key
+function isInArrayWithParentKey(ancestors: JSONNode[], parentKey: string): boolean {
+  return ancestors.some((ancestor, index) => {
+    const parent = ancestors[index - 1];
+    return (
+      ancestor.type === 'Array' && parent?.type === 'Property' && parent.key?.value === parentKey
+    );
+  });
+}
 
-  const typeProperty = block.properties.find((p) => p.keyNode?.value === 'type');
-  if (typeProperty?.valueNode?.value && typeof typeProperty.valueNode.value === 'string') {
-    const blockType = typeProperty.valueNode.value;
-    const existingLocations = typeMap[blockType] || [];
-    typeMap[blockType] = [
-      ...existingLocations,
-      [typeProperty.valueNode.offset, typeProperty.valueNode.length],
-    ];
-  }
+export const reportError =
+  (message: string, context: Context<SourceCodeType.LiquidHtml, Schema>, node: LiquidRawTag) =>
+  (location: Location) => {
+    context.report({
+      message,
+      startIndex: node.blockStartPosition.end + location.startIndex,
+      endIndex: node.blockStartPosition.end + location.endIndex,
+    });
+  };
 
-  // Handle nested blocks
-  const blocksProperty = block.properties.find((p) => p.keyNode?.value === 'blocks');
-  if (blocksProperty?.valueNode?.type === 'array') {
-    for (const nestedBlock of blocksProperty.valueNode.items || []) {
-      collectBlockTypes(nestedBlock, typeMap);
-    }
-  }
+export function collectAndValidateBlockTypes(jsonFile: JSONNode): BlockValidationResult {
+  const rootBlockTypes: BlockTypeMap = {};
+  const presetBlockTypes: BlockTypeMap = {};
+  const localBlockLocations: Location[] = [];
+  const themeBlockLocations: Location[] = [];
+
+  visit<SourceCodeType.JSON, void>(jsonFile, {
+    Property(node, ancestors) {
+      // Only process type and name properties within blocks
+      if (!isInArrayWithParentKey(ancestors, 'blocks') || !isLiteralNode(node.value)) return;
+
+      if (node.key.value === 'type') {
+        const typeValue = node.value.value;
+        const typeLocation = {
+          startIndex: node.value.loc!.start.offset,
+          endIndex: node.value.loc!.end.offset,
+        };
+
+        // Add to appropriate map
+        const inPresets = isInArrayWithParentKey(ancestors, 'presets');
+        const targetMap = inPresets ? presetBlockTypes : rootBlockTypes;
+        if (typeof typeValue === 'string') {
+          targetMap[typeValue] = targetMap[typeValue] || [];
+          targetMap[typeValue].push(typeLocation);
+        }
+
+        // Check if this block has a name property (local block)
+        const parentObject = ancestors[ancestors.length - 1];
+        const hasName =
+          parentObject.type === 'Object' &&
+          parentObject.children.some(
+            (child) => child.type === 'Property' && child.key.value === 'name',
+          );
+
+        if (!hasName && typeValue !== '@theme' && typeValue !== '@app') {
+          themeBlockLocations.push(typeLocation);
+        }
+      } else if (node.key.value === 'name') {
+        localBlockLocations.push({
+          startIndex: node.value.loc!.start.offset,
+          endIndex: node.value.loc!.end.offset,
+        });
+      }
+    },
+  });
+
+  return {
+    rootBlockTypes,
+    presetBlockTypes,
+    hasLocalBlocks: localBlockLocations.length > 0,
+    hasThemeBlocks: themeBlockLocations.length > 0,
+    localBlockLocations,
+    themeBlockLocations,
+  };
 }
 
 export async function validateBlockFileExistence(
@@ -57,6 +109,5 @@ export async function validateBlockFileExistence(
   }
 
   const blockPath = `blocks/${blockType}.liquid`;
-  const exists = await doesFileExist(context, blockPath);
-  return exists;
+  return await doesFileExist(context, blockPath);
 }

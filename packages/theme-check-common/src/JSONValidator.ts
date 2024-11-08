@@ -4,7 +4,7 @@ import {
   TextDocument,
   getLanguageService,
 } from 'vscode-json-languageservice';
-import { SchemaDefinition, SourceCodeType, ValidateJSON, ParseJSON } from './types';
+import { SchemaDefinition, SourceCodeType, ValidateJSON } from './types';
 import { indexBy } from './utils';
 
 export class JSONValidator {
@@ -29,11 +29,6 @@ export class JSONValidator {
       })),
     });
   }
-
-  public parse: ParseJSON<SourceCodeType> = (sourceCode, jsonString) => {
-    const jsonTextDocument = TextDocument.create('file:' + sourceCode.uri, 'json', 0, jsonString);
-    return this.service.parseJSONDocument(jsonTextDocument);
-  };
 
   /**
    * Will return an array of diagnostics for the given source code and JSON string.

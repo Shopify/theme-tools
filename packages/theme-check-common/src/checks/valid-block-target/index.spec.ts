@@ -4,12 +4,6 @@ import { check, MockTheme } from '../../test';
 import { Dependencies } from '../../types';
 
 describe('Module: ValidBlockTarget', () => {
-  const mockDependencies: Partial<Dependencies> = {
-    jsonValidationSet: {
-      schemas: async () => [],
-    },
-  };
-
   const paths = ['sections', 'blocks'];
 
   describe('File Existence Tests', () => {
@@ -33,7 +27,7 @@ describe('Module: ValidBlockTarget', () => {
           `,
         };
 
-        const offenses = await check(theme, [ValidBlockTarget], mockDependencies);
+        const offenses = await check(theme, [ValidBlockTarget]);
         expect(offenses).to.be.empty;
       });
 
@@ -54,7 +48,7 @@ describe('Module: ValidBlockTarget', () => {
           `,
         };
 
-        const offenses = await check(theme, [ValidBlockTarget], mockDependencies);
+        const offenses = await check(theme, [ValidBlockTarget]);
         expect(offenses).to.be.empty;
       });
 
@@ -74,7 +68,7 @@ describe('Module: ValidBlockTarget', () => {
           `,
         };
 
-        const offenses = await check(theme, [ValidBlockTarget], mockDependencies);
+        const offenses = await check(theme, [ValidBlockTarget]);
         expect(offenses).to.have.length(1);
         expect(offenses[0].message).to.equal("Theme block 'blocks/invalid.liquid' does not exist.");
       });
@@ -105,7 +99,7 @@ describe('Module: ValidBlockTarget', () => {
           `,
         };
 
-        const offenses = await check(theme, [ValidBlockTarget], mockDependencies);
+        const offenses = await check(theme, [ValidBlockTarget]);
         expect(offenses).to.have.length(1);
         expect(offenses[0].message).to.equal(
           "Theme block 'blocks/missing_block.liquid' does not exist.",
@@ -132,12 +126,13 @@ describe('Module: ValidBlockTarget', () => {
                     }
                   ]
                 }
+              ]
             }
             {% endschema %}
           `,
         };
 
-        const offenses = await check(theme, [ValidBlockTarget], mockDependencies);
+        const offenses = await check(theme, [ValidBlockTarget]);
         expect(offenses).to.have.length(1);
         expect(offenses[0].message).to.equal("Theme block 'blocks/invalid.liquid' does not exist.");
       });
@@ -173,7 +168,7 @@ describe('Module: ValidBlockTarget', () => {
           `,
         };
 
-        const offenses = await check(theme, [ValidBlockTarget], mockDependencies);
+        const offenses = await check(theme, [ValidBlockTarget]);
         expect(offenses).to.have.length(1);
         expect(offenses[0].message).to.equal(
           'Theme block type "invalid_preset_block" must be allowed in "blocks" at the root of this schema.',
@@ -207,7 +202,7 @@ describe('Module: ValidBlockTarget', () => {
           `,
         };
 
-        const offenses = await check(theme, [ValidBlockTarget], mockDependencies);
+        const offenses = await check(theme, [ValidBlockTarget]);
         expect(offenses).to.have.length(1);
         expect(offenses[0].message).to.equal(
           'Theme block type "_private" is a private block so it must be explicitly allowed in "blocks" at the root of this schema.',
@@ -240,7 +235,7 @@ describe('Module: ValidBlockTarget', () => {
           `,
         };
 
-        const offenses = await check(theme, [ValidBlockTarget], mockDependencies);
+        const offenses = await check(theme, [ValidBlockTarget]);
         expect(offenses).to.have.length(1);
 
         const content = theme[`${path}/private-blocks.liquid`];
@@ -275,7 +270,7 @@ describe('Module: ValidBlockTarget', () => {
           `,
         };
 
-        const offenses = await check(theme, [ValidBlockTarget], mockDependencies);
+        const offenses = await check(theme, [ValidBlockTarget]);
         expect(offenses).to.be.empty;
       });
 
@@ -313,44 +308,13 @@ describe('Module: ValidBlockTarget', () => {
           `,
         };
 
-        const offenses = await check(theme, [ValidBlockTarget], mockDependencies);
+        const offenses = await check(theme, [ValidBlockTarget]);
         expect(offenses).to.be.empty;
       });
     });
   });
 
   describe('Local Block Tests', () => {
-    it('should not report errors when local blocks are defined in a section bucket', async () => {
-      const theme: MockTheme = {
-        'sections/local-blocks.liquid': `
-          {% schema %}
-          {
-            "name": "Section name",
-            "blocks": [
-              {
-                "type": "local_block",
-                "name": "Local Block"
-              }
-            ],
-            "presets": [
-              {
-                "name": "Default",
-                "blocks": [
-                  {
-                    "type": "text"
-                  }
-                ]
-              }
-            ]
-          }
-          {% endschema %}
-        `,
-      };
-
-      const offenses = await check(theme, [ValidBlockTarget], mockDependencies);
-      expect(offenses).to.be.empty;
-    });
-
     it('should report error when local blocks are defined in a block bucket', async () => {
       const theme: MockTheme = {
         'blocks/local-blocks.liquid': `
@@ -368,7 +332,7 @@ describe('Module: ValidBlockTarget', () => {
         `,
       };
 
-      const offenses = await check(theme, [ValidBlockTarget], mockDependencies);
+      const offenses = await check(theme, [ValidBlockTarget]);
       expect(offenses).to.have.length(1);
       expect(offenses[0].message).to.equal(
         'Local scoped blocks are not supported in theme blocks.',
@@ -402,10 +366,73 @@ describe('Module: ValidBlockTarget', () => {
         `,
       };
 
-      const offenses = await check(theme, [ValidBlockTarget], mockDependencies);
+      const offenses = await check(theme, [ValidBlockTarget]);
       expect(offenses).to.have.length(1);
       expect(offenses[0].message).to.equal(
         'Local scoped blocks are not supported in theme blocks.',
+      );
+    });
+
+    it('should report errors when sections use theme blocks together with locally scoped blocks in root level', async () => {
+      const theme: MockTheme = {
+        'blocks/text.liquid': '',
+        'sections/local-blocks.liquid': `
+          {% schema %}
+          {
+            "name": "Section name",
+            "blocks": [
+              {
+                "type": "text"
+              },
+              {
+                "type": "local_block",
+                "name": "Local Block"
+              }
+            ]
+          }
+          {% endschema %}
+        `,
+      };
+      const offenses = await check(theme, [ValidBlockTarget]);
+      expect(offenses).to.have.length(1);
+      expect(offenses[0].message).to.equal(
+        'Sections cannot use theme blocks together with locally scoped blocks.',
+      );
+    });
+
+    it('should report errors when sections use theme blocks together with locally scoped blocks in presets level', async () => {
+      const theme: MockTheme = {
+        'blocks/text.liquid': '',
+        'sections/local-blocks.liquid': `
+          {% schema %}
+          {
+            "name": "Section name",
+            "blocks": [
+              {
+                "type": "local_block",
+                "name": "Local Block"
+              }
+            ],
+            "presets": [
+              {
+                "name": "Default",
+                "blocks": [
+                  {
+                    "type": "text"
+                  }
+                ]
+              }
+            ]
+          }
+          {% endschema %}
+        `,
+      };
+
+      const offenses = await check(theme, [ValidBlockTarget]);
+      console.log(offenses);
+      expect(offenses).to.have.length(1);
+      expect(offenses[0].message).to.equal(
+        'Sections cannot use theme blocks together with locally scoped blocks.',
       );
     });
   });

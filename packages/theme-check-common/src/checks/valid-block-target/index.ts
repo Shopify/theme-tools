@@ -1,7 +1,15 @@
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { hasLocalBlocks, collectBlockTypes, validateBlockFileExistence } from './block-utils';
+import { JSONNode, LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
+import {
+  reportError,
+  collectAndValidateBlockTypes,
+  validateBlockFileExistence,
+} from './block-utils';
+import { toJSONAST } from '../../to-source-code';
 
-type Location = [number, number]; // [offset, length]
+type Location = {
+  startIndex: number;
+  endIndex: number;
+};
 
 export const ValidBlockTarget: LiquidCheckDefinition = {
   meta: {
@@ -26,7 +34,7 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
 
     return {
       async LiquidRawTag(node) {
-        if (node.name !== 'schema' || node.body.kind !== 'json' || !context.parseJSON) {
+        if (node.name !== 'schema' || node.body.kind !== 'json') {
           return;
         }
 
@@ -35,110 +43,81 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
           node.blockEndPosition.start,
         );
 
-        const jsonDocument = context.parseJSON(context.file, jsonString);
-        if (!jsonDocument || !jsonDocument.root) {
-          return;
-        }
+        const jsonFile = toJSONAST(jsonString);
+        if (jsonFile instanceof Error) return;
 
-        // Check for local blocks
-        const { found: localBlocksExist, locations: localBlockLocations } = hasLocalBlocks(
-          jsonDocument.root,
-        );
+        const {
+          rootBlockTypes,
+          presetBlockTypes,
+          hasLocalBlocks,
+          hasThemeBlocks,
+          localBlockLocations,
+          themeBlockLocations,
+        } = collectAndValidateBlockTypes(jsonFile as JSONNode);
 
         // Skip validation for section files with local blocks
-        if (isSection && localBlocksExist) {
+        if (isSection && hasLocalBlocks) {
+          if (hasThemeBlocks) {
+            themeBlockLocations.forEach(
+              reportError(
+                'Sections cannot use theme blocks together with locally scoped blocks.',
+                context,
+                node,
+              ),
+            );
+          }
           return;
         }
 
         // Check for local blocks in theme blocks
-        if (isThemeBlock && localBlocksExist) {
-          for (const [startIndex, length] of localBlockLocations) {
-            context.report({
-              message: `Local scoped blocks are not supported in theme blocks.`,
-              startIndex: node.blockStartPosition.end + startIndex,
-              endIndex: node.blockStartPosition.end + startIndex + length,
-            });
-          }
+        if (isThemeBlock && hasLocalBlocks) {
+          localBlockLocations.forEach(
+            reportError('Local scoped blocks are not supported in theme blocks.', context, node),
+          );
           return;
         }
 
-        // Collect root level block types
-        const rootLevelBlockTypes: { [key: string]: Location[] } = {};
-        if (jsonDocument.root?.type === 'object') {
-          const blocksProperty = jsonDocument.root.properties.find(
-            (p) => p.keyNode?.value === 'blocks',
-          );
-
-          if (blocksProperty?.valueNode?.type === 'array') {
-            for (const block of blocksProperty.valueNode.items || []) {
-              collectBlockTypes(block, rootLevelBlockTypes);
-            }
-          }
-        }
-
-        // Validate existence of root level block types
+        // Validate root level block types
         let errorsInRootLevelBlocks = false;
-        for (const blockType in rootLevelBlockTypes) {
-          const locations = rootLevelBlockTypes[blockType];
+        for (const [blockType, locations] of Object.entries(rootBlockTypes)) {
           const exists = await validateBlockFileExistence(blockType, context);
           if (!exists) {
-            for (const [startIndex, length] of locations) {
-              context.report({
-                message: `Theme block 'blocks/${blockType}.liquid' does not exist.`,
-                startIndex: node.blockStartPosition.end + startIndex,
-                endIndex: node.blockStartPosition.end + startIndex + length,
-              });
-            }
+            locations.forEach(
+              reportError(
+                `Theme block 'blocks/${blockType}.liquid' does not exist.`,
+                context,
+                node,
+              ),
+            );
             errorsInRootLevelBlocks = true;
           }
         }
 
-        // If no errors in root level blocks, proceed to collect preset block types
-        if (!errorsInRootLevelBlocks) {
-          const presetBlockTypes: { [key: string]: Location[] } = {};
-          if (jsonDocument.root?.type === 'object') {
-            const presetsProperty = jsonDocument.root.properties.find(
-              (p) => p.keyNode?.value === 'presets',
-            );
+        if (errorsInRootLevelBlocks) return;
 
-            if (presetsProperty?.valueNode?.type === 'array') {
-              for (const preset of presetsProperty.valueNode.items || []) {
-                collectBlockTypes(preset, presetBlockTypes);
-              }
-            }
-          }
+        // Validate preset block types
+        for (const [presetType, locations] of Object.entries(presetBlockTypes)) {
+          const isPrivateBlockType = presetType.startsWith('_');
+          const isPresetInRootLevel = presetType in rootBlockTypes;
+          const isThemeInRootLevel = '@theme' in rootBlockTypes;
+          const needsExplicitRootBlock = isPrivateBlockType || !isThemeInRootLevel;
 
-          // Validate existence of preset block types
-          for (const presetType in presetBlockTypes) {
-            const presetLocations = presetBlockTypes[presetType];
-            const isPrivateBlockType = presetType.startsWith('_');
-            const isPresetInRootLevel = presetType in rootLevelBlockTypes;
-            const isThemeInRootLevel = '@theme' in rootLevelBlockTypes;
-            const needsExplicitRootBlock = isPrivateBlockType || !isThemeInRootLevel;
+          if (!isPresetInRootLevel && needsExplicitRootBlock) {
+            const errorMessage = isPrivateBlockType
+              ? `Theme block type "${presetType}" is a private block so it must be explicitly allowed in "blocks" at the root of this schema.`
+              : `Theme block type "${presetType}" must be allowed in "blocks" at the root of this schema.`;
 
-            if (!isPresetInRootLevel && needsExplicitRootBlock) {
-              const errorMessage = isPrivateBlockType
-                ? `Theme block type "${presetType}" is a private block so it must be explicitly allowed in "blocks" at the root of this schema.`
-                : `Theme block type "${presetType}" must be allowed in "blocks" at the root of this schema.`;
-
-              presetLocations.forEach(([startIndex, length]) => {
-                context.report({
-                  message: errorMessage,
-                  startIndex: node.blockStartPosition.end + startIndex,
-                  endIndex: node.blockStartPosition.end + startIndex + length,
-                });
-              });
-            } else {
-              const exists = await validateBlockFileExistence(presetType, context);
-              if (!exists) {
-                for (const [startIndex, length] of presetLocations) {
-                  context.report({
-                    message: `Theme block 'blocks/${presetType}.liquid' does not exist.`,
-                    startIndex: node.blockStartPosition.end + startIndex,
-                    endIndex: node.blockStartPosition.end + startIndex + length,
-                  });
-                }
-              }
+            locations.forEach(reportError(errorMessage, context, node));
+          } else {
+            const exists = await validateBlockFileExistence(presetType, context);
+            if (!exists) {
+              locations.forEach(
+                reportError(
+                  `Theme block 'blocks/${presetType}.liquid' does not exist.`,
+                  context,
+                  node,
+                ),
+              );
             }
           }
         }
