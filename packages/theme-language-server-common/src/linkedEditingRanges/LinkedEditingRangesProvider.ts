@@ -1,7 +1,7 @@
 import { LiquidHtmlNode, SourceCodeType } from '@shopify/theme-check-common';
 import { LinkedEditingRangeParams, LinkedEditingRanges } from 'vscode-languageserver';
 import { DocumentManager } from '../documents';
-import { findCurrentNode } from '../visitor';
+import { findCurrentNode } from '@shopify/theme-check-common';
 import { BaseLinkedEditingRangesProvider } from './BaseLinkedEditingRangesProvider';
 import { EmptyHtmlTagLinkedRangesProvider, HtmlTagNameLinkedRangesProvider } from './providers';
 

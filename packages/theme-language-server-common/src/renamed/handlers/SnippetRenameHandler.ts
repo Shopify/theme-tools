@@ -10,7 +10,7 @@ import {
 } from 'vscode-languageserver-protocol';
 import { AugmentedLiquidSourceCode, AugmentedSourceCode } from '../../documents';
 import { isSnippet, snippetName } from '../../utils/uri';
-import { visit } from '../../visitor';
+import { visit } from '@shopify/theme-check-common';
 import { BaseRenameHandler } from '../BaseRenameHandler';
 
 /**

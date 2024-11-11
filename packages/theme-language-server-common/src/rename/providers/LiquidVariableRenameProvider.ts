@@ -20,7 +20,7 @@ import {
   TextEdit,
   WorkspaceEdit,
 } from 'vscode-languageserver-protocol';
-import { visit } from '../../visitor';
+import { visit } from '@shopify/theme-check-common';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { JSONNode } from '@shopify/theme-check-common';
 

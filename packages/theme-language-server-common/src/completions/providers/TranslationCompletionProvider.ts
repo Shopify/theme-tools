@@ -8,7 +8,7 @@ import {
   renderTranslation,
   translationOptions,
 } from '../../translations';
-import { findCurrentNode } from '../../visitor';
+import { findCurrentNode } from '@shopify/theme-check-common';
 import { LiquidCompletionParams } from '../params';
 import { Provider } from './common';
 

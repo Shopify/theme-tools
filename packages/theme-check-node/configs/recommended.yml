@@ -90,6 +90,9 @@ ValidJSON:
 ValidSchema:
   enabled: true
   severity: 0
+ValidSchemaName:
+  enabled: true
+  severity: 0
 ValidStaticBlockType:
   enabled: true
   severity: 0

@@ -8,7 +8,7 @@ import {
   WorkspaceEdit,
 } from 'vscode-languageserver-protocol';
 import { DocumentManager } from '../documents';
-import { findCurrentNode } from '../visitor';
+import { findCurrentNode } from '@shopify/theme-check-common';
 import { BaseRenameProvider } from './BaseRenameProvider';
 import { HtmlTagNameRenameProvider } from './providers/HtmlTagNameRenameProvider';
 import { LiquidVariableRenameProvider } from './providers/LiquidVariableRenameProvider';

@@ -32,7 +32,7 @@ import {
   isSettingsCategory,
 } from './settings';
 import { findLast, memo } from './utils';
-import { visit } from './visitor';
+import { visit } from '@shopify/theme-check-common';
 
 export class TypeSystem {
   constructor(

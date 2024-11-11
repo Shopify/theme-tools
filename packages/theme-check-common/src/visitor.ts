@@ -1,10 +1,4 @@
-import {
-  AST,
-  LiquidHtmlNode,
-  NodeOfType,
-  SourceCodeType,
-  NodeTypes,
-} from '@shopify/theme-check-common';
+import { AST, LiquidHtmlNode, NodeOfType, SourceCodeType, NodeTypes } from './types';
 
 export type VisitorMethod<S extends SourceCodeType, T, R> = (
   node: NodeOfType<S, T>,

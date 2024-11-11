@@ -18,7 +18,7 @@ import {
 } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DocumentManager } from '../documents';
-import { findCurrentNode } from '../visitor';
+import { findCurrentNode } from '@shopify/theme-check-common';
 import { TranslationFileContributions } from './TranslationFileContributions';
 import { SchemaTranslationContributions } from './SchemaTranslationContributions';
 import { GetTranslationsForURI } from '../translations';

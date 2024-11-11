@@ -14,7 +14,7 @@ import {
 } from 'vscode-languageserver-protocol';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { AugmentedLiquidSourceCode } from '../../documents';
-import { findCurrentNode } from '../../visitor';
+import { findCurrentNode } from '@shopify/theme-check-common';
 import { BaseOnTypeFormattingProvider, SetCursorPosition } from '../types';
 
 const defer = (fn: () => void) => setTimeout(fn, 10);

@@ -14,7 +14,7 @@ import {
   TranslationHoverProvider,
 } from './providers';
 import { HtmlAttributeValueHoverProvider } from './providers/HtmlAttributeValueHoverProvider';
-import { findCurrentNode } from '../visitor';
+import { findCurrentNode } from '@shopify/theme-check-common';
 import { GetThemeSettingsSchemaForURI } from '../settings';
 
 export class HoverProvider {

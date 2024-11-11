@@ -1,7 +1,7 @@
 import { SourceCodeType } from '@shopify/theme-check-common';
 import { DocumentHighlight, DocumentHighlightParams } from 'vscode-languageserver';
 import { DocumentManager } from '../documents';
-import { findCurrentNode } from '../visitor';
+import { findCurrentNode } from '@shopify/theme-check-common';
 import { BaseDocumentHighlightsProvider } from './BaseDocumentHighlightsProvider';
 import {
   HtmlTagNameDocumentHighlightsProvider,
