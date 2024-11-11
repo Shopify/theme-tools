@@ -1,5 +1,16 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.6.0
+
+### Minor Changes
+
+- 568d53b: Add support for the `content_for` Liquid tag
+
+### Patch Changes
+
+- Updated dependencies [568d53b]
+  - @shopify/liquid-html-parser@2.1.0
+
 ## 1.5.2
 
 ### Patch Changes

@@ -1,5 +1,22 @@
 ## theme-check-vscode
 
+## 3.1.0
+
+### Minor Changes
+
+- bae0653: Do not activate language server for non-theme files
+- 4a875bb: Add babel prettier plugin manually to fix the formatting in web version of the extension (Thanks @Smintfy)
+- b431db7: Add `ValidateSchemaName` check
+- 568d53b: Support for the `content_for` Liquid tag
+- 8f3bc18: Add "block" or "blocks" completion for the `content_for` Liquid tag (Thanks @Smintfy)
+- 6014dfd: Support metafield auto-completion based on .shopify/metafields.json file
+- Updated dependencies
+  - @shopify/theme-check-common@3.1.0
+  - @shopify/liquid-html-parser@2.1.0
+  - @shopify/prettier-plugin-liquid@1.6.0
+  - @shopify/theme-language-server-browser@2.1.0
+  - @shopify/theme-language-server-node@2.1.0
+
 ## 3.0.0
 
 ### Major Changes

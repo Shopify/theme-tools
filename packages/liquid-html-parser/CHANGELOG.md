@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.1.0
+
+### Minor Changes
+
+- 568d53b: Add support for the `content_for` Liquid tag
+
 ## 2.0.5
 
 ### Patch Changes
