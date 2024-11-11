@@ -1,6 +1,7 @@
 import { FileExists, findRoot, path } from '@shopify/theme-check-common';
 import { Connection } from 'vscode-languageserver';
 import { RenameFilesParams } from 'vscode-languageserver-protocol';
+import { ClientCapabilities } from '../ClientCapabilities';
 import { DocumentManager } from '../documents';
 import { BaseRenameHandler } from './BaseRenameHandler';
 import { AssetRenameHandler } from './handlers/AssetRenameHandler';
@@ -18,10 +19,14 @@ export class RenameHandler {
   private handlers: BaseRenameHandler[];
   constructor(
     connection: Connection,
+    capabilities: ClientCapabilities,
     private documentManager: DocumentManager,
     private fileExists: FileExists,
   ) {
-    this.handlers = [new SnippetRenameHandler(connection), new AssetRenameHandler(connection)];
+    this.handlers = [
+      new SnippetRenameHandler(connection, capabilities),
+      new AssetRenameHandler(connection, capabilities),
+    ];
   }
 
   async onDidRenameFiles(params: RenameFilesParams) {

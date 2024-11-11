@@ -106,7 +106,12 @@ export function startServer(
   const linkedEditingRangesProvider = new LinkedEditingRangesProvider(documentManager);
   const documentHighlightProvider = new DocumentHighlightsProvider(documentManager);
   const renameProvider = new RenameProvider(documentManager);
-  const renameHandler = new RenameHandler(connection, documentManager, fileExists);
+  const renameHandler = new RenameHandler(
+    connection,
+    clientCapabilities,
+    documentManager,
+    fileExists,
+  );
 
   async function findThemeRootURI(uri: string) {
     const rootUri = await findRoot(uri, fileExists);

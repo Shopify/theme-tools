@@ -12,6 +12,7 @@ import { AugmentedLiquidSourceCode, AugmentedSourceCode } from '../../documents'
 import { isSnippet, snippetName } from '../../utils/uri';
 import { visit } from '@shopify/theme-check-common';
 import { BaseRenameHandler } from '../BaseRenameHandler';
+import { ClientCapabilities } from '../../ClientCapabilities';
 
 /**
  * The SnippetRenameHandler will handle snippet renames.
@@ -26,9 +27,10 @@ import { BaseRenameHandler } from '../BaseRenameHandler';
  * WorkspaceEdit that changes the references to the new snippet.
  */
 export class SnippetRenameHandler implements BaseRenameHandler {
-  constructor(private connection: Connection) {}
+  constructor(private connection: Connection, private capabilities: ClientCapabilities) {}
 
   async onDidRenameFiles(params: RenameFilesParams, theme: AugmentedSourceCode[]): Promise<void> {
+    if (!this.capabilities.hasApplyEditSupport) return;
     const isLiquidSourceCode = (file: AugmentedSourceCode): file is AugmentedLiquidSourceCode =>
       file.type === SourceCodeType.LiquidHtml;
 
