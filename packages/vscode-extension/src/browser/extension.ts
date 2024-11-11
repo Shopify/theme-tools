@@ -1,9 +1,14 @@
 /// <reference lib="webworker" />
 import { FileStat, FileTuple, path } from '@shopify/theme-check-common';
 import { commands, ExtensionContext, languages, Uri, workspace } from 'vscode';
-import { LanguageClient, LanguageClientOptions } from 'vscode-languageclient/browser';
+import {
+  LanguageClient,
+  LanguageClientOptions,
+  DocumentSelector,
+} from 'vscode-languageclient/browser';
 import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
+import { documentSelectors } from '../common/constants';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -39,16 +44,7 @@ export function deactivate() {
 async function startServer(context: ExtensionContext) {
   console.log('Starting Theme Check Language Server');
   const clientOptions: LanguageClientOptions = {
-    documentSelector: [
-      { language: 'liquid' },
-      { language: 'plaintext' },
-      { language: 'html' },
-      { language: 'javascript' },
-      { language: 'css' },
-      { language: 'scss' },
-      { language: 'json' },
-      { language: 'jsonc' },
-    ],
+    documentSelector: documentSelectors as DocumentSelector,
   };
 
   client = createWorkerLanguageClient(context, clientOptions);

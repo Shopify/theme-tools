@@ -2,11 +2,13 @@ import { FileStat, FileTuple, path as pathUtils } from '@shopify/theme-check-com
 import * as path from 'node:path';
 import { commands, ExtensionContext, languages, Uri, workspace } from 'vscode';
 import {
+  DocumentSelector,
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
   TransportKind,
 } from 'vscode-languageclient/node';
+import { documentSelectors } from '../common/constants';
 import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
 
@@ -50,16 +52,7 @@ async function startServer(context: ExtensionContext) {
   }
 
   const clientOptions: LanguageClientOptions = {
-    documentSelector: [
-      { language: 'liquid' },
-      { language: 'plaintext' },
-      { language: 'html' },
-      { language: 'javascript' },
-      { language: 'css' },
-      { language: 'scss' },
-      { language: 'json' },
-      { language: 'jsonc' },
-    ],
+    documentSelector: documentSelectors as DocumentSelector,
   };
 
   client = new LanguageClient(
