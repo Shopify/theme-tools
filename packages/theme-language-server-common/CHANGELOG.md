@@ -1,5 +1,61 @@
 # @shopify/theme-language-server-common
 
+## 2.1.0
+
+### Minor Changes
+
+- b431db7: Add `ValidateSchemaName` check
+- 8f3bc18: Add "block" or "blocks" completion for the `content_for` Liquid tag (Thanks @Smintfy)
+- 568d53b: Add support for the `content_for` Liquid tag
+- 6014dfd: Support metafield auto-completion based on .shopify/metafields.json file
+
+  - The metafield definitions can be fetched from Admin API
+  - The format of the JSON needs to be the following:
+
+  ```
+  {
+      "<definition_group>": [
+          {
+              "name": "...",
+              "namespace": "...",
+              "description": "...",
+              "type": {
+                  "category": "...",
+                  "name": "..."
+              },
+          },
+          ...
+      ],
+      ...
+  }
+  ```
+
+  The definition group needs to be one of the following:
+
+  - 'article'
+  - 'blog'
+  - 'brand'
+  - 'collection'
+  - 'company'
+  - 'company_location'
+  - 'location'
+  - 'market'
+  - 'order'
+  - 'page'
+  - 'product'
+  - 'variant'
+  - 'shop'
+
+### Patch Changes
+
+- 04a3275: Gate the `{Asset,Snippet}RenameHandler` behind the `workspace.applyEdit` client capability
+- Updated dependencies [b431db7]
+- Updated dependencies [568d53b]
+- Updated dependencies [568d53b]
+- Updated dependencies [6014dfd]
+  - @shopify/theme-check-common@3.1.0
+  - @shopify/liquid-html-parser@2.1.0
+
 ## 2.0.0
 
 ### Major Changes

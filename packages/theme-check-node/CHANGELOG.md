@@ -1,5 +1,20 @@
 # @shopify/theme-check-node
 
+## 3.1.0
+
+### Minor Changes
+
+- b431db7: Add `ValidateSchemaName` check
+- 568d53b: Add the `ValidContentForArguments` check
+
+### Patch Changes
+
+- Updated dependencies [b431db7]
+- Updated dependencies [568d53b]
+- Updated dependencies [6014dfd]
+  - @shopify/theme-check-common@3.1.0
+  - @shopify/theme-check-docs-updater@3.1.0
+
 ## 3.0.0
 
 ### Major Changes
