@@ -97,10 +97,10 @@ UnknownFilter:
 UnusedAssign:
   enabled: true
   severity: 1
-ValidContentForArguments:
+ValidBlockTarget:
   enabled: true
   severity: 0
-ValidBlockTarget:
+ValidContentForArguments:
   enabled: true
   severity: 0
 ValidHTMLTranslation:
