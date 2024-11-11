@@ -1,3 +1,4 @@
+export { ContentForBlockCompletionProvider } from './ContentForBlockCompletionProvider';
 export { HtmlTagCompletionProvider } from './HtmlTagCompletionProvider';
 export { HtmlAttributeCompletionProvider } from './HtmlAttributeCompletionProvider';
 export { HtmlAttributeValueCompletionProvider } from './HtmlAttributeValueCompletionProvider';
