@@ -6,7 +6,7 @@ import { GetThemeSettingsSchemaForURI } from '../settings';
 import { GetTranslationsForURI } from '../translations';
 import { createLiquidCompletionParams } from './params';
 import {
-  ContentForBlockCompletionProvider,
+  ContentForCompletionProvider,
   FilterCompletionProvider,
   HtmlAttributeCompletionProvider,
   HtmlAttributeValueCompletionProvider,
@@ -55,7 +55,7 @@ export class CompletionsProvider {
     );
 
     this.providers = [
-      new ContentForBlockCompletionProvider(),
+      new ContentForCompletionProvider(),
       new HtmlTagCompletionProvider(),
       new HtmlAttributeCompletionProvider(documentManager),
       new HtmlAttributeValueCompletionProvider(),

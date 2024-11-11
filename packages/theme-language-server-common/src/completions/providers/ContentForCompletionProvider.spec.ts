@@ -1,9 +1,9 @@
-import { describe, beforeEach, it, expect } from "vitest";
-import { CompletionsProvider } from "../CompletionsProvider";
-import { DocumentManager } from "../../documents";
-import { MetafieldDefinitionMap } from "@shopify/theme-check-common";
+import { describe, beforeEach, it, expect } from 'vitest';
+import { CompletionsProvider } from '../CompletionsProvider';
+import { DocumentManager } from '../../documents';
+import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 
-describe('Module: ContentForBlockCompletionProvider', async () => {
+describe('Module: ContentForCompletionProvider', async () => {
   let provider: CompletionsProvider;
 
   beforeEach(async () => {
