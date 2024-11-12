@@ -1,4 +1,4 @@
-import { FileExists, findRoot, path } from '@shopify/theme-check-common';
+import { path } from '@shopify/theme-check-common';
 import { Connection } from 'vscode-languageserver';
 import { RenameFilesParams } from 'vscode-languageserver-protocol';
 import { ClientCapabilities } from '../ClientCapabilities';
@@ -21,7 +21,7 @@ export class RenameHandler {
     connection: Connection,
     capabilities: ClientCapabilities,
     private documentManager: DocumentManager,
-    private fileExists: FileExists,
+    private findThemeRootURI: (uri: string) => Promise<string>,
   ) {
     this.handlers = [
       new SnippetRenameHandler(connection, capabilities),
@@ -30,10 +30,15 @@ export class RenameHandler {
   }
 
   async onDidRenameFiles(params: RenameFilesParams) {
-    const rootUri = await findRoot(path.dirname(params.files[0].oldUri), this.fileExists);
-    await this.documentManager.preload(rootUri);
-    const theme = this.documentManager.theme(rootUri, true);
-    const promises = this.handlers.map((handler) => handler.onDidRenameFiles(params, theme));
-    await Promise.all(promises);
+    try {
+      const rootUri = await this.findThemeRootURI(path.dirname(params.files[0].oldUri));
+      await this.documentManager.preload(rootUri);
+      const theme = this.documentManager.theme(rootUri, true);
+      const promises = this.handlers.map((handler) => handler.onDidRenameFiles(params, theme));
+      await Promise.all(promises);
+    } catch (error) {
+      console.error(error);
+      return;
+    }
   }
 }

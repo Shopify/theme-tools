@@ -14,6 +14,7 @@ import {
   ProtocolConnection,
   WatchDog,
 } from 'vscode-languageserver';
+import { path } from '@shopify/theme-check-common';
 
 type MockConnectionMethods = {
   /** Trigger all appropriate onNotification handlers on the connection */
@@ -70,7 +71,7 @@ function protocolConnection(requests: EventEmitter, notifications: EventEmitter)
   } satisfies ProtocolConnection;
 }
 
-export function mockConnection(): MockConnection {
+export function mockConnection(rootUri: string): MockConnection {
   const watchDog: WatchDog = {
     exit: vi.fn(),
     initialize: vi.fn(),
@@ -115,7 +116,7 @@ export function mockConnection(): MockConnection {
       triggerNotification(DidOpenTextDocumentNotification.type, {
         textDocument: {
           languageId: 'liquid',
-          uri: `browser:/${relativePath}`,
+          uri: path.join(rootUri, relativePath),
           version: 0,
           text,
         },
@@ -125,7 +126,7 @@ export function mockConnection(): MockConnection {
     changeDocument(relativePath, text, version) {
       triggerNotification(DidChangeTextDocumentNotification.type, {
         textDocument: {
-          uri: `browser:/${relativePath}`,
+          uri: path.join(rootUri, relativePath),
           version,
         },
         contentChanges: [
@@ -139,7 +140,7 @@ export function mockConnection(): MockConnection {
     closeDocument(relativePath) {
       triggerNotification(DidCloseTextDocumentNotification.type, {
         textDocument: {
-          uri: `browser:/${relativePath}`,
+          uri: path.join(rootUri, relativePath),
         },
       });
     },
@@ -147,7 +148,7 @@ export function mockConnection(): MockConnection {
     saveDocument(relativePath) {
       triggerNotification(DidSaveTextDocumentNotification.type, {
         textDocument: {
-          uri: `browser:/${relativePath}`,
+          uri: path.join(rootUri, relativePath),
         },
       });
     },

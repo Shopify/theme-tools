@@ -35,6 +35,10 @@ export class ClientCapabilities {
     return !!this.capabilities?.window?.showDocument;
   }
 
+  get hasProgressSupport() {
+    return !!this.capabilities?.window?.workDoneProgress;
+  }
+
   initializationOption<T>(key: string, defaultValue: T): T {
     // { 'themeCheck.checkOnSave': true }
     const direct = this.initializationOptions?.[key];

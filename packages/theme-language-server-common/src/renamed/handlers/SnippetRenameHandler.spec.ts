@@ -10,13 +10,15 @@ import { RenameHandler } from '../RenameHandler';
 import { ClientCapabilities } from '../../ClientCapabilities';
 
 describe('Module: SnippetRenameHandler', () => {
+  const mockRoot = 'mock-fs:';
+  const findThemeRootURI = async () => mockRoot;
   let capabilities: ClientCapabilities;
   let documentManager: DocumentManager;
   let handler: RenameHandler;
   let connection: MockConnection;
   let fs: MockFileSystem;
   beforeEach(() => {
-    connection = mockConnection();
+    connection = mockConnection(mockRoot);
     connection.spies.sendRequest.mockReturnValue(Promise.resolve(true));
     capabilities = new ClientCapabilities();
     fs = new MockFileSystem(
@@ -26,10 +28,10 @@ describe('Module: SnippetRenameHandler', () => {
         'snippets/oldName.liquid': `<div>oldName{%</div>`,
         'snippets/other.liquid': `<div>{% render 'oldName' %}{% render 'other' %}</div>`,
       },
-      'mock-fs:',
+      mockRoot,
     );
     documentManager = new DocumentManager(fs);
-    handler = new RenameHandler(connection, capabilities, documentManager, makeFileExists(fs));
+    handler = new RenameHandler(connection, capabilities, documentManager, findThemeRootURI);
   });
 
   describe('when the client does not support workspace/applyEdit', () => {

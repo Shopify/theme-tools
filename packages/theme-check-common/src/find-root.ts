@@ -45,6 +45,9 @@ async function not(ap: Promise<boolean>) {
  *
  * So you can think of this function as the function that infers where a .theme-check.yml
  * should be.
+ *
+ * Note: that this is not the theme root. The config file might have a `root` entry in it
+ * that points to somewhere else.
  */
 export async function findRoot(curr: UriString, fileExists: FileExists): Promise<UriString> {
   const currIsRoot = await isRoot(curr, fileExists);

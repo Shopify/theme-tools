@@ -1,7 +1,7 @@
 import {
   AugmentedThemeDocset,
   FileTuple,
-  findRoot,
+  findRoot as findConfigFileRoot,
   isError,
   makeFileExists,
   makeGetDefaultSchemaTranslations,
@@ -85,7 +85,7 @@ export function startServer(
   const fileExists = makeFileExists(fs);
   const clientCapabilities = new ClientCapabilities();
   const configuration = new Configuration(connection, clientCapabilities);
-  const documentManager = new DocumentManager(fs);
+  const documentManager = new DocumentManager(fs, connection, clientCapabilities);
   const diagnosticsManager = new DiagnosticsManager(connection);
   const documentLinksProvider = new DocumentLinksProvider(documentManager, findThemeRootURI);
   const codeActionsProvider = new CodeActionsProvider(documentManager, diagnosticsManager);
@@ -110,11 +110,11 @@ export function startServer(
     connection,
     clientCapabilities,
     documentManager,
-    fileExists,
+    findThemeRootURI,
   );
 
   async function findThemeRootURI(uri: string) {
-    const rootUri = await findRoot(uri, fileExists);
+    const rootUri = await findConfigFileRoot(uri, fileExists);
     const config = await loadConfig(rootUri, fs);
     return config.rootUri;
   }
@@ -186,7 +186,7 @@ export function startServer(
   };
 
   const getModeForURI = async (uri: string) => {
-    const rootUri = await findRoot(uri, fileExists);
+    const rootUri = await findConfigFileRoot(uri, fileExists);
     const config = await loadConfig(rootUri, fs);
     return config.context;
   };
@@ -315,6 +315,22 @@ export function startServer(
     if (await configuration.shouldCheckOnOpen()) {
       runChecks([uri]);
     }
+
+    // The objective at the time of writing this is to make {Asset,Snippet}Rename
+    // fast when you eventually need it.
+    //
+    // I'm choosing the textDocument/didOpen notification as a hook because
+    // I'm not sure we have a better solution that this. Yes we have the
+    // initialize request with the workspace folders, but you might have opened
+    // an app folder. The root of a theme app extension would probably be
+    // at ${workspaceRoot}/extensions/${appExtensionName}. It'd be hard to
+    // figure out from the initialize request params.
+    //
+    // If we open a file that we know is liquid, then we can kind of guarantee
+    // we'll find a theme root and we'll preload that.
+    findThemeRootURI(uri)
+      .then((rootUri) => documentManager.preload(rootUri))
+      .catch((e) => console.error(e));
   });
 
   connection.onDidChangeTextDocument(async (params) => {
@@ -412,48 +428,69 @@ export function startServer(
     }
   });
 
-  // These notifications could cause a MissingSnippet check to be invalidated
-  //
-  // It is not guaranteed that the file is or was opened when it was
-  // created/renamed/deleted. If we're smart, we're going to re-lint for
-  // every root affected. Unfortunately, we can't just use the debounced
-  // call because we could run in a weird timing issue where didOpen
-  // happens after the didRename and causes the 'lastArgs' to skip over the
-  // ones we were after.
-  //
-  // So we're using runChecks.force for that.
   connection.workspace.onDidCreateFiles((params) => {
     const triggerUris = params.files.map((fileCreate) => fileCreate.uri);
-    runChecks.force(triggerUris);
     for (const { uri } of params.files) {
-      fs.readDirectory.invalidate(path.dirname(uri));
-      fs.readFile.invalidate(uri);
-      fs.stat.invalidate(uri);
+      // When a file is created, to make sure preload isn't invalidated, we add
+      // an empty string to the document manager for the new URI.
+      if (!documentManager.has(uri)) documentManager.open(uri, '', undefined);
+      fs.readDirectory.invalidate(path.dirname(uri)); // Since there's a new file there
+      fs.readFile.invalidate(uri); // Since this is no longer an error
+      fs.stat.invalidate(uri); // Since this is no longer an error
     }
-  });
-  connection.workspace.onDidRenameFiles((params) => {
-    const triggerUris = params.files.map((fileRename) => fileRename.newUri);
-    renameHandler.onDidRenameFiles(params);
+
+    // MissingAssets/MissingSnippet should be rerun when a new file exists
+    // since the file creation might invalidate the error.
     runChecks.force(triggerUris);
+  });
+
+  connection.workspace.onDidRenameFiles(async (params) => {
+    const triggerUris = params.files.map((fileRename) => fileRename.newUri);
+
+    // Behold the cache invalidation monster
     for (const { oldUri, newUri } of params.files) {
-      documentManager.delete(oldUri);
+      // When a file is renamed, we paste the content of the old file into the
+      // new file in the document manager. We don't need to invalidate preload
+      // because that's the only thing that changed.
+      documentManager.rename(oldUri, newUri);
+
+      // When a file is renamed, readDirectory to the parent folder is invalidated.
       fs.readDirectory.invalidate(path.dirname(oldUri));
       fs.readDirectory.invalidate(path.dirname(newUri));
+
+      // When a file is renamed, readFile and stat for both the old and new URIs are invalidated.
       fs.readFile.invalidate(oldUri);
       fs.readFile.invalidate(newUri);
       fs.stat.invalidate(oldUri);
       fs.stat.invalidate(newUri);
     }
+
+    // We should complete refactors before running theme check
+    await renameHandler.onDidRenameFiles(params);
+
+    // MissingAssets/MissingSnippet should be rerun when a file is renamed
+    // since the file rename might invalidate an error.
+    runChecks.force(triggerUris);
   });
+
   connection.workspace.onDidDeleteFiles((params) => {
     const triggerUris = params.files.map((fileDelete) => fileDelete.uri);
-    runChecks.force(triggerUris);
     for (const { uri } of params.files) {
+      // When a file is deleted, we remove it from the document manager.
+      // Don't need to invalidate preload because that operation covers it.
       documentManager.delete(uri);
+
+      // Since the file is gone, we invalidate the parent directory's readDirectory.
       fs.readDirectory.invalidate(path.dirname(uri));
+
+      // Since the file is gone, we invalidate the readFile and stat for the URI.
       fs.readFile.invalidate(uri);
       fs.stat.invalidate(uri);
     }
+
+    // MissingAssets/MissingSnippet should be rerun when a file is deleted
+    // since the file rename might cause an error.
+    runChecks.force(triggerUris);
   });
 
   connection.listen();

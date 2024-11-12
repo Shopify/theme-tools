@@ -1,4 +1,4 @@
-import { allChecks } from '@shopify/theme-check-common';
+import { allChecks, path } from '@shopify/theme-check-common';
 import { MockFileSystem, MockTheme } from '@shopify/theme-check-common/dist/test';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -7,6 +7,8 @@ import {
   DidDeleteFilesNotification,
   DidRenameFilesNotification,
   PublishDiagnosticsNotification,
+  WorkDoneProgress,
+  WorkDoneProgressCreateRequest,
 } from 'vscode-languageserver';
 import { MockConnection, mockConnection } from '../test/MockConnection';
 import { Dependencies } from '../types';
@@ -16,8 +18,9 @@ import { startServer } from './startServer';
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('Module: server', () => {
+  const mockRoot = path.normalize('browser:/theme');
   const filePath = 'snippets/code.liquid';
-  const fileURI = `browser:/${filePath}`;
+  const fileURI = path.join(mockRoot, filePath);
   const fileContents = `{% render 'foo' %}`;
   let checkOnChange: boolean | null = null;
   let checkOnSave: boolean | null = null;
@@ -31,7 +34,7 @@ describe('Module: server', () => {
     checkOnChange = checkOnSave = checkOnOpen = null;
 
     // Initialize all ze mocks...
-    connection = mockConnection();
+    connection = mockConnection(mockRoot);
 
     // Mock answer to workspace/configuration requests
     connection.spies.sendRequest.mockImplementation(async (method: any, params: any) => {
@@ -217,10 +220,10 @@ describe('Module: server', () => {
     connection.triggerNotification(DidCreateFilesNotification.type, {
       files: [
         {
-          uri: 'browser:/snippets/foo.liquid',
+          uri: path.join(mockRoot, 'snippets/foo.liquid'),
         },
         {
-          uri: 'browser:/snippets/bar.liquid',
+          uri: path.join(mockRoot, 'snippets/bar.liquid'),
         },
       ],
     });
@@ -259,21 +262,24 @@ describe('Module: server', () => {
     // Reset mocks for different expectations later
     connection.spies.sendNotification.mockClear();
 
+    // Adjust mocks
+    fileTree['snippets/foo.liquid'] = fileTree['snippets/bar.liquid'];
+    delete fileTree['snippets/bar.liquid'];
+
     // Trigger a file rename notification
     connection.triggerNotification(DidRenameFilesNotification.type, {
       files: [
         {
-          oldUri: 'browser:/snippets/bar.liquid',
-          newUri: 'browser:/snippets/foo.liquid',
+          oldUri: path.join(mockRoot, 'snippets/bar.liquid'),
+          newUri: path.join(mockRoot, 'snippets/foo.liquid'),
         },
       ],
     });
 
-    // Adjust mocks
-    delete fileTree['snippets/bar.liquid'];
-    fileTree['snippets/foo.liquid'] = '...';
+    // We need to flush the rename handler work
+    await flushAsync();
 
-    // Advance time
+    // Advance time to trigger the re-check
     await advanceAndFlush(100);
 
     // Make sure only one publishDiagnostics has been called and that the
@@ -314,7 +320,7 @@ describe('Module: server', () => {
     connection.triggerNotification(DidDeleteFilesNotification.type, {
       files: [
         {
-          uri: 'browser:/snippets/foo.liquid',
+          uri: path.join(mockRoot, 'snippets/foo.liquid'),
         },
       ],
     });
@@ -351,13 +357,13 @@ describe('Module: server', () => {
     const MissingTemplate = allChecks.filter((c) => c.meta.code === 'MissingTemplate');
 
     return {
-      fs: new MockFileSystem(fileTree, 'browser:/'),
+      fs: new MockFileSystem(fileTree, mockRoot),
       log: logger,
       loadConfig: async () => ({
         context: 'theme',
         settings: {},
         checks: MissingTemplate,
-        rootUri: 'browser:/',
+        rootUri: mockRoot,
       }),
       themeDocset: {
         filters: async () => [],

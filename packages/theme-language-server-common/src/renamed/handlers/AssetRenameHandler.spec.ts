@@ -10,13 +10,15 @@ import { MockConnection, mockConnection } from '../../test/MockConnection';
 import { RenameHandler } from '../RenameHandler';
 
 describe('Module: AssetRenameHandler', () => {
+  const mockRoot = 'mock-fs:';
+  const findThemeRootURI = async () => mockRoot;
   let capabilities: ClientCapabilities;
   let documentManager: DocumentManager;
   let handler: RenameHandler;
   let connection: MockConnection;
   let fs: MockFileSystem;
   beforeEach(() => {
-    connection = mockConnection();
+    connection = mockConnection(mockRoot);
     connection.spies.sendRequest.mockReturnValue(Promise.resolve(true));
     capabilities = new ClientCapabilities();
     fs = new MockFileSystem(
@@ -25,10 +27,10 @@ describe('Module: AssetRenameHandler', () => {
         'sections/section.liquid': `<script src="{{ 'oldName.js' | asset_url }}" defer></script>`,
         'blocks/block.liquid': `{{ 'oldName.js' | asset_url | script_tag }} oldName.js`,
       },
-      'mock-fs:',
+      mockRoot,
     );
     documentManager = new DocumentManager(fs);
-    handler = new RenameHandler(connection, capabilities, documentManager, makeFileExists(fs));
+    handler = new RenameHandler(connection, capabilities, documentManager, findThemeRootURI);
   });
 
   describe('when the client does not support workspace/applyEdit', () => {
@@ -183,7 +185,7 @@ describe('Module: AssetRenameHandler', () => {
         'mock-fs:',
       );
       documentManager = new DocumentManager(fs);
-      handler = new RenameHandler(connection, capabilities, documentManager, makeFileExists(fs));
+      handler = new RenameHandler(connection, capabilities, documentManager, findThemeRootURI);
 
       await handler.onDidRenameFiles({
         files: [
