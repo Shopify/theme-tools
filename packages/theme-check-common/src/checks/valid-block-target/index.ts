@@ -28,10 +28,6 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
   },
 
   create(context) {
-    const relativePath = context.toRelativePath(context.file.uri);
-    const isSection = relativePath.startsWith('sections/');
-    const isThemeBlock = relativePath.startsWith('blocks/');
-
     return {
       async LiquidRawTag(node) {
         if (node.name !== 'schema' || node.body.kind !== 'json') {
@@ -46,38 +42,10 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
         const jsonFile = toJSONAST(jsonString);
         if (jsonFile instanceof Error) return;
 
-        const {
-          rootBlockTypes,
-          presetBlockTypes,
-          hasLocalBlocks,
-          hasThemeBlocks,
-          localBlockLocations,
-          themeBlockLocations,
-        } = collectAndValidateBlockTypes(jsonFile as JSONNode);
+        const { rootBlockTypes, presetBlockTypes } = collectAndValidateBlockTypes(
+          jsonFile as JSONNode,
+        );
 
-        // Skip validation for section files with local blocks
-        if (isSection && hasLocalBlocks) {
-          if (hasThemeBlocks) {
-            themeBlockLocations.forEach(
-              reportError(
-                'Sections cannot use theme blocks together with locally scoped blocks.',
-                context,
-                node,
-              ),
-            );
-          }
-          return;
-        }
-
-        // Check for local blocks in theme blocks
-        if (isThemeBlock && hasLocalBlocks) {
-          localBlockLocations.forEach(
-            reportError('Local scoped blocks are not supported in theme blocks.', context, node),
-          );
-          return;
-        }
-
-        // Validate root level block types
         let errorsInRootLevelBlocks = false;
         for (const [blockType, locations] of Object.entries(rootBlockTypes)) {
           const exists = await validateBlockFileExistence(blockType, context);
@@ -95,7 +63,6 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
 
         if (errorsInRootLevelBlocks) return;
 
-        // Validate preset block types
         for (const [presetType, locations] of Object.entries(presetBlockTypes)) {
           const isPrivateBlockType = presetType.startsWith('_');
           const isPresetInRootLevel = presetType in rootBlockTypes;

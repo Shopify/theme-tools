@@ -14,10 +14,6 @@ type Location = {
 type BlockValidationResult = {
   rootBlockTypes: BlockTypeMap;
   presetBlockTypes: BlockTypeMap;
-  hasLocalBlocks: boolean;
-  hasThemeBlocks: boolean;
-  localBlockLocations: Location[];
-  themeBlockLocations: Location[];
 };
 
 function isLiteralNode(node: JSONNode): node is LiteralNode {
@@ -47,8 +43,6 @@ export const reportError =
 export function collectAndValidateBlockTypes(jsonFile: JSONNode): BlockValidationResult {
   const rootBlockTypes: BlockTypeMap = {};
   const presetBlockTypes: BlockTypeMap = {};
-  const localBlockLocations: Location[] = [];
-  const themeBlockLocations: Location[] = [];
 
   visit<SourceCodeType.JSON, void>(jsonFile, {
     Property(node, ancestors) {
@@ -69,23 +63,6 @@ export function collectAndValidateBlockTypes(jsonFile: JSONNode): BlockValidatio
           targetMap[typeValue] = targetMap[typeValue] || [];
           targetMap[typeValue].push(typeLocation);
         }
-
-        // Check if this block has a name property (local block)
-        const parentObject = ancestors[ancestors.length - 1];
-        const hasName =
-          parentObject.type === 'Object' &&
-          parentObject.children.some(
-            (child) => child.type === 'Property' && child.key.value === 'name',
-          );
-
-        if (!hasName && typeValue !== '@theme' && typeValue !== '@app') {
-          themeBlockLocations.push(typeLocation);
-        }
-      } else if (node.key.value === 'name') {
-        localBlockLocations.push({
-          startIndex: node.value.loc!.start.offset,
-          endIndex: node.value.loc!.end.offset,
-        });
       }
     },
   });
@@ -93,10 +70,6 @@ export function collectAndValidateBlockTypes(jsonFile: JSONNode): BlockValidatio
   return {
     rootBlockTypes,
     presetBlockTypes,
-    hasLocalBlocks: localBlockLocations.length > 0,
-    hasThemeBlocks: themeBlockLocations.length > 0,
-    localBlockLocations,
-    themeBlockLocations,
   };
 }
 
