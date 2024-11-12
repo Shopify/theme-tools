@@ -106,6 +106,9 @@ ValidHTMLTranslation:
 ValidJSON:
   enabled: true
   severity: 0
+ValidLocalBlocks:
+  enabled: true
+  severity: 0
 ValidSchema:
   enabled: true
   severity: 0
