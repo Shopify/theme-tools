@@ -88,7 +88,11 @@ async function main() {
 
   const client = new CodeMirrorLanguageClient(
     worker,
-    {},
+    {
+      initializationOptions: {
+        'themeCheck.preloadOnBoot': false,
+      },
+    },
     {
       autocompleteOptions: {
         activateOnTyping: true,
@@ -125,6 +129,10 @@ async function main() {
         return JSON.stringify(exampleTranslations, null, 2);
       case 'browser:/locales/en.default.schema.json':
         return JSON.stringify(exampleSchemaTranslations, null, 2);
+      case 'browser:/snippets/article-card.liquid':
+      case 'browser:/snippets/product-card.liquid':
+      case 'browser:/snippets/product.liquid':
+        return '';
       default:
         throw new Error(`File does not exist ${uri}`);
     }
@@ -132,9 +140,13 @@ async function main() {
 
   client.client.onRequest('fs/stat' as any, ([uri]: string) => {
     switch (uri) {
-      case 'browser:/sections/section.liquid':
+      case 'browser:/.theme-check.yml':
       case 'browser:/locales/en.default.json':
       case 'browser:/locales/en.schema.default.json':
+      case 'browser:/sections/section.liquid':
+      case 'browser:/snippets/article-card.liquid':
+      case 'browser:/snippets/product-card.liquid':
+      case 'browser:/snippets/product.liquid':
         return { fileType: 1, size: 1 };
       default:
         throw new Error(`File does not exist: ${uri}`);
@@ -150,6 +162,9 @@ async function main() {
           ['browser:/locales', 2],
           ['browser:/.theme-check.yml', 1],
         ];
+      }
+      case 'browser:/sections': {
+        return [['browser:/sections/section.liquid', 1]];
       }
       case 'browser:/snippets': {
         return [

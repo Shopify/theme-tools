@@ -114,7 +114,7 @@ export class CodeMirrorLanguageClient {
 
   constructor(
     private readonly worker: Worker,
-    { log = defaultLogger }: ClientDependencies = {},
+    { log = defaultLogger, initializationOptions }: ClientDependencies = {},
     {
       infoRenderer,
       autocompleteOptions,
@@ -126,6 +126,7 @@ export class CodeMirrorLanguageClient {
   ) {
     this.client = new LanguageClient(worker, {
       clientCapabilities,
+      initializationOptions,
       log,
     });
     this.worker = worker;
