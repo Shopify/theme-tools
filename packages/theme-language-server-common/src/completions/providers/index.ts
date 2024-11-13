@@ -3,6 +3,7 @@ export { HtmlTagCompletionProvider } from './HtmlTagCompletionProvider';
 export { HtmlAttributeCompletionProvider } from './HtmlAttributeCompletionProvider';
 export { HtmlAttributeValueCompletionProvider } from './HtmlAttributeValueCompletionProvider';
 export { FilterCompletionProvider } from './FilterCompletionProvider';
+export { FilterNamedParameterCompletionProvider } from './FilterNamedParameterCompletionProvider';
 export { LiquidTagsCompletionProvider } from './LiquidTagsCompletionProvider';
 export { ObjectAttributeCompletionProvider } from './ObjectAttributeCompletionProvider';
 export { ObjectCompletionProvider } from './ObjectCompletionProvider';
