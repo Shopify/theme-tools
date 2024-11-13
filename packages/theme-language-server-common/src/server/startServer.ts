@@ -320,7 +320,7 @@ export function startServer(
     // fast when you eventually need it.
     //
     // I'm choosing the textDocument/didOpen notification as a hook because
-    // I'm not sure we have a better solution that this. Yes we have the
+    // I'm not sure we have a better solution than this. Yes we have the
     // initialize request with the workspace folders, but you might have opened
     // an app folder. The root of a theme app extension would probably be
     // at ${workspaceRoot}/extensions/${appExtensionName}. It'd be hard to
@@ -328,9 +328,10 @@ export function startServer(
     //
     // If we open a file that we know is liquid, then we can kind of guarantee
     // we'll find a theme root and we'll preload that.
-    findThemeRootURI(uri)
-      .then((rootUri) => documentManager.preload(rootUri))
-      .catch((e) => console.error(e));
+    if (await configuration.shouldPreloadOnBoot()) {
+      const rootUri = await findThemeRootURI(uri);
+      documentManager.preload(rootUri);
+    }
   });
 
   connection.onDidChangeTextDocument(async (params) => {

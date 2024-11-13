@@ -20,21 +20,18 @@ export class RenameHandler {
   constructor(
     connection: Connection,
     capabilities: ClientCapabilities,
-    private documentManager: DocumentManager,
-    private findThemeRootURI: (uri: string) => Promise<string>,
+    documentManager: DocumentManager,
+    findThemeRootURI: (uri: string) => Promise<string>,
   ) {
     this.handlers = [
-      new SnippetRenameHandler(connection, capabilities),
-      new AssetRenameHandler(connection, capabilities),
+      new SnippetRenameHandler(documentManager, connection, capabilities, findThemeRootURI),
+      new AssetRenameHandler(documentManager, connection, capabilities, findThemeRootURI),
     ];
   }
 
   async onDidRenameFiles(params: RenameFilesParams) {
     try {
-      const rootUri = await this.findThemeRootURI(path.dirname(params.files[0].oldUri));
-      await this.documentManager.preload(rootUri);
-      const theme = this.documentManager.theme(rootUri, true);
-      const promises = this.handlers.map((handler) => handler.onDidRenameFiles(params, theme));
+      const promises = this.handlers.map((handler) => handler.onDidRenameFiles(params));
       await Promise.all(promises);
     } catch (error) {
       console.error(error);

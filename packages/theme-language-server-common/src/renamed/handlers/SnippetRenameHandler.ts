@@ -1,5 +1,5 @@
 import { LiquidTag, NamedTags, NodeTypes } from '@shopify/liquid-html-parser';
-import { SourceCodeType } from '@shopify/theme-check-common';
+import { path, SourceCodeType, visit } from '@shopify/theme-check-common';
 import { Connection } from 'vscode-languageserver';
 import {
   ApplyWorkspaceEditRequest,
@@ -8,11 +8,10 @@ import {
   TextEdit,
   WorkspaceEdit,
 } from 'vscode-languageserver-protocol';
-import { AugmentedLiquidSourceCode, AugmentedSourceCode } from '../../documents';
-import { isSnippet, snippetName } from '../../utils/uri';
-import { visit } from '@shopify/theme-check-common';
-import { BaseRenameHandler } from '../BaseRenameHandler';
 import { ClientCapabilities } from '../../ClientCapabilities';
+import { AugmentedLiquidSourceCode, AugmentedSourceCode, DocumentManager } from '../../documents';
+import { isSnippet, snippetName } from '../../utils/uri';
+import { BaseRenameHandler } from '../BaseRenameHandler';
 
 /**
  * The SnippetRenameHandler will handle snippet renames.
@@ -27,17 +26,28 @@ import { ClientCapabilities } from '../../ClientCapabilities';
  * WorkspaceEdit that changes the references to the new snippet.
  */
 export class SnippetRenameHandler implements BaseRenameHandler {
-  constructor(private connection: Connection, private capabilities: ClientCapabilities) {}
+  constructor(
+    private documentManager: DocumentManager,
+    private connection: Connection,
+    private capabilities: ClientCapabilities,
+    private findThemeRootURI: (uri: string) => Promise<string>,
+  ) {}
 
-  async onDidRenameFiles(params: RenameFilesParams, theme: AugmentedSourceCode[]): Promise<void> {
+  async onDidRenameFiles(params: RenameFilesParams): Promise<void> {
     if (!this.capabilities.hasApplyEditSupport) return;
     const isLiquidSourceCode = (file: AugmentedSourceCode): file is AugmentedLiquidSourceCode =>
       file.type === SourceCodeType.LiquidHtml;
 
-    const liquidSourceCodes = theme.filter(isLiquidSourceCode);
     const relevantRenames = params.files.filter(
       (file) => isSnippet(file.oldUri) && isSnippet(file.newUri),
     );
+
+    // Only preload if you have something to do
+    if (relevantRenames.length === 0) return;
+    const rootUri = await this.findThemeRootURI(path.dirname(params.files[0].oldUri));
+    await this.documentManager.preload(rootUri);
+    const theme = this.documentManager.theme(rootUri, true);
+    const liquidSourceCodes = theme.filter(isLiquidSourceCode);
 
     const promises = relevantRenames.map(async (file) => {
       const oldSnippetName = snippetName(file.oldUri);

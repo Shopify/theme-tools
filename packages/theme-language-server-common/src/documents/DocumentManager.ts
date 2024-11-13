@@ -12,7 +12,7 @@ import {
 import { Connection } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { ClientCapabilities } from '../ClientCapabilities';
-import { percent as percent, Progress } from '../progress';
+import { percent, Progress } from '../progress';
 
 export type AugmentedSourceCode<SCT extends SourceCodeType = SourceCodeType> = SourceCode<SCT> & {
   textDocument: TextDocument;
@@ -131,7 +131,7 @@ export class DocumentManager {
       const filesToLoad = await recursiveReadDirectory(
         this.fs,
         rootUri,
-        ([uri]) => /.(liquid|json)$/.test(uri) && !this.sourceCodes.has(uri),
+        ([uri]) => /\.(liquid|json)$/.test(uri) && !this.sourceCodes.has(uri),
       );
 
       progress.report(10, 'Preloading files');

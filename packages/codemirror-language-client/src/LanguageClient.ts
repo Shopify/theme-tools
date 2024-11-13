@@ -30,6 +30,7 @@ export interface PromiseCompletion {
 
 export interface Dependencies {
   clientCapabilities: ClientCapabilities;
+  initializationOptions?: any;
   log(...args: any[]): void;
 }
 
@@ -48,6 +49,7 @@ export interface AbstractLanguageClient {
 
 export class LanguageClient extends EventTarget implements AbstractLanguageClient {
   public readonly clientCapabilities: ClientCapabilities;
+  public readonly initializationOptions: any;
   public serverCapabilities: ServerCapabilities | null;
   public serverInfo: any;
 
@@ -64,6 +66,7 @@ export class LanguageClient extends EventTarget implements AbstractLanguageClien
     this.dispose = () => {};
     this.disposables = [];
     this.clientCapabilities = dependencies.clientCapabilities;
+    this.initializationOptions = dependencies.initializationOptions;
     this.log = dependencies.log;
     this.serverCapabilities = null;
     this.serverInfo = null;
@@ -91,6 +94,7 @@ export class LanguageClient extends EventTarget implements AbstractLanguageClien
      */
     const response = await this.sendRequest(InitializeRequest.type, {
       capabilities: this.clientCapabilities,
+      initializationOptions: this.initializationOptions,
       processId: 0,
       rootUri: 'browser:///',
     });
