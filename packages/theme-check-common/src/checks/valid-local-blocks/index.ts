@@ -46,7 +46,6 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
           hasLocalBlocks,
           hasStaticBlocks,
           hasThemeBlocks,
-          acceptsTheme,
           localBlockLocations,
           staticBlockLocations,
           themeBlockLocations,
@@ -55,19 +54,17 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
 
         if (isSection) {
           staticBlockNameLocations.forEach(
-            reportError('Static blocks cannot have a name.', context, node),
+            reportError('Static theme blocks cannot have a name property.', context, node),
           );
 
-          if (hasLocalBlocks && hasStaticBlocks && !acceptsTheme) {
-            for (const [blockType, locations] of Object.entries(staticBlockLocations)) {
-              locations.forEach(
-                reportError(
-                  `Root level blocks must target @theme or @${blockType} before you can use it.`,
-                  context,
-                  node,
-                ),
-              );
-            }
+          if (hasLocalBlocks && hasStaticBlocks) {
+            staticBlockLocations.forEach(
+              reportError(
+                `Sections cannot use static theme blocks together with locally scoped blocks.`,
+                context,
+                node,
+              ),
+            );
           }
 
           if (hasLocalBlocks && hasThemeBlocks) {

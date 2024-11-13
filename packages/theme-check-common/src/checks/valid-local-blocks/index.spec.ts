@@ -2,7 +2,7 @@ import { expect, describe, it } from 'vitest';
 import { ValidLocalBlocks } from './index';
 import { check, MockTheme } from '../../test';
 
-it('should report error when local blocks are defined in a block bucket', async () => {
+it('should report errors when root level local blocks are defined in a block bucket', async () => {
   const theme: MockTheme = {
     'blocks/local-blocks.liquid': `
       {% schema %}
@@ -24,7 +24,7 @@ it('should report error when local blocks are defined in a block bucket', async 
   expect(offenses[0].message).to.equal('Local scoped blocks are not supported in theme blocks.');
 });
 
-it('should report local block errors when preset defined local blocks are defined in a block bucket', async () => {
+it('should report errors when preset defined local blocks are defined in a block bucket', async () => {
   const theme: MockTheme = {
     'blocks/text.liquid': '',
     'blocks/local-blocks.liquid': `
@@ -120,7 +120,7 @@ it('should report errors when sections use theme blocks together with locally sc
   );
 });
 
-it('should report errors when sections use static blocks without @theme', async () => {
+it('should report errors when sections use static theme blocks together with locally scoped blocks', async () => {
   const theme: MockTheme = {
     'sections/local-blocks.liquid': `
           {% schema %}
@@ -137,10 +137,7 @@ it('should report errors when sections use static blocks without @theme', async 
                 "name": "Default",
                 "blocks": [
                   {
-                    "type": "local_block",
-                    "name": "Local Block"
-                  },
-                  {
+                    "id": "static_block",
                     "type": "static_block",
                     "static": true
                   }
@@ -154,11 +151,11 @@ it('should report errors when sections use static blocks without @theme', async 
   const offenses = await check(theme, [ValidLocalBlocks]);
   expect(offenses).to.have.length(1);
   expect(offenses[0].message).to.equal(
-    'Root level blocks must target @theme or @static_block before you can use it.',
+    'Sections cannot use static theme blocks together with locally scoped blocks.',
   );
 });
 
-it('should report errors with correct indicies when sections use static blocks without @theme', async () => {
+it('should report errors with correct indicies when sections use static theme blocks together with locally scoped blocks', async () => {
   const theme: MockTheme = {
     'sections/local-blocks.liquid': `
             {% schema %}
@@ -175,10 +172,7 @@ it('should report errors with correct indicies when sections use static blocks w
                   "name": "Default",
                   "blocks": [
                     {
-                      "type": "local_block",
-                      "name": "Local Block"
-                    },
-                    {
+                      "id": "static_block",
                       "type": "static_block",
                       "static": true
                     }
@@ -197,41 +191,7 @@ it('should report errors with correct indicies when sections use static blocks w
   expect(errorContent).to.equal('"static_block"');
 });
 
-it('should not report errors when sections mix static and local blocks with @theme', async () => {
-  const theme: MockTheme = {
-    'sections/local-blocks.liquid': `
-          {% schema %}
-          {
-            "name": "Section name",
-            "blocks": [
-              {
-                "type": "@theme"
-              }
-            ],
-            "presets": [
-              {
-                "name": "Default",
-                "blocks": [
-                  {
-                    "type": "local_block",
-                    "name": "Local Block"
-                  },
-                  {
-                    "type": "static_block",
-                    "static": true
-                  }
-                ]
-              }
-            ]
-          }
-          {% endschema %}
-        `,
-  };
-  const offenses = await check(theme, [ValidLocalBlocks]);
-  expect(offenses).to.have.length(0);
-});
-
-it('should report errors when static blocks have a name', async () => {
+it('should report errors when static theme blocks have a name property', async () => {
   const theme: MockTheme = {
     'blocks/text.liquid': '',
     'sections/local-blocks.liquid': `
@@ -248,7 +208,8 @@ it('should report errors when static blocks have a name', async () => {
             "name": "Default",
             "blocks": [
               {
-                "type": "text",
+                "id": "static_block",
+                "type": "static_block",
                 "static": true,
                 "name": "Static Text Block"
               }
@@ -261,5 +222,5 @@ it('should report errors when static blocks have a name', async () => {
   };
   const offenses = await check(theme, [ValidLocalBlocks]);
   expect(offenses).to.have.length(1);
-  expect(offenses[0].message).to.equal('Static blocks cannot have a name.');
+  expect(offenses[0].message).to.equal('Static theme blocks cannot have a name property.');
 });
