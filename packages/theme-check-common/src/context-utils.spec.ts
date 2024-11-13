@@ -20,6 +20,7 @@ describe('Unit: getDefaultLocale', () => {
         '.shopify/metafields.json': JSON.stringify({
           product: [
             {
+              key: 'color',
               name: 'color',
               namespace: 'custom',
               description: 'the color of the product',
@@ -51,6 +52,7 @@ describe('Unit: getDefaultLocale', () => {
 
       expect(definitions.product).toHaveLength(1);
       expect(definitions.product[0]).deep.equals({
+        key: 'color',
         name: 'color',
         namespace: 'custom',
         description: 'the color of the product',

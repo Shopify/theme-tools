@@ -202,7 +202,7 @@ export class TypeSystem {
         }
 
         metafieldNamespaces.get(definition.namespace)!.push({
-          name: definition.name,
+          name: definition.key,
           description: definition.description,
           return_type: metafieldReturnType(definition.type.name),
         });

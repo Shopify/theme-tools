@@ -192,6 +192,7 @@ export const makeGetMetafieldDefinitions = (fs: AbstractFileSystem) =>
       return FETCHED_METAFIELD_CATEGORIES.reduce((definitions, group) => {
         try {
           definitions[group] = json[group].map((definition: any) => ({
+            key: definition.key,
             name: definition.name,
             namespace: definition.namespace,
             description: definition.description,

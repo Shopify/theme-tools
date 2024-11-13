@@ -288,6 +288,7 @@ export type MetafieldDefinitionMap = {
 };
 
 export type MetafieldDefinition = {
+  key: string;
   name: string;
   namespace: string;
   description: string;
