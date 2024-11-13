@@ -141,6 +141,7 @@ describe('Module: TypeSystem', () => {
           market: [],
           order: [
             {
+              key: 'prods',
               name: 'products',
               namespace: 'related',
               description: 'related products',
@@ -153,6 +154,7 @@ describe('Module: TypeSystem', () => {
           page: [],
           product: [
             {
+              key: 'code',
               name: 'code',
               namespace: 'manufacturer',
               description: 'the code provided by the manufacturer',
@@ -162,6 +164,7 @@ describe('Module: TypeSystem', () => {
               },
             },
             {
+              key: 'id',
               name: 'id',
               namespace: 'manufacturer',
               description: 'the id provided by the manufacturer',
@@ -171,6 +174,7 @@ describe('Module: TypeSystem', () => {
               },
             },
             {
+              key: 'is_rare',
               name: 'is_rare',
               namespace: 'custom',
               description: 'is this product rare?',
@@ -491,7 +495,7 @@ describe('Module: TypeSystem', () => {
 
       expect(relatedProperties).toContainEqual(
         expect.objectContaining({
-          name: 'products',
+          name: 'prods',
           return_type: [{ type: 'metafield_product_array', name: '' }],
         }),
       );

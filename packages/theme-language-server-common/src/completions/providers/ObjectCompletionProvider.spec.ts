@@ -92,6 +92,7 @@ describe('Module: ObjectCompletionProvider', async () => {
           page: [],
           product: [
             {
+              key: 'color',
               name: 'color',
               namespace: 'custom',
               description: 'the color of the product',
