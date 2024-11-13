@@ -30,7 +30,7 @@ export class MockFileSystem implements AbstractFileSystem {
         ? this.fileTree
         : deepGet(this.fileTree, relativePath.split('/'));
     if (tree === undefined) {
-      throw new Error(`Directory not found: ${uri}`);
+      throw new Error(`Directory not found: ${uri} in ${this.rootUri}`);
     }
 
     if (typeof tree === 'string') {
