@@ -28,11 +28,12 @@ describe('Module: ValidSchemaName', () => {
   it('reports no offenses with schema name translation that exists and is not over 25 chars long', async () => {
     const offenses = await check(
       {
-        'locales/en.default.schema.json': '{ "my_translation_key": "My translation is good."}',
+        'locales/en.default.schema.json':
+          '{ "default": { "my_translation_key": "My translation is good."}}',
         'code.liquid': `
           {% schema %}
             {
-              "name": "t:my_translation_key"
+              "name": "t:default.my_translation_key"
         } 
       {% endschema %}`,
       },

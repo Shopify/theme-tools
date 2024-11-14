@@ -1,4 +1,5 @@
 import { AbstractFileSystem, FileStat, FileTuple, FileType } from '../AbstractFileSystem';
+import { deepGet } from '../utils/file-utils';
 import { normalize, relative } from '../path';
 import { MockTheme } from './MockTheme';
 
@@ -76,8 +77,4 @@ export class MockFileSystem implements AbstractFileSystem {
   private rootRelative(uri: string) {
     return relative(normalize(uri), this.rootUri);
   }
-}
-
-function deepGet(obj: any, path: string[]): any {
-  return path.reduce((acc, key) => acc?.[key], obj);
 }

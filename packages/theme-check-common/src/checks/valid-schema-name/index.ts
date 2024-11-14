@@ -1,5 +1,5 @@
+import { deepGet } from '../../utils/file-utils';
 import { LiteralNode, ValueNode } from 'json-to-ast';
-import { parseJSON } from '../../json';
 import { toJSONAST } from '../../to-source-code';
 import { JSONNode, LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { visit } from '../../visitor';
@@ -59,7 +59,7 @@ export const ValidSchemaName: LiquidCheckDefinition = {
                 const defaultLocale = await context.getDefaultLocale();
                 const key = name.replace('t:', '');
                 const defaultTranslations = await context.getDefaultSchemaTranslations();
-                const translation = getTranslation(key, defaultTranslations);
+                const translation = deepGet(defaultTranslations, key.split('.'));
 
                 if (translation === undefined) {
                   context.report({
@@ -104,20 +104,4 @@ function getLiteralLocStart(node: LiteralNode): number {
 
 function getLiteralLocEnd(node: LiteralNode): number {
   return node.loc?.end.offset ?? 0;
-}
-
-function getTranslation(key: string, pointer: any) {
-  for (const token of key.split('.')) {
-    if (typeof pointer !== 'object') {
-      return undefined;
-    }
-
-    if (!pointer.hasOwnProperty(token)) {
-      return undefined;
-    }
-
-    pointer = pointer[token];
-  }
-
-  return pointer; //the last pointer is the translation
 }
