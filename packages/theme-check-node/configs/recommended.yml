@@ -6,6 +6,9 @@ ignore:
 AssetPreload:
   enabled: true
   severity: 1
+BlockIdUsage:
+  enabled: true
+  severity: 1
 CaptureOnContentForBlock:
   enabled: true
   severity: 0
