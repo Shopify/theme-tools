@@ -1,8 +1,7 @@
 import { LiquidHtmlNode } from '@shopify/theme-check-common';
 import { describe, expect, it } from 'vitest';
 import { CompletionParams, Position } from 'vscode-languageserver';
-import { DocumentManager } from '../../documents';
-import { AugmentedLiquidSourceCode } from '../../documents/DocumentManager';
+import { DocumentManager, AugmentedLiquidSourceCode } from '../../documents';
 import { createLiquidCompletionParams } from './LiquidCompletionParams';
 
 describe('Module: LiquidCompletionParams', async () => {

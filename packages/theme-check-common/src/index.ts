@@ -48,6 +48,7 @@ export * from './ignore';
 export * from './json';
 export * as path from './path';
 export * from './to-source-code';
+export * from './to-schema';
 export * from './types';
 export * from './utils/error';
 export * from './utils/indexBy';

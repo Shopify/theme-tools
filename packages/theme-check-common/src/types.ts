@@ -14,9 +14,11 @@ import { StringCorrector, JSONCorrector } from './fixes';
 import { AbstractFileSystem, UriString } from './AbstractFileSystem';
 
 import { ThemeDocset, JsonValidationSet } from './types/theme-liquid-docs';
+import { BlockSchema, SectionSchema } from './types/theme-schemas';
 
 export * from './types/theme-liquid-docs';
 export * from './types/schema-prop-factory';
+export * from './types/theme-schemas';
 
 export const isObjectNode = (node?: ASTNode): node is ObjectNode => node?.type === 'Object';
 export const isArrayNode = (node?: ASTNode): node is ArrayNode => node?.type === 'Array';
@@ -305,10 +307,31 @@ export type Translations = {
 };
 
 export interface Dependencies {
+  /** The file system abstraction used to read files. */
   fs: AbstractFileSystem;
+
+  /** The typing information */
   themeDocset?: ThemeDocset;
+
+  /** The blocks/sections JSON schemas */
   jsonValidationSet?: JsonValidationSet;
+
+  /** Returns the typing information for the theme's metafields */
   getMetafieldDefinitions?: (rootUri: UriString) => Promise<MetafieldDefinitionMap>;
+
+  /**
+   * Asynchronously get the block schema for 'blocks/${name}.liquid'
+   * May return undefined when the theme isn't preloaded.
+   * See {@link BlockSchema} for more information
+   */
+  getBlockSchema?: (name: string) => Promise<BlockSchema | undefined>;
+
+  /**
+   * Asynchronously get the section schema for 'section/${name}.liquid'
+   * May return undefined when the theme isn't preloaded or if there are none.
+   * See {@link SectionSchema} for more information
+   */
+  getSectionSchema?: (name: string) => Promise<SectionSchema | undefined>;
 }
 
 export type ValidateJSON<T extends SourceCodeType> = (

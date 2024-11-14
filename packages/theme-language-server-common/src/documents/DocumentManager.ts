@@ -1,26 +1,20 @@
 import {
   AbstractFileSystem,
+  assertNever,
   memoize,
   path,
   recursiveReadDirectory,
-  SourceCode,
   SourceCodeType,
   Theme,
   toSourceCode,
+  toSchema,
   UriString,
 } from '@shopify/theme-check-common';
 import { Connection } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { ClientCapabilities } from '../ClientCapabilities';
 import { percent, Progress } from '../progress';
-
-export type AugmentedSourceCode<SCT extends SourceCodeType = SourceCodeType> = SourceCode<SCT> & {
-  textDocument: TextDocument;
-  uri: UriString;
-};
-
-export type AugmentedLiquidSourceCode = AugmentedSourceCode<SourceCodeType.LiquidHtml>;
-export type AugmentedJsonSourceCode = AugmentedSourceCode<SourceCodeType.JSON>;
+import { AugmentedSourceCode } from './types';
 
 export class DocumentManager {
   /**
@@ -99,16 +93,7 @@ export class DocumentManager {
       return;
     }
 
-    const sourceCode = toSourceCode(uri, source, version);
-    this.sourceCodes.set(uri, {
-      ...sourceCode,
-      textDocument: TextDocument.create(
-        uri,
-        sourceCode.type,
-        sourceCode.version ?? 0, // create doesn't let us put undefined here.
-        sourceCode.source,
-      ),
-    });
+    this.sourceCodes.set(uri, augmentedSourceCode(uri, source, version));
   }
 
   /**
@@ -155,4 +140,34 @@ export class DocumentManager {
     },
     (rootUri) => rootUri,
   );
+}
+
+function augmentedSourceCode(
+  uri: UriString,
+  source: string,
+  version: number | undefined,
+): AugmentedSourceCode {
+  const sourceCode = toSourceCode(uri, source, version);
+  const textDocument = TextDocument.create(
+    uri,
+    sourceCode.type,
+    sourceCode.version ?? 0, // create doesn't let us put undefined here.
+    sourceCode.source,
+  );
+
+  switch (sourceCode.type) {
+    case SourceCodeType.JSON:
+      return {
+        ...sourceCode,
+        textDocument,
+      };
+    case SourceCodeType.LiquidHtml:
+      return {
+        ...sourceCode,
+        schema: toSchema(uri, sourceCode),
+        textDocument,
+      };
+    default:
+      return assertNever(sourceCode);
+  }
 }

@@ -6,8 +6,11 @@ import {
   Theme,
   toSourceCode as commonToSourceCode,
   check as coreCheck,
+  isBlockSchema,
   isIgnored,
+  isSectionSchema,
   path as pathUtils,
+  toSchema,
 } from '@shopify/theme-check-common';
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
 import fs from 'node:fs/promises';
@@ -66,10 +69,19 @@ export async function themeCheckRun(
   const { theme, config } = await getThemeAndConfig(root, configPath);
   const themeLiquidDocsManager = new ThemeLiquidDocsManager(log);
 
+  // We can assume that all files are loaded when running themeCheckRun
+  const schemas = theme.map((source) => toSchema(source.uri, source));
+  // prettier-ignore
+  const blockSchemas = new Map(schemas.filter(isBlockSchema).map((schema) => [schema.name, schema]));
+  // prettier-ignore
+  const sectionSchemas = new Map(schemas.filter(isSectionSchema).map((schema) => [schema.name, schema]));
+
   const offenses = await coreCheck(theme, config, {
     fs: NodeFileSystem,
     themeDocset: themeLiquidDocsManager,
     jsonValidationSet: themeLiquidDocsManager,
+    getSectionSchema: async (name) => sectionSchemas.get(name),
+    getBlockSchema: async (name) => blockSchemas.get(name),
   });
 
   return {
