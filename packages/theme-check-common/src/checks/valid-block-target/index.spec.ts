@@ -136,6 +136,72 @@ describe('Module: ValidBlockTarget', () => {
         expect(offenses).to.have.length(1);
         expect(offenses[0].message).to.equal("Theme block 'blocks/invalid.liquid' does not exist.");
       });
+
+      it(`should report an error when a preset defined block file does not exist with hash-style presets (${path} bucket)`, async () => {
+        const theme: MockTheme = {
+          [`${path}/invalid-block.liquid`]: `
+            {% schema %}
+            {
+              "name": "${path === 'sections' ? 'Section' : 'Block'} name",
+              "blocks": [
+                {
+                  "type": "@theme"
+                }
+              ],
+              "presets": [
+                {
+                  "name": "Default",
+                  "blocks": {
+                    "missing_block_hash": {
+                      "type": "missing_block"
+                    }
+                  },
+                  "block_order": ["missing_block_hash"]
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+        };
+
+        const offenses = await check(theme, [ValidBlockTarget]);
+        expect(offenses).to.have.length(1);
+        expect(offenses[0].message).to.equal(
+          "Theme block 'blocks/missing_block.liquid' does not exist.",
+        );
+      });
+
+      it(`should not report an error when a preset defined block file exists with hash-style presets (${path} bucket)`, async () => {
+        const theme: MockTheme = {
+          'blocks/text.liquid': '',
+          [`${path}/invalid-block.liquid`]: `
+            {% schema %}
+            {
+              "name": "${path === 'sections' ? 'Section' : 'Block'} name",
+              "blocks": [
+                {
+                  "type": "@theme"
+                }
+              ],
+              "presets": [
+                {
+                  "name": "Default",
+                  "blocks": {
+                    "text_block": {
+                      "type": "text"
+                    }
+                  },
+                  "block_order": ["text_block"]
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+        };
+
+        const offenses = await check(theme, [ValidBlockTarget]);
+        expect(offenses).to.be.empty;
+      });
     });
   });
 
@@ -301,6 +367,108 @@ describe('Module: ValidBlockTarget', () => {
                       "type": "custom"
                     }
                   ]
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+        };
+
+        const offenses = await check(theme, [ValidBlockTarget]);
+        expect(offenses).to.be.empty;
+      });
+
+      it(`should report an error when a preset defined block is not specified at root level with hash-style presets (${path} bucket)`, async () => {
+        const theme: MockTheme = {
+          'blocks/text.liquid': '',
+          [`${path}/invalid-preset.liquid`]: `
+            {% schema %}
+            {
+              "name": "${path === 'sections' ? 'Section' : 'Block'} name",
+              "blocks": [
+                {
+                  "type": "text"
+                }
+              ],
+              "presets": [
+                {
+                  "name": "Default preset",
+                  "blocks": {
+                    "invalid_preset_block_hash": {
+                      "type": "invalid_preset_block"
+                    }
+                  },
+                  "block_order": ["invalid_preset_block_hash"]
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+        };
+
+        const offenses = await check(theme, [ValidBlockTarget]);
+        expect(offenses).to.have.length(1);
+        expect(offenses[0].message).to.equal(
+          'Theme block type "invalid_preset_block" must be allowed in "blocks" at the root of this schema.',
+        );
+      });
+
+      it(`should report errors for private blocks even when @theme is specified at root level with hash-style presets (${path} bucket)`, async () => {
+        const theme: MockTheme = {
+          'blocks/_private.liquid': '',
+          [`${path}/private-blocks.liquid`]: `
+            {% schema %}
+            {
+              "name": "${path === 'sections' ? 'Section' : 'Block'} name",
+              "blocks": [
+                {
+                  "type": "@theme"
+                }
+              ],
+              "presets": [
+                {
+                  "name": "Default",
+                  "blocks": {
+                    "private_hash": {
+                      "type": "_private"
+                    }
+                  },
+                  "block_order": ["private_hash"]
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+        };
+
+        const offenses = await check(theme, [ValidBlockTarget]);
+        expect(offenses).to.have.length(1);
+        expect(offenses[0].message).to.equal(
+          'Theme block type "_private" is a private block so it must be explicitly allowed in "blocks" at the root of this schema.',
+        );
+      });
+
+      it(`should not report errors for private blocks when listed at root level with hash-style presets (${path} bucket)`, async () => {
+        const theme: MockTheme = {
+          'blocks/_private.liquid': '',
+          [`${path}/private-blocks.liquid`]: `
+            {% schema %}
+            {
+              "name": "${path === 'sections' ? 'Section' : 'Block'} name",
+              "blocks": [
+                {
+                  "type": "_private"
+                }
+              ],
+              "presets": [
+                {
+                  "name": "Default",
+                  "blocks": {
+                    "private_hash": {
+                      "type": "_private"
+                    }
+                  },
+                  "block_order": ["private_hash"]
                 }
               ]
             }

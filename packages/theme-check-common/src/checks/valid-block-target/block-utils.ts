@@ -25,7 +25,9 @@ function isInArrayWithParentKey(ancestors: JSONNode[], parentKey: string): boole
   return ancestors.some((ancestor, index) => {
     const parent = ancestors[index - 1];
     return (
-      ancestor.type === 'Array' && parent?.type === 'Property' && parent.key?.value === parentKey
+      (ancestor.type === 'Array' || ancestor.type === 'Object') &&
+      parent?.type === 'Property' &&
+      parent.key?.value === parentKey
     );
   });
 }
