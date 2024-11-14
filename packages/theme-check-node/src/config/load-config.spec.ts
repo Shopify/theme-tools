@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { describe, it, expect, afterEach, beforeEach } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach, assert } from 'vitest';
 import { loadConfig } from './load-config';
 import {
   allChecks,
@@ -18,6 +18,7 @@ import {
   removeTmpFolder,
 } from '../test/test-helpers';
 import { thisNodeModuleRoot } from './installation-location';
+import { URI } from 'vscode-uri';
 
 describe('Unit: loadConfig', () => {
   let tempDir: string;
@@ -33,7 +34,6 @@ describe('Unit: loadConfig', () => {
   it('loads the recommended config by default', async () => {
     const config = await loadConfig(undefined, __dirname);
     expect(config.checks).to.eql(recommended);
-    expect(config.rootUri).to.eql('file:' + __dirname);
   });
 
   it('extends the recommended config by default', async () => {
@@ -208,6 +208,24 @@ SyntaxError:
         enabled: true,
       },
     });
+  });
+
+  it('computes the root URI properly (no root property)', async () => {
+    const configPath = await createMockConfigFile(tempDir, ``);
+    const config = await loadConfig(configPath, tempDir);
+    const uri = URI.parse(config.rootUri);
+    expect(uri.scheme).to.equal('file');
+    expect(uri.fsPath).to.equal(URI.file(tempDir).fsPath);
+    assert(config.rootUri.startsWith('file://')); // should double slash for windows paths to work correctly
+  });
+
+  it('computes the root URI properly ', async () => {
+    const configPath = await createMockConfigFile(tempDir, `root: ./src`);
+    const config = await loadConfig(configPath, tempDir);
+    const uri = URI.parse(config.rootUri);
+    expect(uri.scheme).to.equal('file');
+    expect(uri.fsPath).to.equal(URI.file(path.resolve(tempDir, 'src')).fsPath);
+    assert(config.rootUri.startsWith('file://'));
   });
 
   function check(code: string) {

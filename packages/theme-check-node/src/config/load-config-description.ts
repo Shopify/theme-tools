@@ -1,10 +1,17 @@
-import { CheckDefinition, Config, SourceCodeType, allChecks } from '@shopify/theme-check-common';
+import {
+  CheckDefinition,
+  Config,
+  SourceCodeType,
+  allChecks,
+  path as pathUtils,
+} from '@shopify/theme-check-common';
 import path from 'node:path';
 import { fileExists } from '../file-utils';
 import { AbsolutePath } from '../temp';
 import { thisNodeModuleRoot } from './installation-location';
 import { findThirdPartyChecks, loadThirdPartyChecks } from './load-third-party-checks';
 import { ConfigDescription } from './types';
+import { URI, Utils } from 'vscode-uri';
 
 const flatten = <T>(arrs: T[][]): T[] => arrs.flat();
 
@@ -31,12 +38,13 @@ export async function loadConfigDescription(
     .concat(thirdPartyChecks)
     .filter(isEnabledBy(configDescription));
 
+  const rootUri = URI.file(root);
   return {
     settings: unaliasedSettings(configDescription.checkSettings, checks),
     context: configDescription.context ?? 'theme',
     checks,
     ignore: configDescription.ignore,
-    rootUri: resolveRoot(root, configDescription.root),
+    rootUri: resolveRoot(rootUri, configDescription.root),
   };
 }
 
@@ -45,16 +53,16 @@ export async function loadConfigDescription(
  * @param pathLike - resolved textual value of the `root` property from the config files
  * @returns {string} resolved URI of the root property
  */
-export function resolveRoot(root: AbsolutePath, pathLike: string | undefined): string {
+function resolveRoot(root: URI, pathLike: string | undefined): string {
   if (pathLike === undefined) {
-    return 'file:' + root;
+    return pathUtils.normalize(root);
   }
 
   if (path.isAbsolute(pathLike)) {
     throw new Error('the "root" property can only be relative');
   }
 
-  return 'file:' + path.resolve(root, pathLike);
+  return pathUtils.resolve(root, pathLike);
 }
 
 const isEnabledBy =

@@ -1,36 +1,40 @@
 import { RelativePath, UriString } from './types';
 import { URI, Utils } from 'vscode-uri';
 
-export function relative(uri: UriString, rootUri: UriString): RelativePath {
-  return uri
+export { URI, Utils };
+
+export function relative(uri: UriString | URI, rootUri: UriString): RelativePath {
+  return normalize(uri)
     .replace(rootUri, '')
     .replace(/\\\\/g, '/') // We expect forward slash paths (windows path get normalized)
     .replace(/^\/+/, '');
 }
 
-export function join(rootUri: UriString, ...paths: string[]): string {
-  const root = URI.parse(rootUri);
-  return normalize(Utils.joinPath(root, ...paths));
+export function join(rootUri: UriString | URI, ...paths: string[]): string {
+  return normalize(Utils.joinPath(asUri(rootUri), ...paths));
+}
+
+export function resolve(uri: UriString | URI, path: string): string {
+  return normalize(Utils.resolvePath(asUri(uri), path));
 }
 
 export function normalize(uri: UriString | URI): UriString {
-  if (!URI.isUri(uri)) {
-    uri = URI.parse(uri);
-  }
-  return uri.toString(true);
+  return asUri(uri).toString(true);
 }
 
-export function dirname(uri: UriString): UriString {
-  return normalize(Utils.dirname(URI.parse(uri)));
+export function dirname(uri: UriString | URI): UriString {
+  return normalize(Utils.dirname(asUri(uri)));
 }
 
-export function basename(uri: UriString, ext?: string): string {
-  return URI.parse(uri)
-    .path.split(/(\\|\/)/g)
-    .pop()!
-    .replace(ext ? new RegExp(`${ext}$`) : '', '');
+export function basename(uri: UriString | URI, ext?: string): string {
+  const base = Utils.basename(asUri(uri));
+  return ext ? base.replace(new RegExp(`${ext}$`), '') : base;
 }
 
-export function fsPath(uri: UriString): string {
-  return URI.parse(uri).fsPath;
+export function fsPath(uri: UriString | URI): string {
+  return asUri(uri).fsPath;
+}
+
+function asUri(uri: UriString | URI): URI {
+  return URI.isUri(uri) ? uri : URI.parse(uri);
 }
