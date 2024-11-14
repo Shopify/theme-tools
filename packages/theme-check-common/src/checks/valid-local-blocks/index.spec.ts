@@ -85,41 +85,6 @@ describe('ValidLocalBlocks with array-style blocks', () => {
     );
   });
 
-  it('should report errors when sections use theme blocks together with locally scoped blocks in presets', async () => {
-    const theme: MockTheme = {
-      'blocks/text.liquid': '',
-      'sections/local-blocks.liquid': `
-        {% schema %}
-        {
-            "name": "Section name",
-            "blocks": [
-            {
-                "type": "local_block",
-                "name": "Local Block"
-            }
-            ],
-            "presets": [
-            {
-                "name": "Default",
-                "blocks": [
-                {
-                    "type": "text"
-                }
-                ]
-            }
-            ]
-        }
-        {% endschema %}
-        `,
-    };
-
-    const offenses = await check(theme, [ValidLocalBlocks]);
-    expect(offenses).to.have.length(1);
-    expect(offenses[0].message).to.equal(
-      'Sections cannot use theme blocks together with locally scoped blocks.',
-    );
-  });
-
   it('should report errors when sections use static theme blocks together with locally scoped blocks', async () => {
     const theme: MockTheme = {
       'sections/local-blocks.liquid': `
@@ -258,42 +223,6 @@ describe('ValidLocalBlocks with hash-style presets', () => {
     const offenses = await check(theme, [ValidLocalBlocks]);
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).to.equal('Local scoped blocks are not supported in theme blocks.');
-  });
-
-  it('should report errors when sections use theme blocks together with locally scoped blocks in presets with hash-style presets', async () => {
-    const theme: MockTheme = {
-      'blocks/text.liquid': '',
-      'sections/local-blocks.liquid': `
-          {% schema %}
-          {
-            "name": "Section name",
-            "blocks": [
-              {
-                "type": "local_block",
-                "name": "Local Block"
-              }
-            ],
-            "presets": [
-              {
-                "name": "Default",
-                "blocks": {
-                  "text_block": {
-                    "type": "text"
-                  }
-                },
-                "block_order": ["text_block"]
-              }
-            ]
-          }
-          {% endschema %}
-        `,
-    };
-
-    const offenses = await check(theme, [ValidLocalBlocks]);
-    expect(offenses).to.have.length(1);
-    expect(offenses[0].message).to.equal(
-      'Sections cannot use theme blocks together with locally scoped blocks.',
-    );
   });
 
   it('should report errors when sections use static theme blocks together with locally scoped blocks in hash-style presets', async () => {

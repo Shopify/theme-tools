@@ -52,7 +52,11 @@ export function collectBlockProperties(jsonFile: JSONNode): {
 
         if (isStatic && !hasName && typeof typeValue === 'string') {
           staticBlockLocations.push(typeLocation);
-        } else if (!hasName) {
+        } else if (
+          !hasName &&
+          typeValue !== '@app' &&
+          !isInArrayWithParentKey(ancestors, 'presets')
+        ) {
           themeBlockLocations.push(typeLocation);
         }
       } else if (node.key.value === 'name') {
