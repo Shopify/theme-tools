@@ -33,6 +33,9 @@ ImgWidthAndHeight:
 JSONSyntaxError:
   enabled: true
   severity: 0
+LiquidFreeSettings:
+  enabled: true
+  severity: 1
 LiquidHTMLSyntaxError:
   enabled: true
   severity: 0
