@@ -18,6 +18,25 @@ describe('Module: ContentForHeaderModification', () => {
     expect(highlights).toEqual(['{% content_for "block", type: "text", id:"static-block-id" %}']);
   });
 
+  it('reports offense with the use of capture (nested)', async () => {
+    const sourceCode = `
+      {% capture x %}
+        <div>
+          {% if cond %}
+            {% content_for "block", type: "text", id:"static-block-id" %}
+          {% endif %}
+        </div>
+      {% endcapture %}
+    `;
+
+    const offenses = await runLiquidCheck(CaptureOnContentForBlock, sourceCode);
+    expect(offenses).toHaveLength(1);
+    expect(offenses[0].message).toEqual('Do not capture `content_for "block"`');
+
+    const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
+    expect(highlights).toEqual(['{% content_for "block", type: "text", id:"static-block-id" %}']);
+  });
+
   it('does not report an offense with normal use', async () => {
     const sourceCode = '{% content_for "block", type: "text", id:"static-block-id" %}';
 

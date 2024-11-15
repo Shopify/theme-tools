@@ -1,17 +1,6 @@
-import {
-  LiquidTag,
-  LiquidTagCapture,
-  NamedTags,
-  NodeTypes,
-  Position,
-} from '@shopify/liquid-html-parser';
+import { NamedTags, NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { isContentForBlock } from '../../utils/markup';
 import { isNodeOfType } from '../utils';
-
-function isLiquidTagCapture(node: LiquidTag): node is LiquidTagCapture {
-  return node.name === 'capture' && typeof node.markup !== 'string';
-}
 
 export const CaptureOnContentForBlock: LiquidCheckDefinition = {
   meta: {
@@ -30,35 +19,23 @@ export const CaptureOnContentForBlock: LiquidCheckDefinition = {
   },
 
   create(context) {
-    function checkContentForBlock(node: any, position: Position) {
-      if (
-        isNodeOfType(NodeTypes.LiquidTag, node) &&
-        node.name === NamedTags.content_for &&
-        isContentForBlock(node.markup)
-      ) {
-        context.report({
-          message: 'Do not capture `content_for "block"`',
-          startIndex: position.start,
-          endIndex: position.end,
-        });
-      }
-    }
-
     return {
-      async LiquidTag(node) {
-        if (isLiquidTagCapture(node) && node.children) {
-          for (const child of node.children) {
-            if (child.type === NodeTypes.LiquidTag) {
-              checkContentForBlock(child, child.position);
-            }
-          }
-        }
-      },
-      async LiquidVariableOutput(node) {
+      async LiquidTag(node, ancestors) {
+        if (node.name !== NamedTags.content_for) return;
         if (typeof node.markup === 'string') return;
+        if (node.markup.contentForType.value !== 'block') return;
 
-        if (node.markup.filters.length) {
-          checkContentForBlock(node.markup.expression, node.position);
+        for (const parentNode of ancestors) {
+          if (
+            isNodeOfType(NodeTypes.LiquidTag, parentNode) &&
+            parentNode.name === NamedTags.capture
+          ) {
+            context.report({
+              message: 'Do not capture `content_for "block"`',
+              startIndex: node.position.start,
+              endIndex: node.position.end,
+            });
+          }
         }
       },
     };
