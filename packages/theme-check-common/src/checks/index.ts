@@ -33,6 +33,7 @@ import { ValidContentForArguments } from './valid-content-for-arguments';
 import { ValidBlockTarget } from './valid-block-target';
 import { ValidHTMLTranslation } from './valid-html-translation';
 import { ValidJSON } from './valid-json';
+import { ValidLocalBlocks } from './valid-local-blocks';
 import { ValidSchema } from './valid-schema';
 import { ValidSchemaName } from './valid-schema-name';
 import { ValidStaticBlockType } from './valid-static-block-type';
@@ -72,6 +73,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidHTMLTranslation,
   ValidContentForArguments,
   ValidJSON,
+  ValidLocalBlocks,
   ValidSchema,
   ValidStaticBlockType,
   VariableName,
