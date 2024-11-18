@@ -1,4 +1,4 @@
-import { LiquidCheckDefinition, Preset, Severity, SourceCodeType } from '../../types';
+import { LiquidCheckDefinition, Preset, Severity, SourceCodeType, Section } from '../../types';
 import { LiteralNode } from 'json-to-ast';
 import { nodeAtPath } from '../../json';
 import { basename } from '../../path';
@@ -6,7 +6,7 @@ import { isBlock, isSection } from '../../to-schema';
 import { getBlocks, reportWarning } from './valid-block-utils';
 
 type BlockNodeWithPath = {
-  node: Preset.BlockPresetBase;
+  node: Section.Block | Preset.Block;
   path: string[];
 };
 

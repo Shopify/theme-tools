@@ -18,7 +18,7 @@ import {
   reportWarning,
 } from './block-utils';
 type BlockNodeWithPath = {
-  node: Preset.BlockPresetBase;
+  node: Section.Block | ThemeBlock.Block | Preset.Block;
   path: string[];
 };
 

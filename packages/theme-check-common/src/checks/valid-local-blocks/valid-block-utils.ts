@@ -3,7 +3,7 @@ import { getLocEnd, getLocStart } from '../../json';
 import { Preset, ThemeBlock, Section, Context, SourceCodeType } from '../../types';
 
 type BlockNodeWithPath = {
-  node: Preset.BlockPresetBase;
+  node: Section.Block | ThemeBlock.Block | Preset.Block;
   path: string[];
 };
 
@@ -22,7 +22,10 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
   const rootLevelBlocks = validSchema.blocks;
   const presets = validSchema.presets;
 
-  function categorizeBlock(block: Preset.BlockPresetBase, currentPath: string[]) {
+  function categorizeBlock(
+    block: Section.Block | ThemeBlock.Block | Preset.Block,
+    currentPath: string[],
+  ) {
     if (!block) return;
     const hasStatic = 'static' in block;
     const hasName = 'name' in block;
@@ -39,7 +42,7 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
 
     if ('blocks' in block) {
       if (Array.isArray(block.blocks)) {
-        block.blocks.forEach((nestedBlock: Preset.BlockPresetBase, index: number) => {
+        block.blocks.forEach((nestedBlock: Preset.PresetBlockForArray, index: number) => {
           categorizeBlock(nestedBlock, currentPath.concat('blocks', String(index)));
         });
       } else if (typeof block.blocks === 'object' && block.blocks !== null) {
@@ -58,9 +61,9 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
 
   if (presets) {
     presets.forEach((preset: Preset.Preset, presetIndex: number) => {
-      if (preset.blocks) {
+      if ('blocks' in preset && preset.blocks) {
         if (Array.isArray(preset.blocks)) {
-          preset.blocks.forEach((block: Preset.BlockPresetBase, blockIndex: number) => {
+          preset.blocks.forEach((block: Preset.PresetBlockForArray, blockIndex: number) => {
             categorizeBlock(block, ['presets', String(presetIndex), 'blocks', String(blockIndex)]);
           });
         } else if (typeof preset.blocks === 'object') {
