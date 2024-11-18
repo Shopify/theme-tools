@@ -30,6 +30,7 @@ import { UniqueStaticBlockId } from './unique-static-block-id';
 import { UnknownFilter } from './unknown-filter';
 import { UnusedAssign } from './unused-assign';
 import { ValidContentForArguments } from './valid-content-for-arguments';
+import { ValidBlockTarget } from './valid-block-target';
 import { ValidHTMLTranslation } from './valid-html-translation';
 import { ValidJSON } from './valid-json';
 import { ValidSchema } from './valid-schema';
@@ -67,6 +68,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   UniqueStaticBlockId,
   UnknownFilter,
   UnusedAssign,
+  ValidBlockTarget,
   ValidHTMLTranslation,
   ValidContentForArguments,
   ValidJSON,

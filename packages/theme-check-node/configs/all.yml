@@ -97,6 +97,9 @@ UnknownFilter:
 UnusedAssign:
   enabled: true
   severity: 1
+ValidBlockTarget:
+  enabled: true
+  severity: 0
 ValidContentForArguments:
   enabled: true
   severity: 0
