@@ -345,8 +345,8 @@ export interface LiquidLogicalExpression extends ASTNode<NodeTypes.LogicalExpres
 /** Represents `left (<|<=|=|>=|>|contains) right` conditional expressions */
 export interface LiquidComparison extends ASTNode<NodeTypes.Comparison> {
   comparator: Comparators;
-  left: LiquidConditionalExpression;
-  right: LiquidConditionalExpression;
+  left: LiquidExpression;
+  right: LiquidExpression;
 }
 
 /** https://shopify.dev/docs/api/liquid/tags#paginate */

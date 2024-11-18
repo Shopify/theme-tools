@@ -25,6 +25,9 @@ AssetSizeJavaScript:
   enabled: true
   severity: 0
   thresholdInBytes: 10000
+BlockIdUsage:
+  enabled: true
+  severity: 1
 CaptureOnContentForBlock:
   enabled: true
   severity: 0
