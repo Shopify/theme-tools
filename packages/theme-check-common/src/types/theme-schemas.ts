@@ -1,9 +1,12 @@
 import { SourceCode, SourceCodeType } from '../types';
+import { Section, ThemeBlock } from './schemas';
 
-/** Doubles as the folder name */
+export * from './schemas';
+
 export enum ThemeSchemaType {
-  Block = 'blocks',
-  Section = 'sections',
+  AppBlock = 'app-block',
+  Block = 'block',
+  Section = 'section',
 }
 
 /**
@@ -29,7 +32,34 @@ export interface ThemeSchema<T extends ThemeSchemaType> {
 }
 
 /** See {@link ThemeSchema} */
-export interface BlockSchema extends ThemeSchema<ThemeSchemaType.Block> {}
+export interface ThemeBlockSchema extends ThemeSchema<ThemeSchemaType.Block> {
+  /**
+   * @example
+   * const schema = await context.getBlockSchema('product');
+   * const validSchema = schema?.validSchema;
+   * if (!validSchema || validSchema instanceof Error) return;
+   *
+   * for (const block of validSchema.blocks ?? []) {
+   *  // do something
+   * }
+   */
+  validSchema: ThemeBlock.Schema | Error;
+}
 
 /** See {@link ThemeSchema} */
-export interface SectionSchema extends ThemeSchema<ThemeSchemaType.Section> {}
+export interface SectionSchema extends ThemeSchema<ThemeSchemaType.Section> {
+  /**
+   * @example
+   * const schema = await context.getSectionSchema('product');
+   * const validSchema = schema?.validSchema;
+   * if (!validSchema || validSchema instanceof Error) return;
+   *
+   * for (const block of validSchema.blocks ?? []) {
+   *  // do something
+   * }
+   */
+  validSchema: Section.Schema | Error;
+}
+
+/** TODO setup validSchema like the other ones. */
+export interface AppBlockSchema extends ThemeSchema<ThemeSchemaType.AppBlock> {}

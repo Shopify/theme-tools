@@ -1,10 +1,33 @@
 import { expect, describe, it } from 'vitest';
 import { highlightedOffenses, runLiquidCheck, check } from '../../test';
 import { ValidSchemaName } from './index';
+import { ThemeSchemaType } from '../..';
 
 const DEFAULT_FILE_NAME = 'sections/file.liquid';
 
 describe('Module: ValidSchemaName', () => {
+  // We have a different check for that
+  it('reports no offense when the schema is invalid', async () => {
+    const sourceCode = `
+      {% schema %}
+        {
+          "name": 10
+        }
+      {% endschema %}
+    `;
+    const offenses = await runLiquidCheck(ValidSchemaName, sourceCode, DEFAULT_FILE_NAME, {
+      getSectionSchema: async () => ({
+        ast: new Error('Invalid schema'),
+        parsed: new Error('Invalid schema'),
+        validSchema: new Error('Invalid schema'),
+        name: 'file',
+        type: ThemeSchemaType.Section,
+      }),
+    });
+
+    expect(offenses).toHaveLength(0);
+  });
+
   it('reports offense with schema name over 25 characters long', async () => {
     const sourceCode = `
       {% schema %}
@@ -34,8 +57,8 @@ describe('Module: ValidSchemaName', () => {
           {% schema %}
             {
               "name": "t:default.my_translation_key"
-        } 
-      {% endschema %}`,
+            }
+          {% endschema %}`,
       },
       [ValidSchemaName],
     );
@@ -47,11 +70,11 @@ describe('Module: ValidSchemaName', () => {
     const offenses = await check(
       {
         'locales/en.default.schema.json': '{ "another_translation_key": "Another translation"}',
-        'code.liquid': `
+        'sections/file.liquid': `
           {% schema %}
             {
               "name": "t:my_translation_key"
-            } 
+            }
           {% endschema %}`,
       },
       [ValidSchemaName],
@@ -68,11 +91,11 @@ describe('Module: ValidSchemaName', () => {
       {
         'locales/en.default.schema.json':
           '{ "my_translation_key": "My translation is tooooooooo long."}',
-        'code.liquid': `
+        'blocks/code.liquid': `
           {% schema %}
             {
               "name": "t:my_translation_key"
-            } 
+            }
           {% endschema %}`,
       },
       [ValidSchemaName],

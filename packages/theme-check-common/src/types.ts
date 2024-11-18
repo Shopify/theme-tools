@@ -14,7 +14,7 @@ import { StringCorrector, JSONCorrector } from './fixes';
 import { AbstractFileSystem, UriString } from './AbstractFileSystem';
 
 import { ThemeDocset, JsonValidationSet } from './types/theme-liquid-docs';
-import { BlockSchema, SectionSchema } from './types/theme-schemas';
+import { AppBlockSchema, ThemeBlockSchema, SectionSchema } from './types/theme-schemas';
 
 export * from './types/theme-liquid-docs';
 export * from './types/schema-prop-factory';
@@ -322,9 +322,9 @@ export interface Dependencies {
   /**
    * Asynchronously get the block schema for 'blocks/${name}.liquid'
    * May return undefined when the theme isn't preloaded.
-   * See {@link BlockSchema} for more information
+   * See {@link ThemeBlockSchema} for more information
    */
-  getBlockSchema?: (name: string) => Promise<BlockSchema | undefined>;
+  getBlockSchema?: (name: string) => Promise<ThemeBlockSchema | undefined>;
 
   /**
    * Asynchronously get the section schema for 'section/${name}.liquid'
@@ -332,12 +332,22 @@ export interface Dependencies {
    * See {@link SectionSchema} for more information
    */
   getSectionSchema?: (name: string) => Promise<SectionSchema | undefined>;
+
+  /**
+   * (In theme app extension mode)
+   * Asynchronously get the block schema for 'blocks/${name}.liquid'
+   * May return undefined when the theme isn't preloaded.
+   * See {@link AppBlockSchema} for more information
+   */
+  getAppBlockSchema?: (name: string) => Promise<AppBlockSchema | undefined>;
 }
 
-export type ValidateJSON<T extends SourceCodeType> = (
-  file: SourceCode<T>,
+export type ValidateJSON = (
+  uri: string,
   jsonString: string,
 ) => Promise<{ message: string; startIndex: number; endIndex: number }[]>;
+
+export type IsValidSchema = (uri: string, jsonString: string) => Promise<boolean>;
 
 export interface AugmentedDependencies extends Dependencies {
   fileExists: (uri: UriString) => Promise<boolean>;
@@ -346,6 +356,7 @@ export interface AugmentedDependencies extends Dependencies {
   getDefaultSchemaLocale: () => Promise<string>;
   getDefaultTranslations(): Promise<Translations>;
   getDefaultSchemaTranslations(): Promise<Translations>;
+  mode: Mode;
 }
 
 type StaticContextProperties<T extends SourceCodeType> = T extends SourceCodeType
@@ -354,7 +365,7 @@ type StaticContextProperties<T extends SourceCodeType> = T extends SourceCodeTyp
       toRelativePath(uri: UriString): RelativePath;
       toUri(relativePath: RelativePath): UriString;
       file: SourceCode<T>;
-      validateJSON?: ValidateJSON<T>;
+      validateJSON?: ValidateJSON;
     }
   : never;
 

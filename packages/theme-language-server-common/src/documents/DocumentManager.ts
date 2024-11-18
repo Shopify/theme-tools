@@ -9,6 +9,9 @@ import {
   toSourceCode,
   toSchema,
   UriString,
+  IsValidSchema,
+  memo,
+  Mode,
 } from '@shopify/theme-check-common';
 import { Connection } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -26,19 +29,15 @@ export class DocumentManager {
    * are preloaded have a version of `undefined`.
    */
   private sourceCodes: Map<UriString, AugmentedSourceCode>;
-  private readonly fs: AbstractFileSystem | undefined;
-  private readonly connection: Connection | undefined;
-  private readonly clientCapabilities: ClientCapabilities | undefined;
 
   constructor(
-    fs?: AbstractFileSystem,
-    connection?: Connection,
-    clientCapabilities?: ClientCapabilities,
+    private readonly fs?: AbstractFileSystem,
+    private readonly connection?: Connection,
+    private readonly clientCapabilities?: ClientCapabilities,
+    private readonly getModeForUri?: (uri: UriString) => Promise<Mode>,
+    private readonly isValidSchema?: IsValidSchema,
   ) {
     this.sourceCodes = new Map();
-    this.fs = fs;
-    this.connection = connection;
-    this.clientCapabilities = clientCapabilities;
   }
 
   public open(uri: UriString, source: string, version: number | undefined) {
@@ -93,7 +92,7 @@ export class DocumentManager {
       return;
     }
 
-    this.sourceCodes.set(uri, augmentedSourceCode(uri, source, version));
+    this.sourceCodes.set(uri, this.augmentedSourceCode(uri, source, version));
   }
 
   /**
@@ -140,34 +139,40 @@ export class DocumentManager {
     },
     (rootUri) => rootUri,
   );
-}
 
-function augmentedSourceCode(
-  uri: UriString,
-  source: string,
-  version: number | undefined,
-): AugmentedSourceCode {
-  const sourceCode = toSourceCode(uri, source, version);
-  const textDocument = TextDocument.create(
-    uri,
-    sourceCode.type,
-    sourceCode.version ?? 0, // create doesn't let us put undefined here.
-    sourceCode.source,
-  );
+  private augmentedSourceCode(
+    uri: UriString,
+    source: string,
+    version: number | undefined,
+  ): AugmentedSourceCode {
+    const sourceCode = toSourceCode(uri, source, version);
+    const textDocument = TextDocument.create(
+      uri,
+      sourceCode.type,
+      sourceCode.version ?? 0, // create doesn't let us put undefined here.
+      sourceCode.source,
+    );
 
-  switch (sourceCode.type) {
-    case SourceCodeType.JSON:
-      return {
-        ...sourceCode,
-        textDocument,
-      };
-    case SourceCodeType.LiquidHtml:
-      return {
-        ...sourceCode,
-        schema: toSchema(uri, sourceCode),
-        textDocument,
-      };
-    default:
-      return assertNever(sourceCode);
+    switch (sourceCode.type) {
+      case SourceCodeType.JSON:
+        return {
+          ...sourceCode,
+          textDocument,
+        };
+      case SourceCodeType.LiquidHtml:
+        return {
+          ...sourceCode,
+          textDocument,
+
+          /** Lazy and only computed once per file version */
+          getSchema: memo(async () => {
+            if (!this.getModeForUri || !this.isValidSchema) return undefined;
+            const mode = await this.getModeForUri!(uri);
+            return toSchema(mode, uri, sourceCode, this.isValidSchema);
+          }),
+        };
+      default:
+        return assertNever(sourceCode);
+    }
   }
 }

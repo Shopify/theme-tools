@@ -1,11 +1,11 @@
-import { deepGet } from '../../utils/file-utils';
-import { LiteralNode, ValueNode } from 'json-to-ast';
-import { toJSONAST } from '../../to-source-code';
-import { JSONNode, LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { visit } from '../../visitor';
+import { LiteralNode } from 'json-to-ast';
+import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
+import { basename } from '../../path';
+import { isBlock, isSection } from '../../to-schema';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
+import { deepGet } from '../../utils';
 
 const MAX_SCHEMA_NAME_LENGTH = 25;
-const ROOT_NODE_ANCESTORS_COUNT = 1;
 
 export const ValidSchemaName: LiquidCheckDefinition = {
   meta: {
@@ -23,85 +23,67 @@ export const ValidSchemaName: LiquidCheckDefinition = {
   },
 
   create(context) {
+    function getSchema() {
+      const name = basename(context.file.uri, '.liquid');
+      switch (true) {
+        case isBlock(context.file.uri):
+          return context.getBlockSchema?.(name);
+        case isSection(context.file.uri):
+          return context.getSectionSchema?.(name);
+        default:
+          return undefined;
+      }
+    }
+
     return {
       async LiquidRawTag(node) {
         if (node.name !== 'schema' || node.body.kind !== 'json') {
           return;
         }
 
-        const jsonSchemaString = node.source.slice(
-          node.blockStartPosition.end,
-          node.blockEndPosition.start,
-        );
+        const offset = node.blockStartPosition.end;
+        const schema = await getSchema();
+        const { validSchema, ast } = schema ?? {};
+        if (!validSchema || validSchema instanceof Error) return;
+        if (!ast || ast instanceof Error) return;
 
-        const jsonSchemaAst = toJSONAST(jsonSchemaString);
+        const name = validSchema.name;
+        if (!name) return;
 
-        const promises = visit<SourceCodeType.JSON, Promise<void>>(jsonSchemaAst as JSONNode, {
-          async Property(nameNode, ancestors) {
-            if (
-              nameNode.key.value === 'name' &&
-              ancestors.length === ROOT_NODE_ANCESTORS_COUNT &&
-              isLiteralNode(nameNode.value)
-            ) {
-              const name = getLiteralValue(nameNode.value);
-              const startIndex = node.blockStartPosition.end + getLiteralLocStart(nameNode.value);
-              const endIndex = node.blockStartPosition.end + getLiteralLocEnd(nameNode.value);
+        // We can make this type assertion because we know the schema is valid
+        const nameNode = nodeAtPath(ast, ['name'])! as LiteralNode;
+        const startIndex = offset + getLocStart(nameNode);
+        const endIndex = offset + getLocEnd(nameNode);
 
-              if (!name.startsWith('t:') && name.length > MAX_SCHEMA_NAME_LENGTH) {
-                context.report({
-                  message: `Schema name '${name}' is too long (max 25 characters)`,
-                  startIndex: startIndex,
-                  endIndex: endIndex,
-                });
-              }
+        if (name.startsWith('t:')) {
+          const defaultLocale = await context.getDefaultLocale();
+          const key = name.replace('t:', '');
+          const defaultTranslations = await context.getDefaultSchemaTranslations();
+          const translation = deepGet(defaultTranslations, key.split('.'));
 
-              if (name.startsWith('t:')) {
-                const defaultLocale = await context.getDefaultLocale();
-                const key = name.replace('t:', '');
-                const defaultTranslations = await context.getDefaultSchemaTranslations();
-                const translation = deepGet(defaultTranslations, key.split('.'));
+          if (translation === undefined) {
+            context.report({
+              message: `'${name}' does not have a matching entry in 'locales/${defaultLocale}.default.schema.json'`,
+              startIndex,
+              endIndex,
+            });
+          }
 
-                if (translation === undefined) {
-                  context.report({
-                    message: `'${name}' does not have a matching entry in 'locales/${defaultLocale}.default.schema.json'`,
-                    startIndex: startIndex,
-                    endIndex: endIndex,
-                  });
-                }
-
-                if (translation !== undefined && translation.length > MAX_SCHEMA_NAME_LENGTH) {
-                  context.report({
-                    message: `Schema name '${translation}' from 'locales/${defaultLocale}.default.schema.json' is too long (max 25 characters)`,
-                    startIndex: startIndex,
-                    endIndex: endIndex,
-                  });
-                }
-              }
-            }
-          },
-        });
-
-        await Promise.all(promises);
+          if (translation !== undefined && translation.length > MAX_SCHEMA_NAME_LENGTH) {
+            context.report({
+              message: `Schema name '${translation}' from 'locales/${defaultLocale}.default.schema.json' is too long (max 25 characters)`,
+              startIndex,
+              endIndex,
+            });
+          }
+        } else if (name.length > MAX_SCHEMA_NAME_LENGTH) {
+          context.report({
+            message: `Schema name '${name}' is too long (max 25 characters)`,
+            startIndex,
+            endIndex,
+          });
+        }
       },
     };
   },
 };
-
-function isLiteralNode(node: ValueNode): node is LiteralNode {
-  return node.type === 'Literal';
-}
-
-function getLiteralValue(node: LiteralNode): string {
-  if (typeof node.value === 'string') {
-    return node.value;
-  }
-  return '';
-}
-
-function getLiteralLocStart(node: LiteralNode): number {
-  return node.loc?.start.offset ?? 0;
-}
-
-function getLiteralLocEnd(node: LiteralNode): number {
-  return node.loc?.end.offset ?? 0;
-}

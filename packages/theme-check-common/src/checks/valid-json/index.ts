@@ -29,7 +29,7 @@ export const ValidJSON: JSONCheckDefinition = {
 
     return {
       async onCodePathStart(file) {
-        const problems = await validateJSON(file, file.source);
+        const problems = await validateJSON(file.uri, file.source);
         if (!problems) return;
         for (const problem of problems) {
           context.report(problem);

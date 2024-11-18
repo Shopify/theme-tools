@@ -85,7 +85,13 @@ export function startServer(
   const fileExists = makeFileExists(fs);
   const clientCapabilities = new ClientCapabilities();
   const configuration = new Configuration(connection, clientCapabilities);
-  const documentManager = new DocumentManager(fs, connection, clientCapabilities);
+  const documentManager: DocumentManager = new DocumentManager(
+    fs,
+    connection,
+    clientCapabilities,
+    getModeForURI,
+    isValidSchema,
+  );
   const diagnosticsManager = new DiagnosticsManager(connection);
   const documentLinksProvider = new DocumentLinksProvider(documentManager, findThemeRootURI);
   const codeActionsProvider = new CodeActionsProvider(documentManager, diagnosticsManager);
@@ -185,11 +191,17 @@ export function startServer(
     }
   };
 
-  const getModeForURI = async (uri: string) => {
+  async function getModeForURI(uri: string) {
     const rootUri = await findConfigFileRoot(uri, fileExists);
     const config = await loadConfig(rootUri, fs);
     return config.context;
-  };
+  }
+
+  // Defined as a function to solve a circular dependency (doc manager & json
+  // lang service both need each other)
+  async function isValidSchema(uri: string, jsonString: string) {
+    return jsonLanguageService.isValidSchema(uri, jsonString);
+  }
 
   const jsonLanguageService = new JSONLanguageService(
     documentManager,

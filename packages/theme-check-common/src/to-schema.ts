@@ -3,27 +3,33 @@ import { parseJSON } from './json';
 import * as path from './path';
 import { toJSONAST } from './to-source-code';
 import {
-  BlockSchema,
+  AppBlockSchema,
+  ThemeBlockSchema,
+  IsValidSchema,
   LiquidHtmlNode,
   SectionSchema,
   SourceCode,
   SourceCodeType,
-  ThemeSchema,
+  ThemeBlock,
   ThemeSchemaType,
   UriString,
 } from './types';
 import { visit } from './visitor';
 
-export function toSchema(
+export async function toSchema(
+  mode: 'app' | 'theme',
   uri: UriString,
   sourceCode: SourceCode,
-): SectionSchema | BlockSchema | undefined {
+  isValidSchema: IsValidSchema | undefined,
+): Promise<AppBlockSchema | SectionSchema | ThemeBlockSchema | undefined> {
   if (sourceCode.type !== SourceCodeType.LiquidHtml) return undefined;
   switch (true) {
-    case isBlock(uri):
-      return toBlockSchema(uri, sourceCode.ast);
-    case isSection(uri):
-      return toSectionSchema(uri, sourceCode.ast);
+    case mode === 'app' && isBlock(uri):
+      return toAppBlockSchema(uri, sourceCode.ast);
+    case mode === 'theme' && isBlock(uri):
+      return toBlockSchema(uri, sourceCode.ast, isValidSchema);
+    case mode === 'theme' && isSection(uri):
+      return toSectionSchema(uri, sourceCode.ast, isValidSchema);
     default:
       return undefined;
   }
@@ -38,39 +44,85 @@ export function isSection(uri: UriString) {
 }
 
 export function isBlockSchema(
-  schema: SectionSchema | BlockSchema | undefined,
-): schema is BlockSchema {
+  schema: SectionSchema | ThemeBlockSchema | undefined,
+): schema is ThemeBlockSchema {
   return schema?.type === ThemeSchemaType.Block;
 }
 
 export function isSectionSchema(
-  schema: SectionSchema | BlockSchema | undefined,
+  schema: SectionSchema | ThemeBlockSchema | undefined,
 ): schema is SectionSchema {
   return schema?.type === ThemeSchemaType.Section;
 }
 
-export function toBlockSchema(uri: UriString, liquidAst: LiquidHtmlNode | Error): BlockSchema {
+async function toValidSchema<T>(
+  uri: string,
+  schemaNode: LiquidRawTag | Error,
+  parsed: any | Error,
+  isValidSchema: IsValidSchema | undefined,
+): Promise<T | Error> {
+  if (!isValidSchema) return new Error('No JSON validator provided');
+  if (schemaNode instanceof Error) return parsed;
+  if (await isValidSchema(uri, schemaNode.body.value)) {
+    return parsed as T;
+  } else {
+    return new Error('Invalid schema');
+  }
+}
+
+export async function toBlockSchema(
+  uri: UriString,
+  liquidAst: LiquidHtmlNode | Error,
+  isValidSchema: IsValidSchema | undefined,
+): Promise<ThemeBlockSchema> {
   const name = path.basename(uri, '.liquid');
   const schemaNode = toSchemaNode(liquidAst);
+  const parsed = toParsed(schemaNode);
+  const ast = toAst(schemaNode);
   return {
     type: ThemeSchemaType.Block,
+    validSchema: await toValidSchema<ThemeBlock.Schema>(uri, schemaNode, parsed, isValidSchema),
     name,
-    parsed: toParsed(schemaNode),
-    ast: toAst(schemaNode),
+    parsed,
+    ast,
   };
 }
 
 // Coincidentally very similar right now... but could be different in the future
 // given there might be a plan to support folders in the blocks folder.
 // e.g. if we start having a stricter "parsed" object / ways to get settings.
-export function toSectionSchema(uri: UriString, liquidAst: LiquidHtmlNode | Error): SectionSchema {
+export async function toSectionSchema(
+  uri: UriString,
+  liquidAst: LiquidHtmlNode | Error,
+  isValidSchema: IsValidSchema | undefined,
+): Promise<SectionSchema> {
   const name = path.basename(uri, '.liquid');
   const schemaNode = toSchemaNode(liquidAst);
+  const parsed = toParsed(schemaNode);
+  const ast = toAst(schemaNode);
   return {
     type: ThemeSchemaType.Section,
+    validSchema: await toValidSchema(uri, schemaNode, parsed, isValidSchema),
     name,
-    parsed: toParsed(schemaNode),
-    ast: toAst(schemaNode),
+    parsed,
+    ast,
+  };
+}
+
+// validSchema not implemented yet. You can still `visit` the ast.
+export async function toAppBlockSchema(
+  uri: UriString,
+  liquidAst: LiquidHtmlNode | Error,
+): Promise<AppBlockSchema> {
+  const name = path.basename(uri, '.liquid');
+  const schemaNode = toSchemaNode(liquidAst);
+  const parsed = toParsed(schemaNode);
+  const ast = toAst(schemaNode);
+  return {
+    type: ThemeSchemaType.AppBlock,
+    name,
+    parsed,
+    ast,
   };
 }
 

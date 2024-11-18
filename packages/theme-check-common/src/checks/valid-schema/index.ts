@@ -25,7 +25,7 @@ export const ValidSchema: LiquidCheckDefinition = {
           node.blockStartPosition.end,
           node.blockEndPosition.start,
         );
-        const problems = await context.validateJSON(context.file, jsonString);
+        const problems = await context.validateJSON(context.file.uri, jsonString);
         if (!problems) return;
 
         for (const problem of problems) {

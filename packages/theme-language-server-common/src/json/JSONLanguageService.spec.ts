@@ -401,6 +401,44 @@ describe('Module: JSONLanguageService', () => {
     });
   });
 
+  describe('isValidSchema', () => {
+    it('should return true for a valid schema', async () => {
+      const params = getParams(
+        documentManager,
+        'sections/section.liquid',
+        `
+          <div>hello world</div>
+          {% schema %}
+            { "name": "hello world" }
+          {% endschema %}
+        `,
+      );
+      const isValid = await jsonLanguageService.isValidSchema(
+        params.textDocument.uri,
+        '{ "name": "hello world" }',
+      );
+      expect(isValid).to.be.true;
+    });
+
+    it('should return false for an invalid schema', async () => {
+      const params = getParams(
+        documentManager,
+        'sections/section.liquid',
+        `
+          <div>hello world</div>
+          {% schema %}
+            { "invalid": true }
+          {% endschema %}
+        `,
+      );
+      const isValid = await jsonLanguageService.isValidSchema(
+        params.textDocument.uri,
+        '{ "invalid": true }',
+      );
+      expect(isValid).to.be.false;
+    });
+  });
+
   function getParams(
     documentManager: DocumentManager,
     relativePath: string,

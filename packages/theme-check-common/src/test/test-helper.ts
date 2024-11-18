@@ -8,15 +8,19 @@ import {
   createCorrector,
   Dependencies,
   FixApplicator,
+  isBlock,
+  isSection,
   JSONCorrector,
   JSONSourceCode,
   LiquidSourceCode,
   Offense,
-  parseJSON,
   recommended,
+  SectionSchema,
   SourceCodeType,
   StringCorrector,
   Theme,
+  ThemeBlockSchema,
+  toSchema,
   toSourceCode,
 } from '../index';
 import * as path from '../path';
@@ -44,18 +48,42 @@ export async function check(
     context: 'theme',
     settings: { ...checkSettings },
     checks: checks,
-    rootUri: 'file:/',
+    rootUri,
   };
-  const defaultTranslationsFileRelativePath = 'locales/en.default.json';
-  const defaultSchemaTranslationsFileRelativePath = 'locales/en.default.schema.json';
 
-  const defaultMockDependencies = {
+  const sections = new Map(
+    theme
+      .filter((source) => isSection(source.uri))
+      .map((source) => [path.basename(source.uri, '.liquid'), source]),
+  );
+  const blocks = new Map(
+    theme
+      .filter((source) => isBlock(source.uri))
+      .map((source) => [path.basename(source.uri, '.liquid'), source]),
+  );
+
+  /**
+   * Schemas are assumed to be valid in tests, hijack
+   * getBlockSchema/getSectionSchema with overrides when you want to test
+   * something otherwise
+   */
+  const isValidSchema = async () => true;
+
+  const defaultMockDependencies: Dependencies = {
     fs: new MockFileSystem(themeDesc),
-    async getDefaultTranslations() {
-      return parseJSON(themeDesc[defaultTranslationsFileRelativePath] || '{}', {});
+    async getBlockSchema(name) {
+      const block = blocks.get(name);
+      if (!block) return undefined;
+      return toSchema(config.context, block.uri, block, isValidSchema) as Promise<
+        ThemeBlockSchema | undefined
+      >;
     },
-    async getDefaultSchemaTranslations() {
-      return parseJSON(themeDesc[defaultSchemaTranslationsFileRelativePath] || '{}', {});
+    async getSectionSchema(name) {
+      const section = sections.get(name);
+      if (!section) return undefined;
+      return toSchema(config.context, section.uri, section, isValidSchema) as Promise<
+        SectionSchema | undefined
+      >;
     },
     themeDocset: {
       async filters() {

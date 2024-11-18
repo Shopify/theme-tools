@@ -2,7 +2,8 @@ import {
   SourceCodeType,
   SourceCode,
   SectionSchema,
-  BlockSchema,
+  ThemeBlockSchema,
+  AppBlockSchema,
 } from '@shopify/theme-check-common';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
@@ -21,7 +22,7 @@ export type AugmentedJsonSourceCode = _AugmentedSourceCode<SourceCodeType.JSON>;
  * about cache invalidation and will mean we'll parse the schema at most once.
  */
 export type AugmentedLiquidSourceCode = _AugmentedSourceCode<SourceCodeType.LiquidHtml> & {
-  schema?: SectionSchema | BlockSchema;
+  getSchema: () => Promise<SectionSchema | ThemeBlockSchema | AppBlockSchema | undefined>;
 };
 
 /**

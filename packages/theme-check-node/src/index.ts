@@ -1,14 +1,18 @@
 import {
   Config,
   JSONSourceCode,
+  JSONValidator,
   LiquidSourceCode,
   Offense,
+  SectionSchema,
   Theme,
+  ThemeBlockSchema,
   toSourceCode as commonToSourceCode,
   check as coreCheck,
-  isBlockSchema,
+  isBlock,
   isIgnored,
-  isSectionSchema,
+  isSection,
+  memo,
   path as pathUtils,
   toSchema,
 } from '@shopify/theme-check-common';
@@ -69,19 +73,59 @@ export async function themeCheckRun(
   const { theme, config } = await getThemeAndConfig(root, configPath);
   const themeLiquidDocsManager = new ThemeLiquidDocsManager(log);
 
+  // This does feel a bit heavy handed, but I'm in a rush.
+  //
+  // Ultimately, I want to be able to have type safety on the parsed content
+  // of the {% schema %} tags if the schema is known to be valid. This should make
+  // {% schema %} related theme checks much easier to write than having to write visitor
+  // code and doing null checks all over the place. `ThemeBlock.Schema` is much more specific
+  // than `any` ever could be.
+  //
+  // I also want to have the option of passing down the getSectionSchema &
+  // getBlockSchema functions as dependencies. This will enable me to cache the
+  // results in the language server and avoid redoing validation between runs if
+  // we know the schema of a file that didn't change is valid.
+  //
+  // The crux of my problem is that I want to be passing down the json validation set
+  // as dependencies and not a full blown language service. But the easiest way
+  // is to have a `isValidSchema` is to have the language service do the
+  // validation of the JSON schema... We're technically going to have two
+  // JSONValidator running in theme check (node). We already have two in the
+  // language server.
+  const validator = await JSONValidator.create(themeLiquidDocsManager, config);
+  const isValidSchema = validator?.isValid;
+
   // We can assume that all files are loaded when running themeCheckRun
-  const schemas = theme.map((source) => toSchema(source.uri, source));
+  const schemas = theme.map((source) =>
+    toSchema(config.context, source.uri, source, isValidSchema),
+  );
+
   // prettier-ignore
-  const blockSchemas = new Map(schemas.filter(isBlockSchema).map((schema) => [schema.name, schema]));
+  const blockSchemas = new Map(theme.filter(source => isBlock(source.uri)).map((source) => [
+    path.basename(source.uri, '.liquid'),
+    memo(async (): Promise<ThemeBlockSchema | undefined> =>
+      toSchema(config.context, source.uri, source, isValidSchema) as Promise<ThemeBlockSchema | undefined>
+    )
+  ]));
   // prettier-ignore
-  const sectionSchemas = new Map(schemas.filter(isSectionSchema).map((schema) => [schema.name, schema]));
+  const sectionSchemas = new Map(theme.filter(source => isSection(source.uri)).map((source) => [
+    path.basename(source.uri, '.liquid'),
+    memo(async (): Promise<SectionSchema | undefined> =>
+      toSchema(config.context, source.uri, source, isValidSchema) as Promise<SectionSchema | undefined>
+    )
+  ]));
 
   const offenses = await coreCheck(theme, config, {
     fs: NodeFileSystem,
     themeDocset: themeLiquidDocsManager,
     jsonValidationSet: themeLiquidDocsManager,
-    getSectionSchema: async (name) => sectionSchemas.get(name),
-    getBlockSchema: async (name) => blockSchemas.get(name),
+
+    // This is kind of gross, but we want those things to be lazy and called by name so...
+    // In the language server, this is memo'ed in DocumentManager, but we don't have that kind
+    // of luxury in CLI-mode.
+    getSectionSchema: async (name) => sectionSchemas.get(name)?.(),
+    getBlockSchema: async (name) => blockSchemas.get(name)?.(),
+    getAppBlockSchema: async (name) => blockSchemas.get(name)?.() as any, // cheating... but TODO
   });
 
   return {

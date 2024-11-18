@@ -46,9 +46,10 @@ export * from './find-root';
 export * from './fixes';
 export * from './ignore';
 export * from './json';
+export * from './JSONValidator';
 export * as path from './path';
-export * from './to-source-code';
 export * from './to-schema';
+export * from './to-source-code';
 export * from './types';
 export * from './utils/error';
 export * from './utils/indexBy';
@@ -71,6 +72,7 @@ export async function check(
   const { rootUri } = config;
   const dependencies: AugmentedDependencies = {
     ...injectedDependencies,
+    mode: config.context,
     fileExists: makeFileExists(fs),
     fileSize: makeFileSize(fs),
     getDefaultLocale: makeGetDefaultLocale(fs, rootUri),
@@ -82,18 +84,12 @@ export async function check(
   };
 
   const { DisabledChecksVisitor, isDisabled } = createDisabledChecksModule();
-  let validateJSON: ValidateJSON<SourceCodeType> | undefined;
+  const jsonValidator = await JSONValidator.create(dependencies.jsonValidationSet, config);
+  const validateJSON = jsonValidator?.validate;
 
   // We're memozing those deps here because they shouldn't change within a run.
   if (dependencies.themeDocset && !dependencies.themeDocset.isAugmented) {
     dependencies.themeDocset = new AugmentedThemeDocset(dependencies.themeDocset);
-  }
-
-  if (dependencies.jsonValidationSet) {
-    const jsonValidator = new JSONValidator(
-      await dependencies.jsonValidationSet.schemas(config.context),
-    );
-    validateJSON = jsonValidator.validate.bind(jsonValidator);
   }
 
   for (const type of Object.values(SourceCodeType)) {
@@ -137,7 +133,7 @@ function createContext<T extends SourceCodeType, S extends Schema>(
   offenses: Offense[],
   config: Config,
   dependencies: Dependencies,
-  validateJSON?: ValidateJSON<SourceCodeType>,
+  validateJSON?: ValidateJSON,
 ): Context<T, S> {
   const checkSettings = config.settings[check.meta.code];
   return {
@@ -189,7 +185,7 @@ function createCheck<S extends SourceCodeType>(
   config: Config,
   offenses: Offense[],
   dependencies: Dependencies,
-  validateJSON?: ValidateJSON<SourceCodeType>,
+  validateJSON?: ValidateJSON,
 ): Check<S> {
   const context = createContext(check, file, offenses, config, dependencies, validateJSON);
   return check.create(context as any) as Check<S>;
