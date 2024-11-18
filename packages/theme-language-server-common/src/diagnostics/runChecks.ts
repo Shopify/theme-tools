@@ -1,4 +1,12 @@
-import { check, findRoot, makeFileExists } from '@shopify/theme-check-common';
+import {
+  ThemeBlockSchema,
+  check,
+  findRoot,
+  makeFileExists,
+  path,
+  SectionSchema,
+  SourceCodeType,
+} from '@shopify/theme-check-common';
 
 import { DocumentManager } from '../documents';
 import { Dependencies } from '../types';
@@ -39,10 +47,29 @@ export function makeRunChecks(
       const config = await loadConfig(configFileRootUri, fs);
       const theme = documentManager.theme(config.rootUri);
       const offenses = await check(theme, config, {
-        jsonValidationSet,
-        themeDocset,
         fs,
+        themeDocset,
+        jsonValidationSet,
         getMetafieldDefinitions,
+
+        // TODO should do something for app blocks?
+        async getBlockSchema(name) {
+          // We won't preload here. If it's available, we'll give it. Otherwise expect nothing.
+          const uri = path.join(config.rootUri, 'blocks', `${name}.liquid`);
+          const doc = documentManager.get(uri);
+          if (doc?.type !== SourceCodeType.LiquidHtml) return undefined;
+          const schema = await doc.getSchema();
+          return schema as ThemeBlockSchema | undefined;
+        },
+
+        async getSectionSchema(name) {
+          // We won't preload here. If it's available, we'll give it. Otherwise expect nothing.
+          const uri = path.join(config.rootUri, 'sections', `${name}.liquid`);
+          const doc = documentManager.get(uri);
+          if (doc?.type !== SourceCodeType.LiquidHtml) return undefined;
+          const schema = await doc.getSchema();
+          return schema as SectionSchema | undefined;
+        },
       });
 
       // We iterate over the theme files (as opposed to offenses) because if

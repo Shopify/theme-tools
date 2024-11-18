@@ -1,5 +1,5 @@
 import { AbstractFileSystem, FileStat, FileTuple, FileType } from '../AbstractFileSystem';
-import { deepGet } from '../utils/file-utils';
+import { deepGet } from '../utils';
 import { normalize, relative } from '../path';
 import { MockTheme } from './MockTheme';
 

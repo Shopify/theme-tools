@@ -1,11 +1,13 @@
 import { LiquidRawTag, NodeTypes } from '@shopify/liquid-html-parser';
 import {
+  IsValidSchema,
   JsonValidationSet,
   Mode,
   Modes,
   SchemaDefinition,
   SourceCodeType,
-  indexBy,
+  findCurrentNode,
+  isValid,
 } from '@shopify/theme-check-common';
 import { JSONDocument, LanguageService, getLanguageService } from 'vscode-json-languageservice';
 import {
@@ -18,10 +20,9 @@ import {
 } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DocumentManager } from '../documents';
-import { findCurrentNode } from '@shopify/theme-check-common';
-import { TranslationFileContributions } from './TranslationFileContributions';
-import { SchemaTranslationContributions } from './SchemaTranslationContributions';
 import { GetTranslationsForURI } from '../translations';
+import { SchemaTranslationContributions } from './SchemaTranslationContributions';
+import { TranslationFileContributions } from './TranslationFileContributions';
 
 export class JSONLanguageService {
   // We index by Mode here because I don't want to reconfigure the service depending on the URI.
@@ -114,6 +115,13 @@ export class JSONLanguageService {
     const [jsonTextDocument, jsonDocument] = documents;
     return service.doHover(jsonTextDocument, params.position, jsonDocument);
   }
+
+  public isValidSchema: IsValidSchema = async (uri: string, jsonString: string) => {
+    const mode = await this.getModeForURI(uri);
+    const service = this.services[mode];
+    if (!service) return false;
+    return isValid(service, uri, jsonString);
+  };
 
   private getDocuments(
     params: HoverParams | CompletionParams,
