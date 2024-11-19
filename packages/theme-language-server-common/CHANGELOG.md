@@ -1,5 +1,34 @@
 # @shopify/theme-language-server-common
 
+## 2.2.0
+
+### Minor Changes
+
+- add2445: [Internal] Add better building blocks for dealing with `{% schema %}` content
+
+### Patch Changes
+
+- f09c923: Preload theme files on file open instead of on rename
+- 0b7534b: Add a way to disable the theme preload on boot
+
+  The `themeCheck.preloadOnBoot` (default: `true`) configuration / initializationOption can be set to `false` to prevent the preload of all theme files as soon as a theme file is opened.
+
+  We'll use this to disable preload in admin.
+
+- 9a07208: [Bug fix] Metafield definitions should use `namespace.key` for auto-completion
+- Updated dependencies [3f7680e]
+- Updated dependencies [add2445]
+- Updated dependencies [8a0bf78]
+- Updated dependencies [7a6dfe8]
+- Updated dependencies [7317830]
+- Updated dependencies [c4813ff]
+- Updated dependencies [c4813ff]
+- Updated dependencies [b558bfe]
+- Updated dependencies [9a07208]
+- Updated dependencies [f09c923]
+  - @shopify/theme-check-common@3.2.0
+  - @shopify/liquid-html-parser@2.1.1
+
 ## 2.1.0
 
 ### Minor Changes

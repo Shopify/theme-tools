@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.1.1
+
+### Patch Changes
+
+- c4813ff: Fix LiquidComparison types
+
 ## 2.1.0
 
 ### Minor Changes
