@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 3.2.1
+
+### Patch Changes
+
+- 4a18a78: Temporarily disable ValidBlockTarget
+
 ## 3.2.0
 
 ### Minor Changes

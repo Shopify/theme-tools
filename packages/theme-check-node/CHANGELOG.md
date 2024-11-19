@@ -1,5 +1,14 @@
 # @shopify/theme-check-node
 
+## 3.2.1
+
+### Patch Changes
+
+- 4a18a78: Temporarily disable ValidBlockTarget
+- Updated dependencies [4a18a78]
+  - @shopify/theme-check-common@3.2.1
+  - @shopify/theme-check-docs-updater@3.2.1
+
 ## 3.2.0
 
 ### Minor Changes
