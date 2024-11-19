@@ -14,7 +14,7 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
     docs: {
       description:
         'Ensures sections without theme block support do not mix static and local blocks',
-      recommended: true,
+      recommended: false,
       url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/valid-local-blocks',
     },
     type: SourceCodeType.LiquidHtml,
