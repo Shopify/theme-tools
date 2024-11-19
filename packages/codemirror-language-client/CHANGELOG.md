@@ -1,5 +1,11 @@
 # @shopify/codemirror-language-client
 
+## 0.7.1
+
+### Patch Changes
+
+- 0b7534b: Add way to pass LSP initialization options to the server with the initialize request
+
 ## 0.7.0
 
 ### Minor Changes

@@ -1,5 +1,29 @@
 # @shopify/theme-check-node
 
+## 3.2.0
+
+### Minor Changes
+
+- 3f7680e: Add the `ValidBlockTarget` Check
+- add2445: [Internal] Add better building blocks for dealing with `{% schema %}` content
+- 8a0bf78: Add the `ValidLocalBlocks` Check
+- c4813ff: Add the `BlockIdUsage` check
+
+### Patch Changes
+
+- 7a6dfe8: Fix weird root URI loading bug
+- Updated dependencies [3f7680e]
+- Updated dependencies [add2445]
+- Updated dependencies [8a0bf78]
+- Updated dependencies [7a6dfe8]
+- Updated dependencies [7317830]
+- Updated dependencies [c4813ff]
+- Updated dependencies [b558bfe]
+- Updated dependencies [9a07208]
+- Updated dependencies [f09c923]
+  - @shopify/theme-check-common@3.2.0
+  - @shopify/theme-check-docs-updater@3.2.0
+
 ## 3.1.0
 
 ### Minor Changes
