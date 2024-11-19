@@ -1,6 +1,7 @@
 ---
 '@shopify/theme-check-common': minor
 '@shopify/theme-check-node': minor
+'theme-check-vscode': minor
 ---
 
-Add `BlockIdUsage` check
+Add the `BlockIdUsage` check

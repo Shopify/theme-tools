@@ -1,5 +1,6 @@
 ---
 '@shopify/theme-language-server-common': patch
+'theme-check-vscode': patch
 ---
 
 Add a way to disable the theme preload on boot
