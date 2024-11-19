@@ -18,7 +18,7 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
     docs: {
       description:
         'Ensures block types only reference valid block types and respect parent-child relationships',
-      recommended: true,
+      recommended: false,
       url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/valid-block-target',
     },
     type: SourceCodeType.LiquidHtml,
