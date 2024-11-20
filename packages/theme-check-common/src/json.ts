@@ -39,12 +39,33 @@ export function parseJSON(source: string, defaultValue?: any): any | Error {
  * const blocksNode = nodeAtPath(ast, ['blocks'])! as ArrayNode;
  * const someDeepNode = nodeAtPath(ast, ['blocks', 0, 'settings', 'someDeepKey'])! as LiteralNode;
  */
-export function nodeAtPath(node: JSONNode, path: string[]): JSONNode | undefined {
+export function nodeAtPath(node: JSONNode, path: (string | number)[]): JSONNode | undefined {
   return path.reduce<JSONNode | undefined>((acc, key) => {
-    if (!acc || acc.type !== 'Object') return;
-    const property = acc.children.find((child) => child.key.value === key);
-    if (!property) return;
-    return property.value;
+    if (!acc) return;
+    switch (acc.type) {
+      case 'Object': {
+        const property = acc.children.find((child) => child.key.value === key);
+        if (!property) return;
+        return property.value;
+      }
+
+      case 'Array': {
+        return acc.children[key as number];
+      }
+
+      case 'Literal': {
+        // You're probably going too deep
+        return;
+      }
+      case 'Identifier': {
+        // This is for keys, shouldn't get there
+        return;
+      }
+      case 'Property': {
+        // This is for keys, shouldn't get there
+        return;
+      }
+    }
   }, node);
 }
 
