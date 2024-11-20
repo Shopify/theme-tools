@@ -1,7 +1,7 @@
 import { LiquidRawTag } from '@shopify/liquid-html-parser';
 import { Context, SourceCodeType, Schema, JSONNode } from '../../types';
 import { visit } from '../../visitor';
-import { LiteralNode } from 'json-to-ast';
+import { LiteralNode, PropertyNode } from 'json-to-ast';
 
 type Location = {
   startIndex: number;
@@ -10,6 +10,10 @@ type Location = {
 
 function isLiteralNode(node: JSONNode): node is LiteralNode {
   return node.type === 'Literal';
+}
+
+function isPropertyNode(node: JSONNode): node is PropertyNode {
+  return node.type === 'Property';
 }
 
 export function collectBlockProperties(jsonFile: JSONNode): {
@@ -37,7 +41,7 @@ export function collectBlockProperties(jsonFile: JSONNode): {
           (child) => child.type === 'Property' && child.key.value === 'static',
         );
 
-      if (node.key.value === 'type') {
+      if (node.key.value === 'type' && isInBlocksArray(ancestors)) {
         const typeValue = node.value.value;
         const typeLocation = {
           startIndex: node.value.loc!.start.offset,
@@ -55,11 +59,12 @@ export function collectBlockProperties(jsonFile: JSONNode): {
         } else if (
           !hasName &&
           typeValue !== '@app' &&
-          !isInArrayWithParentKey(ancestors, 'presets')
+          !isInArrayWithParentKey(ancestors, 'presets') &&
+          !isInArrayWithParentKey(ancestors, 'default')
         ) {
           themeBlockLocations.push(typeLocation);
         }
-      } else if (node.key.value === 'name') {
+      } else if (node.key.value === 'name' && isInBlocksArray(ancestors)) {
         const nameKeyLocation = {
           startIndex: node.key.loc!.start.offset,
           endIndex: node.key.loc!.end.offset,
@@ -93,6 +98,16 @@ function isInArrayWithParentKey(ancestors: JSONNode[], parentKey: string): boole
       parent.key?.value === parentKey
     );
   });
+}
+
+function isInBlocksArray(ancestors: JSONNode[]): boolean {
+  const thirdAncestor = ancestors[ancestors.length - 3];
+  const fourthAncestor = ancestors[ancestors.length - 4];
+
+  return (
+    (isPropertyNode(thirdAncestor) && thirdAncestor.key?.value === 'blocks') ||
+    (isPropertyNode(fourthAncestor) && fourthAncestor.key?.value === 'blocks')
+  );
 }
 
 export const reportError =

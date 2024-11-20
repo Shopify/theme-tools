@@ -42,12 +42,12 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
         const jsonFile = toJSONAST(jsonString);
         if (jsonFile instanceof Error) return;
 
-        const { rootBlockTypes, presetBlockTypes } = collectAndValidateBlockTypes(
-          jsonFile as JSONNode,
-        );
+        const { hasLocalBlocks, rootThemeBlockTypes, presetBlockTypes, nestedPresetBlockTypes } =
+          collectAndValidateBlockTypes(jsonFile as JSONNode);
 
+        if (hasLocalBlocks) return;
         let errorsInRootLevelBlocks = false;
-        for (const [blockType, locations] of Object.entries(rootBlockTypes)) {
+        for (const [blockType, locations] of Object.entries(rootThemeBlockTypes)) {
           const exists = await validateBlockFileExistence(blockType, context);
           if (!exists) {
             locations.forEach(
@@ -65,8 +65,8 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
 
         for (const [presetType, locations] of Object.entries(presetBlockTypes)) {
           const isPrivateBlockType = presetType.startsWith('_');
-          const isPresetInRootLevel = presetType in rootBlockTypes;
-          const isThemeInRootLevel = '@theme' in rootBlockTypes;
+          const isPresetInRootLevel = presetType in rootThemeBlockTypes;
+          const isThemeInRootLevel = '@theme' in rootThemeBlockTypes;
           const needsExplicitRootBlock = isPrivateBlockType || !isThemeInRootLevel;
 
           if (!isPresetInRootLevel && needsExplicitRootBlock) {
@@ -88,6 +88,8 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
             }
           }
         }
+
+        // TODO: Validate nested preset block types via cross file check
       },
     };
   },
