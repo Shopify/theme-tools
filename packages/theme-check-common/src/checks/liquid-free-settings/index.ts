@@ -37,7 +37,13 @@ export const LiquidFreeSettings: LiquidCheckDefinition = {
           Property(schemaNode, ancestors) {
             if (isInArrayWithParentKey(ancestors, 'settings') && isLiteralNode(schemaNode.value)) {
               const { value, loc } = schemaNode.value;
-              if (typeof value === 'string' && value.includes('{%') && value.includes('%}')) {
+              const propertyValue = schemaNode.key.value;
+              if (
+                typeof value === 'string' &&
+                propertyValue !== 'available_if' &&
+                value.includes('{%') &&
+                value.includes('%}')
+              ) {
                 context.report({
                   message: 'Settings values cannot contain liquid logic.',
                   startIndex: node.blockStartPosition.end + loc!.start.offset,

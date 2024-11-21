@@ -153,5 +153,28 @@ describe('LiquidFreeSettings validation', () => {
       expect(offenses).to.have.length(1);
       expect(offenses[0].message).to.equal('Settings values cannot contain liquid logic.');
     });
+
+    it(`should not report errors when settings value is available_if and it contains liquid logic`, async () => {
+      const theme: MockTheme = {
+        [`${path}/test-section.liquid`]: `
+        {% schema %}
+        {
+          "name": "test",
+          "settings": {
+            "text_block": {
+              "type": "text",
+              "id": "text_block",
+              "label": "Text Block",
+              "default": "Hello World!",
+              "available_if": "{% if user %} true {% endif %}"
+            }
+          }
+        }
+      {% endschema %}
+      `,
+      };
+      const offenses = await check(theme, [LiquidFreeSettings]);
+      expect(offenses).to.have.length(0);
+    });
   });
 });
