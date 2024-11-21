@@ -7,7 +7,7 @@
 
 <h4 align="center">A complete developer experience for Shopify themes</h4>
 
-Official VS Code extension for [Shopify Liquid storefronts](https://shopify.dev/docs/themes) and [Theme App Extensions](https://shopify.dev/docs/apps/online-store/theme-app-extensions).
+Official VS Code extension for [Shopify Liquid storefronts](https://shopify.dev/docs/storefronts/themes) and [Theme App Extensions](https://shopify.dev/docs/apps/online-store/theme-app-extensions).
 
 ![](https://github.com/Shopify/theme-check-vscode/blob/feature/readme-revamp/images/demo.gif?raw=true)
 
