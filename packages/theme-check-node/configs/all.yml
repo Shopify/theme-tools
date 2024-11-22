@@ -64,6 +64,9 @@ MatchingTranslations:
 MissingAsset:
   enabled: true
   severity: 0
+MissingSchema:
+  enabled: false
+  severity: 0
 MissingTemplate:
   enabled: true
   severity: 0
