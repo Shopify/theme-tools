@@ -500,6 +500,351 @@ describe('Module: ValidBlockTarget', () => {
         const offenses = await check(theme, [ValidBlockTarget]);
         expect(offenses).to.be.empty;
       });
+
+      it(`should report errors for nested blocks when they are not allowed (${path} bucket)`, async () => {
+        const theme: MockTheme = {
+          'blocks/image.liquid': '',
+          'blocks/group.liquid': '',
+          'blocks/text.liquid': '',
+          'blocks/slide.liquid': `
+            {% schema %}
+            {
+              "name": "Slide",
+              "blocks": [
+                {
+                  "type": "text"
+                },
+                {
+                  "type": "image"
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+          'sections/slideshow.liquid': `
+            {% schema %}
+            {
+              "name": "Slideshow",
+              "blocks": [
+                {
+                  "type": "slide"
+                }
+              ],
+              "presets": [
+                {
+                  "name": "Default",
+                  "blocks": [
+                    {
+                      "type": "slide",
+                      "blocks": [
+                        {
+                          "type": "group"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+        };
+
+        const offenses = await check(theme, [ValidBlockTarget]);
+        expect(offenses).to.have.length(1);
+        expect(offenses[0].message).to.equal(
+          'Block type "group" is not allowed in "slide" blocks. Allowed types are: text, image.',
+        );
+      });
+
+      it(`should report errors for nested private blocks when they are not allowed (${path} bucket)`, async () => {
+        const theme: MockTheme = {
+          'blocks/image.liquid': '',
+          'blocks/_private.liquid': '',
+          'blocks/text.liquid': '',
+          'blocks/slide.liquid': `
+            {% schema %}
+            {
+              "name": "Slide",
+              "blocks": [
+                {
+                  "type": "text"
+                },
+                {
+                  "type": "image"
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+          'sections/slideshow.liquid': `
+            {% schema %}
+            {
+              "name": "Slideshow",
+              "blocks": [
+                {
+                  "type": "slide"
+                }
+              ],
+              "presets": [
+                {
+                  "name": "Default",
+                  "blocks": [
+                    {
+                      "type": "slide",
+                      "blocks": [
+                        {
+                          "type": "_private"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+        };
+
+        const offenses = await check(theme, [ValidBlockTarget]);
+        expect(offenses).to.have.length(1);
+        expect(offenses[0].message).to.equal(
+          'Private block type "_private" is not allowed in "slide" blocks.',
+        );
+      });
+
+      it(`should report errors for nested blocks when they are not allowed with hash-style presets (${path} bucket)`, async () => {
+        const theme: MockTheme = {
+          'blocks/image.liquid': '',
+          'blocks/group.liquid': '',
+          'blocks/text.liquid': '',
+          'blocks/slide.liquid': `
+            {% schema %}
+            {
+              "name": "Slide",
+              "blocks": [
+                {
+                  "type": "text"
+                },
+                {
+                  "type": "image"
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+          'sections/slideshow.liquid': `
+            {% schema %}
+            {
+              "name": "Slideshow",
+              "blocks": [
+                {
+                  "type": "slide"
+                }
+              ],
+              "presets": [
+                {
+                  "name": "Default",
+                  "blocks": {
+                    "slide_hash": {
+                      "type": "slide",
+                      "blocks": {
+                        "group_hash": {
+                           "type": "group"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+        };
+
+        const offenses = await check(theme, [ValidBlockTarget]);
+        expect(offenses).to.have.length(1);
+        expect(offenses[0].message).to.equal(
+          'Block type "group" is not allowed in "slide" blocks. Allowed types are: text, image.',
+        );
+      });
+
+      it(`should report errors for further nested blocks when they are not allowed (${path} bucket)`, async () => {
+        const theme: MockTheme = {
+          'blocks/image.liquid': '',
+          'blocks/group.liquid': `
+            {% schema %}
+            {
+              "name": "Group",
+              "blocks": [
+                {
+                  "type": "text"
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+          'blocks/text.liquid': '',
+          'blocks/slide.liquid': `
+            {% schema %}
+            {
+              "name": "Slide",
+              "blocks": [
+                {
+                  "type": "group"
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+          'sections/slideshow.liquid': `
+            {% schema %}
+            {
+              "name": "Slideshow",
+              "blocks": [
+                {
+                  "type": "slide"
+                }
+              ],
+              "presets": [
+                {
+                  "name": "Default",
+                  "blocks": [
+                    {
+                      "type": "slide",
+                      "blocks": [
+                        {
+                          "type": "group",
+                          "blocks": [
+                            {
+                              "type": "image"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+        };
+
+        const offenses = await check(theme, [ValidBlockTarget]);
+        expect(offenses).to.have.length(1);
+        expect(offenses[0].message).to.equal(
+          'Block type "image" is not allowed in "group" blocks. Allowed types are: text.',
+        );
+      });
+
+      it(`should report errors with correct indices for nested blocks when they are not allowed (${path} bucket)`, async () => {
+        const theme: MockTheme = {
+          'blocks/image.liquid': '',
+          'blocks/group.liquid': '',
+          'blocks/text.liquid': '',
+          'blocks/slide.liquid': `
+            {% schema %}
+            {
+              "name": "Slide",
+              "blocks": [
+                {
+                  "type": "text"
+                },
+                {
+                  "type": "image"
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+          'sections/slideshow.liquid': `
+            {% schema %}
+            {
+              "name": "Slideshow",
+              "blocks": [
+                {
+                  "type": "slide"
+                }
+              ],
+              "presets": [
+                {
+                  "name": "Default",
+                  "blocks": [
+                    {
+                      "type": "slide",
+                      "blocks": [
+                        {
+                          "type": "group"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+        };
+
+        const offenses = await check(theme, [ValidBlockTarget]);
+        expect(offenses).to.have.length(1);
+        const content = theme['sections/slideshow.liquid'];
+        const erroredContent = content.slice(offenses[0].start.index, offenses[0].end.index);
+        expect(erroredContent).to.equal('"group"');
+      });
+
+      it(`should not report errors for nested blocks when they are allowed (${path} bucket)`, async () => {
+        const theme: MockTheme = {
+          'blocks/image.liquid': '',
+          'blocks/text.liquid': '',
+          'blocks/slide.liquid': `
+            {% schema %}
+            {
+              "name": "Slide",
+              "blocks": [
+                {
+                  "type": "text"
+                },
+                {
+                  "type": "image"
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+          'sections/slideshow.liquid': `
+            {% schema %}
+            {
+              "name": "Slideshow",
+              "blocks": [
+                {
+                  "type": "slide"
+                }
+              ],
+              "presets": [
+                {
+                  "name": "Default",
+                  "blocks": [
+                    {
+                      "type": "slide",
+                      "blocks": [
+                        {
+                          "type": "image"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+        };
+
+        const offenses = await check(theme, [ValidBlockTarget]);
+        expect(offenses).to.be.empty;
+      });
     });
   });
 });

@@ -428,4 +428,66 @@ describe('ValidLocalBlocks on edge cases', () => {
     const offenses = await check(theme, [ValidLocalBlocks]);
     expect(offenses).to.be.empty;
   });
+
+  it('should not report errors on older themes that define local blocks at the root level and use them in presets', async () => {
+    const theme: MockTheme = {
+      'sections/local-blocks.liquid': `
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "local_block",
+              "name": "Local Block"
+            }
+          ],
+          "presets": [
+            {
+              "name": "Default",
+              "blocks": [
+                {
+                  "type": "local_block"
+                }
+              ]
+            }
+          ]
+        }
+        {% endschema %}
+      `,
+    };
+
+    const offenses = await check(theme, [ValidLocalBlocks]);
+    expect(offenses).to.be.empty;
+  });
+
+  it('should not report errors on older themes that define local blocks at the root level and use them in hash-style presets', async () => {
+    const theme: MockTheme = {
+      'sections/local-blocks.liquid': `
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "local_block",
+              "name": "Local Block"
+            }
+          ],
+          "presets": [
+            {
+              "name": "Default",
+              "blocks": {
+                "local_block": {
+                  "type": "local_block"
+                }
+              }
+            }
+          ]
+        }
+        {% endschema %}
+      `,
+    };
+
+    const offenses = await check(theme, [ValidLocalBlocks]);
+    expect(offenses).to.be.empty;
+  });
 });

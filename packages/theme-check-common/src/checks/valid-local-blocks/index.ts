@@ -1,13 +1,11 @@
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { LiteralNode, ArrayNode } from 'json-to-ast';
+import { LiquidCheckDefinition, Section, Severity, SourceCodeType, ThemeBlock } from '../../types';
+import { LiteralNode } from 'json-to-ast';
 import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
 import { basename } from '../../path';
 import { isBlock, isSection } from '../../to-schema';
-import { Section } from '../../types/schemas/section';
-import { Context } from '../../types';
 
 type BlockNodeWithPath = {
-  node: any;
+  node: Section.Block | ThemeBlock.Block;
   path: string[];
 };
 
@@ -40,11 +38,12 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
       }
     }
 
-    function getBlocks(validSchema: any): {
+    function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
       staticBlockNameLocations: BlockNodeWithPath[];
       staticBlockLocations: BlockNodeWithPath[];
       localBlockLocations: BlockNodeWithPath[];
       themeBlockLocations: BlockNodeWithPath[];
+      hasRootLevelThemeBlocks: boolean;
     } {
       const staticBlockNameLocations: BlockNodeWithPath[] = [];
       const staticBlockLocations: BlockNodeWithPath[] = [];
@@ -53,32 +52,31 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
 
       const rootLevelBlocks = validSchema.blocks;
       const presets = validSchema.presets;
-
       // Helper function to categorize blocks
-      function categorizeBlock(block: any, currentPath: string[]) {
+      function categorizeBlock(block: Section.Block | ThemeBlock.Block, currentPath: string[]) {
         if (!block) return;
-        const hasStatic = block.static !== undefined;
-        const hasName = block.name !== undefined;
+        const hasStatic = 'static' in block;
+        const hasName = 'name' in block;
 
         if (hasStatic && hasName) {
-          staticBlockNameLocations.push({ node: block, path: [...currentPath, 'type'] });
+          staticBlockNameLocations.push({ node: block, path: currentPath.concat('type') });
         } else if (hasStatic) {
-          staticBlockLocations.push({ node: block, path: [...currentPath, 'type'] });
+          staticBlockLocations.push({ node: block, path: currentPath.concat('type') });
         } else if (hasName) {
-          localBlockLocations.push({ node: block, path: [...currentPath, 'type'] });
+          localBlockLocations.push({ node: block, path: currentPath.concat('type') });
         } else if (block.type !== '@app') {
-          themeBlockLocations.push({ node: block, path: [...currentPath, 'type'] });
+          themeBlockLocations.push({ node: block, path: currentPath.concat('type') });
         }
 
         // Handle nested blocks
-        if (block.blocks) {
+        if ('blocks' in block) {
           if (Array.isArray(block.blocks)) {
-            block.blocks.forEach((nestedBlock: any, index: any) => {
-              categorizeBlock(nestedBlock, [...currentPath, 'blocks', String(index)]);
+            block.blocks.forEach((nestedBlock: Section.Block | ThemeBlock.Block, index: number) => {
+              categorizeBlock(nestedBlock, currentPath.concat('blocks', String(index)));
             });
-          } else if (typeof block.blocks === 'object') {
+          } else if (typeof block.blocks === 'object' && block.blocks !== null) {
             Object.entries(block.blocks).forEach(([key, nestedBlock]) => {
-              categorizeBlock(nestedBlock, [...currentPath, 'blocks', key]);
+              categorizeBlock(nestedBlock, currentPath.concat('blocks', key));
             });
           }
         }
@@ -93,10 +91,10 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
 
       // Iterate over presetLevelBlocks
       if (presets) {
-        presets.forEach((preset: any, presetIndex: number) => {
+        presets.forEach((preset: ThemeBlock.Preset | Section.Preset, presetIndex: number) => {
           if (preset.blocks) {
             if (Array.isArray(preset.blocks)) {
-              preset.blocks.forEach((block: any, blockIndex: any) => {
+              preset.blocks.forEach((block: Section.Block, blockIndex: number) => {
                 categorizeBlock(block, [
                   'presets',
                   String(presetIndex),
@@ -118,7 +116,16 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
         staticBlockLocations,
         localBlockLocations,
         themeBlockLocations,
+        hasRootLevelThemeBlocks: themeBlockLocations.some((block) => block.path[0] === 'blocks'),
       };
+    }
+
+    function reportWarning(message: string, offset: number, astNode: LiteralNode) {
+      context.report({
+        message,
+        startIndex: offset + getLocStart(astNode),
+        endIndex: offset + getLocEnd(astNode),
+      });
     }
 
     return {
@@ -137,53 +144,51 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
           staticBlockLocations,
           localBlockLocations,
           themeBlockLocations,
+          hasRootLevelThemeBlocks,
         } = getBlocks(validSchema);
 
         if (isSection(context.file.uri)) {
           staticBlockNameLocations.forEach((blockWithPath: BlockNodeWithPath) => {
             const astNode = nodeAtPath(ast, blockWithPath.path)! as LiteralNode;
-            context.report({
-              message: 'Static theme blocks cannot have a name property.',
-              startIndex: offset + getLocStart(astNode),
-              endIndex: offset + getLocEnd(astNode),
-            });
+            reportWarning('Static theme blocks cannot have a name property.', offset, astNode);
           });
 
           if (staticBlockLocations.length > 0 && localBlockLocations.length > 0) {
             staticBlockLocations.forEach((blockWithPath: BlockNodeWithPath) => {
               const astNode = nodeAtPath(ast, blockWithPath.path)! as LiteralNode;
-              context.report({
-                message: `Sections cannot use static theme blocks together with locally scoped blocks.`,
-                startIndex: offset + getLocStart(astNode),
-                endIndex: offset + getLocEnd(astNode),
-              });
+              reportWarning(
+                `Sections cannot use static theme blocks together with locally scoped blocks.`,
+                offset,
+                astNode,
+              );
             });
           }
 
-          if (localBlockLocations.length > 0 && themeBlockLocations.length > 0) {
+          if (
+            hasRootLevelThemeBlocks &&
+            localBlockLocations.length > 0 &&
+            themeBlockLocations.length > 0
+          ) {
             localBlockLocations.forEach((blockWithPath: BlockNodeWithPath) => {
               const astNode = nodeAtPath(ast, blockWithPath.path)! as LiteralNode;
-              context.report({
-                message: 'Sections cannot use theme blocks together with locally scoped blocks.',
-                startIndex: offset + getLocStart(astNode),
-                endIndex: offset + getLocEnd(astNode),
-              });
+              reportWarning(
+                'Sections cannot use theme blocks together with locally scoped blocks.',
+                offset,
+                astNode,
+              );
             });
           }
         }
 
-        const my_test = nodeAtPath(ast, ['blocks', 0, 'type'])! as LiteralNode;
-        const my_test_start = getLocStart(my_test);
-        const my_test_end = getLocEnd(my_test);
         if (isBlock(context.file.uri)) {
           if (localBlockLocations.length > 0) {
             localBlockLocations.forEach((blockWithPath: BlockNodeWithPath) => {
               const astNode = nodeAtPath(ast, blockWithPath.path)! as LiteralNode;
-              context.report({
-                message: 'Local scoped blocks are not supported in theme blocks.',
-                startIndex: offset + getLocStart(astNode),
-                endIndex: offset + getLocEnd(astNode),
-              });
+              reportWarning(
+                'Local scoped blocks are not supported in theme blocks.',
+                offset,
+                astNode,
+              );
             });
           }
         }
