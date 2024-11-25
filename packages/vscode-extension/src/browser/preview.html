@@ -1,0 +1,47 @@
+<html>
+  <head>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+      }
+
+      iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="cat">
+      <p>Waiting for spin to deliver the preview...</p>
+      <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" width="300" />
+    </div>
+    <iframe id="preview" src="https://shop1.shopify.burst.cp-clermont.us.spin.dev/" sandbox="allow-same-origin allow-forms allow-popups allow-scripts allow-modals allow-storage-access-by-user-activation"></iframe>
+    <script>
+      const preview = document.getElementById('preview');
+      const cat = document.getElementById('cat');
+      preview.onload = () => {
+        cat.parentNode.removeChild(cat);
+      }
+      addEventListener('message', (m) => {
+        const message = m.data;
+        console.log('message received', m.data);
+        if (message.type === 'change') {
+          const out = {
+            type: 'change',
+            key: message.path.replace(/^\//, ''),
+            value: message.data,
+          };
+          console.log('sending ', out)
+          preview.contentWindow.postMessage(out, '*')
+        }
+      });
+    </script>
+  </body>
+</html>

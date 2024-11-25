@@ -1,8 +1,7 @@
 //@ts-check
 /** @typedef {import('webpack').Configuration} WebpackConfig **/
 
-'use strict';
-
+const fs = require('fs').promises;
 const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const { default: TsconfigPathsPlugin } = require('tsconfig-paths-webpack-plugin');
@@ -38,6 +37,10 @@ const baseConfig = {
             projectReferences: true,
           },
         },
+      },
+      {
+        test: /\.html$/i,
+        loader: 'html-loader',
       },
     ],
   },
@@ -104,7 +107,7 @@ const desktopConfig = {
 };
 
 /** @type WebpackConfig */
-const browserClientConfig = {
+const browserClientConfig = async () => ({
   ...baseConfig,
   target: 'webworker',
   entry: { extension: './src/browser/extension.ts', },
@@ -123,7 +126,7 @@ const browserClientConfig = {
       'process.env.WEBPACK_MODE': true,
     }),
   ],
-};
+});
 
 const browserServerConfig = async () => {
   const docsManager = new ThemeLiquidDocsManager();

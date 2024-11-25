@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["./src/**/*.ts"],
+  "exclude": ["./dist"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "dist",
+    "rootDir": "src",
+    "allowJs": true,
+    "lib": ["dom", "WebWorker", "ES2020"],
+    "module": "es2022",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
+    "resolveJsonModule": true
+  }
+}
+

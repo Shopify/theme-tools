@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 import { FileStat, FileTuple, path } from '@shopify/theme-check-common';
-import { commands, ExtensionContext, languages, Uri, workspace } from 'vscode';
+import * as vscode from 'vscode';
 import {
   LanguageClient,
   LanguageClientOptions,
@@ -9,12 +9,18 @@ import {
 import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
 import { documentSelectors } from '../common/constants';
+import PREVIEW_HTML from './preview.html';
+
+declare global {
+  export const PREVIEW_HTML: string;
+}
+const { commands, languages, Uri, workspace } = vscode;
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 let client: LanguageClient | undefined;
 
-export async function activate(context: ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   const runChecksCommand = 'themeCheck/runChecks';
 
   context.subscriptions.push(
@@ -41,7 +47,7 @@ export function deactivate() {
   return stopServer();
 }
 
-async function startServer(context: ExtensionContext) {
+async function startServer(context: vscode.ExtensionContext) {
   console.log('Starting Theme Check Language Server');
   const clientOptions: LanguageClientOptions = {
     documentSelector: documentSelectors as DocumentSelector,
@@ -64,12 +70,56 @@ async function startServer(context: ExtensionContext) {
     return workspace.fs.stat(Uri.parse(uriString));
   });
 
+  const panels: vscode.WebviewPanel[] = [];
+
+  context.subscriptions.push(
+    commands.registerCommand('catCoding.start', async () => {
+      // Create and show panel
+      const panel = vscode.window.createWebviewPanel(
+        'catCoding',
+        'Cat Coding',
+        vscode.ViewColumn.Two,
+        {
+          enableScripts: true,
+        },
+      );
+
+      // And set its HTML content
+      panel.webview.html = await getWebviewContent();
+      // panels.push(panel);
+
+      panel.onDidDispose(() => {
+        disposeFS.dispose();
+      });
+
+      const disposeFS = workspace
+        .createFileSystemWatcher('**/*.{liquid,html}')
+        .onDidChange(async (uri) => {
+          console.info('this file changed', uri);
+          try {
+            const contents = await workspace.fs.readFile(uri);
+            panel.webview.postMessage({
+              type: 'change',
+              path: uri.path,
+              data: textDecoder.decode(contents),
+            });
+          } catch (e) {
+            console.error(e);
+          }
+        });
+    }),
+  );
+
   client.start();
   console.log('Theme Check Language Server started');
 }
 
+async function getWebviewContent() {
+  return PREVIEW_HTML;
+}
+
 function createWorkerLanguageClient(
-  context: ExtensionContext,
+  context: vscode.ExtensionContext,
   clientOptions: LanguageClientOptions,
 ) {
   // Create a worker. The worker main file implements the language server.
@@ -92,7 +142,7 @@ async function stopServer() {
   }
 }
 
-async function restartServer(context: ExtensionContext) {
+async function restartServer(context: vscode.ExtensionContext) {
   if (client) {
     await stopServer();
   }

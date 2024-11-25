@@ -1,0 +1,19 @@
+<head id="head">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>Service worker playground</title>
+</head>
+<body>
+  <div>hello world</div>
+  <div id="states"></div>
+  <div id="kind"></div>
+  <div id="register"></div>
+  <div id="availability"></div>
+  <div id="controlled"></div>
+  <div id="iframe-container">
+    <iframe id="myIf"></iframe>
+    <button onclick="myIf.src = '/preview'">home page</button>
+    <button onclick="myIf.src = '/preview/collections/all'">collections</button>
+    <button onclick="myIf.src = '/preview/products/outdoor-sofa'">product</button>
+  </div>
+</body>

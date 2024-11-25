@@ -67,6 +67,10 @@ async function startServer(context: ExtensionContext) {
     return results.map(([name, type]) => [pathUtils.join(uriString, name), type]);
   });
 
+  workspace.createFileSystemWatcher('**/*.{liquid,html}').onDidChange((e) => {
+    console.error('this file changed', e);
+  });
+
   client.onRequest('fs/readFile', async (uriString: string): Promise<string> => {
     const bytes = await workspace.fs.readFile(Uri.parse(uriString));
     return Buffer.from(bytes).toString('utf8');
