@@ -203,6 +203,27 @@ describe('Module: ValidBlockTarget', () => {
         expect(offenses).to.be.empty;
       });
     });
+
+    it('should not report errors for locally scoped blocks at root level', async () => {
+      const theme: MockTheme = {
+        'sections/local-blocks.liquid': `
+          {% schema %}
+          {
+            "name": "Section name",
+            "blocks": [
+              {
+                "type": "local_block",
+                "name": "Local block"
+              }
+            ]
+          }
+          {% endschema %}
+        `,
+      };
+
+      const offenses = await check(theme, [ValidBlockTarget]);
+      expect(offenses).to.be.empty;
+    });
   });
 
   describe('Allowed Targeting Tests', () => {
