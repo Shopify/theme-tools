@@ -34,6 +34,7 @@ import { Parser } from 'prettier';
 import ohm, { Node } from 'ohm-js';
 import { toAST } from 'ohm-js/extras';
 import {
+  LiquidDocGrammar,
   LiquidGrammars,
   TextNodeGrammar,
   placeholderGrammars,
@@ -611,6 +612,30 @@ function toCST<T>(
           ['HelperMappings'],
           tokens[1].sourceString,
           offset + tokens[1].source.startIdx,
+        );
+      },
+      whitespaceStart: (tokens: Node[]) => tokens[0].children[1].sourceString,
+      whitespaceEnd: (tokens: Node[]) => tokens[0].children[7].sourceString,
+      delimiterWhitespaceStart: (tokens: Node[]) => tokens[2].children[1].sourceString,
+      delimiterWhitespaceEnd: (tokens: Node[]) => tokens[2].children[7].sourceString,
+      locStart,
+      locEnd,
+      source,
+      blockStartLocStart: (tokens: Node[]) => tokens[0].source.startIdx,
+      blockStartLocEnd: (tokens: Node[]) => tokens[0].source.endIdx,
+      blockEndLocStart: (tokens: Node[]) => tokens[2].source.startIdx,
+      blockEndLocEnd: (tokens: Node[]) => tokens[2].source.endIdx,
+    },
+    liquidDoc: {
+      type: ConcreteNodeTypes.LiquidRawTag,
+      name: 'doc',
+      body: (tokens: Node[]) => tokens[1].sourceString,
+      children: (tokens: Node[]) => {
+        const contentNode = tokens[1];
+        return toLiquidDocAST(
+          source,
+          contentNode.sourceString,
+          offset + contentNode.source.startIdx,
         );
       },
       whitespaceStart: (tokens: Node[]) => tokens[0].children[1].sourceString,
@@ -1250,4 +1275,36 @@ function toCST<T>(
   );
 
   return toAST(res, selectedMappings) as T;
+}
+
+/**
+ * Builds an AST for LiquidDoc content.
+ *
+ * `toCST` includes mappings and logic that are not needed for LiquidDoc so we're separating this logic
+ */
+function toLiquidDocAST(source: string, matchingSource: string, offset: number) {
+  // When we switch parser, our locStart and locEnd functions must account
+  // for the offset of the {% liquid %} markup
+  const locStart = (tokens: Node[]) => offset + tokens[0].source.startIdx;
+  const locEnd = (tokens: Node[]) => offset + tokens[tokens.length - 1].source.endIdx;
+
+  const res = LiquidDocGrammar.match(matchingSource, 'Node');
+  if (res.failed()) {
+    throw new LiquidHTMLCSTParsingError(res);
+  }
+
+  const LiquidDocMappings: Mapping = {
+    Node: 0,
+    TextNode: {
+      type: ConcreteNodeTypes.TextNode,
+      value: function () {
+        return (this as any).sourceString;
+      },
+      locStart,
+      locEnd,
+      source,
+    },
+  };
+
+  return toAST(res, LiquidDocMappings);
 }
