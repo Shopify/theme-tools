@@ -1220,6 +1220,28 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.markup.1.children.0.children.1.markup.name').to.eql('var3');
     });
 
+    it(`should parse doc tags`, () => {
+      ast = toLiquidAST(`{% doc %}{% enddoc %}`);
+      expectPath(ast, 'children.0.type').to.eql('LiquidRawTag');
+      expectPath(ast, 'children.0.name').to.eql('doc');
+      expectPath(ast, 'children.0.body.value').to.eql('');
+
+      ast = toLiquidAST(`{% doc -%} single line doc {%- enddoc %}`);
+      expectPath(ast, 'children.0.type').to.eql('LiquidRawTag');
+      expectPath(ast, 'children.0.name').to.eql('doc');
+      expectPath(ast, 'children.0.body.value').to.eql(' single line doc ');
+
+      ast = toLiquidAST(`{% doc -%}
+        multi line doc
+        multi line doc
+        {%- enddoc %}`);
+      expectPath(ast, 'children.0.type').to.eql('LiquidRawTag');
+      expectPath(ast, 'children.0.name').to.eql('doc');
+      expectPath(ast, 'children.0.body.source').to.eql(
+        '{% doc -%}\n        multi line doc\n        multi line doc\n        {%- enddoc %}',
+      );
+    });
+
     it('should parse unclosed tables with assignments', () => {
       ast = toLiquidAST(`
         {%- liquid

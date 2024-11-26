@@ -37,6 +37,7 @@ Liquid <: Helpers {
   endOfIdentifier = endOfTagName | endOfVarName
 
   liquidNode =
+  	| liquidDoc
     | liquidBlockComment
     | liquidRawTag
     | liquidDrop
@@ -210,6 +211,13 @@ Liquid <: Helpers {
     commentBlockEnd
   commentBlockStart = "{%" "-"? space* ("comment"    endOfIdentifier) space* tagMarkup "-"? "%}"
   commentBlockEnd   = "{%" "-"? space* ("endcomment" endOfIdentifier) space* tagMarkup "-"? "%}"
+  
+  liquidDoc = 
+  	liquidDocStart
+    	 anyExceptStar<(liquidDocStart|liquidDocEnd)>
+    liquidDocEnd
+  liquidDocStart = "{%" "-"? space* ("doc"    endOfIdentifier) space* tagMarkup "-"? "%}"
+  liquidDocEnd = "{%" "-"? space* ("enddoc" endOfIdentifier) space* tagMarkup "-"? "%}"
 
   // In order for the grammar to "fallback" to the base case, this
   // rule must pass if and only if we support what we parse. This
@@ -371,7 +379,7 @@ LiquidStatement <: Liquid {
 
   liquidStatementEnd = newline | end
   delimTag := liquidStatementEnd
-}
+} 
 
 LiquidHTML <: Liquid {
   Node := yamlFrontmatter? (HtmlNode | liquidNode | TextNode)*
