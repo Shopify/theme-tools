@@ -978,6 +978,33 @@ describe('Unit: Stage 1 (CST)', () => {
         }
       });
 
+      it('should parse doc tags', () => {
+        for (const { toCST, expectPath } of testCases) {
+          const testStr = '{% doc -%} single line doc {%- enddoc %}';
+          cst = toCST(testStr);
+          expectPath(cst, '0.type').to.equal('LiquidRawTag');
+          expectPath(cst, '0.name').to.equal('doc');
+          expectPath(cst, '0.body').to.equal(' single line doc ');
+          expectPath(cst, '0.whitespaceStart').to.equal('');
+          expectPath(cst, '0.whitespaceEnd').to.equal('-');
+          expectPath(cst, '0.delimiterWhitespaceStart').to.equal('-');
+          expectPath(cst, '0.delimiterWhitespaceEnd').to.equal('');
+          expectPath(cst, '0.blockStartLocStart').to.equal(0);
+          expectPath(cst, '0.blockStartLocEnd').to.equal(0 + '{% doc -%}'.length);
+          expectPath(cst, '0.blockEndLocStart').to.equal(testStr.length - '{%- enddoc %}'.length);
+          expectPath(cst, '0.blockEndLocEnd').to.equal(testStr.length);
+          expectPath(cst, '0.children').to.deep.equal([
+            {
+              locEnd: 26,
+              locStart: 11,
+              source: '{% doc -%} single line doc {%- enddoc %}',
+              type: 'TextNode',
+              value: 'single line doc',
+            },
+          ]);
+        }
+      });
+
       it('should parse tag open / close', () => {
         BLOCKS.forEach((block: string) => {
           for (const { toCST, expectPath } of testCases) {

@@ -625,6 +625,32 @@ function toCST<T>(
       blockEndLocStart: (tokens: Node[]) => tokens[2].source.startIdx,
       blockEndLocEnd: (tokens: Node[]) => tokens[2].source.endIdx,
     },
+    liquidDoc: {
+      type: ConcreteNodeTypes.LiquidRawTag,
+      name: 'doc',
+      body: (tokens: Node[]) => tokens[1].sourceString,
+      children: (tokens: Node[]) => {
+        return toCST(
+          source,
+          grammars,
+          TextNodeGrammar,
+          ['HelperMappings'],
+          tokens[1].sourceString,
+          offset + tokens[1].source.startIdx,
+        );
+      },
+      whitespaceStart: (tokens: Node[]) => tokens[0].children[1].sourceString,
+      whitespaceEnd: (tokens: Node[]) => tokens[0].children[7].sourceString,
+      delimiterWhitespaceStart: (tokens: Node[]) => tokens[2].children[1].sourceString,
+      delimiterWhitespaceEnd: (tokens: Node[]) => tokens[2].children[7].sourceString,
+      locStart,
+      locEnd,
+      source,
+      blockStartLocStart: (tokens: Node[]) => tokens[0].source.startIdx,
+      blockStartLocEnd: (tokens: Node[]) => tokens[0].source.endIdx,
+      blockEndLocStart: (tokens: Node[]) => tokens[2].source.startIdx,
+      blockEndLocEnd: (tokens: Node[]) => tokens[2].source.endIdx,
+    },
     liquidInlineComment: {
       type: ConcreteNodeTypes.LiquidTag,
       name: 3,
