@@ -1220,6 +1220,33 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.markup.1.children.0.children.1.markup.name').to.eql('var3');
     });
 
+    it(`should parse doc tags`, () => {
+      ast = toLiquidAST(`{% doc %}{% enddoc %}`);
+      expectPath(ast, 'children.0.type').to.eql('LiquidRawTag');
+      expectPath(ast, 'children.0.name').to.eql('doc');
+      expectPath(ast, 'children.0.markup').toEqual('');
+      expectPath(ast, 'children.0.body.value').to.eql('');
+      expectPath(ast, 'children.0.body.type').toEqual('RawMarkup');
+      expectPath(ast, 'children.0.body.nodes').toEqual([]);
+
+      ast = toLiquidAST(`{% doc -%} single line doc {%- enddoc %}`);
+      expectPath(ast, 'children.0.type').to.eql('LiquidRawTag');
+      expectPath(ast, 'children.0.name').to.eql('doc');
+      expectPath(ast, 'children.0.body.value').to.eql(' single line doc ');
+      expectPath(ast, 'children.0.body.nodes.0.type').toEqual('TextNode');
+
+      ast = toLiquidAST(`{% doc -%}
+        multi line doc
+        multi line doc
+        {%- enddoc %}`);
+      expectPath(ast, 'children.0.type').to.eql('LiquidRawTag');
+      expectPath(ast, 'children.0.name').to.eql('doc');
+      expectPath(ast, 'children.0.body.nodes.0.value').to.eql(
+        `multi line doc\n        multi line doc`,
+      );
+      expectPath(ast, 'children.0.body.nodes.0.type').toEqual('TextNode');
+    });
+
     it('should parse unclosed tables with assignments', () => {
       ast = toLiquidAST(`
         {%- liquid
