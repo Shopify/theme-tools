@@ -42,7 +42,22 @@ export class FilterCompletionProvider implements Provider {
     );
     const partial = node.name.replace(CURSOR, '');
     const options = await this.options(isArrayType(inputType) ? 'array' : inputType);
-    return completionItems(options, partial);
+
+    return options
+      .filter(({ name }) => name.startsWith(partial))
+      .map((entry) => {
+        const { insertText, insertStyle } = appendRequiredParemeters(entry);
+
+        return createCompletionItem(
+          entry,
+          {
+            kind: CompletionItemKind.Function,
+            insertText,
+            insertTextFormat: insertStyle,
+          },
+          'filter',
+        );
+      });
   }
 
   options: (inputType: PseudoType) => Promise<MaybeDeprioritisedFilterEntry[]> = memoize(
@@ -78,24 +93,6 @@ type MaybeDeprioritisedFilterEntry = FilterEntry & { deprioritized?: boolean };
 
 function deprioritized(entry: FilterEntry): MaybeDeprioritisedFilterEntry {
   return { ...entry, deprioritized: true };
-}
-
-function completionItems(options: MaybeDeprioritisedFilterEntry[], partial: string) {
-  return options.filter(({ name }) => name.startsWith(partial)).map(toPropertyCompletionItem);
-}
-
-function toPropertyCompletionItem(entry: MaybeDeprioritisedFilterEntry) {
-  const { insertText, insertStyle } = appendRequiredParemeters(entry);
-
-  return createCompletionItem(
-    entry,
-    {
-      kind: CompletionItemKind.Function,
-      insertText,
-      insertTextFormat: insertStyle,
-    },
-    'filter',
-  );
 }
 
 function appendRequiredParemeters(entry: MaybeDeprioritisedFilterEntry): {
