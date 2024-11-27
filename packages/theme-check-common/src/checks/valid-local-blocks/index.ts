@@ -1,11 +1,18 @@
-import { LiquidCheckDefinition, Section, Severity, SourceCodeType, ThemeBlock } from '../../types';
+import {
+  LiquidCheckDefinition,
+  Preset,
+  Section,
+  Severity,
+  SourceCodeType,
+  ThemeBlock,
+} from '../../types';
 import { LiteralNode } from 'json-to-ast';
 import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
 import { basename } from '../../path';
 import { isBlock, isSection } from '../../to-schema';
 
 type BlockNodeWithPath = {
-  node: Section.Block | ThemeBlock.Block;
+  node: Preset.BlockPresetBase;
   path: string[];
 };
 
@@ -53,7 +60,7 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
       const rootLevelBlocks = validSchema.blocks;
       const presets = validSchema.presets;
       // Helper function to categorize blocks
-      function categorizeBlock(block: Section.Block | ThemeBlock.Block, currentPath: string[]) {
+      function categorizeBlock(block: Preset.BlockPresetBase, currentPath: string[]) {
         if (!block) return;
         const hasStatic = 'static' in block;
         const hasName = 'name' in block;
@@ -71,7 +78,7 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
         // Handle nested blocks
         if ('blocks' in block) {
           if (Array.isArray(block.blocks)) {
-            block.blocks.forEach((nestedBlock: Section.Block | ThemeBlock.Block, index: number) => {
+            block.blocks.forEach((nestedBlock: Preset.BlockPresetBase, index: number) => {
               categorizeBlock(nestedBlock, currentPath.concat('blocks', String(index)));
             });
           } else if (typeof block.blocks === 'object' && block.blocks !== null) {
@@ -91,10 +98,10 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
 
       // Iterate over presetLevelBlocks
       if (presets) {
-        presets.forEach((preset: ThemeBlock.Preset | Section.Preset, presetIndex: number) => {
+        presets.forEach((preset: Preset.Preset, presetIndex: number) => {
           if (preset.blocks) {
             if (Array.isArray(preset.blocks)) {
-              preset.blocks.forEach((block: Section.Block, blockIndex: number) => {
+              preset.blocks.forEach((block: Preset.BlockPresetBase, blockIndex: number) => {
                 categorizeBlock(block, [
                   'presets',
                   String(presetIndex),

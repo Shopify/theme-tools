@@ -1,11 +1,11 @@
-import { JSONNode, Section, SourceCodeType, ThemeBlock } from '../../types';
+import { JSONNode, Preset, Section, SourceCodeType, Theme, ThemeBlock } from '../../types';
 import { LiteralNode } from 'json-to-ast';
 import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
 import { Context } from '../../types';
 import { doesFileExist } from '../../utils/file-utils';
 
 export type BlockNodeWithPath = {
-  node: Section.Block | ThemeBlock.Block;
+  node: Preset.BlockPresetBase;
   path: string[];
 };
 
@@ -22,7 +22,7 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
   const presets = validSchema.presets;
 
   // Helper function to categorize blocks
-  function categorizeRootLevelBlocks(block: ThemeBlock.Block, index: number) {
+  function categorizeRootLevelBlocks(block: Preset.BlockPresetBase, index: number) {
     if (!block) return;
     const hasName = 'name' in block;
 
@@ -40,7 +40,7 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
   }
 
   function categorizePresetLevelBlocks(
-    block: Section.Block,
+    block: Preset.BlockPresetBase,
     currentPath: string[],
     depth: number = 0,
   ) {
@@ -57,7 +57,7 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
 
     if ('blocks' in block) {
       if (Array.isArray(block.blocks)) {
-        block.blocks.forEach((nestedBlock: Section.BlockPresetArrayElement, index: number) => {
+        block.blocks.forEach((nestedBlock: Preset.BlockPresetArrayElement, index: number) => {
           categorizePresetLevelBlocks(
             nestedBlock,
             currentPath.concat('blocks', String(index)),
@@ -79,7 +79,7 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
   }
 
   if (presets) {
-    presets.forEach((preset: ThemeBlock.Preset | Section.Preset, presetIndex: number) => {
+    presets.forEach((preset: Preset.Preset, presetIndex: number) => {
       if (preset.blocks) {
         if (Array.isArray(preset.blocks)) {
           preset.blocks.forEach((block, blockIndex) => {
@@ -106,7 +106,7 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
 }
 
 export function isInvalidPresetBlock(
-  blockNode: Section.Block,
+  blockNode: Preset.BlockPresetBase,
   rootLevelThemeBlocks: BlockNodeWithPath[],
 ): boolean {
   const isPrivateBlockType = blockNode.type.startsWith('_');
@@ -120,10 +120,10 @@ export function isInvalidPresetBlock(
 }
 
 function validateBlock(
-  nestedBlock: any,
+  nestedBlock: Preset.BlockPresetBase,
   nestedPath: string[],
   context: Context<SourceCodeType.LiquidHtml>,
-  parentNode: Section.Block | ThemeBlock.Block,
+  parentNode: Preset.BlockPresetBase,
   rootLevelThemeBlocks: BlockNodeWithPath[],
   allowedBlockTypes: string[],
   offset: number,
@@ -141,7 +141,7 @@ function validateBlock(
     reportWarning(errorMessage, offset, typeNode, context);
   }
 
-  if ('blocks' in nestedBlock) {
+  if ('blocks' in nestedBlock && nestedBlock.blocks) {
     validateNestedBlocks(
       context,
       nestedBlock,
@@ -155,8 +155,8 @@ function validateBlock(
 
 export async function validateNestedBlocks(
   context: Context<SourceCodeType.LiquidHtml>,
-  parentNode: Section.Block | ThemeBlock.Block,
-  nestedBlocks: any,
+  parentNode: Preset.BlockPresetBase,
+  nestedBlocks: Preset.PresetBlocks,
   currentPath: string[],
   offset: number,
   ast: JSONNode,

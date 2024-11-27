@@ -1,4 +1,11 @@
-import { LiquidCheckDefinition, Section, ThemeBlock, Severity, SourceCodeType } from '../../types';
+import {
+  LiquidCheckDefinition,
+  Section,
+  ThemeBlock,
+  Severity,
+  SourceCodeType,
+  Preset,
+} from '../../types';
 import { LiteralNode } from 'json-to-ast';
 import { nodeAtPath } from '../../json';
 import { basename } from '../../path';
@@ -11,7 +18,7 @@ import {
   reportWarning,
 } from './block-utils';
 type BlockNodeWithPath = {
-  node: Section.Block | ThemeBlock.Block;
+  node: Preset.BlockPresetBase;
   path: string[];
 };
 
@@ -96,7 +103,7 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
                   reportWarning(errorMessage, offset, typeNode, context);
                 }
 
-                if ('blocks' in node) {
+                if ('blocks' in node && node.blocks) {
                   await validateNestedBlocks(
                     context,
                     node,
