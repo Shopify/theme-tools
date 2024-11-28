@@ -171,11 +171,26 @@ describe('Module: FilterCompletionProvider', async () => {
 
   describe('when there are no required parameters', () => {
     it('should not include parameters in the insertText of the completion', async () => {
-      await expect(provider).to.complete('{{ string | defa█ }}', [
+      //                  char 12 ⌄   ⌄ char 16
+      const liquid = '{{ string | defa█ }}';
+
+      await expect(provider).to.complete(liquid, [
         expect.objectContaining({
           label: 'default',
-          insertText: 'default',
           insertTextFormat: 1,
+          textEdit: expect.objectContaining({
+            newText: 'default',
+            range: {
+              end: {
+                line: 0,
+                character: 16,
+              },
+              start: {
+                line: 0,
+                character: 12,
+              },
+            },
+          }),
         }),
       ]);
     });
@@ -183,11 +198,26 @@ describe('Module: FilterCompletionProvider', async () => {
 
   describe('when there are required positional parameters', () => {
     it('should include parameters in the insertText of the completion', async () => {
-      await expect(provider).to.complete('{{ string | h█ }}', [
+      //                  char 12 ⌄  ⌄ char 15
+      const liquid = '{{ string | hig█ }}';
+
+      await expect(provider).to.complete(liquid, [
         expect.objectContaining({
           label: 'highlight',
-          insertText: "highlight: '${1:highlighted_term}'",
           insertTextFormat: 2,
+          textEdit: expect.objectContaining({
+            newText: "highlight: '${1:highlighted_term}'",
+            range: {
+              end: {
+                line: 0,
+                character: 15,
+              },
+              start: {
+                line: 0,
+                character: 12,
+              },
+            },
+          }),
         }),
       ]);
     });
@@ -195,13 +225,102 @@ describe('Module: FilterCompletionProvider', async () => {
 
   describe('when there are required named parameters', () => {
     it('should include parameters in the insertText of the completion', async () => {
-      await expect(provider).to.complete('{{ string | pre█ }}', [
+      //                  char 12 ⌄  ⌄ char 15
+      const liquid = '{{ string | pre█ }}';
+
+      await expect(provider).to.complete(liquid, [
         expect.objectContaining({
           label: 'preload_tag',
-          insertText: "preload_tag: as: '$1'",
           insertTextFormat: 2,
+          textEdit: expect.objectContaining({
+            newText: "preload_tag: as: '$1'",
+            range: {
+              end: {
+                line: 0,
+                character: 15,
+              },
+              start: {
+                line: 0,
+                character: 12,
+              },
+            },
+          }),
         }),
       ]);
+    });
+  });
+
+  describe('when the cursor is in the middle of the filter', () => {
+    describe('and the filter can only be completed to the same name', () => {
+      it('sets the range to only the existing name', async () => {
+        //                  char 12 ⌄          ⌄ char 23
+        const liquid = '{{ string | prel█oad_tag: as: "p" }}';
+
+        await expect(provider).to.complete(liquid, [
+          expect.objectContaining({
+            label: 'preload_tag',
+            insertTextFormat: 1,
+            textEdit: expect.objectContaining({
+              newText: 'preload_tag',
+              range: {
+                end: {
+                  line: 0,
+                  character: 23,
+                },
+                start: {
+                  line: 0,
+                  character: 12,
+                },
+              },
+            }),
+          }),
+        ]);
+      });
+    });
+
+    describe('and the filter to be replaced has parameters', () => {
+      it('sets the range to include the parameters if replacing with a different filter', async () => {
+        //                  char 12 ⌄            ⌄ char 25
+        const liquid = '{{ string | d█efault: true }}';
+        //                                 ⌃ char 19
+
+        await expect(provider).to.complete(liquid, [
+          expect.objectContaining({
+            label: 'downcase',
+            insertTextFormat: 1,
+            textEdit: expect.objectContaining({
+              newText: 'downcase',
+              range: {
+                end: {
+                  line: 0,
+                  character: 25,
+                },
+                start: {
+                  line: 0,
+                  character: 12,
+                },
+              },
+            }),
+          }),
+          expect.objectContaining({
+            label: 'default',
+            insertTextFormat: 1,
+            textEdit: expect.objectContaining({
+              newText: 'default',
+              range: {
+                end: {
+                  line: 0,
+                  character: 19,
+                },
+                start: {
+                  line: 0,
+                  character: 12,
+                },
+              },
+            }),
+          }),
+        ]);
+      });
     });
   });
 });

@@ -1,8 +1,14 @@
-import { NodeTypes } from '@shopify/liquid-html-parser';
+import { LiquidFilter, NodeTypes } from '@shopify/liquid-html-parser';
 import { FilterEntry, Parameter } from '@shopify/theme-check-common';
-import { CompletionItem, CompletionItemKind, InsertTextFormat } from 'vscode-languageserver';
+import {
+  CompletionItem,
+  CompletionItemKind,
+  InsertTextFormat,
+  TextEdit,
+} from 'vscode-languageserver';
 import { PseudoType, TypeSystem, isArrayType } from '../../TypeSystem';
 import { memoize } from '../../utils';
+import { AugmentedLiquidSourceCode } from '../../documents';
 import { CURSOR, LiquidCompletionParams } from '../params';
 import { Provider, createCompletionItem, sortByName } from './common';
 
@@ -46,18 +52,78 @@ export class FilterCompletionProvider implements Provider {
     return options
       .filter(({ name }) => name.startsWith(partial))
       .map((entry) => {
-        const { insertText, insertStyle } = appendRequiredParemeters(entry);
+        const { textEdit, format } = this.textEdit(node, params.document, entry);
 
         return createCompletionItem(
           entry,
           {
             kind: CompletionItemKind.Function,
-            insertText,
-            insertTextFormat: insertStyle,
+            insertTextFormat: format,
+            textEdit,
           },
           'filter',
         );
       });
+  }
+
+  textEdit(
+    node: LiquidFilter,
+    document: AugmentedLiquidSourceCode,
+    entry: MaybeDeprioritisedFilterEntry,
+  ): {
+    textEdit: TextEdit;
+    format: InsertTextFormat;
+  } {
+    const remainingText = document.source.slice(node.position.end);
+
+    // Match all the way up to the termination of the filter which could be
+    // another filter (`|`), or the end of a liquid statement.
+    const matchEndOfFilter = remainingText.match(/^(.*?)\s*(?=\||-?\}\}|-?\%\})|^(.*)$/);
+    const endOffset = matchEndOfFilter ? matchEndOfFilter[1].length : remainingText.length;
+
+    // The start position for a LiquidFilter node includes the `|`. We need to
+    // ignore the pipe and any spaces for our starting position.
+    const pipeRegex = new RegExp(`(\\s*\\|\\s*)(?:${node.name}\\}\\})`);
+    const matchFilterPipe = node.source.match(pipeRegex);
+    const startOffet = matchFilterPipe ? matchFilterPipe[1].length : 0;
+
+    let start = document.textDocument.positionAt(node.position.start + startOffet);
+    let end = document.textDocument.positionAt(node.position.end + endOffset);
+
+    const { insertText, insertStyle } = appendRequiredParemeters(entry);
+
+    let newText = insertText;
+    let format = insertStyle;
+
+    // If the cursor is inside the filter or at the end and it's the same
+    // value as the one we're offering a completion for then we want to restrict
+    // the insert to just the name of the filter.
+    // e.g. `{{ product | imag█e_url: crop: 'center' }}` and we're offering `imag█e_url`
+    const existingFilterOffset = remainingText.match(/[^a-zA-Z_]/)?.index ?? remainingText.length;
+    if (node.name + remainingText.slice(0, existingFilterOffset) === entry.name) {
+      newText = entry.name;
+      format = InsertTextFormat.PlainText;
+      end = document.textDocument.positionAt(node.position.end + existingFilterOffset);
+    }
+
+    // If the cursor is at the beginning of the string we can consider all
+    // options and should not replace any text.
+    // e.g. `{{ product | █image_url: crop: 'center' }}`
+    // e.g. `{{ product | █ }}`
+    if (node.name === '█') {
+      end = start;
+    }
+
+    return {
+      textEdit: TextEdit.replace(
+        {
+          start,
+          end,
+        },
+        newText,
+      ),
+      format,
+    };
   }
 
   options: (inputType: PseudoType) => Promise<MaybeDeprioritisedFilterEntry[]> = memoize(
