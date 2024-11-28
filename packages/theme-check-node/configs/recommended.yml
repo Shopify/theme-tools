@@ -99,6 +99,9 @@ UnusedAssign:
 ValidBlockTarget:
   enabled: true
   severity: 0
+ValidBlockPresetSettings:
+  enabled: true
+  severity: 0
 ValidContentForArguments:
   enabled: true
   severity: 0
