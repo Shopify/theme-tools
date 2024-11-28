@@ -21,8 +21,7 @@ import {
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DocumentManager } from '../documents';
 import { GetTranslationsForURI } from '../translations';
-import { SchemaTranslationContributions } from './SchemaTranslationContributions';
-import { TranslationFileContributions } from './TranslationFileContributions';
+import { JSONContributions } from './JSONContributions';
 
 export class JSONLanguageService {
   // We index by Mode here because I don't want to reconfigure the service depending on the URI.
@@ -71,13 +70,8 @@ export class JSONLanguageService {
             },
           },
 
-          // Custom non-JSON schema completion & hover contributions
           contributions: [
-            new TranslationFileContributions(this.documentManager),
-            new SchemaTranslationContributions(
-              this.documentManager,
-              this.getDefaultSchemaTranslations,
-            ),
+            new JSONContributions(this.documentManager, this.getDefaultSchemaTranslations),
           ],
         });
 

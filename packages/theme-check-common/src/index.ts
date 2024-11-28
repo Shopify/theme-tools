@@ -55,6 +55,7 @@ export * from './utils/error';
 export * from './utils/indexBy';
 export * from './utils/memo';
 export * from './utils/types';
+export * from './utils/object';
 export * from './visitor';
 
 const defaultErrorHandler = (_error: Error): void => {
