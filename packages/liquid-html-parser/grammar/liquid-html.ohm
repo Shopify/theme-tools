@@ -211,13 +211,15 @@ Liquid <: Helpers {
     commentBlockEnd
   commentBlockStart = "{%" "-"? space* ("comment"    endOfIdentifier) space* tagMarkup "-"? "%}"
   commentBlockEnd   = "{%" "-"? space* ("endcomment" endOfIdentifier) space* tagMarkup "-"? "%}"
-  
+
   liquidDoc = 
-  	liquidDocStart
-    	 anyExceptStar<(liquidDocStart|liquidDocEnd)>
+    liquidDocStart
+      liquidDocBody
     liquidDocEnd
-  liquidDocStart = "{%" "-"? space* ("doc"    endOfIdentifier) space* tagMarkup "-"? "%}"
+
+  liquidDocStart = "{%" "-"? space* ("doc" endOfIdentifier) space* tagMarkup "-"? "%}"
   liquidDocEnd = "{%" "-"? space* ("enddoc" endOfIdentifier) space* tagMarkup "-"? "%}"
+  liquidDocBody = anyExceptStar<(liquidDocStart | liquidDocEnd)>
 
   // In order for the grammar to "fallback" to the base case, this
   // rule must pass if and only if we support what we parse. This
