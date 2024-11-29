@@ -521,7 +521,7 @@ describe('Module: ValidBlockTarget', () => {
             }
             {% endschema %}
           `,
-          'sections/slideshow.liquid': `
+          [`${path}/slideshow.liquid`]: `
             {% schema %}
             {
               "name": "Slideshow",
@@ -577,7 +577,7 @@ describe('Module: ValidBlockTarget', () => {
             }
             {% endschema %}
           `,
-          'sections/slideshow.liquid': `
+          [`${path}/slideshow.liquid`]: `
             {% schema %}
             {
               "name": "Slideshow",
@@ -633,7 +633,7 @@ describe('Module: ValidBlockTarget', () => {
             }
             {% endschema %}
           `,
-          'sections/slideshow.liquid': `
+          [`${path}/slideshow.liquid`]: `
             {% schema %}
             {
               "name": "Slideshow",
@@ -697,7 +697,7 @@ describe('Module: ValidBlockTarget', () => {
             }
             {% endschema %}
           `,
-          'sections/slideshow.liquid': `
+          [`${path}/slideshow.liquid`]: `
             {% schema %}
             {
               "name": "Slideshow",
@@ -758,7 +758,7 @@ describe('Module: ValidBlockTarget', () => {
             }
             {% endschema %}
           `,
-          'sections/slideshow.liquid': `
+          [`${path}/slideshow.liquid`]: `
             {% schema %}
             {
               "name": "Slideshow",
@@ -789,7 +789,7 @@ describe('Module: ValidBlockTarget', () => {
 
         const offenses = await check(theme, [ValidBlockTarget]);
         expect(offenses).to.have.length(1);
-        const content = theme['sections/slideshow.liquid'];
+        const content = theme[`${path}/slideshow.liquid`];
         const erroredContent = content.slice(offenses[0].start.index, offenses[0].end.index);
         expect(erroredContent).to.equal('"group"');
       });
@@ -813,7 +813,7 @@ describe('Module: ValidBlockTarget', () => {
             }
             {% endschema %}
           `,
-          'sections/slideshow.liquid': `
+          [`${path}/slideshow.liquid`]: `
             {% schema %}
             {
               "name": "Slideshow",
@@ -844,6 +844,142 @@ describe('Module: ValidBlockTarget', () => {
 
         const offenses = await check(theme, [ValidBlockTarget]);
         expect(offenses).to.be.empty;
+      });
+
+      it(`should report errors on the correct file for nested blocks when they are not allowed (${path} bucket)`, async () => {
+        const theme: MockTheme = {
+          'blocks/image.liquid': '',
+          'blocks/group.liquid': '',
+          'blocks/text.liquid': '',
+          'blocks/slide.liquid': `
+          {% schema %}
+          {
+            "name": "Slide",
+            "blocks": [
+              {
+                "type": "text"
+              },
+              {
+                "type": "image"
+              }
+            ]
+          }
+          {% endschema %}
+        `,
+          [`${path}/slideshow.liquid`]: `
+          {% schema %}
+          {
+            "name": "Slideshow",
+            "blocks": [
+              {
+                "type": "slide"
+              }
+            ],
+            "presets": [
+              {
+                "name": "Default",
+                "blocks": [
+                  {
+                    "type": "slide",
+                    "blocks": [
+                      {
+                        "type": "group"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+          {% endschema %}
+        `,
+        };
+
+        const offenses = await check(theme, [ValidBlockTarget]);
+        expect(offenses).to.have.lengthOf(1);
+        expect(offenses[0].uri).to.equal(`file:///${path}/slideshow.liquid`);
+      });
+
+      it('should not crash or timeout with cyclical nested block relationships', async () => {
+        const theme: MockTheme = {
+          'blocks/block-b.liquid': `
+          {% schema %}
+          {
+            "name": "Block B",
+            "blocks": [
+              {
+                "type": "block-c"
+              }
+            ]
+          }
+          {% endschema %}
+        `,
+          'blocks/block-a.liquid': `
+          {% schema %}
+          {
+            "name": "Block A",
+            "blocks": [
+              {
+                "type": "block-b"
+              }
+            ],
+            "presets": [
+              {
+                "name": "Default",
+                "blocks": [
+                  {
+                    "type": "block-b",
+                    "blocks": [
+                      {
+                        "type": "block-c"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+          {% endschema %}
+        `,
+          'blocks/block-c.liquid': `
+          {% schema %}
+          {
+            "name": "Block C",
+            "blocks": [
+              {
+                "type": "block-a"
+              }
+            ],
+            "presets": [
+              {
+                "name": "Default",
+                "blocks": [
+                  {
+                    "type": "block-a",
+                    "blocks": [
+                      {
+                        "type": "block-b"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+          {% endschema %}
+        `,
+        };
+
+        const timeout = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Test exceeded 500 ms')), 500),
+        );
+
+        const testPromise = (async () => {
+          const offenses = await check(theme, [ValidBlockTarget]);
+          expect(offenses).to.be.empty;
+        })();
+
+        await Promise.race([testPromise, timeout]);
       });
     });
   });
