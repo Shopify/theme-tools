@@ -329,3 +329,41 @@ describe('ValidLocalBlocks with hash-style presets', () => {
     expect(offenses[0].message).to.equal('Static theme blocks cannot have a name property.');
   });
 });
+
+describe('ValidLocalBlocks only reports errors for blocks', () => {
+  it('should not report errors for block setting types', async () => {
+    const theme: MockTheme = {
+      'sections/local-blocks.liquid': `
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "@app"
+            },
+            {
+              "type": "link_list",
+              "name": "Link list",
+              "settings": [
+                {
+                  "type": "inline_richtext",
+                  "id": "heading",
+                  "default": "Heading"
+                },
+                {
+                  "type": "link_list",
+                  "id": "menu",
+                  "default": "Footer"
+                }
+              ]
+            }
+          ]
+        }
+        {% endschema %}
+      `,
+    };
+
+    const offenses = await check(theme, [ValidLocalBlocks]);
+    expect(offenses).to.be.empty;
+  });
+});
