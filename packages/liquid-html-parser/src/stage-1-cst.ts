@@ -81,6 +81,7 @@ export enum ConcreteNodeTypes {
   RenderMarkup = 'RenderMarkup',
   PaginateMarkup = 'PaginateMarkup',
   RenderVariableExpression = 'RenderVariableExpression',
+  LiquidDocBody = 'LiquidDocBody',
 }
 
 export const LiquidLiteralValues = {
@@ -503,7 +504,13 @@ function toCST<T>(
   source: string /* the original file */,
   grammars: LiquidGrammars,
   grammar: ohm.Grammar,
-  cstMappings: ('HelperMappings' | 'LiquidMappings' | 'LiquidHTMLMappings' | 'LiquidStatement')[],
+  cstMappings: (
+    | 'HelperMappings'
+    | 'LiquidMappings'
+    | 'LiquidHTMLMappings'
+    | 'LiquidStatement'
+    | 'LiquidDocMappings'
+  )[],
   matchingSource: string = source /* for subtree parsing */,
   offset: number = 0 /* for subtree parsing location offsets */,
 ): T {
@@ -630,13 +637,14 @@ function toCST<T>(
       name: 'doc',
       body: (tokens: Node[]) => tokens[1].sourceString,
       children: (tokens: Node[]) => {
+        const contentNode = tokens[1];
         return toCST(
           source,
           grammars,
-          TextNodeGrammar,
-          ['HelperMappings'],
-          tokens[1].sourceString,
-          offset + tokens[1].source.startIdx,
+          grammars.Liquid,
+          ['LiquidDocMappings'],
+          contentNode.sourceString,
+          offset + contentNode.source.startIdx,
         );
       },
       whitespaceStart: (tokens: Node[]) => tokens[0].children[1].sourceString,
@@ -1099,6 +1107,16 @@ function toCST<T>(
     },
   };
 
+  const LiquidDocMappings: Mapping = {
+    Node: {
+      type: ConcreteNodeTypes.LiquidDocBody,
+      locStart,
+      locEnd,
+      source,
+      description: (tokens: Node[]) => tokens[0].sourceString,
+    },
+  };
+
   const LiquidHTMLMappings: Mapping = {
     Node(frontmatter: Node, nodes: Node) {
       const self = this as any;
@@ -1254,6 +1272,7 @@ function toCST<T>(
     LiquidMappings,
     LiquidHTMLMappings,
     LiquidStatement,
+    LiquidDocMappings,
   };
 
   const selectedMappings = cstMappings.reduce(
