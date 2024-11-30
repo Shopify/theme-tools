@@ -1107,6 +1107,16 @@ function toCST<T>(
     },
   };
 
+  // From what I understand, when we call toCST Again, we're using node as the default resolution to start off with.
+  // I believe this is why we keep getting a text node match by default, Because the grammar dictates that a node can be a liquid node or a text node
+  // As a result, we never get the Liquid Dock Body mapping because it's only looking for an accepted Liquid node or Text node In the grammar that we've provided provided.
+  // I could make a new grammar, but I think that would require a lot more changes and maintenance in the long run.
+  // I'm not sure if there's a better way to do this, but I think this is a good solution for now.
+  // Another thing that I tried was Modify what a liquid node can match. However, because the liquid dock body is so permissive, for the moment, comma, this was pretty hard to do achieve.
+  // Idea - I could also make text node more specific so that we would end up matching the Liquid Doc Body instead of a text node.
+  // Idea - I could also make a new grammar, but I think that would require a lot more changes and maintenance in the long run.
+  // Idea - Maybe I can also use look-a-heads or something else to make sure that the liquid dock body is something that is preceded and followed by the dock and end-dock tags.
+
   const LiquidDocMappings: Mapping = {
     Node: {
       type: ConcreteNodeTypes.LiquidDocBody,
