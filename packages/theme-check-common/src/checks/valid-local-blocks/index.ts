@@ -1,15 +1,9 @@
-import {
-  LiquidCheckDefinition,
-  Preset,
-  Section,
-  Severity,
-  SourceCodeType,
-  ThemeBlock,
-} from '../../types';
+import { LiquidCheckDefinition, Preset, Severity, SourceCodeType } from '../../types';
 import { LiteralNode } from 'json-to-ast';
-import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
+import { nodeAtPath } from '../../json';
 import { basename } from '../../path';
 import { isBlock, isSection } from '../../to-schema';
+import { getBlocks, reportWarning } from './valid-block-utils';
 
 type BlockNodeWithPath = {
   node: Preset.BlockPresetBase;
@@ -45,96 +39,6 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
       }
     }
 
-    function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
-      staticBlockNameLocations: BlockNodeWithPath[];
-      staticBlockLocations: BlockNodeWithPath[];
-      localBlockLocations: BlockNodeWithPath[];
-      themeBlockLocations: BlockNodeWithPath[];
-      hasRootLevelThemeBlocks: boolean;
-    } {
-      const staticBlockNameLocations: BlockNodeWithPath[] = [];
-      const staticBlockLocations: BlockNodeWithPath[] = [];
-      const localBlockLocations: BlockNodeWithPath[] = [];
-      const themeBlockLocations: BlockNodeWithPath[] = [];
-
-      const rootLevelBlocks = validSchema.blocks;
-      const presets = validSchema.presets;
-      // Helper function to categorize blocks
-      function categorizeBlock(block: Preset.BlockPresetBase, currentPath: string[]) {
-        if (!block) return;
-        const hasStatic = 'static' in block;
-        const hasName = 'name' in block;
-
-        if (hasStatic && hasName) {
-          staticBlockNameLocations.push({ node: block, path: currentPath.concat('type') });
-        } else if (hasStatic) {
-          staticBlockLocations.push({ node: block, path: currentPath.concat('type') });
-        } else if (hasName) {
-          localBlockLocations.push({ node: block, path: currentPath.concat('type') });
-        } else if (block.type !== '@app') {
-          themeBlockLocations.push({ node: block, path: currentPath.concat('type') });
-        }
-
-        // Handle nested blocks
-        if ('blocks' in block) {
-          if (Array.isArray(block.blocks)) {
-            block.blocks.forEach((nestedBlock: Preset.BlockPresetBase, index: number) => {
-              categorizeBlock(nestedBlock, currentPath.concat('blocks', String(index)));
-            });
-          } else if (typeof block.blocks === 'object' && block.blocks !== null) {
-            Object.entries(block.blocks).forEach(([key, nestedBlock]) => {
-              categorizeBlock(nestedBlock, currentPath.concat('blocks', key));
-            });
-          }
-        }
-      }
-
-      // Iterate over rootLevelBlocks
-      if (Array.isArray(rootLevelBlocks)) {
-        rootLevelBlocks.forEach((block, index) => {
-          categorizeBlock(block, ['blocks', String(index)]);
-        });
-      }
-
-      // Iterate over presetLevelBlocks
-      if (presets) {
-        presets.forEach((preset: Preset.Preset, presetIndex: number) => {
-          if (preset.blocks) {
-            if (Array.isArray(preset.blocks)) {
-              preset.blocks.forEach((block: Preset.BlockPresetBase, blockIndex: number) => {
-                categorizeBlock(block, [
-                  'presets',
-                  String(presetIndex),
-                  'blocks',
-                  String(blockIndex),
-                ]);
-              });
-            } else if (typeof preset.blocks === 'object') {
-              Object.entries(preset.blocks).forEach(([key, block]) => {
-                categorizeBlock(block, ['presets', String(presetIndex), 'blocks', key]);
-              });
-            }
-          }
-        });
-      }
-
-      return {
-        staticBlockNameLocations,
-        staticBlockLocations,
-        localBlockLocations,
-        themeBlockLocations,
-        hasRootLevelThemeBlocks: themeBlockLocations.some((block) => block.path[0] === 'blocks'),
-      };
-    }
-
-    function reportWarning(message: string, offset: number, astNode: LiteralNode) {
-      context.report({
-        message,
-        startIndex: offset + getLocStart(astNode),
-        endIndex: offset + getLocEnd(astNode),
-      });
-    }
-
     return {
       async LiquidRawTag(node) {
         if (node.name !== 'schema' || node.body.kind !== 'json') return;
@@ -157,7 +61,12 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
         if (isSection(context.file.uri)) {
           staticBlockNameLocations.forEach((blockWithPath: BlockNodeWithPath) => {
             const astNode = nodeAtPath(ast, blockWithPath.path)! as LiteralNode;
-            reportWarning('Static theme blocks cannot have a name property.', offset, astNode);
+            reportWarning(
+              'Static theme blocks cannot have a name property.',
+              offset,
+              astNode,
+              context,
+            );
           });
 
           if (staticBlockLocations.length > 0 && localBlockLocations.length > 0) {
@@ -167,6 +76,7 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
                 `Sections cannot use static theme blocks together with locally scoped blocks.`,
                 offset,
                 astNode,
+                context,
               );
             });
           }
@@ -182,6 +92,7 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
                 'Sections cannot use theme blocks together with locally scoped blocks.',
                 offset,
                 astNode,
+                context,
               );
             });
           }
@@ -195,6 +106,7 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
                 'Local scoped blocks are not supported in theme blocks.',
                 offset,
                 astNode,
+                context,
               );
             });
           }

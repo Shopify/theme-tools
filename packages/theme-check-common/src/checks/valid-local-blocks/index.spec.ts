@@ -429,7 +429,7 @@ describe('ValidLocalBlocks on edge cases', () => {
     expect(offenses).to.be.empty;
   });
 
-  it('should not report errors on older themes that define local blocks at the root level and use them in presets', async () => {
+  it('should not report errors on themes that define local blocks at the root level and use them in presets', async () => {
     const theme: MockTheme = {
       'sections/local-blocks.liquid': `
         {% schema %}
