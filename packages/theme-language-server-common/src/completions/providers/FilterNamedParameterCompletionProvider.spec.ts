@@ -1,9 +1,12 @@
 import { describe, beforeEach, it, expect } from 'vitest';
-import { InsertTextFormat } from 'vscode-languageserver';
+import { InsertTextFormat, type TextEdit } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
+
 import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
+import { CURSOR } from '../params';
 
 describe('Module: ObjectCompletionProvider', async () => {
   let provider: CompletionsProvider;
@@ -83,42 +86,44 @@ describe('Module: ObjectCompletionProvider', async () => {
         const context = `{{ product | image_url: w█idth: 100, height: 200 | image_tag }}`;
         //                                            ⌃ char 29
 
+        const weightTextEdit: TextEdit = {
+          newText: "weight: '$1'",
+          range: {
+            end: { line: 0, character: 34 },
+            start: { line: 0, character: 24 },
+          },
+        };
+
+        const widthTextEdit: TextEdit = {
+          newText: 'width',
+          range: {
+            end: { line: 0, character: 29 },
+            start: { line: 0, character: 24 },
+          },
+        };
+
         await expect(provider).to.complete(context, [
           expect.objectContaining({
             label: 'weight',
             insertTextFormat: InsertTextFormat.Snippet,
-            textEdit: expect.objectContaining({
-              newText: "weight: '$1'",
-              range: {
-                end: {
-                  line: 0,
-                  character: 34,
-                },
-                start: {
-                  line: 0,
-                  character: 24,
-                },
-              },
-            }),
+            textEdit: expect.objectContaining(weightTextEdit),
           }),
           expect.objectContaining({
             label: 'width',
             insertTextFormat: InsertTextFormat.PlainText,
-            textEdit: expect.objectContaining({
-              newText: 'width',
-              range: {
-                end: {
-                  line: 0,
-                  character: 29,
-                },
-                start: {
-                  line: 0,
-                  character: 24,
-                },
-              },
-            }),
+            textEdit: expect.objectContaining(widthTextEdit),
           }),
         ]);
+
+        const textDocument = TextDocument.create('', 'liquid', 0, context.replace(CURSOR, ''));
+
+        expect(TextDocument.applyEdits(textDocument, [weightTextEdit])).toBe(
+          "{{ product | image_url: weight: '$1', height: 200 | image_tag }}",
+        );
+
+        expect(TextDocument.applyEdits(textDocument, [widthTextEdit])).toBe(
+          '{{ product | image_url: width: 100, height: 200 | image_tag }}',
+        );
       });
     });
 
@@ -133,27 +138,29 @@ describe('Module: ObjectCompletionProvider', async () => {
         //                               char 24 ⌄
         const context = `{{ product | image_url: █crop: 'center' }}`;
 
+        const textEdit: TextEdit = {
+          newText: 'width: ',
+          range: {
+            end: { line: 0, character: 24 },
+            start: { line: 0, character: 24 },
+          },
+        };
+
         await expect(provider).to.complete(
           context,
           expect.arrayContaining([
             expect.objectContaining({
-              label: 'crop',
-              insertTextFormat: InsertTextFormat.Snippet,
-              textEdit: expect.objectContaining({
-                newText: "crop: '$1'",
-                range: {
-                  end: {
-                    line: 0,
-                    character: 24,
-                  },
-                  start: {
-                    line: 0,
-                    character: 24,
-                  },
-                },
-              }),
+              label: 'width',
+              insertTextFormat: InsertTextFormat.PlainText,
+              textEdit,
             }),
           ]),
+        );
+
+        const textDocument = TextDocument.create('', 'liquid', 0, context.replace(CURSOR, ''));
+
+        expect(TextDocument.applyEdits(textDocument, [textEdit])).toBe(
+          "{{ product | image_url: width: crop: 'center' }}",
         );
       });
     });
@@ -163,25 +170,27 @@ describe('Module: ObjectCompletionProvider', async () => {
         //                               char 24 ⌄   ⌄ char 28
         const context = `{{ product | image_url: crop█: 'center' }}`;
 
+        const textEdit: TextEdit = {
+          newText: 'crop',
+          range: {
+            end: { line: 0, character: 28 },
+            start: { line: 0, character: 24 },
+          },
+        };
+
         await expect(provider).to.complete(context, [
           expect.objectContaining({
             label: 'crop',
             insertTextFormat: InsertTextFormat.PlainText,
-            textEdit: expect.objectContaining({
-              newText: 'crop',
-              range: {
-                end: {
-                  line: 0,
-                  character: 28,
-                },
-                start: {
-                  line: 0,
-                  character: 24,
-                },
-              },
-            }),
+            textEdit,
           }),
         ]);
+
+        const textDocument = TextDocument.create('', 'liquid', 0, context.replace(CURSOR, ''));
+
+        expect(TextDocument.applyEdits(textDocument, [textEdit])).toBe(
+          "{{ product | image_url: crop: 'center' }}",
+        );
       });
     });
   });
