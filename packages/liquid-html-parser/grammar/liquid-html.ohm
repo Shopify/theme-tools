@@ -381,7 +381,11 @@ LiquidStatement <: Liquid {
 
   liquidStatementEnd = newline | end
   delimTag := liquidStatementEnd
-} 
+}
+
+LiquidDoc <: Helpers {
+  Node := (TextNode)*
+}
 
 LiquidHTML <: Liquid {
   Node := yamlFrontmatter? (HtmlNode | liquidNode | TextNode)*
