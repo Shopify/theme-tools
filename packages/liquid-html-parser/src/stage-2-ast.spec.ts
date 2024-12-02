@@ -1224,6 +1224,7 @@ describe('Unit: Stage 2 (AST)', () => {
       ast = toLiquidAST(`{% doc %}{% enddoc %}`);
       expectPath(ast, 'children.0.type').to.eql('LiquidRawTag');
       expectPath(ast, 'children.0.name').to.eql('doc');
+      expectPath(ast, 'children.0.markup').toEqual('');
       expectPath(ast, 'children.0.body.value').to.eql('');
       expectPath(ast, 'children.0.body.type').toEqual('RawMarkup');
       expectPath(ast, 'children.0.body.nodes').toEqual([]);
