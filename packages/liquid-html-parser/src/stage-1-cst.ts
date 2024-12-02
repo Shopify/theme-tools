@@ -34,6 +34,7 @@ import { Parser } from 'prettier';
 import ohm, { Node } from 'ohm-js';
 import { toAST } from 'ohm-js/extras';
 import {
+  LiquidDocGrammar,
   LiquidGrammars,
   TextNodeGrammar,
   placeholderGrammars,
@@ -81,7 +82,6 @@ export enum ConcreteNodeTypes {
   RenderMarkup = 'RenderMarkup',
   PaginateMarkup = 'PaginateMarkup',
   RenderVariableExpression = 'RenderVariableExpression',
-  LiquidDocBody = 'LiquidDocBody',
 }
 
 export const LiquidLiteralValues = {
@@ -504,13 +504,7 @@ function toCST<T>(
   source: string /* the original file */,
   grammars: LiquidGrammars,
   grammar: ohm.Grammar,
-  cstMappings: (
-    | 'HelperMappings'
-    | 'LiquidMappings'
-    | 'LiquidHTMLMappings'
-    | 'LiquidStatement'
-    | 'LiquidDocMappings'
-  )[],
+  cstMappings: ('HelperMappings' | 'LiquidMappings' | 'LiquidHTMLMappings' | 'LiquidStatement')[],
   matchingSource: string = source /* for subtree parsing */,
   offset: number = 0 /* for subtree parsing location offsets */,
 ): T {
@@ -638,11 +632,8 @@ function toCST<T>(
       body: (tokens: Node[]) => tokens[1].sourceString,
       children: (tokens: Node[]) => {
         const contentNode = tokens[1];
-        return toCST(
+        return toLiquidDocAST(
           source,
-          grammars,
-          grammars.Liquid,
-          ['LiquidDocMappings'],
           contentNode.sourceString,
           offset + contentNode.source.startIdx,
         );
@@ -1108,14 +1099,23 @@ function toCST<T>(
   };
 
   const LiquidDocMappings: Mapping = {
-    Node: {
-      type: ConcreteNodeTypes.LiquidDocBody,
-      locStart,
-      locEnd,
-      source,
-      description: (tokens: Node[]) => tokens[0].sourceString,
-    },
+    Node: 0,
+    TextNode: textNode,
   };
+
+  function toLiquidDocAST(source: string, matchingSource: string, offset: number) {
+    const res = LiquidDocGrammar.match(matchingSource, 'Node');
+    if (res.failed()) {
+      throw new LiquidHTMLCSTParsingError(res);
+    }
+
+    const LiquidDocMappings: Mapping = {
+      Node: 0,
+      TextNode: textNode,
+    };
+
+    return toAST(res, LiquidDocMappings);
+  }
 
   const LiquidHTMLMappings: Mapping = {
     Node(frontmatter: Node, nodes: Node) {
@@ -1272,7 +1272,6 @@ function toCST<T>(
     LiquidMappings,
     LiquidHTMLMappings,
     LiquidStatement,
-    LiquidDocMappings,
   };
 
   const selectedMappings = cstMappings.reduce(

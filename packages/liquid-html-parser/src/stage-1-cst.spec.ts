@@ -994,13 +994,15 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.blockStartLocEnd').to.equal(0 + '{% doc -%}'.length);
           expectPath(cst, '0.blockEndLocStart').to.equal(testStr.length - '{%- enddoc %}'.length);
           expectPath(cst, '0.blockEndLocEnd').to.equal(testStr.length);
-          expectPath(cst, '0.children').to.deep.equal({
-            locEnd: 35,
-            locStart: 11,
-            source: '{% doc -%} Renders loading-spinner. {%- enddoc %}',
-            type: 'LiquidDocBody',
-            description: 'Renders loading-spinner.',
-          });
+          expectPath(cst, '0.children').to.deep.equal([
+            {
+              locEnd: 25,
+              locStart: 1,
+              source: '{% doc -%} Renders loading-spinner. {%- enddoc %}',
+              type: 'TextNode',
+              value: 'Renders loading-spinner.',
+            },
+          ]);
         }
       });
 
