@@ -4,6 +4,8 @@ export const liquidHtmlGrammars = ohm.grammars(require('../grammar/liquid-html.o
 
 export const TextNodeGrammar = liquidHtmlGrammars['Helpers'];
 
+export const LiquidDocGrammar = liquidHtmlGrammars['LiquidDoc'];
+
 export interface LiquidGrammars {
   Liquid: ohm.Grammar;
   LiquidHTML: ohm.Grammar;

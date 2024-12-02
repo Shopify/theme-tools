@@ -29,6 +29,17 @@ Helpers {
   newline = "\r"? "\n"
 }
 
+LiquidDoc <: Helpers {
+  Node := (liquidDocNode | TextNode)*
+  liquidDocNode = 
+    | paramNode
+
+  fallbackNode = "@" paramName
+  paramNode = "@param" (space+ paramType)? space+ paramName (space+ paramDescription)?
+  paramName = letter*
+  paramType = empty
+}
+
 Liquid <: Helpers {
   Node := (liquidNode | TextNode)*
   openControl := "{{" | "{%"

@@ -34,6 +34,7 @@ import { Parser } from 'prettier';
 import ohm, { Node } from 'ohm-js';
 import { toAST } from 'ohm-js/extras';
 import {
+  LiquidDocGrammar,
   LiquidGrammars,
   TextNodeGrammar,
   placeholderGrammars,
@@ -42,6 +43,7 @@ import {
 } from './grammar';
 import { LiquidHTMLCSTParsingError } from './errors';
 import { Comparators, NamedTags } from './types';
+import { P } from 'vitest/dist/chunks/environment.C5eAp3K6';
 
 export enum ConcreteNodeTypes {
   HtmlDoctype = 'HtmlDoctype',
@@ -81,7 +83,8 @@ export enum ConcreteNodeTypes {
   RenderMarkup = 'RenderMarkup',
   PaginateMarkup = 'PaginateMarkup',
   RenderVariableExpression = 'RenderVariableExpression',
-  LiquidDocBody = 'LiquidDocBody',
+
+  LiquidDocParam = 'LiquidDocParam',
 }
 
 export const LiquidLiteralValues = {
@@ -432,7 +435,8 @@ export type LiquidHtmlConcreteNode =
   | ConcreteHtmlNode
   | ConcreteLiquidNode
   | ConcreteTextNode
-  | ConcreteYamlFrontmatterNode;
+  | ConcreteYamlFrontmatterNode
+  | ConcreteLiquidDocNode;
 
 export type LiquidConcreteNode =
   | ConcreteLiquidNode
@@ -504,13 +508,7 @@ function toCST<T>(
   source: string /* the original file */,
   grammars: LiquidGrammars,
   grammar: ohm.Grammar,
-  cstMappings: (
-    | 'HelperMappings'
-    | 'LiquidMappings'
-    | 'LiquidHTMLMappings'
-    | 'LiquidStatement'
-    | 'LiquidDocMappings'
-  )[],
+  cstMappings: ('HelperMappings' | 'LiquidMappings' | 'LiquidHTMLMappings' | 'LiquidStatement')[],
   matchingSource: string = source /* for subtree parsing */,
   offset: number = 0 /* for subtree parsing location offsets */,
 ): T {
@@ -638,11 +636,8 @@ function toCST<T>(
       body: (tokens: Node[]) => tokens[1].sourceString,
       children: (tokens: Node[]) => {
         const contentNode = tokens[1];
-        return toCST(
+        return toLiquidDocAST(
           source,
-          grammars,
-          grammars.Liquid,
-          ['LiquidDocMappings'],
           contentNode.sourceString,
           offset + contentNode.source.startIdx,
         );
@@ -1107,26 +1102,6 @@ function toCST<T>(
     },
   };
 
-  // From what I understand, when we call toCST Again, we're using node as the default resolution to start off with.
-  // I believe this is why we keep getting a text node match by default, Because the grammar dictates that a node can be a liquid node or a text node
-  // As a result, we never get the Liquid Dock Body mapping because it's only looking for an accepted Liquid node or Text node In the grammar that we've provided provided.
-  // I could make a new grammar, but I think that would require a lot more changes and maintenance in the long run.
-  // I'm not sure if there's a better way to do this, but I think this is a good solution for now.
-  // Another thing that I tried was Modify what a liquid node can match. However, because the liquid dock body is so permissive, for the moment, comma, this was pretty hard to do achieve.
-  // Idea - I could also make text node more specific so that we would end up matching the Liquid Doc Body instead of a text node.
-  // Idea - I could also make a new grammar, but I think that would require a lot more changes and maintenance in the long run.
-  // Idea - Maybe I can also use look-a-heads or something else to make sure that the liquid dock body is something that is preceded and followed by the dock and end-dock tags.
-
-  const LiquidDocMappings: Mapping = {
-    Node: {
-      type: ConcreteNodeTypes.LiquidDocBody,
-      locStart,
-      locEnd,
-      source,
-      description: (tokens: Node[]) => tokens[0].sourceString,
-    },
-  };
-
   const LiquidHTMLMappings: Mapping = {
     Node(frontmatter: Node, nodes: Node) {
       const self = this as any;
@@ -1282,7 +1257,6 @@ function toCST<T>(
     LiquidMappings,
     LiquidHTMLMappings,
     LiquidStatement,
-    LiquidDocMappings,
   };
 
   const selectedMappings = cstMappings.reduce(
@@ -1294,4 +1268,77 @@ function toCST<T>(
   );
 
   return toAST(res, selectedMappings) as T;
+}
+
+export type ConcreteLiquidDocNode = ConcreteTextNode | ConcreteParamNode;
+
+// {% doc %}
+//   some text
+//   @param foo
+// {% enddoc %}
+
+// LiquidHtmlNode = TextNode | LiquidNode | LiquidHtmlNode | LiquidDoc
+// LiquidRawTag#doc
+// . -children
+// .   - textnode
+// .   - paramnode
+
+// @param {type} name - some description
+export interface ConcreteParamNode extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocParam> {
+  /** `@param name` << that's the thing we're talking about */
+  name: string;
+  /** `@param {type} name` << that's the thing we're talking about */
+  // paramType?: string; // maybe extend?
+  // description?: string;
+  // isOptional: boolean; TODO
+}
+
+function toLiquidDocAST(
+  source: string,
+  matchingSource: string,
+  offset: number = 0,
+): LiquidDocCSTNode[] {
+  // When we switch parser, our locStart and locEnd functions must account
+  // for the offset of the {% liquid %} markup
+  const locStart = (tokens: Node[]) => offset + tokens[0].source.startIdx;
+  const locEnd = (tokens: Node[]) => offset + tokens[tokens.length - 1].source.endIdx;
+
+  const textNode = {
+    type: ConcreteNodeTypes.TextNode,
+    value: function () {
+      return (this as any).sourceString;
+    },
+    locStart,
+    locEnd,
+    source,
+  };
+
+  const res = LiquidDocGrammar.match(matchingSource, 'Node');
+  if (res.failed()) {
+    throw new LiquidHTMLCSTParsingError(res);
+  }
+
+  return toAST(res, {
+    Node: 0,
+    TextNode: textNode,
+    liquidDocNode: 1,
+
+    orderedListOf: 0,
+
+    listOf: 0,
+    empty: () => null,
+    emptyListOf: () => [],
+    nonemptyListOf(first: any, _sep: any, rest: any) {
+      const self = this as any;
+      return [first.toAST(self.args.mapping)].concat(rest.toAST(self.args.mapping));
+    },
+
+    nonemptyOrderedListOf: 0,
+    nonemptyOrderedListOfBoth(nonemptyListOfA: Node, _sep: Node, nonemptyListOfB: Node) {
+      const self = this as any;
+      return nonemptyListOfA
+        .toAST(self.args.mapping)
+        .concat(nonemptyListOfB.toAST(self.args.mapping));
+    },
+  }) as LiquidDocCSTNode[];
 }

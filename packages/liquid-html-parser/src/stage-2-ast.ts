@@ -11,7 +11,18 @@
  * establishes the parent/child relationship between the nodes.
  *
  * Recall the Liquid example we had in the first stage:
- *   {% if cond %}hi <em>there!</em>{% endif %}
+ * {% if cond %}hi <em>there!</em>{% endif %}
+ *  doc anythingButDoc endDoc
+ *  div anythingButCloseDiv but if open div its ok
+ * <div> <div> </div> </div>
+ * <{% if cond %}div{% else %}a{% endif %}>
+ * "<"
+ * if statement
+ *   "div"
+ * else
+ *   "a"
+ * endif
+ * ">"
  *
  * Whereas the previous stage gives us this CST:
  *   - LiquidTagOpen/if
@@ -1880,6 +1891,7 @@ function toLiquidArgument(node: ConcreteLiquidArgument): LiquidArgument {
   }
 }
 
+// {{ a | filter: width: 100 }}
 function toNamedArgument(node: ConcreteLiquidNamedArgument): LiquidNamedArgument {
   return {
     type: NodeTypes.NamedArgument,
@@ -1948,6 +1960,25 @@ function toTextNode(node: ConcreteTextNode): TextNode {
   return {
     type: NodeTypes.TextNode,
     value: node.value,
+    position: position(node),
+    source: node.source,
+  };
+}
+
+// {{ a | filter: width: 100 }}
+function toLiquidDocParamNode(node: ConcreteLiquidDocParamNode): LiquidDocParamNode {
+  return {
+    type: NodeTypes.LiquidDocParam,
+    name: toParamName(node.name),
+    position: position(node),
+    source: node.source,
+  };
+}
+
+function toParamName(node: ConcreteLiquidDocParamNameNode): ParamName {
+  return {
+    type: NodeTypes.LiquidDocParamName,
+    name: node.name,
     position: position(node),
     source: node.source,
   };

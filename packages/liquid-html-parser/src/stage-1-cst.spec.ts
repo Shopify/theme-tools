@@ -980,7 +980,7 @@ describe('Unit: Stage 1 (CST)', () => {
 
       it('should parse doc tags', () => {
         for (const { toCST, expectPath } of testCases) {
-          const testStr = `{% doc -%} Renders loading-spinner. {%- enddoc %}`;
+          const testStr = `{% doc -%} @foo Renders loading-spinner. {%- enddoc %}`;
 
           cst = toCST(testStr);
           expectPath(cst, '0.type').to.equal('LiquidRawTag');
