@@ -1,6 +1,6 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { isBlock, isSection } from '../../to-schema';
-import { basename } from '../../path';
+import { getSchema } from '../../to-schema';
+import { Position } from '@shopify/liquid-html-parser';
 
 export const EmptyBlockContent: LiquidCheckDefinition = {
   meta: {
@@ -19,40 +19,36 @@ export const EmptyBlockContent: LiquidCheckDefinition = {
   },
 
   create(context) {
-    function getSchema() {
-      const name = basename(context.file.uri, '.liquid');
-      switch (true) {
-        case isBlock(context.file.uri):
-          return context.getBlockSchema?.(name);
-        case isSection(context.file.uri):
-          return context.getSectionSchema?.(name);
-        default:
-          return undefined;
-      }
-    }
+    let isContentForBlocksLocationSet = false;
+    let contentForBlocksLocation: Position = { start: 0, end: 0 };
 
-    let contentForBlocksLocation: { start: number; end: number } | undefined;
     return {
       async LiquidTag(node) {
         if (node.name !== 'content_for') return;
 
         const nodeMarkup = node.markup;
         if (typeof nodeMarkup === 'object' && nodeMarkup.contentForType.value === 'blocks') {
-          contentForBlocksLocation = {
-            start: node.blockStartPosition.start,
-            end: node.blockStartPosition.end,
-          };
+          contentForBlocksLocation.start = node.blockStartPosition.start;
+          contentForBlocksLocation.end = node.blockStartPosition.end;
+          isContentForBlocksLocationSet = true;
         }
       },
 
       async onCodePathEnd() {
-        const schema = await getSchema();
+        const schema = await getSchema(context);
         const { validSchema, ast } = schema ?? {};
         if (!validSchema || validSchema instanceof Error) return;
         if (!ast || ast instanceof Error) return;
 
         const blocks = validSchema.blocks;
-        if (contentForBlocksLocation && blocks && blocks.length === 0) {
+        if (isContentForBlocksLocationSet && !blocks) {
+          context.report({
+            message:
+              "The 'content_for blocks' tag is present, but the blocks array is not defined.",
+            startIndex: contentForBlocksLocation.start,
+            endIndex: contentForBlocksLocation.end,
+          });
+        } else if (isContentForBlocksLocationSet && blocks && blocks.length === 0) {
           context.report({
             message: "The 'content_for blocks' tag is present, but the blocks array is empty.",
             startIndex: contentForBlocksLocation.start,

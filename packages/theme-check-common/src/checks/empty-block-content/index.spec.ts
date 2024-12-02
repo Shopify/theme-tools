@@ -73,7 +73,7 @@ describe('Module: EmptyBlockContent', () => {
       expect(erroredContent).to.equal("{% content_for 'blocks' %}");
     });
 
-    it(`should not report offenses when the blocks array has not been defined in ${path}`, async () => {
+    it(`should report offenses when the blocks array has not been defined in ${path}`, async () => {
       const theme: MockTheme = {
         [`${path}/test_block.liquid`]: `
           <div> 
@@ -88,7 +88,10 @@ describe('Module: EmptyBlockContent', () => {
       };
 
       const offenses = await check(theme, [EmptyBlockContent]);
-      expect(offenses).to.be.empty;
+      expect(offenses).to.have.length(1);
+      expect(offenses[0].message).to.equal(
+        "The 'content_for blocks' tag is present, but the blocks array is not defined.",
+      );
     });
 
     it(`should not report offenses when 'content_for blocks' is not present in ${path}`, async () => {
