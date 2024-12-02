@@ -52,4 +52,5 @@ export const TAGS_WITHOUT_MARKUP = [
   'continue',
   'comment',
   'raw',
+  'doc',
 ];
