@@ -1,14 +1,25 @@
-import { JSONNode, LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import {
-  reportError,
-  collectAndValidateBlockTypes,
+  LiquidCheckDefinition,
+  Section,
+  ThemeBlock,
+  Severity,
+  SourceCodeType,
+  Preset,
+} from '../../types';
+import { LiteralNode } from 'json-to-ast';
+import { nodeAtPath } from '../../json';
+import { basename } from '../../path';
+import { isBlock, isSection } from '../../to-schema';
+import {
+  getBlocks,
+  isInvalidPresetBlock,
+  validateNestedBlocks,
   validateBlockFileExistence,
+  reportWarning,
 } from './block-utils';
-import { toJSONAST } from '../../to-source-code';
-
-type Location = {
-  startIndex: number;
-  endIndex: number;
+type BlockNodeWithPath = {
+  node: Preset.BlockPresetBase;
+  path: string[];
 };
 
 export const ValidBlockTarget: LiquidCheckDefinition = {
@@ -18,7 +29,7 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
     docs: {
       description:
         'Ensures block types only reference valid block types and respect parent-child relationships',
-      recommended: false,
+      recommended: true,
       url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-block-target',
     },
     type: SourceCodeType.LiquidHtml,
@@ -28,64 +39,99 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
   },
 
   create(context) {
+    function getSchema() {
+      const name = basename(context.file.uri, '.liquid');
+      switch (true) {
+        case isBlock(context.file.uri):
+          return context.getBlockSchema?.(name);
+        case isSection(context.file.uri):
+          return context.getSectionSchema?.(name);
+        default:
+          return undefined;
+      }
+    }
+
     return {
       async LiquidRawTag(node) {
-        if (node.name !== 'schema' || node.body.kind !== 'json') {
-          return;
-        }
+        if (node.name !== 'schema' || node.body.kind !== 'json') return;
 
-        const jsonString = node.source.slice(
-          node.blockStartPosition.end,
-          node.blockEndPosition.start,
-        );
+        const offset = node.blockStartPosition.end;
+        const schema = await getSchema();
+        const { validSchema, ast } = schema ?? {};
+        if (!validSchema || validSchema instanceof Error) return;
+        if (!ast || ast instanceof Error) return;
+        if (!schema) return;
 
-        const jsonFile = toJSONAST(jsonString);
-        if (jsonFile instanceof Error) return;
+        const { rootLevelThemeBlocks, rootLevelLocalBlocks, presetLevelBlocks } =
+          getBlocks(validSchema);
 
-        const { rootBlockTypes, presetBlockTypes } = collectAndValidateBlockTypes(
-          jsonFile as JSONNode,
-        );
+        if (rootLevelLocalBlocks.length > 0) return;
 
         let errorsInRootLevelBlocks = false;
-        for (const [blockType, locations] of Object.entries(rootBlockTypes)) {
-          const exists = await validateBlockFileExistence(blockType, context);
-          if (!exists) {
-            locations.forEach(
-              reportError(
-                `Theme block 'blocks/${blockType}.liquid' does not exist.`,
+        await Promise.all(
+          rootLevelThemeBlocks.map(async ({ node, path }: BlockNodeWithPath) => {
+            const typeNode = nodeAtPath(ast, path)! as LiteralNode;
+            const exists = await validateBlockFileExistence(node.type, context);
+            if (!exists) {
+              errorsInRootLevelBlocks = true;
+              reportWarning(
+                `Theme block 'blocks/${node.type}.liquid' does not exist.`,
+                offset,
+                typeNode,
                 context,
-                node,
-              ),
-            );
-            errorsInRootLevelBlocks = true;
-          }
-        }
+              );
+            }
+          }),
+        );
 
         if (errorsInRootLevelBlocks) return;
 
-        for (const [presetType, locations] of Object.entries(presetBlockTypes)) {
-          const isPrivateBlockType = presetType.startsWith('_');
-          const isPresetInRootLevel = presetType in rootBlockTypes;
-          const isThemeInRootLevel = '@theme' in rootBlockTypes;
-          const needsExplicitRootBlock = isPrivateBlockType || !isThemeInRootLevel;
+        let errorsInPresetLevelBlocks = false;
+        for (const [depthStr, blocks] of Object.entries(presetLevelBlocks)) {
+          const depth = parseInt(depthStr, 10);
 
-          if (!isPresetInRootLevel && needsExplicitRootBlock) {
-            const errorMessage = isPrivateBlockType
-              ? `Theme block type "${presetType}" is a private block so it must be explicitly allowed in "blocks" at the root of this schema.`
-              : `Theme block type "${presetType}" must be allowed in "blocks" at the root of this schema.`;
+          if (depth === 0) {
+            await Promise.all(
+              blocks.map(async ({ node, path }: BlockNodeWithPath) => {
+                const typeNode = nodeAtPath(ast, path)! as LiteralNode;
+                const isPrivateBlockType = node.type.startsWith('_');
+                if (isInvalidPresetBlock(node, rootLevelThemeBlocks)) {
+                  errorsInPresetLevelBlocks = true;
+                  const errorMessage = isPrivateBlockType
+                    ? `Theme block type "${node.type}" is a private block so it must be explicitly allowed in "blocks" at the root of this schema.`
+                    : `Theme block type "${node.type}" must be allowed in "blocks" at the root of this schema.`;
+                  reportWarning(errorMessage, offset, typeNode, context);
+                }
 
-            locations.forEach(reportError(errorMessage, context, node));
-          } else {
-            const exists = await validateBlockFileExistence(presetType, context);
-            if (!exists) {
-              locations.forEach(
-                reportError(
-                  `Theme block 'blocks/${presetType}.liquid' does not exist.`,
-                  context,
-                  node,
-                ),
-              );
-            }
+                if ('blocks' in node && node.blocks) {
+                  await validateNestedBlocks(
+                    context,
+                    node,
+                    node.blocks,
+                    path.slice(0, -1),
+                    offset,
+                    ast,
+                  );
+                }
+              }),
+            );
+          }
+
+          if (!errorsInPresetLevelBlocks) {
+            await Promise.all(
+              blocks.map(async ({ node, path }: BlockNodeWithPath) => {
+                const typeNode = nodeAtPath(ast, path)! as LiteralNode;
+                const exists = await validateBlockFileExistence(node.type, context);
+                if (!exists) {
+                  reportWarning(
+                    `Theme block 'blocks/${node.type}.liquid' does not exist.`,
+                    offset,
+                    typeNode,
+                    context,
+                  );
+                }
+              }),
+            );
           }
         }
       },

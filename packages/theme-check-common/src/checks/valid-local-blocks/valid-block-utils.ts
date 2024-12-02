@@ -1,106 +1,95 @@
-import { LiquidRawTag } from '@shopify/liquid-html-parser';
-import { Context, SourceCodeType, Schema, JSONNode } from '../../types';
-import { visit } from '../../visitor';
 import { LiteralNode } from 'json-to-ast';
+import { getLocEnd, getLocStart } from '../../json';
+import { Preset, ThemeBlock, Section, Context, SourceCodeType } from '../../types';
 
-type Location = {
-  startIndex: number;
-  endIndex: number;
+type BlockNodeWithPath = {
+  node: Preset.BlockPresetBase;
+  path: string[];
 };
 
-function isLiteralNode(node: JSONNode): node is LiteralNode {
-  return node.type === 'Literal';
-}
-
-export function collectBlockProperties(jsonFile: JSONNode): {
-  hasLocalBlocks: boolean;
-  hasStaticBlocks: boolean;
-  hasThemeBlocks: boolean;
-  localBlockLocations: Location[];
-  themeBlockLocations: Location[];
-  staticBlockLocations: Location[];
-  staticBlockNameLocations: Location[];
+export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
+  staticBlockNameLocations: BlockNodeWithPath[];
+  staticBlockLocations: BlockNodeWithPath[];
+  localBlockLocations: BlockNodeWithPath[];
+  themeBlockLocations: BlockNodeWithPath[];
+  hasRootLevelThemeBlocks: boolean;
 } {
-  const localBlockLocations: Location[] = [];
-  const themeBlockLocations: Location[] = [];
-  const staticBlockLocations: Location[] = [];
-  const staticBlockNameLocations: Location[] = [];
+  const staticBlockNameLocations: BlockNodeWithPath[] = [];
+  const staticBlockLocations: BlockNodeWithPath[] = [];
+  const localBlockLocations: BlockNodeWithPath[] = [];
+  const themeBlockLocations: BlockNodeWithPath[] = [];
 
-  visit<SourceCodeType.JSON, void>(jsonFile, {
-    Property(node, ancestors) {
-      if (!isInArrayWithParentKey(ancestors, 'blocks') || !isLiteralNode(node.value)) return;
+  const rootLevelBlocks = validSchema.blocks;
+  const presets = validSchema.presets;
 
-      const parentObject = ancestors[ancestors.length - 1];
-      const isStatic =
-        parentObject.type === 'Object' &&
-        parentObject.children.some(
-          (child) => child.type === 'Property' && child.key.value === 'static',
-        );
+  function categorizeBlock(block: Preset.BlockPresetBase, currentPath: string[]) {
+    if (!block) return;
+    const hasStatic = 'static' in block;
+    const hasName = 'name' in block;
 
-      if (node.key.value === 'type') {
-        const typeValue = node.value.value;
-        const typeLocation = {
-          startIndex: node.value.loc!.start.offset,
-          endIndex: node.value.loc!.end.offset,
-        };
+    if (hasStatic && hasName) {
+      staticBlockNameLocations.push({ node: block, path: currentPath.concat('type') });
+    } else if (hasStatic) {
+      staticBlockLocations.push({ node: block, path: currentPath.concat('type') });
+    } else if (hasName) {
+      localBlockLocations.push({ node: block, path: currentPath.concat('type') });
+    } else if (block.type !== '@app') {
+      themeBlockLocations.push({ node: block, path: currentPath.concat('type') });
+    }
 
-        const hasName =
-          parentObject.type === 'Object' &&
-          parentObject.children.some(
-            (child) => child.type === 'Property' && child.key.value === 'name',
-          );
+    if ('blocks' in block) {
+      if (Array.isArray(block.blocks)) {
+        block.blocks.forEach((nestedBlock: Preset.BlockPresetBase, index: number) => {
+          categorizeBlock(nestedBlock, currentPath.concat('blocks', String(index)));
+        });
+      } else if (typeof block.blocks === 'object' && block.blocks !== null) {
+        Object.entries(block.blocks).forEach(([key, nestedBlock]) => {
+          categorizeBlock(nestedBlock, currentPath.concat('blocks', key));
+        });
+      }
+    }
+  }
 
-        if (isStatic && !hasName && typeof typeValue === 'string') {
-          staticBlockLocations.push(typeLocation);
-        } else if (
-          !hasName &&
-          typeValue !== '@app' &&
-          !isInArrayWithParentKey(ancestors, 'presets')
-        ) {
-          themeBlockLocations.push(typeLocation);
-        }
-      } else if (node.key.value === 'name') {
-        const nameKeyLocation = {
-          startIndex: node.key.loc!.start.offset,
-          endIndex: node.key.loc!.end.offset,
-        };
-        if (isStatic) {
-          staticBlockNameLocations.push(nameKeyLocation);
-        } else {
-          localBlockLocations.push(nameKeyLocation);
+  if (Array.isArray(rootLevelBlocks)) {
+    rootLevelBlocks.forEach((block, index) => {
+      categorizeBlock(block, ['blocks', String(index)]);
+    });
+  }
+
+  if (presets) {
+    presets.forEach((preset: Preset.Preset, presetIndex: number) => {
+      if (preset.blocks) {
+        if (Array.isArray(preset.blocks)) {
+          preset.blocks.forEach((block: Preset.BlockPresetBase, blockIndex: number) => {
+            categorizeBlock(block, ['presets', String(presetIndex), 'blocks', String(blockIndex)]);
+          });
+        } else if (typeof preset.blocks === 'object') {
+          Object.entries(preset.blocks).forEach(([key, block]) => {
+            categorizeBlock(block, ['presets', String(presetIndex), 'blocks', key]);
+          });
         }
       }
-    },
-  });
+    });
+  }
 
   return {
-    hasLocalBlocks: localBlockLocations.length > 0,
-    hasStaticBlocks: staticBlockLocations.length > 0,
-    hasThemeBlocks: themeBlockLocations.length > 0,
-    localBlockLocations,
-    staticBlockLocations,
-    themeBlockLocations,
     staticBlockNameLocations,
+    staticBlockLocations,
+    localBlockLocations,
+    themeBlockLocations,
+    hasRootLevelThemeBlocks: themeBlockLocations.some((block) => block.path[0] === 'blocks'),
   };
 }
 
-function isInArrayWithParentKey(ancestors: JSONNode[], parentKey: string): boolean {
-  return ancestors.some((ancestor, index) => {
-    const parent = ancestors[index - 1];
-    return (
-      (ancestor.type === 'Array' || ancestor.type === 'Object') &&
-      parent?.type === 'Property' &&
-      parent.key?.value === parentKey
-    );
+export function reportWarning(
+  message: string,
+  offset: number,
+  astNode: LiteralNode,
+  context: Context<SourceCodeType.LiquidHtml>,
+) {
+  context.report({
+    message,
+    startIndex: offset + getLocStart(astNode),
+    endIndex: offset + getLocEnd(astNode),
   });
 }
-
-export const reportError =
-  (message: string, context: Context<SourceCodeType.LiquidHtml, Schema>, node: LiquidRawTag) =>
-  (location: Location) => {
-    context.report({
-      message,
-      startIndex: node.blockStartPosition.end + location.startIndex,
-      endIndex: node.blockStartPosition.end + location.endIndex,
-    });
-  };

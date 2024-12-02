@@ -1,4 +1,5 @@
 import { Setting } from './setting';
+import { Preset } from './preset';
 
 export declare namespace Section {
   /** {% schema %} */
@@ -10,7 +11,7 @@ export declare namespace Section {
     settings?: Setting.Any[];
     max_blocks?: number;
     blocks?: Block[];
-    presets?: Preset[];
+    presets?: Preset.Preset[];
     default?: Default;
     locales?: Record<string, Record<string, string>>;
     enabled_on?: SectionToggle;
@@ -40,13 +41,6 @@ export declare namespace Section {
     settings?: Setting.Any[];
   };
 
-  // Preset definitions
-  export interface Preset {
-    name: string;
-    settings?: Record<string, string | number | boolean | string[]>;
-    blocks?: PresetBlocks;
-  }
-
   // Default section configuration (kind of like presets)
   export interface Default {
     settings?: Record<string, string | number | boolean | string[]>;
@@ -55,23 +49,6 @@ export declare namespace Section {
       settings?: Record<string, string | number | boolean | string[]>;
     }>;
   }
-
-  // Reuse the block preset types from ThemeBlock namespace
-  export type PresetBlocks = BlockPresetArrayElement[] | BlockPresetHash;
-
-  export type BlockPresetHash = Record<string, BlockPresetBase>;
-  export type BlockPresetArrayElement = BlockPresetBase | BlockPresetStatic;
-
-  export type BlockPresetStatic = BlockPresetBase & {
-    static: true;
-    id: string;
-  };
-
-  export type BlockPresetBase = {
-    type: string;
-    settings?: Setting.Values;
-    blocks?: PresetBlocks;
-  };
 
   // Section toggle interface
   export interface SectionToggle {

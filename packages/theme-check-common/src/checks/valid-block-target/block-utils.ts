@@ -1,83 +1,224 @@
-import { LiquidRawTag } from '@shopify/liquid-html-parser';
-import { Context, SourceCodeType, Schema, JSONNode } from '../../types';
-import { doesFileExist } from '../../utils/file-utils';
-import { visit } from '../../visitor';
+import { JSONNode, Preset, Section, SourceCodeType, Theme, ThemeBlock } from '../../types';
 import { LiteralNode } from 'json-to-ast';
+import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
+import { Context } from '../../types';
+import { doesFileExist } from '../../utils/file-utils';
 
-type BlockTypeMap = { [key: string]: Location[] };
-
-type Location = {
-  startIndex: number;
-  endIndex: number;
+export type BlockNodeWithPath = {
+  node: Preset.BlockPresetBase;
+  path: string[];
 };
 
-type BlockValidationResult = {
-  rootBlockTypes: BlockTypeMap;
-  presetBlockTypes: BlockTypeMap;
-};
+export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
+  rootLevelThemeBlocks: BlockNodeWithPath[];
+  rootLevelLocalBlocks: BlockNodeWithPath[];
+  presetLevelBlocks: { [key: number]: BlockNodeWithPath[] };
+} {
+  const rootLevelThemeBlocks: BlockNodeWithPath[] = [];
+  const rootLevelLocalBlocks: BlockNodeWithPath[] = [];
+  const presetLevelBlocks: { [key: number]: BlockNodeWithPath[] } = {};
 
-function isLiteralNode(node: JSONNode): node is LiteralNode {
-  return node.type === 'Literal';
-}
+  const rootLevelBlocks = validSchema.blocks;
+  const presets = validSchema.presets;
 
-// Function to determine if a node is in an array with a specific parent key
-function isInArrayWithParentKey(ancestors: JSONNode[], parentKey: string): boolean {
-  return ancestors.some((ancestor, index) => {
-    const parent = ancestors[index - 1];
-    return (
-      (ancestor.type === 'Array' || ancestor.type === 'Object') &&
-      parent?.type === 'Property' &&
-      parent.key?.value === parentKey
-    );
-  });
-}
+  // Helper function to categorize blocks
+  function categorizeRootLevelBlocks(block: Preset.BlockPresetBase, index: number) {
+    if (!block) return;
+    const hasName = 'name' in block;
 
-export const reportError =
-  (message: string, context: Context<SourceCodeType.LiquidHtml, Schema>, node: LiquidRawTag) =>
-  (location: Location) => {
-    context.report({
-      message,
-      startIndex: node.blockStartPosition.end + location.startIndex,
-      endIndex: node.blockStartPosition.end + location.endIndex,
+    if (hasName) {
+      rootLevelLocalBlocks.push({
+        node: block,
+        path: ['blocks', String(index), 'type'],
+      });
+    } else if (block.type !== '@app') {
+      rootLevelThemeBlocks.push({
+        node: block,
+        path: ['blocks', String(index), 'type'],
+      });
+    }
+  }
+
+  function categorizePresetLevelBlocks(
+    block: Preset.BlockPresetBase,
+    currentPath: string[],
+    depth: number = 0,
+  ) {
+    if (!block) return;
+
+    if (!presetLevelBlocks[depth]) {
+      presetLevelBlocks[depth] = [];
+    }
+
+    presetLevelBlocks[depth].push({
+      node: block,
+      path: currentPath.concat('type'),
     });
-  };
 
-export function collectAndValidateBlockTypes(jsonFile: JSONNode): BlockValidationResult {
-  const rootBlockTypes: BlockTypeMap = {};
-  const presetBlockTypes: BlockTypeMap = {};
+    if ('blocks' in block) {
+      if (Array.isArray(block.blocks)) {
+        block.blocks.forEach((nestedBlock: Preset.BlockPresetArrayElement, index: number) => {
+          categorizePresetLevelBlocks(
+            nestedBlock,
+            currentPath.concat('blocks', String(index)),
+            depth + 1,
+          );
+        });
+      } else if (typeof block.blocks === 'object' && block.blocks !== null) {
+        Object.entries(block.blocks).forEach(([key, nestedBlock]) => {
+          categorizePresetLevelBlocks(nestedBlock, currentPath.concat('blocks', key), depth + 1);
+        });
+      }
+    }
+  }
 
-  visit<SourceCodeType.JSON, void>(jsonFile, {
-    Property(node, ancestors) {
-      // Only process type and name properties within blocks
-      if (!isInArrayWithParentKey(ancestors, 'blocks') || !isLiteralNode(node.value)) return;
+  if (Array.isArray(rootLevelBlocks)) {
+    rootLevelBlocks.forEach((block, index) => {
+      categorizeRootLevelBlocks(block, index);
+    });
+  }
 
-      if (node.key.value === 'type') {
-        const typeValue = node.value.value;
-        const typeLocation = {
-          startIndex: node.value.loc!.start.offset,
-          endIndex: node.value.loc!.end.offset,
-        };
-
-        // Add to appropriate map
-        const inPresets = isInArrayWithParentKey(ancestors, 'presets');
-        const targetMap = inPresets ? presetBlockTypes : rootBlockTypes;
-        if (typeof typeValue === 'string') {
-          targetMap[typeValue] = targetMap[typeValue] || [];
-          targetMap[typeValue].push(typeLocation);
+  if (presets) {
+    presets.forEach((preset: Preset.Preset, presetIndex: number) => {
+      if (preset.blocks) {
+        if (Array.isArray(preset.blocks)) {
+          preset.blocks.forEach((block, blockIndex) => {
+            categorizePresetLevelBlocks(
+              block,
+              ['presets', String(presetIndex), 'blocks', String(blockIndex)],
+              0,
+            );
+          });
+        } else if (typeof preset.blocks === 'object') {
+          Object.entries(preset.blocks).forEach(([key, block]) => {
+            categorizePresetLevelBlocks(block, ['presets', String(presetIndex), 'blocks', key], 0);
+          });
         }
       }
-    },
-  });
+    });
+  }
 
   return {
-    rootBlockTypes,
-    presetBlockTypes,
+    rootLevelThemeBlocks,
+    rootLevelLocalBlocks,
+    presetLevelBlocks,
   };
+}
+
+export function isInvalidPresetBlock(
+  blockNode: Preset.BlockPresetBase,
+  rootLevelThemeBlocks: BlockNodeWithPath[],
+): boolean {
+  const isPrivateBlockType = blockNode.type.startsWith('_');
+  const isThemeInRootLevel = rootLevelThemeBlocks.some((block) => block.node.type === '@theme');
+  const needsExplicitRootBlock = isPrivateBlockType || !isThemeInRootLevel;
+  const isPresetInRootLevel = rootLevelThemeBlocks.some(
+    (block) => block.node.type === blockNode.type,
+  );
+
+  return !isPresetInRootLevel && needsExplicitRootBlock;
+}
+
+function validateBlock(
+  nestedBlock: Preset.BlockPresetBase,
+  nestedPath: string[],
+  context: Context<SourceCodeType.LiquidHtml>,
+  parentNode: Preset.BlockPresetBase,
+  rootLevelThemeBlocks: BlockNodeWithPath[],
+  allowedBlockTypes: string[],
+  offset: number,
+  ast: JSONNode,
+) {
+  const typeNode = nodeAtPath(ast, nestedPath)! as LiteralNode;
+
+  if (typeNode && isInvalidPresetBlock(nestedBlock, rootLevelThemeBlocks)) {
+    const isPrivateBlock = nestedBlock.type.startsWith('_');
+    const errorMessage = isPrivateBlock
+      ? `Private block type "${nestedBlock.type}" is not allowed in "${parentNode.type}" blocks.`
+      : `Block type "${nestedBlock.type}" is not allowed in "${
+          parentNode.type
+        }" blocks. Allowed types are: ${allowedBlockTypes.join(', ')}.`;
+    reportWarning(errorMessage, offset, typeNode, context);
+  }
+
+  if ('blocks' in nestedBlock && nestedBlock.blocks) {
+    validateNestedBlocks(
+      context,
+      nestedBlock,
+      nestedBlock.blocks,
+      nestedPath.slice(0, -1),
+      offset,
+      ast,
+    );
+  }
+}
+
+export async function validateNestedBlocks(
+  context: Context<SourceCodeType.LiquidHtml>,
+  parentNode: Preset.BlockPresetBase,
+  nestedBlocks: Preset.PresetBlocks,
+  currentPath: string[],
+  offset: number,
+  ast: JSONNode,
+) {
+  if (!nestedBlocks) return;
+
+  const parentSchema = await context.getBlockSchema?.(parentNode.type);
+  if (!parentSchema || parentSchema instanceof Error) return;
+
+  const { validSchema } = parentSchema;
+  if (!validSchema || validSchema instanceof Error) return;
+
+  const { rootLevelThemeBlocks } = getBlocks(validSchema);
+  const allowedBlockTypes = rootLevelThemeBlocks.map((block) => block.node.type);
+
+  if (Array.isArray(nestedBlocks)) {
+    nestedBlocks.forEach((nestedBlock, index) => {
+      const nestedPath = currentPath.concat(['blocks', String(index), 'type']);
+      validateBlock(
+        nestedBlock,
+        nestedPath,
+        context,
+        parentNode,
+        rootLevelThemeBlocks,
+        allowedBlockTypes,
+        offset,
+        ast,
+      );
+    });
+  } else if (typeof nestedBlocks === 'object') {
+    Object.entries(nestedBlocks).forEach(([key, nestedBlock]) => {
+      const nestedPath = currentPath.concat(['blocks', key, 'type']);
+      validateBlock(
+        nestedBlock,
+        nestedPath,
+        context,
+        parentNode,
+        rootLevelThemeBlocks,
+        allowedBlockTypes,
+        offset,
+        ast,
+      );
+    });
+  }
+}
+
+export function reportWarning(
+  message: string,
+  offset: number,
+  astNode: LiteralNode,
+  context: Context<SourceCodeType.LiquidHtml>,
+) {
+  context.report({
+    message,
+    startIndex: offset + getLocStart(astNode),
+    endIndex: offset + getLocEnd(astNode),
+  });
 }
 
 export async function validateBlockFileExistence(
   blockType: string,
-  context: Context<SourceCodeType.LiquidHtml, Schema>,
+  context: Context<SourceCodeType.LiquidHtml>,
 ): Promise<boolean> {
   if (blockType === '@theme' || blockType === '@app') {
     return true;

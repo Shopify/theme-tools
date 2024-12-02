@@ -1,10 +1,13 @@
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { toJSONAST } from '../../to-source-code';
-import { collectBlockProperties, reportError } from './valid-block-utils';
+import { LiquidCheckDefinition, Preset, Severity, SourceCodeType } from '../../types';
+import { LiteralNode } from 'json-to-ast';
+import { nodeAtPath } from '../../json';
+import { basename } from '../../path';
+import { isBlock, isSection } from '../../to-schema';
+import { getBlocks, reportWarning } from './valid-block-utils';
 
-type Location = {
-  startIndex: number;
-  endIndex: number;
+type BlockNodeWithPath = {
+  node: Preset.BlockPresetBase;
+  path: string[];
 };
 
 export const ValidLocalBlocks: LiquidCheckDefinition = {
@@ -14,7 +17,7 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
     docs: {
       description:
         'Ensures sections without theme block support do not mix static and local blocks',
-      recommended: false,
+      recommended: true,
       url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-local-blocks',
     },
     type: SourceCodeType.LiquidHtml,
@@ -24,64 +27,89 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
   },
 
   create(context) {
-    const relativePath = context.toRelativePath(context.file.uri);
-    const isSection = relativePath.startsWith('sections/');
-    const isThemeBlock = relativePath.startsWith('blocks/');
+    function getSchema() {
+      const name = basename(context.file.uri, '.liquid');
+      switch (true) {
+        case isBlock(context.file.uri):
+          return context.getBlockSchema?.(name);
+        case isSection(context.file.uri):
+          return context.getSectionSchema?.(name);
+        default:
+          return undefined;
+      }
+    }
 
     return {
       async LiquidRawTag(node) {
-        if (node.name !== 'schema' || node.body.kind !== 'json') {
-          return;
-        }
+        if (node.name !== 'schema' || node.body.kind !== 'json') return;
 
-        const jsonString = node.source.slice(
-          node.blockStartPosition.end,
-          node.blockEndPosition.start,
-        );
-
-        const jsonFile = toJSONAST(jsonString);
-        if (jsonFile instanceof Error) return;
+        const offset = node.blockStartPosition.end;
+        const schema = await getSchema();
+        const { validSchema, ast } = schema ?? {};
+        if (!validSchema || validSchema instanceof Error) return;
+        if (!ast || ast instanceof Error) return;
+        if (!schema) return;
 
         const {
-          hasLocalBlocks,
-          hasStaticBlocks,
-          hasThemeBlocks,
-          localBlockLocations,
-          staticBlockLocations,
-          themeBlockLocations,
           staticBlockNameLocations,
-        } = collectBlockProperties(jsonFile);
+          staticBlockLocations,
+          localBlockLocations,
+          themeBlockLocations,
+          hasRootLevelThemeBlocks,
+        } = getBlocks(validSchema);
 
-        if (isSection) {
-          staticBlockNameLocations.forEach(
-            reportError('Static theme blocks cannot have a name property.', context, node),
-          );
-
-          if (hasLocalBlocks && hasStaticBlocks) {
-            staticBlockLocations.forEach(
-              reportError(
-                `Sections cannot use static theme blocks together with locally scoped blocks.`,
-                context,
-                node,
-              ),
+        if (isSection(context.file.uri)) {
+          staticBlockNameLocations.forEach((blockWithPath: BlockNodeWithPath) => {
+            const astNode = nodeAtPath(ast, blockWithPath.path)! as LiteralNode;
+            reportWarning(
+              'Static theme blocks cannot have a name property.',
+              offset,
+              astNode,
+              context,
             );
+          });
+
+          if (staticBlockLocations.length > 0 && localBlockLocations.length > 0) {
+            staticBlockLocations.forEach((blockWithPath: BlockNodeWithPath) => {
+              const astNode = nodeAtPath(ast, blockWithPath.path)! as LiteralNode;
+              reportWarning(
+                `Sections cannot use static theme blocks together with locally scoped blocks.`,
+                offset,
+                astNode,
+                context,
+              );
+            });
           }
 
-          if (hasLocalBlocks && hasThemeBlocks) {
-            themeBlockLocations.forEach(
-              reportError(
+          if (
+            hasRootLevelThemeBlocks &&
+            localBlockLocations.length > 0 &&
+            themeBlockLocations.length > 0
+          ) {
+            localBlockLocations.forEach((blockWithPath: BlockNodeWithPath) => {
+              const astNode = nodeAtPath(ast, blockWithPath.path)! as LiteralNode;
+              reportWarning(
                 'Sections cannot use theme blocks together with locally scoped blocks.',
+                offset,
+                astNode,
                 context,
-                node,
-              ),
-            );
+              );
+            });
           }
         }
 
-        if (isThemeBlock && hasLocalBlocks) {
-          localBlockLocations.forEach(
-            reportError('Local scoped blocks are not supported in theme blocks.', context, node),
-          );
+        if (isBlock(context.file.uri)) {
+          if (localBlockLocations.length > 0) {
+            localBlockLocations.forEach((blockWithPath: BlockNodeWithPath) => {
+              const astNode = nodeAtPath(ast, blockWithPath.path)! as LiteralNode;
+              reportWarning(
+                'Local scoped blocks are not supported in theme blocks.',
+                offset,
+                astNode,
+                context,
+              );
+            });
+          }
         }
       },
     };

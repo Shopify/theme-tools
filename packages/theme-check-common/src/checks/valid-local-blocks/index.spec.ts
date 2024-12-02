@@ -188,6 +188,44 @@ describe('ValidLocalBlocks with array-style blocks', () => {
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).to.equal('Static theme blocks cannot have a name property.');
   });
+
+  it('should report errors when static theme blocks have a name property within nested blocks', async () => {
+    const theme: MockTheme = {
+      'sections/local-blocks.liquid': `
+        {% schema %}
+        {
+            "name": "Section name",
+            "blocks": [
+            {
+                "type": "@theme"
+            }
+            ],
+            "presets": [
+            {
+                "name": "Default",
+                "blocks": [
+                {
+                   "type": "text",
+                   "blocks": [
+                    {
+                        "id": "static_block",
+                        "type": "static_block",
+                        "static": true,
+                        "name": "Static Text Block"
+                    }
+                   ]
+                }
+                ]
+            }
+            ]
+        }
+        {% endschema %}
+        `,
+    };
+    const offenses = await check(theme, [ValidLocalBlocks]);
+    expect(offenses).to.have.length(1);
+    expect(offenses[0].message).to.equal('Static theme blocks cannot have a name property.');
+  });
 });
 
 describe('ValidLocalBlocks with hash-style presets', () => {
@@ -327,5 +365,129 @@ describe('ValidLocalBlocks with hash-style presets', () => {
     const offenses = await check(theme, [ValidLocalBlocks]);
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).to.equal('Static theme blocks cannot have a name property.');
+  });
+});
+
+describe('ValidLocalBlocks on edge cases', () => {
+  it('should not report errors for block setting types', async () => {
+    const theme: MockTheme = {
+      'sections/local-blocks.liquid': `
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "@app"
+            },
+            {
+              "type": "link_list",
+              "name": "Link list",
+              "settings": [
+                {
+                  "type": "inline_richtext",
+                  "id": "heading",
+                  "default": "Heading"
+                },
+                {
+                  "type": "link_list",
+                  "id": "menu",
+                  "default": "Footer"
+                }
+              ]
+            }
+          ]
+        }
+        {% endschema %}
+      `,
+    };
+
+    const offenses = await check(theme, [ValidLocalBlocks]);
+    expect(offenses).to.be.empty;
+  });
+
+  it('should not report errors when @app is used alongside static blocks', async () => {
+    const theme: MockTheme = {
+      'sections/local-blocks.liquid': `
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "@app"
+            },
+            {
+              "type": "static_block",
+              "static": true
+            }
+          ]
+        }
+        {% endschema %}
+      `,
+    };
+
+    const offenses = await check(theme, [ValidLocalBlocks]);
+    expect(offenses).to.be.empty;
+  });
+
+  it('should not report errors on themes that define local blocks at the root level and use them in presets', async () => {
+    const theme: MockTheme = {
+      'sections/local-blocks.liquid': `
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "local_block",
+              "name": "Local Block"
+            }
+          ],
+          "presets": [
+            {
+              "name": "Default",
+              "blocks": [
+                {
+                  "type": "local_block"
+                }
+              ]
+            }
+          ]
+        }
+        {% endschema %}
+      `,
+    };
+
+    const offenses = await check(theme, [ValidLocalBlocks]);
+    expect(offenses).to.be.empty;
+  });
+
+  it('should not report errors on older themes that define local blocks at the root level and use them in hash-style presets', async () => {
+    const theme: MockTheme = {
+      'sections/local-blocks.liquid': `
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "local_block",
+              "name": "Local Block"
+            }
+          ],
+          "presets": [
+            {
+              "name": "Default",
+              "blocks": {
+                "local_block": {
+                  "type": "local_block"
+                }
+              }
+            }
+          ]
+        }
+        {% endschema %}
+      `,
+    };
+
+    const offenses = await check(theme, [ValidLocalBlocks]);
+    expect(offenses).to.be.empty;
   });
 });
