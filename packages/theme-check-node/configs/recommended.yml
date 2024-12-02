@@ -66,6 +66,9 @@ RemoteAsset:
 RequiredLayoutThemeObject:
   enabled: true
   severity: 0
+SchemaPresetsBlockOrder:
+  enabled: true
+  severity: 1
 TranslationKeyExists:
   enabled: true
   severity: 0

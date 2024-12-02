@@ -5,7 +5,7 @@ import { Context } from '../../types';
 import { doesFileExist } from '../../utils/file-utils';
 
 export type BlockNodeWithPath = {
-  node: Preset.BlockPresetBase;
+  node: Section.Block | ThemeBlock.Block | Preset.Block;
   path: string[];
 };
 
@@ -22,7 +22,7 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
   const presets = validSchema.presets;
 
   // Helper function to categorize blocks
-  function categorizeRootLevelBlocks(block: Preset.BlockPresetBase, index: number) {
+  function categorizeRootLevelBlocks(block: Preset.Block, index: number) {
     if (!block) return;
     const hasName = 'name' in block;
 
@@ -40,7 +40,7 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
   }
 
   function categorizePresetLevelBlocks(
-    block: Preset.BlockPresetBase,
+    block: Preset.Block,
     currentPath: string[],
     depth: number = 0,
   ) {
@@ -57,7 +57,7 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
 
     if ('blocks' in block) {
       if (Array.isArray(block.blocks)) {
-        block.blocks.forEach((nestedBlock: Preset.BlockPresetArrayElement, index: number) => {
+        block.blocks.forEach((nestedBlock: Preset.PresetBlockForArray, index: number) => {
           categorizePresetLevelBlocks(
             nestedBlock,
             currentPath.concat('blocks', String(index)),
@@ -80,7 +80,7 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
 
   if (presets) {
     presets.forEach((preset: Preset.Preset, presetIndex: number) => {
-      if (preset.blocks) {
+      if ('blocks' in preset && preset.blocks) {
         if (Array.isArray(preset.blocks)) {
           preset.blocks.forEach((block, blockIndex) => {
             categorizePresetLevelBlocks(
@@ -106,7 +106,7 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
 }
 
 export function isInvalidPresetBlock(
-  blockNode: Preset.BlockPresetBase,
+  blockNode: Section.Block | ThemeBlock.Block | Preset.Block,
   rootLevelThemeBlocks: BlockNodeWithPath[],
 ): boolean {
   const isPrivateBlockType = blockNode.type.startsWith('_');
@@ -119,11 +119,11 @@ export function isInvalidPresetBlock(
   return !isPresetInRootLevel && needsExplicitRootBlock;
 }
 
-function validateBlock(
-  nestedBlock: Preset.BlockPresetBase,
+function validateBlockTargeting(
+  nestedBlock: Preset.PresetBlockForArray | Preset.PresetBlockForHash,
   nestedPath: string[],
   context: Context<SourceCodeType.LiquidHtml>,
-  parentNode: Preset.BlockPresetBase,
+  parentNode: Preset.PresetBlockForArray | Preset.PresetBlockForHash,
   rootLevelThemeBlocks: BlockNodeWithPath[],
   allowedBlockTypes: string[],
   offset: number,
@@ -155,8 +155,8 @@ function validateBlock(
 
 export async function validateNestedBlocks(
   context: Context<SourceCodeType.LiquidHtml>,
-  parentNode: Preset.BlockPresetBase,
-  nestedBlocks: Preset.PresetBlocks,
+  parentNode: Preset.PresetBlockForHash | Preset.PresetBlockForArray,
+  nestedBlocks: Preset.PresetBlockHash | Preset.PresetBlockForArray[],
   currentPath: string[],
   offset: number,
   ast: JSONNode,
@@ -175,7 +175,7 @@ export async function validateNestedBlocks(
   if (Array.isArray(nestedBlocks)) {
     nestedBlocks.forEach((nestedBlock, index) => {
       const nestedPath = currentPath.concat(['blocks', String(index), 'type']);
-      validateBlock(
+      validateBlockTargeting(
         nestedBlock,
         nestedPath,
         context,
@@ -189,7 +189,7 @@ export async function validateNestedBlocks(
   } else if (typeof nestedBlocks === 'object') {
     Object.entries(nestedBlocks).forEach(([key, nestedBlock]) => {
       const nestedPath = currentPath.concat(['blocks', key, 'type']);
-      validateBlock(
+      validateBlockTargeting(
         nestedBlock,
         nestedPath,
         context,

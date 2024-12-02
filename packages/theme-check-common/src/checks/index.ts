@@ -24,6 +24,7 @@ import { MissingAsset } from './missing-asset';
 import { MissingTemplate } from './missing-template';
 import { PaginationSize } from './pagination-size';
 import { ParserBlockingScript } from './parser-blocking-script';
+import { SchemaPresetsBlockOrder } from './schema-presets-block-order';
 import { RemoteAsset } from './remote-asset';
 import { RequiredLayoutThemeObject } from './required-layout-theme-object';
 import { TranslationKeyExists } from './translation-key-exists';
@@ -68,6 +69,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   MissingSchema,
   PaginationSize,
   ParserBlockingScript,
+  SchemaPresetsBlockOrder,
   RemoteAsset,
   RequiredLayoutThemeObject,
   TranslationKeyExists,
