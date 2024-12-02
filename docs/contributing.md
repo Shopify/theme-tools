@@ -120,7 +120,9 @@ If ever you want to see how the VS Code extension or playground would behave bef
     theme-docs download
     ```
 
-6. Proceed to debug the VS Code extension or playground as usual.
+6. Note that you may have to delete the cached data directory (`~/Library/Caches/theme-liquid-docs-nodejs`) in order to see your changes.
+
+7. Proceed to debug the VS Code extension or playground as usual.
 
 ## Submitting a Pull Request
 
