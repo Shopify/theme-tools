@@ -1,7 +1,6 @@
 import { LiteralNode } from 'json-to-ast';
 import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
-import { basename } from '../../path';
-import { isBlock, isSection } from '../../to-schema';
+import { getSchema } from '../../to-schema';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { deepGet } from '../../utils';
 
@@ -23,18 +22,6 @@ export const ValidSchemaName: LiquidCheckDefinition = {
   },
 
   create(context) {
-    function getSchema() {
-      const name = basename(context.file.uri, '.liquid');
-      switch (true) {
-        case isBlock(context.file.uri):
-          return context.getBlockSchema?.(name);
-        case isSection(context.file.uri):
-          return context.getSectionSchema?.(name);
-        default:
-          return undefined;
-      }
-    }
-
     return {
       async LiquidRawTag(node) {
         if (node.name !== 'schema' || node.body.kind !== 'json') {
@@ -42,7 +29,7 @@ export const ValidSchemaName: LiquidCheckDefinition = {
         }
 
         const offset = node.blockStartPosition.end;
-        const schema = await getSchema();
+        const schema = await getSchema(context);
         const { validSchema, ast } = schema ?? {};
         if (!validSchema || validSchema instanceof Error) return;
         if (!ast || ast instanceof Error) return;
