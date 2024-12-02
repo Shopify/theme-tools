@@ -37,6 +37,9 @@ CdnPreconnect:
 ContentForHeaderModification:
   enabled: true
   severity: 0
+CyclicalDependencies:
+  enabled: true
+  severity: 0
 DeprecateBgsizes:
   enabled: true
   severity: 1

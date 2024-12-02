@@ -11,6 +11,7 @@ import { BlockIdUsage } from './block-id-usage';
 import { CaptureOnContentForBlock } from './capture-on-content-for-block';
 import { CdnPreconnect } from './cdn-preconnect';
 import { ContentForHeaderModification } from './content-for-header-modification';
+import { CyclicalDependencies } from './cyclical-dependencies';
 import { DeprecateBgsizes } from './deprecate-bgsizes';
 import { DeprecateLazysizes } from './deprecate-lazysizes';
 import { DeprecatedFilter } from './deprecated-filter';
@@ -56,6 +57,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   CaptureOnContentForBlock,
   CdnPreconnect,
   ContentForHeaderModification,
+  CyclicalDependencies,
   DeprecateBgsizes,
   DeprecatedFilter,
   DeprecatedTag,
