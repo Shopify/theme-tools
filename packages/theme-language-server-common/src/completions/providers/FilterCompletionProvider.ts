@@ -110,7 +110,7 @@ export class FilterCompletionProvider implements Provider {
     // options and should not replace any text.
     // e.g. `{{ product | █image_url: crop: 'center' }}`
     // e.g. `{{ product | █ }}`
-    if (node.name === '█') {
+    if (node.name === CURSOR) {
       end = start;
     }
 
