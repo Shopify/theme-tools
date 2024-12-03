@@ -1229,22 +1229,21 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.body.type').toEqual('RawMarkup');
       expectPath(ast, 'children.0.body.nodes').toEqual([]);
 
-      ast = toLiquidAST(`{% doc -%} single line doc {%- enddoc %}`);
+      ast = toLiquidAST(`
+        {% doc -%}
+        @param asdf
+        @unsupported this node falls back to a text node
+        {%- enddoc %}
+      `);
       expectPath(ast, 'children.0.type').to.eql('LiquidRawTag');
       expectPath(ast, 'children.0.name').to.eql('doc');
-      expectPath(ast, 'children.0.body.value').to.eql(' single line doc ');
-      expectPath(ast, 'children.0.body.nodes.0.type').toEqual('TextNode');
+      expectPath(ast, 'children.0.body.nodes.0.type').to.eql('LiquidDocParamNode');
+      expectPath(ast, 'children.0.body.nodes.0.name').to.eql('@param');
 
-      ast = toLiquidAST(`{% doc -%}
-        multi line doc
-        multi line doc
-        {%- enddoc %}`);
-      expectPath(ast, 'children.0.type').to.eql('LiquidRawTag');
-      expectPath(ast, 'children.0.name').to.eql('doc');
-      expectPath(ast, 'children.0.body.nodes.0.value').to.eql(
-        `multi line doc\n        multi line doc`,
+      expectPath(ast, 'children.0.body.nodes.1.type').to.eql('TextNode');
+      expectPath(ast, 'children.0.body.nodes.1.value').to.eql(
+        '@unsupported this node falls back to a text node',
       );
-      expectPath(ast, 'children.0.body.nodes.0.type').toEqual('TextNode');
     });
 
     it('should parse unclosed tables with assignments', () => {
