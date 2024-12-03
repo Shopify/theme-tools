@@ -82,6 +82,8 @@ export enum ConcreteNodeTypes {
   RenderMarkup = 'RenderMarkup',
   PaginateMarkup = 'PaginateMarkup',
   RenderVariableExpression = 'RenderVariableExpression',
+
+  LiquidDocParamNode = 'LiquidDocParamNode',
 }
 
 export const LiquidLiteralValues = {
@@ -102,6 +104,11 @@ export interface ConcreteBasicNode<T> {
   source: string;
   locStart: number;
   locEnd: number;
+}
+
+export interface ConcreteLiquidDocParamNode
+  extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocParamNode> {
+  name: string;
 }
 
 export interface ConcreteHtmlNodeBase<T> extends ConcreteBasicNode<T> {
@@ -1295,11 +1302,14 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
 
   const LiquidDocMappings: Mapping = {
     Node: 0,
-    TextNode: {
+    paramNode: {
+      type: ConcreteNodeTypes.LiquidDocParamNode,
+      locStart,
+      locEnd,
+      source,
+    },
+    fallbackNode: {
       type: ConcreteNodeTypes.TextNode,
-      value: function () {
-        return (this as any).sourceString;
-      },
       locStart,
       locEnd,
       source,

@@ -386,10 +386,12 @@ LiquidStatement <: Liquid {
 LiquidDoc <: Helpers {
   Node := (LiquidDocNode | TextNode)*
   LiquidDocNode =
+    | paramNode
     | fallbackNode
 
-  fallbackNode = "@" paramName
-  paramName = letter*
+  fallbackNode = "@" anyExceptStar<newline>
+  paramNode = "@param" space* paramNodeName
+  paramNodeName = anyExceptStar<newline>
 }
 
 LiquidHTML <: Liquid {
