@@ -13,6 +13,8 @@ import {
   ThemeBlock,
   ThemeSchemaType,
   UriString,
+  Context,
+  Schema,
 } from './types';
 import { visit } from './visitor';
 
@@ -137,6 +139,18 @@ function toSchemaNode(ast: LiquidHtmlNode | Error): LiquidRawTag | Error {
       },
     })[0] ?? new Error('No schema tag found')
   );
+}
+
+export function getSchema(context: Context<SourceCodeType.LiquidHtml, Schema>) {
+  const name = path.basename(context.file.uri, '.liquid');
+  switch (true) {
+    case isBlock(context.file.uri):
+      return context.getBlockSchema?.(name);
+    case isSection(context.file.uri):
+      return context.getSectionSchema?.(name);
+    default:
+      return undefined;
+  }
 }
 
 function toParsed(schemaNode: LiquidRawTag | Error): any | Error {
