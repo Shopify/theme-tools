@@ -1,7 +1,5 @@
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DocumentOnTypeFormattingParams } from 'vscode-languageserver';
-import { Position } from 'vscode-languageserver-protocol';
-import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DocumentManager } from '../../documents';
 import { OnTypeFormattingProvider } from '../OnTypeFormattingProvider';
 
@@ -43,7 +41,7 @@ describe('Module: HtmlElementAutoclosingOnTypeFormattingProvider', () => {
 
     const result = await onTypeFormattingProvider.onTypeFormatting(params);
     assert(result);
-    expect(TextDocument.applyEdits(document, result)).to.equal('<div id="main"></div>');
+    expect(result).to.applyEdits(document, '<div id="main"></div>');
 
     vi.advanceTimersByTime(10);
     expect(setCursorPositionSpy).toHaveBeenCalledWith(
@@ -62,6 +60,12 @@ describe('Module: HtmlElementAutoclosingOnTypeFormattingProvider', () => {
         <div id="inner">█
       </div>
     `;
+    const expected = `
+      <div id="main">
+        <img>
+        <div id="inner"></div>
+      </div>
+    `;
     documentManager.open(uri, source.replace(CURSOR, ''), 1);
     const document = documentManager.get(uri)?.textDocument!;
 
@@ -77,12 +81,7 @@ describe('Module: HtmlElementAutoclosingOnTypeFormattingProvider', () => {
 
     const result = await onTypeFormattingProvider.onTypeFormatting(params);
     assert(result);
-    expect(TextDocument.applyEdits(document, result)).to.equal(`
-      <div id="main">
-        <img>
-        <div id="inner"></div>
-      </div>
-    `);
+    expect(result).to.applyEdits(document, expected);
 
     vi.advanceTimersByTime(10);
     expect(setCursorPositionSpy).toHaveBeenCalledWith(document, document.positionAt(indexOfCursor));
@@ -95,6 +94,12 @@ describe('Module: HtmlElementAutoclosingOnTypeFormattingProvider', () => {
     const source = `
       <div id="main">
         <div id="inner">█
+        <div></div>
+      </div>
+    `;
+    const expected = `
+      <div id="main">
+        <div id="inner"></div>
         <div></div>
       </div>
     `;
@@ -113,12 +118,7 @@ describe('Module: HtmlElementAutoclosingOnTypeFormattingProvider', () => {
 
     const result = await onTypeFormattingProvider.onTypeFormatting(params);
     assert(result);
-    expect(TextDocument.applyEdits(document, result)).to.equal(`
-      <div id="main">
-        <div id="inner"></div>
-        <div></div>
-      </div>
-    `);
+    expect(result).to.applyEdits(document, expected);
 
     vi.advanceTimersByTime(10);
     expect(setCursorPositionSpy).toHaveBeenCalledWith(document, document.positionAt(indexOfCursor));
@@ -149,7 +149,7 @@ describe('Module: HtmlElementAutoclosingOnTypeFormattingProvider', () => {
       assert(document);
       const result = await onTypeFormattingProvider.onTypeFormatting(params);
       assert(result, 'expected results for source:\n' + source);
-      expect(TextDocument.applyEdits(document, result)).to.equal(source.replace(CURSOR, '</div>'));
+      expect(result).to.applyEdits(document, source.replace(CURSOR, '</div>'));
 
       vi.advanceTimersByTime(10);
       expect(setCursorPositionSpy).toHaveBeenCalledWith(

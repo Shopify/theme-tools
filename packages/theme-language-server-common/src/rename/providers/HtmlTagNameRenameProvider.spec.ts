@@ -1,6 +1,5 @@
 import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { Position, TextDocumentEdit } from 'vscode-languageserver-protocol';
-import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DocumentManager } from '../../documents';
 import { RenameProvider } from '../RenameProvider';
 
@@ -46,8 +45,7 @@ describe('HtmlTagNameRenameProvider', () => {
     // Now we apply the edits on the document to make sure the file after the edit
     // is what we expect it to be
     const textEdits = result.documentChanges[0]!.edits;
-    const updatedText = TextDocument.applyEdits(doc, textEdits);
-    expect(updatedText).to.equal('<new-name><old></old></new-name>');
+    expect(textEdits).to.applyEdits(doc, '<new-name><old></old></new-name>');
   });
 
   it('also works on complext liquid + text html tag names', async () => {
@@ -72,7 +70,6 @@ describe('HtmlTagNameRenameProvider', () => {
     // Now we apply the edits on the document to make sure the file after the edit
     // is what we expect it to be
     const textEdits = result.documentChanges[0]!.edits;
-    const updatedText = TextDocument.applyEdits(doc, textEdits);
-    expect(updatedText).to.equal('<new-name>text</new-name>');
+    expect(textEdits).to.applyEdits(doc, '<new-name>text</new-name>');
   });
 });

@@ -1,8 +1,8 @@
 import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { Position, TextDocumentEdit } from 'vscode-languageserver-protocol';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DocumentManager } from '../../documents';
 import { RenameProvider } from '../RenameProvider';
-import { TextDocument } from 'vscode-languageserver-textdocument';
 
 describe('LiquidVariableRenameProvider', () => {
   const textDocumentUri = 'file:///path/to/document.liquid';
@@ -50,19 +50,17 @@ describe('LiquidVariableRenameProvider', () => {
       const result = await provider.rename(params);
       assert(result);
       assert(result.documentChanges);
-      expect(
-        TextDocument.applyEdits(
-          textDocument,
-          (result.documentChanges[0] as TextDocumentEdit).edits,
-        ),
-      ).to.eql(`{% assign pet = 'dog' %}
+      expect((result.documentChanges[0] as TextDocumentEdit).edits).to.applyEdits(
+        textDocument,
+        `{% assign pet = 'dog' %}
 {% assign plant = 'cactus' %}
 {% liquid
   echo plant
 %}
 {% assign painting = 'mona lisa' %}
 {% assign paintings = 'starry night, sunday afternoon, the scream' %}
-<p>I have a cool animal and a great plant</p>`);
+<p>I have a cool animal and a great plant</p>`,
+      );
     });
 
     it('returns new name after liquid variable is renamed on variable usage', async () => {
@@ -75,19 +73,17 @@ describe('LiquidVariableRenameProvider', () => {
       const result = await provider.rename(params);
       assert(result);
       assert(result.documentChanges);
-      expect(
-        TextDocument.applyEdits(
-          textDocument,
-          (result.documentChanges[0] as TextDocumentEdit).edits,
-        ),
-      ).to.eql(`{% assign animal = 'dog' %}
+      expect((result.documentChanges[0] as TextDocumentEdit).edits).to.applyEdits(
+        textDocument,
+        `{% assign animal = 'dog' %}
 {% assign fauna = 'cactus' %}
 {% liquid
   echo fauna
 %}
 {% assign painting = 'mona lisa' %}
 {% assign paintings = 'starry night, sunday afternoon, the scream' %}
-<p>I have a cool animal and a great plant</p>`);
+<p>I have a cool animal and a great plant</p>`,
+      );
     });
 
     it("doesn't rename variables where the name of the one being changed contains within it", async () => {
@@ -100,19 +96,17 @@ describe('LiquidVariableRenameProvider', () => {
       const result = await provider.rename(params);
       assert(result);
       assert(result.documentChanges);
-      expect(
-        TextDocument.applyEdits(
-          textDocument,
-          (result.documentChanges[0] as TextDocumentEdit).edits,
-        ),
-      ).to.eql(`{% assign animal = 'dog' %}
+      expect((result.documentChanges[0] as TextDocumentEdit).edits).to.applyEdits(
+        textDocument,
+        `{% assign animal = 'dog' %}
 {% assign plant = 'cactus' %}
 {% liquid
   echo plant
 %}
 {% assign famous_painting = 'mona lisa' %}
 {% assign paintings = 'starry night, sunday afternoon, the scream' %}
-<p>I have a cool animal and a great plant</p>`);
+<p>I have a cool animal and a great plant</p>`,
+      );
     });
   });
 
@@ -154,19 +148,17 @@ describe('LiquidVariableRenameProvider', () => {
           const result = await provider.rename(params);
           assert(result);
           assert(result.documentChanges);
-          expect(
-            TextDocument.applyEdits(
-              textDocument,
-              (result.documentChanges[0] as TextDocumentEdit).edits,
-            ),
-          ).to.eql(`{% assign counter = 0 %}
+          expect((result.documentChanges[0] as TextDocumentEdit).edits).to.applyEdits(
+            textDocument,
+            `{% assign counter = 0 %}
 {% assign prod = 'some product' %}
 {% liquid
   ${tag} item in products
     echo item.title
     increment counter
   end${tag}
-%}`);
+%}`,
+          );
         });
       });
     });
@@ -185,19 +177,17 @@ describe('LiquidVariableRenameProvider', () => {
       const result = await provider.rename(params);
       assert(result);
       assert(result.documentChanges);
-      expect(
-        TextDocument.applyEdits(
-          textDocument,
-          (result.documentChanges[0] as TextDocumentEdit).edits,
-        ),
-      ).to.eql(`{% assign counter = 0 %}
+      expect((result.documentChanges[0] as TextDocumentEdit).edits).to.applyEdits(
+        textDocument,
+        `{% assign counter = 0 %}
 {% assign item = 'some product' %}
 {% liquid
   for prod in products
     echo prod.title
     increment counter
   endfor
-%}`);
+%}`,
+      );
     });
 
     it('returns new name after variable is renamed inside loop, but is scoped outside it', async () => {
@@ -214,19 +204,17 @@ describe('LiquidVariableRenameProvider', () => {
       const result = await provider.rename(params);
       assert(result);
       assert(result.documentChanges);
-      expect(
-        TextDocument.applyEdits(
-          textDocument,
-          (result.documentChanges[0] as TextDocumentEdit).edits,
-        ),
-      ).to.eql(`{% assign x = 0 %}
+      expect((result.documentChanges[0] as TextDocumentEdit).edits).to.applyEdits(
+        textDocument,
+        `{% assign x = 0 %}
 {% assign prod = 'some product' %}
 {% liquid
   for prod in products
     echo prod.title
     increment x
   endfor
-%}`);
+%}`,
+      );
     });
   });
 });

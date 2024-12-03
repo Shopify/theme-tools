@@ -33,10 +33,7 @@ describe('Module: ContentForCompletionProvider', async () => {
         expect.arrayContaining([
           expect.objectContaining({
             label: 'block',
-            textEdit: expect.applyTextEdit(
-              source,
-              `{% content_for "block", type: "$1", id: "$2" %}`,
-            ),
+            textEdit: expect.applyEdits(source, `{% content_for "block", type: "$1", id: "$2" %}`),
           }),
         ]),
       );
@@ -49,7 +46,7 @@ describe('Module: ContentForCompletionProvider', async () => {
         expect.arrayContaining([
           expect.objectContaining({
             label: 'block',
-            textEdit: expect.applyTextEdit(
+            textEdit: expect.applyEdits(
               source,
               // single quotes everywhere
               `{% content_for 'block', type: '$1', id: '$2' %}`,
@@ -73,7 +70,7 @@ describe('Module: ContentForCompletionProvider', async () => {
         expect.arrayContaining([
           expect.objectContaining({
             label: 'block',
-            textEdit: expect.applyTextEdit(source, afterEdit),
+            textEdit: expect.applyEdits(source, afterEdit),
           }),
         ]),
       );

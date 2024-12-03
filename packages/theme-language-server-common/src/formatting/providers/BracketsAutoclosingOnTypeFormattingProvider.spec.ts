@@ -1,7 +1,6 @@
-import { assert, beforeEach, describe, expect, it, Mock, vi } from 'vitest';
+import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { DocumentOnTypeFormattingParams } from 'vscode-languageserver';
 import { Position } from 'vscode-languageserver-protocol';
-import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DocumentManager } from '../../documents';
 import { OnTypeFormattingProvider } from '../OnTypeFormattingProvider';
 
@@ -33,7 +32,7 @@ describe('Module: BracketsAutoclosingOnTypeFormattingProvider', () => {
 
     const result = await onTypeFormattingProvider.onTypeFormatting(params);
     assert(result);
-    expect(TextDocument.applyEdits(document, result)).to.equal('{{  }}');
+    expect(result).to.applyEdits(document, '{{  }}');
   });
 
   it('should return a TextEdit to insert a space after "{%" in "{% %}"', async () => {
@@ -50,7 +49,7 @@ describe('Module: BracketsAutoclosingOnTypeFormattingProvider', () => {
 
     const result = await onTypeFormattingProvider.onTypeFormatting(params);
     assert(result);
-    expect(TextDocument.applyEdits(document, result)).to.equal('{%  %}');
+    expect(result).to.applyEdits(document, '{%  %}');
   });
 
   it('should return a TextEdit to replace and insert characters in "{{ - }}"', async () => {
@@ -67,7 +66,7 @@ describe('Module: BracketsAutoclosingOnTypeFormattingProvider', () => {
 
     const result = await onTypeFormattingProvider.onTypeFormatting(params);
     assert(result);
-    expect(TextDocument.applyEdits(document, result)).to.equal('{{-  -}}');
+    expect(result).to.applyEdits(document, '{{-  -}}');
   });
 
   it('should return a TextEdit to replace and insert characters in "{% - %}"', async () => {
@@ -84,6 +83,6 @@ describe('Module: BracketsAutoclosingOnTypeFormattingProvider', () => {
 
     const result = await onTypeFormattingProvider.onTypeFormatting(params);
     assert(result);
-    expect(TextDocument.applyEdits(document, result)).to.equal('{%-  -%}');
+    expect(result).to.applyEdits(document, '{%-  -%}');
   });
 });

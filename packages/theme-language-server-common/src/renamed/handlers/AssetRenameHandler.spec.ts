@@ -1,4 +1,3 @@
-import { makeFileExists } from '@shopify/theme-check-common';
 import { MockFileSystem } from '@shopify/theme-check-common/src/test';
 import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { TextDocumentEdit } from 'vscode-json-languageservice';
@@ -138,8 +137,7 @@ describe('Module: AssetRenameHandler', () => {
         const edits = docChange.edits;
         const initialDoc = await fs.readFile(uri);
         const expectedDoc = await expectedFs.readFile(uri);
-        const textDocument = TextDocument.create(uri, 'liquid', 0, initialDoc);
-        expect(TextDocument.applyEdits(textDocument, edits)).toBe(expectedDoc);
+        expect(edits).to.applyEdits(initialDoc, expectedDoc);
       }
     });
 
@@ -171,8 +169,7 @@ describe('Module: AssetRenameHandler', () => {
         const edits = docChange.edits;
         const initialDoc = await fs.readFile(uri);
         const expectedDoc = await expectedFs.readFile(uri);
-        const textDocument = TextDocument.create(uri, 'liquid', 0, initialDoc);
-        expect(TextDocument.applyEdits(textDocument, edits)).toBe(expectedDoc);
+        expect(edits).to.applyEdits(initialDoc, expectedDoc);
       }
     });
 
@@ -213,8 +210,7 @@ describe('Module: AssetRenameHandler', () => {
         const edits = docChange.edits;
         const initialDoc = await fs.readFile(uri);
         const expectedDoc = await expectedFs.readFile(uri);
-        const textDocument = TextDocument.create(uri, 'liquid', 0, initialDoc);
-        expect(TextDocument.applyEdits(textDocument, edits)).toBe(expectedDoc);
+        expect(edits).to.applyEdits(initialDoc, expectedDoc);
       }
     });
   });
