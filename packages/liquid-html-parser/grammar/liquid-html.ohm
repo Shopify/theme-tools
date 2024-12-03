@@ -391,11 +391,9 @@ LiquidStatement <: Liquid {
 LiquidDoc <: Helpers {
   Node := (LiquidDocNode | TextNode)*
   LiquidDocNode =
-    | descriptionNode
-    | paramNode
+    | fallbackNode
 
-  descriptionNode = (~("@param") any)+
-  paramNode = "@param" space
+  fallbackNode = "@" paramName
   paramName = letter*
 }
 
