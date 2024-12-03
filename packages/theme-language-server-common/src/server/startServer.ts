@@ -197,6 +197,12 @@ export function startServer(
     return config.context;
   }
 
+  async function getThemeBlockNames(uri: string) {
+    const rootUri = await findThemeRootURI(uri);
+    const blocks = await fs.readDirectory(path.join(rootUri, 'blocks'));
+    return blocks.map(([uri]) => path.basename(uri, '.liquid'));
+  }
+
   // Defined as a function to solve a circular dependency (doc manager & json
   // lang service both need each other)
   async function isValidSchema(uri: string, jsonString: string) {
@@ -208,6 +214,7 @@ export function startServer(
     jsonValidationSet,
     getSchemaTranslationsForURI,
     getModeForURI,
+    getThemeBlockNames,
   );
   const completionsProvider = new CompletionsProvider({
     documentManager,

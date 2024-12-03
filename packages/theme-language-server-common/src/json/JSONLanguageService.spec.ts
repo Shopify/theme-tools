@@ -1,8 +1,8 @@
 import { Mode, Translations } from '@shopify/theme-check-common';
 import { assert, beforeEach, describe, expect, it } from 'vitest';
-import { CompletionParams, HoverParams } from 'vscode-languageserver';
 import { DocumentManager } from '../documents';
 import { JSONLanguageService } from './JSONLanguageService';
+import { getRequestParams, isCompletionList } from './test/test-helpers';
 
 const simplifiedSectionSchema = JSON.stringify({
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -83,9 +83,15 @@ describe('Module: JSONLanguageService', () => {
   let documentManager: DocumentManager;
   let schemaTranslations: Translations;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     schemaTranslations = {};
-    documentManager = new DocumentManager();
+    documentManager = new DocumentManager(
+      undefined,
+      undefined,
+      undefined,
+      async () => 'theme', // theme schema
+      async () => false, // invalid
+    );
     jsonLanguageService = new JSONLanguageService(
       documentManager,
       {
@@ -112,9 +118,10 @@ describe('Module: JSONLanguageService', () => {
       },
       () => Promise.resolve(schemaTranslations),
       (uri: string) => Promise.resolve(uri.includes('tae') ? 'app' : 'theme'),
+      () => Promise.resolve([]),
     );
 
-    jsonLanguageService.setup({
+    await jsonLanguageService.setup({
       textDocument: {
         completion: {
           contextSupport: true,
@@ -132,7 +139,7 @@ describe('Module: JSONLanguageService', () => {
 
   describe('completions', () => {
     it('should return section JSON schema completions in a section file {% schema %}', async () => {
-      const params = getParams(
+      const params = getRequestParams(
         documentManager,
         'sections/section.liquid',
         `
@@ -147,9 +154,7 @@ describe('Module: JSONLanguageService', () => {
       );
 
       const completions = await jsonLanguageService.completions(params);
-      assert(
-        typeof completions === 'object' && completions !== null && !Array.isArray(completions),
-      );
+      assert(isCompletionList(completions));
       expect(completions.items).to.have.lengthOf(2);
       expect(completions.items[0].label).to.equal('class');
       expect(completions.items[0].documentation).to.equal('Additional CSS class for the section');
@@ -163,7 +168,7 @@ describe('Module: JSONLanguageService', () => {
         'locales/fr.schema.json',
       ];
       for (const path of paths) {
-        const params = getParams(
+        const params = getRequestParams(
           documentManager,
           path,
           `
@@ -178,9 +183,7 @@ describe('Module: JSONLanguageService', () => {
           `,
         );
         const completions = await jsonLanguageService.completions(params);
-        assert(
-          typeof completions === 'object' && completions !== null && !Array.isArray(completions),
-        );
+        assert(isCompletionList(completions));
         expect(completions.items).to.have.lengthOf(1);
         expect(completions.items[0].label).to.equal('one');
         expect(completions.items[0].documentation).to.eql('Translation for the singular form');
@@ -193,7 +196,7 @@ describe('Module: JSONLanguageService', () => {
         ['app', 'tae/blocks/block.liquid', ['class', 'javascript']],
       ];
       for (const [mode, path, expectedRecommendations] of testContexts) {
-        const params = getParams(
+        const params = getRequestParams(
           documentManager,
           path,
           `
@@ -208,9 +211,7 @@ describe('Module: JSONLanguageService', () => {
         );
 
         const completions = await jsonLanguageService.completions(params);
-        assert(
-          typeof completions === 'object' && completions !== null && !Array.isArray(completions),
-        );
+        assert(isCompletionList(completions));
         expect(completions.items).to.have.lengthOf(expectedRecommendations.length);
         expect(completions.items).toEqual(
           expectedRecommendations.map((recommendation) =>
@@ -228,7 +229,7 @@ describe('Module: JSONLanguageService', () => {
         },
       };
 
-      const params = getParams(
+      const params = getRequestParams(
         documentManager,
         'sections/section.liquid',
         `
@@ -242,9 +243,7 @@ describe('Module: JSONLanguageService', () => {
       );
 
       const completions = await jsonLanguageService.completions(params);
-      assert(
-        typeof completions === 'object' && completions !== null && !Array.isArray(completions),
-      );
+      assert(isCompletionList(completions));
       expect(completions.items).to.have.lengthOf(2);
       expect(completions.items[0].label).to.equal('t:general.hello');
       expect(completions.items[0].documentation).to.eql({
@@ -256,7 +255,7 @@ describe('Module: JSONLanguageService', () => {
 
   describe('hover', () => {
     it('should return hover information for the given property in a section {% schema %}', async () => {
-      const params = getParams(
+      const params = getRequestParams(
         documentManager,
         'sections/section.liquid',
         `
@@ -279,7 +278,7 @@ describe('Module: JSONLanguageService', () => {
           hello: 'hello world',
         },
       };
-      const params = getParams(
+      const params = getRequestParams(
         documentManager,
         'sections/section.liquid',
         `
@@ -299,7 +298,7 @@ describe('Module: JSONLanguageService', () => {
     it('should return the path of a translation key in a theme translation file', async () => {
       const paths = ['locales/en.default.json', 'locales/fr.json'];
       for (const path of paths) {
-        const params = getParams(
+        const params = getRequestParams(
           documentManager,
           path,
           `
@@ -319,7 +318,7 @@ describe('Module: JSONLanguageService', () => {
     it('should return add interpolated variables to the hover', async () => {
       const paths = ['locales/en.default.json', 'locales/fr.json'];
       for (const path of paths) {
-        const params = getParams(
+        const params = getRequestParams(
           documentManager,
           path,
           `
@@ -341,7 +340,7 @@ describe('Module: JSONLanguageService', () => {
     it('should return translation group hover for non-leaf nodes', async () => {
       const paths = ['locales/en.default.json', 'locales/fr.json'];
       for (const path of paths) {
-        const params = getParams(
+        const params = getRequestParams(
           documentManager,
           path,
           `
@@ -361,7 +360,7 @@ describe('Module: JSONLanguageService', () => {
     it('should return the parent translation key for pluralized translations', async () => {
       const paths = ['locales/en.default.json', 'locales/fr.json'];
       for (const path of paths) {
-        const params = getParams(
+        const params = getRequestParams(
           documentManager,
           path,
           `
@@ -383,7 +382,7 @@ describe('Module: JSONLanguageService', () => {
     it('should return the t:path of a translation key in a schema translation file', async () => {
       const paths = ['locales/en.default.schema.json', 'locales/fr.schema.json'];
       for (const path of paths) {
-        const params = getParams(
+        const params = getRequestParams(
           documentManager,
           path,
           `
@@ -403,7 +402,7 @@ describe('Module: JSONLanguageService', () => {
 
   describe('isValidSchema', () => {
     it('should return true for a valid schema', async () => {
-      const params = getParams(
+      const params = getRequestParams(
         documentManager,
         'sections/section.liquid',
         `
@@ -421,7 +420,7 @@ describe('Module: JSONLanguageService', () => {
     });
 
     it('should return false for an invalid schema', async () => {
-      const params = getParams(
+      const params = getRequestParams(
         documentManager,
         'sections/section.liquid',
         `
@@ -438,21 +437,4 @@ describe('Module: JSONLanguageService', () => {
       expect(isValid).to.be.false;
     });
   });
-
-  function getParams(
-    documentManager: DocumentManager,
-    relativePath: string,
-    source: string,
-  ): HoverParams & CompletionParams {
-    const uri = `file:///root/${relativePath}`;
-    const sourceWithoutCursor = source.replace('█', '');
-    documentManager.open(uri, sourceWithoutCursor, 1);
-    const doc = documentManager.get(uri)!.textDocument;
-    const position = doc.positionAt(source.indexOf('█'));
-
-    return {
-      textDocument: { uri: uri },
-      position: position,
-    };
-  }
 });

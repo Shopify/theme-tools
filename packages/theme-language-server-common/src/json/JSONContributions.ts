@@ -8,6 +8,10 @@ import {
 import { AugmentedSourceCode, DocumentManager } from '../documents';
 import { GetTranslationsForURI } from '../translations';
 import { JSONCompletionProvider } from './completions/JSONCompletionProvider';
+import {
+  BlockTypeCompletionProvider,
+  GetThemeBlockNames,
+} from './completions/providers/BlockTypeCompletionProvider';
 import { SchemaTranslationsCompletionProvider } from './completions/providers/SchemaTranslationCompletionProvider';
 import { JSONHoverProvider } from './hover/JSONHoverProvider';
 import { SchemaTranslationHoverProvider } from './hover/providers/SchemaTranslationHoverProvider';
@@ -17,6 +21,8 @@ import { findSchemaNode } from './utils';
 
 /** The getInfoContribution API will only fallback if we return undefined synchronously */
 const SKIP_CONTRIBUTION = undefined as any;
+
+export { GetThemeBlockNames };
 
 /**
  * I'm not a fan of how json-languageservice does its feature contributions. It's too different
@@ -32,6 +38,7 @@ export class JSONContributions implements JSONWorkerContribution {
   constructor(
     private documentManager: DocumentManager,
     getDefaultSchemaTranslations: GetTranslationsForURI,
+    getThemeBlockNames: GetThemeBlockNames,
   ) {
     this.hoverProviders = [
       new TranslationPathHoverProvider(),
@@ -39,6 +46,7 @@ export class JSONContributions implements JSONWorkerContribution {
     ];
     this.completionProviders = [
       new SchemaTranslationsCompletionProvider(getDefaultSchemaTranslations),
+      new BlockTypeCompletionProvider(getThemeBlockNames),
     ];
   }
 

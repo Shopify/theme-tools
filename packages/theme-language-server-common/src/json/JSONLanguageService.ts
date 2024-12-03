@@ -21,7 +21,7 @@ import {
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DocumentManager } from '../documents';
 import { GetTranslationsForURI } from '../translations';
-import { JSONContributions } from './JSONContributions';
+import { JSONContributions, GetThemeBlockNames } from './JSONContributions';
 
 export class JSONLanguageService {
   // We index by Mode here because I don't want to reconfigure the service depending on the URI.
@@ -39,6 +39,7 @@ export class JSONLanguageService {
     private jsonValidationSet: JsonValidationSet,
     private getDefaultSchemaTranslations: GetTranslationsForURI,
     private getModeForURI: (uri: string) => Promise<Mode>,
+    private getThemeBlockNames: GetThemeBlockNames,
   ) {
     this.services = Object.fromEntries(Modes.map((mode) => [mode, null])) as typeof this.services;
     this.schemas = {};
@@ -71,7 +72,11 @@ export class JSONLanguageService {
           },
 
           contributions: [
-            new JSONContributions(this.documentManager, this.getDefaultSchemaTranslations),
+            new JSONContributions(
+              this.documentManager,
+              this.getDefaultSchemaTranslations,
+              this.getThemeBlockNames,
+            ),
           ],
         });
 
