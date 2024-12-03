@@ -1,7 +1,10 @@
 import { FilterEntry, MetafieldDefinitionMap, ObjectEntry } from '@shopify/theme-check-common';
+import { InsertTextFormat, type TextEdit } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
+import { CURSOR } from '../params';
 
 const filters: FilterEntry[] = [
   {
@@ -174,25 +177,25 @@ describe('Module: FilterCompletionProvider', async () => {
       //                  char 12 ⌄   ⌄ char 16
       const liquid = '{{ string | defa█ }}';
 
+      const textEdit: TextEdit = {
+        newText: 'default',
+        range: {
+          end: { line: 0, character: 16 },
+          start: { line: 0, character: 12 },
+        },
+      };
+
       await expect(provider).to.complete(liquid, [
         expect.objectContaining({
           label: 'default',
-          insertTextFormat: 1,
-          textEdit: expect.objectContaining({
-            newText: 'default',
-            range: {
-              end: {
-                line: 0,
-                character: 16,
-              },
-              start: {
-                line: 0,
-                character: 12,
-              },
-            },
-          }),
+          insertTextFormat: InsertTextFormat.PlainText,
+          textEdit,
         }),
       ]);
+
+      const textDocument = TextDocument.create('', 'liquid', 0, liquid.replace(CURSOR, ''));
+
+      expect(TextDocument.applyEdits(textDocument, [textEdit])).toBe('{{ string | default }}');
     });
   });
 
@@ -201,25 +204,27 @@ describe('Module: FilterCompletionProvider', async () => {
       //                  char 12 ⌄  ⌄ char 15
       const liquid = '{{ string | hig█ }}';
 
+      const textEdit: TextEdit = {
+        newText: "highlight: '${1:highlighted_term}'",
+        range: {
+          end: { line: 0, character: 15 },
+          start: { line: 0, character: 12 },
+        },
+      };
+
       await expect(provider).to.complete(liquid, [
         expect.objectContaining({
           label: 'highlight',
-          insertTextFormat: 2,
-          textEdit: expect.objectContaining({
-            newText: "highlight: '${1:highlighted_term}'",
-            range: {
-              end: {
-                line: 0,
-                character: 15,
-              },
-              start: {
-                line: 0,
-                character: 12,
-              },
-            },
-          }),
+          insertTextFormat: InsertTextFormat.Snippet,
+          textEdit,
         }),
       ]);
+
+      const textDocument = TextDocument.create('', 'liquid', 0, liquid.replace(CURSOR, ''));
+
+      expect(TextDocument.applyEdits(textDocument, [textEdit])).toBe(
+        "{{ string | highlight: '${1:highlighted_term}' }}",
+      );
     });
   });
 
@@ -228,25 +233,27 @@ describe('Module: FilterCompletionProvider', async () => {
       //                  char 12 ⌄  ⌄ char 15
       const liquid = '{{ string | pre█ }}';
 
+      const textEdit: TextEdit = {
+        newText: "preload_tag: as: '$1'",
+        range: {
+          end: { line: 0, character: 15 },
+          start: { line: 0, character: 12 },
+        },
+      };
+
       await expect(provider).to.complete(liquid, [
         expect.objectContaining({
           label: 'preload_tag',
-          insertTextFormat: 2,
-          textEdit: expect.objectContaining({
-            newText: "preload_tag: as: '$1'",
-            range: {
-              end: {
-                line: 0,
-                character: 15,
-              },
-              start: {
-                line: 0,
-                character: 12,
-              },
-            },
-          }),
+          insertTextFormat: InsertTextFormat.Snippet,
+          textEdit,
         }),
       ]);
+
+      const textDocument = TextDocument.create('', 'liquid', 0, liquid.replace(CURSOR, ''));
+
+      expect(TextDocument.applyEdits(textDocument, [textEdit])).toBe(
+        "{{ string | preload_tag: as: '$1' }}",
+      );
     });
   });
 
@@ -256,25 +263,27 @@ describe('Module: FilterCompletionProvider', async () => {
         //                  char 12 ⌄          ⌄ char 23
         const liquid = '{{ string | prel█oad_tag: as: "p" }}';
 
+        const textEdit: TextEdit = {
+          newText: 'preload_tag',
+          range: {
+            end: { line: 0, character: 23 },
+            start: { line: 0, character: 12 },
+          },
+        };
+
         await expect(provider).to.complete(liquid, [
           expect.objectContaining({
             label: 'preload_tag',
-            insertTextFormat: 1,
-            textEdit: expect.objectContaining({
-              newText: 'preload_tag',
-              range: {
-                end: {
-                  line: 0,
-                  character: 23,
-                },
-                start: {
-                  line: 0,
-                  character: 12,
-                },
-              },
-            }),
+            insertTextFormat: InsertTextFormat.PlainText,
+            textEdit,
           }),
         ]);
+
+        const textDocument = TextDocument.create('', 'liquid', 0, liquid.replace(CURSOR, ''));
+
+        expect(TextDocument.applyEdits(textDocument, [textEdit])).toBe(
+          '{{ string | preload_tag: as: "p" }}',
+        );
       });
     });
 
@@ -284,42 +293,44 @@ describe('Module: FilterCompletionProvider', async () => {
         const liquid = '{{ string | d█efault: true }}';
         //                                 ⌃ char 19
 
+        const downcaseTextEdit: TextEdit = {
+          newText: 'downcase',
+          range: {
+            end: { line: 0, character: 25 },
+            start: { line: 0, character: 12 },
+          },
+        };
+
+        const defaultTextEdit: TextEdit = {
+          newText: 'default',
+          range: {
+            end: { line: 0, character: 19 },
+            start: { line: 0, character: 12 },
+          },
+        };
+
         await expect(provider).to.complete(liquid, [
           expect.objectContaining({
             label: 'downcase',
-            insertTextFormat: 1,
-            textEdit: expect.objectContaining({
-              newText: 'downcase',
-              range: {
-                end: {
-                  line: 0,
-                  character: 25,
-                },
-                start: {
-                  line: 0,
-                  character: 12,
-                },
-              },
-            }),
+            insertTextFormat: InsertTextFormat.PlainText,
+            textEdit: downcaseTextEdit,
           }),
           expect.objectContaining({
             label: 'default',
-            insertTextFormat: 1,
-            textEdit: expect.objectContaining({
-              newText: 'default',
-              range: {
-                end: {
-                  line: 0,
-                  character: 19,
-                },
-                start: {
-                  line: 0,
-                  character: 12,
-                },
-              },
-            }),
+            insertTextFormat: InsertTextFormat.PlainText,
+            textEdit: defaultTextEdit,
           }),
         ]);
+
+        const textDocument = TextDocument.create('', 'liquid', 0, liquid.replace(CURSOR, ''));
+
+        expect(TextDocument.applyEdits(textDocument, [downcaseTextEdit])).toBe(
+          '{{ string | downcase }}',
+        );
+
+        expect(TextDocument.applyEdits(textDocument, [defaultTextEdit])).toBe(
+          '{{ string | default: true }}',
+        );
       });
     });
   });
