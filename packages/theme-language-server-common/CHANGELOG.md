@@ -1,5 +1,41 @@
 # @shopify/theme-language-server-common
 
+## 2.3.0
+
+### Minor Changes
+
+- 528127bd: Add theme block type completion in `{% schema %}`
+
+### Patch Changes
+
+- d1658353: Add filter completion support
+
+  We'll now provide completions for Liquid filter parameters when requested.
+
+- 4b2dec31: Fix a bug where filter completions wouldn't replace existing text
+- 2228b3d9: Add required parameters when autocompleting filters
+
+  When autocompleting a Liquid filter that has required parameters we'll
+  automatically add them with tab support. For example, if you using the
+  completion feature to add the `image_url` filter we'll automatically add the
+  `width` and `height` parameters for it.
+
+- 05b928ea: [internal] Rejig how we do JSON completion & Hover
+- 5916a6ec: Use CURSOR variable instead of hardcoded string
+- Updated dependencies [05ae5ea8]
+- Updated dependencies [3e69d732]
+- Updated dependencies [26215724]
+- Updated dependencies [73758ba1]
+- Updated dependencies [5e8a2bfe]
+- Updated dependencies [05b928ea]
+- Updated dependencies [1f54be13]
+- Updated dependencies [1083b2bc]
+- Updated dependencies [a579d59e]
+- Updated dependencies [5a2caaee]
+- Updated dependencies [d2b5942a]
+  - @shopify/theme-check-common@3.3.0
+  - @shopify/liquid-html-parser@2.1.2
+
 ## 2.2.2
 
 ### Patch Changes
