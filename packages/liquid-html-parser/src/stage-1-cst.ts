@@ -83,6 +83,7 @@ export enum ConcreteNodeTypes {
   PaginateMarkup = 'PaginateMarkup',
   RenderVariableExpression = 'RenderVariableExpression',
   ContentForNamedArgument = 'ContentForNamedArgument',
+  ParamNode = 'ParamNode',
 }
 
 export const LiquidLiteralValues = {
@@ -1311,6 +1312,22 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       value: function () {
         return (this as any).sourceString;
       },
+      locStart,
+      locEnd,
+      source,
+    },
+    descriptionNode: {
+      type: ConcreteNodeTypes.TextNode,
+      value: function () {
+        return (this as any).sourceString;
+      },
+      locStart,
+      locEnd,
+      source,
+    },
+    paramNode: {
+      type: ConcreteNodeTypes.ParamNode,
+      value: 0,
       locStart,
       locEnd,
       source,
