@@ -47,7 +47,7 @@ describe('Module: EmptyBlockContent', () => {
       const offenses = await check(theme, [EmptyBlockContent]);
       expect(offenses).to.have.length(1);
       expect(offenses[0].message).to.equal(
-        "The 'content_for blocks' tag is present, but the blocks array is empty.",
+        `The 'content_for "blocks"' tag is present, but the blocks array is empty.`,
       );
     });
 
@@ -90,7 +90,7 @@ describe('Module: EmptyBlockContent', () => {
       const offenses = await check(theme, [EmptyBlockContent]);
       expect(offenses).to.have.length(1);
       expect(offenses[0].message).to.equal(
-        "The 'content_for blocks' tag is present, but the blocks array is not defined.",
+        `The 'content_for "blocks"' tag is present, but the blocks array is not defined.`,
       );
     });
 

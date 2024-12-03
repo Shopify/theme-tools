@@ -43,14 +43,13 @@ export const EmptyBlockContent: LiquidCheckDefinition = {
         const blocks = validSchema.blocks;
         if (isContentForBlocksLocationSet && !blocks) {
           context.report({
-            message:
-              "The 'content_for blocks' tag is present, but the blocks array is not defined.",
+            message: `The 'content_for "blocks"' tag is present, but the blocks array is not defined.`,
             startIndex: contentForBlocksLocation.start,
             endIndex: contentForBlocksLocation.end,
           });
         } else if (isContentForBlocksLocationSet && blocks && blocks.length === 0) {
           context.report({
-            message: "The 'content_for blocks' tag is present, but the blocks array is empty.",
+            message: `The 'content_for "blocks"' tag is present, but the blocks array is empty.`,
             startIndex: contentForBlocksLocation.start,
             endIndex: contentForBlocksLocation.end,
           });
