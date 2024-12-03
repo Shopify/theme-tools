@@ -1,4 +1,11 @@
-import { LiquidCheckDefinition, Severity, SourceCodeType, Preset } from '../../types';
+import {
+  LiquidCheckDefinition,
+  Severity,
+  SourceCodeType,
+  Preset,
+  Section,
+  ThemeBlock,
+} from '../../types';
 import { LiteralNode } from 'json-to-ast';
 import { nodeAtPath } from '../../json';
 import { getSchema } from '../../to-schema';
