@@ -12,6 +12,11 @@ export class ContentForCompletionProvider implements Provider {
     const { node, ancestors } = params.completionContext;
     const parentNode = ancestors.at(-1);
 
+    if (node?.type === NodeTypes.LiquidTag) {
+      if (node.name === 'render') {
+          node.markup
+    }
+
     if (
       !node ||
       !parentNode ||

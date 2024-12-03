@@ -387,7 +387,33 @@ LiquidStatement <: Liquid {
 
   liquidStatementEnd = newline | end
   delimTag := liquidStatementEnd
+<<<<<<< Updated upstream
 } 
+||||||| Stash base
+}
+
+LiquidDoc <: Helpers {
+  Node := (LiquidDocNode | TextNode)*
+  LiquidDocNode =
+    | descriptionNode
+    | paramNode
+
+  descriptionNode = (~("@param") any)+
+  paramNode = "@param" space
+  paramName = letter*
+}
+=======
+}
+
+LiquidDoc <: Helpers {
+  Node := (LiquidDocNode | TextNode)*
+  LiquidDocNode =
+    | fallbackNode
+
+  // this should be the default node that matches everything
+  fallbackNode = anyExceptPlus<liquidNode>
+}
+>>>>>>> Stashed changes
 
 LiquidHTML <: Liquid {
   Node := yamlFrontmatter? (HtmlNode | liquidNode | TextNode)*

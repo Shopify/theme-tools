@@ -765,6 +765,34 @@ export interface TextNode extends ASTNode<NodeTypes.TextNode> {
   value: string;
 }
 
+// // maybe this is only for @something we don't recognize?
+// export interface LiquidDocFallbackNode extends ASTNode<NodeTypes.LiquidDocFallbackNode> {
+//   name: string;
+//   markup: string;
+// }
+export interface LiquidDocTagNode<Name, Markup> extends ASTNode<NodeTypes.LiquidDocTagNode> {
+  name: Name;
+  markup: Markup;
+}
+
+interface LiquidDocFallbackNode extends LiquidDocTagNode<string, null> {}
+
+// export interface LiquidDocParamNode extends ASTNode<NodeTypes.LiquidDocParamNode> {
+//   name: '@param';
+//   markup: {
+//     type: LiquidDocParamMarkup;
+//     paramName: LiquidDocParamNameNode;
+//     paramType?: LiquidDocParamTypeNode;
+// .   paramDescription?: LiquidDocParamDescriptionNode;
+//   };
+//
+
+/**
+ * In this description there is a {@link} to a {@link LiquidDocParamNode}
+ * @param foo - description
+ * @param {type} foo - description
+ * @returns
+ */
 export interface ASTNode<T> {
   /**
    * The type of the node, as a string.
