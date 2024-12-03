@@ -384,7 +384,12 @@ LiquidStatement <: Liquid {
 }
 
 LiquidDoc <: Helpers {
-  Node := (TextNode)*
+  Node := (LiquidDocNode | TextNode)*
+  LiquidDocNode =
+    | fallbackNode
+
+  fallbackNode = "@" paramName
+  paramName = letter*
 }
 
 LiquidHTML <: Liquid {
