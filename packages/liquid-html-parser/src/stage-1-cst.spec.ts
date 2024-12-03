@@ -984,7 +984,10 @@ describe('Unit: Stage 1 (CST)', () => {
 
       it('should parse doc tags', () => {
         for (const { toCST, expectPath } of testCases) {
-          const testStr = `{% doc -%} Renders loading-spinner. {%- enddoc %}`;
+          const testStr = `{% doc -%} 
+          Renders loading-spinner.
+          @param 
+          {%- enddoc %}`;
 
           cst = toCST(testStr);
           expectPath(cst, '0.type').to.equal('LiquidRawTag');
@@ -998,15 +1001,12 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.blockStartLocEnd').to.equal(0 + '{% doc -%}'.length);
           expectPath(cst, '0.blockEndLocStart').to.equal(testStr.length - '{%- enddoc %}'.length);
           expectPath(cst, '0.blockEndLocEnd').to.equal(testStr.length);
-          expectPath(cst, '0.children').to.deep.equal([
-            {
-              locEnd: 35,
-              locStart: 11,
-              source: '{% doc -%} Renders loading-spinner. {%- enddoc %}',
-              type: 'TextNode',
-              value: 'Renders loading-spinner.',
-            },
-          ]);
+          expectPath(cst, '0.children').to.have.lengthOf(2);
+          expectPath(cst, '0.children.0.type').to.equal('TextNode');
+          // this is too permissive rn
+          expectPath(cst, '0.children.0.value').to.equal('Renders loading-spinner.');
+          expectPath(cst, '0.children.1.type').to.equal('ParamNode');
+          expectPath(cst, '0.children.1.value').to.equal('@param');
         }
       });
 
