@@ -985,14 +985,15 @@ describe('Unit: Stage 1 (CST)', () => {
       it('should parse doc tags', () => {
         for (const { toCST, expectPath } of testCases) {
           const testStr = `{% doc -%} 
-          Renders loading-spinner.
-          @param 
-          {%- enddoc %}`;
+            @param asdf
+            @unsupported
+            {%- enddoc %}`;
 
           cst = toCST(testStr);
+
           expectPath(cst, '0.type').to.equal('LiquidRawTag');
           expectPath(cst, '0.name').to.equal('doc');
-          expectPath(cst, '0.body').to.include('Renders loading-spinner');
+          expectPath(cst, '0.body').to.include('@param asdf');
           expectPath(cst, '0.whitespaceStart').to.equal('');
           expectPath(cst, '0.whitespaceEnd').to.equal('-');
           expectPath(cst, '0.delimiterWhitespaceStart').to.equal('-');
@@ -1001,12 +1002,16 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.blockStartLocEnd').to.equal(0 + '{% doc -%}'.length);
           expectPath(cst, '0.blockEndLocStart').to.equal(testStr.length - '{%- enddoc %}'.length);
           expectPath(cst, '0.blockEndLocEnd').to.equal(testStr.length);
-          expectPath(cst, '0.children').to.have.lengthOf(2);
-          expectPath(cst, '0.children.0.type').to.equal('TextNode');
-          // this is too permissive rn
-          expectPath(cst, '0.children.0.value').to.equal('Renders loading-spinner.');
-          expectPath(cst, '0.children.1.type').to.equal('ParamNode');
-          expectPath(cst, '0.children.1.value').to.equal('@param');
+
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocParamNode');
+          expectPath(cst, '0.children.0.locStart').to.equal(testStr.indexOf('@param'));
+          expectPath(cst, '0.children.0.locEnd').to.equal(testStr.indexOf('asdf') + 'asdf'.length);
+
+          expectPath(cst, '0.children.1.type').to.equal('TextNode');
+          expectPath(cst, '0.children.1.locStart').to.equal(testStr.indexOf('@unsupported'));
+          expectPath(cst, '0.children.1.locEnd').to.equal(
+            testStr.indexOf('@unsupported') + '@unsupported'.length,
+          );
         }
       });
 
