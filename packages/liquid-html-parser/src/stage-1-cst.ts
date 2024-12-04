@@ -447,9 +447,13 @@ export type LiquidConcreteNode =
   | ConcreteTextNode
   | ConcreteYamlFrontmatterNode;
 
+export type LiquidDocConcreteNode = ConcreteLiquidDocParamNode;
+
 export type LiquidHtmlCST = LiquidHtmlConcreteNode[];
 
 export type LiquidCST = LiquidConcreteNode[];
+
+export type LiquidDocCST = LiquidDocConcreteNode[];
 
 interface Mapping {
   [k: string]: number | TemplateMapping | TopLevelFunctionMapping;
