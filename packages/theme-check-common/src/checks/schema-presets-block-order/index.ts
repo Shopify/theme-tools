@@ -77,7 +77,21 @@ function checkBlockOrder(
       }
     }
 
-    // check 2: are items in block_order valid/missing?
+    // check 2: are items in block_order present in blocks?
+    blockOrder?.forEach((block_id, index) => {
+      if (!node.blocks || (!Array.isArray(node.blocks) && !node.blocks[block_id])) {
+        const warning_ast_path = ast_path.concat(['block_order']).concat([String(index)]);
+        reportWarning(
+          context,
+          offset,
+          ast,
+          warning_ast_path,
+          `block '${block_id}' is missing from 'blocks'`,
+        );
+      }
+    });
+
+    // check 3: are items in blocks correctly in block_order?
     for (const [block_id, block] of Object.entries(node.blocks)) {
       if (block.static) {
         // if static block is in the block_order, that's an error

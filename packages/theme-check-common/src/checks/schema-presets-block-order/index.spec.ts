@@ -313,4 +313,32 @@ describe('Module: SchemaPresetsBlockOrder', () => {
     const offenses = await runLiquidCheck(SchemaPresetsBlockOrder, sourceCode, DEFAULT_FILE_NAME);
     expect(offenses).toHaveLength(0);
   });
+
+  it("reports a warning when a block in 'block_order' is not in 'blocks'", async () => {
+    const sourceCode = `
+      {% schema %}
+      {
+        "name": "Test section",
+        "presets": [
+          {
+            "name": "Preset 1",
+            "blocks": {
+              "block-1": {
+                "type": "text"
+              }
+            },
+            "block_order": ["block-1", "block-2"]
+          }
+        ]
+      }
+      {% endschema %}`;
+
+    const offenses = await runLiquidCheck(SchemaPresetsBlockOrder, sourceCode, DEFAULT_FILE_NAME);
+    expect(offenses).toHaveLength(1);
+    expect(offenses[0].message).toEqual("block 'block-2' is missing from 'blocks'");
+
+    const highlights = highlightedOffenses({ [DEFAULT_FILE_NAME]: sourceCode }, offenses);
+    expect(highlights).toHaveLength(1);
+    expect(highlights[0]).toBe('"block-2"');
+  });
 });
