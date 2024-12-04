@@ -39,6 +39,9 @@ ImgWidthAndHeight:
 JSONSyntaxError:
   enabled: true
   severity: 0
+JsonMissingBlock:
+  enabled: true
+  severity: 0
 LiquidFreeSettings:
   enabled: true
   severity: 1

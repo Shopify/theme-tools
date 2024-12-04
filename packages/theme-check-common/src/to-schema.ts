@@ -153,6 +153,22 @@ export function getSchema(context: Context<SourceCodeType.LiquidHtml, Schema>) {
   }
 }
 
+export async function getSchemaFromJSON(context: Context<SourceCodeType.JSON, Schema>) {
+  const originalSource = context.file.source;
+  const strippedSource = originalSource.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim();
+
+  const offset = originalSource.indexOf(strippedSource);
+
+  const parsed = parseJSON(strippedSource);
+  const ast = toJSONAST(strippedSource);
+
+  return {
+    parsed,
+    ast,
+    offset,
+  };
+}
+
 function toParsed(schemaNode: LiquidRawTag | Error): any | Error {
   if (schemaNode instanceof Error) return schemaNode;
   return parseJSON(schemaNode.body.value);
