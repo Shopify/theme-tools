@@ -1,6 +1,7 @@
 import type { AbstractFileSystem } from '@shopify/theme-check-common';
 import { getConnection, NodeFileSystem, startServer } from '@shopify/theme-language-server-node';
 import { VsCodeFileSystem } from '../common/VsCodeFileSystem';
+import { fetchMetafieldDefinitions } from './metafieldDefinitions';
 
 const connection = getConnection();
 
@@ -10,6 +11,7 @@ const fileSystems: Record<string, AbstractFileSystem> = {
 };
 
 startServer(connection, new VsCodeFileSystem(connection, fileSystems));
+fetchMetafieldDefinitions();
 
 process.on('uncaughtException', (e) => {
   console.error(e);
