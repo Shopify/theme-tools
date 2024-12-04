@@ -73,6 +73,7 @@ import {
   LiquidHtmlConcreteNode,
   ConcreteLiquidTagBaseCase,
   ConcreteLiquidTagContentForMarkup,
+  LiquidDocCST,
 } from './stage-1-cst';
 import { Comparators, NamedTags, NodeTypes, nonTraversableProperties, Position } from './types';
 import { assertNever, deepGet, dropLast } from './utils';
@@ -107,7 +108,8 @@ export type LiquidHtmlNode =
   | RenderVariableExpression
   | LiquidLogicalExpression
   | LiquidComparison
-  | TextNode;
+  | TextNode
+  | LiquidDocParamNode;
 
 /** The root node of all LiquidHTML ASTs. */
 export interface DocumentNode extends ASTNode<NodeTypes.Document> {
@@ -754,6 +756,10 @@ export interface TextNode extends ASTNode<NodeTypes.TextNode> {
   value: string;
 }
 
+export interface LiquidDocParamNode extends ASTNode<NodeTypes.LiquidDocParamNode> {
+  name: string;
+}
+
 export interface ASTNode<T> {
   /**
    * The type of the node, as a string.
@@ -1103,7 +1109,7 @@ export function cstToAst(
 }
 
 function buildAst(
-  cst: LiquidHtmlCST | LiquidCST | ConcreteAttributeNode[],
+  cst: LiquidHtmlCST | LiquidCST | LiquidDocCST | ConcreteAttributeNode[],
   options: ASTBuildOptions,
 ) {
   const builder = new ASTBuilder(cst[0].source);
@@ -1262,6 +1268,16 @@ function buildAst(
         builder.push({
           type: NodeTypes.YAMLFrontmatter,
           body: node.body,
+          position: position(node),
+          source: node.source,
+        });
+        break;
+      }
+
+      case ConcreteNodeTypes.LiquidDocParamNode: {
+        builder.push({
+          type: NodeTypes.LiquidDocParamNode,
+          name: node.name,
           position: position(node),
           source: node.source,
         });
