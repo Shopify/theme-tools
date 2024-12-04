@@ -1,5 +1,32 @@
 ## theme-check-vscode
 
+## 3.3.0
+
+### Minor Changes
+
+- 528127bd: Add theme block type completion in `{% schema %}`
+- 5e8a2bfe: Add `SchemaPresetsBlockOrder` check
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [05ae5ea8]
+- Updated dependencies [3e69d732]
+- Updated dependencies [26215724]
+- Updated dependencies [73758ba1]
+- Updated dependencies [5e8a2bfe]
+- Updated dependencies [05b928ea]
+- Updated dependencies [1f54be13]
+- Updated dependencies [1083b2bc]
+- Updated dependencies [a579d59e]
+- Updated dependencies [5a2caaee]
+- Updated dependencies [d2b5942a]
+  - @shopify/prettier-plugin-liquid@1.6.2
+  - @shopify/theme-check-common@3.3.0
+  - @shopify/liquid-html-parser@2.1.2
+  - @shopify/theme-language-server-browser@2.3.0
+  - @shopify/theme-language-server-node@2.3.0
+
 ## 3.2.2
 
 ### Patch Changes
