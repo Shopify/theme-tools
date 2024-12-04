@@ -7,29 +7,44 @@ describe('Module: ValidContentForArguments', () => {
     it('should not report offenses for strategies we do not know or support yet', async () => {
       const offenses = await runLiquidCheck(
         ValidContentForArguments,
-        '{% content_for "snippet", context.product: product %}',
+        '{% content_for "snippet", closest.product: product %}',
       );
       expect(offenses).toHaveLength(0);
     });
   });
 
   describe('{% content_for "blocks" %}', () => {
-    it('should accept `context.*` kwargs', async () => {
+    it('should accept `closest.*` kwargs', async () => {
       const offenses = await runLiquidCheck(
         ValidContentForArguments,
-        '{% content_for "blocks", context.product: product %}',
+        '{% content_for "blocks", closest.product: product %}',
       );
       expect(offenses).toHaveLength(0);
     });
 
-    it('should report offenses for non-`context.*` kwargs', async () => {
+    it('should report offenses for non-`closest.*` kwargs', async () => {
       const offenses = await runLiquidCheck(
         ValidContentForArguments,
         '{% content_for "blocks", product: product %}',
       );
       expect(offenses).toHaveLength(1);
       expect(offenses[0]!.message).to.equal(
-        `{% content_for "blocks" %} only accepts 'context.*' arguments`,
+        `{% content_for "blocks" %} only accepts 'closest.*' arguments`,
+      );
+    });
+
+    it('should report offenses for deprecated `context.*` kwargs', async () => {
+      const offenses = await runLiquidCheck(
+        ValidContentForArguments,
+        '{% content_for "blocks", context.product: product %}',
+      );
+      expect(offenses).toHaveLength(2);
+      expect(offenses[0]!.message).to.equal(
+        `{% content_for "blocks" %} only accepts 'closest.*' arguments`,
+      );
+
+      expect(offenses[1]!.message).to.equal(
+        `{% content_for "blocks" %} only accepts 'closest.*' arguments. The 'context.*' arguments usage has been deprecated.`,
       );
     });
   });
@@ -61,14 +76,29 @@ describe('Module: ValidContentForArguments', () => {
       expect(offenses[0].message).to.equal(`The 'id' argument should be a string`);
     });
 
-    it(`should report an offense if other kwargs are passed that are not named 'context.*'`, async () => {
+    it(`should report an offense if other kwargs are passed that are not named 'closest.*'`, async () => {
       const offenses = await runLiquidCheck(
         ValidContentForArguments,
         '{% content_for "block", type: "foo", id: "id", product: product %}',
       );
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).to.equal(
-        `{% content_for "block" %} only accepts 'id', 'type' and 'context.*' arguments`,
+        `{% content_for "block" %} only accepts 'id', 'type' and 'closest.*' arguments`,
+      );
+    });
+
+    it('should report offenses for deprecated `context.*` kwargs', async () => {
+      const offenses = await runLiquidCheck(
+        ValidContentForArguments,
+        '{% content_for "block", type: "type", id: "static-block", context.product: product %}',
+      );
+      expect(offenses).toHaveLength(2);
+      expect(offenses[0]!.message).to.equal(
+        `{% content_for "block" %} only accepts 'id', 'type' and 'closest.*' arguments`,
+      );
+
+      expect(offenses[1]!.message).to.equal(
+        `{% content_for "block" %} accepts 'closest.*' arguments. The 'context.*' arguments usage has been deprecated.`,
       );
     });
   });

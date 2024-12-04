@@ -604,15 +604,19 @@ describe('Unit: Stage 1 (CST)', () => {
 
       it('should parse content_for "block", id: "my-id", type: "my-block"', () => {
         for (const { toCST, expectPath } of testCases) {
-          cst = toCST(`{% content_for "block", id: "block-id", type: "block-type" -%}`);
+          cst = toCST(
+            `{% content_for "block", closest.product: product, closest.metaobject.test: product, id: "block-id", type: "block-type" -%}`,
+          );
           expectPath(cst, '0.type').to.equal('LiquidTag');
           expectPath(cst, '0.name').to.equal('content_for');
           expectPath(cst, '0.markup.type').to.equal('ContentForMarkup');
           expectPath(cst, '0.markup.contentForType.type').to.equal('String');
           expectPath(cst, '0.markup.contentForType.value').to.equal('block');
           expectPath(cst, '0.markup.contentForType.single').to.equal(false);
-          expectPath(cst, '0.markup.args').to.have.lengthOf(2);
+          expectPath(cst, '0.markup.args').to.have.lengthOf(4);
           const namedArguments = [
+            { name: 'closest.product', valueType: 'VariableLookup' },
+            { name: 'closest.metaobject.test', valueType: 'VariableLookup' },
             { name: 'id', valueType: 'String' },
             { name: 'type', valueType: 'String' },
           ];
