@@ -1306,14 +1306,27 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
 
   const LiquidDocMappings: Mapping = {
     Node: 0,
+    textNode: {
+      type: ConcreteNodeTypes.TextNode,
+      value: function () {
+        return (this as any).sourceString;
+      },
+      locStart,
+      locEnd,
+      source,
+    },
     paramNode: {
       type: ConcreteNodeTypes.LiquidDocParamNode,
+      name: 0,
       locStart,
       locEnd,
       source,
     },
     fallbackNode: {
       type: ConcreteNodeTypes.TextNode,
+      value: function () {
+        return (this as any).sourceString;
+      },
       locStart,
       locEnd,
       source,
