@@ -210,25 +210,17 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
 
     it('should offer text edits that apply correctly', async () => {
       const source = '...\n{% if█ %}\n...';
-      const textEdit: TextEdit = {
-        newText: 'if ${1:condition} %}\n  $2\n{% endif %}',
-        range: {
-          start: { line: 1, character: 3 },
-          end: { line: 1, character: 8 },
-        },
-      };
       await expect(provider).to.complete(source, [
         expect.objectContaining({
           label: 'if',
           insertTextFormat: InsertTextFormat.Snippet,
           insertTextMode: InsertTextMode.adjustIndentation,
-          textEdit,
+          textEdit: expect.applyEdits(
+            source,
+            '...\n{% if ${1:condition} %}\n  $2\n{% endif %}\n...',
+          ),
         }),
       ]);
-      const textDocument = TextDocument.create('', 'liquid', 0, source.replace(CURSOR, ''));
-      expect(TextDocument.applyEdits(textDocument, [textEdit])).toBe(
-        '...\n{% if ${1:condition} %}\n  $2\n{% endif %}\n...',
-      );
     });
 
     it('should inline the snippet if the tag is inline with more content', async () => {

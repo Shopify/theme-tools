@@ -1,13 +1,11 @@
-import { makeFileExists } from '@shopify/theme-check-common';
 import { MockFileSystem } from '@shopify/theme-check-common/src/test';
-import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
+import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { TextDocumentEdit } from 'vscode-json-languageservice';
 import { ApplyWorkspaceEditParams } from 'vscode-languageserver-protocol';
-import { TextDocument } from 'vscode-languageserver-textdocument';
+import { ClientCapabilities } from '../../ClientCapabilities';
 import { DocumentManager } from '../../documents';
 import { MockConnection, mockConnection } from '../../test/MockConnection';
 import { RenameHandler } from '../RenameHandler';
-import { ClientCapabilities } from '../../ClientCapabilities';
 
 describe('Module: SnippetRenameHandler', () => {
   const mockRoot = 'mock-fs:';
@@ -148,8 +146,7 @@ describe('Module: SnippetRenameHandler', () => {
         const edits = docChange.edits;
         const initialDoc = await fs.readFile(uri);
         const expectedDoc = await expectedFs.readFile(uri);
-        const textDocument = TextDocument.create(uri, 'liquid', 0, initialDoc);
-        expect(TextDocument.applyEdits(textDocument, edits)).toBe(expectedDoc);
+        expect(edits).to.applyEdits(initialDoc, expectedDoc);
       }
     });
   });
