@@ -6,6 +6,10 @@
 
 - 528127bd: Add theme block type completion in `{% schema %}`
 - 5e8a2bfe: Add `SchemaPresetsBlockOrder` check
+- 05ae5ea8: Added `MissingSchema` theme check to identify missing schemas in theme app extensions.
+- 26215724: Add `EmptyBlockContent` Check
+- 73758ba1: Add `LiquidFreeSettings` check
+- 5e8a2bfe: Add `SchemaPresetsBlockOrder` check
 
 ### Patch Changes
 

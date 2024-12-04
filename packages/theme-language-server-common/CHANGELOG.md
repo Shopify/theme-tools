@@ -5,12 +5,11 @@
 ### Minor Changes
 
 - 528127bd: Add theme block type completion in `{% schema %}`
-
-### Patch Changes
-
 - d1658353: Add filter completion support
 
   We'll now provide completions for Liquid filter parameters when requested.
+
+### Patch Changes
 
 - 4b2dec31: Fix a bug where filter completions wouldn't replace existing text
 - 2228b3d9: Add required parameters when autocompleting filters
