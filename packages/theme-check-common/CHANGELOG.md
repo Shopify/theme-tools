@@ -4,19 +4,19 @@
 
 ### Minor Changes
 
-- 05ae5ea8: Added MissingSchema theme check to identify missing schemas in theme app extensions.
-- 3e69d732: Update theme check urls
-- 26215724: Add EmptyBlockContent Check
-- 73758ba1: Add LiquidFreeSettings check
+- 05ae5ea8: Added `MissingSchema` theme check to identify missing schemas in theme app extensions.
+- 26215724: Add `EmptyBlockContent` Check
+- 73758ba1: Add `LiquidFreeSettings` check
 - 5e8a2bfe: Add `SchemaPresetsBlockOrder` check
-- 1083b2bc: Refactor ValidBlockTarget and ValidLocalBlocks.
-- 5a2caaee: Import Section and ThemeBlock types.
 
 ### Patch Changes
 
 - 05b928ea: [internal] Rejig how we do JSON completion & Hover
 - a579d59e: (internal) Fixup bug in nodeAtPath
 - d2b5942a: Add positional attribute to exported Parameter type
+- 3e69d732: Update theme check urls
+- 1083b2bc: Refactor `ValidBlockTarget` and `ValidLocalBlocks`.
+- 5a2caaee: Import `Section` and `ThemeBlock` types.
 - Updated dependencies [1f54be13]
   - @shopify/liquid-html-parser@2.1.2
 

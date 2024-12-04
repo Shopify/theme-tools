@@ -6,6 +6,14 @@
 
 - 528127bd: Add theme block type completion in `{% schema %}`
 - 5e8a2bfe: Add `SchemaPresetsBlockOrder` check
+- 05ae5ea8: Added `MissingSchema` theme check to identify missing schemas in theme app extensions.
+- 26215724: Add `EmptyBlockContent` Check
+- 73758ba1: Add `LiquidFreeSettings` check
+- 5e8a2bfe: Add `SchemaPresetsBlockOrder` check
+- b2bad1f4: Add text edit completion of `{% content_for "block" %}`
+- d1658353: Add filter completion support
+
+  We'll now provide completions for Liquid filter parameters when requested.
 
 ### Patch Changes
 

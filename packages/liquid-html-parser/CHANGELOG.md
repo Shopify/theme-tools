@@ -2,7 +2,7 @@
 
 ## 2.1.2
 
-### Patch Changes
+### Minor Changes
 
 - 1f54be13: Add support for incomplete filter statements
 
