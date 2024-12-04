@@ -81,6 +81,7 @@ export enum ConcreteNodeTypes {
   RenderMarkup = 'RenderMarkup',
   PaginateMarkup = 'PaginateMarkup',
   RenderVariableExpression = 'RenderVariableExpression',
+  ContentForNamedArgument = 'ContentForNamedArgument',
 }
 
 export const LiquidLiteralValues = {
@@ -873,11 +874,21 @@ function toCST<T>(
     },
     simpleArgument: 0,
     tagArguments: 0,
+    contentForTagArgument: 0,
     positionalArgument: 0,
     namedArgument: {
       type: ConcreteNodeTypes.NamedArgument,
       name: 0,
       value: 4,
+      locStart,
+      locEnd,
+      source,
+    },
+
+    contentForNamedArgument: {
+      type: ConcreteNodeTypes.NamedArgument,
+      name: (node) => node[0].sourceString + node[1].sourceString,
+      value: 6,
       locStart,
       locEnd,
       source,

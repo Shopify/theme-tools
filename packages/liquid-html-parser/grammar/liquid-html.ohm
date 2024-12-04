@@ -127,8 +127,13 @@ Liquid <: Helpers {
   liquidTagLiquidMarkup = tagMarkup
 
   liquidTagContentFor = liquidTagRule<"content_for", liquidTagContentForMarkup>
+  
   liquidTagContentForMarkup =
-    contentForType (argumentSeparatorOptionalComma tagArguments) (space* ",")? space*
+    contentForType (argumentSeparatorOptionalComma contentForTagArgument) (space* ",")? space*
+    
+  contentForTagArgument = listOf<contentForNamedArgument<delimTag>, argumentSeparatorOptionalComma>
+  contentForNamedArgument<delim> = (variableSegment ("." variableSegment)*) space* ":" space* (liquidExpression<delim>)
+
   contentForType = liquidString<delimTag>
 
   liquidTagInclude = liquidTagRule<"include", liquidTagRenderMarkup>
