@@ -73,7 +73,6 @@ import {
   LiquidHtmlConcreteNode,
   ConcreteLiquidTagBaseCase,
   ConcreteLiquidTagContentForMarkup,
-  LiquidDocCST,
 } from './stage-1-cst';
 import { Comparators, NamedTags, NodeTypes, nonTraversableProperties, Position } from './types';
 import { assertNever, deepGet, dropLast } from './utils';
@@ -1109,7 +1108,7 @@ export function cstToAst(
 }
 
 function buildAst(
-  cst: LiquidHtmlCST | LiquidCST | LiquidDocCST | ConcreteAttributeNode[],
+  cst: LiquidHtmlCST | LiquidCST | ConcreteAttributeNode[],
   options: ASTBuildOptions,
 ) {
   const builder = new ASTBuilder(cst[0].source);
