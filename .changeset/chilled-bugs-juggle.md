@@ -3,4 +3,4 @@
 'theme-check-vscode': minor
 ---
 
-Add the `ValidBlockPresetSettings` check.
+Add the `ValidPresetSettings` check.
