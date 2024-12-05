@@ -1,4 +1,4 @@
-import { Context, SourceCodeType, JSONNode, Preset } from '../../types';
+import { Context, SourceCodeType, JSONNode } from '../../types';
 import { LiteralNode, PropertyNode } from 'json-to-ast';
 import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
 import { doesFileExist } from '../../utils/file-utils';

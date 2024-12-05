@@ -1,5 +1,5 @@
 import { expect, describe, it } from 'vitest';
-import { JsonMissingBlock } from './index';
+import { JSONMissingBlock } from './index';
 import { check, MockTheme } from '../../test';
 
 describe('Module: JsonMissingBlock', () => {
@@ -34,7 +34,7 @@ describe('Module: JsonMissingBlock', () => {
         `,
       };
 
-      const offenses = await check(theme, [JsonMissingBlock]);
+      const offenses = await check(theme, [JSONMissingBlock]);
       expect(offenses).to.have.length(1);
       expect(offenses[0].message).to.equal(
         "Theme block 'blocks/missing_block.liquid' does not exist.",
@@ -76,7 +76,7 @@ describe('Module: JsonMissingBlock', () => {
         'blocks/text.liquid': '',
       };
 
-      const offenses = await check(theme, [JsonMissingBlock]);
+      const offenses = await check(theme, [JSONMissingBlock]);
       expect(offenses).to.be.empty;
     });
 
@@ -127,7 +127,7 @@ describe('Module: JsonMissingBlock', () => {
         `,
       };
 
-      const offenses = await check(theme, [JsonMissingBlock]);
+      const offenses = await check(theme, [JSONMissingBlock]);
       expect(offenses).to.have.length(1);
       expect(offenses[0].message).to.equal(
         "Theme block 'blocks/missing_nested.liquid' does not exist.",
@@ -172,7 +172,7 @@ describe('Module: JsonMissingBlock', () => {
         'blocks/image.liquid': '',
       };
 
-      const offenses = await check(theme, [JsonMissingBlock]);
+      const offenses = await check(theme, [JSONMissingBlock]);
       expect(offenses).to.have.length(1);
       expect(offenses[0].message).to.equal(
         "Block type 'text' is not allowed in 'sections/custom-section.liquid'.",
@@ -232,7 +232,7 @@ describe('Module: JsonMissingBlock', () => {
         'blocks/missing_nested.liquid': '',
       };
 
-      const offenses = await check(theme, [JsonMissingBlock]);
+      const offenses = await check(theme, [JSONMissingBlock]);
       expect(offenses).to.have.length(1);
       expect(offenses[0].message).to.equal(
         "Block type 'missing_nested' is not allowed in 'blocks/text.liquid'.",
@@ -292,7 +292,7 @@ describe('Module: JsonMissingBlock', () => {
         'blocks/_private_block.liquid': '',
       };
 
-      const offenses = await check(theme, [JsonMissingBlock]);
+      const offenses = await check(theme, [JSONMissingBlock]);
       expect(offenses).to.have.length(1);
       expect(offenses[0].message).to.equal(
         "Block type '_private_block' is not allowed in 'blocks/text.liquid'.",
@@ -316,7 +316,7 @@ describe('Module: JsonMissingBlock', () => {
         }`,
       };
 
-      const offenses = await check(theme, [JsonMissingBlock]);
+      const offenses = await check(theme, [JSONMissingBlock]);
       expect(offenses).to.be.empty;
     });
 
@@ -371,7 +371,7 @@ describe('Module: JsonMissingBlock', () => {
         'blocks/_private_block.liquid': '',
       };
 
-      const offenses = await check(theme, [JsonMissingBlock]);
+      const offenses = await check(theme, [JSONMissingBlock]);
       expect(offenses).to.be.empty;
     });
   });

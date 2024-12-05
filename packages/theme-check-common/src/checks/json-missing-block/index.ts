@@ -2,9 +2,9 @@ import { getSchemaFromJSON } from '../../to-schema';
 import { JSONCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { getAllBlocks, isPropertyNode } from './missing-block-utils';
 
-export const JsonMissingBlock: JSONCheckDefinition = {
+export const JSONMissingBlock: JSONCheckDefinition = {
   meta: {
-    code: 'JsonMissingBlock',
+    code: 'JSONMissingBlock',
     name: 'Check for missing blocks types in JSON templates',
     docs: {
       description: 'This check ensures that JSON templates contain valid block types.',

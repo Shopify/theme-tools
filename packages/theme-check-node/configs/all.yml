@@ -55,10 +55,10 @@ EmptyBlockContent:
 ImgWidthAndHeight:
   enabled: true
   severity: 0
-JSONSyntaxError:
+JSONMissingBlock:
   enabled: true
   severity: 0
-JsonMissingBlock:
+JSONSyntaxError:
   enabled: true
   severity: 0
 LiquidFreeSettings:

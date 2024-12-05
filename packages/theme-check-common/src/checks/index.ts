@@ -17,7 +17,7 @@ import { DeprecatedFilter } from './deprecated-filter';
 import { DeprecatedTag } from './deprecated-tag';
 import { EmptyBlockContent } from './empty-block-content';
 import { ImgWidthAndHeight } from './img-width-and-height';
-import { JsonMissingBlock } from './json-missing-block';
+import { JSONMissingBlock } from './json-missing-block';
 import { JSONSyntaxError } from './json-syntax-error';
 import { LiquidFreeSettings } from './liquid-free-settings';
 import { LiquidHTMLSyntaxError } from './liquid-html-syntax-error';
@@ -63,7 +63,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   DeprecateLazysizes,
   EmptyBlockContent,
   ImgWidthAndHeight,
-  JsonMissingBlock,
+  JSONMissingBlock,
   JSONSyntaxError,
   LiquidFreeSettings,
   LiquidHTMLSyntaxError,
