@@ -547,6 +547,10 @@ function printNode(
       return [...doc, ...lookups];
     }
 
+    case NodeTypes.LiquidDocParamNode: {
+      return node.name;
+    }
+
     default: {
       return assertNever(node);
     }
