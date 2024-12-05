@@ -44,6 +44,7 @@ import { ValidSchemaName } from './valid-schema-name';
 import { ValidStaticBlockType } from './valid-static-block-type';
 import { VariableName } from './variable-name';
 import { MissingSchema } from './missing-schema';
+import { ValidBlockPresetSettings } from './valid-block-preset-settings';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -89,6 +90,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidStaticBlockType,
   VariableName,
   ValidSchemaName,
+  ValidBlockPresetSettings,
 ];
 
 /**
