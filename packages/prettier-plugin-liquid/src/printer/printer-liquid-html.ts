@@ -1,5 +1,6 @@
 import {
   getConditionalComment,
+  LiquidDocParamNode,
   NodeTypes,
   Position,
   RawMarkupKinds,
@@ -30,6 +31,7 @@ import {
   LiquidTag,
   LiquidVariableOutput,
   nonTraversableProperties,
+  RawMarkup,
   TextNode,
 } from '../types';
 import { assertNever } from '../utils';
@@ -40,6 +42,7 @@ import { printChildren } from './print/children';
 import { printElement } from './print/element';
 import {
   printLiquidBranch,
+  printLiquidDoc,
   printLiquidRawTag,
   printLiquidTag,
   printLiquidVariableOutput,
@@ -210,6 +213,10 @@ function printNode(
     }
 
     case NodeTypes.RawMarkup: {
+      if (node.parentNode?.name === 'doc') {
+        return printLiquidDoc(path as AstPath<RawMarkup>, options, print, args);
+      }
+
       const isRawMarkupIdentationSensitive = () => {
         switch (node.kind) {
           case RawMarkupKinds.typescript:
@@ -548,7 +555,7 @@ function printNode(
     }
 
     case NodeTypes.LiquidDocParamNode: {
-      return node.name;
+      return [node.name, ' ', node.value];
     }
 
     default: {
