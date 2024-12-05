@@ -3,13 +3,17 @@ import { basename } from '../../path';
 import { LiquidCheckDefinition, Severity, SourceCodeType, ThemeBlock } from '../../types';
 import { Preset } from '../../types/schemas/preset';
 import { Setting } from '../../types/schemas/setting';
+import { isError } from '../../utils/error';
+import { nodeAtPath } from '../../json';
+import { ObjectNode, PropertyNode } from 'json-to-ast';
+import { BlockNodeWithPath, getBlocks } from '../valid-block-target/block-utils';
 
 export const ValidBlockPresetSettings: LiquidCheckDefinition = {
   meta: {
     code: 'ValidBlockPresetSettings',
-    name: 'Reports invalid preset settings for a theme block',
+    name: 'Reports invalid preset settings for a block',
     docs: {
-      description: 'Reports invalid preset settings for a theme block',
+      description: 'Reports invalid preset settings for a block',
       recommended: true,
       url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-block-preset-settings',
     },
@@ -32,82 +36,152 @@ export const ValidBlockPresetSettings: LiquidCheckDefinition = {
       }
     }
 
-    function getInlineSettingsTypesAndKeys(settings: Setting.Any[]) {
-      if (!settings) return [];
-      return settings.map((setting: { id: any; type: any }) => ({
-        id: setting.id,
-        type: setting.type,
-      }));
-    }
-
-    function getPresetSettingsKeys(presets: Preset.Preset[]) {
-      const allKeys: string[] = [];
-      for (const preset of presets) {
-        if (preset.settings) {
-          allKeys.push(...Object.keys(preset.settings));
-        }
-      }
-      return allKeys;
-    }
-
-    function getPresetBlockSettingsKeys(blocks: Preset.PresetBlocks) {
-      const allKeys: string[] = [];
-      for (const block of Object.values(blocks)) {
-        for (const [_, blockData] of Object.entries(block)) {
-          if (blockData && typeof blockData === 'object' && 'settings' in blockData) {
-            const settings = blockData.settings;
-            if (settings && typeof settings === 'object') {
-              allKeys.push(...Object.keys(settings));
-            }
-          }
-        }
-      }
-      return allKeys;
-    }
-
     return {
-      async LiquidRawTag(node) {
-        if (node.name !== 'schema' || node.body.kind !== 'json') {
-          return;
-        }
-
+      async LiquidRawTag() {
         const schema = await getSchema();
+        const { validSchema, ast } = schema ?? {};
+        if (!validSchema || validSchema instanceof Error) return;
+        if (!ast || ast instanceof Error) return;
         if (!schema) return;
-        if (schema.validSchema instanceof Error) return;
 
-        const validSchema = schema.validSchema;
-        const settingsKeys = getInlineSettingsTypesAndKeys(validSchema.settings);
-        const presetSettingsKeys = getPresetSettingsKeys(validSchema.presets ?? []);
+        const presetNode = nodeAtPath(ast, ['presets']) as ObjectNode;
+        if (!presetNode) return;
 
-        for (const key of presetSettingsKeys) {
-          if (!settingsKeys.some((setting) => setting.id === key)) {
+        const settingsNode = nodeAtPath(ast, ['settings']) as ObjectNode;
+        if (!settingsNode) return;
+
+        const presetSettingsIds = presetNode.children
+          .map((preset: PropertyNode) => {
+            const settingsNode = preset.children.find(
+              (prop: PropertyNode) => prop.key.value === 'settings',
+            );
+            if (settingsNode?.value?.children) {
+              return settingsNode.value.children.map((setting: PropertyNode) => {
+                const key = setting.key.value;
+                const start = setting.key.loc?.start;
+                const end = setting.key.loc?.end;
+                return { key, start, end };
+              });
+            }
+            return [];
+          })
+          .flat()
+          .filter(Boolean);
+
+        const settingIds = settingsNode.children.map((child: PropertyNode) => {
+          const idNode = child.children.find((prop: PropertyNode) => prop.key.value === 'id');
+          return idNode?.value?.value; // Access the actual ID string
+        });
+
+
+        for (const presetSettingId of presetSettingsIds) {
+          if (!settingIds.includes(presetSettingId.key)) {
             context.report({
-              message: `Preset setting "${key}" does not exist in the block's settings`,
-              startIndex: 0,
-              endIndex: 0,
+              startIndex: presetSettingId.start.line,
+              endIndex: presetSettingId.end.line,
+              message: `Preset setting "${presetSettingId.key}" does not exist in settings`,
             });
           }
         }
 
-        if (validSchema.blocks) {
-          for (const block of validSchema.blocks) {
-            const blockSchema = await context.getBlockSchema?.(block.type);
-            if (!blockSchema || blockSchema.validSchema instanceof Error) continue;
+        const { rootLevelThemeBlocks, rootLevelLocalBlocks, presetLevelBlocks } =
+          getBlocks(validSchema);
 
-            for (const preset of validSchema.presets ?? []) {
-              if (!preset.blocks) continue;
-              const presetBlockSettingKeys = getPresetBlockSettingsKeys(preset.blocks) ?? [];
 
-              for (const key of presetBlockSettingKeys) {
-                if (!blockSchema.validSchema.settings?.some((setting) => setting.id === key)) {
-                  context.report({
-                    message: `Preset setting "${key}" does not exist in the block type "${block.type}"'s settings`,
-                    startIndex: 0,
-                    endIndex: 0,
-                  });
-                }
+          const rootLevelThemeBlockSettingIds = await Promise.all(
+            rootLevelThemeBlocks.map(async ({ node }) => {
+              const blockSchema = await context.getBlockSchema?.(node.type);
+              const { validSchema, ast } = blockSchema ?? {};
+              
+              if (!validSchema || validSchema instanceof Error) return [];
+              if (!ast || ast instanceof Error) return [];
+  
+              const settingsNode = nodeAtPath(ast, ['settings']) as ObjectNode;
+              if (!settingsNode?.children) return [];
+  
+              return settingsNode.children
+                .map((child: PropertyNode) => {
+                  const idNode = child.children?.find(
+                    (prop: PropertyNode) => prop.key.value === 'id'
+                  );
+                  return idNode?.value?.value;
+                })
+                .filter(Boolean);
+            })
+          );
+
+          const rootLevelLocalBlockSettingIds = await Promise.all(rootLevelLocalBlocks
+            .map(async ({ node }) => {
+              if (!node.settings) {
+                const blockType = node.type;
+                const blockSchema = await context.getBlockSchema?.(blockType);
+                const { validSchema, ast } = blockSchema ?? {};
+                
+                if (!validSchema || validSchema instanceof Error) return [];
+                if (!ast || ast instanceof Error) return [];
+  
+                const settingsNode = nodeAtPath(ast, ['settings']) as ObjectNode;
+                if (!settingsNode?.children) return [];
+  
+                return settingsNode.children
+                  .map((child: PropertyNode) => {
+                    const idNode = child.children?.find(
+                      (prop: PropertyNode) => prop.key.value === 'id'
+                    );
+                    return idNode?.value?.value;
+                  })
+                  .filter(Boolean);
               }
-            }
+              return Object.keys(node.settings);
+            }))
+            .then(ids => ids.flat());
+            console.log(rootLevelLocalBlockSettingIds);
+
+        //one array to compare against
+        const allBlockSettingIds = [
+          ...rootLevelThemeBlockSettingIds,
+          ...rootLevelLocalBlockSettingIds
+        ].flat();
+        
+        console.log(allBlockSettingIds);
+         //we check this against the other two arrays
+         const presetBlockSettingIds = Object.values(presetLevelBlocks)
+         .flat()
+         .map(({ node }) => {
+           const blockKey = Object.keys(node).find(
+             (key) => node[key as keyof typeof node]?.settings,
+           );
+           if (!blockKey) return [];
+
+           const blockSettingsNode = nodeAtPath(ast, [
+             'presets',
+             '0',
+             'blocks',
+             '0',
+             blockKey,
+             'settings',
+           ]) as ObjectNode;
+           if (!blockSettingsNode?.children) return [];
+
+           return blockSettingsNode.children
+             .filter((node): node is PropertyNode => 'key' in node)
+             .map((setting) => ({
+               key: setting.key.value,
+               start: setting.key.loc?.start,
+               end: setting.key.loc?.end,
+             }));
+         })
+         .flat()
+         .filter(Boolean);
+
+        
+        for (const presetBlockSettingId of presetBlockSettingIds) {
+          if (!allBlockSettingIds.includes(presetBlockSettingId.key)) {
+            context.report({
+              startIndex: presetBlockSettingId?.start?.line ?? 0,
+              endIndex: presetBlockSettingId?.end?.line ?? 0,
+              message: `Preset block setting "${presetBlockSettingId.key}" does not exist in settings.`,
+            });
           }
         }
       },
