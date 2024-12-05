@@ -757,6 +757,7 @@ export interface TextNode extends ASTNode<NodeTypes.TextNode> {
 
 export interface LiquidDocParamNode extends ASTNode<NodeTypes.LiquidDocParamNode> {
   name: string;
+  value: string;
 }
 
 export interface ASTNode<T> {
@@ -1279,6 +1280,7 @@ function buildAst(
           name: node.name,
           position: position(node),
           source: node.source,
+          value: node.value,
         });
         break;
       }
