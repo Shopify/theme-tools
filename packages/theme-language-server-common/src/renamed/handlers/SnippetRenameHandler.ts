@@ -9,7 +9,7 @@ import {
   WorkspaceEdit,
 } from 'vscode-languageserver-protocol';
 import { ClientCapabilities } from '../../ClientCapabilities';
-import { AugmentedLiquidSourceCode, AugmentedSourceCode, DocumentManager } from '../../documents';
+import { DocumentManager, isLiquidSourceCode } from '../../documents';
 import { isSnippet, snippetName } from '../../utils/uri';
 import { BaseRenameHandler } from '../BaseRenameHandler';
 
@@ -35,9 +35,6 @@ export class SnippetRenameHandler implements BaseRenameHandler {
 
   async onDidRenameFiles(params: RenameFilesParams): Promise<void> {
     if (!this.capabilities.hasApplyEditSupport) return;
-    const isLiquidSourceCode = (file: AugmentedSourceCode): file is AugmentedLiquidSourceCode =>
-      file.type === SourceCodeType.LiquidHtml;
-
     const relevantRenames = params.files.filter(
       (file) => isSnippet(file.oldUri) && isSnippet(file.newUri),
     );
