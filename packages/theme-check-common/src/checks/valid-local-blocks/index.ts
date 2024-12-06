@@ -1,5 +1,11 @@
-import { LiquidCheckDefinition, Preset, Severity, SourceCodeType, Section } from '../../types';
-import { LiteralNode } from 'json-to-ast';
+import {
+  LiquidCheckDefinition,
+  Preset,
+  Severity,
+  SourceCodeType,
+  Section,
+  LiteralNode,
+} from '../../types';
 import { nodeAtPath } from '../../json';
 import { getSchema } from '../../to-schema';
 import { isBlock, isSection } from '../../to-schema';

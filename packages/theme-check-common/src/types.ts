@@ -1,23 +1,24 @@
-import { NodeTypes as LiquidHtmlNodeTypes, LiquidHtmlNode } from '@shopify/liquid-html-parser';
+import { LiquidHtmlNode, NodeTypes as LiquidHtmlNodeTypes } from '@shopify/liquid-html-parser';
+
+import { Schema, Settings } from './types/schema-prop-factory';
+
+import { AbstractFileSystem, UriString } from './AbstractFileSystem';
+import { JSONCorrector, StringCorrector } from './fixes';
 
 import {
   ArrayNode,
-  IdentifierNode,
-  LiteralNode,
+  ASTNode,
+  JSONNode,
+  JSONNodeTypes,
   ObjectNode,
   PropertyNode,
-  ASTNode,
-} from 'json-to-ast';
-import { Schema, Settings } from './types/schema-prop-factory';
+} from './jsonc/types';
+import { JsonValidationSet, ThemeDocset } from './types/theme-liquid-docs';
+import { AppBlockSchema, SectionSchema, ThemeBlockSchema } from './types/theme-schemas';
 
-import { StringCorrector, JSONCorrector } from './fixes';
-import { AbstractFileSystem, UriString } from './AbstractFileSystem';
-
-import { ThemeDocset, JsonValidationSet } from './types/theme-liquid-docs';
-import { AppBlockSchema, ThemeBlockSchema, SectionSchema } from './types/theme-schemas';
-
-export * from './types/theme-liquid-docs';
+export * from './jsonc/types';
 export * from './types/schema-prop-factory';
+export * from './types/theme-liquid-docs';
 export * from './types/theme-schemas';
 
 export const isObjectNode = (node?: ASTNode): node is ObjectNode => node?.type === 'Object';
@@ -55,8 +56,7 @@ export type LiquidCheckDefinition<S extends Schema = Schema> = CheckDefinition<
 >;
 export type LiquidCheck = Check<SourceCodeType.LiquidHtml>;
 
-export { LiquidHtmlNodeTypes };
-export { LiquidHtmlNode };
+export { LiquidHtmlNode, LiquidHtmlNodeTypes };
 
 export type JSONSourceCode = SourceCode<SourceCodeType.JSON>;
 export type JSONCheckDefinition<S extends Schema = Schema> = CheckDefinition<
@@ -64,10 +64,6 @@ export type JSONCheckDefinition<S extends Schema = Schema> = CheckDefinition<
   S
 >;
 export type JSONCheck = Check<SourceCodeType.JSON>;
-
-export type JSONNodeTypes = 'Object' | 'Property' | 'Identifier' | 'Array' | 'Literal';
-
-export type JSONNode = ArrayNode | IdentifierNode | LiteralNode | ObjectNode | PropertyNode;
 
 // AST[SourceCodeType.LiquidHtml] maps to LiquidHtmlNode
 export type AST = {

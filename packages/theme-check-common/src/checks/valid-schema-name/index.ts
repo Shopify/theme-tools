@@ -1,7 +1,6 @@
-import { LiteralNode } from 'json-to-ast';
 import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
 import { getSchema } from '../../to-schema';
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
+import { LiquidCheckDefinition, LiteralNode, Severity, SourceCodeType } from '../../types';
 import { deepGet } from '../../utils';
 
 const MAX_SCHEMA_NAME_LENGTH = 25;
