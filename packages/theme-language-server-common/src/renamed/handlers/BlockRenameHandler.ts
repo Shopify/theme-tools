@@ -249,19 +249,6 @@ export class BlockRenameHandler implements BaseRenameHandler {
 
       const edits: TextEdit[] = [];
       if (validSchema.blocks) {
-        const hasAtTheme = validSchema.blocks.some((block) => block.type === '@theme');
-        if (hasAtTheme && isPrivate(newBlockName) && isPublic(oldBlockName)) {
-          const arrayNode = nodeAtPath(ast, ['blocks']);
-          edits.push({
-            annotationId,
-            newText: `, { "type": "${newBlockName}" }`,
-            range: Range.create(
-              textDocument.positionAt(offset + arrayNode!.loc.start.offset - 1),
-              textDocument.positionAt(offset + arrayNode!.loc.end.offset - 1),
-            ),
-          });
-        }
-
         for (let i = 0; i < validSchema.blocks.length; i++) {
           const blockDef = validSchema.blocks[i];
           if (isLocalBlock(blockDef)) {
@@ -496,12 +483,4 @@ function getBlocksEditsFactory(
       return edits;
     });
   };
-}
-
-function isPrivate(blockName: string) {
-  return blockName.startsWith('_');
-}
-
-function isPublic(blockName: string) {
-  return !isPrivate(blockName);
 }
