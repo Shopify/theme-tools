@@ -39,3 +39,9 @@ export type AugmentedSourceCode<SCT extends SourceCodeType = SourceCodeType> = {
   [SourceCodeType.JSON]: AugmentedJsonSourceCode;
   [SourceCodeType.LiquidHtml]: AugmentedLiquidSourceCode;
 }[SCT];
+
+export const isLiquidSourceCode = (file: AugmentedSourceCode): file is AugmentedLiquidSourceCode =>
+  file.type === SourceCodeType.LiquidHtml;
+
+export const isJsonSourceCode = (file: AugmentedSourceCode): file is AugmentedJsonSourceCode =>
+  file.type === SourceCodeType.JSON;

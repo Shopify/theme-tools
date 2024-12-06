@@ -886,11 +886,6 @@
   resolved "https://registry.npmjs.org/@types/json-schema/-/json-schema-7.0.12.tgz"
   integrity sha512-Hr5Jfhc9eYOQNPYO5WLDq/n4jqijdHNlDXjuAQkkt+mWdQR+XJToOHrsD4cPaMXpn6KO7y2+wM8AZEs8VpBLVA==
 
-"@types/json-to-ast@^2.1.2":
-  version "2.1.2"
-  resolved "https://registry.npmjs.org/@types/json-to-ast/-/json-to-ast-2.1.2.tgz"
-  integrity sha512-GEjR5l9wZGS74KhL1a1tZuyRJqdLB7LGgOXzWspJx9xxC/iyCFTwwKv71Lz8fzZyGuVW8FjASQGoYFi6XZJWLQ==
-
 "@types/json5@^0.0.29":
   version "0.0.29"
   resolved "https://registry.npmjs.org/@types/json5/-/json5-0.0.29.tgz"
@@ -2057,11 +2052,6 @@ co@^4.6.0:
   version "4.6.0"
   resolved "https://registry.npmjs.org/co/-/co-4.6.0.tgz#6ea6bdf3d853ae54ccb8e47bfa0bf3f9031fb184"
   integrity sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==
-
-code-error-fragment@0.0.230:
-  version "0.0.230"
-  resolved "https://registry.npmjs.org/code-error-fragment/-/code-error-fragment-0.0.230.tgz"
-  integrity sha512-cadkfKp6932H8UkhzE/gcUqhRMNf8jHzkAN7+5Myabswaghu4xABTgPHDCjW+dBAJxj/SpkTYokpzDqY4pCzQw==
 
 codemirror@^6.0.1:
   version "6.0.1"
@@ -4128,14 +4118,6 @@ json-stable-stringify-without-jsonify@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/json-stable-stringify-without-jsonify/-/json-stable-stringify-without-jsonify-1.0.1.tgz"
   integrity sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==
-
-json-to-ast@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.npmjs.org/json-to-ast/-/json-to-ast-2.1.0.tgz"
-  integrity sha512-W9Lq347r8tA1DfMvAGn9QNcgYm4Wm7Yc+k8e6vezpMnRT+NHbtlxgNBXRVjXe9YM6eTn6+p/MKOlV/aABJcSnQ==
-  dependencies:
-    code-error-fragment "0.0.230"
-    grapheme-splitter "^1.0.4"
 
 json5@^1.0.2:
   version "1.0.2"

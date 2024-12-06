@@ -1,6 +1,5 @@
-import { SourceCodeType, JSONCheckDefinition, Severity, Problem, JSONNode } from '../../types';
+import { SourceCodeType, JSONCheckDefinition, Severity, Problem, LiteralNode } from '../../types';
 import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
-import { Location, LiteralNode } from 'json-to-ast';
 
 export const ValidHTMLTranslation: JSONCheckDefinition = {
   meta: {
@@ -31,7 +30,7 @@ export const ValidHTMLTranslation: JSONCheckDefinition = {
         try {
           toLiquidHtmlAST(node.value);
         } catch (error) {
-          const loc = node.loc as Location;
+          const loc = node.loc;
 
           const problem: Problem<SourceCodeType.JSON> = {
             message: `${error}.`,
