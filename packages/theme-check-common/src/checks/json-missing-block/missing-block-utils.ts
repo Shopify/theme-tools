@@ -72,28 +72,30 @@ async function validateBlock(
   const themeBlocks = await getThemeBlocks(ancestorType, currentPath, context);
   if (themeBlocks.length === 0) return;
 
-  const isPrivateBlock = blockType.startsWith('_');
-  const isThemeInRootLevel = themeBlocks.includes('@theme');
-  const isPresetInRootLevel = themeBlocks.includes(blockType);
+  const exists = await validateBlockFileExistence(blockType, context);
+  if (!exists) {
+    reportWarning(
+      `Theme block 'blocks/${blockType}.liquid' does not exist.`,
+      offset,
+      blockPath,
+      context,
+    );
+  } else {
+    const isPrivateBlock = blockType.startsWith('_');
+    const isThemeInRootLevel = themeBlocks.includes('@theme');
+    const isPresetInRootLevel = themeBlocks.includes(blockType);
 
-  if (!isPrivateBlock ? isPresetInRootLevel || isThemeInRootLevel : isPresetInRootLevel) {
-    const exists = await validateBlockFileExistence(blockType, context);
-    if (!exists) {
+    if (!isPrivateBlock ? isPresetInRootLevel || isThemeInRootLevel : isPresetInRootLevel) {
+      return;
+    } else {
+      const location = isNestedBlock(currentPath) ? 'blocks' : 'sections';
       reportWarning(
-        `Theme block 'blocks/${blockType}.liquid' does not exist.`,
+        `Block type '${blockType}' is not allowed in '${location}/${ancestorType}.liquid'.`,
         offset,
         blockPath,
         context,
       );
     }
-  } else {
-    const location = isNestedBlock(currentPath) ? 'blocks' : 'sections';
-    reportWarning(
-      `Block type '${blockType}' is not allowed in '${location}/${ancestorType}.liquid'.`,
-      offset,
-      blockPath,
-      context,
-    );
   }
 }
 
