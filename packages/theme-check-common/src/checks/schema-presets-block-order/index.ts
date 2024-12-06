@@ -1,11 +1,15 @@
-import { ArrayNode } from 'json-to-ast';
 import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
 import { basename } from '../../path';
 import { isBlock, isSection } from '../../to-schema';
-import { JSONNode, LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
+import {
+  ArrayNode,
+  Context,
+  JSONNode,
+  LiquidCheckDefinition,
+  Severity,
+  SourceCodeType,
+} from '../../types';
 import { Preset } from '../../types/schemas/preset';
-import { ThemeBlock } from '../../types/schemas/theme-block';
-import { Context } from '../../types';
 
 export const SchemaPresetsBlockOrder: LiquidCheckDefinition = {
   meta: {

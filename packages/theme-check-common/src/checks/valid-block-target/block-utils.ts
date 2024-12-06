@@ -1,5 +1,12 @@
-import { JSONNode, Preset, Section, SourceCodeType, Theme, ThemeBlock } from '../../types';
-import { LiteralNode } from 'json-to-ast';
+import {
+  JSONNode,
+  LiteralNode,
+  Preset,
+  Section,
+  SourceCodeType,
+  Theme,
+  ThemeBlock,
+} from '../../types';
 import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
 import { Context } from '../../types';
 import { doesFileExist } from '../../utils/file-utils';

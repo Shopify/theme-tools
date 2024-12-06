@@ -28,7 +28,6 @@
   "dependencies": {
     "@shopify/liquid-html-parser": "2.1.2",
     "cross-fetch": "^4.0.0",
-    "json-to-ast": "^2.1.0",
     "jsonc-parser": "^3.2.0",
     "line-column": "^1.0.2",
     "lodash-es": "^4.17.21",
@@ -37,7 +36,6 @@
     "vscode-uri": "^3.0.7"
   },
   "devDependencies": {
-    "@types/json-to-ast": "^2.1.2",
     "@types/line-column": "^1.0.0",
     "@types/lodash-es": "^4.17.12"
   }

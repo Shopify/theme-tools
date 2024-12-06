@@ -1,10 +1,10 @@
-import { PropertyNode } from 'json-to-ast';
 import {
   JSONCheckDefinition,
   JSONNode,
   JSONSourceCode,
   Severity,
   SourceCodeType,
+  PropertyNode,
 } from '../../types';
 
 const PLURALIZATION_KEYS = new Set(['zero', 'one', 'two', 'few', 'many', 'other']);

@@ -1,7 +1,12 @@
-import { JSONNode, LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { toJSONAST } from '../../to-source-code';
+import {
+  JSONNode,
+  LiquidCheckDefinition,
+  LiteralNode,
+  Severity,
+  SourceCodeType,
+} from '../../types';
 import { visit } from '../../visitor';
-import { LiteralNode } from 'json-to-ast';
 
 export const LiquidFreeSettings: LiquidCheckDefinition = {
   meta: {

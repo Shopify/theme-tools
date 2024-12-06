@@ -1,8 +1,8 @@
 import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
-import toJSON from 'json-to-ast';
 
+import { toJSONNode } from './jsonc/parse';
 import * as path from './path';
-import { JSONSourceCode, LiquidSourceCode, SourceCodeType } from './types';
+import { JSONNode, JSONSourceCode, LiquidSourceCode, SourceCodeType } from './types';
 import { asError } from './utils/error';
 
 export function toLiquidHTMLAST(source: string) {
@@ -13,9 +13,9 @@ export function toLiquidHTMLAST(source: string) {
   }
 }
 
-export function toJSONAST(source: string) {
+export function toJSONAST(source: string): JSONNode | Error {
   try {
-    return toJSON(source);
+    return toJSONNode(source);
   } catch (error) {
     return asError(error);
   }

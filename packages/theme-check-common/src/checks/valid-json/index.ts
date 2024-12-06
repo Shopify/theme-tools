@@ -1,10 +1,4 @@
-import { Severity, SourceCodeType, JSONCheckDefinition } from '../../types';
-import { getOffset, isError } from '../../utils';
-
-function cleanErrorMessage(error: Error) {
-  const message = 'rawMessage' in error ? (error.rawMessage as string) : error.message;
-  return message.replace(/\s+at \d+:\d+/, '');
-}
+import { JSONCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 export const ValidJSON: JSONCheckDefinition = {
   meta: {

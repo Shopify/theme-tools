@@ -5,8 +5,8 @@ import {
   Preset,
   Section,
   ThemeBlock,
+  LiteralNode,
 } from '../../types';
-import { LiteralNode } from 'json-to-ast';
 import { nodeAtPath } from '../../json';
 import { getSchema } from '../../to-schema';
 import {
