@@ -1,5 +1,18 @@
 # @shopify/theme-check-common
 
+## 3.4.0
+
+### Minor Changes
+
+- 8912fab8: Update Ohm grammar for ContentFor tag to extract arguments correctly
+  Update ValidContentForArguments check to report deprecated context. argument usage
+- 51ec6a7a: Add case to `SchemaPresetBlockOrder` check
+
+### Patch Changes
+
+- Updated dependencies [8912fab8]
+  - @shopify/liquid-html-parser@2.2.0
+
 ## 3.3.0
 
 ### Minor Changes

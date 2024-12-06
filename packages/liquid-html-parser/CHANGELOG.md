@@ -1,5 +1,12 @@
 # @shopify/liquid-html-parser
 
+## 2.2.0
+
+### Minor Changes
+
+- 8912fab8: Update Ohm grammar for ContentFor tag to extract arguments correctly
+  Update ValidContentForArguments check to report deprecated context. argument usage
+
 ## 2.1.2
 
 ### Minor Changes
