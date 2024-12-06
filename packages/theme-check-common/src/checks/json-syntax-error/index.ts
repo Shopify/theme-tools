@@ -1,5 +1,7 @@
-import { Severity, SourceCodeType, JSONCheckDefinition } from '../../types';
-import { getOffset, isError } from '../../utils';
+import { ParseErrorCode, printParseErrorCode } from 'jsonc-parser';
+import { JSONCParseErrors } from '../../jsonc/parse';
+import { JSONCheckDefinition, Severity, SourceCodeType } from '../../types';
+import { isError } from '../../utils';
 
 function cleanErrorMessage(error: Error) {
   const message = 'rawMessage' in error ? (error.rawMessage as string) : error.message;
@@ -30,20 +32,14 @@ export const JSONSyntaxError: JSONCheckDefinition = {
 
     return {
       async onCodePathStart(file) {
-        if (
-          'line' in error &&
-          typeof error.line === 'number' &&
-          'column' in error &&
-          typeof error.column === 'number'
-        ) {
-          const { line, column } = error;
-          const startIndex = getOffset(file.source, line, column);
-          const endIndex = getOffset(file.source, line, column) + 1;
-          context.report({
-            message: cleanErrorMessage(error),
-            startIndex,
-            endIndex: endIndex,
-          });
+        if (file.ast instanceof JSONCParseErrors) {
+          for (const error of file.ast.errors) {
+            context.report({
+              message: jsoncParseErrorMessage(error.error),
+              startIndex: error.offset,
+              endIndex: error.offset + error.length,
+            });
+          }
         } else {
           context.report({
             message: cleanErrorMessage(error),
@@ -55,3 +51,42 @@ export const JSONSyntaxError: JSONCheckDefinition = {
     };
   },
 };
+
+function jsoncParseErrorMessage(errorType: ParseErrorCode) {
+  switch (errorType) {
+    case ParseErrorCode.InvalidSymbol:
+      return 'Invalid symbol';
+    case ParseErrorCode.InvalidNumberFormat:
+      return 'Invalid number format';
+    case ParseErrorCode.PropertyNameExpected:
+      return 'Property name expected';
+    case ParseErrorCode.ValueExpected:
+      return 'Expecting a value';
+    case ParseErrorCode.ColonExpected:
+      return 'Expecting a colon after a property name (:)';
+    case ParseErrorCode.CommaExpected:
+      return 'Expecting a comma';
+    case ParseErrorCode.CloseBraceExpected:
+      return 'Expecting a closing brace (})';
+    case ParseErrorCode.CloseBracketExpected:
+      return 'Expecting a closing bracket (])';
+    case ParseErrorCode.EndOfFileExpected:
+      return 'Expecting end of file';
+    case ParseErrorCode.InvalidCommentToken:
+      return 'Invalid comment token';
+    case ParseErrorCode.UnexpectedEndOfComment:
+      return 'Unexpected end of comment';
+    case ParseErrorCode.UnexpectedEndOfString:
+      return 'Unexpected end of string';
+    case ParseErrorCode.UnexpectedEndOfNumber:
+      return 'Unexpected end of number';
+    case ParseErrorCode.InvalidUnicode:
+      return 'Invalid unicode';
+    case ParseErrorCode.InvalidEscapeCharacter:
+      return 'Invalid escape character';
+    case ParseErrorCode.InvalidCharacter:
+      return 'Invalid character';
+    default:
+      return 'Something went wrong with this JSON';
+  }
+}

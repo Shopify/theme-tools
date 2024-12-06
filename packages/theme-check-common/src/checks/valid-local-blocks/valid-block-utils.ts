@@ -1,6 +1,5 @@
-import { LiteralNode } from 'json-to-ast';
 import { getLocEnd, getLocStart } from '../../json';
-import { Preset, ThemeBlock, Section, Context, SourceCodeType } from '../../types';
+import { Preset, ThemeBlock, Section, Context, SourceCodeType, LiteralNode } from '../../types';
 
 type BlockNodeWithPath = {
   node: Section.Block | ThemeBlock.Block | Preset.Block;
