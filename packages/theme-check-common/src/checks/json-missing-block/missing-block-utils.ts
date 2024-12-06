@@ -1,5 +1,5 @@
 import { Context, SourceCodeType, JSONNode } from '../../types';
-import { LiteralNode, PropertyNode } from 'json-to-ast';
+import { PropertyNode } from 'json-to-ast';
 import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
 import { doesFileExist } from '../../utils/file-utils';
 
@@ -14,7 +14,7 @@ function isNestedBlock(currentPath: string[]): boolean {
 function reportWarning(
   message: string,
   offset: number,
-  astNode: LiteralNode,
+  astNode: JSONNode,
   context: Context<SourceCodeType.JSON>,
 ) {
   context.report({
@@ -63,7 +63,7 @@ async function getThemeBlocks(
 
 async function validateBlock(
   blockType: string,
-  blockPath: LiteralNode,
+  blockPath: JSONNode,
   ancestorType: string,
   currentPath: string[],
   offset: number,
@@ -109,7 +109,7 @@ export async function getAllBlocks(
     Object.entries(blocks).map(async ([blockKey, block]) => {
       if (block.type) {
         const typePath = currentPath.concat(blockKey, 'type');
-        const blockPath = nodeAtPath(ast, typePath)! as LiteralNode;
+        const blockPath = nodeAtPath(ast, typePath)! as JSONNode;
 
         if (blockPath) {
           await validateBlock(block.type, blockPath, ancestorType, currentPath, offset, context);
