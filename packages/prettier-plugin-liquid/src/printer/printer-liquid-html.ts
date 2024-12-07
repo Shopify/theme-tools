@@ -555,7 +555,7 @@ function printNode(
     }
 
     case NodeTypes.LiquidDocParamNode: {
-      return [node.name, ' ', node.value];
+      return [node.name, ' ', node.paramName, ' ', node.paramDescription];
     }
 
     default: {
