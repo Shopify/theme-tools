@@ -1,9 +1,14 @@
 It should indent the body
 {% doc %}
-  @param body
+  @param paramName param with description
 {% enddoc %}
 
 It should not dedent to root
 {% doc %}
-  @param body
+  @param paramName param with description
+{% enddoc %}
+
+It should trim whitespace between nodes
+{% doc %}
+  @param paramName param with description
 {% enddoc %}

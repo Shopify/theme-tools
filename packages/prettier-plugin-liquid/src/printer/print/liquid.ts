@@ -1,4 +1,10 @@
-import { NodeTypes, NamedTags, isBranchedTag, RawMarkup } from '@shopify/liquid-html-parser';
+import {
+  NodeTypes,
+  NamedTags,
+  isBranchedTag,
+  RawMarkup,
+  LiquidDocParamNode,
+} from '@shopify/liquid-html-parser';
 import { Doc, doc } from 'prettier';
 
 import {
@@ -497,7 +503,22 @@ export function printLiquidDoc(
   _args: LiquidPrinterArgs,
 ) {
   const body = path.map((p: any) => print(p), 'nodes');
-  return [indent([hardline, body]), hardline];
+  return [indent([hardline, join(hardline, body)]), hardline];
+}
+
+export function printLiquidDocParam(
+  path: AstPath<LiquidDocParamNode>,
+  _options: LiquidParserOptions,
+  _print: LiquidPrinter,
+  _args: LiquidPrinterArgs,
+): Doc {
+  const node = path.getValue();
+  return [
+    node.name,
+    ' ',
+    node.paramName.value,
+    node.paramDescription.value ? ' ' + node.paramDescription.value : '',
+  ];
 }
 
 function innerLeadingWhitespace(node: LiquidTag | LiquidBranch) {

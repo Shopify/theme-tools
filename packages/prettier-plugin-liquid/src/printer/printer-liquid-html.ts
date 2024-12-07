@@ -46,6 +46,7 @@ import {
   printLiquidRawTag,
   printLiquidTag,
   printLiquidVariableOutput,
+  printLiquidDocParam,
 } from './print/liquid';
 import { printClosingTagSuffix, printOpeningTagPrefix } from './print/tag';
 import { bodyLines, hasLineBreakInRange, isEmpty, isTextLikeNode, reindent } from './utils';
@@ -555,7 +556,7 @@ function printNode(
     }
 
     case NodeTypes.LiquidDocParamNode: {
-      return [node.name, ' ', node.value];
+      return printLiquidDocParam(path as AstPath<LiquidDocParamNode>, options, print, args);
     }
 
     default: {
