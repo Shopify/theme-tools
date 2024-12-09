@@ -513,12 +513,21 @@ export function printLiquidDocParam(
   _args: LiquidPrinterArgs,
 ): Doc {
   const node = path.getValue();
-  return [
-    node.name,
-    ' ',
-    node.paramName.value,
-    node.paramDescription.value ? ' ' + node.paramDescription.value : '',
-  ];
+  const parts: Doc[] = ['@param'];
+
+  if (node.paramType.value) {
+    parts.push(' ', `{${node.paramType.value}}`);
+  }
+
+  if (node.paramName.value) {
+    parts.push(' ', node.paramName.value);
+  }
+
+  if (node.paramDescription.value) {
+    parts.push(' ', node.paramDescription.value);
+  }
+
+  return parts;
 }
 
 function innerLeadingWhitespace(node: LiquidTag | LiquidBranch) {
