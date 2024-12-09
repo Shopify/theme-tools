@@ -1058,6 +1058,19 @@ describe('Unit: Stage 1 (CST)', () => {
           );
         });
 
+        it('should parse @param with description seperated by a dash', () => {
+          const testStr = `{% doc %}
+            @param dashWithSpace - param with description
+            @param dashWithNoSpace -param with description
+            @param notDashSeparated param with description
+          {% enddoc %}`;
+          cst = toCST(testStr);
+
+          expectPath(cst, '0.children.0.paramDescription.dashSeparated').to.equal(true);
+          expectPath(cst, '0.children.1.paramDescription.dashSeparated').to.equal(true);
+          expectPath(cst, '0.children.2.paramDescription.dashSeparated').to.equal(false);
+        });
+
         it('should parse unsupported doc tags as text nodes', () => {
           const testStr = `{% doc %} @unsupported this tag is not supported {% enddoc %}`;
           cst = toCST(testStr);
