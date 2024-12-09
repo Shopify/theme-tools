@@ -83,7 +83,7 @@ export class FilterCompletionProvider implements Provider {
 
     // The start position for a LiquidFilter node includes the `|`. We need to
     // ignore the pipe and any spaces for our starting position.
-    const pipeRegex = new RegExp(`(\\s*\\|\\s*)(?:${node.name}\\}\\})`);
+    const pipeRegex = new RegExp(`(\\s*\\|\\s*)(?:${node.name}(?:\\}|\\%)\\})`);
     const matchFilterPipe = node.source.match(pipeRegex);
     const startOffet = matchFilterPipe ? matchFilterPipe[1].length : 0;
 
