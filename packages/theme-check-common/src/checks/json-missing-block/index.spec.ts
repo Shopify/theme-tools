@@ -320,7 +320,7 @@ describe('Module: JsonMissingBlock', () => {
       expect(offenses).to.be.empty;
     });
 
-    it('should ingore templates with local blocks', async () => {
+    it('should ignore templates with local blocks', async () => {
       const theme: MockTheme = {
         'templates/product.nested.json': `{
           "sections": {
