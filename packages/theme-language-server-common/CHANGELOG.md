@@ -1,5 +1,11 @@
 # @shopify/theme-language-server-common
 
+## 2.3.2
+
+### Patch Changes
+
+- 2bd19d66: Fixed bug where filter completions wouldn't work on Liquid assignments
+
 ## 2.3.1
 
 ### Patch Changes
