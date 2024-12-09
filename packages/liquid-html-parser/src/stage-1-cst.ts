@@ -112,8 +112,8 @@ export interface ConcreteLiquidDocParamNode
   extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocParamNode> {
   name: string;
   value: string;
-  paramName: string;
-  paramDescription: string;
+  paramName: ConcreteTextNode;
+  paramDescription: ConcreteTextNode;
 }
 
 export interface ConcreteHtmlNodeBase<T> extends ConcreteBasicNode<T> {
@@ -1337,17 +1337,30 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       locEnd,
       source,
       paramName: function (nodes: Node[]) {
-        // I would like to find a better way to capture and separate whitespace
-        return nodes[2].sourceString.trim();
+        const nameNode = nodes[2];
+        return {
+          type: ConcreteNodeTypes.TextNode,
+          value: nameNode.sourceString.trim(),
+          source,
+          locStart: offset + nameNode.source.startIdx,
+          locEnd: offset + nameNode.source.endIdx,
+        };
       },
       paramDescription: function (nodes: Node[]) {
-        return nodes[4].sourceString.trim();
+        const descriptionNode = nodes[4];
+        return {
+          type: ConcreteNodeTypes.TextNode,
+          value: descriptionNode.sourceString.trim(),
+          source,
+          locStart: offset + descriptionNode.source.startIdx,
+          locEnd: offset + descriptionNode.source.endIdx,
+        };
       },
     },
     fallbackNode: {
       type: ConcreteNodeTypes.TextNode,
       value: function () {
-        return (this as any).sourceString;
+        return (this as any).sourceString.trim();
       },
       locStart,
       locEnd,
