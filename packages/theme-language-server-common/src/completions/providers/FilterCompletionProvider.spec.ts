@@ -172,6 +172,33 @@ describe('Module: FilterCompletionProvider', async () => {
     await expect(provider).to.complete('{{ string | █ }}', stringFilters.concat(anyFilters));
   });
 
+  it('handles assignment the same way as output', async () => {
+    //                                     char 31 ⌄ ⌄ char 33
+    const liquid = '{% assign imageUrl = product | de█ %}';
+
+    const textEdit: TextEdit = {
+      newText: 'default',
+      range: {
+        end: { line: 0, character: 33 },
+        start: { line: 0, character: 31 },
+      },
+    };
+
+    await expect(provider).to.complete(liquid, [
+      expect.objectContaining({
+        label: 'default',
+        insertTextFormat: InsertTextFormat.PlainText,
+        textEdit,
+      }),
+    ]);
+
+    const textDocument = TextDocument.create('', 'liquid', 0, liquid.replace(CURSOR, ''));
+
+    expect(TextDocument.applyEdits(textDocument, [textEdit])).toBe(
+      '{% assign imageUrl = product | default %}',
+    );
+  });
+
   describe('when there are no required parameters', () => {
     it('should not include parameters in the insertText of the completion', async () => {
       //                  char 12 ⌄   ⌄ char 16
