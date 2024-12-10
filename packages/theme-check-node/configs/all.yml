@@ -118,6 +118,9 @@ UnknownFilter:
 UnusedAssign:
   enabled: true
   severity: 1
+ValidBlockPresetSettings:
+  enabled: true
+  severity: 0
 ValidBlockTarget:
   enabled: true
   severity: 0
