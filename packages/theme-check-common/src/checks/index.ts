@@ -7,7 +7,6 @@ import { AssetSizeAppBlockJavaScript } from './asset-size-app-block-javascript';
 import { AssetSizeCSS } from './asset-size-css';
 import { AssetSizeJavaScript } from './asset-size-javascript';
 import { BlockIdUsage } from './block-id-usage';
-``;
 import { CaptureOnContentForBlock } from './capture-on-content-for-block';
 import { CdnPreconnect } from './cdn-preconnect';
 import { ContentForHeaderModification } from './content-for-header-modification';
@@ -27,6 +26,7 @@ import { MissingTemplate } from './missing-template';
 import { PaginationSize } from './pagination-size';
 import { ParserBlockingScript } from './parser-blocking-script';
 import { SchemaPresetsBlockOrder } from './schema-presets-block-order';
+import { SchemaPresetsStaticBlocks } from './schema-presets-static-blocks';
 import { RemoteAsset } from './remote-asset';
 import { RequiredLayoutThemeObject } from './required-layout-theme-object';
 import { TranslationKeyExists } from './translation-key-exists';
@@ -74,6 +74,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   PaginationSize,
   ParserBlockingScript,
   SchemaPresetsBlockOrder,
+  SchemaPresetsStaticBlocks,
   RemoteAsset,
   RequiredLayoutThemeObject,
   TranslationKeyExists,
