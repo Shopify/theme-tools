@@ -5,6 +5,7 @@
 ### Minor Changes
 
 - 6f1862c8: Add `SchemaPresetsStaticBlocks` check
+- d7436b4a: Add `JsonMissingBlock` check
 
 ### Patch Changes
 
