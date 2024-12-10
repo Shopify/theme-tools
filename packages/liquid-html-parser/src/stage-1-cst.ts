@@ -113,9 +113,14 @@ export interface ConcreteLiquidDocParamNode
   name: string;
   value: string;
   paramName: ConcreteTextNode;
-  paramDescription: ConcreteTextNode;
+  paramDescription: ConcreteLiquidDocParamDescription;
   paramType: ConcreteTextNode;
+}
+
+export interface ConcreteLiquidDocParamDescription
+  extends ConcreteBasicNode<ConcreteNodeTypes.TextNode> {
   dashSeparated: boolean;
+  value: string;
 }
 
 export interface ConcreteHtmlNodeBase<T> extends ConcreteBasicNode<T> {
@@ -1359,7 +1364,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
         };
       },
       paramDescription: function (nodes: Node[]) {
-        const dashSeparatorNode = nodes[6].children[0];
+        const dashSeparatorNode = nodes[6]?.children[0];
         const descriptionNode = nodes[7];
         return {
           type: ConcreteNodeTypes.TextNode,
