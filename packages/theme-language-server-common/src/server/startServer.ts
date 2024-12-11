@@ -11,6 +11,7 @@ import {
   parseJSON,
   path,
   recursiveReadDirectory,
+  SourceCodeType,
 } from '@shopify/theme-check-common';
 import {
   Connection,
@@ -203,6 +204,16 @@ export function startServer(
     return blocks.map(([uri]) => path.basename(uri, '.liquid'));
   }
 
+  async function getThemeBlockSchema(uri: string, name: string) {
+    const rootUri = await findThemeRootURI(uri);
+    const blockUri = path.join(rootUri, 'blocks', `${name}.liquid`);
+    const doc = documentManager.get(blockUri);
+    if (!doc || doc.type !== SourceCodeType.LiquidHtml) {
+      return;
+    }
+    return doc.getSchema();
+  }
+
   // Defined as a function to solve a circular dependency (doc manager & json
   // lang service both need each other)
   async function isValidSchema(uri: string, jsonString: string) {
@@ -215,6 +226,7 @@ export function startServer(
     getSchemaTranslationsForURI,
     getModeForURI,
     getThemeBlockNames,
+    getThemeBlockSchema,
   );
   const completionsProvider = new CompletionsProvider({
     documentManager,
