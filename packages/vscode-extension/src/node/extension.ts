@@ -1,6 +1,6 @@
 import { FileStat, FileTuple, path as pathUtils } from '@shopify/theme-check-common';
 import * as path from 'node:path';
-import { commands, ExtensionContext, languages, Uri, workspace } from 'vscode';
+import { commands, ExtensionContext, languages, Uri, workspace, window } from 'vscode';
 import {
   DocumentSelector,
   LanguageClient,
@@ -16,8 +16,96 @@ const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 let client: LanguageClient | undefined;
 
+async function isShopifyTheme(workspaceRoot: string): Promise<boolean> {
+  try {
+    // Check for typical Shopify theme folders
+    const requiredFolders = ['sections', 'templates', 'assets', 'config'];
+    for (const folder of requiredFolders) {
+      const folderUri = Uri.file(path.join(workspaceRoot, folder));
+      try {
+        await workspace.fs.stat(folderUri);
+      } catch {
+        return false;
+      }
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isCursor(): boolean {
+  // Check if we're running in Cursor's electron process
+  const processTitle = process.title.toLowerCase();
+  const isElectronCursor =
+    processTitle.includes('cursor') && process.versions.electron !== undefined;
+
+  // Check for Cursor-specific environment variables that are set by Cursor itself
+  const hasCursorEnv =
+    process.env.CURSOR_CHANNEL !== undefined || process.env.CURSOR_VERSION !== undefined;
+
+  return isElectronCursor || hasCursorEnv;
+}
+
+interface ConfigFile {
+  path: string;
+  templateName: string;
+  prompt: string;
+}
+
+async function getConfigFileDetails(workspaceRoot: string): Promise<ConfigFile> {
+  if (isCursor()) {
+    return {
+      path: path.join(workspaceRoot, '.cursorrules'),
+      templateName: 'llm_instructions.template',
+      prompt:
+        'Detected Shopify theme project in Cursor. Do you want a .cursorrules file to be created?',
+    };
+  }
+  return {
+    path: path.join(workspaceRoot, '.github', 'copilot-instructions.md'),
+    templateName: 'llm_instructions.template',
+    prompt:
+      'Detected Shopify theme project in VSCode. Do you want a Copilot instructions file to be created?',
+  };
+}
+
 export async function activate(context: ExtensionContext) {
   const runChecksCommand = 'themeCheck/runChecks';
+
+  if (workspace.workspaceFolders?.length) {
+    const workspaceRoot = workspace.workspaceFolders[0].uri.fsPath;
+    const instructionsConfig = await getConfigFileDetails(workspaceRoot);
+
+    // Don't do anything if the file already exists
+    try {
+      await workspace.fs.stat(Uri.file(instructionsConfig.path));
+      return;
+    } catch {
+      // File doesn't exist, continue
+    }
+
+    if (await isShopifyTheme(workspaceRoot)) {
+      const response = await window.showInformationMessage(instructionsConfig.prompt, 'Yes', 'No');
+
+      if (response === 'Yes') {
+        // Create directory if it doesn't exist (needed for .github case)
+        const dir = path.dirname(instructionsConfig.path);
+        try {
+          await workspace.fs.createDirectory(Uri.file(dir));
+        } catch {
+          // Directory might already exist, continue
+        }
+
+        // Read the template file from the extension's resources
+        const templateContent = await workspace.fs.readFile(
+          Uri.file(context.asAbsolutePath(`resources/${instructionsConfig.templateName}`)),
+        );
+        await workspace.fs.writeFile(Uri.file(instructionsConfig.path), templateContent);
+        console.log(`Wrote instructions file to ${instructionsConfig.path}`);
+      }
+    }
+  }
 
   context.subscriptions.push(
     commands.registerCommand('shopifyLiquid.restart', () => restartServer(context)),
