@@ -474,7 +474,7 @@ const THEME_ARCHITECTURE: { [key: string]: { summary: string; tip?: string } } =
   },
   snippets: {
     summary: `Reusable code fragments included in templates, sections, and layouts via the render tag. Ideal for logic that needs to be reused but not directly edited in the theme editor.`,
-    tip: `Keep snippets focused on a single responsibility. Use variables to make snippets more reusable. Add a header comment block that documents expected inputs, dependencies, and any required objects/variables that need to be passed to the snippet. For example:
+    tip: `Keep snippets focused on a single responsibility. They should always have a header that documents expected inputs, like this:
     {% doc %}
       Renders loading-spinner.
 
