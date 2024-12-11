@@ -1,6 +1,19 @@
 import { FileStat, FileTuple, path as pathUtils } from '@shopify/theme-check-common';
 import * as path from 'node:path';
-import { commands, ExtensionContext, languages, Uri, workspace } from 'vscode';
+import {
+  commands,
+  ExtensionContext,
+  LanguageModelChatMessage,
+  languages,
+  lm,
+  Position,
+  Range,
+  TextEditor,
+  TextEditorDecorationType,
+  Uri,
+  window,
+  workspace,
+} from 'vscode';
 import {
   DocumentSelector,
   LanguageClient,
@@ -11,7 +24,7 @@ import {
 import { documentSelectors } from '../common/constants';
 import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
-import LiquidCompletionProvider from '../common/completionProvider';
+import { showSidekickTipsDecoration } from './sidekick';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -35,11 +48,38 @@ export async function activate(context: ExtensionContext) {
     ),
   );
   context.subscriptions.push(
-    languages.registerInlineCompletionItemProvider(
-      [{ language: 'liquid' }],
-      new LiquidCompletionProvider(),
+    commands.registerTextEditorCommand('shopifyLiquid.sidekick', async (textEditor: TextEditor) => {
+      const position = textEditor.selection.active;
+
+      const analyzingDecoration = window.createTextEditorDecorationType({
+        after: {
+          contentText: ` ✨ Analyzing...`,
+          color: 'grey',
+          fontStyle: 'italic',
+        },
+      });
+
+      textEditor.setDecorations(analyzingDecoration, [{ range: new Range(position, position) }]);
+
+      await showSidekickTipsDecoration(textEditor);
+
+      analyzingDecoration.dispose();
+    }),
+  );
+  context.subscriptions.push(
+    commands.registerCommand(
+      'shopifyLiquid.sidefix',
+      async (args: { range: vscode.Range; newCode: string }) => {
+        console.error('sidefix', args); // TODO
+      },
     ),
   );
+  // context.subscriptions.push(
+  //   languages.registerInlineCompletionItemProvider(
+  //     [{ language: 'liquid' }],
+  //     new LiquidCompletionProvider(),
+  //   ),
+  // );
 
   await startServer(context);
 }

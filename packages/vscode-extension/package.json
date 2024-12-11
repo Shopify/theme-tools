@@ -99,8 +99,24 @@
       {
         "command": "shopifyLiquid.runChecks",
         "title": "Liquid Theme Check: Run Checks"
+      },
+      {
+        "command": "shopifyLiquid.sidefix",
+        "title": "Apply Sidekick suggestion"
+      },
+      {
+        "command": "shopifyLiquid.sidekick",
+        "title": "✨ Sidekick"
       }
     ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "shopifyLiquid.sidekick",
+          "group": "navigation"
+        }
+      ]
+    },
     "configuration": {
       "title": "Shopify Liquid | Syntax Highlighting & Linter by Shopify",
       "properties": {
