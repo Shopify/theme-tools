@@ -5,8 +5,15 @@ Remember the following important mindset when providing code, in the following o
 - Simplicity
 - Readability
 
+Some best practices from Shopify on theme development (more available at https://shopify.dev/docs/themes/best-practices.txt):
+* With the large majority of online store traffic happening on mobile, designing for mobile devices must be at the forefront throughout the theme build process.
+* To provide the best experience to a wide range of merchants and customers, themes must be built from the ground up with accessibility best practices in mind.
+* Themes should minimize the use of JavaScript and rely on modern and native web browser features for most functionality.
+* Use responsive images by using the `image_tag` filter. This filter returns a `srcset` for the image using a smart default set of widths. An example is `{{ product.featured_image | image_url: width: 2000 | image_tag }}`. 
+
 The theme folder structure is as follows:
 /assets
+/blocks
 /config
 /layout
 /locales
@@ -17,15 +24,11 @@ The theme folder structure is as follows:
 /templates/metaobject
 Files can also be placed in the root directory. Subdirectories, other than the ones listed, aren't supported.
 
-Liquid filters are used to modify Liquid output and are documented at https://shopify.dev/docs/api/liquid/filters.txt.
+Liquid filters are used to modify Liquid output and are documented at https://shopify.dev/docs/api/liquid/filters.txt. The full list of filters is "item_count_for_variant,line_items_for,class_list,link_to_type,link_to_vendor,sort_by,url_for_type,url_for_vendor,within,brightness_difference,color_brightness,color_contrast,color_darken,color_desaturate,color_difference,color_extract,color_lighten,color_mix,color_modify,color_saturate,color_to_hex,color_to_hsl,color_to_rgb,hex_to_rgba,hmac_sha1,hmac_sha256,md5,sha1,sha256,currency_selector,customer_login_link,customer_logout_link,customer_register_link,date,font_face,font_modify,font_url,default_errors,payment_button,payment_terms,time_tag,translate,inline_asset_content,json,abs,append,at_least,at_most,base64_decode,base64_encode,base64_url_safe_decode,base64_url_safe_encode,capitalize,ceil,compact,concat,default,divided_by,downcase,escape,escape_once,first,floor,join,last,lstrip,map,minus,modulo,newline_to_br,plus,prepend,remove,remove_first,remove_last,replace,replace_first,replace_last,reverse,round,rstrip,size,slice,sort,sort_natural,split,strip,strip_html,strip_newlines,sum,times,truncate,truncatewords,uniq,upcase,url_decode,url_encode,where,external_video_tag,external_video_url,image_tag,media_tag,model_viewer_tag,video_tag,metafield_tag,metafield_text,money,money_with_currency,money_without_currency,money_without_trailing_zeros,default_pagination,avatar,login_button,camelize,handleize,url_escape,url_param_escape,structured_data,highlight_active_tag,link_to_add_tag,link_to_remove_tag,link_to_tag,format_address,highlight,pluralize,article_img_url,asset_img_url,asset_url,collection_img_url,file_img_url,file_url,global_asset_url,image_url,img_tag,img_url,link_to,payment_type_img_url,payment_type_svg_tag,placeholder_svg_tag,preload_tag,product_img_url,script_tag,shopify_asset_url,stylesheet_tag,weight_with_unit"
+* Liquid tags are used to define logic that tells templates what to do and are documented at https://shopify.dev/api/liquid/tags.txt. The full list of tags is "content_for,form,layout,assign,break,capture,case,comment,continue,cycle,decrement,echo,for,if,include,increment,raw,render,tablerow,unless,paginate,javascript,section,stylesheet,sections,style,else,liquid"
+Liquid objects represent variables that you can use to build your theme and are documented at https://shopify.dev/api/liquid/objects.txt. The full list of objects is "media,address,collections,pages,all_products,app,discount,articles,article,block,blogs,blog,brand,cart,collection,brand_color,color,color_scheme,color_scheme_group,company_address,company,company_location,content_for_header,country,currency,customer,discount_allocation,discount_application,external_video,filter,filter_value_display,filter_value,focal_point,font,form,fulfillment,generic_file,gift_card,image,image_presentation,images,line_item,link,linklists,linklist,forloop,tablerowloop,localization,location,market,measurement,metafield,metaobject_definition,metaobject,metaobject_system,model,model_source,money,order,page,paginate,predictive_search,selling_plan_price_adjustment,product,product_option,product_option_value,swatch,variant,quantity_price_break,rating,recipient,recommendations,request,robots,group,rule,routes,script,search,section,selling_plan_allocation,selling_plan_allocation_price_adjustment,selling_plan_checkout_charge,selling_plan,selling_plan_group,selling_plan_group_option,selling_plan_option,shipping_method,shop,shop_locale,policy,store_availability,tax_line,taxonomy_category,theme,settings,template,transaction,unit_price_measurement,user,video,video_source,additional_checkout_buttons,all_country_option_tags,canonical_url,checkout,comment,content_for_additional_checkout_buttons,content_for_index,content_for_layout,country_option_tags,current_page,current_tags,form_errors,handle,page_description,page_image,page_title,part,pending_payment_instruction_input,powered_by_link,predictive_search_resources,quantity_rule,scripts,sitemap,sort_option,transaction_payment_details,user_agent"
+When you are suggesting code, don't invent new filters, objects or tags. 
 
-Liquid tags are used to define logic that tells templates what to do and are documented at https://shopify.dev/api/liquid/tags.txt.
-Liquid objects represent variables that you can use to build your theme and are documented at https://shopify.dev/api/liquid/objects.txt.
 
-Some best practices from Shopify on theme development (more available at https://shopify.dev/docs/themes/best-practices.txt):
-* With the large majority of online store traffic happening on mobile, designing for mobile devices must be at the forefront throughout the theme build process.
-* To provide the best experience to a wide range of merchants and customers, themes must be built from the ground up with accessibility best practices in mind.
-* Themes should minimize the use of JavaScript and rely on modern and native web browser features for most functionality.
-* Use responsive images by using the `image_tag` filter. This filter returns a `srcset` for the image using a smart default set of widths. An example is `{{ product.featured_image | image_url: width: 2000 | image_tag }}`. 
 
 
