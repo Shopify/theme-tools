@@ -107,10 +107,13 @@ export interface ConcreteBasicNode<T> {
   locEnd: number;
 }
 
+// todo: change param and description to concrete nodes
 export interface ConcreteLiquidDocParamNode
   extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocParamNode> {
   name: string;
   value: string;
+  paramName: ConcreteTextNode;
+  paramDescription: ConcreteTextNode;
 }
 
 export interface ConcreteHtmlNodeBase<T> extends ConcreteBasicNode<T> {
@@ -1329,15 +1332,35 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
     paramNode: {
       type: ConcreteNodeTypes.LiquidDocParamNode,
       name: 0,
-      value: 2,
+      value: 0,
       locStart,
       locEnd,
       source,
+      paramName: function (nodes: Node[]) {
+        const nameNode = nodes[2];
+        return {
+          type: ConcreteNodeTypes.TextNode,
+          value: nameNode.sourceString.trim(),
+          source,
+          locStart: offset + nameNode.source.startIdx,
+          locEnd: offset + nameNode.source.endIdx,
+        };
+      },
+      paramDescription: function (nodes: Node[]) {
+        const descriptionNode = nodes[4];
+        return {
+          type: ConcreteNodeTypes.TextNode,
+          value: descriptionNode.sourceString.trim(),
+          source,
+          locStart: offset + descriptionNode.source.startIdx,
+          locEnd: offset + descriptionNode.source.endIdx,
+        };
+      },
     },
     fallbackNode: {
       type: ConcreteNodeTypes.TextNode,
       value: function () {
-        return (this as any).sourceString;
+        return (this as any).sourceString.trim();
       },
       locStart,
       locEnd,

@@ -395,8 +395,9 @@ LiquidDoc <: Helpers {
     | fallbackNode
 
   fallbackNode = "@" anyExceptStar<newline>
-  paramNode = "@param" space* paramNodeName
-  paramNodeName = anyExceptStar<newline>
+  paramNode = "@param" space* (paramName)? (space+ (paramDescription))?
+  paramName = identifierCharacter+
+  paramDescription = (~newline identifierCharacter | space)+
 }
 
 LiquidHTML <: Liquid {
