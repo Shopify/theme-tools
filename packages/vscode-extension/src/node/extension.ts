@@ -3,15 +3,12 @@ import * as path from 'node:path';
 import {
   commands,
   ExtensionContext,
-  LanguageModelChatMessage,
   languages,
-  lm,
   Position,
   Range,
   TextEditor,
   TextEditorDecorationType,
   Uri,
-  window,
   workspace,
 } from 'vscode';
 import {
@@ -24,13 +21,19 @@ import {
 import { documentSelectors } from '../common/constants';
 import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
-import { getSidekickAnalysis } from './sidekick';
+import {
+  buildAnalyzingDecoration,
+  getSidekickAnalysis,
+  LiquidSuggestion,
+  log,
+  SidekickDecoration,
+} from './sidekick';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-let client: LanguageClient | undefined;
-let editor: TextEditor | undefined;
-let decorations: TextEditorDecorationType[] = [];
+let $client: LanguageClient | undefined;
+let $editor: TextEditor | undefined;
+let $decorations: TextEditorDecorationType[] = [];
 
 export async function activate(context: ExtensionContext) {
   const runChecksCommand = 'themeCheck/runChecks';
@@ -40,7 +43,7 @@ export async function activate(context: ExtensionContext) {
   );
   context.subscriptions.push(
     commands.registerCommand('shopifyLiquid.runChecks', () => {
-      client!.sendRequest('workspace/executeCommand', { command: runChecksCommand });
+      $client!.sendRequest('workspace/executeCommand', { command: runChecksCommand });
     }),
   );
   context.subscriptions.push(
@@ -51,51 +54,23 @@ export async function activate(context: ExtensionContext) {
   );
   context.subscriptions.push(
     commands.registerTextEditorCommand('shopifyLiquid.sidekick', async (textEditor: TextEditor) => {
-      editor = textEditor;
+      $editor = textEditor;
 
-      const position = textEditor.selection.active;
-      const analyzingDecoration = window.createTextEditorDecorationType({
-        after: {
-          contentText: ` ✨ Analyzing...`,
-          color: 'grey',
-          fontStyle: 'italic',
-        },
-      });
+      log('Sidekick is analyzing...');
 
-      textEditor.setDecorations(analyzingDecoration, [{ range: new Range(position, position) }]);
+      // Show analyzing decoration
+      applyDecorations([buildAnalyzingDecoration(textEditor)]);
 
-      const decorations = await getSidekickAnalysis(textEditor);
-      decorations.forEach((decoration) => {
-        textEditor.setDecorations(decoration.type, [decoration.options]);
-      });
-
-      analyzingDecoration.dispose();
+      // Show sidekick decorations
+      applyDecorations(await getSidekickAnalysis(textEditor));
     }),
   );
   context.subscriptions.push(
-    commands.registerCommand(
-      'shopifyLiquid.sidefix',
-      async (args: { range: Range; newCode: string }) => {
-        console.error('sidefix', args);
+    commands.registerCommand('shopifyLiquid.sidefix', async (suggestion: LiquidSuggestion) => {
+      log('Sidekick is fixing...');
 
-        const { range, newCode } = args;
-
-        const aa = new Range(
-          new Position(range.start.line - 1, range.start.character),
-          new Position(range.end.line - 1, range.end.character),
-        );
-
-        editor?.edit((editBuilder) => {
-          try {
-            editBuilder.replace(aa, newCode);
-            decorations.forEach((decoration) => decoration.dispose());
-            decorations = [];
-          } catch (e) {
-            console.log(e);
-          }
-        });
-      },
-    ),
+      applySuggestion(suggestion);
+    }),
   );
   // context.subscriptions.push(
   //   languages.registerInlineCompletionItemProvider(
@@ -125,44 +100,44 @@ async function startServer(context: ExtensionContext) {
     documentSelector: documentSelectors as DocumentSelector,
   };
 
-  client = new LanguageClient(
+  $client = new LanguageClient(
     'shopifyLiquid',
     'Theme Check Language Server',
     serverOptions,
     clientOptions,
   );
 
-  client.onRequest('fs/readDirectory', async (uriString: string): Promise<FileTuple[]> => {
+  $client.onRequest('fs/readDirectory', async (uriString: string): Promise<FileTuple[]> => {
     const results = await workspace.fs.readDirectory(Uri.parse(uriString));
     return results.map(([name, type]) => [pathUtils.join(uriString, name), type]);
   });
 
-  client.onRequest('fs/readFile', async (uriString: string): Promise<string> => {
+  $client.onRequest('fs/readFile', async (uriString: string): Promise<string> => {
     const bytes = await workspace.fs.readFile(Uri.parse(uriString));
     return Buffer.from(bytes).toString('utf8');
   });
 
-  client.onRequest('fs/stat', async (uriString: string): Promise<FileStat> => {
+  $client.onRequest('fs/stat', async (uriString: string): Promise<FileStat> => {
     return workspace.fs.stat(Uri.parse(uriString));
   });
 
-  client.start();
+  $client.start();
 }
 
 async function stopServer() {
   try {
-    if (client) {
-      await Promise.race([client.stop(), sleep(1000)]);
+    if ($client) {
+      await Promise.race([$client.stop(), sleep(1000)]);
     }
   } catch (e) {
     console.error(e);
   } finally {
-    client = undefined;
+    $client = undefined;
   }
 }
 
 async function restartServer(context: ExtensionContext) {
-  if (client) {
+  if ($client) {
     await stopServer();
   }
   await startServer(context);
@@ -184,4 +159,34 @@ async function getServerOptions(context: ExtensionContext): Promise<ServerOption
       },
     },
   };
+}
+
+// TODO: Check if we need to manually dispose decorations, or if we may be able to rely on the language server to do it
+function disposeDecorations() {
+  $decorations.forEach((decoration) => decoration.dispose());
+  $decorations = [];
+}
+
+function applyDecorations(decorations: SidekickDecoration[]) {
+  disposeDecorations();
+
+  decorations.forEach((decoration) => {
+    $decorations.push(decoration.type);
+    $editor?.setDecorations(decoration.type, [decoration.options]);
+  });
+}
+
+function applySuggestion({ range, newCode }: LiquidSuggestion) {
+  $editor?.edit((textEditorEdit) => {
+    try {
+      const start = new Position(range.start.line - 1, range.start.character);
+      const end = range.end;
+
+      textEditorEdit.replace(new Range(start, end), newCode);
+    } catch (err) {
+      log('Error during sidefix', err);
+    }
+
+    disposeDecorations();
+  });
 }
