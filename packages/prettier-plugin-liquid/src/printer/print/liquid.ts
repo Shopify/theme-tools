@@ -524,10 +524,11 @@ export function printLiquidDocParam(
   }
 
   if (node.paramDescription.value) {
+    const normalizedDescription = node.paramDescription.value.replace(/\s+/g, ' ').trim();
     if (node.paramDescription.dashSeparated) {
-      parts.push(' - ', node.paramDescription.value);
+      parts.push(' - ', normalizedDescription);
     } else {
-      parts.push(' ', node.paramDescription.value);
+      parts.push(' ', normalizedDescription);
     }
   }
 
