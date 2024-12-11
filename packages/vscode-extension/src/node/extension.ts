@@ -125,14 +125,14 @@ async function getConfigFileDetails(workspaceRoot: string): Promise<ConfigFile> 
   if (isCursor()) {
     return {
       path: path.join(workspaceRoot, '.cursorrules'),
-      templateName: 'llm_instructions.template',
+      templateName: 'llm-instructions.template',
       prompt:
         'Detected Shopify theme project in Cursor. Do you want a .cursorrules file to be created?',
     };
   }
   return {
     path: path.join(workspaceRoot, '.github', 'copilot-instructions.md'),
-    templateName: 'llm_instructions.template',
+    templateName: 'llm-instructions.template',
     prompt:
       'Detected Shopify theme project in VSCode. Do you want a Copilot instructions file to be created?',
   };
