@@ -758,9 +758,14 @@ export interface TextNode extends ASTNode<NodeTypes.TextNode> {
 export interface LiquidDocParamNode extends ASTNode<NodeTypes.LiquidDocParamNode> {
   name: string;
   value: string;
-  paramDescription: TextNode;
+  paramDescription: LiquidDocParamDescription;
   paramName: TextNode;
   paramType: TextNode;
+}
+
+export interface LiquidDocParamDescription extends ASTNode<NodeTypes.TextNode> {
+  dashSeparated: boolean;
+  value: string;
 }
 
 export interface ASTNode<T> {
@@ -1295,6 +1300,7 @@ function buildAst(
             value: node.paramDescription.value,
             position: position(node.paramDescription),
             source: node.paramDescription.source,
+            dashSeparated: node.paramDescription.dashSeparated,
           },
           paramType: {
             type: NodeTypes.TextNode,
