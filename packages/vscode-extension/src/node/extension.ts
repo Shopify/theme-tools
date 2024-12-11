@@ -24,11 +24,13 @@ import {
 import { documentSelectors } from '../common/constants';
 import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
-import { showSidekickTipsDecoration } from './sidekick';
+import { getSidekickAnalysis } from './sidekick';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 let client: LanguageClient | undefined;
+let editor: TextEditor | undefined;
+let decorations: TextEditorDecorationType[] = [];
 
 export async function activate(context: ExtensionContext) {
   const runChecksCommand = 'themeCheck/runChecks';
@@ -49,8 +51,9 @@ export async function activate(context: ExtensionContext) {
   );
   context.subscriptions.push(
     commands.registerTextEditorCommand('shopifyLiquid.sidekick', async (textEditor: TextEditor) => {
-      const position = textEditor.selection.active;
+      editor = textEditor;
 
+      const position = textEditor.selection.active;
       const analyzingDecoration = window.createTextEditorDecorationType({
         after: {
           contentText: ` ✨ Analyzing...`,
@@ -61,7 +64,10 @@ export async function activate(context: ExtensionContext) {
 
       textEditor.setDecorations(analyzingDecoration, [{ range: new Range(position, position) }]);
 
-      await showSidekickTipsDecoration(textEditor);
+      const decorations = await getSidekickAnalysis(textEditor);
+      decorations.forEach((decoration) => {
+        textEditor.setDecorations(decoration.type, [decoration.options]);
+      });
 
       analyzingDecoration.dispose();
     }),
@@ -69,8 +75,25 @@ export async function activate(context: ExtensionContext) {
   context.subscriptions.push(
     commands.registerCommand(
       'shopifyLiquid.sidefix',
-      async (args: { range: vscode.Range; newCode: string }) => {
-        console.error('sidefix', args); // TODO
+      async (args: { range: Range; newCode: string }) => {
+        console.error('sidefix', args);
+
+        const { range, newCode } = args;
+
+        const aa = new Range(
+          new Position(range.start.line - 1, range.start.character),
+          new Position(range.end.line - 1, range.end.character),
+        );
+
+        editor?.edit((editBuilder) => {
+          try {
+            editBuilder.replace(aa, newCode);
+            decorations.forEach((decoration) => decoration.dispose());
+            decorations = [];
+          } catch (e) {
+            console.log(e);
+          }
+        });
       },
     ),
   );
