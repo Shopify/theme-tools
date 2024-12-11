@@ -1043,6 +1043,21 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.children.0.paramDescription.value').to.equal('param with description');
         });
 
+        it('should parse @param with type', () => {
+          const testStr = `{% doc %} @param {String} paramWithType {% enddoc %}`;
+          cst = toCST(testStr);
+
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocParamNode');
+          expectPath(cst, '0.children.0.paramName.value').to.equal('paramWithType');
+
+          expectPath(cst, '0.children.0.paramType.type').to.equal('TextNode');
+          expectPath(cst, '0.children.0.paramType.value').to.equal('String');
+          expectPath(cst, '0.children.0.paramType.locStart').to.equal(testStr.indexOf('{String}'));
+          expectPath(cst, '0.children.0.paramType.locEnd').to.equal(
+            testStr.indexOf('{String}') + '{String}'.length,
+          );
+        });
+
         it('should parse unsupported doc tags as text nodes', () => {
           const testStr = `{% doc %} @unsupported this tag is not supported {% enddoc %}`;
           cst = toCST(testStr);

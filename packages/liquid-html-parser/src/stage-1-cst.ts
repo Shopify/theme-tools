@@ -114,6 +114,7 @@ export interface ConcreteLiquidDocParamNode
   value: string;
   paramName: ConcreteTextNode;
   paramDescription: ConcreteTextNode;
+  paramType: ConcreteTextNode;
 }
 
 export interface ConcreteHtmlNodeBase<T> extends ConcreteBasicNode<T> {
@@ -1336,8 +1337,18 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       locStart,
       locEnd,
       source,
+      paramType: function (nodes: Node[]) {
+        const typeNode = nodes[2];
+        return {
+          type: ConcreteNodeTypes.TextNode,
+          value: typeNode.sourceString.slice(1, -1).trim(),
+          source,
+          locStart: offset + typeNode.source.startIdx,
+          locEnd: offset + typeNode.source.endIdx,
+        };
+      },
       paramName: function (nodes: Node[]) {
-        const nameNode = nodes[2];
+        const nameNode = nodes[4];
         return {
           type: ConcreteNodeTypes.TextNode,
           value: nameNode.sourceString.trim(),
@@ -1347,7 +1358,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
         };
       },
       paramDescription: function (nodes: Node[]) {
-        const descriptionNode = nodes[4];
+        const descriptionNode = nodes[5];
         return {
           type: ConcreteNodeTypes.TextNode,
           value: descriptionNode.sourceString.trim(),
