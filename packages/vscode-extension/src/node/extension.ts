@@ -11,6 +11,7 @@ import {
 import { documentSelectors } from '../common/constants';
 import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
+import LiquidCompletionProvider from '../common/completionProvider';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -31,6 +32,12 @@ export async function activate(context: ExtensionContext) {
     languages.registerDocumentFormattingEditProvider(
       [{ language: 'liquid' }],
       new LiquidFormatter(vscodePrettierFormat),
+    ),
+  );
+  context.subscriptions.push(
+    languages.registerInlineCompletionItemProvider(
+      [{ language: 'liquid' }],
+      new LiquidCompletionProvider(),
     ),
   );
 
