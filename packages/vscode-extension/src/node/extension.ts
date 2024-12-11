@@ -84,6 +84,60 @@ async function getConfigFileDetails(workspaceRoot: string): Promise<ConfigFile> 
   };
 }
 
+async function isShopifyTheme(workspaceRoot: string): Promise<boolean> {
+  try {
+    // Check for typical Shopify theme folders
+    const requiredFolders = ['sections', 'templates', 'assets', 'config'];
+    for (const folder of requiredFolders) {
+      const folderUri = Uri.file(path.join(workspaceRoot, folder));
+      try {
+        await workspace.fs.stat(folderUri);
+      } catch {
+        return false;
+      }
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isCursor(): boolean {
+  // Check if we're running in Cursor's electron process
+  const processTitle = process.title.toLowerCase();
+  const isElectronCursor =
+    processTitle.includes('cursor') && process.versions.electron !== undefined;
+
+  // Check for Cursor-specific environment variables that are set by Cursor itself
+  const hasCursorEnv =
+    process.env.CURSOR_CHANNEL !== undefined || process.env.CURSOR_VERSION !== undefined;
+
+  return isElectronCursor || hasCursorEnv;
+}
+
+interface ConfigFile {
+  path: string;
+  templateName: string;
+  prompt: string;
+}
+
+async function getConfigFileDetails(workspaceRoot: string): Promise<ConfigFile> {
+  if (isCursor()) {
+    return {
+      path: path.join(workspaceRoot, '.cursorrules'),
+      templateName: 'llm_instructions.template',
+      prompt:
+        'Detected Shopify theme project in Cursor. Do you want a .cursorrules file to be created?',
+    };
+  }
+  return {
+    path: path.join(workspaceRoot, '.github', 'copilot-instructions.md'),
+    templateName: 'llm_instructions.template',
+    prompt:
+      'Detected Shopify theme project in VSCode. Do you want a Copilot instructions file to be created?',
+  };
+}
+
 export async function activate(context: ExtensionContext) {
   const runChecksCommand = 'themeCheck/runChecks';
 
