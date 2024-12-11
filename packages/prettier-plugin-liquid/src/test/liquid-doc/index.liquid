@@ -10,10 +10,15 @@ It should not dedent to root
 
 It should trim whitespace between nodes
 {% doc %}
-@param paramName       param with description
+@param paramName param with description
 {% enddoc %}
 
 It should format the param type
 {% doc %}
-    @param      { string      }      paramName param with description
+@param { string } paramName param with description
+{% enddoc %}
+
+It should format the param description with a dash separator
+{% doc %}
+@param paramName  -   param with description
 {% enddoc %}

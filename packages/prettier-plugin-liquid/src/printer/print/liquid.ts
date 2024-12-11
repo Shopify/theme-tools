@@ -524,7 +524,11 @@ export function printLiquidDocParam(
   }
 
   if (node.paramDescription.value) {
-    parts.push(' ', node.paramDescription.value);
+    if (node.paramDescription.dashSeparated) {
+      parts.push(' - ', node.paramDescription.value);
+    } else {
+      parts.push(' ', node.paramDescription.value);
+    }
   }
 
   return parts;

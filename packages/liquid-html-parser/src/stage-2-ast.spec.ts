@@ -1232,7 +1232,7 @@ describe('Unit: Stage 2 (AST)', () => {
       ast = toLiquidAST(`
         {% doc -%}
         @param asdf
-        @param {String} paramWithDescription param with description
+        @param {String} paramWithDescription - param with description
         @unsupported this node falls back to a text node
         {%- enddoc %}
       `);
@@ -1244,18 +1244,18 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.body.nodes.0.paramName.value').to.eql('asdf');
       expectPath(ast, 'children.0.body.nodes.0.paramDescription.type').to.eql('TextNode');
       expectPath(ast, 'children.0.body.nodes.0.paramDescription.value').to.eql('');
-
+      expectPath(ast, 'children.0.body.nodes.0.paramDescription.dashSeparated').to.eql(false);
       expectPath(ast, 'children.0.body.nodes.1.type').to.eql('LiquidDocParamNode');
       expectPath(ast, 'children.0.body.nodes.1.name').to.eql('@param');
       expectPath(ast, 'children.0.body.nodes.1.paramName.type').to.eql('TextNode');
       expectPath(ast, 'children.0.body.nodes.1.paramName.value').to.eql('paramWithDescription');
       expectPath(ast, 'children.0.body.nodes.1.paramDescription.type').to.eql('TextNode');
+      expectPath(ast, 'children.0.body.nodes.1.paramDescription.dashSeparated').to.eql(true);
       expectPath(ast, 'children.0.body.nodes.1.paramDescription.value').to.eql(
         'param with description',
       );
       expectPath(ast, 'children.0.body.nodes.1.paramType.type').to.eql('TextNode');
       expectPath(ast, 'children.0.body.nodes.1.paramType.value').to.eql('String');
-
       expectPath(ast, 'children.0.body.nodes.2.type').to.eql('TextNode');
       expectPath(ast, 'children.0.body.nodes.2.value').to.eql(
         '@unsupported this node falls back to a text node',
