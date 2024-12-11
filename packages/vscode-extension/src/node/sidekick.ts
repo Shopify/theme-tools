@@ -7,13 +7,13 @@ import {
   MarkdownString,
   Position,
   Range,
-  TextDocument,
   TextEditor,
   TextEditorDecorationType,
   window,
 } from 'vscode';
 
-const PROMPT = `You are a code tutor who helps liquid developers learn to use modern Liquid features.
+const PROMPT = `
+You are a code tutor who helps liquid developers learn to use modern Liquid features.
 
 Your job is to evaluate a block of code and suggest opportunities to use newer Liquid filters and tags that could improve the code. Look specifically for:
 
@@ -46,42 +46,47 @@ Example respons:
 }
 `;
 
-function getVisibleCodeWithLineNumbers(textEditor: TextEditor) {
-  let code = '';
-
-  const lines = textEditor.document.getText().split('\n');
-
-  for (let i = 0; i < lines.length; i++) {
-    code += `${i + 1}: ${lines[i]}\n`;
-  }
-
-  return code;
+/** A sidekick decoration that provides code improvement suggestions */
+export interface SidekickDecoration {
+  /** The type defining the visual styling */
+  type: TextEditorDecorationType;
+  /** The options specifying where and how to render the suggestion */
+  options: DecorationOptions;
 }
 
-export async function showSidekickTipsDecoration(textEditor: TextEditor) {
-  let [model] = await lm.selectChatModels({
+/** Represents a suggestion for improving Liquid code */
+export interface LiquidSuggestion {
+  /** Line number where this suggestion starts */
+  line: number;
+  /** The range where this suggestion applies */
+  range: Range;
+  /** The improved code that should replace the existing code */
+  newCode: string;
+  /** Human-friendly explanation of the suggested improvement */
+  suggestion: string;
+}
+
+export async function getSidekickAnalysis(textEditor: TextEditor): Promise<SidekickDecoration[]> {
+  const [model] = await lm.selectChatModels({
     vendor: 'copilot',
     family: 'gpt-4o',
   });
 
-  const codeWithLineNumbers = getVisibleCodeWithLineNumbers(textEditor);
-
-  const messages = [
-    LanguageModelChatMessage.User(PROMPT),
-    LanguageModelChatMessage.User(codeWithLineNumbers),
-  ];
-
-  if (model) {
-    try {
-      let chatResponse = await model.sendRequest(messages, {}, new CancellationTokenSource().token);
-
-      const jsonResponse = await parseChatResponse(chatResponse);
-
-      applyDecoration(textEditor, jsonResponse);
-    } catch (e) {
-      console.error('Error during GPT-4o request', e);
-    }
+  if (!model) {
+    return [];
   }
+
+  try {
+    const messages = buildMessages(textEditor);
+    const chatResponse = await model.sendRequest(messages, {}, new CancellationTokenSource().token);
+    const jsonResponse = await parseChatResponse(chatResponse);
+
+    return buildSidekickDecorations(textEditor, jsonResponse);
+  } catch (err) {
+    console.error('[Sidekick] Error during language model request', err);
+  }
+
+  return [];
 }
 
 async function parseChatResponse(chatResponse: LanguageModelChatResponse) {
@@ -89,67 +94,71 @@ async function parseChatResponse(chatResponse: LanguageModelChatResponse) {
 
   for await (const fragment of chatResponse.text) {
     accResponse += fragment;
+
     if (fragment.includes('}')) {
       try {
-        console.error('parse try', accResponse);
-        const response = JSON.parse(accResponse.replace('```json', ''));
-
-        console.error('parse success', response);
-        return response;
-      } catch (e) {
+        return JSON.parse(accResponse.replace('```json', ''));
+      } catch (_err) {
         // ingore; next iteration
       }
     }
   }
 }
 
-function applyDecoration(
+function buildSidekickDecorations(
   editor: TextEditor,
-  annotation: {
-    range: {
-      start: { line: number; character: number };
-      end: { line: number; character: number };
-    };
-    newCode: string;
-    line: number;
-    suggestion: string;
-  },
-) {
-  const decorationType = window.createTextEditorDecorationType({
+  suggestion: LiquidSuggestion,
+): SidekickDecoration[] {
+  const type = window.createTextEditorDecorationType({
     after: {
-      contentText: `✨ ${annotation.suggestion.substring(0, 120) + '...'}`,
+      contentText: `✨ ${suggestion.suggestion.substring(0, 120) + '...'}`,
       color: 'grey',
       fontStyle: 'italic',
     },
   });
 
-  const commandArgs = {
-    range: annotation.range,
-    newCode: annotation.newCode,
+  const range = new Range(
+    new Position(suggestion.range.start.line - 2, 0),
+    new Position(
+      suggestion.range.start.line - 2,
+      editor.document.lineAt(suggestion.range.start.line - 2).text.length,
+    ),
+  );
+
+  const options: DecorationOptions = {
+    range: range,
+    hoverMessage: createHoverMessage(suggestion),
   };
 
+  return [{ type, options }];
+}
+
+function createHoverMessage(suggestion: LiquidSuggestion) {
+  const hoverUrlArgs = encodeURIComponent(JSON.stringify(suggestion));
   const hoverMessage = new MarkdownString(
-    `${annotation.suggestion}
-    \n\n[Quick fix](command:code-tutor.applySuggestion?${encodeURIComponent(
-      JSON.stringify(commandArgs),
-    )})`,
+    `${suggestion.suggestion}
+    \n\n[Quick fix](command:shopifyLiquid.sidefix?${hoverUrlArgs})`,
   );
 
   hoverMessage.isTrusted = true;
   hoverMessage.supportHtml = true;
 
-  const range = new Range(
-    new Position(annotation.range.start.line - 2, 0),
-    new Position(
-      annotation.range.start.line - 2,
-      editor.document.lineAt(annotation.range.start.line - 2).text.length,
-    ),
-  );
+  return hoverMessage;
+}
 
-  const decoration: DecorationOptions = {
-    range: range,
-    hoverMessage,
-  };
+function buildMessages(textEditor: TextEditor) {
+  const codeWithLineNumbers = getVisibleCodeWithLineNumbers(textEditor);
 
-  editor.setDecorations(decorationType, [decoration]);
+  return [
+    LanguageModelChatMessage.User(PROMPT),
+    LanguageModelChatMessage.User(codeWithLineNumbers),
+  ];
+}
+
+function getVisibleCodeWithLineNumbers(textEditor: TextEditor) {
+  return textEditor.document
+    .getText()
+    .split('\n')
+    .map((line, index) => `${index + 1}: ${line}`)
+    .join('\n');
 }
