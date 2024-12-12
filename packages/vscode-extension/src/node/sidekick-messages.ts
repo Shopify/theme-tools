@@ -9,8 +9,7 @@ export function buildMessages(textEditor: TextEditor) {
     code(textEditor),
     codeContext(textEditor),
     themeArchitectureContext(),
-    // -- deactivate this to make it faster
-    // docsContext(),
+    docsContext(),
   ];
 
   console.error(' message >>>>>>>');
