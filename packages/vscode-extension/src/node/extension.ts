@@ -21,13 +21,7 @@ import {
 import { documentSelectors } from '../common/constants';
 import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
-import {
-  buildAnalyzingDecoration,
-  getSidekickAnalysis,
-  LiquidSuggestion,
-  log,
-  SidekickDecoration,
-} from './sidekick';
+import { getSidekickAnalysis, LiquidSuggestion, log, SidekickDecoration } from './sidekick';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -57,12 +51,18 @@ export async function activate(context: ExtensionContext) {
       $editor = textEditor;
 
       log('Sidekick is analyzing...');
+      await Promise.all([
+        commands.executeCommand('setContext', 'shopifyLiquid.sidekick.isLoading', true),
+      ]);
 
-      // Show analyzing decoration
-      applyDecorations([buildAnalyzingDecoration(textEditor)]);
-
-      // Show sidekick decorations
-      applyDecorations(await getSidekickAnalysis(textEditor));
+      try {
+        // Show sidekick decorations
+        applyDecorations(await getSidekickAnalysis(textEditor));
+      } finally {
+        await Promise.all([
+          commands.executeCommand('setContext', 'shopifyLiquid.sidekick.isLoading', false),
+        ]);
+      }
     }),
   );
   context.subscriptions.push(
