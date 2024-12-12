@@ -75,7 +75,7 @@ function buildSidekickDecoration(
 ): SidekickDecoration[] {
   const { suggestion, range } = liquidSuggestion;
   const type = createTextEditorDecorationType(suggestion.substring(0, 120));
-  const line = range.start.line - 2;
+  const line = Math.max(0, range.start.line - 2);
   const options = {
     range: new Range(
       new Position(line, 0),
@@ -95,7 +95,11 @@ async function parseChatResponse(chatResponse: LanguageModelChatResponse) {
 
     if (fragment.includes('}')) {
       try {
-        return JSON.parse(accResponse.replace('```json', ''));
+        const parsedResponse = JSON.parse(accResponse.replace('```json', ''));
+        console.error(' parsedResponse >>>>>>>');
+        console.error(JSON.stringify(parsedResponse, null, 2));
+        console.error(' parsedResponse <<<<<<<');
+        return parsedResponse;
       } catch (_err) {
         // ingore; next iteration
       }
