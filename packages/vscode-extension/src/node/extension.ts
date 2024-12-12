@@ -188,7 +188,7 @@ function applySuggestion({ range, newCode }: LiquidSuggestion) {
       const start = new Position(range.start.line - 1, range.start.character);
       const end = range.end;
 
-      textEditorEdit.replace(new Range(start, end), newCode);
+      textEditorEdit.replace(new Range(start, end), newCode + '\n');
     } catch (err) {
       log('Error during sidefix', err);
     }
