@@ -1,5 +1,22 @@
 ## theme-check-vscode
 
+## 3.4.0
+
+### Minor Changes
+
+- 6f1862c8: Add `SchemaPresetsStaticBlocks` check
+- d7436b4a: Add `JsonMissingBlock` check
+
+### Patch Changes
+
+- Updated dependencies [8e909870]
+- Updated dependencies [d7436b4a]
+- Updated dependencies [6f1862c8]
+- Updated dependencies [d01e657b]
+  - @shopify/theme-check-common@3.5.0
+  - @shopify/theme-language-server-browser@2.3.3
+  - @shopify/theme-language-server-node@2.3.3
+
 ## 3.3.2
 
 ### Patch Changes

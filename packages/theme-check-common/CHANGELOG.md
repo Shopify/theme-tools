@@ -1,5 +1,17 @@
 # @shopify/theme-check-common
 
+## 3.5.0
+
+### Minor Changes
+
+- d7436b4a: Add `JsonMissingBlock` check
+- 6f1862c8: Add `SchemaPresetsStaticBlocks` check
+- d01e657b: [Internal] Add JSONC support to the AST parser
+
+### Patch Changes
+
+- 8e909870: Import fix for PropertyNode in JSONMissingBlock.
+
 ## 3.4.0
 
 ### Minor Changes

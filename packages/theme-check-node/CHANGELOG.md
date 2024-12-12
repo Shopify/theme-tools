@@ -1,5 +1,21 @@
 # @shopify/theme-check-node
 
+## 3.5.0
+
+### Minor Changes
+
+- d7436b4a: Add `JsonMissingBlock` check
+- 6f1862c8: Add `SchemaPresetsStaticBlocks` check
+
+### Patch Changes
+
+- Updated dependencies [8e909870]
+- Updated dependencies [d7436b4a]
+- Updated dependencies [6f1862c8]
+- Updated dependencies [d01e657b]
+  - @shopify/theme-check-common@3.5.0
+  - @shopify/theme-check-docs-updater@3.5.0
+
 ## 3.4.0
 
 ### Patch Changes

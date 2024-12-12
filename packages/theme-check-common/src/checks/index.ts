@@ -7,7 +7,6 @@ import { AssetSizeAppBlockJavaScript } from './asset-size-app-block-javascript';
 import { AssetSizeCSS } from './asset-size-css';
 import { AssetSizeJavaScript } from './asset-size-javascript';
 import { BlockIdUsage } from './block-id-usage';
-``;
 import { CaptureOnContentForBlock } from './capture-on-content-for-block';
 import { CdnPreconnect } from './cdn-preconnect';
 import { ContentForHeaderModification } from './content-for-header-modification';
@@ -17,6 +16,7 @@ import { DeprecatedFilter } from './deprecated-filter';
 import { DeprecatedTag } from './deprecated-tag';
 import { EmptyBlockContent } from './empty-block-content';
 import { ImgWidthAndHeight } from './img-width-and-height';
+import { JSONMissingBlock } from './json-missing-block';
 import { JSONSyntaxError } from './json-syntax-error';
 import { LiquidFreeSettings } from './liquid-free-settings';
 import { LiquidHTMLSyntaxError } from './liquid-html-syntax-error';
@@ -26,6 +26,7 @@ import { MissingTemplate } from './missing-template';
 import { PaginationSize } from './pagination-size';
 import { ParserBlockingScript } from './parser-blocking-script';
 import { SchemaPresetsBlockOrder } from './schema-presets-block-order';
+import { SchemaPresetsStaticBlocks } from './schema-presets-static-blocks';
 import { RemoteAsset } from './remote-asset';
 import { RequiredLayoutThemeObject } from './required-layout-theme-object';
 import { TranslationKeyExists } from './translation-key-exists';
@@ -62,6 +63,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   DeprecateLazysizes,
   EmptyBlockContent,
   ImgWidthAndHeight,
+  JSONMissingBlock,
   JSONSyntaxError,
   LiquidFreeSettings,
   LiquidHTMLSyntaxError,
@@ -72,6 +74,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   PaginationSize,
   ParserBlockingScript,
   SchemaPresetsBlockOrder,
+  SchemaPresetsStaticBlocks,
   RemoteAsset,
   RequiredLayoutThemeObject,
   TranslationKeyExists,

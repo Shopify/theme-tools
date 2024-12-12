@@ -36,6 +36,9 @@ EmptyBlockContent:
 ImgWidthAndHeight:
   enabled: true
   severity: 0
+JSONMissingBlock:
+  enabled: true
+  severity: 0
 JSONSyntaxError:
   enabled: true
   severity: 0
@@ -72,6 +75,9 @@ RequiredLayoutThemeObject:
 SchemaPresetsBlockOrder:
   enabled: true
   severity: 1
+SchemaPresetsStaticBlocks:
+  enabled: true
+  severity: 0
 TranslationKeyExists:
   enabled: true
   severity: 0
