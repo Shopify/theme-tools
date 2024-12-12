@@ -61,4 +61,20 @@ describe('DocumentLinksProvider', () => {
       expect(result[i].target).toBe(expectedUrls[i]);
     }
   });
+
+  it('should return a list of document links with correct URLs for a LiquidRawTag document', async () => {
+    uriString = 'file:///path/to/liquid-raw-tag-document.liquid';
+    rootUri = 'file:///path/to/project';
+
+    const liquidRawTagContent = `
+      {% schema %}
+        { "blocks": [{ "type": "valid" }] }
+      {% endschema %}
+    `;
+
+    documentManager.open(uriString, liquidRawTagContent, 1);
+
+    const result = await documentLinksProvider.documentLinks(uriString);
+    expect(result).toEqual([]);
+  });
 });
