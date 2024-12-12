@@ -106,14 +106,26 @@
       },
       {
         "command": "shopifyLiquid.sidekick",
-        "title": "✨ Sidekick"
+        "title": "✨ Sidekick",
+        "enablement": "!shopifyLiquid.sidekick.isLoading"
+      },
+      {
+        "command": "shopifyLiquid.sidekickLoading",
+        "title": "✨ Analyzing",
+        "enablement": "false"
       }
     ],
     "menus": {
       "editor/title": [
         {
           "command": "shopifyLiquid.sidekick",
-          "group": "navigation"
+          "group": "navigation",
+          "when": "!shopifyLiquid.sidekick.isLoading"
+        },
+        {
+          "command": "shopifyLiquid.sidekickLoading",
+          "group": "navigation",
+          "when": "shopifyLiquid.sidekick.isLoading"
         }
       ]
     },

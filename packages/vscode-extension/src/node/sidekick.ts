@@ -95,15 +95,6 @@ export function log(message?: any, ...optionalParams: any[]) {
   console.error(` [Sidekick] ${message}`, ...optionalParams);
 }
 
-export function buildAnalyzingDecoration(editor: TextEditor): SidekickDecoration {
-  const type = createTextEditorDecorationType('Analyzing');
-
-  const position = editor.selection.active;
-  const options = { range: new Range(position, position) };
-
-  return { type, options };
-}
-
 function createHoverMessage(liquidSuggestion: LiquidSuggestion) {
   const hoverUrlArgs = encodeURIComponent(JSON.stringify(liquidSuggestion));
   const hoverMessage = new MarkdownString(
