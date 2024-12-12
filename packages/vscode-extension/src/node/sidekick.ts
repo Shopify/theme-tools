@@ -39,6 +39,7 @@ export async function getSidekickAnalysis(textEditor: TextEditor): Promise<Sidek
   });
 
   if (!model) {
+    log('No language model available');
     return [];
   }
 
@@ -75,7 +76,7 @@ function buildSidekickDecoration(
 ): SidekickDecoration[] {
   const { suggestion, range } = liquidSuggestion;
   const type = createTextEditorDecorationType(suggestion.substring(0, 120));
-  const line = Math.max(0, range.start.line - 2);
+  const line = Math.max(0, range.start.line - 1);
   const options = {
     range: new Range(
       new Position(line, 0),
@@ -116,7 +117,7 @@ export function log(message?: any, ...optionalParams: any[]) {
 function createHoverMessage(liquidSuggestion: LiquidSuggestion) {
   const hoverUrlArgs = encodeURIComponent(JSON.stringify(liquidSuggestion));
   const hoverMessage = new MarkdownString(
-    `${liquidSuggestion.suggestion}
+    `✨ ${liquidSuggestion.suggestion}
     \n\n[Quick fix](command:shopifyLiquid.sidefix?${hoverUrlArgs})`,
   );
 
@@ -132,6 +133,8 @@ function createTextEditorDecorationType(text: string) {
       contentText: ` ✨ ${text}...`,
       color: 'grey',
       fontStyle: 'italic',
+      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      border: '0; border-radius: 3px',
     },
   });
 }
