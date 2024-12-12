@@ -51,6 +51,7 @@ If you don't have any suggestions, add a "reasonIfNoSuggestions" with an explana
 
 export function buildMessages(textEditor: TextEditor) {
   const codeWithLineNumbers = getVisibleCodeWithLineNumbers(textEditor);
+  +`\n\nAdd a maximum of ${textEditor.selection.isEmpty ? 5 : 1} suggestions to the array.\n`;
 
   return [
     LanguageModelChatMessage.User(PROMPT),
@@ -59,9 +60,12 @@ export function buildMessages(textEditor: TextEditor) {
 }
 
 function getVisibleCodeWithLineNumbers(textEditor: TextEditor) {
-  return textEditor.document
-    .getText()
+  const selection = textEditor.selection;
+  const offset = selection.isEmpty ? 0 : selection.start.line;
+  const text = textEditor.document.getText(selection.isEmpty ? undefined : selection);
+
+  return text
     .split('\n')
-    .map((line, index) => `${index + 1}: ${line}`)
+    .map((line, index) => `${index + 1 + offset}: ${line}`)
     .join('\n');
 }
