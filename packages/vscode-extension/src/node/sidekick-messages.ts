@@ -11,26 +11,41 @@ Your job is to evaluate a block of code and suggest opportunities to use newer L
 4. Instead of "array | where: field, value | first", use "array | find: field, value"
 5. Your response must be a parsable json
 
-Your response must be only a valid and parsable JSON object (this is really important!) with the following structure:
+Your response must be only a valid and parsable JSON object (this is really important!), with the following structure:
 {
-  "range": {
-    "start": {"line": <line number>, "character": <character number>},
-    "end": {"line": <line number>, "character": <character number>}
-  },
-  "newCode": "The suggested code that will replace the current code",
-  "line": <line number>,
-  "suggestion": "Friendly explanation of how and why to use the new feature"
+  reasonIfNoSuggestions: "Explanation of why there are no suggestions",
+  suggestions: [
+    {
+      "range": {
+        "start": {"line": <line number>, "character": <character number>},
+        "end": {"line": <line number>, "character": <character number>}
+      },
+      "newCode": "The suggested code that will replace the current code",
+      "line": <line number>,
+      "suggestion": "Friendly explanation of how and why to use the new feature"
+    }
+  ]
 }
 
-Example respons:
+Add one object to the suggestions array response per suggestion. Example response:
 {
-  "range": {
-    "start": {"line": 5, "character": 0},
-    "end": {"line": 7, "character": 42}
-  },
-  "newCode": "{% assign first_product = products | first %}",
-  "line": 5,
-  "suggestion": "Instead of using a for loop to get the first item, you could use the 'first' filter. This is more concise and clearly shows your intent."
+  reasonIfNoSuggestions: null,
+  suggestions: [{
+    "range": {
+      "start": {"line": 5, "character": 0},
+      "end": {"line": 7, "character": 42}
+    },
+    "newCode": "{% assign first_product = products | first %}",
+    "line": 5,
+    "suggestion": "Instead of using a for loop to get the first item, you could use the 'first' filter. This is more concise and clearly shows your intent."
+  }]
+}
+
+If you don't have any suggestions, add a "reasonIfNoSuggestions" with an explanation of why there are no suggestions. Example response:
+
+{
+  reasonIfNoSuggestions: "The code already looks perfect!",
+  suggestions: []
 }
 `;
 
