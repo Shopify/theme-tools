@@ -75,7 +75,7 @@ function buildSidekickDecoration(
 ): SidekickDecoration[] {
   const { suggestion, range } = liquidSuggestion;
   const type = createTextEditorDecorationType(suggestion.substring(0, 120));
-  const line = range.start.line - 1;
+  const line = range.start.line - 2;
   const options = {
     range: new Range(
       new Position(line, 0),
