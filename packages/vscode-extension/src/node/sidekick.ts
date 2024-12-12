@@ -47,7 +47,21 @@ export async function getSidekickAnalysis(textEditor: TextEditor): Promise<Sidek
     const chatResponse = await model.sendRequest(messages, {}, new CancellationTokenSource().token);
     const jsonResponse = await parseChatResponse(chatResponse);
 
-    return buildSidekickDecorations(textEditor, jsonResponse);
+    if (!Array.isArray(jsonResponse?.suggestions)) {
+      log('Invalid response from language model', jsonResponse);
+      return [];
+    }
+
+    log(
+      `Received response from language model with ${jsonResponse?.suggestions?.length} suggestions.`,
+    );
+
+    if (jsonResponse.suggestions.length === 0) {
+      log(jsonResponse.reasonIfNoSuggestions ?? 'No suggestions provided');
+      return [];
+    }
+
+    return jsonResponse.suggestions.flatMap(buildSidekickDecoration.bind(null, textEditor));
   } catch (err) {
     log('Error during language model request', err);
   }
@@ -55,13 +69,13 @@ export async function getSidekickAnalysis(textEditor: TextEditor): Promise<Sidek
   return [];
 }
 
-function buildSidekickDecorations(
+function buildSidekickDecoration(
   editor: TextEditor,
   liquidSuggestion: LiquidSuggestion,
 ): SidekickDecoration[] {
   const { suggestion, range } = liquidSuggestion;
   const type = createTextEditorDecorationType(suggestion.substring(0, 120));
-  const line = range.start.line - 2;
+  const line = range.start.line - 1;
   const options = {
     range: new Range(
       new Position(line, 0),
