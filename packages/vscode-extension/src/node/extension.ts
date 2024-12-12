@@ -79,6 +79,12 @@ export async function activate(context: ExtensionContext) {
   //   ),
   // );
 
+  context.subscriptions.push(
+    workspace.onDidChangeTextDocument(() => {
+      disposeDecorations();
+    }),
+  );
+
   await startServer(context);
 }
 
