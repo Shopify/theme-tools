@@ -1,6 +1,6 @@
 import { FileStat, FileTuple, path as pathUtils } from '@shopify/theme-check-common';
 import * as path from 'node:path';
-import { commands, ExtensionContext, languages, Uri, workspace } from 'vscode';
+import { commands, ExtensionContext, languages, Uri, workspace, window } from 'vscode';
 import {
   DocumentSelector,
   LanguageClient,
@@ -11,10 +11,13 @@ import {
 import { documentSelectors } from '../common/constants';
 import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
+import { LiquidProfiler } from './liquid_profiler';
+import Config from 'conf';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 let client: LanguageClient | undefined;
+let liquidProfiler: LiquidProfiler | undefined;
 
 export async function activate(context: ExtensionContext) {
   const runChecksCommand = 'themeCheck/runChecks';
@@ -32,6 +35,38 @@ export async function activate(context: ExtensionContext) {
       [{ language: 'liquid' }],
       new LiquidFormatter(vscodePrettierFormat),
     ),
+  );
+  context.subscriptions.push(
+    commands.registerCommand('shopifyLiquid.openPreview', async () => {
+      const config = new Config({ projectName: 'shopify-cli-theme-conf' });
+      const storeUrl = config.get('themeStore');
+
+      if (!storeUrl) {
+        window.showErrorMessage(
+          'Make sure Shopify is CLI is available in your environment and authenticated',
+        );
+        return;
+      }
+
+      const url = await window.showInputBox({
+        prompt: `Enter the URL path to profile on ${storeUrl}:\n`,
+        placeHolder: '/products/classic-tee',
+      });
+
+      if (url) {
+        // Instantiate the LiquidProfiler if it doesn't exist, and show the panel
+        if (!liquidProfiler) {
+          liquidProfiler = new LiquidProfiler(context);
+        }
+        try {
+          await liquidProfiler.showProfileForUrl(url);
+        } catch (error) {
+          window.showErrorMessage(
+            'Could not establish a profile for this URL. Check that you can execute `shopify theme profile` in your terminal',
+          );
+        }
+      }
+    }),
   );
 
   await startServer(context);
