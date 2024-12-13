@@ -11,6 +11,7 @@ import {
   parseJSON,
   path,
   recursiveReadDirectory,
+  SourceCodeType,
 } from '@shopify/theme-check-common';
 import {
   Connection,
@@ -41,6 +42,7 @@ import { snippetName } from '../utils/uri';
 import { VERSION } from '../version';
 import { CachedFileSystem } from './CachedFileSystem';
 import { Configuration } from './Configuration';
+import { ReferencesProvider } from '../references/ReferencesProvider';
 
 const defaultLogger = () => {};
 
@@ -117,6 +119,11 @@ export function startServer(
     clientCapabilities,
     documentManager,
     findThemeRootURI,
+  );
+
+  const referencesProvider = new ReferencesProvider(
+    documentManager,
+    getLiquidFiles,
   );
 
   async function findThemeRootURI(uri: string) {
@@ -203,6 +210,26 @@ export function startServer(
     return blocks.map(([uri]) => path.basename(uri, '.liquid'));
   }
 
+  // TODO: Fix this; seems very costly
+  async function getLiquidFiles(uri: string) {
+    const rootUri = await findThemeRootURI(uri);
+
+    const blockFiles = await fs.readDirectory(path.join(rootUri, 'blocks'));
+    const sectionFiles = await fs.readDirectory(path.join(rootUri, 'sections'));
+    const snippetFiles = await fs.readDirectory(path.join(rootUri, 'snippets'));
+
+    const sources = [];
+    for(let [uri, _] of [...blockFiles, ...sectionFiles, ...snippetFiles]) {
+      const doc = documentManager.get(uri);
+      if (!doc || doc.type !== SourceCodeType.LiquidHtml) {
+        continue;
+      }
+      sources.push(doc);
+    }
+
+    return sources;
+  }
+
   // Defined as a function to solve a circular dependency (doc manager & json
   // lang service both need each other)
   async function isValidSchema(uri: string, jsonString: string) {
@@ -282,6 +309,7 @@ export function startServer(
           resolveProvider: false,
           workDoneProgress: false,
         },
+        referencesProvider: true,
         documentHighlightProvider: true,
         linkedEditingRangeProvider: true,
         renameProvider: {
@@ -431,6 +459,12 @@ export function startServer(
   connection.languages.onLinkedEditingRange(async (params) => {
     if (hasUnsupportedDocument(params)) return null;
     return linkedEditingRangesProvider.linkedEditingRanges(params);
+  });
+
+  connection.onReferences(async (params) => {
+    if (hasUnsupportedDocument(params)) return [];
+
+    return referencesProvider.references(params);
   });
 
   connection.onDidChangeWatchedFiles(async (params) => {
