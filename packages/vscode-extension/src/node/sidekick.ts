@@ -75,7 +75,7 @@ function buildSidekickDecoration(
   liquidSuggestion: LiquidSuggestion,
 ): SidekickDecoration[] {
   const { suggestion, range } = liquidSuggestion;
-  const type = createTextEditorDecorationType(suggestion.substring(0, 120));
+  const type = createTextEditorDecorationType(suggestion);
   const line = Math.max(0, range.start.line - 1);
   const options = {
     range: new Range(
@@ -111,7 +111,7 @@ async function parseChatResponse(chatResponse: LanguageModelChatResponse) {
 }
 
 export function log(message?: any, ...optionalParams: any[]) {
-  console.error(` [Sidekick] ${message}`, ...optionalParams);
+  console.error(`[Sidekick] ${message}`, ...optionalParams);
 }
 
 function createHoverMessage(key: string, liquidSuggestion: LiquidSuggestion) {
@@ -130,11 +130,19 @@ function createHoverMessage(key: string, liquidSuggestion: LiquidSuggestion) {
 function createTextEditorDecorationType(text: string) {
   return window.createTextEditorDecorationType({
     after: {
-      contentText: ` ✨ ${text}...`,
+      contentText: ` ✨ ${truncate(text, 120)}`,
       color: 'grey',
       fontStyle: 'italic',
       backgroundColor: 'rgba(255, 255, 255, 0.05)',
       border: '0; border-radius: 3px',
     },
   });
+}
+
+function truncate(text: string, maxLength: number): string {
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  return text.substring(0, maxLength).trim() + '...';
 }
