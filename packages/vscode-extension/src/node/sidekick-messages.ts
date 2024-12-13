@@ -42,7 +42,7 @@ function basePrompt(textEditor: TextEditor): string {
             <ensurance>
                 <point>The new code you propose contain full lines of valid code and keep the correct indentation, scope, and style format as the original code</point>
                 <point>Scopes are defined by the opened by "{%", "{{" with the matching closing element "%}" or "}}"</point>
-                <point>The range of the code being edited with "{%"/"{{" must encopass the matching closing element "%}"/"}}" (they should be even, never odd)</point>
+                <point>The range must include the closing element ("%}","}}") for every opening element ("{%","{{")</point>
                 <point>Code suggestions cannot overlap in line numbers. If you have multiple suggestions for the same code chunk, merge them into a single suggestion</point>
                 <point>Make full-scope suggestions that consider the entire context of the code you are modifying, keeping the logical scope of the code valid</point>
                 <point>The resulting code must work and should not break existing HTML tags or Liquid syntax</point>
