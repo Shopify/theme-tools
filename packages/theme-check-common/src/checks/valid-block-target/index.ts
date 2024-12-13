@@ -15,11 +15,13 @@ import {
   validateNestedBlocks,
   validateBlockFileExistence,
   reportWarning,
+  isShopifyAppBlockType,
 } from './block-utils';
 type BlockNodeWithPath = {
   node: Section.Block | ThemeBlock.Block | Preset.Block;
   path: string[];
 };
+type PresetBlock = Preset.PresetBlockForArray | Preset.PresetBlockForHash;
 
 export const ValidBlockTarget: LiquidCheckDefinition = {
   meta: {
@@ -82,7 +84,11 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
               blocks.map(async ({ node, path }: BlockNodeWithPath) => {
                 const typeNode = nodeAtPath(ast, path)! as LiteralNode;
                 const isPrivateBlockType = node.type.startsWith('_');
-                if (isInvalidPresetBlock(node, rootLevelThemeBlocks)) {
+                if (isShopifyAppBlockType(node.type)) {
+                  errorsInPresetLevelBlocks = true;
+                  reportWarning(`App blocks are not allowed in preset blocks.`, offset, typeNode, context);
+                }
+                else if (isInvalidPresetBlock(node, rootLevelThemeBlocks)) {
                   errorsInPresetLevelBlocks = true;
                   const errorMessage = isPrivateBlockType
                     ? `Theme block type "${node.type}" is a private block so it must be explicitly allowed in "blocks" at the root of this schema.`

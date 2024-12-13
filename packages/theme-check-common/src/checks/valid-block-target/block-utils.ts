@@ -126,6 +126,10 @@ export function isInvalidPresetBlock(
   return !isPresetInRootLevel && needsExplicitRootBlock;
 }
 
+export function isShopifyAppBlockType(type: string): boolean {
+  return type.startsWith('shopify://apps/');
+}
+
 function validateBlockTargeting(
   nestedBlock: Preset.PresetBlockForArray | Preset.PresetBlockForHash,
   nestedPath: string[],
@@ -138,7 +142,11 @@ function validateBlockTargeting(
 ) {
   const typeNode = nodeAtPath(ast, nestedPath)! as LiteralNode;
 
-  if (typeNode && isInvalidPresetBlock(nestedBlock, rootLevelThemeBlocks)) {
+  if (isShopifyAppBlockType(nestedBlock.type)) {
+    reportWarning(`App blocks are not allowed in preset blocks.`, offset, typeNode, context);
+  }
+
+  else if (typeNode && isInvalidPresetBlock(nestedBlock, rootLevelThemeBlocks)) {
     const isPrivateBlock = nestedBlock.type.startsWith('_');
     const errorMessage = isPrivateBlock
       ? `Private block type "${nestedBlock.type}" is not allowed in "${parentNode.type}" blocks.`

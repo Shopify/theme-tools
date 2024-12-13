@@ -106,6 +106,39 @@ describe('Module: ValidBlockTarget', () => {
         );
       });
 
+      it(`should report an error when a preset defined block is an app block`, async () => {
+        const theme: MockTheme = {
+          [`${path}/invalid-block.liquid`]: `
+            {% schema %}
+            {
+              "name": "${path === 'sections' ? 'Section' : 'Block'} name",
+              "blocks": [
+                {
+                  "type": "@theme"
+                }
+              ],
+              "presets": [
+                {
+                  "name": "Default",
+                  "blocks": [
+                    {
+                      "type": "shopify://apps/judge-me-reviews/blocks/review_widget_homepage/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8"
+                    }
+                  ]
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+        };
+
+        const offenses = await check(theme, [ValidBlockTarget]);
+        expect(offenses).to.have.length(1);
+        expect(offenses[0].message).to.equal(
+          "App blocks are not allowed in preset blocks.",
+        );
+      });
+
       it(`should not report subsequent errors in present defined blocks if error in root level (${path} bucket)`, async () => {
         const theme: MockTheme = {
           [`${path}/invalid-block.liquid`]: `
@@ -168,6 +201,40 @@ describe('Module: ValidBlockTarget', () => {
         expect(offenses).to.have.length(1);
         expect(offenses[0].message).to.equal(
           "Theme block 'blocks/missing_block.liquid' does not exist.",
+        );
+      });
+
+      it(`should report an error when a preset defined block is an app block in hash-style presets (${path} bucket)`, async () => {
+        const theme: MockTheme = {
+          [`${path}/invalid-block.liquid`]: `
+            {% schema %}
+            {
+              "name": "${path === 'sections' ? 'Section' : 'Block'} name",
+              "blocks": [
+                {
+                  "type": "@theme"
+                }
+              ],
+              "presets": [
+                {
+                  "name": "Default",
+                  "blocks": {
+                    "missing_block_hash": {
+                      "type": "shopify://apps/judge-me-reviews/blocks/review_widget_homepage/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8"
+                    }
+                  },
+                  "block_order": ["shopify://apps/judge-me-reviews/blocks/review_widget_homepage/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8"]
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+        };
+
+        const offenses = await check(theme, [ValidBlockTarget]);
+        expect(offenses).to.have.length(1);
+        expect(offenses[0].message).to.equal(
+          "App blocks are not allowed in preset blocks.",
         );
       });
 
@@ -898,6 +965,46 @@ describe('Module: ValidBlockTarget', () => {
         const offenses = await check(theme, [ValidBlockTarget]);
         expect(offenses).to.have.lengthOf(1);
         expect(offenses[0].uri).to.equal(`file:///${path}/slideshow.liquid`);
+      });
+
+      it(`should report an error when a preset defined block is an app block at nested level with hash-style presets (${path} bucket)`, async () => {
+        const theme: MockTheme = {
+          'blocks/text.liquid': '',
+          [`${path}/invalid-preset.liquid`]: `
+            {% schema %}
+            {
+              "name": "${path === 'sections' ? 'Section' : 'Block'} name",
+              "blocks": [
+                {
+                  "type": "@theme"
+                }
+              ],
+              "presets": [
+                {
+                  "name": "Default preset",
+                  "blocks": {
+                    "text-block-1": {
+                      "type": "text",
+                      "blocks": {
+                        "nested-app-block-1": {
+                          "type": "shopify://apps/judge-me-reviews/blocks/review_widget_homepage/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8"
+                        }
+                      }
+                    }
+                  },
+                  "block_order": ["text-block-1"]
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+        };
+
+        const offenses = await check(theme, [ValidBlockTarget]);
+        expect(offenses).to.have.length(1);
+        expect(offenses[0].message).to.equal(
+          'App blocks are not allowed in preset blocks.',
+        );
       });
 
       it('should not crash or timeout with cyclical nested block relationships', async () => {
