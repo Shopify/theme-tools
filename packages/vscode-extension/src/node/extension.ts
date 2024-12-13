@@ -25,11 +25,15 @@ import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
 import { getSidekickAnalysis, LiquidSuggestion, log, SidekickDecoration } from './sidekick';
 
+type LiquidSuggestionWithDecorationKey = LiquidSuggestion & { key: string };
+
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 let $client: LanguageClient | undefined;
 let $editor: TextEditor | undefined;
 let $decorations: TextEditorDecorationType[] = [];
+let $isApplyingSuggestion = false;
+let $previousShownConflicts = new Map<string, number>();
 
 async function isShopifyTheme(workspaceRoot: string): Promise<boolean> {
   try {
@@ -210,11 +214,14 @@ export async function activate(context: ExtensionContext) {
     }),
   );
   context.subscriptions.push(
-    commands.registerCommand('shopifyLiquid.sidefix', async (suggestion: LiquidSuggestion) => {
-      log('Sidekick is fixing...');
+    commands.registerCommand(
+      'shopifyLiquid.sidefix',
+      async (suggestion: LiquidSuggestionWithDecorationKey) => {
+        log('Sidekick is fixing...');
 
-      applySuggestion(suggestion);
-    }),
+        applySuggestion(suggestion);
+      },
+    ),
   );
   // context.subscriptions.push(
   //   languages.registerInlineCompletionItemProvider(
@@ -224,8 +231,32 @@ export async function activate(context: ExtensionContext) {
   // );
 
   context.subscriptions.push(
-    workspace.onDidChangeTextDocument(() => {
-      disposeDecorations();
+    workspace.onDidChangeTextDocument(({ contentChanges, reason, document }) => {
+      // Each shown suggestion fix is displayed as a conflict in the editor. We want to
+      // hide all suggestion hints when the user starts typing, as they are no longer
+      // relevant, but we don't want to remove them on conflict resolution since that
+      // only means the user has accepted/rejected a suggestion and might continue with
+      // the other suggestions.
+      const currentShownConflicts = document.getText().split(conflictMarkerStart).length - 1;
+
+      if (
+        // Ignore when there are no content changes
+        contentChanges.length > 0 &&
+        // Ignore when initiating the diff view (it triggers a change event)
+        !$isApplyingSuggestion &&
+        // Ignore undo/redos
+        reason === undefined &&
+        // Only dispose decorations when there are no conflicts currently shown (no diff views)
+        // and when there were no conflicts shown previously. This means that the current
+        // change is not related to a conflict resolution but a manual user input.
+        currentShownConflicts === 0 &&
+        !$previousShownConflicts.get(document.fileName)
+      ) {
+        disposeDecorations();
+      }
+
+      // Store the previous number of conflicts shown for this document.
+      $previousShownConflicts.set(document.fileName, currentShownConflicts);
     }),
   );
 
@@ -326,11 +357,17 @@ function applyDecorations(decorations: SidekickDecoration[]) {
   });
 }
 
-async function applySuggestion({ range, newCode }: LiquidSuggestion) {
+const conflictMarkerStart = '<<<<<<< Current';
+const conflictMarkerMiddle = '=======';
+const conflictMarkerEnd = '>>>>>>> Suggested Change';
+
+async function applySuggestion({ key, range, newCode }: LiquidSuggestionWithDecorationKey) {
   log('Applying suggestion...');
   if (!$editor) {
     return;
   }
+
+  $isApplyingSuggestion = true;
 
   const endLineIndex = range.end.line - 1;
   const start = new Position(range.start.line - 1, 0);
@@ -340,11 +377,11 @@ async function applySuggestion({ range, newCode }: LiquidSuggestion) {
 
   // Create a merge conflict style text
   const conflictText = [
-    '<<<<<<< Current',
+    conflictMarkerStart,
     oldCode,
-    '=======',
+    conflictMarkerMiddle,
     newCode.replace(/^/gm, initialIndentation),
-    '>>>>>>> Suggested Change',
+    conflictMarkerEnd,
   ].join('\n');
 
   // Replace the current text with the conflict markers
@@ -352,5 +389,12 @@ async function applySuggestion({ range, newCode }: LiquidSuggestion) {
   edit.replace($editor.document.uri, new Range(start, end), conflictText);
   await workspace.applyEdit(edit);
 
-  disposeDecorations();
+  // Only dispose the decoration associated with this suggestion
+  const decorationIndex = $decorations.findIndex((d) => d.key === key);
+  if (decorationIndex !== -1) {
+    $decorations[decorationIndex].dispose();
+    $decorations.splice(decorationIndex, 1);
+  }
+
+  $isApplyingSuggestion = false;
 }

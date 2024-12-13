@@ -82,10 +82,10 @@ function buildSidekickDecoration(
       new Position(line, 0),
       new Position(line, editor.document.lineAt(line).text.length),
     ),
-    hoverMessage: createHoverMessage(liquidSuggestion),
+    hoverMessage: createHoverMessage(type.key, liquidSuggestion),
   };
 
-  return [{ type, options }];
+  return [{ type, options  }];
 }
 
 async function parseChatResponse(chatResponse: LanguageModelChatResponse) {
@@ -114,8 +114,8 @@ export function log(message?: any, ...optionalParams: any[]) {
   console.error(` [Sidekick] ${message}`, ...optionalParams);
 }
 
-function createHoverMessage(liquidSuggestion: LiquidSuggestion) {
-  const hoverUrlArgs = encodeURIComponent(JSON.stringify(liquidSuggestion));
+function createHoverMessage(key: string, liquidSuggestion: LiquidSuggestion) {
+  const hoverUrlArgs = encodeURIComponent(JSON.stringify({ key, ...liquidSuggestion }));
   const hoverMessage = new MarkdownString(
     `✨ ${liquidSuggestion.suggestion}
     \n\n[Quick fix](command:shopifyLiquid.sidefix?${hoverUrlArgs})`,
