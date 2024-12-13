@@ -32,19 +32,23 @@ function basePrompt(textEditor: TextEditor): string {
     - Enhancing readability, conciseness, and efficiency while maintaining the same functionality
     - Leveraging new features in Liquid, including filters, tags, and objects
     - Be pragmatic and don't suggest without a really good reason
-    - You should not suggest changes to the code that impact HTML -- they should be focused on Liquid
+    - You should not suggest changes to the code that impact only HTML -- they should be focused on Liquid and Theme features.
     - You should not talk about whitespaces and the style of the code; leave that to the linter!
 
-    Ensure the suggestions are specific, actionable, and align with the best practices in Liquid and Shopify theme development.
+    At the same time, ensure the following is true:
 
-    Use the "## THEME ARCHITECTURE", "## CONTEXT", the "## DOCS", and Shopify.dev context. Do not make up new information.
+    - The resulting code must work and should not break existing HTML tags or Liquid syntax. Make full-scope suggestions that consider the entire context of the code you are modifying
+    - The new code you propose contain full lines of valid code and keep the correct indentation and style format as the original code
+    - The suggestions are specific, actionable, and align with the best practices in Liquid and Shopify theme development
+    - Add a maximum of ${numberOfSuggestions} distinct suggestions to the array
+    - Code suggestions cannot overlap in line numbers. If you have multiple suggestions for the same code chunk, merge them into a single suggestion
 
-    Add a maximum of ${numberOfSuggestions} suggestions to the array.
+    Use the "## THEME ARCHITECTURE", "## CONTEXT", the "## DOCS", and Shopify.dev context as a reference. Do not make up new information.
 
     Your response must be exclusively a valid and parsable JSON object with the following structure:
 
     {
-      "reasonIfNoSuggestions": "Explanation of why there are no suggestions",
+      "reasonIfNoSuggestions": "<string|null: explanation of why there are no suggestions>",
       "suggestions": [
         {
           "newCode": "<string: the improved code to replace the current code>",
