@@ -99,8 +99,36 @@
       {
         "command": "shopifyLiquid.runChecks",
         "title": "Liquid Theme Check: Run Checks"
+      },
+      {
+        "command": "shopifyLiquid.sidefix",
+        "title": "Apply Sidekick suggestion"
+      },
+      {
+        "command": "shopifyLiquid.sidekick",
+        "title": "✨ Sidekick",
+        "enablement": "!shopifyLiquid.sidekick.isLoading"
+      },
+      {
+        "command": "shopifyLiquid.sidekickLoading",
+        "title": "✨ Analyzing",
+        "enablement": "false"
       }
     ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "shopifyLiquid.sidekick",
+          "group": "navigation",
+          "when": "!shopifyLiquid.sidekick.isLoading"
+        },
+        {
+          "command": "shopifyLiquid.sidekickLoading",
+          "group": "navigation",
+          "when": "shopifyLiquid.sidekick.isLoading"
+        }
+      ]
+    },
     "configuration": {
       "title": "Shopify Liquid | Syntax Highlighting & Linter by Shopify",
       "properties": {
