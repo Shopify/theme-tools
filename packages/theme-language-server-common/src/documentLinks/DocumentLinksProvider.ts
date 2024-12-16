@@ -83,29 +83,23 @@ function documentLinksVisitor(
     },
 
     LiquidRawTag(node) {
-      // look for schema tags
       if (node.name === 'schema') {
-        // parse and return a tree of the schema
         const errors: ParseError[] = [];
         const jsonNode = parseTree(node.body.value, errors);
         if (!jsonNode || errors.length > 0) {
           return [];
         }
 
-        // create an array of links so we can process all block types and preset block types in the schema
         const links: DocumentLink[] = [];
 
-        // Process top-level blocks
         const blocksNode = findNodeAtLocation(jsonNode, ['blocks']);
         if (blocksNode && blocksNode.type === 'array' && blocksNode.children) {
           links.push(...createLinksFromBlocks(blocksNode, node, textDocument, root));
         }
 
-        // Process presets
         const presetsNode = findNodeAtLocation(jsonNode, ['presets']);
         if (presetsNode && presetsNode.type === 'array' && presetsNode.children) {
           presetsNode.children.forEach((presetNode) => {
-            // Process blocks within each preset
             const presetBlocksNode = findNodeAtLocation(presetNode, ['blocks']);
             if (presetBlocksNode) {
               links.push(...processPresetBlocks(presetBlocksNode, node, textDocument, root));
@@ -161,10 +155,9 @@ function processPresetBlocks(
 
   if (blocksNode.type === 'object' && blocksNode.children) {
     blocksNode.children.forEach((propertyNode) => {
-      const blockValueNode = propertyNode.children?.[1]; // The value node of the property
+      const blockValueNode = propertyNode.children?.[1];
       if (!blockValueNode) return;
 
-      // Check if the block has a 'name' key so we don't deeplink inline block types
       const nameNode = findNodeAtLocation(blockValueNode, ['name']);
       if (nameNode) {
         return;
@@ -190,7 +183,6 @@ function processPresetBlocks(
         }
       }
 
-      // Recursively process nested blocks
       const nestedBlocksNode = findNodeAtLocation(blockValueNode, ['blocks']);
       if (nestedBlocksNode) {
         links.push(...processPresetBlocks(nestedBlocksNode, parentNode, textDocument, root));
@@ -198,10 +190,9 @@ function processPresetBlocks(
     });
   } else if (blocksNode.type === 'array' && blocksNode.children) {
     blocksNode.children.forEach((blockNode) => {
-      // Check if the block has a 'name' key
       const nameNode = findNodeAtLocation(blockNode, ['name']);
       if (nameNode) {
-        return; // Skip creating a link if 'name' key exists
+        return;
       }
 
       const typeNode = findNodeAtLocation(blockNode, ['type']);
@@ -224,7 +215,6 @@ function processPresetBlocks(
         }
       }
 
-      // Recursively process nested blocks
       const nestedBlocksNode = findNodeAtLocation(blockNode, ['blocks']);
       if (nestedBlocksNode) {
         links.push(...processPresetBlocks(nestedBlocksNode, parentNode, textDocument, root));
@@ -245,7 +235,6 @@ function createLinksFromBlocks(
 
   if (blocksNode.children) {
     blocksNode.children.forEach((blockNode: JSONNode) => {
-      // Check if the block has a 'name' key to avoid deeplinking inline block types
       const nameNode = findNodeAtLocation(blockNode, ['name']);
       if (nameNode) {
         return;
