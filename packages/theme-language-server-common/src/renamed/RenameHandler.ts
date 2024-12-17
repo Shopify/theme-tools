@@ -1,10 +1,10 @@
-import { path } from '@shopify/theme-check-common';
 import { Connection } from 'vscode-languageserver';
 import { RenameFilesParams } from 'vscode-languageserver-protocol';
 import { ClientCapabilities } from '../ClientCapabilities';
 import { DocumentManager } from '../documents';
 import { BaseRenameHandler } from './BaseRenameHandler';
 import { AssetRenameHandler } from './handlers/AssetRenameHandler';
+import { BlockRenameHandler } from './handlers/BlockRenameHandler';
 import { SnippetRenameHandler } from './handlers/SnippetRenameHandler';
 
 /**
@@ -26,6 +26,7 @@ export class RenameHandler {
     this.handlers = [
       new SnippetRenameHandler(documentManager, connection, capabilities, findThemeRootURI),
       new AssetRenameHandler(documentManager, connection, capabilities, findThemeRootURI),
+      new BlockRenameHandler(documentManager, connection, capabilities, findThemeRootURI),
     ];
   }
 

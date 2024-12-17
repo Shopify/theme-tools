@@ -46,13 +46,13 @@ export function isSection(uri: UriString) {
 }
 
 export function isBlockSchema(
-  schema: SectionSchema | ThemeBlockSchema | undefined,
+  schema: AppBlockSchema | SectionSchema | ThemeBlockSchema | undefined,
 ): schema is ThemeBlockSchema {
   return schema?.type === ThemeSchemaType.Block;
 }
 
 export function isSectionSchema(
-  schema: SectionSchema | ThemeBlockSchema | undefined,
+  schema: AppBlockSchema | SectionSchema | ThemeBlockSchema | undefined,
 ): schema is SectionSchema {
   return schema?.type === ThemeSchemaType.Section;
 }
@@ -84,6 +84,7 @@ export async function toBlockSchema(
   return {
     type: ThemeSchemaType.Block,
     validSchema: await toValidSchema<ThemeBlock.Schema>(uri, schemaNode, parsed, isValidSchema),
+    offset: schemaNode instanceof Error ? 0 : schemaNode.blockStartPosition.end,
     name,
     parsed,
     ast,
@@ -105,6 +106,7 @@ export async function toSectionSchema(
   return {
     type: ThemeSchemaType.Section,
     validSchema: await toValidSchema(uri, schemaNode, parsed, isValidSchema),
+    offset: schemaNode instanceof Error ? 0 : schemaNode.blockStartPosition.end,
     name,
     parsed,
     ast,
@@ -122,6 +124,7 @@ export async function toAppBlockSchema(
   const ast = toAst(schemaNode);
   return {
     type: ThemeSchemaType.AppBlock,
+    offset: schemaNode instanceof Error ? 0 : schemaNode.blockStartPosition.end,
     name,
     parsed,
     ast,
