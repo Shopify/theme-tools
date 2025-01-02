@@ -80,6 +80,9 @@ MissingTemplate:
   enabled: true
   severity: 0
   ignoreMissing: []
+NoImportmap:
+  enabled: false
+  severity: 0
 PaginationSize:
   enabled: true
   severity: 1
@@ -118,9 +121,6 @@ UnknownFilter:
 UnusedAssign:
   enabled: true
   severity: 1
-ValidBlockPresetSettings:
-  enabled: true
-  severity: 0
 ValidBlockTarget:
   enabled: true
   severity: 0
