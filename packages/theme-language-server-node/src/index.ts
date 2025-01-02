@@ -4,6 +4,7 @@ import { startServer as startCoreServer } from '@shopify/theme-language-server-c
 import { stdin, stdout } from 'node:process';
 import { createConnection } from 'vscode-languageserver/node';
 import { loadConfig } from './dependencies';
+import { fetchMetafieldDefinitionsForURI } from './metafieldDefinitions';
 
 export { NodeFileSystem } from '@shopify/theme-check-node';
 export * from '@shopify/theme-language-server-common';
@@ -21,5 +22,6 @@ export function startServer(connection = getConnection(), fs: AbstractFileSystem
     loadConfig,
     themeDocset: themeLiquidDocsManager,
     jsonValidationSet: themeLiquidDocsManager,
+    fetchMetafieldDefinitionsForURI,
   });
 }
