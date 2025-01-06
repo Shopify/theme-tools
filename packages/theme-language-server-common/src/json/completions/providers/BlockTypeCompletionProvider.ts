@@ -12,8 +12,7 @@ import { CompletionItemKind } from 'vscode-languageserver-protocol';
 import { isLiquidRequestContext, RequestContext } from '../../RequestContext';
 import { fileMatch } from '../../utils';
 import { JSONCompletionProvider } from '../JSONCompletionProvider';
-
-export type GetThemeBlockNames = (uri: string) => Promise<string[]>;
+import { GetThemeBlockNames } from '../../JSONContributions';
 
 /**
  * The BlockTypeCompletionProvider offers value completions of the
@@ -52,14 +51,18 @@ export class BlockTypeCompletionProvider implements JSONCompletionProvider {
     // Local blocks have their type defined in the schema, there's nothing to complete
     if (hasLocalBlockDefinitions(schema)) return [];
 
-    const blockNames = await this.getThemeBlockNames(doc.uri);
+    const blockNames = await this.getThemeBlockNames(doc.uri, true);
 
-    return blockNames.map((name) => ({
-      kind: CompletionItemKind.Value,
-      label: `"${name}"`,
-      insertText: `"${name}"`,
-    }));
+    return createBlockNameCompletionItems(blockNames);
   }
+}
+
+export function createBlockNameCompletionItems(blockNames: string[]) {
+  return blockNames.map((name) => ({
+    kind: CompletionItemKind.Value,
+    label: `"${name}"`,
+    insertText: `"${name}"`,
+  }));
 }
 
 export function isBlockDefinitionPath(path: JSONPath) {
