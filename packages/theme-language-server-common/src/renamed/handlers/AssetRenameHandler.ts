@@ -9,7 +9,12 @@ import {
   WorkspaceEdit,
 } from 'vscode-languageserver-protocol';
 import { ClientCapabilities } from '../../ClientCapabilities';
-import { AugmentedLiquidSourceCode, AugmentedSourceCode, DocumentManager } from '../../documents';
+import {
+  AugmentedLiquidSourceCode,
+  AugmentedSourceCode,
+  DocumentManager,
+  isLiquidSourceCode,
+} from '../../documents';
 import { assetName, isAsset } from '../../utils/uri';
 import { BaseRenameHandler } from '../BaseRenameHandler';
 
@@ -35,8 +40,6 @@ export class AssetRenameHandler implements BaseRenameHandler {
 
   async onDidRenameFiles(params: RenameFilesParams): Promise<void> {
     if (!this.capabilities.hasApplyEditSupport) return;
-    const isLiquidSourceCode = (file: AugmentedSourceCode): file is AugmentedLiquidSourceCode =>
-      file.type === SourceCodeType.LiquidHtml;
 
     const relevantRenames = params.files.filter(
       (file) => isAsset(file.oldUri) && isAsset(file.newUri),
