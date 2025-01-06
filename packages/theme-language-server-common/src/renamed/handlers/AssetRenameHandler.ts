@@ -9,12 +9,7 @@ import {
   WorkspaceEdit,
 } from 'vscode-languageserver-protocol';
 import { ClientCapabilities } from '../../ClientCapabilities';
-import {
-  AugmentedLiquidSourceCode,
-  AugmentedSourceCode,
-  DocumentManager,
-  isLiquidSourceCode,
-} from '../../documents';
+import { DocumentManager, isLiquidSourceCode } from '../../documents';
 import { assetName, isAsset } from '../../utils/uri';
 import { BaseRenameHandler } from '../BaseRenameHandler';
 
