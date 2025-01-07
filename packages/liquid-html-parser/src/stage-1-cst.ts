@@ -83,6 +83,8 @@ export enum ConcreteNodeTypes {
   PaginateMarkup = 'PaginateMarkup',
   RenderVariableExpression = 'RenderVariableExpression',
   ContentForNamedArgument = 'ContentForNamedArgument',
+
+  LiquidDocParamNode = 'LiquidDocParamNode',
 }
 
 export const LiquidLiteralValues = {
@@ -103,6 +105,22 @@ export interface ConcreteBasicNode<T> {
   source: string;
   locStart: number;
   locEnd: number;
+}
+
+// todo: change param and description to concrete nodes
+export interface ConcreteLiquidDocParamNode
+  extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocParamNode> {
+  name: string;
+  value: string;
+  paramName: ConcreteTextNode;
+  paramDescription: ConcreteLiquidDocParamDescription;
+  paramType: ConcreteTextNode;
+}
+
+export interface ConcreteLiquidDocParamDescription
+  extends ConcreteBasicNode<ConcreteNodeTypes.TextNode> {
+  dashSeparated: boolean;
+  value: string;
 }
 
 export interface ConcreteHtmlNodeBase<T> extends ConcreteBasicNode<T> {
@@ -440,9 +458,12 @@ export type LiquidConcreteNode =
   | ConcreteTextNode
   | ConcreteYamlFrontmatterNode;
 
-export type LiquidHtmlCST = LiquidHtmlConcreteNode[];
+export type LiquidHtmlCST = LiquidHtmlConcreteNode[] | LiquidDocCST;
 
 export type LiquidCST = LiquidConcreteNode[];
+
+type LiquidDocCST = LiquidDocConcreteNode[];
+export type LiquidDocConcreteNode = ConcreteLiquidDocParamNode;
 
 interface Mapping {
   [k: string]: number | TemplateMapping | TopLevelFunctionMapping;
@@ -1306,10 +1327,59 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
 
   const LiquidDocMappings: Mapping = {
     Node: 0,
-    TextNode: {
+    textNode: {
       type: ConcreteNodeTypes.TextNode,
       value: function () {
         return (this as any).sourceString;
+      },
+      locStart,
+      locEnd,
+      source,
+    },
+    paramNode: {
+      type: ConcreteNodeTypes.LiquidDocParamNode,
+      name: 0,
+      value: 0,
+      locStart,
+      locEnd,
+      source,
+      paramType: function (nodes: Node[]) {
+        const typeNode = nodes[2];
+        return {
+          type: ConcreteNodeTypes.TextNode,
+          value: typeNode.sourceString.slice(1, -1).trim(),
+          source,
+          locStart: offset + typeNode.source.startIdx,
+          locEnd: offset + typeNode.source.endIdx,
+        };
+      },
+      paramName: function (nodes: Node[]) {
+        const nameNode = nodes[4];
+        return {
+          type: ConcreteNodeTypes.TextNode,
+          value: nameNode.sourceString.trim(),
+          source,
+          locStart: offset + nameNode.source.startIdx,
+          locEnd: offset + nameNode.source.endIdx,
+        };
+      },
+      paramDescription: function (nodes: Node[]) {
+        const dashNode = nodes[6];
+        const descriptionNode = nodes[7];
+        return {
+          type: ConcreteNodeTypes.TextNode,
+          value: descriptionNode.sourceString.trim(),
+          source,
+          locStart: offset + descriptionNode.source.startIdx,
+          locEnd: offset + descriptionNode.source.endIdx,
+          dashSeparated: dashNode.sourceString.trim() === '-',
+        };
+      },
+    },
+    fallbackNode: {
+      type: ConcreteNodeTypes.TextNode,
+      value: function () {
+        return (this as any).sourceString.trim();
       },
       locStart,
       locEnd,
