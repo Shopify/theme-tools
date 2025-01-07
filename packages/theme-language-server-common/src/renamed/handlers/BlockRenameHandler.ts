@@ -94,7 +94,7 @@ const annotationId = 'renameBlock';
  *      S is the number of sections, T is the number of templates and SG is the
  *      number of section groups. It's not worth it.
  *
- *      This shit is complicated enough as it is 😅.
+ *      This stuff is complicated enough as it is 😅.
  */
 export class BlockRenameHandler implements BaseRenameHandler {
   constructor(
