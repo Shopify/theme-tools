@@ -107,7 +107,8 @@ export type LiquidHtmlNode =
   | RenderVariableExpression
   | LiquidLogicalExpression
   | LiquidComparison
-  | TextNode;
+  | TextNode
+  | LiquidDocParamNode;
 
 /** The root node of all LiquidHTML ASTs. */
 export interface DocumentNode extends ASTNode<NodeTypes.Document> {
@@ -754,6 +755,19 @@ export interface TextNode extends ASTNode<NodeTypes.TextNode> {
   value: string;
 }
 
+export interface LiquidDocParamNode extends ASTNode<NodeTypes.LiquidDocParamNode> {
+  name: string;
+  value: string;
+  paramDescription: LiquidDocParamDescription;
+  paramName: TextNode;
+  paramType: TextNode;
+}
+
+export interface LiquidDocParamDescription extends ASTNode<NodeTypes.TextNode> {
+  dashSeparated: boolean;
+  value: string;
+}
+
 export interface ASTNode<T> {
   /**
    * The type of the node, as a string.
@@ -1264,6 +1278,36 @@ function buildAst(
           body: node.body,
           position: position(node),
           source: node.source,
+        });
+        break;
+      }
+
+      case ConcreteNodeTypes.LiquidDocParamNode: {
+        builder.push({
+          type: NodeTypes.LiquidDocParamNode,
+          name: node.name,
+          position: position(node),
+          source: node.source,
+          value: node.value,
+          paramName: {
+            type: NodeTypes.TextNode,
+            value: node.paramName.value,
+            position: position(node.paramName),
+            source: node.paramName.source,
+          },
+          paramDescription: {
+            type: NodeTypes.TextNode,
+            value: node.paramDescription.value,
+            position: position(node.paramDescription),
+            source: node.paramDescription.source,
+            dashSeparated: node.paramDescription.dashSeparated,
+          },
+          paramType: {
+            type: NodeTypes.TextNode,
+            value: node.paramType.value,
+            position: position(node.paramType),
+            source: node.paramType.source,
+          },
         });
         break;
       }

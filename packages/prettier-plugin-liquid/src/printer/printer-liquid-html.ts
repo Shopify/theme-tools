@@ -1,5 +1,6 @@
 import {
   getConditionalComment,
+  LiquidDocParamNode,
   NodeTypes,
   Position,
   RawMarkupKinds,
@@ -30,6 +31,7 @@ import {
   LiquidTag,
   LiquidVariableOutput,
   nonTraversableProperties,
+  RawMarkup,
   TextNode,
 } from '../types';
 import { assertNever } from '../utils';
@@ -40,9 +42,11 @@ import { printChildren } from './print/children';
 import { printElement } from './print/element';
 import {
   printLiquidBranch,
+  printLiquidDoc,
   printLiquidRawTag,
   printLiquidTag,
   printLiquidVariableOutput,
+  printLiquidDocParam,
 } from './print/liquid';
 import { printClosingTagSuffix, printOpeningTagPrefix } from './print/tag';
 import { bodyLines, hasLineBreakInRange, isEmpty, isTextLikeNode, reindent } from './utils';
@@ -210,6 +214,10 @@ function printNode(
     }
 
     case NodeTypes.RawMarkup: {
+      if (node.parentNode?.name === 'doc') {
+        return printLiquidDoc(path as AstPath<RawMarkup>, options, print, args);
+      }
+
       const isRawMarkupIdentationSensitive = () => {
         switch (node.kind) {
           case RawMarkupKinds.typescript:
@@ -545,6 +553,10 @@ function printNode(
         }
       }, 'lookups');
       return [...doc, ...lookups];
+    }
+
+    case NodeTypes.LiquidDocParamNode: {
+      return printLiquidDocParam(path as AstPath<LiquidDocParamNode>, options, print, args);
     }
 
     default: {
