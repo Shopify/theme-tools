@@ -1071,6 +1071,15 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.children.2.paramDescription.dashSeparated').to.equal(false);
         });
 
+        it('should accept punctation inside the param description body', () => {
+          const testStr = `{% doc %} @param paramName paramDescription - asdf . \`should\` work {% enddoc %}`;
+          cst = toCST(testStr);
+
+          expectPath(cst, '0.children.0.paramDescription.value').to.equal(
+            'paramDescription - asdf . `should` work',
+          );
+        });
+
         it('should parse unsupported doc tags as text nodes', () => {
           const testStr = `{% doc %} @unsupported this tag is not supported {% enddoc %}`;
           cst = toCST(testStr);

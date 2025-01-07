@@ -398,7 +398,8 @@ LiquidDoc <: Helpers {
   paramNode = "@param" space* (paramType)? space* (paramName)? space* "-"? paramDescription?
   paramType = "{" anyExceptStar<"}"> "}"
   paramName = identifierCharacter+
-  paramDescription = (~newline identifierCharacter | space)+
+  paramDescription = (~newline identifierCharacter | space | punctuation)+
+  punctuation = singleQuote | doubleQuote | "." | "`"
 }
 
 LiquidHTML <: Liquid {
