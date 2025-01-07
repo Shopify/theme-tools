@@ -34,7 +34,7 @@ new EditorView({
 
 This project includes code from the following repositories. Thank you for your work!
 
-1. [@yetoapp/jsonc](https://github.com/yettoapp/lezer-jsonc)
+1. [@yettoapp/jsonc](https://github.com/yettoapp/lezer-jsonc)
 2. [@lezer/json](https://github.com/lezer-parser/json)
 3. [@codemirror/lang-json](https://github.com/codemirror/lang-json)
 
