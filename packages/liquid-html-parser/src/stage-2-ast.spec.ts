@@ -1232,7 +1232,7 @@ describe('Unit: Stage 2 (AST)', () => {
       ast = toLiquidAST(`
         {% doc -%}
         @param asdf
-        @param {String} paramWithDescription - param with description
+        @param {String} paramWithDescription - param with description and \`punctation\`. This is still a valid param description.
         @unsupported this node falls back to a text node
         {%- enddoc %}
       `);
@@ -1252,7 +1252,7 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.body.nodes.1.paramDescription.type').to.eql('TextNode');
       expectPath(ast, 'children.0.body.nodes.1.paramDescription.dashSeparated').to.eql(true);
       expectPath(ast, 'children.0.body.nodes.1.paramDescription.value').to.eql(
-        'param with description',
+        'param with description and `punctation`. This is still a valid param description.',
       );
       expectPath(ast, 'children.0.body.nodes.1.paramType.type').to.eql('TextNode');
       expectPath(ast, 'children.0.body.nodes.1.paramType.value').to.eql('String');
