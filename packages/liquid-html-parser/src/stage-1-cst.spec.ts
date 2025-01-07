@@ -1003,19 +1003,15 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.blockEndLocEnd').to.equal(testStr.length);
         });
 
-        it('should parse @param with no name or description', () => {
+        it('should not parse @param without a name', () => {
           const testStr = `{% doc %} @param {% enddoc %}`;
           cst = toCST(testStr);
 
-          expectPath(cst, '0.children.0.type').to.equal('LiquidDocParamNode');
+          expectPath(cst, '0.children.0.type').to.equal('TextNode');
           expectPath(cst, '0.children.0.value').to.equal('@param');
-          expectPath(cst, '0.children.0.paramName.type').to.equal('TextNode');
-          expectPath(cst, '0.children.0.paramName.value').to.equal('');
-          expectPath(cst, '0.children.0.paramDescription.type').to.equal('TextNode');
-          expectPath(cst, '0.children.0.paramDescription.value').to.equal('');
         });
 
-        it('should parse @param with name but no description', () => {
+        it('should parse @param with name', () => {
           const testStr = `{% doc %} @param paramWithNoDescription {% enddoc %}`;
           cst = toCST(testStr);
 
