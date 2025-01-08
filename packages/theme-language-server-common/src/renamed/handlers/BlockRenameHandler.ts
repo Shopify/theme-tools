@@ -136,25 +136,13 @@ export class BlockRenameHandler implements BaseRenameHandler {
       },
     };
 
-    const documentChanges = (
-      sourceCode: AugmentedSourceCode,
-      edits: TextEdit[],
-    ): DocumentChange => ({
-      textDocument: {
-        uri: sourceCode.uri,
-        version: sourceCode.version ?? null /* null means file from disk in this API */,
-      },
-      edits,
-    });
-
     // We need to keep track of sections that have local blocks, because we
     // shouldn't rename those. Only uses of "@theme" or specifically named blocks
     // should be renamed when the blocks/*.liquid file is renamed.
     const sectionsWithLocalBlocks = new Set();
-
     const sectionAndBlocksChanges: (DocumentChange | null)[] = await Promise.all(
       sectionsAndBlocks.map(
-        this.getSchemaChanges(sectionsWithLocalBlocks, oldBlockName, newBlockName, documentChanges),
+        this.getSchemaChanges(sectionsWithLocalBlocks, oldBlockName, newBlockName),
       ),
     );
 
@@ -162,28 +150,14 @@ export class BlockRenameHandler implements BaseRenameHandler {
     // when the old block name wasn't a local block.
     const [templateChanges, sectionGroupChanges, contentForChanges] = await Promise.all([
       Promise.all(
-        templates.map(
-          this.getTemplateChanges(
-            oldBlockName,
-            newBlockName,
-            sectionsWithLocalBlocks,
-            documentChanges,
-          ),
-        ),
+        templates.map(this.getTemplateChanges(oldBlockName, newBlockName, sectionsWithLocalBlocks)),
       ),
       Promise.all(
         sectionGroups.map(
-          this.getSectionGroupChanges(
-            oldBlockName,
-            newBlockName,
-            sectionsWithLocalBlocks,
-            documentChanges,
-          ),
+          this.getSectionGroupChanges(oldBlockName, newBlockName, sectionsWithLocalBlocks),
         ),
       ),
-      Promise.all(
-        liquidFiles.map(this.getContentForChanges(oldBlockName, newBlockName, documentChanges)),
-      ),
+      Promise.all(liquidFiles.map(this.getContentForChanges(oldBlockName, newBlockName))),
     ]);
 
     for (const docChange of [
@@ -227,7 +201,6 @@ export class BlockRenameHandler implements BaseRenameHandler {
     sectionsWithLocalBlocks: Set<unknown>,
     oldBlockName: string,
     newBlockName: string,
-    documentChanges: (sourceCode: AugmentedSourceCode, edits: TextEdit[]) => DocumentChange,
   ) {
     return async (sourceCode: AugmentedLiquidSourceCode) => {
       if (sourceCode.ast instanceof Error) return null;
@@ -321,7 +294,6 @@ export class BlockRenameHandler implements BaseRenameHandler {
     oldBlockName: string,
     newBlockName: string,
     sectionsWithLocalBlocks: Set<unknown>,
-    documentChanges: (sourceCode: AugmentedSourceCode, edits: TextEdit[]) => DocumentChange,
   ) {
     return async (sourceCode: AugmentedJsonSourceCode) => {
       // assuming that the JSON is valid...
@@ -353,7 +325,6 @@ export class BlockRenameHandler implements BaseRenameHandler {
     oldBlockName: string,
     newBlockName: string,
     sectionsWithLocalBlocks: Set<unknown>,
-    documentChanges: (sourceCode: AugmentedSourceCode, edits: TextEdit[]) => DocumentChange,
   ) {
     return async (sourceCode: AugmentedJsonSourceCode) => {
       const { textDocument, ast, source } = sourceCode;
@@ -380,11 +351,7 @@ export class BlockRenameHandler implements BaseRenameHandler {
     };
   }
 
-  private getContentForChanges(
-    oldBlockName: string,
-    newBlockName: string,
-    documentChanges: (sourceCode: AugmentedSourceCode, edits: TextEdit[]) => DocumentChange,
-  ) {
+  private getContentForChanges(oldBlockName: string, newBlockName: string) {
     return async (sourceCode: AugmentedLiquidSourceCode) => {
       const { textDocument, ast } = sourceCode;
       if (isError(ast)) return null;
@@ -472,5 +439,15 @@ function getBlocksEditsFactory(
       }
       return edits;
     });
+  };
+}
+
+function documentChanges(sourceCode: AugmentedSourceCode, edits: TextEdit[]): DocumentChange {
+  return {
+    textDocument: {
+      uri: sourceCode.uri,
+      version: sourceCode.version ?? null /* null means file from disk in this API */,
+    },
+    edits,
   };
 }
