@@ -63,6 +63,7 @@ describe('Unit: BlockTypeCompletionProvider', () => {
       async () => ({}),
       async () => 'theme',
       async () => blockNames,
+      async () => undefined,
     );
 
     await jsonLanguageService.setup({

@@ -119,6 +119,7 @@ describe('Module: JSONLanguageService', () => {
       () => Promise.resolve(schemaTranslations),
       (uri: string) => Promise.resolve(uri.includes('tae') ? 'app' : 'theme'),
       () => Promise.resolve([]),
+      async () => undefined,
     );
 
     await jsonLanguageService.setup({

@@ -11,6 +11,7 @@ import {
   parseJSON,
   path,
   recursiveReadDirectory,
+  SourceCodeType,
 } from '@shopify/theme-check-common';
 import {
   Connection,
@@ -197,10 +198,26 @@ export function startServer(
     return config.context;
   }
 
-  async function getThemeBlockNames(uri: string) {
+  async function getThemeBlockNames(uri: string, includePrivate: boolean) {
     const rootUri = await findThemeRootURI(uri);
     const blocks = await fs.readDirectory(path.join(rootUri, 'blocks'));
-    return blocks.map(([uri]) => path.basename(uri, '.liquid'));
+    const blockNames = blocks.map(([uri]) => path.basename(uri, '.liquid'));
+
+    if (includePrivate) {
+      return blockNames;
+    }
+
+    return blockNames.filter((blockName) => !blockName.startsWith('_'));
+  }
+
+  async function getThemeBlockSchema(uri: string, name: string) {
+    const rootUri = await findThemeRootURI(uri);
+    const blockUri = path.join(rootUri, 'blocks', `${name}.liquid`);
+    const doc = documentManager.get(blockUri);
+    if (!doc || doc.type !== SourceCodeType.LiquidHtml) {
+      return;
+    }
+    return doc.getSchema();
   }
 
   // Defined as a function to solve a circular dependency (doc manager & json
@@ -215,6 +232,7 @@ export function startServer(
     getSchemaTranslationsForURI,
     getModeForURI,
     getThemeBlockNames,
+    getThemeBlockSchema,
   );
   const completionsProvider = new CompletionsProvider({
     documentManager,

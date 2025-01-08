@@ -1,4 +1,10 @@
-import { parseJSON, SourceCodeType } from '@shopify/theme-check-common';
+import {
+  AppBlockSchema,
+  parseJSON,
+  SectionSchema,
+  SourceCodeType,
+  ThemeBlockSchema,
+} from '@shopify/theme-check-common';
 import {
   CompletionsCollector,
   JSONPath,
@@ -8,10 +14,8 @@ import {
 import { AugmentedSourceCode, DocumentManager } from '../documents';
 import { GetTranslationsForURI } from '../translations';
 import { JSONCompletionProvider } from './completions/JSONCompletionProvider';
-import {
-  BlockTypeCompletionProvider,
-  GetThemeBlockNames,
-} from './completions/providers/BlockTypeCompletionProvider';
+import { BlockTypeCompletionProvider } from './completions/providers/BlockTypeCompletionProvider';
+import { PresetsBlockTypeCompletionProvider } from './completions/providers/PresetsBlockTypeCompletionProvider';
 import { SchemaTranslationsCompletionProvider } from './completions/providers/SchemaTranslationCompletionProvider';
 import { JSONHoverProvider } from './hover/JSONHoverProvider';
 import { SchemaTranslationHoverProvider } from './hover/providers/SchemaTranslationHoverProvider';
@@ -22,7 +26,11 @@ import { findSchemaNode } from './utils';
 /** The getInfoContribution API will only fallback if we return undefined synchronously */
 const SKIP_CONTRIBUTION = undefined as any;
 
-export { GetThemeBlockNames };
+export type GetThemeBlockSchema = (
+  uri: string,
+  name: string,
+) => Promise<SectionSchema | ThemeBlockSchema | AppBlockSchema | undefined>;
+export type GetThemeBlockNames = (uri: string, includePrivate: boolean) => Promise<string[]>;
 
 /**
  * I'm not a fan of how json-languageservice does its feature contributions. It's too different
@@ -39,6 +47,7 @@ export class JSONContributions implements JSONWorkerContribution {
     private documentManager: DocumentManager,
     getDefaultSchemaTranslations: GetTranslationsForURI,
     getThemeBlockNames: GetThemeBlockNames,
+    getThemeBlockSchema: GetThemeBlockSchema,
   ) {
     this.hoverProviders = [
       new TranslationPathHoverProvider(),
@@ -47,6 +56,7 @@ export class JSONContributions implements JSONWorkerContribution {
     this.completionProviders = [
       new SchemaTranslationsCompletionProvider(getDefaultSchemaTranslations),
       new BlockTypeCompletionProvider(getThemeBlockNames),
+      new PresetsBlockTypeCompletionProvider(getThemeBlockNames, getThemeBlockSchema),
     ];
   }
 
