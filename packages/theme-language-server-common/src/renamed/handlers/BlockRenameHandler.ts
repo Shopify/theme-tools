@@ -111,8 +111,9 @@ export class BlockRenameHandler implements BaseRenameHandler {
       (file) => isBlock(file.oldUri) && isBlock(file.newUri),
     );
 
-    // Only preload if you have something to do
-    if (relevantRenames.length === 0) return;
+    // Only preload if you have something to do (folder renames not supported yet).
+    if (relevantRenames.length !== 1) return;
+    const rename = relevantRenames[0];
     const rootUri = await this.findThemeRootURI(path.dirname(params.files[0].oldUri));
     await this.documentManager.preload(rootUri);
     const theme = this.documentManager.theme(rootUri, true);
@@ -122,114 +123,104 @@ export class BlockRenameHandler implements BaseRenameHandler {
     );
     const templates = theme.filter(isJsonSourceCode).filter((file) => isTemplate(file.uri));
     const sectionGroups = theme.filter(isJsonSourceCode).filter((file) => isSectionGroup(file.uri));
-
-    const promises = relevantRenames.map(async (file) => {
-      const oldBlockName = blockName(file.oldUri);
-      const newBlockName = blockName(file.newUri);
-      const editLabel = `Rename block '${oldBlockName}' to '${newBlockName}'`;
-      const workspaceEdit: WorkspaceEdit = {
-        documentChanges: [],
-        changeAnnotations: {
-          [annotationId]: {
-            label: editLabel,
-            needsConfirmation: false,
-          },
+    const oldBlockName = blockName(rename.oldUri);
+    const newBlockName = blockName(rename.newUri);
+    const editLabel = `Rename block '${oldBlockName}' to '${newBlockName}'`;
+    const workspaceEdit: WorkspaceEdit = {
+      documentChanges: [],
+      changeAnnotations: {
+        [annotationId]: {
+          label: editLabel,
+          needsConfirmation: false,
         },
-      };
+      },
+    };
 
-      const documentChanges = (
-        sourceCode: AugmentedSourceCode,
-        edits: TextEdit[],
-      ): DocumentChange => ({
-        textDocument: {
-          uri: sourceCode.uri,
-          version: sourceCode.version ?? null /* null means file from disk in this API */,
-        },
-        edits,
-      });
+    const documentChanges = (
+      sourceCode: AugmentedSourceCode,
+      edits: TextEdit[],
+    ): DocumentChange => ({
+      textDocument: {
+        uri: sourceCode.uri,
+        version: sourceCode.version ?? null /* null means file from disk in this API */,
+      },
+      edits,
+    });
 
-      // We need to keep track of sections that have local blocks, because we
-      // shouldn't rename those. Only uses of "@theme" or specifically named blocks
-      // should be renamed when the blocks/*.liquid file is renamed.
-      const sectionsWithLocalBlocks = new Set();
+    // We need to keep track of sections that have local blocks, because we
+    // shouldn't rename those. Only uses of "@theme" or specifically named blocks
+    // should be renamed when the blocks/*.liquid file is renamed.
+    const sectionsWithLocalBlocks = new Set();
 
-      const sectionAndBlocksChanges: (DocumentChange | null)[] = await Promise.all(
-        sectionsAndBlocks.map(
-          this.getSchemaChanges(
-            sectionsWithLocalBlocks,
+    const sectionAndBlocksChanges: (DocumentChange | null)[] = await Promise.all(
+      sectionsAndBlocks.map(
+        this.getSchemaChanges(sectionsWithLocalBlocks, oldBlockName, newBlockName, documentChanges),
+      ),
+    );
+
+    // All the templates/*.json files need to be updated with the new block name
+    // when the old block name wasn't a local block.
+    const [templateChanges, sectionGroupChanges, contentForChanges] = await Promise.all([
+      Promise.all(
+        templates.map(
+          this.getTemplateChanges(
             oldBlockName,
             newBlockName,
+            sectionsWithLocalBlocks,
             documentChanges,
           ),
         ),
-      );
-
-      // All the templates/*.json files need to be updated with the new block name
-      // when the old block name wasn't a local block.
-      const [templateChanges, sectionGroupChanges, contentForChanges] = await Promise.all([
-        Promise.all(
-          templates.map(
-            this.getTemplateChanges(
-              oldBlockName,
-              newBlockName,
-              sectionsWithLocalBlocks,
-              documentChanges,
-            ),
+      ),
+      Promise.all(
+        sectionGroups.map(
+          this.getSectionGroupChanges(
+            oldBlockName,
+            newBlockName,
+            sectionsWithLocalBlocks,
+            documentChanges,
           ),
         ),
-        Promise.all(
-          sectionGroups.map(
-            this.getSectionGroupChanges(
-              oldBlockName,
-              newBlockName,
-              sectionsWithLocalBlocks,
-              documentChanges,
-            ),
-          ),
-        ),
-        Promise.all(
-          liquidFiles.map(this.getContentForChanges(oldBlockName, newBlockName, documentChanges)),
-        ),
-      ]);
+      ),
+      Promise.all(
+        liquidFiles.map(this.getContentForChanges(oldBlockName, newBlockName, documentChanges)),
+      ),
+    ]);
 
-      for (const docChange of [
-        ...sectionAndBlocksChanges,
-        ...templateChanges,
-        ...sectionGroupChanges,
-      ]) {
-        if (docChange !== null) {
+    for (const docChange of [
+      ...sectionAndBlocksChanges,
+      ...templateChanges,
+      ...sectionGroupChanges,
+    ]) {
+      if (docChange !== null) {
+        workspaceEdit.documentChanges!.push(docChange);
+      }
+    }
+
+    // Because contentForChanges could make a change to an existing document, we need
+    // to group the edits together by document. Or else we might have index
+    // drifting issues.
+    for (const docChange of contentForChanges) {
+      if (docChange !== null) {
+        const existingDocChange = (workspaceEdit.documentChanges as DocumentChange[]).find(
+          (dc) => dc.textDocument.uri === docChange?.textDocument.uri,
+        );
+        if (existingDocChange) {
+          existingDocChange.edits.push(...docChange.edits);
+        } else {
           workspaceEdit.documentChanges!.push(docChange);
         }
       }
+    }
 
-      // Because contentForChanges could make a change to an existing document, we need
-      // to group the edits together by document. Or else we might have index
-      // drifting issues.
-      for (const docChange of contentForChanges) {
-        if (docChange !== null) {
-          const existingDocChange = (workspaceEdit.documentChanges as DocumentChange[]).find(
-            (dc) => dc.textDocument.uri === docChange?.textDocument.uri,
-          );
-          if (existingDocChange) {
-            existingDocChange.edits.push(...docChange.edits);
-          } else {
-            workspaceEdit.documentChanges!.push(docChange);
-          }
-        }
-      }
+    if (workspaceEdit.documentChanges!.length === 0) {
+      console.error('Nothing to do!');
+      return;
+    }
 
-      if (workspaceEdit.documentChanges!.length === 0) {
-        console.error('Nothing to do!');
-        return;
-      }
-
-      return this.connection.sendRequest(ApplyWorkspaceEditRequest.type, {
-        label: editLabel,
-        edit: workspaceEdit,
-      });
+    await this.connection.sendRequest(ApplyWorkspaceEditRequest.type, {
+      label: editLabel,
+      edit: workspaceEdit,
     });
-
-    await Promise.all(promises);
   }
 
   private getSchemaChanges(
