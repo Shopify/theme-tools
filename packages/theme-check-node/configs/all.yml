@@ -3,6 +3,9 @@
 # Do not modify manually. Your changes will be overwritten.
 ignore:
   - node_modules/**
+AppBlockMissingSchema:
+  enabled: false
+  severity: 0
 AppBlockValidTags:
   enabled: false
   severity: 0
@@ -73,9 +76,6 @@ MatchingTranslations:
 MissingAsset:
   enabled: true
   severity: 0
-MissingSchema:
-  enabled: false
-  severity: 0
 MissingTemplate:
   enabled: true
   severity: 0
@@ -118,9 +118,6 @@ UnknownFilter:
 UnusedAssign:
   enabled: true
   severity: 1
-ValidBlockPresetSettings:
-  enabled: true
-  severity: 0
 ValidBlockTarget:
   enabled: true
   severity: 0
