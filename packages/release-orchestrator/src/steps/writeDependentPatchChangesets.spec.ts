@@ -1,17 +1,17 @@
 import { expect, it, describe, afterEach, afterAll, vi, Mock } from 'vitest';
-import { patchBumpDependants } from './patch-bump-dependants';
-import { changesetStatus } from './changeset';
-import { generatePatchChangeset } from './generate-patch-changeset';
+import { writeDependentPatchChangesets } from './writeDependentPatchChangesets';
+import { changesetStatus } from './changesetStatus';
+import { generatePatchChangeset } from './generatePatchChangeset';
 
-vi.mock('./changeset', async () => ({
+vi.mock('./changesetStatus', async () => ({
   changesetStatus: vi.fn(),
 }));
 
-vi.mock('./generate-patch-changeset', async () => ({
+vi.mock('./generatePatchChangeset', async () => ({
   generatePatchChangeset: vi.fn(),
 }));
 
-describe('patchBumpDependants', () => {
+describe('writeDependentPatchChangesets', () => {
   afterEach(() => {
     vi.clearAllMocks();
   });
@@ -37,7 +37,7 @@ describe('patchBumpDependants', () => {
       changesets: [],
     });
 
-    await patchBumpDependants(packageJsonMap);
+    await writeDependentPatchChangesets(packageJsonMap);
 
     expect(changesetStatus).toHaveBeenCalledTimes(2);
     expect(generatePatchChangeset).toHaveBeenCalledWith('package1', ['package2']);
@@ -53,7 +53,7 @@ describe('patchBumpDependants', () => {
       changesets: [],
     });
 
-    await patchBumpDependants(packageJsonMap);
+    await writeDependentPatchChangesets(packageJsonMap);
 
     expect(changesetStatus).toHaveBeenCalledTimes(1);
     expect(generatePatchChangeset).not.toHaveBeenCalled();
