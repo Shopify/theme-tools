@@ -1,10 +1,19 @@
-import { buildReleasePipeline } from './build-release-pipeline';
-import { flow } from './flow';
+import { changesetVersion } from './steps/changesetVersion';
+import { getPackageJsonPaths } from './steps/getPackageJsonPaths';
+import { getPackageJsonRecord } from './steps/getPackageJsonRecord';
+import { writeDependentPatchChangesets } from './steps/writeDependentPatchChangesets';
+import type { StepFunction } from './types';
+import { flow } from './utils';
 
 const main = async () => {
-  const args = process.argv.slice(2);
-  const releasePipeline = buildReleasePipeline(args);
-  const startRelease = flow(releasePipeline);
+  const steps: StepFunction[] = [
+    getPackageJsonPaths,
+    getPackageJsonRecord,
+    writeDependentPatchChangesets,
+    changesetVersion,
+  ];
+
+  const startRelease = flow(steps);
 
   try {
     await startRelease();

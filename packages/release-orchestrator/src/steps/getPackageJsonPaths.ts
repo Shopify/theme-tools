@@ -1,14 +1,10 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-import { getRepoRoot } from './utils';
+import { getRepoRoot } from '../utils';
 
-/**
- * Returns an object map of all package.json file contents to their package names.
- *
- * This only looks at immediate children package.json's within the packages directory
- */
-export const locateAllPkgJsons = async () => {
+export type PackageJsonPath = string;
+export async function getPackageJsonPaths(): Promise<PackageJsonPath[]> {
   const pkgsRootDir = path.join(await getRepoRoot(), 'packages');
 
   const packageJsonPaths: string[] = [];
@@ -37,4 +33,4 @@ export const locateAllPkgJsons = async () => {
     process.exit(1);
   }
   return packageJsonPaths;
-};
+}

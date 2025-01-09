@@ -1,14 +1,14 @@
-import { changesetStatus } from './changeset';
-import { generatePatchChangeset } from './generate-patch-changeset';
-import type { ChangesetStatus, PackageJsonMap } from './types';
+import { changesetStatus } from './changesetStatus';
+import { generatePatchChangeset } from './generatePatchChangeset';
+import type { ChangesetStatus, PackageJsonRecord } from '../types';
 
 /**
- * Creates patch changelogs for all packages that depend on the
- * updated packages but were not updated themselves.
+ * Creates patch changesets for all packages that depend on the updated packages
+ * but were not updated themselves.
  *
  * This will enable us to leverage `changeset version` to bump everything.
  */
-export const patchBumpDependants = async (packageJsonMap: PackageJsonMap) => {
+export const writeDependentPatchChangesets = async (packageJsonMap: PackageJsonRecord) => {
   let updated: ChangesetStatus;
   let numPatches: number;
 
@@ -18,7 +18,7 @@ export const patchBumpDependants = async (packageJsonMap: PackageJsonMap) => {
      * in the next release based on all the changelogs available at the point of invocation.
      */
     updated = await changesetStatus();
-    numPatches = await applyPatchBumps({ updated, packageJsonMap });
+    numPatches = await generateDependentPatchChangesets({ updated, packageJsonMap });
   } while (
     /**
      * Until there are no more patches that can be applied to un-updated packages
@@ -28,14 +28,14 @@ export const patchBumpDependants = async (packageJsonMap: PackageJsonMap) => {
   );
 };
 
-const applyPatchBumps = async ({
+const generateDependentPatchChangesets = async ({
   updated,
   packageJsonMap,
 }: {
   updated: ChangesetStatus;
-  packageJsonMap: PackageJsonMap;
+  packageJsonMap: PackageJsonRecord;
 }): Promise<number> => {
-  const updatedPkgNames = updated.releases.map((release) => release.name);
+  const updatedPkgNames = updated.releases.map((release: any) => release.name);
 
   /**
    * Perf opt: we can avoid evaluating packages that are already in the updatedPkgNames array

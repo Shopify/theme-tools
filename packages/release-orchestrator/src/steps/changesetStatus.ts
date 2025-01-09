@@ -1,18 +1,6 @@
 import path from 'path';
-
-import type { ChangesetStatus } from './types';
-import { getRepoRoot, readFile, run } from './utils';
-
-export const changesetTag = async () => {
-  console.log('Creating git tags for package versions...');
-  console.log(await run('yarn changeset tag'));
-};
-
-export const changesetVersion = async () => {
-  console.log('Running `changeset version`...');
-
-  console.log(await run('yarn changeset version'));
-};
+import type { ChangesetStatus } from '../types';
+import { run, getRepoRoot, readFile } from '../utils';
 
 export const changesetStatus = async (): Promise<ChangesetStatus> => {
   const basefile = `changeset-status.json`;
@@ -26,7 +14,7 @@ export const changesetStatus = async (): Promise<ChangesetStatus> => {
     console.log(
       "Exiting release process. Please run `yarn changeset status` to see what's going on.",
     );
-    process.exit();
+    process.exit(0);
   }
   const statusFilepath = path.join(await getRepoRoot(), basefile);
   const statusOutput = JSON.parse(await readFile(statusFilepath, 'utf-8'));

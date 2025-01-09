@@ -1,6 +1,6 @@
 import { expect, it, describe, afterEach, afterAll, vi, Mock } from 'vitest';
 import fs from 'fs';
-import { buildPackageJsonMap } from './build-package-json-map';
+import { getPackageJsonRecord } from './getPackageJsonRecord';
 // import { promisify } from 'node:util';
 
 vi.mock('fs', async () => ({
@@ -15,7 +15,7 @@ vi.stubGlobal('console', {
   error: vi.fn(),
 });
 
-describe('buildPackageJsonMap', () => {
+describe('getPackageJsonRecord', () => {
   afterEach(() => {
     vi.clearAllMocks();
   });
@@ -34,7 +34,7 @@ describe('buildPackageJsonMap', () => {
       JSON.stringify({ name: 'package2', version: '2.0.0' }),
     );
 
-    const result = await buildPackageJsonMap(['path/to/package1.json', 'path/to/package2.json']);
+    const result = await getPackageJsonRecord(['path/to/package1.json', 'path/to/package2.json']);
 
     expect(result).toEqual({
       package1: { name: 'package1', version: '1.0.0' },
@@ -50,7 +50,7 @@ describe('buildPackageJsonMap', () => {
     // @ts-ignore
     (fs.readFile as Mock).mockRejectedValueOnce(new Error('test error'));
 
-    const result = await buildPackageJsonMap(['path/to/package1.json', 'path/to/package2.json']);
+    const result = await getPackageJsonRecord(['path/to/package1.json', 'path/to/package2.json']);
 
     expect(result).toEqual({
       package1: { name: 'package1', version: '1.0.0' },
