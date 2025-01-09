@@ -1,6 +1,12 @@
 name: Release Workflow
 
-on: workflow_dispatch
+on:
+  push:
+    branches:
+      - main
+      - feature/changeset-action-pr
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 env:
   VSCE_PAT: ${{ secrets.VSCE_PAT }}
@@ -32,15 +38,26 @@ jobs:
         env:
           NODE_ENV: production
 
-      - name: Publish to npm
+      - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: yarn changeset publish
-          createGithubRelease: false
+          # When there are no changesets, this gets called
+          publish: echo yarn changeset publish
+          # When there are changesets, this gets called and then a PR is opened/updated
+          version: yarn release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Query VS Code Marketplace version
+        id: marketplace-version
+        run: echo "version=$(vsce show --json Shopify.theme-check-vscode | jq -r .versions[0].version)" >> $GITHUB_OUTPUT
+
+      - name: Query VS Code Package version
+        id: package-version
+        run: echo "version=$(jq -r .version packages/vscode-extension/package.json)" >> $GITHUB_OUTPUT
+
       - name: VS Code Marketplace publish
-        run: yarn publish:vsce
+        if: steps.marketplace-version.outputs.version != steps.package-version.outputs.version
+        run: echo yarn publish:vsce
