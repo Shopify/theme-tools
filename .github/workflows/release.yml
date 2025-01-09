@@ -58,6 +58,9 @@ jobs:
         id: package-version
         run: echo "version=$(jq -r .version packages/vscode-extension/package.json)" >> $GITHUB_OUTPUT
 
+      - name: Check if VS Code Marketplace version is different from package version
+        run: echo ",${{ steps.marketplace-version.outputs.version }}, ,${{ steps.package-version.outputs.version }},"
+
       - name: VS Code Marketplace publish
         if: steps.marketplace-version.outputs.version != steps.package-version.outputs.version
         run: echo yarn publish:vsce
