@@ -19,6 +19,9 @@ AssetSizeAppBlockJavaScript:
 MissingSchema:
   enabled: true
   severity: 0
+NoImportmap:
+  enabled: true
+  severity: 0
 RequiredLayoutThemeObject:
   enabled: false
   severity: 0
