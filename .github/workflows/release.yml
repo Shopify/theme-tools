@@ -38,10 +38,17 @@ jobs:
         env:
           NODE_ENV: production
 
+      - name: Grab date as YYYY-MM-DD
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
         with:
+          # Put date in the title and commit message
+          title: "Theme Tools Release — ${{ steps.date.outputs.date }}"
+          commit: "Theme Rools Release — ${{ steps.date.outputs.date }}"
           # When there are no changesets, this gets called
           publish: echo yarn changeset publish
           # When there are changesets, this gets called and then a PR is opened/updated
