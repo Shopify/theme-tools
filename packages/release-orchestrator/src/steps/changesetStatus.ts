@@ -8,6 +8,7 @@ export const changesetStatus = async (): Promise<ChangesetStatus | undefined> =>
   try {
     await run(`yarn changeset status --output=${basefile}`);
   } catch (err) {
+    console.log(err);
     console.log(
       'Failed to get changeset status. This can happen if there are no changesets to process for release.',
     );
