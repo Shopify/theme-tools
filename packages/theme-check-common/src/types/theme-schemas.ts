@@ -29,6 +29,9 @@ export interface ThemeSchema<T extends ThemeSchemaType> {
 
   /** Parsed as a JavaScript object or an Error */
   parsed: any | Error;
+
+  /** 0-based index of the start of JSON object in the document */
+  offset: number;
 }
 
 /** See {@link ThemeSchema} */

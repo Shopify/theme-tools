@@ -9,7 +9,7 @@ import {
   WorkspaceEdit,
 } from 'vscode-languageserver-protocol';
 import { ClientCapabilities } from '../../ClientCapabilities';
-import { AugmentedLiquidSourceCode, AugmentedSourceCode, DocumentManager } from '../../documents';
+import { DocumentManager, isLiquidSourceCode } from '../../documents';
 import { isSnippet, snippetName } from '../../utils/uri';
 import { BaseRenameHandler } from '../BaseRenameHandler';
 
@@ -35,81 +35,74 @@ export class SnippetRenameHandler implements BaseRenameHandler {
 
   async onDidRenameFiles(params: RenameFilesParams): Promise<void> {
     if (!this.capabilities.hasApplyEditSupport) return;
-    const isLiquidSourceCode = (file: AugmentedSourceCode): file is AugmentedLiquidSourceCode =>
-      file.type === SourceCodeType.LiquidHtml;
-
     const relevantRenames = params.files.filter(
       (file) => isSnippet(file.oldUri) && isSnippet(file.newUri),
     );
 
-    // Only preload if you have something to do
-    if (relevantRenames.length === 0) return;
+    // Only preload if you have something to do (folder renames are not supported)
+    if (relevantRenames.length !== 1) return;
+    const rename = relevantRenames[0];
     const rootUri = await this.findThemeRootURI(path.dirname(params.files[0].oldUri));
     await this.documentManager.preload(rootUri);
     const theme = this.documentManager.theme(rootUri, true);
     const liquidSourceCodes = theme.filter(isLiquidSourceCode);
-
-    const promises = relevantRenames.map(async (file) => {
-      const oldSnippetName = snippetName(file.oldUri);
-      const newSnippetName = snippetName(file.newUri);
-      const editLabel = `Rename snippet '${oldSnippetName}' to '${newSnippetName}'`;
-      const annotationId = 'renameSnippet';
-      const workspaceEdit: WorkspaceEdit = {
-        documentChanges: [],
-        changeAnnotations: {
-          [annotationId]: {
-            label: editLabel,
-            needsConfirmation: false,
-          },
+    const oldSnippetName = snippetName(rename.oldUri);
+    const newSnippetName = snippetName(rename.newUri);
+    const editLabel = `Rename snippet '${oldSnippetName}' to '${newSnippetName}'`;
+    const annotationId = 'renameSnippet';
+    const workspaceEdit: WorkspaceEdit = {
+      documentChanges: [],
+      changeAnnotations: {
+        [annotationId]: {
+          label: editLabel,
+          needsConfirmation: false,
         },
-      };
+      },
+    };
 
-      for (const sourceCode of liquidSourceCodes) {
-        if (sourceCode.ast instanceof Error) continue;
-        const textDocument = sourceCode.textDocument;
-        const edits: TextEdit[] = visit<SourceCodeType.LiquidHtml, TextEdit>(sourceCode.ast, {
-          LiquidTag(node: LiquidTag) {
-            if (node.name !== NamedTags.render && node.name !== NamedTags.include) {
-              return;
-            }
-            if (typeof node.markup === 'string') {
-              return;
-            }
-            const snippet = node.markup.snippet;
-            if (snippet.type === NodeTypes.String && snippet.value === oldSnippetName) {
-              return {
-                newText: `${newSnippetName}`,
-                range: Range.create(
-                  textDocument.positionAt(snippet.position.start + 1), // +1 to skip the opening quote
-                  textDocument.positionAt(snippet.position.end - 1), // -1 to skip the closing quote
-                ),
-              };
-            }
-          },
-        });
-
-        if (edits.length === 0) continue;
-        workspaceEdit.documentChanges!.push({
-          textDocument: {
-            uri: textDocument.uri,
-            version: sourceCode.version ?? null /* null means file from disk in this API */,
-          },
-          annotationId,
-          edits,
-        });
-      }
-
-      if (workspaceEdit.documentChanges!.length === 0) {
-        console.error('Nothing to do!');
-        return;
-      }
-
-      return this.connection.sendRequest(ApplyWorkspaceEditRequest.type, {
-        label: editLabel,
-        edit: workspaceEdit,
+    for (const sourceCode of liquidSourceCodes) {
+      if (sourceCode.ast instanceof Error) continue;
+      const textDocument = sourceCode.textDocument;
+      const edits: TextEdit[] = visit<SourceCodeType.LiquidHtml, TextEdit>(sourceCode.ast, {
+        LiquidTag(node: LiquidTag) {
+          if (node.name !== NamedTags.render && node.name !== NamedTags.include) {
+            return;
+          }
+          if (typeof node.markup === 'string') {
+            return;
+          }
+          const snippet = node.markup.snippet;
+          if (snippet.type === NodeTypes.String && snippet.value === oldSnippetName) {
+            return {
+              newText: `${newSnippetName}`,
+              range: Range.create(
+                textDocument.positionAt(snippet.position.start + 1), // +1 to skip the opening quote
+                textDocument.positionAt(snippet.position.end - 1), // -1 to skip the closing quote
+              ),
+            };
+          }
+        },
       });
-    });
 
-    await Promise.all(promises);
+      if (edits.length === 0) continue;
+      workspaceEdit.documentChanges!.push({
+        textDocument: {
+          uri: textDocument.uri,
+          version: sourceCode.version ?? null /* null means file from disk in this API */,
+        },
+        annotationId,
+        edits,
+      });
+    }
+
+    if (workspaceEdit.documentChanges!.length === 0) {
+      console.error('Nothing to do!');
+      return;
+    }
+
+    await this.connection.sendRequest(ApplyWorkspaceEditRequest.type, {
+      label: editLabel,
+      edit: workspaceEdit,
+    });
   }
 }

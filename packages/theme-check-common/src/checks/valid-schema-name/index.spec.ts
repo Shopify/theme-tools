@@ -22,6 +22,7 @@ describe('Module: ValidSchemaName', () => {
         validSchema: new Error('Invalid schema'),
         name: 'file',
         type: ThemeSchemaType.Section,
+        offset: 0,
       }),
     });
 
