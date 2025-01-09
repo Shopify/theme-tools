@@ -6,7 +6,7 @@ export const changesetStatus = async (): Promise<ChangesetStatus | undefined> =>
   const basefile = `changeset-status.json`;
 
   try {
-    await run(`yarn changeset status --output=${basefile}`);
+    await run(`yarn changeset status --output=${basefile} --since=feature/changeset-action-pr`);
   } catch (err) {
     console.log(err);
     console.log(
