@@ -9,7 +9,7 @@ import type { ChangesetStatus, PackageJsonRecord } from '../types';
  * This will enable us to leverage `changeset version` to bump everything.
  */
 export const writeDependentPatchChangesets = async (packageJsonMap: PackageJsonRecord) => {
-  let updated: ChangesetStatus;
+  let updated: ChangesetStatus | undefined;
   let numPatches: number;
 
   do {
@@ -18,7 +18,7 @@ export const writeDependentPatchChangesets = async (packageJsonMap: PackageJsonR
      * in the next release based on all the changelogs available at the point of invocation.
      */
     updated = await changesetStatus();
-    numPatches = await generateDependentPatchChangesets({ updated, packageJsonMap });
+    numPatches = updated ? await generateDependentPatchChangesets({ updated, packageJsonMap }) : 0;
   } while (
     /**
      * Until there are no more patches that can be applied to un-updated packages

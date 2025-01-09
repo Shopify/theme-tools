@@ -2,7 +2,7 @@ import path from 'path';
 import type { ChangesetStatus } from '../types';
 import { run, getRepoRoot, readFile } from '../utils';
 
-export const changesetStatus = async (): Promise<ChangesetStatus> => {
+export const changesetStatus = async (): Promise<ChangesetStatus | undefined> => {
   const basefile = `changeset-status.json`;
 
   try {
@@ -14,7 +14,8 @@ export const changesetStatus = async (): Promise<ChangesetStatus> => {
     console.log(
       "Exiting release process. Please run `yarn changeset status` to see what's going on.",
     );
-    process.exit(0);
+
+    return;
   }
   const statusFilepath = path.join(await getRepoRoot(), basefile);
   const statusOutput = JSON.parse(await readFile(statusFilepath, 'utf-8'));
