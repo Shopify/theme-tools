@@ -59,7 +59,7 @@ jobs:
 
       - name: Query VS Code Marketplace version
         id: marketplace-version
-        run: echo "version=$(vsce show --json Shopify.theme-check-vscode | jq -r .versions[0].version)" >> $GITHUB_OUTPUT
+        run: echo "version=$(yarn --silent vsce show --json Shopify.theme-check-vscode | jq -r .versions[0].version)" >> $GITHUB_OUTPUT
 
       - name: Query VS Code Package version
         id: package-version
