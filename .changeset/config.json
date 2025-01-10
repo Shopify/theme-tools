@@ -10,6 +10,6 @@
   ],
   "linked": [],
   "access": "restricted",
-  "baseBranch": "feature/changeset-action-pr",
+  "baseBranch": "main",
   "updateInternalDependencies": "patch"
 }

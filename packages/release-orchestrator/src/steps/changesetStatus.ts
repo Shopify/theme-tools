@@ -4,10 +4,9 @@ import { run, getRepoRoot, readFile } from '../utils';
 
 export const changesetStatus = async (): Promise<ChangesetStatus> => {
   const basefile = `changeset-status.json`;
-  const basebranch = `feature/changeset-action-pr`;
 
   try {
-    await run(`yarn changeset status --output=${basefile} --since=${basebranch}`);
+    await run(`yarn changeset status --output=${basefile}`);
   } catch (err) {
     console.log(err);
     console.log(

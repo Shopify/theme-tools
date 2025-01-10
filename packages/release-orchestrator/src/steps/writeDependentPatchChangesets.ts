@@ -35,7 +35,6 @@ const generateDependentPatchChangesets = async ({
   updated: ChangesetStatus;
   packageJsonMap: PackageJsonRecord;
 }): Promise<number> => {
-  debugger;
   const updatedPkgNames = updated.releases.map((release: any) => release.name);
 
   const pkgNamesToProcess = Object.keys(packageJsonMap).filter(
