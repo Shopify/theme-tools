@@ -6,8 +6,8 @@ export const changesetStatus = async (): Promise<ChangesetStatus> => {
   const basefile = `changeset-status.json`;
 
   try {
-    await run(`git fetch origin main`);
-    await run('git fetch origin ${GITHUB_REF#refs/heads/}');
+    // fetch commits between current branch and main
+    await run('git fetch origin ${GITHUB_REF#refs/heads/} --shallow-exclude main');
     console.log(await run('git diff --name-only origin/main...${GITHUB_REF#refs/heads/}'));
     await run(`yarn changeset status --output=${basefile}`);
   } catch (err) {
