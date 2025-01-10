@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feature/changeset-action-pr
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -39,11 +38,6 @@ jobs:
         env:
           NODE_ENV: production
 
-      # - name: Build the release orchestrator (testing) code
-      #   run: yarn --cwd packages/release-orchestrator build
-      #   env:
-      #     NODE_ENV: production
-
       - name: Grab date as YYYY-MM-DD
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
@@ -64,16 +58,13 @@ jobs:
           title: "Theme Tools Release — ${{ steps.date.outputs.date }}"
           commit: "Theme Rools Release — ${{ steps.date.outputs.date }}"
           # When there are no changesets, this gets called
-          publish: echo yarn changeset publish
+          publish: yarn changeset publish
           # When there are changesets, this gets called and then a PR is opened/updated
           version: yarn release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: debug state
-        run: echo ":${{ steps.changesets.outputs.hasChangesets }}:${{ steps.marketplace-version.outputs.version }}:${{ steps.package-version.outputs.version }}:"
-
       - name: VS Code Marketplace publish
         if: steps.changesets.outputs.hasChangesets == 'false' && steps.marketplace-version.outputs.version != steps.package-version.outputs.version
-        run: echo yarn publish:vsce
+        run: yarn publish:vsce
