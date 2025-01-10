@@ -7,7 +7,7 @@ export const changesetStatus = async (): Promise<ChangesetStatus> => {
 
   try {
     await run(`git fetch origin main`);
-    await run('git fetch origin ${$GITHUB_REF#refs/heads/}');
+    await run('git fetch origin ${GITHUB_REF#refs/heads/}');
     await run(`yarn changeset status --output=${basefile}`);
   } catch (err) {
     console.log(err);
