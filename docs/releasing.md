@@ -17,24 +17,9 @@
 
 ## Releasing new package versions
 
-1. Start on main.
+1. Merge the `Theme-Tools Release — YYYY-MM-DD` PR
 
-   ```bash
-   git fetch origin main
-   git checkout main
-   git reset --hard origin/main
-   ```
-
-2. Run the release script.
-
-   ```sh
-   yarn release
-   ```
-
-3. Create a PR as per script says.
-4. Merge said PR.
-5. Run the [release GitHub workflow](https://github.com/Shopify/theme-tools/actions/workflows/release.yml) (requires manual dispatch).
-6. Done!
+2. Done!
 
 ## Upgrading projects that depend on this
 
