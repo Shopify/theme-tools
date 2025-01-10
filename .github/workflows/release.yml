@@ -33,8 +33,13 @@ jobs:
       - name: Install the packages
         run: yarn install --frozen-lockfile --ignore-engines
 
-      - name: Build the code
-        run: yarn build
+      # - name: Build the code
+      #   run: yarn build
+      #   env:
+      #     NODE_ENV: production
+
+      - name: Build the release orchestrator (testing) code
+        run: yarn --cwd packages/release-orchestrator build
         env:
           NODE_ENV: production
 
