@@ -48,6 +48,14 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
+      - name: Query VS Code Marketplace version
+        id: marketplace-version
+        run: echo "version=$(yarn --silent vsce show --json Shopify.theme-check-vscode | jq -r .versions[0].version)" >> $GITHUB_OUTPUT
+
+      - name: Query VS Code Package version (Before running changeset version)
+        id: package-version
+        run: echo "version=$(jq -r .version packages/vscode-extension/package.json)" >> $GITHUB_OUTPUT
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
@@ -63,17 +71,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Query VS Code Marketplace version
-        id: marketplace-version
-        run: echo "version=$(yarn --silent vsce show --json Shopify.theme-check-vscode | jq -r .versions[0].version)" >> $GITHUB_OUTPUT
-
-      - name: Query VS Code Package version
-        id: package-version
-        run: echo "version=$(jq -r .version packages/vscode-extension/package.json)" >> $GITHUB_OUTPUT
-
-      - name: Check if VS Code Marketplace version is different from package version
-        run: echo ",${{ steps.marketplace-version.outputs.version }}, ,${{ steps.package-version.outputs.version }},"
-
       - name: VS Code Marketplace publish
-        if: steps.marketplace-version.outputs.version != steps.package-version.outputs.version
+        if: steps.changesets.outputs.hasChangesets == false && steps.marketplace-version.outputs.version != steps.package-version.outputs.version
         run: echo yarn publish:vsce
