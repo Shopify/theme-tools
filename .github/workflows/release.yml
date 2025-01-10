@@ -42,9 +42,6 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      - name: Fetch main for some reason
-        run: git fetch origin main --depth=1
-
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
