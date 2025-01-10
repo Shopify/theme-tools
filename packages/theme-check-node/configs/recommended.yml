@@ -87,6 +87,9 @@ UnclosedHTMLElement:
 UndefinedObject:
   enabled: true
   severity: 1
+UniqueSettingId:
+  enabled: true
+  severity: 0
 UniqueStaticBlockId:
   enabled: true
   severity: 0
