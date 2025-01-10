@@ -1076,12 +1076,14 @@ describe('Unit: Stage 1 (CST)', () => {
           );
         });
 
-        it('should parse unsupported doc tags as text nodes', () => {
-          const testStr = `{% doc %} @unsupported this tag is not supported {% enddoc %}`;
+        it('should parse fallback nodes as text nodes', () => {
+          const testStr = `{% doc %} @unsupported this should get matched as a fallback node and translated into a text node {% enddoc %}`;
           cst = toCST(testStr);
 
           expectPath(cst, '0.children.0.type').to.equal('TextNode');
-          expectPath(cst, '0.children.0.value').to.equal('@unsupported this tag is not supported');
+          expectPath(cst, '0.children.0.value').to.equal(
+            '@unsupported this should get matched as a fallback node and translated into a text node',
+          );
         });
 
         it('should parse multiple doc tags in sequence', () => {
