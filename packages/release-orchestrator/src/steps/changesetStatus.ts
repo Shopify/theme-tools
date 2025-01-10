@@ -7,8 +7,7 @@ export const changesetStatus = async (): Promise<ChangesetStatus> => {
 
   try {
     await run(`git fetch origin main`);
-    await run;
-    await run(`yarn changeset status --output=${basefile} --since=origin/main`);
+    await run(`yarn changeset status --output=${basefile}`);
   } catch (err) {
     console.log(err);
     console.log(
