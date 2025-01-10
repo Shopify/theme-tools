@@ -1,5 +1,11 @@
 # release-orchestrator
 
+## 1.2.0
+
+### Minor Changes
+
+- 9614162a: Remove git operations from release-orchestrator
+
 ## 1.1.0
 
 ### Minor Changes

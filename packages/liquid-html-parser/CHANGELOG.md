@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.3.0
+
+### Minor Changes
+
+- 74c6cba8: Minor bump with lots of dependents
+
 ## 2.2.0
 
 ### Minor Changes
