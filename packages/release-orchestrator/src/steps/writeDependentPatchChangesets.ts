@@ -18,7 +18,7 @@ export const writeDependentPatchChangesets = async (packageJsonMap: PackageJsonR
      * in the next release based on all the changelogs available at the point of invocation.
      */
     updated = await changesetStatus();
-    numPatches = updated ? await generateDependentPatchChangesets({ updated, packageJsonMap }) : 0;
+    numPatches = await generateDependentPatchChangesets({ updated, packageJsonMap });
   } while (
     /**
      * Until there are no more patches that can be applied to un-updated packages
@@ -35,14 +35,9 @@ const generateDependentPatchChangesets = async ({
   updated: ChangesetStatus;
   packageJsonMap: PackageJsonRecord;
 }): Promise<number> => {
+  debugger;
   const updatedPkgNames = updated.releases.map((release: any) => release.name);
 
-  /**
-   * Perf opt: we can avoid evaluating packages that are already in the updatedPkgNames array
-   *
-   * Changeset configured with `"updateInternalDependencies": "patch"` will automatically bump the patch version
-   * of any monorepo package dependency that is already within the release.
-   */
   const pkgNamesToProcess = Object.keys(packageJsonMap).filter(
     (pkgName) => !updatedPkgNames.includes(pkgName),
   );
