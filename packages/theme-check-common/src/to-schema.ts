@@ -81,6 +81,7 @@ export async function toBlockSchema(
   const schemaNode = toSchemaNode(liquidAst);
   const parsed = toParsed(schemaNode);
   const ast = toAst(schemaNode);
+
   return {
     type: ThemeSchemaType.Block,
     validSchema: await toValidSchema<ThemeBlock.Schema>(uri, schemaNode, parsed, isValidSchema),
@@ -88,6 +89,7 @@ export async function toBlockSchema(
     name,
     parsed,
     ast,
+    value: schemaNode instanceof Error ? '' : schemaNode.body.value,
   };
 }
 
@@ -103,6 +105,7 @@ export async function toSectionSchema(
   const schemaNode = toSchemaNode(liquidAst);
   const parsed = toParsed(schemaNode);
   const ast = toAst(schemaNode);
+
   return {
     type: ThemeSchemaType.Section,
     validSchema: await toValidSchema(uri, schemaNode, parsed, isValidSchema),
@@ -110,6 +113,7 @@ export async function toSectionSchema(
     name,
     parsed,
     ast,
+    value: schemaNode instanceof Error ? '' : schemaNode.body.value,
   };
 }
 
@@ -122,12 +126,14 @@ export async function toAppBlockSchema(
   const schemaNode = toSchemaNode(liquidAst);
   const parsed = toParsed(schemaNode);
   const ast = toAst(schemaNode);
+
   return {
     type: ThemeSchemaType.AppBlock,
     offset: schemaNode instanceof Error ? 0 : schemaNode.blockStartPosition.end,
     name,
     parsed,
     ast,
+    value: schemaNode instanceof Error ? '' : schemaNode.body.value,
   };
 }
 

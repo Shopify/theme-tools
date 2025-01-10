@@ -1,7 +1,11 @@
 import { describe, it, expect, assert, beforeEach } from 'vitest';
 import { JSONLanguageService } from '../../JSONLanguageService';
 import { DocumentManager } from '../../../documents';
-import { getRequestParams, isCompletionList } from '../../test/test-helpers';
+import {
+  getRequestParams,
+  isCompletionList,
+  mockJSONLanguageService,
+} from '../../test/test-helpers';
 import { SourceCodeType, ThemeBlock } from '@shopify/theme-check-common';
 
 describe('Unit: PresetsBlockTypeCompletionProvider', () => {
@@ -17,31 +21,11 @@ describe('Unit: PresetsBlockTypeCompletionProvider', () => {
       async () => 'theme', // 'theme' mode
       async () => false, // schema is invalid for tests
     );
-    jsonLanguageService = new JSONLanguageService(
-      documentManager,
-      {
-        schemas: async () => [
-          {
-            uri: 'https://shopify.dev/block-schema.json',
-            schema: JSON.stringify({
-              $schema: 'http://json-schema.org/draft-07/schema#',
-            }),
-            fileMatch: ['**/{blocks,sections}/*.liquid'],
-          },
-        ],
-      },
-      async () => ({}),
-      async () => 'theme',
-      async () => ['block-1', 'block-2', 'custom-block'],
-      async (_uri: string, name: string) => {
-        const blockUri = `${rootUri}/blocks/${name}.liquid`;
-        const doc = documentManager.get(blockUri);
-        if (!doc || doc.type !== SourceCodeType.LiquidHtml) {
-          return;
-        }
-        return doc.getSchema();
-      },
-    );
+    jsonLanguageService = mockJSONLanguageService(rootUri, documentManager, undefined, async () => [
+      'block-1',
+      'block-2',
+      'custom-block',
+    ]);
 
     await jsonLanguageService.setup({
       textDocument: {
