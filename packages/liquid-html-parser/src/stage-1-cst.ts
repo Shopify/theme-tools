@@ -107,7 +107,6 @@ export interface ConcreteBasicNode<T> {
   locEnd: number;
 }
 
-// todo: change param and description to concrete nodes
 export interface ConcreteLiquidDocParamNode
   extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocParamNode> {
   name: string;
