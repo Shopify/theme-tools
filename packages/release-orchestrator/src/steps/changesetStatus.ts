@@ -8,14 +8,10 @@ export const changesetStatus = async (): Promise<ChangesetStatus> => {
   try {
     await run(`yarn changeset status --output=${basefile}`);
   } catch (err) {
+    console.log('Failed to get changeset status. This should not be happening...');
+    console.log('Exiting changeset version process.');
     console.log(err);
-    console.log(
-      'Failed to get changeset status. This can happen if there are no changesets to process for release.',
-    );
-    console.log(
-      "Exiting release process. Please run `yarn changeset status` to see what's going on.",
-    );
-    process.exit(0);
+    process.exit(1);
   }
   const statusFilepath = path.join(await getRepoRoot(), basefile);
   const statusOutput = JSON.parse(await readFile(statusFilepath, 'utf-8'));
