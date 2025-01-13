@@ -1,5 +1,29 @@
 ## theme-check-vscode
 
+## 3.5.0
+
+### Minor Changes
+
+- b31e0f85: Add "On theme block rename" handling
+
+  Whenever a theme block gets renamed, the following will now happen:
+
+  1. References in files with a `{% schema %}` will be updated automatically
+  2. References in template files will be updated automatically
+  3. References in section groups will be updated automatically
+  4. References in `{% content_for "block", type: "oldName" %}` will be updated automatically
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [b31e0f85]
+- Updated dependencies [e998b8ab]
+  - @shopify/prettier-plugin-liquid@1.6.4
+  - @shopify/theme-check-common@3.6.0
+  - @shopify/liquid-html-parser@2.2.1
+  - @shopify/theme-language-server-browser@2.4.0
+  - @shopify/theme-language-server-node@2.4.0
+
 ## 3.4.0
 
 ### Minor Changes
