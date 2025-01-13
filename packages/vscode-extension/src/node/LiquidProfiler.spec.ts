@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { LiquidProfiler } from '../liquid_profiler';
-import { execSync } from 'node:child_process';
+import { exec } from './utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ExtensionContext } from 'vscode';
+import { fetchProfileContents, LiquidProfiler } from './LiquidProfiler';
 
 // Mock the vscode namespace
 vi.mock('vscode', () => ({
@@ -19,8 +19,8 @@ vi.mock('vscode', () => ({
 }));
 
 // Mock child_process
-vi.mock('node:child_process', () => ({
-  execSync: vi.fn(),
+vi.mock('./utils', () => ({
+  exec: vi.fn(),
 }));
 
 describe('LiquidProfiler', () => {
@@ -35,23 +35,21 @@ describe('LiquidProfiler', () => {
     profiler = new LiquidProfiler(mockContext);
   });
 
-  describe('getProfileContents', () => {
-    it('successfully retrieves profile content', () => {
+  describe('fetchProfileContents', () => {
+    it('successfully retrieves profile content', async () => {
       const mockJson = '{"profiles":[{"events":[]}]}';
-      vi.mocked(execSync).mockReturnValue(Buffer.from(mockJson));
+      vi.mocked(exec).mockReturnValue(Promise.resolve({ stdout: mockJson, stderr: '' }));
 
-      const result = LiquidProfiler['getProfileContents']('http://example.com');
+      const result = await fetchProfileContents('http://example.com');
       expect(result).toBe(mockJson);
     });
 
-    it('handles CLI errors gracefully', () => {
+    it('handles CLI errors gracefully', async () => {
       const mockError = new Error('CLI Error');
       (mockError as any).stderr = 'Command failed';
-      vi.mocked(execSync).mockImplementation(() => {
-        throw mockError;
-      });
+      vi.mocked(exec).mockReturnValue(Promise.reject(mockError));
 
-      const result = LiquidProfiler['getProfileContents']('http://example.com');
+      const result = await fetchProfileContents('http://example.com');
       expect(result).toContain('Error loading preview');
       expect(result).toContain('Command failed');
     });

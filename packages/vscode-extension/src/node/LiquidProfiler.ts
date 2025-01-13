@@ -1,17 +1,17 @@
+import * as path from 'node:path';
 import {
+  DecorationOptions,
   Disposable,
   ExtensionContext,
+  Position,
+  Range,
   Uri,
   ViewColumn,
   WebviewPanel,
   window,
   workspace,
-  Range,
-  DecorationOptions,
-  Position,
 } from 'vscode';
-import * as path from 'node:path';
-import { execSync } from 'node:child_process';
+import { exec } from './utils';
 
 const SHOPIFY_CLI_COMMAND = 'shopify theme profile';
 
@@ -41,17 +41,17 @@ export class LiquidProfiler {
     borderRadius: '3px',
   });
 
-  private _panel: WebviewPanel | undefined;
-  private _disposables: Disposable[] = [];
-  private _decorations = new Map<string, DecorationOptions[]>();
-  private _context: ExtensionContext;
+  private panel: WebviewPanel | undefined;
+  private disposables: Disposable[] = [];
+  private decorations = new Map<string, DecorationOptions[]>();
+  private context: ExtensionContext;
 
   constructor(context: ExtensionContext) {
-    this._context = context;
+    this.context = context;
   }
 
   public async showProfileForUrl(url: string) {
-    const profile = LiquidProfiler.getProfileContents(url);
+    const profile = await fetchProfileContents(url);
     await this.processAndShowDecorations(profile);
     await this.showWebviewPanelForProfile(profile, url);
   }
@@ -59,53 +59,53 @@ export class LiquidProfiler {
   private async showWebviewPanelForProfile(profile: string, url: string) {
     const column = ViewColumn.Beside;
 
-    if (this._panel) {
-      this._panel.reveal(column);
-      this._panel.title = `Liquid Profile: ${url}`;
-      this._panel.webview.html = '';
+    if (this.panel) {
+      this.panel.reveal(column);
+      this.panel.title = `Liquid Profile: ${url}`;
+      this.panel.webview.html = '';
     } else {
-      this._panel = window.createWebviewPanel('liquidProfile', `Liquid Profile: ${url}`, column, {
+      this.panel = window.createWebviewPanel('liquidProfile', `Liquid Profile: ${url}`, column, {
         enableScripts: true,
         // Allow files in the user's workspace (.tmp directory) to be used as local resources
         localResourceRoots: [
           ...(workspace.workspaceFolders
             ? workspace.workspaceFolders.map((folder) => folder.uri)
             : []),
-          Uri.file(this._context.asAbsolutePath(path.join('dist', 'node', 'speedscope'))),
+          Uri.file(this.context.asAbsolutePath(path.join('dist', 'node', 'speedscope'))),
         ],
       });
-      this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+      this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
     }
 
-    this._panel.webview.html = await this._getSpeedscopeHtml(profile);
+    this.panel.webview.html = await this.getSpeedscopeHtml(profile);
   }
 
-  private _getSpeedscopeWebviewUri(fileName: string): Uri {
+  private getSpeedscopeWebviewUri(fileName: string): Uri {
     const filePath = path.join('dist', 'node', 'speedscope', fileName);
-    return this._panel!.webview.asWebviewUri(Uri.file(this._context.asAbsolutePath(filePath)));
+    return this.panel!.webview.asWebviewUri(Uri.file(this.context.asAbsolutePath(filePath)));
   }
 
-  private async _getSpeedscopeHtml(profileContents: string) {
+  private async getSpeedscopeHtml(profileContents: string) {
     const indexHtmlPath = Uri.file(
-      this._context.asAbsolutePath(path.join('dist', 'node', 'speedscope', 'index.html')),
+      this.context.asAbsolutePath(path.join('dist', 'node', 'speedscope', 'index.html')),
     );
     let htmlContent = Buffer.from(await workspace.fs.readFile(indexHtmlPath)).toString('utf8');
 
     // Convert local resource paths to vscode-resource URIs, and replace the paths in the HTML content
-    const cssUri = this._getSpeedscopeWebviewUri('source-code-pro.52b1676f.css');
+    const cssUri = this.getSpeedscopeWebviewUri('source-code-pro.52b1676f.css');
     htmlContent = htmlContent.replace('source-code-pro.52b1676f.css', cssUri.toString());
 
-    const resetCssUri = this._getSpeedscopeWebviewUri('reset.8c46b7a1.css');
+    const resetCssUri = this.getSpeedscopeWebviewUri('reset.8c46b7a1.css');
     htmlContent = htmlContent.replace('reset.8c46b7a1.css', resetCssUri.toString());
 
-    const jsUri = this._getSpeedscopeWebviewUri('speedscope.6f107512.js');
+    const jsUri = this.getSpeedscopeWebviewUri('speedscope.6f107512.js');
     htmlContent = htmlContent.replace('speedscope.6f107512.js', jsUri.toString());
 
     // Put the profile JSON in a tmp file, and replace the profile URL in the HTML content.
     const tmpDir = workspace.workspaceFolders?.[0].uri.fsPath;
     const tmpFile = path.join(tmpDir!, '.tmp', 'profile.json');
     await workspace.fs.writeFile(Uri.file(tmpFile), Buffer.from(profileContents));
-    const tmpUri = this._panel!.webview.asWebviewUri(Uri.file(tmpFile));
+    const tmpUri = this.panel!.webview.asWebviewUri(Uri.file(tmpFile));
     htmlContent = htmlContent.replace(
       '<body>',
       `<body><script>window.location.hash = "profileURL=${encodeURIComponent(
@@ -117,14 +117,14 @@ export class LiquidProfiler {
   }
 
   public dispose() {
-    this._panel?.dispose();
-    while (this._disposables.length) {
-      const disposable = this._disposables.pop();
+    this.panel?.dispose();
+    while (this.disposables.length) {
+      const disposable = this.disposables.pop();
       if (disposable) {
         disposable.dispose();
       }
     }
-    this._panel = undefined;
+    this.panel = undefined;
   }
 
   /**
@@ -174,7 +174,7 @@ export class LiquidProfiler {
     console.log('[Liquid Profiler] Processing profile results for decorations');
 
     // Clear existing decorations
-    this._decorations.clear();
+    this.decorations.clear();
     const visibleEditorsToClear = window.visibleTextEditors;
     for (const editor of visibleEditorsToClear) {
       editor.setDecorations(this.fileDecorationType, []);
@@ -215,7 +215,7 @@ export class LiquidProfiler {
         };
 
         // Store the file-level decoration.
-        this._decorations.set(uri.fsPath, [decoration]);
+        this.decorations.set(uri.fsPath, [decoration]);
 
         const visibleEditors = window.visibleTextEditors;
         // Store the paths it's been applied to in a set.
@@ -279,9 +279,9 @@ export class LiquidProfiler {
         };
 
         // Store the decoration in a map where the key is the file path and the value is an array of decorations
-        const fileDecorations = this._decorations.get(uri.fsPath) || [];
+        const fileDecorations = this.decorations.get(uri.fsPath) || [];
         fileDecorations.push(decoration);
-        this._decorations.set(uri.fsPath, fileDecorations);
+        this.decorations.set(uri.fsPath, fileDecorations);
       } catch (err) {
         console.error(
           `[Liquid Profiler] Error creating line decoration for ${frame.file}:${frame.line}:`,
@@ -294,15 +294,15 @@ export class LiquidProfiler {
     const visibleEditors = window.visibleTextEditors;
     for (const editor of visibleEditors) {
       // Get stored decorations for this file
-      const lineDecorations = this._decorations.get(editor.document.uri.fsPath) || [];
+      const lineDecorations = this.decorations.get(editor.document.uri.fsPath) || [];
       editor.setDecorations(this.lineDecorationType, lineDecorations);
     }
 
     // Add listener for active editor changes
-    this._context.subscriptions.push(
+    this.context.subscriptions.push(
       window.onDidChangeActiveTextEditor((editor) => {
         if (editor) {
-          const decorations = this._decorations.get(editor.document.uri.fsPath);
+          const decorations = this.decorations.get(editor.document.uri.fsPath);
           if (decorations) {
             editor.setDecorations(this.lineDecorationType, decorations);
           } else {
@@ -328,28 +328,30 @@ export class LiquidProfiler {
     // Slow: Red
     return '#f44336';
   }
+}
 
-  private static getProfileContents(url: string) {
-    try {
-      console.log('[Liquid Profiler] Attempting to load preview for URL:', url);
-      const result = execSync(`${SHOPIFY_CLI_COMMAND} --url=${url} --json`, { stdio: 'pipe' });
-      // Remove all characters leading up to the first {
-      const content = result.toString().replace(/^[^{]+/, '');
-      console.log(`[Liquid Profiler] Successfully retrieved preview content ${content}`);
-      return content;
-    } catch (error) {
-      console.error('[Liquid Profiler] Error loading preview:', error);
-      if (error instanceof Error) {
-        // If there's stderr output, it will be in error.stderr
-        const errorMessage = (error as any).stderr?.toString() || error.message;
-        console.error('[Liquid Profiler] Error details:', errorMessage);
-        return `<div style="color: red; padding: 20px;">
+export async function fetchProfileContents(url: string) {
+  try {
+    console.log('[Liquid Profiler] Attempting to load preview for URL:', url);
+    const { stdout: result, stderr } = await exec(`${SHOPIFY_CLI_COMMAND} --url=${url} --json`);
+    if (stderr) console.error(stderr);
+
+    // Remove all characters leading up to the first {
+    const content = result.toString().replace(/^[^{]+/, '');
+    console.log(`[Liquid Profiler] Successfully retrieved preview content ${content}`);
+    return content;
+  } catch (error) {
+    console.error('[Liquid Profiler] Error loading preview:', error);
+    if (error instanceof Error) {
+      // If there's stderr output, it will be in error.stderr
+      const errorMessage = (error as any).stderr?.toString() || error.message;
+      console.error('[Liquid Profiler] Error details:', errorMessage);
+      return `<div style="color: red; padding: 20px;">
           <h3>Error loading preview:</h3>
           <pre>${errorMessage}</pre>
         </div>`;
-      }
-      console.error('[Liquid Profiler] Unexpected error type:', typeof error);
-      return '<div style="color: red; padding: 20px;">An unexpected error occurred</div>';
     }
+    console.error('[Liquid Profiler] Unexpected error type:', typeof error);
+    return '<div style="color: red; padding: 20px;">An unexpected error occurred</div>';
   }
 }

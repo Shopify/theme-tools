@@ -1,6 +1,7 @@
 import { FileStat, FileTuple, path as pathUtils } from '@shopify/theme-check-common';
+import Config from 'conf';
 import * as path from 'node:path';
-import { commands, ExtensionContext, languages, Uri, workspace, window } from 'vscode';
+import { commands, ExtensionContext, languages, Uri, window, workspace } from 'vscode';
 import {
   DocumentSelector,
   LanguageClient,
@@ -11,8 +12,7 @@ import {
 import { documentSelectors } from '../common/constants';
 import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
-import { LiquidProfiler } from './liquid_profiler';
-import Config from 'conf';
+import { LiquidProfiler } from './LiquidProfiler';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
