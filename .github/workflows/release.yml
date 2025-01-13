@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - demo/changeset-action-in-action
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -55,10 +56,10 @@ jobs:
         uses: changesets/action@v1
         with:
           # Put date in the title and commit message
-          title: "Theme Tools Release — ${{ steps.date.outputs.date }}"
-          commit: "Theme Rools Release — ${{ steps.date.outputs.date }}"
+          title: "(Demo) Theme Tools Release — ${{ steps.date.outputs.date }}"
+          commit: "(Demo) Theme Rools Release — ${{ steps.date.outputs.date }}"
           # When there are no changesets, this gets called
-          publish: yarn changeset publish
+          publish: echo yarn changeset publish
           # When there are changesets, this gets called and then a PR is opened/updated
           version: yarn release
         env:
@@ -67,4 +68,4 @@ jobs:
 
       - name: VS Code Marketplace publish
         if: steps.changesets.outputs.hasChangesets == 'false' && steps.marketplace-version.outputs.version != steps.package-version.outputs.version
-        run: yarn publish:vsce
+        run: echo yarn publish:vsce
