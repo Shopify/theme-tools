@@ -1,5 +1,16 @@
 # @shopify/theme-check-common
 
+## 3.6.0
+
+### Minor Changes
+
+- b31e0f85: [internal] Add `offset` information on Schema objects
+
+### Patch Changes
+
+- Updated dependencies [e998b8ab]
+  - @shopify/liquid-html-parser@2.2.1
+
 ## 3.5.0
 
 ### Minor Changes
