@@ -92,6 +92,11 @@ const desktopConfig = {
           to: 'data',
         },
         {
+          // Copy speedscope resources to the dist folder
+          from: path.resolve(__dirname, 'resources/speedscope'),
+          to: 'speedscope',
+        },
+        {
           from: path.resolve(__dirname, '../../node_modules/prettier'),
           to: 'prettier',
           globOptions: {

@@ -64,6 +64,7 @@
     "@shopify/theme-language-server-browser": "^2.3.3",
     "@shopify/theme-language-server-node": "^2.3.3",
     "@shopify/theme-check-common": "^3.5.0",
+    "conf": "^10.0.0",
     "prettier": "^2.6.2",
     "vscode-languageclient": "^8.1.0",
     "vscode-uri": "^3.0.8"
@@ -99,6 +100,10 @@
       {
         "command": "shopifyLiquid.runChecks",
         "title": "Liquid Theme Check: Run Checks"
+      },
+      {
+        "command": "shopifyLiquid.openPreview",
+        "title": "Shopify: Liquid Profile for URL..."
       }
     ],
     "configuration": {
