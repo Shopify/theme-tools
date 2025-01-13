@@ -508,7 +508,7 @@ export function printLiquidDoc(
 
 export function printLiquidDocParam(
   path: AstPath<LiquidDocParamNode>,
-  _options: LiquidParserOptions,
+  options: LiquidParserOptions,
   _print: LiquidPrinter,
   _args: LiquidPrinterArgs,
 ): Doc {
@@ -525,7 +525,8 @@ export function printLiquidDocParam(
 
   if (node.paramDescription?.value) {
     const normalizedDescription = node.paramDescription.value.replace(/\s+/g, ' ').trim();
-    if (node.paramDescription.dashSeparated) {
+
+    if (options.liquidDocParamDash) {
       parts.push(' - ', normalizedDescription);
     } else {
       parts.push(' ', normalizedDescription);

@@ -111,14 +111,8 @@ export interface ConcreteLiquidDocParamNode
   extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocParamNode> {
   name: 'param';
   paramName: ConcreteTextNode;
-  paramDescription: ConcreteLiquidDocParamDescription | null;
+  paramDescription: ConcreteTextNode | null;
   paramType: ConcreteTextNode | null;
-}
-
-export interface ConcreteLiquidDocParamDescription
-  extends ConcreteBasicNode<ConcreteNodeTypes.TextNode> {
-  dashSeparated: boolean;
-  value: string;
 }
 
 export interface ConcreteHtmlNodeBase<T> extends ConcreteBasicNode<T> {

@@ -1,30 +1,29 @@
 It should indent the body
 {% doc %}
-@param paramName param with description
-{% enddoc %}
-
-It should not dedent to root
-{% doc %}
-@param paramName param with description
+  @param paramName - param with description
 {% enddoc %}
 
 It should trim whitespace between nodes
 {% doc %}
-@param paramName param with description
+  @param paramName - param with description
 {% enddoc %}
 
-It should format the param type
+It should normalize the param type
 {% doc %}
-@param { string } paramName param with description
+  @param { string     } paramName - param with description
 {% enddoc %}
 
 It should format the param description with a dash separator
 {% doc %}
-@param paramName  -   param with description
+  @param paramName  -   param with description
+{% enddoc %}
+
+It should respect the liquidDocParamDash option liquidDocParamDash: false
+{% doc %}
+  @param paramName  param with description
 {% enddoc %}
 
 It should normalize the param description
 {% doc %}
-@param paramName param          with                    description
+  @param paramName - param           with                    description
 {% enddoc %}
-

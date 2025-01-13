@@ -1244,13 +1244,11 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.body.nodes.0.paramName.value').to.eql('asdf');
       expectPath(ast, 'children.0.body.nodes.0.paramDescription.type').to.eql('TextNode');
       expectPath(ast, 'children.0.body.nodes.0.paramDescription.value').to.eql('');
-      expectPath(ast, 'children.0.body.nodes.0.paramDescription.dashSeparated').to.eql(false);
       expectPath(ast, 'children.0.body.nodes.1.type').to.eql('LiquidDocParamNode');
       expectPath(ast, 'children.0.body.nodes.1.name').to.eql('@param');
       expectPath(ast, 'children.0.body.nodes.1.paramName.type').to.eql('TextNode');
       expectPath(ast, 'children.0.body.nodes.1.paramName.value').to.eql('paramWithDescription');
       expectPath(ast, 'children.0.body.nodes.1.paramDescription.type').to.eql('TextNode');
-      expectPath(ast, 'children.0.body.nodes.1.paramDescription.dashSeparated').to.eql(true);
       expectPath(ast, 'children.0.body.nodes.1.paramDescription.value').to.eql(
         'param with description and `punctation`. This is still a valid param description.',
       );

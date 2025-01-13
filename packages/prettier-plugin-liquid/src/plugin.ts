@@ -61,6 +61,13 @@ const options: SupportOptions = {
     description: 'Indent the contents of the {% schema %} tag',
     since: '0.1.0',
   },
+  liquidDocParamDash: {
+    type: 'boolean',
+    category: 'LIQUID',
+    default: true,
+    description: 'Append a dash (-) to separate descriptions in {% doc %} @param annotations',
+    since: '1.6.4',
+  },
 };
 
 const defaultOptions = {
