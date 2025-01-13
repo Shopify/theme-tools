@@ -443,18 +443,18 @@ export type LiquidHtmlConcreteNode =
   | ConcreteHtmlNode
   | ConcreteLiquidNode
   | ConcreteTextNode
-  | ConcreteYamlFrontmatterNode;
+  | ConcreteYamlFrontmatterNode
+  | LiquidDocConcreteNode;
 
 export type LiquidConcreteNode =
   | ConcreteLiquidNode
   | ConcreteTextNode
   | ConcreteYamlFrontmatterNode;
 
-export type LiquidHtmlCST = LiquidHtmlConcreteNode[] | LiquidDocCST;
+export type LiquidHtmlCST = LiquidHtmlConcreteNode[];
 
 export type LiquidCST = LiquidConcreteNode[];
 
-type LiquidDocCST = LiquidDocConcreteNode[];
 export type LiquidDocConcreteNode = ConcreteLiquidDocParamNode;
 
 interface Mapping {
