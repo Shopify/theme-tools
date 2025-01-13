@@ -7,7 +7,10 @@ import { URI } from 'vscode-languageserver';
 
 import { WithOptional } from './utils';
 
-export type Dependencies = WithOptional<RequiredDependencies, 'log' | 'getMetafieldDefinitions'>;
+export type Dependencies = WithOptional<
+  RequiredDependencies,
+  'log' | 'getMetafieldDefinitions' | 'fetchMetafieldDefinitionsForURI'
+>;
 
 export interface RequiredDependencies {
   /**
@@ -86,4 +89,10 @@ export interface RequiredDependencies {
    * fetching the set of metafield definitions every time.
    */
   getMetafieldDefinitions: ThemeCheckDependencies['getMetafieldDefinitions'];
+
+  /**
+   * Fetch Metafield definitions using the CLI provided the URI of the project root.
+   * This should only be used in node environments; not on the browser.
+   */
+  fetchMetafieldDefinitionsForURI: (uri: URI) => Promise<void>;
 }

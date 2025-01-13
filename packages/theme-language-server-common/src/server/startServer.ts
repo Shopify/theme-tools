@@ -19,6 +19,7 @@ import {
   InitializeResult,
   ShowDocumentRequest,
   TextDocumentSyncKind,
+  WorkspaceFolder,
 } from 'vscode-languageserver';
 import { ClientCapabilities } from '../ClientCapabilities';
 import { CodeActionKinds, CodeActionsProvider } from '../codeActions';
@@ -80,6 +81,7 @@ export function startServer(
     log = defaultLogger,
     jsonValidationSet,
     themeDocset: remoteThemeDocset,
+    fetchMetafieldDefinitionsForURI,
   }: Dependencies,
 ) {
   const fs = new CachedFileSystem(injectedFs);
@@ -259,6 +261,18 @@ export function startServer(
     connection,
   );
 
+  const fetchMetafieldDefinitionsForWorkspaceFolders = async (folders: WorkspaceFolder[]) => {
+    if (!fetchMetafieldDefinitionsForURI) return;
+
+    for (let folder of folders) {
+      const mode = await getModeForURI(folder.uri);
+
+      if (mode === 'theme') {
+        fetchMetafieldDefinitionsForURI(folder.uri);
+      }
+    }
+  };
+
   connection.onInitialize((params) => {
     clientCapabilities.setup(params.capabilities, params.initializationOptions);
     jsonLanguageService.setup(params.capabilities);
@@ -312,6 +326,10 @@ export function startServer(
           workDoneProgress: false,
         },
         workspace: {
+          workspaceFolders: {
+            supported: true,
+            changeNotifications: true,
+          },
           fileOperations: {
             didRename: fileOperationRegistrationOptions,
             didCreate: fileOperationRegistrationOptions,
@@ -338,6 +356,16 @@ export function startServer(
           globPattern: '**/.shopify/*',
         },
       ],
+    });
+
+    connection.workspace.getWorkspaceFolders().then(async (folders) => {
+      if (!folders) return;
+
+      fetchMetafieldDefinitionsForWorkspaceFolders(folders);
+    });
+
+    connection.workspace.onDidChangeWorkspaceFolders(async (params) => {
+      fetchMetafieldDefinitionsForWorkspaceFolders(params.added);
     });
   });
 
