@@ -73,6 +73,7 @@ import {
   LiquidHtmlConcreteNode,
   ConcreteLiquidTagBaseCase,
   ConcreteLiquidTagContentForMarkup,
+  ConcreteLiquidDocParamDescription,
 } from './stage-1-cst';
 import { Comparators, NamedTags, NodeTypes, nonTraversableProperties, Position } from './types';
 import { assertNever, deepGet, dropLast } from './utils';
@@ -755,15 +756,22 @@ export interface TextNode extends ASTNode<NodeTypes.TextNode> {
   value: string;
 }
 
+/** Represents a `@param` node in a LiquidDoc comment - `@param paramName {paramType} - paramDescription` */
 export interface LiquidDocParamNode extends ASTNode<NodeTypes.LiquidDocParamNode> {
   name: 'param';
-  paramDescription: LiquidDocParamDescription;
+  /** The name of the parameter (e.g. "product") */
   paramName: TextNode;
-  paramType: TextNode;
+  /** Optional description of the parameter in a Liquid doc comment (e.g. "The product title") */
+  paramDescription: LiquidDocParamDescription | null;
+  /** Optional type annotation for the parameter (e.g. "{string}", "{number}") */
+  paramType: TextNode | null;
 }
 
 export interface LiquidDocParamDescription extends ASTNode<NodeTypes.TextNode> {
+  /** Whether the parameter description is dash-separated (e.g. "paramName - paramDescription") */
   dashSeparated: boolean;
+
+  /** The body of the description */
   value: string;
 }
 
@@ -1293,19 +1301,8 @@ function buildAst(
             position: position(node.paramName),
             source: node.paramName.source,
           },
-          paramDescription: {
-            type: NodeTypes.TextNode,
-            value: node.paramDescription.value,
-            position: position(node.paramDescription),
-            source: node.paramDescription.source,
-            dashSeparated: node.paramDescription.dashSeparated,
-          },
-          paramType: {
-            type: NodeTypes.TextNode,
-            value: node.paramType.value,
-            position: position(node.paramType),
-            source: node.paramType.source,
-          },
+          paramDescription: toParamDescription(node.paramDescription),
+          paramType: toParamType(node.paramType),
         });
         break;
       }
@@ -2088,5 +2085,28 @@ function getUnclosed(node?: ParentNode, parentNode?: ParentNode): UnclosedNode |
     type: node.type,
     name: getName(node) ?? '',
     blockStartPosition: 'blockStartPosition' in node ? node.blockStartPosition : node.position,
+  };
+}
+
+function toParamDescription(
+  node: ConcreteLiquidDocParamDescription | null,
+): LiquidDocParamDescription | null {
+  if (!node) return null;
+  return {
+    type: NodeTypes.TextNode,
+    value: node.value,
+    position: position(node),
+    source: node.source,
+    dashSeparated: node.dashSeparated,
+  };
+}
+
+function toParamType(node: ConcreteTextNode | null): TextNode | null {
+  if (!node) return null;
+  return {
+    type: NodeTypes.TextNode,
+    value: node.value,
+    position: position(node),
+    source: node.source,
   };
 }

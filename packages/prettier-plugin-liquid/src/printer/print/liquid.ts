@@ -515,7 +515,7 @@ export function printLiquidDocParam(
   const node = path.getValue();
   const parts: Doc[] = ['@param'];
 
-  if (node.paramType.value) {
+  if (node.paramType?.value) {
     parts.push(' ', `{${node.paramType.value}}`);
   }
 
@@ -523,7 +523,7 @@ export function printLiquidDocParam(
     parts.push(' ', node.paramName.value);
   }
 
-  if (node.paramDescription.value) {
+  if (node.paramDescription?.value) {
     const normalizedDescription = node.paramDescription.value.replace(/\s+/g, ' ').trim();
     if (node.paramDescription.dashSeparated) {
       parts.push(' - ', normalizedDescription);
