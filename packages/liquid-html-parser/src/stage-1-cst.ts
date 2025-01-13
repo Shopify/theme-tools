@@ -109,7 +109,7 @@ export interface ConcreteBasicNode<T> {
 
 export interface ConcreteLiquidDocParamNode
   extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocParamNode> {
-  name: string;
+  name: 'param';
   paramName: ConcreteTextNode;
   paramDescription: ConcreteLiquidDocParamDescription;
   paramType: ConcreteTextNode;
@@ -1336,7 +1336,6 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
     },
     paramNode: {
       type: ConcreteNodeTypes.LiquidDocParamNode,
-      name: 0,
       locStart,
       locEnd,
       source,

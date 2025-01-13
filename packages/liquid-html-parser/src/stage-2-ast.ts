@@ -756,7 +756,7 @@ export interface TextNode extends ASTNode<NodeTypes.TextNode> {
 }
 
 export interface LiquidDocParamNode extends ASTNode<NodeTypes.LiquidDocParamNode> {
-  name: string;
+  name: 'param';
   paramDescription: LiquidDocParamDescription;
   paramName: TextNode;
   paramType: TextNode;
