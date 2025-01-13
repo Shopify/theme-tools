@@ -1,8 +1,8 @@
 import { expect, it, describe, afterEach, afterAll, vi, Mock } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
-import { generatePatchChangeset } from './generate-patch-changeset';
-import { getRepoRoot } from './utils';
+import { generatePatchChangeset } from './generatePatchChangeset';
+import { getRepoRoot } from '../utils';
 
 // Need to do this for stupid windows paths
 const repoPathTokens = ['path', 'to', 'repo'];
@@ -17,7 +17,7 @@ const changelogPathRegex = new RegExp(
   pathSeparatorToken + ['path', 'to', 'repo', '.changeset', '123456.md'].join(pathSeparatorToken),
 );
 
-vi.mock('./utils', async () => ({
+vi.mock('../utils', async () => ({
   getRepoRoot: vi.fn(),
   getRandomId: vi.fn(() => '123456'),
 }));

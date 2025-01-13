@@ -8,12 +8,7 @@ export type RunOptions = {
   encoding: string;
 } & ExecOptions;
 
-export type FileStatus = {
-  status: string;
-  filepath: string;
-};
-
-export type StageFunction = (arg?: any) => Promise<any> | void;
+export type StepFunction = (arg?: any) => Promise<any> | void;
 
 interface Release {
   name: string;
@@ -34,16 +29,11 @@ export interface ChangesetStatus {
   releases: Release[];
 }
 
-export interface StatusProperty {
-  _value: ChangesetStatus;
-  value: ChangesetStatus;
-}
-
 export interface PackageJson {
   name: string;
   [key: string]: any;
 }
 
-export interface PackageJsonMap {
-  [key: string]: PackageJson;
-}
+/** The name attribute in the package.json, e.g. `@shopify/prettier-plugin-liquid` */
+export type PackageName = string;
+export type PackageJsonRecord = Record<PackageName, PackageJson>;

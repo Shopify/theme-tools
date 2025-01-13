@@ -1,11 +1,12 @@
-import type { PackageJson, PackageJsonMap } from './types';
-import { readFile } from './utils';
+import type { PackageJson, PackageJsonRecord } from '../types';
+import { readFile } from '../utils';
 
 /**
- * Reads a list of package.json files and builds a map with package names as keys and
- * package.json content as values.
+ * Reads a list of package.json files and builds a Record<PackageName, PackageJson>.
  */
-export const buildPackageJsonMap = async (packageJsonPaths: string[]): Promise<PackageJsonMap> => {
+export const getPackageJsonRecord = async (
+  packageJsonPaths: string[],
+): Promise<PackageJsonRecord> => {
   // Start reading and parsing all package json files
   const jsonDataPromises = packageJsonPaths.map(async (packageJsonPath) => {
     try {

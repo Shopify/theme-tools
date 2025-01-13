@@ -1,6 +1,11 @@
 name: Release Workflow
 
-on: workflow_dispatch
+on:
+  push:
+    branches:
+      - main
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 env:
   VSCE_PAT: ${{ secrets.VSCE_PAT }}
@@ -16,6 +21,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,15 +38,33 @@ jobs:
         env:
           NODE_ENV: production
 
-      - name: Publish to npm
+      - name: Grab date as YYYY-MM-DD
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Query VS Code Marketplace version
+        id: marketplace-version
+        run: echo "version=$(yarn --silent vsce show --json Shopify.theme-check-vscode | jq -r .versions[0].version)" >> $GITHUB_OUTPUT
+
+      - name: Query VS Code Package version (Before running changeset version)
+        id: package-version
+        run: echo "version=$(jq -r .version packages/vscode-extension/package.json)" >> $GITHUB_OUTPUT
+
+      - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
         with:
+          # Put date in the title and commit message
+          title: "Theme Tools Release — ${{ steps.date.outputs.date }}"
+          commit: "Theme Rools Release — ${{ steps.date.outputs.date }}"
+          # When there are no changesets, this gets called
           publish: yarn changeset publish
-          createGithubRelease: false
+          # When there are changesets, this gets called and then a PR is opened/updated
+          version: yarn release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: VS Code Marketplace publish
+        if: steps.changesets.outputs.hasChangesets == 'false' && steps.marketplace-version.outputs.version != steps.package-version.outputs.version
         run: yarn publish:vsce

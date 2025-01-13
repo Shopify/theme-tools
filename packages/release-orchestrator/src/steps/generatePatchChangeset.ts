@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-import { getRepoRoot, getRandomId } from './utils';
+import { getRepoRoot, getRandomId } from '../utils';
 
 /**
  * Generate a patch changeset for a package.

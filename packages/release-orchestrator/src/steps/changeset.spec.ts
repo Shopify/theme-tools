@@ -1,12 +1,15 @@
 import path from 'path';
 import { expect, it, describe, afterEach, afterAll, vi, Mock } from 'vitest';
-import { changesetTag, changesetVersion, changesetStatus } from './changeset';
-import { getRepoRoot, readFile, run } from './utils';
+import { changesetStatus } from './changesetStatus';
+import { changesetTag } from './changesetTag';
+import { changesetVersion } from './changesetVersion';
+import { getRepoRoot, readFile, run } from '../utils';
 
-vi.mock('./utils', async () => ({
+vi.mock('../utils', async () => ({
   getRepoRoot: vi.fn(),
   readFile: vi.fn(),
   run: vi.fn(),
+  memoize: vi.fn((fn) => fn),
 }));
 
 vi.stubGlobal('console', {
