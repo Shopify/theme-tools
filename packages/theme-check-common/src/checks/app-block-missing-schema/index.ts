@@ -1,13 +1,13 @@
 import { ConfigTarget, LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
-export const MissingSchema: LiquidCheckDefinition = {
+export const AppBlockMissingSchema: LiquidCheckDefinition = {
   meta: {
-    code: 'MissingSchema',
-    name: 'Missing schema definitions in theme app extensions should be avoided',
+    code: 'AppBlockMissingSchema',
+    name: 'Missing schema definitions in theme app extensions app blocks should be avoided',
     docs: {
-      description: 'Report missing schema definitions in theme app extensions',
+      description: 'Report missing schema definitions in theme app extensions app blocks',
       recommended: true,
-      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/missing-schema',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/app-block-missing-schema',
     },
     severity: Severity.ERROR,
     type: SourceCodeType.LiquidHtml,
@@ -17,6 +17,15 @@ export const MissingSchema: LiquidCheckDefinition = {
 
   create(context) {
     let foundSchema = false;
+    const relativePath = context.toRelativePath(context.file.uri);
+
+    /**
+     * Theme app extension blocks are the only types of files that can have a
+     * schema defined in them.
+     */
+    if (!relativePath.startsWith('blocks/')) {
+      return {};
+    }
 
     return {
       async LiquidRawTag(node) {

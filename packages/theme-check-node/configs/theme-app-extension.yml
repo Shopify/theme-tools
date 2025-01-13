@@ -5,6 +5,9 @@ extends: theme-check:recommended
 context: app
 ignore:
   - node_modules/**
+AppBlockMissingSchema:
+  enabled: true
+  severity: 0
 AppBlockValidTags:
   enabled: true
   severity: 0
@@ -16,9 +19,6 @@ AssetSizeAppBlockJavaScript:
   enabled: true
   severity: 0
   thresholdInBytes: 10000
-MissingSchema:
-  enabled: true
-  severity: 0
 RequiredLayoutThemeObject:
   enabled: false
   severity: 0
