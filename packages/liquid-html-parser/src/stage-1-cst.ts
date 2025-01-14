@@ -1355,7 +1355,6 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
         };
       },
       paramDescription: function (nodes: Node[]) {
-        const dashNode = nodes[6];
         const descriptionNode = nodes[7];
         return {
           type: ConcreteNodeTypes.TextNode,
@@ -1363,7 +1362,6 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
           source,
           locStart: offset + descriptionNode.source.startIdx,
           locEnd: offset + descriptionNode.source.endIdx,
-          dashSeparated: dashNode.sourceString.trim() === '-',
         };
       },
     },
