@@ -1239,13 +1239,13 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.type').to.eql('LiquidRawTag');
       expectPath(ast, 'children.0.name').to.eql('doc');
       expectPath(ast, 'children.0.body.nodes.0.type').to.eql('LiquidDocParamNode');
-      expectPath(ast, 'children.0.body.nodes.0.name').to.eql('@param');
+      expectPath(ast, 'children.0.body.nodes.0.name').to.eql('param');
       expectPath(ast, 'children.0.body.nodes.0.paramName.type').to.eql('TextNode');
       expectPath(ast, 'children.0.body.nodes.0.paramName.value').to.eql('asdf');
       expectPath(ast, 'children.0.body.nodes.0.paramDescription.type').to.eql('TextNode');
       expectPath(ast, 'children.0.body.nodes.0.paramDescription.value').to.eql('');
       expectPath(ast, 'children.0.body.nodes.1.type').to.eql('LiquidDocParamNode');
-      expectPath(ast, 'children.0.body.nodes.1.name').to.eql('@param');
+      expectPath(ast, 'children.0.body.nodes.1.name').to.eql('param');
       expectPath(ast, 'children.0.body.nodes.1.paramName.type').to.eql('TextNode');
       expectPath(ast, 'children.0.body.nodes.1.paramName.value').to.eql('paramWithDescription');
       expectPath(ast, 'children.0.body.nodes.1.paramDescription.type').to.eql('TextNode');

@@ -1330,6 +1330,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
     },
     paramNode: {
       type: ConcreteNodeTypes.LiquidDocParamNode,
+      name: 'param',
       locStart,
       locEnd,
       source,
