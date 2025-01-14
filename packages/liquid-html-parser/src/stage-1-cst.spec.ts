@@ -1048,13 +1048,13 @@ describe('Unit: Stage 1 (CST)', () => {
 
           expectPath(cst, '0.children.0.paramType.type').to.equal('TextNode');
           expectPath(cst, '0.children.0.paramType.value').to.equal('String');
-          expectPath(cst, '0.children.0.paramType.locStart').to.equal(testStr.indexOf('{String}'));
+          expectPath(cst, '0.children.0.paramType.locStart').to.equal(testStr.indexOf('String'));
           expectPath(cst, '0.children.0.paramType.locEnd').to.equal(
-            testStr.indexOf('{String}') + '{String}'.length,
+            testStr.indexOf('String') + 'String'.length,
           );
         });
 
-        it('should parse @param with type with space inside', () => {
+        it('should strip whitespace around param type for @param annotation', () => {
           const testStr = `{% doc %} @param { String } paramWithType {% enddoc %}`;
           cst = toCST(testStr);
 
@@ -1063,11 +1063,9 @@ describe('Unit: Stage 1 (CST)', () => {
 
           expectPath(cst, '0.children.0.paramType.type').to.equal('TextNode');
           expectPath(cst, '0.children.0.paramType.value').to.equal('String');
-          expectPath(cst, '0.children.0.paramType.locStart').to.equal(
-            testStr.indexOf('{ String }'),
-          );
+          expectPath(cst, '0.children.0.paramType.locStart').to.equal(testStr.indexOf('String'));
           expectPath(cst, '0.children.0.paramType.locEnd').to.equal(
-            testStr.indexOf('{ String }') + '{ String }'.length,
+            testStr.indexOf('String') + 'String'.length,
           );
         });
 

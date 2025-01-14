@@ -441,15 +441,14 @@ export interface ConcreteYamlFrontmatterNode
 
 export type LiquidHtmlConcreteNode =
   | ConcreteHtmlNode
-  | ConcreteLiquidNode
-  | ConcreteTextNode
   | ConcreteYamlFrontmatterNode
-  | LiquidDocConcreteNode;
+  | LiquidConcreteNode;
 
 export type LiquidConcreteNode =
   | ConcreteLiquidNode
   | ConcreteTextNode
-  | ConcreteYamlFrontmatterNode;
+  | ConcreteYamlFrontmatterNode
+  | LiquidDocConcreteNode;
 
 export type LiquidHtmlCST = LiquidHtmlConcreteNode[];
 
@@ -1317,17 +1316,22 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
     throw new LiquidHTMLCSTParsingError(res);
   }
 
+  /**
+   * Reusable text node type
+   */
+  const textNode = {
+    type: ConcreteNodeTypes.TextNode,
+    value: function () {
+      return (this as any).sourceString;
+    },
+    locStart,
+    locEnd,
+    source,
+  };
+
   const LiquidDocMappings: Mapping = {
     Node: 0,
-    TextNode: {
-      type: ConcreteNodeTypes.TextNode,
-      value: function () {
-        return (this as any).sourceString;
-      },
-      locStart,
-      locEnd,
-      source,
-    },
+    TextNode: textNode,
     paramNode: {
       type: ConcreteNodeTypes.LiquidDocParamNode,
       name: 'param',
@@ -1336,44 +1340,13 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       source,
       paramType: 2,
       paramName: 4,
-      paramDescription: 7,
+      paramDescription: 8,
     },
-    paramType: {
-      type: ConcreteNodeTypes.TextNode,
-      value: function (nodes: Node[]) {
-        return nodes[1].sourceString.trim();
-      },
-      source,
-      locStart,
-      locEnd,
-    },
-    paramName: {
-      type: ConcreteNodeTypes.TextNode,
-      value: function (nodes: Node[]) {
-        return nodes[0].sourceString.trim();
-      },
-      source,
-      locStart,
-      locEnd,
-    },
-    paramDescription: {
-      type: ConcreteNodeTypes.TextNode,
-      value: function (nodes: Node[]) {
-        return nodes[0].sourceString.trim();
-      },
-      source,
-      locStart,
-      locEnd,
-    },
-    fallbackNode: {
-      type: ConcreteNodeTypes.TextNode,
-      value: function () {
-        return (this as any).sourceString.trim();
-      },
-      locStart,
-      locEnd,
-      source,
-    },
+    paramType: 2,
+    paramTypeContent: textNode,
+    paramName: textNode,
+    paramDescription: textNode,
+    fallbackNode: textNode,
   };
 
   return toAST(res, LiquidDocMappings);
