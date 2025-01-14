@@ -243,6 +243,7 @@ export function startServer(
     getSnippetNamesForURI,
     getThemeSettingsSchemaForURI,
     log,
+    getThemeBlockNames,
     getMetafieldDefinitions,
   });
   const hoverProvider = new HoverProvider(

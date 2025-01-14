@@ -42,6 +42,7 @@ describe('DocumentLinksProvider', () => {
       {% echo 'echo.js' | asset_url %}
       {% assign x = 'assign.css' | asset_url %}
       {{ 'asset.js' | asset_url }}
+      {% content_for 'block', type: 'block_name' %}
     `;
 
     documentManager.open(uriString, liquidHtmlContent, 1);
@@ -54,6 +55,7 @@ describe('DocumentLinksProvider', () => {
       'file:///path/to/project/assets/echo.js',
       'file:///path/to/project/assets/assign.css',
       'file:///path/to/project/assets/asset.js',
+      'file:///path/to/project/blocks/block_name.liquid',
     ];
 
     expect(result.length).toBe(expectedUrls.length);
