@@ -1319,7 +1319,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
 
   const LiquidDocMappings: Mapping = {
     Node: 0,
-    textNode: {
+    TextNode: {
       type: ConcreteNodeTypes.TextNode,
       value: function () {
         return (this as any).sourceString;
@@ -1334,36 +1334,36 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       locStart,
       locEnd,
       source,
-      paramType: function (nodes: Node[]) {
-        const typeNode = nodes[2];
-        return {
-          type: ConcreteNodeTypes.TextNode,
-          value: typeNode.sourceString.slice(1, -1).trim(),
-          source,
-          locStart: offset + typeNode.source.startIdx,
-          locEnd: offset + typeNode.source.endIdx,
-        };
+      paramType: 2,
+      paramName: 4,
+      paramDescription: 7,
+    },
+    paramType: {
+      type: ConcreteNodeTypes.TextNode,
+      value: function (nodes: Node[]) {
+        return nodes[1].sourceString.trim();
       },
-      paramName: function (nodes: Node[]) {
-        const nameNode = nodes[4];
-        return {
-          type: ConcreteNodeTypes.TextNode,
-          value: nameNode.sourceString.trim(),
-          source,
-          locStart: offset + nameNode.source.startIdx,
-          locEnd: offset + nameNode.source.endIdx,
-        };
+      source,
+      locStart,
+      locEnd,
+    },
+    paramName: {
+      type: ConcreteNodeTypes.TextNode,
+      value: function (nodes: Node[]) {
+        return nodes[0].sourceString.trim();
       },
-      paramDescription: function (nodes: Node[]) {
-        const descriptionNode = nodes[7];
-        return {
-          type: ConcreteNodeTypes.TextNode,
-          value: descriptionNode.sourceString.trim(),
-          source,
-          locStart: offset + descriptionNode.source.startIdx,
-          locEnd: offset + descriptionNode.source.endIdx,
-        };
+      source,
+      locStart,
+      locEnd,
+    },
+    paramDescription: {
+      type: ConcreteNodeTypes.TextNode,
+      value: function (nodes: Node[]) {
+        return nodes[0].sourceString.trim();
       },
+      source,
+      locStart,
+      locEnd,
     },
     fallbackNode: {
       type: ConcreteNodeTypes.TextNode,
