@@ -1054,6 +1054,23 @@ describe('Unit: Stage 1 (CST)', () => {
           );
         });
 
+        it('should parse @param with type with space inside', () => {
+          const testStr = `{% doc %} @param { String } paramWithType {% enddoc %}`;
+          cst = toCST(testStr);
+
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocParamNode');
+          expectPath(cst, '0.children.0.paramName.value').to.equal('paramWithType');
+
+          expectPath(cst, '0.children.0.paramType.type').to.equal('TextNode');
+          expectPath(cst, '0.children.0.paramType.value').to.equal('String');
+          expectPath(cst, '0.children.0.paramType.locStart').to.equal(
+            testStr.indexOf('{ String }'),
+          );
+          expectPath(cst, '0.children.0.paramType.locEnd').to.equal(
+            testStr.indexOf('{ String }') + '{ String }'.length,
+          );
+        });
+
         it('should accept punctation inside the param description body', () => {
           const testStr = `{% doc %} @param paramName paramDescription - asdf . \`should\` work {% enddoc %}`;
           cst = toCST(testStr);
