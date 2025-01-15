@@ -23,6 +23,7 @@ describe('Module: ValidSchemaName', () => {
         name: 'file',
         type: ThemeSchemaType.Section,
         offset: 0,
+        value: '',
       }),
     });
 

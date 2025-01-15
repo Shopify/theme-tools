@@ -1,14 +1,6 @@
-import {
-  AppBlockSchema,
-  deepGet,
-  isError,
-  SectionSchema,
-  ThemeBlockSchema,
-  ThemeSchemaType,
-} from '@shopify/theme-check-common';
+import { deepGet, isError } from '@shopify/theme-check-common';
 import { JSONPath } from 'vscode-json-languageservice';
 import { JSONCompletionItem } from 'vscode-json-languageservice/lib/umd/jsonContributions';
-import { CompletionItemKind } from 'vscode-languageserver-protocol';
 import { isLiquidRequestContext, RequestContext } from '../../RequestContext';
 import { fileMatch } from '../../utils';
 import { JSONCompletionProvider } from '../JSONCompletionProvider';

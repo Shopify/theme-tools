@@ -32,6 +32,9 @@ export interface ThemeSchema<T extends ThemeSchemaType> {
 
   /** 0-based index of the start of JSON object in the document */
   offset: number;
+
+  /** schema node value */
+  value: string;
 }
 
 /** See {@link ThemeSchema} */
