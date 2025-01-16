@@ -12,6 +12,7 @@ import {
   SourceCodeType,
   LiquidCheckDefinition,
   LiquidHtmlNode,
+  SchemaProp,
 } from '../../types';
 import { isAttr, isValuedHtmlAttribute, isNodeOfType, ValuedHtmlAttribute } from '../utils';
 import { last } from '../../utils';
@@ -42,15 +43,24 @@ function isLiquidVariable(node: LiquidHtmlNode | string): node is LiquidVariable
   return typeof node !== 'string' && node.type === NodeTypes.LiquidVariable;
 }
 
-function isUrlHostedbyShopify(url: string): boolean {
-  const urlObj = new URL(url);
-  return SHOPIFY_CDN_DOMAINS.includes(urlObj.hostname);
+function isUrlHostedbyShopify(url: string, allowedDomains: string[] = []): boolean {
+  try {
+    const urlObj = new URL(url);
+    return [...SHOPIFY_CDN_DOMAINS, ...allowedDomains].includes(urlObj.hostname);
+  } catch (_error) {
+    // Return false for any invalid URLs (missing protocol, malformed URLs, invalid characters etc.)
+    // Since we're validating if URLs are Shopify-hosted, any invalid URL should return false
+    return false;
+  }
 }
 
-function valueIsDefinitelyNotShopifyHosted(attr: ValuedHtmlAttribute): boolean {
+function valueIsDefinitelyNotShopifyHosted(
+  attr: ValuedHtmlAttribute,
+  allowedDomains: string[] = [],
+): boolean {
   return attr.value.some((node) => {
     if (node.type === NodeTypes.TextNode && /^(https?:)?\/\//.test(node.value)) {
-      if (!isUrlHostedbyShopify(node.value)) {
+      if (!isUrlHostedbyShopify(node.value, allowedDomains)) {
         return true;
       }
     }
@@ -60,7 +70,7 @@ function valueIsDefinitelyNotShopifyHosted(attr: ValuedHtmlAttribute): boolean {
       if (isLiquidVariable(variable)) {
         const expression = variable.expression;
         if (expression.type === NodeTypes.String && /^https?:\/\//.test(expression.value)) {
-          if (!isUrlHostedbyShopify(expression.value)) {
+          if (!isUrlHostedbyShopify(expression.value, allowedDomains)) {
             return true;
           }
         }
@@ -96,7 +106,27 @@ function valueIsShopifyHosted(attr: ValuedHtmlAttribute): boolean {
   });
 }
 
-export const RemoteAsset: LiquidCheckDefinition = {
+// Takes a list of allowed domains, and normalises them into an expected domain: www.domain.com -> domain.com for equality checks.
+function normaliseAllowedDomains(allowedDomains: string[]): string[] {
+  return allowedDomains
+    .map((domain) => {
+      try {
+        const url = new URL(domain);
+        // Hostname can still return www. from https://www.domain.com we want it to be  https://www.domain.com -> domain.com
+        return url.hostname.replace(/^www\./, '');
+      } catch (_error) {
+        // we shouldn't return the malformed domain - should be strict and stick to web standards (new URL validation).
+        return undefined;
+      }
+    })
+    .filter((domain): domain is string => domain !== undefined);
+}
+
+const schema = {
+  allowedDomains: SchemaProp.array(SchemaProp.string()).optional(),
+};
+
+export const RemoteAsset: LiquidCheckDefinition<typeof schema> = {
   meta: {
     code: 'RemoteAsset',
     aliases: ['AssetUrlFilters'],
@@ -108,11 +138,13 @@ export const RemoteAsset: LiquidCheckDefinition = {
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,
-    schema: {},
+    schema,
     targets: [],
   },
 
   create(context) {
+    const allowedDomains = normaliseAllowedDomains(context.settings.allowedDomains || []);
+
     function checkHtmlNode(node: HtmlVoidElement | HtmlRawNode) {
       if (!RESOURCE_TAGS.includes(node.name)) return;
 
@@ -124,11 +156,14 @@ export const RemoteAsset: LiquidCheckDefinition = {
 
       const isShopifyUrl = urlAttribute.value
         .filter((node): node is TextNode => node.type === NodeTypes.TextNode)
-        .some((textNode) => isUrlHostedbyShopify(textNode.value));
+        .some((textNode) => isUrlHostedbyShopify(textNode.value, allowedDomains));
 
       if (isShopifyUrl) return;
 
-      const hasDefinitelyARemoteAssetUrl = valueIsDefinitelyNotShopifyHosted(urlAttribute);
+      const hasDefinitelyARemoteAssetUrl = valueIsDefinitelyNotShopifyHosted(
+        urlAttribute,
+        allowedDomains,
+      );
       if (hasDefinitelyARemoteAssetUrl) {
         context.report({
           message: 'Asset should be served by the Shopify CDN for better performance.',
@@ -167,7 +202,10 @@ export const RemoteAsset: LiquidCheckDefinition = {
       if (hasAsset) return;
 
       const urlNode = parentNode.expression;
-      if (urlNode.type === NodeTypes.String && !isUrlHostedbyShopify(urlNode.value)) {
+      if (
+        urlNode.type === NodeTypes.String &&
+        !isUrlHostedbyShopify(urlNode.value, allowedDomains)
+      ) {
         context.report({
           message: 'Asset should be served by the Shopify CDN for better performance.',
           startIndex: urlNode.position.start,
