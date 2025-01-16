@@ -1,5 +1,41 @@
 ## theme-check-vscode
 
+## 3.5.0
+
+### Minor Changes
+
+- dc9c6da6: In `{% schema %}` tags, add block type completion in presets
+- c60e61ba: In `{% schema %}` tags, add hover and code completion of presets settings ids
+- 4a429e15: Fetch metafield definitions on start-up using CLI
+- c74850c8: Add "On section rename" handling
+
+  When `sections/*.liquid` files are renamed, we will update all references to these files in their previous locations. This includes:
+
+  - `templates/*.json` files that referenced the old file name
+  - `sections/*.json` files that referenced the old file name
+  - Static section calls formatted as `{% section 'old-name' %}`
+
+- b31e0f85: Add "On theme block rename" handling
+
+  Whenever a theme block gets renamed, the following will now happen:
+
+  1. References in files with a `{% schema %}` will be updated automatically
+  2. References in template files will be updated automatically
+  3. References in section groups will be updated automatically
+  4. References in `{% content_for "block", type: "oldName" %}` will be updated automatically
+
+### Patch Changes
+
+- Updated dependencies [68e1b44b]
+- Updated dependencies [c74850c8]
+- Updated dependencies [c60e61ba]
+- Updated dependencies [b31e0f85]
+- Updated dependencies [34c2268a]
+- Updated dependencies [4a429e15]
+  - @shopify/theme-language-server-node@2.4.0
+  - @shopify/theme-check-common@3.6.0
+  - @shopify/theme-language-server-browser@2.4.0
+
 ## 3.4.0
 
 ### Minor Changes
