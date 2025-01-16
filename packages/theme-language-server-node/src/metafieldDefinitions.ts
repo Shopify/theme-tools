@@ -8,13 +8,13 @@ const isWin = process.platform === 'win32';
 const shopifyCliPathPromise = getShopifyCliPath();
 
 export async function fetchMetafieldDefinitionsForURI(uri: string) {
-  const path = await shopifyCliPathPromise;
-
-  if (!path) {
-    return;
-  }
-
   try {
+    const path = await shopifyCliPathPromise;
+
+    if (!path) {
+      return;
+    }
+
     await exec(`${path} theme metafields pull`, {
       cwd: new URL(uri),
       timeout: 10_000,

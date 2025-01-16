@@ -358,15 +358,17 @@ export function startServer(
       ],
     });
 
-    connection.workspace.getWorkspaceFolders().then(async (folders) => {
-      if (!folders) return;
+    if (clientCapabilities.hasWorkspaceFoldersSupport) {
+      connection.workspace.getWorkspaceFolders().then(async (folders) => {
+        if (!folders) return;
 
-      fetchMetafieldDefinitionsForWorkspaceFolders(folders);
-    });
+        fetchMetafieldDefinitionsForWorkspaceFolders(folders);
+      });
 
-    connection.workspace.onDidChangeWorkspaceFolders(async (params) => {
-      fetchMetafieldDefinitionsForWorkspaceFolders(params.added);
-    });
+      connection.workspace.onDidChangeWorkspaceFolders(async (params) => {
+        fetchMetafieldDefinitionsForWorkspaceFolders(params.added);
+      });
+    }
   });
 
   connection.onDidChangeConfiguration((_params) => {

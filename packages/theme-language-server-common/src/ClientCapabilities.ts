@@ -23,6 +23,10 @@ export class ClientCapabilities {
     return !!this.capabilities?.workspace?.applyEdit;
   }
 
+  get hasWorkspaceFoldersSupport() {
+    return !!this.capabilities?.workspace?.workspaceFolders;
+  }
+
   get hasDidChangeConfigurationDynamicRegistrationSupport() {
     return !!this.capabilities?.workspace?.didChangeConfiguration?.dynamicRegistration;
   }
