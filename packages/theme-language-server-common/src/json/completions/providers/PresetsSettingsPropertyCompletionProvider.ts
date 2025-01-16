@@ -100,9 +100,5 @@ export class PresetsSettingsPropertyCompletionProvider implements JSONCompletion
 }
 
 function isPresetSettingsPath(path: JSONPath) {
-  return path.at(0) === 'presets' && path.at(1) === 0 && path.at(2) === 'settings';
-}
-
-function isTranslationKey(path: string) {
-  return path.startsWith('t:');
+  return path.at(0) === 'presets' && path.at(2) === 'settings';
 }
