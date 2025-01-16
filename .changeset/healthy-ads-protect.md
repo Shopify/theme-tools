@@ -1,5 +1,6 @@
 ---
 '@shopify/theme-language-server-common': minor
+'theme-check-vscode': minor
 ---
 
-Support hover and code completion for presets settings properties
+In `{% schema %}` tags, add hover and code completion of presets settings ids
