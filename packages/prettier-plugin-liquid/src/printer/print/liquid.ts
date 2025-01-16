@@ -1,4 +1,10 @@
-import { NodeTypes, NamedTags, isBranchedTag } from '@shopify/liquid-html-parser';
+import {
+  NodeTypes,
+  NamedTags,
+  isBranchedTag,
+  RawMarkup,
+  LiquidDocParamNode,
+} from '@shopify/liquid-html-parser';
 import { Doc, doc } from 'prettier';
 
 import {
@@ -488,6 +494,46 @@ export function printLiquidRawTag(
   }
 
   return [blockStart, ...body, blockEnd];
+}
+
+export function printLiquidDoc(
+  path: AstPath<RawMarkup>,
+  _options: LiquidParserOptions,
+  print: LiquidPrinter,
+  _args: LiquidPrinterArgs,
+) {
+  const body = path.map((p: any) => print(p), 'nodes');
+  return [indent([hardline, join(hardline, body)]), hardline];
+}
+
+export function printLiquidDocParam(
+  path: AstPath<LiquidDocParamNode>,
+  options: LiquidParserOptions,
+  _print: LiquidPrinter,
+  _args: LiquidPrinterArgs,
+): Doc {
+  const node = path.getValue();
+  const parts: Doc[] = ['@param'];
+
+  if (node.paramType?.value) {
+    parts.push(' ', `{${node.paramType.value}}`);
+  }
+
+  if (node.paramName.value) {
+    parts.push(' ', node.paramName.value);
+  }
+
+  if (node.paramDescription?.value) {
+    const normalizedDescription = node.paramDescription.value.replace(/\s+/g, ' ').trim();
+
+    if (options.liquidDocParamDash) {
+      parts.push(' - ', normalizedDescription);
+    } else {
+      parts.push(' ', normalizedDescription);
+    }
+  }
+
+  return parts;
 }
 
 function innerLeadingWhitespace(node: LiquidTag | LiquidBranch) {

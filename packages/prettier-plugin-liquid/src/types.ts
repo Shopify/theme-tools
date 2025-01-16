@@ -24,6 +24,7 @@ export type LiquidParserOptions = ParserOptions<LiquidHtmlNode> & {
   embeddedSingleQuote: boolean;
   indentSchema: boolean;
   captureWhitespaceSensitivity: 'strict' | 'ignore';
+  liquidDocParamDash: boolean;
 };
 export type LiquidPrinterArgs = {
   leadingSpaceGroupId?: symbol[] | symbol;

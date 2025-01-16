@@ -107,7 +107,8 @@ export type LiquidHtmlNode =
   | RenderVariableExpression
   | LiquidLogicalExpression
   | LiquidComparison
-  | TextNode;
+  | TextNode
+  | LiquidDocParamNode;
 
 /** The root node of all LiquidHTML ASTs. */
 export interface DocumentNode extends ASTNode<NodeTypes.Document> {
@@ -754,6 +755,16 @@ export interface TextNode extends ASTNode<NodeTypes.TextNode> {
   value: string;
 }
 
+/** Represents a `@param` node in a LiquidDoc comment - `@param paramName {paramType} - paramDescription` */
+export interface LiquidDocParamNode extends ASTNode<NodeTypes.LiquidDocParamNode> {
+  name: 'param';
+  /** The name of the parameter (e.g. "product") */
+  paramName: TextNode;
+  /** Optional description of the parameter in a Liquid doc comment (e.g. "The product title") */
+  paramDescription: TextNode | null;
+  /** Optional type annotation for the parameter (e.g. "{string}", "{number}") */
+  paramType: TextNode | null;
+}
 export interface ASTNode<T> {
   /**
    * The type of the node, as a string.
@@ -1264,6 +1275,24 @@ function buildAst(
           body: node.body,
           position: position(node),
           source: node.source,
+        });
+        break;
+      }
+
+      case ConcreteNodeTypes.LiquidDocParamNode: {
+        builder.push({
+          type: NodeTypes.LiquidDocParamNode,
+          name: node.name,
+          position: position(node),
+          source: node.source,
+          paramName: {
+            type: NodeTypes.TextNode,
+            value: node.paramName.value,
+            position: position(node.paramName),
+            source: node.paramName.source,
+          },
+          paramDescription: toNullableTextNode(node.paramDescription),
+          paramType: toNullableTextNode(node.paramType),
         });
         break;
       }
@@ -1942,6 +1971,11 @@ function toHtmlSelfClosingElement(
     blockStartPosition: position(node),
     source: node.source,
   };
+}
+
+function toNullableTextNode(node: ConcreteTextNode | null): TextNode | null {
+  if (!node) return null;
+  return toTextNode(node);
 }
 
 function toTextNode(node: ConcreteTextNode): TextNode {
