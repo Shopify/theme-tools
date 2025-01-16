@@ -123,7 +123,6 @@ export class SectionRenameHandler implements BaseRenameHandler {
 
   private getTemplateChanges(oldSectionName: string, newSectionName: string) {
     return async (sourceCode: AugmentedJsonSourceCode) => {
-      // assuming that the JSON is valid...
       const { textDocument, ast, source } = sourceCode;
       const parsed = parseJSON(source);
       if (!parsed || isError(parsed) || isError(ast)) return null;

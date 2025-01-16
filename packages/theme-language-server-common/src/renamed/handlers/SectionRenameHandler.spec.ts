@@ -204,8 +204,6 @@ describe('Module: SectionRenameHandler', () => {
               "order": ["section-id"]
             }`,
 
-          // The old-name-id's section type is updated, but not the id.
-          // This isn't a regex search and replace.
           'templates/index.json': `
             {
               "sections": {
