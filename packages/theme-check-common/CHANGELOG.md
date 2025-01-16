@@ -1,5 +1,17 @@
 # @shopify/theme-check-common
 
+## 3.6.0
+
+### Minor Changes
+
+- b31e0f85: [internal] Add `offset` information on Schema objects
+- 34c2268a: This update ensures that the AppBlockMissingSchema theme check will only run on block files on theme app extensions, to avoid errors surfacing when the theme check is incorrectly run on snippets. Renamed the check to make it more accurate (from MissingSchema to AppBlockMissingSchema).
+
+### Patch Changes
+
+- c74850c8: [Internal] Add template type interfaces
+- c60e61ba: [Internal] Add schema raw value to schema node
+
 ## 3.5.0
 
 ### Minor Changes
