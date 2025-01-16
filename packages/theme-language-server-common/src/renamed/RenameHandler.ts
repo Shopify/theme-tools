@@ -6,6 +6,7 @@ import { BaseRenameHandler } from './BaseRenameHandler';
 import { AssetRenameHandler } from './handlers/AssetRenameHandler';
 import { BlockRenameHandler } from './handlers/BlockRenameHandler';
 import { SnippetRenameHandler } from './handlers/SnippetRenameHandler';
+import { SectionRenameHandler } from './handlers/SectionRenameHandler';
 
 /**
  * The RenameHandler is responsible for handling workspace/didRenameFiles notifications.
@@ -27,6 +28,7 @@ export class RenameHandler {
       new SnippetRenameHandler(documentManager, connection, capabilities, findThemeRootURI),
       new AssetRenameHandler(documentManager, connection, capabilities, findThemeRootURI),
       new BlockRenameHandler(documentManager, connection, capabilities, findThemeRootURI),
+      new SectionRenameHandler(documentManager, connection, capabilities, findThemeRootURI),
     ];
   }
 

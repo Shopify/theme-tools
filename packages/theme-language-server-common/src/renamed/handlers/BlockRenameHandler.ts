@@ -9,8 +9,8 @@ import {
   path,
   Preset,
   Section,
-  Setting,
   SourceCodeType,
+  Template,
   ThemeBlock,
   visit,
 } from '@shopify/theme-check-common';
@@ -35,41 +35,9 @@ import {
 } from '../../documents';
 import { blockName, isBlock, isSection, isSectionGroup, isTemplate } from '../../utils/uri';
 import { BaseRenameHandler } from '../BaseRenameHandler';
+import { isValidSectionGroup, isValidTemplate } from './utils';
 
 type DocumentChange = TextDocumentEdit;
-
-export namespace Template {
-  export interface Template {
-    layout?: string | false;
-    wrapper?: string;
-    sections: Record<string, Template.Section>;
-    order: string[];
-  }
-
-  export interface Section {
-    type: string;
-    settings?: Setting.Values;
-    disabled?: boolean;
-    blocks?: Record<string, Template.Block>;
-    block_order?: string[];
-  }
-
-  export interface Block {
-    type: string;
-    settings?: Setting.Values;
-    disabled?: boolean;
-    blocks?: Record<string, Template.Block>;
-    block_order?: string[];
-    static?: boolean;
-  }
-
-  export interface SectionGroup {
-    type: string;
-    name: string;
-    sections: Record<string, Template.Section>;
-    order: string[];
-  }
-}
 
 const annotationId = 'renameBlock';
 
@@ -390,27 +358,6 @@ export class BlockRenameHandler implements BaseRenameHandler {
 
 function isLocalBlock(blockDef: ThemeBlock.Block | Section.Block): blockDef is Section.LocalBlock {
   return 'name' in blockDef && typeof blockDef.name === 'string';
-}
-
-// this is very very optimistic...
-function isValidTemplate(parsed: unknown): parsed is Template.Template {
-  return (
-    typeof parsed === 'object' &&
-    parsed !== null &&
-    'sections' in parsed &&
-    'order' in parsed &&
-    Array.isArray((parsed as Template.Template).order)
-  );
-}
-
-function isValidSectionGroup(parsed: unknown): parsed is Template.SectionGroup {
-  return (
-    typeof parsed === 'object' &&
-    parsed !== null &&
-    'sections' in parsed &&
-    'order' in parsed &&
-    Array.isArray((parsed as Template.SectionGroup).order)
-  );
 }
 
 function getBlocksEditsFactory(
