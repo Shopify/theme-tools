@@ -1,5 +1,6 @@
 ---
 '@shopify/theme-language-server-common': minor
+'theme-check-vscode': minor
 ---
 
-Support schema presets block type completion
+In `{% schema %}` tags, add block type completion in presets
