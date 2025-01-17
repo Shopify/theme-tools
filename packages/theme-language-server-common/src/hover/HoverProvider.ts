@@ -1,4 +1,5 @@
 import {
+  GetLiquidDocDefinitionsForURI,
   LiquidDocDefinition,
   MetafieldDefinitionMap,
   SourceCodeType,
@@ -32,10 +33,12 @@ export class HoverProvider {
     readonly getMetafieldDefinitions: (rootUri: string) => Promise<MetafieldDefinitionMap>,
     readonly getTranslationsForURI: GetTranslationsForURI = async () => ({}),
     readonly getSettingsSchemaForURI: GetThemeSettingsSchemaForURI = async () => [],
-    readonly getLiquidDocDefinitionsForURI: (
-      uri: string,
-      snippetName: string,
-    ) => Promise<LiquidDocDefinition>,
+    readonly getLiquidDocDefinitionsForURI: GetLiquidDocDefinitionsForURI = async (
+      _uri,
+      snippetName,
+    ) => ({
+      name: snippetName,
+    }),
   ) {
     const typeSystem = new TypeSystem(
       themeDocset,
