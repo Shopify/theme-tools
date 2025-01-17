@@ -2,18 +2,16 @@ import { deepGet } from '@shopify/theme-check-common';
 import { JSONPath, MarkedString } from 'vscode-json-languageservice';
 import { GetTranslationsForURI, renderTranslation, translationValue } from '../../../translations';
 import { isLiquidRequestContext, LiquidRequestContext, RequestContext } from '../../RequestContext';
-import { fileMatch } from '../../utils';
+import { isSectionOrBlockFile } from '../../utils';
 import { JSONHoverProvider } from '../JSONHoverProvider';
 
 export class SchemaTranslationHoverProvider implements JSONHoverProvider {
-  private uriPatterns = [/(sections|blocks)\/[^\/]*\.liquid$/];
-
   constructor(private getDefaultSchemaTranslations: GetTranslationsForURI) {}
 
   canHover(context: RequestContext, path: JSONPath): context is LiquidRequestContext {
     const label = deepGet(context.parsed, path);
     return (
-      fileMatch(context.doc.uri, this.uriPatterns) &&
+      isSectionOrBlockFile(context.doc.uri) &&
       isLiquidRequestContext(context) &&
       path.length !== 0 &&
       label &&

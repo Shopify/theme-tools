@@ -6,16 +6,14 @@ import {
   translationOptions,
 } from '../../../translations';
 import { isLiquidRequestContext, RequestContext } from '../../RequestContext';
-import { fileMatch } from '../../utils';
+import { isSectionOrBlockFile } from '../../utils';
 import { JSONCompletionItem, JSONCompletionProvider } from '../JSONCompletionProvider';
 
 export class SchemaTranslationsCompletionProvider implements JSONCompletionProvider {
-  private uriPatterns = [/(sections|blocks)\/[^\/]*\.liquid$/];
-
   constructor(private getDefaultSchemaTranslations: GetTranslationsForURI) {}
 
   async completeValue(context: RequestContext, path: JSONPath): Promise<JSONCompletionItem[]> {
-    if (!fileMatch(context.doc.uri, this.uriPatterns) || !isLiquidRequestContext(context)) {
+    if (!isSectionOrBlockFile(context.doc.uri) || !isLiquidRequestContext(context)) {
       return [];
     }
 

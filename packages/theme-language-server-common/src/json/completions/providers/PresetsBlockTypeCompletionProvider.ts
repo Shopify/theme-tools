@@ -2,7 +2,7 @@ import { deepGet, isError } from '@shopify/theme-check-common';
 import { JSONPath } from 'vscode-json-languageservice';
 import { JSONCompletionItem } from 'vscode-json-languageservice/lib/umd/jsonContributions';
 import { isLiquidRequestContext, RequestContext } from '../../RequestContext';
-import { fileMatch } from '../../utils';
+import { isSectionOrBlockFile } from '../../utils';
 import { JSONCompletionProvider } from '../JSONCompletionProvider';
 import {
   createBlockNameCompletionItems,
@@ -28,8 +28,6 @@ import { GetThemeBlockNames, GetThemeBlockSchema } from '../../JSONContributions
  * {% endschema %}
  */
 export class PresetsBlockTypeCompletionProvider implements JSONCompletionProvider {
-  private uriPatterns = [/^.*\/(sections|blocks)\/[^\/]*\.liquid$/];
-
   constructor(
     private getThemeBlockNames: GetThemeBlockNames,
     private getThemeBlockSchema: GetThemeBlockSchema,
@@ -37,7 +35,7 @@ export class PresetsBlockTypeCompletionProvider implements JSONCompletionProvide
 
   async completeValue(context: RequestContext, path: JSONPath): Promise<JSONCompletionItem[]> {
     if (
-      !fileMatch(context.doc.uri, this.uriPatterns) ||
+      !isSectionOrBlockFile(context.doc.uri) ||
       !isLiquidRequestContext(context) ||
       !isPresetBlockPath(path)
     ) {
