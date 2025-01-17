@@ -1,12 +1,9 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../../documents';
-import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
-import { JSONHoverProvider } from '../JSONHoverProvider';
-import { PresetsSettingsHoverProvider } from './PresetsSettingsHoverProvider';
 import { JSONLanguageService } from '../../JSONLanguageService';
 import { getRequestParams, mockJSONLanguageService } from '../../test/test-helpers';
 
-describe('Module: PresetsSettingsHoverProvider', async () => {
+describe('Module: SettingsHoverProvider', async () => {
   const rootUri = 'file:///root/';
   let jsonLanguageService: JSONLanguageService;
   let documentManager: DocumentManager;

@@ -7,7 +7,7 @@ import { JSONHoverProvider } from '../JSONHoverProvider';
 import { AugmentedLiquidSourceCode } from '../../../documents';
 import { isSectionOrBlockSchema } from '../../completions/providers/BlockTypeCompletionProvider';
 
-export class PresetsSettingsHoverProvider implements JSONHoverProvider {
+export class SettingsHoverProvider implements JSONHoverProvider {
   private uriPatterns = [/(sections|blocks)\/[^\/]*\.liquid$/];
 
   constructor(private getDefaultSchemaTranslations: GetTranslationsForURI) {}

@@ -10,7 +10,7 @@ import { CompletionItemKind } from 'vscode-languageserver-protocol';
 import { GetTranslationsForURI, renderTranslation, translationValue } from '../../../translations';
 
 /**
- * The PresetsSettingsPropertyCompletionProvider offers property completions of the
+ * The SettingsPropertyCompletionProvider offers property completions of the
  * `presets.[].settings.[]` objects inside section and theme block `{% schema %}` tags.
  *
  * @example
@@ -26,7 +26,7 @@ import { GetTranslationsForURI, renderTranslation, translationValue } from '../.
  * }
  * {% endschema %}
  */
-export class PresetsSettingsPropertyCompletionProvider implements JSONCompletionProvider {
+export class SettingsPropertyCompletionProvider implements JSONCompletionProvider {
   private uriPatterns = [/^.*\/(sections|blocks)\/[^\/]*\.liquid$/];
 
   constructor(public getDefaultSchemaTranslations: GetTranslationsForURI) {}

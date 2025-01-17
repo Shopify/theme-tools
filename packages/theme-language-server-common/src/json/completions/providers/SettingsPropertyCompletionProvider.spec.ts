@@ -7,7 +7,7 @@ import {
   mockJSONLanguageService,
 } from '../../test/test-helpers';
 
-describe('Unit: PresetsSettingsPropertyCompletionProvider', () => {
+describe('Unit: SettingsPropertyCompletionProvider', () => {
   const rootUri = 'file:///root/';
   let jsonLanguageService: JSONLanguageService;
   let documentManager: DocumentManager;
