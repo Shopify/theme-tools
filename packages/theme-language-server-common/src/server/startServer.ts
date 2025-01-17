@@ -3,10 +3,12 @@ import {
   FileTuple,
   findRoot as findConfigFileRoot,
   isError,
+  LiquidDocDefinition,
   makeFileExists,
   makeGetDefaultSchemaTranslations,
   makeGetDefaultTranslations,
   makeGetMetafieldDefinitions,
+  makeGetLiquidDocDefinitions,
   memoize,
   parseJSON,
   path,
@@ -171,6 +173,23 @@ export function startServer(
     return getDefaultSchemaTranslations();
   };
 
+  const getLiquidDocDefinitionsForURI = async (
+    uri: string,
+    snippetName: string,
+  ): Promise<LiquidDocDefinition> => {
+    const rootUri = await findThemeRootURI(uri);
+    const snippetURI = path.join(rootUri, 'snippets', `${snippetName}.liquid`);
+    const snippet = documentManager.get(snippetURI);
+
+    if (!snippet || snippet.type !== SourceCodeType.LiquidHtml || isError(snippet.ast)) {
+      return { name: snippetName };
+    }
+
+    const getLiquidDocDefinitions = makeGetLiquidDocDefinitions();
+
+    return getLiquidDocDefinitions(snippet.ast, snippetName);
+  };
+
   const snippetFilter = ([uri]: FileTuple) => /\.liquid$/.test(uri) && /snippets/.test(uri);
   const getSnippetNamesForURI: GetSnippetNamesForURI = async (uri: string) => {
     const rootUri = await findThemeRootURI(uri);
@@ -252,6 +271,7 @@ export function startServer(
     getMetafieldDefinitions,
     getTranslationsForURI,
     getThemeSettingsSchemaForURI,
+    getLiquidDocDefinitionsForURI,
   );
 
   const executeCommandProvider = new ExecuteCommandProvider(
