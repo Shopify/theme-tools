@@ -1,4 +1,4 @@
-import { LiquidHtmlNode, LiquidString, NodeTypes } from '@shopify/liquid-html-parser';
+import { LiquidHtmlNode, LiquidString, NamedTags, NodeTypes } from '@shopify/liquid-html-parser';
 import { SourceCodeType } from '@shopify/theme-check-common';
 import { DocumentLink, Range } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -61,6 +61,17 @@ function documentLinksVisitor(
           Utils.resolvePath(root, 'sections', sectionName.value + '.liquid').toString(),
         );
       }
+
+      // {% content_for 'block', type: 'block_name' %}
+      if (node.name === NamedTags.content_for && typeof node.markup !== 'string') {
+        const typeArg = node.markup.args.find((arg) => arg.name === 'type');
+        if (typeArg && typeArg.value.type === 'String') {
+          return DocumentLink.create(
+            range(textDocument, typeArg.value),
+            Utils.resolvePath(root, 'blocks', typeArg.value.value + '.liquid').toString(),
+          );
+        }
+      }
     },
 
     // {{ 'theme.js' | asset_url }}
@@ -83,8 +94,8 @@ function documentLinksVisitor(
 }
 
 function range(textDocument: TextDocument, node: { position: LiquidHtmlNode['position'] }): Range {
-  const start = textDocument.positionAt(node.position.start);
-  const end = textDocument.positionAt(node.position.end);
+  const start = textDocument.positionAt(node.position.start + 1);
+  const end = textDocument.positionAt(node.position.end - 1);
   return Range.create(start, end);
 }
 

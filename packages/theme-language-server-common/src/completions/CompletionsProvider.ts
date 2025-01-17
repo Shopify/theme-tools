@@ -7,6 +7,7 @@ import { GetTranslationsForURI } from '../translations';
 import { createLiquidCompletionParams } from './params';
 import {
   ContentForCompletionProvider,
+  ContentForBlockTypeCompletionProvider,
   FilterCompletionProvider,
   HtmlAttributeCompletionProvider,
   HtmlAttributeValueCompletionProvider,
@@ -28,6 +29,7 @@ export interface CompletionProviderDependencies {
   getSnippetNamesForURI?: GetSnippetNamesForURI;
   getThemeSettingsSchemaForURI?: GetThemeSettingsSchemaForURI;
   getMetafieldDefinitions: (rootUri: string) => Promise<MetafieldDefinitionMap>;
+  getThemeBlockNames?: (rootUri: string, includePrivate: boolean) => Promise<string[]>;
   log?: (message: string) => void;
 }
 
@@ -44,6 +46,7 @@ export class CompletionsProvider {
     getTranslationsForURI = async () => ({}),
     getSnippetNamesForURI = async () => [],
     getThemeSettingsSchemaForURI = async () => [],
+    getThemeBlockNames = async (_rootUri: string, _includePrivate: boolean) => [],
     log = () => {},
   }: CompletionProviderDependencies) {
     this.documentManager = documentManager;
@@ -57,6 +60,7 @@ export class CompletionsProvider {
 
     this.providers = [
       new ContentForCompletionProvider(),
+      new ContentForBlockTypeCompletionProvider(getThemeBlockNames),
       new HtmlTagCompletionProvider(),
       new HtmlAttributeCompletionProvider(documentManager),
       new HtmlAttributeValueCompletionProvider(),
