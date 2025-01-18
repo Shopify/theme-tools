@@ -6,4 +6,4 @@ export { HtmlTagHoverProvider } from './HtmlTagHoverProvider';
 export { HtmlAttributeHoverProvider } from './HtmlAttributeHoverProvider';
 export { HtmlAttributeValueHoverProvider } from './HtmlAttributeValueHoverProvider';
 export { TranslationHoverProvider } from './TranslationHoverProvider';
-export { SnippetHoverProvider } from './SnippetHoverProvider';
+export { RenderSnippetHoverProvider } from './RenderSnippetHoverProvider';

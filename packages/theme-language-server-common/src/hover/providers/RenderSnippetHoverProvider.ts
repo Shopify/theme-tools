@@ -7,7 +7,7 @@ import {
 import { Hover, HoverParams } from 'vscode-languageserver';
 import { BaseHoverProvider } from '../BaseHoverProvider';
 
-export class SnippetHoverProvider implements BaseHoverProvider {
+export class RenderSnippetHoverProvider implements BaseHoverProvider {
   constructor(
     private getLiquidDocDefinitionsForURI: (
       uri: string,

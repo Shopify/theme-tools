@@ -3,7 +3,7 @@ import { DocumentManager } from '../../documents';
 import { HoverProvider } from '../HoverProvider';
 import { LiquidDocDefinition, MetafieldDefinitionMap } from '@shopify/theme-check-common';
 
-describe('Module: SnippetHoverProvider', async () => {
+describe('Module: RenderSnippetHoverProvider', async () => {
   let provider: HoverProvider;
   let getLiquidDoc: () => Promise<LiquidDocDefinition>;
   const mockDefinitions = {
