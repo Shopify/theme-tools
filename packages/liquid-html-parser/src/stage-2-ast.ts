@@ -108,7 +108,8 @@ export type LiquidHtmlNode =
   | LiquidLogicalExpression
   | LiquidComparison
   | TextNode
-  | LiquidDocParamNode;
+  | LiquidDocParamNode
+  | LiquidDocExampleNode;
 
 /** The root node of all LiquidHTML ASTs. */
 export interface DocumentNode extends ASTNode<NodeTypes.Document> {
@@ -765,6 +766,14 @@ export interface LiquidDocParamNode extends ASTNode<NodeTypes.LiquidDocParamNode
   /** Optional type annotation for the parameter (e.g. "{string}", "{number}") */
   paramType: TextNode | null;
 }
+
+/** Represents a `@example` node in a LiquidDoc comment - `@example @exampleContent` */
+export interface LiquidDocExampleNode extends ASTNode<NodeTypes.LiquidDocExampleNode> {
+  name: 'example';
+  /** The contents of the example (e.g. "{{ product }}"). Can be multiline. */
+  exampleContent: TextNode;
+}
+
 export interface ASTNode<T> {
   /**
    * The type of the node, as a string.
@@ -1293,6 +1302,26 @@ function buildAst(
           },
           paramDescription: toNullableTextNode(node.paramDescription),
           paramType: toNullableTextNode(node.paramType),
+        });
+        break;
+      }
+
+      case ConcreteNodeTypes.LiquidDocExampleNode: {
+        builder.push({
+          type: NodeTypes.LiquidDocExampleNode,
+          name: node.name,
+          position: position(node),
+          source: node.source,
+          exampleContent: {
+            type: NodeTypes.TextNode,
+            value: node.exampleContent.value
+              .split('\n')
+              .map((line) => line.trim())
+              .filter(Boolean)
+              .join('\n'),
+            position: position(node.exampleContent),
+            source: node.exampleContent.source,
+          },
         });
         break;
       }
