@@ -4,6 +4,7 @@ import {
   isBranchedTag,
   RawMarkup,
   LiquidDocParamNode,
+  LiquidDocExampleNode,
 } from '@shopify/liquid-html-parser';
 import { Doc, doc } from 'prettier';
 
@@ -530,6 +531,30 @@ export function printLiquidDocParam(
       parts.push(' - ', normalizedDescription);
     } else {
       parts.push(' ', normalizedDescription);
+    }
+  }
+
+  return parts;
+}
+
+export function printLiquidDocExample(
+  path: AstPath<LiquidDocExampleNode>,
+  options: LiquidParserOptions,
+  _print: LiquidPrinter,
+  _args: LiquidPrinterArgs,
+): Doc {
+  const node = path.getValue();
+  const parts: Doc[] = ['@example'];
+
+  if (node.exampleContent?.value) {
+    const content = node.exampleContent.value.trim();
+    if (content) {
+      parts.push(hardline);
+      const lines = content
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean);
+      parts.push(join(hardline, lines));
     }
   }
 
