@@ -1,5 +1,16 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.7.0
+
+### Minor Changes
+
+- ac55577a: Add prettier support for LiquidDoc {% doc %} tag and @param annotation
+
+### Patch Changes
+
+- Updated dependencies [ac55577a]
+  - @shopify/liquid-html-parser@2.3.0
+
 ## 1.6.3
 
 ### Patch Changes

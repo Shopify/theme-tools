@@ -1,5 +1,29 @@
 # @shopify/theme-language-server-common
 
+## 2.5.0
+
+### Minor Changes
+
+- ccc0c952: Support `content_for` block type completion + document link
+
+  - The following code will offer completion suggestions based on public blocks
+    within the blocks folder.
+
+  ```
+  {% content_for "block", type: "█", id: "" %}
+  ```
+
+  - You can navigate to a block file by clicking through the `type` parameter value
+    within the `content_for "block"` tag.
+
+- ac55577a: Add prettier support for LiquidDoc {% doc %} tag and @param annotation
+
+### Patch Changes
+
+- Updated dependencies [ac55577a]
+  - @shopify/liquid-html-parser@2.3.0
+  - @shopify/theme-check-common@3.6.1
+
 ## 2.4.0
 
 ### Minor Changes

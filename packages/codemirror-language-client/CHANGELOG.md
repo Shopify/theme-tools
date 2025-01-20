@@ -1,5 +1,11 @@
 # @shopify/codemirror-language-client
 
+## 0.7.2
+
+### Patch Changes
+
+- 5207eceb: Fix `DataCloneError` on Safari by serializing the `ResponseError` before sending it to the worker.
+
 ## 0.7.1
 
 ### Patch Changes
