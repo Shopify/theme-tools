@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.3.0
+
+### Minor Changes
+
+- ac55577a: Add prettier support for LiquidDoc {% doc %} tag and @param annotation
+
 ## 2.2.0
 
 ### Minor Changes
