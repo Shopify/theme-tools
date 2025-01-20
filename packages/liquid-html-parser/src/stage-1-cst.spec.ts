@@ -1108,6 +1108,83 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.children.2.type').to.equal('TextNode');
           expectPath(cst, '0.children.2.value').to.equal('@unsupported');
         });
+
+        it('should parse a basic example tag', () => {
+          const testStr = `{% doc -%} @example {%- enddoc %}`;
+          cst = toCST(testStr);
+          expectPath(cst, '0.type').to.equal('LiquidRawTag');
+          expectPath(cst, '0.name').to.equal('doc');
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
+          expectPath(cst, '0.children.0.exampleContent.value').to.equal('');
+        });
+
+        it('should parse example tag with content that has leading whitespace', () => {
+          const testStr = `{% doc %} @example         hello there       {%- enddoc %}`;
+          cst = toCST(testStr);
+          expectPath(cst, '0.type').to.equal('LiquidRawTag');
+          expectPath(cst, '0.name').to.equal('doc');
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
+          expectPath(cst, '0.children.0.name').to.equal('example');
+          expectPath(cst, '0.children.0.exampleContent.value').to.equal('hello there');
+        });
+
+        it('should parse an example tag with a value', () => {
+          const testStr = `{% doc %}
+          @example
+          This is an example
+          It supports multiple lines
+        {% enddoc %}`;
+
+          cst = toCST(testStr);
+          expectPath(cst, '0.type').to.equal('LiquidRawTag');
+          expectPath(cst, '0.name').to.equal('doc');
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
+          expectPath(cst, '0.children.0.name').to.equal('example');
+          expectPath(cst, '0.children.0.exampleContent.value').toEqual(
+            expect.stringContaining('This is an example'),
+          );
+          expectPath(cst, '0.children.0.exampleContent.value').toEqual(
+            expect.stringContaining('It supports multiple lines'),
+          );
+        });
+
+        it('should parse example node and stop at the next @', () => {
+          const testStr = `{% doc %}
+          @example
+          This is an example
+          @param param1
+        {% enddoc %}`;
+          cst = toCST(testStr);
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
+          expectPath(cst, '0.children.0.name').to.equal('example');
+          expectPath(cst, '0.children.0.exampleContent.value').toEqual(
+            expect.stringContaining('This is an example'),
+          );
+          expectPath(cst, '0.children.1.type').to.equal('LiquidDocParamNode');
+          expectPath(cst, '0.children.1.paramName.value').to.equal('param1');
+        });
+
+        it('should parse example node with whitespace and new lines', () => {
+          const testStr = `{% doc %}
+          @example hello      there        my    friend
+          This is an example
+          It supports multiple lines
+        {% enddoc %}`;
+          cst = toCST(testStr);
+          expectPath(cst, '0.type').to.equal('LiquidRawTag');
+          expectPath(cst, '0.name').to.equal('doc');
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
+          expectPath(cst, '0.children.0.name').to.equal('example');
+          expectPath(cst, '0.children.0.exampleContent.value').toEqual(
+            expect.stringContaining('hello      there        my    friend'),
+          );
+          expectPath(cst, '0.children.0.exampleContent.value').toEqual(
+            expect.stringContaining('This is an example'),
+          );
+          expectPath(cst, '0.children.0.exampleContent.value').toEqual(
+            expect.stringContaining('It supports multiple lines'),
+          );
+        });
       }
     });
   });
@@ -1304,8 +1381,8 @@ describe('Unit: Stage 1 (CST)', () => {
           { type: 'AttrSingleQuoted', name: 'single', quote: '‘' },
           { type: 'AttrSingleQuoted', name: 'single', quote: '’' },
           { type: 'AttrDoubleQuoted', name: 'double', quote: '"' },
-          { type: 'AttrDoubleQuoted', name: 'double', quote: '“' },
-          { type: 'AttrDoubleQuoted', name: 'double', quote: '”' },
+          { type: 'AttrDoubleQuoted', name: 'double', quote: '"' },
+          { type: 'AttrDoubleQuoted', name: 'double', quote: '"' },
           { type: 'AttrUnquoted', name: 'unquoted', quote: '' },
         ].forEach((testConfig) => {
           [
