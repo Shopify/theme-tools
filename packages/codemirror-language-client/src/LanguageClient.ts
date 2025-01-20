@@ -265,7 +265,7 @@ export class LanguageClient extends EventTarget implements AbstractLanguageClien
   private sendResponse(id: number | string, result: any, error?: ResponseError) {
     const response: ResponseMessage = { jsonrpc: '2.0', id };
     if (result !== undefined) response.result = result;
-    if (error !== undefined) response.error = error;
+    if (error !== undefined) response.error = error.toJson();
     this.log(`Client->Server response [${id}]`, response);
     this.sendMessage(response);
   }
