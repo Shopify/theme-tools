@@ -1,11 +1,8 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
-import {
-  LiquidHtmlNode,
-  LiquidDocDefinition,
-  LiquidDocParameter,
-} from '@shopify/theme-check-common';
+import { LiquidHtmlNode } from '@shopify/theme-check-common';
 import { Hover, HoverParams } from 'vscode-languageserver';
 import { BaseHoverProvider } from '../BaseHoverProvider';
+import { LiquidDocDefinition, LiquidDocParameter } from '../../liquidDoc';
 
 export class RenderSnippetHoverProvider implements BaseHoverProvider {
   constructor(

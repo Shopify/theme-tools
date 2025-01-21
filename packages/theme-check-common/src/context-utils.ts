@@ -8,12 +8,8 @@ import {
   SourceCodeType,
   Theme,
   Translations,
-  LiquidDocDefinition,
-  LiquidDocParameter,
 } from './types';
 import { isError } from './utils';
-import { visit } from './visitor';
-import { LiquidDocParamNode, LiquidHtmlNode } from '@shopify/liquid-html-parser';
 
 export type FileExists = (uri: string) => Promise<boolean>;
 
@@ -215,28 +211,3 @@ export const makeGetMetafieldDefinitions = (fs: AbstractFileSystem) =>
       return definitions;
     }
   };
-
-export function makeGetLiquidDocDefinitions(): (
-  ast: LiquidHtmlNode,
-  snippetName: string,
-) => Promise<LiquidDocDefinition> {
-  return async function getLiquidDocDefinitions(ast: LiquidHtmlNode, snippetName: string) {
-    const liquidDocAnnotations: LiquidDocParameter[] = visit<
-      SourceCodeType.LiquidHtml,
-      LiquidDocParameter
-    >(ast, {
-      LiquidDocParamNode(node: LiquidDocParamNode) {
-        return {
-          name: node.paramName.value,
-          description: node.paramDescription?.value ?? null,
-          type: node.paramType?.value ?? null,
-        };
-      },
-    });
-
-    return {
-      name: snippetName,
-      parameters: liquidDocAnnotations,
-    };
-  };
-}

@@ -1,10 +1,4 @@
-import {
-  GetLiquidDocDefinitionsForURI,
-  LiquidDocDefinition,
-  MetafieldDefinitionMap,
-  SourceCodeType,
-  ThemeDocset,
-} from '@shopify/theme-check-common';
+import { MetafieldDefinitionMap, SourceCodeType, ThemeDocset } from '@shopify/theme-check-common';
 import { Hover, HoverParams } from 'vscode-languageserver';
 import { TypeSystem } from '../TypeSystem';
 import { DocumentManager } from '../documents';
@@ -23,6 +17,7 @@ import {
 import { HtmlAttributeValueHoverProvider } from './providers/HtmlAttributeValueHoverProvider';
 import { findCurrentNode } from '@shopify/theme-check-common';
 import { GetThemeSettingsSchemaForURI } from '../settings';
+import { GetLiquidDocDefinitionsForURI } from '../liquidDoc';
 
 export class HoverProvider {
   private providers: BaseHoverProvider[] = [];

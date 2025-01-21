@@ -1,7 +1,8 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { HoverProvider } from '../HoverProvider';
-import { LiquidDocDefinition, MetafieldDefinitionMap } from '@shopify/theme-check-common';
+import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
+import { LiquidDocDefinition } from '../../liquidDoc';
 
 describe('Module: RenderSnippetHoverProvider', async () => {
   let provider: HoverProvider;
