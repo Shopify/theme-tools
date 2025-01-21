@@ -298,22 +298,6 @@ type MetafieldDefinitionType = {
   name: string;
 };
 
-export type GetLiquidDocDefinitionsForURI = (
-  uri: string,
-  snippetName: string,
-) => Promise<LiquidDocDefinition>;
-
-export type LiquidDocParameter = {
-  name: string;
-  description: string | null;
-  type: string | null;
-};
-
-export type LiquidDocDefinition = {
-  name: string;
-  parameters?: LiquidDocParameter[];
-};
-
 export type Translations = {
   [k in string]: string | Translations;
 };

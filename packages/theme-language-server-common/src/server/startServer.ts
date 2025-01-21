@@ -3,17 +3,16 @@ import {
   FileTuple,
   findRoot as findConfigFileRoot,
   isError,
-  LiquidDocDefinition,
   makeFileExists,
   makeGetDefaultSchemaTranslations,
   makeGetDefaultTranslations,
   makeGetMetafieldDefinitions,
-  makeGetLiquidDocDefinitions,
   memoize,
   parseJSON,
   path,
   recursiveReadDirectory,
   SourceCodeType,
+  visit,
 } from '@shopify/theme-check-common';
 import {
   Connection,
@@ -31,7 +30,7 @@ import { GetSnippetNamesForURI } from '../completions/providers/RenderSnippetCom
 import { DiagnosticsManager, makeRunChecks } from '../diagnostics';
 import { DocumentHighlightsProvider } from '../documentHighlights/DocumentHighlightsProvider';
 import { DocumentLinksProvider } from '../documentLinks';
-import { DocumentManager } from '../documents';
+import { AugmentedLiquidSourceCode, DocumentManager } from '../documents';
 import { OnTypeFormattingProvider } from '../formatting';
 import { HoverProvider } from '../hover';
 import { JSONLanguageService } from '../json/JSONLanguageService';
@@ -45,6 +44,8 @@ import { snippetName } from '../utils/uri';
 import { VERSION } from '../version';
 import { CachedFileSystem } from './CachedFileSystem';
 import { Configuration } from './Configuration';
+import { LiquidDocParamNode, LiquidHtmlNode } from '@shopify/liquid-html-parser';
+import { LiquidDocDefinition, LiquidDocParameter } from '../liquidDoc';
 
 const defaultLogger = () => {};
 
@@ -185,9 +186,7 @@ export function startServer(
       return { name: snippetName };
     }
 
-    const getLiquidDocDefinitions = makeGetLiquidDocDefinitions();
-
-    return getLiquidDocDefinitions(snippet.ast, snippetName);
+    return getSnippetDefinition(snippet.ast, snippetName);
   };
 
   const snippetFilter = ([uri]: FileTuple) => /\.liquid$/.test(uri) && /snippets/.test(uri);
@@ -583,4 +582,10 @@ export function startServer(
   });
 
   connection.listen();
+}
+function getSnippetDefinition(
+  ast: LiquidHtmlNode,
+  snippetName: string,
+): LiquidDocDefinition | PromiseLike<LiquidDocDefinition> {
+  throw new Error('Function not implemented.');
 }
