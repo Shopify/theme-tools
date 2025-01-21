@@ -118,9 +118,6 @@ UnknownFilter:
 UnusedAssign:
   enabled: true
   severity: 1
-ValidPresetAndDefaultSettings:
-  enabled: true
-  severity: 0
 ValidBlockTarget:
   enabled: true
   severity: 0
@@ -134,6 +131,9 @@ ValidJSON:
   enabled: true
   severity: 0
 ValidLocalBlocks:
+  enabled: true
+  severity: 0
+ValidPresetAndDefaultSettings:
   enabled: true
   severity: 0
 ValidSchema:

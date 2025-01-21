@@ -99,9 +99,6 @@ UnusedAssign:
 ValidBlockTarget:
   enabled: true
   severity: 0
-ValidPresetAndDefaultSettings:
-  enabled: true
-  severity: 0
 ValidContentForArguments:
   enabled: true
   severity: 0
@@ -112,6 +109,9 @@ ValidJSON:
   enabled: true
   severity: 0
 ValidLocalBlocks:
+  enabled: true
+  severity: 0
+ValidPresetAndDefaultSettings:
   enabled: true
   severity: 0
 ValidSchema:

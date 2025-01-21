@@ -7,11 +7,9 @@ import {
   ObjectNode,
   Preset,
   PropertyNode,
-  Section,
   Setting,
   Severity,
   SourceCodeType,
-  ThemeBlock,
   ValueNode,
 } from '../../types';
 import { nodeAtPath } from '../../json';
@@ -45,36 +43,44 @@ export const ValidPresetAndDefaultSettings: LiquidCheckDefinition = {
       }
     }
 
-    const extractBlockSettings = (block: PropertyNode) => {
-      let settingsNode;
+    const extractBlockSettings = (block: ValueNode) => {
+      const blockSettings: { key: string; start: any; end: any }[] = [];
+      (block as ObjectNode).children.forEach((node: PropertyNode) => {
+        console.log('Node');
+        console.log(node.value);
+        if (node.value.type === 'Array') {
+          console.log('ArrayEntering Recursion', node.value.children);
+          blockSettings.push(...extractBlockSettings(node.value));
+          console.log('\n');
+        }
 
-      if (block.value && 'children' in block.value) {
-        settingsNode = (block.value as ObjectNode).children?.find(
+        const settingsNode = (block as ObjectNode).children.find(
           (child: PropertyNode) => child.key.value === 'settings',
         );
-      } else {
-        settingsNode = block.children?.find(
-          (child: PropertyNode) => child.key.value === 'settings',
-        );
-      }
 
-      return settingsNode;
+        if (settingsNode) {
+          console.log('SettingsNode', settingsNode);
+          blockSettings.push({
+            key: settingsNode.key.value,
+            start: settingsNode.loc?.start,
+            end: settingsNode.loc?.end,
+          });
+        }
+
+        debugger;
+        return blockSettings;
+      });
+      return blockSettings;
     };
 
-
-    const getNestedSettingIds = (node: ObjectNode) => {
-      // console.log("Node", node.type);
-      // console.log("NodeChildren", node.children);
-      return node.children
-        .map((node: PropertyNode) => {
-          // console.log("PropertyChildren", node.children[0]);
-          const settingsNode = node.children!.find(
+    const getNestedSettingIds = (preset: ArrayNode) => {
+      return preset.children
+        .map((node: ValueNode) => {
+          const settingsNode = (node as ObjectNode).children!.find(
             (prop: PropertyNode) => prop.key.value === 'settings',
           );
-          console.log("SettingsNode", settingsNode);
-          console.log("SettingsNode", settingsNode?.value?.type);
-          if (settingsNode?.value?.children) {
-            return settingsNode.value.children.map((setting: PropertyNode) => {
+          if ((settingsNode?.value as ObjectNode).children) {
+            return (settingsNode?.value as ObjectNode).children.map((setting: PropertyNode) => {
               const key = setting.key.value;
               const start = setting.loc?.start;
               const end = setting.loc?.end;
@@ -95,24 +101,27 @@ export const ValidPresetAndDefaultSettings: LiquidCheckDefinition = {
         if (!validSchema || validSchema instanceof Error) return;
         if (!ast || ast instanceof Error) return;
 
-        const settingsNode = nodeAtPath(ast, ['settings']) as ObjectNode;
-        const presetNode = nodeAtPath(ast, ['presets']) as ObjectNode;
+        const settingsNode = nodeAtPath(ast, ['settings']) as ArrayNode;
+        const presetNode = nodeAtPath(ast, ['presets']) as ArrayNode;
         const defaultNode = nodeAtPath(ast, ['default']) as ObjectNode;
 
         const settingIds =
-          settingsNode?.children?.map((child: PropertyNode) => {
-            const idNode = child.children?.find((prop: PropertyNode) => prop.key.value === 'id');
+          settingsNode?.children?.map((child: ValueNode) => {
+            const idNode = (child as ObjectNode).children?.find(
+              (prop: PropertyNode) => prop.key.value === 'id',
+            );
             return idNode?.value && 'value' in idNode.value ? idNode.value.value : undefined;
           }) ?? [];
 
         const defaultSettingsIds =
-          (defaultNode?.children
-            ?.find((child: PropertyNode) => child.key.value === 'settings')
-            ?.value as ObjectNode)?.children?.map((child: PropertyNode) => ({
-              key: child.key.value,
-              start: child.loc!.start,
-              end: child.loc!.end,
-            })) ?? [];
+          (
+            defaultNode?.children?.find((child: PropertyNode) => child.key.value === 'settings')
+              ?.value as ObjectNode
+          )?.children?.map((child: PropertyNode) => ({
+            key: child.key.value,
+            start: child.loc!.start,
+            end: child.loc!.end,
+          })) ?? [];
         const presetSettingsIds = presetNode ? getNestedSettingIds(presetNode) : [];
 
         for (const presetSettingId of presetSettingsIds) {
@@ -146,16 +155,14 @@ export const ValidPresetAndDefaultSettings: LiquidCheckDefinition = {
             if (!validSchema || validSchema instanceof Error) return [];
             if (!ast || ast instanceof Error) return [];
 
-            const settingsNode = nodeAtPath(ast, ['settings']) as ObjectNode;
+            const settingsNode = nodeAtPath(ast, ['settings']) as ArrayNode;
             if (!settingsNode?.children) return [];
-            return settingsNode.children
-              .map((settingObj: PropertyNode) => {
-                const idNode = settingObj.children.find(
-                  (prop: { key: { value: string } }) => prop.key.value === 'id',
-                );
-                return idNode?.value?.value;
-              })
-              .filter((id: string): id is string => Boolean(id));
+            return settingsNode.children.map((settingObj: ValueNode) => {
+              const idNode = (settingObj as ObjectNode).children.find(
+                (prop: { key: { value: string } }) => prop.key.value === 'id',
+              );
+              return (idNode?.value as LiteralNode).value;
+            });
           }),
         );
 
@@ -163,21 +170,15 @@ export const ValidPresetAndDefaultSettings: LiquidCheckDefinition = {
         await Promise.all(
           Object.values(presetLevelBlocks)
             .flat()
-            .map(async ({ node, path }: BlockNodeWithPath) => {
+            .map(async ({ node }: BlockNodeWithPath) => {
               const blockNode = nodeAtPath(ast, ['presets', '0', 'blocks', '0']) as ValueNode;
-              console.log("Node", node);
-              console.log("Path", path);
-              console.log("Ast", ast);
-              console.log("BlockNode", blockNode);
-              debugger;
               let settings: Setting.Values;
               if ('settings' in node) {
                 settings = (node as Preset.Block).settings!;
               } else {
                 const blockTypeKey = Object.keys(node)[0];
-                settings = ((node as { [key: string]: any })[blockTypeKey])?.settings!;
+                settings = (node as { [key: string]: any })[blockTypeKey]?.settings!;
               }
-
               if (settings) {
                 for (const [key, value] of Object.entries(settings)) {
                   presetBlockSettingIds.push({
@@ -187,20 +188,20 @@ export const ValidPresetAndDefaultSettings: LiquidCheckDefinition = {
                   });
                 }
               }
-            })
+            }),
         );
 
-        const defaultBlockSettingIds: { key: string; start: any; end: any }[] = [];
         const defaultBlocks = defaultNode?.children?.find(
           (child: PropertyNode) => child.key.value === 'blocks',
         )?.value;
 
+        const defaultBlockSettingIds: { key: string; start: any; end: any }[] = [];
         if (defaultBlocks && 'children' in defaultBlocks) {
-          defaultBlocks.children.forEach((block: PropertyNode | ValueNode) => {
-            const settingsNode = extractBlockSettings(block as PropertyNode);
-
+          (defaultBlocks as ArrayNode).children.forEach((block: ValueNode) => {
+            debugger;
+            const settingsNode = extractBlockSettings(block as ObjectNode);
             if (settingsNode?.value && 'children' in settingsNode.value) {
-              settingsNode.value.children.forEach((setting: PropertyNode) => {
+              (settingsNode.value as ObjectNode).children.forEach((setting: PropertyNode) => {
                 defaultBlockSettingIds.push({
                   key: setting.key.value,
                   start: setting.loc?.start,
@@ -211,22 +212,21 @@ export const ValidPresetAndDefaultSettings: LiquidCheckDefinition = {
           });
         }
 
-        for (const defaultBlockSettingId of defaultBlockSettingIds) {
-          if (!rootLevelBlockSettingIds.flat().some((id) => id === defaultBlockSettingId.key)) {
-            context.report({
-              startIndex: defaultBlockSettingId!.start.offset,
-              endIndex: defaultBlockSettingId!.end.offset,
-              message: `Default block setting "${defaultBlockSettingId.key}" does not exist in settings.`,
-            });
-          }
-        }
-
         for (const presetBlockSettingId of presetBlockSettingIds) {
           if (!rootLevelBlockSettingIds.flat().some((id) => id === presetBlockSettingId.key)) {
             context.report({
               startIndex: presetBlockSettingId!.start.offset,
               endIndex: presetBlockSettingId!.end.offset,
               message: `Preset block setting "${presetBlockSettingId.key}" does not exist in settings.`,
+            });
+          }
+        }
+        for (const defaultBlockSettingId of defaultBlockSettingIds) {
+          if (!rootLevelBlockSettingIds.flat().some((id) => id === defaultBlockSettingId.key)) {
+            context.report({
+              startIndex: defaultBlockSettingId!.start.offset,
+              endIndex: defaultBlockSettingId!.end.offset,
+              message: `Default block setting "${defaultBlockSettingId.key}" does not exist in settings.`,
             });
           }
         }
