@@ -12,7 +12,6 @@ import {
   path,
   recursiveReadDirectory,
   SourceCodeType,
-  visit,
 } from '@shopify/theme-check-common';
 import {
   Connection,
@@ -30,7 +29,7 @@ import { GetSnippetNamesForURI } from '../completions/providers/RenderSnippetCom
 import { DiagnosticsManager, makeRunChecks } from '../diagnostics';
 import { DocumentHighlightsProvider } from '../documentHighlights/DocumentHighlightsProvider';
 import { DocumentLinksProvider } from '../documentLinks';
-import { AugmentedLiquidSourceCode, DocumentManager } from '../documents';
+import { DocumentManager } from '../documents';
 import { OnTypeFormattingProvider } from '../formatting';
 import { HoverProvider } from '../hover';
 import { JSONLanguageService } from '../json/JSONLanguageService';
@@ -44,8 +43,8 @@ import { snippetName } from '../utils/uri';
 import { VERSION } from '../version';
 import { CachedFileSystem } from './CachedFileSystem';
 import { Configuration } from './Configuration';
-import { LiquidDocParamNode, LiquidHtmlNode } from '@shopify/liquid-html-parser';
-import { LiquidDocDefinition, LiquidDocParameter } from '../liquidDoc';
+import { LiquidHtmlNode } from '@shopify/liquid-html-parser';
+import { getSnippetDefinition, SnippetDefinition } from '../liquidDoc';
 
 const defaultLogger = () => {};
 
@@ -174,10 +173,10 @@ export function startServer(
     return getDefaultSchemaTranslations();
   };
 
-  const getLiquidDocDefinitionsForURI = async (
+  const getSnippetDefinitionsForURI = async (
     uri: string,
     snippetName: string,
-  ): Promise<LiquidDocDefinition> => {
+  ): Promise<SnippetDefinition> => {
     const rootUri = await findThemeRootURI(uri);
     const snippetURI = path.join(rootUri, 'snippets', `${snippetName}.liquid`);
     const snippet = documentManager.get(snippetURI);
@@ -270,7 +269,7 @@ export function startServer(
     getMetafieldDefinitions,
     getTranslationsForURI,
     getThemeSettingsSchemaForURI,
-    getLiquidDocDefinitionsForURI,
+    getSnippetDefinitionsForURI,
   );
 
   const executeCommandProvider = new ExecuteCommandProvider(
@@ -582,10 +581,4 @@ export function startServer(
   });
 
   connection.listen();
-}
-function getSnippetDefinition(
-  ast: LiquidHtmlNode,
-  snippetName: string,
-): LiquidDocDefinition | PromiseLike<LiquidDocDefinition> {
-  throw new Error('Function not implemented.');
 }
