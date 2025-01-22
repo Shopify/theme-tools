@@ -185,7 +185,7 @@ export function startServer(
       return { name: snippetName };
     }
 
-    return getSnippetDefinition(snippet.ast, snippetName);
+    return snippet.liquidDoc(snippetName);
   };
 
   const snippetFilter = ([uri]: FileTuple) => /\.liquid$/.test(uri) && /snippets/.test(uri);

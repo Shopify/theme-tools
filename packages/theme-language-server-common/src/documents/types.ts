@@ -6,6 +6,7 @@ import {
   AppBlockSchema,
 } from '@shopify/theme-check-common';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { SnippetDefinition } from '../liquidDoc';
 
 /** Util type to add the common `textDocument` property to the SourceCode. */
 type _AugmentedSourceCode<SCT extends SourceCodeType = SourceCodeType> = SourceCode<SCT> & {
@@ -23,6 +24,7 @@ export type AugmentedJsonSourceCode = _AugmentedSourceCode<SourceCodeType.JSON>;
  */
 export type AugmentedLiquidSourceCode = _AugmentedSourceCode<SourceCodeType.LiquidHtml> & {
   getSchema: () => Promise<SectionSchema | ThemeBlockSchema | AppBlockSchema | undefined>;
+  liquidDoc: (snippetName: string) => Promise<SnippetDefinition>;
 };
 
 /**
