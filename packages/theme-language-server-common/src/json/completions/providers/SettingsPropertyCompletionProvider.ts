@@ -33,8 +33,6 @@ import { GetTranslationsForURI, renderTranslation, translationValue } from '../.
  * {% endschema %}
  */
 export class SettingsPropertyCompletionProvider implements JSONCompletionProvider {
-  private uriPatterns = [/^.*\/(sections|blocks)\/[^\/]*\.liquid$/];
-
   constructor(public getDefaultSchemaTranslations: GetTranslationsForURI) {}
 
   async completeProperty(context: RequestContext, path: JSONPath): Promise<JSONCompletionItem[]> {

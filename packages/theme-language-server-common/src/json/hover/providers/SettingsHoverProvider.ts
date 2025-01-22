@@ -2,19 +2,17 @@ import { isError } from '@shopify/theme-check-common';
 import { JSONPath, MarkedString } from 'vscode-json-languageservice';
 import { GetTranslationsForURI, renderTranslation, translationValue } from '../../../translations';
 import { isLiquidRequestContext, LiquidRequestContext, RequestContext } from '../../RequestContext';
-import { fileMatch } from '../../utils';
+import { isSectionOrBlockFile } from '../../utils';
 import { JSONHoverProvider } from '../JSONHoverProvider';
 import { AugmentedLiquidSourceCode } from '../../../documents';
 import { isSectionOrBlockSchema } from '../../completions/providers/BlockTypeCompletionProvider';
 
 export class SettingsHoverProvider implements JSONHoverProvider {
-  private uriPatterns = [/(sections|blocks)\/[^\/]*\.liquid$/];
-
   constructor(private getDefaultSchemaTranslations: GetTranslationsForURI) {}
 
   canHover(context: RequestContext, path: JSONPath): context is LiquidRequestContext {
     return (
-      fileMatch(context.doc.uri, this.uriPatterns) &&
+      isSectionOrBlockFile(context.doc.uri) &&
       isLiquidRequestContext(context) &&
       path.length !== 0 &&
       (isPresetSettingsPath(path) || isDefaultSettingsPath(path))
