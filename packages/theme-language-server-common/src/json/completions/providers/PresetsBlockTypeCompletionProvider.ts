@@ -12,7 +12,7 @@ import { GetThemeBlockNames, GetThemeBlockSchema } from '../../JSONContributions
 
 /**
  * The PresetsBlockTypeCompletionProvider offers value completions of the
- * `presets.[](recursive .blocks.[].type)` keys inside section and theme block `{% schema %}` tags.
+ * `presets.[](recursive .blocks.[]).type` keys inside section and theme block `{% schema %}` tags.
  *
  * @example
  * {% schema %}
@@ -70,7 +70,7 @@ export class PresetsBlockTypeCompletionProvider implements JSONCompletionProvide
       parsedBlockSchema = parentBlockSchema.parsed;
     }
 
-    const blocks: { type: string }[] = parsedBlockSchema.blocks;
+    const blocks: { type: string }[] = parsedBlockSchema.blocks || [];
 
     const blockGroups = {
       themeBlocks: false,

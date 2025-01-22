@@ -23,7 +23,7 @@ describe('Unit: SettingsPropertyCompletionProvider', () => {
     jsonLanguageService = mockJSONLanguageService(
       rootUri,
       documentManager,
-      async (uri: string) => ({
+      async (_uri: string) => ({
         general: {
           fake: 'Fake Setting',
         },
@@ -46,86 +46,136 @@ describe('Unit: SettingsPropertyCompletionProvider', () => {
     });
   });
 
-  describe('valid schema', () => {
-    it('completes preset setting property when settings exist', async () => {
-      const source = `
-        {% schema %}
-        {
-          "settings": [
-            {"id": "custom-setting"},
-            {"id": "fake-setting"},
-            {},
-          ],
-          "presets": [{
-            "settings": {
-              "█": "",
+  describe('section file with valid schema', () => {
+    const tests = [
+      {
+        label: 'preset',
+        schemaTemplate: (setting: object) => {
+          return {
+            presets: [setting],
+          };
+        },
+      },
+      {
+        label: 'default',
+        schemaTemplate: (setting: object) => {
+          return {
+            default: setting,
+          };
+        },
+      },
+    ];
+
+    for (const test of tests) {
+      describe(`${test.label} settings`, () => {
+        it(`completes ${test.label} setting property when settings exist`, async () => {
+          const schema = {
+            settings: [{ id: 'custom-setting' }, { id: 'fake-setting' }, {}],
+            ...test.schemaTemplate({
+              settings: {
+                '█': '',
+              },
+            }),
+          };
+          const source = `
+            {% schema %}
+              ${JSON.stringify(schema)}
+            {% endschema %}
+          `;
+          const params = getRequestParams(documentManager, 'sections/section.liquid', source);
+          const completions = await jsonLanguageService.completions(params);
+
+          assert(isCompletionList(completions));
+          expect(completions.items).to.have.lengthOf(2);
+          expect(completions.items.map((item) => item.label)).to.include.members([
+            `"custom-setting"`,
+            `"fake-setting"`,
+          ]);
+        });
+
+        it(`offers no suggestions for ${test.label} setting property when there are no settings`, async () => {
+          const schema = {
+            ...test.schemaTemplate({
+              settings: {
+                '█': '',
+              },
+            }),
+          };
+          const source = `
+            {% schema %}
+              ${JSON.stringify(schema)}
+            {% endschema %}
+          `;
+          const params = getRequestParams(documentManager, 'sections/section.liquid', source);
+          const completions = await jsonLanguageService.completions(params);
+
+          assert(isCompletionList(completions));
+          expect(completions.items).to.have.lengthOf(0);
+          expect(completions.items.map((item) => item.label)).to.include.members([]);
+        });
+
+        it(`offers ${test.label} setting completion with docs from setting.label`, async () => {
+          const schema = {
+            settings: [
+              { id: 'custom-setting', label: 'Custom Setting' },
+              { id: 'fake-setting', label: 't:general.fake' },
+              {},
+            ],
+            ...test.schemaTemplate({
+              settings: {
+                '█': '',
+              },
+            }),
+          };
+          const source = `
+            {% schema %}
+              ${JSON.stringify(schema)}
+            {% endschema %}
+          `;
+          const params = getRequestParams(documentManager, 'sections/section.liquid', source);
+          const completions = await jsonLanguageService.completions(params);
+
+          assert(isCompletionList(completions));
+          expect(completions.items).to.have.lengthOf(2);
+          expect(completions.items).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                documentation: { kind: 'markdown', value: 'Custom Setting' },
+              }),
+              expect.objectContaining({
+                documentation: { kind: 'markdown', value: 'Fake Setting' },
+              }),
+            ]),
+          );
+        });
+      });
+    }
+
+    describe('block file with valid schema', () => {
+      it(`offers no suggestions for default setting property when file is block`, async () => {
+        const source = `
+          {% schema %}
+          {
+            "settings": [
+              {"id": "custom-setting"},
+              {"id": "fake-setting"},
+              {},
+            ],
+            "default": {
+              "settings": {
+                "█": ""
+              }
             }
-          }]
-        }
-        {% endschema %}
-      `;
-      const params = getRequestParams(documentManager, 'blocks/block.liquid', source);
-      const completions = await jsonLanguageService.completions(params);
+          }
+          {% endschema %}
+        `;
+        const params = getRequestParams(documentManager, 'blocks/block.liquid', source);
+        const completions = await jsonLanguageService.completions(params);
 
-      assert(isCompletionList(completions));
-      expect(completions.items).to.have.lengthOf(2);
-      expect(completions.items.map((item) => item.label)).to.include.members([
-        `"custom-setting"`,
-        `"fake-setting"`,
-      ]);
-    });
-
-    it('offers no suggestions for preset setting property when there are no settings', async () => {
-      const source = `
-        {% schema %}
-        {
-          "presets": [{
-            "settings": {
-              "█": "",
-            }
-          }]
-        }
-        {% endschema %}
-      `;
-      const params = getRequestParams(documentManager, 'blocks/block.liquid', source);
-      const completions = await jsonLanguageService.completions(params);
-
-      assert(isCompletionList(completions));
-      expect(completions.items).to.have.lengthOf(0);
-      expect(completions.items.map((item) => item.label)).to.include.members([]);
-    });
-
-    it('offers presets setting completion with docs from setting.label', async () => {
-      const source = `
-        {% schema %}
-        {
-          "settings": [
-            {"id": "custom-setting", "label": "Custom Setting"},
-            {"id": "fake-setting", "label": "t:general.fake"},
-          ],
-          "presets": [{
-            "settings": {
-              "█": "",
-            }
-          }]
-        }
-        {% endschema %}
-      `;
-      const params = getRequestParams(documentManager, 'blocks/block.liquid', source);
-      const completions = await jsonLanguageService.completions(params);
-
-      assert(isCompletionList(completions));
-      expect(completions.items).to.have.lengthOf(2);
-      expect(completions.items).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            documentation: { kind: 'markdown', value: 'Custom Setting' },
-          }),
-          expect.objectContaining({
-            documentation: { kind: 'markdown', value: 'Fake Setting' },
-          }),
-        ]),
-      );
+        assert(isCompletionList(completions));
+        expect(completions.items).to.have.lengthOf(0);
+        expect(completions.items.map((item) => item.label)).to.include.members([]);
+      });
     });
   });
 

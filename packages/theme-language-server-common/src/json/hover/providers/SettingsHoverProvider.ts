@@ -17,7 +17,7 @@ export class SettingsHoverProvider implements JSONHoverProvider {
       fileMatch(context.doc.uri, this.uriPatterns) &&
       isLiquidRequestContext(context) &&
       path.length !== 0 &&
-      isPresetSettingsPath(path)
+      (isPresetSettingsPath(path) || isDefaultSettingsPath(path))
     );
   }
 
@@ -25,7 +25,7 @@ export class SettingsHoverProvider implements JSONHoverProvider {
     if (!this.canHover(context, path)) return [];
 
     const { doc } = context;
-    const label = await getSettingsLabel(doc, path.at(3) as string);
+    const label = await getSettingsLabel(doc, path.at(-1) as string);
 
     if (!label) return [];
 
@@ -46,10 +46,18 @@ export class SettingsHoverProvider implements JSONHoverProvider {
 function isPresetSettingsPath(path: JSONPath) {
   return (
     path.at(0) === 'presets' &&
-    path.at(1) === 0 &&
     path.at(2) === 'settings' &&
     path.at(3) !== undefined &&
     typeof path.at(3) === 'string'
+  );
+}
+
+function isDefaultSettingsPath(path: JSONPath) {
+  return (
+    path.at(0) === 'default' &&
+    path.at(1) === 'settings' &&
+    path.at(2) !== undefined &&
+    typeof path.at(2) === 'string'
   );
 }
 

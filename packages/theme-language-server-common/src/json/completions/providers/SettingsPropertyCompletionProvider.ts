@@ -3,15 +3,16 @@ import { isError, SourceCodeType } from '@shopify/theme-check-common';
 import { JSONPath } from 'vscode-json-languageservice';
 import { JSONCompletionItem } from 'vscode-json-languageservice/lib/umd/jsonContributions';
 import { RequestContext } from '../../RequestContext';
-import { fileMatch } from '../../utils';
+import { isBlockFile, isSectionFile } from '../../utils';
 import { JSONCompletionProvider } from '../JSONCompletionProvider';
 import { isSectionOrBlockSchema } from './BlockTypeCompletionProvider';
 import { CompletionItemKind } from 'vscode-languageserver-protocol';
 import { GetTranslationsForURI, renderTranslation, translationValue } from '../../../translations';
 
 /**
- * The SettingsPropertyCompletionProvider offers property completions of the
- * `presets.[].settings.[]` objects inside section and theme block `{% schema %}` tags.
+ * The SettingsPropertyCompletionProvider offers property completions for:
+ * - `presets.[].settings.[]` objects inside `{% schema %}` tag in sections and blocks
+ * - `default.settings` object inside `{% schema %}` tag in sections
  *
  * @example
  * {% schema %}
@@ -22,7 +23,12 @@ import { GetTranslationsForURI, renderTranslation, translationValue } from '../.
  *         { "█" },
  *       ]
  *     },
- *   ]
+ *   ],
+ *   "default": {
+ *     "settings": {
+ *       "█"
+ *     }
+ *   }
  * }
  * {% endschema %}
  */
@@ -32,10 +38,16 @@ export class SettingsPropertyCompletionProvider implements JSONCompletionProvide
   constructor(public getDefaultSchemaTranslations: GetTranslationsForURI) {}
 
   async completeProperty(context: RequestContext, path: JSONPath): Promise<JSONCompletionItem[]> {
+    if (context.doc.type !== SourceCodeType.LiquidHtml) return [];
+
+    // section files can have schemas with `presets` and `default`
+    // block files can have schemas with `presets` only
     if (
-      !fileMatch(context.doc.uri, this.uriPatterns) ||
-      context.doc.type !== SourceCodeType.LiquidHtml ||
-      !isPresetSettingsPath(path)
+      !(
+        isSectionFile(context.doc.uri) &&
+        (isPresetSettingsPath(path) || isDefaultSettingsPath(path))
+      ) &&
+      !(isBlockFile(context.doc.uri) && isPresetSettingsPath(path))
     ) {
       return [];
     }
@@ -100,5 +112,9 @@ export class SettingsPropertyCompletionProvider implements JSONCompletionProvide
 }
 
 function isPresetSettingsPath(path: JSONPath) {
-  return path.at(0) === 'presets' && path.at(2) === 'settings';
+  return path.length === 3 && path.at(0) === 'presets' && path.at(2) === 'settings';
+}
+
+function isDefaultSettingsPath(path: JSONPath) {
+  return path.length === 2 && path.at(0) === 'default' && path.at(1) === 'settings';
 }

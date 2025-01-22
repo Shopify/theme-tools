@@ -43,74 +43,97 @@ describe('Module: SettingsHoverProvider', async () => {
     });
   });
 
-  it('provide hover for preset setting when setting label contains a translation key', async () => {
-    const source = `
-      {% schema %}
-      {
-        "settings": [
-          {"id": "custom-setting", "label": "Custom Setting"},
-          {"id": "fake-setting", "label": "t:general.fake"},
-        ],
-        "presets": [{
-          "settings": {
-            "fake-setting█": "",
-          }
-        }]
-      }
-      {% endschema %}
-    `;
-    const params = getRequestParams(documentManager, 'blocks/block.liquid', source);
-    const hover = await jsonLanguageService.hover(params);
+  const tests = [
+    {
+      label: 'preset',
+      schemaTemplate: (setting: object) => {
+        return {
+          presets: [setting],
+        };
+      },
+    },
+    {
+      label: 'default',
+      schemaTemplate: (setting: object) => {
+        return {
+          default: setting,
+        };
+      },
+    },
+  ];
 
-    expect(hover).not.toBeNull();
-    expect(hover!.contents).to.have.lengthOf(1);
-    expect(hover!.contents).toEqual(['Fake Setting']);
-  });
+  for (const test of tests) {
+    describe(`${test.label} settings`, () => {
+      it(`provide hover for ${test.label} setting when setting label contains a translation key`, async () => {
+        const schema = {
+          settings: [
+            { id: 'custom-setting', label: 'Custom Setting' },
+            { id: 'fake-setting', label: 't:general.fake' },
+          ],
+          ...test.schemaTemplate({
+            settings: {
+              'fake-setting█': '',
+            },
+          }),
+        };
+        const source = `
+          {% schema %}
+            ${JSON.stringify(schema)}
+          {% endschema %}
+        `;
+        const params = getRequestParams(documentManager, 'blocks/block.liquid', source);
+        const hover = await jsonLanguageService.hover(params);
 
-  it('provide hover for preset setting when setting label is literal text', async () => {
-    const source = `
-      {% schema %}
-      {
-        "settings": [
-          {"id": "custom-setting", "label": "Custom Setting"},
-          {"id": "fake-setting", "label": "t:general.fake"},
-        ],
-        "presets": [{
-          "settings": {
-            "custom-setting█": "",
-          }
-        }]
-      }
-      {% endschema %}
-    `;
-    const params = getRequestParams(documentManager, 'blocks/block.liquid', source);
-    const hover = await jsonLanguageService.hover(params);
+        expect(hover).not.toBeNull();
+        expect(hover!.contents).to.have.lengthOf(1);
+        expect(hover!.contents).toEqual(['Fake Setting']);
+      });
 
-    expect(hover).not.toBeNull();
-    expect(hover!.contents).to.have.lengthOf(1);
-    expect(hover!.contents).toEqual(['Custom Setting']);
-  });
+      it(`provide hover for ${test.label} setting when setting label is literal text`, async () => {
+        const schema = {
+          settings: [
+            { id: 'custom-setting', label: 'Custom Setting' },
+            { id: 'fake-setting', label: 't:general.fake' },
+          ],
+          ...test.schemaTemplate({
+            settings: {
+              'custom-setting█': '',
+            },
+          }),
+        };
+        const source = `
+          {% schema %}
+            ${JSON.stringify(schema)}
+          {% endschema %}
+        `;
+        const params = getRequestParams(documentManager, 'blocks/block.liquid', source);
+        const hover = await jsonLanguageService.hover(params);
 
-  it('provide no hover for preset setting when setting label does not exist', async () => {
-    const source = `
-      {% schema %}
-      {
-        "settings": [
-          {"id": "custom-setting"},
-          {"id": "fake-setting", "label": "t:general.fake"},
-        ],
-        "presets": [{
-          "settings": {
-            "custom-setting█": "",
-          }
-        }]
-      }
-      {% endschema %}
-    `;
-    const params = getRequestParams(documentManager, 'blocks/block.liquid', source);
-    const hover = await jsonLanguageService.hover(params);
+        expect(hover).not.toBeNull();
+        expect(hover!.contents).to.have.lengthOf(1);
+        expect(hover!.contents).toEqual(['Custom Setting']);
+      });
 
-    expect(hover).not.toBeNull();
-    expect(hover!.contents).to.have.lengthOf(0);
-  });
+      it(`provide no hover for ${test.label} setting when setting label does not exist`, async () => {
+        const schema = {
+          settings: [{ id: 'custom-setting' }, { id: 'fake-setting', label: 't:general.fake' }],
+          ...test.schemaTemplate({
+            settings: {
+              'custom-setting█': '',
+            },
+          }),
+        };
+        const source = `
+          {% schema %}
+            ${JSON.stringify(schema)}
+          {% endschema %}
+        `;
+        const params = getRequestParams(documentManager, 'blocks/block.liquid', source);
+        const hover = await jsonLanguageService.hover(params);
+
+        expect(hover).not.toBeNull();
+        expect(hover!.contents).to.have.lengthOf(0);
+      });
+    });
+  }
 });
