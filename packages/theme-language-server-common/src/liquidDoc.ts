@@ -4,10 +4,10 @@ import { LiquidHtmlNode } from '@shopify/theme-check-common';
 
 import { LiquidDocParamNode } from '@shopify/liquid-html-parser';
 
-export type GetLiquidDocDefinitionsForURI = (
+export type GetSnippetDefinitionForURI = (
   uri: string,
   snippetName: string,
-) => Promise<LiquidDocDefinition>;
+) => Promise<SnippetDefinition>;
 
 export type LiquidDocParameter = {
   name: string;
@@ -15,13 +15,20 @@ export type LiquidDocParameter = {
   type: string | null;
 };
 
-export type LiquidDocDefinition = {
+export type SnippetDefinition = {
   name: string;
+  liquidDoc?: LiquidDocDefinition;
+};
+
+type LiquidDocDefinition = {
   parameters?: LiquidDocParameter[];
 };
 
-export function getSnippetDefinition(snippet: LiquidHtmlNode, snippetName: string) {
-  const liquidDocAnnotations: LiquidDocParameter[] = visit<
+export function getSnippetDefinition(
+  snippet: LiquidHtmlNode,
+  snippetName: string,
+): SnippetDefinition {
+  const liquidDocParameters: LiquidDocParameter[] = visit<
     SourceCodeType.LiquidHtml,
     LiquidDocParameter
   >(snippet, {
@@ -36,6 +43,8 @@ export function getSnippetDefinition(snippet: LiquidHtmlNode, snippetName: strin
 
   return {
     name: snippetName,
-    parameters: liquidDocAnnotations,
+    liquidDoc: {
+      parameters: liquidDocParameters,
+    },
   };
 }

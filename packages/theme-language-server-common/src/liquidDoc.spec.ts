@@ -20,7 +20,9 @@ describe('Unit: makeGetLiquidDocDefinitions', () => {
     const result = getSnippetDefinition(ast, 'product-card');
     expect(result).to.deep.equal({
       name: 'product-card',
-      parameters: [],
+      liquidDoc: {
+        parameters: [],
+      },
     });
   });
 
@@ -37,28 +39,30 @@ describe('Unit: makeGetLiquidDocDefinitions', () => {
     const result = getSnippetDefinition(ast, 'product-card');
     expect(result).to.deep.equal({
       name: 'product-card',
-      parameters: [
-        {
-          name: 'firstParam',
-          description: 'The first param',
-          type: 'String',
-        },
-        {
-          name: 'secondParam',
-          description: 'The second param',
-          type: 'Number',
-        },
-        {
-          name: 'paramWithNoType',
-          description: 'param with no type',
-          type: null,
-        },
-        {
-          name: 'paramWithOnlyName',
-          description: '',
-          type: null,
-        },
-      ],
+      liquidDoc: {
+        parameters: [
+          {
+            name: 'firstParam',
+            description: 'The first param',
+            type: 'String',
+          },
+          {
+            name: 'secondParam',
+            description: 'The second param',
+            type: 'Number',
+          },
+          {
+            name: 'paramWithNoType',
+            description: 'param with no type',
+            type: null,
+          },
+          {
+            name: 'paramWithOnlyName',
+            description: '',
+            type: null,
+          },
+        ],
+      },
     });
   });
 });

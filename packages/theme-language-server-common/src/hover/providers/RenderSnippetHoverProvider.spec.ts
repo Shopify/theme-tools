@@ -2,14 +2,14 @@ import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { HoverProvider } from '../HoverProvider';
 import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
-import { LiquidDocDefinition } from '../../liquidDoc';
+import { GetSnippetDefinitionForURI, SnippetDefinition } from '../../liquidDoc';
 
 describe('Module: RenderSnippetHoverProvider', async () => {
   let provider: HoverProvider;
-  let getLiquidDoc: () => Promise<LiquidDocDefinition>;
-  const mockDefinitions = {
-    'product-card': {
-      name: 'product-card',
+  let getSnippetDefinition: GetSnippetDefinitionForURI;
+  const mockSnippetDefinition: SnippetDefinition = {
+    name: 'product-card',
+    liquidDoc: {
       parameters: [
         {
           name: 'title',
@@ -23,12 +23,9 @@ describe('Module: RenderSnippetHoverProvider', async () => {
         },
       ],
     },
-    'empty-snippet': {
-      name: 'empty-snippet',
-    },
   };
 
-  const createProvider = (getLiquidDoc: () => Promise<LiquidDocDefinition>) => {
+  const createProvider = (getSnippetDefinition: GetSnippetDefinitionForURI) => {
     return new HoverProvider(
       new DocumentManager(),
       {
@@ -40,17 +37,17 @@ describe('Module: RenderSnippetHoverProvider', async () => {
       async (_rootUri: string) => ({} as MetafieldDefinitionMap),
       async () => ({}),
       async () => [],
-      getLiquidDoc,
+      getSnippetDefinition,
     );
   };
 
   beforeEach(async () => {
-    getLiquidDoc = async () => mockDefinitions['product-card'];
-    provider = createProvider(getLiquidDoc);
+    getSnippetDefinition = async () => mockSnippetDefinition;
+    provider = createProvider(getSnippetDefinition);
   });
 
   describe('hover', () => {
-    it('should return snippet documentation with all parameters', async () => {
+    it('should return snippet definition with all parameters', async () => {
       await expect(provider).to.hover(
         `{% render 'product-car█d' %}`,
         '### product-card\n\n**Parameters:**\n- `title`: string - The title of the product\n- `border-radius`: number - The border radius in px',
@@ -58,8 +55,8 @@ describe('Module: RenderSnippetHoverProvider', async () => {
     });
 
     it('should return an H3 with snippet name if no LiquidDocDefinition found', async () => {
-      getLiquidDoc = async () => undefined as any;
-      provider = createProvider(getLiquidDoc);
+      getSnippetDefinition = async () => ({ name: 'unknown-snippet' });
+      provider = createProvider(getSnippetDefinition);
       await expect(provider).to.hover(`{% render 'unknown-sni█ppet' %}`, '### unknown-snippet');
     });
 
