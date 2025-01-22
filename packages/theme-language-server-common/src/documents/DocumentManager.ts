@@ -169,7 +169,7 @@ export class DocumentManager {
             if (!this.getModeForUri || !this.isValidSchema) return undefined;
 
             const mode = await this.getModeForUri!(uri);
-            return toSchema(mode, uri, sourceCode, this.isValidSchema);
+            return toSchema(mode, uri, sourceCode, this.isValidSchema, false);
           }),
         };
       default:
