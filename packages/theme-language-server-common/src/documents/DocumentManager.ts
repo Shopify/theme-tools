@@ -12,12 +12,14 @@ import {
   IsValidSchema,
   memo,
   Mode,
+  isError,
 } from '@shopify/theme-check-common';
 import { Connection } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { ClientCapabilities } from '../ClientCapabilities';
 import { percent, Progress } from '../progress';
 import { AugmentedSourceCode } from './types';
+import { getSnippetDefinition } from '../liquidDoc';
 
 export class DocumentManager {
   /**
@@ -170,6 +172,12 @@ export class DocumentManager {
 
             const mode = await this.getModeForUri!(uri);
             return toSchema(mode, uri, sourceCode, this.isValidSchema);
+          }),
+          /** Lazy and only computed once per file version */
+          liquidDoc: memo(async (snippetName: string) => {
+            if (isError(sourceCode.ast)) return { name: snippetName };
+
+            return getSnippetDefinition(sourceCode.ast, snippetName);
           }),
         };
       default:
