@@ -2,14 +2,17 @@ import { NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidHtmlNode } from '@shopify/theme-check-common';
 import { Hover, HoverParams } from 'vscode-languageserver';
 import { BaseHoverProvider } from '../BaseHoverProvider';
-import { LiquidDocDefinition, LiquidDocParameter } from '../../liquidDoc';
+import { SnippetDefinition, LiquidDocParameter } from '../../liquidDoc';
 
+/**
+ * @param x {string} asdf
+ */
 export class RenderSnippetHoverProvider implements BaseHoverProvider {
   constructor(
-    private getLiquidDocDefinitionsForURI: (
+    private getSnippetDefinitionForURI: (
       uri: string,
       snippetName: string,
-    ) => Promise<LiquidDocDefinition>,
+    ) => Promise<SnippetDefinition>,
   ) {}
 
   async hover(
@@ -27,30 +30,32 @@ export class RenderSnippetHoverProvider implements BaseHoverProvider {
     }
 
     const snippetName = currentNode.value.replace(/['"]/g, '');
-    const liquidDocDefinition = await this.getLiquidDocDefinitionsForURI(
+    const snippetDefinition = await this.getSnippetDefinitionForURI(
       params.textDocument.uri,
       snippetName,
     );
 
-    if (!liquidDocDefinition) {
+    if (!snippetDefinition.liquidDoc) {
       return {
         contents: {
           kind: 'markdown',
-          value: `### ${snippetName}`,
+          value: `### ${snippetDefinition.name}`,
         },
       };
     }
 
-    const parameterDocs = liquidDocDefinition.parameters
+    const liquidDoc = snippetDefinition.liquidDoc;
+
+    const parameters = liquidDoc.parameters
       ?.map(
         (param: LiquidDocParameter) =>
           `- \`${param.name}\`${param.type ? `: ${param.type}` : ''} - ${param.description || ''}`,
       )
       .join('\n');
 
-    const parts = [`### ${liquidDocDefinition.name}`];
-    if (parameterDocs) {
-      parts.push('', '**Parameters:**', parameterDocs);
+    const parts = [`### ${snippetDefinition.name}`];
+    if (parameters) {
+      parts.push('', '**Parameters:**', parameters);
     }
 
     return {
