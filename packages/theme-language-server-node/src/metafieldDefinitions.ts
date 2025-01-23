@@ -25,17 +25,25 @@ export async function fetchMetafieldDefinitionsForURI(uri: string) {
   }
 }
 
-// eslint-disable-next-line no-unused-vars
 async function getShopifyCliPath() {
-  if (isWin) {
-    const { stdout } = await exec(`where.exe shopify`);
-    const executables = stdout
-      .replace(/\r/g, '')
-      .split('\n')
-      .filter((exe) => exe.endsWith('bat'));
-    return executables.length > 0 ? executables[0] : '';
-  } else {
-    const { stdout } = await exec(`which shopify`);
-    return stdout.split('\n')[0].replace('\r', '');
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
+
+  try {
+    if (isWin) {
+      const { stdout } = await exec(`where.exe shopify`);
+      const executables = stdout
+        .replace(/\r/g, '')
+        .split('\n')
+        .filter((exe) => exe.endsWith('bat'));
+      return executables.length > 0 ? executables[0] : '';
+    } else {
+      const { stdout } = await exec(`which shopify`);
+      return stdout.split('\n')[0].replace('\r', '');
+    }
+  } catch (_) {
+    // If any errors occur while trying to find the CLI, we will silently return
+    return;
   }
 }

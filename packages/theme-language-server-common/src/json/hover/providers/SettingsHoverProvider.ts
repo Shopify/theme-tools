@@ -2,22 +2,20 @@ import { isError } from '@shopify/theme-check-common';
 import { JSONPath, MarkedString } from 'vscode-json-languageservice';
 import { GetTranslationsForURI, renderTranslation, translationValue } from '../../../translations';
 import { isLiquidRequestContext, LiquidRequestContext, RequestContext } from '../../RequestContext';
-import { fileMatch } from '../../utils';
+import { isSectionOrBlockFile } from '../../utils';
 import { JSONHoverProvider } from '../JSONHoverProvider';
 import { AugmentedLiquidSourceCode } from '../../../documents';
 import { isSectionOrBlockSchema } from '../../completions/providers/BlockTypeCompletionProvider';
 
-export class PresetsSettingsHoverProvider implements JSONHoverProvider {
-  private uriPatterns = [/(sections|blocks)\/[^\/]*\.liquid$/];
-
+export class SettingsHoverProvider implements JSONHoverProvider {
   constructor(private getDefaultSchemaTranslations: GetTranslationsForURI) {}
 
   canHover(context: RequestContext, path: JSONPath): context is LiquidRequestContext {
     return (
-      fileMatch(context.doc.uri, this.uriPatterns) &&
+      isSectionOrBlockFile(context.doc.uri) &&
       isLiquidRequestContext(context) &&
       path.length !== 0 &&
-      isPresetSettingsPath(path)
+      (isPresetSettingsPath(path) || isDefaultSettingsPath(path))
     );
   }
 
@@ -25,7 +23,7 @@ export class PresetsSettingsHoverProvider implements JSONHoverProvider {
     if (!this.canHover(context, path)) return [];
 
     const { doc } = context;
-    const label = await getSettingsLabel(doc, path.at(3) as string);
+    const label = await getSettingsLabel(doc, path.at(-1) as string);
 
     if (!label) return [];
 
@@ -46,10 +44,18 @@ export class PresetsSettingsHoverProvider implements JSONHoverProvider {
 function isPresetSettingsPath(path: JSONPath) {
   return (
     path.at(0) === 'presets' &&
-    path.at(1) === 0 &&
     path.at(2) === 'settings' &&
     path.at(3) !== undefined &&
     typeof path.at(3) === 'string'
+  );
+}
+
+function isDefaultSettingsPath(path: JSONPath) {
+  return (
+    path.at(0) === 'default' &&
+    path.at(1) === 'settings' &&
+    path.at(2) !== undefined &&
+    typeof path.at(2) === 'string'
   );
 }
 

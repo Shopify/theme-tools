@@ -10,7 +10,7 @@ import { JSONPath } from 'vscode-json-languageservice';
 import { JSONCompletionItem } from 'vscode-json-languageservice/lib/umd/jsonContributions';
 import { CompletionItemKind } from 'vscode-languageserver-protocol';
 import { isLiquidRequestContext, RequestContext } from '../../RequestContext';
-import { fileMatch } from '../../utils';
+import { isSectionOrBlockFile } from '../../utils';
 import { JSONCompletionProvider } from '../JSONCompletionProvider';
 import { GetThemeBlockNames } from '../../JSONContributions';
 
@@ -28,13 +28,11 @@ import { GetThemeBlockNames } from '../../JSONContributions';
  * {% endschema %}
  */
 export class BlockTypeCompletionProvider implements JSONCompletionProvider {
-  private uriPatterns = [/^.*\/(sections|blocks)\/[^\/]*\.liquid$/];
-
   constructor(private getThemeBlockNames: GetThemeBlockNames) {}
 
   async completeValue(context: RequestContext, path: JSONPath): Promise<JSONCompletionItem[]> {
     if (
-      !fileMatch(context.doc.uri, this.uriPatterns) ||
+      !isSectionOrBlockFile(context.doc.uri) ||
       !isLiquidRequestContext(context) ||
       !isBlockDefinitionPath(path)
     ) {
