@@ -43,8 +43,7 @@ import { snippetName } from '../utils/uri';
 import { VERSION } from '../version';
 import { CachedFileSystem } from './CachedFileSystem';
 import { Configuration } from './Configuration';
-import { LiquidHtmlNode } from '@shopify/liquid-html-parser';
-import { getSnippetDefinition, SnippetDefinition } from '../liquidDoc';
+import { SnippetDefinition } from '../liquidDoc';
 
 const defaultLogger = () => {};
 
@@ -176,13 +175,13 @@ export function startServer(
   const getSnippetDefinitionForURI = async (
     uri: string,
     snippetName: string,
-  ): Promise<SnippetDefinition> => {
+  ): Promise<SnippetDefinition | undefined> => {
     const rootUri = await findThemeRootURI(uri);
     const snippetURI = path.join(rootUri, 'snippets', `${snippetName}.liquid`);
     const snippet = documentManager.get(snippetURI);
 
     if (!snippet || snippet.type !== SourceCodeType.LiquidHtml || isError(snippet.ast)) {
-      return { name: snippetName };
+      return undefined;
     }
 
     return snippet.getLiquidDoc(snippetName);

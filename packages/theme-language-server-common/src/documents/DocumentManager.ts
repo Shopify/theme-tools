@@ -175,7 +175,7 @@ export class DocumentManager {
           }),
           /** Lazy and only computed once per file version */
           getLiquidDoc: memo(async (snippetName: string) => {
-            if (isError(sourceCode.ast)) return { name: snippetName };
+            if (isError(sourceCode.ast)) return undefined;
 
             return getSnippetDefinition(sourceCode.ast, snippetName);
           }),

@@ -24,7 +24,7 @@ export type AugmentedJsonSourceCode = _AugmentedSourceCode<SourceCodeType.JSON>;
  */
 export type AugmentedLiquidSourceCode = _AugmentedSourceCode<SourceCodeType.LiquidHtml> & {
   getSchema: () => Promise<SectionSchema | ThemeBlockSchema | AppBlockSchema | undefined>;
-  getLiquidDoc: (snippetName: string) => Promise<SnippetDefinition>;
+  getLiquidDoc: (snippetName: string) => Promise<SnippetDefinition | undefined>;
 };
 
 /**
