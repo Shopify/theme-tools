@@ -5,6 +5,10 @@ import {
   horizonNestedBlockSchema,
   createHorizonBlockSchema,
   createDawnSectionSchema,
+  validDawnDefaultSchema,
+  validDawnPresetSchema,
+  validHorizonPresetSchema,
+  validHorizonDefaultSchema,
 } from './valid-schema-utils';
 import { ValidPresetAndDefaultSettings } from '.';
 
@@ -34,6 +38,9 @@ const invalidBlockPresetSchema = {
       blocks: [
         {
           type: 'text',
+          settings: {
+            invalid_nested_setting_1: 'this is an invalid setting as this key does not exist',
+          },
         },
       ],
     },
@@ -45,9 +52,14 @@ const invalidBlockPresetSchema = {
       blocks: [
         {
           type: 'text',
-          settings: {
-            invalid_nested_setting_2: 'this is an invalid setting as this key does not exist',
-          },
+          blocks: [
+            {
+              type: 'text',
+              settings: {
+                invalid_nested_setting_2: 'this is an invalid setting as this key does not exist',
+              },
+            },
+          ],
         },
       ],
     },
@@ -94,8 +106,20 @@ const invalidSectionPresetSchema = {
         {
           type: 'text',
           settings: {
-            invalid_nested_setting_2: 'this is an invalid setting as this key does not exist',
+            invalid_nested_setting_3: 'this is an invalid setting as this key does not exist',
           },
+        },
+      ],
+    },
+    {
+      type: '_tab',
+      settings: {
+        title: 'Tab 1',
+        invalid_nested_setting_2: 'this is an invalid setting as this key does not exist',
+      },
+      blocks: [
+        {
+          type: 'text',
         },
       ],
     },
@@ -120,6 +144,20 @@ const invalidSectionDefaultSchema = {
             invalid_nested_setting_2: 'this is an invalid setting as this key does not exist',
           },
         },
+        {
+          type: 'text',
+          settings: {
+            invalid_nested_setting_3: 'this is an invalid setting as this key does not exist',
+          },
+          blocks: [
+            {
+              type: 'text',
+              settings: {
+                invalid_nested_setting_4: 'this is an invalid setting as this key does not exist',
+              },
+            },
+          ],
+        },
       ],
     },
   ],
@@ -134,7 +172,7 @@ describe('ValidPresetAndDefaultSettings', () => {
       };
 
       const offenses = await check(theme, [ValidPresetAndDefaultSettings]);
-      expect(offenses).to.have.length(3);
+      expect(offenses).to.have.length(4);
       expect(offenses[0].message).to.include(
         'Preset setting "invalid_setting" does not exist in settings',
       );
@@ -142,6 +180,9 @@ describe('ValidPresetAndDefaultSettings', () => {
         'Preset block setting "invalid_nested_setting" does not exist in settings',
       );
       expect(offenses[2].message).to.include(
+        'Preset block setting "invalid_nested_setting_1" does not exist in settings',
+      );
+      expect(offenses[3].message).to.include(
         'Preset block setting "invalid_nested_setting_2" does not exist in settings',
       );
     });
@@ -153,7 +194,6 @@ describe('ValidPresetAndDefaultSettings', () => {
       };
 
       const offenses = await check(theme, [ValidPresetAndDefaultSettings]);
-      console.log(offenses);
       expect(offenses).to.have.length(3);
       expect(offenses[0].message).to.include(
         'Default setting "invalid_setting" does not exist in settings',
@@ -166,10 +206,20 @@ describe('ValidPresetAndDefaultSettings', () => {
       );
     });
 
-    it('should not report when all preset and default settings in the block are valid', async () => {
+    it('should not report when all preset settings in the block are valid', async () => {
       const theme: MockTheme = {
         'blocks/_tab.liquid': horizonNestedBlockSchema,
-        'blocks/tabs.liquid': createHorizonBlockSchema(),
+        'blocks/tabs.liquid': validHorizonPresetSchema,
+      };
+
+      const offenses = await check(theme, [ValidPresetAndDefaultSettings]);
+      expect(offenses).to.have.length(0);
+    });
+
+    it('should not report when all default settings in the block are valid', async () => {
+      const theme: MockTheme = {
+        'blocks/_tab.liquid': horizonNestedBlockSchema,
+        'blocks/tabs.liquid': validHorizonDefaultSchema,
       };
 
       const offenses = await check(theme, [ValidPresetAndDefaultSettings]);
@@ -180,6 +230,8 @@ describe('ValidPresetAndDefaultSettings', () => {
   describe('sections', () => {
     it('should report invalid keys within preset setting', async () => {
       const theme: MockTheme = {
+        'blocks/_tab.liquid': horizonNestedBlockSchema,
+        'blocks/announcement.liquid': horizonNestedBlockSchema,
         'sections/announcement-bar.liquid': createDawnSectionSchema(
           invalidSectionPresetSchema,
           null,
@@ -187,7 +239,7 @@ describe('ValidPresetAndDefaultSettings', () => {
       };
 
       const offenses = await check(theme, [ValidPresetAndDefaultSettings]);
-      expect(offenses).to.have.length(3);
+      expect(offenses).to.have.length(4);
       expect(offenses[0].message).to.include(
         `Preset setting "invalid_setting" does not exist in settings`,
       );
@@ -195,12 +247,16 @@ describe('ValidPresetAndDefaultSettings', () => {
         `Preset block setting "invalid_nested_setting_1" does not exist in settings`,
       );
       expect(offenses[2].message).to.include(
+        `Preset block setting "invalid_nested_setting_3" does not exist in settings`,
+      );
+      expect(offenses[3].message).to.include(
         `Preset block setting "invalid_nested_setting_2" does not exist in settings`,
       );
     });
 
     it('should report invalid keys in a sections default setting', async () => {
       const theme: MockTheme = {
+        'blocks/_tab.liquid': horizonNestedBlockSchema,
         'sections/announcement-bar.liquid': createDawnSectionSchema(
           null,
           invalidSectionDefaultSchema,
@@ -208,7 +264,7 @@ describe('ValidPresetAndDefaultSettings', () => {
       };
 
       const offenses = await check(theme, [ValidPresetAndDefaultSettings]);
-      expect(offenses).to.have.length(3);
+      expect(offenses).to.have.length(5);
       expect(offenses[0].message).to.include(
         `Default setting "invalid_setting" does not exist in settings`,
       );
@@ -218,11 +274,26 @@ describe('ValidPresetAndDefaultSettings', () => {
       expect(offenses[2].message).to.include(
         `Default block setting "invalid_nested_setting_2" does not exist in settings`,
       );
+      expect(offenses[3].message).to.include(
+        `Default block setting "invalid_nested_setting_3" does not exist in settings`,
+      );
+      expect(offenses[4].message).to.include(
+        `Default block setting "invalid_nested_setting_4" does not exist in settings`,
+      );
     });
 
-    it('should not report when all preset and default settings are valid', async () => {
+    it('should not report when all preset settings are valid', async () => {
       const theme: MockTheme = {
-        'sections/announcement-bar.liquid': createDawnSectionSchema(),
+        'sections/announcement-bar.liquid': validDawnPresetSchema,
+      };
+
+      const offenses = await check(theme, [ValidPresetAndDefaultSettings]);
+      expect(offenses).to.have.length(0);
+    });
+
+    it('should not report when all default settings are valid', async () => {
+      const theme: MockTheme = {
+        'sections/announcement-bar.liquid': validDawnDefaultSchema,
       };
 
       const offenses = await check(theme, [ValidPresetAndDefaultSettings]);

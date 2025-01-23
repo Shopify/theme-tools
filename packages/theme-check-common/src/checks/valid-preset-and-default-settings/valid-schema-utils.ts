@@ -193,69 +193,71 @@ export const createHorizonBlockSchema = (presetSchema?: any, defaultSchema?: any
         default: 0,
       },
     ],
-    ...(presetSchema
-      ? { presets: [presetSchema] }
-      : {
-          presets: [
-            {
-              name: 'Tabbed content',
-              settings: {
-                tab_pill_border_radius: 15,
-              },
-              blocks: [
-                {
-                  type: '_tab',
-                  settings: {
-                    title: 'Tab 1',
-                  },
-                  blocks: [
-                    {
-                      type: 'text',
-                    },
-                  ],
-                },
-                {
-                  type: '_tab',
-                  settings: {
-                    title: 'Tab 2',
-                  },
-                  blocks: [
-                    {
-                      type: 'text',
-                    },
-                  ],
-                },
-                {
-                  type: '_tab',
-                  settings: {
-                    title: 'Tab 3',
-                  },
-                  blocks: [
-                    {
-                      type: 'text',
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        }),
-    ...(defaultSchema
-      ? { default: defaultSchema }
-      : {
-          default: {
-            settings: {
-              tab_pill_border_radius: 15,
-            },
-            blocks: [{ type: '_tab', settings: { title: 'Tab 1' }, blocks: [{ type: 'text' }] }],
-          },
-        }),
+    ...(presetSchema ? { presets: [presetSchema] } : {}),
+    ...(defaultSchema ? { default: defaultSchema } : {}),
   };
 
   return `{% schema %}
   ${JSON.stringify(schema)}
   {% endschema %}`;
 };
+
+export const validHorizonPresetSchema = createHorizonBlockSchema({
+  presetSchema: [
+    {
+      name: 'Tabbed content',
+      settings: {
+        tab_pill_border_radius: 15,
+      },
+      blocks: [
+        {
+          type: '_tab',
+          settings: {
+            title: 'Tab 1',
+          },
+          blocks: [
+            {
+              type: 'text',
+            },
+          ],
+        },
+        {
+          type: '_tab',
+          settings: {
+            title: 'Tab 2',
+          },
+          blocks: [
+            {
+              type: 'text',
+            },
+          ],
+        },
+        {
+          type: '_tab',
+          settings: {
+            title: 'Tab 3',
+          },
+          blocks: [
+            {
+              type: 'text',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  defaultSchema: null,
+});
+
+export const validHorizonDefaultSchema = createHorizonBlockSchema({
+  presetSchema: null,
+  defaultSchema: {
+    settings: {
+      'padding-inline-start': 15,
+    },
+    blocks: [{ type: '_tab', settings: { title: 'Tab 1' }, blocks: [{ type: 'text' }] }],
+  },
+});
 
 export const createDawnSectionSchema = (presetSchema?: any, defaultSchema?: any) => {
   const schema = {
@@ -350,38 +352,51 @@ export const createDawnSectionSchema = (presetSchema?: any, defaultSchema?: any)
           },
         ],
       },
+      {
+        type: '_tab',
+        settings: {
+          title: 'Tab 1',
+        },
+      },
     ],
-    ...(presetSchema
-      ? { presets: [presetSchema] }
-      : {
-          presets: [
-            {
-              name: 't:sections.announcement-bar.presets.name',
-              blocks: [
-                {
-                  type: 'announcement',
-                },
-              ],
-            },
-          ],
-        }),
-    ...(defaultSchema
-      ? { default: defaultSchema }
-      : {
-          default: {
-            settings: {
-              tab_pill_border_radius: 15,
-            },
-            blocks: [{ type: '_tab', settings: { title: 'Tab 1' }, blocks: [{ type: 'text' }] }],
-          },
-        }),
+    ...(presetSchema ? { presets: [presetSchema] } : {}),
+    ...(defaultSchema ? { default: defaultSchema } : {}),
   };
 
-  console.log(schema);
   return `{% schema %}
   ${JSON.stringify(schema)}
   {% endschema %}`;
 };
+
+export const validDawnPresetSchema = createDawnSectionSchema({
+  presetSchema: [
+    {
+      name: 't:sections.announcement-bar.presets.name',
+      settings: {
+        title: 'Tab name',
+      },
+      blocks: [
+        {
+          type: 'announcement',
+          settings: {
+            title: 'Tab name',
+          },
+        },
+      ],
+    },
+  ],
+  defaultSchema: null,
+});
+
+export const validDawnDefaultSchema = createDawnSectionSchema({
+  presetSchema: null,
+  defaultSchema: {
+    settings: {
+      title: 'Announcement bar',
+    },
+    blocks: [{ type: 'text', settings: { title: 'Announcement bar' } }],
+  },
+});
 
 export const horizonNestedBlockSchema = `{% schema %}
 {
