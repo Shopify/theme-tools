@@ -174,7 +174,7 @@ export class DocumentManager {
             return toSchema(mode, uri, sourceCode, this.isValidSchema);
           }),
           /** Lazy and only computed once per file version */
-          liquidDoc: memo(async (snippetName: string) => {
+          getLiquidDoc: memo(async (snippetName: string) => {
             if (isError(sourceCode.ast)) return { name: snippetName };
 
             return getSnippetDefinition(sourceCode.ast, snippetName);
