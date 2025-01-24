@@ -1029,6 +1029,7 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.children.0.paramDescription.value').to.equal('');
         });
 
+        // todo - we probably want the indexes of the []? Maybe not?
         it('should parse an optional @param', () => {
           const testStr = `{% doc %} @param [paramWithNoDescription] {% enddoc %}`;
           cst = toCST(testStr);
