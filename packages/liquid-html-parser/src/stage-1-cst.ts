@@ -85,6 +85,7 @@ export enum ConcreteNodeTypes {
   ContentForNamedArgument = 'ContentForNamedArgument',
 
   LiquidDocParamNode = 'LiquidDocParamNode',
+  LiquidDocParamNameNode = 'LiquidDocParamNameNode',
   LiquidDocExampleNode = 'LiquidDocExampleNode',
 }
 
@@ -111,9 +112,16 @@ export interface ConcreteBasicNode<T> {
 export interface ConcreteLiquidDocParamNode
   extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocParamNode> {
   name: 'param';
-  paramName: ConcreteTextNode;
+  paramName: ConcreteLiquidDocParamNameNode;
   paramDescription: ConcreteTextNode | null;
   paramType: ConcreteTextNode | null;
+}
+
+export interface ConcreteLiquidDocParamNameNode
+  extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocParamNameNode> {
+  name: 'paramName';
+  content: ConcreteTextNode;
+  required: boolean;
 }
 
 export interface ConcreteLiquidDocExampleNode
@@ -1351,7 +1359,22 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
     },
     paramType: 2,
     paramTypeContent: textNode,
-    paramName: textNode,
+    paramName: {
+      type: ConcreteNodeTypes.LiquidDocParamNameNode,
+      content: 0,
+      locStart,
+      locEnd,
+      source,
+      required: true,
+    },
+    optionalParamName: {
+      type: ConcreteNodeTypes.LiquidDocParamNameNode,
+      content: 2,
+      locStart,
+      locEnd,
+      source,
+      required: false,
+    },
     paramDescription: textNode,
     exampleNode: {
       type: ConcreteNodeTypes.LiquidDocExampleNode,
@@ -1362,6 +1385,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       exampleContent: 2,
     },
     exampleContent: textNode,
+    textValue: textNode,
     fallbackNode: textNode,
   };
 
