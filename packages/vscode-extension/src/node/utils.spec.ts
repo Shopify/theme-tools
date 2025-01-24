@@ -1,6 +1,7 @@
 import { it, expect, describe, vi, afterEach, afterAll, beforeEach } from 'vitest';
 import { workspace } from 'vscode';
 import { hasShopifyThemeLoaded, isCursor } from './utils';
+import path from 'node:path';
 
 vi.mock('vscode', async () => {
   const commands = {
@@ -32,13 +33,17 @@ describe('utils', async () => {
     it('should return true when all required folders exist', async () => {
       vi.mocked(workspace.fs.stat).mockResolvedValue(true as any);
 
+      const rootPath = (folder: string) => {
+        // Windows paths
+        return path.join(path.sep, 'mock', 'path', folder);
+      };
       const result = await hasShopifyThemeLoaded();
 
       expect(result).toBeTruthy();
-      expect(workspace.fs.stat).toHaveBeenCalledWith('/mock/path/config');
-      expect(workspace.fs.stat).toHaveBeenCalledWith('/mock/path/layout');
-      expect(workspace.fs.stat).toHaveBeenCalledWith('/mock/path/sections');
-      expect(workspace.fs.stat).toHaveBeenCalledWith('/mock/path/templates');
+      expect(workspace.fs.stat).toHaveBeenCalledWith(rootPath('config'));
+      expect(workspace.fs.stat).toHaveBeenCalledWith(rootPath('layout'));
+      expect(workspace.fs.stat).toHaveBeenCalledWith(rootPath('sections'));
+      expect(workspace.fs.stat).toHaveBeenCalledWith(rootPath('templates'));
     });
 
     it('should return false when a required folder is missing', async () => {
