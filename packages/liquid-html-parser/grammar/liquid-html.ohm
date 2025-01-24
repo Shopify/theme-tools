@@ -400,11 +400,16 @@ LiquidDoc <: Helpers {
   openControl:= "@" | end
 
   fallbackNode = "@" anyExceptStar<endOfParam>
-  paramNode = "@param" strictSpace* paramType? strictSpace* paramName (strictSpace* "-")? strictSpace* paramDescription
+  paramNode = "@param" strictSpace* paramType? strictSpace* (optionalParamName | paramName) (strictSpace* "-")? strictSpace* paramDescription
   paramType = "{" strictSpace* paramTypeContent strictSpace* "}"
   paramTypeContent = anyExceptStar<("}"| strictSpace)>
-  paramName = identifierCharacter+
-  paramDescription = anyExceptStar<endOfParam>
+
+  paramName = (~endOfParamName identifierCharacter)+
+  optionalParamName = "[" strictSpace* optionalParamNameContent strictSpace* "]"
+  optionalParamNameContent = anyExceptStar<endOfParamName>
+  endOfParamName = strictSpace* ("]" | "@")
+
+  paramDescription = (~"]" anyExceptStar<endOfParam>)
   endOfParam = strictSpace* (newline | end)
 }
 

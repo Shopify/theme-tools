@@ -755,7 +755,7 @@ export interface TextNode extends ASTNode<NodeTypes.TextNode> {
   value: string;
 }
 
-/** Represents a `@param` node in a LiquidDoc comment - `@param paramName {paramType} - paramDescription` */
+/** Represents a `@param` node in a LiquidDoc comment - `@param {paramType} [paramName]  - paramDescription` */
 export interface LiquidDocParamNode extends ASTNode<NodeTypes.LiquidDocParamNode> {
   name: 'param';
   /** The name of the parameter (e.g. "product") */
@@ -764,6 +764,8 @@ export interface LiquidDocParamNode extends ASTNode<NodeTypes.LiquidDocParamNode
   paramDescription: TextNode | null;
   /** Optional type annotation for the parameter (e.g. "{string}", "{number}") */
   paramType: TextNode | null;
+  /** Whether this parameter must be passed when using the snippet */
+  required: boolean;
 }
 export interface ASTNode<T> {
   /**
@@ -1293,6 +1295,7 @@ function buildAst(
           },
           paramDescription: toNullableTextNode(node.paramDescription),
           paramType: toNullableTextNode(node.paramType),
+          required: node.required,
         });
         break;
       }
