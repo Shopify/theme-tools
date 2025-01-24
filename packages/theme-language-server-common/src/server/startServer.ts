@@ -15,7 +15,6 @@ import {
 } from '@shopify/theme-check-common';
 import {
   Connection,
-  DocumentSelector,
   FileOperationRegistrationOptions,
   InitializeResult,
   ShowDocumentRequest,
@@ -315,7 +314,6 @@ export function startServer(
           save: true,
           openClose: true,
         },
-        inlineCompletionProvider: true, // only available in 3.18 (not released yet)
         codeActionProvider: {
           codeActionKinds: [...CodeActionKinds],
         },
@@ -357,7 +355,7 @@ export function startServer(
         name: 'theme-language-server',
         version: VERSION,
       },
-    } as InitializeResult;
+    };
 
     return result;
   });
