@@ -1,0 +1,87 @@
+{
+  "article": [],
+  "blog": [],
+  "brand": [],
+  "collection": [
+    {
+      "key": "test_colletion",
+      "namespace": "custom",
+      "name": "Test Colletion",
+      "description": "",
+      "type": {
+        "name": "single_line_text_field",
+        "category": "TEXT"
+      }
+    },
+    {
+      "key": "awards",
+      "namespace": "media",
+      "name": "Test Collection.json metafield",
+      "description": "Test Collection.json metafield",
+      "type": {
+        "name": "list.single_line_text_field",
+        "category": "TEXT"
+      }
+    }
+  ],
+  "company": [],
+  "company_location": [],
+  "location": [],
+  "market": [],
+  "order": [],
+  "page": [],
+  "product": [
+    {
+      "key": "section_group_metafield",
+      "namespace": "custom",
+      "name": "Section Group Metafield",
+      "description": "Test Metafield value :) ",
+      "type": {
+        "name": "single_line_text_field",
+        "category": "TEXT"
+      }
+    },
+    {
+      "key": "test_url",
+      "namespace": "custom",
+      "name": "test_url",
+      "description": "TestTest",
+      "type": {
+        "name": "url",
+        "category": "URL"
+      }
+    },
+    {
+      "key": "product_list",
+      "namespace": "custom",
+      "name": "Product List",
+      "description": "",
+      "type": {
+        "name": "list.product_reference",
+        "category": "REFERENCE"
+      }
+    },
+    {
+      "key": "test",
+      "namespace": "custom",
+      "name": "Test",
+      "description": "",
+      "type": {
+        "name": "collection_reference",
+        "category": "REFERENCE"
+      }
+    },
+    {
+      "key": "color_schemes",
+      "namespace": "custom",
+      "name": "color_schemes",
+      "description": "",
+      "type": {
+        "name": "color",
+        "category": "COLOR"
+      }
+    }
+  ],
+  "variant": [],
+  "shop": []
+}

@@ -403,7 +403,7 @@ LiquidDoc <: Helpers {
   paramNode = "@param" strictSpace* paramType? strictSpace* paramName (strictSpace* "-")? strictSpace* paramDescription
   paramType = "{" strictSpace* paramTypeContent strictSpace* "}"
   paramTypeContent = anyExceptStar<("}"| strictSpace)>
-  paramName = identifierCharacter+
+  paramName = "["? identifierCharacter+ "]"?
   paramDescription = anyExceptStar<endOfParam>
   endOfParam = strictSpace* (newline | end)
 }
