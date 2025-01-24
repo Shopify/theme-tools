@@ -85,6 +85,7 @@ export enum ConcreteNodeTypes {
   ContentForNamedArgument = 'ContentForNamedArgument',
 
   LiquidDocParamNode = 'LiquidDocParamNode',
+  LiquidDocParamNameNode = 'LiquidDocParamNameNode',
 }
 
 export const LiquidLiteralValues = {
@@ -110,9 +111,16 @@ export interface ConcreteBasicNode<T> {
 export interface ConcreteLiquidDocParamNode
   extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocParamNode> {
   name: 'param';
-  paramName: ConcreteTextNode;
+  paramName: ConcreteLiquidDocParamNameNode;
   paramDescription: ConcreteTextNode | null;
   paramType: ConcreteTextNode | null;
+}
+
+export interface ConcreteLiquidDocParamNameNode
+  extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocParamNameNode> {
+  required: boolean;
+  defaultValue: ConcreteTextNode | null;
+  paramNameContent: ConcreteTextNode;
 }
 
 export interface ConcreteHtmlNodeBase<T> extends ConcreteBasicNode<T> {
@@ -1344,7 +1352,28 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
     },
     paramType: 2,
     paramTypeContent: textNode,
-    paramName: textNode,
+    paramName: {
+      type: ConcreteNodeTypes.LiquidDocParamNameNode,
+      paramNameContent: 0,
+      locStart,
+      locEnd,
+      source,
+      required: true,
+      defaultValue: null,
+    },
+    optionalParamName: 2,
+    optionalParamNameContent: {
+      type: ConcreteNodeTypes.LiquidDocParamNameNode,
+      paramNameContent: 1,
+      required: false,
+      defaultValue: 3,
+      locStart,
+      locEnd,
+      source,
+    },
+    optionalParamNameDefaultValue: 2,
+    optionalParamNameDefaultContent: textNode,
+    textValue: textNode,
     paramDescription: textNode,
     fallbackNode: textNode,
   };
