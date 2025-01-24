@@ -1340,24 +1340,15 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       locEnd,
       source,
       paramType: 2,
-      paramName: 4,
-      paramDescription: 8,
+      paramName: 5,
+      paramDescription: 10,
       required: function (nodes: Node[]) {
-        const paramNameNodes = nodes[4].children;
-        return paramNameNodes[0].sourceString === '' && paramNameNodes[2].sourceString === '';
+        return nodes[4].sourceString === '' && nodes[6].sourceString === '';
       },
     },
     paramType: 2,
     paramTypeContent: textNode,
-    paramName: {
-      type: ConcreteNodeTypes.TextNode,
-      value: function (nodes: Node[]) {
-        return nodes[1].sourceString;
-      },
-      locStart,
-      locEnd,
-      source,
-    },
+    paramName: textNode,
     paramDescription: textNode,
     fallbackNode: textNode,
   };
