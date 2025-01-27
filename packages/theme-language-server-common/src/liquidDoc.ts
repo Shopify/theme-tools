@@ -7,13 +7,7 @@ import { LiquidDocParamNode } from '@shopify/liquid-html-parser';
 export type GetSnippetDefinitionForURI = (
   uri: string,
   snippetName: string,
-) => Promise<SnippetDefinition>;
-
-export type LiquidDocParameter = {
-  name: string;
-  description: string | null;
-  type: string | null;
-};
+) => Promise<SnippetDefinition | undefined>;
 
 export type SnippetDefinition = {
   name: string;
@@ -24,27 +18,33 @@ type LiquidDocDefinition = {
   parameters?: LiquidDocParameter[];
 };
 
+export type LiquidDocParameter = {
+  name: string;
+  description: string | null;
+  type: string | null;
+};
+
 export function getSnippetDefinition(
   snippet: LiquidHtmlNode,
   snippetName: string,
 ): SnippetDefinition {
-  const liquidDocParameters: LiquidDocParameter[] = visit<
-    SourceCodeType.LiquidHtml,
-    LiquidDocParameter
-  >(snippet, {
-    LiquidDocParamNode(node: LiquidDocParamNode) {
-      return {
-        name: node.paramName.value,
-        description: node.paramDescription?.value ?? null,
-        type: node.paramType?.value ?? null,
-      };
+  const parameters: LiquidDocParameter[] = visit<SourceCodeType.LiquidHtml, LiquidDocParameter>(
+    snippet,
+    {
+      LiquidDocParamNode(node: LiquidDocParamNode) {
+        return {
+          name: node.paramName.value,
+          description: node.paramDescription?.value ?? null,
+          type: node.paramType?.value ?? null,
+        };
+      },
     },
-  });
+  );
 
   return {
     name: snippetName,
     liquidDoc: {
-      parameters: liquidDocParameters,
+      parameters,
     },
   };
 }

@@ -9,7 +9,7 @@ describe('Unit: makeGetLiquidDocDefinitions', () => {
     return toSourceCode('/tmp/foo.liquid', code).ast as LiquidHtmlNode;
   }
 
-  it('should return name if no valid annotations are present in definition', async () => {
+  it('should return default snippet definition if no renderable content is present', async () => {
     const ast = toAST(`
         {% doc %}
           just a description

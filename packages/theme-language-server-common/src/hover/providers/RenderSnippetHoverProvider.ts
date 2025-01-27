@@ -9,7 +9,7 @@ export class RenderSnippetHoverProvider implements BaseHoverProvider {
     private getSnippetDefinitionForURI: (
       uri: string,
       snippetName: string,
-    ) => Promise<SnippetDefinition>,
+    ) => Promise<SnippetDefinition | undefined>,
   ) {}
 
   async hover(
@@ -31,6 +31,10 @@ export class RenderSnippetHoverProvider implements BaseHoverProvider {
       params.textDocument.uri,
       snippetName,
     );
+
+    if (!snippetDefinition) {
+      return null;
+    }
 
     const liquidDoc = snippetDefinition.liquidDoc;
 
