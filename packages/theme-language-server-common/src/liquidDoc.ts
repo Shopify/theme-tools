@@ -27,7 +27,7 @@ export type LiquidDocParameter = {
 export function getSnippetDefinition(
   snippet: LiquidHtmlNode,
   snippetName: string,
-): SnippetDefinition | undefined {
+): SnippetDefinition {
   const parameters: LiquidDocParameter[] = visit<SourceCodeType.LiquidHtml, LiquidDocParameter>(
     snippet,
     {
@@ -40,10 +40,6 @@ export function getSnippetDefinition(
       },
     },
   );
-
-  if (parameters.length === 0) {
-    return undefined;
-  }
 
   return {
     name: snippetName,

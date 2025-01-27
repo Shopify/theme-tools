@@ -57,7 +57,7 @@ describe('Module: RenderSnippetHoverProvider', async () => {
     it('should return null if no LiquidDocDefinition found', async () => {
       getSnippetDefinition = async () => ({ name: 'unknown-snippet', liquidDoc: undefined });
       provider = createProvider(getSnippetDefinition);
-      await expect(provider).to.hover(`{% render 'unknown-sni█ppet' %}`, null);
+      await expect(provider).to.hover(`{% render 'unknown-sni█ppet' %}`, `### unknown-snippet`);
     });
 
     it('should return null if snippet is null', async () => {

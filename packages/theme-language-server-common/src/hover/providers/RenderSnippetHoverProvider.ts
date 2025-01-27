@@ -32,9 +32,19 @@ export class RenderSnippetHoverProvider implements BaseHoverProvider {
       snippetName,
     );
 
-    const liquidDoc = snippetDefinition?.liquidDoc;
-    if (!liquidDoc) {
+    if (!snippetDefinition) {
       return null;
+    }
+
+    const liquidDoc = snippetDefinition.liquidDoc;
+
+    if (!liquidDoc) {
+      return {
+        contents: {
+          kind: 'markdown',
+          value: `### ${snippetDefinition.name}`,
+        },
+      };
     }
 
     const parts = [`### ${snippetDefinition.name}`];

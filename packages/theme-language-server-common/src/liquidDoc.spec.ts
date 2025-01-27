@@ -9,7 +9,7 @@ describe('Unit: makeGetLiquidDocDefinitions', () => {
     return toSourceCode('/tmp/foo.liquid', code).ast as LiquidHtmlNode;
   }
 
-  it('should return undefined if no renderable content is present', async () => {
+  it('should return default snippet definition if no renderable content is present', async () => {
     const ast = toAST(`
         {% doc %}
           just a description
@@ -18,7 +18,12 @@ describe('Unit: makeGetLiquidDocDefinitions', () => {
       `);
 
     const result = getSnippetDefinition(ast, 'product-card');
-    expect(result).to.be.undefined;
+    expect(result).to.deep.equal({
+      name: 'product-card',
+      liquidDoc: {
+        parameters: [],
+      },
+    });
   });
 
   it('should extract name, description and type from param annotations', async () => {
@@ -59,16 +64,5 @@ describe('Unit: makeGetLiquidDocDefinitions', () => {
         ],
       },
     });
-  });
-
-  it('should return undefined if no renderable content is present', async () => {
-    const ast = toAST(`
-        {% doc %}
-          just a description (update this when we add description to renderable content)
-        {% enddoc %}
-      `);
-
-    const result = getSnippetDefinition(ast, 'product-card');
-    expect(result).to.be.undefined;
   });
 });
