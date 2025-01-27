@@ -1,23 +1,13 @@
 import { FileStat, FileTuple, path as pathUtils } from '@shopify/theme-check-common';
 import * as path from 'node:path';
 import {
-  CancellationToken,
-  CodeAction,
-  CodeActionContext,
-  CodeActionKind,
-  CodeActionProvider,
   commands,
   ExtensionContext,
   languages,
-  Position,
-  ProviderResult,
-  Range,
-  TextDocument,
   TextEditor,
   TextEditorDecorationType,
   Uri,
   workspace,
-  WorkspaceEdit,
 } from 'vscode';
 import {
   DocumentSelector,
@@ -29,11 +19,11 @@ import {
 import { documentSelectors } from '../common/constants';
 import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
-import { getSidekickAnalysis, LiquidSuggestion, log, SidekickDecoration } from './shopify-magic';
+import { getSidekickAnalysis, SidekickDecoration } from './shopify-magic';
 import { showShopifyMagicButton, showShopifyMagicLoadingButton } from './ui';
 import { createInstructionsFiles } from './llm-instructions';
-
-type LiquidSuggestionWithDecorationKey = LiquidSuggestion & { key: string };
+import { RefactorProvider } from './RefactorProvider';
+import { applySuggestion, conflictMarkerStart } from './shopify-magic-suggestions';
 
 let $client: LanguageClient | undefined;
 let $editor: TextEditor | undefined;
@@ -42,6 +32,8 @@ let $isApplyingSuggestion = false;
 let $previousShownConflicts = new Map<string, number>();
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+const log = (msg?: any, ...opts: any[]) => console.error(`[Shopify Magic] ${msg}`, ...opts);
 
 export async function activate(context: ExtensionContext) {
   const runChecksCommand = 'themeCheck/runChecks';
@@ -69,60 +61,36 @@ export async function activate(context: ExtensionContext) {
       async (textEditor: TextEditor) => {
         $editor = textEditor;
 
-        log('Sidekick is analyzing...');
-
-        await showShopifyMagicLoadingButton();
+        log('Shopify Magic is analyzing...');
 
         try {
-          // Show sidekick decorations
-          applyDecorations(await getSidekickAnalysis(textEditor));
+          await showShopifyMagicLoadingButton();
+          const decorations = await getSidekickAnalysis(textEditor);
+          applyDecorations(decorations);
         } finally {
           await showShopifyMagicButton();
         }
       },
     ),
   );
+
   context.subscriptions.push(
-    commands.registerCommand(
-      'shopifyLiquid.sidefix',
-      async (suggestion: LiquidSuggestionWithDecorationKey) => {
-        log('Sidekick is fixing...');
-        applySuggestion(suggestion);
-      },
-    ),
+    commands.registerCommand('shopifyLiquid.sidefix', async (suggestion: any) => {
+      log('Shopify Magic is fixing...');
+
+      $isApplyingSuggestion = true;
+      applySuggestion($editor, suggestion);
+
+      // Only dispose the decoration associated with this suggestion
+      const decorationIndex = $decorations.findIndex((d) => d.key === suggestion.key);
+      if (decorationIndex !== -1) {
+        $decorations[decorationIndex].dispose();
+        $decorations.splice(decorationIndex, 1);
+      }
+
+      $isApplyingSuggestion = false;
+    }),
   );
-
-  class RefactorProvider implements CodeActionProvider {
-    public static readonly providedCodeActionKinds = [CodeActionKind.Refactor];
-
-    public provideCodeActions(
-      document: TextDocument,
-      range: Range,
-      // eslint-disable-next-line no-unused-vars
-      _context: CodeActionContext,
-      // eslint-disable-next-line no-unused-vars
-      _token: CancellationToken,
-    ): ProviderResult<CodeAction[]> {
-      return [this.createRefactorCodeAction(8, document, range, CodeActionKind.RefactorRewrite)];
-    }
-
-    private createRefactorCodeAction(
-      n: number,
-      document: TextDocument,
-      range: Range,
-      kind: CodeActionKind,
-    ): CodeAction {
-      const refactorAction = new CodeAction(`Refactor using Sidekick`, CodeActionKind.Refactor);
-      refactorAction.command = {
-        command: 'shopifyLiquid.shopifyMagic',
-        title: `Refactor Code ${n}`,
-        arguments: [document, range],
-        tooltip: `This is the tooltip for the refactor code ${n}`,
-      };
-      refactorAction.kind = kind;
-      return refactorAction;
-    }
-  }
 
   context.subscriptions.push(
     languages.registerCodeActionsProvider([{ language: 'liquid' }], new RefactorProvider(), {
@@ -242,7 +210,6 @@ async function getServerOptions(context: ExtensionContext): Promise<ServerOption
   };
 }
 
-// TODO: Check if we need to manually dispose decorations, or if we may be able to rely on the language server to do it
 function disposeDecorations() {
   $decorations.forEach((decoration) => decoration.dispose());
   $decorations = [];
@@ -255,46 +222,4 @@ function applyDecorations(decorations: SidekickDecoration[]) {
     $decorations.push(decoration.type);
     $editor?.setDecorations(decoration.type, [decoration.options]);
   });
-}
-
-const conflictMarkerStart = '<<<<<<< Current';
-const conflictMarkerMiddle = '=======';
-const conflictMarkerEnd = '>>>>>>> Suggested Change';
-
-async function applySuggestion({ key, range, newCode }: LiquidSuggestionWithDecorationKey) {
-  log('Applying suggestion...');
-  if (!$editor) {
-    return;
-  }
-
-  $isApplyingSuggestion = true;
-
-  const endLineIndex = range.end.line - 1;
-  const start = new Position(range.start.line - 1, 0);
-  const end = new Position(endLineIndex, $editor.document.lineAt(endLineIndex).text.length);
-  const oldCode = $editor.document.getText(new Range(start, end));
-  const initialIndentation = oldCode.match(/^[ \t]+/)?.[0] ?? '';
-
-  // Create a merge conflict style text
-  const conflictText = [
-    conflictMarkerStart,
-    oldCode,
-    conflictMarkerMiddle,
-    newCode.replace(/^/gm, initialIndentation),
-    conflictMarkerEnd,
-  ].join('\n');
-
-  // Replace the current text with the conflict markers
-  const edit = new WorkspaceEdit();
-  edit.replace($editor.document.uri, new Range(start, end), conflictText);
-  await workspace.applyEdit(edit);
-
-  // Only dispose the decoration associated with this suggestion
-  const decorationIndex = $decorations.findIndex((d) => d.key === key);
-  if (decorationIndex !== -1) {
-    $decorations[decorationIndex].dispose();
-    $decorations.splice(decorationIndex, 1);
-  }
-
-  $isApplyingSuggestion = false;
 }

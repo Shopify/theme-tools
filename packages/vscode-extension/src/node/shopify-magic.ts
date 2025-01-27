@@ -32,6 +32,8 @@ export interface LiquidSuggestion {
   suggestion: string;
 }
 
+const log = (msg?: any, ...opts: any[]) => console.error(`[Shopify Magic][Prompt] ${msg}`, ...opts);
+
 export async function getSidekickAnalysis(textEditor: TextEditor): Promise<SidekickDecoration[]> {
   const [model] = await lm.selectChatModels({
     vendor: 'copilot',
@@ -108,10 +110,6 @@ async function parseChatResponse(chatResponse: LanguageModelChatResponse) {
   }
 
   return [];
-}
-
-export function log(message?: any, ...optionalParams: any[]) {
-  console.error(`[Sidekick] ${message}`, ...optionalParams);
 }
 
 function createHoverMessage(key: string, liquidSuggestion: LiquidSuggestion) {
