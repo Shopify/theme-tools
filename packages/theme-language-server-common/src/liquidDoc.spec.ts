@@ -33,6 +33,7 @@ describe('Unit: makeGetLiquidDocDefinitions', () => {
           @param {Number} secondParam - The second param
           @param paramWithNoType - param with no type
           @param paramWithOnlyName
+          @param {Number} paramWithNoDescription
         {% enddoc %}
       `);
 
@@ -58,8 +59,13 @@ describe('Unit: makeGetLiquidDocDefinitions', () => {
           },
           {
             name: 'paramWithOnlyName',
-            description: '',
+            description: null,
             type: null,
+          },
+          {
+            name: 'paramWithNoDescription',
+            description: null,
+            type: 'Number',
           },
         ],
       },

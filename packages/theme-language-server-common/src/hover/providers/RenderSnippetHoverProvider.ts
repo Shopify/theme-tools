@@ -49,7 +49,7 @@ export class RenderSnippetHoverProvider implements BaseHoverProvider {
       const parameters = liquidDoc.parameters
         ?.map(
           ({ name, type, description }: LiquidDocParameter) =>
-            `- \`${name}\`${type ? `: ${type}` : ''} ${description ? `- ${description}` : ''}`,
+            `- \`${name}\`${type ? `: ${type}` : ''}${description ? ` - ${description}` : ''}`,
         )
         .join('\n');
 

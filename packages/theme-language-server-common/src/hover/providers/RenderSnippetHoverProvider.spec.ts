@@ -3,6 +3,7 @@ import { DocumentManager } from '../../documents';
 import { HoverProvider } from '../HoverProvider';
 import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 import { GetSnippetDefinitionForURI, SnippetDefinition } from '../../liquidDoc';
+import '../../../../theme-check-common/src/test/test-setup';
 
 describe('Module: RenderSnippetHoverProvider', async () => {
   let provider: HoverProvider;
@@ -20,6 +21,21 @@ describe('Module: RenderSnippetHoverProvider', async () => {
           name: 'border-radius',
           description: 'The border radius in px',
           type: 'number',
+        },
+        {
+          name: 'no-type',
+          description: 'This parameter has no type',
+          type: null,
+        },
+        {
+          name: 'no-description',
+          description: null,
+          type: 'string',
+        },
+        {
+          name: 'no-type-or-description',
+          description: null,
+          type: null,
         },
       ],
     },
@@ -50,7 +66,7 @@ describe('Module: RenderSnippetHoverProvider', async () => {
     it('should return snippet definition with all parameters', async () => {
       await expect(provider).to.hover(
         `{% render 'product-car█d' %}`,
-        '### product-card\n\n**Parameters:**\n- `title`: string - The title of the product\n- `border-radius`: number - The border radius in px',
+        '### product-card\n\n**Parameters:**\n- `title`: string - The title of the product\n- `border-radius`: number - The border radius in px\n- `no-type` - This parameter has no type\n- `no-description`: string\n- `no-type-or-description`',
       );
     });
 
