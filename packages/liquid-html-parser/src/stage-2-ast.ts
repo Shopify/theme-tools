@@ -1974,7 +1974,8 @@ function toHtmlSelfClosingElement(
 }
 
 function toNullableTextNode(node: ConcreteTextNode | null): TextNode | null {
-  if (!node) return null;
+  if (!node || node.value === '') return null;
+
   return toTextNode(node);
 }
 
