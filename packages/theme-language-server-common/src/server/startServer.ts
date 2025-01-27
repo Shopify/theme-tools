@@ -43,6 +43,8 @@ import { snippetName } from '../utils/uri';
 import { VERSION } from '../version';
 import { CachedFileSystem } from './CachedFileSystem';
 import { Configuration } from './Configuration';
+import { LiquidHtmlNode } from '@shopify/liquid-html-parser';
+import { getSnippetDefinition, SnippetDefinition } from '../liquidDoc';
 
 const defaultLogger = () => {};
 
@@ -171,6 +173,21 @@ export function startServer(
     return getDefaultSchemaTranslations();
   };
 
+  const getSnippetDefinitionForURI = async (
+    uri: string,
+    snippetName: string,
+  ): Promise<SnippetDefinition> => {
+    const rootUri = await findThemeRootURI(uri);
+    const snippetURI = path.join(rootUri, 'snippets', `${snippetName}.liquid`);
+    const snippet = documentManager.get(snippetURI);
+
+    if (!snippet || snippet.type !== SourceCodeType.LiquidHtml || isError(snippet.ast)) {
+      return { name: snippetName };
+    }
+
+    return snippet.getLiquidDoc(snippetName);
+  };
+
   const snippetFilter = ([uri]: FileTuple) => /\.liquid$/.test(uri) && /snippets/.test(uri);
   const getSnippetNamesForURI: GetSnippetNamesForURI = async (uri: string) => {
     const rootUri = await findThemeRootURI(uri);
@@ -252,6 +269,7 @@ export function startServer(
     getMetafieldDefinitions,
     getTranslationsForURI,
     getThemeSettingsSchemaForURI,
+    getSnippetDefinitionForURI,
   );
 
   const executeCommandProvider = new ExecuteCommandProvider(

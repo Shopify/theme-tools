@@ -12,10 +12,12 @@ import {
   LiquidObjectHoverProvider,
   LiquidTagHoverProvider,
   TranslationHoverProvider,
+  RenderSnippetHoverProvider,
 } from './providers';
 import { HtmlAttributeValueHoverProvider } from './providers/HtmlAttributeValueHoverProvider';
 import { findCurrentNode } from '@shopify/theme-check-common';
 import { GetThemeSettingsSchemaForURI } from '../settings';
+import { GetSnippetDefinitionForURI } from '../liquidDoc';
 
 export class HoverProvider {
   private providers: BaseHoverProvider[] = [];
@@ -26,6 +28,12 @@ export class HoverProvider {
     readonly getMetafieldDefinitions: (rootUri: string) => Promise<MetafieldDefinitionMap>,
     readonly getTranslationsForURI: GetTranslationsForURI = async () => ({}),
     readonly getSettingsSchemaForURI: GetThemeSettingsSchemaForURI = async () => [],
+    readonly getSnippetDefinitionForURI: GetSnippetDefinitionForURI = async (
+      _uri,
+      snippetName,
+    ) => ({
+      name: snippetName,
+    }),
   ) {
     const typeSystem = new TypeSystem(
       themeDocset,
@@ -41,6 +49,7 @@ export class HoverProvider {
       new HtmlAttributeHoverProvider(),
       new HtmlAttributeValueHoverProvider(),
       new TranslationHoverProvider(getTranslationsForURI, documentManager),
+      new RenderSnippetHoverProvider(getSnippetDefinitionForURI),
     ];
   }
 
