@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable @typescript-eslint/naming-convention */
-
 import { LanguageModelChatMessage, TextEditor } from 'vscode';
 
 export function buildMessages(textEditor: TextEditor) {
@@ -22,7 +19,7 @@ function basePrompt(textEditor: TextEditor): string {
     <prompt>
         <instructions>
             <description>
-                You are Sidekick, an AI assistant designed to help Liquid developers optimize Shopify themes.
+                You are Shopify Magic, an AI assistant designed to help Liquid developers optimize Shopify themes.
             </description>
             <prompt_metadata>
                 <type>Advanced Frontend Development Catalyst</type>

@@ -1,42 +1,45 @@
 import { it, expect, describe, vi, afterEach, afterAll, beforeEach } from 'vitest';
 import { workspace } from 'vscode';
-import { hasShopifyThemeLoaded, isCursor } from './utils';
+import { getShopifyThemeRootDirs, hasShopifyThemeLoaded, isCursor } from './utils';
 import path from 'node:path';
 
 vi.mock('vscode', async () => {
-  const commands = {
-    executeCommand: vi.fn(),
-  };
-  const workspace = {
-    workspaceFolders: [{ uri: { fsPath: '/mock/path' } }],
-    fs: {
-      stat: vi.fn(),
-    },
-  };
-  const uri = {
-    file: vi.fn((path) => path),
-  };
-
   return {
-    commands,
-    workspace,
+    commands: {
+      executeCommand: vi.fn(),
+    },
+    workspace: {
+      workspaceFolders: [],
+      fs: {
+        stat: vi.fn(),
+      },
+    },
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    Uri: uri,
+    Uri: {
+      file: vi.fn((path) => path),
+    },
   };
 });
 
 describe('utils', async () => {
-  afterEach(vi.clearAllMocks);
   afterAll(vi.unstubAllGlobals);
+  afterEach(vi.clearAllMocks);
+  beforeEach(() => {
+    vi.mocked(workspace).workspaceFolders = [
+      { uri: { fsPath: '/mock/path1' } },
+      { uri: { fsPath: '/mock/path2' } },
+      { uri: { fsPath: '/mock/path3' } },
+    ] as any;
+  });
 
   describe('hasShopifyThemeLoaded', async () => {
-    it('should return true when all required folders exist', async () => {
+    it('should return true when all required folders exist in one of the workspace folders', async () => {
       vi.mocked(workspace.fs.stat).mockResolvedValue(true as any);
 
       const rootPath = (folder: string) => {
-        // Windows paths
-        return path.join(path.sep, 'mock', 'path', folder);
+        return path.join(path.sep, 'mock', 'path1', folder);
       };
+
       const result = await hasShopifyThemeLoaded();
 
       expect(result).toBeTruthy();
@@ -46,7 +49,7 @@ describe('utils', async () => {
       expect(workspace.fs.stat).toHaveBeenCalledWith(rootPath('templates'));
     });
 
-    it('should return false when a required folder is missing', async () => {
+    it('should return false when a required folder is missing in one of the workspace folders', async () => {
       vi.mocked(workspace.fs.stat).mockRejectedValue(new Error('Not found'));
 
       const result = await hasShopifyThemeLoaded();
@@ -68,6 +71,63 @@ describe('utils', async () => {
       const result = await hasShopifyThemeLoaded();
 
       expect(result).toBeFalsy();
+    });
+  });
+
+  describe('getShopifyThemeRootDirs', async () => {
+    it('should return paths when all required folders exist in one of the workspace folders', async () => {
+      vi.mocked(workspace.fs.stat).mockImplementation((uri: any) => {
+        if (uri.includes('path2')) {
+          return Promise.resolve(true as any);
+        } else {
+          return Promise.reject(new Error('Not found'));
+        }
+      });
+
+      const result = await getShopifyThemeRootDirs();
+
+      expect(result).toEqual([path.join(path.sep, 'mock', 'path2')]);
+    });
+
+    it('should return empty array when required folders are missing', async () => {
+      vi.mocked(workspace.fs.stat).mockRejectedValue(new Error('Not found'));
+
+      const result = await getShopifyThemeRootDirs();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should return empty array when workspace has no folders', async () => {
+      vi.mocked(workspace).workspaceFolders = undefined;
+
+      const result = await getShopifyThemeRootDirs();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should return empty array when an error occurs', async () => {
+      vi.mocked(workspace.fs.stat).mockRejectedValue(new Error('Unknown error'));
+
+      const result = await getShopifyThemeRootDirs();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle multiple workspace folders', async () => {
+      vi.mocked(workspace.fs.stat).mockImplementation((uri: any) => {
+        if (uri.includes('path2')) {
+          return Promise.reject(new Error('Not found'));
+        } else {
+          return Promise.resolve(true as any);
+        }
+      });
+
+      const result = await getShopifyThemeRootDirs();
+
+      expect(result).toEqual([
+        path.join(path.sep, 'mock', 'path1'),
+        path.join(path.sep, 'mock', 'path3'),
+      ]);
     });
   });
 
