@@ -10,7 +10,7 @@ import {
   TextEditorDecorationType,
   window,
 } from 'vscode';
-import { buildMessages } from './sidekick-messages';
+import { buildMessages } from './shopify-magic-prompts';
 
 /** A sidekick decoration that provides code improvement suggestions */
 export interface SidekickDecoration {
