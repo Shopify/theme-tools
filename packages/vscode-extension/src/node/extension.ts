@@ -1,15 +1,21 @@
 import { FileStat, FileTuple, path as pathUtils } from '@shopify/theme-check-common';
 import * as path from 'node:path';
 import {
+  CancellationToken,
+  CodeAction,
+  CodeActionContext,
+  CodeActionKind,
+  CodeActionProvider,
   commands,
   ExtensionContext,
   languages,
   Position,
+  ProviderResult,
   Range,
+  TextDocument,
   TextEditor,
   TextEditorDecorationType,
   Uri,
-  window,
   workspace,
   WorkspaceEdit,
 } from 'vscode';
@@ -23,14 +29,11 @@ import {
 import { documentSelectors } from '../common/constants';
 import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
-import { getSidekickAnalysis, LiquidSuggestion, log, SidekickDecoration } from './sidekick';
+import { getSidekickAnalysis, LiquidSuggestion, log, SidekickDecoration } from './shopify-magic';
+import { showShopifyMagicButton, showShopifyMagicLoadingButton } from './ui';
+import { createInstructionsFiles } from './llm-instructions';
 
 type LiquidSuggestionWithDecorationKey = LiquidSuggestion & { key: string };
-interface ConfigFile {
-  path: string;
-  templateName: string;
-  prompt: string;
-}
 
 let $client: LanguageClient | undefined;
 let $editor: TextEditor | undefined;
@@ -43,7 +46,8 @@ const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 export async function activate(context: ExtensionContext) {
   const runChecksCommand = 'themeCheck/runChecks';
 
-  await createInstructionsFileIfNeeded(context);
+  await createInstructionsFiles(context);
+  await showShopifyMagicButton();
 
   context.subscriptions.push(
     commands.registerCommand('shopifyLiquid.restart', () => restartServer(context)),
@@ -60,40 +64,71 @@ export async function activate(context: ExtensionContext) {
     ),
   );
   context.subscriptions.push(
-    commands.registerTextEditorCommand('shopifyLiquid.sidekick', async (textEditor: TextEditor) => {
-      $editor = textEditor;
+    commands.registerTextEditorCommand(
+      'shopifyLiquid.shopifyMagic',
+      async (textEditor: TextEditor) => {
+        $editor = textEditor;
 
-      log('Sidekick is analyzing...');
-      await Promise.all([
-        commands.executeCommand('setContext', 'shopifyLiquid.sidekick.isLoading', true),
-      ]);
+        log('Sidekick is analyzing...');
 
-      try {
-        // Show sidekick decorations
-        applyDecorations(await getSidekickAnalysis(textEditor));
-      } finally {
-        await Promise.all([
-          commands.executeCommand('setContext', 'shopifyLiquid.sidekick.isLoading', false),
-        ]);
-      }
-    }),
+        await showShopifyMagicLoadingButton();
+
+        try {
+          // Show sidekick decorations
+          applyDecorations(await getSidekickAnalysis(textEditor));
+        } finally {
+          await showShopifyMagicButton();
+        }
+      },
+    ),
   );
   context.subscriptions.push(
     commands.registerCommand(
       'shopifyLiquid.sidefix',
       async (suggestion: LiquidSuggestionWithDecorationKey) => {
         log('Sidekick is fixing...');
-
         applySuggestion(suggestion);
       },
     ),
   );
-  // context.subscriptions.push(
-  //   languages.registerInlineCompletionItemProvider(
-  //     [{ language: 'liquid' }],
-  //     new LiquidCompletionProvider(),
-  //   ),
-  // );
+
+  class RefactorProvider implements CodeActionProvider {
+    public static readonly providedCodeActionKinds = [CodeActionKind.Refactor];
+
+    public provideCodeActions(
+      document: TextDocument,
+      range: Range,
+      // eslint-disable-next-line no-unused-vars
+      _context: CodeActionContext,
+      // eslint-disable-next-line no-unused-vars
+      _token: CancellationToken,
+    ): ProviderResult<CodeAction[]> {
+      return [this.createRefactorCodeAction(8, document, range, CodeActionKind.RefactorRewrite)];
+    }
+
+    private createRefactorCodeAction(
+      n: number,
+      document: TextDocument,
+      range: Range,
+      kind: CodeActionKind,
+    ): CodeAction {
+      const refactorAction = new CodeAction(`Refactor using Sidekick`, CodeActionKind.Refactor);
+      refactorAction.command = {
+        command: 'shopifyLiquid.shopifyMagic',
+        title: `Refactor Code ${n}`,
+        arguments: [document, range],
+        tooltip: `This is the tooltip for the refactor code ${n}`,
+      };
+      refactorAction.kind = kind;
+      return refactorAction;
+    }
+  }
+
+  context.subscriptions.push(
+    languages.registerCodeActionsProvider([{ language: 'liquid' }], new RefactorProvider(), {
+      providedCodeActionKinds: RefactorProvider.providedCodeActionKinds,
+    }),
+  );
 
   context.subscriptions.push(
     workspace.onDidChangeTextDocument(({ contentChanges, reason, document }) => {
@@ -262,94 +297,4 @@ async function applySuggestion({ key, range, newCode }: LiquidSuggestionWithDeco
   }
 
   $isApplyingSuggestion = false;
-}
-
-async function isShopifyTheme(workspaceRoot: string): Promise<boolean> {
-  try {
-    // Check for typical Shopify theme folders
-    const requiredFolders = ['sections', 'templates', 'assets', 'config'];
-    for (const folder of requiredFolders) {
-      const folderUri = Uri.file(path.join(workspaceRoot, folder));
-      try {
-        await workspace.fs.stat(folderUri);
-      } catch {
-        return false;
-      }
-    }
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function isCursor(): boolean {
-  try {
-    // Check if we're running in Cursor's electron process
-    const processTitle = process.title.toLowerCase();
-    const isElectronCursor =
-      processTitle.includes('cursor') && process.versions.electron !== undefined;
-
-    // Check for Cursor-specific environment variables that are set by Cursor itself
-    const hasCursorEnv =
-      process.env.CURSOR_CHANNEL !== undefined || process.env.CURSOR_VERSION !== undefined;
-
-    return isElectronCursor || hasCursorEnv;
-  } catch {
-    return false;
-  }
-}
-
-async function getConfigFileDetails(workspaceRoot: string): Promise<ConfigFile> {
-  if (isCursor()) {
-    return {
-      path: path.join(workspaceRoot, '.cursorrules'),
-      templateName: 'llm-instructions.template',
-      prompt:
-        'Detected Shopify theme project in Cursor. Do you want a .cursorrules file to be created?',
-    };
-  }
-  return {
-    path: path.join(workspaceRoot, '.github', 'copilot-instructions.md'),
-    templateName: 'llm-instructions.template',
-    prompt:
-      'Detected Shopify theme project in VSCode. Do you want a Copilot instructions file to be created?',
-  };
-}
-
-async function createInstructionsFileIfNeeded(context: ExtensionContext) {
-  if (!workspace.workspaceFolders?.length) {
-    return;
-  }
-
-  const workspaceRoot = workspace.workspaceFolders[0].uri.fsPath;
-  const instructionsConfig = await getConfigFileDetails(workspaceRoot);
-
-  // Don't do anything if the file already exists
-  try {
-    await workspace.fs.stat(Uri.file(instructionsConfig.path));
-    return;
-  } catch {
-    // File doesn't exist, continue
-  }
-
-  if (await isShopifyTheme(workspaceRoot)) {
-    const response = await window.showInformationMessage(instructionsConfig.prompt, 'Yes', 'No');
-
-    if (response === 'Yes') {
-      // Create directory if it doesn't exist (needed for .github case)
-      const dir = path.dirname(instructionsConfig.path);
-      try {
-        await workspace.fs.createDirectory(Uri.file(dir));
-      } catch {
-        // Directory might already exist, continue
-      }
-
-      // Read the template file from the extension's resources
-      const templateContent = await workspace.fs.readFile(
-        Uri.file(context.asAbsolutePath(`resources/${instructionsConfig.templateName}`)),
-      );
-      await workspace.fs.writeFile(Uri.file(instructionsConfig.path), templateContent);
-      log(`Wrote instructions file to ${instructionsConfig.path}`);
-    }
-  }
 }

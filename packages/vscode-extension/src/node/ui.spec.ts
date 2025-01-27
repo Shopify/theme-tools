@@ -5,16 +5,21 @@ import { hasShopifyThemeLoaded } from './utils';
 
 vi.mock('./utils');
 vi.mock('vscode', async () => {
-  const commands = {
-    executeCommand: vi.fn(),
-  };
-  const workspace = {
-    workspaceFolders: [{ uri: { fsPath: '/mock/path' } }],
-    fs: {
-      stat: vi.fn(),
+  return {
+    commands: {
+      executeCommand: vi.fn(),
+    },
+    workspace: {
+      workspaceFolders: [
+        {
+          uri: { fsPath: '/mock/path' },
+        },
+      ],
+      fs: {
+        stat: vi.fn(),
+      },
     },
   };
-  return { commands, workspace };
 });
 
 describe('ui', async () => {
