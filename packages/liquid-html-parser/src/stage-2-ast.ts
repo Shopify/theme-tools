@@ -1146,7 +1146,48 @@ function buildAst(
       }
 
       case ConcreteNodeTypes.LiquidTag: {
-        builder.push(toLiquidTag(node, { ...options, isBlockTag: false }));
+        if (node.name === 'doc') {
+          const docNode: ConcreteLiquidRawTag = {
+            type: ConcreteNodeTypes.LiquidRawTag,
+            name: node.name,
+            markup: node.markup,
+            body: '',
+            children: [],
+            whitespaceStart: node.whitespaceStart,
+            whitespaceEnd: node.whitespaceEnd,
+            delimiterWhitespaceStart: null,
+            delimiterWhitespaceEnd: null,
+            blockStartLocStart: node.locStart,
+            blockStartLocEnd: node.locEnd,
+            blockEndLocStart: node.locStart,
+            blockEndLocEnd: node.locEnd,
+            locStart: node.locStart,
+            locEnd: node.locEnd,
+            source: node.source,
+          };
+          builder.push({
+            type: NodeTypes.LiquidRawTag,
+            markup: markup(docNode.name, docNode.markup),
+            name: docNode.name,
+            body: toRawMarkup(docNode, options),
+            whitespaceStart: docNode.whitespaceStart ?? '',
+            whitespaceEnd: docNode.whitespaceEnd ?? '',
+            delimiterWhitespaceStart: docNode.delimiterWhitespaceStart ?? '',
+            delimiterWhitespaceEnd: docNode.delimiterWhitespaceEnd ?? '',
+            position: position(docNode),
+            blockStartPosition: {
+              start: docNode.blockStartLocStart,
+              end: docNode.blockStartLocEnd,
+            },
+            blockEndPosition: {
+              start: docNode.blockEndLocStart,
+              end: docNode.blockEndLocEnd,
+            },
+            source: docNode.source,
+          });
+        } else {
+          builder.push(toLiquidTag(node, { ...options, isBlockTag: false }));
+        }
         break;
       }
 

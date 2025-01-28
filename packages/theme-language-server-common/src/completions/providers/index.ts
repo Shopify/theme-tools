@@ -10,4 +10,5 @@ export { ObjectAttributeCompletionProvider } from './ObjectAttributeCompletionPr
 export { ObjectCompletionProvider } from './ObjectCompletionProvider';
 export { TranslationCompletionProvider } from './TranslationCompletionProvider';
 export { RenderSnippetCompletionProvider } from './RenderSnippetCompletionProvider';
+export { DocParamCompletionProvider } from './DocParamCompletionProvider';
 export { Provider } from './common/Provider';
