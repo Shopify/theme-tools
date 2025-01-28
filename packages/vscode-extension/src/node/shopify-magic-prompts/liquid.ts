@@ -1,6 +1,8 @@
 import { FilterEntry, TagEntry } from '@shopify/theme-check-common';
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
 
+const liquidDocs = new ThemeLiquidDocsManager();
+
 export async function liquidRules() {
   return [
     '<liquid_rules>',
@@ -15,7 +17,7 @@ export async function liquidRules() {
 }
 
 async function filters() {
-  const filters = await liquidDocs().filters();
+  const filters = await liquidDocs.filters();
   const filtersString = getCategories(filters)
     .map((c) => formatFilter(filters, c))
     .join('\n');
@@ -24,7 +26,7 @@ async function filters() {
 }
 
 async function tags() {
-  const tags = await liquidDocs().tags();
+  const tags = await liquidDocs.tags();
   const tagsString = getCategories(tags)
     .map((c) => formatTag(tags, c))
     .join('\n');
@@ -33,7 +35,7 @@ async function tags() {
 }
 
 async function objects() {
-  const objects = await liquidDocs().objects();
+  const objects = await liquidDocs.objects();
   const objectsString = objects
     .filter((o) => o.access?.global === true)
     .map((o) => o.name)
@@ -65,10 +67,6 @@ function getCategories(items: { category?: string }[]): string[] {
   return [
     ...new Set(items.map((item) => item.category).filter((c): c is string => c !== undefined)),
   ];
-}
-
-function liquidDocs() {
-  return new ThemeLiquidDocsManager();
 }
 
 function validationRules() {
