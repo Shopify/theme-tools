@@ -46,7 +46,7 @@ export async function getSidekickAnalysis(textEditor: TextEditor): Promise<Sidek
   }
 
   try {
-    const messages = buildMessages(textEditor);
+    const messages = await buildMessages(textEditor);
     const chatResponse = await model.sendRequest(messages, {}, new CancellationTokenSource().token);
     const jsonResponse = await parseChatResponse(chatResponse);
 
