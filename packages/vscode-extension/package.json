@@ -48,9 +48,9 @@
     "postinstall": "yarn --cwd ./syntaxes install",
     "prebuild": "rimraf dist language-configuration.json",
     "preinstall": "sh scripts/fetch-syntaxes.sh",
-    "pretest": "yarn run test:build && yarn run dev:build && yarn run lint",
+    "pretest": "yarn run test:build && yarn run dev:build",
     "publish:vsce": "vsce publish --no-dependencies $npm_package_version",
-    "test": "vitest",
+    "test": "vitest -c \"./vitest.config.mjs\"",
     "test:build": "tsc -p . --outDir out",
     "test:watch": "tsc -p . -w --outDir out",
     "type-check": "tsc --noEmit"
@@ -64,12 +64,12 @@
     "@shopify/theme-language-server-browser": "^2.5.0",
     "@shopify/theme-language-server-node": "^2.5.0",
     "@shopify/theme-check-common": "^3.6.1",
+    "@shopify/theme-check-docs-updater": "^3.6.1",
     "prettier": "^2.6.2",
     "vscode-languageclient": "^8.1.0",
     "vscode-uri": "^3.0.8"
   },
   "devDependencies": {
-    "@shopify/theme-check-docs-updater": "^3.6.1",
     "@types/glob": "^8.0.0",
     "@types/node": "16.x",
     "@types/prettier": "^2.4.2",
@@ -99,8 +99,36 @@
       {
         "command": "shopifyLiquid.runChecks",
         "title": "Liquid Theme Check: Run Checks"
+      },
+      {
+        "command": "shopifyLiquid.sidefix",
+        "title": "Apply Shopify Magic suggestion"
+      },
+      {
+        "command": "shopifyLiquid.shopifyMagic",
+        "title": "✨ Shopify Magic",
+        "enablement": "!shopifyLiquid.shopifyMagic.isLoading"
+      },
+      {
+        "command": "shopifyLiquid.shopifyMagicLoading",
+        "title": "✨ Analyzing",
+        "enablement": "false"
       }
     ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "shopifyLiquid.shopifyMagic",
+          "group": "navigation",
+          "when": "shopifyLiquid.shopifyMagic.visible"
+        },
+        {
+          "command": "shopifyLiquid.shopifyMagicLoading",
+          "group": "navigation",
+          "when": "shopifyLiquid.shopifyMagicLoading.visible"
+        }
+      ]
+    },
     "configuration": {
       "title": "Shopify Liquid | Syntax Highlighting & Linter by Shopify",
       "properties": {
