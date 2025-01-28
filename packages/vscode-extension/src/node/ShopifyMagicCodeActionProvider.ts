@@ -1,8 +1,6 @@
 import { CodeAction, CodeActionKind, CodeActionProvider, Range, TextDocument } from 'vscode';
 
-export class RefactorProvider implements CodeActionProvider {
-  public static readonly providedCodeActionKinds = [CodeActionKind.RefactorRewrite];
-
+export class ShopifyMagicCodeActionProvider implements CodeActionProvider {
   public provideCodeActions(document: TextDocument, range: Range) {
     const title = 'Refactor using Shopify Magic';
     const kind = CodeActionKind.RefactorRewrite;
