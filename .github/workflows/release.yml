@@ -16,6 +16,8 @@ env:
 jobs:
   publish-packages:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -64,6 +66,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
 
       - name: VS Code Marketplace publish
         if: steps.changesets.outputs.hasChangesets == 'false' && steps.marketplace-version.outputs.version != steps.package-version.outputs.version
