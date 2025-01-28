@@ -19,6 +19,7 @@ It should format the param description with a dash separator
 {% enddoc %}
 
 It should respect the liquidDocParamDash option liquidDocParamDash: false
+liquidDocParamDash: false
 {% doc %}
   @param paramName param with description
 {% enddoc %}
@@ -26,6 +27,19 @@ It should respect the liquidDocParamDash option liquidDocParamDash: false
 It should normalize the param description
 {% doc %}
   @param paramName - param with description
+{% enddoc %}
+
+It should strip whitespace between optional param delimiters
+{% doc %}
+  @param [paramName] - param with description
+{% enddoc %}
+
+It should not break params with malformed optional delimiters
+{% doc %}
+  @param [missingTail - param with description
+  @param missingHead - ] - param with description
+  @param [too many words no desc]
+  @param [too many words] - param with description
 {% enddoc %}
 
 It should push example content to the next line
