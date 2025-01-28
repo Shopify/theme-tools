@@ -1140,11 +1140,8 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.name').to.equal('doc');
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
           expectPath(cst, '0.children.0.name').to.equal('example');
-          expectPath(cst, '0.children.0.exampleContent.value').toEqual(
-            expect.stringContaining('This is an example'),
-          );
-          expectPath(cst, '0.children.0.exampleContent.value').toEqual(
-            expect.stringContaining('It supports multiple lines'),
+          expectPath(cst, '0.children.0.exampleContent.value').to.equal(
+            '\n          This is an example\n          It supports multiple lines\n',
           );
         });
 
@@ -1157,9 +1154,7 @@ describe('Unit: Stage 1 (CST)', () => {
           cst = toCST(testStr);
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
           expectPath(cst, '0.children.0.name').to.equal('example');
-          expectPath(cst, '0.children.0.exampleContent.value').toEqual(
-            expect.stringContaining('This is an example'),
-          );
+          expectPath(cst, '0.children.0.exampleContent.value').to.equal('\n          This is an example\n');
           expectPath(cst, '0.children.1.type').to.equal('LiquidDocParamNode');
           expectPath(cst, '0.children.1.paramName.value').to.equal('param1');
         });
@@ -1175,14 +1170,8 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.name').to.equal('doc');
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
           expectPath(cst, '0.children.0.name').to.equal('example');
-          expectPath(cst, '0.children.0.exampleContent.value').toEqual(
-            expect.stringContaining('hello      there        my    friend'),
-          );
-          expectPath(cst, '0.children.0.exampleContent.value').toEqual(
-            expect.stringContaining('This is an example'),
-          );
-          expectPath(cst, '0.children.0.exampleContent.value').toEqual(
-            expect.stringContaining('It supports multiple lines'),
+          expectPath(cst, '0.children.0.exampleContent.value').to.equal(
+            'hello      there        my    friend\n          This is an example\n          It supports multiple lines\n',
           );
         });
       }

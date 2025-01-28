@@ -1314,11 +1314,7 @@ function buildAst(
           source: node.source,
           exampleContent: {
             type: NodeTypes.TextNode,
-            value: node.exampleContent.value
-              .split('\n')
-              .map((line) => line.trim())
-              .filter(Boolean)
-              .join('\n'),
+            value: node.exampleContent.value,
             position: position(node.exampleContent),
             source: node.exampleContent.source,
           },
