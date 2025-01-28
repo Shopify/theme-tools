@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.3.1
+
+### Patch Changes
+
+- dd0cd4d2: [Internal] Modify paramDescription to be null when empty
+
 ## 2.3.0
 
 ### Minor Changes

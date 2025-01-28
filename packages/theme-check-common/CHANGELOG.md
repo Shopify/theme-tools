@@ -1,5 +1,18 @@
 # @shopify/theme-check-common
 
+## 3.7.0
+
+### Minor Changes
+
+- c85a6131: Cache liquidDoc fetch results
+- 913d5386: Add unique settings ID validator to prevent duplicate IDs in theme configurations
+- 931dc9b9: Add hover support for Liquid snippets using {% doc %} annotations
+
+### Patch Changes
+
+- Updated dependencies [dd0cd4d2]
+  - @shopify/liquid-html-parser@2.3.1
+
 ## 3.6.1
 
 ### Patch Changes
