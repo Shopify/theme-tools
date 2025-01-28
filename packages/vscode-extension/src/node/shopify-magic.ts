@@ -12,8 +12,8 @@ import {
 } from 'vscode';
 import { buildMessages } from './shopify-magic-prompts';
 
-/** A sidekick decoration that provides code improvement suggestions */
-export interface SidekickDecoration {
+/** A Shopify Magic decoration that provides code improvement suggestions */
+export interface ShopifyMagicDecoration {
   /** The type defining the visual styling */
   type: TextEditorDecorationType;
   /** The options specifying where and how to render the suggestion */
@@ -34,7 +34,9 @@ export interface LiquidSuggestion {
 
 const log = (msg?: any, ...opts: any[]) => console.error(`[Shopify Magic][Prompt] ${msg}`, ...opts);
 
-export async function getSidekickAnalysis(textEditor: TextEditor): Promise<SidekickDecoration[]> {
+export async function getShopifyMagicAnalysis(
+  textEditor: TextEditor,
+): Promise<ShopifyMagicDecoration[]> {
   const [model] = await lm.selectChatModels({
     vendor: 'copilot',
     family: 'gpt-4o',
@@ -64,7 +66,7 @@ export async function getSidekickAnalysis(textEditor: TextEditor): Promise<Sidek
       return [];
     }
 
-    return jsonResponse.suggestions.flatMap(buildSidekickDecoration.bind(null, textEditor));
+    return jsonResponse.suggestions.flatMap(buildShopifyMagicDecoration.bind(null, textEditor));
   } catch (err) {
     log('Error during language model request', err);
   }
@@ -72,10 +74,10 @@ export async function getSidekickAnalysis(textEditor: TextEditor): Promise<Sidek
   return [];
 }
 
-function buildSidekickDecoration(
+function buildShopifyMagicDecoration(
   editor: TextEditor,
   liquidSuggestion: LiquidSuggestion,
-): SidekickDecoration[] {
+): ShopifyMagicDecoration[] {
   const { suggestion, range } = liquidSuggestion;
   const type = createTextEditorDecorationType(suggestion);
   const line = Math.max(0, range.start.line - 1);
@@ -115,7 +117,7 @@ async function parseChatResponse(chatResponse: LanguageModelChatResponse) {
 function createHoverMessage(key: string, liquidSuggestion: LiquidSuggestion) {
   const hoverUrlArgs = encodeURIComponent(JSON.stringify({ key, ...liquidSuggestion }));
   const hoverMessage = new MarkdownString(
-    `#### ✨ Sidekick suggestion\n ${liquidSuggestion.suggestion}
+    `#### ✨ Shopify Magic suggestion\n ${liquidSuggestion.suggestion}
     \n\n[Quick fix](command:shopifyLiquid.sidefix?${hoverUrlArgs})`,
   );
 
