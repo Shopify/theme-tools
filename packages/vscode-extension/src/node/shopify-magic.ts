@@ -1,6 +1,7 @@
 import {
   CancellationTokenSource,
   DecorationOptions,
+  LanguageModelChatMessage,
   LanguageModelChatResponse,
   lm,
   MarkdownString,
@@ -10,7 +11,13 @@ import {
   TextEditorDecorationType,
   window,
 } from 'vscode';
-import { buildMessages } from './shopify-magic-prompts';
+import {
+  basePrompt,
+  code,
+  codeMetadata,
+  liquidRules,
+  themeArchitectureRules,
+} from './shopify-magic-prompts';
 
 /** A Shopify Magic decoration that provides code improvement suggestions */
 export interface ShopifyMagicDecoration {
@@ -112,6 +119,22 @@ async function parseChatResponse(chatResponse: LanguageModelChatResponse) {
   }
 
   return [];
+}
+
+async function buildMessages(textEditor: TextEditor) {
+  const baseContext = basePrompt(textEditor);
+  const codeContext = code(textEditor);
+  const codeMetadataContext = codeMetadata(textEditor);
+  const liquidRulesContext = await liquidRules();
+  const themeArchitectureContext = themeArchitectureRules();
+
+  return [
+    baseContext,
+    codeContext,
+    codeMetadataContext,
+    liquidRulesContext,
+    themeArchitectureContext,
+  ].map((message) => LanguageModelChatMessage.User(message));
 }
 
 function createHoverMessage(key: string, liquidSuggestion: LiquidSuggestion) {

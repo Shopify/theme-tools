@@ -9,6 +9,5 @@ export function htmlRules() {
     - Ensure all interactive elements are focusable. e.g. if you use a label to style a checkbox, include \`tabindex="0"\`
     - Only use \`tabindex="0"\` unless absolutely necessary, to avoid hijacking tab flow
   </accessibility>
-</html>
-  `;
+</html>`;
 }

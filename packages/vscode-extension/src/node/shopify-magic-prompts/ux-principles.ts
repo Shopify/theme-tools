@@ -68,10 +68,6 @@ export function uxPrinciplesRules() {
 
           "Optimistic UI" is the idea that we can update part of the UI before the server response is received in the name of **perceived performance**.
 
-          Recommended reading:
-
-          - [Optimistic UI Patterns for Improved Perceived Performance](https://simonhearne.com/2021/optimistic-ui-patterns/)
-          - [True Lies Of Optimistic User Interfaces](https://www.smashingmagazine.com/2016/11/true-lies-of-optimistic-user-interfaces/)
           <criteria>
             Key factors to consider when deciding whether to use optimistic UI:
 
@@ -86,6 +82,5 @@ export function uxPrinciplesRules() {
           </criteria>
         </optimistic_ui>
       </server_side_rendering>
-    </ux_principles>
-  `;
+    </ux_principles>`;
 }

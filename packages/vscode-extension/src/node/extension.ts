@@ -33,8 +33,6 @@ let $previousShownConflicts = new Map<string, number>();
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-const log = (msg: string, ...opts: any[]) => console.error(`[Shopify Magic] ${msg}`, ...opts);
-
 export async function activate(context: ExtensionContext) {
   const runChecksCommand = 'themeCheck/runChecks';
 
@@ -66,24 +64,12 @@ export async function activate(context: ExtensionContext) {
       'shopifyLiquid.shopifyMagic',
       async (textEditor: TextEditor) => {
         $editor = textEditor;
-
-        log('Shopify Magic is analyzing...');
-
-        try {
-          await showShopifyMagicLoadingButton();
-          const decorations = await getShopifyMagicAnalysis(textEditor);
-          applyDecorations(decorations);
-        } finally {
-          await showShopifyMagicButton();
-        }
+        await analyse(textEditor);
       },
     ),
   );
-
   context.subscriptions.push(
     commands.registerCommand('shopifyLiquid.sidefix', async (suggestion: any) => {
-      log('Shopify Magic is fixing...');
-
       $isApplyingSuggestion = true;
       applySuggestion($editor, suggestion);
 
@@ -97,7 +83,6 @@ export async function activate(context: ExtensionContext) {
       $isApplyingSuggestion = false;
     }),
   );
-
   context.subscriptions.push(
     workspace.onDidChangeTextDocument(({ contentChanges, reason, document }) => {
       // Each shown suggestion fix is displayed as a conflict in the editor. We want to
@@ -208,6 +193,16 @@ async function getServerOptions(context: ExtensionContext): Promise<ServerOption
       },
     },
   };
+}
+
+async function analyse(textEditor: TextEditor) {
+  try {
+    await showShopifyMagicLoadingButton();
+    const decorations = await getShopifyMagicAnalysis(textEditor);
+    applyDecorations(decorations);
+  } finally {
+    await showShopifyMagicButton();
+  }
 }
 
 function disposeDecorations() {
