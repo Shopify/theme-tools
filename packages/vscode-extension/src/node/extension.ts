@@ -19,7 +19,7 @@ import {
 import { documentSelectors } from '../common/constants';
 import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
-import { getSidekickAnalysis, SidekickDecoration } from './shopify-magic';
+import { getShopifyMagicAnalysis, ShopifyMagicDecoration } from './shopify-magic';
 import { showShopifyMagicButton, showShopifyMagicLoadingButton } from './ui';
 import { createInstructionsFiles } from './llm-instructions';
 import { RefactorProvider } from './RefactorProvider';
@@ -33,13 +33,13 @@ let $previousShownConflicts = new Map<string, number>();
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-const log = (msg?: any, ...opts: any[]) => console.error(`[Shopify Magic] ${msg}`, ...opts);
+const log = (msg: string, ...opts: any[]) => console.error(`[Shopify Magic] ${msg}`, ...opts);
 
 export async function activate(context: ExtensionContext) {
   const runChecksCommand = 'themeCheck/runChecks';
 
-  await createInstructionsFiles(context);
   await showShopifyMagicButton();
+  await createInstructionsFiles(context);
 
   context.subscriptions.push(
     commands.registerCommand('shopifyLiquid.restart', () => restartServer(context)),
@@ -65,7 +65,7 @@ export async function activate(context: ExtensionContext) {
 
         try {
           await showShopifyMagicLoadingButton();
-          const decorations = await getSidekickAnalysis(textEditor);
+          const decorations = await getShopifyMagicAnalysis(textEditor);
           applyDecorations(decorations);
         } finally {
           await showShopifyMagicButton();
@@ -215,7 +215,7 @@ function disposeDecorations() {
   $decorations = [];
 }
 
-function applyDecorations(decorations: SidekickDecoration[]) {
+function applyDecorations(decorations: ShopifyMagicDecoration[]) {
   disposeDecorations();
 
   decorations.forEach((decoration) => {
