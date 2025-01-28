@@ -519,8 +519,10 @@ export function printLiquidDocParam(
     parts.push(' ', `{${node.paramType.value}}`);
   }
 
-  if (node.paramName.value) {
+  if (node.required) {
     parts.push(' ', node.paramName.value);
+  } else {
+    parts.push(' ', `[${node.paramName.value}]`);
   }
 
   if (node.paramDescription?.value) {
