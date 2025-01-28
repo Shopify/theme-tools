@@ -1,15 +1,7 @@
-import {
-  JSONNode,
-  LiteralNode,
-  Preset,
-  Section,
-  SourceCodeType,
-  Theme,
-  ThemeBlock,
-} from '../../types';
-import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
-import { Context } from '../../types';
-import { doesFileExist } from '../../utils/file-utils';
+import { JSONNode, LiteralNode, Preset, Section, SourceCodeType, ThemeBlock } from '../types';
+import { getLocEnd, getLocStart, nodeAtPath } from '../json';
+import { Context } from '../types';
+import { doesFileExist } from './file-utils';
 
 export type BlockNodeWithPath = {
   node: Section.Block | ThemeBlock.Block | Preset.Block;
@@ -213,7 +205,7 @@ export async function validateNestedBlocks(
 export function reportWarning(
   message: string,
   offset: number,
-  astNode: LiteralNode,
+  astNode: JSONNode,
   context: Context<SourceCodeType.LiquidHtml>,
 ) {
   context.report({
