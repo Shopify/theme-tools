@@ -15,7 +15,7 @@ import {
   validateNestedBlocks,
   validateBlockFileExistence,
   reportWarning,
-} from './block-utils';
+} from '../../utils';
 type BlockNodeWithPath = {
   node: Section.Block | ThemeBlock.Block | Preset.Block;
   path: string[];
