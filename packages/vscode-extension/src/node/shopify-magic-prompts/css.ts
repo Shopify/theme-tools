@@ -47,6 +47,5 @@ export function cssRules() {
       - Parent-child relationships with multiple states/modifiers affecting children
     - Keep nesting simple and logical
   </nesting>
-</css>
-  `;
+</css>`;
 }
