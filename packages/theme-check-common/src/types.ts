@@ -10,8 +10,10 @@ import {
   ASTNode,
   JSONNode,
   JSONNodeTypes,
+  LiteralNode,
   ObjectNode,
   PropertyNode,
+  ValueNode,
 } from './jsonc/types';
 import { JsonValidationSet, ThemeDocset } from './types/theme-liquid-docs';
 import { AppBlockSchema, SectionSchema, ThemeBlockSchema } from './types/theme-schemas';
@@ -24,6 +26,8 @@ export * from './types/theme-schemas';
 export const isObjectNode = (node?: ASTNode): node is ObjectNode => node?.type === 'Object';
 export const isArrayNode = (node?: ASTNode): node is ArrayNode => node?.type === 'Array';
 export const isPropertyNode = (node?: ASTNode): node is PropertyNode => node?.type === 'Property';
+export const isValueNode = (node?: ASTNode): node is ValueNode => node?.type === 'Value';
+export const isLiteralNode = (node?: ASTNode): node is LiteralNode => node?.type === 'Literal';
 
 export const Modes = ['theme', 'app'] as const;
 export type Mode = (typeof Modes)[number];

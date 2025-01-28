@@ -45,6 +45,7 @@ import { ValidSchemaName } from './valid-schema-name';
 import { ValidStaticBlockType } from './valid-static-block-type';
 import { VariableName } from './variable-name';
 import { AppBlockMissingSchema } from './app-block-missing-schema';
+import { UniqueSettingIds } from './unique-settings-id';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -80,6 +81,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   TranslationKeyExists,
   UnclosedHTMLElement,
   UndefinedObject,
+  UniqueSettingIds,
   UniqueStaticBlockId,
   UnknownFilter,
   UnusedAssign,
