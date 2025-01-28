@@ -4,7 +4,7 @@ import { toSourceCode } from '@shopify/theme-check-common';
 import { describe } from 'vitest';
 import { getSnippetDefinition } from './liquidDoc';
 
-describe('Unit: makeGetLiquidDocDefinitions', () => {
+describe('Unit: getSnippetDefinition', () => {
   function toAST(code: string) {
     return toSourceCode('/tmp/foo.liquid', code).ast as LiquidHtmlNode;
   }
@@ -31,6 +31,7 @@ describe('Unit: makeGetLiquidDocDefinitions', () => {
         {% doc %}
           @param {String} firstParam - The first param
           @param {Number} secondParam - The second param
+          @param {String} [optionalParam] - The optional param
           @param paramWithNoType - param with no type
           @param paramWithOnlyName
           @param {Number} paramWithNoDescription
@@ -46,26 +47,37 @@ describe('Unit: makeGetLiquidDocDefinitions', () => {
             name: 'firstParam',
             description: 'The first param',
             type: 'String',
+            required: true,
           },
           {
             name: 'secondParam',
             description: 'The second param',
             type: 'Number',
+            required: true,
+          },
+          {
+            name: 'optionalParam',
+            description: 'The optional param',
+            type: 'String',
+            required: false,
           },
           {
             name: 'paramWithNoType',
             description: 'param with no type',
             type: null,
+            required: true,
           },
           {
             name: 'paramWithOnlyName',
             description: null,
             type: null,
+            required: true,
           },
           {
             name: 'paramWithNoDescription',
             description: null,
             type: 'Number',
+            required: true,
           },
         ],
       },
