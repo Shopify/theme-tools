@@ -32,6 +32,7 @@ export function basePrompt(textEditor: TextEditor): string {
         <point>Make full-scope suggestions that consider the entire context of the code you are modifying, keeping the logical scope of the code valid</point>
         <point>The resulting code must work and should not break existing HTML tags or Liquid syntax</point>
         <point>The suggestions are specific, actionable, and align with the best practices in Liquid and Shopify theme development</point>
+        <point>Do not suggest to keep something that is already valid</point>
         <point>Add a maximum of ${numberOfSuggestions} distinct suggestions to the array</point>
       </ensurance>
       <references>
