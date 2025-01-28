@@ -85,8 +85,9 @@ async function getAiInstructionsFileConfig(root: string): Promise<AiInstructions
     return {
       path: path.join(root, '.cursorrules'),
       prompt: {
-        create:
-          'A Shopify theme project has been detected. Would you like to create a .cursorrules file to refine AI behavior?',
+        create: `A Shopify theme project has been detected at "${path.basename(
+          root,
+        )}". Would you like to create a .cursorrules file to refine AI behavior?`,
         update:
           'A new version of the .cursorrules template is available. Would you like to update your file to access the latest features? Note: This will overwrite your existing file.',
       },
@@ -96,8 +97,9 @@ async function getAiInstructionsFileConfig(root: string): Promise<AiInstructions
   return {
     path: path.join(root, '.github', 'copilot-instructions.md'),
     prompt: {
-      create:
-        'A Shopify theme project has been detected. Would you like to create a Copilot instructions file to refine AI behavior?',
+      create: `A Shopify theme project has been detected at "${path.basename(
+        root,
+      )}". Would you like to create a Copilot instructions file to refine AI behavior?`,
       update:
         'A new version of the Copilot instructions template is available. Would you like to update your file to access the latest features? Note: This will overwrite your existing file.',
     },
