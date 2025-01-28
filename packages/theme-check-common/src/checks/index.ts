@@ -42,6 +42,7 @@ import { ValidJSON } from './valid-json';
 import { ValidLocalBlocks } from './valid-local-blocks';
 import { ValidSchema } from './valid-schema';
 import { ValidSchemaName } from './valid-schema-name';
+import { ValidSettingsKey } from './valid-settings-key';
 import { ValidStaticBlockType } from './valid-static-block-type';
 import { VariableName } from './variable-name';
 import { AppBlockMissingSchema } from './app-block-missing-schema';
@@ -91,6 +92,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidJSON,
   ValidLocalBlocks,
   ValidSchema,
+  ValidSettingsKey,
   ValidStaticBlockType,
   VariableName,
   ValidSchemaName,
