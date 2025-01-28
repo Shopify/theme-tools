@@ -2,6 +2,12 @@ import { ExtensionContext, Uri, window, workspace } from 'vscode';
 import { getShopifyThemeRootDirs, isCursor } from './utils';
 import * as path from 'node:path';
 import { fileExists } from './fs';
+import { themeArchitectureRules } from './shopify-magic-prompts/theme-architecture';
+import { liquidRules } from './shopify-magic-prompts/liquid';
+import { cssRules } from './shopify-magic-prompts/css';
+import { javascriptRules } from './shopify-magic-prompts/javascript';
+import { htmlRules } from './shopify-magic-prompts/html';
+import { uxPrinciplesRules } from './shopify-magic-prompts/ux-principles';
 
 /** Configuration for AI instructions file */
 interface AiInstructionsConfig {
@@ -35,7 +41,7 @@ async function createAiInstructionsFileIfNeeded(
   const promptKey = `createAiInstructionsFile:${config.path}:no-${promptType}`;
   const promptMessage = config.prompt[promptType];
 
-  if (promptType === 'update' && (await isInstructionsFileUpdated(config, ctx, log))) {
+  if (promptType === 'update' && (await isInstructionsFileUpdated(config, log))) {
     return; // AI instructions file is up to date
   }
 
@@ -50,28 +56,28 @@ async function createAiInstructionsFileIfNeeded(
   }
 
   if (promptType === 'update') {
-    await updateConfigFile(config, ctx);
+    await updateConfigFile(config);
     log(`[Shopify Magic][AI] Updated instructions file at ${config.path}`);
   } else {
-    await createConfigFile(config, ctx);
+    await createConfigFile(config);
     log(`[Shopify Magic][AI] Created instructions file at ${config.path}`);
   }
 }
 
-async function updateConfigFile(config: AiInstructionsConfig, ctx: ExtensionContext) {
-  const templateContent = await readTemplateFile(ctx);
-  const templateUri = Uri.file(config.path);
+async function updateConfigFile(config: AiInstructionsConfig) {
+  const uri = Uri.file(config.path);
+  const content = await templateContent();
 
-  await workspace.fs.writeFile(templateUri, templateContent);
+  await workspace.fs.writeFile(uri, new TextEncoder().encode(content));
 }
 
-async function createConfigFile(config: AiInstructionsConfig, ctx: ExtensionContext) {
+async function createConfigFile(config: AiInstructionsConfig) {
   await ensureDirectory(config.path);
 
-  const templateContent = await readTemplateFile(ctx);
-  const templateUri = Uri.file(config.path);
+  const uri = Uri.file(config.path);
+  const content = await templateContent();
 
-  await workspace.fs.writeFile(templateUri, templateContent);
+  await workspace.fs.writeFile(uri, new TextEncoder().encode(content));
 }
 
 async function getAiInstructionsFileConfig(root: string): Promise<AiInstructionsConfig> {
@@ -96,13 +102,6 @@ async function getAiInstructionsFileConfig(root: string): Promise<AiInstructions
         'A new version of the Copilot instructions template is available. Would you like to update your file to access the latest features? Note: This will overwrite your existing file.',
     },
   };
-}
-
-async function readTemplateFile(ctx: ExtensionContext) {
-  const filePath = ctx.asAbsolutePath(`resources/llm-instructions.template`);
-  const fileUri = Uri.file(filePath);
-
-  return workspace.fs.readFile(fileUri);
 }
 
 async function ensureDirectory(pathString: string) {
@@ -135,20 +134,15 @@ async function setAsAnswered(key: string, ctx: ExtensionContext): Promise<void> 
   await ctx.globalState.update(key, { key, timestamp: Date.now() });
 }
 
-async function isInstructionsFileUpdated(
-  config: AiInstructionsConfig,
-  ctx: ExtensionContext,
-  log = console.error,
-) {
+async function isInstructionsFileUpdated(config: AiInstructionsConfig, log = console.error) {
   try {
-    const templateContent = await readTemplateFile(ctx);
     const existingContent = await workspace.fs.readFile(Uri.file(config.path));
 
-    const normalize = (content: Uint8Array) => {
+    const normalize = (content: Uint8Array | string) => {
       return Buffer.from(content).toString().toLowerCase().replace(/\s+/g, '');
     };
 
-    const normalizedTemplate = normalize(templateContent);
+    const normalizedTemplate = normalize(await templateContent());
     const normalizedExisting = normalize(existingContent);
 
     const templateChunks: string[] = normalizedTemplate.match(/.{1,4}/g) || [];
@@ -165,4 +159,15 @@ async function isInstructionsFileUpdated(
     // If there's any error reading files, assume it's up to date
     return true;
   }
+}
+
+async function templateContent() {
+  return [
+    await liquidRules(),
+    themeArchitectureRules(),
+    uxPrinciplesRules(),
+    htmlRules(),
+    cssRules(),
+    javascriptRules(),
+  ].join('\n\n');
 }

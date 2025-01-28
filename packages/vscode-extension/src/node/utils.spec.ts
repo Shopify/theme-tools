@@ -26,9 +26,9 @@ describe('utils', async () => {
   afterEach(vi.clearAllMocks);
   beforeEach(() => {
     vi.mocked(workspace).workspaceFolders = [
-      { uri: { fsPath: '/mock/path1' } },
-      { uri: { fsPath: '/mock/path2' } },
-      { uri: { fsPath: '/mock/path3' } },
+      { uri: { fsPath: path.join(path.sep, 'mock', 'path1') } },
+      { uri: { fsPath: path.join(path.sep, 'mock', 'path2') } },
+      { uri: { fsPath: path.join(path.sep, 'mock', 'path3') } },
     ] as any;
   });
 
@@ -75,7 +75,7 @@ describe('utils', async () => {
   });
 
   describe('getShopifyThemeRootDirs', async () => {
-    it('should return paths when all required folders exist in one of the workspace folders', async () => {
+    it('should return paths when all required folders exist in one of the workspace folders!', async () => {
       vi.mocked(workspace.fs.stat).mockImplementation((uri: any) => {
         if (uri.includes('path2')) {
           return Promise.resolve(true as any);
@@ -113,7 +113,7 @@ describe('utils', async () => {
       expect(result).toEqual([]);
     });
 
-    it('should handle multiple workspace folders', async () => {
+    it('should handle multiple workspace folders!', async () => {
       vi.mocked(workspace.fs.stat).mockImplementation((uri: any) => {
         if (uri.includes('path2')) {
           return Promise.reject(new Error('Not found'));
