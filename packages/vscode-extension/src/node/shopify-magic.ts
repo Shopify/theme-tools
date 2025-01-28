@@ -39,10 +39,11 @@ export interface LiquidSuggestion {
   suggestion: string;
 }
 
-const log = (msg?: any, ...opts: any[]) => console.error(`[Shopify Magic][Prompt] ${msg}`, ...opts);
+const logger = (msg?: any, ...opts: any[]) => console.error(`[Shopify Magic] ${msg}`, ...opts);
 
 export async function getShopifyMagicAnalysis(
   textEditor: TextEditor,
+  log = logger,
 ): Promise<ShopifyMagicDecoration[]> {
   const [model] = await lm.selectChatModels({
     vendor: 'copilot',
@@ -57,19 +58,15 @@ export async function getShopifyMagicAnalysis(
   try {
     const messages = await buildMessages(textEditor);
     const chatResponse = await model.sendRequest(messages, {}, new CancellationTokenSource().token);
-    const jsonResponse = await parseChatResponse(chatResponse);
+    const jsonResponse = await parseChatResponse(chatResponse, log);
 
     if (!Array.isArray(jsonResponse?.suggestions)) {
       log('Invalid response from language model', jsonResponse);
       return [];
     }
 
-    log(
-      `Received response from language model with ${jsonResponse?.suggestions?.length} suggestions.`,
-    );
-
+    log(`Received ${jsonResponse?.suggestions?.length ?? 0} suggestions from language model`);
     if (jsonResponse.suggestions.length === 0) {
-      log(jsonResponse.reasonIfNoSuggestions ?? 'No suggestions provided');
       return [];
     }
 
@@ -99,7 +96,7 @@ function buildShopifyMagicDecoration(
   return [{ type, options }];
 }
 
-async function parseChatResponse(chatResponse: LanguageModelChatResponse) {
+async function parseChatResponse(chatResponse: LanguageModelChatResponse, log = logger) {
   let accResponse = '';
 
   for await (const fragment of chatResponse.text) {
@@ -108,11 +105,11 @@ async function parseChatResponse(chatResponse: LanguageModelChatResponse) {
     if (fragment.includes('}')) {
       try {
         const parsedResponse = JSON.parse(accResponse.replace('```json', ''));
-        console.error(' parsedResponse >>>>>>>');
-        console.error(JSON.stringify(parsedResponse, null, 2));
-        console.error(' parsedResponse <<<<<<<');
+        log('The language model response has been parsed:');
+        log(JSON.stringify(parsedResponse, null, 2));
+        log('--');
         return parsedResponse;
-      } catch (_err) {
+      } catch {
         // ingore; next iteration
       }
     }

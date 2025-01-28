@@ -153,7 +153,7 @@ async function isInstructionsFileUpdated(config: AiInstructionsConfig, log = con
 
     log(`[Shopify Magic][AI] Similarity: ${similarity}`);
 
-    return similarity >= 0.8;
+    return similarity >= 0.9;
   } catch (error) {
     log(`[Shopify Magic][AI] Similarity: ${error}`);
     // If there's any error reading files, assume it's up to date
