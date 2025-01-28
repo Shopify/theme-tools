@@ -5,6 +5,7 @@ import {
   RawMarkup,
   LiquidDocParamNode,
   LiquidDocExampleNode,
+  TextNode,
 } from '@shopify/liquid-html-parser';
 import { Doc, doc } from 'prettier';
 
@@ -544,7 +545,18 @@ export function printLiquidDocExample(
   _args: LiquidPrinterArgs,
 ): Doc {
   const node = path.getValue();
-  const parts: Doc[] = ['@example'];
+  const parts: Doc[] = [];
+
+  // Add newline if not first node
+  const parentPath = path.getParentNode();
+  if (parentPath && 'nodes' in parentPath && Array.isArray(parentPath.nodes)) {
+    const index = parentPath.nodes.findIndex((n) => n === node);
+    if (index > 0) {
+      parts.push(hardline);
+    }
+  }
+
+  parts.push('@example');
 
   if (node.exampleContent?.value) {
     const content = node.exampleContent.value.trim();
