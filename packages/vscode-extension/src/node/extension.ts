@@ -22,7 +22,7 @@ import { vscodePrettierFormat } from './formatter';
 import { getShopifyMagicAnalysis, ShopifyMagicDecoration } from './shopify-magic';
 import { showShopifyMagicButton, showShopifyMagicLoadingButton } from './ui';
 import { createInstructionsFiles } from './llm-instructions';
-import { RefactorProvider } from './RefactorProvider';
+import { ShopifyMagicCodeActionProvider } from './ShopifyMagicCodeActionProvider';
 import { applySuggestion, conflictMarkerStart } from './shopify-magic-suggestions';
 
 let $client: LanguageClient | undefined;
@@ -53,6 +53,12 @@ export async function activate(context: ExtensionContext) {
     languages.registerDocumentFormattingEditProvider(
       [{ language: 'liquid' }],
       new LiquidFormatter(vscodePrettierFormat),
+    ),
+  );
+  context.subscriptions.push(
+    languages.registerCodeActionsProvider(
+      [{ language: 'liquid' }],
+      new ShopifyMagicCodeActionProvider(),
     ),
   );
   context.subscriptions.push(
@@ -89,12 +95,6 @@ export async function activate(context: ExtensionContext) {
       }
 
       $isApplyingSuggestion = false;
-    }),
-  );
-
-  context.subscriptions.push(
-    languages.registerCodeActionsProvider([{ language: 'liquid' }], new RefactorProvider(), {
-      providedCodeActionKinds: RefactorProvider.providedCodeActionKinds,
     }),
   );
 
