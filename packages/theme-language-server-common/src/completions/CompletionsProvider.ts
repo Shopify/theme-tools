@@ -19,6 +19,7 @@ import {
   RenderSnippetCompletionProvider,
   TranslationCompletionProvider,
   FilterNamedParameterCompletionProvider,
+  ContentForParameterCompletionProvider,
 } from './providers';
 import { GetSnippetNamesForURI } from './providers/RenderSnippetCompletionProvider';
 
@@ -61,6 +62,7 @@ export class CompletionsProvider {
     this.providers = [
       new ContentForCompletionProvider(),
       new ContentForBlockTypeCompletionProvider(getThemeBlockNames),
+      new ContentForParameterCompletionProvider(),
       new HtmlTagCompletionProvider(),
       new HtmlAttributeCompletionProvider(documentManager),
       new HtmlAttributeValueCompletionProvider(),
