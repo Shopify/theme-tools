@@ -1,5 +1,9 @@
 import { it, expect, describe, vi, afterEach, afterAll, beforeEach } from 'vitest';
-import { createInstructionsFiles } from './llm-instructions';
+import {
+  createInstructionsFiles,
+  isInstructionsFileUpdated,
+  templateContent,
+} from './llm-instructions';
 import { window, ExtensionContext } from 'vscode';
 import { getShopifyThemeRootDirs, isCursor } from './utils';
 import * as fs from 'node:fs/promises';
@@ -38,22 +42,24 @@ vi.mock('vscode', async () => {
 
 describe('createInstructionsFiles', async () => {
   const nullLogger = () => {};
-  const templateFile = path.join(__dirname, '..', '..', 'resources', 'llm-instructions.template');
   const ctx = {
     globalState: {
       get: vi.fn(),
       update: vi.fn(),
     },
-    asAbsolutePath: () => templateFile,
   } as unknown as ExtensionContext;
 
   let tmpDir: string;
-  let themeDirs: string[];
 
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'shopify-test-'));
-    themeDirs = [path.join(tmpDir, 'theme1'), path.join(tmpDir, 'theme2')];
 
+    vi.mocked(getShopifyThemeRootDirs).mockResolvedValue([
+      path.join(tmpDir, 'theme1'),
+      path.join(tmpDir, 'theme2'),
+    ]);
+
+    const themeDirs = await getShopifyThemeRootDirs();
     await Promise.all(themeDirs.map((dir) => fs.mkdir(dir, { recursive: true })));
   });
 
@@ -66,69 +72,121 @@ describe('createInstructionsFiles', async () => {
     vi.unstubAllGlobals();
   });
 
-  it('should create Cursor instructions files for each theme directory when user accepts', async () => {
-    vi.mocked(getShopifyThemeRootDirs).mockResolvedValue(themeDirs);
-    vi.mocked(isCursor).mockReturnValue(true);
+  describe('createInstructionsFiles', async () => {
+    it('should create Cursor instructions files for each theme directory when user accepts', async () => {
+      vi.mocked(isCursor).mockReturnValue(true);
 
-    await createInstructionsFiles(ctx, nullLogger);
+      await createInstructionsFiles(ctx, nullLogger);
 
-    expect(window.showInformationMessage).toHaveBeenCalledTimes(2);
+      expect(window.showInformationMessage).toHaveBeenCalledTimes(2);
 
-    for (const themeDir of themeDirs) {
-      const rulesPath = path.join(themeDir, '.cursorrules');
-      expect(await fileExists(rulesPath)).toBeTruthy();
-    }
+      for (const themeDir of await getShopifyThemeRootDirs()) {
+        const rulesPath = path.join(themeDir, '.cursorrules');
+        expect(await fileExists(rulesPath)).toBeTruthy();
+      }
+    });
+
+    it('should not create files when user declines', async () => {
+      vi.mocked(isCursor).mockReturnValue(true);
+      vi.mocked(window.showInformationMessage).mockResolvedValue('No' as any);
+
+      await createInstructionsFiles(ctx, nullLogger);
+
+      expect(window.showInformationMessage).toHaveBeenCalledTimes(2);
+
+      for (const themeDir of await getShopifyThemeRootDirs()) {
+        const rulesPath = path.join(themeDir, '.cursorrules');
+        expect(await fileExists(rulesPath)).toBeFalsy();
+      }
+
+      expect(ctx.globalState.update).toHaveBeenCalledTimes(2);
+    });
+
+    it('should create Copilot instructions when not using Cursor', async () => {
+      vi.mocked(isCursor).mockReturnValue(false);
+      vi.mocked(window.showInformationMessage).mockResolvedValue('Yes' as any);
+
+      await createInstructionsFiles(ctx, nullLogger);
+
+      for (const themeDir of await getShopifyThemeRootDirs()) {
+        const copilotPath = path.join(themeDir, '.github', 'copilot-instructions.md');
+        expect(await fileExists(copilotPath)).toBeTruthy();
+      }
+    });
+
+    it('should prompt for update when file exists', async () => {
+      vi.mocked(isCursor).mockReturnValue(true);
+      vi.mocked(window.showInformationMessage).mockResolvedValue('Yes' as any);
+
+      for (const themeDir of await getShopifyThemeRootDirs()) {
+        const rulesPath = path.join(themeDir, '.cursorrules');
+        await fs.mkdir(path.dirname(rulesPath), { recursive: true });
+        await fs.writeFile(rulesPath, 'old content');
+      }
+
+      await createInstructionsFiles(ctx, nullLogger);
+
+      expect(window.showInformationMessage).toHaveBeenCalledTimes(2);
+
+      for (const themeDir of await getShopifyThemeRootDirs()) {
+        const rulesPath = path.join(themeDir, '.cursorrules');
+        const content = await fs.readFile(rulesPath, 'utf-8');
+        expect(content).not.toBe('old content');
+      }
+    });
   });
 
-  it('should not create files when user declines', async () => {
-    vi.mocked(getShopifyThemeRootDirs).mockResolvedValue(themeDirs);
-    vi.mocked(isCursor).mockReturnValue(true);
-    vi.mocked(window.showInformationMessage).mockResolvedValue('No' as any);
+  describe('isInstructionsFileUpdated', () => {
+    let config: any;
 
-    await createInstructionsFiles(ctx, nullLogger);
+    beforeEach(async () => {
+      config = {
+        path: path.join(tmpDir, '.cursorrules'),
+        prompt: {
+          create: 'create prompt',
+          update: 'update prompt',
+        },
+      };
+    });
 
-    expect(window.showInformationMessage).toHaveBeenCalledTimes(2);
+    it('should return false when file does not contain liquid_development tags', async () => {
+      await fs.writeFile(config.path, 'content without tags');
+      const result = await isInstructionsFileUpdated(config, nullLogger);
 
-    for (const themeDir of themeDirs) {
-      const rulesPath = path.join(themeDir, '.cursorrules');
-      expect(await fileExists(rulesPath)).toBeFalsy();
-    }
+      expect(result).toBeFalsy();
+    });
 
-    expect(ctx.globalState.update).toHaveBeenCalledTimes(2);
-  });
+    it('should return true when content similarity is >= 90%', async () => {
+      const templateRules = await templateContent();
+      const personalUserRules = Array.from({ length: 1000 }, () =>
+        String.fromCharCode(Math.floor(Math.random() * (122 - 97 + 1)) + 97),
+      ).join('');
 
-  it('should create Copilot instructions when not using Cursor', async () => {
-    vi.mocked(getShopifyThemeRootDirs).mockResolvedValue(themeDirs);
-    vi.mocked(isCursor).mockReturnValue(false);
-    vi.mocked(window.showInformationMessage).mockResolvedValue('Yes' as any);
+      await fs.writeFile(config.path, personalUserRules + templateRules);
 
-    await createInstructionsFiles(ctx, nullLogger);
+      const result = await isInstructionsFileUpdated(config, nullLogger);
 
-    for (const themeDir of themeDirs) {
-      const copilotPath = path.join(themeDir, '.github', 'copilot-instructions.md');
-      expect(await fileExists(copilotPath)).toBeTruthy();
-    }
-  });
+      expect(result).toBeTruthy();
+    });
 
-  it('should prompt for update when file exists', async () => {
-    vi.mocked(getShopifyThemeRootDirs).mockResolvedValue(themeDirs);
-    vi.mocked(isCursor).mockReturnValue(true);
-    vi.mocked(window.showInformationMessage).mockResolvedValue('Yes' as any);
+    it('should return false when content similarity is < 90%', async () => {
+      await fs.writeFile(
+        config.path,
+        '<liquid_development>completely different content</liquid_development>',
+      );
 
-    for (const themeDir of themeDirs) {
-      const rulesPath = path.join(themeDir, '.cursorrules');
-      await fs.mkdir(path.dirname(rulesPath), { recursive: true });
-      await fs.writeFile(rulesPath, 'old content');
-    }
+      const result = await isInstructionsFileUpdated(config, nullLogger);
+      expect(result).toBeFalsy();
+    });
 
-    await createInstructionsFiles(ctx, nullLogger);
+    it('should return true when there is an error reading the file', async () => {
+      const configWithInvalidFile = {
+        ...config,
+        path: path.join(tmpDir, 'nonexistent-file'),
+      };
+      const result = await isInstructionsFileUpdated(configWithInvalidFile, nullLogger);
 
-    expect(window.showInformationMessage).toHaveBeenCalledTimes(2);
-
-    for (const themeDir of themeDirs) {
-      const rulesPath = path.join(themeDir, '.cursorrules');
-      const content = await fs.readFile(rulesPath, 'utf-8');
-      expect(content).not.toBe('old content');
-    }
+      expect(result).toBe(true);
+    });
   });
 });

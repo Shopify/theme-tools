@@ -136,13 +136,35 @@ async function setAsAnswered(key: string, ctx: ExtensionContext): Promise<void> 
   await ctx.globalState.update(key, { key, timestamp: Date.now() });
 }
 
-async function isInstructionsFileUpdated(config: AiInstructionsConfig, log = console.error) {
+/**
+ * Checks if the AI instructions file needs updating by comparing content
+ * similarity.
+ *
+ * Uses a chunk-based comparison to calculate similarity between template and
+ * existing file content. This approach is more resilient to minor formatting
+ * changes and custom additions while still detecting significant template
+ * updates.
+ *
+ * The 90% similarity threshold aims to balance between preserving user
+ * customizations and ensuring critical template updates are applied.
+ *
+ * @param config - Configuration object containing file path and prompts
+ * @param log - Optional logging function, defaults to console.error
+ *
+ * @returns `true` if file matches template closely enough (>=90% similar)
+ */
+export async function isInstructionsFileUpdated(config: AiInstructionsConfig, log = console.error) {
+  const normalize = (content: Uint8Array | string) => {
+    const template = Buffer.from(content).toString();
+    const templateMatch = template.match(/<liquid_development>([\s\S]*)<\/liquid_development>/);
+    if (!templateMatch) {
+      return '';
+    }
+    return templateMatch[1].toLowerCase().replace(/\s+/g, '');
+  };
+
   try {
     const existingContent = await workspace.fs.readFile(Uri.file(config.path));
-
-    const normalize = (content: Uint8Array | string) => {
-      return Buffer.from(content).toString().toLowerCase().replace(/\s+/g, '');
-    };
 
     const normalizedTemplate = normalize(await templateContent());
     const normalizedExisting = normalize(existingContent);
@@ -154,7 +176,6 @@ async function isInstructionsFileUpdated(config: AiInstructionsConfig, log = con
     const similarity = commonChunks.length / Math.max(templateChunks.length, existingChunks.length);
 
     log(`[Shopify Magic][AI] Similarity: ${similarity}`);
-
     return similarity >= 0.9;
   } catch (error) {
     log(`[Shopify Magic][AI] Similarity: ${error}`);
@@ -163,13 +184,15 @@ async function isInstructionsFileUpdated(config: AiInstructionsConfig, log = con
   }
 }
 
-async function templateContent() {
+export async function templateContent() {
   return [
+    '<liquid_development>',
     await liquidRules(),
     themeArchitectureRules(),
     uxPrinciplesRules(),
     htmlRules(),
     cssRules(),
     javascriptRules(),
+    '</liquid_development>',
   ].join('\n\n');
 }
