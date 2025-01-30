@@ -1493,7 +1493,7 @@ function toNamedLiquidTag(
       return {
         ...liquidTagBaseAttributes(node),
         name: node.name,
-        markup: toContentForMarkup(node.markup),
+        markup: toContentForMarkup(node.markup, options.mode),
       };
     }
 
@@ -1773,11 +1773,25 @@ function toRawMarkupKindFromLiquidNode(node: ConcreteLiquidRawTag): RawMarkupKin
   }
 }
 
-function toContentForMarkup(node: ConcreteLiquidTagContentForMarkup): ContentForMarkup {
+function toContentForMarkup(
+  node: ConcreteLiquidTagContentForMarkup,
+  mode: ASTBuildOptions['mode'],
+): ContentForMarkup {
   return {
     type: NodeTypes.ContentForMarkup,
     contentForType: toExpression(node.contentForType) as LiquidString,
-    args: node.args.map(toNamedArgument),
+    /**
+     * When we're in completion mode we won't necessarily have valid named
+     * arguments so we need to call toLiquidArgument instead of toNamedArgument.
+     * We cast using `as` so that this doesn't affect the type system used in
+     * other areas (like theme check) for a scenario that only occurs in
+     * completion mode. This means that our types are *wrong* in completion mode
+     * but this is the compromise we're making to get completions to work.
+     */
+    args:
+      mode === 'completion'
+        ? (node.args.map(toLiquidArgument) as LiquidNamedArgument[])
+        : node.args.map(toNamedArgument),
     position: position(node),
     source: node.source,
   };

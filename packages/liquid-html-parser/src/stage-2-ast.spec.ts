@@ -1546,6 +1546,15 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.name.0.value').to.equal('h█');
     });
 
+    it('should not freak out when parsing incomplete named arguments for content_for tags', () => {
+      ast = toAST(`{% content_for "blocks", id: 1, cl█ %}`);
+
+      expectPath(ast, 'children.0.type').to.equal('LiquidTag');
+      expectPath(ast, 'children.0.markup.args.0.type').to.equal('NamedArgument');
+      expectPath(ast, 'children.0.markup.args.1.type').to.equal('VariableLookup');
+      expectPath(ast, 'children.0.markup.args').to.have.lengthOf(2);
+    });
+
     it('should not freak out when parsing dangling liquid tags', () => {
       ast = toAST(`<h {% if cond %}attr{% end█ %}>`);
       expectPath(ast, 'children.0.type').to.equal('HtmlElement');
