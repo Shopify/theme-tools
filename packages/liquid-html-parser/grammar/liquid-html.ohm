@@ -128,11 +128,12 @@ Liquid <: Helpers {
   liquidTagLiquidMarkup = tagMarkup
 
   liquidTagContentFor = liquidTagRule<"content_for", liquidTagContentForMarkup>
-  
+
   liquidTagContentForMarkup =
     contentForType (argumentSeparatorOptionalComma contentForTagArgument) (space* ",")? space*
-    
+
   contentForTagArgument = listOf<contentForNamedArgument<delimTag>, argumentSeparatorOptionalComma>
+  completionModeContentForTagArgument = listOf<contentForNamedArgument<delimTag>, argumentSeparatorOptionalComma> (argumentSeparator? (liquidVariableLookup<delimTag>))?
   contentForNamedArgument<delim> = (variableSegment ("." variableSegment)*) space* ":" space* (liquidExpression<delim>)
 
   contentForType = liquidString<delimTag>
@@ -217,7 +218,7 @@ Liquid <: Helpers {
   commentBlockStart = "{%" "-"? space* ("comment"    endOfIdentifier) space* tagMarkup "-"? "%}"
   commentBlockEnd   = "{%" "-"? space* ("endcomment" endOfIdentifier) space* tagMarkup "-"? "%}"
 
-  liquidDoc = 
+  liquidDoc =
     liquidDocStart
       liquidDocBody
     liquidDocEnd
@@ -396,7 +397,7 @@ LiquidDoc <: Helpers {
 
   // By default, space matches new lines as well. We override it here to make writing rules easier.
   strictSpace = " " | "\t"
-  // We use this as an escape hatch to stop matching TextNode and try again when one of these characters is encountered 
+  // We use this as an escape hatch to stop matching TextNode and try again when one of these characters is encountered
   openControl:= "@" | end
 
   fallbackNode = "@" anyExceptStar<endOfParam>
@@ -536,18 +537,24 @@ StrictLiquidHTML <: LiquidHTML {
 
 WithPlaceholderLiquid <: Liquid {
   liquidFilter<delim> := space* "|" space* identifier (space* ":" space* filterArguments<delim> (space* ",")?)?
+  liquidTagContentForMarkup :=
+    contentForType (argumentSeparatorOptionalComma completionModeContentForTagArgument) (space* ",")? space*
   liquidTagName := (letter | "█") (alnum | "_")*
   variableSegment := (letter | "_" | "█") (identifierCharacter | "█")*
 }
 
 WithPlaceholderLiquidStatement <: LiquidStatement {
   liquidFilter<delim> := space* "|" space* identifier (space* ":" space* filterArguments<delim> (space* ",")?)?
+  liquidTagContentForMarkup :=
+    contentForType (argumentSeparatorOptionalComma completionModeContentForTagArgument) (space* ",")? space*
   liquidTagName := (letter | "█") (alnum | "_")*
   variableSegment := (letter | "_" | "█") (identifierCharacter | "█")*
 }
 
 WithPlaceholderLiquidHTML <: LiquidHTML {
   liquidFilter<delim> := space* "|" space* identifier (space* ":" space* filterArguments<delim> (space* ",")?)?
+  liquidTagContentForMarkup :=
+    contentForType (argumentSeparatorOptionalComma completionModeContentForTagArgument) (space* ",")? space*
   liquidTagName := (letter | "█") (alnum | "_")*
   variableSegment := (letter | "_" | "█") (identifierCharacter | "█")*
   leadingTagNameTextNode := (letter | "█") (alnum | "-" | ":" | "█")*
