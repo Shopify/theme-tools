@@ -1,5 +1,27 @@
 # @shopify/theme-language-server-common
 
+## 2.6.0
+
+### Minor Changes
+
+- c85a6131: Cache liquidDoc fetch results
+- 931dc9b9: Add hover support for Liquid snippets using {% doc %} annotations
+- 9765bece: Support `default.settings` completion + hover
+
+  - Fix bug where `presets.[].settings` hover only worked on first setting
+  - Fix bug where preset block completion creates an error when `blocks` isn't defined
+
+### Patch Changes
+
+- 02b8967f: Prevent rendering hover tooltip for snippets that do not renderable content
+- dd0cd4d2: [Internal] Modify paramDescription to be null when empty
+- Updated dependencies [c85a6131]
+- Updated dependencies [913d5386]
+- Updated dependencies [931dc9b9]
+- Updated dependencies [dd0cd4d2]
+  - @shopify/theme-check-common@3.7.0
+  - @shopify/liquid-html-parser@2.3.1
+
 ## 2.5.0
 
 ### Minor Changes

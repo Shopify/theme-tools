@@ -1,5 +1,16 @@
 # @shopify/theme-language-server-browser
 
+## 2.6.0
+
+### Patch Changes
+
+- Updated dependencies [c85a6131]
+- Updated dependencies [931dc9b9]
+- Updated dependencies [02b8967f]
+- Updated dependencies [9765bece]
+- Updated dependencies [dd0cd4d2]
+  - @shopify/theme-language-server-common@2.6.0
+
 ## 2.5.0
 
 ### Patch Changes
