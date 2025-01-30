@@ -26,13 +26,13 @@ export function basePrompt(textEditor: TextEditor): string {
       </focus_areas>
       <ensurance>
         <point>The new code you propose contain full lines of valid code and keep the correct indentation, scope, and style format as the original code</point>
+        <point>**Do not suggest to keep** something that is already valid</point>
         <point>Scopes are defined by the opened by "{%", "{{" with the matching closing element "%}" or "}}"</point>
         <point>The range must include the closing element ("%}","}}") for every opening element ("{%","{{")</point>
         <point>Code suggestions cannot overlap in line numbers. If you have multiple suggestions for the same code chunk, merge them into a single suggestion</point>
         <point>Make full-scope suggestions that consider the entire context of the code you are modifying, keeping the logical scope of the code valid</point>
         <point>The resulting code must work and should not break existing HTML tags or Liquid syntax</point>
         <point>The suggestions are specific, actionable, and align with the best practices in Liquid and Shopify theme development</point>
-        <point>Do not suggest to keep something that is already valid</point>
         <point>Add a maximum of ${numberOfSuggestions} distinct suggestions to the array</point>
       </ensurance>
       <references>
