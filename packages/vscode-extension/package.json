@@ -101,7 +101,7 @@
         "title": "Liquid Theme Check: Run Checks"
       },
       {
-        "command": "shopifyLiquid.sidefix",
+        "command": "shopifyLiquid.magicFix",
         "title": "Apply Shopify Magic suggestion"
       },
       {

@@ -138,7 +138,7 @@ function createHoverMessage(key: string, liquidSuggestion: LiquidSuggestion) {
   const hoverUrlArgs = encodeURIComponent(JSON.stringify({ key, ...liquidSuggestion }));
   const hoverMessage = new MarkdownString(
     `#### ✨ Shopify Magic suggestion\n ${liquidSuggestion.suggestion}
-    \n\n[Quick fix](command:shopifyLiquid.sidefix?${hoverUrlArgs})`,
+    \n\n[Quick fix](command:shopifyLiquid.magicFix?${hoverUrlArgs})`,
   );
 
   hoverMessage.isTrusted = true;

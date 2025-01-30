@@ -69,7 +69,7 @@ export async function activate(context: ExtensionContext) {
     ),
   );
   context.subscriptions.push(
-    commands.registerCommand('shopifyLiquid.sidefix', async (suggestion: any) => {
+    commands.registerCommand('shopifyLiquid.magicFix', async (suggestion: any) => {
       $isApplyingSuggestion = true;
       applySuggestion($editor, suggestion);
 
