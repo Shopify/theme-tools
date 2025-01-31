@@ -45,6 +45,7 @@ export enum NodeTypes {
   RenderMarkup = 'RenderMarkup',
   RenderVariableExpression = 'RenderVariableExpression',
   LiquidDocParamNode = 'LiquidDocParamNode',
+  LiquidDocExampleNode = 'LiquidDocExampleNode',
 }
 
 // These are officially supported with special node types
