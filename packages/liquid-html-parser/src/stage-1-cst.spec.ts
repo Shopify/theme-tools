@@ -1154,7 +1154,9 @@ describe('Unit: Stage 1 (CST)', () => {
           cst = toCST(testStr);
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
           expectPath(cst, '0.children.0.name').to.equal('example');
-          expectPath(cst, '0.children.0.exampleContent.value').to.equal('\n          This is an example\n');
+          expectPath(cst, '0.children.0.exampleContent.value').to.equal(
+            '\n          This is an example\n',
+          );
           expectPath(cst, '0.children.1.type').to.equal('LiquidDocParamNode');
           expectPath(cst, '0.children.1.paramName.value').to.equal('param1');
         });

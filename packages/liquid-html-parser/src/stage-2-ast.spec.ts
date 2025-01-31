@@ -1210,7 +1210,6 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.markup.0.name').to.eql('assign');
       expectPath(ast, 'children.0.markup.0.markup.name').to.eql('var1');
 
-
       expectPath(ast, 'children.0.markup.1.type').to.eql('LiquidTag');
       expectPath(ast, 'children.0.markup.1.name').to.eql('if');
 
