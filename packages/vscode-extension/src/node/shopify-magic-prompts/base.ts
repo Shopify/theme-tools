@@ -23,10 +23,10 @@ export function basePrompt(textEditor: TextEditor): string {
         <area>Combine multiple operations into one to improve readability and performance -- for example, use the find filter instead of where and first, if find is a valid filter</area>
         <area>You should not suggest changes to the code that impact only HTML -- they should be focused on Liquid and Theme features.</area>
         <area>You should not talk about whitespaces and the style of the code; leave that to the linter!</area>
+        <area>**Do not suggest to keep** something that is already valid</area>
       </focus_areas>
       <ensurance>
         <point>The new code you propose contain full lines of valid code and keep the correct indentation, scope, and style format as the original code</point>
-        <point>**Do not suggest to keep** something that is already valid</point>
         <point>Scopes are defined by the opened by "{%", "{{" with the matching closing element "%}" or "}}"</point>
         <point>The range must include the closing element ("%}","}}") for every opening element ("{%","{{")</point>
         <point>Code suggestions cannot overlap in line numbers. If you have multiple suggestions for the same code chunk, merge them into a single suggestion</point>
