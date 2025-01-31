@@ -1231,7 +1231,8 @@ describe('Unit: Stage 2 (AST)', () => {
 
       ast = toLiquidAST(`
         {% doc -%}
-        @param paramWithNoType
+        @param requiredParamWithNoType
+        @param [optionalParameter] - optional parameter description
         @param {String} paramWithDescription - param with description and \`punctation\`. This is still a valid param description.
         @param {String} paramWithNoDescription
         @unsupported this node falls back to a text node
@@ -1242,34 +1243,43 @@ describe('Unit: Stage 2 (AST)', () => {
 
       expectPath(ast, 'children.0.body.nodes.0.type').to.eql('LiquidDocParamNode');
       expectPath(ast, 'children.0.body.nodes.0.name').to.eql('param');
+      expectPath(ast, 'children.0.body.nodes.0.required').to.eql(true);
       expectPath(ast, 'children.0.body.nodes.0.paramName.type').to.eql('TextNode');
-      expectPath(ast, 'children.0.body.nodes.0.paramName.value').to.eql('paramWithNoType');
+      expectPath(ast, 'children.0.body.nodes.0.paramName.value').to.eql('requiredParamWithNoType');
       expectPath(ast, 'children.0.body.nodes.0.paramType').to.be.null;
       expectPath(ast, 'children.0.body.nodes.0.paramDescription').to.be.null;
 
       expectPath(ast, 'children.0.body.nodes.1.type').to.eql('LiquidDocParamNode');
       expectPath(ast, 'children.0.body.nodes.1.name').to.eql('param');
+      expectPath(ast, 'children.0.body.nodes.1.required').to.eql(false);
       expectPath(ast, 'children.0.body.nodes.1.paramName.type').to.eql('TextNode');
-      expectPath(ast, 'children.0.body.nodes.1.paramName.value').to.eql('paramWithDescription');
+      expectPath(ast, 'children.0.body.nodes.1.paramName.value').to.eql('optionalParameter');
       expectPath(ast, 'children.0.body.nodes.1.paramDescription.type').to.eql('TextNode');
       expectPath(ast, 'children.0.body.nodes.1.paramDescription.value').to.eql(
-        'param with description and `punctation`. This is still a valid param description.',
+        'optional parameter description',
       );
-      expectPath(ast, 'children.0.body.nodes.1.paramType.type').to.eql('TextNode');
-      expectPath(ast, 'children.0.body.nodes.1.paramType.value').to.eql('String');
+      expectPath(ast, 'children.0.body.nodes.1.paramType').to.be.null;
+      expectPath(ast, 'children.0.body.nodes.1.paramType').to.be.null;
 
       expectPath(ast, 'children.0.body.nodes.2.type').to.eql('LiquidDocParamNode');
       expectPath(ast, 'children.0.body.nodes.2.name').to.eql('param');
+      expectPath(ast, 'children.0.body.nodes.2.required').to.eql(true);
       expectPath(ast, 'children.0.body.nodes.2.paramName.type').to.eql('TextNode');
-      expectPath(ast, 'children.0.body.nodes.2.paramName.value').to.eql('paramWithNoDescription');
-      expectPath(ast, 'children.0.body.nodes.2.paramDescription').to.be.null;
+      expectPath(ast, 'children.0.body.nodes.2.paramName.value').to.eql('paramWithDescription');
+      expectPath(ast, 'children.0.body.nodes.2.paramDescription.type').to.eql('TextNode');
+      expectPath(ast, 'children.0.body.nodes.2.paramDescription.value').to.eql(
+        'param with description and `punctation`. This is still a valid param description.',
+      );
       expectPath(ast, 'children.0.body.nodes.2.paramType.type').to.eql('TextNode');
       expectPath(ast, 'children.0.body.nodes.2.paramType.value').to.eql('String');
 
-      expectPath(ast, 'children.0.body.nodes.3.type').to.eql('TextNode');
-      expectPath(ast, 'children.0.body.nodes.3.value').to.eql(
-        '@unsupported this node falls back to a text node',
-      );
+      expectPath(ast, 'children.0.body.nodes.3.type').to.eql('LiquidDocParamNode');
+      expectPath(ast, 'children.0.body.nodes.3.name').to.eql('param');
+      expectPath(ast, 'children.0.body.nodes.2.paramName.type').to.eql('TextNode');
+      expectPath(ast, 'children.0.body.nodes.3.paramName.value').to.eql('paramWithNoDescription');
+      expectPath(ast, 'children.0.body.nodes.3.paramDescription').to.be.null;
+      expectPath(ast, 'children.0.body.nodes.3.paramType.type').to.eql('TextNode');
+      expectPath(ast, 'children.0.body.nodes.3.paramType.value').to.eql('String');
     });
 
     it('should parse unclosed tables with assignments', () => {
