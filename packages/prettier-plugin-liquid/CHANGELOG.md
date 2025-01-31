@@ -1,5 +1,13 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.7.2
+
+### Patch Changes
+
+- 841ca6d1: Update repository URL for all packages to be case sensitive
+- Updated dependencies [841ca6d1]
+  - @shopify/liquid-html-parser@2.3.2
+
 ## 1.7.1
 
 ### Patch Changes

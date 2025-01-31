@@ -1,5 +1,11 @@
 # @shopify/codemirror-language-client
 
+## 0.7.3
+
+### Patch Changes
+
+- 841ca6d1: Update repository URL for all packages to be case sensitive
+
 ## 0.7.2
 
 ### Patch Changes
