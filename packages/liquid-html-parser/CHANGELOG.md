@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.3.2
+
+### Patch Changes
+
+- 841ca6d1: Update repository URL for all packages to be case sensitive
+
 ## 2.3.1
 
 ### Patch Changes

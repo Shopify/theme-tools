@@ -1,5 +1,14 @@
 # @shopify/theme-check-node
 
+## 3.7.1
+
+### Patch Changes
+
+- 841ca6d1: Update repository URL for all packages to be case sensitive
+- Updated dependencies [841ca6d1]
+  - @shopify/theme-check-docs-updater@3.7.1
+  - @shopify/theme-check-common@3.7.1
+
 ## 3.7.0
 
 ### Patch Changes

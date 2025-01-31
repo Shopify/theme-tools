@@ -1,5 +1,17 @@
 ## theme-check-vscode
 
+## 3.5.3
+
+### Patch Changes
+
+- 841ca6d1: Update repository URL for all packages to be case sensitive
+- Updated dependencies [841ca6d1]
+  - @shopify/theme-language-server-browser@2.6.1
+  - @shopify/theme-language-server-node@2.6.1
+  - @shopify/prettier-plugin-liquid@1.7.2
+  - @shopify/liquid-html-parser@2.3.2
+  - @shopify/theme-check-common@3.7.1
+
 ## 3.5.2
 
 ### Patch Changes

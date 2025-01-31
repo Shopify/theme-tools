@@ -1,5 +1,13 @@
 # @shopify/theme-language-server-browser
 
+## 2.6.1
+
+### Patch Changes
+
+- 841ca6d1: Update repository URL for all packages to be case sensitive
+- Updated dependencies [841ca6d1]
+  - @shopify/theme-language-server-common@2.6.1
+
 ## 2.6.0
 
 ### Patch Changes

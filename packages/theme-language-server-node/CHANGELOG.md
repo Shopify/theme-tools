@@ -1,5 +1,15 @@
 # @shopify/theme-language-server-node
 
+## 2.6.1
+
+### Patch Changes
+
+- 841ca6d1: Update repository URL for all packages to be case sensitive
+- Updated dependencies [841ca6d1]
+  - @shopify/theme-language-server-common@2.6.1
+  - @shopify/theme-check-docs-updater@3.7.1
+  - @shopify/theme-check-node@3.7.1
+
 ## 2.6.0
 
 ### Patch Changes

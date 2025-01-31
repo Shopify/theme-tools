@@ -1,5 +1,11 @@
 # @shopify/lang-jsonc
 
+## 1.0.1
+
+### Patch Changes
+
+- 841ca6d1: Update repository URL for all packages to be case sensitive
+
 ## 1.0.0
 
 ### Major Changes
