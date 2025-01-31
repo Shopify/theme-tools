@@ -6,11 +6,11 @@
   "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/prettier-plugin-liquid#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shopify/theme-tools.git",
+    "url": "https://github.com/Shopify/theme-tools.git",
     "directory": "packages/prettier-plugin-liquid"
   },
   "bugs": {
-    "url": "https://github.com/shopify/theme-tools/issues"
+    "url": "https://github.com/Shopify/theme-tools/issues"
   },
   "license": "MIT",
   "main": "dist/index.js",

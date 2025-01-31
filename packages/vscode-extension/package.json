@@ -4,11 +4,11 @@
   "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/vscode-extension#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shopify/theme-tools.git",
+    "url": "https://github.com/Shopify/theme-tools.git",
     "directory": "packages/vscode-extension"
   },
   "bugs": {
-    "url": "https://github.com/shopify/theme-tools/issues"
+    "url": "https://github.com/Shopify/theme-tools/issues"
   },
   "version": "3.5.2",
   "publisher": "Shopify",

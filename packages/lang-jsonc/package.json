@@ -10,11 +10,11 @@
   "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/lang-jsonc#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shopify/theme-tools.git",
+    "url": "https://github.com/Shopify/theme-tools.git",
     "directory": "packages/lang-jsonc"
   },
   "bugs": {
-    "url": "https://github.com/shopify/theme-tools/issues"
+    "url": "https://github.com/Shopify/theme-tools/issues"
   },
   "main": "./dist/umd/index.js",
   "typings": "./dist/umd/index.js",

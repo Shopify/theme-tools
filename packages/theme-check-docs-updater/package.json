@@ -8,11 +8,11 @@
   "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/theme-check-docs-updater#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shopify/theme-tools.git",
+    "url": "https://github.com/Shopify/theme-tools.git",
     "directory": "packages/theme-check-docs-updater"
   },
   "bugs": {
-    "url": "https://github.com/shopify/theme-tools/issues"
+    "url": "https://github.com/Shopify/theme-tools/issues"
   },
   "publishConfig": {
     "access": "public",
