@@ -6,7 +6,6 @@ import {
   isCompletionList,
   mockJSONLanguageService,
 } from '../../test/test-helpers';
-import { SourceCodeType, ThemeBlock } from '@shopify/theme-check-common';
 
 describe('Unit: PresetsBlockTypeCompletionProvider', () => {
   const rootUri = 'file:///root/';
@@ -129,64 +128,5 @@ describe('Unit: PresetsBlockTypeCompletionProvider', () => {
         expect(completions.items.map((item) => item.label)).to.include.members(test.expected);
       });
     }
-  });
-
-  describe('invalid schema', () => {
-    it('does not complete when schema is invalid', async () => {
-      const source = `
-        {% schema %}
-        typo
-        {
-          "blocks": [{"type": "@theme"}],
-          "presets": [{
-            "blocks": [
-              { "type": "█" },
-            ]
-          }]
-        }
-        {% endschema %}
-      `;
-
-      const params = getRequestParams(documentManager, 'sections/section.liquid', source);
-      const completions = await jsonLanguageService.completions(params);
-
-      assert(isCompletionList(completions));
-      expect(completions.items).to.have.lengthOf(0);
-    });
-
-    it('does not complete when parent block schema is invalid', async () => {
-      const source = `
-        {% schema %}
-        {
-          "blocks": [{"type": "custom-block"}],
-          "presets": [{
-            "blocks": [
-              {
-                "type": "custom-block",
-                "blocks": [{"type": "█"}],
-              },
-            ]
-          }]
-        }
-        {% endschema %}
-      `;
-
-      documentManager.open(
-        `${rootUri}/blocks/custom-block.liquid`,
-        `{% schema %}
-          typo
-          {
-            "blocks": [{"type": "@theme"}]
-          }
-        {% endschema %}`,
-        1,
-      );
-
-      const params = getRequestParams(documentManager, 'sections/section.liquid', source);
-      const completions = await jsonLanguageService.completions(params);
-
-      assert(isCompletionList(completions));
-      expect(completions.items).to.have.lengthOf(0);
-    });
   });
 });

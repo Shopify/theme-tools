@@ -23,15 +23,16 @@ export async function toSchema(
   uri: UriString,
   sourceCode: SourceCode,
   isValidSchema: IsValidSchema | undefined,
+  isStrict: boolean = true,
 ): Promise<AppBlockSchema | SectionSchema | ThemeBlockSchema | undefined> {
   if (sourceCode.type !== SourceCodeType.LiquidHtml) return undefined;
   switch (true) {
     case mode === 'app' && isBlock(uri):
-      return toAppBlockSchema(uri, sourceCode.ast);
+      return toAppBlockSchema(uri, sourceCode.ast, isStrict);
     case mode === 'theme' && isBlock(uri):
-      return toBlockSchema(uri, sourceCode.ast, isValidSchema);
+      return toBlockSchema(uri, sourceCode.ast, isValidSchema, isStrict);
     case mode === 'theme' && isSection(uri):
-      return toSectionSchema(uri, sourceCode.ast, isValidSchema);
+      return toSectionSchema(uri, sourceCode.ast, isValidSchema, isStrict);
     default:
       return undefined;
   }
@@ -76,10 +77,11 @@ export async function toBlockSchema(
   uri: UriString,
   liquidAst: LiquidHtmlNode | Error,
   isValidSchema: IsValidSchema | undefined,
+  isStrict: boolean,
 ): Promise<ThemeBlockSchema> {
   const name = path.basename(uri, '.liquid');
   const schemaNode = toSchemaNode(liquidAst);
-  const parsed = toParsed(schemaNode);
+  const parsed = toParsed(schemaNode, isStrict);
   const ast = toAst(schemaNode);
 
   return {
@@ -100,10 +102,11 @@ export async function toSectionSchema(
   uri: UriString,
   liquidAst: LiquidHtmlNode | Error,
   isValidSchema: IsValidSchema | undefined,
+  isStrict: boolean,
 ): Promise<SectionSchema> {
   const name = path.basename(uri, '.liquid');
   const schemaNode = toSchemaNode(liquidAst);
-  const parsed = toParsed(schemaNode);
+  const parsed = toParsed(schemaNode, isStrict);
   const ast = toAst(schemaNode);
 
   return {
@@ -121,10 +124,11 @@ export async function toSectionSchema(
 export async function toAppBlockSchema(
   uri: UriString,
   liquidAst: LiquidHtmlNode | Error,
+  isStrict: boolean,
 ): Promise<AppBlockSchema> {
   const name = path.basename(uri, '.liquid');
   const schemaNode = toSchemaNode(liquidAst);
-  const parsed = toParsed(schemaNode);
+  const parsed = toParsed(schemaNode, isStrict);
   const ast = toAst(schemaNode);
 
   return {
@@ -178,9 +182,9 @@ export async function getSchemaFromJSON(context: Context<SourceCodeType.JSON, Sc
   };
 }
 
-function toParsed(schemaNode: LiquidRawTag | Error): any | Error {
+function toParsed(schemaNode: LiquidRawTag | Error, isStrict: boolean): any | Error {
   if (schemaNode instanceof Error) return schemaNode;
-  return parseJSON(schemaNode.body.value);
+  return parseJSON(schemaNode.body.value, undefined, isStrict);
 }
 
 function toAst(schemaNode: LiquidRawTag | Error): SourceCode<SourceCodeType.JSON>['ast'] | Error {

@@ -5,7 +5,7 @@ import {
   HoverParams,
 } from 'vscode-languageserver-protocol';
 import { DocumentManager } from '../../documents';
-import { GetThemeBlockNames, GetThemeBlockSchema } from '../JSONContributions';
+import { GetThemeBlockNames } from '../JSONContributions';
 import { JSONLanguageService } from '../JSONLanguageService';
 import { SourceCodeType } from '@shopify/theme-check-common';
 import { GetTranslationsForURI } from '../../translations';

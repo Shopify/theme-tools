@@ -24,6 +24,8 @@ import { RequestContext } from './RequestContext';
 import { findSchemaNode } from './utils';
 import { SettingsPropertyCompletionProvider } from './completions/providers/SettingsPropertyCompletionProvider';
 import { SettingsHoverProvider } from './hover/providers/SettingsHoverProvider';
+import { PresetsBlockSettingsPropertyCompletionProvider } from './completions/providers/PresetsBlockSettingsPropertyCompletionProvider';
+import { PresetsBlockSettingsHoverProvider } from './hover/providers/PresetsBlockSettingsHoverProvider';
 
 /** The getInfoContribution API will only fallback if we return undefined synchronously */
 const SKIP_CONTRIBUTION = undefined as any;
@@ -55,11 +57,16 @@ export class JSONContributions implements JSONWorkerContribution {
       new TranslationPathHoverProvider(),
       new SchemaTranslationHoverProvider(getDefaultSchemaTranslations),
       new SettingsHoverProvider(getDefaultSchemaTranslations),
+      new PresetsBlockSettingsHoverProvider(getDefaultSchemaTranslations, getThemeBlockSchema),
     ];
     this.completionProviders = [
       new SchemaTranslationsCompletionProvider(getDefaultSchemaTranslations),
       new BlockTypeCompletionProvider(getThemeBlockNames),
       new PresetsBlockTypeCompletionProvider(getThemeBlockNames, getThemeBlockSchema),
+      new PresetsBlockSettingsPropertyCompletionProvider(
+        getDefaultSchemaTranslations,
+        getThemeBlockSchema,
+      ),
       new SettingsPropertyCompletionProvider(getDefaultSchemaTranslations),
     ];
   }

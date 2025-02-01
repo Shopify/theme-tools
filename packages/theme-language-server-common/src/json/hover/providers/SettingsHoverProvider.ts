@@ -15,7 +15,7 @@ export class SettingsHoverProvider implements JSONHoverProvider {
       isSectionOrBlockFile(context.doc.uri) &&
       isLiquidRequestContext(context) &&
       path.length !== 0 &&
-      (isPresetSettingsPath(path) || isDefaultSettingsPath(path))
+      (isPresetsSettingsPath(path) || isDefaultSettingsPath(path))
     );
   }
 
@@ -41,7 +41,7 @@ export class SettingsHoverProvider implements JSONHoverProvider {
   }
 }
 
-function isPresetSettingsPath(path: JSONPath) {
+function isPresetsSettingsPath(path: JSONPath) {
   return (
     path.at(0) === 'presets' &&
     path.at(2) === 'settings' &&
@@ -75,5 +75,5 @@ async function getSettingsLabel(
     return;
   }
 
-  return schema.parsed.settings.find((setting: any) => setting.id === label)?.label;
+  return schema.parsed.settings.find((setting: any) => setting?.id === label)?.label;
 }
