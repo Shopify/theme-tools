@@ -3,7 +3,7 @@ import { DocumentManager } from '../../../documents';
 import { JSONLanguageService } from '../../JSONLanguageService';
 import { getRequestParams, mockJSONLanguageService } from '../../test/test-helpers';
 
-describe('Module: PresetsBlockSettingsHoverProvider', async () => {
+describe('Module: BlockSettingsHoverProvider', async () => {
   const rootUri = 'file:///root';
   let jsonLanguageService: JSONLanguageService;
   let documentManager: DocumentManager;

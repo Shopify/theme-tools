@@ -7,7 +7,7 @@ import {
   mockJSONLanguageService,
 } from '../../test/test-helpers';
 
-describe('Unit: PresetsBlockTypeCompletionProvider', () => {
+describe('Unit: ReferencedBlockTypeCompletionProvider', () => {
   const rootUri = 'file:///root/';
   let jsonLanguageService: JSONLanguageService;
   let documentManager: DocumentManager;

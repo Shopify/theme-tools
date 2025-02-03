@@ -13,7 +13,7 @@ import { JSONHoverProvider } from '../JSONHoverProvider';
 import { isSectionOrBlockSchema } from '../../completions/providers/BlockTypeCompletionProvider';
 import { GetThemeBlockSchema } from '../../JSONContributions';
 
-export class PresetsBlockSettingsHoverProvider implements JSONHoverProvider {
+export class BlockSettingsHoverProvider implements JSONHoverProvider {
   constructor(
     private getDefaultSchemaTranslations: GetTranslationsForURI,
     private getThemeBlockSchema: GetThemeBlockSchema,
@@ -24,7 +24,7 @@ export class PresetsBlockSettingsHoverProvider implements JSONHoverProvider {
       isSectionOrBlockFile(context.doc.uri) &&
       isLiquidRequestContext(context) &&
       path.length !== 0 &&
-      isPresetsBlocksSettingsPath(path)
+      isBlocksSettingsPath(path)
     );
   }
 
@@ -65,9 +65,9 @@ export class PresetsBlockSettingsHoverProvider implements JSONHoverProvider {
   }
 }
 
-function isPresetsBlocksSettingsPath(path: JSONPath) {
+function isBlocksSettingsPath(path: JSONPath) {
   return (
-    path.at(0) === 'presets' &&
+    (path.at(0) === 'presets' || path.at(0) === 'default') &&
     path.at(-4) === 'blocks' &&
     path.at(-2) === 'settings' &&
     path.at(-1) !== undefined &&

@@ -2,15 +2,16 @@ import { JSONPath } from 'vscode-json-languageservice';
 import { GetThemeBlockSchema } from '../../JSONContributions';
 import { RequestContext } from '../../RequestContext';
 import { JSONCompletionItem, JSONCompletionProvider } from '../JSONCompletionProvider';
-import { isSectionOrBlockFile } from '../../utils';
+import { isBlockFile, isSectionFile } from '../../utils';
 import { deepGet, isError, SourceCodeType } from '@shopify/theme-check-common';
 import { isSectionOrBlockSchema } from './BlockTypeCompletionProvider';
 import { GetTranslationsForURI } from '../../../translations';
 import { schemaSettingsPropertyCompletionItems } from './helpers/schemaSettings';
 
 /**
- * The PresetsBlockSettingsPropertyCompletionProvider offers value completions of the
- * `presets.[].(recursive blocks.[]).settings` keys inside section and theme block `{% schema %}` tags.
+ * The BlockSettingsPropertyCompletionProvider offers value completions of the
+ * `presets.[].(recursive blocks.[]).settings` keys and `defaults.blocks.[].settings` keys inside
+ * `{% schema %}` tags.
  *
  * @example
  * {% schema %}
@@ -26,11 +27,21 @@ import { schemaSettingsPropertyCompletionItems } from './helpers/schemaSettings'
  *         },
  *       ]
  *     },
- *   ]
+ *   ],
+ *   "default": {
+ *     "blocks": [
+ *       {
+ *         "type": "block-type",
+ *         "settings": {
+ *           "█"
+ *         }
+ *       },
+ *     ]
+ *   }
  * }
  * {% endschema %}
  */
-export class PresetsBlockSettingsPropertyCompletionProvider implements JSONCompletionProvider {
+export class BlockSettingsPropertyCompletionProvider implements JSONCompletionProvider {
   constructor(
     private getDefaultSchemaTranslations: GetTranslationsForURI,
     private getThemeBlockSchema: GetThemeBlockSchema,
@@ -40,8 +51,20 @@ export class PresetsBlockSettingsPropertyCompletionProvider implements JSONCompl
     const { doc } = context;
 
     if (doc.type !== SourceCodeType.LiquidHtml) return [];
-    if (!isSectionOrBlockFile(doc.uri) || !isPresetsBlocksSettingsPath(path)) {
+
+    // section files can have schemas with `presets` and `default`
+    // block files can have schemas with `presets` only
+    if (
+      !(
+        isSectionFile(doc.uri) &&
+        (isPresetsBlocksSettingsPath(path) || isDefaultBlocksSettingsPath(path))
+      ) &&
+      !(isBlockFile(doc.uri) && isPresetsBlocksSettingsPath(path))
+    ) {
       return [];
+    }
+
+    if (isSectionFile(doc.uri) && !isDefaultBlocksSettingsPath(path)) {
     }
 
     const schema = await doc.getSchema();
@@ -80,4 +103,9 @@ export class PresetsBlockSettingsPropertyCompletionProvider implements JSONCompl
 // We need to ensure the last leg of the path is { "blocks": [{ "settings": { "█" } }] }
 function isPresetsBlocksSettingsPath(path: JSONPath) {
   return path.at(0) === 'presets' && path.at(-3) === 'blocks' && path.at(-1) === 'settings';
+}
+
+// `blocks` inside `default` can't be nested within other `blocks`
+function isDefaultBlocksSettingsPath(path: JSONPath) {
+  return path.at(0) === 'default' && path.at(1) === 'blocks' && path.at(3) === 'settings';
 }
