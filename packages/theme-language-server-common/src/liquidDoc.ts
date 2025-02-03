@@ -2,7 +2,7 @@ import { SourceCodeType, visit } from '@shopify/theme-check-common';
 
 import { LiquidHtmlNode } from '@shopify/theme-check-common';
 
-import { LiquidDocParamNode } from '@shopify/liquid-html-parser';
+import { LiquidDocExampleNode, LiquidDocParamNode } from '@shopify/liquid-html-parser';
 
 export type GetSnippetDefinitionForURI = (
   uri: string,
@@ -16,12 +16,17 @@ export type SnippetDefinition = {
 
 type LiquidDocDefinition = {
   parameters?: LiquidDocParameter[];
+  examples?: LiquidDocExample[]; //  I don't think we need an array but maybe we'll allow multiple examples
 };
 
 export type LiquidDocParameter = {
   name: string;
   description: string | null;
   type: string | null;
+};
+
+export type LiquidDocExample = {
+  content: string;
 };
 
 export function getSnippetDefinition(
@@ -41,10 +46,22 @@ export function getSnippetDefinition(
     },
   );
 
+  const examples: LiquidDocExample[] = visit<SourceCodeType.LiquidHtml, LiquidDocExample>(
+    snippet,
+    {
+      LiquidDocExampleNode(node: LiquidDocExampleNode) {
+        return {
+          content: node.exampleContent.value,
+        };
+      },
+    },
+  );
+
   return {
     name: snippetName,
     liquidDoc: {
       parameters,
+      examples,
     },
   };
 }
