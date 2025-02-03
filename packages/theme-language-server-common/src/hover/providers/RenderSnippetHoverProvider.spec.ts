@@ -43,6 +43,11 @@ describe('Module: RenderSnippetHoverProvider', async () => {
           required: true,
         },
       ],
+      examples: [
+        {
+          content: '{{ product }}',
+        },
+      ],
     },
   };
 
@@ -51,7 +56,7 @@ describe('Module: RenderSnippetHoverProvider', async () => {
       provider = createProvider(async () => mockSnippetDefinition);
       await expect(provider).to.hover(
         `{% render 'product-car█d' %}`,
-        '### product-card\n\n**Parameters:**\n- `title`: string - The title of the product\n- `border-radius` (Optional): number - The border radius in px\n- `no-type` - This parameter has no type\n- `no-description`: string\n- `no-type-or-description`',
+        '### product-card\n\n**Parameters:**\n- `title`: string - The title of the product\n- `border-radius` (Optional): number - The border radius in px\n- `no-type` - This parameter has no type\n- `no-description`: string\n- `no-type-or-description`\n\n**Examples:**\n\`\`\`liquid\n{{ product }}\n\`\`\`',
       );
     });
 

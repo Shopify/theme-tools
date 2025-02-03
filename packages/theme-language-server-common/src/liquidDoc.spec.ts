@@ -22,6 +22,7 @@ describe('Unit: getSnippetDefinition', () => {
       name: 'product-card',
       liquidDoc: {
         parameters: [],
+        examples: [],
       },
     });
   });
@@ -80,6 +81,63 @@ describe('Unit: getSnippetDefinition', () => {
             required: true,
           },
         ],
+        examples: [],
+      },
+    });
+  });
+
+  it('should extract examples from @example annotations', async () => {
+    const ast = toAST(`
+        {% doc %}
+          @example
+          {{ product }}
+        {% enddoc %}
+      `);
+
+    const result = getSnippetDefinition(ast, 'product-card');
+    expect(result).to.deep.equal({
+      name: 'product-card',
+      liquidDoc: {
+        parameters: [],
+        examples: [{ content: '\n          {{ product }}\n' }],
+      },
+    });
+  });
+
+  it('should extract examples from @example annotations with multiple lines', async () => {
+    const ast = toAST(`
+        {% doc %}
+          @example
+          {{ product }}
+          {{ product.title }}
+        {% enddoc %}
+      `);
+
+    const result = getSnippetDefinition(ast, 'product-card');
+    expect(result).to.deep.equal({
+      name: 'product-card',
+      liquidDoc: {
+        parameters: [],
+        examples: [{ content: '\n          {{ product }}\n          {{ product.title }}\n' }],
+      },
+    });
+  });
+
+  it('should extract example from @example and @param annotations', async () => {
+    const ast = toAST(`
+        {% doc %}
+          @param {String} product - The product
+          @example
+          {{ product }} // This is an example
+        {% enddoc %}
+      `);
+
+    const result = getSnippetDefinition(ast, 'product-card');
+    expect(result).to.deep.equal({
+      name: 'product-card',
+      liquidDoc: {
+        parameters: [{ name: 'product', description: 'The product', type: 'String' }],
+        examples: [{ content: '\n          {{ product }} // This is an example\n' }],
       },
     });
   });
