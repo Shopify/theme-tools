@@ -1285,12 +1285,7 @@ function buildAst(
           name: node.name,
           position: position(node),
           source: node.source,
-          paramName: {
-            type: NodeTypes.TextNode,
-            value: node.paramName.value,
-            position: position(node.paramName),
-            source: node.paramName.source,
-          },
+          paramName: toTextNode(node.paramName),
           paramDescription: toNullableTextNode(node.paramDescription),
           paramType: toNullableTextNode(node.paramType),
         });
