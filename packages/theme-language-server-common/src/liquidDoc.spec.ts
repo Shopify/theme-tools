@@ -99,7 +99,12 @@ describe('Unit: getSnippetDefinition', () => {
       name: 'product-card',
       liquidDoc: {
         parameters: [],
-        examples: [{ content: '\n          {{ product }}\n' }],
+        examples: [
+          {
+            content: '\n          {{ product }}\n',
+            nodeType: 'example',
+          },
+        ],
       },
     });
   });
@@ -118,7 +123,12 @@ describe('Unit: getSnippetDefinition', () => {
       name: 'product-card',
       liquidDoc: {
         parameters: [],
-        examples: [{ content: '\n          {{ product }}\n          {{ product.title }}\n' }],
+        examples: [
+          {
+            content: '\n          {{ product }}\n          {{ product.title }}\n',
+            nodeType: 'example',
+          },
+        ],
       },
     });
   });
@@ -136,8 +146,49 @@ describe('Unit: getSnippetDefinition', () => {
     expect(result).to.deep.equal({
       name: 'product-card',
       liquidDoc: {
-        parameters: [{ name: 'product', description: 'The product', type: 'String' }],
-        examples: [{ content: '\n          {{ product }} // This is an example\n' }],
+        parameters: [
+          {
+            name: 'product',
+            description: 'The product',
+            type: 'String',
+            nodeType: 'param',
+          },
+        ],
+        examples: [
+          {
+            content: '\n          {{ product }} // This is an example\n',
+            nodeType: 'example',
+          },
+        ],
+      },
+    });
+  });
+
+  it('should extract multiple examples from @example annotations', async () => {
+    const ast = toAST(`
+        {% doc %}
+          @example
+          {{ product }}
+          @example
+          {{ product.title }}
+        {% enddoc %}
+      `);
+
+    const result = getSnippetDefinition(ast, 'product-card');
+    expect(result).to.deep.equal({
+      name: 'product-card',
+      liquidDoc: {
+        parameters: [],
+        examples: [
+          {
+            content: '\n          {{ product }}\n',
+            nodeType: 'example',
+          },
+          {
+            content: '\n          {{ product.title }}\n',
+            nodeType: 'example',
+          },
+        ],
       },
     });
   });

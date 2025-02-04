@@ -46,6 +46,11 @@ describe('Module: RenderSnippetHoverProvider', async () => {
       examples: [
         {
           content: '{{ product }}',
+          nodeType: 'example',
+        },
+        {
+          content: '{{ product.title }}',
+          nodeType: 'example',
         },
       ],
     },

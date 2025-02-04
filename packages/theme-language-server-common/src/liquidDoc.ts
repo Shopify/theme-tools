@@ -19,16 +19,21 @@ type LiquidDocDefinition = {
   examples?: LiquidDocExample[]; //  I don't think we need an array but maybe we'll allow multiple examples
 };
 
-export type LiquidDocParameter = {
+interface LiquidDocNode {
+  nodeType: 'param' | 'example';
+}
+
+export interface LiquidDocParameter extends LiquidDocNode {
   name: string;
   description: string | null;
   type: string | null;
   required: boolean;
 };
 
-export type LiquidDocExample = {
+export interface LiquidDocExample extends LiquidDocNode {
   content: string;
-};
+  nodeType: 'example';
+}
 
 export function getSnippetDefinition(
   snippet: LiquidHtmlNode,
@@ -46,18 +51,16 @@ export function getSnippetDefinition(
         };
       },
     },
-  );
-
-  const examples: LiquidDocExample[] = visit<SourceCodeType.LiquidHtml, LiquidDocExample>(
-    snippet,
-    {
-      LiquidDocExampleNode(node: LiquidDocExampleNode) {
-        return {
-          content: node.exampleContent.value,
-        };
-      },
+    LiquidDocExampleNode(node: LiquidDocExampleNode) {
+      return {
+        content: node.exampleContent.value,
+        nodeType: 'example',
+      };
     },
-  );
+  });
+
+  const parameters = nodes.filter((node): node is LiquidDocParameter => node.nodeType === 'param');
+  const examples = nodes.filter((node): node is LiquidDocExample => node.nodeType === 'example');
 
   return {
     name: snippetName,
