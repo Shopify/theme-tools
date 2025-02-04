@@ -13,17 +13,25 @@ describe('Function: parseJSON', () => {
   it('should return an Error for invalid JSON string', () => {
     const jsonString = '{"key": "value"';
 
-    const result = parseJSON(jsonString);
+    const result = parseJSON(jsonString, undefined, true);
 
     expect(result).toBeInstanceOf(Error);
     expect(result.message).toBe('Closing brace `}` expected.');
+  });
+
+  it('should not return an Error for invalid JSON string if not strict', () => {
+    const jsonString = '{"key": "value"';
+
+    const result = parseJSON(jsonString);
+
+    expect(result).toEqual({ key: 'value' });
   });
 
   it('should return default value for invalid JSON string when provided', () => {
     const jsonString = '{"key": "value"';
     const defaultValue = { defaultKey: 'defaultValue' };
 
-    const result = parseJSON(jsonString, defaultValue);
+    const result = parseJSON(jsonString, defaultValue, true);
 
     expect(result).toEqual(defaultValue);
   });
@@ -53,7 +61,7 @@ describe('Function: parseJSON', () => {
   it('should return an Error object if parsing fails', () => {
     const jsonString = '{"key": "value"';
 
-    const result = parseJSON(jsonString);
+    const result = parseJSON(jsonString, undefined, true);
 
     expect(result).toBeInstanceOf(Error);
     expect(result.message).toBe('Closing brace `}` expected.');

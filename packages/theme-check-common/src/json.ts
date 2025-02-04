@@ -11,11 +11,7 @@ const PARSE_OPTS = {
 export function parseJSON(source: string): any | Error;
 export function parseJSON(source: string, defaultValue: any): any;
 export function parseJSON(source: string, defaultValue: any, isStrict: boolean): any;
-export function parseJSON(
-  source: string,
-  defaultValue?: any,
-  isStrict: boolean = true,
-): any | Error {
+export function parseJSON(source: string, defaultValue?: any, isStrict?: boolean): any | Error {
   try {
     /**
      * The jsonc-parser is fault-tolerant and typically returns a valid

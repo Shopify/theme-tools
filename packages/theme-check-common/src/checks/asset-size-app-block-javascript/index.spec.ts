@@ -63,18 +63,4 @@ describe('Module: AssetSizeAppBlockJavaScript', () => {
       end: { index: 71 },
     });
   });
-
-  it('should not report an offense if the schema is malformed JSON', async () => {
-    const extensionFiles: MockTheme = {
-      'blocks/app.liquid': `
-        {% schema %}
-        {
-          "javascript": "app.js",
-        {% endschema %}
-      `,
-    };
-
-    const offenses = await check(extensionFiles, [AssetSizeAppBlockJavaScript]);
-    expect(offenses).toHaveLength(0);
-  });
 });
