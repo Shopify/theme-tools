@@ -10,7 +10,8 @@ const PARSE_OPTS = {
 
 export function parseJSON(source: string): any | Error;
 export function parseJSON(source: string, defaultValue: any): any;
-export function parseJSON(source: string, defaultValue?: any): any | Error {
+export function parseJSON(source: string, defaultValue: any, isStrict: boolean): any;
+export function parseJSON(source: string, defaultValue?: any, isStrict?: boolean): any | Error {
   try {
     /**
      * The jsonc-parser is fault-tolerant and typically returns a valid
@@ -20,7 +21,7 @@ export function parseJSON(source: string, defaultValue?: any): any | Error {
     const errors: ParseError[] = [];
     const result = parse(source, errors, PARSE_OPTS);
 
-    if (errors.length) {
+    if (errors.length && isStrict) {
       throw errors[0];
     }
 

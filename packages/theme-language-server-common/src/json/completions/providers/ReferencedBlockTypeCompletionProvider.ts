@@ -11,8 +11,9 @@ import {
 import { GetThemeBlockNames, GetThemeBlockSchema } from '../../JSONContributions';
 
 /**
- * The PresetsBlockTypeCompletionProvider offers value completions of the
- * `presets.[](recursive .blocks.[]).type` keys inside section and theme block `{% schema %}` tags.
+ * The ReferencedBlockTypeCompletionProvider offers value completions of the
+ * `presets.[](recursive .blocks.[]).type` value and `default.blocks.[].type` value inside
+ * section and theme block `{% schema %}` tags.
  *
  * @example
  * {% schema %}
@@ -23,11 +24,16 @@ import { GetThemeBlockNames, GetThemeBlockSchema } from '../../JSONContributions
  *         { "type": "█" },
  *       ]
  *     },
- *   ]
+ *   ],
+ *   "default": {
+ *     "blocks": [
+ *       { "type": "█" },
+ *     ]
+ *   }
  * }
  * {% endschema %}
  */
-export class PresetsBlockTypeCompletionProvider implements JSONCompletionProvider {
+export class ReferencedBlockTypeCompletionProvider implements JSONCompletionProvider {
   constructor(
     private getThemeBlockNames: GetThemeBlockNames,
     private getThemeBlockSchema: GetThemeBlockSchema,
@@ -37,7 +43,7 @@ export class PresetsBlockTypeCompletionProvider implements JSONCompletionProvide
     if (
       !isSectionOrBlockFile(context.doc.uri) ||
       !isLiquidRequestContext(context) ||
-      !isPresetBlockPath(path)
+      !isBlockTypePath(path)
     ) {
       return [];
     }
@@ -97,8 +103,12 @@ export class PresetsBlockTypeCompletionProvider implements JSONCompletionProvide
 
 // `blocks` can be nested within other `blocks`
 // We need to ensure the last leg of the path is { "blocks": [{ "type": "█" }] }
-function isPresetBlockPath(path: JSONPath) {
-  return path.at(0) === 'presets' && path.at(-3) === 'blocks' && path.at(-1) === 'type';
+function isBlockTypePath(path: JSONPath) {
+  return (
+    (path.at(0) === 'presets' || path.at(0) === 'default') &&
+    path.at(-3) === 'blocks' &&
+    path.at(-1) === 'type'
+  );
 }
 
 function isNestedBlockPath(path: JSONPath) {

@@ -15,7 +15,7 @@ import { AugmentedSourceCode, DocumentManager } from '../documents';
 import { GetTranslationsForURI } from '../translations';
 import { JSONCompletionProvider } from './completions/JSONCompletionProvider';
 import { BlockTypeCompletionProvider } from './completions/providers/BlockTypeCompletionProvider';
-import { PresetsBlockTypeCompletionProvider } from './completions/providers/PresetsBlockTypeCompletionProvider';
+import { ReferencedBlockTypeCompletionProvider } from './completions/providers/ReferencedBlockTypeCompletionProvider';
 import { SchemaTranslationsCompletionProvider } from './completions/providers/SchemaTranslationCompletionProvider';
 import { JSONHoverProvider } from './hover/JSONHoverProvider';
 import { SchemaTranslationHoverProvider } from './hover/providers/SchemaTranslationHoverProvider';
@@ -24,6 +24,8 @@ import { RequestContext } from './RequestContext';
 import { findSchemaNode } from './utils';
 import { SettingsPropertyCompletionProvider } from './completions/providers/SettingsPropertyCompletionProvider';
 import { SettingsHoverProvider } from './hover/providers/SettingsHoverProvider';
+import { BlockSettingsPropertyCompletionProvider } from './completions/providers/BlockSettingsPropertyCompletionProvider';
+import { BlockSettingsHoverProvider } from './hover/providers/BlockSettingsHoverProvider';
 
 /** The getInfoContribution API will only fallback if we return undefined synchronously */
 const SKIP_CONTRIBUTION = undefined as any;
@@ -55,11 +57,16 @@ export class JSONContributions implements JSONWorkerContribution {
       new TranslationPathHoverProvider(),
       new SchemaTranslationHoverProvider(getDefaultSchemaTranslations),
       new SettingsHoverProvider(getDefaultSchemaTranslations),
+      new BlockSettingsHoverProvider(getDefaultSchemaTranslations, getThemeBlockSchema),
     ];
     this.completionProviders = [
       new SchemaTranslationsCompletionProvider(getDefaultSchemaTranslations),
       new BlockTypeCompletionProvider(getThemeBlockNames),
-      new PresetsBlockTypeCompletionProvider(getThemeBlockNames, getThemeBlockSchema),
+      new ReferencedBlockTypeCompletionProvider(getThemeBlockNames, getThemeBlockSchema),
+      new BlockSettingsPropertyCompletionProvider(
+        getDefaultSchemaTranslations,
+        getThemeBlockSchema,
+      ),
       new SettingsPropertyCompletionProvider(getDefaultSchemaTranslations),
     ];
   }
