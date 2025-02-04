@@ -1011,21 +1011,133 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.children.0.value').to.equal('@param');
         });
 
-        it('should parse @param with name', () => {
+        it('should parse required @param with name', () => {
           const testStr = `{% doc %} @param paramWithNoDescription {% enddoc %}`;
           cst = toCST(testStr);
 
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocParamNode');
-          expectPath(cst, '0.children.0.paramName.type').to.equal('TextNode');
-          expectPath(cst, '0.children.0.paramName.value').to.equal('paramWithNoDescription');
-          expectPath(cst, '0.children.0.paramName.locStart').to.equal(
+          expectPath(cst, '0.children.0.paramName.type').to.equal('LiquidDocParamNameNode');
+          expectPath(cst, '0.children.0.paramName.required').to.equal(true);
+          expectPath(cst, '0.children.0.paramName.content.value').to.equal(
+            'paramWithNoDescription',
+          );
+          expectPath(cst, '0.children.0.paramName.content.locStart').to.equal(
             testStr.indexOf('paramWithNoDescription'),
           );
           expectPath(cst, '0.children.0.paramName.locEnd').to.equal(
             testStr.indexOf('paramWithNoDescription') + 'paramWithNoDescription'.length,
           );
+
           expectPath(cst, '0.children.0.paramDescription.type').to.equal('TextNode');
           expectPath(cst, '0.children.0.paramDescription.value').to.equal('');
+        });
+
+        it('should parse an optional @param', () => {
+          const testStr = `{% doc %}
+          @param [paramWithNoDescription]
+          @param [    paramWithWhitespace       ]
+          @param {String} [optionalParam] - The optional param
+          @param {String} [paramWithType]
+          {% enddoc %}`;
+          cst = toCST(testStr);
+
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocParamNode');
+          expectPath(cst, '0.children.0.paramName.type').to.equal('LiquidDocParamNameNode');
+          expectPath(cst, '0.children.0.paramName.required').to.equal(false);
+          expectPath(cst, '0.children.0.paramName.content.value').to.equal(
+            'paramWithNoDescription',
+          );
+          expectPath(cst, '0.children.0.paramName.content.locStart').to.equal(
+            testStr.indexOf('paramWithNoDescription'),
+          );
+          expectPath(cst, '0.children.0.paramName.content.locEnd').to.equal(
+            testStr.indexOf('paramWithNoDescription') + 'paramWithNoDescription'.length,
+          );
+          expectPath(cst, '0.children.0.paramDescription.type').to.equal('TextNode');
+          expectPath(cst, '0.children.0.paramDescription.value').to.equal('');
+
+          expectPath(cst, '0.children.1.type').to.equal('LiquidDocParamNode');
+          expectPath(cst, '0.children.1.paramName.type').to.equal('LiquidDocParamNameNode');
+          expectPath(cst, '0.children.1.paramName.required').to.equal(false);
+          expectPath(cst, '0.children.1.paramName.content.value').to.equal('paramWithWhitespace');
+          expectPath(cst, '0.children.1.paramName.content.locStart').to.equal(
+            testStr.indexOf('paramWithWhitespace'),
+          );
+          expectPath(cst, '0.children.1.paramName.content.locEnd').to.equal(
+            testStr.indexOf('paramWithWhitespace') + 'paramWithWhitespace'.length,
+          );
+
+          expectPath(cst, '0.children.2.type').to.equal('LiquidDocParamNode');
+          expectPath(cst, '0.children.2.paramName.type').to.equal('LiquidDocParamNameNode');
+          expectPath(cst, '0.children.2.paramName.required').to.equal(false);
+          expectPath(cst, '0.children.2.paramType.type').to.equal('TextNode');
+          expectPath(cst, '0.children.2.paramType.value').to.equal('String');
+          expectPath(cst, '0.children.2.paramDescription.type').to.equal('TextNode');
+          expectPath(cst, '0.children.2.paramDescription.value').to.equal('The optional param');
+
+          expectPath(cst, '0.children.3.type').to.equal('LiquidDocParamNode');
+          expectPath(cst, '0.children.3.paramName.type').to.equal('LiquidDocParamNameNode');
+          expectPath(cst, '0.children.3.paramName.required').to.equal(false);
+          expectPath(cst, '0.children.3.paramType.value').to.equal('String');
+          expectPath(cst, '0.children.3.paramDescription.value').to.equal('');
+        });
+
+        it('should parse @param with malformed optional delimiters as Text Nodes', () => {
+          const testStr = `{% doc %} 
+            @param paramWithMissingHeadDelim] 
+            @param [paramWithMissingTailDelim
+            @param missingHeadWithDescription] - description value
+            @param [missingTailWithDescription - description value
+            @param [too many words] description
+          {% enddoc %}`;
+          cst = toCST(testStr);
+
+          expectPath(cst, '0.children.0.type').to.equal('TextNode');
+          expectPath(cst, '0.children.0.value').to.equal('@param paramWithMissingHeadDelim]');
+          expectPath(cst, '0.children.0.locStart').to.equal(
+            testStr.indexOf('@param paramWithMissingHeadDelim]'),
+          );
+          expectPath(cst, '0.children.0.locEnd').to.equal(
+            testStr.indexOf('@param paramWithMissingHeadDelim]') +
+              '@param paramWithMissingHeadDelim]'.length,
+          );
+
+          expectPath(cst, '0.children.1.type').to.equal('TextNode');
+          expectPath(cst, '0.children.1.value').to.equal('@param [paramWithMissingTailDelim');
+          expectPath(cst, '0.children.1.locStart').to.equal(
+            testStr.indexOf('@param [paramWithMissingTailDelim'),
+          );
+          expectPath(cst, '0.children.1.locEnd').to.equal(
+            testStr.indexOf('@param [paramWithMissingTailDelim') +
+              '@param [paramWithMissingTailDelim'.length,
+          );
+
+          expectPath(cst, '0.children.2.type').to.equal('TextNode');
+          expectPath(cst, '0.children.2.value').to.equal(
+            '@param missingHeadWithDescription] - description value',
+          );
+          expectPath(cst, '0.children.2.locStart').to.equal(
+            testStr.indexOf('@param missingHeadWithDescription] - description value'),
+          );
+          expectPath(cst, '0.children.2.locEnd').to.equal(
+            testStr.indexOf('@param missingHeadWithDescription] - description value') +
+              '@param missingHeadWithDescription] - description value'.length,
+          );
+
+          expectPath(cst, '0.children.3.type').to.equal('TextNode');
+          expectPath(cst, '0.children.3.value').to.equal(
+            '@param [missingTailWithDescription - description value',
+          );
+          expectPath(cst, '0.children.3.locStart').to.equal(
+            testStr.indexOf('@param [missingTailWithDescription - description value'),
+          );
+          expectPath(cst, '0.children.3.locEnd').to.equal(
+            testStr.indexOf('@param [missingTailWithDescription - description value') +
+              '@param [missingTailWithDescription - description value'.length,
+          );
+
+          expectPath(cst, '0.children.4.type').to.equal('TextNode');
+          expectPath(cst, '0.children.4.value').to.equal('@param [too many words] description');
         });
 
         it('should parse @param with name and description', () => {
@@ -1033,9 +1145,16 @@ describe('Unit: Stage 1 (CST)', () => {
           cst = toCST(testStr);
 
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocParamNode');
-          expectPath(cst, '0.children.0.paramName.type').to.equal('TextNode');
-          expectPath(cst, '0.children.0.paramName.value').to.equal('paramWithDescription');
-          expectPath(cst, '0.children.0.paramDescription.type').to.equal('TextNode');
+          expectPath(cst, '0.children.0.paramName.type').to.equal('LiquidDocParamNameNode');
+          expectPath(cst, '0.children.0.paramName.required').to.equal(true);
+          expectPath(cst, '0.children.0.paramName.content.type').to.equal('TextNode');
+          expectPath(cst, '0.children.0.paramName.content.value').to.equal('paramWithDescription');
+          expectPath(cst, '0.children.0.paramName.content.locStart').to.equal(
+            testStr.indexOf('paramWithDescription'),
+          );
+          expectPath(cst, '0.children.0.paramName.content.locEnd').to.equal(
+            testStr.indexOf('paramWithDescription') + 'paramWithDescription'.length,
+          );
           expectPath(cst, '0.children.0.paramDescription.value').to.equal('param with description');
         });
 
@@ -1044,7 +1163,10 @@ describe('Unit: Stage 1 (CST)', () => {
           cst = toCST(testStr);
 
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocParamNode');
-          expectPath(cst, '0.children.0.paramName.value').to.equal('paramWithType');
+          expectPath(cst, '0.children.0.paramName.type').to.equal('LiquidDocParamNameNode');
+          expectPath(cst, '0.children.0.paramName.required').to.equal(true);
+          expectPath(cst, '0.children.0.paramName.content.type').to.equal('TextNode');
+          expectPath(cst, '0.children.0.paramName.content.value').to.equal('paramWithType');
 
           expectPath(cst, '0.children.0.paramType.type').to.equal('TextNode');
           expectPath(cst, '0.children.0.paramType.value').to.equal('String');
@@ -1059,7 +1181,7 @@ describe('Unit: Stage 1 (CST)', () => {
           cst = toCST(testStr);
 
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocParamNode');
-          expectPath(cst, '0.children.0.paramName.value').to.equal('paramWithType');
+          expectPath(cst, '0.children.0.paramName.content.value').to.equal('paramWithType');
 
           expectPath(cst, '0.children.0.paramType.type').to.equal('TextNode');
           expectPath(cst, '0.children.0.paramType.value').to.equal('String');
@@ -1098,11 +1220,11 @@ describe('Unit: Stage 1 (CST)', () => {
           cst = toCST(testStr);
 
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocParamNode');
-          expectPath(cst, '0.children.0.paramName.value').to.equal('param1');
+          expectPath(cst, '0.children.0.paramName.content.value').to.equal('param1');
           expectPath(cst, '0.children.0.paramDescription.value').to.equal('first parameter');
 
           expectPath(cst, '0.children.1.type').to.equal('LiquidDocParamNode');
-          expectPath(cst, '0.children.1.paramName.value').to.equal('param2');
+          expectPath(cst, '0.children.1.paramName.content.value').to.equal('param2');
           expectPath(cst, '0.children.1.paramDescription.value').to.equal('second parameter');
 
           expectPath(cst, '0.children.2.type').to.equal('TextNode');
@@ -1158,7 +1280,7 @@ describe('Unit: Stage 1 (CST)', () => {
             '\n          This is an example\n',
           );
           expectPath(cst, '0.children.1.type').to.equal('LiquidDocParamNode');
-          expectPath(cst, '0.children.1.paramName.value').to.equal('param1');
+          expectPath(cst, '0.children.1.paramName.content.value').to.equal('param1');
         });
 
         it('should parse example node with whitespace and new lines', () => {
