@@ -128,10 +128,10 @@ Liquid <: Helpers {
   liquidTagLiquidMarkup = tagMarkup
 
   liquidTagContentFor = liquidTagRule<"content_for", liquidTagContentForMarkup>
-  
+
   liquidTagContentForMarkup =
     contentForType (argumentSeparatorOptionalComma contentForTagArgument) (space* ",")? space*
-    
+
   contentForTagArgument = listOf<contentForNamedArgument<delimTag>, argumentSeparatorOptionalComma>
   contentForNamedArgument<delim> = (variableSegment ("." variableSegment)*) space* ":" space* (liquidExpression<delim>)
 
@@ -217,7 +217,7 @@ Liquid <: Helpers {
   commentBlockStart = "{%" "-"? space* ("comment"    endOfIdentifier) space* tagMarkup "-"? "%}"
   commentBlockEnd   = "{%" "-"? space* ("endcomment" endOfIdentifier) space* tagMarkup "-"? "%}"
 
-  liquidDoc = 
+  liquidDoc =
     liquidDocStart
       liquidDocBody
     liquidDocEnd
@@ -392,20 +392,26 @@ LiquidDoc <: Helpers {
   Node := (LiquidDocNode | TextNode)*
   LiquidDocNode =
     | paramNode
+    | exampleNode
     | fallbackNode
 
   // By default, space matches new lines as well. We override it here to make writing rules easier.
   strictSpace = " " | "\t"
-  // We use this as an escape hatch to stop matching TextNode and try again when one of these characters is encountered 
+  // We use this as an escape hatch to stop matching TextNode and try again when one of these characters is encountered
   openControl:= "@" | end
 
-  fallbackNode = "@" anyExceptStar<endOfParam>
   paramNode = "@param" strictSpace* paramType? strictSpace* paramName (strictSpace* "-")? strictSpace* paramDescription
   paramType = "{" strictSpace* paramTypeContent strictSpace* "}"
   paramTypeContent = anyExceptStar<("}"| strictSpace)>
   paramName = identifierCharacter+
   paramDescription = anyExceptStar<endOfParam>
   endOfParam = strictSpace* (newline | end)
+
+  exampleNode = "@example" strictSpace* exampleContent
+  exampleContent = anyExceptStar<endOfExample>
+  endOfExample =  strictSpace* ("@" | end)
+
+  fallbackNode = "@" anyExceptStar<endOfParam>
 }
 
 LiquidHTML <: Liquid {

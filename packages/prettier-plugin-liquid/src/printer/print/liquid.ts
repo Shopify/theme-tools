@@ -4,6 +4,7 @@ import {
   isBranchedTag,
   RawMarkup,
   LiquidDocParamNode,
+  LiquidDocExampleNode,
 } from '@shopify/liquid-html-parser';
 import { Doc, doc } from 'prettier';
 
@@ -530,6 +531,62 @@ export function printLiquidDocParam(
       parts.push(' - ', normalizedDescription);
     } else {
       parts.push(' ', normalizedDescription);
+    }
+  }
+
+  return parts;
+}
+
+export function printLiquidDocExample(
+  path: AstPath<LiquidDocExampleNode>,
+  options: LiquidParserOptions,
+  _print: LiquidPrinter,
+  _args: LiquidPrinterArgs,
+): Doc {
+  const node = path.getValue();
+  const parts: Doc[] = ['@example'];
+
+  if (node.exampleContent?.value) {
+    const content = node.exampleContent.value;
+    if (content) {
+      // Count leading newlines before content (\n\nmy content)
+      const leadingNewlines = content.match(/^\n*/)?.[0]?.length ?? 0;
+      const trimmedContent = content.trim();
+
+      // Push inline content to new line
+      parts.push(hardline);
+
+      // If there were two or more leading newlines, push another new line
+      if (leadingNewlines > 1) {
+        parts.push(hardline);
+      }
+
+      // If content doesn't have newlines in it, make sure it's on a new line (not inline)
+      if (!trimmedContent.includes('\n')) {
+        parts.push(trimmedContent);
+        return parts;
+      }
+
+      // For multi-line content
+      const lines = trimmedContent.split('\n');
+      const processedLines: string[] = [];
+      let emptyLineCount = 0;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+
+        if (line === '') {
+          emptyLineCount++;
+          if (emptyLineCount <= 2) {
+            processedLines.push('');
+          }
+        } else {
+          emptyLineCount = 0;
+          processedLines.push(line);
+        }
+      }
+
+      parts.push(join(hardline, processedLines));
     }
   }
 

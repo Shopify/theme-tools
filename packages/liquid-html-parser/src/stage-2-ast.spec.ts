@@ -1270,6 +1270,55 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.body.nodes.3.value').to.eql(
         '@unsupported this node falls back to a text node',
       );
+
+      ast = toLiquidAST(`
+        {% doc -%}
+        @example simple inline example
+        {%- enddoc %}
+      `);
+      expectPath(ast, 'children.0.type').to.eql('LiquidRawTag');
+      expectPath(ast, 'children.0.name').to.eql('doc');
+      expectPath(ast, 'children.0.body.nodes.0.name').to.eql('example');
+      expectPath(ast, 'children.0.body.nodes.0.type').to.eql('LiquidDocExampleNode');
+      expectPath(ast, 'children.0.body.nodes.0.exampleContent.type').to.eql('TextNode');
+      expectPath(ast, 'children.0.body.nodes.0.exampleContent.value').to.eql(
+        'simple inline example\n',
+      );
+
+      ast = toLiquidAST(`
+        {% doc -%}
+        @example including inline code
+        This is a valid example
+        It can have multiple lines
+        {% enddoc %}
+      `);
+      expectPath(ast, 'children.0.body.nodes.0.type').to.eql('LiquidDocExampleNode');
+      expectPath(ast, 'children.0.body.nodes.0.name').to.eql('example');
+      expectPath(ast, 'children.0.body.nodes.0.exampleContent.value').to.eql(
+        'including inline code\n        This is a valid example\n        It can have multiple lines\n',
+      );
+
+      ast = toLiquidAST(`
+        {% doc -%}
+        @example
+        This is a valid example
+        It can have multiple lines
+        @param {String} paramWithDescription - param with description
+        {% enddoc %}
+      `);
+      expectPath(ast, 'children.0.type').to.eql('LiquidRawTag');
+      expectPath(ast, 'children.0.name').to.eql('doc');
+      expectPath(ast, 'children.0.body.nodes.0.type').to.eql('LiquidDocExampleNode');
+      expectPath(ast, 'children.0.body.nodes.0.name').to.eql('example');
+      expectPath(ast, 'children.0.body.nodes.0.exampleContent.value').to.eql(
+        '\n        This is a valid example\n        It can have multiple lines\n',
+      );
+      expectPath(ast, 'children.0.body.nodes.1.type').to.eql('LiquidDocParamNode');
+      expectPath(ast, 'children.0.body.nodes.1.name').to.eql('param');
+      expectPath(ast, 'children.0.body.nodes.1.paramName.value').to.eql('paramWithDescription');
+      expectPath(ast, 'children.0.body.nodes.1.paramDescription.value').to.eql(
+        'param with description',
+      );
     });
 
     it('should parse unclosed tables with assignments', () => {

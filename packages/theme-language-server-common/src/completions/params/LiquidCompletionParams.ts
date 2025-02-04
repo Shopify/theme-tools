@@ -406,6 +406,9 @@ function findCurrentNode(
       case NodeTypes.LiquidDocParamNode: {
         break;
       }
+      case NodeTypes.LiquidDocExampleNode: {
+        break;
+      }
 
       default: {
         return assertNever(current);
