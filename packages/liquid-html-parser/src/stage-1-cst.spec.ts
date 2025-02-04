@@ -1248,6 +1248,12 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
           expectPath(cst, '0.children.0.name').to.equal('example');
           expectPath(cst, '0.children.0.exampleContent.value').to.equal('hello there');
+          expectPath(cst, '0.children.0.exampleContent.locStart').to.equal(
+            testStr.indexOf('hello there'),
+          );
+          expectPath(cst, '0.children.0.exampleContent.locEnd').to.equal(
+            testStr.indexOf('hello there') + 'hello there'.length,
+          );
         });
 
         it('should parse an example tag with a value', () => {
@@ -1297,6 +1303,18 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.children.0.exampleContent.value').to.equal(
             'hello      there        my    friend\n          This is an example\n          It supports multiple lines\n',
           );
+        });
+
+        it('should parse multiple example nodes', () => {
+          const testStr = `{% doc %}
+          @example hello there
+          @example second example
+        {% enddoc %}`;
+          cst = toCST(testStr);
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
+          expectPath(cst, '0.children.0.exampleContent.value').to.equal('hello there\n');
+          expectPath(cst, '0.children.1.type').to.equal('LiquidDocExampleNode');
+          expectPath(cst, '0.children.1.exampleContent.value').to.equal('second example\n');
         });
       }
     });
