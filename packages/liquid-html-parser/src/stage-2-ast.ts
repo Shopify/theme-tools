@@ -767,7 +767,7 @@ export interface LiquidDocParamNode extends ASTNode<NodeTypes.LiquidDocParamNode
   paramType: TextNode | null;
 }
 
-/** Represents a `@example` node in a LiquidDoc comment - `@example @exampleContent` */
+/** Represents a `@example` node in a LiquidDoc comment - `@example exampleContent` */
 export interface LiquidDocExampleNode extends ASTNode<NodeTypes.LiquidDocExampleNode> {
   name: 'example';
   /** The contents of the example (e.g. "{{ product }}"). Can be multiline. */
@@ -1312,12 +1312,7 @@ function buildAst(
           name: node.name,
           position: position(node),
           source: node.source,
-          exampleContent: {
-            type: NodeTypes.TextNode,
-            value: node.exampleContent.value,
-            position: position(node.exampleContent),
-            source: node.exampleContent.source,
-          },
+          exampleContent: toTextNode(node.exampleContent),
         });
         break;
       }

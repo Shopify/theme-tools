@@ -1301,6 +1301,27 @@ describe('Unit: Stage 2 (AST)', () => {
       ast = toLiquidAST(`
         {% doc -%}
         @example
+        First Example
+        @example
+        Second Example
+        {% enddoc %}
+      `);
+      expectPath(ast, 'children.0.type').to.eql('LiquidRawTag');
+      expectPath(ast, 'children.0.name').to.eql('doc');
+      expectPath(ast, 'children.0.body.nodes.0.type').to.eql('LiquidDocExampleNode');
+      expectPath(ast, 'children.0.body.nodes.0.name').to.eql('example');
+      expectPath(ast, 'children.0.body.nodes.0.exampleContent.value').to.eql(
+        '\n        First Example\n',
+      );
+      expectPath(ast, 'children.0.body.nodes.1.type').to.eql('LiquidDocExampleNode');
+      expectPath(ast, 'children.0.body.nodes.1.name').to.eql('example');
+      expectPath(ast, 'children.0.body.nodes.1.exampleContent.value').to.eql(
+        '\n        Second Example\n',
+      );
+
+      ast = toLiquidAST(`
+        {% doc -%}
+        @example
         This is a valid example
         It can have multiple lines
         @param {String} paramWithDescription - param with description
