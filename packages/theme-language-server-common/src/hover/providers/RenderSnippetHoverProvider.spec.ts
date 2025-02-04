@@ -16,57 +16,42 @@ describe('Module: RenderSnippetHoverProvider', async () => {
           name: 'title',
           description: 'The title of the product',
           type: 'string',
+          required: true,
         },
         {
           name: 'border-radius',
           description: 'The border radius in px',
           type: 'number',
+          required: false,
         },
         {
           name: 'no-type',
           description: 'This parameter has no type',
           type: null,
+          required: true,
         },
         {
           name: 'no-description',
           description: null,
           type: 'string',
+          required: true,
         },
         {
           name: 'no-type-or-description',
           description: null,
           type: null,
+          required: true,
         },
       ],
     },
   };
 
-  const createProvider = (getSnippetDefinition: GetSnippetDefinitionForURI) => {
-    return new HoverProvider(
-      new DocumentManager(),
-      {
-        filters: async () => [],
-        objects: async () => [],
-        tags: async () => [],
-        systemTranslations: async () => ({}),
-      },
-      async (_rootUri: string) => ({} as MetafieldDefinitionMap),
-      async () => ({}),
-      async () => [],
-      getSnippetDefinition,
-    );
-  };
-
-  beforeEach(async () => {
-    getSnippetDefinition = async () => mockSnippetDefinition;
-    provider = createProvider(getSnippetDefinition);
-  });
-
   describe('hover', () => {
     it('should return snippet definition with all parameters', async () => {
+      provider = createProvider(async () => mockSnippetDefinition);
       await expect(provider).to.hover(
         `{% render 'product-car█d' %}`,
-        '### product-card\n\n**Parameters:**\n- `title`: string - The title of the product\n- `border-radius`: number - The border radius in px\n- `no-type` - This parameter has no type\n- `no-description`: string\n- `no-type-or-description`',
+        '### product-card\n\n**Parameters:**\n- `title`: string - The title of the product\n- `[border-radius]`: number - The border radius in px\n- `no-type` - This parameter has no type\n- `no-description`: string\n- `no-type-or-description`',
       );
     });
 
@@ -86,5 +71,47 @@ describe('Module: RenderSnippetHoverProvider', async () => {
       await expect(provider).to.hover(`{% assign asdf = 'snip█pet' %}`, null);
       await expect(provider).to.hover(`{{ 'snip█pet' }}`, null);
     });
+
+    it('should wrap optional parameters in []', async () => {
+      provider = createProvider(async () => ({
+        name: 'product-card',
+        liquidDoc: {
+          parameters: [
+            {
+              name: 'title',
+              description: 'The title of the product',
+              type: 'string',
+              required: true,
+            },
+            {
+              name: 'border-radius',
+              description: 'The border radius in px',
+              type: 'number',
+              required: false,
+            },
+          ],
+        },
+      }));
+      await expect(provider).to.hover(
+        `{% render 'product-car█d' %}`,
+        '### product-card\n\n**Parameters:**\n- `title`: string - The title of the product\n- `[border-radius]`: number - The border radius in px',
+      );
+    });
   });
 });
+
+const createProvider = (getSnippetDefinition: GetSnippetDefinitionForURI) => {
+  return new HoverProvider(
+    new DocumentManager(),
+    {
+      filters: async () => [],
+      objects: async () => [],
+      tags: async () => [],
+      systemTranslations: async () => ({}),
+    },
+    async (_rootUri: string) => ({} as MetafieldDefinitionMap),
+    async () => ({}),
+    async () => [],
+    getSnippetDefinition,
+  );
+};

@@ -50,13 +50,7 @@ export class RenderSnippetHoverProvider implements BaseHoverProvider {
     const parts = [`### ${snippetDefinition.name}`];
 
     if (liquidDoc.parameters?.length) {
-      const parameters = liquidDoc.parameters
-        ?.map(
-          ({ name, type, description }: LiquidDocParameter) =>
-            `- \`${name}\`${type ? `: ${type}` : ''}${description ? ` - ${description}` : ''}`,
-        )
-        .join('\n');
-
+      const parameters = this.buildParameters(liquidDoc.parameters);
       parts.push('', '**Parameters:**', parameters);
     }
 
@@ -66,5 +60,16 @@ export class RenderSnippetHoverProvider implements BaseHoverProvider {
         value: parts.join('\n'),
       },
     };
+  }
+
+  private buildParameters(parameters: LiquidDocParameter[]) {
+    return parameters
+      .map(({ name, type, description, required }: LiquidDocParameter) => {
+        const nameStr = required ? `\`${name}\`` : `\`[${name}]\``;
+        const typeStr = type ? `: ${type}` : '';
+        const descStr = description ? ` - ${description}` : '';
+        return `- ${nameStr}${typeStr}${descStr}`;
+      })
+      .join('\n');
   }
 }
