@@ -60,6 +60,14 @@ export class RenderSnippetHoverProvider implements BaseHoverProvider {
       parts.push('', '**Parameters:**', parameters);
     }
 
+    if (liquidDoc.examples?.length) {
+      const examples = liquidDoc.examples
+        ?.map(({ content }) => `\`\`\`liquid\n${content.trimStart().trimEnd()}\n\`\`\``)
+        .join('\n');
+
+      parts.push('', '**Examples:**', examples);
+    }
+
     return {
       contents: {
         kind: 'markdown',
