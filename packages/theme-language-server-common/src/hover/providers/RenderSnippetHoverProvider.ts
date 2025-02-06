@@ -65,7 +65,7 @@ export class RenderSnippetHoverProvider implements BaseHoverProvider {
   private buildParameters(parameters: LiquidDocParameter[]) {
     return parameters
       .map(({ name, type, description, required }: LiquidDocParameter) => {
-        const nameStr = required ? `\`${name}\`` : `\`[${name}]\``;
+        const nameStr = required ? `\`${name}\`` : `\`${name}\` (Optional)`;
         const typeStr = type ? `: ${type}` : '';
         const descStr = description ? ` - ${description}` : '';
         return `- ${nameStr}${typeStr}${descStr}`;
