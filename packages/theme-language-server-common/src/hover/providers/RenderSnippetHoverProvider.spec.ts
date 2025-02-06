@@ -72,7 +72,7 @@ describe('Module: RenderSnippetHoverProvider', async () => {
       await expect(provider).to.hover(`{{ 'snip█pet' }}`, null);
     });
 
-    it('should wrap optional parameters in []', async () => {
+    it('should wrap optional parameters in (Optional)', async () => {
       provider = createProvider(async () => ({
         name: 'product-card',
         liquidDoc: {
