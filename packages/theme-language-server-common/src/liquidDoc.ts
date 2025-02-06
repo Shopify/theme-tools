@@ -22,6 +22,7 @@ export type LiquidDocParameter = {
   name: string;
   description: string | null;
   type: string | null;
+  required: boolean;
 };
 
 export function getSnippetDefinition(
@@ -36,6 +37,7 @@ export function getSnippetDefinition(
           name: node.paramName.value,
           description: node.paramDescription?.value ?? null,
           type: node.paramType?.value ?? null,
+          required: node.required,
         };
       },
     },
