@@ -7,3 +7,4 @@ export { HtmlAttributeHoverProvider } from './HtmlAttributeHoverProvider';
 export { HtmlAttributeValueHoverProvider } from './HtmlAttributeValueHoverProvider';
 export { TranslationHoverProvider } from './TranslationHoverProvider';
 export { RenderSnippetHoverProvider } from './RenderSnippetHoverProvider';
+export { RenderSnippetParameterHoverProvider } from './RenderSnippetParameterHoverProvider';
