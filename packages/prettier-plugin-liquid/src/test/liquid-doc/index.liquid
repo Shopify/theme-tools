@@ -28,6 +28,19 @@ It should normalize the param description
   @param paramName - param           with                    description
 {% enddoc %}
 
+It should strip whitespace between optional param delimiters
+{% doc %}
+  @param [ paramName ] - param with description
+{% enddoc %}
+
+It should handle params with malformed optional delimiters
+{% doc %}
+  @param [missingTail - param with description
+  @param missingHead - ] - param with description
+  @param [too many words no desc]
+  @param [too many words] - param with description
+{% enddoc %}
+
 It should push example content to the next line
 {% doc %}
   @example This is a valid example
