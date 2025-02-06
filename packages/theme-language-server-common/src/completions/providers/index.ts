@@ -1,5 +1,6 @@
 export { ContentForCompletionProvider } from './ContentForCompletionProvider';
 export { ContentForBlockTypeCompletionProvider } from './ContentForBlockTypeCompletionProvider';
+export { ContentForParameterCompletionProvider } from './ContentForParameterCompletionProvider';
 export { HtmlTagCompletionProvider } from './HtmlTagCompletionProvider';
 export { HtmlAttributeCompletionProvider } from './HtmlAttributeCompletionProvider';
 export { HtmlAttributeValueCompletionProvider } from './HtmlAttributeValueCompletionProvider';
