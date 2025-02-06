@@ -13,6 +13,7 @@ import {
   LiquidTagHoverProvider,
   TranslationHoverProvider,
   RenderSnippetHoverProvider,
+  RenderSnippetParameterHoverProvider,
 } from './providers';
 import { HtmlAttributeValueHoverProvider } from './providers/HtmlAttributeValueHoverProvider';
 import { findCurrentNode } from '@shopify/theme-check-common';
@@ -50,6 +51,7 @@ export class HoverProvider {
       new HtmlAttributeValueHoverProvider(),
       new TranslationHoverProvider(getTranslationsForURI, documentManager),
       new RenderSnippetHoverProvider(getSnippetDefinitionForURI),
+      new RenderSnippetParameterHoverProvider(getSnippetDefinitionForURI),
     ];
   }
 
