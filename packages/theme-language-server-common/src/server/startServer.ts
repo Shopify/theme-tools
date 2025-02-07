@@ -44,6 +44,7 @@ import { VERSION } from '../version';
 import { CachedFileSystem } from './CachedFileSystem';
 import { Configuration } from './Configuration';
 import { SnippetDefinition } from '../liquidDoc';
+import { safe } from './safe';
 
 const defaultLogger = () => {};
 
@@ -188,27 +189,22 @@ export function startServer(
   };
 
   const snippetFilter = ([uri]: FileTuple) => /\.liquid$/.test(uri) && /snippets/.test(uri);
-  const getSnippetNamesForURI: GetSnippetNamesForURI = async (uri: string) => {
+  const getSnippetNamesForURI: GetSnippetNamesForURI = safe(async (uri: string) => {
     const rootUri = await findThemeRootURI(uri);
     const snippetUris = await recursiveReadDirectory(fs, rootUri, snippetFilter);
     return snippetUris.map(snippetName);
-  };
+  }, []);
 
-  const getThemeSettingsSchemaForURI = async (uri: string) => {
-    try {
-      const rootUri = await findThemeRootURI(uri);
-      const settingsSchemaUri = path.join(rootUri, 'config', 'settings_schema.json');
-      const contents = await fs.readFile(settingsSchemaUri);
-      const json = parseJSON(contents);
-      if (isError(json) || !Array.isArray(json)) {
-        throw new Error('Settings JSON file not in correct format');
-      }
-      return json;
-    } catch (error) {
-      console.error(error);
-      return [];
+  const getThemeSettingsSchemaForURI = safe(async (uri: string) => {
+    const rootUri = await findThemeRootURI(uri);
+    const settingsSchemaUri = path.join(rootUri, 'config', 'settings_schema.json');
+    const contents = await fs.readFile(settingsSchemaUri);
+    const json = parseJSON(contents);
+    if (isError(json) || !Array.isArray(json)) {
+      throw new Error('Settings JSON file not in correct format');
     }
-  };
+    return json;
+  }, []);
 
   async function getModeForURI(uri: string) {
     const rootUri = await findConfigFileRoot(uri, fileExists);
@@ -216,7 +212,7 @@ export function startServer(
     return config.context;
   }
 
-  async function getThemeBlockNames(uri: string, includePrivate: boolean) {
+  const getThemeBlockNames = safe(async (uri: string, includePrivate: boolean) => {
     const rootUri = await findThemeRootURI(uri);
     const blocks = await fs.readDirectory(path.join(rootUri, 'blocks'));
     const blockNames = blocks.map(([uri]) => path.basename(uri, '.liquid'));
@@ -226,7 +222,7 @@ export function startServer(
     }
 
     return blockNames.filter((blockName) => !blockName.startsWith('_'));
-  }
+  }, []);
 
   async function getThemeBlockSchema(uri: string, name: string) {
     const rootUri = await findThemeRootURI(uri);
