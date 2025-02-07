@@ -1,5 +1,23 @@
 # @shopify/liquid-html-parser
 
+## 2.4.0
+
+### Minor Changes
+
+- e57979e0: Add parsing and prettier support for example node in liquiddoc
+  Example:
+
+  ```liquid
+  {% doc %}
+    @example
+    Here is my content
+  {% enddoc %}
+  ```
+
+- 8c9f5bcf: Add parsing support for optional param delimiters `[]`.
+  Parameters with `[]` around a valid param name will be considered optional.
+  Param names can be any alphanumeric character, `-`, or `_`.
+
 ## 2.3.2
 
 ### Patch Changes

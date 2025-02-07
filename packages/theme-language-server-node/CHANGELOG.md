@@ -1,5 +1,24 @@
 # @shopify/theme-language-server-node
 
+## 2.7.0
+
+### Minor Changes
+
+- 2ef93d17: Support completion + hover for presets blocks settings under `{% schema %}` tag
+
+  - Hover + Completion description for `presets.[].blocks.[].settings` and `default.blocks.[].settings`
+    will be from the referenced block's setting's label - i.e. `settings.[].label`
+    - The label will be translated if it contains a translation key
+
+### Patch Changes
+
+- Updated dependencies [2ef93d17]
+- Updated dependencies [5312283e]
+- Updated dependencies [77c2536f]
+  - @shopify/theme-language-server-common@2.7.0
+  - @shopify/theme-check-node@3.7.2
+  - @shopify/theme-check-docs-updater@3.7.2
+
 ## 2.6.1
 
 ### Patch Changes
