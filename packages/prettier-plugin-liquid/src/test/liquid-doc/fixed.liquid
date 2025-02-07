@@ -51,7 +51,6 @@ It should push example content to the next line
 It should allow single empty lines between content
 {% doc %}
   @example
-
   This is a valid example
 
   So is this without a newline
@@ -61,7 +60,6 @@ It should allow single empty lines between content
 It should allow multiple empty lines between content
 {% doc %}
   @example
-
   This is a valid example
 
 
@@ -73,7 +71,6 @@ It should allow multiple empty lines between content
 It should remove empty lines at the end of the example content
 {% doc %}
   @example
-
   Here is my content and a newline
 {% enddoc %}
 
@@ -81,7 +78,6 @@ It should respect example content with param and description
 {% doc %}
   @param paramName - param with description
   @example
-
   This is a valid example
 {% enddoc %}
 
@@ -91,14 +87,4 @@ It should allow multiple example nodes
   First Example
   @example
   Second Example
-{% enddoc %}
-
-It should default to two lines between example content when there are three or more new lines
-{% doc %}
-  @example
-
-  There are three lines between me and the next line
-
-
-  It will format down to two lines
 {% enddoc %}

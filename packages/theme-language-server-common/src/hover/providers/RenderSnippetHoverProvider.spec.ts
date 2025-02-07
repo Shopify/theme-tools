@@ -17,30 +17,45 @@ describe('Module: RenderSnippetHoverProvider', async () => {
           description: 'The title of the product',
           type: 'string',
           required: true,
+          nodeType: 'param',
         },
         {
           name: 'border-radius',
           description: 'The border radius in px',
           type: 'number',
           required: false,
+          nodeType: 'param',
         },
         {
           name: 'no-type',
           description: 'This parameter has no type',
           type: null,
           required: true,
+          nodeType: 'param',
         },
         {
           name: 'no-description',
           description: null,
           type: 'string',
           required: true,
+          nodeType: 'param',
         },
         {
           name: 'no-type-or-description',
           description: null,
           type: null,
           required: true,
+          nodeType: 'param',
+        },
+      ],
+      examples: [
+        {
+          content: '{{ product }}',
+          nodeType: 'example',
+        },
+        {
+          content: '{{ product.title }}',
+          nodeType: 'example',
         },
       ],
     },
@@ -51,7 +66,7 @@ describe('Module: RenderSnippetHoverProvider', async () => {
       provider = createProvider(async () => mockSnippetDefinition);
       await expect(provider).to.hover(
         `{% render 'product-car█d' %}`,
-        '### product-card\n\n**Parameters:**\n- `title`: string - The title of the product\n- `border-radius` (Optional): number - The border radius in px\n- `no-type` - This parameter has no type\n- `no-description`: string\n- `no-type-or-description`',
+        '### product-card\n\n**Parameters:**\n- `title`: string - The title of the product\n- `border-radius` (Optional): number - The border radius in px\n- `no-type` - This parameter has no type\n- `no-description`: string\n- `no-type-or-description`\n\n**Examples:**\n```liquid{{ product }}```\n```liquid{{ product.title }}```',
       );
     });
 
@@ -82,12 +97,14 @@ describe('Module: RenderSnippetHoverProvider', async () => {
               description: 'The title of the product',
               type: 'string',
               required: true,
+              nodeType: 'param',
             },
             {
               name: 'border-radius',
               description: 'The border radius in px',
               type: 'number',
               required: false,
+              nodeType: 'param',
             },
           ],
         },

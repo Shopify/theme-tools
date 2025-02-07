@@ -22,6 +22,7 @@ describe('Unit: getSnippetDefinition', () => {
       name: 'product-card',
       liquidDoc: {
         parameters: [],
+        examples: [],
       },
     });
   });
@@ -48,36 +49,151 @@ describe('Unit: getSnippetDefinition', () => {
             description: 'The first param',
             type: 'String',
             required: true,
+            nodeType: 'param',
           },
           {
             name: 'secondParam',
             description: 'The second param',
             type: 'Number',
             required: true,
+            nodeType: 'param',
           },
           {
             name: 'optionalParam',
             description: 'The optional param',
             type: 'String',
             required: false,
+            nodeType: 'param',
           },
           {
             name: 'paramWithNoType',
             description: 'param with no type',
             type: null,
             required: true,
+            nodeType: 'param',
           },
           {
             name: 'paramWithOnlyName',
             description: null,
             type: null,
             required: true,
+            nodeType: 'param',
           },
           {
             name: 'paramWithNoDescription',
             description: null,
             type: 'Number',
             required: true,
+            nodeType: 'param',
+          },
+        ],
+        examples: [],
+      },
+    });
+  });
+
+  it('should extract examples from @example annotations', async () => {
+    const ast = toAST(`
+        {% doc %}
+          @example
+          {{ product }}
+        {% enddoc %}
+      `);
+
+    const result = getSnippetDefinition(ast, 'product-card');
+    expect(result).to.deep.equal({
+      name: 'product-card',
+      liquidDoc: {
+        parameters: [],
+        examples: [
+          {
+            content: '\n          {{ product }}\n',
+            nodeType: 'example',
+          },
+        ],
+      },
+    });
+  });
+
+  it('should extract examples from @example annotations with multiple lines', async () => {
+    const ast = toAST(`
+        {% doc %}
+          @example
+          {{ product }}
+          {{ product.title }}
+        {% enddoc %}
+      `);
+
+    const result = getSnippetDefinition(ast, 'product-card');
+    expect(result).to.deep.equal({
+      name: 'product-card',
+      liquidDoc: {
+        parameters: [],
+        examples: [
+          {
+            content: '\n          {{ product }}\n          {{ product.title }}\n',
+            nodeType: 'example',
+          },
+        ],
+      },
+    });
+  });
+
+  it('should extract example from @example and @param annotations', async () => {
+    const ast = toAST(`
+        {% doc %}
+          @param {String} product - The product
+          @example
+          {{ product }} // This is an example
+        {% enddoc %}
+      `);
+
+    const result = getSnippetDefinition(ast, 'product-card');
+    expect(result).to.deep.equal({
+      name: 'product-card',
+      liquidDoc: {
+        parameters: [
+          {
+            name: 'product',
+            description: 'The product',
+            type: 'String',
+            required: true,
+            nodeType: 'param',
+          },
+        ],
+        examples: [
+          {
+            content: '\n          {{ product }} // This is an example\n',
+            nodeType: 'example',
+          },
+        ],
+      },
+    });
+  });
+
+  it('should extract multiple examples from @example annotations', async () => {
+    const ast = toAST(`
+        {% doc %}
+          @example
+          {{ product }}
+          @example
+          {{ product.title }}
+        {% enddoc %}
+      `);
+
+    const result = getSnippetDefinition(ast, 'product-card');
+    expect(result).to.deep.equal({
+      name: 'product-card',
+      liquidDoc: {
+        parameters: [],
+        examples: [
+          {
+            content: '\n          {{ product }}\n',
+            nodeType: 'example',
+          },
+          {
+            content: '\n          {{ product.title }}\n',
+            nodeType: 'example',
           },
         ],
       },
