@@ -16,7 +16,7 @@ export type SnippetDefinition = {
 
 type LiquidDocDefinition = {
   parameters?: LiquidDocParameter[];
-  examples?: LiquidDocExample[]; //  I don't think we need an array but maybe we'll allow multiple examples
+  examples?: LiquidDocExample[];
 };
 
 interface LiquidDocNode {
@@ -28,7 +28,7 @@ export interface LiquidDocParameter extends LiquidDocNode {
   description: string | null;
   type: string | null;
   required: boolean;
-};
+}
 
 export interface LiquidDocExample extends LiquidDocNode {
   content: string;
@@ -39,17 +39,18 @@ export function getSnippetDefinition(
   snippet: LiquidHtmlNode,
   snippetName: string,
 ): SnippetDefinition {
-  const parameters: LiquidDocParameter[] = visit<SourceCodeType.LiquidHtml, LiquidDocParameter>(
-    snippet,
-    {
-      LiquidDocParamNode(node: LiquidDocParamNode) {
-        return {
-          name: node.paramName.value,
-          description: node.paramDescription?.value ?? null,
-          type: node.paramType?.value ?? null,
-          required: node.required,
-        };
-      },
+  const nodes: (LiquidDocParameter | LiquidDocExample)[] = visit<
+    SourceCodeType.LiquidHtml,
+    LiquidDocParameter | LiquidDocExample
+  >(snippet, {
+    LiquidDocParamNode(node: LiquidDocParamNode) {
+      return {
+        name: node.paramName.value,
+        description: node.paramDescription?.value ?? null,
+        type: node.paramType?.value ?? null,
+        required: node.required,
+        nodeType: 'param',
+      };
     },
     LiquidDocExampleNode(node: LiquidDocExampleNode) {
       return {
