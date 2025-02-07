@@ -1,5 +1,26 @@
 # @shopify/theme-language-server-common
 
+## 2.7.0
+
+### Minor Changes
+
+- 2ef93d17: Support completion + hover for presets blocks settings under `{% schema %}` tag
+
+  - Hover + Completion description for `presets.[].blocks.[].settings` and `default.blocks.[].settings`
+    will be from the referenced block's setting's label - i.e. `settings.[].label`
+    - The label will be translated if it contains a translation key
+
+- 5312283e: Render `[]` around name of optional liquidDoc parameters when hovering over `{% render snip█pet %}` tag
+
+### Patch Changes
+
+- 77c2536f: Gracefully handle fs.readDirectory errors in getThemeBlockNames
+- Updated dependencies [2ef93d17]
+- Updated dependencies [e57979e0]
+- Updated dependencies [8c9f5bcf]
+  - @shopify/theme-check-common@3.7.2
+  - @shopify/liquid-html-parser@2.4.0
+
 ## 2.6.1
 
 ### Patch Changes

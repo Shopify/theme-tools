@@ -1,5 +1,28 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.8.0
+
+### Minor Changes
+
+- e57979e0: Add parsing and prettier support for example node in liquiddoc
+  Example:
+
+  ```liquid
+  {% doc %}
+    @example
+    Here is my content
+  {% enddoc %}
+  ```
+
+- 357feaa8: Add formatting support for optional liquidDoc parameters (e.g. `@param [optional-parameter] - paramDescription`).
+  Whitespace is now stripped around the parameter name and the optional delimiters.
+
+### Patch Changes
+
+- Updated dependencies [e57979e0]
+- Updated dependencies [8c9f5bcf]
+  - @shopify/liquid-html-parser@2.4.0
+
 ## 1.7.2
 
 ### Patch Changes

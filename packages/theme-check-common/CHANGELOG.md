@@ -1,5 +1,14 @@
 # @shopify/theme-check-common
 
+## 3.7.2
+
+### Patch Changes
+
+- 2ef93d17: [internal] Add `strict` arg for `parseJSON`. The default schema JSON parsed is more laxed.
+- Updated dependencies [e57979e0]
+- Updated dependencies [8c9f5bcf]
+  - @shopify/liquid-html-parser@2.4.0
+
 ## 3.7.1
 
 ### Patch Changes
