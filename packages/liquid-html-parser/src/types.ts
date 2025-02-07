@@ -44,6 +44,7 @@ export enum NodeTypes {
   RawMarkup = 'RawMarkup',
   RenderMarkup = 'RenderMarkup',
   RenderVariableExpression = 'RenderVariableExpression',
+  LiquidDocDescriptionNode = 'LiquidDocDescriptionNode',
   LiquidDocParamNode = 'LiquidDocParamNode',
   LiquidDocExampleNode = 'LiquidDocExampleNode',
 }

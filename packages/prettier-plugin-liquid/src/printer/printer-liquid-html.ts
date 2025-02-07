@@ -565,6 +565,10 @@ function printNode(
       return printLiquidDocExample(path as AstPath<LiquidDocExampleNode>, options, print, args);
     }
 
+    case NodeTypes.LiquidDocDescriptionNode: {
+      return '';
+    }
+
     default: {
       return assertNever(node);
     }

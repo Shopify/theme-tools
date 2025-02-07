@@ -109,7 +109,8 @@ export type LiquidHtmlNode =
   | LiquidComparison
   | TextNode
   | LiquidDocParamNode
-  | LiquidDocExampleNode;
+  | LiquidDocExampleNode
+  | LiquidDocDescriptionNode;
 
 /** The root node of all LiquidHTML ASTs. */
 export interface DocumentNode extends ASTNode<NodeTypes.Document> {
@@ -769,6 +770,13 @@ export interface LiquidDocParamNode extends ASTNode<NodeTypes.LiquidDocParamNode
   required: boolean;
 }
 
+/** Represents a `@description` node in a LiquidDoc comment - `@description descriptionContent` */
+export interface LiquidDocDescriptionNode extends ASTNode<NodeTypes.LiquidDocDescriptionNode> {
+  name: 'description';
+  /** The contents of the description (e.g. "This is a description"). Can be multiline. */
+  content: TextNode;
+}
+
 /** Represents a `@example` node in a LiquidDoc comment - `@example exampleContent` */
 export interface LiquidDocExampleNode extends ASTNode<NodeTypes.LiquidDocExampleNode> {
   name: 'example';
@@ -1300,6 +1308,17 @@ function buildAst(
           paramDescription: toNullableTextNode(node.paramDescription),
           paramType: toNullableTextNode(node.paramType),
           required: node.paramName.required,
+        });
+        break;
+      }
+
+      case ConcreteNodeTypes.LiquidDocDescriptionNode: {
+        builder.push({
+          type: NodeTypes.LiquidDocDescriptionNode,
+          name: node.name,
+          position: position(node),
+          source: node.source,
+          content: toTextNode(node.content),
         });
         break;
       }
