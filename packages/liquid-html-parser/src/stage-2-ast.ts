@@ -781,7 +781,7 @@ export interface LiquidDocDescriptionNode extends ASTNode<NodeTypes.LiquidDocDes
 export interface LiquidDocExampleNode extends ASTNode<NodeTypes.LiquidDocExampleNode> {
   name: 'example';
   /** The contents of the example (e.g. "{{ product }}"). Can be multiline. */
-  exampleContent: TextNode;
+  content: TextNode;
 }
 
 export interface ASTNode<T> {
@@ -1329,7 +1329,7 @@ function buildAst(
           name: node.name,
           position: position(node),
           source: node.source,
-          exampleContent: toTextNode(node.exampleContent),
+          content: toTextNode(node.content),
         });
         break;
       }

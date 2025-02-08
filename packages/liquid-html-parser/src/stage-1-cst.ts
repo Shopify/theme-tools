@@ -134,7 +134,7 @@ export interface ConcreteLiquidDocDescriptionNode
 export interface ConcreteLiquidDocExampleNode
   extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocExampleNode> {
   name: 'example';
-  exampleContent: ConcreteTextNode;
+  content: ConcreteTextNode;
 }
 
 export interface ConcreteHtmlNodeBase<T> extends ConcreteBasicNode<T> {
@@ -1401,7 +1401,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       locStart,
       locEnd,
       source,
-      exampleContent: 2,
+      content: 2,
     },
     exampleContent: textNode,
     textValue: textNode,

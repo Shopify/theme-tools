@@ -1237,7 +1237,7 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.type').to.equal('LiquidRawTag');
           expectPath(cst, '0.name').to.equal('doc');
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
-          expectPath(cst, '0.children.0.exampleContent.value').to.equal('');
+          expectPath(cst, '0.children.0.content.value').to.equal('');
         });
 
         it('should parse example tag with content that has leading whitespace', () => {
@@ -1247,11 +1247,9 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.name').to.equal('doc');
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
           expectPath(cst, '0.children.0.name').to.equal('example');
-          expectPath(cst, '0.children.0.exampleContent.value').to.equal('hello there');
-          expectPath(cst, '0.children.0.exampleContent.locStart').to.equal(
-            testStr.indexOf('hello there'),
-          );
-          expectPath(cst, '0.children.0.exampleContent.locEnd').to.equal(
+          expectPath(cst, '0.children.0.content.value').to.equal('hello there');
+          expectPath(cst, '0.children.0.content.locStart').to.equal(testStr.indexOf('hello there'));
+          expectPath(cst, '0.children.0.content.locEnd').to.equal(
             testStr.indexOf('hello there') + 'hello there'.length,
           );
         });
@@ -1268,7 +1266,7 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.name').to.equal('doc');
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
           expectPath(cst, '0.children.0.name').to.equal('example');
-          expectPath(cst, '0.children.0.exampleContent.value').to.equal(
+          expectPath(cst, '0.children.0.content.value').to.equal(
             '\n          This is an example\n          It supports multiple lines\n',
           );
         });
@@ -1282,7 +1280,7 @@ describe('Unit: Stage 1 (CST)', () => {
           cst = toCST(testStr);
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
           expectPath(cst, '0.children.0.name').to.equal('example');
-          expectPath(cst, '0.children.0.exampleContent.value').to.equal(
+          expectPath(cst, '0.children.0.content.value').to.equal(
             '\n          This is an example\n',
           );
           expectPath(cst, '0.children.1.type').to.equal('LiquidDocParamNode');
@@ -1300,7 +1298,7 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.name').to.equal('doc');
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
           expectPath(cst, '0.children.0.name').to.equal('example');
-          expectPath(cst, '0.children.0.exampleContent.value').to.equal(
+          expectPath(cst, '0.children.0.content.value').to.equal(
             'hello      there        my    friend\n          This is an example\n          It supports multiple lines\n',
           );
         });
@@ -1312,9 +1310,9 @@ describe('Unit: Stage 1 (CST)', () => {
         {% enddoc %}`;
           cst = toCST(testStr);
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
-          expectPath(cst, '0.children.0.exampleContent.value').to.equal('hello there\n');
+          expectPath(cst, '0.children.0.content.value').to.equal('hello there\n');
           expectPath(cst, '0.children.1.type').to.equal('LiquidDocExampleNode');
-          expectPath(cst, '0.children.1.exampleContent.value').to.equal('second example\n');
+          expectPath(cst, '0.children.1.content.value').to.equal('second example\n');
         });
 
         it('should parse @description node', () => {

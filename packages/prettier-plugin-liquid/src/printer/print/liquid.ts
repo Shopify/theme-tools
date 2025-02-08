@@ -548,7 +548,7 @@ export function printLiquidDocExample(
   const node = path.getValue();
   const parts: Doc[] = ['@example'];
 
-  const content = node.exampleContent.value;
+  const content = node.content.value;
   if (content) {
     if (content.includes('\n')) {
       parts.push(hardline);
