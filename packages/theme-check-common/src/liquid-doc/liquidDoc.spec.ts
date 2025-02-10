@@ -1,7 +1,6 @@
-import { expect, it } from 'vitest';
-import { LiquidHtmlNode } from '@shopify/theme-check-common';
-import { toSourceCode } from '@shopify/theme-check-common';
-import { describe } from 'vitest';
+import { expect, it, describe } from 'vitest';
+import { toSourceCode } from '../to-source-code';
+import { LiquidHtmlNode } from '../types';
 import { getSnippetDefinition } from './liquidDoc';
 
 describe('Unit: getSnippetDefinition', () => {

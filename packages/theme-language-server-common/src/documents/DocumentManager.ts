@@ -19,7 +19,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { ClientCapabilities } from '../ClientCapabilities';
 import { percent, Progress } from '../progress';
 import { AugmentedSourceCode } from './types';
-import { getSnippetDefinition } from '../liquidDoc';
+import { getSnippetDefinition } from '@shopify/theme-check-common';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
