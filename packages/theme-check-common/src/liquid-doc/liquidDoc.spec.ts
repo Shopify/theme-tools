@@ -199,4 +199,131 @@ describe('Unit: getSnippetDefinition', () => {
       },
     });
   });
+
+  it('should parse parameters from doc comments', () => {
+    const source = `
+      {% doc %}
+        @param {String} title - The title of the card
+        @param {Number} [width] - The width of the card
+        @param {String} description - The description of the card
+      {% enddoc %}
+      <div>{{ title }}</div>
+      <div>{{ description }}</div>
+    `;
+
+    const ast = toLiquidHtmlAST(source, { allowUnclosedDocumentNode: false, mode: 'tolerant' });
+    const definition = getSnippetDefinition(ast, 'card');
+
+    expect(definition.liquidDoc?.parameters).toHaveLength(3);
+    expect(definition.liquidDoc?.parameters?.[0]).toEqual({
+      name: 'title',
+      type: 'String',
+      description: 'The title of the card',
+      required: true,
+      nodeType: 'param',
+    });
+    expect(definition.liquidDoc?.parameters?.[1]).toEqual({
+      name: 'width',
+      type: 'Number',
+      description: 'The width of the card',
+      required: false,
+      nodeType: 'param',
+    });
+    expect(definition.liquidDoc?.parameters?.[2]).toEqual({
+      name: 'description',
+      type: 'String',
+      description: 'The description of the card',
+      required: true,
+      nodeType: 'param',
+    });
+  });
+
+  it('should parse examples from doc comments', () => {
+    const source = `
+      {% doc %}
+        @example
+          {% render 'card', title: 'My Card', description: 'A nice card' %}
+        @example
+          {% render 'card', title: 'Another Card', width: 100, description: 'Another nice card' %}
+      {% enddoc %}
+      <div>{{ title }}</div>
+      <div>{{ description }}</div>
+    `;
+
+    const ast = toLiquidHtmlAST(source, { allowUnclosedDocumentNode: false, mode: 'tolerant' });
+    const definition = getSnippetDefinition(ast, 'card');
+
+    expect(definition.liquidDoc?.examples).toHaveLength(2);
+    expect(definition.liquidDoc?.examples?.[0]).toEqual({
+      content: "{% render 'card', title: 'My Card', description: 'A nice card' %}",
+      nodeType: 'example',
+    });
+    expect(definition.liquidDoc?.examples?.[1]).toEqual({
+      content:
+        "{% render 'card', title: 'Another Card', width: 100, description: 'Another nice card' %}",
+      nodeType: 'example',
+    });
+  });
+
+  it('should handle snippets without doc comments', () => {
+    const source = `
+      <div>{{ title }}</div>
+      <div>{{ description }}</div>
+    `;
+
+    const ast = toLiquidHtmlAST(source, { allowUnclosedDocumentNode: false, mode: 'tolerant' });
+    const definition = getSnippetDefinition(ast, 'card');
+
+    expect(definition.liquidDoc?.parameters).toHaveLength(0);
+    expect(definition.liquidDoc?.examples).toHaveLength(0);
+  });
+
+  it('should handle empty doc comments', () => {
+    const source = `
+      {% doc %}
+      {% enddoc %}
+      <div>{{ title }}</div>
+      <div>{{ description }}</div>
+    `;
+
+    const ast = toLiquidHtmlAST(source, { allowUnclosedDocumentNode: false, mode: 'tolerant' });
+    const definition = getSnippetDefinition(ast, 'card');
+
+    expect(definition.liquidDoc?.parameters).toHaveLength(0);
+    expect(definition.liquidDoc?.examples).toHaveLength(0);
+  });
+
+  it('should handle malformed parameter definitions', () => {
+    const source = `
+      {% doc %}
+        @param title - Missing type
+        @param {String} - Missing name
+        @param {InvalidType} name - Invalid type
+      {% enddoc %}
+      <div>{{ title }}</div>
+    `;
+
+    const ast = toLiquidHtmlAST(source, { allowUnclosedDocumentNode: false, mode: 'tolerant' });
+    const definition = getSnippetDefinition(ast, 'card');
+
+    expect(definition.liquidDoc?.parameters).toHaveLength(0);
+  });
+
+  it('should handle multiple doc comments and use the first one', () => {
+    const source = `
+      {% doc %}
+        @param {String} title - First doc comment
+      {% enddoc %}
+      {% doc %}
+        @param {String} title - Second doc comment
+      {% enddoc %}
+      <div>{{ title }}</div>
+    `;
+
+    const ast = toLiquidHtmlAST(source, { allowUnclosedDocumentNode: false, mode: 'tolerant' });
+    const definition = getSnippetDefinition(ast, 'card');
+
+    expect(definition.liquidDoc?.parameters).toHaveLength(1);
+    expect(definition.liquidDoc?.parameters?.[0].description).toBe('First doc comment');
+  });
 });

@@ -1,7 +1,11 @@
 import { SourceCodeType } from '../types';
 import { visit } from '../visitor';
 import { LiquidHtmlNode } from '../types';
-import { LiquidDocExampleNode, LiquidDocParamNode } from '@shopify/liquid-html-parser';
+import {
+  LiquidDocExampleNode,
+  LiquidDocParamNode,
+  LiquidRawTag,
+} from '@shopify/liquid-html-parser';
 
 export type GetSnippetDefinitionForURI = (
   uri: string,
@@ -38,10 +42,15 @@ export function getSnippetDefinition(
   snippet: LiquidHtmlNode,
   snippetName: string,
 ): SnippetDefinition {
+  let hasDocTag = false;
   const nodes: (LiquidDocParameter | LiquidDocExample)[] = visit<
     SourceCodeType.LiquidHtml,
     LiquidDocParameter | LiquidDocExample
   >(snippet, {
+    LiquidRawTag(node) {
+      if (node.name === 'doc') hasDocTag = true;
+      return undefined;
+    },
     LiquidDocParamNode(node: LiquidDocParamNode) {
       return {
         name: node.paramName.value,
@@ -64,9 +73,6 @@ export function getSnippetDefinition(
 
   return {
     name: snippetName,
-    liquidDoc: {
-      parameters,
-      examples,
-    },
+    liquidDoc: hasDocTag ? { parameters, examples } : undefined,
   };
 }
