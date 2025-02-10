@@ -81,28 +81,28 @@ describe('Module: RenderSnippetParameterHoverProvider', async () => {
     it('should return parameter info with type and description', async () => {
       await expect(provider).to.hover(
         `{% render 'product-card' ti█tle: 'My Product' %}`,
-        '`title`: `string`\n- The title of the product',
+        '### `title`: string\n\nThe title of the product',
       );
     });
 
     it('should return parameter info with only type', async () => {
       await expect(provider).to.hover(
         `{% render 'product-card' no-descri█ption: 'value' %}`,
-        '`no-description`: `string`',
+        '### `no-description`: string',
       );
     });
 
     it('should return parameter info with only description', async () => {
       await expect(provider).to.hover(
         `{% render 'product-card' no-ty█pe: 'value' %}`,
-        '`no-type`\n- This parameter has no type',
+        '### `no-type`\n\nThis parameter has no type',
       );
     });
 
     it('should return only parameter name when no type or description', async () => {
       await expect(provider).to.hover(
         `{% render 'product-card' no-type-or-descri█ption: 'value' %}`,
-        '`no-type-or-description`',
+        '### `no-type-or-description`',
       );
     });
   });

@@ -376,7 +376,7 @@ export interface ConcreteLiquidTagRenderMarkup
   snippet: ConcreteStringLiteral | ConcreteLiquidVariableLookup;
   alias: string | null;
   variable: ConcreteRenderVariableExpression | null;
-  args: ConcreteLiquidNamedArgument[];
+  renderArguments: ConcreteLiquidNamedArgument[];
 }
 
 export interface ConcreteRenderVariableExpression
@@ -865,10 +865,28 @@ function toCST<T>(
       snippet: 0,
       variable: 1,
       alias: 2,
-      args: 4,
+      renderArguments: 3,
       locStart,
       locEnd,
       source,
+    },
+    renderArguments: 1,
+    completionModeRenderArguments: function (
+      _0,
+      namedArguments,
+      _2,
+      _3,
+      _4,
+      _5,
+      variableLookup,
+      _7,
+    ) {
+      const self = this as any;
+
+      // variableLookup.sourceString can be '' when there are no incomplete params
+      return namedArguments
+        .toAST(self.args.mapping)
+        .concat(variableLookup.sourceString === '' ? [] : variableLookup.toAST(self.args.mapping));
     },
     snippetExpression: 0,
     renderVariableExpression: {

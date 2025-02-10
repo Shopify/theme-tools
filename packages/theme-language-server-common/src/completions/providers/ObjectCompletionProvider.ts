@@ -11,6 +11,8 @@ export class ObjectCompletionProvider implements Provider {
     if (!params.completionContext) return [];
 
     const { partialAst, node, ancestors } = params.completionContext;
+    const parentNode = ancestors.at(-1);
+
     if (!node || node.type !== NodeTypes.VariableLookup) {
       return [];
     }
@@ -20,8 +22,11 @@ export class ObjectCompletionProvider implements Provider {
       return [];
     }
 
-    // ContentFor uses VariableLookup to support completion of NamedParams.
-    if (ancestors.at(-1)?.type === NodeTypes.ContentForMarkup) {
+    // ContentFor and Render uses VariableLookup to support completion of NamedParams.
+    if (
+      parentNode?.type === NodeTypes.ContentForMarkup ||
+      parentNode?.type === NodeTypes.RenderMarkup
+    ) {
       return [];
     }
 

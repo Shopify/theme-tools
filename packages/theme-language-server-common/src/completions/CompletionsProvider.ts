@@ -1,4 +1,9 @@
-import { MetafieldDefinitionMap, SourceCodeType, ThemeDocset } from '@shopify/theme-check-common';
+import {
+  GetSnippetDefinitionForURI,
+  MetafieldDefinitionMap,
+  SourceCodeType,
+  ThemeDocset,
+} from '@shopify/theme-check-common';
 import { CompletionItem, CompletionParams } from 'vscode-languageserver';
 import { TypeSystem } from '../TypeSystem';
 import { DocumentManager } from '../documents';
@@ -22,6 +27,7 @@ import {
   ContentForParameterCompletionProvider,
 } from './providers';
 import { GetSnippetNamesForURI } from './providers/RenderSnippetCompletionProvider';
+import { RenderSnippetParameterCompletionProvider } from './providers/RenderSnippetParameterCompletionProvider';
 
 export interface CompletionProviderDependencies {
   documentManager: DocumentManager;
@@ -30,6 +36,7 @@ export interface CompletionProviderDependencies {
   getSnippetNamesForURI?: GetSnippetNamesForURI;
   getThemeSettingsSchemaForURI?: GetThemeSettingsSchemaForURI;
   getMetafieldDefinitions: (rootUri: string) => Promise<MetafieldDefinitionMap>;
+  getSnippetDefinitionForURI?: GetSnippetDefinitionForURI;
   getThemeBlockNames?: (rootUri: string, includePrivate: boolean) => Promise<string[]>;
   log?: (message: string) => void;
 }
@@ -47,6 +54,9 @@ export class CompletionsProvider {
     getTranslationsForURI = async () => ({}),
     getSnippetNamesForURI = async () => [],
     getThemeSettingsSchemaForURI = async () => [],
+    getSnippetDefinitionForURI = async (_uri, snippetName) => ({
+      name: snippetName,
+    }),
     getThemeBlockNames = async (_rootUri: string, _includePrivate: boolean) => [],
     log = () => {},
   }: CompletionProviderDependencies) {
@@ -72,6 +82,7 @@ export class CompletionsProvider {
       new FilterCompletionProvider(typeSystem),
       new TranslationCompletionProvider(documentManager, getTranslationsForURI),
       new RenderSnippetCompletionProvider(getSnippetNamesForURI),
+      new RenderSnippetParameterCompletionProvider(getSnippetDefinitionForURI),
       new FilterNamedParameterCompletionProvider(themeDocset),
     ];
   }
