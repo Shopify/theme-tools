@@ -1,7 +1,6 @@
 import { expect, describe, it } from 'vitest';
 import { ValidBlockTarget } from './index';
 import { check, MockTheme } from '../../test';
-import { Dependencies } from '../../types';
 
 describe('Module: ValidBlockTarget', () => {
   const paths = ['sections', 'blocks'];
