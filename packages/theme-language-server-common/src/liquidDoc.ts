@@ -54,7 +54,7 @@ export function getSnippetDefinition(
     },
     LiquidDocExampleNode(node: LiquidDocExampleNode) {
       return {
-        content: node.exampleContent.value,
+        content: node.content.value,
         nodeType: 'example',
       };
     },
