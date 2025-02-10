@@ -43,7 +43,7 @@ import { snippetName } from '../utils/uri';
 import { VERSION } from '../version';
 import { CachedFileSystem } from './CachedFileSystem';
 import { Configuration } from './Configuration';
-import { SnippetDefinition } from '../liquidDoc';
+import { SnippetDefinition } from '@shopify/theme-check-common';
 import { safe } from './safe';
 
 const defaultLogger = () => {};

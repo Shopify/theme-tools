@@ -1,8 +1,8 @@
-import { expect, it } from 'vitest';
-import { LiquidHtmlNode } from '@shopify/theme-check-common';
-import { toSourceCode } from '@shopify/theme-check-common';
-import { describe } from 'vitest';
+import { expect, it, describe } from 'vitest';
+import { toSourceCode } from '../to-source-code';
+import { LiquidHtmlNode } from '../types';
 import { getSnippetDefinition } from './liquidDoc';
+import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
 
 describe('Unit: getSnippetDefinition', () => {
   function toAST(code: string) {
