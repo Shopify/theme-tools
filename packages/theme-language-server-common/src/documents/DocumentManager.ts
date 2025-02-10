@@ -50,6 +50,11 @@ export class DocumentManager {
     return this.set(uri, source, version);
   }
 
+  public async changeFromDisk(uri: UriString) {
+    if (!this.fs) throw new Error('Cannot call changeFromDisk without a FileSystem');
+    this.change(uri, await this.fs.readFile(uri), undefined);
+  }
+
   public close(uri: UriString) {
     const sourceCode = this.sourceCodes.get(uri);
     if (!sourceCode) return;

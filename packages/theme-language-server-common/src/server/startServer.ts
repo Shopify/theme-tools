@@ -15,6 +15,8 @@ import {
 } from '@shopify/theme-check-common';
 import {
   Connection,
+  FileChangeType,
+  FileEvent,
   FileOperationRegistrationOptions,
   InitializeResult,
   ShowDocumentRequest,
@@ -88,6 +90,7 @@ export function startServer(
 ) {
   const fs = new CachedFileSystem(injectedFs);
   const fileExists = makeFileExists(fs);
+  const recentlyProcessed = new RecentlyProcessedSet();
   const clientCapabilities = new ClientCapabilities();
   const configuration = new Configuration(connection, clientCapabilities);
   const documentManager: DocumentManager = new DocumentManager(
@@ -369,6 +372,15 @@ export function startServer(
         {
           globPattern: '**/.shopify/*',
         },
+        {
+          globPattern: '**/*.liquid',
+        },
+        {
+          globPattern: '**/{locales,sections,templates,customers}/*.json',
+        },
+        {
+          globPattern: '**/config/settings_{data,schema}.json',
+        },
       ],
     });
 
@@ -432,6 +444,7 @@ export function startServer(
     const { uri } = params.textDocument;
     fs.readFile.invalidate(uri);
     fs.stat.invalidate(uri);
+    recentlyProcessed.add(uri); // To avoid redundant operation in didChangeWatchedFiles
     if (await configuration.shouldCheckOnSave()) {
       runChecks([uri]);
     }
@@ -495,21 +508,6 @@ export function startServer(
     return linkedEditingRangesProvider.linkedEditingRanges(params);
   });
 
-  connection.onDidChangeWatchedFiles(async (params) => {
-    if (params.changes.length === 0) return;
-
-    for (const change of params.changes) {
-      fs.readDirectory.invalidate(path.dirname(change.uri));
-      fs.readFile.invalidate(change.uri);
-      fs.stat.invalidate(change.uri);
-
-      if (change.uri.endsWith('metafields.json')) {
-        const rootUri = await findThemeRootURI(change.uri);
-        getMetafieldDefinitionsForRootUri.invalidate(rootUri);
-      }
-    }
-  });
-
   connection.workspace.onDidCreateFiles((params) => {
     const triggerUris = params.files.map((fileCreate) => fileCreate.uri);
     for (const { uri } of params.files) {
@@ -519,6 +517,7 @@ export function startServer(
       fs.readDirectory.invalidate(path.dirname(uri)); // Since there's a new file there
       fs.readFile.invalidate(uri); // Since this is no longer an error
       fs.stat.invalidate(uri); // Since this is no longer an error
+      recentlyProcessed.add(uri); // We don't want to perform the same operation in didChangeWatchedFiles
     }
 
     // MissingAssets/MissingSnippet should be rerun when a new file exists
@@ -545,6 +544,10 @@ export function startServer(
       fs.readFile.invalidate(newUri);
       fs.stat.invalidate(oldUri);
       fs.stat.invalidate(newUri);
+
+      // We don't want to perform the same operation in didChangeWatchedFiles
+      recentlyProcessed.add(newUri);
+      recentlyProcessed.add(oldUri);
     }
 
     // We should complete refactors before running theme check
@@ -568,6 +571,9 @@ export function startServer(
       // Since the file is gone, we invalidate the readFile and stat for the URI.
       fs.readFile.invalidate(uri);
       fs.stat.invalidate(uri);
+
+      // We don't want to perform the same operation in didChangeWatchedFiles
+      recentlyProcessed.add(uri);
     }
 
     // MissingAssets/MissingSnippet should be rerun when a file is deleted
@@ -575,5 +581,69 @@ export function startServer(
     runChecks.force(triggerUris);
   });
 
+  /**
+   * onDidChangeWatchedFiles is triggered by file operations (in or out of the editor).
+   *
+   * For in-editor changes, happens redundantly with
+   *   - onDidCreateFiles
+   *   - onDidRenameFiles
+   *   - onDidDeleteFiles
+   *   - onDidSaveTextDocument
+   *
+   * Not redundant for operations that happen outside of the editor
+   *   - git pull, checkout, reset, stash pop, etc.
+   *   - shopify theme metafields pull
+   *   - etc.
+   */
+  connection.onDidChangeWatchedFiles(async (params) => {
+    if (params.changes.length === 0) return;
+
+    const promises: Promise<any>[] = [];
+    for (const change of params.changes) {
+      // Skip things that were handled in didCreate/didSave/didRename/didDelete
+      if (recentlyProcessed.has(change.uri)) continue;
+
+      // Invalidate caches related to change
+      fs.readDirectory.invalidate(path.dirname(change.uri));
+      fs.readFile.invalidate(change.uri);
+      fs.stat.invalidate(change.uri);
+
+      // Update the document manager with the new contents of the file
+      switch (change.type) {
+        case FileChangeType.Changed:
+        case FileChangeType.Created:
+          // If a file is created (or changed) under out feet, we update its contents.
+          promises.push(documentManager.changeFromDisk(change.uri));
+          break;
+        case FileChangeType.Deleted:
+          // If a file is deleted, it's removed from the document manager
+          documentManager.delete(change.uri);
+          break;
+      }
+
+      if (change.uri.endsWith('metafields.json')) {
+        const rootUri = await findThemeRootURI(change.uri);
+        getMetafieldDefinitionsForRootUri.invalidate(rootUri);
+      }
+    }
+
+    await Promise.all(promises);
+  });
+
   connection.listen();
+}
+
+/**
+ * Both the onDidChangeWatchedFile and onDid{Create,Rename,Save,Delete}Files events
+ * can be triggered by the same file operation. This set is used to keep track
+ * of URIs that were processed in onDid{Create,Rename,Save,Delete}Files.
+ *
+ * That way, we won't invalidate the cache twice for the same change.
+ */
+class RecentlyProcessedSet extends Set {
+  add(uri: string) {
+    super.add(uri);
+    setTimeout(() => this.delete(uri), 500); /* 500 ms should be good enough? */
+    return this;
+  }
 }
