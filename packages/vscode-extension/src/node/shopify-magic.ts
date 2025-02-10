@@ -131,7 +131,10 @@ async function buildMessages(textEditor: TextEditor) {
     codeMetadataContext,
     liquidRulesContext,
     themeArchitectureContext,
-  ].map((message) => LanguageModelChatMessage.User(message));
+  ].map((message) => {
+    console.error(message);
+    return LanguageModelChatMessage.User(message);
+  });
 }
 
 function createHoverMessage(key: string, liquidSuggestion: LiquidSuggestion) {
