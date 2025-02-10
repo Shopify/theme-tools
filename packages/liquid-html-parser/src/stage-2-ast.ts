@@ -391,7 +391,13 @@ export interface LiquidTagLiquid extends LiquidTagNode<NamedTags.liquid, LiquidS
 export interface ContentForMarkup extends ASTNode<NodeTypes.ContentForMarkup> {
   /** {% content_for 'contentForType' %} */
   contentForType: LiquidString;
-  /** {% content_for 'contentForType', arg1: value1, arg2: value2 %} */
+  /**
+   * WARNING: `args` could contain LiquidVariableLookup when we are in a completion context
+   * because the NamedArgument isn't fully typed out.
+   * E.g. {% content_for 'contentForType', arg1: value1, arg2█ %}
+   *
+   * @example {% content_for 'contentForType', arg1: value1, arg2: value2 %}
+   */
   args: LiquidNamedArgument[];
 }
 
@@ -1493,7 +1499,7 @@ function toNamedLiquidTag(
       return {
         ...liquidTagBaseAttributes(node),
         name: node.name,
-        markup: toContentForMarkup(node.markup, options.mode),
+        markup: toContentForMarkup(node.markup),
       };
     }
 
@@ -1773,10 +1779,7 @@ function toRawMarkupKindFromLiquidNode(node: ConcreteLiquidRawTag): RawMarkupKin
   }
 }
 
-function toContentForMarkup(
-  node: ConcreteLiquidTagContentForMarkup,
-  mode: ASTBuildOptions['mode'],
-): ContentForMarkup {
+function toContentForMarkup(node: ConcreteLiquidTagContentForMarkup): ContentForMarkup {
   return {
     type: NodeTypes.ContentForMarkup,
     contentForType: toExpression(node.contentForType) as LiquidString,
@@ -1788,10 +1791,7 @@ function toContentForMarkup(
      * completion mode. This means that our types are *wrong* in completion mode
      * but this is the compromise we're making to get completions to work.
      */
-    args:
-      mode === 'completion'
-        ? (node.args.map(toLiquidArgument) as LiquidNamedArgument[])
-        : node.args.map(toNamedArgument),
+    args: node.args.map(toLiquidArgument) as LiquidNamedArgument[],
     position: position(node),
     source: node.source,
   };
