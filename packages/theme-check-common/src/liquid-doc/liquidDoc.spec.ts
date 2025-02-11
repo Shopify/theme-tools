@@ -19,10 +19,7 @@ describe('Unit: getSnippetDefinition', () => {
     const result = getSnippetDefinition(ast, 'product-card');
     expect(result).to.deep.equal({
       name: 'product-card',
-      liquidDoc: {
-        parameters: [],
-        examples: [],
-      },
+      liquidDoc: {},
     });
   });
 
@@ -86,7 +83,6 @@ describe('Unit: getSnippetDefinition', () => {
             nodeType: 'param',
           },
         ],
-        examples: [],
       },
     });
   });
@@ -103,7 +99,6 @@ describe('Unit: getSnippetDefinition', () => {
     expect(result).to.deep.equal({
       name: 'product-card',
       liquidDoc: {
-        parameters: [],
         examples: [
           {
             content: '\n          {{ product }}\n',
@@ -127,7 +122,6 @@ describe('Unit: getSnippetDefinition', () => {
     expect(result).to.deep.equal({
       name: 'product-card',
       liquidDoc: {
-        parameters: [],
         examples: [
           {
             content: '\n          {{ product }}\n          {{ product.title }}\n',
@@ -184,7 +178,6 @@ describe('Unit: getSnippetDefinition', () => {
     expect(result).to.deep.equal({
       name: 'product-card',
       liquidDoc: {
-        parameters: [],
         examples: [
           {
             content: '\n          {{ product }}\n',
@@ -196,6 +189,29 @@ describe('Unit: getSnippetDefinition', () => {
           },
         ],
       },
+    });
+  });
+
+  it('should return snippetDefinition without liquidDoc property if doc header is not present', async () => {
+    const ast = toAST(`
+      <div>No doc header here</div>
+    `);
+
+    const result = getSnippetDefinition(ast, 'product-card');
+    expect(result).to.deep.equal({
+      name: 'product-card',
+    });
+  });
+
+  it('should return an empty liquidDoc definition doc header is present but empty', async () => {
+    const ast = toAST(`
+      {% doc %}{% enddoc %}
+    `);
+
+    const result = getSnippetDefinition(ast, 'product-card');
+    expect(result).to.deep.equal({
+      name: 'product-card',
+      liquidDoc: {},
     });
   });
 });

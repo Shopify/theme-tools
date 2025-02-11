@@ -1,11 +1,7 @@
 import { SourceCodeType } from '../types';
 import { visit } from '../visitor';
 import { LiquidHtmlNode } from '../types';
-import {
-  LiquidDocExampleNode,
-  LiquidDocParamNode,
-  LiquidRawTag,
-} from '@shopify/liquid-html-parser';
+import { LiquidDocExampleNode, LiquidDocParamNode } from '@shopify/liquid-html-parser';
 
 export type GetSnippetDefinitionForURI = (
   uri: string,
@@ -67,12 +63,25 @@ export function getSnippetDefinition(
       };
     },
   });
+  const { parameters, examples } = nodes.reduce(
+    (acc, node) => {
+      if (node.nodeType === 'param') {
+        acc.parameters.push(node as LiquidDocParameter);
+      } else if (node.nodeType === 'example') {
+        acc.examples.push(node as LiquidDocExample);
+      }
+      return acc;
+    },
+    { parameters: [] as LiquidDocParameter[], examples: [] as LiquidDocExample[] },
+  );
 
-  const parameters = nodes.filter((node): node is LiquidDocParameter => node.nodeType === 'param');
-  const examples = nodes.filter((node): node is LiquidDocExample => node.nodeType === 'example');
+  if (!hasDocTag) return { name: snippetName };
 
   return {
     name: snippetName,
-    liquidDoc: hasDocTag ? { parameters, examples } : undefined,
+    liquidDoc: {
+      ...(parameters.length && { parameters }),
+      ...(examples.length && { examples }),
+    },
   };
 }
