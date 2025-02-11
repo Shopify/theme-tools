@@ -16,7 +16,6 @@ import {
 import {
   Connection,
   FileChangeType,
-  FileEvent,
   FileOperationRegistrationOptions,
   InitializeResult,
   ShowDocumentRequest,
@@ -36,6 +35,7 @@ import { OnTypeFormattingProvider } from '../formatting';
 import { HoverProvider } from '../hover';
 import { JSONLanguageService } from '../json/JSONLanguageService';
 import { LinkedEditingRangesProvider } from '../linkedEditingRanges/LinkedEditingRangesProvider';
+import { SnippetDefinition } from '../liquidDoc';
 import { RenameProvider } from '../rename/RenameProvider';
 import { RenameHandler } from '../renamed/RenameHandler';
 import { GetTranslationsForURI } from '../translations';
@@ -45,7 +45,6 @@ import { snippetName } from '../utils/uri';
 import { VERSION } from '../version';
 import { CachedFileSystem } from './CachedFileSystem';
 import { Configuration } from './Configuration';
-import { SnippetDefinition } from '../liquidDoc';
 import { safe } from './safe';
 
 const defaultLogger = () => {};
@@ -90,7 +89,6 @@ export function startServer(
 ) {
   const fs = new CachedFileSystem(injectedFs);
   const fileExists = makeFileExists(fs);
-  const recentlyProcessed = new RecentlyProcessedSet();
   const clientCapabilities = new ClientCapabilities();
   const configuration = new Configuration(connection, clientCapabilities);
   const documentManager: DocumentManager = new DocumentManager(
@@ -349,8 +347,6 @@ export function startServer(
           },
           fileOperations: {
             didRename: fileOperationRegistrationOptions,
-            didCreate: fileOperationRegistrationOptions,
-            didDelete: fileOperationRegistrationOptions,
           },
         },
       },
@@ -442,9 +438,6 @@ export function startServer(
   connection.onDidSaveTextDocument(async (params) => {
     if (hasUnsupportedDocument(params)) return;
     const { uri } = params.textDocument;
-    fs.readFile.invalidate(uri);
-    fs.stat.invalidate(uri);
-    recentlyProcessed.add(uri); // To avoid redundant operation in didChangeWatchedFiles
     if (await configuration.shouldCheckOnSave()) {
       runChecks([uri]);
     }
@@ -508,23 +501,6 @@ export function startServer(
     return linkedEditingRangesProvider.linkedEditingRanges(params);
   });
 
-  connection.workspace.onDidCreateFiles((params) => {
-    const triggerUris = params.files.map((fileCreate) => fileCreate.uri);
-    for (const { uri } of params.files) {
-      // When a file is created, to make sure preload isn't invalidated, we add
-      // an empty string to the document manager for the new URI.
-      if (!documentManager.has(uri)) documentManager.open(uri, '', undefined);
-      fs.readDirectory.invalidate(path.dirname(uri)); // Since there's a new file there
-      fs.readFile.invalidate(uri); // Since this is no longer an error
-      fs.stat.invalidate(uri); // Since this is no longer an error
-      recentlyProcessed.add(uri); // We don't want to perform the same operation in didChangeWatchedFiles
-    }
-
-    // MissingAssets/MissingSnippet should be rerun when a new file exists
-    // since the file creation might invalidate the error.
-    runChecks.force(triggerUris);
-  });
-
   connection.workspace.onDidRenameFiles(async (params) => {
     const triggerUris = params.files.map((fileRename) => fileRename.newUri);
 
@@ -544,37 +520,10 @@ export function startServer(
       fs.readFile.invalidate(newUri);
       fs.stat.invalidate(oldUri);
       fs.stat.invalidate(newUri);
-
-      // We don't want to perform the same operation in didChangeWatchedFiles
-      recentlyProcessed.add(newUri);
-      recentlyProcessed.add(oldUri);
     }
 
     // We should complete refactors before running theme check
     await renameHandler.onDidRenameFiles(params);
-
-    // MissingAssets/MissingSnippet should be rerun when a file is renamed
-    // since the file rename might invalidate an error.
-    runChecks.force(triggerUris);
-  });
-
-  connection.workspace.onDidDeleteFiles((params) => {
-    const triggerUris = params.files.map((fileDelete) => fileDelete.uri);
-    for (const { uri } of params.files) {
-      // When a file is deleted, we remove it from the document manager.
-      // Don't need to invalidate preload because that operation covers it.
-      documentManager.delete(uri);
-
-      // Since the file is gone, we invalidate the parent directory's readDirectory.
-      fs.readDirectory.invalidate(path.dirname(uri));
-
-      // Since the file is gone, we invalidate the readFile and stat for the URI.
-      fs.readFile.invalidate(uri);
-      fs.stat.invalidate(uri);
-
-      // We don't want to perform the same operation in didChangeWatchedFiles
-      recentlyProcessed.add(uri);
-    }
 
     // MissingAssets/MissingSnippet should be rerun when a file is deleted
     // since the file rename might cause an error.
@@ -594,56 +543,70 @@ export function startServer(
    *   - git pull, checkout, reset, stash pop, etc.
    *   - shopify theme metafields pull
    *   - etc.
+   *
+   * It always runs and onDid* will never fire without a corresponding onDidChangeWatchedFiles.
+   *
+   * This is why the bulk of the cache invalidation logic is in this handler.
    */
   connection.onDidChangeWatchedFiles(async (params) => {
     if (params.changes.length === 0) return;
 
-    const promises: Promise<any>[] = [];
+    const triggerUris = params.changes.map((change) => change.uri);
+    const updates: Promise<any>[] = [];
     for (const change of params.changes) {
-      // Skip things that were handled in didCreate/didSave/didRename/didDelete
-      if (recentlyProcessed.has(change.uri)) continue;
+      // Rename cache invalidation is handled by onDidRenameFiles
+      if (documentManager.hasRecentRename(change.uri)) {
+        documentManager.clearRecentRename(change.uri);
+        continue;
+      }
 
-      // Invalidate caches related to change
-      fs.readDirectory.invalidate(path.dirname(change.uri));
-      fs.readFile.invalidate(change.uri);
-      fs.stat.invalidate(change.uri);
-
-      // Update the document manager with the new contents of the file
       switch (change.type) {
-        case FileChangeType.Changed:
         case FileChangeType.Created:
-          // If a file is created (or changed) under out feet, we update its contents.
-          promises.push(documentManager.changeFromDisk(change.uri));
+          // A created file invalidates readDirectory, readFile and stat
+          fs.readDirectory.invalidate(path.dirname(change.uri));
+          fs.readFile.invalidate(change.uri);
+          fs.stat.invalidate(change.uri);
+          // If a file is created under out feet, we update its contents.
+          updates.push(documentManager.changeFromDisk(change.uri));
           break;
+
+        case FileChangeType.Changed:
+          // A changed file invalidates readFile and stat (but not readDirectory)
+          fs.readFile.invalidate(change.uri);
+          fs.stat.invalidate(change.uri);
+          // If the file is not open, we update its contents in the doc manager
+          // If it is open, then we don't need to update it because the document manager
+          // will have the version from the editor.
+          if (documentManager.get(change.uri)?.version === undefined) {
+            updates.push(documentManager.changeFromDisk(change.uri));
+          }
+          break;
+
         case FileChangeType.Deleted:
+          // A deleted file invalides readDirectory, readFile, and stat
+          fs.readDirectory.invalidate(path.dirname(change.uri));
+          fs.readFile.invalidate(change.uri);
+          fs.stat.invalidate(change.uri);
           // If a file is deleted, it's removed from the document manager
           documentManager.delete(change.uri);
           break;
       }
 
       if (change.uri.endsWith('metafields.json')) {
-        const rootUri = await findThemeRootURI(change.uri);
-        getMetafieldDefinitionsForRootUri.invalidate(rootUri);
+        updates.push(
+          findThemeRootURI(change.uri).then((rootUri) =>
+            getMetafieldDefinitionsForRootUri.invalidate(rootUri),
+          ),
+        );
       }
     }
 
-    await Promise.all(promises);
+    await Promise.all(updates);
+
+    // MissingAssets/MissingSnippet should be rerun when a file is deleted
+    // since an error might be introduced (and vice versa).
+    runChecks.force(triggerUris);
   });
 
   connection.listen();
-}
-
-/**
- * Both the onDidChangeWatchedFile and onDid{Create,Rename,Save,Delete}Files events
- * can be triggered by the same file operation. This set is used to keep track
- * of URIs that were processed in onDid{Create,Rename,Save,Delete}Files.
- *
- * That way, we won't invalidate the cache twice for the same change.
- */
-class RecentlyProcessedSet extends Set {
-  add(uri: string) {
-    super.add(uri);
-    setTimeout(() => this.delete(uri), 500); /* 500 ms should be good enough? */
-    return this;
-  }
 }

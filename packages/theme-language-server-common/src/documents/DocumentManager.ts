@@ -31,6 +31,7 @@ export class DocumentManager {
    * are preloaded have a version of `undefined`.
    */
   private sourceCodes: Map<UriString, AugmentedSourceCode>;
+  private recentlyRenamed: Set<UriString>;
 
   constructor(
     private readonly fs?: AbstractFileSystem,
@@ -40,6 +41,7 @@ export class DocumentManager {
     private readonly isValidSchema?: IsValidSchema,
   ) {
     this.sourceCodes = new Map();
+    this.recentlyRenamed = new Set();
   }
 
   public open(uri: UriString, source: string, version: number | undefined) {
@@ -66,6 +68,8 @@ export class DocumentManager {
   }
 
   public rename(oldUri: UriString, newUri: UriString) {
+    this.recentlyRenamed.add(oldUri);
+    this.recentlyRenamed.add(newUri);
     const sourceCode = this.sourceCodes.get(oldUri);
     if (!sourceCode) return;
     this.sourceCodes.delete(oldUri);
@@ -90,6 +94,14 @@ export class DocumentManager {
 
   public has(uri: UriString) {
     return this.sourceCodes.has(path.normalize(uri));
+  }
+
+  public hasRecentRename(uri: UriString) {
+    return this.recentlyRenamed.has(uri);
+  }
+
+  public clearRecentRename(uri: UriString) {
+    this.recentlyRenamed.delete(uri);
   }
 
   private set(uri: UriString, source: string, version: number | undefined) {
