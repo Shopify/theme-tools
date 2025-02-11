@@ -3,9 +3,11 @@ import { MockFileSystem, MockTheme } from '@shopify/theme-check-common/dist/test
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   DidChangeConfigurationNotification,
+  DidChangeWatchedFilesNotification,
   DidCreateFilesNotification,
   DidDeleteFilesNotification,
   DidRenameFilesNotification,
+  FileChangeType,
   PublishDiagnosticsNotification,
   WorkDoneProgress,
   WorkDoneProgressCreateRequest,
@@ -217,16 +219,19 @@ describe('Module: server', () => {
     fileTree['snippets/bar.liquid'] = '...';
 
     // Trigger create files notification & update mocks
-    connection.triggerNotification(DidCreateFilesNotification.type, {
-      files: [
+    connection.triggerNotification(DidChangeWatchedFilesNotification.type, {
+      changes: [
         {
           uri: path.join(mockRoot, 'snippets/foo.liquid'),
+          type: FileChangeType.Created,
         },
         {
           uri: path.join(mockRoot, 'snippets/bar.liquid'),
+          type: FileChangeType.Created,
         },
       ],
     });
+    await flushAsync();
     await advanceAndFlush(100);
 
     // Verify that we re-check'ed filePath to remove the linting error
@@ -276,6 +281,20 @@ describe('Module: server', () => {
       ],
     });
 
+    // Trigger a changed watched files notification
+    connection.triggerNotification(DidChangeWatchedFilesNotification.type, {
+      changes: [
+        {
+          uri: path.join(mockRoot, 'snippets/bar.liquid'),
+          type: FileChangeType.Deleted,
+        },
+        {
+          uri: path.join(mockRoot, 'snippets/foo.liquid'),
+          type: FileChangeType.Created,
+        },
+      ],
+    });
+
     // We need to flush the rename handler work
     await flushAsync();
 
@@ -317,14 +336,16 @@ describe('Module: server', () => {
     connection.spies.sendNotification.mockClear();
 
     // Notify about file delete
-    connection.triggerNotification(DidDeleteFilesNotification.type, {
-      files: [
+    connection.triggerNotification(DidChangeWatchedFilesNotification.type, {
+      changes: [
         {
           uri: path.join(mockRoot, 'snippets/foo.liquid'),
+          type: FileChangeType.Deleted,
         },
       ],
     });
     delete fileTree['snippets/foo.liquid'];
+    await flushAsync();
     await advanceAndFlush(100);
 
     // Make sure there's an error now that the file no longer exists
