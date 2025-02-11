@@ -1,7 +1,6 @@
-import { SourceCodeType, visit } from '@shopify/theme-check-common';
-
-import { LiquidHtmlNode } from '@shopify/theme-check-common';
-
+import { SourceCodeType } from '../types';
+import { visit } from '../visitor';
+import { LiquidHtmlNode } from '../types';
 import { LiquidDocExampleNode, LiquidDocParamNode } from '@shopify/liquid-html-parser';
 
 export type GetSnippetDefinitionForURI = (

@@ -2,7 +2,7 @@ import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { HoverProvider } from '../HoverProvider';
 import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
-import { GetSnippetDefinitionForURI, SnippetDefinition } from '../../liquidDoc';
+import { GetSnippetDefinitionForURI, SnippetDefinition } from '@shopify/theme-check-common';
 import '../../../../theme-check-common/src/test/test-setup';
 
 describe('Module: RenderSnippetParameterHoverProvider', async () => {

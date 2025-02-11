@@ -12,6 +12,7 @@ import {
   path,
   recursiveReadDirectory,
   SourceCodeType,
+  SnippetDefinition,
 } from '@shopify/theme-check-common';
 import {
   Connection,
@@ -35,7 +36,6 @@ import { OnTypeFormattingProvider } from '../formatting';
 import { HoverProvider } from '../hover';
 import { JSONLanguageService } from '../json/JSONLanguageService';
 import { LinkedEditingRangesProvider } from '../linkedEditingRanges/LinkedEditingRangesProvider';
-import { SnippetDefinition } from '../liquidDoc';
 import { RenameProvider } from '../rename/RenameProvider';
 import { RenameHandler } from '../renamed/RenameHandler';
 import { GetTranslationsForURI } from '../translations';
