@@ -21,6 +21,8 @@ import { percent, Progress } from '../progress';
 import { AugmentedSourceCode } from './types';
 import { getSnippetDefinition } from '../liquidDoc';
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export class DocumentManager {
   /**
    * The sourceCodes map is a map of URIs to SourceCodes. It is used to keep
@@ -68,8 +70,7 @@ export class DocumentManager {
   }
 
   public rename(oldUri: UriString, newUri: UriString) {
-    this.recentlyRenamed.add(oldUri);
-    this.recentlyRenamed.add(newUri);
+    this.trackRename(oldUri, newUri);
     const sourceCode = this.sourceCodes.get(oldUri);
     if (!sourceCode) return;
     this.sourceCodes.delete(oldUri);
@@ -96,6 +97,7 @@ export class DocumentManager {
     return this.sourceCodes.has(path.normalize(uri));
   }
 
+  /** Used to prevent cache busting twice for the same operation */
   public hasRecentRename(uri: UriString) {
     return this.recentlyRenamed.has(uri);
   }
@@ -200,5 +202,22 @@ export class DocumentManager {
       default:
         return assertNever(sourceCode);
     }
+  }
+
+  /**
+   * The workspace/onDidRenameFile notification is sent when a file is renamed in the workspace (via a user gesture)
+   * The workspace/onDidChangeWatchedFiles notification is sent when a file is renamed on disk (via a file system event)
+   *
+   * The order is not guaranteed, but it seems to be true that onDidRenameFile happens before onDidChangeWatchedFiles.
+   *
+   * In the off-chance that the order is reversed, we'll have the sleep timer to clean up the state.
+   */
+  private trackRename(oldUri: UriString, newUri: UriString) {
+    this.recentlyRenamed.add(oldUri);
+    this.recentlyRenamed.add(newUri);
+    sleep(2000).then(() => {
+      this.clearRecentRename(oldUri);
+      this.clearRecentRename(newUri);
+    });
   }
 }
