@@ -10,13 +10,18 @@ export class ObjectCompletionProvider implements Provider {
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
 
-    const { partialAst, node } = params.completionContext;
+    const { partialAst, node, ancestors } = params.completionContext;
     if (!node || node.type !== NodeTypes.VariableLookup) {
       return [];
     }
 
     if (!node.name || node.lookups.length > 0) {
       // We only do top level in this one.
+      return [];
+    }
+
+    // ContentFor uses VariableLookup to support completion of NamedParams.
+    if (ancestors.at(-1)?.type === NodeTypes.ContentForMarkup) {
       return [];
     }
 

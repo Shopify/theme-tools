@@ -937,6 +937,13 @@ function toCST<T>(
     simpleArgument: 0,
     tagArguments: 0,
     contentForTagArgument: 0,
+    completionModeContentForTagArgument: function (namedArguments, _separator, variableLookup) {
+      const self = this as any;
+
+      return namedArguments
+        .toAST(self.args.mapping)
+        .concat(variableLookup.sourceString === '' ? [] : variableLookup.toAST(self.args.mapping));
+    },
     positionalArgument: 0,
     namedArgument: {
       type: ConcreteNodeTypes.NamedArgument,

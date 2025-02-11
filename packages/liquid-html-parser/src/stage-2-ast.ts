@@ -391,7 +391,13 @@ export interface LiquidTagLiquid extends LiquidTagNode<NamedTags.liquid, LiquidS
 export interface ContentForMarkup extends ASTNode<NodeTypes.ContentForMarkup> {
   /** {% content_for 'contentForType' %} */
   contentForType: LiquidString;
-  /** {% content_for 'contentForType', arg1: value1, arg2: value2 %} */
+  /**
+   * WARNING: `args` could contain LiquidVariableLookup when we are in a completion context
+   * because the NamedArgument isn't fully typed out.
+   * E.g. {% content_for 'contentForType', arg1: value1, arg2█ %}
+   *
+   * @example {% content_for 'contentForType', arg1: value1, arg2: value2 %}
+   */
   args: LiquidNamedArgument[];
 }
 
@@ -1777,7 +1783,15 @@ function toContentForMarkup(node: ConcreteLiquidTagContentForMarkup): ContentFor
   return {
     type: NodeTypes.ContentForMarkup,
     contentForType: toExpression(node.contentForType) as LiquidString,
-    args: node.args.map(toNamedArgument),
+    /**
+     * When we're in completion mode we won't necessarily have valid named
+     * arguments so we need to call toLiquidArgument instead of toNamedArgument.
+     * We cast using `as` so that this doesn't affect the type system used in
+     * other areas (like theme check) for a scenario that only occurs in
+     * completion mode. This means that our types are *wrong* in completion mode
+     * but this is the compromise we're making to get completions to work.
+     */
+    args: node.args.map(toLiquidArgument) as LiquidNamedArgument[],
     position: position(node),
     source: node.source,
   };

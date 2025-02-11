@@ -1776,6 +1776,16 @@ describe('Unit: Stage 1 (CST)', () => {
       expectPath(cst, '0.markup.filters.0.args.1.type').to.equal('NamedArgument');
       expectPath(cst, '0.markup.filters.0.args.2.type').to.equal('VariableLookup');
     });
+
+    it('should parse incomplete parameters for content_for tags', () => {
+      const toCST = (source: string) => toLiquidHtmlCST(source, { mode: 'completion' });
+
+      cst = toCST(`{% content_for "blocks", id: 1, cl█ %}`);
+
+      expectPath(cst, '0.markup.type').to.equal('ContentForMarkup');
+      expectPath(cst, '0.markup.args.0.type').to.equal('NamedArgument');
+      expectPath(cst, '0.markup.args.1.type').to.equal('VariableLookup');
+    });
   });
 
   function makeExpectPath(message: string) {
