@@ -117,6 +117,9 @@ ValidJSON:
 ValidLocalBlocks:
   enabled: true
   severity: 0
+ValidRenderSnippetParamTypes:
+  enabled: true
+  severity: 1
 ValidRenderSnippetParams:
   enabled: true
   severity: 1

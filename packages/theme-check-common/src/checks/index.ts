@@ -42,6 +42,7 @@ import { ValidHTMLTranslation } from './valid-html-translation';
 import { ValidJSON } from './valid-json';
 import { ValidLocalBlocks } from './valid-local-blocks';
 import { ValidRenderSnippetParams } from './valid-render-snippet-params';
+import { ValidRenderSnippetParamTypes } from './valid-render-snippet-param-types';
 import { ValidSchema } from './valid-schema';
 import { ValidSchemaName } from './valid-schema-name';
 import { ValidSettingsKey } from './valid-settings-key';
@@ -102,6 +103,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidVisibleIfSettingsSchema,
   VariableName,
   ValidRenderSnippetParams,
+  ValidRenderSnippetParamTypes,
   ValidSchemaName,
 ];
 
