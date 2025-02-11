@@ -1,0 +1,8 @@
+name: theme-tools
+
+dev.edition: 2024
+
+up:
+  - node:
+      version: v22.14.0
+      yarn: v1.22.22
