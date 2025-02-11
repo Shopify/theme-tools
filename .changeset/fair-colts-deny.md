@@ -7,3 +7,4 @@ Add ValidRenderSnippetParams check which validates args passed to snippets with 
 
 - Checks that required parameters are provided
 - Checks that unknown parameters are not provided
+- Checks that the defined type of a parameter matches the type of the provided value if provided

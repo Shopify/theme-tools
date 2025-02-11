@@ -3,7 +3,7 @@ import { LiquidNamedArgument, RenderMarkup } from '@shopify/liquid-html-parser';
 import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
 import { getSnippetDefinition, LiquidDocParameter } from '../../liquid-doc/liquidDoc';
 import { isLiquidString } from '../utils';
-
+import { inferArgumentType, getDefaultValueForType } from '../../liquid-doc/utils';
 export const ValidRenderSnippetParams: LiquidCheckDefinition = {
   meta: {
     code: 'ValidRenderSnippetParams',
@@ -30,6 +30,7 @@ export const ValidRenderSnippetParams: LiquidCheckDefinition = {
 
       const missingRequiredParams: LiquidDocParameter[] = [];
       const unknownProvidedParams: LiquidNamedArgument[] = [];
+      const typeMismatchParams: LiquidNamedArgument[] = [];
 
       // Check required params
       for (const param of liquidDocParameters.values()) {
@@ -43,12 +44,18 @@ export const ValidRenderSnippetParams: LiquidCheckDefinition = {
         const liquidDocParamDef = liquidDocParameters.get(arg.name);
         if (!liquidDocParamDef) {
           unknownProvidedParams.push(arg);
+        } else {
+          const inferredType = inferArgumentType(arg);
+          if (inferredType !== liquidDocParamDef.type?.toLowerCase()) {
+            typeMismatchParams.push(arg);
+          }
         }
       }
 
       return {
         missingRequiredParams,
         unknownProvidedParams,
+        typeMismatchParams,
       };
     }
 
@@ -99,6 +106,37 @@ export const ValidRenderSnippetParams: LiquidCheckDefinition = {
       }
     }
 
+    function reportTypeMismatches(
+      typeMismatchParams: LiquidNamedArgument[],
+      liquidDocParameters: Map<string, LiquidDocParameter>,
+    ) {
+      for (const arg of typeMismatchParams) {
+        const paramDef = liquidDocParameters.get(arg.name);
+        if (!paramDef || !paramDef.type) continue;
+
+        const expectedType = paramDef.type.toLowerCase();
+        const actualType = inferArgumentType(arg);
+
+        context.report({
+          message: `Type mismatch for parameter '${arg.name}': expected ${expectedType}, got ${actualType}`,
+          startIndex: arg.value.position.start,
+          endIndex: arg.value.position.end,
+          suggest: [
+            {
+              message: `Convert to ${expectedType}`,
+              fix: (fixer) => {
+                return fixer.replace(
+                  arg.value.position.start,
+                  arg.value.position.end,
+                  getDefaultValueForType(expectedType),
+                );
+              },
+            },
+          ],
+        });
+      }
+    }
+
     return {
       async RenderMarkup(node: RenderMarkup) {
         if (!isLiquidString(node.snippet) || node.variable) {
@@ -121,17 +159,13 @@ export const ValidRenderSnippetParams: LiquidCheckDefinition = {
           snippetDef.liquidDoc.parameters.map((p) => [p.name, p]),
         );
 
-        const { missingRequiredParams, unknownProvidedParams } = partitionParameters(
-          liquidDocParameters,
-          node.args,
-        );
+        const { missingRequiredParams, unknownProvidedParams, typeMismatchParams } =
+          partitionParameters(liquidDocParameters, node.args);
 
         reportMissingParams(missingRequiredParams, node, snippetName);
         reportUnknownParams(unknownProvidedParams, snippetName);
+        reportTypeMismatches(typeMismatchParams, liquidDocParameters);
       },
     };
   },
 };
-function getDefaultValueForType(type: string | null) {
-  throw new Error('Function not implemented.');
-}
