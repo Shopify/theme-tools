@@ -86,6 +86,7 @@ export enum ConcreteNodeTypes {
 
   LiquidDocParamNode = 'LiquidDocParamNode',
   LiquidDocParamNameNode = 'LiquidDocParamNameNode',
+  LiquidDocDescriptionNode = 'LiquidDocDescriptionNode',
   LiquidDocExampleNode = 'LiquidDocExampleNode',
 }
 
@@ -124,10 +125,16 @@ export interface ConcreteLiquidDocParamNameNode
   required: boolean;
 }
 
+export interface ConcreteLiquidDocDescriptionNode
+  extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocDescriptionNode> {
+  name: 'description';
+  content: ConcreteTextNode;
+}
+
 export interface ConcreteLiquidDocExampleNode
   extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocExampleNode> {
   name: 'example';
-  exampleContent: ConcreteTextNode;
+  content: ConcreteTextNode;
 }
 
 export interface ConcreteHtmlNodeBase<T> extends ConcreteBasicNode<T> {
@@ -469,7 +476,10 @@ export type LiquidHtmlCST = LiquidHtmlConcreteNode[];
 
 export type LiquidCST = LiquidConcreteNode[];
 
-export type LiquidDocConcreteNode = ConcreteLiquidDocParamNode | ConcreteLiquidDocExampleNode;
+export type LiquidDocConcreteNode =
+  | ConcreteLiquidDocParamNode
+  | ConcreteLiquidDocExampleNode
+  | ConcreteLiquidDocDescriptionNode;
 
 interface Mapping {
   [k: string]: number | TemplateMapping | TopLevelFunctionMapping;
@@ -927,6 +937,13 @@ function toCST<T>(
     simpleArgument: 0,
     tagArguments: 0,
     contentForTagArgument: 0,
+    completionModeContentForTagArgument: function (namedArguments, _separator, variableLookup) {
+      const self = this as any;
+
+      return namedArguments
+        .toAST(self.args.mapping)
+        .concat(variableLookup.sourceString === '' ? [] : variableLookup.toAST(self.args.mapping));
+    },
     positionalArgument: 0,
     namedArgument: {
       type: ConcreteNodeTypes.NamedArgument,
@@ -1357,6 +1374,15 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       paramName: 4,
       paramDescription: 8,
     },
+    descriptionNode: {
+      type: ConcreteNodeTypes.LiquidDocDescriptionNode,
+      name: 'description',
+      locStart,
+      locEnd,
+      source,
+      content: 2,
+    },
+    descriptionContent: textNode,
     paramType: 2,
     paramTypeContent: textNode,
     paramName: {
@@ -1382,7 +1408,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       locStart,
       locEnd,
       source,
-      exampleContent: 2,
+      content: 2,
     },
     exampleContent: textNode,
     textValue: textNode,

@@ -19,7 +19,9 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { ClientCapabilities } from '../ClientCapabilities';
 import { percent, Progress } from '../progress';
 import { AugmentedSourceCode } from './types';
-import { getSnippetDefinition } from '../liquidDoc';
+import { getSnippetDefinition } from '@shopify/theme-check-common';
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export class DocumentManager {
   /**
@@ -31,6 +33,7 @@ export class DocumentManager {
    * are preloaded have a version of `undefined`.
    */
   private sourceCodes: Map<UriString, AugmentedSourceCode>;
+  private recentlyRenamed: Set<UriString>;
 
   constructor(
     private readonly fs?: AbstractFileSystem,
@@ -40,6 +43,7 @@ export class DocumentManager {
     private readonly isValidSchema?: IsValidSchema,
   ) {
     this.sourceCodes = new Map();
+    this.recentlyRenamed = new Set();
   }
 
   public open(uri: UriString, source: string, version: number | undefined) {
@@ -48,6 +52,11 @@ export class DocumentManager {
 
   public change(uri: UriString, source: string, version: number | undefined) {
     return this.set(uri, source, version);
+  }
+
+  public async changeFromDisk(uri: UriString) {
+    if (!this.fs) throw new Error('Cannot call changeFromDisk without a FileSystem');
+    this.change(uri, await this.fs.readFile(uri), undefined);
   }
 
   public close(uri: UriString) {
@@ -61,6 +70,7 @@ export class DocumentManager {
   }
 
   public rename(oldUri: UriString, newUri: UriString) {
+    this.trackRename(oldUri, newUri);
     const sourceCode = this.sourceCodes.get(oldUri);
     if (!sourceCode) return;
     this.sourceCodes.delete(oldUri);
@@ -85,6 +95,15 @@ export class DocumentManager {
 
   public has(uri: UriString) {
     return this.sourceCodes.has(path.normalize(uri));
+  }
+
+  /** Used to prevent cache busting twice for the same operation */
+  public hasRecentRename(uri: UriString) {
+    return this.recentlyRenamed.has(uri);
+  }
+
+  public clearRecentRename(uri: UriString) {
+    this.recentlyRenamed.delete(uri);
   }
 
   private set(uri: UriString, source: string, version: number | undefined) {
@@ -183,5 +202,22 @@ export class DocumentManager {
       default:
         return assertNever(sourceCode);
     }
+  }
+
+  /**
+   * The workspace/onDidRenameFile notification is sent when a file is renamed in the workspace (via a user gesture)
+   * The workspace/onDidChangeWatchedFiles notification is sent when a file is renamed on disk (via a file system event)
+   *
+   * The order is not guaranteed, but it seems to be true that onDidRenameFile happens before onDidChangeWatchedFiles.
+   *
+   * In the off-chance that the order is reversed, we'll have the sleep timer to clean up the state.
+   */
+  private trackRename(oldUri: UriString, newUri: UriString) {
+    this.recentlyRenamed.add(oldUri);
+    this.recentlyRenamed.add(newUri);
+    sleep(2000).then(() => {
+      this.clearRecentRename(oldUri);
+      this.clearRecentRename(newUri);
+    });
   }
 }

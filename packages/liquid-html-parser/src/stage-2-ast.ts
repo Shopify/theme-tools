@@ -109,7 +109,8 @@ export type LiquidHtmlNode =
   | LiquidComparison
   | TextNode
   | LiquidDocParamNode
-  | LiquidDocExampleNode;
+  | LiquidDocExampleNode
+  | LiquidDocDescriptionNode;
 
 /** The root node of all LiquidHTML ASTs. */
 export interface DocumentNode extends ASTNode<NodeTypes.Document> {
@@ -390,7 +391,13 @@ export interface LiquidTagLiquid extends LiquidTagNode<NamedTags.liquid, LiquidS
 export interface ContentForMarkup extends ASTNode<NodeTypes.ContentForMarkup> {
   /** {% content_for 'contentForType' %} */
   contentForType: LiquidString;
-  /** {% content_for 'contentForType', arg1: value1, arg2: value2 %} */
+  /**
+   * WARNING: `args` could contain LiquidVariableLookup when we are in a completion context
+   * because the NamedArgument isn't fully typed out.
+   * E.g. {% content_for 'contentForType', arg1: value1, arg2█ %}
+   *
+   * @example {% content_for 'contentForType', arg1: value1, arg2: value2 %}
+   */
   args: LiquidNamedArgument[];
 }
 
@@ -769,11 +776,18 @@ export interface LiquidDocParamNode extends ASTNode<NodeTypes.LiquidDocParamNode
   required: boolean;
 }
 
+/** Represents a `@description` node in a LiquidDoc comment - `@description descriptionContent` */
+export interface LiquidDocDescriptionNode extends ASTNode<NodeTypes.LiquidDocDescriptionNode> {
+  name: 'description';
+  /** The contents of the description (e.g. "This is a description"). Can be multiline. */
+  content: TextNode;
+}
+
 /** Represents a `@example` node in a LiquidDoc comment - `@example exampleContent` */
 export interface LiquidDocExampleNode extends ASTNode<NodeTypes.LiquidDocExampleNode> {
   name: 'example';
   /** The contents of the example (e.g. "{{ product }}"). Can be multiline. */
-  exampleContent: TextNode;
+  content: TextNode;
 }
 
 export interface ASTNode<T> {
@@ -1304,13 +1318,24 @@ function buildAst(
         break;
       }
 
+      case ConcreteNodeTypes.LiquidDocDescriptionNode: {
+        builder.push({
+          type: NodeTypes.LiquidDocDescriptionNode,
+          name: node.name,
+          position: position(node),
+          source: node.source,
+          content: toTextNode(node.content),
+        });
+        break;
+      }
+
       case ConcreteNodeTypes.LiquidDocExampleNode: {
         builder.push({
           type: NodeTypes.LiquidDocExampleNode,
           name: node.name,
           position: position(node),
           source: node.source,
-          exampleContent: toTextNode(node.exampleContent),
+          content: toTextNode(node.content),
         });
         break;
       }
@@ -1758,7 +1783,15 @@ function toContentForMarkup(node: ConcreteLiquidTagContentForMarkup): ContentFor
   return {
     type: NodeTypes.ContentForMarkup,
     contentForType: toExpression(node.contentForType) as LiquidString,
-    args: node.args.map(toNamedArgument),
+    /**
+     * When we're in completion mode we won't necessarily have valid named
+     * arguments so we need to call toLiquidArgument instead of toNamedArgument.
+     * We cast using `as` so that this doesn't affect the type system used in
+     * other areas (like theme check) for a scenario that only occurs in
+     * completion mode. This means that our types are *wrong* in completion mode
+     * but this is the compromise we're making to get completions to work.
+     */
+    args: node.args.map(toLiquidArgument) as LiquidNamedArgument[],
     position: position(node),
     source: node.source,
   };

@@ -57,6 +57,7 @@ export * from './utils/memo';
 export * from './utils/types';
 export * from './utils/object';
 export * from './visitor';
+export * from './liquid-doc/liquidDoc';
 
 const defaultErrorHandler = (_error: Error): void => {
   // Silently ignores errors by default.
