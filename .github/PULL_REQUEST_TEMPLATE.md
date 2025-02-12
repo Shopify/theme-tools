@@ -24,6 +24,7 @@
     <!-- When that happens, the check's config should be updated/overridden in the theme-app-extension config -->
     <!-- see packages/node/configs/theme-app-extension.yml -->
     - [ ] If applicable, I've updated the `theme-app-extension.yml` config
+  - [ ] I've made a PR to update the [shopify.dev theme check docs](https://github.com/Shopify/shopify-dev/tree/main/content/storefronts/themes/tools/theme-check/checks) if applicable (link PR here).
 
 <!-- Public API changes, new features -->
 - [ ] I included a minor bump `changeset`
