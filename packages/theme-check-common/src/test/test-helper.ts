@@ -39,7 +39,7 @@ export function getTheme(themeDesc: MockTheme): Theme {
 
 export async function check(
   themeDesc: MockTheme,
-  checks: CheckDefinition<SourceCodeType>[] = recommended,
+  checks: CheckDefinition[] = recommended,
   mockDependencies: Partial<Dependencies> = {},
   checkSettings: ChecksSettings = {},
 ): Promise<Offense[]> {
@@ -47,8 +47,11 @@ export async function check(
   const config: Config = {
     context: 'theme',
     settings: { ...checkSettings },
-    checks: checks,
+    checks,
     rootUri,
+    onError: (err) => {
+      throw err;
+    },
   };
 
   const sections = new Map(
