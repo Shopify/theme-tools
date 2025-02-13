@@ -38,10 +38,15 @@ export function getSnippetDefinition(
   snippet: LiquidHtmlNode,
   snippetName: string,
 ): SnippetDefinition {
+  let hasDocTag = false;
   const nodes: (LiquidDocParameter | LiquidDocExample)[] = visit<
     SourceCodeType.LiquidHtml,
     LiquidDocParameter | LiquidDocExample
   >(snippet, {
+    LiquidRawTag(node) {
+      if (node.name === 'doc') hasDocTag = true;
+      return undefined;
+    },
     LiquidDocParamNode(node: LiquidDocParamNode) {
       return {
         name: node.paramName.value,
@@ -58,15 +63,25 @@ export function getSnippetDefinition(
       };
     },
   });
+  const { parameters, examples } = nodes.reduce(
+    (acc, node) => {
+      if (node.nodeType === 'param') {
+        acc.parameters.push(node as LiquidDocParameter);
+      } else if (node.nodeType === 'example') {
+        acc.examples.push(node as LiquidDocExample);
+      }
+      return acc;
+    },
+    { parameters: [] as LiquidDocParameter[], examples: [] as LiquidDocExample[] },
+  );
 
-  const parameters = nodes.filter((node): node is LiquidDocParameter => node.nodeType === 'param');
-  const examples = nodes.filter((node): node is LiquidDocExample => node.nodeType === 'example');
+  if (!hasDocTag) return { name: snippetName };
 
   return {
     name: snippetName,
     liquidDoc: {
-      parameters,
-      examples,
+      ...(parameters.length && { parameters }),
+      ...(examples.length && { examples }),
     },
   };
 }
