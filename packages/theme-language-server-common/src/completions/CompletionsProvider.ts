@@ -28,6 +28,7 @@ import {
 } from './providers';
 import { GetSnippetNamesForURI } from './providers/RenderSnippetCompletionProvider';
 import { RenderSnippetParameterCompletionProvider } from './providers/RenderSnippetParameterCompletionProvider';
+import { LiquidDocTagCompletionProvider } from './providers/LiquidDocTagCompletionProvider';
 
 export interface CompletionProviderDependencies {
   documentManager: DocumentManager;
@@ -84,6 +85,7 @@ export class CompletionsProvider {
       new RenderSnippetCompletionProvider(getSnippetNamesForURI),
       new RenderSnippetParameterCompletionProvider(getSnippetDefinitionForURI),
       new FilterNamedParameterCompletionProvider(themeDocset),
+      new LiquidDocTagCompletionProvider(),
     ];
   }
 
