@@ -40,6 +40,17 @@ export class LiquidTagsCompletionProvider implements Provider {
     const partial = node.name.replace(CURSOR, '');
     const blockParent = findParentNode(partial, ancestors);
     const tags = await this.themeDocset.tags();
+    if (!tags.some(tag => tag.name === 'doc')) {
+      tags.push({
+        name: 'doc',
+        category: 'theme',
+        description: 'Creates a documentation block in your theme.',
+        syntax: '{% doc %}\n content\n{% enddoc %}',
+        syntax_keywords: [{ keyword: 'content', description: 'The content of the doc' }],
+        deprecated: false,
+        parameters: [],
+      });
+    }
     return tags
       .filter(({ name }) => name.startsWith(partial))
       .sort(sortByName)
