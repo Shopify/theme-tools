@@ -11,6 +11,7 @@ import { CURSOR, LiquidCompletionParams } from '../params';
 import { Provider } from './common';
 import { formatLiquidDocParameter } from '../../utils/liquidDoc';
 import { GetSnippetDefinitionForURI } from '@shopify/theme-check-common';
+import { getDefaultValueForType } from '@shopify/theme-check-common/src/liquid-doc/utils';
 
 export type GetSnippetNamesForURI = (uri: string) => Promise<string[]>;
 
@@ -58,15 +59,24 @@ export class RenderSnippetParameterCompletionProvider implements Provider {
     return liquidDocParams
       .filter((liquidDocParam) => !existingRenderParams.includes(liquidDocParam.name))
       .filter((liquidDocParam) => liquidDocParam.name.startsWith(userInputStr))
-      .map((liquidDocParam) => ({
-        label: liquidDocParam.name,
-        kind: CompletionItemKind.Property,
-        documentation: {
-          kind: MarkupKind.Markdown,
-          value: formatLiquidDocParameter(liquidDocParam, true),
-        },
-        textEdit: TextEdit.replace(Range.create(start, end), `${liquidDocParam.name}: $0`),
-        insertTextFormat: InsertTextFormat.Snippet,
-      }));
+      .map((liquidDocParam) => {
+        const paramDefaultValue = getDefaultValueForType(liquidDocParam.type);
+        const paramValueTemplate =
+          paramDefaultValue === "''" ? `'$1'$0` : `\${1:${paramDefaultValue}}$0`;
+
+        return {
+          label: liquidDocParam.name,
+          kind: CompletionItemKind.Property,
+          documentation: {
+            kind: MarkupKind.Markdown,
+            value: formatLiquidDocParameter(liquidDocParam, true),
+          },
+          textEdit: TextEdit.replace(
+            Range.create(start, end),
+            `${liquidDocParam.name}: ${paramValueTemplate}`,
+          ),
+          insertTextFormat: InsertTextFormat.Snippet,
+        };
+      });
   }
 }
