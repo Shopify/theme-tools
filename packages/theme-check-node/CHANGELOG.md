@@ -1,5 +1,22 @@
 # @shopify/theme-check-node
 
+## 3.8.0
+
+### Minor Changes
+
+- 055cef77: Theme check verifies if setting key exists within block schemas and section schemas
+
+  - Check if the keys inside `presets.[].settings` and `default.settings` exist as `settings.[].id` in the same file
+  - Check if the keys inside `presets.[](recursive .blocks.[]).settings` and `default.blocks.[].settings` exist as `settings.[].id` inside the referenced block's file
+
+### Patch Changes
+
+- Updated dependencies [055cef77]
+- Updated dependencies [e9c1d98a]
+- Updated dependencies [d32afb7f]
+  - @shopify/theme-check-common@3.8.0
+  - @shopify/theme-check-docs-updater@3.8.0
+
 ## 3.7.2
 
 ### Patch Changes
