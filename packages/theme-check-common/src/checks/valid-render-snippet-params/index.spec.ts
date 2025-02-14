@@ -99,6 +99,26 @@ describe('Module: ValidRenderSnippetParams', () => {
       expect(offenses).toHaveLength(0);
     });
 
+    it('should not report when LiquidDoc definition has no defined params', async () => {
+      const fs = new MockFileSystem({
+        'snippets/card.liquid': `
+            {% doc %}
+              @description this is a description
+              @example this is an example
+            {% enddoc %}
+            <div>{{ title }}</div>
+            <div>{{ description }}</div>
+          `,
+      });
+
+      const sourceCode = `{% render 'card', title: 'My Card' %}`;
+      const offenses = await runLiquidCheck(ValidRenderSnippetParams, sourceCode, undefined, {
+        fs,
+      });
+
+      expect(offenses).toHaveLength(0);
+    });
+
     // We need to know the runtime value of the variable in order to do this
     it('should not report when snippet name is a VariableLookup', async () => {
       const fs = new MockFileSystem({
