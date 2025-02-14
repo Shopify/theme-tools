@@ -44,6 +44,7 @@ import { ValidSchema } from './valid-schema';
 import { ValidSchemaName } from './valid-schema-name';
 import { ValidSettingsKey } from './valid-settings-key';
 import { ValidStaticBlockType } from './valid-static-block-type';
+import { ValidVisibleIf } from './valid-visible-if';
 import { VariableName } from './variable-name';
 import { AppBlockMissingSchema } from './app-block-missing-schema';
 import { UniqueSettingIds } from './unique-settings-id';
@@ -94,6 +95,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidSchema,
   ValidSettingsKey,
   ValidStaticBlockType,
+  ValidVisibleIf,
   VariableName,
   ValidSchemaName,
 ];
