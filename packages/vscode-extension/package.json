@@ -10,7 +10,7 @@
   "bugs": {
     "url": "https://github.com/Shopify/theme-tools/issues"
   },
-  "version": "3.5.4",
+  "version": "3.5.5",
   "publisher": "Shopify",
   "private": true,
   "license": "SEE LICENSE IN LICENSE.md",
@@ -59,17 +59,17 @@
     "vscode": "^1.85.0"
   },
   "dependencies": {
-    "@shopify/liquid-html-parser": "^2.4.0",
-    "@shopify/prettier-plugin-liquid": "^1.8.0",
-    "@shopify/theme-language-server-browser": "^2.7.0",
-    "@shopify/theme-language-server-node": "^2.7.0",
-    "@shopify/theme-check-common": "^3.7.2",
+    "@shopify/liquid-html-parser": "^2.5.0",
+    "@shopify/prettier-plugin-liquid": "^1.8.1",
+    "@shopify/theme-language-server-browser": "^2.8.0",
+    "@shopify/theme-language-server-node": "^2.8.0",
+    "@shopify/theme-check-common": "^3.8.0",
     "prettier": "^2.6.2",
     "vscode-languageclient": "^8.1.0",
     "vscode-uri": "^3.0.8"
   },
   "devDependencies": {
-    "@shopify/theme-check-docs-updater": "^3.7.2",
+    "@shopify/theme-check-docs-updater": "^3.8.0",
     "@types/glob": "^8.0.0",
     "@types/node": "16.x",
     "@types/prettier": "^2.4.2",
