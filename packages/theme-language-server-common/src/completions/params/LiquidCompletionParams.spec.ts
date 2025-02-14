@@ -127,6 +127,14 @@ describe('Module: LiquidCompletionParams', async () => {
         }
       });
 
+      it("returns a TextNode when you're completing a tag within a doc tag", async () => {
+        const source = `{% doc %} @par█`;
+        const { completionContext } = createLiquidParamsFromContext(source);
+
+        const { node } = completionContext!;
+        expectPath(node, 'type', source).to.eql('TextNode');
+      });
+
       it(`returns a String node when you're in the middle of it`, async () => {
         const contexts = [
           `{% render '█' %}`,

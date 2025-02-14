@@ -23,6 +23,7 @@ import {
 import { HtmlAttributeValueHoverProvider } from './providers/HtmlAttributeValueHoverProvider';
 import { findCurrentNode } from '@shopify/theme-check-common';
 import { GetThemeSettingsSchemaForURI } from '../settings';
+import { LiquidDocTagHoverProvider } from './providers/LiquidDocTagHoverProvider';
 
 export class HoverProvider {
   private providers: BaseHoverProvider[] = [];
@@ -56,6 +57,7 @@ export class HoverProvider {
       new TranslationHoverProvider(getTranslationsForURI, documentManager),
       new RenderSnippetHoverProvider(getSnippetDefinitionForURI),
       new RenderSnippetParameterHoverProvider(getSnippetDefinitionForURI),
+      new LiquidDocTagHoverProvider(),
     ];
   }
 
