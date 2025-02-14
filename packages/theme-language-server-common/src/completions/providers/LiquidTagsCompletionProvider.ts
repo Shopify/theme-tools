@@ -40,7 +40,7 @@ export class LiquidTagsCompletionProvider implements Provider {
     const partial = node.name.replace(CURSOR, '');
     const blockParent = findParentNode(partial, ancestors);
     const tags = await this.themeDocset.tags();
-    if (!tags.some(tag => tag.name === 'doc')) {
+    if (!tags.some((tag) => tag.name === 'doc')) {
       tags.push({
         name: 'doc',
         category: 'theme',
