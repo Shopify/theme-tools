@@ -1,5 +1,5 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { LiquidNamedArgument, RenderMarkup } from '@shopify/liquid-html-parser';
+import { LiquidNamedArgument, NodeTypes, RenderMarkup } from '@shopify/liquid-html-parser';
 import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
 import { getSnippetDefinition, LiquidDocParameter } from '../../liquid-doc/liquidDoc';
 import { isLiquidString } from '../utils';
@@ -45,9 +45,10 @@ export const ValidRenderSnippetParams: LiquidCheckDefinition = {
         if (!liquidDocParamDef) {
           unknownProvidedParams.push(arg);
         } else {
-          const inferredType = inferArgumentType(arg);
-          if (inferredType !== liquidDocParamDef.type?.toLowerCase()) {
-            typeMismatchParams.push(arg);
+          if (arg.value.type !== NodeTypes.VariableLookup) {
+            if (inferArgumentType(arg) !== liquidDocParamDef.type?.toLowerCase()) {
+              typeMismatchParams.push(arg);
+            }
           }
         }
       }

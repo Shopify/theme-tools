@@ -70,29 +70,26 @@ describe('Module: ValidRenderSnippetParams', () => {
     const typeTests = [
       {
         type: 'string',
-        validValues: ["'hello'", "''"],
+        validValues: ["'hello'", "''", 'product'],
         invalidValues: [
           { value: '123', expectedType: SupportedParamTypes.Number },
           { value: 'true', expectedType: SupportedParamTypes.Boolean },
-          { value: 'product', expectedType: SupportedParamTypes.Object },
         ],
       },
       {
         type: 'number',
-        validValues: ['0', '123', '-1'],
+        validValues: ['0', '123', '-1', 'product'],
         invalidValues: [
           { value: "'hello'", expectedType: SupportedParamTypes.String },
           { value: 'true', expectedType: SupportedParamTypes.Boolean },
-          { value: 'product', expectedType: SupportedParamTypes.Object },
         ],
       },
       {
         type: 'boolean',
-        validValues: ['true', 'false', 'nil', 'empty'],
+        validValues: ['true', 'false', 'nil', 'empty', 'product'],
         invalidValues: [
           { value: "'hello'", expectedType: SupportedParamTypes.String },
           { value: '123', expectedType: SupportedParamTypes.Number },
-          { value: 'product', expectedType: SupportedParamTypes.Object },
         ],
       },
       {
@@ -102,6 +99,7 @@ describe('Module: ValidRenderSnippetParams', () => {
           { value: "'hello'", expectedType: SupportedParamTypes.String },
           { value: '123', expectedType: SupportedParamTypes.Number },
           { value: 'true', expectedType: SupportedParamTypes.Boolean },
+          { value: 'empty', expectedType: SupportedParamTypes.Boolean },
         ],
       },
     ];
