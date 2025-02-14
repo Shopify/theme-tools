@@ -5,6 +5,12 @@ export enum SupportedParamTypes {
   Object = 'object',
 }
 
+export enum SupportedDocTagTypes {
+  Param = 'param',
+  Example = 'example',
+  Description = 'description',
+}
+
 /**
  * Provides a default completion value for an argument / parameter of a given type.
  */
