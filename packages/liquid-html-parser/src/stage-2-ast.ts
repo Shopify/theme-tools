@@ -409,7 +409,13 @@ export interface RenderMarkup extends ASTNode<NodeTypes.RenderMarkup> {
   alias: string | null;
   /** {% render 'snippet' [with variable] %} */
   variable: RenderVariableExpression | null;
-  /** {% render 'snippet', arg1: value1, arg2: value2 %} */
+  /**
+   * WARNING: `args` could contain LiquidVariableLookup when we are in a completion context
+   * because the NamedArgument isn't fully typed out.
+   * E.g. {% render 'snippet', arg1: value1, arg2█ %}
+   *
+   * @example {% render 'snippet', arg1: value1, arg2: value2 %}
+   */
   args: LiquidNamedArgument[];
 }
 
@@ -1803,7 +1809,15 @@ function toRenderMarkup(node: ConcreteLiquidTagRenderMarkup): RenderMarkup {
     snippet: toExpression(node.snippet) as LiquidString | LiquidVariableLookup,
     alias: node.alias,
     variable: toRenderVariableExpression(node.variable),
-    args: node.args.map(toNamedArgument),
+    /**
+     * When we're in completion mode we won't necessarily have valid named
+     * arguments so we need to call toLiquidArgument instead of toNamedArgument.
+     * We cast using `as` so that this doesn't affect the type system used in
+     * other areas (like theme check) for a scenario that only occurs in
+     * completion mode. This means that our types are *wrong* in completion mode
+     * but this is the compromise we're making to get completions to work.
+     */
+    args: node.renderArguments.map(toLiquidArgument) as LiquidNamedArgument[],
     position: position(node),
     source: node.source,
   };

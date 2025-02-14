@@ -6,8 +6,7 @@ import {
   LiquidCST,
   ConcreteLiquidTagLiquid,
 } from './stage-1-cst';
-import { BLOCKS, VOID_ELEMENTS } from './grammar';
-import { NamedTags } from './types';
+import { VOID_ELEMENTS } from './grammar';
 import { deepGet } from './utils';
 
 describe('Unit: Stage 1 (CST)', () => {
@@ -561,11 +560,11 @@ describe('Unit: Stage 1 (CST)', () => {
                 expectPath(cst, '0.markup.variable').to.equal(null);
               }
               expectPath(cst, '0.markup.alias').to.equal(alias);
-              expectPath(cst, '0.markup.args').to.have.lengthOf(namedArguments.length);
+              expectPath(cst, '0.markup.renderArguments').to.have.lengthOf(namedArguments.length);
               namedArguments.forEach(({ name, valueType }, i) => {
-                expectPath(cst, `0.markup.args.${i}.type`).to.equal('NamedArgument');
-                expectPath(cst, `0.markup.args.${i}.name`).to.equal(name);
-                expectPath(cst, `0.markup.args.${i}.value.type`).to.equal(valueType);
+                expectPath(cst, `0.markup.renderArguments.${i}.type`).to.equal('NamedArgument');
+                expectPath(cst, `0.markup.renderArguments.${i}.name`).to.equal(name);
+                expectPath(cst, `0.markup.renderArguments.${i}.value.type`).to.equal(valueType);
               });
               expectPath(cst, '0.whitespaceStart').to.equal(null);
               expectPath(cst, '0.whitespaceEnd').to.equal('-');
@@ -1785,6 +1784,16 @@ describe('Unit: Stage 1 (CST)', () => {
       expectPath(cst, '0.markup.type').to.equal('ContentForMarkup');
       expectPath(cst, '0.markup.args.0.type').to.equal('NamedArgument');
       expectPath(cst, '0.markup.args.1.type').to.equal('VariableLookup');
+    });
+
+    it('should parse incomplete parameters for render tags', () => {
+      const toCST = (source: string) => toLiquidHtmlCST(source, { mode: 'completion' });
+
+      cst = toCST(`{% render "example-snippet", id: 2, foo█ %}`);
+
+      expectPath(cst, '0.markup.type').to.equal('RenderMarkup');
+      expectPath(cst, '0.markup.renderArguments.0.type').to.equal('NamedArgument');
+      expectPath(cst, '0.markup.renderArguments.1.type').to.equal('VariableLookup');
     });
   });
 

@@ -1,7 +1,8 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
-import { LiquidHtmlNode, SnippetDefinition, LiquidDocParameter } from '@shopify/theme-check-common';
+import { LiquidHtmlNode, SnippetDefinition } from '@shopify/theme-check-common';
 import { Hover, HoverParams } from 'vscode-languageserver';
 import { BaseHoverProvider } from '../BaseHoverProvider';
+import { formatLiquidDocParameter } from '../../utils/liquidDoc';
 
 export class RenderSnippetParameterHoverProvider implements BaseHoverProvider {
   constructor(
@@ -45,21 +46,10 @@ export class RenderSnippetParameterHoverProvider implements BaseHoverProvider {
       return null;
     }
 
-    const parts = [];
-    parts.push(
-      hoveredParameter.type
-        ? `\`${hoveredParameter.name}\`: \`${hoveredParameter.type}\``
-        : `\`${hoveredParameter.name}\``,
-    );
-
-    if (hoveredParameter.description) {
-      parts.push(`- ${hoveredParameter.description}`);
-    }
-
     return {
       contents: {
         kind: 'markdown',
-        value: parts.join('\n'),
+        value: formatLiquidDocParameter(hoveredParameter, true),
       },
     };
   }

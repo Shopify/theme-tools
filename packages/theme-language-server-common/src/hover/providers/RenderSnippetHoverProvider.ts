@@ -2,6 +2,7 @@ import { NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidHtmlNode, SnippetDefinition, LiquidDocParameter } from '@shopify/theme-check-common';
 import { Hover, HoverParams } from 'vscode-languageserver';
 import { BaseHoverProvider } from '../BaseHoverProvider';
+import { formatLiquidDocParameter } from '../../utils/liquidDoc';
 
 export class RenderSnippetHoverProvider implements BaseHoverProvider {
   constructor(
@@ -70,13 +71,6 @@ export class RenderSnippetHoverProvider implements BaseHoverProvider {
   }
 
   private buildParameters(parameters: LiquidDocParameter[]) {
-    return parameters
-      .map(({ name, type, description, required }: LiquidDocParameter) => {
-        const nameStr = required ? `\`${name}\`` : `\`${name}\` (Optional)`;
-        const typeStr = type ? `: ${type}` : '';
-        const descStr = description ? ` - ${description}` : '';
-        return `- ${nameStr}${typeStr}${descStr}`;
-      })
-      .join('\n');
+    return parameters.map((param) => formatLiquidDocParameter(param)).join('\n');
   }
 }

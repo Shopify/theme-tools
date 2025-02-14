@@ -258,6 +258,7 @@ export function startServer(
     log,
     getThemeBlockNames,
     getMetafieldDefinitions,
+    getSnippetDefinitionForURI,
   });
   const hoverProvider = new HoverProvider(
     documentManager,
