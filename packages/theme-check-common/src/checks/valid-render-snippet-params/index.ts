@@ -67,7 +67,7 @@ export const ValidRenderSnippetParams: LiquidCheckDefinition = {
             {
               message: `Add required parameter '${param.name}'`,
               fix: (fixer) => {
-                // This will insert the argument at the end position
+                // This will insert the argument at the end position 1 place before the closing tag `%}`
                 return fixer.insert(
                   node.position.end - 1,
                   `, ${param.name}: ${getDefaultValueForType(param.type)}`,
@@ -81,6 +81,7 @@ export const ValidRenderSnippetParams: LiquidCheckDefinition = {
 
     function reportUnknownParams(
       unknownProvidedParams: LiquidNamedArgument[],
+      node: RenderMarkup,
       snippetName: string,
     ) {
       for (const arg of unknownProvidedParams) {
@@ -92,6 +93,11 @@ export const ValidRenderSnippetParams: LiquidCheckDefinition = {
             {
               message: `Remove '${arg.name}'`,
               fix: (fixer) => {
+                // if the node has a `,` after the argument, we need to remove the `,`
+                const sourceString = node.source;
+                if (sourceString.charAt(arg.position.end) === ',') {
+                  return fixer.remove(arg.position.start - 2, arg.position.end + 1);
+                }
                 return fixer.remove(arg.position.start - 2, arg.position.end);
               },
             },
@@ -128,7 +134,7 @@ export const ValidRenderSnippetParams: LiquidCheckDefinition = {
         );
 
         reportMissingParams(missingRequiredParams, node, snippetName);
-        reportUnknownParams(unknownProvidedParams, snippetName);
+        reportUnknownParams(unknownProvidedParams, node, snippetName);
       },
     };
   },
