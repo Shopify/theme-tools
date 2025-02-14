@@ -40,6 +40,7 @@ import { ValidBlockTarget } from './valid-block-target';
 import { ValidHTMLTranslation } from './valid-html-translation';
 import { ValidJSON } from './valid-json';
 import { ValidLocalBlocks } from './valid-local-blocks';
+import { ValidRenderSnippetParams } from './valid-render-snippet-params';
 import { ValidSchema } from './valid-schema';
 import { ValidSchemaName } from './valid-schema-name';
 import { ValidSettingsKey } from './valid-settings-key';
@@ -95,6 +96,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidSettingsKey,
   ValidStaticBlockType,
   VariableName,
+  ValidRenderSnippetParams,
   ValidSchemaName,
 ];
 
