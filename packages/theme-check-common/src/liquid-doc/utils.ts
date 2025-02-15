@@ -17,7 +17,7 @@ export function getDefaultValueForType(type: string | null) {
     case SupportedParamTypes.Boolean:
       return 'false';
     case SupportedParamTypes.Object:
-      return '';
+      return 'empty';
     default:
       return "''";
   }

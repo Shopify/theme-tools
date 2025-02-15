@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { runLiquidCheck } from '../../test';
+import { applySuggestions, runLiquidCheck } from '../../test';
 import { ValidRenderSnippetParams } from '.';
 import { MockFileSystem } from '../../test';
 
@@ -25,44 +25,165 @@ const defaultSnippet = `
 `;
 
 describe('Module: ValidRenderSnippetParams', () => {
-  it('should report missing required parameters', async () => {
-    const offenses = await check(defaultSnippet, `{% render 'card' %}`);
+  describe('missing required parameters', () => {
+    it('should report missing required parameters', async () => {
+      const offenses = await check(defaultSnippet, `{% render 'card' %}`);
 
-    expect(offenses).toHaveLength(4);
-    expect(offenses[0].message).toBe(
-      "Missing required parameter 'required_string' in render tag for snippet 'card'",
-    );
-    expect(offenses[1].message).toBe(
-      "Missing required parameter 'required_number' in render tag for snippet 'card'",
-    );
-    expect(offenses[2].message).toBe(
-      "Missing required parameter 'required_boolean' in render tag for snippet 'card'",
-    );
-    expect(offenses[3].message).toBe(
-      "Missing required parameter 'required_object' in render tag for snippet 'card'",
-    );
+      expect(offenses).toHaveLength(4);
+      expect(offenses[0].message).toBe(
+        "Missing required parameter 'required_string' in render tag for snippet 'card'",
+      );
+      expect(offenses[1].message).toBe(
+        "Missing required parameter 'required_number' in render tag for snippet 'card'",
+      );
+      expect(offenses[2].message).toBe(
+        "Missing required parameter 'required_boolean' in render tag for snippet 'card'",
+      );
+      expect(offenses[3].message).toBe(
+        "Missing required parameter 'required_object' in render tag for snippet 'card'",
+      );
+    });
+
+    it('should suggest adding missing required parameters when none already exist', async () => {
+      const sourceCode = `{% render 'card' %}`;
+      const offenses = await check(defaultSnippet, sourceCode);
+
+      expect(offenses).toHaveLength(4);
+      const x = applySuggestions(sourceCode, offenses[0]);
+      expect(x).toEqual([`{% render 'card', required_string: '' %}`]);
+    });
+
+    it('should suggest adding missing required parameters with proper comma handling', async () => {
+      const sourceCode = `{% render 'card', required_string: 'value' %}`;
+      const offenses = await check(defaultSnippet, sourceCode);
+
+      expect(offenses).toHaveLength(3); // Will have other missing required params
+      const x = applySuggestions(sourceCode, offenses[0]);
+      expect(x).toEqual([`{% render 'card', required_string: 'value', required_number: 0 %}`]);
+    });
+
+    it('should suggest adding missing required parameters with trailing comma and whitespace', async () => {
+      const sourceCode = `{% render 'card', required_string: 'value',    %}`;
+      const offenses = await check(defaultSnippet, sourceCode);
+
+      expect(offenses).toHaveLength(3);
+      const x = applySuggestions(sourceCode, offenses[0]);
+      expect(x).toEqual([`{% render 'card', required_string: 'value', required_number: 0 %}`]);
+    });
+
+    it('should suggest adding missing required parameters with trailing comma and space', async () => {
+      const sourceCode = `{% render 'card', required_string: 'value' , %}`;
+      const offenses = await check(defaultSnippet, sourceCode);
+
+      expect(offenses).toHaveLength(3);
+      const x = applySuggestions(sourceCode, offenses[0]);
+      expect(x).toEqual([`{% render 'card', required_string: 'value', required_number: 0 %}`]);
+    });
   });
 
-  it('should report unknown parameters that are provided in the render markup', async () => {
-    const sourceCode = `
-      {% render 'card',
-      required_string: 'My Card',
-      required_number: 1,
-      required_boolean: true,
-      required_object: product,
-      unknown_param: 'unknown',
-      second_unknown_param: 'second unknown',
-      %}
-      `;
-    const offenses = await check(defaultSnippet, sourceCode);
+  describe('unknown parameters', () => {
+    it('should report unknown parameters that are provided in the render markup', async () => {
+      const sourceCode = `
+        {% render 'card',
+        required_string: 'My Card',
+        required_number: 1,
+        required_boolean: true,
+        required_object: product,
+        unknown_param: 'unknown',
+        second_unknown_param: 'second unknown',
+        %}
+        `;
+      const offenses = await check(defaultSnippet, sourceCode);
 
-    expect(offenses).toHaveLength(2);
-    expect(offenses[0].message).toBe(
-      "Unknown parameter 'unknown_param' in render tag for snippet 'card'",
-    );
-    expect(offenses[1].message).toBe(
-      "Unknown parameter 'second_unknown_param' in render tag for snippet 'card'",
-    );
+      expect(offenses).toHaveLength(2);
+      expect(offenses[0].message).toBe(
+        "Unknown parameter 'unknown_param' in render tag for snippet 'card'",
+      );
+      expect(offenses[1].message).toBe(
+        "Unknown parameter 'second_unknown_param' in render tag for snippet 'card'",
+      );
+    });
+
+    it('should properly remove unknown parameters when the only parameter is unknown', async () => {
+      let sourceCode = `{% render 'card', unknown_param: 'value' %}`;
+      let offenses = await check(defaultSnippet, sourceCode);
+
+      expect(offenses).toHaveLength(5); // Will have missing required params too
+      const suggestionResult = applySuggestions(sourceCode, offenses[4]);
+      expect(suggestionResult).toEqual([`{% render 'card' %}`]);
+    });
+
+    it('should properly remove an unknown parameter when there are multiple parameters with no leading whitespaces', async () => {
+      const sourceCode = `{% render 'card',unknown_param: 'value', required_string: 'test' %}`;
+      const offenses = await check(defaultSnippet, sourceCode);
+
+      expect(offenses).toHaveLength(4);
+      const suggestionResult = applySuggestions(sourceCode, offenses[3]);
+      expect(suggestionResult).toEqual([`{% render 'card', required_string: 'test' %}`]);
+    });
+
+    it('should properly remove an unknown parameter when there are multiple parameters', async () => {
+      const sourceCode = `{% render 'card', unknown_param: 'value', required_string: 'test' %}`;
+      const offenses = await check(defaultSnippet, sourceCode);
+
+      expect(offenses).toHaveLength(4);
+      const suggestionResult = applySuggestions(sourceCode, offenses[3]);
+      expect(suggestionResult).toEqual([`{% render 'card', required_string: 'test' %}`]);
+    });
+
+    it('should properly remove an unknown parameter when it has trailing whitespace', async () => {
+      const sourceCode = `{% render 'card', unknown_param: 'value'  , required_string: 'test' %}`;
+      const offenses = await check(defaultSnippet, sourceCode);
+
+      expect(offenses).toHaveLength(4);
+      const suggestionResult = applySuggestions(sourceCode, offenses[3]);
+      expect(suggestionResult).toEqual([`{% render 'card', required_string: 'test' %}`]);
+    });
+
+    it('should properly remove an unknown parameter when it has leading whitespace', async () => {
+      const sourceCode = `{% render 'card',     unknown_param: 'value', required_string: 'test' %}`;
+      const offenses = await check(defaultSnippet, sourceCode);
+
+      expect(offenses).toHaveLength(4);
+      const suggestionResult = applySuggestions(sourceCode, offenses[3]);
+      expect(suggestionResult).toEqual([`{% render 'card', required_string: 'test' %}`]);
+    });
+
+    it('should properly remove an unknown parameter when it has no trailing comma and is the only param', async () => {
+      const sourceCode = `{% render 'card',     unknown_param: 'value' %}`;
+      const offenses = await check(defaultSnippet, sourceCode);
+
+      expect(offenses).toHaveLength(5);
+      const suggestionResult = applySuggestions(sourceCode, offenses[4]);
+      expect(suggestionResult).toEqual([`{% render 'card' %}`]);
+    });
+
+    it('should properly remove an unknown parameter when it has a trailing comma and is the only param', async () => {
+      const sourceCode = `{% render 'card',     unknown_param: 'value', %}`;
+      const offenses = await check(defaultSnippet, sourceCode);
+
+      expect(offenses).toHaveLength(5);
+      const suggestionResult = applySuggestions(sourceCode, offenses[4]);
+      expect(suggestionResult).toEqual([`{% render 'card' %}`]);
+    });
+
+    it('should properly remove an unknown parameter when it has trailing comma and is the last of multiple params', async () => {
+      const sourceCode = `{% render 'card',     unknown_param: 'value', %}`;
+      const offenses = await check(defaultSnippet, sourceCode);
+
+      expect(offenses).toHaveLength(5);
+      const suggestionResult = applySuggestions(sourceCode, offenses[4]);
+      expect(suggestionResult).toEqual([`{% render 'card' %}`]);
+    });
+
+    it('should properly remove an unknown parameter when it has no trailing comma and is the last of multiple params', async () => {
+      const sourceCode = `{% render 'card', required_string: '',   unknown_param: 'value' %}`;
+      const offenses = await check(defaultSnippet, sourceCode);
+
+      expect(offenses).toHaveLength(4);
+      const suggestionResult = applySuggestions(sourceCode, offenses[3]);
+      expect(suggestionResult).toEqual([`{% render 'card', required_string: '' %}`]);
+    });
   });
 
   describe('edge cases', () => {

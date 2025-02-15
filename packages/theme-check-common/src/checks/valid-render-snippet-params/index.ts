@@ -67,11 +67,29 @@ export const ValidRenderSnippetParams: LiquidCheckDefinition = {
             {
               message: `Add required parameter '${param.name}'`,
               fix: (fixer) => {
-                // This will insert the argument at the end position 1 place before the closing tag `%}`
-                return fixer.insert(
-                  node.position.end - 1,
-                  `, ${param.name}: ${getDefaultValueForType(param.type)}`,
+                const paramToAdd = `, ${param.name}: ${getDefaultValueForType(param.type)}`;
+
+                if (node.args.length == 0) {
+                  return fixer.insert(node.snippet.position.end, paramToAdd);
+                }
+
+                const lastArg = node.args[node.args.length - 1];
+                const sourceAfterLastArg = node.source.substring(
+                  lastArg.position.end,
+                  node.position.end,
                 );
+
+                const trailingCommaAndWhitespaceMatch = sourceAfterLastArg.match(/\s*,\s*/);
+                if (trailingCommaAndWhitespaceMatch) {
+                  // IF there is already a trailing comma after the last arg, we want to find it and replace it with our own while stripping whitespace
+                  return fixer.replace(
+                    lastArg.position.end,
+                    lastArg.position.end + trailingCommaAndWhitespaceMatch[0].length,
+                    `${paramToAdd} `,
+                  );
+                }
+
+                return fixer.insert(lastArg.position.end, paramToAdd);
               },
             },
           ],
@@ -84,25 +102,45 @@ export const ValidRenderSnippetParams: LiquidCheckDefinition = {
       node: RenderMarkup,
       snippetName: string,
     ) {
-      for (const arg of unknownProvidedParams) {
+      for (const param of unknownProvidedParams) {
         context.report({
-          message: `Unknown parameter '${arg.name}' in render tag for snippet '${snippetName}'`,
-          startIndex: arg.position.start,
-          endIndex: arg.position.end,
+          message: `Unknown parameter '${param.name}' in render tag for snippet '${snippetName}'`,
+          startIndex: param.position.start,
+          endIndex: param.position.end,
           suggest: [
             {
-              message: `Remove '${arg.name}'`,
+              message: `Remove '${param.name}'`,
               fix: (fixer) => {
-                // if the node has a `,` after the argument, we need to remove the `,`
-                const sourceString = node.source;
-                if (sourceString.charAt(arg.position.end) === ',') {
-                  return fixer.remove(arg.position.start - 2, arg.position.end + 1);
+                // This is a bit messy, but it allows us to strip leading and trailing whitespaces and commas
+                const sourceBeforeArg = node.source.slice(0, param.position.start);
+                const matches = sourceBeforeArg.match(/,\s*/g);
+                const lastWhitespaceMatch = matches ? matches[matches.length - 1] : null;
+                let startPos = lastWhitespaceMatch
+                  ? param.position.start - (lastWhitespaceMatch.length - 1)
+                  : param.position.start;
+
+                if (isLastParam(param)) {
+                  // Remove the leading comma if it's the last parameter
+                  startPos -= 1;
                 }
-                return fixer.remove(arg.position.start - 2, arg.position.end);
+
+                const sourceAfterArg = node.source.substring(param.position.end, node.position.end);
+                const trailingCommaMatch = sourceAfterArg.match(/\s*,/);
+                if (trailingCommaMatch) {
+                  return fixer.remove(startPos, param.position.end + trailingCommaMatch[0].length);
+                }
+                return fixer.remove(startPos, param.position.end);
               },
             },
           ],
         });
+      }
+
+      function isLastParam(param: LiquidNamedArgument): boolean {
+        return (
+          node.args.length == 1 ||
+          param.position.start == node.args[node.args.length - 1].position.start
+        );
       }
     }
 
