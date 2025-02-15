@@ -1394,7 +1394,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       locStart,
       locEnd,
       source,
-      content: 1,
+      content: 0,
     },
     TextNode: textNode,
     paramNode: {

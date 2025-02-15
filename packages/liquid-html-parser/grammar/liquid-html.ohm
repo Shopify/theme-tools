@@ -402,7 +402,7 @@ LiquidDoc <: Helpers {
   
   endOfDescription = strictSpace* openControl
   descriptionContent = anyExceptStar<endOfDescription>
-  ImplicitDescription = strictSpace* descriptionContent
+  ImplicitDescription = descriptionContent
     
   // By default, space matches new lines as well. We override it here to make writing rules easier.
   strictSpace = " " | "\t"
