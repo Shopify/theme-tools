@@ -1380,7 +1380,22 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
   };
 
   const LiquidDocMappings: Mapping = {
-    Node: 0,
+    Node(implicitDescription: Node, body: Node) {
+      const self = this as any;
+      const implicitDescriptionNode =
+        implicitDescription.sourceString.length === 0
+          ? []
+          : [implicitDescription.toAST(self.args.mapping)];
+      return implicitDescriptionNode.concat(body.toAST(self.args.mapping));
+    },
+    ImplicitDescription: {
+      type: ConcreteNodeTypes.LiquidDocDescriptionNode,
+      name: 'description',
+      locStart,
+      locEnd,
+      source,
+      content: 1,
+    },
     TextNode: textNode,
     paramNode: {
       type: ConcreteNodeTypes.LiquidDocParamNode,
