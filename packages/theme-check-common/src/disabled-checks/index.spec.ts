@@ -125,6 +125,85 @@ ${buildComment('theme-check-enable LiquidFilter')}
       }
     });
 
+    it('should allow disabling just the next line', async () => {
+      for (const buildComment of commentTypes) {
+        const file = `{% render 'something-1' %}
+          ${buildComment('theme-check-disable-next-line LiquidFilter')}
+          {{ 'asset-1' | random_filter }}
+          {{ 'asset-2' | random_filter }}
+        `;
+
+        const offenses = await check({ 'code.liquid': file }, checks);
+
+        const expectedOffenses = [
+          expect.objectContaining({
+            check: 'RenderMarkup',
+            message: "'something-1.liquid' can not be rendered",
+            start: expect.objectContaining({ line: 0 }),
+            end: expect.objectContaining({ line: 0 }),
+          }),
+          expect.objectContaining({
+            check: 'LiquidFilter',
+            message: 'Liquid filter can not be used',
+            // The random_filter used on `asset-1` is disabled so the next
+            // offense should be on line 3.
+            start: expect.objectContaining({ line: 3 }),
+            end: expect.objectContaining({ line: 3 }),
+          }),
+        ];
+
+        expect(offenses).toEqual(expect.arrayContaining(expectedOffenses));
+        expect(offenses).toHaveLength(expectedOffenses.length);
+      }
+    });
+
+    describe('when next line is used on the last line in a file', () => {
+      it('should still work', async () => {
+        for (const buildComment of commentTypes) {
+          const file = `{% render 'something-1' %}
+            {{ 'asset-1' | random_filter }}
+            ${buildComment('theme-check-disable-next-line LiquidFilter')}
+            {{ 'asset-2' | random_filter }}`;
+
+          const offenses = await check({ 'code.liquid': file }, checks);
+
+          const expectedOffenses = [
+            expect.objectContaining({
+              check: 'RenderMarkup',
+              message: "'something-1.liquid' can not be rendered",
+              start: expect.objectContaining({ line: 0 }),
+              end: expect.objectContaining({ line: 0 }),
+            }),
+            expect.objectContaining({
+              check: 'LiquidFilter',
+              message: 'Liquid filter can not be used',
+              start: expect.objectContaining({ line: 1 }),
+              end: expect.objectContaining({ line: 1 }),
+            }),
+          ];
+
+          expect(offenses).toEqual(expect.arrayContaining(expectedOffenses));
+          expect(offenses).toHaveLength(expectedOffenses.length);
+        }
+      });
+    });
+
+    describe('when next line is used on an empty line', () => {
+      it('has no effect', async () => {
+        for (const buildComment of commentTypes) {
+          const file = `{% render 'something-1' %}
+            {{ 'asset-1' | random_filter }}
+            ${buildComment('theme-check-disable-next-line LiquidFilter')}
+
+            {{ 'asset-2' | random_filter }}`;
+
+          const offenses = await check({ 'code.liquid': file }, checks);
+
+          expect(offenses).toHaveLength(3);
+        }
+      });
+    });
+
     describe('Mix of general and specific commands', () => {
       it('should not reenable specific check when all checks have been disabled before', async () => {
         for (const buildComment of commentTypes) {
