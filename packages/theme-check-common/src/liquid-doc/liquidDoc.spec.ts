@@ -1,4 +1,4 @@
-import { expect, it, describe } from 'vitest';
+import { expect, it, describe, should } from 'vitest';
 import { toSourceCode } from '../to-source-code';
 import { LiquidHtmlNode } from '../types';
 import { getSnippetDefinition } from './liquidDoc';
@@ -19,7 +19,12 @@ describe('Unit: getSnippetDefinition', () => {
     const result = getSnippetDefinition(ast, 'product-card');
     expect(result).to.deep.equal({
       name: 'product-card',
-      liquidDoc: {},
+      liquidDoc: {
+        description: {
+          content: 'just a description',
+          nodeType: 'description',
+        },
+      },
     });
   });
 
@@ -251,6 +256,39 @@ describe('Unit: getSnippetDefinition', () => {
     expect(result).to.deep.equal({
       name: 'product-card',
       liquidDoc: {},
+    });
+  });
+
+  it('should return implicit description if multiple descriptions are provided', async () => {
+    const ast = toAST(`
+      {% doc %}
+        this is an implicit description
+        in a header
+
+        @param asdf
+
+        @description with a description annotation
+      {% enddoc %}
+    `);
+
+    const result = getSnippetDefinition(ast, 'product-card');
+    expect(result).to.deep.equal({
+      name: 'product-card',
+      liquidDoc: {
+        description: {
+          content: 'this is an implicit description\n        in a header',
+          nodeType: 'description',
+        },
+        parameters: [
+          {
+            name: 'asdf',
+            description: null,
+            type: null,
+            required: true,
+            nodeType: 'param',
+          },
+        ],
+      },
     });
   });
 });

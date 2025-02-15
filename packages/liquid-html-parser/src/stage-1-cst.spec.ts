@@ -985,7 +985,7 @@ describe('Unit: Stage 1 (CST)', () => {
     describe('Case: LiquidDoc', () => {
       for (const { toCST, expectPath } of testCases) {
         it('should parse basic doc tag structure', () => {
-          const testStr = `{% doc -%} content {%- enddoc %}`;
+          const testStr = `{% doc -%} {%- enddoc %}`;
           cst = toCST(testStr);
 
           expectPath(cst, '0.type').to.equal('LiquidRawTag');
@@ -1376,6 +1376,66 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.children.0.content.value').to.equal('hello there');
           expectPath(cst, '0.children.1.type').to.equal('LiquidDocDescriptionNode');
           expectPath(cst, '0.children.1.content.value').to.equal('second description');
+        });
+
+        it('should parse implicit description', () => {
+          const testStr = `{% doc %} implicit descriptions are
+\tplaced at the top of the doc header
+\t\t and may have mixed spacing {%- enddoc %}`;
+          cst = toCST(testStr);
+
+          expectPath(cst, '0.type').to.equal('LiquidRawTag');
+          expectPath(cst, '0.name').to.equal('doc');
+
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocDescriptionNode');
+          expectPath(cst, '0.children.0.isImplicit').to.equal(true);
+          expectPath(cst, '0.children.0.locStart').to.equal(
+            testStr.indexOf('implicit descriptions are'),
+          );
+          expectPath(cst, '0.children.0.locEnd').to.equal(
+            testStr.indexOf('mixed spacing') + 'mixed spacing'.length,
+          );
+          expectPath(cst, '0.children.0.content.value').to.equal(
+            'implicit descriptions are\n\tplaced at the top of the doc header\n\t\t and may have mixed spacing',
+          );
+          expectPath(cst, '0.children.0.content.locStart').to.equal(
+            testStr.indexOf('implicit descriptions are'),
+          );
+          expectPath(cst, '0.children.0.content.locEnd').to.equal(
+            testStr.indexOf('mixed spacing') + 'mixed spacing'.length,
+          );
+        });
+
+        it('should handle implicit description followed by @description', () => {
+          const testStr = `{% doc %} implicit content\n\t@description explicit content{% enddoc %}`;
+          cst = toCST(testStr);
+
+          expectPath(cst, '0.type').to.equal('LiquidRawTag');
+          expectPath(cst, '0.name').to.equal('doc');
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocDescriptionNode');
+          expectPath(cst, '0.children.0.isImplicit').to.equal(true);
+          expectPath(cst, '0.children.0.content.value').to.equal('implicit content');
+          expectPath(cst, '0.children.0.content.locStart').to.equal(
+            testStr.indexOf('implicit content'),
+          );
+          expectPath(cst, '0.children.0.content.locEnd').to.equal(
+            testStr.indexOf('implicit content') + 'implicit content '.length,
+          );
+          expectPath(cst, '0.children.1.type').to.equal('LiquidDocDescriptionNode');
+          expectPath(cst, '0.children.1.isImplicit').to.equal(false);
+          expectPath(cst, '0.children.1.content.value').to.equal('explicit content');
+        });
+
+        it('should preserve special characters in implicit description', () => {
+          const testStr = `{% doc %}content with @-like characters: @@test{% enddoc %}`;
+          cst = toCST(testStr);
+
+          expectPath(cst, '0.type').to.equal('LiquidRawTag');
+          expectPath(cst, '0.name').to.equal('doc');
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocDescriptionNode');
+          expectPath(cst, '0.children.0.content.value').to.equal('content with');
+          expectPath(cst, '0.children.1.type').to.equal('TextNode');
+          expectPath(cst, '0.children.1.value').to.equal('@-like characters: @@test');
         });
       }
     });

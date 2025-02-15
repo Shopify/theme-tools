@@ -787,6 +787,8 @@ export interface LiquidDocDescriptionNode extends ASTNode<NodeTypes.LiquidDocDes
   name: 'description';
   /** The contents of the description (e.g. "This is a description"). Can be multiline. */
   content: TextNode;
+  /** Whether this description is implicit (e.g. not appended by a @description annotation) */
+  isImplicit: boolean;
 }
 
 /** Represents a `@example` node in a LiquidDoc comment - `@example exampleContent` */
@@ -1331,6 +1333,7 @@ function buildAst(
           position: position(node),
           source: node.source,
           content: toTextNode(node.content),
+          isImplicit: node.isImplicit,
         });
         break;
       }
