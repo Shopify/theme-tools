@@ -1,24 +1,20 @@
-import { toLiquidHtmlAST, type LiquidVariableLookup, NodeTypes } from '@shopify/liquid-html-parser';
+import { type LiquidVariableLookup } from '@shopify/liquid-html-parser';
 import {
   Severity,
   SourceCodeType,
   type LiquidCheckDefinition,
   type JSONCheckDefinition,
-  type Context,
 } from '../../types';
-import { getLocStart, nodeAtPath, parseJSON } from '../../json';
+import { getLocStart, nodeAtPath } from '../../json';
 import { getSchema, isBlockSchema, isSectionSchema } from '../../to-schema';
 import { reportWarning } from '../../utils';
-import { visit } from '../../visitor';
-import { findRoot } from '../../find-root';
-import { join } from '../../path';
-
-type Vars = { [key: string]: Vars | true };
-
-const variableExpressionMatcher = /{{(.+?)}}/;
-const adjustedPrefix = '{% if ';
-const adjustedSuffix = ' %}{% endif %}';
-const offsetAdjust = '{{'.length - adjustedPrefix.length;
+import {
+  getGlobalSettings,
+  getVariableLookupsInExpression,
+  validateLookup,
+  offsetAdjust,
+  type Vars,
+} from './visible-if-utils';
 
 // Note that unlike most other files in the `checks` directory, this exports two
 // checks: one for Liquid files and one for 'config/settings_schema.json'. They
@@ -163,6 +159,7 @@ export const ValidVisibleIfSettingsSchema: JSONCheckDefinition = {
         };
 
         for (const lookup of varLookupsOrWarning) {
+          // settings_schema.json can't reference `section` or `block`.
           if (lookup.name === 'section') {
             report(
               `Invalid visible_if: can't refer to "section" when not in a section file.`,
@@ -178,119 +175,3 @@ export const ValidVisibleIfSettingsSchema: JSONCheckDefinition = {
     };
   },
 };
-
-async function getGlobalSettings(context: Context<SourceCodeType>) {
-  const globalSettings: string[] = [];
-
-  try {
-    const path = join(
-      await findRoot(context.file.uri, context.fileExists),
-      'config/settings_schema.json',
-    );
-    const settingsFile = await context.fs.readFile(path);
-    const settings = parseJSON(settingsFile);
-    if (Array.isArray(settings)) {
-      for (const group of settings) {
-        if ('settings' in group && Array.isArray(group.settings)) {
-          globalSettings.push(
-            ...group.settings.map((setting: any) => setting.id).filter((id: any) => id),
-          );
-        }
-      }
-    }
-  } catch (e) {
-    console.error('Error fetching global settings:', e);
-    // ignore absent or malformed settings schema
-  }
-
-  return globalSettings;
-}
-
-function getVariableLookupsInExpression(
-  expression: string,
-): LiquidVariableLookup[] | { warning: string } {
-  // parsers other than liquidjs don't yet support expressions in {{ variable }}
-  // tags. so we have to do something a little gnarly...
-  const match = variableExpressionMatcher.exec(expression);
-  if (match == null) {
-    return {
-      warning: `Invalid visible_if expression. It should take the form "{{ <expression> }}".`,
-    };
-  }
-  const unwrappedExpression = match[1];
-
-  const adjustedExpression = `${adjustedPrefix}${unwrappedExpression}${adjustedSuffix}`;
-
-  try {
-    const innerAst = toLiquidHtmlAST(adjustedExpression);
-
-    if (innerAst.children.length !== 1) {
-      throw new Error('Unexpected child count for DocumentNode');
-    }
-
-    const ifTag = innerAst.children[0];
-
-    if (ifTag.type !== 'LiquidTag' || ifTag.name !== 'if') {
-      throw new Error("Expected DocumentNode to contain 'if' tag");
-    }
-
-    const vars = visit<SourceCodeType.LiquidHtml, LiquidVariableLookup>(ifTag, {
-      VariableLookup: (node) => node,
-    });
-
-    if (vars.length === 0) {
-      return {
-        warning: `visible_if expression contains no references to any settings. This is likely an error.`,
-      };
-    }
-
-    return vars;
-  } catch (error) {
-    return { warning: String(error) };
-  }
-}
-
-function validateLookup(lookup: LiquidVariableLookup, vars: Vars): string | null {
-  const normalized = getNormalizedLookups(lookup);
-
-  const poppedSegments = [];
-  let scope = vars;
-  while (normalized.length > 0) {
-    const segment = normalized.shift()!;
-    poppedSegments.push(segment);
-
-    // "noUncheckedIndexedAccess" is false in our tsconfig.json
-    const next = scope[segment] as true | Vars | undefined;
-
-    if (!next) {
-      return `Invalid variable: "${poppedSegments.join('.')}" was not found.`;
-    }
-
-    if (typeof next === 'boolean') {
-      if (normalized.length > 0) {
-        return `Invalid variable: "${poppedSegments.join(
-          '.',
-        )}" refers to a variable, but is being used here as a namespace.`;
-      }
-      return null;
-    }
-
-    scope = next;
-  }
-
-  // note this is the reverse of the above similar-looking case
-  return `Invalid variable: "${poppedSegments.join(
-    '.',
-  )}" refers to a namespace, but is being used here as a variable.`;
-}
-
-function getNormalizedLookups(lookup: LiquidVariableLookup) {
-  const nestedLookups = lookup.lookups.map((l) => {
-    if (l.type !== NodeTypes.String) {
-      throw new Error(`Expected lookups to be String nodes: ${JSON.stringify(lookup)}`);
-    }
-    return l.value;
-  });
-
-  return [lookup.name, ...nestedLookups];
-}
