@@ -1,8 +1,4 @@
-import {
-  toLiquidHtmlAST,
-  type LiquidVariableLookup,
-  type LiquidString,
-} from '@shopify/liquid-html-parser';
+import { toLiquidHtmlAST, type LiquidVariableLookup, NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType, type Context } from '../../types';
 import { getLocStart, nodeAtPath, parseJSON } from '../../json';
 import { getSchema, isBlockSchema, isSectionSchema } from '../../to-schema';
@@ -11,12 +7,14 @@ import { visit } from '../../visitor';
 import { findRoot } from '../../find-root';
 import { join } from '../../path';
 
+type Vars = { [key: string]: Vars | true };
+
 const variableExpressionMatcher = /{{(.+?)}}/;
 const adjustedPrefix = '{% if ';
 const adjustedSuffix = ' %}{% endif %}';
 const offsetAdjust = '{{'.length - adjustedPrefix.length;
 
-// TODO: also perform analysis for json files?
+// TODO: also perform analysis for json files
 
 export const ValidVisibleIf: LiquidCheckDefinition = {
   meta: {
@@ -52,8 +50,19 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
         }
 
         const offset = node.blockStartPosition.end;
-        const globalSettings = new Set(await getGlobalSettings(context));
-        const currentFileSettings = new Set(validSchema.settings.map((setting) => setting.id));
+        const settings = Object.fromEntries(
+          (await getGlobalSettings(context)).map((s) => [s, true] as const),
+        );
+        const currentFileSettings = Object.fromEntries(
+          validSchema.settings.map((setting) => [setting.id, true] as const),
+        );
+
+        const vars: Vars = { settings };
+        if (isSectionSchema(schema)) {
+          vars.section = { settings: currentFileSettings };
+        } else if (isBlockSchema(schema)) {
+          vars.block = { settings: currentFileSettings };
+        }
 
         for (const [i, setting] of validSchema.settings.entries()) {
           if (!('visible_if' in setting) || typeof setting.visible_if !== 'string') continue;
@@ -83,39 +92,30 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
           };
 
           for (const lookup of varLookupsOrWarning) {
-            if (lookup.name === 'section') {
-              if (isSectionSchema(schema)) {
-                report(validateLookup(lookup, ['settings'], currentFileSettings), lookup);
-              } else {
-                report(
-                  `Invalid visible_if variable: can't refer to "section" when not in a section file.`,
-                  lookup,
-                );
-              }
-            } else if (lookup.name === 'block') {
-              if (isBlockSchema(schema)) {
-                report(validateLookup(lookup, ['settings'], currentFileSettings), lookup);
-              } else {
-                report(
-                  `Invalid visible_if variable: can't refer to "block" when not in a block file.`,
-                  lookup,
-                );
-              }
-            } else if (lookup.name === 'settings') {
-              report(validateLookup(lookup, [], globalSettings), lookup);
+            if (lookup.name === 'section' && !isSectionSchema(schema)) {
+              report(
+                `Invalid visible_if: can't refer to "section" when not in a section file.`,
+                lookup,
+              );
+            } else if (lookup.name === 'block' && !isBlockSchema(schema)) {
+              report(
+                `Invalid visible_if: can't refer to "block" when not in a block file.`,
+                lookup,
+              );
+            } else {
+              // the `undefined-object` rule already handles some lookups... but
+              // only if they're not expressions. this works:
+              //
+              // "visible_if": "{{ asdf }}",    // <- reports undefined object
+              //
+              // this doesn't:
+              //
+              // "visible_if": "{{ asdf != 'foo' }}",    // <- no warning
+              //
+              // for now let's validate every lookup, even though with both
+              // checks enabled we may end up reporting some lookups twice.
+              report(validateLookup(lookup, vars), lookup);
             }
-
-            // TODO
-            // the `undefined-object` rule already handles some lookups... but
-            // only if they're not expressions. this works:
-            //
-            // "visible_if": "{{ asdf }}",    // <- reports undefined object
-            //
-            // this doesn't:
-            //
-            // "visible_if": "{{ asdf != 'foo' }}",    // <- no warning
-            //
-            // for now, let's validate every lookup
           }
         }
       },
@@ -185,36 +185,47 @@ function getVariableLookupsInExpression(
   return vars;
 }
 
-function validateLookup(
-  lookup: LiquidVariableLookup,
-  prefix: string[],
-  vars: Set<string>,
-): string | null {
-  if (lookup.lookups.length === 0) {
-    // FIXME: busted, too many dots
-    return `"${lookup.name}" can't be used as a variable directly. Try "${
-      lookup.name
-    }.${prefix.join('.')}.some_setting_name".`;
+function validateLookup(lookup: LiquidVariableLookup, vars: Vars): string | null {
+  const normalized = getNormalizedLookups(lookup);
+
+  const poppedSegments = [];
+  let scope = vars;
+  while (normalized.length > 0) {
+    const segment = normalized.shift()!;
+    poppedSegments.push(segment);
+
+    // "noUncheckedIndexedAccess" is false in our tsconfig.json
+    const next = scope[segment] as true | Vars | undefined;
+
+    if (!next) {
+      return `Invalid variable: "${poppedSegments.join('.')}" was not found.`;
+    }
+
+    if (typeof next === 'boolean') {
+      if (normalized.length > 0) {
+        return `Invalid variable: "${poppedSegments.join(
+          '.',
+        )}" refers to a variable, but is being used here as a namespace.`;
+      }
+      return null;
+    }
+
+    scope = next;
   }
 
-  const notFound = () =>
-    `Invalid variable: "${lookup.name}.${lookup.lookups
-      .map((l) => (l as LiquidString).value)
-      .join('.')}" was not found.`;
+  // note this is the reverse of the above similar-looking case
+  return `Invalid variable: "${poppedSegments.join(
+    '.',
+  )}" refers to a namespace, but is being used here as a variable.`;
+}
 
-  const nestedLookups = [...lookup.lookups];
-  while (prefix.length > 0 && nestedLookups.length > 0) {
-    const expectedSegment = prefix.shift()!;
-    const actualSegment = (nestedLookups.shift() as LiquidString).value;
-    if (expectedSegment !== actualSegment) return notFound();
-  }
-  if (prefix.length !== 0 || nestedLookups.length !== 1) {
-    return notFound();
-  }
+function getNormalizedLookups(lookup: LiquidVariableLookup) {
+  const nestedLookups = lookup.lookups.map((l) => {
+    if (l.type !== NodeTypes.String) {
+      throw new Error(`Expected lookups to be String nodes: ${JSON.stringify(lookup)}`);
+    }
+    return l.value;
+  });
 
-  if (!vars.has((nestedLookups[0] as LiquidString).value)) {
-    return notFound();
-  }
-
-  return null;
+  return [lookup.name, ...nestedLookups];
 }
