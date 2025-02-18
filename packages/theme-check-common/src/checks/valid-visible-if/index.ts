@@ -1,5 +1,11 @@
 import { toLiquidHtmlAST, type LiquidVariableLookup, NodeTypes } from '@shopify/liquid-html-parser';
-import { LiquidCheckDefinition, Severity, SourceCodeType, type Context } from '../../types';
+import {
+  Severity,
+  SourceCodeType,
+  type LiquidCheckDefinition,
+  type JSONCheckDefinition,
+  type Context,
+} from '../../types';
 import { getLocStart, nodeAtPath, parseJSON } from '../../json';
 import { getSchema, isBlockSchema, isSectionSchema } from '../../to-schema';
 import { reportWarning } from '../../utils';
@@ -14,22 +20,26 @@ const adjustedPrefix = '{% if ';
 const adjustedSuffix = ' %}{% endif %}';
 const offsetAdjust = '{{'.length - adjustedPrefix.length;
 
-// TODO: also perform analysis for json files
+// Note that unlike most other files in the `checks` directory, this exports two
+// checks: one for Liquid files and one for 'config/settings_schema.json'. They
+// perform the same check using the same logic (modulo differences extracting
+// the schema and determining warning squiggle start and end indices).
+
+const meta = {
+  code: 'ValidVisibleIf',
+  name: 'Validate settings keys in visible_if expressions',
+  docs: {
+    description: 'Ensures visible_if expressions only reference settings keys that are defined',
+    recommended: true,
+    url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-visible-if',
+  },
+  severity: Severity.ERROR,
+  schema: {},
+  targets: [],
+};
 
 export const ValidVisibleIf: LiquidCheckDefinition = {
-  meta: {
-    code: 'ValidVisibleIf',
-    name: 'Validate settings keys in visible_if expressions',
-    docs: {
-      description: 'Ensures visible_if expressions only reference settings keys that are defined',
-      recommended: true,
-      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-visible-if',
-    },
-    type: SourceCodeType.LiquidHtml,
-    severity: Severity.ERROR,
-    schema: {},
-    targets: [],
-  },
+  meta: { ...meta, type: SourceCodeType.LiquidHtml },
 
   create(context) {
     return {
@@ -116,6 +126,63 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
               // checks enabled we may end up reporting some lookups twice.
               report(validateLookup(lookup, vars), lookup);
             }
+          }
+        }
+      },
+    };
+  },
+};
+
+export const ValidVisibleIfSettingsSchema: JSONCheckDefinition = {
+  meta: { ...meta, type: SourceCodeType.JSON },
+
+  create(context) {
+    const relativePath = context.toRelativePath(context.file.uri);
+    if (relativePath !== 'config/settings_schema.json') return {};
+
+    return {
+      async Property(node) {
+        if (node.key.value !== 'visible_if' || node.value.type !== 'Literal') return;
+        const visibleIfExpression = node.value.value;
+        if (typeof visibleIfExpression !== 'string') return;
+        const offset = node.value.loc.start.offset;
+
+        const varLookupsOrWarning = getVariableLookupsInExpression(visibleIfExpression);
+        if ('warning' in varLookupsOrWarning) {
+          context.report({
+            message: varLookupsOrWarning.warning,
+            startIndex: node.value.loc.start.offset,
+            endIndex: node.value.loc.end.offset,
+          });
+          return;
+        }
+
+        const settings = Object.fromEntries(
+          (await getGlobalSettings(context)).map((s) => [s, true] as const),
+        );
+
+        const vars: Vars = { settings };
+
+        const report = (message: string | null, lookup: LiquidVariableLookup) => {
+          if (typeof message === 'string') {
+            context.report({
+              message,
+              startIndex: offset + lookup.position.start + offsetAdjust + 1,
+              endIndex: offset + lookup.position.end + offsetAdjust + 1,
+            });
+          }
+        };
+
+        for (const lookup of varLookupsOrWarning) {
+          if (lookup.name === 'section') {
+            report(
+              `Invalid visible_if: can't refer to "section" when not in a section file.`,
+              lookup,
+            );
+          } else if (lookup.name === 'block') {
+            report(`Invalid visible_if: can't refer to "block" when not in a block file.`, lookup);
+          } else {
+            report(validateLookup(lookup, vars), lookup);
           }
         }
       },

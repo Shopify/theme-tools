@@ -1,6 +1,6 @@
 import { expect, describe, it } from 'vitest';
 import { check } from '../../test';
-import { ValidVisibleIf } from './index';
+import { ValidVisibleIf, ValidVisibleIfSettingsSchema } from './index';
 
 type ThemeSchema = { [key: string]: unknown; settings?: Record<string, unknown>[] };
 type Theme = { [key: `${string}.json`]: ThemeSchema[]; [key: `${string}.liquid`]: ThemeSchema };
@@ -19,7 +19,8 @@ const makeTheme = (themeData: Record<string, unknown>) =>
     ]),
   );
 
-const checkRule = (themeData: Theme) => check(makeTheme(themeData), [ValidVisibleIf]);
+const checkRule = (themeData: Theme) =>
+  check(makeTheme(themeData), [ValidVisibleIf, ValidVisibleIfSettingsSchema]);
 
 const baseThemeData: Theme = {
   'sections/example.liquid': {
@@ -120,7 +121,19 @@ describe('Module: ValidVisibleIf', () => {
     expect(offenses).toEqual([]);
   });
 
-  it('reports an error for an invalid reference to a global variable', async () => {
+  it('reports no error for a valid reference to a global setting (in theme settings)', async () => {
+    const themeData = structuredClone(baseThemeData);
+
+    themeData['config/settings_schema.json'].at(-1)!.settings!.push({
+      id: 'some-other-setting',
+      visible_if: '{{ settings.some-global-setting }}',
+    });
+
+    const offenses = await checkRule(themeData);
+    expect(offenses).toEqual([]);
+  });
+
+  it('reports an error for an invalid reference to a global variable (in block)', async () => {
     const themeData = structuredClone(baseThemeData);
 
     themeData['blocks/example.liquid'].settings!.push({
@@ -290,6 +303,40 @@ describe('Module: ValidVisibleIf', () => {
     `);
   });
 
+  it('reports an error for an invalid reference to a global setting (in theme settings)', async () => {
+    const themeData = structuredClone(baseThemeData);
+
+    themeData['config/settings_schema.json'].at(-1)!.settings!.push({
+      id: 'some-other-setting',
+      visible_if: '{{ settings.some-non-existent-setting }}',
+    });
+
+    const offenses = await checkRule(themeData);
+    expect(offenses).toMatchInlineSnapshot(`
+      [
+        {
+          "check": "ValidVisibleIfSettingsSchema",
+          "end": {
+            "character": 60,
+            "index": 427,
+            "line": 19,
+          },
+          "fix": undefined,
+          "message": "Invalid variable: "settings.some-non-existent-setting" was not found.",
+          "severity": 0,
+          "start": {
+            "character": 26,
+            "index": 393,
+            "line": 19,
+          },
+          "suggest": undefined,
+          "type": "JSON",
+          "uri": "file:///config/settings_schema.json",
+        },
+      ]
+    `);
+  });
+
   it('reports a detailed error when trying to use a block var in a section', async () => {
     const themeData = structuredClone(baseThemeData);
 
@@ -353,6 +400,40 @@ describe('Module: ValidVisibleIf', () => {
           "suggest": undefined,
           "type": "LiquidHtml",
           "uri": "file:///blocks/example.liquid",
+        },
+      ]
+    `);
+  });
+
+  it('reports a detailed error when trying to use a block var in theme settings', async () => {
+    const themeData = structuredClone(baseThemeData);
+
+    themeData['config/settings_schema.json'].at(-1)!.settings!.push({
+      id: 'some-other-setting',
+      visible_if: '{{ block.settings.some-block-setting }}',
+    });
+
+    const offenses = await checkRule(themeData);
+    expect(offenses).toMatchInlineSnapshot(`
+      [
+        {
+          "check": "ValidVisibleIfSettingsSchema",
+          "end": {
+            "character": 59,
+            "index": 426,
+            "line": 19,
+          },
+          "fix": undefined,
+          "message": "Invalid visible_if: can't refer to "block" when not in a block file.",
+          "severity": 0,
+          "start": {
+            "character": 26,
+            "index": 393,
+            "line": 19,
+          },
+          "suggest": undefined,
+          "type": "JSON",
+          "uri": "file:///config/settings_schema.json",
         },
       ]
     `);
