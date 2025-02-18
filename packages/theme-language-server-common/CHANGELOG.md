@@ -1,5 +1,50 @@
 # @shopify/theme-language-server-common
 
+## 2.8.0
+
+### Minor Changes
+
+- 2e4613b8: Add hover support for @example in liquid doc tags
+  EX:
+
+  ```liquid
+  {% doc %}
+    @example
+    {{ product }}
+  {% enddoc %}
+  ```
+
+- d9dbc265: - Support parsing incomplete content_for tags in completion context
+  - Support content_for param completion
+- e9c1d98a: Move `getSnippetDefinition` to theme-check-common
+- 2db3047f: Support `render` param completion based on liquid docs
+
+  - If you defined liquid doc parameters on a snippet, they will appear as completion options
+    for parameters when rendered by a `render` tag.
+
+- 261c2958: Support liquid doc inner tags completion + hover
+
+  - `@param`, `@description`, `@example` will support code completion
+    whenever being typed inside of `doc` tag
+  - `@param`, `@description`, `@example` can be hovered to show their
+    help doc
+
+- 5eaf2950: Add hover support for named parameters in {% render %} snippet tags. Parameters that have a corresponding liquidDoc @param will render information when hovered.
+
+### Patch Changes
+
+- e3e1dfdf: Update document manager on git operations
+- Updated dependencies [fe84a17a]
+- Updated dependencies [055cef77]
+- Updated dependencies [c4bbf3b5]
+- Updated dependencies [d9dbc265]
+- Updated dependencies [e9c1d98a]
+- Updated dependencies [2db3047f]
+- Updated dependencies [261c2958]
+- Updated dependencies [d32afb7f]
+  - @shopify/theme-check-common@3.8.0
+  - @shopify/liquid-html-parser@2.5.0
+
 ## 2.7.0
 
 ### Minor Changes

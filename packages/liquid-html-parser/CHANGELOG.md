@@ -1,5 +1,24 @@
 # @shopify/liquid-html-parser
 
+## 2.5.0
+
+### Minor Changes
+
+- c4bbf3b5: [LiquidDoc]: Add parser support for @description annotations. These can be placed anywhere within the header, and can span numerous lines.
+- d9dbc265: - Support parsing incomplete content_for tags in completion context
+  - Support content_for param completion
+- 2db3047f: Support `render` param completion based on liquid docs
+
+  - If you defined liquid doc parameters on a snippet, they will appear as completion options
+    for parameters when rendered by a `render` tag.
+
+- 261c2958: Support liquid doc inner tags completion + hover
+
+  - `@param`, `@description`, `@example` will support code completion
+    whenever being typed inside of `doc` tag
+  - `@param`, `@description`, `@example` can be hovered to show their
+    help doc
+
 ## 2.4.0
 
 ### Minor Changes
