@@ -55,7 +55,10 @@ export function getVariableLookupsInExpression(
   const adjustedExpression = `${adjustedPrefix}${unwrappedExpression}${adjustedSuffix}`;
 
   try {
-    const innerAst = toLiquidHtmlAST(adjustedExpression);
+    const innerAst = toLiquidHtmlAST(adjustedExpression, {
+      mode: 'strict',
+      allowUnclosedDocumentNode: false,
+    });
 
     if (innerAst.children.length !== 1) {
       throw new Error('Unexpected child count for DocumentNode');
@@ -79,6 +82,13 @@ export function getVariableLookupsInExpression(
 
     return vars;
   } catch (error) {
+    if (error instanceof SyntaxError) {
+      // Because of our hackish approach, the underlying error is likely to
+      // include an incorrect range and/or mention {% if %} tags. Squelch the
+      // details and just report that it's a simple syntax error.
+      return { warning: 'Syntax error: cannot parse visible_if expression.' };
+    }
+
     return { warning: String(error) };
   }
 }

@@ -507,7 +507,7 @@ describe('Module: ValidVisibleIf', () => {
     `);
   });
 
-  it('reports malformed visible_if fields', async () => {
+  it('reports visible_if fields declared with incorrect or missing brackets', async () => {
     const themeData = structuredClone(baseThemeData);
 
     themeData['sections/example.liquid'].settings!.push({
@@ -541,12 +541,12 @@ describe('Module: ValidVisibleIf', () => {
     `);
   });
 
-  it('reports when no variable lookup is found', async () => {
+  it('reports malformed visible_if fields', async () => {
     const themeData = structuredClone(baseThemeData);
 
     themeData['sections/example.liquid'].settings!.push({
       id: 'some-other-setting',
-      visible_if: '{{ }}',
+      visible_if: '{{ section.settings.some-section-setting !r=erf "null" }}',
     });
 
     const offenses = await checkRule(themeData);
@@ -555,8 +555,42 @@ describe('Module: ValidVisibleIf', () => {
         {
           "check": "ValidVisibleIf",
           "end": {
-            "character": 27,
-            "index": 177,
+            "character": 81,
+            "index": 231,
+            "line": 10,
+          },
+          "fix": undefined,
+          "message": "Syntax error: cannot parse visible_if expression.",
+          "severity": 0,
+          "start": {
+            "character": 20,
+            "index": 170,
+            "line": 10,
+          },
+          "suggest": undefined,
+          "type": "LiquidHtml",
+          "uri": "file:///sections/example.liquid",
+        },
+      ]
+    `);
+  });
+
+  it('reports when no variable lookup is found', async () => {
+    const themeData = structuredClone(baseThemeData);
+
+    themeData['sections/example.liquid'].settings!.push({
+      id: 'some-other-setting',
+      visible_if: '{{ "some random string" }}',
+    });
+
+    const offenses = await checkRule(themeData);
+    expect(offenses).toMatchInlineSnapshot(`
+      [
+        {
+          "check": "ValidVisibleIf",
+          "end": {
+            "character": 50,
+            "index": 200,
             "line": 10,
           },
           "fix": undefined,
