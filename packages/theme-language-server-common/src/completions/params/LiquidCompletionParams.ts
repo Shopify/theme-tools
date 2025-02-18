@@ -253,6 +253,9 @@ function findCurrentNode(
         break;
 
       case NodeTypes.LiquidRawTag:
+        if (current.name === 'doc' && current.body.nodes.length > 0) {
+          finder.current = current.body.nodes.at(-1);
+        }
         break;
 
       case NodeTypes.AttrDoubleQuoted:

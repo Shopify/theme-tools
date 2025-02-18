@@ -561,6 +561,10 @@ WithPlaceholderLiquid <: Liquid {
     snippetExpression renderVariableExpression? renderAliasExpression? completionModeRenderArguments
   liquidTagName := (letter | "█") (alnum | "_")*
   variableSegment := (letter | "_" | "█") (identifierCharacter | "█")*
+  liquidDoc :=
+    liquidDocStart
+      liquidDocBody
+    liquidDocEnd?
 }
 
 WithPlaceholderLiquidStatement <: LiquidStatement {
@@ -571,6 +575,10 @@ WithPlaceholderLiquidStatement <: LiquidStatement {
     snippetExpression renderVariableExpression? renderAliasExpression? completionModeRenderArguments
   liquidTagName := (letter | "█") (alnum | "_")*
   variableSegment := (letter | "_" | "█") (identifierCharacter | "█")*
+  liquidDoc :=
+    liquidDocStart
+      liquidDocBody
+    liquidDocEnd?
 }
 
 WithPlaceholderLiquidHTML <: LiquidHTML {
@@ -583,4 +591,8 @@ WithPlaceholderLiquidHTML <: LiquidHTML {
   variableSegment := (letter | "_" | "█") (identifierCharacter | "█")*
   leadingTagNameTextNode := (letter | "█") (alnum | "-" | ":" | "█")*
   trailingTagNameTextNode := (alnum | "-" | ":" | "█")+
+  liquidDoc :=
+    liquidDocStart
+      liquidDocBody
+    liquidDocEnd?
 }

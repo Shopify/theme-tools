@@ -1562,6 +1562,29 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.attributes.0.children.0.type').to.equal('LiquidBranch');
       expectPath(ast, 'children.0.attributes.0.children.0.children.1.type').to.equal('LiquidTag');
     });
+
+    it('should not freak out when completing doc tags', () => {
+      ast = toAST(`
+        {% doc %}
+        @description This is a description
+        @example This is an example
+        @param {String} paramWithDescription - param with description
+        @p█
+      `);
+      expectPath(ast, 'children.0.body.nodes.0.type').to.eql('LiquidDocDescriptionNode');
+      expectPath(ast, 'children.0.body.nodes.0.content.value').to.eql('This is a description\n');
+
+      expectPath(ast, 'children.0.body.nodes.1.type').to.eql('LiquidDocExampleNode');
+      expectPath(ast, 'children.0.body.nodes.1.name').to.eql('example');
+      expectPath(ast, 'children.0.body.nodes.1.content.value').to.eql('This is an example\n');
+
+      expectPath(ast, 'children.0.body.nodes.2.type').to.eql('LiquidDocParamNode');
+      expectPath(ast, 'children.0.body.nodes.2.name').to.eql('param');
+      expectPath(ast, 'children.0.body.nodes.2.paramName.value').to.eql('paramWithDescription');
+
+      expectPath(ast, 'children.0.body.nodes.3.type').to.eql('TextNode');
+      expectPath(ast, 'children.0.body.nodes.3.value').to.eql('@p█');
+    });
   });
 
   function makeExpectPath(message: string) {
