@@ -1,5 +1,30 @@
 # @shopify/theme-check-common
 
+## 3.8.0
+
+### Minor Changes
+
+- fe84a17a: Add ValidRenderSnippetParams check which validates args passed to snippets with LiquidDoc definitions
+
+  - Checks that required parameters are provided
+  - Checks that unknown parameters are not provided
+
+- 055cef77: Theme check verifies if setting key exists within block schemas and section schemas
+
+  - Check if the keys inside `presets.[].settings` and `default.settings` exist as `settings.[].id` in the same file
+  - Check if the keys inside `presets.[](recursive .blocks.[]).settings` and `default.blocks.[].settings` exist as `settings.[].id` inside the referenced block's file
+
+- e9c1d98a: Move `getSnippetDefinition` to theme-check-common
+
+### Patch Changes
+
+- d32afb7f: Improve type adherence of `getSnippetDefinition`. The function now returns `undefined` when the corresponding properties are empty.
+- Updated dependencies [c4bbf3b5]
+- Updated dependencies [d9dbc265]
+- Updated dependencies [2db3047f]
+- Updated dependencies [261c2958]
+  - @shopify/liquid-html-parser@2.5.0
+
 ## 3.7.2
 
 ### Patch Changes
