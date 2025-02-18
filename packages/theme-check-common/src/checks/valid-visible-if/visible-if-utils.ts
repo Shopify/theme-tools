@@ -12,38 +12,16 @@ export const adjustedPrefix = '{% if ';
 export const adjustedSuffix = ' %}{% endif %}';
 export const offsetAdjust = '{{'.length - adjustedPrefix.length;
 
-export async function getGlobalSettings(context: Context<SourceCodeType>) {
-  const globalSettings: string[] = [];
-
-  try {
-    const path = join(
-      await findRoot(context.file.uri, context.fileExists),
-      'config/settings_schema.json',
-    );
-    const settingsFile = await context.fs.readFile(path);
-    const settings = parseJSON(settingsFile);
-    if (Array.isArray(settings)) {
-      for (const group of settings) {
-        if ('settings' in group && Array.isArray(group.settings)) {
-          globalSettings.push(
-            ...group.settings.map((setting: any) => setting.id).filter((id: any) => id),
-          );
-        }
-      }
-    }
-  } catch (e) {
-    console.error('Error fetching global settings:', e);
-    // ignore absent or malformed settings schema
-  }
-
-  return globalSettings;
-}
-
 export function getVariableLookupsInExpression(
   expression: string,
 ): LiquidVariableLookup[] | { warning: string } {
-  // parsers other than liquidjs don't yet support expressions in {{ variable }}
-  // tags. so we have to do something a little gnarly...
+  // As of February 2025, parsers other than LiquidJS don't yet support
+  // expressions in {{ variable }} tags. So we have to do something a little
+  // gnarly — before parsing it we extract the expression from within the tag
+  // and plunk it into an `{% if <expression> %}{% endif %}` statement instead.
+  // This requires us to adjust the reported character ranges and offer slightly
+  // less useful messages on syntax errors, but otherwise should behave
+  // similarly to a proper `{{ <expression> }}` syntax whenever it lands.
   const match = variableExpressionMatcher.exec(expression);
   if (match == null) {
     return {
@@ -84,8 +62,8 @@ export function getVariableLookupsInExpression(
   } catch (error) {
     if (error instanceof SyntaxError) {
       // Because of our hackish approach, the underlying error is likely to
-      // include an incorrect range and/or mention {% if %} tags. Squelch the
-      // details and just report that it's a simple syntax error.
+      // include an incorrect character range and/or mention {% if %} tags.
+      // Squelch the details and just report it as a simple syntax error.
       return { warning: 'Syntax error: cannot parse visible_if expression.' };
     }
 
@@ -128,12 +106,39 @@ export function validateLookup(lookup: LiquidVariableLookup, vars: Vars): string
 }
 
 function getNormalizedLookups(lookup: LiquidVariableLookup) {
-  const nestedLookups = lookup.lookups.map((l) => {
-    if (l.type !== NodeTypes.String) {
+  const nestedLookups = lookup.lookups.map((lookup) => {
+    if (lookup.type !== NodeTypes.String) {
       throw new Error(`Expected lookups to be String nodes: ${JSON.stringify(lookup)}`);
     }
-    return l.value;
+    return lookup.value;
   });
 
   return [lookup.name, ...nestedLookups];
+}
+
+export async function getGlobalSettings(context: Context<SourceCodeType>) {
+  const globalSettings: string[] = [];
+
+  try {
+    const path = join(
+      await findRoot(context.file.uri, context.fileExists),
+      'config/settings_schema.json',
+    );
+    const settingsFile = await context.fs.readFile(path);
+    const settings = parseJSON(settingsFile);
+    if (Array.isArray(settings)) {
+      for (const group of settings) {
+        if ('settings' in group && Array.isArray(group.settings)) {
+          globalSettings.push(
+            ...group.settings.map((setting: any) => setting.id).filter((id: any) => id),
+          );
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Error fetching global settings:', e);
+    // ignore absent or malformed settings schema
+  }
+
+  return globalSettings;
 }

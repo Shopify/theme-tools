@@ -23,9 +23,10 @@ import {
 
 const meta = {
   code: 'ValidVisibleIf',
-  name: 'Validate settings keys in visible_if expressions',
+  name: 'Validate visible_if expressions',
   docs: {
-    description: 'Ensures visible_if expressions only reference settings keys that are defined',
+    description:
+      'Ensures visible_if expressions are well-formed and only reference settings keys that are defined',
     recommended: true,
     url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-visible-if',
   },
