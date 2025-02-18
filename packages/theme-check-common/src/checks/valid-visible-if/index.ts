@@ -1,12 +1,10 @@
 import {
   toLiquidHtmlAST,
-  toLiquidAST,
   type LiquidVariableLookup,
-  NodeTypes,
   type LiquidString,
 } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType, type Context } from '../../types';
-import { nodeAtPath, parseJSON } from '../../json';
+import { getLocStart, nodeAtPath, parseJSON } from '../../json';
 import { getSchema, isBlockSchema, isSectionSchema } from '../../to-schema';
 import { reportWarning } from '../../utils';
 import { visit } from '../../visitor';
@@ -14,6 +12,9 @@ import { findRoot } from '../../find-root';
 import { join } from '../../path';
 
 const variableExpressionMatcher = /{{(.+?)}}/;
+const adjustedPrefix = '{% if ';
+const adjustedSuffix = ' %}{% endif %}';
+const offsetAdjust = '{{'.length - adjustedPrefix.length;
 
 // TODO: also perform analysis for json files?
 
@@ -37,13 +38,20 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
       async LiquidRawTag(node) {
         if (node.name !== 'schema' || node.body.kind !== 'json') return;
 
-        const offset = node.blockStartPosition.end;
         const schema = await getSchema(context);
 
         const { validSchema, ast } = schema ?? {};
-        if (!validSchema || validSchema instanceof Error || !validSchema.settings) return;
-        if (!ast || ast instanceof Error) return;
+        if (
+          !validSchema ||
+          validSchema instanceof Error ||
+          !validSchema.settings?.some((setting) => 'visible_if' in setting) ||
+          !ast ||
+          ast instanceof Error
+        ) {
+          return;
+        }
 
+        const offset = node.blockStartPosition.end;
         const globalSettings = new Set(await getGlobalSettings(context));
         const currentFileSettings = new Set(validSchema.settings.map((setting) => setting.id));
 
@@ -58,34 +66,56 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
             continue;
           }
 
-          const report = (maybeWarning: string | null) => {
-            if (typeof maybeWarning === 'string') {
-              reportWarning(maybeWarning, offset, visibleIfNode, context);
+          const report = (message: string | null, lookup: LiquidVariableLookup) => {
+            if (typeof message === 'string') {
+              context.report({
+                message,
+                // the JSONNode start location returned by `getLocStart`
+                // includes the opening quotation mark — whereas when we parse
+                // the inner expression, 0 is the location _inside_ the quotes.
+                // we add 1 to the offsets to compensate.
+                startIndex:
+                  offset + getLocStart(visibleIfNode) + lookup.position.start + offsetAdjust + 1,
+                endIndex:
+                  offset + getLocStart(visibleIfNode) + lookup.position.end + offsetAdjust + 1,
+              });
             }
           };
 
           for (const lookup of varLookupsOrWarning) {
             if (lookup.name === 'section') {
               if (isSectionSchema(schema)) {
-                report(validateLookup(lookup, ['settings'], currentFileSettings));
+                report(validateLookup(lookup, ['settings'], currentFileSettings), lookup);
               } else {
                 report(
                   `Invalid visible_if variable: can't refer to "section" when not in a section file.`,
+                  lookup,
                 );
               }
             } else if (lookup.name === 'block') {
               if (isBlockSchema(schema)) {
-                report(validateLookup(lookup, ['settings'], currentFileSettings));
+                report(validateLookup(lookup, ['settings'], currentFileSettings), lookup);
               } else {
                 report(
                   `Invalid visible_if variable: can't refer to "block" when not in a block file.`,
+                  lookup,
                 );
               }
             } else if (lookup.name === 'settings') {
-              report(validateLookup(lookup, [], globalSettings));
+              report(validateLookup(lookup, [], globalSettings), lookup);
             }
 
-            // the `undefined-object` rule already handles other lookups.
+            // TODO
+            // the `undefined-object` rule already handles some lookups... but
+            // only if they're not expressions. this works:
+            //
+            // "visible_if": "{{ asdf }}",    // <- reports undefined object
+            //
+            // this doesn't:
+            //
+            // "visible_if": "{{ asdf != 'foo' }}",    // <- no warning
+            //
+            // for now, let's validate every lookup
           }
         }
       },
@@ -133,13 +163,10 @@ function getVariableLookupsInExpression(
   }
   const unwrappedExpression = match[1];
 
-  const prefix = '{% if ';
-  const suffix = ' %}{% endif %}';
-  const adjustedExpression = `${prefix}${unwrappedExpression}${suffix}`;
+  const adjustedExpression = `${adjustedPrefix}${unwrappedExpression}${adjustedSuffix}`;
 
-  const offsetAdjustment = prefix.length - '{{'.length;
-
-  const innerAst = toLiquidAST(adjustedExpression);
+  // TODO: handle parse errors?
+  const innerAst = toLiquidHtmlAST(adjustedExpression);
 
   if (innerAst.children.length !== 1) {
     throw new Error('Unexpected child count for DocumentNode');
@@ -152,8 +179,7 @@ function getVariableLookupsInExpression(
   }
 
   const vars = visit<SourceCodeType.LiquidHtml, LiquidVariableLookup>(ifTag, {
-    // TODO: remap range
-    VariableLookup: (node) => ({ ...node }),
+    VariableLookup: (node) => node,
   });
 
   return vars;
@@ -165,6 +191,7 @@ function validateLookup(
   vars: Set<string>,
 ): string | null {
   if (lookup.lookups.length === 0) {
+    // FIXME: busted, too many dots
     return `"${lookup.name}" can't be used as a variable directly. Try "${
       lookup.name
     }.${prefix.join('.')}.some_setting_name".`;
