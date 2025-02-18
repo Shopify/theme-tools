@@ -2,8 +2,7 @@ import { expect, describe, it } from 'vitest';
 import { check } from '../../test';
 import { ValidVisibleIf } from './index';
 
-type ThemeSetting = Record<string, unknown>;
-type ThemeSchema = { [key: string]: unknown; settings?: ThemeSetting[] };
+type ThemeSchema = { [key: string]: unknown; settings?: Record<string, unknown>[] };
 type Theme = { [key: `${string}.json`]: ThemeSchema[]; [key: `${string}.liquid`]: ThemeSchema };
 
 const toLiquid = (schema: unknown) => `
@@ -422,6 +421,74 @@ describe('Module: ValidVisibleIf', () => {
           "suggest": undefined,
           "type": "LiquidHtml",
           "uri": "file:///blocks/example.liquid",
+        },
+      ]
+    `);
+  });
+
+  it('reports malformed visible_if fields', async () => {
+    const themeData = structuredClone(baseThemeData);
+
+    themeData['sections/example.liquid'].settings!.push({
+      id: 'some-other-setting',
+      visible_if: '{% section.settings.some-section-setting != "null" %}',
+    });
+
+    const offenses = await checkRule(themeData);
+    expect(offenses).toMatchInlineSnapshot(`
+      [
+        {
+          "check": "ValidVisibleIf",
+          "end": {
+            "character": 77,
+            "index": 227,
+            "line": 10,
+          },
+          "fix": undefined,
+          "message": "Invalid visible_if expression. It should take the form "{{ <expression> }}".",
+          "severity": 0,
+          "start": {
+            "character": 20,
+            "index": 170,
+            "line": 10,
+          },
+          "suggest": undefined,
+          "type": "LiquidHtml",
+          "uri": "file:///sections/example.liquid",
+        },
+      ]
+    `);
+  });
+
+  it('reports when no variable lookup is found', async () => {
+    const themeData = structuredClone(baseThemeData);
+
+    themeData['sections/example.liquid'].settings!.push({
+      id: 'some-other-setting',
+      visible_if: '{{ }}',
+    });
+
+    const offenses = await checkRule(themeData);
+    expect(offenses).toMatchInlineSnapshot(`
+      [
+        {
+          "check": "ValidVisibleIf",
+          "end": {
+            "character": 27,
+            "index": 177,
+            "line": 10,
+          },
+          "fix": undefined,
+          "message": "visible_if expression contains no references to any settings. This is likely an error.",
+          "severity": 0,
+          "start": {
+            "character": 20,
+            "index": 170,
+            "line": 10,
+          },
+          "suggest": undefined,
+          "type": "LiquidHtml",
+          "uri": "file:///sections/example.liquid",
         },
       ]
     `);

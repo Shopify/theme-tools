@@ -165,24 +165,33 @@ function getVariableLookupsInExpression(
 
   const adjustedExpression = `${adjustedPrefix}${unwrappedExpression}${adjustedSuffix}`;
 
-  // TODO: handle parse errors?
-  const innerAst = toLiquidHtmlAST(adjustedExpression);
+  try {
+    const innerAst = toLiquidHtmlAST(adjustedExpression);
 
-  if (innerAst.children.length !== 1) {
-    throw new Error('Unexpected child count for DocumentNode');
+    if (innerAst.children.length !== 1) {
+      throw new Error('Unexpected child count for DocumentNode');
+    }
+
+    const ifTag = innerAst.children[0];
+
+    if (ifTag.type !== 'LiquidTag' || ifTag.name !== 'if') {
+      throw new Error("Expected DocumentNode to contain 'if' tag");
+    }
+
+    const vars = visit<SourceCodeType.LiquidHtml, LiquidVariableLookup>(ifTag, {
+      VariableLookup: (node) => node,
+    });
+
+    if (vars.length === 0) {
+      return {
+        warning: `visible_if expression contains no references to any settings. This is likely an error.`,
+      };
+    }
+
+    return vars;
+  } catch (error) {
+    return { warning: String(error) };
   }
-
-  const ifTag = innerAst.children[0];
-
-  if (ifTag.type !== 'LiquidTag' || ifTag.name !== 'if') {
-    throw new Error("Expected DocumentNode to contain 'if' tag");
-  }
-
-  const vars = visit<SourceCodeType.LiquidHtml, LiquidVariableLookup>(ifTag, {
-    VariableLookup: (node) => node,
-  });
-
-  return vars;
 }
 
 function validateLookup(lookup: LiquidVariableLookup, vars: Vars): string | null {
