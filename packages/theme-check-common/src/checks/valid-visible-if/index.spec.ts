@@ -315,7 +315,7 @@ describe('Module: ValidVisibleIf', () => {
     expect(offenses).toMatchInlineSnapshot(`
       [
         {
-          "check": "ValidVisibleIfSettingsSchema",
+          "check": "ValidVisibleIf",
           "end": {
             "character": 60,
             "index": 427,
@@ -417,7 +417,7 @@ describe('Module: ValidVisibleIf', () => {
     expect(offenses).toMatchInlineSnapshot(`
       [
         {
-          "check": "ValidVisibleIfSettingsSchema",
+          "check": "ValidVisibleIf",
           "end": {
             "character": 59,
             "index": 426,
