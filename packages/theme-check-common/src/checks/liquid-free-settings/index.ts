@@ -45,7 +45,7 @@ export const LiquidFreeSettings: LiquidCheckDefinition = {
               const propertyValue = schemaNode.key.value;
               if (
                 typeof value === 'string' &&
-                propertyValue !== 'available_if' &&
+                propertyValue !== 'visible_if' &&
                 value.includes('{%') &&
                 value.includes('%}')
               ) {

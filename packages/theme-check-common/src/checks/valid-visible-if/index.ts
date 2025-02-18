@@ -23,7 +23,7 @@ const offsetAdjust = '{{'.length - adjustedPrefix.length;
 // Note that unlike most other files in the `checks` directory, this exports two
 // checks: one for Liquid files and one for 'config/settings_schema.json'. They
 // perform the same check using the same logic (modulo differences extracting
-// the schema and determining warning squiggle start and end indices).
+// the schema and determining warning start and end indices).
 
 const meta = {
   code: 'ValidVisibleIf',
@@ -113,17 +113,6 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
                 lookup,
               );
             } else {
-              // the `undefined-object` rule already handles some lookups... but
-              // only if they're not expressions. this works:
-              //
-              // "visible_if": "{{ asdf }}",    // <- reports undefined object
-              //
-              // this doesn't:
-              //
-              // "visible_if": "{{ asdf != 'foo' }}",    // <- no warning
-              //
-              // for now let's validate every lookup, even though with both
-              // checks enabled we may end up reporting some lookups twice.
               report(validateLookup(lookup, vars), lookup);
             }
           }
