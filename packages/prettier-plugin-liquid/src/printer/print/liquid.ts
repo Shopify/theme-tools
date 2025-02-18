@@ -5,6 +5,7 @@ import {
   RawMarkup,
   LiquidDocParamNode,
   LiquidDocExampleNode,
+  LiquidDocDescriptionNode,
 } from '@shopify/liquid-html-parser';
 import { Doc, doc } from 'prettier';
 
@@ -554,6 +555,22 @@ export function printLiquidDocExample(
       parts.push(hardline);
     }
     parts.push(content.trim());
+  }
+
+  return parts;
+}
+
+export function printLiquidDocDescription(
+  path: AstPath<LiquidDocDescriptionNode>,
+  options: LiquidParserOptions,
+  _print: LiquidPrinter,
+  _args: LiquidPrinterArgs,
+): Doc {
+  const node = path.getValue();
+  const parts: Doc[] = ['@description'];
+
+  if (node.content?.value) {
+    parts.push(' ', node.content.value.trim());
   }
 
   return parts;

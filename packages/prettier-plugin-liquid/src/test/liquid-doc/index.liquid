@@ -87,3 +87,23 @@ It should allow multiple example nodes
   @example
   Second Example
 {% enddoc %}
+
+It should move description content inline
+{% doc %}
+  @description
+  This is a description
+{% enddoc %}
+
+It should add a space between a description tag and content
+{% doc %}
+  @descriptionThis is a description
+{% enddoc %}
+
+It should handle param, example, and description nodes
+{% doc %}
+  @param {String} paramName - param with description
+  @example
+  This is a valid example
+  @description This is a description
+{% enddoc %}
+
