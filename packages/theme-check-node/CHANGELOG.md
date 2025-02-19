@@ -1,5 +1,13 @@
 # @shopify/theme-check-node
 
+## 3.8.1
+
+### Patch Changes
+
+- Updated dependencies [f077a9ec]
+  - @shopify/theme-check-common@3.8.1
+  - @shopify/theme-check-docs-updater@3.8.1
+
 ## 3.8.0
 
 ### Minor Changes
