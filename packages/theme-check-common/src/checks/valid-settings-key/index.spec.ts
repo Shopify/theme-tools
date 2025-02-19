@@ -1,8 +1,8 @@
 import { expect, describe, it } from 'vitest';
-import { ValidSettingsKey } from './index';
 import { check } from '../../test';
+import { ValidSettingsKey } from './index';
 
-describe('Moduel: ValidSettingsKey', () => {
+describe('Module: ValidSettingsKey', () => {
   const schemaTemplate = {
     name: 'Example',
     settings: [

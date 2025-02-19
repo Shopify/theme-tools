@@ -18,7 +18,7 @@ export const ValidSettingsKey: LiquidCheckDefinition = {
     name: 'Validate settings key in presets',
     docs: {
       description:
-        "Ensures settings key only references valid settings defined in it's respective schema",
+        'Ensures settings key only references valid settings defined in its respective schema',
       recommended: true,
       url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-settings-key',
     },
@@ -58,7 +58,7 @@ export const ValidSettingsKey: LiquidCheckDefinition = {
           validateSettingsKey(context, offset, settingsNode, validSchema.settings);
 
           // Check if default block settings match the settings defined in the block file's schema
-          validSchema.default.blocks?.forEach(async (block, i) => {
+          validSchema.default.blocks?.forEach((block, i) => {
             const settingsNode = nodeAtPath(ast, ['default', 'blocks', i, 'settings']);
 
             validateReferencedBlock(context, offset, settingsNode, rootLevelLocalBlocks, block);
@@ -66,8 +66,8 @@ export const ValidSettingsKey: LiquidCheckDefinition = {
         }
 
         // Check if preset block settings match the settings defined in the block file's schema
-        for (let [_depthStr, blocks] of Object.entries(presetLevelBlocks)) {
-          blocks.forEach(async ({ node: blockNode, path }) => {
+        for (const [_depthStr, blocks] of Object.entries(presetLevelBlocks)) {
+          blocks.forEach(({ node: blockNode, path }) => {
             const settingsNode = nodeAtPath(ast, path.slice(0, -1).concat('settings'));
 
             validateReferencedBlock(context, offset, settingsNode, rootLevelLocalBlocks, blockNode);

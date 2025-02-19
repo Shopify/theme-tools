@@ -1,6 +1,13 @@
-import { JSONNode, LiteralNode, Preset, Section, SourceCodeType, ThemeBlock } from '../types';
+import {
+  JSONNode,
+  LiteralNode,
+  Preset,
+  Section,
+  SourceCodeType,
+  ThemeBlock,
+  Context,
+} from '../types';
 import { getLocEnd, getLocStart, nodeAtPath } from '../json';
-import { Context } from '../types';
 import { doesFileExist } from './file-utils';
 
 export type BlockNodeWithPath = {

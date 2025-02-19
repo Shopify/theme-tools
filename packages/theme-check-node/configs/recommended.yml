@@ -129,6 +129,9 @@ ValidSettingsKey:
 ValidStaticBlockType:
   enabled: true
   severity: 0
+ValidVisibleIf:
+  enabled: true
+  severity: 0
 VariableName:
   enabled: true
   severity: 1
