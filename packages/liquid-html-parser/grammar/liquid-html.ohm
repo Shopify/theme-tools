@@ -305,6 +305,7 @@ Liquid <: Helpers {
     // Base blocks
     | "capture"
     | "case"
+    | "doc"
     | "for"
     | "ifchanged"
     | "if"
@@ -399,7 +400,6 @@ LiquidDoc <: Helpers {
     | exampleNode
     | descriptionNode
     | fallbackNode
-    
   // By default, space matches new lines as well. We override it here to make writing rules easier.
   strictSpace = " " | "\t"
   // We use this as an escape hatch to stop matching TextNode and try again when one of these characters is encountered
