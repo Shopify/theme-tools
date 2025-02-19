@@ -1,7 +1,11 @@
 import { SourceCodeType } from '../types';
 import { visit } from '../visitor';
 import { LiquidHtmlNode } from '../types';
-import { LiquidDocExampleNode, LiquidDocParamNode } from '@shopify/liquid-html-parser';
+import {
+  LiquidDocExampleNode,
+  LiquidDocParamNode,
+  LiquidDocDescriptionNode,
+} from '@shopify/liquid-html-parser';
 
 export type GetSnippetDefinitionForURI = (
   uri: string,
@@ -16,10 +20,11 @@ export type SnippetDefinition = {
 type LiquidDocDefinition = {
   parameters?: LiquidDocParameter[];
   examples?: LiquidDocExample[];
+  description?: LiquidDocDescription;
 };
 
 interface LiquidDocNode {
-  nodeType: 'param' | 'example';
+  nodeType: 'param' | 'example' | 'description';
 }
 
 export interface LiquidDocParameter extends LiquidDocNode {
@@ -34,14 +39,19 @@ export interface LiquidDocExample extends LiquidDocNode {
   nodeType: 'example';
 }
 
+export interface LiquidDocDescription extends LiquidDocNode {
+  content: string;
+  nodeType: 'description';
+}
+
 export function getSnippetDefinition(
   snippet: LiquidHtmlNode,
   snippetName: string,
 ): SnippetDefinition {
   let hasDocTag = false;
-  const nodes: (LiquidDocParameter | LiquidDocExample)[] = visit<
+  const nodes: (LiquidDocParameter | LiquidDocExample | LiquidDocDescription)[] = visit<
     SourceCodeType.LiquidHtml,
-    LiquidDocParameter | LiquidDocExample
+    LiquidDocParameter | LiquidDocExample | LiquidDocDescription
   >(snippet, {
     LiquidRawTag(node) {
       if (node.name === 'doc') hasDocTag = true;
@@ -62,17 +72,29 @@ export function getSnippetDefinition(
         nodeType: 'example',
       };
     },
+    LiquidDocDescriptionNode(node: LiquidDocDescriptionNode) {
+      return {
+        content: node.content.value,
+        nodeType: 'description',
+      };
+    },
   });
-  const { parameters, examples } = nodes.reduce(
+  const { parameters, examples, description } = nodes.reduce(
     (acc, node) => {
       if (node.nodeType === 'param') {
         acc.parameters.push(node as LiquidDocParameter);
       } else if (node.nodeType === 'example') {
         acc.examples.push(node as LiquidDocExample);
+      } else if (node.nodeType === 'description' && !acc.description) {
+        acc.description = node as LiquidDocDescription;
       }
       return acc;
     },
-    { parameters: [] as LiquidDocParameter[], examples: [] as LiquidDocExample[] },
+    {
+      parameters: [] as LiquidDocParameter[],
+      examples: [] as LiquidDocExample[],
+      description: undefined as LiquidDocDescription | undefined,
+    },
   );
 
   if (!hasDocTag) return { name: snippetName };
@@ -82,6 +104,7 @@ export function getSnippetDefinition(
     liquidDoc: {
       ...(parameters.length && { parameters }),
       ...(examples.length && { examples }),
+      ...(description && { description }),
     },
   };
 }
