@@ -422,7 +422,7 @@ LiquidDoc <: Helpers {
 
   exampleNode = "@example" strictSpace* exampleContent
   exampleContent = anyExceptStar<endOfExample>
-  endOfExample =  strictSpace* ("@" | end)
+  endOfExample =  newline? strictSpace* ("@" | end)
 
   fallbackNode = "@" anyExceptStar<endOfParam>
 }
