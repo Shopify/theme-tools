@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 3.8.1
+
+### Patch Changes
+
+- f077a9ec: [internal] Adding list of supported doc tag types
+
 ## 3.8.0
 
 ### Minor Changes

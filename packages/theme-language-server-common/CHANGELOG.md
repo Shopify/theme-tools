@@ -1,5 +1,18 @@
 # @shopify/theme-language-server-common
 
+## 2.9.0
+
+### Minor Changes
+
+- f077a9ec: Adding liquid doc param type completion
+
+  - render param completion supports default values based on param type
+
+### Patch Changes
+
+- Updated dependencies [f077a9ec]
+  - @shopify/theme-check-common@3.8.1
+
 ## 2.8.0
 
 ### Minor Changes
