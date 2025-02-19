@@ -1,5 +1,6 @@
 import {
   getConditionalComment,
+  LiquidDocDescriptionNode,
   LiquidDocExampleNode,
   LiquidDocParamNode,
   NodeTypes,
@@ -49,6 +50,7 @@ import {
   printLiquidVariableOutput,
   printLiquidDocParam,
   printLiquidDocExample,
+  printLiquidDocDescription,
 } from './print/liquid';
 import { printClosingTagSuffix, printOpeningTagPrefix } from './print/tag';
 import { bodyLines, hasLineBreakInRange, isEmpty, isTextLikeNode, reindent } from './utils';
@@ -566,7 +568,12 @@ function printNode(
     }
 
     case NodeTypes.LiquidDocDescriptionNode: {
-      return '';
+      return printLiquidDocDescription(
+        path as AstPath<LiquidDocDescriptionNode>,
+        options,
+        print,
+        args,
+      );
     }
 
     default: {
