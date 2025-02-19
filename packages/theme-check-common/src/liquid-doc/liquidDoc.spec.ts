@@ -192,6 +192,45 @@ describe('Unit: getSnippetDefinition', () => {
     });
   });
 
+  it('should extract description from @description annotations', async () => {
+    const ast = toAST(`
+        {% doc %}
+          @description This is a description
+        {% enddoc %}
+      `);
+
+    const result = getSnippetDefinition(ast, 'product-card');
+    expect(result).to.deep.equal({
+      name: 'product-card',
+      liquidDoc: {
+        description: {
+          content: 'This is a description\n',
+          nodeType: 'description',
+        },
+      },
+    });
+  });
+
+  it('should extract only the first @description annotation', async () => {
+    const ast = toAST(`
+        {% doc %}
+          @description This is a description
+          @description This is another description
+        {% enddoc %}
+      `);
+
+    const result = getSnippetDefinition(ast, 'product-card');
+    expect(result).to.deep.equal({
+      name: 'product-card',
+      liquidDoc: {
+        description: {
+          content: 'This is a description\n',
+          nodeType: 'description',
+        },
+      },
+    });
+  });
+
   it('should return snippetDefinition without liquidDoc property if doc header is not present', async () => {
     const ast = toAST(`
       <div>No doc header here</div>
