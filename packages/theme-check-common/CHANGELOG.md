@@ -1,5 +1,15 @@
 # @shopify/theme-check-common
 
+## 3.9.0
+
+### Minor Changes
+
+- 0bb780de: Add `ValidVisibleIf` check to ensure `visible_if` expressions are well-formed and only reference defined settings keys
+
+### Patch Changes
+
+- f077a9ec: [internal] Adding list of supported doc tag types
+
 ## 3.8.0
 
 ### Minor Changes

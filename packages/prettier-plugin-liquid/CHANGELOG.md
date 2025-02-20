@@ -1,5 +1,11 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.8.2
+
+### Patch Changes
+
+- 085aabbe: Add prettier support for the `@description` tag
+
 ## 1.8.1
 
 ### Patch Changes
