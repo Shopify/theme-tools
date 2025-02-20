@@ -166,7 +166,7 @@ describe('LiquidFreeSettings validation', () => {
               "id": "text_block",
               "label": "Text Block",
               "default": "Hello World!",
-              "available_if": "{% if user %} true {% endif %}"
+              "visible_if": "{% if user %} true {% endif %}"
             }
           }
         }
@@ -174,7 +174,7 @@ describe('LiquidFreeSettings validation', () => {
       `,
       };
       const offenses = await check(theme, [LiquidFreeSettings]);
-      expect(offenses).to.have.length(0);
+      expect(offenses).toEqual([]);
     });
   });
 });
