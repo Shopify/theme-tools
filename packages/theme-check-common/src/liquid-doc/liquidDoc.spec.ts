@@ -204,7 +204,7 @@ describe('Unit: getSnippetDefinition', () => {
       name: 'product-card',
       liquidDoc: {
         description: {
-          content: 'This is a description\n',
+          content: 'This is a description',
           nodeType: 'description',
         },
       },
@@ -224,7 +224,7 @@ describe('Unit: getSnippetDefinition', () => {
       name: 'product-card',
       liquidDoc: {
         description: {
-          content: 'This is a description\n',
+          content: 'This is a description',
           nodeType: 'description',
         },
       },

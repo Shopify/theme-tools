@@ -49,7 +49,7 @@ describe('Module: RenderSnippetHoverProvider', async () => {
         },
       ],
       description: {
-        content: 'This is a description\n',
+        content: 'This is a description',
         nodeType: 'description',
       },
       examples: [
@@ -70,7 +70,7 @@ describe('Module: RenderSnippetHoverProvider', async () => {
       provider = createProvider(async () => mockSnippetDefinition);
       await expect(provider).to.hover(
         `{% render 'product-car█d' %}`,
-        '### product-card\n\n**Parameters:**\n- `title`: string - The title of the product\n- `border-radius` (Optional): number - The border radius in px\n- `no-type` - This parameter has no type\n- `no-description`: string\n- `no-type-or-description`\n\n**Description:**\nThis is a description\n\n**Examples:**\n```liquid{{ product }}```\n```liquid{{ product.title }}```',
+        '### product-card\n\n**Description:**\nThis is a description\n\n**Parameters:**\n- `title`: string - The title of the product\n- `border-radius` (Optional): number - The border radius in px\n- `no-type` - This parameter has no type\n- `no-description`: string\n- `no-type-or-description`\n\n**Examples:**\n```liquid{{ product }}```\n```liquid{{ product.title }}```',
       );
     });
 

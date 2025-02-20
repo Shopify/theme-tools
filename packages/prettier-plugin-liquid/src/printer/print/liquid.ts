@@ -584,7 +584,7 @@ export function printLiquidDocDescription(
   const parts: Doc[] = ['@description'];
 
   if (node.content?.value) {
-    parts.push(' ', node.content.value.trim());
+    parts.push(' ', node.content.value);
   }
 
   return parts;
