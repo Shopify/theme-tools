@@ -76,11 +76,6 @@ export const tags: TagEntry[] = [
     ],
   },
   { name: 'echo' },
-  {
-    name: 'doc',
-    syntax: '{% doc %}doc_body{% enddoc %}',
-    syntax_keywords: [{ keyword: 'doc_body', description: '...' }],
-  },
 ];
 
 describe('Module: LiquidTagsCompletionProvider', async () => {
@@ -106,7 +101,6 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
     await expect(provider).to.complete('{% ren', ['render']);
     await expect(provider).to.complete('{% rend', ['render']);
     await expect(provider).to.complete('{% fo', ['for']);
-    await expect(provider).to.complete('{% do', ['doc']);
   });
 
   it('should complete end tags with the correct thing', async () => {
@@ -117,7 +111,6 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
       'endjavascript',
     ]);
     await expect(provider).to.complete('{% form "cart", cart %} ... {% end', ['endform']);
-    await expect(provider).to.complete('{% doc %} doc_body {% end', ['enddoc']);
   });
 
   it('should not complete literal `liquid` tag', async () => {
@@ -148,7 +141,6 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
       'endjavascript',
     ]);
     await expect(provider).to.complete('{% form "cart", cart %} ... {% e', ['echo', 'endform']);
-    await expect(provider).to.complete('{% doc %} my doc {% e', ['echo', 'enddoc']);
   });
 
   it('should not complete anything if the partial end tag does not match', async () => {
@@ -157,7 +149,6 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
     await expect(provider).to.complete('{% for i in (1..3) %}{% endz', []);
     await expect(provider).to.complete('{% javascript %} console.log("hi") {% endz', []);
     await expect(provider).to.complete('{% form "cart", cart %} ... {% endz', []);
-    await expect(provider).to.complete('{% doc %} my doc {% endz', []);
   });
 
   it('should complete empty statements', async () => {
@@ -180,7 +171,6 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
       '{% form "cart", cart %} ... {% ',
       allTags.concat('endform'),
     );
-    await expect(provider).to.complete('{% doc %} my doc {% ', allTags.concat('enddoc'));
   });
 
   describe('Snippet completion', () => {
