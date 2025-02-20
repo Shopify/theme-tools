@@ -985,7 +985,7 @@ describe('Unit: Stage 1 (CST)', () => {
     describe('Case: LiquidDoc', () => {
       for (const { toCST, expectPath } of testCases) {
         it('should parse basic doc tag structure', () => {
-          const testStr = `{% doc -%} content {%- enddoc %}`;
+          const testStr = `{% doc -%} {%- enddoc %}`;
           cst = toCST(testStr);
 
           expectPath(cst, '0.type').to.equal('LiquidRawTag');
@@ -1000,6 +1000,25 @@ describe('Unit: Stage 1 (CST)', () => {
           );
           expectPath(cst, '0.blockEndLocStart').to.equal(testStr.length - '{%- enddoc %}'.length);
           expectPath(cst, '0.blockEndLocEnd').to.equal(testStr.length);
+        });
+
+        it('should parse implicit description', () => {
+          const testStr = `{% doc %}        content {%- enddoc %}`;
+          cst = toCST(testStr);
+
+          expectPath(cst, '0.type').to.equal('LiquidRawTag');
+          expectPath(cst, '0.name').to.equal('doc');
+
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocDescriptionNode');
+          expectPath(cst, '0.children.0.locStart').to.equal(testStr.indexOf('content'));
+          expectPath(cst, '0.children.0.locEnd').to.equal(
+            testStr.indexOf('content') + 'content'.length,
+          );
+          expectPath(cst, '0.children.0.content.value').to.equal('content');
+          expectPath(cst, '0.children.0.content.locStart').to.equal(testStr.indexOf('content'));
+          expectPath(cst, '0.children.0.content.locEnd').to.equal(
+            testStr.indexOf('content') + 'content'.length,
+          );
         });
 
         it('should not parse @param without a name', () => {
@@ -1377,6 +1396,38 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.children.1.type').to.equal('LiquidDocDescriptionNode');
           expectPath(cst, '0.children.1.content.value').to.equal('second description\n');
         });
+
+        it('should preserve leading whitespace in doc description', () => {
+          const testStr = `{% doc %}
+    This description has
+      indented lines
+    with preserved whitespace
+  {% enddoc %}`;
+          cst = toCST(testStr);
+
+          expectPath(cst, '0.type').to.equal('LiquidRawTag');
+          expectPath(cst, '0.name').to.equal('doc');
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocDescriptionNode');
+          expectPath(cst, '0.children.0.content.value').to.equal(`
+    This description has
+      indented lines
+    with preserved whitespace
+  `);
+        });
+
+        it('should preserve mixed whitespace in doc description', () => {
+          const testStr = `{% doc %}  Spaces at start
+\tTab indented line
+   Mixed    spacing   here  {% enddoc %}`;
+          cst = toCST(testStr);
+
+          expectPath(cst, '0.type').to.equal('LiquidRawTag');
+          expectPath(cst, '0.name').to.equal('doc');
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocDescriptionNode');
+          expectPath(cst, '0.children.0.content.value').to.equal(`  Spaces at start
+\tTab indented line
+   Mixed    spacing   here  `);
+        });
       }
     });
   });
@@ -1570,8 +1621,8 @@ describe('Unit: Stage 1 (CST)', () => {
       it(`should parse quoted attributes`, () => {
         [
           { type: 'AttrSingleQuoted', name: 'single', quote: "'" },
-          { type: 'AttrSingleQuoted', name: 'single', quote: '‘' },
-          { type: 'AttrSingleQuoted', name: 'single', quote: '’' },
+          { type: 'AttrSingleQuoted', name: 'single', quote: '"' },
+          { type: 'AttrSingleQuoted', name: 'single', quote: '"' },
           { type: 'AttrDoubleQuoted', name: 'double', quote: '"' },
           { type: 'AttrDoubleQuoted', name: 'double', quote: '"' },
           { type: 'AttrDoubleQuoted', name: 'double', quote: '"' },
