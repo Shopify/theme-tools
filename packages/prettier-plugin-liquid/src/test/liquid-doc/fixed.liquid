@@ -77,6 +77,7 @@ It should remove empty lines at the end of the example content
 It should respect example content with param and description
 {% doc %}
   @param paramName - param with description
+
   @example
   This is a valid example
 {% enddoc %}
@@ -102,7 +103,24 @@ It should add a space between a description tag and content
 It should handle param, example, and description nodes
 {% doc %}
   @param {String} paramName - param with description
+
   @example
   This is a valid example
+
   @description This is a description
+{% enddoc %}
+
+It should add padding between dissimilar nodes
+{% doc %}
+  @param {String} param1 - param with description
+  @param {String} param2 - param with description
+
+  @example
+  This is a valid example
+  @example
+  This is another valid example
+
+  @description This is a description
+
+  @param {String} param3 - param with description
 {% enddoc %}

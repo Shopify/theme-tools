@@ -1369,7 +1369,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
   /**
    * Reusable text node type
    */
-  const textNode = {
+  const textNode = () => ({
     type: ConcreteNodeTypes.TextNode,
     value: function () {
       return (this as any).sourceString;
@@ -1377,11 +1377,11 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
     locStart,
     locEnd,
     source,
-  };
+  });
 
   const LiquidDocMappings: Mapping = {
     Node: 0,
-    TextNode: textNode,
+    TextNode: textNode(),
     paramNode: {
       type: ConcreteNodeTypes.LiquidDocParamNode,
       name: 'param',
@@ -1400,9 +1400,9 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       source,
       content: 2,
     },
-    descriptionContent: textNode,
+    descriptionContent: textNode(),
     paramType: 2,
-    paramTypeContent: textNode,
+    paramTypeContent: textNode(),
     paramName: {
       type: ConcreteNodeTypes.LiquidDocParamNameNode,
       content: 0,
@@ -1419,7 +1419,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       source,
       required: false,
     },
-    paramDescription: textNode,
+    paramDescription: textNode(),
     exampleNode: {
       type: ConcreteNodeTypes.LiquidDocExampleNode,
       name: 'example',
@@ -1428,9 +1428,9 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       source,
       content: 2,
     },
-    exampleContent: textNode,
-    textValue: textNode,
-    fallbackNode: textNode,
+    exampleContent: textNode(),
+    textValue: textNode(),
+    fallbackNode: textNode(),
   };
 
   return toAST(res, LiquidDocMappings);

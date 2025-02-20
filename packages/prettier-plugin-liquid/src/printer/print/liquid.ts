@@ -504,8 +504,22 @@ export function printLiquidDoc(
   print: LiquidPrinter,
   _args: LiquidPrinterArgs,
 ) {
-  const body = path.map((p: any) => print(p), 'nodes');
-  return [indent([hardline, join(hardline, body)]), hardline];
+  const nodes = path.map((p: any) => print(p), 'nodes') as string[][];
+
+  if (nodes.length === 0) return [];
+
+  const lines = [nodes[0]] as (string[] | doc.builders.Concat)[];
+
+  for (let i = 1; i < nodes.length; i++) {
+    lines.push(hardline);
+    // If the tag name is different from the previous one, add an extra line break
+    if (nodes[i - 1][0] !== nodes[i][0]) {
+      lines.push(hardline);
+    }
+    lines.push(nodes[i]);
+  }
+
+  return [indent([hardline, lines]), hardline];
 }
 
 export function printLiquidDocParam(
