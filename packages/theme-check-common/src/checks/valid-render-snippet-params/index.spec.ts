@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { applySuggestions, runLiquidCheck } from '../../test';
 import { ValidRenderSnippetParams } from '.';
 import { MockFileSystem } from '../../test';
+import { SupportedParamTypes } from '../../liquid-doc/utils';
 
 function check(snippet: string, source: string) {
   return runLiquidCheck(ValidRenderSnippetParams, source, undefined, {
@@ -184,6 +185,87 @@ describe('Module: ValidRenderSnippetParams', () => {
       const suggestionResult = applySuggestions(sourceCode, offenses[3]);
       expect(suggestionResult).toEqual([`{% render 'card', required_string: '' %}`]);
     });
+  });
+
+  describe('type validation', () => {
+    const typeTests = [
+      {
+        type: 'string',
+        validValues: ["'hello'", "''", 'product'],
+        invalidValues: [
+          { value: '123', expectedType: SupportedParamTypes.Number },
+          { value: 'true', expectedType: SupportedParamTypes.Boolean },
+        ],
+      },
+      {
+        type: 'number',
+        validValues: ['0', '123', '-1', 'product'],
+        invalidValues: [
+          { value: "'hello'", expectedType: SupportedParamTypes.String },
+          { value: 'true', expectedType: SupportedParamTypes.Boolean },
+        ],
+      },
+      {
+        type: 'boolean',
+        validValues: ['true', 'false', 'nil', 'empty', 'product'],
+        invalidValues: [
+          { value: "'hello'", expectedType: SupportedParamTypes.String },
+          { value: '123', expectedType: SupportedParamTypes.Number },
+        ],
+      },
+      {
+        type: 'object',
+        validValues: ['product', '(1..3)'],
+        invalidValues: [
+          { value: "'hello'", expectedType: SupportedParamTypes.String },
+          { value: '123', expectedType: SupportedParamTypes.Number },
+          { value: 'true', expectedType: SupportedParamTypes.Boolean },
+          { value: 'empty', expectedType: SupportedParamTypes.Boolean },
+        ],
+      },
+    ];
+
+    for (const test of typeTests) {
+      describe(`${test.type} validation`, () => {
+        const makeSnippet = (type: string) => `
+          {% doc %}
+            @param {${type}} param - Description
+          {% enddoc %}
+          <div>{{ param }}</div>
+        `;
+
+        test.validValues.forEach((value) => {
+          it(`should accept ${value} for ${test.type}`, async () => {
+            const fs = new MockFileSystem({
+              'snippets/card.liquid': makeSnippet(test.type),
+            });
+
+            const sourceCode = `{% render 'card', param: ${value} %}`;
+            const offenses = await runLiquidCheck(ValidRenderSnippetParams, sourceCode, undefined, {
+              fs,
+            });
+            expect(offenses).toHaveLength(0);
+          });
+        });
+
+        test.invalidValues.forEach(({ value, expectedType }) => {
+          it(`should reject ${value} for ${test.type}`, async () => {
+            const fs = new MockFileSystem({
+              'snippets/card.liquid': makeSnippet(test.type),
+            });
+
+            const sourceCode = `{% render 'card', param: ${value} %}`;
+            const offenses = await runLiquidCheck(ValidRenderSnippetParams, sourceCode, undefined, {
+              fs,
+            });
+            expect(offenses).toHaveLength(1);
+            expect(offenses[0].message).toBe(
+              `Type mismatch for parameter 'param': expected ${test.type}, got ${expectedType}`,
+            );
+          });
+        });
+      });
+    }
   });
 
   describe('edge cases', () => {
