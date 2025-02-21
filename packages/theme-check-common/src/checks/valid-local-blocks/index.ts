@@ -45,7 +45,6 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
         if (!schema) return;
 
         const {
-          staticBlockNameLocations,
           staticBlockLocations,
           localBlockLocations,
           themeBlockLocations,
@@ -53,16 +52,6 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
         } = getBlocks(validSchema);
 
         if (isSection(context.file.uri)) {
-          staticBlockNameLocations.forEach((blockWithPath: BlockNodeWithPath) => {
-            const astNode = nodeAtPath(ast, blockWithPath.path)! as LiteralNode;
-            reportWarning(
-              'Static theme blocks cannot have a name property.',
-              offset,
-              astNode,
-              context,
-            );
-          });
-
           if (staticBlockLocations.length > 0 && localBlockLocations.length > 0) {
             staticBlockLocations.forEach((blockWithPath: BlockNodeWithPath) => {
               const astNode = nodeAtPath(ast, blockWithPath.path)! as LiteralNode;
