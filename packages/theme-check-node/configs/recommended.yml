@@ -96,6 +96,9 @@ UniqueStaticBlockId:
 UnknownFilter:
   enabled: true
   severity: 0
+UnsupportedDocTag:
+  enabled: true
+  severity: 0
 UnusedAssign:
   enabled: true
   severity: 1
