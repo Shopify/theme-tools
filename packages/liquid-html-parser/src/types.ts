@@ -100,6 +100,8 @@ export const LiquidNodeTypes = [
   NodeTypes.LiquidRawTag,
 ] as const;
 
+export const LoopNamedTags = [NamedTags.for, NamedTags.tablerow] as const;
+
 // Those properties create loops that would make walking infinite
 export const nonTraversableProperties = new Set([
   'parentNode',
