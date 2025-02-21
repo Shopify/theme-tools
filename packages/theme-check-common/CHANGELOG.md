@@ -1,5 +1,13 @@
 # @shopify/theme-check-common
 
+## 3.9.1
+
+### Patch Changes
+
+- beccb69e: Fixed local blocks validation to not consider preset blocks as containing local blocks when a name is present
+- Updated dependencies [9563715a]
+  - @shopify/liquid-html-parser@2.5.1
+
 ## 3.9.0
 
 ### Minor Changes

@@ -1,5 +1,13 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.8.3
+
+### Patch Changes
+
+- 9563715a: Add padding for liquid doc content
+- Updated dependencies [9563715a]
+  - @shopify/liquid-html-parser@2.5.1
+
 ## 1.8.2
 
 ### Patch Changes

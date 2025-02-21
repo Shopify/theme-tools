@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.5.1
+
+### Patch Changes
+
+- 9563715a: [internal] Fix typo in liquid doc parser
+
 ## 2.5.0
 
 ### Minor Changes
