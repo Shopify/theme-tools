@@ -24,7 +24,10 @@ describe('Module: LiquidDocParamTypeCompletionProvider', async () => {
     const sources = [`{% doc %} @param {█`, `{% doc %} @param  {  █`];
 
     for (const source of sources) {
-      await expect(provider).to.complete(source, Object.values(SupportedParamTypes));
+      await expect(provider).to.complete(
+        { source, relativePath: 'file://snippets/file.liquid' },
+        Object.values(SupportedParamTypes),
+      );
     }
   });
 
@@ -37,7 +40,17 @@ describe('Module: LiquidDocParamTypeCompletionProvider', async () => {
     ];
 
     for (const source of sources) {
-      await expect(provider).to.complete(source, []);
+      await expect(provider).to.complete(
+        { source, relativePath: 'file://snippets/file.liquid' },
+        [],
+      );
     }
+  });
+
+  it("does not offer completion if it's not within a snippet file", async () => {
+    await expect(provider).to.complete(
+      { source: `{% doc %} @param {█`, relativePath: 'file://sections/file.liquid' },
+      [],
+    );
   });
 });
