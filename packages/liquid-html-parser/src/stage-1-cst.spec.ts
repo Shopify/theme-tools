@@ -1082,8 +1082,8 @@ describe('Unit: Stage 1 (CST)', () => {
         });
 
         it('should parse @param with malformed optional delimiters as Text Nodes', () => {
-          const testStr = `{% doc %} 
-            @param paramWithMissingHeadDelim] 
+          const testStr = `{% doc %}
+            @param paramWithMissingHeadDelim]
             @param [paramWithMissingTailDelim
             @param missingHeadWithDescription] - description value
             @param [missingTailWithDescription - description value
@@ -1330,10 +1330,10 @@ describe('Unit: Stage 1 (CST)', () => {
           {% enddoc %}`;
           cst = toCST(testStr);
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocDescriptionNode');
-          expectPath(cst, '0.children.0.content.value').to.equal('This is a description\n');
+          expectPath(cst, '0.children.0.content.value').to.equal('This is a description');
 
           expectPath(cst, '0.children.1.type').to.equal('LiquidDocDescriptionNode');
-          expectPath(cst, '0.children.1.content.value').to.equal('This is a second description\n');
+          expectPath(cst, '0.children.1.content.value').to.equal('This is a second description');
         });
 
         it('should parse and strip whitespace from description tag with content that has leading whitespace', () => {
@@ -1362,7 +1362,7 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocDescriptionNode');
           expectPath(cst, '0.children.0.name').to.equal('description');
           expectPath(cst, '0.children.0.content.value').to.equal(
-            'hello      there        my    friend\n          This is a description\n          It supports multiple lines\n',
+            'hello      there        my    friend\n          This is a description\n          It supports multiple lines',
           );
         });
 
@@ -1373,9 +1373,9 @@ describe('Unit: Stage 1 (CST)', () => {
         {% enddoc %}`;
           cst = toCST(testStr);
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocDescriptionNode');
-          expectPath(cst, '0.children.0.content.value').to.equal('hello there\n');
+          expectPath(cst, '0.children.0.content.value').to.equal('hello there');
           expectPath(cst, '0.children.1.type').to.equal('LiquidDocDescriptionNode');
-          expectPath(cst, '0.children.1.content.value').to.equal('second description\n');
+          expectPath(cst, '0.children.1.content.value').to.equal('second description');
         });
       }
     });
