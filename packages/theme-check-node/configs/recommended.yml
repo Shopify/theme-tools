@@ -99,6 +99,9 @@ UnknownFilter:
 UnusedAssign:
   enabled: true
   severity: 1
+UnusedDocParam:
+  enabled: true
+  severity: 1
 ValidBlockTarget:
   enabled: true
   severity: 0

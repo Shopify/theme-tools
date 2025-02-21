@@ -9,6 +9,7 @@ import {
   AttrUnquoted,
   LiquidHtmlNode,
   LiquidBranch,
+  NamedTags,
 } from '@shopify/liquid-html-parser';
 import { LiquidHtmlNodeOfType as NodeOfType } from '../types';
 
@@ -84,4 +85,14 @@ export function hasAttributeValueOf(attr: ValuedHtmlAttribute, value: string) {
 
 export function isLiquidString(node: LiquidHtmlNode): node is NodeOfType<NodeTypes.String> {
   return node.type === NodeTypes.String;
+}
+
+export function isLoopScopedVariable(variableName: string, ancestors: LiquidHtmlNode[]) {
+  return ancestors.some(
+    (ancestor) =>
+      ancestor.type === NodeTypes.LiquidTag &&
+      (ancestor.name === NamedTags.for || ancestor.name === NamedTags.tablerow) &&
+      typeof ancestor.markup !== 'string' &&
+      ancestor.markup.variableName === variableName,
+  );
 }
