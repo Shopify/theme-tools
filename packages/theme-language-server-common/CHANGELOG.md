@@ -1,5 +1,15 @@
 # @shopify/theme-language-server-common
 
+## 2.9.1
+
+### Patch Changes
+
+- 8be77897: Add hover support for the `@description` tag
+- Updated dependencies [beccb69e]
+- Updated dependencies [9563715a]
+  - @shopify/theme-check-common@3.9.1
+  - @shopify/liquid-html-parser@2.5.1
+
 ## 2.9.0
 
 ### Minor Changes
