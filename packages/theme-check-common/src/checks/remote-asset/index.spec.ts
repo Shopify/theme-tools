@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { runLiquidCheck, highlightedOffenses } from '../../test';
+import { runLiquidCheck, highlightedOffenses, check, MockTheme } from '../../test';
 import { RemoteAsset } from './index';
 
 describe('Module: RemoteAsset', () => {
@@ -208,5 +208,72 @@ describe('Module: RemoteAsset', () => {
     expect(offenses).to.be.empty;
     const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
     expect(highlights).to.be.empty;
+  });
+
+  it('should report an offense if url is not listed in allowedDomains', async () => {
+    const themeFiles: MockTheme = {
+      'layout/theme.liquid': `
+        <script src="https://domain.com" defer></script>
+      `,
+    };
+
+    const offenses = await check(
+      themeFiles,
+      [RemoteAsset],
+      {},
+      {
+        RemoteAsset: {
+          enabled: true,
+          allowedDomains: ['someotherdomain.com'],
+        },
+      },
+    );
+
+    expect(offenses).to.have.length(1);
+  });
+
+  it('should report an offense if the url in the config is malformed/missing protocol', async () => {
+    const themeFiles: MockTheme = {
+      'layout/theme.liquid': `
+        <script src="https://domain.com" defer></script>
+        <script src="https://www.domain.com" defer></script>
+      `,
+    };
+
+    const offenses = await check(
+      themeFiles,
+      [RemoteAsset],
+      {},
+      {
+        RemoteAsset: {
+          enabled: true,
+          allowedDomains: ['www.domain.com', 'domain.com'],
+        },
+      },
+    );
+
+    expect(offenses).to.have.length(2);
+  });
+
+  it('should not report an offense if url is listed in allowedDomains', async () => {
+    const themeFiles: MockTheme = {
+      'layout/theme.liquid': `
+        <script src="https://domain.com" defer></script>
+      `,
+    };
+
+    const offenses = await check(
+      themeFiles,
+      [RemoteAsset],
+      {},
+      {
+        RemoteAsset: {
+          enabled: true,
+          allowedDomains: ['https://domain.com', 'http://domain.com', 'https://www.domain.com'],
+        },
+      },
+    );
+
+    expect(offenses).to.be.empty;
   });
 });
