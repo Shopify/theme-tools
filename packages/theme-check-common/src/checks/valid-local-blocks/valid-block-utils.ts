@@ -82,16 +82,3 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
     hasRootLevelThemeBlocks: themeBlockLocations.some((block) => block.path[0] === 'blocks'),
   };
 }
-
-export function reportWarning(
-  message: string,
-  offset: number,
-  astNode: LiteralNode,
-  context: Context<SourceCodeType.LiquidHtml>,
-) {
-  context.report({
-    message,
-    startIndex: offset + getLocStart(astNode),
-    endIndex: offset + getLocEnd(astNode),
-  });
-}

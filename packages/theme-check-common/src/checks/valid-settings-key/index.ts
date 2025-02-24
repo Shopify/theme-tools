@@ -10,7 +10,7 @@ import {
 } from '../../types';
 import { nodeAtPath } from '../../json';
 import { getSchema, isSectionSchema } from '../../to-schema';
-import { BlockNodeWithPath, getBlocks, reportWarning } from '../../utils';
+import { BlockNodeWithPath, getBlocks, reportOnJsonNode } from '../../utils';
 
 export const ValidSettingsKey: LiquidCheckDefinition = {
   meta: {
@@ -123,7 +123,7 @@ function validateSettingsKey(
         ? `Setting '${setting.key.value}' does not exist in 'blocks/${blockNode.type}.liquid'.`
         : `Setting '${setting.key.value}' does not exist in schema.`;
 
-      reportWarning(errorMessage, offset, setting.key, context);
+      reportOnJsonNode(errorMessage, offset, setting.key, context);
     }
   }
 }

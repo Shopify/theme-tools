@@ -9,7 +9,8 @@ import {
 import { nodeAtPath } from '../../json';
 import { getSchema } from '../../to-schema';
 import { isBlock, isSection } from '../../to-schema';
-import { getBlocks, reportWarning } from './valid-block-utils';
+import { getBlocks } from './valid-block-utils';
+import { reportOnJsonNode } from '../../utils';
 
 type BlockNodeWithPath = {
   node: Section.Block | Preset.Block;
@@ -55,7 +56,7 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
           if (staticBlockLocations.length > 0 && localBlockLocations.length > 0) {
             staticBlockLocations.forEach((blockWithPath: BlockNodeWithPath) => {
               const astNode = nodeAtPath(ast, blockWithPath.path)! as LiteralNode;
-              reportWarning(
+              reportOnJsonNode(
                 `Sections cannot use static theme blocks together with locally scoped blocks.`,
                 offset,
                 astNode,
@@ -71,7 +72,7 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
           ) {
             localBlockLocations.forEach((blockWithPath: BlockNodeWithPath) => {
               const astNode = nodeAtPath(ast, blockWithPath.path)! as LiteralNode;
-              reportWarning(
+              reportOnJsonNode(
                 'Sections cannot use theme blocks together with locally scoped blocks.',
                 offset,
                 astNode,
@@ -85,7 +86,7 @@ export const ValidLocalBlocks: LiquidCheckDefinition = {
           if (localBlockLocations.length > 0) {
             localBlockLocations.forEach((blockWithPath: BlockNodeWithPath) => {
               const astNode = nodeAtPath(ast, blockWithPath.path)! as LiteralNode;
-              reportWarning(
+              reportOnJsonNode(
                 'Local scoped blocks are not supported in theme blocks.',
                 offset,
                 astNode,

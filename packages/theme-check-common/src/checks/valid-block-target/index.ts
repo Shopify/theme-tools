@@ -14,7 +14,7 @@ import {
   isInvalidPresetBlock,
   validateNestedBlocks,
   validateBlockFileExistence,
-  reportWarning,
+  reportOnJsonNode,
 } from '../../utils';
 type BlockNodeWithPath = {
   node: Section.Block | ThemeBlock.Block | Preset.Block;
@@ -61,7 +61,7 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
             const exists = await validateBlockFileExistence(node.type, context);
             if (!exists) {
               errorsInRootLevelBlocks = true;
-              reportWarning(
+              reportOnJsonNode(
                 `Theme block 'blocks/${node.type}.liquid' does not exist.`,
                 offset,
                 typeNode,
@@ -87,7 +87,7 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
                   const errorMessage = isPrivateBlockType
                     ? `Theme block type "${node.type}" is a private block so it must be explicitly allowed in "blocks" at the root of this schema.`
                     : `Theme block type "${node.type}" must be allowed in "blocks" at the root of this schema.`;
-                  reportWarning(errorMessage, offset, typeNode, context);
+                  reportOnJsonNode(errorMessage, offset, typeNode, context);
                 }
 
                 if ('blocks' in node && node.blocks) {
@@ -110,7 +110,7 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
                 const typeNode = nodeAtPath(ast, path)! as LiteralNode;
                 const exists = await validateBlockFileExistence(node.type, context);
                 if (!exists) {
-                  reportWarning(
+                  reportOnJsonNode(
                     `Theme block 'blocks/${node.type}.liquid' does not exist.`,
                     offset,
                     typeNode,

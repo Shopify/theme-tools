@@ -144,7 +144,7 @@ function validateBlockTargeting(
       : `Block type "${nestedBlock.type}" is not allowed in "${
           parentNode.type
         }" blocks. Allowed types are: ${allowedBlockTypes.join(', ')}.`;
-    reportWarning(errorMessage, offset, typeNode, context);
+    reportOnJsonNode(errorMessage, offset, typeNode, context);
   }
 
   if ('blocks' in nestedBlock && nestedBlock.blocks) {
@@ -209,7 +209,7 @@ export async function validateNestedBlocks(
   }
 }
 
-export function reportWarning(
+export function reportOnJsonNode(
   message: string,
   offset: number,
   astNode: JSONNode,

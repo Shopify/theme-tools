@@ -7,7 +7,7 @@ import {
 } from '../../types';
 import { getLocStart, nodeAtPath } from '../../json';
 import { getSchema, isBlockSchema, isSectionSchema } from '../../to-schema';
-import { reportWarning } from '../../utils';
+import { reportOnJsonNode } from '../../utils';
 import {
   getGlobalSettings,
   getVariableLookupsInExpression,
@@ -78,7 +78,7 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
 
           const varLookupsOrWarning = getVariableLookupsInExpression(setting.visible_if);
           if ('warning' in varLookupsOrWarning) {
-            reportWarning(varLookupsOrWarning.warning, offset, visibleIfNode, context);
+            reportOnJsonNode(varLookupsOrWarning.warning, offset, visibleIfNode, context);
             continue;
           }
 
