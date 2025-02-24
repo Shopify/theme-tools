@@ -3,12 +3,14 @@ import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { LiquidCompletionParams } from '../params';
 import { Provider } from './common';
 import { SupportedDocTagTypes, SupportedParamTypes } from '@shopify/theme-check-common';
+import { isSnippet } from '../../utils/uri';
 
 export class LiquidDocParamTypeCompletionProvider implements Provider {
   constructor() {}
 
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
+    if (!isSnippet(params.document.uri)) return [];
 
     const { node, ancestors } = params.completionContext;
     const parentNode = ancestors.at(-1);
