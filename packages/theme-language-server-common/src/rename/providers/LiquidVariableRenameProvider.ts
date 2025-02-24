@@ -8,6 +8,7 @@ import {
   NodeTypes,
   Position,
   AssignMarkup,
+  TextNode,
   LiquidVariableLookup,
   ForMarkup,
 } from '@shopify/liquid-html-parser';
@@ -36,7 +37,7 @@ export class LiquidVariableRenameProvider implements BaseRenameProvider {
     const textDocument = document?.textDocument;
 
     if (!textDocument || !node || !ancestors) return null;
-    if (!supportedTags(node)) return null;
+    if (!supportedTags(node, ancestors)) return null;
 
     const oldName = variableName(node);
     const offsetOfVariableNameEnd = node.position.start + oldName.length;
@@ -63,7 +64,7 @@ export class LiquidVariableRenameProvider implements BaseRenameProvider {
 
     if (!textDocument || !node || !ancestors) return null;
     if (document.ast instanceof Error) return null;
-    if (!supportedTags(node)) return null;
+    if (!supportedTags(node, ancestors)) return null;
 
     const oldName = variableName(node);
     const scope = variableNameBlockScope(oldName, ancestors);
@@ -73,6 +74,11 @@ export class LiquidVariableRenameProvider implements BaseRenameProvider {
       VariableLookup: replaceRange,
       AssignMarkup: replaceRange,
       ForMarkup: replaceRange,
+      TextNode: (node: LiquidHtmlNode, ancestors: (LiquidHtmlNode | JSONNode)[]) => {
+        if (ancestors.at(-1)?.type !== NodeTypes.LiquidDocParamNode) return;
+
+        return replaceRange(node, ancestors);
+      },
     });
 
     const textDocumentEdit = TextDocumentEdit.create(
@@ -88,11 +94,27 @@ export class LiquidVariableRenameProvider implements BaseRenameProvider {
 
 function supportedTags(
   node: LiquidHtmlNode,
-): node is AssignMarkup | LiquidVariableLookup | ForMarkup {
+  ancestors: LiquidHtmlNode[],
+): node is AssignMarkup | LiquidVariableLookup | ForMarkup | TextNode {
   return (
     node.type === NodeTypes.AssignMarkup ||
     node.type === NodeTypes.VariableLookup ||
-    node.type === NodeTypes.ForMarkup
+    node.type === NodeTypes.ForMarkup ||
+    isLiquidDocParamNameNode(node, ancestors)
+  );
+}
+
+function isLiquidDocParamNameNode(
+  node: LiquidHtmlNode,
+  ancestors: LiquidHtmlNode[],
+): node is TextNode {
+  const parentNode = ancestors.at(-1);
+
+  return (
+    !!parentNode &&
+    parentNode.type === NodeTypes.LiquidDocParamNode &&
+    parentNode.paramName === node &&
+    node.type === NodeTypes.TextNode
   );
 }
 
@@ -103,6 +125,8 @@ function variableName(node: LiquidHtmlNode): string {
       return node.name ?? '';
     case NodeTypes.ForMarkup:
       return node.variableName ?? '';
+    case NodeTypes.TextNode:
+      return node.value;
     default:
       return '';
   }
