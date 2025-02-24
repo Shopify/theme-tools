@@ -11,10 +11,11 @@ import { reportOnJsonNode } from '../../utils';
 import {
   getGlobalSettings,
   getVariableLookupsInExpression,
+  lookupIsError,
   validateLookup,
   offsetAdjust,
   type Vars,
-} from './visible-if-utils';
+} from '../../utils/visible-if-utils';
 
 // Note that unlike most other files in the `checks` directory, this exports two
 // checks: one for Liquid files and one for 'config/settings_schema.json'. They
@@ -76,9 +77,9 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
 
           const visibleIfNode = nodeAtPath(ast, ['settings', i, 'visible_if'])!;
 
-          const varLookupsOrWarning = getVariableLookupsInExpression(setting.visible_if);
-          if ('warning' in varLookupsOrWarning) {
-            reportOnJsonNode(varLookupsOrWarning.warning, offset, visibleIfNode, context);
+          const varLookups = getVariableLookupsInExpression(setting.visible_if);
+          if (lookupIsError(varLookups)) {
+            reportOnJsonNode(varLookups.error, offset, visibleIfNode, context);
             continue;
           }
 
@@ -98,7 +99,7 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
             }
           };
 
-          for (const lookup of varLookupsOrWarning) {
+          for (const lookup of varLookups) {
             if (lookup.name === 'section' && !isSectionSchema(schema)) {
               report(
                 `Invalid visible_if: can't refer to "section" when not in a section file.`,
@@ -133,10 +134,10 @@ export const ValidVisibleIfSettingsSchema: JSONCheckDefinition = {
         if (typeof visibleIfExpression !== 'string') return;
         const offset = node.value.loc.start.offset;
 
-        const varLookupsOrWarning = getVariableLookupsInExpression(visibleIfExpression);
-        if ('warning' in varLookupsOrWarning) {
+        const varLookups = getVariableLookupsInExpression(visibleIfExpression);
+        if (lookupIsError(varLookups)) {
           context.report({
-            message: varLookupsOrWarning.warning,
+            message: varLookups.error,
             startIndex: node.value.loc.start.offset,
             endIndex: node.value.loc.end.offset,
           });
@@ -159,7 +160,7 @@ export const ValidVisibleIfSettingsSchema: JSONCheckDefinition = {
           }
         };
 
-        for (const lookup of varLookupsOrWarning) {
+        for (const lookup of varLookups) {
           // settings_schema.json can't reference `section` or `block`.
           if (lookup.name === 'section') {
             report(

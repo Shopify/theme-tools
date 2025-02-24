@@ -594,7 +594,7 @@ describe('Module: ValidVisibleIf', () => {
             "line": 10,
           },
           "fix": undefined,
-          "message": "visible_if expression contains no references to any settings. This is likely an error.",
+          "message": "visible_if expression contains no references to any settings. This may be an error.",
           "severity": 0,
           "start": {
             "character": 20,

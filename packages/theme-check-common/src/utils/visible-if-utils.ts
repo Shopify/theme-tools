@@ -1,20 +1,25 @@
 import { type LiquidVariableLookup, toLiquidHtmlAST, NodeTypes } from '@shopify/liquid-html-parser';
-import type { Context, SourceCodeType } from '../..';
-import { findRoot } from '../../find-root';
-import { parseJSON } from '../../json';
-import { join } from '../../path';
-import { visit } from '../../visitor';
+import type { Context, SourceCodeType } from '..';
+import { findRoot } from '../find-root';
+import { parseJSON } from '../json';
+import { join } from '../path';
+import { visit } from '../visitor';
 
 export type Vars = { [key: string]: Vars | true };
+type LookupError = { error: string };
 
 export const variableExpressionMatcher = /{{(.+?)}}/;
 export const adjustedPrefix = '{% if ';
 export const adjustedSuffix = ' %}{% endif %}';
 export const offsetAdjust = '{{'.length - adjustedPrefix.length;
 
+export function lookupIsError(lookup: LiquidVariableLookup[] | LookupError): lookup is LookupError {
+  return 'error' in lookup;
+}
+
 export function getVariableLookupsInExpression(
   expression: string,
-): LiquidVariableLookup[] | { warning: string } {
+): LiquidVariableLookup[] | LookupError {
   // As of February 2025, parsers other than LiquidJS don't yet support
   // expressions in {{ variable }} tags. So we have to do something a little
   // gnarly — before parsing it we extract the expression from within the tag
@@ -25,7 +30,7 @@ export function getVariableLookupsInExpression(
   const match = variableExpressionMatcher.exec(expression);
   if (match == null) {
     return {
-      warning: `Invalid visible_if expression. It should take the form "{{ <expression> }}".`,
+      error: `Invalid visible_if expression. It should take the form "{{ <expression> }}".`,
     };
   }
   const unwrappedExpression = match[1];
@@ -53,8 +58,9 @@ export function getVariableLookupsInExpression(
     });
 
     if (vars.length === 0) {
+      // TODO: Surface this as a usage warning instead of an error
       return {
-        warning: `visible_if expression contains no references to any settings. This is likely an error.`,
+        error: `visible_if expression contains no references to any settings. This may be an error.`,
       };
     }
 
@@ -64,10 +70,10 @@ export function getVariableLookupsInExpression(
       // Because of our hackish approach, the underlying error is likely to
       // include an incorrect character range and/or mention {% if %} tags.
       // Squelch the details and just report it as a simple syntax error.
-      return { warning: 'Syntax error: cannot parse visible_if expression.' };
+      return { error: 'Syntax error: cannot parse visible_if expression.' };
     }
 
-    return { warning: String(error) };
+    return { error: String(error) };
   }
 }
 
