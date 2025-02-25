@@ -32,6 +32,7 @@ import { RequiredLayoutThemeObject } from './required-layout-theme-object';
 import { TranslationKeyExists } from './translation-key-exists';
 import { UnclosedHTMLElement } from './unclosed-html-element';
 import { UndefinedObject } from './undefined-object';
+import { UniqueDocParamNames } from './unique-doc-param-names';
 import { UniqueStaticBlockId } from './unique-static-block-id';
 import { UnknownFilter } from './unknown-filter';
 import { UnusedAssign } from './unused-assign';
@@ -41,6 +42,7 @@ import { ValidContentForArguments } from './valid-content-for-arguments';
 import { ValidBlockTarget } from './valid-block-target';
 import { ValidHTMLTranslation } from './valid-html-translation';
 import { ValidJSON } from './valid-json';
+import { ValidDocParamTypes } from './valid-doc-param-types';
 import { ValidLocalBlocks } from './valid-local-blocks';
 import { ValidRenderSnippetParams } from './valid-render-snippet-params';
 import { ValidRenderSnippetParamTypes } from './valid-render-snippet-param-types';
@@ -87,6 +89,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   TranslationKeyExists,
   UnclosedHTMLElement,
   UndefinedObject,
+  UniqueDocParamNames,
   UniqueSettingIds,
   UniqueStaticBlockId,
   UnknownFilter,
@@ -97,6 +100,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidHTMLTranslation,
   ValidContentForArguments,
   ValidJSON,
+  ValidDocParamTypes,
   ValidLocalBlocks,
   ValidSchema,
   ValidSettingsKey,
