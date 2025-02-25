@@ -789,6 +789,8 @@ export interface LiquidDocDescriptionNode extends ASTNode<NodeTypes.LiquidDocDes
   content: TextNode;
   /** Whether this description is implicit (e.g. not appended by a @description annotation) */
   isImplicit: boolean;
+  /** Whether this description starts on the same line as the @description annotation. This is false for implicit descriptions. */
+  isInline: boolean;
 }
 
 /** Represents a `@example` node in a LiquidDoc comment - `@example exampleContent` */
@@ -796,6 +798,8 @@ export interface LiquidDocExampleNode extends ASTNode<NodeTypes.LiquidDocExample
   name: 'example';
   /** The contents of the example (e.g. "{{ product }}"). Can be multiline. */
   content: TextNode;
+  /** Whether this example starts on the same line as the @example annotation.  */
+  isInline: boolean;
 }
 
 export interface ASTNode<T> {
@@ -1334,6 +1338,7 @@ function buildAst(
           source: node.source,
           content: toTextNode(node.content),
           isImplicit: node.isImplicit,
+          isInline: node.isInline,
         });
         break;
       }
@@ -1345,6 +1350,7 @@ function buildAst(
           position: position(node),
           source: node.source,
           content: toTextNode(node.content),
+          isInline: node.isInline,
         });
         break;
       }

@@ -1350,10 +1350,10 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.name').to.eql('doc');
       expectPath(ast, 'children.0.body.nodes.0.type').to.eql('LiquidDocExampleNode');
       expectPath(ast, 'children.0.body.nodes.0.name').to.eql('example');
-      expectPath(ast, 'children.0.body.nodes.0.content.value').to.eql('\n        First Example\n');
+      expectPath(ast, 'children.0.body.nodes.0.content.value').to.eql('First Example\n');
       expectPath(ast, 'children.0.body.nodes.1.type').to.eql('LiquidDocExampleNode');
       expectPath(ast, 'children.0.body.nodes.1.name').to.eql('example');
-      expectPath(ast, 'children.0.body.nodes.1.content.value').to.eql('\n        Second Example\n');
+      expectPath(ast, 'children.0.body.nodes.1.content.value').to.eql('Second Example\n');
 
       ast = toLiquidAST(`
         {% doc -%}
@@ -1368,7 +1368,7 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.body.nodes.0.type').to.eql('LiquidDocExampleNode');
       expectPath(ast, 'children.0.body.nodes.0.name').to.eql('example');
       expectPath(ast, 'children.0.body.nodes.0.content.value').to.eql(
-        '\n        This is a valid example\n        It can have multiple lines\n',
+        'This is a valid example\n        It can have multiple lines\n',
       );
       expectPath(ast, 'children.0.body.nodes.1.type').to.eql('LiquidDocParamNode');
       expectPath(ast, 'children.0.body.nodes.1.name').to.eql('param');
@@ -1385,10 +1385,10 @@ describe('Unit: Stage 2 (AST)', () => {
         {% enddoc %}
       `);
       expectPath(ast, 'children.0.body.nodes.0.type').to.eql('LiquidDocDescriptionNode');
-      expectPath(ast, 'children.0.body.nodes.0.content.value').to.eql('This is a description');
+      expectPath(ast, 'children.0.body.nodes.0.content.value').to.eql('This is a description\n');
       expectPath(ast, 'children.0.body.nodes.1.type').to.eql('LiquidDocDescriptionNode');
       expectPath(ast, 'children.0.body.nodes.1.content.value').to.eql(
-        'This is another description\n        it can have multiple lines',
+        'This is another description\n        it can have multiple lines\n',
       );
 
       ast = toLiquidAST(`
@@ -1399,7 +1399,7 @@ describe('Unit: Stage 2 (AST)', () => {
         {% enddoc %}
       `);
       expectPath(ast, 'children.0.body.nodes.0.type').to.eql('LiquidDocDescriptionNode');
-      expectPath(ast, 'children.0.body.nodes.0.content.value').to.eql('This is a description');
+      expectPath(ast, 'children.0.body.nodes.0.content.value').to.eql('This is a description\n');
 
       expectPath(ast, 'children.0.body.nodes.1.type').to.eql('LiquidDocExampleNode');
       expectPath(ast, 'children.0.body.nodes.1.name').to.eql('example');
@@ -1416,19 +1416,19 @@ describe('Unit: Stage 2 (AST)', () => {
         {% doc -%}
         this is an implicit description
         in a header
-        
+
         @description with a description annotation
         {% enddoc %}
       `);
       expectPath(ast, 'children.0.body.nodes.0.type').to.eql('LiquidDocDescriptionNode');
       expectPath(ast, 'children.0.body.nodes.0.content.value').to.eql(
-        'this is an implicit description\n        in a header',
+        'this is an implicit description\n        in a header\n\n',
       );
       expectPath(ast, 'children.0.body.nodes.0.isImplicit').to.eql(true);
 
       expectPath(ast, 'children.0.body.nodes.1.type').to.eql('LiquidDocDescriptionNode');
       expectPath(ast, 'children.0.body.nodes.1.content.value').to.eql(
-        'with a description annotation',
+        'with a description annotation\n',
       );
       expectPath(ast, 'children.0.body.nodes.1.isImplicit').to.eql(false);
     });
@@ -1592,7 +1592,7 @@ describe('Unit: Stage 2 (AST)', () => {
         @p█
       `);
       expectPath(ast, 'children.0.body.nodes.0.type').to.eql('LiquidDocDescriptionNode');
-      expectPath(ast, 'children.0.body.nodes.0.content.value').to.eql('This is a description');
+      expectPath(ast, 'children.0.body.nodes.0.content.value').to.eql('This is a description\n');
 
       expectPath(ast, 'children.0.body.nodes.1.type').to.eql('LiquidDocExampleNode');
       expectPath(ast, 'children.0.body.nodes.1.name').to.eql('example');
