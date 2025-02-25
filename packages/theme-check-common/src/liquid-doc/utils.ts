@@ -1,3 +1,6 @@
+import { LiquidNamedArgument, NodeTypes } from '@shopify/liquid-html-parser';
+import { assertNever } from '../utils';
+
 export enum SupportedParamTypes {
   String = 'string',
   Number = 'number',
@@ -22,9 +25,43 @@ export function getDefaultValueForType(type: string | null) {
       return '0';
     case SupportedParamTypes.Boolean:
       return 'false';
-    case SupportedParamTypes.Object:
-      return 'empty';
+    case SupportedParamTypes.Object: // Objects don't have a sensible default value (maybe `theme`?)
     default:
-      return "''";
+      return '';
   }
+}
+
+/**
+ * Casts the value of a LiquidNamedArgument to a string representing the type of the value.
+ */
+export function inferArgumentType(arg: LiquidNamedArgument): SupportedParamTypes {
+  switch (arg.value.type) {
+    case NodeTypes.String:
+      return SupportedParamTypes.String;
+    case NodeTypes.Number:
+      return SupportedParamTypes.Number;
+    case NodeTypes.LiquidLiteral:
+      return SupportedParamTypes.Boolean;
+    case NodeTypes.Range:
+    case NodeTypes.VariableLookup:
+      return SupportedParamTypes.Object;
+    default:
+      // This ensures that we have a case for every possible type for arg.value
+      return assertNever(arg.value);
+  }
+}
+
+/**
+ * Checks if the provided argument type is compatible with the expected type.
+ * Makes certain types more permissive:
+ * - Boolean accepts any value, since everything is truthy / falsy in Liquid
+ */
+export function isTypeCompatible(expectedType: string, actualType: SupportedParamTypes): boolean {
+  const normalizedExpectedType = expectedType.toLowerCase();
+
+  if (normalizedExpectedType === SupportedParamTypes.Boolean) {
+    return true;
+  }
+
+  return normalizedExpectedType === actualType;
 }

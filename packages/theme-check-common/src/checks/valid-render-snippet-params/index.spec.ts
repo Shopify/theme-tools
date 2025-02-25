@@ -284,8 +284,6 @@ describe('Module: ValidRenderSnippetParams', () => {
       });
 
       expect(offenses).toHaveLength(0);
-
-      sourceCode = ``;
     });
   });
 });
