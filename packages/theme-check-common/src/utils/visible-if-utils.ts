@@ -123,7 +123,7 @@ function getNormalizedLookups(lookup: LiquidVariableLookup) {
 }
 
 export async function getGlobalSettings(context: Context<SourceCodeType>) {
-  const globalSettings: string[] = [];
+  const globalSettings: Array<{ id: string; type: string }> = [];
 
   try {
     const path = join(
@@ -136,7 +136,9 @@ export async function getGlobalSettings(context: Context<SourceCodeType>) {
       for (const group of settings) {
         if ('settings' in group && Array.isArray(group.settings)) {
           globalSettings.push(
-            ...group.settings.map((setting: any) => setting.id).filter((id: any) => id),
+            ...group.settings
+              .filter((setting: any) => setting.id && setting.type)
+              .map((setting: any) => ({ id: setting.id, type: setting.type }))
           );
         }
       }

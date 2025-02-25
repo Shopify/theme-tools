@@ -59,7 +59,7 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
 
         const offset = node.blockStartPosition.end;
         const settings = Object.fromEntries(
-          (await getGlobalSettings(context)).map((s) => [s, true] as const),
+          (await getGlobalSettings(context)).map((s) => [s.id, true] as const),
         );
         const currentFileSettings = Object.fromEntries(
           validSchema.settings.map((setting) => [setting.id, true] as const),
@@ -145,7 +145,7 @@ export const ValidVisibleIfSettingsSchema: JSONCheckDefinition = {
         }
 
         const settings = Object.fromEntries(
-          (await getGlobalSettings(context)).map((s) => [s, true] as const),
+          (await getGlobalSettings(context)).map((s) => [s.id, true] as const),
         );
 
         const vars: Vars = { settings };

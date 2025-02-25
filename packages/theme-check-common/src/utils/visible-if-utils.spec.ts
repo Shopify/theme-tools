@@ -127,14 +127,20 @@ describe('Module: visible-if-utils', () => {
             },
             {
               name: 'Colors',
-              settings: [{ id: 'color_1' }, { id: 'color_2' }],
+              settings: [
+                { id: 'color_1', type: 'color' },
+                { id: 'color_2', type: 'color' }
+              ],
             },
           ]),
         ),
       });
 
       const settings = await getGlobalSettings(mockContext);
-      expect(settings).toEqual(['color_1', 'color_2']);
+      expect(settings).toEqual([
+        { id: 'color_1', type: 'color' },
+        { id: 'color_2', type: 'color' }
+      ]);
     });
 
     it('returns empty array when settings_schema.json is not found', async () => {
@@ -156,6 +162,31 @@ describe('Module: visible-if-utils', () => {
 
       const settings = await getGlobalSettings(mockContext);
       expect(settings).toEqual([]);
+    });
+
+    it('filters out settings without id or type', async () => {
+      const mockContext = createMockContext({
+        readFile: vi.fn().mockResolvedValue(
+          JSON.stringify([
+            {
+              name: 'Settings',
+              settings: [
+                { id: 'valid_1', type: 'text' },
+                { id: 'valid_2', type: 'color' },
+                { id: 'missing_type' },
+                { type: 'missing_id' },
+                {}
+              ],
+            },
+          ]),
+        ),
+      });
+
+      const settings = await getGlobalSettings(mockContext);
+      expect(settings).toEqual([
+        { id: 'valid_1', type: 'text' },
+        { id: 'valid_2', type: 'color' }
+      ]);
     });
   });
 }); 

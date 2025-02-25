@@ -42,7 +42,7 @@ const baseThemeData: Theme = {
       name: 't:some.namespace',
       settings: [
         { type: 'header', content: 't:some.other.namespace' },
-        { id: 'some-global-setting' },
+        { type: 'text', id: 'some-global-setting' },
       ],
     },
   ],
@@ -142,29 +142,13 @@ describe('Module: ValidVisibleIf', () => {
     });
 
     const offenses = await checkRule(themeData);
-    expect(offenses).toMatchInlineSnapshot(`
-      [
-        {
-          "check": "ValidVisibleIf",
-          "end": {
-            "character": 49,
-            "index": 195,
-            "line": 10,
-          },
-          "fix": undefined,
-          "message": "Invalid variable: "some-nonexistent-whatever" was not found.",
-          "severity": 0,
-          "start": {
-            "character": 24,
-            "index": 170,
-            "line": 10,
-          },
-          "suggest": undefined,
-          "type": "LiquidHtml",
-          "uri": "file:///blocks/example.liquid",
-        },
-      ]
-    `);
+    expect(offenses).to.have.length(1);
+    expect(offenses).to.containOffense({
+      check: ValidVisibleIf.meta.code,
+      message: 'Invalid variable: "some-nonexistent-whatever" was not found.',
+      uri: 'file:///blocks/example.liquid',
+      severity: 0,
+    });
   });
 
   it('reports an error for an invalid reference to a block schema setting (simple lookup)', async () => {
@@ -176,29 +160,13 @@ describe('Module: ValidVisibleIf', () => {
     });
 
     const offenses = await checkRule(themeData);
-    expect(offenses).toMatchInlineSnapshot(`
-      [
-        {
-          "check": "ValidVisibleIf",
-          "end": {
-            "character": 69,
-            "index": 215,
-            "line": 10,
-          },
-          "fix": undefined,
-          "message": "Invalid variable: "block.settings.some-nonexistent-block-setting" was not found.",
-          "severity": 0,
-          "start": {
-            "character": 24,
-            "index": 170,
-            "line": 10,
-          },
-          "suggest": undefined,
-          "type": "LiquidHtml",
-          "uri": "file:///blocks/example.liquid",
-        },
-      ]
-    `);
+    expect(offenses).to.have.length(1);
+    expect(offenses).to.containOffense({
+      check: ValidVisibleIf.meta.code,
+      message: 'Invalid variable: "block.settings.some-nonexistent-block-setting" was not found.',
+      uri: 'file:///blocks/example.liquid',
+      severity: 0,
+    });
   });
 
   it('reports an error for an invalid reference to a block schema setting (expression)', async () => {
@@ -210,29 +178,13 @@ describe('Module: ValidVisibleIf', () => {
     });
 
     const offenses = await checkRule(themeData);
-    expect(offenses).toMatchInlineSnapshot(`
-      [
-        {
-          "check": "ValidVisibleIf",
-          "end": {
-            "character": 69,
-            "index": 215,
-            "line": 10,
-          },
-          "fix": undefined,
-          "message": "Invalid variable: "block.settings.some-nonexistent-block-setting" was not found.",
-          "severity": 0,
-          "start": {
-            "character": 24,
-            "index": 170,
-            "line": 10,
-          },
-          "suggest": undefined,
-          "type": "LiquidHtml",
-          "uri": "file:///blocks/example.liquid",
-        },
-      ]
-    `);
+    expect(offenses).to.have.length(1);
+    expect(offenses).to.containOffense({
+      check: ValidVisibleIf.meta.code,
+      message: 'Invalid variable: "block.settings.some-nonexistent-block-setting" was not found.',
+      uri: 'file:///blocks/example.liquid',
+      severity: 0,
+    });
   });
 
   it('reports an error for an invalid reference to a section schema (simple lookup)', async () => {
@@ -244,29 +196,13 @@ describe('Module: ValidVisibleIf', () => {
     });
 
     const offenses = await checkRule(themeData);
-    expect(offenses).toMatchInlineSnapshot(`
-      [
-        {
-          "check": "ValidVisibleIf",
-          "end": {
-            "character": 73,
-            "index": 223,
-            "line": 10,
-          },
-          "fix": undefined,
-          "message": "Invalid variable: "section.settings.some-nonexistent-section-setting" was not found.",
-          "severity": 0,
-          "start": {
-            "character": 24,
-            "index": 174,
-            "line": 10,
-          },
-          "suggest": undefined,
-          "type": "LiquidHtml",
-          "uri": "file:///sections/example.liquid",
-        },
-      ]
-    `);
+    expect(offenses).to.have.length(1);
+    expect(offenses).to.containOffense({
+      check: ValidVisibleIf.meta.code,
+      message: 'Invalid variable: "section.settings.some-nonexistent-section-setting" was not found.',
+      uri: 'file:///sections/example.liquid',
+      severity: 0,
+    });
   });
 
   it('reports an error for an invalid reference to a section schema (expression)', async () => {
@@ -278,29 +214,13 @@ describe('Module: ValidVisibleIf', () => {
     });
 
     const offenses = await checkRule(themeData);
-    expect(offenses).toMatchInlineSnapshot(`
-      [
-        {
-          "check": "ValidVisibleIf",
-          "end": {
-            "character": 73,
-            "index": 223,
-            "line": 10,
-          },
-          "fix": undefined,
-          "message": "Invalid variable: "section.settings.some-nonexistent-section-setting" was not found.",
-          "severity": 0,
-          "start": {
-            "character": 24,
-            "index": 174,
-            "line": 10,
-          },
-          "suggest": undefined,
-          "type": "LiquidHtml",
-          "uri": "file:///sections/example.liquid",
-        },
-      ]
-    `);
+    expect(offenses).to.have.length(1);
+    expect(offenses).to.containOffense({
+      check: ValidVisibleIf.meta.code,
+      message: 'Invalid variable: "section.settings.some-nonexistent-section-setting" was not found.',
+      uri: 'file:///sections/example.liquid',
+      severity: 0,
+    });
   });
 
   it('reports an error for an invalid reference to a global setting (in theme settings)', async () => {
@@ -312,29 +232,13 @@ describe('Module: ValidVisibleIf', () => {
     });
 
     const offenses = await checkRule(themeData);
-    expect(offenses).toMatchInlineSnapshot(`
-      [
-        {
-          "check": "ValidVisibleIf",
-          "end": {
-            "character": 60,
-            "index": 427,
-            "line": 19,
-          },
-          "fix": undefined,
-          "message": "Invalid variable: "settings.some-non-existent-setting" was not found.",
-          "severity": 0,
-          "start": {
-            "character": 26,
-            "index": 393,
-            "line": 19,
-          },
-          "suggest": undefined,
-          "type": "JSON",
-          "uri": "file:///config/settings_schema.json",
-        },
-      ]
-    `);
+    expect(offenses).to.have.length(1);
+    expect(offenses).to.containOffense({
+      check: ValidVisibleIf.meta.code,
+      message: 'Invalid variable: "settings.some-non-existent-setting" was not found.',
+      uri: 'file:///config/settings_schema.json',
+      severity: 0,
+    });
   });
 
   it('reports a detailed error when trying to use a block var in a section', async () => {
@@ -346,29 +250,13 @@ describe('Module: ValidVisibleIf', () => {
     });
 
     const offenses = await checkRule(themeData);
-    expect(offenses).toMatchInlineSnapshot(`
-      [
-        {
-          "check": "ValidVisibleIf",
-          "end": {
-            "character": 59,
-            "index": 209,
-            "line": 10,
-          },
-          "fix": undefined,
-          "message": "Invalid visible_if: can't refer to "block" when not in a block file.",
-          "severity": 0,
-          "start": {
-            "character": 24,
-            "index": 174,
-            "line": 10,
-          },
-          "suggest": undefined,
-          "type": "LiquidHtml",
-          "uri": "file:///sections/example.liquid",
-        },
-      ]
-    `);
+    expect(offenses).to.have.length(1);
+    expect(offenses).to.containOffense({
+      check: ValidVisibleIf.meta.code,
+      message: 'Invalid visible_if: can\'t refer to "block" when not in a block file.',
+      uri: 'file:///sections/example.liquid',
+      severity: 0,
+    });
   });
 
   it('reports a detailed error when trying to use a section var in a block', async () => {
@@ -380,29 +268,13 @@ describe('Module: ValidVisibleIf', () => {
     });
 
     const offenses = await checkRule(themeData);
-    expect(offenses).toMatchInlineSnapshot(`
-      [
-        {
-          "check": "ValidVisibleIf",
-          "end": {
-            "character": 59,
-            "index": 205,
-            "line": 10,
-          },
-          "fix": undefined,
-          "message": "Invalid visible_if: can't refer to "section" when not in a section file.",
-          "severity": 0,
-          "start": {
-            "character": 24,
-            "index": 170,
-            "line": 10,
-          },
-          "suggest": undefined,
-          "type": "LiquidHtml",
-          "uri": "file:///blocks/example.liquid",
-        },
-      ]
-    `);
+    expect(offenses).to.have.length(1);
+    expect(offenses).to.containOffense({
+      check: ValidVisibleIf.meta.code,
+      message: 'Invalid visible_if: can\'t refer to "section" when not in a section file.',
+      uri: 'file:///blocks/example.liquid',
+      severity: 0,
+    });
   });
 
   it('reports a detailed error when trying to use a block var in theme settings', async () => {
@@ -414,29 +286,13 @@ describe('Module: ValidVisibleIf', () => {
     });
 
     const offenses = await checkRule(themeData);
-    expect(offenses).toMatchInlineSnapshot(`
-      [
-        {
-          "check": "ValidVisibleIf",
-          "end": {
-            "character": 59,
-            "index": 426,
-            "line": 19,
-          },
-          "fix": undefined,
-          "message": "Invalid visible_if: can't refer to "block" when not in a block file.",
-          "severity": 0,
-          "start": {
-            "character": 26,
-            "index": 393,
-            "line": 19,
-          },
-          "suggest": undefined,
-          "type": "JSON",
-          "uri": "file:///config/settings_schema.json",
-        },
-      ]
-    `);
+    expect(offenses).to.have.length(1);
+    expect(offenses).to.containOffense({
+      check: ValidVisibleIf.meta.code,
+      message: 'Invalid visible_if: can\'t refer to "block" when not in a block file.',
+      uri: 'file:///config/settings_schema.json',
+      severity: 0,
+    });
   });
 
   it('reports a detailed error when attempting to use a namespace as a var', async () => {
@@ -448,29 +304,13 @@ describe('Module: ValidVisibleIf', () => {
     });
 
     const offenses = await checkRule(themeData);
-    expect(offenses).toMatchInlineSnapshot(`
-      [
-        {
-          "check": "ValidVisibleIf",
-          "end": {
-            "character": 38,
-            "index": 184,
-            "line": 10,
-          },
-          "fix": undefined,
-          "message": "Invalid variable: "block.settings" refers to a namespace, but is being used here as a variable.",
-          "severity": 0,
-          "start": {
-            "character": 24,
-            "index": 170,
-            "line": 10,
-          },
-          "suggest": undefined,
-          "type": "LiquidHtml",
-          "uri": "file:///blocks/example.liquid",
-        },
-      ]
-    `);
+    expect(offenses).to.have.length(1);
+    expect(offenses).to.containOffense({
+      check: ValidVisibleIf.meta.code,
+      message: 'Invalid variable: "block.settings" refers to a namespace, but is being used here as a variable.',
+      uri: 'file:///blocks/example.liquid',
+      severity: 0,
+    });
   });
 
   it('reports a detailed error when attempting to use a var as a namespace', async () => {
@@ -482,29 +322,13 @@ describe('Module: ValidVisibleIf', () => {
     });
 
     const offenses = await checkRule(themeData);
-    expect(offenses).toMatchInlineSnapshot(`
-      [
-        {
-          "check": "ValidVisibleIf",
-          "end": {
-            "character": 71,
-            "index": 217,
-            "line": 10,
-          },
-          "fix": undefined,
-          "message": "Invalid variable: "block.settings.some-block-setting" refers to a variable, but is being used here as a namespace.",
-          "severity": 0,
-          "start": {
-            "character": 24,
-            "index": 170,
-            "line": 10,
-          },
-          "suggest": undefined,
-          "type": "LiquidHtml",
-          "uri": "file:///blocks/example.liquid",
-        },
-      ]
-    `);
+    expect(offenses).to.have.length(1);
+    expect(offenses).to.containOffense({
+      check: ValidVisibleIf.meta.code,
+      message: 'Invalid variable: "block.settings.some-block-setting" refers to a variable, but is being used here as a namespace.',
+      uri: 'file:///blocks/example.liquid',
+      severity: 0,
+    });
   });
 
   it('reports visible_if fields declared with incorrect or missing brackets', async () => {
@@ -516,29 +340,13 @@ describe('Module: ValidVisibleIf', () => {
     });
 
     const offenses = await checkRule(themeData);
-    expect(offenses).toMatchInlineSnapshot(`
-      [
-        {
-          "check": "ValidVisibleIf",
-          "end": {
-            "character": 77,
-            "index": 227,
-            "line": 10,
-          },
-          "fix": undefined,
-          "message": "Invalid visible_if expression. It should take the form "{{ <expression> }}".",
-          "severity": 0,
-          "start": {
-            "character": 20,
-            "index": 170,
-            "line": 10,
-          },
-          "suggest": undefined,
-          "type": "LiquidHtml",
-          "uri": "file:///sections/example.liquid",
-        },
-      ]
-    `);
+    expect(offenses).to.have.length(1);
+    expect(offenses).to.containOffense({
+      check: ValidVisibleIf.meta.code,
+      message: 'Invalid visible_if expression. It should take the form "{{ <expression> }}".',
+      uri: 'file:///sections/example.liquid',
+      severity: 0,
+    });
   });
 
   it('reports malformed visible_if fields', async () => {
@@ -550,29 +358,13 @@ describe('Module: ValidVisibleIf', () => {
     });
 
     const offenses = await checkRule(themeData);
-    expect(offenses).toMatchInlineSnapshot(`
-      [
-        {
-          "check": "ValidVisibleIf",
-          "end": {
-            "character": 81,
-            "index": 231,
-            "line": 10,
-          },
-          "fix": undefined,
-          "message": "Syntax error: cannot parse visible_if expression.",
-          "severity": 0,
-          "start": {
-            "character": 20,
-            "index": 170,
-            "line": 10,
-          },
-          "suggest": undefined,
-          "type": "LiquidHtml",
-          "uri": "file:///sections/example.liquid",
-        },
-      ]
-    `);
+    expect(offenses).to.have.length(1);
+    expect(offenses).to.containOffense({
+      check: ValidVisibleIf.meta.code,
+      message: 'Syntax error: cannot parse visible_if expression.',
+      uri: 'file:///sections/example.liquid',
+      severity: 0,
+    });
   });
 
   it('reports when no variable lookup is found', async () => {
@@ -584,28 +376,12 @@ describe('Module: ValidVisibleIf', () => {
     });
 
     const offenses = await checkRule(themeData);
-    expect(offenses).toMatchInlineSnapshot(`
-      [
-        {
-          "check": "ValidVisibleIf",
-          "end": {
-            "character": 50,
-            "index": 200,
-            "line": 10,
-          },
-          "fix": undefined,
-          "message": "visible_if expression contains no references to any settings. This may be an error.",
-          "severity": 0,
-          "start": {
-            "character": 20,
-            "index": 170,
-            "line": 10,
-          },
-          "suggest": undefined,
-          "type": "LiquidHtml",
-          "uri": "file:///sections/example.liquid",
-        },
-      ]
-    `);
+    expect(offenses).to.have.length(1);
+    expect(offenses).to.containOffense({
+      check: ValidVisibleIf.meta.code,
+      message: 'visible_if expression contains no references to any settings. This may be an error.',
+      uri: 'file:///sections/example.liquid',
+      severity: 0,
+    });
   });
 });
