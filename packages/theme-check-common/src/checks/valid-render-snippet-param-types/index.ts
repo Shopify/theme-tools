@@ -7,6 +7,7 @@ import {
   inferArgumentType,
   getDefaultValueForType,
   SupportedParamTypes,
+  isTypeCompatible,
 } from '../../liquid-doc/utils';
 
 export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
@@ -46,7 +47,7 @@ export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
             continue;
           }
 
-          if (inferArgumentType(arg) !== paramType) {
+          if (!isTypeCompatible(paramType, inferArgumentType(arg))) {
             typeMismatchParams.push(arg);
           }
         }

@@ -25,8 +25,7 @@ export function getDefaultValueForType(type: string | null) {
       return '0';
     case SupportedParamTypes.Boolean:
       return 'false';
-    case SupportedParamTypes.Object:
-      return 'empty';
+    case SupportedParamTypes.Object: // Objects don't have a sensible default value (maybe `theme`?)
     default:
       return '';
   }
@@ -50,4 +49,19 @@ export function inferArgumentType(arg: LiquidNamedArgument): SupportedParamTypes
       // This ensures that we have a case for every possible type for arg.value
       return assertNever(arg.value);
   }
+}
+
+/**
+ * Checks if the provided argument type is compatible with the expected type.
+ * Makes certain types more permissive:
+ * - Boolean accepts any value, since everything is truthy / falsy in Liquid
+ */
+export function isTypeCompatible(expectedType: string, actualType: SupportedParamTypes): boolean {
+  const normalizedExpectedType = expectedType.toLowerCase();
+
+  if (normalizedExpectedType === SupportedParamTypes.Boolean) {
+    return true;
+  }
+
+  return normalizedExpectedType === actualType;
 }

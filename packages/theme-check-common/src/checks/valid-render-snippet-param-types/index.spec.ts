@@ -25,11 +25,8 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
       },
       {
         type: 'boolean',
-        validValues: ['true', 'false', 'nil', 'empty', 'product'],
-        invalidValues: [
-          { value: "'hello'", actualType: SupportedParamTypes.String },
-          { value: '123', actualType: SupportedParamTypes.Number },
-        ],
+        validValues: ['true', 'false', 'nil', 'empty', 'product', '123', "'hello'"],
+        invalidValues: [],
       },
       {
         type: 'object',
