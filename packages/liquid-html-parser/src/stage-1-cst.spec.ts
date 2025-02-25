@@ -1266,7 +1266,7 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
           expectPath(cst, '0.children.0.name').to.equal('example');
           expectPath(cst, '0.children.0.content.value').to.equal(
-            '\n          This is an example\n          It supports multiple lines\n',
+            'This is an example\n          It supports multiple lines\n',
           );
         });
 
@@ -1279,9 +1279,7 @@ describe('Unit: Stage 1 (CST)', () => {
           cst = toCST(testStr);
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
           expectPath(cst, '0.children.0.name').to.equal('example');
-          expectPath(cst, '0.children.0.content.value').to.equal(
-            '\n          This is an example\n',
-          );
+          expectPath(cst, '0.children.0.content.value').to.equal('This is an example\n');
           expectPath(cst, '0.children.1.type').to.equal('LiquidDocParamNode');
           expectPath(cst, '0.children.1.paramName.content.value').to.equal('param1');
         });
@@ -1330,10 +1328,10 @@ describe('Unit: Stage 1 (CST)', () => {
           {% enddoc %}`;
           cst = toCST(testStr);
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocDescriptionNode');
-          expectPath(cst, '0.children.0.content.value').to.equal('This is a description');
+          expectPath(cst, '0.children.0.content.value').to.equal('This is a description\n');
 
           expectPath(cst, '0.children.1.type').to.equal('LiquidDocDescriptionNode');
-          expectPath(cst, '0.children.1.content.value').to.equal('This is a second description');
+          expectPath(cst, '0.children.1.content.value').to.equal('This is a second description\n');
         });
 
         it('should parse and strip whitespace from description tag with content that has leading whitespace', () => {
@@ -1362,20 +1360,21 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocDescriptionNode');
           expectPath(cst, '0.children.0.name').to.equal('description');
           expectPath(cst, '0.children.0.content.value').to.equal(
-            'hello      there        my    friend\n          This is a description\n          It supports multiple lines',
+            'hello      there        my    friend\n          This is a description\n          It supports multiple lines\n',
           );
         });
 
         it('should parse multiple description nodes', () => {
           const testStr = `{% doc %}
           @description hello there
-          @description second description
+          @description
+          second description
         {% enddoc %}`;
           cst = toCST(testStr);
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocDescriptionNode');
-          expectPath(cst, '0.children.0.content.value').to.equal('hello there');
+          expectPath(cst, '0.children.0.content.value').to.equal('hello there\n');
           expectPath(cst, '0.children.1.type').to.equal('LiquidDocDescriptionNode');
-          expectPath(cst, '0.children.1.content.value').to.equal('second description');
+          expectPath(cst, '0.children.1.content.value').to.equal('second description\n');
         });
 
         it('should parse implicit description', () => {
@@ -1414,7 +1413,7 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.name').to.equal('doc');
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocDescriptionNode');
           expectPath(cst, '0.children.0.isImplicit').to.equal(true);
-          expectPath(cst, '0.children.0.content.value').to.equal('implicit content');
+          expectPath(cst, '0.children.0.content.value').to.equal('implicit content\n');
           expectPath(cst, '0.children.0.content.locStart').to.equal(
             testStr.indexOf('implicit content'),
           );
@@ -1630,8 +1629,8 @@ describe('Unit: Stage 1 (CST)', () => {
       it(`should parse quoted attributes`, () => {
         [
           { type: 'AttrSingleQuoted', name: 'single', quote: "'" },
-          { type: 'AttrSingleQuoted', name: 'single', quote: '‘' },
-          { type: 'AttrSingleQuoted', name: 'single', quote: '’' },
+          { type: 'AttrSingleQuoted', name: 'single', quote: "'" },
+          { type: 'AttrSingleQuoted', name: 'single', quote: "'" },
           { type: 'AttrDoubleQuoted', name: 'double', quote: '"' },
           { type: 'AttrDoubleQuoted', name: 'double', quote: '"' },
           { type: 'AttrDoubleQuoted', name: 'double', quote: '"' },

@@ -130,12 +130,14 @@ export interface ConcreteLiquidDocDescriptionNode
   name: 'description';
   content: ConcreteTextNode;
   isImplicit: boolean;
+  isInline: boolean;
 }
 
 export interface ConcreteLiquidDocExampleNode
   extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocExampleNode> {
   name: 'example';
   content: ConcreteTextNode;
+  isInline: boolean;
 }
 
 export interface ConcreteHtmlNodeBase<T> extends ConcreteBasicNode<T> {
@@ -1397,6 +1399,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       source,
       content: 0,
       isImplicit: true,
+      isInline: true,
     },
     TextNode: textNode(),
     paramNode: {
@@ -1417,16 +1420,11 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       source,
       content: 2,
       isImplicit: false,
-    },
-    descriptionContent: {
-      type: ConcreteNodeTypes.TextNode,
-      value: function (this: Node) {
-        return this.sourceString.trim();
+      isInline: function (this: Node) {
+        return !this.children[1].sourceString.includes('\n');
       },
-      locStart,
-      locEnd,
-      source,
     },
+    descriptionContent: textNode(),
     paramType: 2,
     paramTypeContent: textNode(),
     paramName: {
@@ -1453,6 +1451,9 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       locEnd,
       source,
       content: 2,
+      isInline: function (this: Node) {
+        return !this.children[1].sourceString.includes('\n');
+      },
     },
     exampleContent: textNode(),
     textValue: textNode(),
