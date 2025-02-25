@@ -106,7 +106,7 @@ describe('Unit: getSnippetDefinition', () => {
       liquidDoc: {
         examples: [
           {
-            content: '\n          {{ product }}\n',
+            content: '{{ product }}',
             nodeType: 'example',
           },
         ],
@@ -129,7 +129,7 @@ describe('Unit: getSnippetDefinition', () => {
       liquidDoc: {
         examples: [
           {
-            content: '\n          {{ product }}\n          {{ product.title }}\n',
+            content: '{{ product }}\n          {{ product.title }}',
             nodeType: 'example',
           },
         ],
@@ -161,7 +161,7 @@ describe('Unit: getSnippetDefinition', () => {
         ],
         examples: [
           {
-            content: '\n          {{ product }} // This is an example\n',
+            content: '{{ product }} // This is an example',
             nodeType: 'example',
           },
         ],
@@ -185,11 +185,11 @@ describe('Unit: getSnippetDefinition', () => {
       liquidDoc: {
         examples: [
           {
-            content: '\n          {{ product }}\n',
+            content: '{{ product }}',
             nodeType: 'example',
           },
           {
-            content: '\n          {{ product.title }}\n',
+            content: '{{ product.title }}',
             nodeType: 'example',
           },
         ],
