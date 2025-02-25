@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { runLiquidCheck } from '../../test';
+import { runLiquidCheck, applySuggestions } from '../../test';
 import { ValidRenderSnippetParamTypes } from '.';
 import { MockFileSystem } from '../../test';
 import { SupportedParamTypes } from '../../liquid-doc/utils';
@@ -178,6 +178,156 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
         fs,
       });
       expect(offenses).toHaveLength(0);
+    });
+  });
+
+  describe('autofix tests', () => {
+    const makeSnippet = (type: string) => `
+      {% doc %}
+        @param {${type}} param - Description
+      {% enddoc %}
+      <div>{{ param }}</div>
+    `;
+
+    it('should suggest replacing with default value for type or removing value', async () => {
+      const fs = new MockFileSystem({
+        'snippets/card.liquid': makeSnippet('string'),
+      });
+
+      const sourceCode = `{% render 'card', param: 123 %}`;
+      const offenses = await runLiquidCheck(ValidRenderSnippetParamTypes, sourceCode, undefined, {
+        fs,
+      });
+
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].suggest).toHaveLength(2);
+      expect(offenses[0].suggest?.[0]?.message).toBe("Replace with default value '''' for string");
+
+      const result = applySuggestions(sourceCode, offenses[0]);
+      expect(result?.[0]).toEqual(`{% render 'card', param: '' %}`);
+
+      const suggestions = applySuggestions(sourceCode, offenses[0]);
+      expect(suggestions?.[1]).toEqual(`{% render 'card', param:  %}`);
+    });
+
+    it('should allow users to fix a single parameter when multiple are provided`', async () => {
+      const fs = new MockFileSystem({
+        'snippets/card.liquid': `
+          {% doc %}
+            @param {string} title - The title
+            @param {number} count - The count
+          {% enddoc %}
+          <div>{{ title }} {{ count }}</div>
+        `,
+      });
+
+      const sourceCode = `{% render 'card', title: 123, count: 5 %}`;
+      const offenses = await runLiquidCheck(ValidRenderSnippetParamTypes, sourceCode, undefined, {
+        fs,
+      });
+
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toBe(
+        "Type mismatch for parameter 'title': expected string, got number",
+      );
+
+      const result = applySuggestions(sourceCode, offenses[0]);
+      expect(result?.[0]).toEqual(`{% render 'card', title: '', count: 5 %}`);
+    });
+
+    it('should handle parameters with trailing commas', async () => {
+      const fs = new MockFileSystem({
+        'snippets/card.liquid': makeSnippet('string'),
+      });
+
+      const sourceCode = `{% render 'card', param: 123, %}`;
+      const offenses = await runLiquidCheck(ValidRenderSnippetParamTypes, sourceCode, undefined, {
+        fs,
+      });
+
+      expect(offenses).toHaveLength(1);
+
+      const result = applySuggestions(sourceCode, offenses[0]);
+      expect(result?.[0]).toEqual(`{% render 'card', param: '', %}`);
+    });
+
+    it('should handle parameters with complex spacing', async () => {
+      const fs = new MockFileSystem({
+        'snippets/card.liquid': `
+          {% doc %}
+            @param {string} title - The title
+            @param {number} count - The count
+          {% enddoc %}
+        `,
+      });
+
+      const sourceCode = `{% render 'card',
+        title: 123,
+        count: 5
+      %}`;
+      const offenses = await runLiquidCheck(ValidRenderSnippetParamTypes, sourceCode, undefined, {
+        fs,
+      });
+
+      expect(offenses).toHaveLength(1);
+
+      const result = applySuggestions(sourceCode, offenses[0]);
+      expect(result?.[0]).toEqual(`{% render 'card',
+        title: '',
+        count: 5
+      %}`);
+    });
+
+    it('should handle parameter with no space after colon', async () => {
+      const fs = new MockFileSystem({
+        'snippets/card.liquid': makeSnippet('string'),
+      });
+
+      const sourceCode = `{% render 'card', param:123 %}`;
+      const offenses = await runLiquidCheck(ValidRenderSnippetParamTypes, sourceCode, undefined, {
+        fs,
+      });
+
+      expect(offenses).toHaveLength(1);
+
+      const result = applySuggestions(sourceCode, offenses[0]);
+      expect(result?.[0]).toEqual(`{% render 'card', param:'' %}`);
+    });
+
+    it('should handle parameter with multiple spaces after colon', async () => {
+      const fs = new MockFileSystem({
+        'snippets/card.liquid': makeSnippet('string'),
+      });
+
+      const sourceCode = `{% render 'card', param:     123 %}`;
+      const offenses = await runLiquidCheck(ValidRenderSnippetParamTypes, sourceCode, undefined, {
+        fs,
+      });
+
+      expect(offenses).toHaveLength(1);
+
+      const result = applySuggestions(sourceCode, offenses[0]);
+      expect(result?.[0]).toEqual(`{% render 'card', param:     '' %}`);
+    });
+
+    it('should handle parameter with newlines', async () => {
+      const fs = new MockFileSystem({
+        'snippets/card.liquid': makeSnippet('string'),
+      });
+
+      const sourceCode = `{% render 'card', param: 
+        123 
+      %}`;
+      const offenses = await runLiquidCheck(ValidRenderSnippetParamTypes, sourceCode, undefined, {
+        fs,
+      });
+
+      expect(offenses).toHaveLength(1);
+
+      const result = applySuggestions(sourceCode, offenses[0]);
+      expect(result?.[0]).toEqual(`{% render 'card', param: 
+        '' 
+      %}`);
     });
   });
 });
