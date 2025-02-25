@@ -51,7 +51,7 @@ export class RenderSnippetHoverProvider implements BaseHoverProvider {
 
     if (liquidDoc.description) {
       const description = liquidDoc.description.content;
-      parts.push('', '**Description:**', '\n', description);
+      parts.push('', '**Description:**', '\n', `\`\`\`plaintext\n${description}\n\`\`\``);
     }
 
     if (liquidDoc.parameters?.length) {
