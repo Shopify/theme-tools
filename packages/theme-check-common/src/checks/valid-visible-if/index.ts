@@ -1,19 +1,21 @@
 import { type LiquidVariableLookup } from '@shopify/liquid-html-parser';
+import { nodeAtPath } from '../../json';
+import { getSchema, isBlockSchema, isSectionSchema } from '../../to-schema';
 import {
   Severity,
   SourceCodeType,
-  type LiquidCheckDefinition,
   type JSONCheckDefinition,
+  type LiquidCheckDefinition,
 } from '../../types';
-import { getLocStart, nodeAtPath } from '../../json';
-import { getSchema, isBlockSchema, isSectionSchema } from '../../to-schema';
 import { reportOnJsonNode } from '../../utils';
 import {
+  buildLiquidLookupReport,
   getGlobalSettings,
   getVariableLookupsInExpression,
   lookupIsError,
-  validateLookup,
+  lookupIsWarning,
   offsetAdjust,
+  validateLookupErrors,
   type Vars,
 } from '../../utils/visible-if-utils';
 
@@ -83,21 +85,13 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
             continue;
           }
 
-          const report = (message: string | null, lookup: LiquidVariableLookup) => {
-            if (typeof message === 'string') {
-              context.report({
-                message,
-                // the JSONNode start location returned by `getLocStart`
-                // includes the opening quotation mark — whereas when we parse
-                // the inner expression, 0 is the location _inside_ the quotes.
-                // we add 1 to the offsets to compensate.
-                startIndex:
-                  offset + getLocStart(visibleIfNode) + lookup.position.start + offsetAdjust + 1,
-                endIndex:
-                  offset + getLocStart(visibleIfNode) + lookup.position.end + offsetAdjust + 1,
-              });
-            }
-          };
+          if (lookupIsWarning(varLookups)) {
+            // Skip validation warnings from the expression parsing.
+            // Those warnings will be reported in the VisibleIfUsage check.
+            continue;
+          }
+
+          const report = buildLiquidLookupReport(context, offset, visibleIfNode);
 
           for (const lookup of varLookups) {
             if (lookup.name === 'section' && !isSectionSchema(schema)) {
@@ -111,7 +105,7 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
                 lookup,
               );
             } else {
-              report(validateLookup(lookup, vars), lookup);
+              report(validateLookupErrors(lookup, vars), lookup);
             }
           }
         }
@@ -144,6 +138,12 @@ export const ValidVisibleIfSettingsSchema: JSONCheckDefinition = {
           return;
         }
 
+        if (lookupIsWarning(varLookups)) {
+          // Skip validation warnings from the expression parsing.
+          // Those warnings will be reported in the VisibleIfUsage check.
+          return;
+        }
+
         const settings = Object.fromEntries(
           (await getGlobalSettings(context)).map((s) => [s.id, true] as const),
         );
@@ -170,7 +170,7 @@ export const ValidVisibleIfSettingsSchema: JSONCheckDefinition = {
           } else if (lookup.name === 'block') {
             report(`Invalid visible_if: can't refer to "block" when not in a block file.`, lookup);
           } else {
-            report(validateLookup(lookup, vars), lookup);
+            report(validateLookupErrors(lookup, vars), lookup);
           }
         }
       },

@@ -4,7 +4,7 @@ import { type Context, SourceCodeType } from '..';
 import {
   lookupIsError,
   getVariableLookupsInExpression,
-  validateLookup,
+  validateLookupErrors,
   getGlobalSettings,
   type Vars,
 } from './visible-if-utils';
@@ -57,7 +57,7 @@ describe('Module: visible-if-utils', () => {
     });
   });
 
-  describe('Function: validateLookup', () => {
+  describe('Function: validateLookupErrors', () => {
     const vars: Vars = {
       settings: {
         foo: true,
@@ -77,24 +77,24 @@ describe('Module: visible-if-utils', () => {
 
     it('returns null for valid lookups', () => {
       const lookup = makeLookup('settings', ['foo']);
-      expect(validateLookup(lookup, vars)).toBeNull();
+      expect(validateLookupErrors(lookup, vars)).toBeNull();
     });
 
     it('returns error for non-existent variables', () => {
       const lookup = makeLookup('settings', ['nonexistent']);
-      expect(validateLookup(lookup, vars)).toBe('Invalid variable: "settings.nonexistent" was not found.');
+      expect(validateLookupErrors(lookup, vars)).toBe('Invalid variable: "settings.nonexistent" was not found.');
     });
 
     it('returns error when using variable as namespace', () => {
       const lookup = makeLookup('settings', ['foo', 'invalid']);
-      expect(validateLookup(lookup, vars)).toBe(
+      expect(validateLookupErrors(lookup, vars)).toBe(
         'Invalid variable: "settings.foo" refers to a variable, but is being used here as a namespace.',
       );
     });
 
     it('returns error when using namespace as variable', () => {
       const lookup = makeLookup('settings', ['bar']);
-      expect(validateLookup(lookup, vars)).toBe(
+      expect(validateLookupErrors(lookup, vars)).toBe(
         'Invalid variable: "settings.bar" refers to a namespace, but is being used here as a variable.',
       );
     });

@@ -136,3 +136,6 @@ VariableName:
   enabled: true
   severity: 1
   format: snake_case
+VisibleIfUsage:
+  enabled: true
+  severity: 1

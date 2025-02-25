@@ -367,22 +367,21 @@ describe('Module: ValidVisibleIf', () => {
     });
   });
 
-  // THIS WILL BE MOVED TO THE VisibleIfUsage check
-  // it('reports when no variable lookup is found', async () => {
-  //   const themeData = structuredClone(baseThemeData);
+  it('reports when no variable lookup is found', async () => {
+    const themeData = structuredClone(baseThemeData);
 
-  //   themeData['sections/example.liquid'].settings!.push({
-  //     id: 'some-other-setting',
-  //     visible_if: '{{ "some random string" }}',
-  //   });
+    themeData['sections/example.liquid'].settings!.push({
+      id: 'some-other-setting',
+      visible_if: '{{ "some random string" }}',
+    });
 
-  //   const offenses = await checkRule(themeData);
-  //   expect(offenses).to.have.length(1);
-  //   expect(offenses).to.containOffense({
-  //     check: ValidVisibleIf.meta.code,
-  //     message: 'visible_if expression contains no references to any settings. This may be an error.',
-  //     uri: 'file:///sections/example.liquid',
-  //     severity: 0,
-  //   });
-  // });
+    const offenses = await checkRule(themeData);
+    expect(offenses).to.have.length(1);
+    expect(offenses).to.containOffense({
+      check: ValidVisibleIf.meta.code,
+      message: 'visible_if expression contains no references to any settings. This may be an error.',
+      uri: 'file:///sections/example.liquid',
+      severity: 0,
+    });
+  });
 });

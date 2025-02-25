@@ -1,25 +1,30 @@
 import { type LiquidVariableLookup, toLiquidHtmlAST, NodeTypes } from '@shopify/liquid-html-parser';
-import type { Context, SourceCodeType } from '..';
+import get from 'lodash/get';
+import type { Context, JSONNode, SourceCodeType } from '..';
 import { findRoot } from '../find-root';
-import { parseJSON } from '../json';
+import { parseJSON, getLocStart } from '../json';
 import { join } from '../path';
 import { visit } from '../visitor';
-
-export type Vars = { [key: string]: Vars | true };
+import { Setting } from '../types/schemas/setting';
+export type Vars = { [key: string]: Vars | true | string };
 type LookupError = { error: string };
+type LookupWarning = { warning: string };
+type LookupResult = LiquidVariableLookup[] | LookupError | LookupWarning;
 
 export const variableExpressionMatcher = /{{(.+?)}}/;
 export const adjustedPrefix = '{% if ';
 export const adjustedSuffix = ' %}{% endif %}';
 export const offsetAdjust = '{{'.length - adjustedPrefix.length;
 
-export function lookupIsError(lookup: LiquidVariableLookup[] | LookupError): lookup is LookupError {
+export function lookupIsError(lookup: LookupResult): lookup is LookupError {
   return 'error' in lookup;
 }
 
-export function getVariableLookupsInExpression(
-  expression: string,
-): LiquidVariableLookup[] | LookupError {
+export function lookupIsWarning(lookup: LookupResult): lookup is LookupWarning {
+  return 'warning' in lookup;
+}
+
+export function getVariableLookupsInExpression(expression: string): LookupResult {
   // As of February 2025, parsers other than LiquidJS don't yet support
   // expressions in {{ variable }} tags. So we have to do something a little
   // gnarly — before parsing it we extract the expression from within the tag
@@ -58,9 +63,8 @@ export function getVariableLookupsInExpression(
     });
 
     if (vars.length === 0) {
-      // TODO: Surface this as a usage warning instead of an error
       return {
-        error: `visible_if expression contains no references to any settings. This may be an error.`,
+        warning: `visible_if expression contains no references to any settings. This may be an error.`,
       };
     }
 
@@ -77,7 +81,7 @@ export function getVariableLookupsInExpression(
   }
 }
 
-export function validateLookup(lookup: LiquidVariableLookup, vars: Vars): string | null {
+export function validateLookupErrors(lookup: LiquidVariableLookup, vars: Vars): string | null {
   const normalized = getNormalizedLookups(lookup);
 
   const poppedSegments = [];
@@ -111,6 +115,24 @@ export function validateLookup(lookup: LiquidVariableLookup, vars: Vars): string
   )}" refers to a namespace, but is being used here as a variable.`;
 }
 
+export function validateLookupWarnings(lookup: LiquidVariableLookup, vars: Vars): string | null {
+  const normalized = getNormalizedLookups(lookup);
+  const settingType = get(vars, normalized);
+
+  if (
+    typeof settingType === 'string' &&
+    (settingType === Setting.Type.Richtext ||
+      settingType === Setting.Type.InlineRichtext ||
+      settingType === Setting.Type.Html ||
+      settingType === Setting.Type.Text ||
+      settingType === Setting.Type.Textarea)
+  ) {
+    return `It is not recommended to use a ${settingType} setting in a visible_if expression.`;
+  }
+
+  return null;
+}
+
 function getNormalizedLookups(lookup: LiquidVariableLookup) {
   const nestedLookups = lookup.lookups.map((lookup) => {
     if (lookup.type !== NodeTypes.String) {
@@ -118,6 +140,10 @@ function getNormalizedLookups(lookup: LiquidVariableLookup) {
     }
     return lookup.value;
   });
+
+  if (lookup.name === null) {
+    return nestedLookups;
+  }
 
   return [lookup.name, ...nestedLookups];
 }
@@ -138,7 +164,7 @@ export async function getGlobalSettings(context: Context<SourceCodeType>) {
           globalSettings.push(
             ...group.settings
               .filter((setting: any) => setting.id && setting.type)
-              .map((setting: any) => ({ id: setting.id, type: setting.type }))
+              .map((setting: any) => ({ id: setting.id, type: setting.type })),
           );
         }
       }
@@ -149,4 +175,25 @@ export async function getGlobalSettings(context: Context<SourceCodeType>) {
   }
 
   return globalSettings;
+}
+
+export function buildLiquidLookupReport(
+  context: Context<SourceCodeType>,
+  offset: number,
+  visibleIfNode: JSONNode,
+) {
+  // the JSONNode start location returned by `getLocStart`
+  // includes the opening quotation mark — whereas when we parse
+  // the inner expression, 0 is the location _inside_ the quotes.
+  // we add 1 to the offsets to compensate.
+  const generalOffset = offset + getLocStart(visibleIfNode) + offsetAdjust + 1;
+
+  return (message: string | null, lookup: LiquidVariableLookup) => {
+    if (typeof message === 'string') {
+      const startIndex = lookup.position.start + generalOffset;
+      const endIndex = lookup.position.end + generalOffset;
+
+      context.report({ message, startIndex, endIndex });
+    }
+  };
 }

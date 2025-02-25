@@ -1,5 +1,6 @@
 import { ConfigTarget, JSONCheckDefinition, LiquidCheckDefinition } from '../types';
 
+import { AppBlockMissingSchema } from './app-block-missing-schema';
 import { AppBlockValidTags } from './app-block-valid-tags';
 import { AssetPreload } from './asset-preload';
 import { AssetSizeAppBlockCSS } from './asset-size-app-block-css';
@@ -11,9 +12,9 @@ import { CaptureOnContentForBlock } from './capture-on-content-for-block';
 import { CdnPreconnect } from './cdn-preconnect';
 import { ContentForHeaderModification } from './content-for-header-modification';
 import { DeprecateBgsizes } from './deprecate-bgsizes';
-import { DeprecateLazysizes } from './deprecate-lazysizes';
 import { DeprecatedFilter } from './deprecated-filter';
 import { DeprecatedTag } from './deprecated-tag';
+import { DeprecateLazysizes } from './deprecate-lazysizes';
 import { EmptyBlockContent } from './empty-block-content';
 import { ImgWidthAndHeight } from './img-width-and-height';
 import { JSONMissingBlock } from './json-missing-block';
@@ -25,18 +26,19 @@ import { MissingAsset } from './missing-asset';
 import { MissingTemplate } from './missing-template';
 import { PaginationSize } from './pagination-size';
 import { ParserBlockingScript } from './parser-blocking-script';
-import { SchemaPresetsBlockOrder } from './schema-presets-block-order';
-import { SchemaPresetsStaticBlocks } from './schema-presets-static-blocks';
 import { RemoteAsset } from './remote-asset';
 import { RequiredLayoutThemeObject } from './required-layout-theme-object';
+import { SchemaPresetsBlockOrder } from './schema-presets-block-order';
+import { SchemaPresetsStaticBlocks } from './schema-presets-static-blocks';
 import { TranslationKeyExists } from './translation-key-exists';
 import { UnclosedHTMLElement } from './unclosed-html-element';
 import { UndefinedObject } from './undefined-object';
+import { UniqueSettingIds } from './unique-settings-id';
 import { UniqueStaticBlockId } from './unique-static-block-id';
 import { UnknownFilter } from './unknown-filter';
 import { UnusedAssign } from './unused-assign';
-import { ValidContentForArguments } from './valid-content-for-arguments';
 import { ValidBlockTarget } from './valid-block-target';
+import { ValidContentForArguments } from './valid-content-for-arguments';
 import { ValidHTMLTranslation } from './valid-html-translation';
 import { ValidJSON } from './valid-json';
 import { ValidLocalBlocks } from './valid-local-blocks';
@@ -47,10 +49,10 @@ import { ValidSettingsKey } from './valid-settings-key';
 import { ValidStaticBlockType } from './valid-static-block-type';
 import { ValidVisibleIf, ValidVisibleIfSettingsSchema } from './valid-visible-if';
 import { VariableName } from './variable-name';
-import { AppBlockMissingSchema } from './app-block-missing-schema';
-import { UniqueSettingIds } from './unique-settings-id';
+import { VisibleIfUsage } from './visible-if-usage';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
+  AppBlockMissingSchema,
   AppBlockValidTags,
   AssetPreload,
   AssetSizeAppBlockCSS,
@@ -74,13 +76,12 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   MatchingTranslations,
   MissingAsset,
   MissingTemplate,
-  AppBlockMissingSchema,
   PaginationSize,
   ParserBlockingScript,
-  SchemaPresetsBlockOrder,
-  SchemaPresetsStaticBlocks,
   RemoteAsset,
   RequiredLayoutThemeObject,
+  SchemaPresetsBlockOrder,
+  SchemaPresetsStaticBlocks,
   TranslationKeyExists,
   UnclosedHTMLElement,
   UndefinedObject,
@@ -89,18 +90,19 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   UnknownFilter,
   UnusedAssign,
   ValidBlockTarget,
-  ValidHTMLTranslation,
   ValidContentForArguments,
+  ValidHTMLTranslation,
   ValidJSON,
   ValidLocalBlocks,
+  ValidRenderSnippetParams,
   ValidSchema,
+  ValidSchemaName,
   ValidSettingsKey,
   ValidStaticBlockType,
   ValidVisibleIf,
   ValidVisibleIfSettingsSchema,
   VariableName,
-  ValidRenderSnippetParams,
-  ValidSchemaName,
+  VisibleIfUsage,
 ];
 
 /**
