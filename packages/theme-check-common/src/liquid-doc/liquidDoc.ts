@@ -68,13 +68,13 @@ export function getSnippetDefinition(
     },
     LiquidDocExampleNode(node: LiquidDocExampleNode) {
       return {
-        content: node.content.value,
+        content: node.content.value.trim(),
         nodeType: 'example',
       };
     },
     LiquidDocDescriptionNode(node: LiquidDocDescriptionNode) {
       return {
-        content: node.content.value,
+        content: node.content.value.trim(),
         nodeType: 'description',
       };
     },
