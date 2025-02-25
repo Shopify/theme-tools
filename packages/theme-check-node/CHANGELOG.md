@@ -1,5 +1,34 @@
 # @shopify/theme-check-node
 
+## 3.10.0
+
+### Minor Changes
+
+- 10493c9d: New `UnusedDocParam` theme-check rule
+
+  - Theme check will verify that parameters defined within a snippet's `doc` header are used within the body
+
+- f130a78f: Introduce a new theme check which validates the types of parameters passed to snippets against the liquidDoc header.
+
+  - Reports type mismatches
+  - Suggests autofixes (replace with default or remove value)
+  - Skips type checking for variable lookups
+  - Skips type checking for unknown parameters
+  - Skips type checking for unknown types
+
+- 754f7f66: New theme check to ensure `doc` tag is only used in snippet files
+
+### Patch Changes
+
+- Updated dependencies [10493c9d]
+- Updated dependencies [f130a78f]
+- Updated dependencies [79c9f773]
+- Updated dependencies [754f7f66]
+- Updated dependencies [dc8c9fda]
+- Updated dependencies [beccb69e]
+  - @shopify/theme-check-common@3.10.0
+  - @shopify/theme-check-docs-updater@3.10.0
+
 ## 3.9.0
 
 ### Patch Changes
