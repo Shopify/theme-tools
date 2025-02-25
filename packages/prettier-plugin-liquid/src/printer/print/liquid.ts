@@ -564,12 +564,12 @@ export function printLiquidDocExample(
   const parts: Doc[] = ['@example'];
 
   const content = node.content.value;
-  if (content) {
-    if (content.includes('\n')) {
-      parts.push(hardline);
-    }
-    parts.push(content.trim());
+  if (content.trimEnd().includes('\n')) {
+    parts.push(hardline);
+  } else {
+    parts.push(' ');
   }
+  parts.push(content.trim());
 
   return parts;
 }
@@ -582,14 +582,20 @@ export function printLiquidDocDescription(
 ): Doc {
   const node = path.getValue();
   const parts: Doc[] = [];
+  const content = node.content.value;
 
-  if (!node.isImplicit) {
-    parts.push('@description ');
+  if (node.isImplicit) {
+    parts.push(content.trim());
+    return parts;
   }
 
-  if (node.content?.value) {
-    parts.push(node.content.value);
+  parts.push('@description');
+  if (content.trimEnd().includes('\n')) {
+    parts.push(hardline);
+  } else {
+    parts.push(' ');
   }
+  parts.push(content.trim());
 
   return parts;
 }
