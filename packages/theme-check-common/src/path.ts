@@ -19,7 +19,12 @@ export function resolve(uri: UriString | URI, path: string): string {
 }
 
 export function normalize(uri: UriString | URI): UriString {
-  return asUri(uri).toString(true);
+  const normalized = asUri(uri).toString(true);
+  // On Windows machines, paths use backslash ('\') as separator
+  // This causes issues since backslashes in glob patterns are treated as escape characters
+  // and in various URI contexts, forward slashes are expected
+  // We replace all backslashes with forward slashes for cross-platform consistency
+  return normalized.replace(/\\/g, '/');
 }
 
 export function dirname(uri: UriString | URI): UriString {
