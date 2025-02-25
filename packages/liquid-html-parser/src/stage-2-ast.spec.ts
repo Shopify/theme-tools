@@ -1411,6 +1411,26 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.body.nodes.2.paramDescription.value').to.eql(
         'param with description',
       );
+
+      ast = toLiquidAST(`
+        {% doc -%}
+        this is an implicit description
+        in a header
+        
+        @description with a description annotation
+        {% enddoc %}
+      `);
+      expectPath(ast, 'children.0.body.nodes.0.type').to.eql('LiquidDocDescriptionNode');
+      expectPath(ast, 'children.0.body.nodes.0.content.value').to.eql(
+        'this is an implicit description\n        in a header',
+      );
+      expectPath(ast, 'children.0.body.nodes.0.isImplicit').to.eql(true);
+
+      expectPath(ast, 'children.0.body.nodes.1.type').to.eql('LiquidDocDescriptionNode');
+      expectPath(ast, 'children.0.body.nodes.1.content.value').to.eql(
+        'with a description annotation',
+      );
+      expectPath(ast, 'children.0.body.nodes.1.isImplicit').to.eql(false);
     });
 
     it('should parse unclosed tables with assignments', () => {

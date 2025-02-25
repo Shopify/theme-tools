@@ -129,6 +129,7 @@ export interface ConcreteLiquidDocDescriptionNode
   extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocDescriptionNode> {
   name: 'description';
   content: ConcreteTextNode;
+  isImplicit: boolean;
 }
 
 export interface ConcreteLiquidDocExampleNode
@@ -1380,7 +1381,23 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
   });
 
   const LiquidDocMappings: Mapping = {
-    Node: 0,
+    Node(implicitDescription: Node, body: Node) {
+      const self = this as any;
+      const implicitDescriptionNode =
+        implicitDescription.sourceString.length === 0
+          ? []
+          : [implicitDescription.toAST(self.args.mapping)];
+      return implicitDescriptionNode.concat(body.toAST(self.args.mapping));
+    },
+    ImplicitDescription: {
+      type: ConcreteNodeTypes.LiquidDocDescriptionNode,
+      name: 'description',
+      locStart,
+      locEnd,
+      source,
+      content: 0,
+      isImplicit: true,
+    },
     TextNode: textNode(),
     paramNode: {
       type: ConcreteNodeTypes.LiquidDocParamNode,
@@ -1399,6 +1416,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       locEnd,
       source,
       content: 2,
+      isImplicit: false,
     },
     descriptionContent: {
       type: ConcreteNodeTypes.TextNode,
