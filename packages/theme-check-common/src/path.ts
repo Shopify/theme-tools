@@ -19,9 +19,11 @@ export function resolve(uri: UriString | URI, path: string): string {
 }
 
 export function normalize(uri: UriString | URI): UriString {
-  // Continue to use the URI parsing
   const normalized = asUri(uri).toString(true);
-  // Replace backslashes with forward slashes
+  // On Windows machines, paths use backslash ('\') as separator
+  // This causes issues since backslashes in glob patterns are treated as escape characters
+  // and in various URI contexts, forward slashes are expected
+  // We replace all backslashes with forward slashes for cross-platform consistency
   return normalized.replace(/\\/g, '/');
 }
 
