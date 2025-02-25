@@ -1418,15 +1418,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       content: 2,
       isImplicit: false,
     },
-    descriptionContent: {
-      type: ConcreteNodeTypes.TextNode,
-      value: function (this: Node) {
-        return this.sourceString.trim();
-      },
-      locStart,
-      locEnd,
-      source,
-    },
+    descriptionContent: textNode(),
     paramType: 2,
     paramTypeContent: textNode(),
     paramName: {
