@@ -19,7 +19,10 @@ export function resolve(uri: UriString | URI, path: string): string {
 }
 
 export function normalize(uri: UriString | URI): UriString {
-  return asUri(uri).toString(true);
+  // Continue to use the URI parsing
+  const normalized = asUri(uri).toString(true);
+  // Replace backslashes with forward slashes
+  return normalized.replace(/\\/g, '/');
 }
 
 export function dirname(uri: UriString | URI): UriString {
