@@ -124,3 +124,10 @@ It should add padding between dissimilar nodes
 
   @param {String} param3 - param with description
 {% enddoc %}
+
+It should not append an implicit description with an @description annotation
+{% doc %}
+  This is an implicit description
+
+  @description This is an explicit description
+{% enddoc %}

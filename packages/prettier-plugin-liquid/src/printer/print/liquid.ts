@@ -581,10 +581,14 @@ export function printLiquidDocDescription(
   _args: LiquidPrinterArgs,
 ): Doc {
   const node = path.getValue();
-  const parts: Doc[] = ['@description'];
+  const parts: Doc[] = [];
+
+  if (!node.isImplicit) {
+    parts.push('@description ');
+  }
 
   if (node.content?.value) {
-    parts.push(' ', node.content.value);
+    parts.push(node.content.value);
   }
 
   return parts;
