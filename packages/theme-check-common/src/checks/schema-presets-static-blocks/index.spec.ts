@@ -67,7 +67,6 @@ describe('Module: SchemaPresetsStaticBlocks', () => {
 
     const offenses = await runLiquidCheck(SchemaPresetsStaticBlocks, sourceCode, DEFAULT_FILE_NAME);
     expect(offenses).toHaveLength(1);
-    console.log(offenses);
     expect(offenses[0].message).toEqual(
       'Static block block-2 is missing a corresponding content_for "block" tag.',
     );
@@ -134,7 +133,6 @@ describe('Module: SchemaPresetsStaticBlocks', () => {
 
     const offenses = await runLiquidCheck(SchemaPresetsStaticBlocks, sourceCode, DEFAULT_FILE_NAME);
     expect(offenses).toHaveLength(1);
-    console.log(offenses);
     expect(offenses[0].message).toEqual(
       'Static block block-2 is missing a corresponding content_for "block" tag.',
     );
