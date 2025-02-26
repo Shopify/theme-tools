@@ -1,5 +1,25 @@
 # @shopify/theme-language-server-common
 
+## 2.9.1
+
+### Patch Changes
+
+- 754f7f66: Do not allow liquid doc completion outside snippet files
+- 8be77897: Add hover support for the `@description` tag
+- Updated dependencies [10493c9d]
+- Updated dependencies [10493c9d]
+- Updated dependencies [79c9f773]
+- Updated dependencies [f130a78f]
+- Updated dependencies [1a4482eb]
+- Updated dependencies [5ad43a8c]
+- Updated dependencies [79c9f773]
+- Updated dependencies [754f7f66]
+- Updated dependencies [dc8c9fda]
+- Updated dependencies [beccb69e]
+- Updated dependencies [9563715a]
+  - @shopify/liquid-html-parser@2.6.0
+  - @shopify/theme-check-common@3.10.0
+
 ## 2.9.0
 
 ### Minor Changes

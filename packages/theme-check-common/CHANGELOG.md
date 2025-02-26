@@ -1,5 +1,42 @@
 # @shopify/theme-check-common
 
+## 3.10.0
+
+### Minor Changes
+
+- 10493c9d: New `UnusedDocParam` theme-check rule
+
+  - Theme check will verify that parameters defined within a snippet's `doc` header are used within the body
+
+- f130a78f: Introduce a new theme check which validates the types of parameters passed to snippets against the liquidDoc header.
+
+  - Reports type mismatches
+  - Suggests autofixes (replace with default or remove value)
+  - Skips type checking for variable lookups
+  - Skips type checking for unknown parameters
+  - Skips type checking for unknown types
+
+- 1a4482eb: New theme checks to validate liquid doc params
+
+  - `UniqueDocParamNames` will check if param names are unique within the `doc` tag
+  - `ValidDocParamTypes` will check if the param types defined in the `doc` tag are supported
+
+- 79c9f773: Update getSnippetDefinition `definition` property to return implicit description if provided.
+
+  Implicit descriptions are provided as text before any annotations `@` are provided. This overrides any `@description` annotations.
+
+- 754f7f66: New theme check to ensure `doc` tag is only used in snippet files
+
+### Patch Changes
+
+- 5ad43a8c: Fixed issue with normalize method not working properly on windows due to not replacing backslashes with forward slashes
+- dc8c9fda: Add RemoteAsset allowedDomains check to validate CDN and approved domain usage for better performance and developer experience
+- beccb69e: Fixed local blocks validation to not consider preset blocks as containing local blocks when a name is present
+- Updated dependencies [10493c9d]
+- Updated dependencies [79c9f773]
+- Updated dependencies [9563715a]
+  - @shopify/liquid-html-parser@2.6.0
+
 ## 3.9.0
 
 ### Minor Changes
