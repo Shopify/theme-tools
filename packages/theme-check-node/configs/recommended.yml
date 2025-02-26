@@ -87,6 +87,9 @@ UnclosedHTMLElement:
 UndefinedObject:
   enabled: true
   severity: 1
+UniqueDocParamNames:
+  enabled: true
+  severity: 0
 UniqueSettingId:
   enabled: true
   severity: 0
@@ -109,6 +112,9 @@ ValidBlockTarget:
   enabled: true
   severity: 0
 ValidContentForArguments:
+  enabled: true
+  severity: 0
+ValidDocParamTypes:
   enabled: true
   severity: 0
 ValidHTMLTranslation:
