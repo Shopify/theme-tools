@@ -5,7 +5,11 @@ import {
   NodeTypes,
   toLiquidHtmlAST,
 } from '@shopify/liquid-html-parser';
-import { MetafieldDefinitionMap, path as pathUtils } from '@shopify/theme-check-common';
+import {
+  MetafieldDefinitionMap,
+  path as pathUtils,
+  SupportedParamTypes,
+} from '@shopify/theme-check-common';
 import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { URI } from 'vscode-uri';
 import { SettingsSchemaJSONFile } from './settings';
@@ -418,6 +422,36 @@ describe('Module: TypeSystem', () => {
       );
       expect(inferredType).to.eql('untyped');
     }
+  });
+
+  describe('LiquidDoc inferred type', () => {
+    const liquidDocParamTypeToTypeMap = {
+      [SupportedParamTypes.String]: 'string',
+      [SupportedParamTypes.Number]: 'number',
+      [SupportedParamTypes.Boolean]: 'boolean',
+      [SupportedParamTypes.Object]: 'untyped',
+      invalid: 'untyped',
+    };
+
+    Object.entries(liquidDocParamTypeToTypeMap).forEach(([docParamType, expectedType]) => {
+      it(`should support liquid doc params type: ${docParamType}`, async () => {
+        const sourceCode = `
+          {% doc %}
+            @param {${docParamType}} data - some data
+          {% enddoc %}
+          {{ data }}
+        `;
+        const ast = toLiquidHtmlAST(sourceCode);
+        const variableOutput = ast.children[1];
+        assert(isLiquidVariableOutput(variableOutput));
+        const inferredType = await typeSystem.inferType(
+          variableOutput.markup,
+          ast,
+          'file:///snippets/example.liquid',
+        );
+        expect(inferredType).to.eql(expectedType);
+      });
+    });
   });
 
   describe('metafieldDefinitionsObjectMap', async () => {
