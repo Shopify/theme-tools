@@ -1,5 +1,16 @@
 # @shopify/liquid-html-parser
 
+## 2.6.0
+
+### Minor Changes
+
+- 79c9f773: [LiquidDoc] Add parsing support for implicit descriptions.
+
+### Patch Changes
+
+- 10493c9d: Added `LoopNamedTags` to identify tags that provides iteration
+- 9563715a: [internal] Fix typo in liquid doc parser
+
 ## 2.5.0
 
 ### Minor Changes

@@ -1,5 +1,19 @@
 # @shopify/theme-check-docs-updater
 
+## 3.10.0
+
+### Patch Changes
+
+- Updated dependencies [10493c9d]
+- Updated dependencies [f130a78f]
+- Updated dependencies [1a4482eb]
+- Updated dependencies [5ad43a8c]
+- Updated dependencies [79c9f773]
+- Updated dependencies [754f7f66]
+- Updated dependencies [dc8c9fda]
+- Updated dependencies [beccb69e]
+  - @shopify/theme-check-common@3.10.0
+
 ## 3.9.0
 
 ### Patch Changes

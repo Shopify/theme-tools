@@ -1,5 +1,16 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.8.3
+
+### Patch Changes
+
+- 9563715a: Add padding for liquid doc content
+- 357ea7fc: Prevent prettier from appending `@description` annotation before implicit descriptions
+- Updated dependencies [10493c9d]
+- Updated dependencies [79c9f773]
+- Updated dependencies [9563715a]
+  - @shopify/liquid-html-parser@2.6.0
+
 ## 1.8.2
 
 ### Patch Changes

@@ -1,5 +1,34 @@
 ## theme-check-vscode
 
+## 3.5.7
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/liquid-html-parser
+  - @shopify/prettier-plugin-liquid
+  - @shopify/theme-language-server-browser
+  - @shopify/theme-language-server-node
+  - @shopify/theme-check-common
+- Updated dependencies [10493c9d]
+- Updated dependencies [10493c9d]
+- Updated dependencies [79c9f773]
+- Updated dependencies [f130a78f]
+- Updated dependencies [1a4482eb]
+- Updated dependencies [5ad43a8c]
+- Updated dependencies [9563715a]
+- Updated dependencies [79c9f773]
+- Updated dependencies [357ea7fc]
+- Updated dependencies [754f7f66]
+- Updated dependencies [dc8c9fda]
+- Updated dependencies [beccb69e]
+- Updated dependencies [9563715a]
+  - @shopify/liquid-html-parser@2.6.0
+  - @shopify/theme-check-common@3.10.0
+  - @shopify/prettier-plugin-liquid@1.8.3
+  - @shopify/theme-language-server-browser@2.9.1
+  - @shopify/theme-language-server-node@2.9.1
+
 ## 3.5.6
 
 ### Patch Changes
