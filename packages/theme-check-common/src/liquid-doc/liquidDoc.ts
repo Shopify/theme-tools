@@ -75,16 +75,24 @@ export function getSnippetDefinition(
     LiquidDocDescriptionNode(node: LiquidDocDescriptionNode) {
       const trimmedDescription = node.content.value.trim();
       if (trimmedDescription.includes('\n')) {
-        const indent = node.content.value.match(/^ */)?.[0] ?? '';
-        const lines = trimmedDescription.split('\n');
-        const normalizedDescription = [
-          lines[0],
-          ...lines.slice(1).map((line) => line.slice(indent.length)),
-        ].join('\n');
-        return {
-          content: normalizedDescription,
-          nodeType: 'description',
-        };
+        const lines = node.content.value.split('\n');
+        const nonEmptyLines = lines.filter((line) => line.trim().length > 0);
+
+        if (nonEmptyLines.length > 0) {
+          const firstNonEmptyLine = nonEmptyLines[0];
+          const baseIndent = firstNonEmptyLine.match(/^(\s*)/)?.[0] ?? '';
+
+          const normalizedDescription = lines
+            .map((line) => {
+              return line.startsWith(baseIndent) ? line.slice(baseIndent.length) : line;
+            })
+            .join('\n');
+
+          return {
+            content: normalizedDescription.trim(),
+            nodeType: 'description',
+          };
+        }
       }
       return {
         content: trimmedDescription,

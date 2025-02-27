@@ -1418,10 +1418,13 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       locStart,
       locEnd,
       source,
-      content: 3,
+      content: 1,
       isImplicit: false,
       isInline: function (this: Node) {
-        return !this.children[2].sourceString.includes('\n');
+        const content = this.children[1].sourceString;
+        const firstNewlineIndex = content.indexOf('\n');
+        const firstCharacterIndex = content.indexOf(content.trim());
+        return firstNewlineIndex < firstCharacterIndex;
       },
     },
     descriptionContent: textNode(),
@@ -1450,9 +1453,12 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       locStart,
       locEnd,
       source,
-      content: 3,
+      content: 1,
       isInline: function (this: Node) {
-        return !this.children[2].sourceString.includes('\n');
+        const content = this.children[1].sourceString;
+        const firstNewlineIndex = content.indexOf('\n');
+        const firstCharacterIndex = content.indexOf(content.trim());
+        return firstNewlineIndex < firstCharacterIndex;
       },
     },
     exampleContent: textNode(),

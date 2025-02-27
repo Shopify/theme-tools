@@ -409,7 +409,7 @@ LiquidDoc <: Helpers {
   // We use this as an escape hatch to stop matching TextNode and try again when one of these characters is encountered
   openControl:= "@" | end
 
-  descriptionNode = "@description" strictSpace* newline? descriptionContent
+  descriptionNode = "@description" descriptionContent
 
   paramNode = "@param" strictSpace* paramType? strictSpace* (optionalParamName | paramName) (strictSpace* "-")? strictSpace* paramDescription
   paramType = "{" strictSpace* paramTypeContent strictSpace* "}"
@@ -422,7 +422,7 @@ LiquidDoc <: Helpers {
   paramDescription = (~"]" anyExceptStar<endOfParam>)
   endOfParam = strictSpace* (newline | end)
 
-  exampleNode = "@example" strictSpace* newline? exampleContent
+  exampleNode = "@example" exampleContent
   exampleContent = anyExceptStar<endOfExample>
   endOfExample =  strictSpace* ("@" | end)
 
