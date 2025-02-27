@@ -238,5 +238,25 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
         "Unknown parameter 'unknown_param' in render tag for snippet 'card'",
       );
     });
+
+    it('should correctly suggest removing aliases with variable whitespace', async () => {
+      const fs = new MockFileSystem({
+        'snippets/card.liquid': `
+          {% doc %}
+            @param {string} title - The title of the card
+          {% enddoc %}
+          <div>{{ title }}</div>  
+        `,
+      });
+
+      let sourceCode = `{% render 'card' with 'my-card'       as   unknown_param %}`;
+      let offenses = await runLiquidCheck(UnrecognizedRenderSnippetParams, sourceCode, undefined, {
+        fs,
+      });
+
+      expect(offenses).toHaveLength(1);
+      let result = applySuggestions(sourceCode, offenses[0]);
+      expect(result).toEqual([`{% render 'card' %}`]);
+    });
   });
 });
