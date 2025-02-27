@@ -54,6 +54,9 @@ MatchingTranslations:
 MissingAsset:
   enabled: true
   severity: 0
+MissingRenderSnippetParams:
+  enabled: true
+  severity: 1
 MissingTemplate:
   enabled: true
   severity: 0
@@ -99,6 +102,9 @@ UniqueStaticBlockId:
 UnknownFilter:
   enabled: true
   severity: 0
+UnrecognizedRenderSnippetParams:
+  enabled: true
+  severity: 1
 UnsupportedDocTag:
   enabled: true
   severity: 0
@@ -127,9 +133,6 @@ ValidLocalBlocks:
   enabled: true
   severity: 0
 ValidRenderSnippetParamTypes:
-  enabled: true
-  severity: 1
-ValidRenderSnippetParams:
   enabled: true
   severity: 1
 ValidSchema:
