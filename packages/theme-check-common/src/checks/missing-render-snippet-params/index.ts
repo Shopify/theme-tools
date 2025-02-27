@@ -40,7 +40,7 @@ export const MissingRenderSnippetParams: LiquidCheckDefinition = {
                 const paramToAdd = `, ${param.name}: ${getDefaultValueForType(param.type)}`;
 
                 if (node.args.length == 0) {
-                  return fixer.insert(node.snippet.position.end, paramToAdd);
+                  return fixer.insert(node.position.end - 1, paramToAdd);
                 }
 
                 const lastArg = node.args[node.args.length - 1];
@@ -69,7 +69,7 @@ export const MissingRenderSnippetParams: LiquidCheckDefinition = {
 
     return {
       async RenderMarkup(node: RenderMarkup) {
-        if (!isLiquidString(node.snippet) || node.variable) {
+        if (!isLiquidString(node.snippet)) {
           return;
         }
 
@@ -87,7 +87,7 @@ export const MissingRenderSnippetParams: LiquidCheckDefinition = {
 
         const providedParams = new Map(node.args.map((arg) => [arg.name, arg]));
         const missingRequiredParams = snippetDef.liquidDoc.parameters.filter(
-          (p) => p.required && !providedParams.has(p.name),
+          (p) => p.required && !providedParams.has(p.name) && node.alias !== p.name,
         );
 
         reportMissingParams(missingRequiredParams, node, snippetName);
