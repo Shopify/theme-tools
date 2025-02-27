@@ -114,6 +114,9 @@ ValidBlockTarget:
 ValidContentForArguments:
   enabled: true
   severity: 0
+ValidDocParamNames:
+  enabled: true
+  severity: 1
 ValidDocParamTypes:
   enabled: true
   severity: 0

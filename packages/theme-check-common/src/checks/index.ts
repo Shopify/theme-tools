@@ -42,6 +42,7 @@ import { ValidContentForArguments } from './valid-content-for-arguments';
 import { ValidBlockTarget } from './valid-block-target';
 import { ValidHTMLTranslation } from './valid-html-translation';
 import { ValidJSON } from './valid-json';
+import { ValidDocParamNames } from './valid-doc-param-names';
 import { ValidDocParamTypes } from './valid-doc-param-types';
 import { ValidLocalBlocks } from './valid-local-blocks';
 import { ValidRenderSnippetParams } from './valid-render-snippet-params';
@@ -100,6 +101,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidHTMLTranslation,
   ValidContentForArguments,
   ValidJSON,
+  ValidDocParamNames,
   ValidDocParamTypes,
   ValidLocalBlocks,
   ValidSchema,
