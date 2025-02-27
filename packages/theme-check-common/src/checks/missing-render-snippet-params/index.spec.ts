@@ -81,6 +81,45 @@ describe('Module: MissingRenderSnippetParams', () => {
       const x = applySuggestions(sourceCode, offenses[0]);
       expect(x).toEqual([`{% render 'card', required_string: 'value', required_number: 0 %}`]);
     });
+
+    it('should suggest adding missing parameter after provided alias variable', async () => {
+      const fs = new MockFileSystem({
+        'snippets/card.liquid': `
+          {% doc %}
+            @param {string} title - The title of the card
+            @param {string} description - The description of the card
+          {% enddoc %}
+          <div>{{ title }}</div>
+          <div>{{ description }}</div>
+        `,
+      });
+
+      let sourceCode = `{% render 'card' as title %}`;
+      let offenses = await runLiquidCheck(MissingRenderSnippetParams, sourceCode, undefined, {
+        fs,
+      });
+
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toBe(
+        "Missing required parameter 'description' in render tag for snippet 'card'",
+      );
+
+      let result = applySuggestions(sourceCode, offenses[0]);
+      expect(result).toEqual([`{% render 'card' as title, description: '' %}`]);
+
+      sourceCode = `{% render 'card' for titles as title %}`;
+      offenses = await runLiquidCheck(MissingRenderSnippetParams, sourceCode, undefined, {
+        fs,
+      });
+
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toBe(
+        "Missing required parameter 'description' in render tag for snippet 'card'",
+      );
+
+      result = applySuggestions(sourceCode, offenses[0]);
+      expect(result).toEqual([`{% render 'card' for titles as title, description: '' %}`]);
+    });
   });
 
   describe('edge cases', () => {
@@ -157,7 +196,7 @@ describe('Module: MissingRenderSnippetParams', () => {
       expect(offenses).toHaveLength(0);
     });
 
-    it('should not report when "with/for" alias syntax is used', async () => {
+    it('should report when "with/for" alias syntax is used', async () => {
       const fs = new MockFileSystem({
         'snippets/card.liquid': `
           {% doc %}
@@ -167,19 +206,25 @@ describe('Module: MissingRenderSnippetParams', () => {
         `,
       });
 
-      let sourceCode = `{% render 'card' with 'my-card' as title %}`;
+      let sourceCode = `{% render 'card' with 'my-card' as unknown %}`;
       let offenses = await runLiquidCheck(MissingRenderSnippetParams, sourceCode, undefined, {
         fs,
       });
 
-      expect(offenses).toHaveLength(0);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toEqual(
+        "Missing required parameter 'title' in render tag for snippet 'card'",
+      );
 
-      sourceCode = `{% render 'card' for array as title %}`;
+      sourceCode = `{% render 'card' for array as unknown %}`;
       offenses = await runLiquidCheck(MissingRenderSnippetParams, sourceCode, undefined, {
         fs,
       });
 
-      expect(offenses).toHaveLength(0);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toEqual(
+        "Missing required parameter 'title' in render tag for snippet 'card'",
+      );
     });
   });
 });
