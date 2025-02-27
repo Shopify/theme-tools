@@ -61,7 +61,7 @@ export class RenderSnippetHoverProvider implements BaseHoverProvider {
 
     if (liquidDoc.examples?.length) {
       const examples = liquidDoc.examples
-        ?.map(({ content }) => `\`\`\`liquid${content}\`\`\``)
+        ?.map(({ content }) => `\`\`\`liquid\n${content}\n\`\`\``)
         .join('\n');
 
       parts.push('', '**Examples:**', examples);

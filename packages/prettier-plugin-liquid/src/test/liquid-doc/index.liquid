@@ -41,29 +41,20 @@ It should handle params with malformed optional delimiters
   @param [too many words] - param with description
 {% enddoc %}
 
-It should push example content to the next line
+It should keep single-line examples on the line it's written on
 {% doc %}
   @example This is a valid example
+  @example
+  This is a valid example on the next line
 {% enddoc %}
 
-It should allow single empty lines between content
+It should push multi-line examples to the next line
 {% doc %}
-  @example
-  This is a valid example
+  @example This is a valid example
+
 
   So is this without a newline
   See?
-{% enddoc %}
-
-It should allow multiple empty lines between example content
-{% doc %}
-  @example
-  This is a valid example
-
-
-  Here is another example
-
-  with a single empty line
 {% enddoc %}
 
 It should remove empty lines at the end of the example content
@@ -88,10 +79,19 @@ It should allow multiple example nodes
   Second Example
 {% enddoc %}
 
-It should move description content inline
+It should keep single-line description content on the line it's written on
 {% doc %}
+  @description This is a description
   @description
-  This is a description
+  This is another description on the next line
+{% enddoc %}
+
+It should push multi-line description content to the next line
+{% doc %}
+  @description This is a description
+
+
+  This is another description on the next line
 {% enddoc %}
 
 It should add a space between a description tag and content
@@ -119,7 +119,7 @@ It should add padding between dissimilar nodes
   @param {String} param3 - param with description
 {% enddoc %}
 
-It should not append an implicit description with an @description annotation
+It should not prepend an implicit description with an @description annotation
 {% doc %}
 This is an implicit description
 

@@ -87,8 +87,12 @@ This is a description
 - \`no-type-or-description\`
 
 **Examples:**
-\`\`\`liquid{{ product }}\`\`\`
-\`\`\`liquid{{ product.title }}\`\`\``;
+\`\`\`liquid
+{{ product }}
+\`\`\`
+\`\`\`liquid
+{{ product.title }}
+\`\`\``;
 
       await expect(provider).to.hover(`{% render 'product-car█d' %}`, expectedHoverContent);
     });
