@@ -156,12 +156,12 @@ export async function getTheme(config: Config): Promise<Theme> {
   const normalizedGlob = path
     .normalize(path.join(config.rootUri.replace(/^file:/, ''), '**/*.{liquid,json}'))
     .replace(/\\/g, '/');
-  console.log(normalizedGlob);
+  console.log(`normalizedGlob: ${normalizedGlob}`);
   const paths = await asyncGlob(normalizedGlob).then((result) =>
     // Global ignored paths should not be part of the theme
     result.filter((filePath) => !isIgnored(filePath, config)),
   );
-  console.log(paths);
+  console.log(`paths: ${paths}`);
   const sourceCodes = await Promise.all(paths.map(toSourceCode));
   return sourceCodes.filter((x): x is LiquidSourceCode | JSONSourceCode => x !== undefined);
 }
