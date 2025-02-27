@@ -1,5 +1,5 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { LiquidNamedArgument, RenderMarkup } from '@shopify/liquid-html-parser';
+import { LiquidNamedArgument, NodeTypes, RenderMarkup } from '@shopify/liquid-html-parser';
 import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
 import { getSnippetDefinition, LiquidDocParameter } from '../../liquid-doc/liquidDoc';
 import { isLiquidString } from '../utils';
@@ -69,9 +69,42 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
       }
     }
 
+    function reportUnknownAliases(
+      node: RenderMarkup,
+      liquidDocParameters: Map<string, LiquidDocParameter>,
+      snippetName: string,
+    ) {
+      if (node.alias && !liquidDocParameters.has(node.alias) && node.variable) {
+        const asAliasMatch = node.source.match(new RegExp(`as\\s+${node.alias}`));
+
+        const suggest = asAliasMatch
+          ? [
+              {
+                message: `Remove '${node.alias}'`,
+                fix: (fixer: any) => {
+                  if (node.variable) {
+                    return fixer.remove(
+                      node.variable.position.start,
+                      node.source.indexOf(asAliasMatch[0]) + asAliasMatch[0].length,
+                    );
+                  }
+                },
+              },
+            ]
+          : [];
+
+        context.report({
+          message: `Unknown parameter '${node.alias}' in render tag for snippet '${snippetName}'`,
+          startIndex: node.variable.position.start,
+          endIndex: node.variable.position.end,
+          suggest,
+        });
+      }
+    }
+
     return {
       async RenderMarkup(node: RenderMarkup) {
-        if (!isLiquidString(node.snippet) || node.variable) {
+        if (!isLiquidString(node.snippet)) {
           return;
         }
 
@@ -92,6 +125,7 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
         );
 
         const unknownProvidedParams = node.args.filter((p) => !liquidDocParameters.has(p.name));
+        reportUnknownAliases(node, liquidDocParameters, snippetName);
         reportUnknownParams(unknownProvidedParams, node, snippetName);
       },
     };

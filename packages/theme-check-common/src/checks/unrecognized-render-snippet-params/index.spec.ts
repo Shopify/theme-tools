@@ -201,7 +201,7 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
       expect(offenses).toHaveLength(0);
     });
 
-    it('should not report when "with/for" alias syntax is used', async () => {
+    it('should report when "with/for" alias syntax is used', async () => {
       const fs = new MockFileSystem({
         'snippets/card.liquid': `
           {% doc %}
@@ -211,19 +211,45 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
         `,
       });
 
-      let sourceCode = `{% render 'card' with 'my-card' as title %}`;
+      let sourceCode = `{% render 'card' with 'my-card' as unknown_param %}`;
       let offenses = await runLiquidCheck(UnrecognizedRenderSnippetParams, sourceCode, undefined, {
         fs,
       });
 
-      expect(offenses).toHaveLength(0);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toBe(
+        "Unknown parameter 'unknown_param' in render tag for snippet 'card'",
+      );
 
-      sourceCode = `{% render 'card' for array as title %}`;
+      sourceCode = `{% render 'card' for array as unknown_param %}`;
       offenses = await runLiquidCheck(UnrecognizedRenderSnippetParams, sourceCode, undefined, {
         fs,
       });
 
-      expect(offenses).toHaveLength(0);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toBe(
+        "Unknown parameter 'unknown_param' in render tag for snippet 'card'",
+      );
+    });
+
+    it('should correctly suggest removing aliases with variable whitespace', async () => {
+      const fs = new MockFileSystem({
+        'snippets/card.liquid': `
+          {% doc %}
+            @param {string} title - The title of the card
+          {% enddoc %}
+          <div>{{ title }}</div>  
+        `,
+      });
+
+      let sourceCode = `{% render 'card' with 'my-card'       as   unknown_param %}`;
+      let offenses = await runLiquidCheck(UnrecognizedRenderSnippetParams, sourceCode, undefined, {
+        fs,
+      });
+
+      expect(offenses).toHaveLength(1);
+      let result = applySuggestions(sourceCode, offenses[0]);
+      expect(result).toEqual([`{% render 'card' %}`]);
     });
   });
 });
