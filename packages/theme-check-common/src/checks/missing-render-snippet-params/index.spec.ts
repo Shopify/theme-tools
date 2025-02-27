@@ -43,7 +43,9 @@ describe('Module: MissingRenderSnippetParams', () => {
         "Missing required parameter 'required_object' in render tag for snippet 'card'",
       );
     });
+  });
 
+  describe('suggestions', () => {
     it('should suggest adding missing required parameters when none already exist', async () => {
       const sourceCode = `{% render 'card' %}`;
       const offenses = await check(defaultSnippet, sourceCode);

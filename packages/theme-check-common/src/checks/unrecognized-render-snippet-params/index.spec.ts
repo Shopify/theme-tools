@@ -47,7 +47,9 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
         "Unknown parameter 'second_unknown_param' in render tag for snippet 'card'",
       );
     });
+  });
 
+  describe('suggestions', () => {
     it('should properly remove unknown parameters when the only parameter is unknown', async () => {
       let sourceCode = `{% render 'card', unknown_param: 'value' %}`;
       let offenses = await check(defaultSnippet, sourceCode);
