@@ -94,7 +94,7 @@ describe('Module: MissingRenderSnippetParams', () => {
         `,
       });
 
-      let sourceCode = `{% render 'card' as title %}`;
+      let sourceCode = `{% render 'card' with 'my-card' as title %}`;
       let offenses = await runLiquidCheck(MissingRenderSnippetParams, sourceCode, undefined, {
         fs,
       });
@@ -105,7 +105,7 @@ describe('Module: MissingRenderSnippetParams', () => {
       );
 
       let result = applySuggestions(sourceCode, offenses[0]);
-      expect(result).toEqual([`{% render 'card' as title, description: '' %}`]);
+      expect(result).toEqual([`{% render 'card' with 'my-card' as title, description: '' %}`]);
 
       sourceCode = `{% render 'card' for titles as title %}`;
       offenses = await runLiquidCheck(MissingRenderSnippetParams, sourceCode, undefined, {
