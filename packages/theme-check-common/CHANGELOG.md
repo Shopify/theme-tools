@@ -1,5 +1,13 @@
 # @shopify/theme-check-common
 
+## 3.10.1
+
+### Patch Changes
+
+- dafba833: [Internal] Update `getSnippetDefinitions` and `RenderSnippetHoverProvider` to account for trimmed newline characters in description and example nodes content.
+- Updated dependencies [de877551]
+  - @shopify/liquid-html-parser@2.7.0
+
 ## 3.10.0
 
 ### Minor Changes
