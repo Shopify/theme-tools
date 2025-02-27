@@ -45,7 +45,8 @@ import { ValidJSON } from './valid-json';
 import { ValidDocParamNames } from './valid-doc-param-names';
 import { ValidDocParamTypes } from './valid-doc-param-types';
 import { ValidLocalBlocks } from './valid-local-blocks';
-import { ValidRenderSnippetParams } from './valid-render-snippet-params';
+import { MissingRenderSnippetParams } from './missing-render-snippet-params';
+import { UnrecognizedRenderSnippetParams } from './unrecognized-render-snippet-params';
 import { ValidRenderSnippetParamTypes } from './valid-render-snippet-param-types';
 import { ValidSchema } from './valid-schema';
 import { ValidSchemaName } from './valid-schema-name';
@@ -110,7 +111,8 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidVisibleIf,
   ValidVisibleIfSettingsSchema,
   VariableName,
-  ValidRenderSnippetParams,
+  MissingRenderSnippetParams,
+  UnrecognizedRenderSnippetParams,
   ValidRenderSnippetParamTypes,
   ValidSchemaName,
 ];
