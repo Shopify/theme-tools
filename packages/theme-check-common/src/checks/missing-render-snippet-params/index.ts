@@ -23,23 +23,6 @@ export const MissingRenderSnippetParams: LiquidCheckDefinition = {
   },
 
   create(context) {
-    function findMissingRequiredParams(
-      liquidDocParameters: Map<string, LiquidDocParameter>,
-      providedParams: LiquidNamedArgument[],
-    ): LiquidDocParameter[] {
-      const providedParameters = new Map(providedParams.map((arg) => [arg.name, arg]));
-      const missingRequiredParams: LiquidDocParameter[] = [];
-
-      // Check required params
-      for (const param of liquidDocParameters.values()) {
-        if (param.required && !providedParameters.has(param.name)) {
-          missingRequiredParams.push(param);
-        }
-      }
-
-      return missingRequiredParams;
-    }
-
     function reportMissingParams(
       missingRequiredParams: LiquidDocParameter[],
       node: RenderMarkup,
@@ -102,11 +85,11 @@ export const MissingRenderSnippetParams: LiquidCheckDefinition = {
           return;
         }
 
-        const liquidDocParameters = new Map(
-          snippetDef.liquidDoc.parameters.map((p) => [p.name, p]),
+        const providedParams = new Map(node.args.map((arg) => [arg.name, arg]));
+        const missingRequiredParams = snippetDef.liquidDoc.parameters.filter(
+          (p) => p.required && !providedParams.has(p.name),
         );
 
-        const missingRequiredParams = findMissingRequiredParams(liquidDocParameters, node.args);
         reportMissingParams(missingRequiredParams, node, snippetName);
       },
     };

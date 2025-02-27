@@ -22,23 +22,6 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
   },
 
   create(context) {
-    function findUnknownProvidedParams(
-      liquidDocParameters: Map<string, LiquidDocParameter>,
-      providedParams: LiquidNamedArgument[],
-    ): LiquidNamedArgument[] {
-      const unknownProvidedParams: LiquidNamedArgument[] = [];
-
-      // Check provided params
-      for (const arg of providedParams) {
-        const liquidDocParamDef = liquidDocParameters.has(arg.name);
-        if (!liquidDocParamDef) {
-          unknownProvidedParams.push(arg);
-        }
-      }
-
-      return unknownProvidedParams;
-    }
-
     function reportUnknownParams(
       unknownProvidedParams: LiquidNamedArgument[],
       node: RenderMarkup,
@@ -108,7 +91,7 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
           snippetDef.liquidDoc.parameters.map((p) => [p.name, p]),
         );
 
-        const unknownProvidedParams = findUnknownProvidedParams(liquidDocParameters, node.args);
+        const unknownProvidedParams = node.args.filter((p) => !liquidDocParameters.has(p.name));
         reportUnknownParams(unknownProvidedParams, node, snippetName);
       },
     };
