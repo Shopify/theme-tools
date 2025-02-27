@@ -1,5 +1,6 @@
 import {
   AssignMarkup,
+  LiquidDocParamNode,
   LiquidExpression,
   LiquidHtmlNode,
   LiquidTag,
@@ -24,6 +25,7 @@ import {
   parseJSON,
   path,
   FETCHED_METAFIELD_CATEGORIES,
+  SupportedParamTypes,
 } from '@shopify/theme-check-common';
 import {
   GetThemeSettingsSchemaForURI,
@@ -479,6 +481,17 @@ function buildSymbolsTable(
       };
     },
 
+    // {% doc %}
+    //   @param {string} name - your name
+    // {% enddoc %}
+    LiquidDocParamNode(node) {
+      return {
+        identifier: node.paramName.value,
+        type: inferLiquidDocParamType(node),
+        range: [node.position.end],
+      };
+    },
+
     // This also covers tablerow
     ForMarkup(node, ancestors) {
       const parentNode = ancestors.at(-1)! as LiquidTag;
@@ -628,6 +641,21 @@ function inferType(
     default: {
       return Untyped;
     }
+  }
+}
+
+function inferLiquidDocParamType(node: LiquidDocParamNode) {
+  switch (node.paramType?.value) {
+    case SupportedParamTypes.String:
+      return 'string';
+    case SupportedParamTypes.Number:
+      return 'number';
+    case SupportedParamTypes.Boolean:
+      return 'boolean';
+    default:
+      // SupportedParamTypes.Object does not map to any specific
+      // type in the type system.
+      return 'untyped';
   }
 }
 
