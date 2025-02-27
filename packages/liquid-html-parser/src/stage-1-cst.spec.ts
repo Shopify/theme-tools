@@ -1266,7 +1266,7 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
           expectPath(cst, '0.children.0.name').to.equal('example');
           expectPath(cst, '0.children.0.content.value').to.equal(
-            'This is an example\n          It supports multiple lines\n',
+            '          This is an example\n          It supports multiple lines\n',
           );
         });
 
@@ -1279,7 +1279,7 @@ describe('Unit: Stage 1 (CST)', () => {
           cst = toCST(testStr);
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocExampleNode');
           expectPath(cst, '0.children.0.name').to.equal('example');
-          expectPath(cst, '0.children.0.content.value').to.equal('This is an example\n');
+          expectPath(cst, '0.children.0.content.value').to.equal('          This is an example\n');
           expectPath(cst, '0.children.1.type').to.equal('LiquidDocParamNode');
           expectPath(cst, '0.children.1.paramName.content.value').to.equal('param1');
         });
@@ -1367,11 +1367,11 @@ describe('Unit: Stage 1 (CST)', () => {
         it('should parse multiple description nodes', () => {
           const testStr = `{% doc %}
           @description hello there
-          @description
-          second description
+          @description           second description
         {% enddoc %}`;
           cst = toCST(testStr);
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocDescriptionNode');
+          expectPath(cst, '0.children.0.name').to.equal('description');
           expectPath(cst, '0.children.0.content.value').to.equal('hello there\n');
           expectPath(cst, '0.children.1.type').to.equal('LiquidDocDescriptionNode');
           expectPath(cst, '0.children.1.content.value').to.equal('second description\n');

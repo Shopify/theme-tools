@@ -106,7 +106,7 @@ describe('Unit: getSnippetDefinition', () => {
       liquidDoc: {
         examples: [
           {
-            content: '{{ product }}',
+            content: '          {{ product }}',
             nodeType: 'example',
           },
         ],
@@ -129,7 +129,7 @@ describe('Unit: getSnippetDefinition', () => {
       liquidDoc: {
         examples: [
           {
-            content: '{{ product }}\n          {{ product.title }}',
+            content: '          {{ product }}\n          {{ product.title }}',
             nodeType: 'example',
           },
         ],
@@ -161,7 +161,7 @@ describe('Unit: getSnippetDefinition', () => {
         ],
         examples: [
           {
-            content: '{{ product }} // This is an example',
+            content: '          {{ product }} // This is an example',
             nodeType: 'example',
           },
         ],
@@ -185,11 +185,11 @@ describe('Unit: getSnippetDefinition', () => {
       liquidDoc: {
         examples: [
           {
-            content: '{{ product }}',
+            content: '          {{ product }}',
             nodeType: 'example',
           },
           {
-            content: '{{ product.title }}',
+            content: '          {{ product.title }}',
             nodeType: 'example',
           },
         ],
@@ -209,7 +209,7 @@ describe('Unit: getSnippetDefinition', () => {
       name: 'product-card',
       liquidDoc: {
         description: {
-          content: 'This is a description',
+          content: '          This is a description',
           nodeType: 'description',
         },
       },
@@ -229,7 +229,7 @@ describe('Unit: getSnippetDefinition', () => {
       name: 'product-card',
       liquidDoc: {
         description: {
-          content: 'This is a description',
+          content: '          This is a description',
           nodeType: 'description',
         },
       },
@@ -276,7 +276,7 @@ describe('Unit: getSnippetDefinition', () => {
       name: 'product-card',
       liquidDoc: {
         description: {
-          content: 'this is an implicit description\n        in a header',
+          content: '        this is an implicit description\n        in a header',
           nodeType: 'description',
         },
         parameters: [

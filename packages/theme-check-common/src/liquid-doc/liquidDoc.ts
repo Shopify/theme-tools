@@ -73,8 +73,21 @@ export function getSnippetDefinition(
       };
     },
     LiquidDocDescriptionNode(node: LiquidDocDescriptionNode) {
+      const trimmedDescription = node.content.value.trim();
+      if (trimmedDescription.includes('\n')) {
+        const indent = node.content.value.match(/^ */)?.[0] ?? '';
+        const lines = trimmedDescription.split('\n');
+        const normalizedDescription = [
+          lines[0],
+          ...lines.slice(1).map((line) => line.slice(indent.length)),
+        ].join('\n');
+        return {
+          content: normalizedDescription,
+          nodeType: 'description',
+        };
+      }
       return {
-        content: node.content.value.trim(),
+        content: trimmedDescription,
         nodeType: 'description',
       };
     },
