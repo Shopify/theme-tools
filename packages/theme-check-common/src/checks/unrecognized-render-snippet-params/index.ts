@@ -1,5 +1,5 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { LiquidNamedArgument, RenderMarkup } from '@shopify/liquid-html-parser';
+import { LiquidNamedArgument, NodeTypes, RenderMarkup } from '@shopify/liquid-html-parser';
 import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
 import { getSnippetDefinition, LiquidDocParameter } from '../../liquid-doc/liquidDoc';
 import { isLiquidString } from '../utils';
@@ -71,7 +71,7 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
 
     return {
       async RenderMarkup(node: RenderMarkup) {
-        if (!isLiquidString(node.snippet) || node.variable) {
+        if (!isLiquidString(node.snippet)) {
           return;
         }
 
@@ -92,6 +92,33 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
         );
 
         const unknownProvidedParams = node.args.filter((p) => !liquidDocParameters.has(p.name));
+        if (node.alias && !liquidDocParameters.has(node.alias) && node.variable) {
+          const suggest =
+            node.variable && node.source.indexOf(`as ${node.alias}`) !== -1
+              ? [
+                  {
+                    message: `Remove '${node.alias}'`,
+                    fix: (fixer: any) => {
+                      if (node.variable) {
+                        // remove everything from node.variable.position.start to  the value `as #{node.alias}`
+                        const asIndex = node.source.indexOf(`as ${node.alias}`);
+                        return fixer.remove(
+                          node.variable.position.start,
+                          asIndex + `as ${node.alias}`.length,
+                        );
+                      }
+                    },
+                  },
+                ]
+              : [];
+
+          context.report({
+            message: `Unknown parameter '${node.alias}' in render tag for snippet '${snippetName}'`,
+            startIndex: node.variable.position.start,
+            endIndex: node.variable.position.end,
+            suggest,
+          });
+        }
         reportUnknownParams(unknownProvidedParams, node, snippetName);
       },
     };

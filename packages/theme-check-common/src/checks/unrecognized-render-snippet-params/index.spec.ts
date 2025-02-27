@@ -128,6 +128,15 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
       const suggestionResult = applySuggestions(sourceCode, offenses[0]);
       expect(suggestionResult).toEqual([`{% render 'card', required_string: '' %}`]);
     });
+
+    // it('should properly remove an unknown parameter an alias is used', async () => {
+    //   const sourceCode = `{% render 'card' with value as unknown_param: 'value' %}`;
+    //   const offenses = await check(defaultSnippet, sourceCode);
+
+    //   expect(offenses).toHaveLength(1);
+    //   const result = applySuggestions(sourceCode, offenses[0]);
+    //   expect(result).toEqual([`{% render 'card', required_string: 'value' %}`]);
+    // });
   });
 
   describe('edge cases', () => {
@@ -199,7 +208,7 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
       expect(offenses).toHaveLength(0);
     });
 
-    it('should not report when "with/for" alias syntax is used', async () => {
+    it('should report when "with/for" alias syntax is used', async () => {
       const fs = new MockFileSystem({
         'snippets/card.liquid': `
           {% doc %}
@@ -209,19 +218,25 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
         `,
       });
 
-      let sourceCode = `{% render 'card' with 'my-card' as title %}`;
+      let sourceCode = `{% render 'card' with 'my-card' as unknown_param %}`;
       let offenses = await runLiquidCheck(UnrecognizedRenderSnippetParams, sourceCode, undefined, {
         fs,
       });
 
-      expect(offenses).toHaveLength(0);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toBe(
+        "Unknown parameter 'unknown_param' in render tag for snippet 'card'",
+      );
 
-      sourceCode = `{% render 'card' for array as title %}`;
+      sourceCode = `{% render 'card' for array as unknown_param %}`;
       offenses = await runLiquidCheck(UnrecognizedRenderSnippetParams, sourceCode, undefined, {
         fs,
       });
 
-      expect(offenses).toHaveLength(0);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toBe(
+        "Unknown parameter 'unknown_param' in render tag for snippet 'card'",
+      );
     });
   });
 });
