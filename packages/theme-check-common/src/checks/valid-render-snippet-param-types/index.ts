@@ -9,6 +9,7 @@ import {
   SupportedParamTypes,
   isTypeCompatible,
 } from '../../liquid-doc/utils';
+import { StringCorrector } from '../../fixes';
 
 export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
   meta: {
@@ -28,6 +29,38 @@ export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
   },
 
   create(context) {
+    /**
+     * Generates suggestions for type mismatches based on the expected type and node positions
+     */
+    function generateTypeMismatchSuggestions(
+      expectedType: string,
+      startPosition: number,
+      endPosition: number,
+    ) {
+      const defaultValue = getDefaultValueForType(expectedType);
+      const suggestions = [];
+
+      // Only add the "replace with default" suggestion if the default is not an empty string
+      if (defaultValue !== '') {
+        suggestions.push({
+          message: `Replace with default value '${defaultValue}' for ${expectedType}`,
+          fix: (fixer: StringCorrector) => {
+            return fixer.replace(startPosition, endPosition, defaultValue);
+          },
+        });
+      }
+
+      // Always include the "remove value" suggestion
+      suggestions.push({
+        message: `Remove value`,
+        fix: (fixer: StringCorrector) => {
+          return fixer.remove(startPosition, endPosition);
+        },
+      });
+
+      return suggestions;
+    }
+
     function findTypeMismatchParams(
       liquidDocParameters: Map<string, LiquidDocParameter>,
       providedParams: LiquidNamedArgument[],
@@ -67,30 +100,17 @@ export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
         const expectedType = paramDef.type.toLowerCase();
         const actualType = inferArgumentType(arg.value);
 
+        const suggestions = generateTypeMismatchSuggestions(
+          expectedType,
+          arg.value.position.start,
+          arg.value.position.end,
+        );
+
         context.report({
           message: `Type mismatch for parameter '${arg.name}': expected ${expectedType}, got ${actualType}`,
           startIndex: arg.value.position.start,
           endIndex: arg.value.position.end,
-          suggest: [
-            {
-              message: `Replace with default value '${getDefaultValueForType(
-                expectedType,
-              )}' for ${expectedType}`,
-              fix: (fixer) => {
-                return fixer.replace(
-                  arg.value.position.start,
-                  arg.value.position.end,
-                  getDefaultValueForType(expectedType),
-                );
-              },
-            },
-            {
-              message: `Remove value`,
-              fix: (fixer) => {
-                return fixer.remove(arg.value.position.start, arg.value.position.end);
-              },
-            },
-          ],
+          suggest: suggestions,
         });
       }
     }
@@ -114,24 +134,17 @@ export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
         if (paramIsDefinedWithType) {
           const providedParamType = inferArgumentType(node.variable.name);
           if (!isTypeCompatible(paramIsDefinedWithType, providedParamType)) {
+            const suggestions = generateTypeMismatchSuggestions(
+              paramIsDefinedWithType,
+              node.variable.name.position.start,
+              node.variable.name.position.end,
+            );
+
             context.report({
               message: `Type mismatch for parameter '${node.alias}': expected ${paramIsDefinedWithType}, got ${providedParamType}`,
               startIndex: node.variable.name.position.start,
               endIndex: node.variable.name.position.end,
-              suggest: [
-                {
-                  message: `Replace with default value '${getDefaultValueForType(
-                    paramIsDefinedWithType,
-                  )}' for ${paramIsDefinedWithType}`,
-                  fix: (fixer: any) => {
-                    return fixer.replace(
-                      node.variable?.name.position.start,
-                      node.variable?.name.position.end,
-                      getDefaultValueForType(paramIsDefinedWithType),
-                    );
-                  },
-                },
-              ],
+              suggest: suggestions,
             });
           }
         }
