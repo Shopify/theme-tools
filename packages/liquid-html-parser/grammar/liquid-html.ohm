@@ -206,7 +206,6 @@ Liquid <: Helpers {
     | liquidRawTagImpl<"javascript">
     | liquidRawTagImpl<"schema">
     | liquidRawTagImpl<"stylesheet">
-    | liquidRawTagImpl<"style">
   liquidRawTagImpl<name> =
     "{%" "-"? space* (name endOfIdentifier) space* tagMarkup "-"? "%}"
     anyExceptStar<liquidRawTagClose<name>>
@@ -301,6 +300,7 @@ Liquid <: Helpers {
   blockName =
     // Shopify blocks
     ( "form"
+    | "style"
     | "paginate"
     // Base blocks
     | "capture"
