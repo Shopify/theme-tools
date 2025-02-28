@@ -56,6 +56,7 @@ import { ValidVisibleIf, ValidVisibleIfSettingsSchema } from './valid-visible-if
 import { VariableName } from './variable-name';
 import { AppBlockMissingSchema } from './app-block-missing-schema';
 import { UniqueSettingIds } from './unique-settings-id';
+import { DuplicateRenderSnippetParams } from './duplicate-render-snippet-params';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -72,6 +73,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   DeprecatedFilter,
   DeprecatedTag,
   DeprecateLazysizes,
+  DuplicateRenderSnippetParams,
   EmptyBlockContent,
   ImgWidthAndHeight,
   JSONMissingBlock,

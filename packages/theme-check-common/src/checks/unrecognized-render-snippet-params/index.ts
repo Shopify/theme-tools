@@ -36,7 +36,9 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
             {
               message: `Remove '${param.name}'`,
               fix: (fixer) => {
-                // This is a bit messy, but it allows us to strip leading and trailing whitespaces and commas
+                // This parameter removal logic is duplicated in DuplicateRenderSnippetParams
+                // Consider extracting to a shared utility or simplifying the removal approach in the parsing steps.
+                // I chose not to do so here as I would like more examples to see how this should be done.
                 const sourceBeforeArg = node.source.slice(0, param.position.start);
                 const matches = sourceBeforeArg.match(/,\s*/g);
                 const lastWhitespaceMatch = matches ? matches[matches.length - 1] : null;

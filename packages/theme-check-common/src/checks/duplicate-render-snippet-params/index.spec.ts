@@ -1,0 +1,122 @@
+import { describe, it, expect, vi } from 'vitest';
+import { DuplicateRenderSnippetParams } from '.';
+import { runLiquidCheck, StringCorrector, applySuggestions } from '../../test';
+
+describe('Module: DuplicateRenderSnippetParams', () => {
+  function runCheck(sourceCode: string) {
+    return runLiquidCheck(DuplicateRenderSnippetParams, sourceCode);
+  }
+
+  describe('detection', () => {
+    it('should report duplicate parameters in render tags', async () => {
+      const sourceCode = `
+        {% render 'snippet', param1: 'value1', param2: 'value2', param1: 'value3' %}
+      `;
+
+      const offenses = await runCheck(sourceCode);
+
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toMatch(/Duplicate parameter 'param1'/);
+      expect(offenses[0].suggest).toBeDefined();
+      expect(offenses[0].suggest!.length).toBe(1);
+      expect(offenses[0].suggest![0].message).toBe("Remove duplicate parameter 'param1'");
+    });
+
+    it('should report multiple duplicate parameters in render tags', async () => {
+      const sourceCode = `
+        {% render 'snippet', param1: 'value1', param2: 'value2', param1: 'value3', param2: 'value4', param1: 'value5' %}
+      `;
+
+      const offenses = await runCheck(sourceCode);
+
+      expect(offenses).toHaveLength(3);
+      expect(offenses[0].message).toMatch(/Duplicate parameter 'param1'/);
+      expect(offenses[0].start.index).toBe(sourceCode.indexOf("param1: 'value3'"));
+      expect(offenses[1].message).toMatch(/Duplicate parameter 'param2'/);
+      expect(offenses[1].start.index).toBe(sourceCode.indexOf("param2: 'value4'"));
+      expect(offenses[2].message).toMatch(/Duplicate parameter 'param1'/);
+      expect(offenses[2].start.index).toBe(sourceCode.indexOf("param1: 'value5'"));
+    });
+
+    it('should not report when render tag is using `with/for` alias syntax', async () => {
+      const sourceCode = `
+        {% render 'snippet' with 'string' as param1, param1: 'value1' %}
+      `;
+
+      const offenses = await runCheck(sourceCode);
+
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toMatch(/Duplicate parameter 'param1'/);
+    });
+  });
+
+  describe('suggestions', () => {
+    it('should correctly suggest fixing all duplicate parameters except for the first', async () => {
+      const sourceCode = `{% render 'snippet', param1: 'value1', param2: 'value2', param1: 'value3', param1: 'value4' %}`;
+      const offenses = await runCheck(sourceCode);
+
+      expect(offenses).toHaveLength(2);
+      expect(offenses[0].start.index).toBe(sourceCode.indexOf("param1: 'value3'"));
+      expect(offenses[1].start.index).toBe(sourceCode.indexOf("param1: 'value4'"));
+      const suggestionResult = applySuggestions(sourceCode, offenses[0]);
+      expect(suggestionResult).toEqual([
+        `{% render 'snippet', param1: 'value1', param2: 'value2', param1: 'value4' %}`,
+      ]);
+    });
+
+    it('should suggest removing duplicates when with / for alias is used', async () => {
+      const sourceCode = `{% render 'snippet' with 'string' as param2, param1: 'value1', param2: 'value2' %}`;
+      const offenses = await runCheck(sourceCode);
+
+      expect(offenses).toHaveLength(1);
+      const suggestionResult = applySuggestions(sourceCode, offenses[0]);
+      expect(suggestionResult).toEqual([
+        `{% render 'snippet' with 'string' as param2, param1: 'value1' %}`,
+      ]);
+    });
+
+    it('should suggest removing last tag as duplicate and handle whitespace', async () => {
+      const sourceCode = `{% render 'snippet', param1: 'value1', param2: 'value2'   ,        param1:    'value3' %}`;
+      const offenses = await runCheck(sourceCode);
+
+      expect(offenses).toHaveLength(1);
+      const suggestionResult = applySuggestions(sourceCode, offenses[0]);
+      expect(suggestionResult).toEqual([
+        `{% render 'snippet', param1: 'value1', param2: 'value2'    %}`,
+      ]);
+    });
+
+    it('should suggest removing an tag as duplicate and handle whitespace', async () => {
+      const sourceCode = `{% render 'snippet', param1: 'value1',    param1:     'value2'   , param2: 'value3' %}`;
+      const offenses = await runCheck(sourceCode);
+
+      expect(offenses).toHaveLength(1);
+      const suggestionResult = applySuggestions(sourceCode, offenses[0]);
+      expect(suggestionResult).toEqual([
+        `{% render 'snippet', param1: 'value1', param2: 'value3' %}`,
+      ]);
+    });
+  });
+
+  describe('edge cases', () => {
+    it('should not report when there are no duplicate parameters', async () => {
+      const sourceCode = `
+        {% render 'snippet', param1: 'value1', param2: 'value2', param3: 'value3' %}
+      `;
+
+      const offenses = await runCheck(sourceCode);
+
+      expect(offenses).toHaveLength(0);
+    });
+
+    it('should not report for variable render tags where snippet name is a variable', async () => {
+      const sourceCode = `
+        {% render my_variable, param1: 'value1', param1: 'value2' %}
+      `;
+
+      const offenses = await runCheck(sourceCode);
+
+      expect(offenses).toHaveLength(0);
+    });
+  });
+});
