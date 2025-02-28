@@ -130,6 +130,29 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
       const suggestionResult = applySuggestions(sourceCode, offenses[0]);
       expect(suggestionResult).toEqual([`{% render 'card', required_string: '' %}`]);
     });
+
+    it('should properly remove parameter from the correct render tag when multiple are present', async () => {
+      const sourceCode = `{% render 'card', unknown_param: 'value' %}\n{% render 'card', second_unknown_param: 'value' %}`;
+      const offenses = await check(defaultSnippet, sourceCode);
+
+      expect(offenses[0].message).toBe(
+        "Unknown parameter 'unknown_param' in render tag for snippet 'card'",
+      );
+      expect(offenses[1].message).toBe(
+        "Unknown parameter 'second_unknown_param' in render tag for snippet 'card'",
+      );
+
+      expect(offenses).toHaveLength(2);
+      const suggestionResult = applySuggestions(sourceCode, offenses[1]);
+      expect(suggestionResult).toEqual([
+        `{% render 'card', unknown_param: 'value' %}\n{% render 'card' %}`,
+      ]);
+
+      const suggestionResult2 = applySuggestions(sourceCode, offenses[0]);
+      expect(suggestionResult2).toEqual([
+        `{% render 'card' %}\n{% render 'card', second_unknown_param: 'value' %}`,
+      ]);
+    });
   });
 
   describe('edge cases', () => {
@@ -220,6 +243,10 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
       expect(offenses[0].message).toBe(
         "Unknown parameter 'unknown_param' in render tag for snippet 'card'",
       );
+      expect(offenses[0].start.index).toBe(sourceCode.indexOf(' with'));
+      expect(offenses[0].end.index).toBe(
+        sourceCode.indexOf('unknown_param') + 'unknown_param'.length,
+      );
 
       sourceCode = `{% render 'card' for array as unknown_param %}`;
       offenses = await runLiquidCheck(UnrecognizedRenderSnippetParams, sourceCode, undefined, {
@@ -229,6 +256,10 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toBe(
         "Unknown parameter 'unknown_param' in render tag for snippet 'card'",
+      );
+      expect(offenses[0].start.index).toBe(sourceCode.indexOf(' for'));
+      expect(offenses[0].end.index).toBe(
+        sourceCode.indexOf('unknown_param') + 'unknown_param'.length,
       );
     });
 
