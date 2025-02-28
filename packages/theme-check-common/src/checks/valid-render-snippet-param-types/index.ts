@@ -47,7 +47,7 @@ export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
             continue;
           }
 
-          if (!isTypeCompatible(paramType, inferArgumentType(arg))) {
+          if (!isTypeCompatible(paramType, inferArgumentType(arg.value))) {
             typeMismatchParams.push(arg);
           }
         }
@@ -65,7 +65,7 @@ export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
         if (!paramDef || !paramDef.type) continue;
 
         const expectedType = paramDef.type.toLowerCase();
-        const actualType = inferArgumentType(arg);
+        const actualType = inferArgumentType(arg.value);
 
         context.report({
           message: `Type mismatch for parameter '${arg.name}': expected ${expectedType}, got ${actualType}`,
@@ -95,9 +95,52 @@ export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
       }
     }
 
+    /**
+     * Checks for type mismatches when alias is used with `for` or `with` syntax.
+     * This can be refactored at a later date to share more code with regular named arguments as they are both backed by LiquidExpression nodes.
+     *
+     * E.g. {% render 'card' with 123 as title %}
+     */
+    function findAndReportAliasType(
+      node: RenderMarkup,
+      liquidDocParameters: Map<string, LiquidDocParameter>,
+    ) {
+      if (
+        node.alias &&
+        node.variable?.name &&
+        node.variable.name.type !== NodeTypes.VariableLookup
+      ) {
+        const paramIsDefinedWithType = liquidDocParameters.get(node.alias)?.type?.toLowerCase();
+        if (paramIsDefinedWithType) {
+          const providedParamType = inferArgumentType(node.variable.name);
+          if (!isTypeCompatible(paramIsDefinedWithType, providedParamType)) {
+            context.report({
+              message: `Type mismatch for parameter '${node.alias}': expected ${paramIsDefinedWithType}, got ${providedParamType}`,
+              startIndex: node.variable.name.position.start,
+              endIndex: node.variable.name.position.end,
+              suggest: [
+                {
+                  message: `Replace with default value '${getDefaultValueForType(
+                    paramIsDefinedWithType,
+                  )}' for ${paramIsDefinedWithType}`,
+                  fix: (fixer: any) => {
+                    return fixer.replace(
+                      node.variable?.name.position.start,
+                      node.variable?.name.position.end,
+                      getDefaultValueForType(paramIsDefinedWithType),
+                    );
+                  },
+                },
+              ],
+            });
+          }
+        }
+      }
+    }
+
     return {
       async RenderMarkup(node: RenderMarkup) {
-        if (!isLiquidString(node.snippet) || node.variable) {
+        if (!isLiquidString(node.snippet)) {
           return;
         }
 
@@ -116,6 +159,8 @@ export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
         const liquidDocParameters = new Map(
           snippetDef.liquidDoc.parameters.map((p) => [p.name, p]),
         );
+
+        findAndReportAliasType(node, liquidDocParameters);
 
         const typeMismatchParams = findTypeMismatchParams(liquidDocParameters, node.args);
         reportTypeMismatches(typeMismatchParams, liquidDocParameters);

@@ -1,4 +1,4 @@
-import { LiquidNamedArgument, NodeTypes } from '@shopify/liquid-html-parser';
+import { LiquidExpression, LiquidNamedArgument, NodeTypes } from '@shopify/liquid-html-parser';
 import { assertNever } from '../utils';
 
 export enum SupportedParamTypes {
@@ -34,8 +34,8 @@ export function getDefaultValueForType(type: string | null) {
 /**
  * Casts the value of a LiquidNamedArgument to a string representing the type of the value.
  */
-export function inferArgumentType(arg: LiquidNamedArgument): SupportedParamTypes {
-  switch (arg.value.type) {
+export function inferArgumentType(arg: LiquidExpression): SupportedParamTypes {
+  switch (arg.type) {
     case NodeTypes.String:
       return SupportedParamTypes.String;
     case NodeTypes.Number:
@@ -47,7 +47,7 @@ export function inferArgumentType(arg: LiquidNamedArgument): SupportedParamTypes
       return SupportedParamTypes.Object;
     default:
       // This ensures that we have a case for every possible type for arg.value
-      return assertNever(arg.value);
+      return assertNever(arg);
   }
 }
 
