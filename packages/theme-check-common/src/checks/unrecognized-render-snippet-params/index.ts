@@ -69,9 +69,48 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
       }
     }
 
+    function reportUnknownAliases(
+      node: RenderMarkup,
+      liquidDocParameters: Map<string, LiquidDocParameter>,
+      snippetName: string,
+    ) {
+      if (node.alias && !liquidDocParameters.has(node.alias) && node.variable) {
+        const asAliasMatch = node.source
+          .slice(node.variable.position.end, node.position.end)
+          .match(new RegExp(`\\s+as\\s+${node.alias}`));
+
+        let endIndex = node.variable.position.end;
+        let suggest = [];
+
+        if (asAliasMatch) {
+          // We drop the the position information for the node representing `as alias`, so we're manually calculating it here.
+          // This brute-force approach can be simplified by changing the mapping in stage-1 and 2 to preserve this info, as it should already be parsed
+          endIndex += asAliasMatch[0].length;
+          suggest.push({
+            message: `Remove '${node.alias}'`,
+            fix: (fixer: any) => {
+              if (node.variable) {
+                return fixer.remove(
+                  node.variable.position.start,
+                  node.variable.position.end + asAliasMatch[0].length,
+                );
+              }
+            },
+          });
+        }
+
+        context.report({
+          message: `Unknown parameter '${node.alias}' in render tag for snippet '${snippetName}'`,
+          startIndex: node.variable.position.start,
+          endIndex: endIndex,
+          suggest,
+        });
+      }
+    }
+
     return {
       async RenderMarkup(node: RenderMarkup) {
-        if (!isLiquidString(node.snippet) || node.variable) {
+        if (!isLiquidString(node.snippet)) {
           return;
         }
 
@@ -92,6 +131,7 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
         );
 
         const unknownProvidedParams = node.args.filter((p) => !liquidDocParameters.has(p.name));
+        reportUnknownAliases(node, liquidDocParameters, snippetName);
         reportUnknownParams(unknownProvidedParams, node, snippetName);
       },
     };
