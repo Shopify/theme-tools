@@ -33,7 +33,8 @@ describe('Unit: getTheme', () => {
     const jsonFile = theme.find((sc) => sc.type === SourceCodeType.JSON);
     assert(jsonFile);
 
-    // internally we expect the path to be normalized
-    expect(jsonFile.uri).to.equal(workspace.uri('locales/en.default.json').replace(/\\/g, '/'));
+    // explicitly normalize URI for cross-platform compatibility
+    const expectedUri = workspace.uri('locales/en.default.json').replace(/\\/g, '/');
+    expect(jsonFile.uri).to.equal(expectedUri);
   });
 });
