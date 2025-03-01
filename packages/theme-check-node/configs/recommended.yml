@@ -30,6 +30,9 @@ DeprecatedFilter:
 DeprecatedTag:
   enabled: true
   severity: 1
+DuplicateRenderSnippetParams:
+  enabled: true
+  severity: 1
 EmptyBlockContent:
   enabled: true
   severity: 1
