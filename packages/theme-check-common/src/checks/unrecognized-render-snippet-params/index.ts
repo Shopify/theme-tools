@@ -3,6 +3,7 @@ import { LiquidNamedArgument, RenderMarkup } from '@shopify/liquid-html-parser';
 import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
 import { getSnippetDefinition, LiquidDocParameter } from '../../liquid-doc/liquidDoc';
 import { isLiquidString } from '../utils';
+import { isLastParam } from '../duplicate-render-snippet-params';
 
 export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
   meta: {
@@ -39,14 +40,17 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
                 // This parameter removal logic is duplicated in DuplicateRenderSnippetParams
                 // Consider extracting to a shared utility or simplifying the removal approach in the parsing steps.
                 // I chose not to do so here as I would like more examples to see how this should be done.
-                const sourceBeforeArg = node.source.slice(0, param.position.start);
+                const sourceBeforeArg = node.source.slice(
+                  node.position.start,
+                  param.position.start,
+                );
                 const matches = sourceBeforeArg.match(/,\s*/g);
-                const lastWhitespaceMatch = matches ? matches[matches.length - 1] : null;
-                let startPos = lastWhitespaceMatch
-                  ? param.position.start - (lastWhitespaceMatch.length - 1)
+                const lastCommaMatch = matches?.[matches.length - 1];
+                let startPos = lastCommaMatch
+                  ? param.position.start - (lastCommaMatch.length - 1)
                   : param.position.start;
 
-                if (isLastParam(param)) {
+                if (isLastParam(node, param)) {
                   // Remove the leading comma if it's the last parameter
                   startPos -= 1;
                 }
@@ -61,13 +65,6 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
             },
           ],
         });
-      }
-
-      function isLastParam(param: LiquidNamedArgument): boolean {
-        return (
-          node.args.length == 1 ||
-          param.position.start == node.args[node.args.length - 1].position.start
-        );
       }
     }
 

@@ -42,14 +42,18 @@ export const DuplicateRenderSnippetParams: LiquidCheckDefinition = {
                     // This parameter removal logic is duplicated in UnrecognizedRenderSnippetParams
                     // Consider extracting to a shared utility or simplifying the removal approach in the parsing steps.
                     // I chose not to do so here as I would like more examples to see how this should be done.
-                    const sourceBeforeArg = node.source.slice(0, param.position.start);
+                    const sourceBeforeArg = node.source.slice(
+                      node.position.start,
+                      param.position.start,
+                    );
                     const matches = sourceBeforeArg.match(/,\s*/g);
-                    const lastWhitespaceMatch = matches ? matches[matches.length - 1] : null;
-                    let startPos = lastWhitespaceMatch
-                      ? param.position.start - (lastWhitespaceMatch.length - 1)
+                    const lastCommaMatch = matches?.[matches.length - 1];
+                    let startPos = lastCommaMatch
+                      ? param.position.start - (lastCommaMatch.length - 1)
                       : param.position.start;
 
-                    if (isLastParam(param)) {
+                    if (isLastParam(node, param)) {
+                      // Remove the leading comma if it's the last parameter
                       startPos -= 1;
                     }
 
@@ -65,13 +69,6 @@ export const DuplicateRenderSnippetParams: LiquidCheckDefinition = {
                       );
                     }
                     return fixer.remove(startPos, param.position.end);
-
-                    function isLastParam(param: LiquidNamedArgument): boolean {
-                      return (
-                        node.args.length == 1 ||
-                        param.position.start == node.args[node.args.length - 1].position.start
-                      );
-                    }
                   },
                 },
               ],
@@ -85,3 +82,9 @@ export const DuplicateRenderSnippetParams: LiquidCheckDefinition = {
     };
   },
 };
+
+export function isLastParam(node: RenderMarkup, param: LiquidNamedArgument): boolean {
+  return (
+    node.args.length == 1 || param.position.start == node.args[node.args.length - 1].position.start
+  );
+}

@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { DuplicateRenderSnippetParams } from '.';
-import { runLiquidCheck, StringCorrector, applySuggestions } from '../../test';
+import { runLiquidCheck, applySuggestions } from '../../test';
 
 describe('Module: DuplicateRenderSnippetParams', () => {
   function runCheck(sourceCode: string) {
@@ -117,6 +117,26 @@ describe('Module: DuplicateRenderSnippetParams', () => {
       const offenses = await runCheck(sourceCode);
 
       expect(offenses).toHaveLength(0);
+    });
+
+    it('should handle remove duplicate param when there are multiple render tags', async () => {
+      const sourceCode = `
+        {% render 'snippet', param1: 'value1', param2: 'value2', param3: 'value3' %}
+        {% render 'snippet', param1: 'value4', param2: 'value5', param1: 'value6' %}
+       `;
+
+      const offenses = await runCheck(sourceCode);
+
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toMatch(/Duplicate parameter 'param1'/);
+      expect(offenses[0].start.index).toBe(sourceCode.indexOf("param1: 'value6'"));
+      const suggestionResult = applySuggestions(sourceCode, offenses[0]);
+      expect(suggestionResult).toEqual([
+        `
+        {% render 'snippet', param1: 'value1', param2: 'value2', param3: 'value3' %}
+        {% render 'snippet', param1: 'value4', param2: 'value5' %}
+       `,
+      ]);
     });
   });
 });
