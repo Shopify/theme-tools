@@ -1,5 +1,34 @@
 # @shopify/theme-check-node
 
+## 3.11.0
+
+### Minor Changes
+
+- 8a0393a1: Theme check to ensure liquid doc param names don't collide with reserved words
+
+  - Theme check will report a warning if param name collides with global liquid objects
+  - Theme check will report a warning if param name collides with liquid tags
+
+- c55077e7: Split ValidRenderSnippetParams theme check into MissingRenderSnippetParams and UnrecognizedRenderSnippetParams. This allows them to be disabled independantly.
+- a851f379: Add DuplicateRenderSnippetParams theme check
+
+  Introduces a new theme check to detect and report duplicate parameters in Liquid render tags. The check:
+
+  - Identifies duplicate parameter names in render snippets
+  - Provides suggestions to remove redundant parameters
+
+### Patch Changes
+
+- Updated dependencies [8a0393a1]
+- Updated dependencies [0d96194e]
+- Updated dependencies [21354237]
+- Updated dependencies [dafba833]
+- Updated dependencies [c55077e7]
+- Updated dependencies [48d4d79e]
+- Updated dependencies [a851f379]
+  - @shopify/theme-check-common@3.11.0
+  - @shopify/theme-check-docs-updater@3.11.0
+
 ## 3.10.0
 
 ### Minor Changes
