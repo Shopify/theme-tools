@@ -40,7 +40,8 @@ export class LiquidTagsCompletionProvider implements Provider {
     const partial = node.name.replace(CURSOR, '');
     const blockParent = findParentNode(partial, ancestors);
     const tags = await this.themeDocset.tags();
-    return tags
+    tags.push({ name: 'doc' });
+    const completions = tags
       .filter(({ name }) => name.startsWith(partial))
       .sort(sortByName)
       .map(toCompletionItem(params, node, ancestors, partial))
@@ -53,6 +54,7 @@ export class LiquidTagsCompletionProvider implements Provider {
             }
           : [],
       );
+    return completions;
   }
 }
 
@@ -453,5 +455,5 @@ function isLiquidLiquidTag(parent: LiquidHtmlNode): parent is LiquidTagLiquid {
 }
 
 function isBlockTag(name: string) {
-  return BLOCKS.includes(name);
+  return BLOCKS.includes(name) || name === 'doc';
 }
