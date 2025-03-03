@@ -76,6 +76,7 @@ export const tags: TagEntry[] = [
     ],
   },
   { name: 'echo' },
+  { name: 'doc' },
 ];
 
 describe('Module: LiquidTagsCompletionProvider', async () => {

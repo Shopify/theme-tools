@@ -40,8 +40,8 @@ export class LiquidTagsCompletionProvider implements Provider {
     const partial = node.name.replace(CURSOR, '');
     const blockParent = findParentNode(partial, ancestors);
     const tags = await this.themeDocset.tags();
-    tags.push({ name: 'doc' });
-    const completions = tags
+    const augmentedTags = tags.concat({ name: 'doc' });
+    const completions = augmentedTags
       .filter(({ name }) => name.startsWith(partial))
       .sort(sortByName)
       .map(toCompletionItem(params, node, ancestors, partial))
