@@ -76,6 +76,11 @@ export const tags: TagEntry[] = [
     ],
   },
   { name: 'echo' },
+  {
+    name: 'doc',
+    syntax: '{% doc %}doc_body{% enddoc %}',
+    syntax_keywords: [{ keyword: 'doc_body', description: '...' }],
+  },
 ];
 
 describe('Module: LiquidTagsCompletionProvider', async () => {
@@ -101,6 +106,7 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
     await expect(provider).to.complete('{% ren', ['render']);
     await expect(provider).to.complete('{% rend', ['render']);
     await expect(provider).to.complete('{% fo', ['for']);
+    await expect(provider).to.complete('{% do', ['doc'])
   });
 
   it('should complete end tags with the correct thing', async () => {
