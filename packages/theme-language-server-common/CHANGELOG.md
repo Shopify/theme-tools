@@ -1,5 +1,33 @@
 # @shopify/theme-language-server-common
 
+## 2.10.0
+
+### Minor Changes
+
+- d9fc9d03: Support LiquidDoc param code completion within snippet
+
+  - When a param is defined in LiquidDoc, it will appear as code completion suggestion
+    when performing a variable lookup in the file
+
+### Patch Changes
+
+- 110bb005: Renaming variables inside snippets also renames the LiquidDoc parameters
+
+  - You can rename doc params or variable usage in the file
+
+- 3a68fe5f: Update hover behaviour for the {% render %} tag to render new lines for multi-line descriptions
+- dafba833: [Internal] Update `getSnippetDefinitions` and `RenderSnippetHoverProvider` to account for trimmed newline characters in description and example nodes content.
+- Updated dependencies [8a0393a1]
+- Updated dependencies [0d96194e]
+- Updated dependencies [21354237]
+- Updated dependencies [dafba833]
+- Updated dependencies [c55077e7]
+- Updated dependencies [48d4d79e]
+- Updated dependencies [de877551]
+- Updated dependencies [a851f379]
+  - @shopify/theme-check-common@3.11.0
+  - @shopify/liquid-html-parser@2.7.0
+
 ## 2.9.1
 
 ### Patch Changes
