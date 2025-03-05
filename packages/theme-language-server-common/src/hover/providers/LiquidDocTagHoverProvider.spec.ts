@@ -48,30 +48,12 @@ describe('Module: RenderSnippetParameterHoverProvider', async () => {
     );
   });
 
-  it('should show the param help doc when hovering over the text', async () => {
+  it('should not show the param help doc when hovering over text outside param name', async () => {
     await expect(provider).to.hover(
       `{% doc %} @param {string} name - █your name {% enddoc %}`,
-      formatLiquidDocTagHandle(
-        'param',
-        SUPPORTED_LIQUID_DOC_TAG_HANDLES['param'].description,
-        SUPPORTED_LIQUID_DOC_TAG_HANDLES['param'].example,
-      ),
+      null,
     );
-    await expect(provider).to.hover(
-      `{% doc %} @example my █example {% enddoc %}`,
-      formatLiquidDocTagHandle(
-        'example',
-        SUPPORTED_LIQUID_DOC_TAG_HANDLES['example'].description,
-        SUPPORTED_LIQUID_DOC_TAG_HANDLES['example'].example,
-      ),
-    );
-    await expect(provider).to.hover(
-      `{% doc %} @description cool text█ is cool {% enddoc %}`,
-      formatLiquidDocTagHandle(
-        'description',
-        SUPPORTED_LIQUID_DOC_TAG_HANDLES['description'].description,
-        SUPPORTED_LIQUID_DOC_TAG_HANDLES['description'].example,
-      ),
-    );
+    await expect(provider).to.hover(`{% doc %} @example my █example {% enddoc %}`, null);
+    await expect(provider).to.hover(`{% doc %} @description cool text█ is cool {% enddoc %}`, null);
   });
 });

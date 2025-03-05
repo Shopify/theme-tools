@@ -57,7 +57,7 @@ export class HoverProvider {
       new TranslationHoverProvider(getTranslationsForURI, documentManager),
       new RenderSnippetHoverProvider(getSnippetDefinitionForURI),
       new RenderSnippetParameterHoverProvider(getSnippetDefinitionForURI),
-      new LiquidDocTagHoverProvider(),
+      new LiquidDocTagHoverProvider(documentManager),
     ];
   }
 
