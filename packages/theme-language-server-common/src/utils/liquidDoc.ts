@@ -41,7 +41,7 @@ export const SUPPORTED_LIQUID_DOC_TAG_HANDLES = {
     description: 'Provides an example on how to use the snippet.',
     example:
       '{% doc %}\n' + '  @example {% render "snippet-name", arg1: "value" %}\n' + '{% enddoc %}\n',
-    template: `example\n$0`,
+    template: `example $0`,
   },
   [SupportedDocTagTypes.Description]: {
     description: 'Provides information on what the snippet does.',
