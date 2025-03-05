@@ -320,7 +320,7 @@ export function startServer(
           codeActionKinds: [...CodeActionKinds],
         },
         completionProvider: {
-          triggerCharacters: ['.', '{{ ', '{% ', '<', '/', '[', '"', "'", ':'],
+          triggerCharacters: ['.', '{{ ', '{% ', '<', '/', '[', '"', "'", ':', '@'],
         },
         documentOnTypeFormattingProvider: {
           firstTriggerCharacter: ' ',
