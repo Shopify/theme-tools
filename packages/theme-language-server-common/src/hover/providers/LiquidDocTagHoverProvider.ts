@@ -1,41 +1,44 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidHtmlNode } from '@shopify/theme-check-common';
-import { Hover, MarkupKind } from 'vscode-languageserver';
+import { Hover, HoverParams, MarkupKind } from 'vscode-languageserver';
 import { BaseHoverProvider } from '../BaseHoverProvider';
 import { formatLiquidDocTagHandle, SUPPORTED_LIQUID_DOC_TAG_HANDLES } from '../../utils/liquidDoc';
+import { DocumentManager } from '../../documents';
 
 export class LiquidDocTagHoverProvider implements BaseHoverProvider {
-  constructor() {}
+  constructor(private documentManager: DocumentManager) {}
 
-  async hover(currentNode: LiquidHtmlNode, ancestors: LiquidHtmlNode[]): Promise<Hover | null> {
+  async hover(
+    currentNode: LiquidHtmlNode,
+    ancestors: LiquidHtmlNode[],
+    params: HoverParams,
+  ): Promise<Hover | null> {
     const parentNode = ancestors.at(-1);
 
-    let docTagNode;
-
-    // We could be hovering on the liquidDoc tag itself
     if (
-      currentNode.type === NodeTypes.LiquidDocParamNode ||
-      currentNode.type === NodeTypes.LiquidDocDescriptionNode ||
-      currentNode.type === NodeTypes.LiquidDocExampleNode
+      currentNode.type !== NodeTypes.LiquidDocParamNode &&
+      currentNode.type !== NodeTypes.LiquidDocDescriptionNode &&
+      currentNode.type !== NodeTypes.LiquidDocExampleNode
     ) {
-      docTagNode = currentNode;
-    }
-
-    // or we could be hovering on the liquidDoc tag's text
-    if (
-      (parentNode?.type === NodeTypes.LiquidDocParamNode ||
-        parentNode?.type === NodeTypes.LiquidDocDescriptionNode ||
-        parentNode?.type === NodeTypes.LiquidDocExampleNode) &&
-      currentNode.type === NodeTypes.TextNode
-    ) {
-      docTagNode = parentNode;
-    }
-
-    if (!docTagNode) {
       return null;
     }
 
-    const docTagData = SUPPORTED_LIQUID_DOC_TAG_HANDLES[docTagNode.name];
+    const document = this.documentManager.get(params.textDocument.uri)?.textDocument;
+
+    // We only want to provide hover when we are on the exact tag name
+    // If the cursor is passed that but still within the tag node, we ignore it
+    //
+    // E.g.
+    // Provide hover: @para█m name - description
+    // Don't provide hover: @param █name - description
+    if (
+      document &&
+      document.offsetAt(params.position) > currentNode.position.start + currentNode.name.length
+    ) {
+      return null;
+    }
+
+    const docTagData = SUPPORTED_LIQUID_DOC_TAG_HANDLES[currentNode.name];
 
     if (!docTagData) {
       return null;
@@ -45,7 +48,7 @@ export class LiquidDocTagHoverProvider implements BaseHoverProvider {
       contents: {
         kind: MarkupKind.Markdown,
         value: formatLiquidDocTagHandle(
-          docTagNode.name,
+          currentNode.name,
           docTagData.description,
           docTagData.example,
         ),
