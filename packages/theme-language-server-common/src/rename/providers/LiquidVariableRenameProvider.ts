@@ -1,5 +1,5 @@
 import { BaseRenameProvider } from '../BaseRenameProvider';
-import { DocumentManager } from '../../documents';
+import { AugmentedLiquidSourceCode, DocumentManager, isLiquidSourceCode } from '../../documents';
 import {
   LiquidHtmlNode,
   LiquidTagFor,
@@ -7,13 +7,15 @@ import {
   NamedTags,
   NodeTypes,
   Position,
+  RenderMarkup,
   AssignMarkup,
   TextNode,
   LiquidVariableLookup,
   ForMarkup,
 } from '@shopify/liquid-html-parser';
-import { Range } from 'vscode-languageserver';
+import { Connection, Range } from 'vscode-languageserver';
 import {
+  ApplyWorkspaceEditRequest,
   PrepareRenameParams,
   PrepareRenameResult,
   RenameParams,
@@ -21,12 +23,18 @@ import {
   TextEdit,
   WorkspaceEdit,
 } from 'vscode-languageserver-protocol';
-import { visit } from '@shopify/theme-check-common';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { JSONNode } from '@shopify/theme-check-common';
+import { JSONNode, SourceCodeType, visit } from '@shopify/theme-check-common';
+import { snippetName } from '../../utils/uri';
+import { ClientCapabilities } from '../../ClientCapabilities';
 
 export class LiquidVariableRenameProvider implements BaseRenameProvider {
-  constructor(private documentManager: DocumentManager) {}
+  constructor(
+    private connection: Connection,
+    private clientCapabilities: ClientCapabilities,
+    private documentManager: DocumentManager,
+    private findThemeRootURI: (uri: string) => Promise<string>,
+  ) {}
 
   async prepare(
     node: LiquidHtmlNode,
@@ -60,6 +68,7 @@ export class LiquidVariableRenameProvider implements BaseRenameProvider {
     params: RenameParams,
   ): Promise<null | WorkspaceEdit> {
     const document = this.documentManager.get(params.textDocument.uri);
+    const rootUri = await this.findThemeRootURI(params.textDocument.uri);
     const textDocument = document?.textDocument;
 
     if (!textDocument || !node || !ancestors) return null;
@@ -70,6 +79,8 @@ export class LiquidVariableRenameProvider implements BaseRenameProvider {
     const scope = variableNameBlockScope(oldName, ancestors);
     const replaceRange = textReplaceRange(oldName, textDocument, scope);
 
+    let liquidDocParamUpdated = false;
+
     const ranges: Range[] = visit(document.ast, {
       VariableLookup: replaceRange,
       AssignMarkup: replaceRange,
@@ -77,9 +88,19 @@ export class LiquidVariableRenameProvider implements BaseRenameProvider {
       TextNode: (node: LiquidHtmlNode, ancestors: (LiquidHtmlNode | JSONNode)[]) => {
         if (ancestors.at(-1)?.type !== NodeTypes.LiquidDocParamNode) return;
 
+        liquidDocParamUpdated = true;
+
         return replaceRange(node, ancestors);
       },
     });
+
+    if (this.clientCapabilities.hasApplyEditSupport && liquidDocParamUpdated) {
+      const themeFiles = this.documentManager.theme(rootUri, true);
+      const liquidSourceCodes = themeFiles.filter(isLiquidSourceCode);
+      const name = snippetName(params.textDocument.uri);
+
+      updateRenderTags(this.connection, liquidSourceCodes, name, oldName, params.newName);
+    }
 
     const textDocumentEdit = TextDocumentEdit.create(
       { uri: textDocument.uri, version: textDocument.version },
@@ -183,4 +204,68 @@ function textReplaceRange(
       textDocument.positionAt(node.position.start + oldName.length),
     );
   };
+}
+
+async function updateRenderTags(
+  connection: Connection,
+  liquidSourceCodes: AugmentedLiquidSourceCode[],
+  snippetName: string,
+  oldParamName: string,
+  newParamName: string,
+) {
+  const editLabel = `Rename snippet parameter '${oldParamName}' to '${newParamName}'`;
+  const annotationId = 'renameSnippetParameter';
+  const workspaceEdit: WorkspaceEdit = {
+    documentChanges: [],
+    changeAnnotations: {
+      [annotationId]: {
+        label: editLabel,
+        needsConfirmation: false,
+      },
+    },
+  };
+
+  for (const sourceCode of liquidSourceCodes) {
+    if (sourceCode.ast instanceof Error) continue;
+    const textDocument = sourceCode.textDocument;
+    const edits: TextEdit[] = visit<SourceCodeType.LiquidHtml, TextEdit>(sourceCode.ast, {
+      RenderMarkup(node: RenderMarkup) {
+        if (node.snippet.type !== NodeTypes.String || node.snippet.value !== snippetName) {
+          return;
+        }
+
+        const renamedNameParamNode = node.args.find((arg) => arg.name === oldParamName);
+
+        if (renamedNameParamNode) {
+          return {
+            newText: `${newParamName}: `,
+            range: Range.create(
+              textDocument.positionAt(renamedNameParamNode.position.start),
+              textDocument.positionAt(renamedNameParamNode.value.position.start),
+            ),
+          };
+        }
+      },
+    });
+
+    if (edits.length === 0) continue;
+    workspaceEdit.documentChanges!.push({
+      textDocument: {
+        uri: textDocument.uri,
+        version: sourceCode.version ?? null /* null means file from disk in this API */,
+      },
+      annotationId,
+      edits,
+    });
+  }
+
+  if (workspaceEdit.documentChanges!.length === 0) {
+    console.error('Nothing to do!');
+    return;
+  }
+
+  await connection.sendRequest(ApplyWorkspaceEditRequest.type, {
+    label: editLabel,
+    edit: workspaceEdit,
+  });
 }
