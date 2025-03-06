@@ -117,7 +117,12 @@ export function startServer(
   );
   const linkedEditingRangesProvider = new LinkedEditingRangesProvider(documentManager);
   const documentHighlightProvider = new DocumentHighlightsProvider(documentManager);
-  const renameProvider = new RenameProvider(documentManager);
+  const renameProvider = new RenameProvider(
+    connection,
+    clientCapabilities,
+    documentManager,
+    findThemeRootURI,
+  );
   const renameHandler = new RenameHandler(
     connection,
     clientCapabilities,

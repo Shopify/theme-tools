@@ -2,6 +2,10 @@ import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { Position, TextDocumentEdit } from 'vscode-languageserver-protocol';
 import { DocumentManager } from '../../documents';
 import { RenameProvider } from '../RenameProvider';
+import { ClientCapabilities } from '../../ClientCapabilities';
+import { mockConnection } from '../../test/MockConnection';
+
+const mockRoot = 'file:';
 
 describe('HtmlTagNameRenameProvider', () => {
   let documentManager: DocumentManager;
@@ -9,7 +13,12 @@ describe('HtmlTagNameRenameProvider', () => {
 
   beforeEach(() => {
     documentManager = new DocumentManager();
-    provider = new RenameProvider(documentManager);
+    provider = new RenameProvider(
+      mockConnection(mockRoot),
+      new ClientCapabilities(),
+      documentManager,
+      async () => mockRoot,
+    );
   });
 
   it('returns null when the cursor is not over an HTML tag name', async () => {

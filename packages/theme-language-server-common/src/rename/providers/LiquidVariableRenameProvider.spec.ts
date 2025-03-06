@@ -3,9 +3,23 @@ import { Position, TextDocumentEdit } from 'vscode-languageserver-protocol';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DocumentManager } from '../../documents';
 import { RenameProvider } from '../RenameProvider';
+import { mockConnection, MockConnection } from '../../test/MockConnection';
+import { ClientCapabilities } from '../../ClientCapabilities';
+
+const mockRoot = 'file:';
 
 describe('LiquidVariableRenameProvider', () => {
-  const textDocumentUri = 'file:///path/to/document.liquid';
+  const textDocumentUri = `${mockRoot}///snippets/example-snippet.liquid`;
+  const findThemeRootURI = async () => mockRoot;
+
+  let capabilities: ClientCapabilities;
+  let connection: MockConnection;
+
+  beforeEach(() => {
+    capabilities = new ClientCapabilities();
+    connection = mockConnection(mockRoot);
+    connection.spies.sendRequest.mockReturnValue(Promise.resolve(true));
+  });
 
   describe('unscoped variable', async () => {
     let documentManager: DocumentManager;
@@ -25,7 +39,7 @@ describe('LiquidVariableRenameProvider', () => {
 
     beforeEach(() => {
       documentManager = new DocumentManager();
-      provider = new RenameProvider(documentManager);
+      provider = new RenameProvider(connection, capabilities, documentManager, findThemeRootURI);
 
       textDocument = TextDocument.create(textDocumentUri, 'liquid', 1, documentSource);
       documentManager.open(textDocument.uri, documentSource, 1);
@@ -184,7 +198,7 @@ describe('LiquidVariableRenameProvider', () => {
 
     beforeEach(() => {
       documentManager = new DocumentManager();
-      provider = new RenameProvider(documentManager);
+      provider = new RenameProvider(connection, capabilities, documentManager, findThemeRootURI);
     });
 
     ['for', 'tablerow'].forEach((tag) => {
@@ -334,4 +348,105 @@ describe('LiquidVariableRenameProvider', () => {
       });
     });
   });
+
+  describe('updates across files', async () => {
+    let documentManager: DocumentManager;
+    let provider: RenameProvider;
+    let textDocument: TextDocument;
+
+    beforeEach(() => {
+      capabilities.setup({
+        workspace: {
+          applyEdit: true,
+        },
+      });
+      textDocument = TextDocument.create(
+        textDocumentUri,
+        'liquid',
+        1,
+        `{% doc %}
+  @param [name] - the name
+  @param [age] - the age
+{% enddoc %}`,
+      );
+
+      documentManager = new DocumentManager();
+      provider = new RenameProvider(connection, capabilities, documentManager, findThemeRootURI);
+
+      documentManager.open(textDocumentUri, textDocument.getText(), 1);
+    });
+
+    it("updates render tag's named parameter when exists", async () => {
+      createSectionWithSource(
+        documentManager,
+        'section1',
+        `<div>{% render 'example-snippet', name: 'Bob' %}</div>`,
+      );
+      createSectionWithSource(
+        documentManager,
+        'section2',
+        `<div>{% render 'example-snippet', age: 60 %}</div>`,
+      );
+
+      const params = {
+        textDocument,
+        position: Position.create(1, 11),
+        newName: 'first_name',
+      };
+      const result = await provider.rename(params);
+      assert(result);
+      assert(result.documentChanges);
+
+      expect(connection.spies.sendRequest).toHaveBeenCalledOnce();
+      expect(connection.spies.sendRequest).toHaveBeenCalledWith('workspace/applyEdit', {
+        label: `Rename snippet parameter 'name' to 'first_name'`,
+        edit: {
+          changeAnnotations: {
+            renameSnippetParameter: {
+              label: `Rename snippet parameter 'name' to 'first_name'`,
+              needsConfirmation: false,
+            },
+          },
+          documentChanges: [
+            {
+              textDocument: {
+                uri: getSectionUri('section1'),
+                version: 1,
+              },
+              edits: [
+                {
+                  newText: 'first_name: ',
+                  range: {
+                    end: {
+                      character: 40,
+                      line: 0,
+                    },
+                    start: {
+                      character: 34,
+                      line: 0,
+                    },
+                  },
+                },
+              ],
+              annotationId: 'renameSnippetParameter',
+            },
+          ],
+        },
+      });
+    });
+  });
 });
+
+function createSectionWithSource(
+  documentManager: DocumentManager,
+  sectionName: string,
+  source: string,
+) {
+  const sectionUri = getSectionUri(sectionName);
+  const sectionTextDocument = TextDocument.create(sectionUri, 'liquid', 1, source);
+  documentManager.open(sectionUri, sectionTextDocument.getText(), 1);
+}
+
+function getSectionUri(sectionName: string) {
+  return `${mockRoot}///sections/${sectionName}.liquid`;
+}

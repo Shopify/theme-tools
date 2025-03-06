@@ -12,6 +12,8 @@ import { findCurrentNode } from '@shopify/theme-check-common';
 import { BaseRenameProvider } from './BaseRenameProvider';
 import { HtmlTagNameRenameProvider } from './providers/HtmlTagNameRenameProvider';
 import { LiquidVariableRenameProvider } from './providers/LiquidVariableRenameProvider';
+import { Connection } from 'vscode-languageserver';
+import { ClientCapabilities } from '../ClientCapabilities';
 
 /**
  * RenameProvider is responsible for providing rename support for the theme language server.
@@ -21,10 +23,20 @@ import { LiquidVariableRenameProvider } from './providers/LiquidVariableRenamePr
 export class RenameProvider {
   private providers: BaseRenameProvider[];
 
-  constructor(private documentManager: DocumentManager) {
+  constructor(
+    connection: Connection,
+    clientCapabilities: ClientCapabilities,
+    private documentManager: DocumentManager,
+    findThemeRootURI: (uri: string) => Promise<string>,
+  ) {
     this.providers = [
       new HtmlTagNameRenameProvider(documentManager),
-      new LiquidVariableRenameProvider(documentManager),
+      new LiquidVariableRenameProvider(
+        connection,
+        clientCapabilities,
+        documentManager,
+        findThemeRootURI,
+      ),
     ];
   }
 
