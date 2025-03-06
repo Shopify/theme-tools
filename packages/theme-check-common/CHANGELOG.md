@@ -1,5 +1,31 @@
 # @shopify/theme-check-common
 
+## 3.11.0
+
+### Minor Changes
+
+- 8a0393a1: Theme check to ensure liquid doc param names don't collide with reserved words
+
+  - Theme check will report a warning if param name collides with global liquid objects
+  - Theme check will report a warning if param name collides with liquid tags
+
+- 0d96194e: Update MissingRenderSnippetParams to report when alias variable are provided using `with/for` syntax.
+- 21354237: Update UnrecognizedRenderSnippetParams to report when alias variable are provided using `with/for` syntax.
+- c55077e7: Split ValidRenderSnippetParams theme check into MissingRenderSnippetParams and UnrecognizedRenderSnippetParams. This allows them to be disabled independantly.
+- 48d4d79e: Update ValidRenderSnippetParamTypes to report when alias variable are provided using `with/for` syntax.
+- a851f379: Add DuplicateRenderSnippetParams theme check
+
+  Introduces a new theme check to detect and report duplicate parameters in Liquid render tags. The check:
+
+  - Identifies duplicate parameter names in render snippets
+  - Provides suggestions to remove redundant parameters
+
+### Patch Changes
+
+- dafba833: [Internal] Update `getSnippetDefinitions` and `RenderSnippetHoverProvider` to account for trimmed newline characters in description and example nodes content.
+- Updated dependencies [de877551]
+  - @shopify/liquid-html-parser@2.7.0
+
 ## 3.10.0
 
 ### Minor Changes

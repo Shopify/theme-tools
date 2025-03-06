@@ -1,5 +1,19 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.9.0
+
+### Minor Changes
+
+- 8ff89592: Adjust LiquidDoc formatting rules for single-line and multi-line examples and descriptions
+
+  - Multi-line content starts on a new line
+  - Single-line content is kept on the same line or a new line as it was provided
+
+### Patch Changes
+
+- Updated dependencies [de877551]
+  - @shopify/liquid-html-parser@2.7.0
+
 ## 1.8.3
 
 ### Patch Changes
