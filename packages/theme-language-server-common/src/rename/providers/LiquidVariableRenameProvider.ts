@@ -245,6 +245,23 @@ async function updateRenderTags(
             ),
           };
         }
+
+        if (node.alias === oldParamName && node.variable) {
+          // `as variable` is not captured in our liquid parser yet,
+          // so we have to check it manually and replace it
+          const aliasMatch = /as\s+([^\s,]+)/g;
+          const match = aliasMatch.exec(node.source.slice(node.position.start, node.position.end));
+
+          if (!match) return;
+
+          return {
+            newText: `as ${newParamName}`,
+            range: Range.create(
+              textDocument.positionAt(node.position.start + match.index),
+              textDocument.positionAt(node.position.start + match.index + match[0].length),
+            ),
+          };
+        }
       },
     });
 

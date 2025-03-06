@@ -434,6 +434,65 @@ describe('LiquidVariableRenameProvider', () => {
         },
       });
     });
+
+    ['with', 'for'].forEach((aliasTag) => {
+      it(`updates render tag's '${aliasTag} as' alias when exists`, async () => {
+        const renderTagSource = `<div>{% render 'example-snippet' ${aliasTag} 'Bob' as name %}</div>`;
+
+        createSectionWithSource(documentManager, 'section1', renderTagSource);
+        createSectionWithSource(
+          documentManager,
+          'section2',
+          `<div>{% render 'example-snippet' ${aliasTag} 'Bob' as friend %}</div>`,
+        );
+
+        const params = {
+          textDocument,
+          position: Position.create(1, 11),
+          newName: 'first_name',
+        };
+        const result = await provider.rename(params);
+        assert(result);
+        assert(result.documentChanges);
+
+        expect(connection.spies.sendRequest).toHaveBeenCalledOnce();
+        expect(connection.spies.sendRequest).toHaveBeenCalledWith('workspace/applyEdit', {
+          label: `Rename snippet parameter 'name' to 'first_name'`,
+          edit: {
+            changeAnnotations: {
+              renameSnippetParameter: {
+                label: `Rename snippet parameter 'name' to 'first_name'`,
+                needsConfirmation: false,
+              },
+            },
+            documentChanges: [
+              {
+                textDocument: {
+                  uri: getSectionUri('section1'),
+                  version: 1,
+                },
+                edits: [
+                  {
+                    newText: 'as first_name',
+                    range: {
+                      end: {
+                        character: renderTagSource.indexOf('as name') + 'as name'.length,
+                        line: 0,
+                      },
+                      start: {
+                        character: renderTagSource.indexOf('as name'),
+                        line: 0,
+                      },
+                    },
+                  },
+                ],
+                annotationId: 'renameSnippetParameter',
+              },
+            ],
+          },
+        });
+      });
+    });
   });
 });
 
