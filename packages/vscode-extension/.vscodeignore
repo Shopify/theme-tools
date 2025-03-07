@@ -1,7 +1,6 @@
 .vscode/
 .github/
 .DS_Store
-.eslintrc.js
 .projections.json
 .gitignore
 .gitmodules
@@ -12,6 +11,7 @@ images/*.gif
 CONTRIBUTING.md
 CODE_OF_CONDUCT.md
 RELEASING.md
+eslint.config.mjs
 webpack.config.js
 theme-check-vscode*.vsix
 yarn.lock
