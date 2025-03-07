@@ -82,6 +82,7 @@ export enum ConcreteNodeTypes {
   RenderMarkup = 'RenderMarkup',
   PaginateMarkup = 'PaginateMarkup',
   RenderVariableExpression = 'RenderVariableExpression',
+  RenderAliasExpression = 'RenderAliasExpression',
   ContentForNamedArgument = 'ContentForNamedArgument',
 
   LiquidDocParamNode = 'LiquidDocParamNode',
@@ -377,8 +378,8 @@ export interface ConcreteLiquidTagContentForMarkup
 export interface ConcreteLiquidTagRenderMarkup
   extends ConcreteBasicNode<ConcreteNodeTypes.RenderMarkup> {
   snippet: ConcreteStringLiteral | ConcreteLiquidVariableLookup;
-  alias: string | null;
   variable: ConcreteRenderVariableExpression | null;
+  aliasExpression: ConcreteRenderAliasExpression | null;
   renderArguments: ConcreteLiquidNamedArgument[];
 }
 
@@ -386,6 +387,11 @@ export interface ConcreteRenderVariableExpression
   extends ConcreteBasicNode<ConcreteNodeTypes.RenderVariableExpression> {
   kind: 'for' | 'with';
   name: ConcreteLiquidExpression;
+}
+
+export interface ConcreteRenderAliasExpression
+  extends ConcreteBasicNode<ConcreteNodeTypes.RenderAliasExpression> {
+  alias: string;
 }
 
 export interface ConcreteLiquidVariableOutput
@@ -867,7 +873,7 @@ function toCST<T>(
       type: ConcreteNodeTypes.RenderMarkup,
       snippet: 0,
       variable: 1,
-      alias: 2,
+      aliasExpression: 2,
       renderArguments: 3,
       locStart,
       locEnd,
@@ -900,7 +906,13 @@ function toCST<T>(
       locEnd,
       source,
     },
-    renderAliasExpression: 3,
+    renderAliasExpression: {
+      type: ConcreteNodeTypes.RenderAliasExpression,
+      alias: 3,
+      locStart,
+      locEnd,
+      source,
+    },
 
     liquidDrop: {
       type: ConcreteNodeTypes.LiquidVariableOutput,
