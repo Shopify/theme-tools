@@ -1,5 +1,31 @@
 ## theme-check-vscode
 
+## 3.6.0
+
+### Minor Changes
+
+- d1909354: Update vscode-extension syntaxes module to latest commit in order to use liquid doc syntax highlighting
+
+### Patch Changes
+
+- 52c90b15: Update liquid-tm-grammar commit to incorporate example node bug fix
+- 5214069a: Bump liquid-tm-grammar to latest version
+- 9d99a410: Fix bug in liquid-tm-grammar built files
+- Updated dependencies [8ff89592]
+- Updated dependencies [8a0393a1]
+- Updated dependencies [0d96194e]
+- Updated dependencies [21354237]
+- Updated dependencies [dafba833]
+- Updated dependencies [c55077e7]
+- Updated dependencies [48d4d79e]
+- Updated dependencies [de877551]
+- Updated dependencies [a851f379]
+  - @shopify/prettier-plugin-liquid@1.9.0
+  - @shopify/theme-check-common@3.11.0
+  - @shopify/liquid-html-parser@2.7.0
+  - @shopify/theme-language-server-browser@2.10.0
+  - @shopify/theme-language-server-node@2.10.0
+
 ## 3.5.7
 
 ### Patch Changes

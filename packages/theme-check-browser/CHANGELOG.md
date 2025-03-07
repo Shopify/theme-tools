@@ -1,5 +1,18 @@
 # @shopify/theme-check-browser
 
+## 3.11.0
+
+### Patch Changes
+
+- Updated dependencies [8a0393a1]
+- Updated dependencies [0d96194e]
+- Updated dependencies [21354237]
+- Updated dependencies [dafba833]
+- Updated dependencies [c55077e7]
+- Updated dependencies [48d4d79e]
+- Updated dependencies [a851f379]
+  - @shopify/theme-check-common@3.11.0
+
 ## 3.10.0
 
 ### Patch Changes

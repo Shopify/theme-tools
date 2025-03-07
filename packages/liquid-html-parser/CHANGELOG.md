@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.7.0
+
+### Minor Changes
+
+- de877551: Modify parsing logic to capture leading whitespace on `description` and `example` nodes and add a `isInline` property to indicate whether content was provided inline or on a new line.
+
 ## 2.6.0
 
 ### Minor Changes
