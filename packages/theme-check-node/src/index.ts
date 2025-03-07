@@ -153,8 +153,15 @@ export async function getTheme(config: Config): Promise<Theme> {
   // as mentioned in the documentation of node-glob
 
   // the path is normalised and '\' are replaced with '/' and then passed to the glob function
+  const isWin = process.platform === 'win32';
+
+  let replaceFile = /^file:/;
+  if (isWin) {
+    replaceFile = /^file:\/\/\//;
+  }
+
   const normalizedGlob = path
-    .normalize(path.join(config.rootUri.replace(/^file:/, ''), '**/*.{liquid,json}'))
+    .normalize(path.join(config.rootUri.replace(replaceFile, ''), '**/*.{liquid,json}'))
     .replace(/\\/g, '/');
   const paths = await asyncGlob(normalizedGlob).then((result) =>
     // Global ignored paths should not be part of the theme
