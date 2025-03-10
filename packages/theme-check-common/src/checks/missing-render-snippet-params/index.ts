@@ -82,7 +82,8 @@ export const MissingRenderSnippetParams: LiquidCheckDefinition = {
 
         const providedParams = new Map(node.args.map((arg) => [arg.name, arg]));
         const missingRequiredParams = snippetDef.liquidDoc.parameters.filter(
-          (p) => p.required && !providedParams.has(p.name) && p.name !== node.alias,
+          (p) =>
+            p.required && !providedParams.has(p.name) && p.name !== node.aliasExpression?.alias,
         );
 
         reportMissingParams(missingRequiredParams, node, snippetName);

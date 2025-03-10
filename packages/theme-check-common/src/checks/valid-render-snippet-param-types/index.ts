@@ -124,11 +124,13 @@ export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
       liquidDocParameters: Map<string, LiquidDocParameter>,
     ) {
       if (
-        node.alias &&
+        node.aliasExpression?.alias &&
         node.variable?.name &&
         node.variable.name.type !== NodeTypes.VariableLookup
       ) {
-        const paramIsDefinedWithType = liquidDocParameters.get(node.alias)?.type?.toLowerCase();
+        const paramIsDefinedWithType = liquidDocParameters
+          .get(node.aliasExpression.alias)
+          ?.type?.toLowerCase();
         if (paramIsDefinedWithType) {
           const providedParamType = inferArgumentType(node.variable.name);
           if (!isTypeCompatible(paramIsDefinedWithType, providedParamType)) {
@@ -139,7 +141,7 @@ export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
             );
 
             context.report({
-              message: `Type mismatch for parameter '${node.alias}': expected ${paramIsDefinedWithType}, got ${providedParamType}`,
+              message: `Type mismatch for parameter '${node.aliasExpression.alias}': expected ${paramIsDefinedWithType}, got ${providedParamType}`,
               startIndex: node.variable.name.position.start,
               endIndex: node.variable.name.position.end,
               suggest: suggestions,
