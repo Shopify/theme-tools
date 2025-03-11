@@ -137,7 +137,6 @@ describe('Module: TypeSystem', () => {
         return {
           article: [],
           blog: [],
-          brand: [],
           collection: [],
           company: [],
           company_location: [],

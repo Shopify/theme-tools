@@ -152,7 +152,6 @@ function isIgnored([uri, type]: FileTuple) {
 export const FETCHED_METAFIELD_CATEGORIES: MetafieldCategory[] = [
   'article',
   'blog',
-  'brand',
   'collection',
   'company',
   'company_location',
@@ -170,7 +169,6 @@ export const makeGetMetafieldDefinitions = (fs: AbstractFileSystem) =>
     const definitions = {
       article: [],
       blog: [],
-      brand: [],
       collection: [],
       company: [],
       company_location: [],
