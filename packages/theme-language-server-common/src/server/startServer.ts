@@ -286,10 +286,14 @@ export function startServer(
     if (!fetchMetafieldDefinitionsForURI) return;
 
     for (let folder of folders) {
-      const mode = await getModeForURI(folder.uri);
+      try {
+        const mode = await getModeForURI(folder.uri);
 
-      if (mode === 'theme') {
-        fetchMetafieldDefinitionsForURI(folder.uri);
+        if (mode === 'theme') {
+          fetchMetafieldDefinitionsForURI(folder.uri);
+        }
+      } catch (_err) {
+        // ignore if we can't find mode for folder uri
       }
     }
   };
