@@ -18,6 +18,10 @@ export async function fetchMetafieldDefinitionsForURI(uri: string) {
     await exec(`${path} theme metafields pull`, {
       cwd: new URL(uri),
       timeout: 10_000,
+      env: {
+        ...process.env,
+        SHOPIFY_LANGUAGE_SERVER: '1',
+      },
     });
   } catch (_) {
     // CLI command can break because of incorrect version or not being logged in
