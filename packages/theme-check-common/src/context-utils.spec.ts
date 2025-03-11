@@ -77,7 +77,6 @@ describe('Unit: getDefaultLocale', () => {
       expect(definitions).deep.equals({
         article: [],
         blog: [],
-        brand: [],
         collection: [],
         company: [],
         company_location: [],

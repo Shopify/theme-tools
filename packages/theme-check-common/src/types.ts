@@ -273,7 +273,6 @@ type CheckLifecycleMethods<T extends SourceCodeType> = {
 export type MetafieldCategory =
   | 'article'
   | 'blog'
-  | 'brand'
   | 'collection'
   | 'company'
   | 'company_location'

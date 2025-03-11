@@ -82,7 +82,6 @@ describe('Module: ObjectCompletionProvider', async () => {
         return {
           article: [],
           blog: [],
-          brand: [],
           collection: [],
           company: [],
           company_location: [],

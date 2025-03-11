@@ -100,7 +100,6 @@ describe('Module: LiquidObjectHoverProvider', async () => {
         return {
           article: [],
           blog: [],
-          brand: [],
           collection: [],
           company: [],
           company_location: [],
