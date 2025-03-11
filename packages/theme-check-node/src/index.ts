@@ -26,6 +26,7 @@ import glob = require('glob');
 import { autofix } from './autofix';
 import { findConfigPath, loadConfig as resolveConfig } from './config';
 import { NodeFileSystem } from './NodeFileSystem';
+import { fileURLToPath } from 'node:url';
 
 const asyncGlob = promisify(glob);
 
@@ -153,13 +154,18 @@ export async function getTheme(config: Config): Promise<Theme> {
   // as mentioned in the documentation of node-glob
 
   // the path is normalised and '\' are replaced with '/' and then passed to the glob function
-  const normalizedGlob = path
-    .normalize(path.join(config.rootUri.replace(/^file:/, ''), '**/*.{liquid,json}'))
-    .replace(/\\/g, '/');
-  const paths = await asyncGlob(normalizedGlob).then((result) =>
+  let normalizedGlob = getThemeFilesPathPattern(config.rootUri);
+
+  const paths = await asyncGlob(normalizedGlob, { absolute: true }).then((result) =>
     // Global ignored paths should not be part of the theme
     result.filter((filePath) => !isIgnored(filePath, config)),
   );
   const sourceCodes = await Promise.all(paths.map(toSourceCode));
   return sourceCodes.filter((x): x is LiquidSourceCode | JSONSourceCode => x !== undefined);
+}
+
+export function getThemeFilesPathPattern(rootUri: string) {
+  return path
+    .normalize(path.join(fileURLToPath(rootUri), '**/*.{liquid,json}'))
+    .replace(/\\/g, '/');
 }

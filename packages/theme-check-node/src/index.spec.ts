@@ -1,6 +1,7 @@
 import { afterEach, assert, beforeEach, describe, expect, it } from 'vitest';
-import { Config, SourceCodeType, getTheme } from './index';
+import { Config, SourceCodeType, getTheme, getThemeFilesPathPattern } from './index';
 import { Workspace, makeTempWorkspace } from './test/test-helpers';
+import { pathToFileURL } from 'node:url';
 
 describe('Unit: getTheme', () => {
   let workspace: Workspace;
@@ -35,5 +36,16 @@ describe('Unit: getTheme', () => {
 
     // internally we expect the path to be normalized
     expect(jsonFile.uri).to.equal(workspace.uri('locales/en.default.json').replace(/\\/g, '/'));
+  });
+});
+
+describe('Unit: getThemeFilesPathPattern', () => {
+  // This is mostly just to catch edge cases in Windows paths. We want
+  // to ensure that paths do not start with a leading slash on Windows.
+  it('should correctly format the glob pattern', () => {
+    const rootUri = pathToFileURL(__dirname);
+    const normalizedGlob = getThemeFilesPathPattern(rootUri.toString());
+
+    expect(normalizedGlob).to.equal(__dirname.replace(/\\/g, '/') + '/**/*.{liquid,json}');
   });
 });
