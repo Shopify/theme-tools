@@ -1,5 +1,17 @@
 # @shopify/theme-language-server-common
 
+## 2.10.1
+
+### Patch Changes
+
+- 9ffbe27d: Remove `brand` from list of metafield owner types being fetched
+
+  - Brand is removed from ownerType
+  - https://shopify.dev/docs/api/admin-graphql/latest/queries/metafieldDefinitions
+
+- Updated dependencies [9ffbe27d]
+  - @shopify/theme-check-common@3.11.1
+
 ## 2.10.0
 
 ### Minor Changes

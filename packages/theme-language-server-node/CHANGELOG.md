@@ -1,5 +1,16 @@
 # @shopify/theme-language-server-node
 
+## 2.10.1
+
+### Patch Changes
+
+- 5005c310: [internal] Add env var when CLI command is run
+- Updated dependencies [5a5b7592]
+- Updated dependencies [9ffbe27d]
+  - @shopify/theme-check-node@3.11.1
+  - @shopify/theme-language-server-common@2.10.1
+  - @shopify/theme-check-docs-updater@3.11.1
+
 ## 2.10.0
 
 ### Patch Changes

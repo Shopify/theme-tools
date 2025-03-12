@@ -1,5 +1,14 @@
 # @shopify/theme-check-node
 
+## 3.11.1
+
+### Patch Changes
+
+- 5a5b7592: [Bug fix] Fix file URI handling for Windows platforms
+- Updated dependencies [9ffbe27d]
+  - @shopify/theme-check-common@3.11.1
+  - @shopify/theme-check-docs-updater@3.11.1
+
 ## 3.11.0
 
 ### Minor Changes
