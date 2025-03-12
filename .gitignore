@@ -21,3 +21,4 @@ package-lock.json
 packages/theme-check-docs-updater/data
 packages/lang-jsonc/src/parser.*
 .vscode-test-web
+.shopify

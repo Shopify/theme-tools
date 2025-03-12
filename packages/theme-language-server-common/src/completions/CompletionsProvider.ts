@@ -30,6 +30,7 @@ import { GetSnippetNamesForURI } from './providers/RenderSnippetCompletionProvid
 import { RenderSnippetParameterCompletionProvider } from './providers/RenderSnippetParameterCompletionProvider';
 import { LiquidDocTagCompletionProvider } from './providers/LiquidDocTagCompletionProvider';
 import { LiquidDocParamTypeCompletionProvider } from './providers/LiquidDocParamTypeCompletionProvider';
+import { CompletionsForStyleSheetProvider } from './providers/CompletionsForStyleSheetProvider';
 
 export interface CompletionProviderDependencies {
   documentManager: DocumentManager;
@@ -72,6 +73,7 @@ export class CompletionsProvider {
     );
 
     this.providers = [
+      new CompletionsForStyleSheetProvider(),
       new ContentForCompletionProvider(),
       new ContentForBlockTypeCompletionProvider(getThemeBlockNames),
       new ContentForParameterCompletionProvider(),

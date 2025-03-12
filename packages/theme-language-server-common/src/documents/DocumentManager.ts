@@ -181,10 +181,26 @@ export class DocumentManager {
           textDocument,
         };
       case SourceCodeType.LiquidHtml:
+        const stylesheet = sourceCode.source.match(
+          /{% stylesheet %}([\s\S]*?){% endstylesheet %}/,
+        );
         return {
           ...sourceCode,
           textDocument,
-
+          stylesheet: stylesheet && stylesheet[1]
+            ? {
+                source: TextDocument.create(
+                  uri + '-css',
+                  'css',
+                  sourceCode.version ?? 0,
+                  stylesheet[1],
+                ),
+                tagStart: sourceCode.source.indexOf('{% stylesheet %}'),
+                tagEnd: sourceCode.source.indexOf('{% endstylesheet %}'),
+                cssStart: sourceCode.source.indexOf('{% stylesheet %}') + '{% stylesheet %}'.length - 1,
+                cssEnd: sourceCode.source.indexOf('{% endstylesheet %}') - '{% endstylesheet %}'.length - 1,
+              }
+            : undefined,
           /** Lazy and only computed once per file version */
           getSchema: memo(async () => {
             if (!this.getModeForUri || !this.isValidSchema) return undefined;
