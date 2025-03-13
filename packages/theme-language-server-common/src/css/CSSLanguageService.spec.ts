@@ -1,4 +1,3 @@
-import { Mode, Translations } from '@shopify/theme-check-common';
 import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { DocumentManager } from '../documents';
 import { CSSLanguageService } from './CSSLanguageService';
@@ -16,9 +15,7 @@ describe('Module: CSSLanguageService', () => {
       async () => 'theme', // theme schema
       async () => false, // invalid
     );
-    cssLanguageService = new CSSLanguageService(documentManager, (uri: string) =>
-      Promise.resolve(uri.includes('tae') ? 'app' : 'theme'),
-    );
+    cssLanguageService = new CSSLanguageService(documentManager);
 
     await cssLanguageService.setup({
       textDocument: {
