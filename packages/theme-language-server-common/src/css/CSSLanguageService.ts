@@ -34,11 +34,11 @@ export class CSSLanguageService {
     return service.doComplete(stylesheetTextDocument, params.position, stylesheetDocument);
   }
 
-  async diagnostics(params: DocumentDiagnosticParams): Promise<Diagnostic[] | null> {
+  async diagnostics(params: DocumentDiagnosticParams): Promise<Diagnostic[]> {
     const service = this.service;
-    if (!service) return null;
+    if (!service) return [];
     const documents = this.getDocuments(params, service);
-    if (!documents) return null;
+    if (!documents) return [];
     const [stylesheetTextDocument, stylesheetDocument] = documents;
     return service.doValidation(stylesheetTextDocument, stylesheetDocument);
   }

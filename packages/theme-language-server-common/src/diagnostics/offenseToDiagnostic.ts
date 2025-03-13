@@ -60,3 +60,21 @@ function diagnosticSeverity(offense: Offense): DiagnosticSeverity {
     }
   }
 }
+
+export function offenseSeverity(diagnostic: Diagnostic): Severity {
+  switch (diagnostic.severity) {
+    case DiagnosticSeverity.Hint:
+    case DiagnosticSeverity.Information: {
+      return Severity.INFO;
+    }
+    case DiagnosticSeverity.Warning: {
+      return Severity.WARNING;
+    }
+    case DiagnosticSeverity.Error: {
+      return Severity.ERROR;
+    }
+    default: {
+      return Severity.INFO;
+    }
+  }
+}

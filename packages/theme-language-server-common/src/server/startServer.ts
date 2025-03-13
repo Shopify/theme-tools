@@ -150,6 +150,7 @@ export function startServer(
 
   // These are augmented here so that the caching is maintained over different runs.
   const themeDocset = new AugmentedThemeDocset(remoteThemeDocset);
+  const cssLanguageService = new CSSLanguageService(documentManager);
   const runChecks = debounce(
     makeRunChecks(documentManager, diagnosticsManager, {
       fs,
@@ -157,6 +158,7 @@ export function startServer(
       themeDocset,
       jsonValidationSet,
       getMetafieldDefinitions,
+      cssLanguageService,
     }),
     100,
   );
@@ -247,7 +249,6 @@ export function startServer(
     return jsonLanguageService.isValidSchema(uri, jsonString);
   }
 
-  const cssLanguageService = new CSSLanguageService(documentManager);
   const jsonLanguageService = new JSONLanguageService(
     documentManager,
     jsonValidationSet,
