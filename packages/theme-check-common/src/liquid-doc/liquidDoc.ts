@@ -68,13 +68,13 @@ export function getSnippetDefinition(
     },
     LiquidDocExampleNode(node: LiquidDocExampleNode) {
       return {
-        content: node.content.value.trim(),
+        content: handleMultilineIndentation(node.content.value.trim()),
         nodeType: 'example',
       };
     },
     LiquidDocDescriptionNode(node: LiquidDocDescriptionNode) {
       return {
-        content: node.content.value.trim(),
+        content: handleMultilineIndentation(node.content.value.trim()),
         nodeType: 'description',
       };
     },
@@ -107,4 +107,28 @@ export function getSnippetDefinition(
       ...(description && { description }),
     },
   };
+}
+
+function handleMultilineIndentation(text: string): string {
+  const lines = text.split('\n');
+
+  if (lines.length <= 1) return text;
+
+  const nonEmptyLines = lines.slice(1).filter((line) => line.trim().length > 0);
+  const indentLengths = nonEmptyLines.map((line) => {
+    const match = line.match(/^\s*/);
+    return match ? match[0].length : 0;
+  });
+
+  if (indentLengths.length === 0) return text;
+
+  const minIndent = Math.min(...indentLengths);
+
+  return [
+    lines[0],
+    ...lines.slice(1).map((line) => {
+      if (line.trim().length === 0) return line; // Skip empty lines
+      return line.slice(minIndent);
+    }),
+  ].join('\n');
 }

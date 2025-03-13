@@ -75,9 +75,7 @@ describe('Module: RenderSnippetHoverProvider', async () => {
 **Description:**
 
 
-\`\`\`plaintext
 This is a description
-\`\`\`
 
 **Parameters:**
 - \`title\`: string - The title of the product

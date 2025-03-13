@@ -129,7 +129,7 @@ describe('Unit: getSnippetDefinition', () => {
       liquidDoc: {
         examples: [
           {
-            content: '{{ product }}\n          {{ product.title }}',
+            content: '{{ product }}\n{{ product.title }}',
             nodeType: 'example',
           },
         ],
@@ -276,7 +276,7 @@ describe('Unit: getSnippetDefinition', () => {
       name: 'product-card',
       liquidDoc: {
         description: {
-          content: 'this is an implicit description\n        in a header',
+          content: 'this is an implicit description\nin a header',
           nodeType: 'description',
         },
         parameters: [
