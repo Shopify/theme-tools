@@ -35,6 +35,7 @@ import { DocumentManager } from '../documents';
 import { OnTypeFormattingProvider } from '../formatting';
 import { HoverProvider } from '../hover';
 import { JSONLanguageService } from '../json/JSONLanguageService';
+import { CSSLanguageService } from '../css/CSSLanguageService';
 import { LinkedEditingRangesProvider } from '../linkedEditingRanges/LinkedEditingRangesProvider';
 import { RenameProvider } from '../rename/RenameProvider';
 import { RenameHandler } from '../renamed/RenameHandler';
@@ -246,6 +247,7 @@ export function startServer(
     return jsonLanguageService.isValidSchema(uri, jsonString);
   }
 
+  const cssLanguageService = new CSSLanguageService(documentManager);
   const jsonLanguageService = new JSONLanguageService(
     documentManager,
     jsonValidationSet,
@@ -296,6 +298,7 @@ export function startServer(
 
   connection.onInitialize((params) => {
     clientCapabilities.setup(params.capabilities, params.initializationOptions);
+    cssLanguageService.setup(params.capabilities);
     jsonLanguageService.setup(params.capabilities);
     configuration.setup();
 
@@ -472,6 +475,7 @@ export function startServer(
   connection.onCompletion(async (params) => {
     if (hasUnsupportedDocument(params)) return [];
     return (
+      (await cssLanguageService.completions(params)) ??
       (await jsonLanguageService.completions(params)) ??
       (await completionsProvider.completions(params))
     );
@@ -479,7 +483,11 @@ export function startServer(
 
   connection.onHover(async (params) => {
     if (hasUnsupportedDocument(params)) return null;
-    return (await jsonLanguageService.hover(params)) ?? (await hoverProvider.hover(params));
+    return (
+      (await cssLanguageService.hover(params)) ??
+      (await jsonLanguageService.hover(params)) ??
+      (await hoverProvider.hover(params))
+    );
   });
 
   connection.onDocumentOnTypeFormatting(async (params) => {

@@ -16,14 +16,6 @@ type _AugmentedSourceCode<SCT extends SourceCodeType = SourceCodeType> = SourceC
 /** JsonSourceCode + textDocument */
 export type AugmentedJsonSourceCode = _AugmentedSourceCode<SourceCodeType.JSON>;
 
-export type StyleSheetTag = {
-  source: TextDocument;
-  tagStart: number;
-  tagEnd: number;
-  cssStart: number;
-  cssEnd: number;
-};
-
 /**
  * AugmentedLiquidSourceCode may hold the schema for the section or block.
  *
@@ -33,7 +25,6 @@ export type StyleSheetTag = {
 export type AugmentedLiquidSourceCode = _AugmentedSourceCode<SourceCodeType.LiquidHtml> & {
   getSchema: () => Promise<SectionSchema | ThemeBlockSchema | AppBlockSchema | undefined>;
   getLiquidDoc: (snippetName: string) => Promise<SnippetDefinition | undefined>;
-  stylesheet: StyleSheetTag | undefined;
 };
 
 /**
