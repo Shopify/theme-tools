@@ -1,16 +1,20 @@
 import {
-  ThemeBlockSchema,
   check,
   findRoot,
   makeFileExists,
+  Offense,
   path,
   SectionSchema,
+  Severity,
   SourceCodeType,
+  ThemeBlockSchema,
 } from '@shopify/theme-check-common';
 
-import { DocumentManager } from '../documents';
+import { CSSLanguageService } from '../css/CSSLanguageService';
+import { AugmentedSourceCode, DocumentManager } from '../documents';
 import { Dependencies } from '../types';
 import { DiagnosticsManager } from './DiagnosticsManager';
+import { offenseSeverity } from './offenseToDiagnostic';
 
 export function makeRunChecks(
   documentManager: DocumentManager,
@@ -21,10 +25,11 @@ export function makeRunChecks(
     themeDocset,
     jsonValidationSet,
     getMetafieldDefinitions,
+    cssLanguageService,
   }: Pick<
     Dependencies,
     'fs' | 'loadConfig' | 'themeDocset' | 'jsonValidationSet' | 'getMetafieldDefinitions'
-  >,
+  > & { cssLanguageService?: CSSLanguageService },
 ) {
   return async function runChecks(triggerURIs: string[]): Promise<void> {
     // This function takes an array of triggerURIs so that we can correctly
@@ -46,7 +51,14 @@ export function makeRunChecks(
     async function runChecksForRoot(configFileRootUri: string) {
       const config = await loadConfig(configFileRootUri, fs);
       const theme = documentManager.theme(config.rootUri);
-      const offenses = await check(theme, config, {
+
+      const cssOffenses = cssLanguageService
+        ? await Promise.all(
+            theme.map((sourceCode) => getCSSDiagnostics(cssLanguageService, sourceCode)),
+          ).then((offenses) => offenses.flat())
+        : [];
+
+      const themeOffenses = await check(theme, config, {
         fs,
         themeDocset,
         jsonValidationSet,
@@ -71,6 +83,7 @@ export function makeRunChecks(
           return schema as SectionSchema | undefined;
         },
       });
+      const offenses = [...themeOffenses, ...cssOffenses];
 
       // We iterate over the theme files (as opposed to offenses) because if
       // there were offenses before, we need to send an empty array to clear
@@ -81,4 +94,39 @@ export function makeRunChecks(
       }
     }
   };
+}
+
+async function getCSSDiagnostics(
+  cssLanguageService: CSSLanguageService,
+  sourceCode: AugmentedSourceCode,
+): Promise<Offense[]> {
+  if (sourceCode.type !== SourceCodeType.LiquidHtml) {
+    return [];
+  }
+
+  const diagnostics = await cssLanguageService.diagnostics({
+    textDocument: { uri: sourceCode.uri },
+  });
+
+  return diagnostics
+    .map(
+      (diagnostic): Offense => ({
+        check: 'css',
+        message: diagnostic.message,
+        end: {
+          index: sourceCode.textDocument.offsetAt(diagnostic.range.end),
+          line: diagnostic.range.end.line,
+          character: diagnostic.range.end.character,
+        },
+        start: {
+          index: sourceCode.textDocument.offsetAt(diagnostic.range.start),
+          line: diagnostic.range.start.line,
+          character: diagnostic.range.start.character,
+        },
+        severity: offenseSeverity(diagnostic),
+        uri: sourceCode.uri,
+        type: SourceCodeType.LiquidHtml,
+      }),
+    )
+    .filter((offense) => offense.severity !== Severity.INFO);
 }

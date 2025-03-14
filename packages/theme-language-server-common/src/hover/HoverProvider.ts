@@ -24,7 +24,6 @@ import { HtmlAttributeValueHoverProvider } from './providers/HtmlAttributeValueH
 import { findCurrentNode } from '@shopify/theme-check-common';
 import { GetThemeSettingsSchemaForURI } from '../settings';
 import { LiquidDocTagHoverProvider } from './providers/LiquidDocTagHoverProvider';
-
 export class HoverProvider {
   private providers: BaseHoverProvider[] = [];
 

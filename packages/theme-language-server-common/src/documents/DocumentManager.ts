@@ -184,7 +184,6 @@ export class DocumentManager {
         return {
           ...sourceCode,
           textDocument,
-
           /** Lazy and only computed once per file version */
           getSchema: memo(async () => {
             if (!this.getModeForUri || !this.isValidSchema) return undefined;
