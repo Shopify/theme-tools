@@ -23,6 +23,5 @@ export function startServer(
   dependencies: Dependencies,
   connection = getConnection(worker),
 ) {
-  console.info('staging server', worker, dependencies, connection);
   startCoreServer(connection, dependencies);
 }
