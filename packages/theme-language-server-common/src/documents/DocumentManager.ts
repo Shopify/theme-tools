@@ -146,7 +146,11 @@ export class DocumentManager {
         filesToLoad.map(async (file) => {
           // This is what is important, we are loading the file from the file system
           // And setting their initial version to `undefined` to mean "on disk".
-          this.set(file, await fs.readFile(file), undefined);
+          try {
+            this.set(file, await fs.readFile(file), undefined);
+          } catch (error) {
+            console.error('Failed to preload', file, error);
+          }
 
           // This is just doing progress reporting
           if (++i % 10 === 0) {
@@ -155,7 +159,6 @@ export class DocumentManager {
           }
         }),
       );
-
       progress.end('Completed');
     },
     (rootUri) => rootUri,
