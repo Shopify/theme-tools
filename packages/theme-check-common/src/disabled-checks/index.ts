@@ -1,17 +1,19 @@
-import { Position } from '@shopify/liquid-html-parser';
+import { LiquidRawTag, LiquidTagBaseCase } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Offense, UriString } from '../types';
 
 type CheckName = string;
 type DisabledChecksMap = Map<UriString, Map<CheckName, { from: number; to?: number }[]>>;
+type Node = LiquidRawTag | LiquidTagBaseCase;
 
 export function createDisabledChecksModule() {
   const SPECIFIC_CHECK_NOT_DEFINED = '@all';
   const INLINE_COMMENT_TAG = '#';
   const disabledChecks: DisabledChecksMap = new Map();
 
-  function determineRanges(uri: string, value: string, position: Position) {
+  function determineRanges(uri: string, value: string, node: Node) {
     const [_, command, checksJoined] =
-      value.trim().match(/^(?:theme\-check\-(disable|enable)) ?(.*)/) || [];
+      value.trim().match(/^(?:theme\-check\-(disable-next-line|disable|enable)) ?(.*)/) || [];
+    const { position, source } = node;
 
     const checks = checksJoined ? checksJoined.split(/,[ ]*/) : [SPECIFIC_CHECK_NOT_DEFINED];
 
@@ -23,6 +25,26 @@ export function createDisabledChecksModule() {
           disabledRanges.set(check, []);
         }
         disabledRanges.get(check)!.push({ from: position.end });
+      }
+
+      if (command === 'disable-next-line') {
+        if (!disabledRanges.has(check)) {
+          disabledRanges.set(check, []);
+        }
+
+        const nextNewLineIndex = source.slice(position.end).indexOf('\n', 1);
+
+        const endOfDisable =
+          nextNewLineIndex > -1
+            ? nextNewLineIndex
+            : // If we're at the end of the file and it doesn't have a trailing
+              // newline then we can use the entire length of the source.
+              source.length - position.end;
+
+        disabledRanges.get(check)!.push({
+          from: position.end,
+          to: position.end + endOfDisable,
+        });
       }
 
       if (command === 'enable') {
@@ -56,7 +78,7 @@ export function createDisabledChecksModule() {
           return;
         }
 
-        determineRanges(file.uri, node.body.value, node.position);
+        determineRanges(file.uri, node.body.value, node);
       },
 
       async LiquidTag(node) {
@@ -64,7 +86,7 @@ export function createDisabledChecksModule() {
           return;
         }
 
-        determineRanges(file.uri, node.markup, node.position);
+        determineRanges(file.uri, node.markup, node);
       },
     }),
   };
