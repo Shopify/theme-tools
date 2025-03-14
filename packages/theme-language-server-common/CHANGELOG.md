@@ -1,5 +1,17 @@
 # @shopify/theme-language-server-common
 
+## 2.11.0
+
+### Minor Changes
+
+- 86f2c25e: Add support for the CSS Language Server when we are within `{% stylesheet %}` tags. This add support for hover-information, auto-complete and diagnostics.
+
+### Patch Changes
+
+- d42ed610: Improve rendering of multi-line descriptions
+- Updated dependencies [d42ed610]
+  - @shopify/theme-check-common@3.11.2
+
 ## 2.10.1
 
 ### Patch Changes
