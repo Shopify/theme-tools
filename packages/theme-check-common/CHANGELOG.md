@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 3.11.2
+
+### Patch Changes
+
+- d42ed610: Fix indentation for multi-line examples and descriptions
+
 ## 3.11.1
 
 ### Patch Changes
