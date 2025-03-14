@@ -22,6 +22,14 @@ describe('Module: ValidContentForArguments', () => {
       expect(offenses).toHaveLength(0);
     });
 
+    it('should accept `context.*` kwargs', async () => {
+      const offenses = await runLiquidCheck(
+        ValidContentForArguments,
+        '{% content_for "blocks", context.product: product %}',
+      );
+      expect(offenses).toHaveLength(0);
+    });
+
     it('should report offenses for non-`closest.*` kwargs', async () => {
       const offenses = await runLiquidCheck(
         ValidContentForArguments,
@@ -29,22 +37,7 @@ describe('Module: ValidContentForArguments', () => {
       );
       expect(offenses).toHaveLength(1);
       expect(offenses[0]!.message).to.equal(
-        `{% content_for "blocks" %} only accepts 'closest.*' arguments`,
-      );
-    });
-
-    it('should report offenses for deprecated `context.*` kwargs', async () => {
-      const offenses = await runLiquidCheck(
-        ValidContentForArguments,
-        '{% content_for "blocks", context.product: product %}',
-      );
-      expect(offenses).toHaveLength(2);
-      expect(offenses[0]!.message).to.equal(
-        `{% content_for "blocks" %} only accepts 'closest.*' arguments`,
-      );
-
-      expect(offenses[1]!.message).to.equal(
-        `{% content_for "blocks" %} only accepts 'closest.*' arguments. The 'context.*' arguments usage has been deprecated.`,
+        `{% content_for "blocks" %} only accepts 'closest.*' and 'context.*' arguments`,
       );
     });
   });
@@ -83,22 +76,7 @@ describe('Module: ValidContentForArguments', () => {
       );
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).to.equal(
-        `{% content_for "block" %} only accepts 'id', 'type' and 'closest.*' arguments`,
-      );
-    });
-
-    it('should report offenses for deprecated `context.*` kwargs', async () => {
-      const offenses = await runLiquidCheck(
-        ValidContentForArguments,
-        '{% content_for "block", type: "type", id: "static-block", context.product: product %}',
-      );
-      expect(offenses).toHaveLength(2);
-      expect(offenses[0]!.message).to.equal(
-        `{% content_for "block" %} only accepts 'id', 'type' and 'closest.*' arguments`,
-      );
-
-      expect(offenses[1]!.message).to.equal(
-        `{% content_for "block" %} accepts 'closest.*' arguments. The 'context.*' arguments usage has been deprecated.`,
+        `{% content_for "block" %} only accepts 'id', 'type', 'closest.*', and 'context.*' arguments`,
       );
     });
   });
