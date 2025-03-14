@@ -95,10 +95,9 @@ export class CSSLanguageService {
         // Which means that the completions will be at the same line number in the Liquid document
         const stylesheetString =
           Array(schemaLineNumber).fill('\n').join('') +
-          stylesheetTag.source.slice(
-            stylesheetTag.blockStartPosition.end,
-            stylesheetTag.blockEndPosition.start,
-          );
+          stylesheetTag.source
+            .slice(stylesheetTag.blockStartPosition.end, stylesheetTag.blockEndPosition.start)
+            .replace(/\n$/, ''); // Remove trailing newline so parsing errors don't show up on `{% endstylesheet %}`
         const stylesheetTextDocument = TextDocument.create(
           textDocument.uri,
           'json',

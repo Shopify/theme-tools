@@ -1,19 +1,19 @@
 import {
-  ThemeBlockSchema,
   check,
   findRoot,
   makeFileExists,
+  Offense,
   path,
   SectionSchema,
-  SourceCodeType,
-  Offense,
   Severity,
+  SourceCodeType,
+  ThemeBlockSchema,
 } from '@shopify/theme-check-common';
 
-import { DocumentManager } from '../documents';
+import { CSSLanguageService } from '../css/CSSLanguageService';
+import { AugmentedSourceCode, DocumentManager } from '../documents';
 import { Dependencies } from '../types';
 import { DiagnosticsManager } from './DiagnosticsManager';
-import { CSSLanguageService } from '../css/CSSLanguageService';
 import { offenseSeverity } from './offenseToDiagnostic';
 
 export function makeRunChecks(
@@ -51,42 +51,13 @@ export function makeRunChecks(
     async function runChecksForRoot(configFileRootUri: string) {
       const config = await loadConfig(configFileRootUri, fs);
       const theme = documentManager.theme(config.rootUri);
-      let cssOffenses: Offense[] = [];
-      if (cssLanguageService) {
-        for (const sourceCode of theme) {
-          if (sourceCode.type !== SourceCodeType.LiquidHtml) continue;
-          cssOffenses.push(
-            ...(
-              await cssLanguageService.diagnostics({
-                textDocument: {
-                  uri: sourceCode.uri,
-                },
-              })
-            )
-              .map(
-                (diagnostic) =>
-                  ({
-                    check: 'css',
-                    message: diagnostic.message,
-                    end: {
-                      index: sourceCode.textDocument.offsetAt(diagnostic.range.end),
-                      line: diagnostic.range.end.line,
-                      character: diagnostic.range.end.character,
-                    },
-                    start: {
-                      index: sourceCode.textDocument.offsetAt(diagnostic.range.start),
-                      line: diagnostic.range.start.line,
-                      character: diagnostic.range.start.character,
-                    },
-                    severity: offenseSeverity(diagnostic),
-                    uri: sourceCode.uri,
-                    type: SourceCodeType.LiquidHtml,
-                  } satisfies Offense),
-              )
-              .filter((offense) => offense.severity !== Severity.INFO),
-          );
-        }
-      }
+
+      const cssOffenses = cssLanguageService
+        ? await Promise.all(
+            theme.map((sourceCode) => getCSSDiagnostics(cssLanguageService, sourceCode)),
+          ).then((offenses) => offenses.flat())
+        : [];
+
       const themeOffenses = await check(theme, config, {
         fs,
         themeDocset,
@@ -123,4 +94,39 @@ export function makeRunChecks(
       }
     }
   };
+}
+
+async function getCSSDiagnostics(
+  cssLanguageService: CSSLanguageService,
+  sourceCode: AugmentedSourceCode,
+): Promise<Offense[]> {
+  if (sourceCode.type !== SourceCodeType.LiquidHtml) {
+    return [];
+  }
+
+  const diagnostics = await cssLanguageService.diagnostics({
+    textDocument: { uri: sourceCode.uri },
+  });
+
+  return diagnostics
+    .map(
+      (diagnostic): Offense => ({
+        check: 'css',
+        message: diagnostic.message,
+        end: {
+          index: sourceCode.textDocument.offsetAt(diagnostic.range.end),
+          line: diagnostic.range.end.line,
+          character: diagnostic.range.end.character,
+        },
+        start: {
+          index: sourceCode.textDocument.offsetAt(diagnostic.range.start),
+          line: diagnostic.range.start.line,
+          character: diagnostic.range.start.character,
+        },
+        severity: offenseSeverity(diagnostic),
+        uri: sourceCode.uri,
+        type: SourceCodeType.LiquidHtml,
+      }),
+    )
+    .filter((offense) => offense.severity !== Severity.INFO);
 }
