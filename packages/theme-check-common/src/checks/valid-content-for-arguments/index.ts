@@ -1,9 +1,9 @@
 import { ContentForMarkup, NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
-// content_for "block" and content_for "blocks" only allow `closest.*` kwargs.
-const isClosestArgument = (argName: string) => argName.startsWith('closest.');
-const isContextArgument = (argName: string) => argName.startsWith('context.');
+const isValidKeywordArgument = (argName: string) => {
+  return argName.startsWith('closest.') || argName.startsWith('context.');
+};
 
 export const ValidContentForArguments: LiquidCheckDefinition = {
   meta: {
@@ -24,19 +24,10 @@ export const ValidContentForArguments: LiquidCheckDefinition = {
   create(context) {
     const validationStrategies = {
       blocks: (node: ContentForMarkup) => {
-        const problematicArguments = node.args.filter((arg) => !isClosestArgument(arg.name));
+        const problematicArguments = node.args.filter((arg) => !isValidKeywordArgument(arg.name));
         for (const arg of problematicArguments) {
           context.report({
-            message: `{% content_for "blocks" %} only accepts 'closest.*' arguments`,
-            startIndex: arg.position.start,
-            endIndex: arg.position.end,
-          });
-        }
-
-        const deprecatedArguments = node.args.filter((arg) => isContextArgument(arg.name));
-        for (const arg of deprecatedArguments) {
-          context.report({
-            message: `{% content_for "blocks" %} only accepts 'closest.*' arguments. The 'context.*' arguments usage has been deprecated.`,
+            message: `{% content_for "blocks" %} only accepts 'closest.*' and 'context.*' arguments`,
             startIndex: arg.position.start,
             endIndex: arg.position.end,
           });
@@ -72,21 +63,12 @@ export const ValidContentForArguments: LiquidCheckDefinition = {
         }
 
         const problematicArguments = node.args.filter(
-          (arg) => !(requiredArguments.includes(arg.name) || isClosestArgument(arg.name)),
+          (arg) => !(requiredArguments.includes(arg.name) || isValidKeywordArgument(arg.name)),
         );
 
         for (const arg of problematicArguments) {
           context.report({
-            message: `{% content_for "block" %} only accepts 'id', 'type' and 'closest.*' arguments`,
-            startIndex: arg.position.start,
-            endIndex: arg.position.end,
-          });
-        }
-
-        const deprecatedArguments = node.args.filter((arg) => isContextArgument(arg.name));
-        for (const arg of deprecatedArguments) {
-          context.report({
-            message: `{% content_for "block" %} accepts 'closest.*' arguments. The 'context.*' arguments usage has been deprecated.`,
+            message: `{% content_for "block" %} only accepts 'id', 'type', 'closest.*', and 'context.*' arguments`,
             startIndex: arg.position.start,
             endIndex: arg.position.end,
           });
