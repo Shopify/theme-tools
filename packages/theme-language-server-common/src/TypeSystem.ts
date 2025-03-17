@@ -352,7 +352,7 @@ function getContextualEntries(uri: string): string[] {
     return ['section', 'predictive_search', 'recommendations', 'comment'];
   }
   if (BLOCK_FILE_REGEX.test(normalizedUri)) {
-    return ['app', 'section', 'block'];
+    return ['app', 'section', 'recommendations', 'block'];
   }
   if (SNIPPET_FILE_REGEX.test(normalizedUri)) {
     return ['app'];
