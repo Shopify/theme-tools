@@ -47,6 +47,7 @@ import { VERSION } from '../version';
 import { CachedFileSystem } from './CachedFileSystem';
 import { Configuration } from './Configuration';
 import { safe } from './safe';
+import { JSLanguageService } from '../js/JSLanguageService';
 
 const defaultLogger = () => {};
 
@@ -151,6 +152,7 @@ export function startServer(
   // These are augmented here so that the caching is maintained over different runs.
   const themeDocset = new AugmentedThemeDocset(remoteThemeDocset);
   const cssLanguageService = new CSSLanguageService(documentManager);
+  const jsLanguageService = new JSLanguageService(documentManager);
   const runChecks = debounce(
     makeRunChecks(documentManager, diagnosticsManager, {
       fs,
@@ -300,6 +302,7 @@ export function startServer(
   connection.onInitialize((params) => {
     clientCapabilities.setup(params.capabilities, params.initializationOptions);
     cssLanguageService.setup(params.capabilities);
+    jsLanguageService.setup(params.capabilities, fs, params.initializationOptions.workspaceFolders?.[0]?.uri);
     jsonLanguageService.setup(params.capabilities);
     configuration.setup();
 
