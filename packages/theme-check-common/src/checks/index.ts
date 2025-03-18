@@ -57,6 +57,7 @@ import { VariableName } from './variable-name';
 import { AppBlockMissingSchema } from './app-block-missing-schema';
 import { UniqueSettingIds } from './unique-settings-id';
 import { DuplicateRenderSnippetParams } from './duplicate-render-snippet-params';
+import { InvalidComparisonSyntax } from './invalid-comparison-syntax';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -70,12 +71,13 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   CdnPreconnect,
   ContentForHeaderModification,
   DeprecateBgsizes,
+  DeprecateLazysizes,
   DeprecatedFilter,
   DeprecatedTag,
-  DeprecateLazysizes,
   DuplicateRenderSnippetParams,
   EmptyBlockContent,
   ImgWidthAndHeight,
+  InvalidComparisonSyntax,
   JSONMissingBlock,
   JSONSyntaxError,
   LiquidFreeSettings,

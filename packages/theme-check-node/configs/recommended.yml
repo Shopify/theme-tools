@@ -39,6 +39,9 @@ EmptyBlockContent:
 ImgWidthAndHeight:
   enabled: true
   severity: 0
+InvalidComparisonSyntax:
+  enabled: true
+  severity: 0
 JSONMissingBlock:
   enabled: true
   severity: 0
