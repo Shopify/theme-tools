@@ -25,7 +25,7 @@ export const InvalidComparisonSyntax: LiquidCheckDefinition = {
         const markup = node.markup.toString();
 
         const regex =
-          /(>=|<=|>|<|==|!=)\s+([^\s]+)\s+([^\s]+)(?!\s+(and|or|%}|contains|startswith|endswith))/g;
+          /(>=|<=|>|<|==|!=)\s+([^\s]+)\s+([^\s]+)(?!\s+(and|or|%}|contains))/g;
 
         let match;
         while ((match = regex.exec(markup)) !== null) {
@@ -59,6 +59,6 @@ export const InvalidComparisonSyntax: LiquidCheckDefinition = {
 };
 
 function isValidComparisonConnector(token: string): boolean {
-  const validConnectors = ['and', 'or', '%}', 'contains', 'startswith', 'endswith'];
+  const validConnectors = ['and', 'or', '%}', 'contains'];
   return validConnectors.some((connector) => token.includes(connector));
 }
