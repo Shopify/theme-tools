@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { describe, it, expect, afterEach, beforeEach, assert } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach, assert, vi } from 'vitest';
 import { loadConfig } from './load-config';
 import {
   allChecks,
@@ -19,6 +19,7 @@ import {
 } from '../test/test-helpers';
 import { thisNodeModuleRoot } from './installation-location';
 import { URI } from 'vscode-uri';
+import * as resolveModule from './resolve';
 
 describe('Unit: loadConfig', () => {
   let tempDir: string;
@@ -34,7 +35,30 @@ describe('Unit: loadConfig', () => {
   it('loads the recommended config by default', async () => {
     const config = await loadConfig(undefined, __dirname);
     expect(config.checks).to.eql(recommended);
+    expect(config.context).to.eql('theme');
   });
+
+  describe.each(['shopify.extension.toml', 'shopify.app.toml'])(
+    'when the root contains a %s file',
+    (fileName) => {
+      beforeEach(async () => {
+        const filePath = path.join(tempDir, fileName);
+        await fs.writeFile(filePath, '', 'utf8');
+      });
+
+      it('sets the context to app', async () => {
+        const config = await loadConfig(undefined, tempDir);
+        expect(config.context).to.eql('app');
+      });
+
+      it('calls resolveConfig with theme-check:theme-app-extension', async () => {
+        const spy = vi.spyOn(resolveModule, 'resolveConfig');
+        await loadConfig(undefined, tempDir);
+        expect(spy).toHaveBeenCalledWith('theme-check:theme-app-extension', true);
+        vi.restoreAllMocks();
+      });
+    },
+  );
 
   it('extends the recommended config by default', async () => {
     const configPath = await createMockConfigFile(tempDir, `ignore: ['src/**']`);
