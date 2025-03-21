@@ -60,6 +60,7 @@ import {
   ConcreteLiquidTagAssignMarkup,
   ConcreteLiquidTagRenderMarkup,
   ConcreteRenderVariableExpression,
+  ConcreteRenderAliasExpression,
   ConcreteLiquidTagOpenNamed,
   ConcreteLiquidTagOpen,
   ConcreteLiquidArgument,
@@ -105,6 +106,7 @@ export type LiquidHtmlNode =
   | PaginateMarkup
   | RawMarkup
   | RenderVariableExpression
+  | RenderAliasExpression
   | LiquidLogicalExpression
   | LiquidComparison
   | TextNode
@@ -406,7 +408,7 @@ export interface RenderMarkup extends ASTNode<NodeTypes.RenderMarkup> {
   /** {% render snippet %} */
   snippet: LiquidString | LiquidVariableLookup;
   /** {% render 'snippet' with thing as alias %} */
-  alias: string | null;
+  aliasExpression: RenderAliasExpression | null;
   /** {% render 'snippet' [with variable] %} */
   variable: RenderVariableExpression | null;
   /**
@@ -425,6 +427,12 @@ export interface RenderVariableExpression extends ASTNode<NodeTypes.RenderVariab
   kind: 'for' | 'with';
   /** {% render 'snippet' (for|with) name %} */
   name: LiquidExpression;
+}
+
+/** Represents the `as name` expressions in render nodes */
+export interface RenderAliasExpression extends ASTNode<NodeTypes.RenderAliasExpression> {
+  /** {% render 'snippet' as name %} */
+  alias: string;
 }
 
 /** The union type of the strictly and loosely typed LiquidBranch nodes */
@@ -1816,7 +1824,7 @@ function toRenderMarkup(node: ConcreteLiquidTagRenderMarkup): RenderMarkup {
   return {
     type: NodeTypes.RenderMarkup,
     snippet: toExpression(node.snippet) as LiquidString | LiquidVariableLookup,
-    alias: node.alias,
+    aliasExpression: toRenderAliasExpression(node.aliasExpression),
     variable: toRenderVariableExpression(node.variable),
     /**
      * When we're in completion mode we won't necessarily have valid named
@@ -1840,6 +1848,18 @@ function toRenderVariableExpression(
     type: NodeTypes.RenderVariableExpression,
     kind: node.kind,
     name: toExpression(node.name),
+    position: position(node),
+    source: node.source,
+  };
+}
+
+function toRenderAliasExpression(
+  node: ConcreteRenderAliasExpression | null,
+): RenderAliasExpression | null {
+  if (!node) return null;
+  return {
+    type: NodeTypes.RenderAliasExpression,
+    alias: node.alias,
     position: position(node),
     source: node.source,
   };
