@@ -1,5 +1,16 @@
 # @shopify/theme-check-node
 
+## 3.12.0
+
+### Patch Changes
+
+- 449d1623: Fix false positives when running theme check on theme app extensions
+- Updated dependencies [d42ed610]
+- Updated dependencies [ea9f2451]
+- Updated dependencies [6268e838]
+  - @shopify/theme-check-common@3.12.0
+  - @shopify/theme-check-docs-updater@3.12.0
+
 ## 3.11.1
 
 ### Patch Changes

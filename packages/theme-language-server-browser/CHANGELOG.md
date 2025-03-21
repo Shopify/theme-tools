@@ -1,5 +1,17 @@
 # @shopify/theme-language-server-browser
 
+## 2.11.0
+
+### Patch Changes
+
+- d9b58157: Make theme preload fs.readFile error resilient
+- Updated dependencies [d42ed610]
+- Updated dependencies [d9b58157]
+- Updated dependencies [86f2c25e]
+- Updated dependencies [ea9f2451]
+- Updated dependencies [6268e838]
+  - @shopify/theme-language-server-common@2.11.0
+
 ## 2.10.1
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # @shopify/theme-check-common
 
+## 3.12.0
+
+### Minor Changes
+
+- ea9f2451: Reintroduce support for `context` parameters in the `content_for` tag
+- 6268e838: Allow `recommendations` as a global variable in `blocks/`
+
+### Patch Changes
+
+- d42ed610: Fix indentation for multi-line examples and descriptions
+
 ## 3.11.1
 
 ### Patch Changes
