@@ -1,5 +1,22 @@
 # @shopify/theme-language-server-common
 
+## 2.11.0
+
+### Minor Changes
+
+- 86f2c25e: Add support for the CSS Language Server when we are within `{% stylesheet %}` tags. This add support for hover-information, auto-complete and diagnostics.
+- ea9f2451: Reintroduce support for `context` parameters in the `content_for` tag
+- 6268e838: Allow `recommendations` as a global variable in `blocks/`
+
+### Patch Changes
+
+- d42ed610: Improve rendering of multi-line descriptions
+- d9b58157: Make theme preload fs.readFile error resilient
+- Updated dependencies [d42ed610]
+- Updated dependencies [ea9f2451]
+- Updated dependencies [6268e838]
+  - @shopify/theme-check-common@3.12.0
+
 ## 2.10.1
 
 ### Patch Changes

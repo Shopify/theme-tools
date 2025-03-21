@@ -1,5 +1,21 @@
 ## theme-check-vscode
 
+## 3.7.0
+
+### Minor Changes
+
+- 86f2c25e: Add support for the CSS Language Server when we are within `{% stylesheet %}` tags. This add support for hover-information, auto-complete and diagnostics.
+
+### Patch Changes
+
+- Updated dependencies [d42ed610]
+- Updated dependencies [d9b58157]
+- Updated dependencies [ea9f2451]
+- Updated dependencies [6268e838]
+  - @shopify/theme-check-common@3.12.0
+  - @shopify/theme-language-server-browser@2.11.0
+  - @shopify/theme-language-server-node@2.11.0
+
 ## 3.6.1
 
 ### Patch Changes
