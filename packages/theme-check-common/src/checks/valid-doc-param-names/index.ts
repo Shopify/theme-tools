@@ -8,7 +8,7 @@ export const ValidDocParamNames: LiquidCheckDefinition = {
     docs: {
       description:
         'This check exists to ensure any parameter names defined in LiquidDoc do not collide with reserved words.',
-      recommended: true,
+      recommended: false,
       url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-doc-param-names',
     },
     type: SourceCodeType.LiquidHtml,
