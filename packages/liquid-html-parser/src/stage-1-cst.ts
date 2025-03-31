@@ -379,7 +379,7 @@ export interface ConcreteLiquidTagRenderMarkup
   extends ConcreteBasicNode<ConcreteNodeTypes.RenderMarkup> {
   snippet: ConcreteStringLiteral | ConcreteLiquidVariableLookup;
   variable: ConcreteRenderVariableExpression | null;
-  aliasExpression: ConcreteRenderAliasExpression | null;
+  alias: ConcreteRenderAliasExpression | null;
   renderArguments: ConcreteLiquidNamedArgument[];
 }
 
@@ -391,7 +391,7 @@ export interface ConcreteRenderVariableExpression
 
 export interface ConcreteRenderAliasExpression
   extends ConcreteBasicNode<ConcreteNodeTypes.RenderAliasExpression> {
-  alias: string;
+  value: string;
 }
 
 export interface ConcreteLiquidVariableOutput
@@ -873,7 +873,7 @@ function toCST<T>(
       type: ConcreteNodeTypes.RenderMarkup,
       snippet: 0,
       variable: 1,
-      aliasExpression: 2,
+      alias: 2,
       renderArguments: 3,
       locStart,
       locEnd,
@@ -908,7 +908,7 @@ function toCST<T>(
     },
     renderAliasExpression: {
       type: ConcreteNodeTypes.RenderAliasExpression,
-      alias: 3,
+      value: 3,
       locStart,
       locEnd,
       source,

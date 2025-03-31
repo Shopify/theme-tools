@@ -183,7 +183,7 @@ function printNamedLiquidBlockStart(
     case NamedTags.render: {
       const markup = node.markup;
       const trailingWhitespace =
-        markup.args.length > 0 || (markup.variable && markup.aliasExpression?.alias) ? line : ' ';
+        markup.args.length > 0 || (markup.variable && markup.alias) ? line : ' ';
       return tag(trailingWhitespace);
     }
 

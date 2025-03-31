@@ -71,36 +71,29 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
       liquidDocParameters: Map<string, LiquidDocParameter>,
       snippetName: string,
     ) {
-      if (
-        node.aliasExpression?.alias &&
-        !liquidDocParameters.has(node.aliasExpression?.alias) &&
-        node.variable
-      ) {
+      if (node.alias?.value && !liquidDocParameters.has(node.alias.value) && node.variable) {
         const source = node.source;
         let startIndex = node.variable.position.start;
 
         if (
-          source.slice(startIndex, node.aliasExpression.position.start).includes(' with ') ||
-          source.slice(startIndex, node.aliasExpression.position.start).includes(' for ')
+          source.slice(startIndex, node.alias.position.start).includes(' with ') ||
+          source.slice(startIndex, node.alias.position.start).includes(' for ')
         ) {
           startIndex = node.variable.position.start + 1;
         } else {
-          startIndex = node.aliasExpression.position.start;
+          startIndex = node.alias.position.start;
         }
 
         context.report({
-          message: `Unknown parameter '${node.aliasExpression.alias}' in render tag for snippet '${snippetName}'`,
+          message: `Unknown parameter '${node.alias.value}' in render tag for snippet '${snippetName}'`,
           startIndex: startIndex,
-          endIndex: node.aliasExpression.position.end,
+          endIndex: node.alias.position.end,
           suggest: [
             {
-              message: `Remove '${node.aliasExpression.alias}'`,
+              message: `Remove '${node.alias.value}'`,
               fix: (fixer: any) => {
                 if (node.variable) {
-                  return fixer.remove(
-                    node.variable.position.start,
-                    node.aliasExpression?.position.end,
-                  );
+                  return fixer.remove(node.variable.position.start, node.alias?.position.end);
                 }
               },
             },

@@ -408,7 +408,7 @@ export interface RenderMarkup extends ASTNode<NodeTypes.RenderMarkup> {
   /** {% render snippet %} */
   snippet: LiquidString | LiquidVariableLookup;
   /** {% render 'snippet' with thing as alias %} */
-  aliasExpression: RenderAliasExpression | null;
+  alias: RenderAliasExpression | null;
   /** {% render 'snippet' [with variable] %} */
   variable: RenderVariableExpression | null;
   /**
@@ -432,7 +432,7 @@ export interface RenderVariableExpression extends ASTNode<NodeTypes.RenderVariab
 /** Represents the `as name` expressions in render nodes */
 export interface RenderAliasExpression extends ASTNode<NodeTypes.RenderAliasExpression> {
   /** {% render 'snippet' as name %} */
-  alias: string;
+  value: string;
 }
 
 /** The union type of the strictly and loosely typed LiquidBranch nodes */
@@ -1824,7 +1824,7 @@ function toRenderMarkup(node: ConcreteLiquidTagRenderMarkup): RenderMarkup {
   return {
     type: NodeTypes.RenderMarkup,
     snippet: toExpression(node.snippet) as LiquidString | LiquidVariableLookup,
-    aliasExpression: toRenderAliasExpression(node.aliasExpression),
+    alias: toRenderAliasExpression(node.alias),
     variable: toRenderVariableExpression(node.variable),
     /**
      * When we're in completion mode we won't necessarily have valid named
@@ -1859,7 +1859,7 @@ function toRenderAliasExpression(
   if (!node) return null;
   return {
     type: NodeTypes.RenderAliasExpression,
-    alias: node.alias,
+    value: node.value,
     position: position(node),
     source: node.source,
   };
