@@ -402,15 +402,15 @@ describe('Unit: Stage 2 (AST)', () => {
           {
             expression: `"snippet"`,
             snippetType: 'String',
-            aliasExpression: null,
+            alias: null,
             renderVariableExpression: null,
             namedArguments: [],
           },
           {
             expression: `"snippet" as foo`,
             snippetType: 'String',
-            aliasExpression: {
-              alias: 'foo',
+            alias: {
+              value: 'foo',
             },
             renderVariableExpression: null,
             namedArguments: [],
@@ -418,8 +418,8 @@ describe('Unit: Stage 2 (AST)', () => {
           {
             expression: `"snippet" with "string" as foo`,
             snippetType: 'String',
-            aliasExpression: {
-              alias: 'foo',
+            alias: {
+              value: 'foo',
             },
             renderVariableExpression: {
               kind: 'with',
@@ -432,8 +432,8 @@ describe('Unit: Stage 2 (AST)', () => {
           {
             expression: `"snippet" for products as product`,
             snippetType: 'String',
-            aliasExpression: {
-              alias: 'product',
+            alias: {
+              value: 'product',
             },
             renderVariableExpression: {
               kind: 'for',
@@ -446,8 +446,8 @@ describe('Unit: Stage 2 (AST)', () => {
           {
             expression: `variable with "string" as foo, key1: val1, key2: "hi"`,
             snippetType: 'VariableLookup',
-            aliasExpression: {
-              alias: 'foo',
+            alias: {
+              value: 'foo',
             },
             renderVariableExpression: {
               kind: 'with',
@@ -461,13 +461,7 @@ describe('Unit: Stage 2 (AST)', () => {
             ],
           },
         ].forEach(
-          ({
-            expression,
-            snippetType,
-            renderVariableExpression,
-            aliasExpression,
-            namedArguments,
-          }) => {
+          ({ expression, snippetType, renderVariableExpression, alias, namedArguments }) => {
             for (const { toAST, expectPath, expectPosition } of testCases) {
               ast = toAST(`{% render ${expression} -%}`);
               expectPath(ast, 'children.0.type').to.equal('LiquidTag');
@@ -489,9 +483,7 @@ describe('Unit: Stage 2 (AST)', () => {
               } else {
                 expectPath(ast, 'children.0.markup.variable').to.equal(null);
               }
-              expectPath(ast, 'children.0.markup.aliasExpression.alias').to.equal(
-                aliasExpression?.alias,
-              );
+              expectPath(ast, 'children.0.markup.alias.value').to.equal(alias?.value);
               expectPath(ast, 'children.0.markup.args').to.have.lengthOf(namedArguments.length);
               namedArguments.forEach(({ name, valueType }, i) => {
                 expectPath(ast, `children.0.markup.args.${i}.type`).to.equal('NamedArgument');
