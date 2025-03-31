@@ -39,6 +39,12 @@ const schema = {
   format: SchemaProp.string('snake_case'),
 };
 
+// It's impossible to make an idempotent rule that works for all cases. We
+// have to accept whatever spacing the user has input as valid.
+// This function strips dash/underscores around digits so that we can at least
+// make sure that the variable name is in the "correct" format. (e.g. snake case)
+const collapseNumberSpacing = (varName: string) => varName.replace(/[-_]?\d[-_]?/g, '');
+
 export const VariableName: LiquidCheckDefinition<typeof schema> = {
   meta: {
     code: 'VariableName',
@@ -62,12 +68,11 @@ export const VariableName: LiquidCheckDefinition<typeof schema> = {
         };
       }
 
-      const suggestion = formatTypes[context.settings.format as FormatTypes]
-        .call(null, node.markup.name)
-        .replace(/(\d+)[-_](?=[a-z])/g, '$1');
+      const formatter = formatTypes[context.settings.format as FormatTypes];
+      const suggestion = formatter(node.markup.name);
 
       return {
-        valid: node.markup.name === suggestion,
+        valid: collapseNumberSpacing(node.markup.name) === collapseNumberSpacing(suggestion),
         suggestion,
       };
     };
