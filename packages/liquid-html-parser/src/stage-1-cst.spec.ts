@@ -1444,6 +1444,96 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.children.1.type').to.equal('TextNode');
           expectPath(cst, '0.children.1.value').to.equal('@-like characters: @@test');
         });
+
+        it('should parse @prompt node', () => {
+          const testStr = `{% doc %} @prompt hello there {% enddoc %}`;
+          cst = toCST(testStr);
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocPromptNode');
+          expectPath(cst, '0.children.0.name').to.equal('prompt');
+          expectPath(cst, '0.children.0.content.value').to.equal('hello there');
+        });
+
+        it('should parse a basic prompt tag', () => {
+          const testStr = `{% doc -%} @prompt {%- enddoc %}`;
+          cst = toCST(testStr);
+          expectPath(cst, '0.type').to.equal('LiquidRawTag');
+          expectPath(cst, '0.name').to.equal('doc');
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocPromptNode');
+          expectPath(cst, '0.children.0.content.value').to.equal('');
+        });
+
+        it('should parse prompt tag with content that has leading whitespace', () => {
+          const testStr = `{% doc %} @prompt         hello there       {%- enddoc %}`;
+          cst = toCST(testStr);
+          expectPath(cst, '0.type').to.equal('LiquidRawTag');
+          expectPath(cst, '0.name').to.equal('doc');
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocPromptNode');
+          expectPath(cst, '0.children.0.name').to.equal('prompt');
+          expectPath(cst, '0.children.0.content.value').to.equal('hello there');
+          expectPath(cst, '0.children.0.content.locStart').to.equal(testStr.indexOf('hello there'));
+          expectPath(cst, '0.children.0.content.locEnd').to.equal(
+            testStr.indexOf('hello there') + 'hello there'.length,
+          );
+        });
+
+        it('should parse a prompt tag with a value', () => {
+          const testStr = `{% doc %}
+        @prompt
+        This is a prompt
+        It supports multiple lines
+      {% enddoc %}`;
+
+          cst = toCST(testStr);
+          expectPath(cst, '0.type').to.equal('LiquidRawTag');
+          expectPath(cst, '0.name').to.equal('doc');
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocPromptNode');
+          expectPath(cst, '0.children.0.name').to.equal('prompt');
+          expectPath(cst, '0.children.0.content.value').to.equal(
+            'This is a prompt\n        It supports multiple lines\n',
+          );
+        });
+
+        it('should parse prompt node and stop at the next @', () => {
+          const testStr = `{% doc %}
+        @prompt
+        This is a prompt
+        @param param1
+      {% enddoc %}`;
+          cst = toCST(testStr);
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocPromptNode');
+          expectPath(cst, '0.children.0.name').to.equal('prompt');
+          expectPath(cst, '0.children.0.content.value').to.equal('This is a prompt\n');
+          expectPath(cst, '0.children.1.type').to.equal('LiquidDocParamNode');
+          expectPath(cst, '0.children.1.paramName.content.value').to.equal('param1');
+        });
+
+        it('should parse prompt node with whitespace and new lines', () => {
+          const testStr = `{% doc %}
+        @prompt hello      there        my    friend
+        This is a prompt
+        It supports multiple lines
+      {% enddoc %}`;
+          cst = toCST(testStr);
+          expectPath(cst, '0.type').to.equal('LiquidRawTag');
+          expectPath(cst, '0.name').to.equal('doc');
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocPromptNode');
+          expectPath(cst, '0.children.0.name').to.equal('prompt');
+          expectPath(cst, '0.children.0.content.value').to.equal(
+            'hello      there        my    friend\n        This is a prompt\n        It supports multiple lines\n',
+          );
+        });
+
+        it('should parse multiple prompt nodes', () => {
+          const testStr = `{% doc %}
+        @prompt first prompt
+        @prompt second prompt
+      {% enddoc %}`;
+          cst = toCST(testStr);
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocPromptNode');
+          expectPath(cst, '0.children.0.content.value').to.equal('first prompt\n');
+          expectPath(cst, '0.children.1.type').to.equal('LiquidDocPromptNode');
+          expectPath(cst, '0.children.1.content.value').to.equal('second prompt\n');
+        });
       }
     });
   });
