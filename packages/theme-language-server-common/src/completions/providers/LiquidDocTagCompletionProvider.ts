@@ -10,14 +10,14 @@ import {
 import { LiquidCompletionParams } from '../params';
 import { Provider } from './common';
 import { formatLiquidDocTagHandle, SUPPORTED_LIQUID_DOC_TAG_HANDLES } from '../../utils/liquidDoc';
-import { isSnippet } from '../../utils/uri';
+import { filePathSupportsLiquidDoc } from '@shopify/theme-check-common';
 
 export class LiquidDocTagCompletionProvider implements Provider {
   constructor() {}
 
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
-    if (!isSnippet(params.document.uri)) return [];
+    if (!filePathSupportsLiquidDoc(params.document.uri)) return [];
 
     const { node, ancestors } = params.completionContext;
     const parentNode = ancestors.at(-1);

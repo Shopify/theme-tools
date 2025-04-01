@@ -20,7 +20,7 @@ describe('Module: LiquidDocParamTypeCompletionProvider', async () => {
     });
   });
 
-  it("offers type completions within liquid doc's param type tag", async () => {
+  it("offers type completions within liquid doc's param type tag for snippets", async () => {
     const sources = [`{% doc %} @param {█`, `{% doc %} @param  {  █`];
 
     for (const source of sources) {
@@ -29,6 +29,13 @@ describe('Module: LiquidDocParamTypeCompletionProvider', async () => {
         Object.values(SupportedParamTypes),
       );
     }
+  });
+
+  it('offers completions within liquid doc tag for blocks', async () => {
+    await expect(provider).to.complete(
+      { source: `{% doc %} @█`, relativePath: 'file://blocks/file.liquid' },
+      ['param', 'example', 'description'],
+    );
   });
 
   it("does not offer completion if it's not within liquid doc's param type tag", async () => {
@@ -47,9 +54,19 @@ describe('Module: LiquidDocParamTypeCompletionProvider', async () => {
     }
   });
 
-  it("does not offer completion if it's not within a snippet file", async () => {
+  it("does not offer completion if it's not within a snippet or block", async () => {
     await expect(provider).to.complete(
       { source: `{% doc %} @param {█`, relativePath: 'file://sections/file.liquid' },
+      [],
+    );
+
+    await expect(provider).to.complete(
+      { source: `{% doc %} @param {█`, relativePath: 'file://templates/file.liquid' },
+      [],
+    );
+
+    await expect(provider).to.complete(
+      { source: `{% doc %} @param {█`, relativePath: 'file://layout/file.liquid' },
       [],
     );
   });
