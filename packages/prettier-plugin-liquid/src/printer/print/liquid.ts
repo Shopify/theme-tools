@@ -6,6 +6,7 @@ import {
   LiquidDocParamNode,
   LiquidDocExampleNode,
   LiquidDocDescriptionNode,
+  LiquidDocPromptNode,
 } from '@shopify/liquid-html-parser';
 import { Doc, doc } from 'prettier';
 
@@ -562,6 +563,26 @@ export function printLiquidDocExample(
 ): Doc {
   const node = path.getValue();
   const parts: Doc[] = ['@example'];
+
+  const content = node.content.value;
+  if (content.trimEnd().includes('\n') || !node.isInline) {
+    parts.push(hardline);
+  } else {
+    parts.push(' ');
+  }
+  parts.push(content.trim());
+
+  return parts;
+}
+
+export function printLiquidDocPrompt(
+  path: AstPath<LiquidDocPromptNode>,
+  options: LiquidParserOptions,
+  _print: LiquidPrinter,
+  _args: LiquidPrinterArgs,
+): Doc {
+  const node = path.getValue();
+  const parts: Doc[] = ['@prompt'];
 
   const content = node.content.value;
   if (content.trimEnd().includes('\n') || !node.isInline) {
