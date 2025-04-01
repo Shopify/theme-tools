@@ -43,20 +43,20 @@ describe('Module: VariableName', () => {
     expect(suggestions).to.include(expectedFixedCode);
   });
 
-  it('should report an error when a variable containing numbers uses wrong format', async () => {
-    const sourceCode = `{% assign first_3_d_model = "value" %}`;
-
-    const offenses = await runLiquidCheck(VariableName, sourceCode);
-
-    expect(offenses).to.have.length(1);
-    expect(offenses[0].message).to.equal("The variable 'first_3_d_model' uses wrong naming format");
-  });
-
-  it('should not report an error when a variable containing numbers is using correct format', async () => {
-    const sourceCode = `{% assign first_3d_model = "value" %}`;
-
-    const offenses = await runLiquidCheck(VariableName, sourceCode);
-
-    expect(offenses).to.be.empty;
+  // It's impossible to make an idempotent rule that works for all cases. We
+  // have to accept whatever spacing the user has input as valid.
+  it('should not complain about numbers inside variable names', async () => {
+    const varNames = [
+      `first_b_2_b_model`,
+      `first_b2_b_model`,
+      `first_b2b_model`,
+      `first_3_d_model`,
+      `first3_d_model`,
+    ];
+    for (const varName of varNames) {
+      const sourceCode = `{% assign ${varName} = "value" %}`;
+      const offenses = await runLiquidCheck(VariableName, sourceCode);
+      expect(offenses).to.be.empty;
+    }
   });
 });
