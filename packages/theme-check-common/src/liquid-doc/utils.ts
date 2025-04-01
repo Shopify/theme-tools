@@ -1,5 +1,8 @@
-import { LiquidExpression, LiquidNamedArgument, NodeTypes } from '@shopify/liquid-html-parser';
+import { LiquidExpression, NodeTypes } from '@shopify/liquid-html-parser';
 import { assertNever } from '../utils';
+import { isSnippet } from '../to-schema';
+import { isBlock } from '../to-schema';
+import { UriString } from '../types';
 
 export enum SupportedParamTypes {
   String = 'string',
@@ -64,4 +67,11 @@ export function isTypeCompatible(expectedType: string, actualType: SupportedPara
   }
 
   return normalizedExpectedType === actualType;
+}
+
+/**
+ * Checks if the provided file path supports the LiquidDoc tag.
+ */
+export function filePathSupportsLiquidDoc(uri: UriString) {
+  return isSnippet(uri) || isBlock(uri);
 }

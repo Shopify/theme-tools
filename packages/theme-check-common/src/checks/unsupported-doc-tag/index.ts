@@ -1,5 +1,6 @@
 import { isSnippet, isBlock } from '../../to-schema';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
+import { filePathSupportsLiquidDoc } from '../../liquid-doc/utils';
 
 export const UnsupportedDocTag: LiquidCheckDefinition = {
   meta: {
@@ -19,7 +20,7 @@ export const UnsupportedDocTag: LiquidCheckDefinition = {
   create(context) {
     const docTagName = 'doc';
 
-    if (isBlock(context.file.uri) || isSnippet(context.file.uri)) {
+    if (filePathSupportsLiquidDoc(context.file.uri)) {
       return {};
     }
 
