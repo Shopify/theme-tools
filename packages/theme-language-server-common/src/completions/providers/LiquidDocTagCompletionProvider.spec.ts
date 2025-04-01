@@ -19,7 +19,7 @@ describe('Module: LiquidDocTagCompletionProvider', async () => {
     });
   });
 
-  it('offers completions within liquid doc tag', async () => {
+  it('offers completions within liquid doc tag for snippets', async () => {
     await expect(provider).to.complete(
       { source: `{% doc %} @█`, relativePath: 'file://snippets/file.liquid' },
       ['param', 'example', 'description'],
@@ -27,6 +27,13 @@ describe('Module: LiquidDocTagCompletionProvider', async () => {
     await expect(provider).to.complete(
       { source: `{% doc %} @par█`, relativePath: 'file://snippets/file.liquid' },
       ['param'],
+    );
+  });
+
+  it('offers completions within liquid doc tag for blocks', async () => {
+    await expect(provider).to.complete(
+      { source: `{% doc %} @█`, relativePath: 'file://blocks/file.liquid' },
+      ['param', 'example', 'description'],
     );
   });
 
@@ -44,9 +51,17 @@ describe('Module: LiquidDocTagCompletionProvider', async () => {
     );
   });
 
-  it('does not offer completion if it is not a snippet file', async () => {
+  it('does not offer completion if it is not a snippet file or block', async () => {
     await expect(provider).to.complete(
       { source: `{% doc %} @█`, relativePath: 'file://sections/file.liquid' },
+      [],
+    );
+    await expect(provider).to.complete(
+      { source: `{% doc %} @█`, relativePath: 'file://templates/file.liquid' },
+      [],
+    );
+    await expect(provider).to.complete(
+      { source: `{% doc %} @█`, relativePath: 'file://layout/file.liquid' },
       [],
     );
   });
