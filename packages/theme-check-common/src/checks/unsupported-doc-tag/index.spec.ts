@@ -13,7 +13,9 @@ describe('Module: UnsupportedDocTag', () => {
     );
 
     expect(offenses).to.have.length(1);
-    expect(offenses[0].message).to.equal('The `doc` tag can only be used within a snippet.');
+    expect(offenses[0].message).to.equal(
+      'The `doc` tag can only be used within a snippet or block.',
+    );
   });
 
   it('should apply suggestion when `doc` tag is used outside snippets', async () => {
