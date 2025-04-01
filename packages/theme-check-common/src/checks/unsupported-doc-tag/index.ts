@@ -1,5 +1,5 @@
+import { isSnippet, isBlock } from '../../to-schema';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { dirname } from '../../path';
 
 export const UnsupportedDocTag: LiquidCheckDefinition = {
   meta: {
@@ -19,7 +19,7 @@ export const UnsupportedDocTag: LiquidCheckDefinition = {
   create(context) {
     const docTagName = 'doc';
 
-    if (dirname(context.file.uri).endsWith('snippets')) {
+    if (isBlock(context.file.uri) || isSnippet(context.file.uri)) {
       return {};
     }
 
@@ -29,7 +29,7 @@ export const UnsupportedDocTag: LiquidCheckDefinition = {
           return;
         }
         context.report({
-          message: `The \`${docTagName}\` tag can only be used within a snippet.`,
+          message: `The \`${docTagName}\` tag can only be used within a snippet or block.`,
           startIndex: node.position.start,
           endIndex: node.position.end,
           suggest: [

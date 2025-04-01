@@ -46,6 +46,10 @@ export function isSection(uri: UriString) {
   return path.dirname(uri).endsWith('sections');
 }
 
+export function isSnippet(uri: UriString) {
+  return path.dirname(uri).endsWith('snippets');
+}
+
 export function isBlockSchema(
   schema: AppBlockSchema | SectionSchema | ThemeBlockSchema | undefined,
 ): schema is ThemeBlockSchema {
