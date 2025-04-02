@@ -436,7 +436,7 @@ describe('Module: TypeSystem', () => {
     };
 
     Object.entries(liquidDocParamTypeToTypeMap).forEach(([docParamType, expectedType]) => {
-      it(`should support liquid doc params type: ${docParamType}`, async () => {
+      it(`should support basic liquid doc params type: ${docParamType}`, async () => {
         const sourceCode = `
           {% doc %}
             @param {${docParamType}} data - some data
@@ -453,6 +453,24 @@ describe('Module: TypeSystem', () => {
         );
         expect(inferredType).to.eql(expectedType);
       });
+    });
+
+    it(`should support complex liquid doc params type: product`, async () => {
+      const sourceCode = `
+        {% doc %}
+          @param {product} data - some data
+        {% enddoc %}
+        {{ data }}
+      `;
+      const ast = toLiquidHtmlAST(sourceCode);
+      const variableOutput = ast.children[1];
+      assert(isLiquidVariableOutput(variableOutput));
+      const inferredType = await typeSystem.inferType(
+        variableOutput.markup,
+        ast,
+        'file:///snippets/example.liquid',
+      );
+      expect(inferredType).to.eql('product');
     });
   });
 

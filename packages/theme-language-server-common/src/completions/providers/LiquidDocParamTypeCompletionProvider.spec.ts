@@ -13,7 +13,11 @@ describe('Module: LiquidDocParamTypeCompletionProvider', async () => {
       themeDocset: {
         filters: async () => [],
         objects: async () => [],
-        liquidDrops: async () => [],
+        liquidDrops: async () => [
+          {
+            name: 'product',
+          },
+        ],
         tags: async () => [],
         systemTranslations: async () => ({}),
       },
@@ -25,10 +29,10 @@ describe('Module: LiquidDocParamTypeCompletionProvider', async () => {
     const sources = [`{% doc %} @param {█`, `{% doc %} @param  {  █`];
 
     for (const source of sources) {
-      await expect(provider).to.complete(
-        { source, relativePath: 'file://snippets/file.liquid' },
-        Object.values(BasicParamTypes),
-      );
+      await expect(provider).to.complete({ source, relativePath: 'file://snippets/file.liquid' }, [
+        ...Object.values(BasicParamTypes),
+        'product',
+      ]);
     }
   });
 
