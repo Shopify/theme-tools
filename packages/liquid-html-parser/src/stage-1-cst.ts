@@ -1467,7 +1467,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
         return !this.children[1].sourceString.includes('\n');
       },
     },
-    exampleContent: textNode(),
+    multilineTextContent: textNode(),
     textValue: textNode(),
     fallbackNode: textNode(),
   };
