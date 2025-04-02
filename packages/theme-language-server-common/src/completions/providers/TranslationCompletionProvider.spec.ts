@@ -12,6 +12,7 @@ describe('Module: TranslationCompletionProvider', async () => {
       themeDocset: {
         filters: async () => [],
         objects: async () => [],
+        liquidDrops: async () => [],
         tags: async () => [],
         systemTranslations: async () => ({}),
       },

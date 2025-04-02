@@ -18,6 +18,7 @@ describe('Module: HtmlAttributeCompletionProvider', async () => {
       themeDocset: {
         filters: async () => [],
         objects: async () => [],
+        liquidDrops: async () => [],
         tags: async () => [],
         systemTranslations: async () => ({}),
       },

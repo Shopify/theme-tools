@@ -14,6 +14,7 @@ describe('Module: RenderSnippetParameterHoverProvider', async () => {
       {
         filters: async () => [],
         objects: async () => [],
+        liquidDrops: async () => [],
         tags: async () => [],
         systemTranslations: async () => ({}),
       },

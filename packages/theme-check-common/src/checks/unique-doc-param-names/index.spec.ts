@@ -1,7 +1,6 @@
 import { expect, describe, it } from 'vitest';
 import { UniqueDocParamNames } from './index';
-import { runLiquidCheck, applySuggestions } from '../../test';
-import { SupportedParamTypes } from '../../liquid-doc/utils';
+import { runLiquidCheck } from '../../test';
 
 describe('Module: UniqueDocParamNames', () => {
   it(`should not report an error when a all doc params have unique names`, async () => {

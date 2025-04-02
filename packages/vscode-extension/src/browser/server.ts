@@ -44,6 +44,7 @@ const dependencies: Dependencies = {
   themeDocset: {
     filters: async () => filters,
     objects: async () => objects,
+    liquidDrops: async () => objects,
     tags: async () => tags,
     systemTranslations: async () => systemTranslations,
   },

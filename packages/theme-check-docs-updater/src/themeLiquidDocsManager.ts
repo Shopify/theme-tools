@@ -36,6 +36,10 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
     return findSuitableResource(this.loaders('objects'), JSON.parse, [], this.log);
   });
 
+  liquidDrops = memo(async (): Promise<ObjectEntry[]> => {
+    return findSuitableResource(this.loaders('objects'), JSON.parse, [], this.log);
+  });
+
   tags = memo(async (): Promise<TagEntry[]> => {
     return findSuitableResource(this.loaders('tags'), JSON.parse, [], this.log);
   });
