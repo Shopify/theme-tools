@@ -246,7 +246,7 @@ async function updateRenderTags(
           };
         }
 
-        if (node.alias === oldParamName && node.variable) {
+        if (node.alias?.value === oldParamName && node.variable) {
           // `as variable` is not captured in our liquid parser yet,
           // so we have to check it manually and replace it
           const aliasMatch = /as\s+([^\s,]+)/g;
