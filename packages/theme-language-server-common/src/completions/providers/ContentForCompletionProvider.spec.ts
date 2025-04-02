@@ -13,6 +13,7 @@ describe('Module: ContentForCompletionProvider', async () => {
       themeDocset: {
         filters: async () => [],
         objects: async () => [],
+        liquidDrops: async () => [],
         tags: async () => [],
         systemTranslations: async () => ({}),
       },

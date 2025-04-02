@@ -1,98 +1,101 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { HoverProvider } from '../HoverProvider';
-import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
+import { MetafieldDefinitionMap, ObjectEntry } from '@shopify/theme-check-common';
 
 describe('Module: LiquidObjectHoverProvider', async () => {
   let provider: HoverProvider;
 
   beforeEach(async () => {
+    const _objects: ObjectEntry[] = [
+      {
+        name: 'product',
+        description: 'product description',
+        return_type: [],
+        properties: [
+          {
+            name: 'featured_image',
+            return_type: [{ type: 'image', name: '' }],
+          },
+          {
+            name: 'title',
+            return_type: [{ type: 'string', name: '' }],
+          },
+          { name: 'metafields' },
+        ],
+      },
+      {
+        name: 'all_products',
+        return_type: [{ type: 'array', array_value: 'product' }],
+      },
+      {
+        name: 'paginate',
+        access: { global: false, parents: [], template: [] },
+        return_type: [],
+      },
+      {
+        name: 'forloop',
+        access: { global: false, parents: [], template: [] },
+        return_type: [],
+      },
+      {
+        name: 'tablerowloop',
+        access: { global: false, parents: [], template: [] },
+        return_type: [],
+      },
+      {
+        name: 'image',
+        description: 'image description',
+        access: { global: false, parents: [], template: [] },
+      },
+      {
+        name: 'section',
+        access: { global: false, parents: [], template: [] },
+      },
+      {
+        name: 'block',
+        access: { global: false, parents: [], template: [] },
+      },
+      {
+        name: 'app',
+        access: { global: false, parents: [], template: [] },
+      },
+      {
+        name: 'predictive_search',
+        access: { global: false, parents: [], template: [] },
+      },
+      {
+        name: 'recommendations',
+        access: { global: false, parents: [], template: [] },
+      },
+      {
+        name: 'metafield',
+        access: {
+          global: false,
+          template: [],
+          parents: [],
+        },
+        properties: [
+          {
+            name: 'type',
+            description: 'the type of the metafield',
+            return_type: [{ type: 'string', name: '' }],
+          },
+          {
+            name: 'value',
+            description: 'the value of the metafield',
+            return_type: [{ type: 'untyped', name: '' }],
+          },
+        ],
+      },
+    ];
+
     provider = new HoverProvider(
       new DocumentManager(),
       {
         filters: async () => [],
-        objects: async () => [
-          {
-            name: 'product',
-            description: 'product description',
-            return_type: [],
-            properties: [
-              {
-                name: 'featured_image',
-                return_type: [{ type: 'image', name: '' }],
-              },
-              {
-                name: 'title',
-                return_type: [{ type: 'string', name: '' }],
-              },
-              { name: 'metafields' },
-            ],
-          },
-          {
-            name: 'all_products',
-            return_type: [{ type: 'array', array_value: 'product' }],
-          },
-          {
-            name: 'paginate',
-            access: { global: false, parents: [], template: [] },
-            return_type: [],
-          },
-          {
-            name: 'forloop',
-            access: { global: false, parents: [], template: [] },
-            return_type: [],
-          },
-          {
-            name: 'tablerowloop',
-            access: { global: false, parents: [], template: [] },
-            return_type: [],
-          },
-          {
-            name: 'image',
-            description: 'image description',
-            access: { global: false, parents: [], template: [] },
-          },
-          {
-            name: 'section',
-            access: { global: false, parents: [], template: [] },
-          },
-          {
-            name: 'block',
-            access: { global: false, parents: [], template: [] },
-          },
-          {
-            name: 'app',
-            access: { global: false, parents: [], template: [] },
-          },
-          {
-            name: 'predictive_search',
-            access: { global: false, parents: [], template: [] },
-          },
-          {
-            name: 'recommendations',
-            access: { global: false, parents: [], template: [] },
-          },
-          {
-            name: 'metafield',
-            access: {
-              global: false,
-              template: [],
-              parents: [],
-            },
-            properties: [
-              {
-                name: 'type',
-                description: 'the type of the metafield',
-                return_type: [{ type: 'string', name: '' }],
-              },
-              {
-                name: 'value',
-                description: 'the value of the metafield',
-                return_type: [{ type: 'untyped', name: '' }],
-              },
-            ],
-          },
-        ],
+        objects: async () => _objects,
+        liquidDrops: async () => _objects,
         tags: async () => [],
         systemTranslations: async () => ({}),
       },

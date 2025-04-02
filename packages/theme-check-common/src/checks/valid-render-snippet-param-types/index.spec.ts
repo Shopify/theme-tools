@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { runLiquidCheck, applySuggestions } from '../../test';
 import { ValidRenderSnippetParamTypes } from '.';
 import { MockFileSystem } from '../../test';
-import { SupportedParamTypes } from '../../liquid-doc/utils';
+import { BasicParamTypes } from '../../liquid-doc/utils';
 
 describe('Module: ValidRenderSnippetParamTypes', () => {
   describe('type validation', () => {
@@ -11,16 +11,16 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
         type: 'string',
         validValues: ["'hello'", "''", 'product'],
         invalidValues: [
-          { value: '123', actualType: SupportedParamTypes.Number },
-          { value: 'true', actualType: SupportedParamTypes.Boolean },
+          { value: '123', actualType: BasicParamTypes.Number },
+          { value: 'true', actualType: BasicParamTypes.Boolean },
         ],
       },
       {
         type: 'number',
         validValues: ['0', '123', '-1', 'product'],
         invalidValues: [
-          { value: "'hello'", actualType: SupportedParamTypes.String },
-          { value: 'true', actualType: SupportedParamTypes.Boolean },
+          { value: "'hello'", actualType: BasicParamTypes.String },
+          { value: 'true', actualType: BasicParamTypes.Boolean },
         ],
       },
       {
@@ -32,10 +32,10 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
         type: 'object',
         validValues: ['product', '(1..3)'],
         invalidValues: [
-          { value: "'hello'", actualType: SupportedParamTypes.String },
-          { value: '123', actualType: SupportedParamTypes.Number },
-          { value: 'true', actualType: SupportedParamTypes.Boolean },
-          { value: 'empty', actualType: SupportedParamTypes.Boolean },
+          { value: "'hello'", actualType: BasicParamTypes.String },
+          { value: '123', actualType: BasicParamTypes.Number },
+          { value: 'true', actualType: BasicParamTypes.Boolean },
+          { value: 'empty', actualType: BasicParamTypes.Boolean },
         ],
       },
     ];

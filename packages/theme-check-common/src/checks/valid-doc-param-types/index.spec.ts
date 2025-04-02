@@ -1,10 +1,10 @@
 import { expect, describe, it } from 'vitest';
 import { ValidDocParamTypes } from './index';
 import { runLiquidCheck, applySuggestions } from '../../test';
-import { SupportedParamTypes } from '../../liquid-doc/utils';
+import { BasicParamTypes } from '../../liquid-doc/utils';
 
 describe('Module: ValidDocParamTypes', () => {
-  Object.values(SupportedParamTypes).forEach((paramType) => {
+  Object.values(BasicParamTypes).forEach((paramType) => {
     it(`should not report an error when a valid parameter (${paramType}) type is used`, async () => {
       const sourceCode = `
         {% doc %}
