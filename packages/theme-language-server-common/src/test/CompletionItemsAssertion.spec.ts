@@ -14,6 +14,7 @@ describe('Module: CompletionItemsAssertion', () => {
       themeDocset: {
         filters: async () => [],
         objects: async () => [],
+        liquidDrops: async () => [],
         tags: async () => [{ name: 'render' }],
         systemTranslations: async () => ({}),
       },

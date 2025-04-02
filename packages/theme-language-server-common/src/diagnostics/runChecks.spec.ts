@@ -63,6 +63,7 @@ describe('Module: runChecks', () => {
       themeDocset: {
         filters: async () => [],
         objects: async () => [],
+        liquidDrops: async () => [],
         tags: async () => [],
         systemTranslations: async () => ({}),
       },
@@ -216,6 +217,7 @@ describe('Module: runChecks', () => {
       themeDocset: {
         filters: async () => [],
         objects: async () => [],
+        liquidDrops: async () => [],
         tags: async () => [],
         systemTranslations: async () => ({}),
       },

@@ -6,7 +6,7 @@ import { isLiquidString } from '../utils';
 import {
   inferArgumentType,
   getDefaultValueForType,
-  SupportedParamTypes,
+  BasicParamTypes,
   isTypeCompatible,
 } from '../../liquid-doc/utils';
 import { StringCorrector } from '../../fixes';
@@ -75,7 +75,7 @@ export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
         const liquidDocParamDef = liquidDocParameters.get(arg.name);
         if (liquidDocParamDef && liquidDocParamDef.type) {
           const paramType = liquidDocParamDef.type.toLowerCase();
-          const supportedTypes = Object.keys(SupportedParamTypes).map((type) => type.toLowerCase());
+          const supportedTypes = Object.keys(BasicParamTypes).map((type) => type.toLowerCase());
           if (!supportedTypes.includes(paramType)) {
             continue;
           }

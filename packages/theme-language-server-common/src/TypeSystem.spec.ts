@@ -8,7 +8,8 @@ import {
 import {
   MetafieldDefinitionMap,
   path as pathUtils,
-  SupportedParamTypes,
+  BasicParamTypes,
+  ObjectEntry,
 } from '@shopify/theme-check-common';
 import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { URI } from 'vscode-uri';
@@ -27,103 +28,105 @@ describe('Module: TypeSystem', () => {
   ];
 
   beforeEach(() => {
+    const _objects: ObjectEntry[] = [
+      {
+        name: 'all_products',
+        return_type: [{ type: 'array', array_value: 'product' }],
+      },
+      {
+        name: 'product',
+        access: {
+          global: false,
+          parents: [],
+          template: [],
+        },
+        return_type: [],
+        properties: [
+          {
+            name: 'featured_image',
+            description: 'ze best image for ze product',
+            return_type: [{ type: 'image', name: '' }],
+          },
+          {
+            name: 'metafields',
+            return_type: [{ type: 'untyped', name: '' }],
+          },
+        ],
+      },
+      {
+        name: 'metafield',
+        properties: [
+          {
+            name: 'type',
+            description: 'the type of the metafield',
+            return_type: [{ type: 'string', name: '' }],
+          },
+          {
+            name: 'value',
+            description: 'the value of the metafield',
+            return_type: [{ type: 'untyped', name: '' }],
+          },
+        ],
+      },
+      {
+        name: 'settings',
+        return_type: [],
+        properties: [], // these should be populated dynamically
+      },
+      {
+        name: 'predictive_search',
+        access: { global: false, parents: [], template: [] },
+        return_type: [],
+      },
+      {
+        name: 'comment',
+        access: { global: false, parents: [], template: [] },
+        return_type: [],
+      },
+      {
+        name: 'recommendations',
+        access: { global: false, parents: [], template: [] },
+        return_type: [],
+      },
+      {
+        name: 'app',
+        access: { global: false, parents: [], template: [] },
+        return_type: [],
+      },
+      {
+        name: 'section',
+        access: { global: false, parents: [], template: [] },
+        return_type: [],
+        properties: [
+          {
+            name: 'settings',
+            return_type: [{ type: 'untyped', name: '' }],
+          },
+        ],
+      },
+      {
+        name: 'block',
+        access: { global: false, parents: [], template: [] },
+        return_type: [],
+        properties: [
+          {
+            name: 'settings',
+            return_type: [{ type: 'untyped', name: '' }],
+          },
+        ],
+      },
+      {
+        name: 'locale',
+        access: { global: false, parents: [], template: [] },
+        return_type: [],
+      },
+    ];
     settingsProvider = vi.fn().mockResolvedValue([]);
     typeSystem = new TypeSystem(
       {
         tags: async () => [],
-        objects: async () => [
-          {
-            name: 'all_products',
-            return_type: [{ type: 'array', array_value: 'product' }],
-          },
-          {
-            name: 'product',
-            access: {
-              global: false,
-              parents: [],
-              template: [],
-            },
-            return_type: [],
-            properties: [
-              {
-                name: 'featured_image',
-                description: 'ze best image for ze product',
-                return_type: [{ type: 'image', name: '' }],
-              },
-              {
-                name: 'metafields',
-                return_type: [{ type: 'untyped', name: '' }],
-              },
-            ],
-          },
-          {
-            name: 'metafield',
-            properties: [
-              {
-                name: 'type',
-                description: 'the type of the metafield',
-                return_type: [{ type: 'string', name: '' }],
-              },
-              {
-                name: 'value',
-                description: 'the value of the metafield',
-                return_type: [{ type: 'untyped', name: '' }],
-              },
-            ],
-          },
-          {
-            name: 'settings',
-            return_type: [],
-            properties: [], // these should be populated dynamically
-          },
-          {
-            name: 'predictive_search',
-            access: { global: false, parents: [], template: [] },
-            return_type: [],
-          },
-          {
-            name: 'comment',
-            access: { global: false, parents: [], template: [] },
-            return_type: [],
-          },
-          {
-            name: 'recommendations',
-            access: { global: false, parents: [], template: [] },
-            return_type: [],
-          },
-          {
-            name: 'app',
-            access: { global: false, parents: [], template: [] },
-            return_type: [],
-          },
-          {
-            name: 'section',
-            access: { global: false, parents: [], template: [] },
-            return_type: [],
-            properties: [
-              {
-                name: 'settings',
-                return_type: [{ type: 'untyped', name: '' }],
-              },
-            ],
-          },
-          {
-            name: 'block',
-            access: { global: false, parents: [], template: [] },
-            return_type: [],
-            properties: [
-              {
-                name: 'settings',
-                return_type: [{ type: 'untyped', name: '' }],
-              },
-            ],
-          },
-          {
-            name: 'locale',
-            access: { global: false, parents: [], template: [] },
-            return_type: [],
-          },
-        ],
+        objects: async () => _objects,
+        liquidDrops: async () => _objects,
         filters: async () => [
           {
             name: 'size',
@@ -425,10 +428,10 @@ describe('Module: TypeSystem', () => {
 
   describe('LiquidDoc inferred type', () => {
     const liquidDocParamTypeToTypeMap = {
-      [SupportedParamTypes.String]: 'string',
-      [SupportedParamTypes.Number]: 'number',
-      [SupportedParamTypes.Boolean]: 'boolean',
-      [SupportedParamTypes.Object]: 'untyped',
+      [BasicParamTypes.String]: 'string',
+      [BasicParamTypes.Number]: 'number',
+      [BasicParamTypes.Boolean]: 'boolean',
+      [BasicParamTypes.Object]: 'untyped',
       invalid: 'untyped',
     };
 

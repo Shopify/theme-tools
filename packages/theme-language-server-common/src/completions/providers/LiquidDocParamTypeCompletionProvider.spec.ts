@@ -2,7 +2,7 @@ import { describe, beforeEach, it, expect } from 'vitest';
 import { CompletionsProvider } from '../CompletionsProvider';
 import { DocumentManager } from '../../documents';
 import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
-import { SupportedParamTypes } from '@shopify/theme-check-common';
+import { BasicParamTypes } from '@shopify/theme-check-common';
 
 describe('Module: LiquidDocParamTypeCompletionProvider', async () => {
   let provider: CompletionsProvider;
@@ -13,6 +13,7 @@ describe('Module: LiquidDocParamTypeCompletionProvider', async () => {
       themeDocset: {
         filters: async () => [],
         objects: async () => [],
+        liquidDrops: async () => [],
         tags: async () => [],
         systemTranslations: async () => ({}),
       },
@@ -26,7 +27,7 @@ describe('Module: LiquidDocParamTypeCompletionProvider', async () => {
     for (const source of sources) {
       await expect(provider).to.complete(
         { source, relativePath: 'file://snippets/file.liquid' },
-        Object.values(SupportedParamTypes),
+        Object.values(BasicParamTypes),
       );
     }
   });

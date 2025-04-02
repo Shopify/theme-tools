@@ -1,80 +1,83 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
-import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
+import { MetafieldDefinitionMap, ObjectEntry } from '@shopify/theme-check-common';
 
 describe('Module: ObjectCompletionProvider', async () => {
   let provider: CompletionsProvider;
 
   beforeEach(async () => {
+    const _objects: ObjectEntry[] = [
+      { name: 'all_products' },
+      { name: 'global' },
+      {
+        name: 'section',
+        access: {
+          global: false,
+          template: [],
+          parents: [],
+        },
+      },
+      {
+        name: 'block',
+        access: {
+          global: false,
+          template: [],
+          parents: [],
+        },
+      },
+      {
+        name: 'predictive_search',
+        access: {
+          global: false,
+          template: [],
+          parents: [],
+        },
+      },
+      {
+        name: 'recommendations',
+        access: {
+          global: false,
+          template: [],
+          parents: [],
+        },
+      },
+      {
+        name: 'product',
+        properties: [
+          {
+            name: 'metafields',
+          },
+        ],
+      },
+      {
+        name: 'metafield',
+        access: {
+          global: false,
+          template: [],
+          parents: [],
+        },
+        properties: [
+          {
+            name: 'type',
+            description: 'the type of the metafield',
+            return_type: [{ type: 'string', name: '' }],
+          },
+          {
+            name: 'value',
+            description: 'the value of the metafield',
+            return_type: [{ type: 'untyped', name: '' }],
+          },
+        ],
+      },
+    ];
+
     provider = new CompletionsProvider({
       documentManager: new DocumentManager(),
       themeDocset: {
         filters: async () => [],
-        objects: async () => [
-          { name: 'all_products' },
-          { name: 'global' },
-          {
-            name: 'section',
-            access: {
-              global: false,
-              template: [],
-              parents: [],
-            },
-          },
-          {
-            name: 'block',
-            access: {
-              global: false,
-              template: [],
-              parents: [],
-            },
-          },
-          {
-            name: 'predictive_search',
-            access: {
-              global: false,
-              template: [],
-              parents: [],
-            },
-          },
-          {
-            name: 'recommendations',
-            access: {
-              global: false,
-              template: [],
-              parents: [],
-            },
-          },
-          {
-            name: 'product',
-            properties: [
-              {
-                name: 'metafields',
-              },
-            ],
-          },
-          {
-            name: 'metafield',
-            access: {
-              global: false,
-              template: [],
-              parents: [],
-            },
-            properties: [
-              {
-                name: 'type',
-                description: 'the type of the metafield',
-                return_type: [{ type: 'string', name: '' }],
-              },
-              {
-                name: 'value',
-                description: 'the value of the metafield',
-                return_type: [{ type: 'untyped', name: '' }],
-              },
-            ],
-          },
-        ],
+        objects: async () => _objects,
+        liquidDrops: async () => _objects,
         tags: async () => [],
         systemTranslations: async () => ({}),
       },

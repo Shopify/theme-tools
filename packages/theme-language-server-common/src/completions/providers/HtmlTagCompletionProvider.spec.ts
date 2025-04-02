@@ -16,6 +16,7 @@ describe('Module: HtmlTagCompletionProvider', async () => {
       themeDocset: {
         filters: async () => [],
         objects: async () => [],
+        liquidDrops: async () => [],
         tags: async () => [],
         systemTranslations: async () => ({}),
       },

@@ -9,6 +9,7 @@ describe('Module: AugmentedThemeDocset', async () => {
     themeDocset = new AugmentedThemeDocset({
       filters: async () => [],
       objects: async () => [],
+      liquidDrops: async () => [],
       tags: async () => [],
       systemTranslations: async () => ({}),
     });

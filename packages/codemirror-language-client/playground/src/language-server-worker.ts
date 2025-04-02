@@ -64,6 +64,7 @@ startServer(
       filters: async () => filters,
       tags: async () => tags,
       objects: async () => objects,
+      liquidDrops: async () => objects,
       systemTranslations: async () => systemTranslations,
     },
     jsonValidationSet: {
