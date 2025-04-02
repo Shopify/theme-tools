@@ -107,6 +107,10 @@ export class AugmentedThemeDocset implements ThemeDocset {
         return true;
       }
 
+      if (obj.deprecated) {
+        return false;
+      }
+
       // objects that are accessible outside Global context
       return !obj.access.global || (obj.access.global && obj.access.parents.length > 0);
     });

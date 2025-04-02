@@ -4,10 +4,10 @@ import { ObjectEntry } from '..';
 
 /**
  * The base set of supported param types for LiquidDoc.
- * 
+ *
  * This is used in conjunction with objects defined in [liquid docs](https://shopify.dev/docs/api/liquid/objects)
  * to determine ALL supported param types for LiquidDoc.
- * 
+ *
  * References `getValidParamTypes`
  */
 export enum BasicParamTypes {
@@ -73,4 +73,28 @@ export function isTypeCompatible(expectedType: string, actualType: BasicParamTyp
   }
 
   return normalizedExpectedType === actualType;
+}
+
+/**
+ * Dynamically generates a map of LiquidDoc param types using object entries from
+ * [liquid docs](https://shopify.dev/docs/api/liquid/objects).
+ *
+ * This is used in conjunction with the base set of supported param.
+ *
+ * References `BasicParamTypes`
+ */
+export function getValidParamTypes(objectEntries: ObjectEntry[]): Map<string, string | undefined> {
+  const paramTypes: Map<string, string | undefined> = new Map([
+    [BasicParamTypes.String, undefined],
+    [BasicParamTypes.Number, undefined],
+    [BasicParamTypes.Boolean, undefined],
+    [
+      BasicParamTypes.Object,
+      'A generic type used to represent any liquid object or primitive value.',
+    ],
+  ]);
+
+  objectEntries.forEach((obj) => paramTypes.set(obj.name, obj.summary || obj.description));
+
+  return paramTypes;
 }

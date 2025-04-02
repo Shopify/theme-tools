@@ -25,7 +25,8 @@ import {
   parseJSON,
   path,
   FETCHED_METAFIELD_CATEGORIES,
-  SupportedParamTypes,
+  BasicParamTypes,
+  getValidParamTypes,
 } from '@shopify/theme-check-common';
 import {
   GetThemeSettingsSchemaForURI,
@@ -282,7 +283,7 @@ export class TypeSystem {
 
   private async symbolsTable(partialAst: LiquidHtmlNode, uri: string): Promise<SymbolsTable> {
     const seedSymbolsTable = await this.seedSymbolsTable(uri);
-    return buildSymbolsTable(partialAst, seedSymbolsTable);
+    return buildSymbolsTable(partialAst, seedSymbolsTable, await this.themeDocset.liquidDrops());
   }
 
   /**
@@ -470,6 +471,7 @@ type SymbolsTable = Record<Identifier, TypeRange[]>;
 function buildSymbolsTable(
   partialAst: LiquidHtmlNode,
   seedSymbolsTable: SymbolsTable,
+  liquidDrops: ObjectEntry[],
 ): SymbolsTable {
   const typeRanges = visit<SourceCodeType.LiquidHtml, TypeRange>(partialAst, {
     // {% assign x = foo.x | filter %}
@@ -487,7 +489,7 @@ function buildSymbolsTable(
     LiquidDocParamNode(node) {
       return {
         identifier: node.paramName.value,
-        type: inferLiquidDocParamType(node),
+        type: inferLiquidDocParamType(node, liquidDrops),
         range: [node.position.end],
       };
     },
@@ -644,19 +646,21 @@ function inferType(
   }
 }
 
-function inferLiquidDocParamType(node: LiquidDocParamNode) {
-  switch (node.paramType?.value) {
-    case SupportedParamTypes.String:
-      return 'string';
-    case SupportedParamTypes.Number:
-      return 'number';
-    case SupportedParamTypes.Boolean:
-      return 'boolean';
-    default:
-      // SupportedParamTypes.Object does not map to any specific
-      // type in the type system.
-      return 'untyped';
+function inferLiquidDocParamType(node: LiquidDocParamNode, liquidDrops: ObjectEntry[]) {
+  if (
+    !node.paramType ||
+    // BasicParamTypes.Object does not map to any specific
+    // type in the type system.
+    node.paramType.value === BasicParamTypes.Object
+  ) {
+    return Untyped;
   }
+
+  if (getValidParamTypes(liquidDrops).has(node.paramType.value)) {
+    return node.paramType.value;
+  }
+
+  return Untyped;
 }
 
 function inferLookupType(

@@ -5,7 +5,7 @@ import { BasicParamTypes } from '../../liquid-doc/utils';
 
 describe('Module: ValidDocParamTypes', () => {
   Object.values(BasicParamTypes).forEach((paramType) => {
-    it(`should not report an error when a valid parameter (${paramType}) type is used`, async () => {
+    it(`should not report an error when a valid basic parameter (${paramType}) type is used`, async () => {
       const sourceCode = `
         {% doc %}
           @param {${paramType}} param1 - Example param
@@ -16,6 +16,18 @@ describe('Module: ValidDocParamTypes', () => {
 
       expect(offenses).to.be.empty;
     });
+  });
+
+  it(`should not report an error when a valid liquid object parameter (product) type is used`, async () => {
+    const sourceCode = `
+      {% doc %}
+        @param {product} param1 - Example param
+      {% enddoc %}
+    `;
+
+    const offenses = await runLiquidCheck(ValidDocParamTypes, sourceCode);
+
+    expect(offenses).to.be.empty;
   });
 
   it('should report an error with suggestions when an invalid parameter type is used', async () => {

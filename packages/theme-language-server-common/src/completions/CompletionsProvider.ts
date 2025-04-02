@@ -87,7 +87,7 @@ export class CompletionsProvider {
       new RenderSnippetParameterCompletionProvider(getSnippetDefinitionForURI),
       new FilterNamedParameterCompletionProvider(themeDocset),
       new LiquidDocTagCompletionProvider(),
-      new LiquidDocParamTypeCompletionProvider(),
+      new LiquidDocParamTypeCompletionProvider(themeDocset),
     ];
   }
 
