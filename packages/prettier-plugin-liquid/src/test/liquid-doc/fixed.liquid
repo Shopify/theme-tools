@@ -133,3 +133,17 @@ It should not prepend an implicit description with an @description annotation
 
   @description This is an explicit description
 {% enddoc %}
+
+It should keep single-line prompts on the line it's written on
+{% doc %}
+  @prompt This is a single line prompt
+  @prompt
+  This is a prompt on the next line
+{% enddoc %}
+
+It should push multi-line prompts to the next line
+{% doc %}
+  @prompt
+  This is a valid prompt
+  So is this without a newline See?
+{% enddoc %}

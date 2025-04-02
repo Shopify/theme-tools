@@ -398,6 +398,7 @@ LiquidDoc <: Helpers {
     | paramNode
     | exampleNode
     | descriptionNode
+	  | promptNode
     | fallbackNode
   
   endOfDescription = strictSpace* openControl
@@ -421,10 +422,13 @@ LiquidDoc <: Helpers {
 
   paramDescription = (~"]" anyExceptStar<endOfParam>)
   endOfParam = strictSpace* (newline | end)
+  
+  promptNode = "@prompt" space* multilineTextContent
+  
+  exampleNode = "@example" space* multilineTextContent
 
-  exampleNode = "@example" space* exampleContent
-  exampleContent = anyExceptStar<endOfExample>
-  endOfExample =  strictSpace* ("@" | end)
+  multilineTextContent = anyExceptStar<endOfMultilineText>
+  endOfMultilineText =  strictSpace* ("@" | end)
 
   fallbackNode = "@" anyExceptStar<endOfParam>
 }
