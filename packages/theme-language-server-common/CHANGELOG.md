@@ -1,5 +1,20 @@
 # @shopify/theme-language-server-common
 
+## 2.12.0
+
+### Minor Changes
+
+- 52b3d2c9: Enable tag and param type completions for LiquidDoc in theme blocks
+
+### Patch Changes
+
+- 1a95a190: Introduce parsing support for a `@prompt` annotation within `{% doc %}` tags
+- Updated dependencies [1a95a190]
+- Updated dependencies [d9204c55]
+- Updated dependencies [cf51a514]
+  - @shopify/liquid-html-parser@2.8.0
+  - @shopify/theme-check-common@3.13.0
+
 ## 2.11.0
 
 ### Minor Changes

@@ -1,5 +1,13 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.9.1
+
+### Patch Changes
+
+- 1a95a190: Introduce parsing support for a `@prompt` annotation within `{% doc %}` tags
+- Updated dependencies [1a95a190]
+  - @shopify/liquid-html-parser@2.8.0
+
 ## 1.9.0
 
 ### Minor Changes
