@@ -44,7 +44,6 @@ export class ContentForParameterCompletionProvider implements Provider {
     if (parentNode.contentForType.value == 'blocks') {
       options = {
         closest: DEFAULT_COMPLETION_OPTIONS.closest,
-        context: DEFAULT_COMPLETION_OPTIONS.context,
       };
     }
 
@@ -87,9 +86,8 @@ export class ContentForParameterCompletionProvider implements Provider {
 
     let start = document.textDocument.positionAt(node.position.start);
     let end = document.textDocument.positionAt(node.position.end + offset);
-    let isValidKeywordArg = name === 'closest' || name === 'context';
-    let newText = isValidKeywordArg ? `${name}.` : `${name}: '$1'`;
-    let format = isValidKeywordArg ? InsertTextFormat.PlainText : InsertTextFormat.Snippet;
+    let newText = name === 'closest' ? `${name}.` : `${name}: '$1'`;
+    let format = name === 'closest' ? InsertTextFormat.PlainText : InsertTextFormat.Snippet;
 
     // If the cursor is inside the parameter or at the end and it's the same
     // value as the one we're offering a completion for then we want to restrict

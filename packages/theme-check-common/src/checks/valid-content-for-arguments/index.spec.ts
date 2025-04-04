@@ -22,12 +22,15 @@ describe('Module: ValidContentForArguments', () => {
       expect(offenses).toHaveLength(0);
     });
 
-    it('should accept `context.*` kwargs', async () => {
+    it('should not accept `context.*` kwargs', async () => {
       const offenses = await runLiquidCheck(
         ValidContentForArguments,
         '{% content_for "blocks", context.product: product %}',
       );
-      expect(offenses).toHaveLength(0);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0]!.message).to.equal(
+        `{% content_for "blocks" %} only accepts 'closest.*' arguments`,
+      );
     });
 
     it('should report offenses for non-`closest.*` kwargs', async () => {
@@ -37,7 +40,7 @@ describe('Module: ValidContentForArguments', () => {
       );
       expect(offenses).toHaveLength(1);
       expect(offenses[0]!.message).to.equal(
-        `{% content_for "blocks" %} only accepts 'closest.*' and 'context.*' arguments`,
+        `{% content_for "blocks" %} only accepts 'closest.*' arguments`,
       );
     });
   });
@@ -69,15 +72,36 @@ describe('Module: ValidContentForArguments', () => {
       expect(offenses[0].message).to.equal(`The 'id' argument should be a string`);
     });
 
-    it(`should report an offense if other kwargs are passed that are not named 'closest.*'`, async () => {
+    it(`should accept static arguments`, async () => {
       const offenses = await runLiquidCheck(
         ValidContentForArguments,
         '{% content_for "block", type: "foo", id: "id", product: product %}',
       );
+      expect(offenses).toHaveLength(0);
+    });
+
+    it(`should report an offense for reserved arguments`, async () => {
+      const offenses = await runLiquidCheck(
+        ValidContentForArguments,
+        '{% content_for "block", type: "foo", id: "id", settings: settings %}',
+      );
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).to.equal(
-        `{% content_for "block" %} only accepts 'id', 'type', 'closest.*', and 'context.*' arguments`,
+        `{% content_for "block" %} doesn't support 'settings' because it's a reserved argument.`,
       );
+    });
+
+    it(`should report offenses for multiple reserved arguments`, async () => {
+      const offenses = await runLiquidCheck(
+        ValidContentForArguments,
+        '{% content_for "block", type: "foo", id: "id", settings: settings, section: section %}',
+      );
+      const messages = offenses.map((o) => o.message);
+
+      expect(messages).to.deep.equal([
+        `{% content_for "block" %} doesn't support 'settings' because it's a reserved argument.`,
+        `{% content_for "block" %} doesn't support 'section' because it's a reserved argument.`,
+      ]);
     });
   });
 });
