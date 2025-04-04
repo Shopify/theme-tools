@@ -45,7 +45,6 @@ describe('Module: ContentForBlockParameterCompletionProvider', async () => {
       'type',
       'id',
       'closest',
-      'context',
       'testOption',
     ]);
   });
@@ -110,9 +109,9 @@ describe('Module: ContentForBlockParameterCompletionProvider', async () => {
     );
   });
 
-  describe("when we're completing for blocks we allow `closest` and `context`", () => {
+  describe("when we're completing for blocks we allow `closest`", () => {
     it('does something', async () => {
-      await expect(provider).to.complete('{% content_for "blocks", █ %}', ['closest', 'context']);
+      await expect(provider).to.complete('{% content_for "blocks", █ %}', ['closest']);
     });
   });
 
@@ -174,13 +173,7 @@ describe('Module: ContentForBlockParameterCompletionProvider', async () => {
       it('offers a full list of completion items', async () => {
         const context = `{% content_for "block", █type: "button" %}`;
 
-        await expect(provider).to.complete(context, [
-          'type',
-          'id',
-          'closest',
-          'context',
-          'testOption',
-        ]);
+        await expect(provider).to.complete(context, ['type', 'id', 'closest', 'testOption']);
       });
 
       it('does not replace the existing text', async () => {
