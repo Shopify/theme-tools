@@ -1,10 +1,6 @@
 import { ContentForMarkup, NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
-const isValidKeywordArgument = (argName: string) => {
-  return argName.startsWith('closest.') || argName.startsWith('context.');
-};
-
 export const ValidContentForArguments: LiquidCheckDefinition = {
   meta: {
     code: 'ValidContentForArguments',
@@ -24,10 +20,11 @@ export const ValidContentForArguments: LiquidCheckDefinition = {
   create(context) {
     const validationStrategies = {
       blocks: (node: ContentForMarkup) => {
-        const problematicArguments = node.args.filter((arg) => !isValidKeywordArgument(arg.name));
+        const problematicArguments = node.args.filter((arg) => !arg.name.startsWith('closest.'));
+
         for (const arg of problematicArguments) {
           context.report({
-            message: `{% content_for "blocks" %} only accepts 'closest.*' and 'context.*' arguments`,
+            message: `{% content_for "blocks" %} only accepts 'closest.*' arguments`,
             startIndex: arg.position.start,
             endIndex: arg.position.end,
           });
@@ -36,6 +33,24 @@ export const ValidContentForArguments: LiquidCheckDefinition = {
 
       block: (node: ContentForMarkup) => {
         const requiredArguments = ['id', 'type'];
+        const reservedArguments = [
+          'attributes',
+          'block',
+          'blocks',
+          'class',
+          'context',
+          'inherit',
+          'resource',
+          'resources',
+          'schema',
+          'section',
+          'sections',
+          'settings',
+          'snippet',
+          'snippets',
+          'template',
+          'templates',
+        ];
 
         // Make sure the id and string arguments are present and are strings
         for (const requiredArgumentName of requiredArguments) {
@@ -62,13 +77,13 @@ export const ValidContentForArguments: LiquidCheckDefinition = {
           }
         }
 
-        const problematicArguments = node.args.filter(
-          (arg) => !(requiredArguments.includes(arg.name) || isValidKeywordArgument(arg.name)),
+        const problematicArguments = node.args.filter((arg) =>
+          reservedArguments.includes(arg.name),
         );
 
         for (const arg of problematicArguments) {
           context.report({
-            message: `{% content_for "block" %} only accepts 'id', 'type', 'closest.*', and 'context.*' arguments`,
+            message: `{% content_for "block" %} doesn't support '${arg.name}' because it's a reserved argument.`,
             startIndex: arg.position.start,
             endIndex: arg.position.end,
           });
