@@ -1,5 +1,5 @@
 import { TextNode } from '@shopify/liquid-html-parser';
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
+import { LiquidCheckDefinition, ObjectEntry, Severity, SourceCodeType } from '../../types';
 
 export const ValidDocParamNames: LiquidCheckDefinition = {
   meta: {
@@ -21,12 +21,19 @@ export const ValidDocParamNames: LiquidCheckDefinition = {
     const tagsPromise = context.themeDocset?.tags();
     const objectsPromise = context.themeDocset?.objects();
 
+    function isGlobal(object: ObjectEntry) {
+      return !object.access || object.access?.global === true || object.access?.template.length > 0;
+    }
+
     return {
       async LiquidDocParamNode(node) {
         const paramName = node.paramName.value;
 
         const tags = (await tagsPromise)?.map((tag) => tag.name) || [];
-        const objects = (await objectsPromise)?.map((obj) => obj.name) || [];
+        const objects =
+          (await objectsPromise)
+            ?.filter((object) => isGlobal(object))
+            .map((object) => object.name) || [];
 
         if (tags.includes(paramName)) {
           reportWarning(

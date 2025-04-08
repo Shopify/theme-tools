@@ -31,6 +31,18 @@ describe('Module: ValidDocParamNames', () => {
     );
   });
 
+  it('should not report a warning when a doc param shares a name with a liquid object type that is not global', async () => {
+    const sourceCode = `
+      {% doc %}
+        @param image - A type, but not a global
+      {% enddoc %}
+    `;
+
+    const offenses = await runLiquidCheck(ValidDocParamNames, sourceCode);
+
+    expect(offenses).to.have.length(0);
+  });
+
   it('should report a warning when a doc param shares a name with a liquid tag', async () => {
     const sourceCode = `
       {% doc %}
