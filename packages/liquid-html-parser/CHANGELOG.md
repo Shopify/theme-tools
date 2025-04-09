@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.8.0
+
+### Minor Changes
+
+- 1a95a190: Introduce parsing support for a `@prompt` annotation within `{% doc %}` tags
+
 ## 2.7.0
 
 ### Minor Changes

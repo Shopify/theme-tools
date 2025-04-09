@@ -1,5 +1,19 @@
 # @shopify/theme-check-common
 
+## 3.13.0
+
+### Minor Changes
+
+- 886ee4b1: Update theme blocks to support static arguments only in static blocks without the `context` namespace
+- cf51a514: Update UnsupportDocTags check to accept the {% doc %} tag in theme blocks
+
+### Patch Changes
+
+- d9204c55: Fix: Be less strict about numbers in VariableName
+- 3fff76bf: Do not report errors when using a Liquid doc @param name of a non global variable
+- Updated dependencies [1a95a190]
+  - @shopify/liquid-html-parser@2.8.0
+
 ## 3.12.0
 
 ### Minor Changes
