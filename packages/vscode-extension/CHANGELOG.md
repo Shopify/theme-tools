@@ -1,5 +1,24 @@
 ## theme-check-vscode
 
+## 3.8.0
+
+### Minor Changes
+
+- d38e8b2e: Update liquid-tm-grammar commit to add syntax highlighting for the prompt tag in liquid doc
+
+### Patch Changes
+
+- Updated dependencies [1a95a190]
+- Updated dependencies [d9204c55]
+- Updated dependencies [886ee4b1]
+- Updated dependencies [cf51a514]
+- Updated dependencies [3fff76bf]
+  - @shopify/liquid-html-parser@2.8.0
+  - @shopify/prettier-plugin-liquid@1.9.1
+  - @shopify/theme-check-common@3.13.0
+  - @shopify/theme-language-server-browser@2.12.0
+  - @shopify/theme-language-server-node@2.12.0
+
 ## 3.7.0
 
 ### Minor Changes

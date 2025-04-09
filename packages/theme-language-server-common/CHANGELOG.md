@@ -1,5 +1,24 @@
 # @shopify/theme-language-server-common
 
+## 2.12.0
+
+### Minor Changes
+
+- 52b3d2c9: Enable tag and param type completions for LiquidDoc in theme blocks
+- 886ee4b1: Update theme blocks to support static arguments only in static blocks without the `context` namespace
+
+### Patch Changes
+
+- 1a95a190: Introduce parsing support for a `@prompt` annotation within `{% doc %}` tags
+- 44233c4f: Complete variable name before type in LiquidDoc @param completion
+- Updated dependencies [1a95a190]
+- Updated dependencies [d9204c55]
+- Updated dependencies [886ee4b1]
+- Updated dependencies [cf51a514]
+- Updated dependencies [3fff76bf]
+  - @shopify/liquid-html-parser@2.8.0
+  - @shopify/theme-check-common@3.13.0
+
 ## 2.11.0
 
 ### Minor Changes
