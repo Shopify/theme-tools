@@ -1,6 +1,5 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { LiquidNamedArgument, NodeTypes, RenderMarkup } from '@shopify/liquid-html-parser';
-import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
 import { getSnippetDefinition, LiquidDocParameter } from '../../liquid-doc/liquidDoc';
 import { isLiquidString } from '../utils';
 import {
@@ -15,7 +14,6 @@ export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
   meta: {
     code: 'ValidRenderSnippetParamTypes',
     name: 'Valid Render Snippet Parameter Types',
-
     docs: {
       description:
         'This check ensures that parameters passed to snippet match the expected types defined in the liquidDoc header if present.',
@@ -161,11 +159,9 @@ export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
         const snippetPath = `snippets/${snippetName}.liquid`;
         const snippetUri = context.toUri(snippetPath);
 
-        const snippetContent = await context.fs.readFile(snippetUri);
-        const snippetAst = toLiquidHtmlAST(snippetContent);
-        const snippetDef = getSnippetDefinition(snippetAst, snippetName);
+        const snippetDef = context.getDocDefinition && (await context.getDocDefinition(snippetUri));
 
-        if (!snippetDef.liquidDoc?.parameters) {
+        if (!snippetDef?.liquidDoc?.parameters) {
           return;
         }
 

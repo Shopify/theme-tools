@@ -82,6 +82,12 @@ export function makeRunChecks(
           const schema = await doc.getSchema();
           return schema as SectionSchema | undefined;
         },
+
+        async getDocDefinition(uri) {
+          const doc = documentManager.get(uri);
+          if (doc?.type !== SourceCodeType.LiquidHtml) return undefined;
+          return doc.getLiquidDoc(path.basename(uri, '.liquid'));
+        },
       });
       const offenses = [...themeOffenses, ...cssOffenses];
 

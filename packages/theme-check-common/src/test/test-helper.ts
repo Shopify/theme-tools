@@ -1,3 +1,4 @@
+import { isLiquidHtmlNode } from '@shopify/liquid-html-parser';
 import {
   applyFixToString,
   CheckDefinition,
@@ -8,6 +9,7 @@ import {
   createCorrector,
   Dependencies,
   FixApplicator,
+  getSnippetDefinition,
   isBlock,
   isSection,
   JSONCorrector,
@@ -87,6 +89,13 @@ export async function check(
       return toSchema(config.context, section.uri, section, isValidSchema) as Promise<
         SectionSchema | undefined
       >;
+    },
+    async getDocDefinition(uri) {
+      const file = theme.find((file) => file.uri === uri);
+      if (!file || !isLiquidHtmlNode(file.ast)) {
+        return undefined;
+      }
+      return getSnippetDefinition(file.ast, path.basename(file.uri, '.liquid'));
     },
     themeDocset: {
       async filters() {
@@ -224,8 +233,13 @@ export async function runLiquidCheck(
   sourceCode: string,
   fileName: string = 'file.liquid',
   mockDependencies: Partial<Dependencies> = {},
+  existingThemeFiles?: MockTheme,
 ): Promise<Offense[]> {
-  const offenses = await check({ [fileName]: sourceCode }, [checkDef], mockDependencies);
+  const offenses = await check(
+    { ...existingThemeFiles, [fileName]: sourceCode },
+    [checkDef],
+    mockDependencies,
+  );
   return offenses.filter((offense) => offense.uri === path.join(rootUri, fileName));
 }
 
