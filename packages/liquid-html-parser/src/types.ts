@@ -47,7 +47,6 @@ export enum NodeTypes {
   LiquidDocDescriptionNode = 'LiquidDocDescriptionNode',
   LiquidDocParamNode = 'LiquidDocParamNode',
   LiquidDocExampleNode = 'LiquidDocExampleNode',
-  LiquidDocPromptNode = 'LiquidDocPromptNode',
 }
 
 // These are officially supported with special node types
