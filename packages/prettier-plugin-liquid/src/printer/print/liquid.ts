@@ -6,7 +6,6 @@ import {
   LiquidDocParamNode,
   LiquidDocExampleNode,
   LiquidDocDescriptionNode,
-  LiquidDocPromptNode,
 } from '@shopify/liquid-html-parser';
 import { Doc, doc } from 'prettier';
 
@@ -555,14 +554,16 @@ export function printLiquidDocParam(
   return parts;
 }
 
-function printLiquidDocTag(
-  path: AstPath<LiquidDocExampleNode | LiquidDocPromptNode | LiquidDocDescriptionNode>,
-  tagName: string,
+export function printLiquidDocExample(
+  path: AstPath<LiquidDocExampleNode>,
+  options: LiquidParserOptions,
+  _print: LiquidPrinter,
+  _args: LiquidPrinterArgs,
 ): Doc {
   const node = path.getValue();
-  const parts: Doc[] = [tagName];
-  const content = node.content.value;
+  const parts: Doc[] = ['@example'];
 
+  const content = node.content.value;
   if (content.trimEnd().includes('\n') || !node.isInline) {
     parts.push(hardline);
   } else {
@@ -573,24 +574,6 @@ function printLiquidDocTag(
   return parts;
 }
 
-export function printLiquidDocExample(
-  path: AstPath<LiquidDocExampleNode>,
-  options: LiquidParserOptions,
-  _print: LiquidPrinter,
-  _args: LiquidPrinterArgs,
-): Doc {
-  return printLiquidDocTag(path, '@example');
-}
-
-export function printLiquidDocPrompt(
-  path: AstPath<LiquidDocPromptNode>,
-  options: LiquidParserOptions,
-  _print: LiquidPrinter,
-  _args: LiquidPrinterArgs,
-): Doc {
-  return printLiquidDocTag(path, '@prompt');
-}
-
 export function printLiquidDocDescription(
   path: AstPath<LiquidDocDescriptionNode>,
   options: LiquidParserOptions,
@@ -598,12 +581,23 @@ export function printLiquidDocDescription(
   _args: LiquidPrinterArgs,
 ): Doc {
   const node = path.getValue();
+  const parts: Doc[] = [];
+  const content = node.content.value;
 
   if (node.isImplicit) {
-    return [node.content.value.trim()];
+    parts.push(content.trim());
+    return parts;
   }
 
-  return printLiquidDocTag(path, '@description');
+  parts.push('@description');
+  if (content.trimEnd().includes('\n') || !node.isInline) {
+    parts.push(hardline);
+  } else {
+    parts.push(' ');
+  }
+  parts.push(content.trim());
+
+  return parts;
 }
 
 function innerLeadingWhitespace(node: LiquidTag | LiquidBranch) {

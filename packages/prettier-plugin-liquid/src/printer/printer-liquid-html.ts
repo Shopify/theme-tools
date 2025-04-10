@@ -3,7 +3,6 @@ import {
   LiquidDocDescriptionNode,
   LiquidDocExampleNode,
   LiquidDocParamNode,
-  LiquidDocPromptNode,
   NodeTypes,
   Position,
   RawMarkupKinds,
@@ -52,7 +51,6 @@ import {
   printLiquidDocParam,
   printLiquidDocExample,
   printLiquidDocDescription,
-  printLiquidDocPrompt,
 } from './print/liquid';
 import { printClosingTagSuffix, printOpeningTagPrefix } from './print/tag';
 import { bodyLines, hasLineBreakInRange, isEmpty, isTextLikeNode, reindent } from './utils';
@@ -567,10 +565,6 @@ function printNode(
 
     case NodeTypes.LiquidDocExampleNode: {
       return printLiquidDocExample(path as AstPath<LiquidDocExampleNode>, options, print, args);
-    }
-
-    case NodeTypes.LiquidDocPromptNode: {
-      return printLiquidDocPrompt(path as AstPath<LiquidDocPromptNode>, options, print, args);
     }
 
     case NodeTypes.LiquidDocDescriptionNode: {
