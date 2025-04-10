@@ -1,5 +1,11 @@
 # @shopify/theme-check-docs-updater
 
+## 3.13.1
+
+### Patch Changes
+
+- @shopify/theme-check-common@3.13.1
+
 ## 3.13.0
 
 ### Patch Changes

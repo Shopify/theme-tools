@@ -1,5 +1,13 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.9.2
+
+### Patch Changes
+
+- 7ff54f02: Remove dead code
+- Updated dependencies [7ff54f02]
+  - @shopify/liquid-html-parser@2.8.1
+
 ## 1.9.1
 
 ### Patch Changes
