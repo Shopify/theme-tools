@@ -1,5 +1,17 @@
 ## theme-check-vscode
 
+## 3.8.1
+
+### Patch Changes
+
+- 7ff54f02: Remove dead code
+- Updated dependencies [7ff54f02]
+  - @shopify/prettier-plugin-liquid@1.9.2
+  - @shopify/liquid-html-parser@2.8.1
+  - @shopify/theme-language-server-browser@2.12.1
+  - @shopify/theme-language-server-node@2.12.1
+  - @shopify/theme-check-common@3.13.1
+
 ## 3.8.0
 
 ### Minor Changes

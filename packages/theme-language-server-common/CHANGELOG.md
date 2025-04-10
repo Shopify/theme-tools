@@ -1,5 +1,14 @@
 # @shopify/theme-language-server-common
 
+## 2.12.1
+
+### Patch Changes
+
+- 7ff54f02: Remove dead code
+- Updated dependencies [7ff54f02]
+  - @shopify/liquid-html-parser@2.8.1
+  - @shopify/theme-check-common@3.13.1
+
 ## 2.12.0
 
 ### Minor Changes
