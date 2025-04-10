@@ -346,4 +346,36 @@ describe('Module: UndefinedObject', () => {
 
     expect(offenses).toHaveLength(0);
   });
+
+  it('should not report an offense when object is defined with @param in a block file', async () => {
+    const sourceCode = `
+      {% doc %}
+        @param {string} text
+      {% enddoc %}
+
+      {{ text }}
+    `;
+
+    const filePath = 'blocks/my-custom-block.liquid';
+    const offenses = await runLiquidCheck(UndefinedObject, sourceCode, filePath);
+
+    expect(offenses).toHaveLength(0);
+  });
+
+  it('should report an offense when an undefined object is used alongside @param in a block file', async () => {
+    const sourceCode = `
+      {% doc %}
+        @param {string} text
+      {% enddoc %}
+
+      {{ text }}
+      {{ undefined_variable }}
+    `;
+
+    const filePath = 'blocks/my-custom-block.liquid';
+    const offenses = await runLiquidCheck(UndefinedObject, sourceCode, filePath);
+
+    expect(offenses).toHaveLength(1);
+    expect(offenses[0].message).toBe("Unknown object 'undefined_variable' used.");
+  });
 });
