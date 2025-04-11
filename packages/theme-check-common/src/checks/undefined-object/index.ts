@@ -34,14 +34,7 @@ export const UndefinedObject: LiquidCheckDefinition = {
   },
 
   create(context) {
-    /**
-     * At present, snippet assets are not supported due to the inability of this
-     * check to handle objects defined in other assets.
-     */
     const relativePath = context.toRelativePath(context.file.uri);
-    if (relativePath.startsWith('snippets/')) {
-      return {};
-    }
 
     /**
      * Skip this check when definitions for global objects are unavailable.

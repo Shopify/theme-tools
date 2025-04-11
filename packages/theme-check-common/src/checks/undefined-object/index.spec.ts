@@ -245,12 +245,28 @@ describe('Module: UndefinedObject', () => {
     }
   });
 
-  it('should not report an offense when object is undefined in a "snippet" file', async () => {
+  it('should report an offense when object is undefined in a "snippet" file', async () => {
     const sourceCode = `
       {{ my_var }}
     `;
 
     const offenses = await runLiquidCheck(UndefinedObject, sourceCode, 'snippets/file.liquid');
+
+    expect(offenses).toHaveLength(1);
+    expect(offenses.map((e) => e.message)).toEqual(["Unknown object 'my_var' used."]);
+  });
+
+  it('should not report an offense when object is defined with @param in a snippet file', async () => {
+    const sourceCode = `
+      {% doc %}
+        @param {string} text
+      {% enddoc %}
+
+      {{ text }}
+    `;
+
+    const filePath = 'snippets/file.liquid';
+    const offenses = await runLiquidCheck(UndefinedObject, sourceCode, filePath);
 
     expect(offenses).toHaveLength(0);
   });
