@@ -5,18 +5,22 @@ import {
   LiquidSourceCode,
   Offense,
   SectionSchema,
+  SnippetDefinition,
   Theme,
   ThemeBlockSchema,
   toSourceCode as commonToSourceCode,
   check as coreCheck,
+  getSnippetDefinition,
   isBlock,
   isIgnored,
   isSection,
+  isSnippet,
   memo,
   path as pathUtils,
   toSchema,
 } from '@shopify/theme-check-common';
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
+import { isLiquidHtmlNode } from '@shopify/liquid-html-parser';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -115,6 +119,20 @@ export async function themeCheckRun(
       toSchema(config.context, source.uri, source, isValidSchema) as Promise<SectionSchema | undefined>
     )
   ]));
+  const docDefinitions = new Map(
+    theme
+      .filter((file) => isSnippet(file.uri))
+      .map((file) => [
+        path.relative(URI.file(root).toString(), file.uri),
+        memo(async (): Promise<SnippetDefinition | undefined> => {
+          const ast = file.ast;
+          if (!isLiquidHtmlNode(ast)) {
+            return undefined;
+          }
+          return getSnippetDefinition(ast, path.basename(file.uri, '.liquid'));
+        }),
+      ]),
+  );
 
   const offenses = await coreCheck(theme, config, {
     fs: NodeFileSystem,
@@ -127,6 +145,7 @@ export async function themeCheckRun(
     getSectionSchema: async (name) => sectionSchemas.get(name)?.(),
     getBlockSchema: async (name) => blockSchemas.get(name)?.(),
     getAppBlockSchema: async (name) => blockSchemas.get(name)?.() as any, // cheating... but TODO
+    getDocDefinition: async (relativePath) => docDefinitions.get(relativePath)?.(),
   });
 
   return {

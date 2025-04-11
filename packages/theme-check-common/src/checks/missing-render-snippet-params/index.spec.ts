@@ -1,14 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { applySuggestions, runLiquidCheck } from '../../test';
+import { applySuggestions, MockTheme, runLiquidCheck } from '../../test';
 import { MissingRenderSnippetParams } from '.';
-import { MockFileSystem } from '../../test';
 
 function check(snippet: string, source: string) {
-  return runLiquidCheck(MissingRenderSnippetParams, source, undefined, {
-    fs: new MockFileSystem({
+  return runLiquidCheck(
+    MissingRenderSnippetParams,
+    source,
+    undefined,
+    {},
+    {
       'snippets/card.liquid': snippet,
-    }),
-  });
+    },
+  );
 }
 
 const defaultSnippet = `
@@ -83,7 +86,7 @@ describe('Module: MissingRenderSnippetParams', () => {
     });
 
     it('should suggest adding missing parameter after provided alias variable', async () => {
-      const fs = new MockFileSystem({
+      const mockTheme = {
         'snippets/card.liquid': `
           {% doc %}
             @param {string} title - The title of the card
@@ -92,12 +95,16 @@ describe('Module: MissingRenderSnippetParams', () => {
           <div>{{ title }}</div>
           <div>{{ description }}</div>
         `,
-      });
+      } as MockTheme;
 
       let sourceCode = `{% render 'card' with 'my-card' as title %}`;
-      let offenses = await runLiquidCheck(MissingRenderSnippetParams, sourceCode, undefined, {
-        fs,
-      });
+      let offenses = await runLiquidCheck(
+        MissingRenderSnippetParams,
+        sourceCode,
+        undefined,
+        {},
+        mockTheme,
+      );
 
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toBe(
@@ -108,9 +115,13 @@ describe('Module: MissingRenderSnippetParams', () => {
       expect(result).toEqual([`{% render 'card' with 'my-card' as title, description: '' %}`]);
 
       sourceCode = `{% render 'card' for titles as title %}`;
-      offenses = await runLiquidCheck(MissingRenderSnippetParams, sourceCode, undefined, {
-        fs,
-      });
+      offenses = await runLiquidCheck(
+        MissingRenderSnippetParams,
+        sourceCode,
+        undefined,
+        {},
+        mockTheme,
+      );
 
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toBe(
@@ -124,8 +135,14 @@ describe('Module: MissingRenderSnippetParams', () => {
 
   describe('edge cases', () => {
     it('should handle mixed case type annotations', async () => {
-      const fs = new MockFileSystem({
-        'snippets/card.liquid': `
+      const sourceCode = `{% render 'card', text: "hello", count: 5, flag: true, data: product %}`;
+      const offenses = await runLiquidCheck(
+        MissingRenderSnippetParams,
+        sourceCode,
+        undefined,
+        {},
+        {
+          'snippets/card.liquid': `
             {% doc %}
               @param {String} text - The text
               @param {NUMBER} count - The count
@@ -134,31 +151,35 @@ describe('Module: MissingRenderSnippetParams', () => {
             {% enddoc %}
             <div>{{ text }}{{ count }}{{ flag }}{{ data }}</div>
           `,
-      });
-
-      const sourceCode = `{% render 'card', text: "hello", count: 5, flag: true, data: product %}`;
-      const offenses = await runLiquidCheck(MissingRenderSnippetParams, sourceCode, undefined, {
-        fs,
-      });
+        },
+      );
       expect(offenses).toHaveLength(0);
     });
 
     it('should not report when snippet has no doc comment', async () => {
-      const fs = new MockFileSystem({
-        'snippets/card.liquid': `<h1>This snippet has no doc comment</h1>`,
-      });
-
       const sourceCode = `{% render 'card', title: 'My Card' %}`;
-      const offenses = await runLiquidCheck(MissingRenderSnippetParams, sourceCode, undefined, {
-        fs,
-      });
+      const offenses = await runLiquidCheck(
+        MissingRenderSnippetParams,
+        sourceCode,
+        undefined,
+        {},
+        {
+          'snippets/card.liquid': `<h1>This snippet has no doc comment</h1>`,
+        },
+      );
 
       expect(offenses).toHaveLength(0);
     });
 
     it('should not report when LiquidDoc definition has no defined params', async () => {
-      const fs = new MockFileSystem({
-        'snippets/card.liquid': `
+      const sourceCode = `{% render 'card', title: 'My Card' %}`;
+      const offenses = await runLiquidCheck(
+        MissingRenderSnippetParams,
+        sourceCode,
+        undefined,
+        {},
+        {
+          'snippets/card.liquid': `
             {% doc %}
               @description this is a description
               @example this is an example
@@ -166,19 +187,21 @@ describe('Module: MissingRenderSnippetParams', () => {
             <div>{{ title }}</div>
             <div>{{ description }}</div>
           `,
-      });
-
-      const sourceCode = `{% render 'card', title: 'My Card' %}`;
-      const offenses = await runLiquidCheck(MissingRenderSnippetParams, sourceCode, undefined, {
-        fs,
-      });
+        },
+      );
 
       expect(offenses).toHaveLength(0);
     });
 
     it('should not report when snippet name is a VariableLookup', async () => {
-      const fs = new MockFileSystem({
-        'snippets/card.liquid': `
+      const sourceCode = `{% assign snippet_name = 'card' %}{% render snippet_name, title: 'My Card' %}`;
+      const offenses = await runLiquidCheck(
+        MissingRenderSnippetParams,
+        sourceCode,
+        undefined,
+        {},
+        {
+          'snippets/card.liquid': `
             {% doc %}
               @param {string} title - The title of the card
               @param {string} description - The description of the card
@@ -186,30 +209,30 @@ describe('Module: MissingRenderSnippetParams', () => {
             <div>{{ title }}</div>
             <div>{{ description }}</div>
           `,
-      });
-
-      const sourceCode = `{% assign snippet_name = 'card' %}{% render snippet_name, title: 'My Card' %}`;
-      const offenses = await runLiquidCheck(MissingRenderSnippetParams, sourceCode, undefined, {
-        fs,
-      });
+        },
+      );
 
       expect(offenses).toHaveLength(0);
     });
 
     it('should report when "with/for" alias syntax is used', async () => {
-      const fs = new MockFileSystem({
+      const mockTheme = {
         'snippets/card.liquid': `
           {% doc %}
             @param {string} title - The title of the card
           {% enddoc %}
           <div>{{ title }}</div>  
         `,
-      });
+      } as MockTheme;
 
       let sourceCode = `{% render 'card' with 'my-card' as unknown %}`;
-      let offenses = await runLiquidCheck(MissingRenderSnippetParams, sourceCode, undefined, {
-        fs,
-      });
+      let offenses = await runLiquidCheck(
+        MissingRenderSnippetParams,
+        sourceCode,
+        undefined,
+        {},
+        mockTheme,
+      );
 
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toEqual(
@@ -217,9 +240,13 @@ describe('Module: MissingRenderSnippetParams', () => {
       );
 
       sourceCode = `{% render 'card' for array as unknown %}`;
-      offenses = await runLiquidCheck(MissingRenderSnippetParams, sourceCode, undefined, {
-        fs,
-      });
+      offenses = await runLiquidCheck(
+        MissingRenderSnippetParams,
+        sourceCode,
+        undefined,
+        {},
+        mockTheme,
+      );
 
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toEqual(

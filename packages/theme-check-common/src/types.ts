@@ -17,6 +17,7 @@ import {
 } from './jsonc/types';
 import { JsonValidationSet, ThemeDocset } from './types/theme-liquid-docs';
 import { AppBlockSchema, SectionSchema, ThemeBlockSchema } from './types/theme-schemas';
+import { SnippetDefinition } from './liquid-doc/liquidDoc';
 
 export * from './jsonc/types';
 export * from './types/schema-prop-factory';
@@ -339,6 +340,14 @@ export interface Dependencies {
    * See {@link AppBlockSchema} for more information
    */
   getAppBlockSchema?: (name: string) => Promise<AppBlockSchema | undefined>;
+
+  /**
+   * Asynchronously get the Liquid HTML AST for a file.
+   * May return undefined when the theme isn't preloaded.
+   *
+   * Used in theme-checks for cross-file checks rather that going through fs.
+   */
+  getDocDefinition?: (relativePath: string) => Promise<SnippetDefinition | undefined>;
 }
 
 export type ValidateJSON = (
