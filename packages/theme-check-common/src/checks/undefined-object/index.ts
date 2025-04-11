@@ -1,4 +1,5 @@
 import {
+  LiquidDocParamNode,
   LiquidHtmlNode,
   LiquidTag,
   LiquidTagAssign,
@@ -61,6 +62,13 @@ export const UndefinedObject: LiquidCheckDefinition = {
     }
 
     return {
+      async LiquidDocParamNode(node: LiquidDocParamNode) {
+        const paramName = node.paramName?.value;
+        if (paramName) {
+          variableScopes.set(paramName, []);
+        }
+      },
+
       async LiquidTag(node) {
         if (isLiquidTagAssign(node)) {
           indexVariableScope(node.markup.name, {
