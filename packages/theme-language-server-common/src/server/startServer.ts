@@ -12,7 +12,8 @@ import {
   path,
   recursiveReadDirectory,
   SourceCodeType,
-  SnippetDefinition,
+  DocDefinition,
+  DocSupportedType,
 } from '@shopify/theme-check-common';
 import {
   Connection,
@@ -182,19 +183,20 @@ export function startServer(
     return getDefaultSchemaTranslations();
   };
 
-  const getSnippetDefinitionForURI = async (
+  const getDocDefinitionForURI = async (
     uri: string,
+    type: DocSupportedType,
     snippetName: string,
-  ): Promise<SnippetDefinition | undefined> => {
+  ): Promise<DocDefinition | undefined> => {
     const rootUri = await findThemeRootURI(uri);
-    const snippetURI = path.join(rootUri, 'snippets', `${snippetName}.liquid`);
+    const snippetURI = path.join(rootUri, type, `${snippetName}.liquid`);
     const snippet = documentManager.get(snippetURI);
 
     if (!snippet || snippet.type !== SourceCodeType.LiquidHtml || isError(snippet.ast)) {
       return undefined;
     }
 
-    return snippet.getLiquidDoc(snippetName);
+    return snippet.getLiquidDoc(type, snippetName);
   };
 
   const snippetFilter = ([uri]: FileTuple) => /\.liquid$/.test(uri) && /snippets/.test(uri);
@@ -266,7 +268,7 @@ export function startServer(
     log,
     getThemeBlockNames,
     getMetafieldDefinitions,
-    getSnippetDefinitionForURI,
+    getDocDefinitionForURI,
   });
   const hoverProvider = new HoverProvider(
     documentManager,
@@ -274,7 +276,7 @@ export function startServer(
     getMetafieldDefinitions,
     getTranslationsForURI,
     getThemeSettingsSchemaForURI,
-    getSnippetDefinitionForURI,
+    getDocDefinitionForURI,
   );
 
   const executeCommandProvider = new ExecuteCommandProvider(

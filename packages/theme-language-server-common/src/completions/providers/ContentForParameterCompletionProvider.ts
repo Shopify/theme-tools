@@ -9,6 +9,8 @@ import { CURSOR, LiquidCompletionParams } from '../params';
 import { Provider } from './common';
 import { AugmentedLiquidSourceCode } from '../../documents';
 import { DEFAULT_COMPLETION_OPTIONS } from './data/contentForParameterCompletionOptions';
+import { GetDocDefinitionForURI } from '@shopify/theme-check-common';
+import { formatLiquidDocParameter } from '../../utils/liquidDoc';
 
 /**
  * Offers completions for parameters for the `content_for` tag after a user has
@@ -17,7 +19,7 @@ import { DEFAULT_COMPLETION_OPTIONS } from './data/contentForParameterCompletion
  * @example {% content_for "block", █ %}
  */
 export class ContentForParameterCompletionProvider implements Provider {
-  constructor() {}
+  constructor(private readonly getDocDefinitionForURI: GetDocDefinitionForURI) {}
 
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
@@ -45,6 +47,29 @@ export class ContentForParameterCompletionProvider implements Provider {
       options = {
         closest: DEFAULT_COMPLETION_OPTIONS.closest,
       };
+    } else if (parentNode.contentForType.value === 'block') {
+      const typeArg = parentNode.args.find((arg) => arg.name === 'type')?.value;
+
+      if (typeArg?.type === NodeTypes.String) {
+        const snippetDefinition = await this.getDocDefinitionForURI(
+          params.textDocument.uri,
+          'blocks',
+          typeArg.value,
+        );
+        const liquidDocParams = snippetDefinition?.liquidDoc?.parameters;
+
+        if (liquidDocParams) {
+          options = {
+            ...options,
+            ...Object.fromEntries(
+              liquidDocParams.map((liquidDocParam) => [
+                liquidDocParam.name,
+                formatLiquidDocParameter(liquidDocParam),
+              ]),
+            ),
+          };
+        }
+      }
     }
 
     return Object.entries(options)

@@ -2,14 +2,15 @@ import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { HoverProvider } from '../HoverProvider';
 import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
-import { GetSnippetDefinitionForURI, SnippetDefinition } from '@shopify/theme-check-common';
+import { GetDocDefinitionForURI, DocDefinition } from '@shopify/theme-check-common';
 import '../../../../theme-check-common/src/test/test-setup';
 
 describe('Module: RenderSnippetParameterHoverProvider', async () => {
   let provider: HoverProvider;
-  let getSnippetDefinition: GetSnippetDefinitionForURI;
-  const mockSnippetDefinition: SnippetDefinition = {
+  let getSnippetDefinition: GetDocDefinitionForURI;
+  const mockSnippetDefinition: DocDefinition = {
     name: 'product-card',
+    type: 'snippets',
     liquidDoc: {
       parameters: [
         {
@@ -66,6 +67,7 @@ describe('Module: RenderSnippetParameterHoverProvider', async () => {
     it('should return null if no parameters are defined in liquidDoc', async () => {
       getSnippetDefinition = async () => ({
         name: 'product-card',
+        type: 'snippets',
         liquidDoc: {
           parameters: [],
         },
@@ -108,7 +110,7 @@ describe('Module: RenderSnippetParameterHoverProvider', async () => {
   });
 });
 
-const createProvider = (getSnippetDefinition: GetSnippetDefinitionForURI) => {
+const createProvider = (getSnippetDefinition: GetDocDefinitionForURI) => {
   return new HoverProvider(
     new DocumentManager(),
     {
