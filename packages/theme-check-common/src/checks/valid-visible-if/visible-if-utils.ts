@@ -1,5 +1,10 @@
-import { type LiquidVariableLookup, toLiquidHtmlAST, NodeTypes } from '@shopify/liquid-html-parser';
-import type { Context, SourceCodeType } from '../..';
+import {
+  type LiquidVariableLookup,
+  toLiquidHtmlAST,
+  NodeTypes,
+  LiquidVariableOutput,
+} from '@shopify/liquid-html-parser';
+import { Context, SourceCodeType } from '../..';
 import { findRoot } from '../../find-root';
 import { parseJSON } from '../../json';
 import { join } from '../../path';
@@ -14,7 +19,7 @@ export const offsetAdjust = '{{'.length - adjustedPrefix.length;
 
 export function getVariableLookupsInExpression(
   expression: string,
-): LiquidVariableLookup[] | { warning: string } {
+): LiquidVariableLookup[] | { warning: string } | null {
   // As of February 2025, parsers other than LiquidJS don't yet support
   // expressions in {{ variable }} tags. So we have to do something a little
   // gnarly — before parsing it we extract the expression from within the tag
@@ -46,6 +51,21 @@ export function getVariableLookupsInExpression(
 
     if (ifTag.type !== 'LiquidTag' || ifTag.name !== 'if') {
       throw new Error("Expected DocumentNode to contain 'if' tag");
+    }
+
+    const expressionNode = ifTag.markup;
+    if (typeof expressionNode === 'string') {
+      return {
+        warning: `Invalid visible_if expression.`,
+      };
+    }
+
+    if (
+      expressionNode.type === NodeTypes.LiquidLiteral &&
+      ['true', 'false'].includes(expressionNode.keyword)
+    ) {
+      // Those are OK
+      return null;
     }
 
     const vars = visit<SourceCodeType.LiquidHtml, LiquidVariableLookup>(ifTag, {
