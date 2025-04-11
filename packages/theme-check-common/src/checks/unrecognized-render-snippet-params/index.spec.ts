@@ -230,7 +230,7 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
           {% doc %}
             @param {string} title - The title of the card
           {% enddoc %}
-          <div>{{ title }}</div>  
+          <div>{{ title }}</div>
         `,
       });
 
@@ -243,7 +243,7 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
       expect(offenses[0].message).toBe(
         "Unknown parameter 'unknown_param' in render tag for snippet 'card'",
       );
-      expect(offenses[0].start.index).toBe(sourceCode.indexOf(' with'));
+      expect(offenses[0].start.index).toBe(sourceCode.indexOf('with'));
       expect(offenses[0].end.index).toBe(
         sourceCode.indexOf('unknown_param') + 'unknown_param'.length,
       );
@@ -257,7 +257,7 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
       expect(offenses[0].message).toBe(
         "Unknown parameter 'unknown_param' in render tag for snippet 'card'",
       );
-      expect(offenses[0].start.index).toBe(sourceCode.indexOf(' for'));
+      expect(offenses[0].start.index).toBe(sourceCode.indexOf('for'));
       expect(offenses[0].end.index).toBe(
         sourceCode.indexOf('unknown_param') + 'unknown_param'.length,
       );
@@ -269,7 +269,7 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
           {% doc %}
             @param {string} title - The title of the card
           {% enddoc %}
-          <div>{{ title }}</div>  
+          <div>{{ title }}</div>
         `,
       });
 

@@ -73,36 +73,33 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
       liquidDocParameters: Map<string, LiquidDocParameter>,
       snippetName: string,
     ) {
-      if (node.alias && !liquidDocParameters.has(node.alias) && node.variable) {
-        const asAliasMatch = node.source
-          .slice(node.variable.position.end, node.position.end)
-          .match(new RegExp(`\\s+as\\s+${node.alias}`));
+      if (node.alias?.value && !liquidDocParameters.has(node.alias.value) && node.variable) {
+        const source = node.source;
+        let startIndex = node.variable.position.start;
 
-        let endIndex = node.variable.position.end;
-        let suggest = [];
-
-        if (asAliasMatch) {
-          // We drop the the position information for the node representing `as alias`, so we're manually calculating it here.
-          // This brute-force approach can be simplified by changing the mapping in stage-1 and 2 to preserve this info, as it should already be parsed
-          endIndex += asAliasMatch[0].length;
-          suggest.push({
-            message: `Remove '${node.alias}'`,
-            fix: (fixer: any) => {
-              if (node.variable) {
-                return fixer.remove(
-                  node.variable.position.start,
-                  node.variable.position.end + asAliasMatch[0].length,
-                );
-              }
-            },
-          });
+        if (
+          source.slice(startIndex, node.alias.position.start).includes(' with ') ||
+          source.slice(startIndex, node.alias.position.start).includes(' for ')
+        ) {
+          startIndex = node.variable.position.start + 1;
+        } else {
+          startIndex = node.alias.position.start;
         }
 
         context.report({
-          message: `Unknown parameter '${node.alias}' in render tag for snippet '${snippetName}'`,
-          startIndex: node.variable.position.start,
-          endIndex: endIndex,
-          suggest,
+          message: `Unknown parameter '${node.alias.value}' in render tag for snippet '${snippetName}'`,
+          startIndex: startIndex,
+          endIndex: node.alias.position.end,
+          suggest: [
+            {
+              message: `Remove '${node.alias.value}'`,
+              fix: (fixer: any) => {
+                if (node.variable) {
+                  return fixer.remove(node.variable.position.start, node.alias?.position.end);
+                }
+              },
+            },
+          ],
         });
       }
     }
