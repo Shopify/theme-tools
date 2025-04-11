@@ -1,5 +1,11 @@
 # @shopify/codemirror-language-client
 
+## 0.7.4
+
+### Patch Changes
+
+- e75f896d: [internal] Add liquid drops to ThemeDocset
+
 ## 0.7.3
 
 ### Patch Changes
