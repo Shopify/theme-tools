@@ -1,4 +1,4 @@
-import { SourceCodeType } from '../types';
+import { SourceCodeType, UriString } from '../types';
 import { visit } from '../visitor';
 import { LiquidHtmlNode } from '../types';
 import {
@@ -7,17 +7,18 @@ import {
   LiquidDocDescriptionNode,
 } from '@shopify/liquid-html-parser';
 
-export type GetSnippetDefinitionForURI = (
-  uri: string,
-  snippetName: string,
-) => Promise<SnippetDefinition | undefined>;
+export type GetDocDefinitionForURI = (
+  uri: UriString,
+  category: 'blocks' | 'snippets',
+  name: string,
+) => Promise<DocDefinition | undefined>;
 
-export type SnippetDefinition = {
-  name: string;
-  liquidDoc?: LiquidDocDefinition;
+export type DocDefinition = {
+  uri: UriString;
+  liquidDoc?: DocContent;
 };
 
-type LiquidDocDefinition = {
+type DocContent = {
   parameters?: LiquidDocParameter[];
   examples?: LiquidDocExample[];
   description?: LiquidDocDescription;
@@ -44,15 +45,12 @@ export interface LiquidDocDescription extends LiquidDocNode {
   nodeType: 'description';
 }
 
-export function getSnippetDefinition(
-  snippet: LiquidHtmlNode,
-  snippetName: string,
-): SnippetDefinition {
+export function extractDocDefinition(uri: UriString, ast: LiquidHtmlNode): DocDefinition {
   let hasDocTag = false;
   const nodes: (LiquidDocParameter | LiquidDocExample | LiquidDocDescription)[] = visit<
     SourceCodeType.LiquidHtml,
     LiquidDocParameter | LiquidDocExample | LiquidDocDescription
-  >(snippet, {
+  >(ast, {
     LiquidRawTag(node) {
       if (node.name === 'doc') hasDocTag = true;
       return undefined;
@@ -79,6 +77,9 @@ export function getSnippetDefinition(
       };
     },
   });
+
+  if (!hasDocTag) return { uri };
+
   const { parameters, examples, description } = nodes.reduce(
     (acc, node) => {
       if (node.nodeType === 'param') {
@@ -97,10 +98,8 @@ export function getSnippetDefinition(
     },
   );
 
-  if (!hasDocTag) return { name: snippetName };
-
   return {
-    name: snippetName,
+    uri,
     liquidDoc: {
       ...(parameters.length && { parameters }),
       ...(examples.length && { examples }),

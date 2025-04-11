@@ -1,16 +1,16 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
-import { LiquidHtmlNode, SnippetDefinition, LiquidDocParameter } from '@shopify/theme-check-common';
+import {
+  LiquidHtmlNode,
+  LiquidDocParameter,
+  GetDocDefinitionForURI,
+  path,
+} from '@shopify/theme-check-common';
 import { Hover, HoverParams } from 'vscode-languageserver';
 import { BaseHoverProvider } from '../BaseHoverProvider';
 import { formatLiquidDocParameter } from '../../utils/liquidDoc';
 
 export class RenderSnippetHoverProvider implements BaseHoverProvider {
-  constructor(
-    private getSnippetDefinitionForURI: (
-      uri: string,
-      snippetName: string,
-    ) => Promise<SnippetDefinition | undefined>,
-  ) {}
+  constructor(private getDocDefinitionForURI: GetDocDefinitionForURI) {}
 
   async hover(
     currentNode: LiquidHtmlNode,
@@ -27,8 +27,9 @@ export class RenderSnippetHoverProvider implements BaseHoverProvider {
     }
 
     const snippetName = currentNode.value;
-    const snippetDefinition = await this.getSnippetDefinitionForURI(
+    const snippetDefinition = await this.getDocDefinitionForURI(
       params.textDocument.uri,
+      'snippets',
       snippetName,
     );
 
@@ -42,12 +43,12 @@ export class RenderSnippetHoverProvider implements BaseHoverProvider {
       return {
         contents: {
           kind: 'markdown',
-          value: `### ${snippetDefinition.name}`,
+          value: `### ${snippetName}`,
         },
       };
     }
 
-    const parts = [`### ${snippetDefinition.name}`];
+    const parts = [`### ${snippetName}`];
 
     if (liquidDoc.description) {
       const description = liquidDoc.description.content;

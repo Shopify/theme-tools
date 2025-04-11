@@ -1,13 +1,15 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { CompletionsProvider } from '../CompletionsProvider';
 import { DocumentManager } from '../../documents';
-import { MetafieldDefinitionMap, SnippetDefinition } from '@shopify/theme-check-common';
+import { MetafieldDefinitionMap, DocDefinition } from '@shopify/theme-check-common';
+
+const uri = 'file:///snippets/product-card.liquid';
 
 describe('Module: RenderSnippetParameterCompletionProvider', async () => {
   let provider: CompletionsProvider;
   const mockSnippetName = 'product-card';
-  const mockSnippetDefinition: SnippetDefinition = {
-    name: mockSnippetName,
+  const mockSnippetDefinition: DocDefinition = {
+    uri,
     liquidDoc: {
       parameters: [
         {
@@ -60,7 +62,7 @@ describe('Module: RenderSnippetParameterCompletionProvider', async () => {
         systemTranslations: async () => ({}),
       },
       getMetafieldDefinitions: async (_rootUri: string) => ({} as MetafieldDefinitionMap),
-      getSnippetDefinitionForURI: async (_uri, snippetName) => {
+      getDocDefinitionForURI: async (_uri, _type, snippetName) => {
         if (mockSnippetName === snippetName) {
           return mockSnippetDefinition;
         }

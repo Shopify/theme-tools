@@ -102,9 +102,9 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
         }
 
         const snippetName = node.snippet.value;
-        const snippetPath = `snippets/${snippetName}.liquid`;
         const snippetDef =
-          context.getDocDefinition && (await context.getDocDefinition(snippetPath));
+          context.getDocDefinition &&
+          (await context.getDocDefinition(`snippets/${snippetName}.liquid`));
 
         if (!snippetDef?.liquidDoc?.parameters) {
           return;

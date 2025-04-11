@@ -1,5 +1,5 @@
 import {
-  GetSnippetDefinitionForURI,
+  GetDocDefinitionForURI,
   MetafieldDefinitionMap,
   SourceCodeType,
   ThemeDocset,
@@ -13,23 +13,23 @@ import { createLiquidCompletionParams } from './params';
 import {
   ContentForCompletionProvider,
   ContentForBlockTypeCompletionProvider,
+  ContentForParameterCompletionProvider,
   FilterCompletionProvider,
+  FilterNamedParameterCompletionProvider,
+  GetSnippetNamesForURI,
   HtmlAttributeCompletionProvider,
   HtmlAttributeValueCompletionProvider,
   HtmlTagCompletionProvider,
+  LiquidDocParamTypeCompletionProvider,
+  LiquidDocTagCompletionProvider,
   LiquidTagsCompletionProvider,
   ObjectAttributeCompletionProvider,
   ObjectCompletionProvider,
   Provider,
   RenderSnippetCompletionProvider,
+  RenderSnippetParameterCompletionProvider,
   TranslationCompletionProvider,
-  FilterNamedParameterCompletionProvider,
-  ContentForParameterCompletionProvider,
 } from './providers';
-import { GetSnippetNamesForURI } from './providers/RenderSnippetCompletionProvider';
-import { RenderSnippetParameterCompletionProvider } from './providers/RenderSnippetParameterCompletionProvider';
-import { LiquidDocTagCompletionProvider } from './providers/LiquidDocTagCompletionProvider';
-import { LiquidDocParamTypeCompletionProvider } from './providers/LiquidDocParamTypeCompletionProvider';
 
 export interface CompletionProviderDependencies {
   documentManager: DocumentManager;
@@ -38,7 +38,7 @@ export interface CompletionProviderDependencies {
   getSnippetNamesForURI?: GetSnippetNamesForURI;
   getThemeSettingsSchemaForURI?: GetThemeSettingsSchemaForURI;
   getMetafieldDefinitions: (rootUri: string) => Promise<MetafieldDefinitionMap>;
-  getSnippetDefinitionForURI?: GetSnippetDefinitionForURI;
+  getDocDefinitionForURI?: GetDocDefinitionForURI;
   getThemeBlockNames?: (rootUri: string, includePrivate: boolean) => Promise<string[]>;
   log?: (message: string) => void;
 }
@@ -56,9 +56,7 @@ export class CompletionsProvider {
     getTranslationsForURI = async () => ({}),
     getSnippetNamesForURI = async () => [],
     getThemeSettingsSchemaForURI = async () => [],
-    getSnippetDefinitionForURI = async (_uri, snippetName) => ({
-      name: snippetName,
-    }),
+    getDocDefinitionForURI = async (uri, _relativePath) => ({ uri }),
     getThemeBlockNames = async (_rootUri: string, _includePrivate: boolean) => [],
     log = () => {},
   }: CompletionProviderDependencies) {
@@ -84,7 +82,7 @@ export class CompletionsProvider {
       new FilterCompletionProvider(typeSystem),
       new TranslationCompletionProvider(documentManager, getTranslationsForURI),
       new RenderSnippetCompletionProvider(getSnippetNamesForURI),
-      new RenderSnippetParameterCompletionProvider(getSnippetDefinitionForURI),
+      new RenderSnippetParameterCompletionProvider(getDocDefinitionForURI),
       new FilterNamedParameterCompletionProvider(themeDocset),
       new LiquidDocTagCompletionProvider(),
       new LiquidDocParamTypeCompletionProvider(themeDocset),

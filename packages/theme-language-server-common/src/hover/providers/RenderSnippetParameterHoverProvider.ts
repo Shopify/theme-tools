@@ -1,16 +1,11 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
-import { LiquidHtmlNode, SnippetDefinition } from '@shopify/theme-check-common';
+import { LiquidHtmlNode, GetDocDefinitionForURI } from '@shopify/theme-check-common';
 import { Hover, HoverParams } from 'vscode-languageserver';
 import { BaseHoverProvider } from '../BaseHoverProvider';
 import { formatLiquidDocParameter } from '../../utils/liquidDoc';
 
 export class RenderSnippetParameterHoverProvider implements BaseHoverProvider {
-  constructor(
-    private getSnippetDefinitionForURI: (
-      uri: string,
-      snippetName: string,
-    ) => Promise<SnippetDefinition | undefined>,
-  ) {}
+  constructor(private getDocDefinitionForURI: GetDocDefinitionForURI) {}
 
   async hover(
     currentNode: LiquidHtmlNode,
@@ -27,10 +22,10 @@ export class RenderSnippetParameterHoverProvider implements BaseHoverProvider {
       return null;
     }
 
-    const snippetName = parentNode.snippet.value;
-    const snippetDefinition = await this.getSnippetDefinitionForURI(
+    const snippetDefinition = await this.getDocDefinitionForURI(
       params.textDocument.uri,
-      snippetName,
+      'snippets',
+      parentNode.snippet.value,
     );
 
     if (!snippetDefinition?.liquidDoc?.parameters?.length) {

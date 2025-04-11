@@ -1,14 +1,16 @@
-import { expect, it, describe, should } from 'vitest';
+import { expect, it, describe } from 'vitest';
 import { toSourceCode } from '../to-source-code';
 import { LiquidHtmlNode } from '../types';
-import { getSnippetDefinition } from './liquidDoc';
+import { extractDocDefinition } from './liquidDoc';
 
-describe('Unit: getSnippetDefinition', () => {
+describe('Unit: extractDocDefinition', () => {
+  const uri = 'file:///snippets/fake.liquid';
+
   function toAST(code: string) {
-    return toSourceCode('/tmp/foo.liquid', code).ast as LiquidHtmlNode;
+    return toSourceCode(uri, code).ast as LiquidHtmlNode;
   }
 
-  it('should return default snippet definition if no renderable content is present', async () => {
+  it('should return default doc definition if no renderable content is present', async () => {
     const ast = toAST(`
         {% doc %}
           just a description
@@ -16,9 +18,9 @@ describe('Unit: getSnippetDefinition', () => {
         {% enddoc %}
       `);
 
-    const result = getSnippetDefinition(ast, 'product-card');
+    const result = extractDocDefinition(uri, ast);
     expect(result).to.deep.equal({
-      name: 'product-card',
+      uri,
       liquidDoc: {
         description: {
           content: 'just a description',
@@ -40,9 +42,9 @@ describe('Unit: getSnippetDefinition', () => {
         {% enddoc %}
       `);
 
-    const result = getSnippetDefinition(ast, 'product-card');
+    const result = extractDocDefinition(uri, ast);
     expect(result).to.deep.equal({
-      name: 'product-card',
+      uri,
       liquidDoc: {
         parameters: [
           {
@@ -100,9 +102,9 @@ describe('Unit: getSnippetDefinition', () => {
         {% enddoc %}
       `);
 
-    const result = getSnippetDefinition(ast, 'product-card');
+    const result = extractDocDefinition(uri, ast);
     expect(result).to.deep.equal({
-      name: 'product-card',
+      uri,
       liquidDoc: {
         examples: [
           {
@@ -123,9 +125,9 @@ describe('Unit: getSnippetDefinition', () => {
         {% enddoc %}
       `);
 
-    const result = getSnippetDefinition(ast, 'product-card');
+    const result = extractDocDefinition(uri, ast);
     expect(result).to.deep.equal({
-      name: 'product-card',
+      uri,
       liquidDoc: {
         examples: [
           {
@@ -146,9 +148,9 @@ describe('Unit: getSnippetDefinition', () => {
         {% enddoc %}
       `);
 
-    const result = getSnippetDefinition(ast, 'product-card');
+    const result = extractDocDefinition(uri, ast);
     expect(result).to.deep.equal({
-      name: 'product-card',
+      uri,
       liquidDoc: {
         parameters: [
           {
@@ -179,9 +181,9 @@ describe('Unit: getSnippetDefinition', () => {
         {% enddoc %}
       `);
 
-    const result = getSnippetDefinition(ast, 'product-card');
+    const result = extractDocDefinition(uri, ast);
     expect(result).to.deep.equal({
-      name: 'product-card',
+      uri,
       liquidDoc: {
         examples: [
           {
@@ -204,9 +206,9 @@ describe('Unit: getSnippetDefinition', () => {
         {% enddoc %}
       `);
 
-    const result = getSnippetDefinition(ast, 'product-card');
+    const result = extractDocDefinition(uri, ast);
     expect(result).to.deep.equal({
-      name: 'product-card',
+      uri,
       liquidDoc: {
         description: {
           content: 'This is a description',
@@ -224,9 +226,9 @@ describe('Unit: getSnippetDefinition', () => {
         {% enddoc %}
       `);
 
-    const result = getSnippetDefinition(ast, 'product-card');
+    const result = extractDocDefinition(uri, ast);
     expect(result).to.deep.equal({
-      name: 'product-card',
+      uri,
       liquidDoc: {
         description: {
           content: 'This is a description',
@@ -241,9 +243,9 @@ describe('Unit: getSnippetDefinition', () => {
       <div>No doc header here</div>
     `);
 
-    const result = getSnippetDefinition(ast, 'product-card');
+    const result = extractDocDefinition(uri, ast);
     expect(result).to.deep.equal({
-      name: 'product-card',
+      uri,
     });
   });
 
@@ -252,9 +254,9 @@ describe('Unit: getSnippetDefinition', () => {
       {% doc %}{% enddoc %}
     `);
 
-    const result = getSnippetDefinition(ast, 'product-card');
+    const result = extractDocDefinition(uri, ast);
     expect(result).to.deep.equal({
-      name: 'product-card',
+      uri,
       liquidDoc: {},
     });
   });
@@ -271,9 +273,9 @@ describe('Unit: getSnippetDefinition', () => {
       {% enddoc %}
     `);
 
-    const result = getSnippetDefinition(ast, 'product-card');
+    const result = extractDocDefinition(uri, ast);
     expect(result).to.deep.equal({
-      name: 'product-card',
+      uri,
       liquidDoc: {
         description: {
           content: 'this is an implicit description\nin a header',
