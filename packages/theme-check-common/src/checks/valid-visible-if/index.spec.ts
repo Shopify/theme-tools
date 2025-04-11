@@ -575,6 +575,33 @@ describe('Module: ValidVisibleIf', () => {
     `);
   });
 
+  it('does not reports when true or false is hardcoded', async () => {
+    for (const bool of ['true', 'false']) {
+      const themeData = structuredClone(baseThemeData);
+
+      themeData['sections/example.liquid'].settings!.push({
+        id: 'some-other-setting',
+        visible_if: `{{ ${bool} }}`,
+      });
+
+      const offenses = await checkRule(themeData);
+      expect(offenses).to.be.empty;
+    }
+  });
+
+  it('reports a warning for unparseable expressions', async () => {
+    const themeData = structuredClone(baseThemeData);
+
+    themeData['sections/example.liquid'].settings!.push({
+      id: 'some-other-setting',
+      visible_if: `{{ something $ unparseable }}`,
+    });
+
+    const offenses = await checkRule(themeData);
+    expect(offenses).to.be.lengthOf(1);
+    expect(offenses).to.containOffense('Syntax error: cannot parse visible_if expression.');
+  });
+
   it('reports when no variable lookup is found', async () => {
     const themeData = structuredClone(baseThemeData);
 

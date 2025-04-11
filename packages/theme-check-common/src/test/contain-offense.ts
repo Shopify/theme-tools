@@ -25,6 +25,8 @@ export const containOffense: RawMatcherFn<MatcherState> = function (
       pass: containsMessage,
       message: () =>
         `expected offenses to ${isNot ? 'not ' : ''}contain offense with message ${expected}`,
+      actual: offenses.map((offense) => offense.message),
+      expected: [expected],
     };
   }
 
