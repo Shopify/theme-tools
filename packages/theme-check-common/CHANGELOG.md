@@ -1,5 +1,19 @@
 # @shopify/theme-check-common
 
+## 3.14.0
+
+### Minor Changes
+
+- e75f896d: [Feature] Support more types for LiquidDoc param
+
+  - Support [liquid objects](https://shopify.dev/docs/api/liquid/objects) as LiquidDoc param type
+    - Object is NOT supported if it is exclusively a global liquid variable
+    - Object is NOT supported if it is deprecated
+
+### Patch Changes
+
+- 034a803b: Updated UndefinedObject check to recognize variables declared via `@param` within doc tags in blocks
+
 ## 3.13.1
 
 ### Patch Changes

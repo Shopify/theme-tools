@@ -1,5 +1,14 @@
 # @shopify/theme-check-docs-updater
 
+## 3.14.0
+
+### Patch Changes
+
+- e75f896d: [internal] Add liquid drops to ThemeDocset
+- Updated dependencies [e75f896d]
+- Updated dependencies [034a803b]
+  - @shopify/theme-check-common@3.14.0
+
 ## 3.13.1
 
 ### Patch Changes
