@@ -1,5 +1,23 @@
 # @shopify/theme-language-server-common
 
+## 2.13.0
+
+### Minor Changes
+
+- e75f896d: [Feature] Support more types for LiquidDoc param
+
+  - Support [liquid objects](https://shopify.dev/docs/api/liquid/objects) as LiquidDoc param type
+    - Object is NOT supported if it is exclusively a global liquid variable
+    - Object is NOT supported if it is deprecated
+
+### Patch Changes
+
+- Updated dependencies [b6f94d16]
+- Updated dependencies [75c02293]
+- Updated dependencies [e75f896d]
+- Updated dependencies [034a803b]
+  - @shopify/theme-check-common@3.14.0
+
 ## 2.12.1
 
 ### Patch Changes
