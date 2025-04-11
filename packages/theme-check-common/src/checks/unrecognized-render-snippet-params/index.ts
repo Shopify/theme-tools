@@ -1,6 +1,6 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { LiquidNamedArgument, RenderMarkup } from '@shopify/liquid-html-parser';
-import { getSnippetDefinition, LiquidDocParameter } from '../../liquid-doc/liquidDoc';
+import { LiquidDocParameter } from '../../liquid-doc/liquidDoc';
 import { isLiquidString } from '../utils';
 import { isLastParam } from '../duplicate-render-snippet-params';
 
@@ -113,9 +113,8 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
 
         const snippetName = node.snippet.value;
         const snippetPath = `snippets/${snippetName}.liquid`;
-        const snippetUri = context.toUri(snippetPath);
-
-        const snippetDef = context.getDocDefinition && (await context.getDocDefinition(snippetUri));
+        const snippetDef =
+          context.getDocDefinition && (await context.getDocDefinition(snippetPath));
 
         if (!snippetDef?.liquidDoc?.parameters) {
           return;

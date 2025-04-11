@@ -90,8 +90,8 @@ export async function check(
         SectionSchema | undefined
       >;
     },
-    async getDocDefinition(uri) {
-      const file = theme.find((file) => file.uri === uri);
+    async getDocDefinition(relativePath) {
+      const file = theme.find((file) => file.uri.endsWith(relativePath));
       if (!file || !isLiquidHtmlNode(file.ast)) {
         return undefined;
       }

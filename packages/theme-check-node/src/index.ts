@@ -2,7 +2,6 @@ import {
   Config,
   JSONSourceCode,
   JSONValidator,
-  LiquidHtmlNode,
   LiquidSourceCode,
   Offense,
   SectionSchema,
@@ -124,7 +123,7 @@ export async function themeCheckRun(
     theme
       .filter((file) => isSnippet(file.uri))
       .map((file) => [
-        file.uri,
+        path.relative(URI.file(root).toString(), file.uri),
         memo(async (): Promise<SnippetDefinition | undefined> => {
           const ast = file.ast;
           if (!isLiquidHtmlNode(ast)) {
@@ -146,7 +145,7 @@ export async function themeCheckRun(
     getSectionSchema: async (name) => sectionSchemas.get(name)?.(),
     getBlockSchema: async (name) => blockSchemas.get(name)?.(),
     getAppBlockSchema: async (name) => blockSchemas.get(name)?.() as any, // cheating... but TODO
-    getDocDefinition: async (uri) => docDefinitions.get(uri)?.(),
+    getDocDefinition: async (relativePath) => docDefinitions.get(relativePath)?.(),
   });
 
   return {

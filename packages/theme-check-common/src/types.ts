@@ -347,7 +347,7 @@ export interface Dependencies {
    *
    * Used in theme-checks for cross-file checks rather that going through fs.
    */
-  getDocDefinition?: (uri: string) => Promise<SnippetDefinition | undefined>;
+  getDocDefinition?: (relativePath: string) => Promise<SnippetDefinition | undefined>;
 }
 
 export type ValidateJSON = (
