@@ -1,5 +1,5 @@
 import {
-  GetSnippetDefinitionForURI,
+  GetDocDefinitionForURI,
   MetafieldDefinitionMap,
   SourceCodeType,
   ThemeDocset,
@@ -33,11 +33,12 @@ export class HoverProvider {
     readonly getMetafieldDefinitions: (rootUri: string) => Promise<MetafieldDefinitionMap>,
     readonly getTranslationsForURI: GetTranslationsForURI = async () => ({}),
     readonly getSettingsSchemaForURI: GetThemeSettingsSchemaForURI = async () => [],
-    readonly getSnippetDefinitionForURI: GetSnippetDefinitionForURI = async (
+    readonly getDocDefinitionForURI: GetDocDefinitionForURI = async (
       _uri,
-      snippetName,
+      type,
+      name,
     ) => ({
-      name: snippetName,
+      name, type
     }),
   ) {
     const typeSystem = new TypeSystem(
@@ -54,8 +55,8 @@ export class HoverProvider {
       new HtmlAttributeHoverProvider(),
       new HtmlAttributeValueHoverProvider(),
       new TranslationHoverProvider(getTranslationsForURI, documentManager),
-      new RenderSnippetHoverProvider(getSnippetDefinitionForURI),
-      new RenderSnippetParameterHoverProvider(getSnippetDefinitionForURI),
+      new RenderSnippetHoverProvider(getDocDefinitionForURI),
+      new RenderSnippetParameterHoverProvider(getDocDefinitionForURI),
       new LiquidDocTagHoverProvider(documentManager),
     ];
   }

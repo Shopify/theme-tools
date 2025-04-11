@@ -1,15 +1,16 @@
-import { describe, beforeEach, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { HoverProvider } from '../HoverProvider';
 import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
-import { GetSnippetDefinitionForURI, SnippetDefinition } from '@shopify/theme-check-common';
+import { GetDocDefinitionForURI, DocDefinition } from '@shopify/theme-check-common';
 import '../../../../theme-check-common/src/test/test-setup';
 
 describe('Module: RenderSnippetHoverProvider', async () => {
   let provider: HoverProvider;
-  let getSnippetDefinition: GetSnippetDefinitionForURI;
-  const mockSnippetDefinition: SnippetDefinition = {
+  let getSnippetDefinition: GetDocDefinitionForURI;
+  const mockSnippetDefinition: DocDefinition = {
     name: 'product-card',
+    type: 'snippets',
     liquidDoc: {
       parameters: [
         {
@@ -115,6 +116,7 @@ This is a description
     it('should wrap optional parameters in (Optional)', async () => {
       provider = createProvider(async () => ({
         name: 'product-card',
+        type: 'snippets',
         liquidDoc: {
           parameters: [
             {
@@ -142,7 +144,7 @@ This is a description
   });
 });
 
-const createProvider = (getSnippetDefinition: GetSnippetDefinitionForURI) => {
+const createProvider = (getSnippetDefinition: GetDocDefinitionForURI) => {
   return new HoverProvider(
     new DocumentManager(),
     {

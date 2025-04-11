@@ -1,7 +1,7 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { LiquidNamedArgument, RenderMarkup } from '@shopify/liquid-html-parser';
+import { RenderMarkup } from '@shopify/liquid-html-parser';
 import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
-import { getSnippetDefinition, LiquidDocParameter } from '../../liquid-doc/liquidDoc';
+import { getDocDefinition, LiquidDocParameter } from '../../liquid-doc/liquidDoc';
 import { isLiquidString } from '../utils';
 import { getDefaultValueForType } from '../../liquid-doc/utils';
 
@@ -79,7 +79,7 @@ export const MissingRenderSnippetParams: LiquidCheckDefinition = {
 
         const snippetContent = await context.fs.readFile(snippetUri);
         const snippetAst = toLiquidHtmlAST(snippetContent);
-        const snippetDef = getSnippetDefinition(snippetAst, snippetName);
+        const snippetDef = getDocDefinition(snippetAst, 'snippets', snippetName);
 
         if (!snippetDef.liquidDoc?.parameters) {
           return;

@@ -7,17 +7,21 @@ import {
   LiquidDocDescriptionNode,
 } from '@shopify/liquid-html-parser';
 
-export type GetSnippetDefinitionForURI = (
-  uri: string,
-  snippetName: string,
-) => Promise<SnippetDefinition | undefined>;
+export type DocSupportedType = 'blocks' | 'snippets';
 
-export type SnippetDefinition = {
+export type GetDocDefinitionForURI = (
+  uri: string,
+  type: DocSupportedType,
+  name: string,
+) => Promise<DocDefinition | undefined>;
+
+export type DocDefinition = {
   name: string;
-  liquidDoc?: LiquidDocDefinition;
+  type: DocSupportedType,
+  liquidDoc?: DocContent;
 };
 
-type LiquidDocDefinition = {
+type DocContent = {
   parameters?: LiquidDocParameter[];
   examples?: LiquidDocExample[];
   description?: LiquidDocDescription;
@@ -44,15 +48,16 @@ export interface LiquidDocDescription extends LiquidDocNode {
   nodeType: 'description';
 }
 
-export function getSnippetDefinition(
-  snippet: LiquidHtmlNode,
-  snippetName: string,
-): SnippetDefinition {
+export function getDocDefinition(
+  node: LiquidHtmlNode,
+  type: DocSupportedType,
+  name: string,
+): DocDefinition {
   let hasDocTag = false;
   const nodes: (LiquidDocParameter | LiquidDocExample | LiquidDocDescription)[] = visit<
     SourceCodeType.LiquidHtml,
     LiquidDocParameter | LiquidDocExample | LiquidDocDescription
-  >(snippet, {
+  >(node, {
     LiquidRawTag(node) {
       if (node.name === 'doc') hasDocTag = true;
       return undefined;
@@ -97,10 +102,11 @@ export function getSnippetDefinition(
     },
   );
 
-  if (!hasDocTag) return { name: snippetName };
+  if (!hasDocTag) return { type, name };
 
   return {
-    name: snippetName,
+    name,
+    type,
     liquidDoc: {
       ...(parameters.length && { parameters }),
       ...(examples.length && { examples }),

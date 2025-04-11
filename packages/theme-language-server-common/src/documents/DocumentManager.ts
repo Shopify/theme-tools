@@ -13,13 +13,14 @@ import {
   memo,
   Mode,
   isError,
+  DocSupportedType,
 } from '@shopify/theme-check-common';
 import { Connection } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { ClientCapabilities } from '../ClientCapabilities';
 import { percent, Progress } from '../progress';
 import { AugmentedSourceCode } from './types';
-import { getSnippetDefinition } from '@shopify/theme-check-common';
+import { getDocDefinition } from '@shopify/theme-check-common';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -195,10 +196,10 @@ export class DocumentManager {
             return toSchema(mode, uri, sourceCode, this.isValidSchema, false);
           }),
           /** Lazy and only computed once per file version */
-          getLiquidDoc: memo(async (snippetName: string) => {
+          getLiquidDoc: memo(async (type: DocSupportedType, name: string) => {
             if (isError(sourceCode.ast)) return undefined;
 
-            return getSnippetDefinition(sourceCode.ast, snippetName);
+            return getDocDefinition(sourceCode.ast, type, name);
           }),
         };
       default:

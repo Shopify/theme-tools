@@ -1,7 +1,7 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { LiquidNamedArgument, NodeTypes, RenderMarkup } from '@shopify/liquid-html-parser';
 import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
-import { getSnippetDefinition, LiquidDocParameter } from '../../liquid-doc/liquidDoc';
+import { getDocDefinition, LiquidDocParameter } from '../../liquid-doc/liquidDoc';
 import { isLiquidString } from '../utils';
 import {
   inferArgumentType,
@@ -163,7 +163,7 @@ export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
 
         const snippetContent = await context.fs.readFile(snippetUri);
         const snippetAst = toLiquidHtmlAST(snippetContent);
-        const snippetDef = getSnippetDefinition(snippetAst, snippetName);
+        const snippetDef = getDocDefinition(snippetAst, 'snippets', snippetName);
 
         if (!snippetDef.liquidDoc?.parameters) {
           return;
