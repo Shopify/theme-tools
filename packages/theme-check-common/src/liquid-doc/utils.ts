@@ -2,9 +2,17 @@ import { LiquidExpression, NodeTypes } from '@shopify/liquid-html-parser';
 import { assertNever } from '../utils';
 import { isSnippet } from '../to-schema';
 import { isBlock } from '../to-schema';
-import { UriString } from '../types';
+import { ObjectEntry, UriString } from '../types';
 
-export enum SupportedParamTypes {
+/**
+ * The base set of supported param types for LiquidDoc.
+ *
+ * This is used in conjunction with objects defined in [liquid docs](https://shopify.dev/docs/api/liquid/objects)
+ * to determine ALL supported param types for LiquidDoc.
+ *
+ * References `getValidParamTypes`
+ */
+export enum BasicParamTypes {
   String = 'string',
   Number = 'number',
   Boolean = 'boolean',
@@ -22,13 +30,13 @@ export enum SupportedDocTagTypes {
  */
 export function getDefaultValueForType(type: string | null) {
   switch (type?.toLowerCase()) {
-    case SupportedParamTypes.String:
+    case BasicParamTypes.String:
       return "''";
-    case SupportedParamTypes.Number:
+    case BasicParamTypes.Number:
       return '0';
-    case SupportedParamTypes.Boolean:
+    case BasicParamTypes.Boolean:
       return 'false';
-    case SupportedParamTypes.Object: // Objects don't have a sensible default value (maybe `theme`?)
+    case BasicParamTypes.Object: // Objects don't have a sensible default value (maybe `theme`?)
     default:
       return '';
   }
@@ -37,17 +45,17 @@ export function getDefaultValueForType(type: string | null) {
 /**
  * Casts the value of a LiquidNamedArgument to a string representing the type of the value.
  */
-export function inferArgumentType(arg: LiquidExpression): SupportedParamTypes {
+export function inferArgumentType(arg: LiquidExpression): BasicParamTypes {
   switch (arg.type) {
     case NodeTypes.String:
-      return SupportedParamTypes.String;
+      return BasicParamTypes.String;
     case NodeTypes.Number:
-      return SupportedParamTypes.Number;
+      return BasicParamTypes.Number;
     case NodeTypes.LiquidLiteral:
-      return SupportedParamTypes.Boolean;
+      return BasicParamTypes.Boolean;
     case NodeTypes.Range:
     case NodeTypes.VariableLookup:
-      return SupportedParamTypes.Object;
+      return BasicParamTypes.Object;
     default:
       // This ensures that we have a case for every possible type for arg.value
       return assertNever(arg);
@@ -59,10 +67,10 @@ export function inferArgumentType(arg: LiquidExpression): SupportedParamTypes {
  * Makes certain types more permissive:
  * - Boolean accepts any value, since everything is truthy / falsy in Liquid
  */
-export function isTypeCompatible(expectedType: string, actualType: SupportedParamTypes): boolean {
+export function isTypeCompatible(expectedType: string, actualType: BasicParamTypes): boolean {
   const normalizedExpectedType = expectedType.toLowerCase();
 
-  if (normalizedExpectedType === SupportedParamTypes.Boolean) {
+  if (normalizedExpectedType === BasicParamTypes.Boolean) {
     return true;
   }
 
@@ -74,4 +82,28 @@ export function isTypeCompatible(expectedType: string, actualType: SupportedPara
  */
 export function filePathSupportsLiquidDoc(uri: UriString) {
   return isSnippet(uri) || isBlock(uri);
+}
+
+/**
+ * Dynamically generates a map of LiquidDoc param types using object entries from
+ * [liquid docs](https://shopify.dev/docs/api/liquid/objects).
+ *
+ * This is used in conjunction with the base set of supported param.
+ *
+ * References `BasicParamTypes`
+ */
+export function getValidParamTypes(objectEntries: ObjectEntry[]): Map<string, string | undefined> {
+  const paramTypes: Map<string, string | undefined> = new Map([
+    [BasicParamTypes.String, undefined],
+    [BasicParamTypes.Number, undefined],
+    [BasicParamTypes.Boolean, undefined],
+    [
+      BasicParamTypes.Object,
+      'A generic type used to represent any liquid object or primitive value.',
+    ],
+  ]);
+
+  objectEntries.forEach((obj) => paramTypes.set(obj.name, obj.summary || obj.description));
+
+  return paramTypes;
 }

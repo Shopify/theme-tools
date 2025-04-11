@@ -87,6 +87,7 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
       themeDocset: {
         filters: async () => [],
         objects: async () => [],
+        liquidDrops: async () => [],
         tags: async () => tags,
         systemTranslations: async () => ({}),
       },

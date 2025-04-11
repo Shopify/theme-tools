@@ -1,12 +1,12 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind, MarkupKind } from 'vscode-languageserver';
 import { LiquidCompletionParams } from '../params';
 import { Provider } from './common';
-import { SupportedDocTagTypes, SupportedParamTypes } from '@shopify/theme-check-common';
 import { filePathSupportsLiquidDoc } from '@shopify/theme-check-common';
+import { getValidParamTypes, SupportedDocTagTypes, ThemeDocset } from '@shopify/theme-check-common';
 
 export class LiquidDocParamTypeCompletionProvider implements Provider {
-  constructor() {}
+  constructor(private readonly themeDocset: ThemeDocset) {}
 
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
@@ -40,10 +40,22 @@ export class LiquidDocParamTypeCompletionProvider implements Provider {
       return [];
     }
 
-    return Object.values(SupportedParamTypes).map((label) => ({
-      label,
-      kind: CompletionItemKind.EnumMember,
-      insertText: label,
-    }));
+    const liquidDrops = await this.themeDocset.liquidDrops();
+
+    return Array.from(getValidParamTypes(liquidDrops)).map(([label, description]) => {
+      const documentation = description
+        ? {
+            kind: MarkupKind.Markdown,
+            value: description,
+          }
+        : undefined;
+
+      return {
+        label,
+        kind: CompletionItemKind.EnumMember,
+        insertText: label,
+        documentation,
+      };
+    });
   }
 }

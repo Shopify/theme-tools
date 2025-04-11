@@ -8,7 +8,47 @@ describe('Module: AugmentedThemeDocset', async () => {
   beforeEach(async () => {
     themeDocset = new AugmentedThemeDocset({
       filters: async () => [],
-      objects: async () => [],
+      objects: async () => [
+        {
+          name: 'test-object',
+          access: {
+            global: false,
+            parents: [],
+            template: [],
+          },
+        },
+        {
+          name: 'deprecated-test-object',
+          deprecated: true,
+          access: {
+            global: false,
+            parents: [],
+            template: [],
+          },
+        },
+        {
+          name: 'exclusive-global-test-object',
+          access: {
+            global: true,
+            parents: [],
+            template: [],
+          },
+        },
+        {
+          name: 'global-test-object-with-parents',
+          access: {
+            global: true,
+            parents: [
+              {
+                object: 'parent-test-object',
+                property: 'parent-property',
+              },
+            ],
+            template: [],
+          },
+        },
+      ],
+      liquidDrops: async () => [],
       tags: async () => [],
       systemTranslations: async () => ({}),
     });
@@ -52,6 +92,41 @@ describe('Module: AugmentedThemeDocset', async () => {
             name: '',
           },
         ],
+      });
+    });
+  });
+
+  describe('liquidDrops', async () => {
+    it('should return non-deprecated objects', async () => {
+      const objects = await themeDocset.liquidDrops();
+
+      expect(objects).to.have.lengthOf(2);
+      expect(objects).to.deep.include({
+        name: 'test-object',
+        access: {
+          global: false,
+          parents: [],
+          template: [],
+        },
+      });
+    });
+
+    it("should return objects that aren't exclusively global", async () => {
+      const objects = await themeDocset.liquidDrops();
+
+      expect(objects).to.have.lengthOf(2);
+      expect(objects).to.deep.include({
+        name: 'global-test-object-with-parents',
+        access: {
+          global: true,
+          parents: [
+            {
+              object: 'parent-test-object',
+              property: 'parent-property',
+            },
+          ],
+          template: [],
+        },
       });
     });
   });

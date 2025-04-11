@@ -1,5 +1,5 @@
 import { LiquidDocParameter } from '@shopify/theme-check-common';
-import { SupportedDocTagTypes, SupportedParamTypes } from '@shopify/theme-check-common';
+import { SupportedDocTagTypes, BasicParamTypes } from '@shopify/theme-check-common';
 
 export function formatLiquidDocParameter(
   { name, type, description, required }: LiquidDocParameter,
@@ -25,17 +25,19 @@ export const SUPPORTED_LIQUID_DOC_TAG_HANDLES = {
   [SupportedDocTagTypes.Param]: {
     description:
       'Provides information about a parameter for the snippet.\n' +
-      `- The type of parameter is optional and can be ${Object.values(SupportedParamTypes)
+      `- The type of parameter is optional and can be ${Object.values(BasicParamTypes)
         .map((type) => `\`${type}\``)
         .join(', ')}\n` +
+      ` or liquid object that isn't exclusively a global object in our [API Docs](https://shopify.dev/docs/api/liquid/objects)\n` +
       '- An optional parameter is denoted by square brackets around the parameter name\n' +
       '- The description is optional Markdown text',
     example:
       '{% doc %}\n' +
       "  @param {string} name - The person's name\n" +
       "  @param {number} [fav_num] - The person's favorite number\n" +
+      "  @param {product} prod - The person's chosen product\n" +
       '{% enddoc %}\n',
-    template: `param {$2} $1 - $0`,
+    template: `param {$1} $2$0`,
   },
   [SupportedDocTagTypes.Example]: {
     description: 'Provides an example on how to use the snippet.',

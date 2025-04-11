@@ -128,6 +128,7 @@ describe('Module: FilterCompletionProvider', async () => {
       themeDocset: {
         filters: async () => filters,
         objects: async () => objects,
+        liquidDrops: async () => [],
         tags: async () => [],
         systemTranslations: async () => ({}),
       },

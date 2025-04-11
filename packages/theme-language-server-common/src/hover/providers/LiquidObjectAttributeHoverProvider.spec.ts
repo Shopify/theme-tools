@@ -1,43 +1,46 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { HoverProvider } from '../HoverProvider';
-import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
+import { MetafieldDefinitionMap, ObjectEntry } from '@shopify/theme-check-common';
 
 describe('Module: LiquidObjectAttributeHoverProvider', async () => {
   let provider: HoverProvider;
 
   beforeEach(async () => {
+    const _objects: ObjectEntry[] = [
+      {
+        name: 'product',
+        description: 'product description',
+        return_type: [],
+        properties: [
+          {
+            name: 'featured_image',
+            description: 'featured_image description',
+            return_type: [{ type: 'image', name: '' }],
+          },
+          {
+            name: 'title',
+            return_type: [{ type: 'string', name: '' }],
+          },
+        ],
+      },
+      {
+        name: 'image',
+        description: 'image description',
+        access: {
+          global: false,
+          parents: [],
+          template: [],
+        },
+      },
+    ];
+
     provider = new HoverProvider(
       new DocumentManager(),
       {
         filters: async () => [],
-        objects: async () => [
-          {
-            name: 'product',
-            description: 'product description',
-            return_type: [],
-            properties: [
-              {
-                name: 'featured_image',
-                description: 'featured_image description',
-                return_type: [{ type: 'image', name: '' }],
-              },
-              {
-                name: 'title',
-                return_type: [{ type: 'string', name: '' }],
-              },
-            ],
-          },
-          {
-            name: 'image',
-            description: 'image description',
-            access: {
-              global: false,
-              parents: [],
-              template: [],
-            },
-          },
-        ],
+        objects: async () => _objects,
+        liquidDrops: async () => _objects,
         tags: async () => [],
         systemTranslations: async () => ({}),
       },

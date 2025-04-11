@@ -13,6 +13,9 @@ export interface ThemeDocset {
   /** Returns objects (or Liquid variables) available on themes. */
   objects(): Promise<ObjectEntry[]>;
 
+  /** Returns objects (excluding global variables, hidden objects, and deprecated objects) available on themes. */
+  liquidDrops(): Promise<ObjectEntry[]>;
+
   /** Returns Liquid tags available on themes. */
   tags(): Promise<TagEntry[]>;
 

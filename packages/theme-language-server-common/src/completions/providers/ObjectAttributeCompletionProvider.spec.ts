@@ -2,13 +2,65 @@ import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
 import { SettingsSchemaJSONFile } from '../../settings';
-import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
+import { MetafieldDefinitionMap, ObjectEntry } from '@shopify/theme-check-common';
 
 describe('Module: ObjectAttributeCompletionProvider', async () => {
   let provider: CompletionsProvider;
   let settingsProvider: any;
 
   beforeEach(async () => {
+    const _objects: ObjectEntry[] = [
+      {
+        name: 'settings',
+        properties: [],
+      },
+      {
+        name: 'global_default',
+        properties: [{ name: 'prop1' }, { name: 'prop2' }],
+      },
+      {
+        name: 'global_access',
+        access: {
+          global: true,
+          parents: [],
+          template: [],
+        },
+        properties: [{ name: 'prop3' }, { name: 'prop4' }],
+      },
+      {
+        name: 'product',
+        access: {
+          global: false,
+          parents: [],
+          template: ['product'],
+        },
+        properties: [
+          {
+            name: 'images',
+            return_type: [
+              {
+                type: 'array',
+                array_value: 'image',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        name: 'image',
+        access: {
+          global: false, // image is a type, but not a global variable
+          parents: [],
+          template: [],
+        },
+        properties: [
+          { name: 'src', return_type: [{ type: 'string', name: '' }] },
+          { name: 'width', return_type: [{ type: 'number', name: '' }] },
+          { name: 'height', return_type: [{ type: 'number', name: '' }] },
+        ],
+      },
+    ];
+
     settingsProvider = vi.fn().mockResolvedValue([]);
     provider = new CompletionsProvider({
       documentManager: new DocumentManager(),
@@ -18,57 +70,8 @@ describe('Module: ObjectAttributeCompletionProvider', async () => {
           { name: 'upcase', return_type: [{ type: 'string', name: '' }] },
           { name: 'downcase', return_type: [{ type: 'string', name: '' }] },
         ],
-        objects: async () => [
-          {
-            name: 'settings',
-            properties: [],
-          },
-          {
-            name: 'global_default',
-            properties: [{ name: 'prop1' }, { name: 'prop2' }],
-          },
-          {
-            name: 'global_access',
-            access: {
-              global: true,
-              parents: [],
-              template: [],
-            },
-            properties: [{ name: 'prop3' }, { name: 'prop4' }],
-          },
-          {
-            name: 'product',
-            access: {
-              global: false,
-              parents: [],
-              template: ['product'],
-            },
-            properties: [
-              {
-                name: 'images',
-                return_type: [
-                  {
-                    type: 'array',
-                    array_value: 'image',
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            name: 'image',
-            access: {
-              global: false, // image is a type, but not a global variable
-              parents: [],
-              template: [],
-            },
-            properties: [
-              { name: 'src', return_type: [{ type: 'string', name: '' }] },
-              { name: 'width', return_type: [{ type: 'number', name: '' }] },
-              { name: 'height', return_type: [{ type: 'number', name: '' }] },
-            ],
-          },
-        ],
+        objects: async () => _objects,
+        liquidDrops: async () => _objects,
         tags: async () => [],
         systemTranslations: async () => ({}),
       },

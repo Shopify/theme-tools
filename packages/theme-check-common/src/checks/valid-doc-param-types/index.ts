@@ -1,5 +1,5 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { SupportedParamTypes } from '../../liquid-doc/utils';
+import { getValidParamTypes, BasicParamTypes } from '../../liquid-doc/utils';
 
 export const ValidDocParamTypes: LiquidCheckDefinition = {
   meta: {
@@ -18,13 +18,19 @@ export const ValidDocParamTypes: LiquidCheckDefinition = {
   },
 
   create(context) {
+    if (!context.themeDocset) {
+      return {};
+    }
+
     return {
       async LiquidDocParamNode(node) {
         if (!node.paramType) {
           return;
         }
 
-        if (Object.values(SupportedParamTypes).includes(node.paramType.value as any)) {
+        const objectEntries = await context.themeDocset!.objects();
+
+        if (getValidParamTypes(objectEntries).has(node.paramType.value)) {
           return;
         }
 

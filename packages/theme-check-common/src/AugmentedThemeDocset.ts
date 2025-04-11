@@ -101,6 +101,21 @@ export class AugmentedThemeDocset implements ThemeDocset {
     ];
   });
 
+  liquidDrops = memo(async (): Promise<ObjectEntry[]> => {
+    return (await this.themeDocset.objects()).filter((obj) => {
+      if (!obj.access) {
+        return true;
+      }
+
+      if (obj.deprecated) {
+        return false;
+      }
+
+      // objects that are accessible outside Global context
+      return !obj.access.global || (obj.access.global && obj.access.parents.length > 0);
+    });
+  });
+
   tags = memo(async (): Promise<TagEntry[]> => {
     return [...(await this.themeDocset.tags()), ...undocumentedTags.map(toTagEntry)];
   });

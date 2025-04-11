@@ -204,6 +204,9 @@ export async function check(
           },
         ];
       },
+      async liquidDrops() {
+        return this.objects();
+      },
       async tags() {
         return [];
       },
