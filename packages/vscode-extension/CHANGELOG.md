@@ -1,5 +1,18 @@
 ## theme-check-vscode
 
+## 3.8.2
+
+### Patch Changes
+
+- e75f896d: [internal] Add liquid drops to ThemeDocset
+- Updated dependencies [b6f94d16]
+- Updated dependencies [75c02293]
+- Updated dependencies [e75f896d]
+- Updated dependencies [034a803b]
+  - @shopify/theme-check-common@3.14.0
+  - @shopify/theme-language-server-browser@2.13.0
+  - @shopify/theme-language-server-node@2.13.0
+
 ## 3.8.1
 
 ### Patch Changes

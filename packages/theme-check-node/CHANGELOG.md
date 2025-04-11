@@ -1,5 +1,18 @@
 # @shopify/theme-check-node
 
+## 3.14.0
+
+### Patch Changes
+
+- 75c02293: Fix slow render tag theme checks
+- Updated dependencies [b6f94d16]
+- Updated dependencies [75c02293]
+- Updated dependencies [e75f896d]
+- Updated dependencies [034a803b]
+- Updated dependencies [e75f896d]
+  - @shopify/theme-check-common@3.14.0
+  - @shopify/theme-check-docs-updater@3.14.0
+
 ## 3.13.1
 
 ### Patch Changes
