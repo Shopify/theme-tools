@@ -1,6 +1,5 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { LiquidNamedArgument, RenderMarkup } from '@shopify/liquid-html-parser';
-import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
+import { RenderMarkup } from '@shopify/liquid-html-parser';
 import { getSnippetDefinition, LiquidDocParameter } from '../../liquid-doc/liquidDoc';
 import { isLiquidString } from '../utils';
 import { getDefaultValueForType } from '../../liquid-doc/utils';
@@ -9,7 +8,6 @@ export const MissingRenderSnippetParams: LiquidCheckDefinition = {
   meta: {
     code: 'MissingRenderSnippetParams',
     name: 'Missing Render Snippet Parameters',
-
     docs: {
       description:
         'This check ensures that all required parameters are provided when rendering a snippet.',
@@ -77,11 +75,9 @@ export const MissingRenderSnippetParams: LiquidCheckDefinition = {
         const snippetPath = `snippets/${snippetName}.liquid`;
         const snippetUri = context.toUri(snippetPath);
 
-        const snippetContent = await context.fs.readFile(snippetUri);
-        const snippetAst = toLiquidHtmlAST(snippetContent);
-        const snippetDef = getSnippetDefinition(snippetAst, snippetName);
+        const snippetDef = context.getDocDefinition && (await context.getDocDefinition(snippetUri));
 
-        if (!snippetDef.liquidDoc?.parameters) {
+        if (!snippetDef?.liquidDoc?.parameters) {
           return;
         }
 

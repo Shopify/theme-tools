@@ -1,14 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { applySuggestions, runLiquidCheck } from '../../test';
+import { applySuggestions, MockTheme, runLiquidCheck } from '../../test';
 import { UnrecognizedRenderSnippetParams } from '.';
-import { MockFileSystem } from '../../test';
 
 function check(snippet: string, source: string) {
-  return runLiquidCheck(UnrecognizedRenderSnippetParams, source, undefined, {
-    fs: new MockFileSystem({
+  return runLiquidCheck(
+    UnrecognizedRenderSnippetParams,
+    source,
+    undefined,
+    {},
+    {
       'snippets/card.liquid': snippet,
-    }),
-  });
+    },
+  );
 }
 
 const defaultSnippet = `
@@ -157,17 +160,14 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
 
   describe('edge cases', () => {
     it('should not report when snippet has no doc comment', async () => {
-      const fs = new MockFileSystem({
-        'snippets/card.liquid': `<h1>This snippet has no doc comment</h1>`,
-      });
-
       const sourceCode = `{% render 'card', title: 'My Card' %}`;
       const offenses = await runLiquidCheck(
         UnrecognizedRenderSnippetParams,
         sourceCode,
         undefined,
+        {},
         {
-          fs,
+          'snippets/card.liquid': `<h1>This snippet has no doc comment</h1>`,
         },
       );
 
@@ -175,24 +175,21 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
     });
 
     it('should not report when LiquidDoc definition has no defined params', async () => {
-      const fs = new MockFileSystem({
-        'snippets/card.liquid': `
-            {% doc %}
-              @description this is a description
-              @example this is an example
-            {% enddoc %}
-            <div>{{ title }}</div>
-            <div>{{ description }}</div>
-          `,
-      });
-
       const sourceCode = `{% render 'card', title: 'My Card' %}`;
       const offenses = await runLiquidCheck(
         UnrecognizedRenderSnippetParams,
         sourceCode,
         undefined,
+        {},
         {
-          fs,
+          'snippets/card.liquid': `
+              {% doc %}
+                @description this is a description
+                @example this is an example
+              {% enddoc %}
+              <div>{{ title }}</div>
+              <div>{{ description }}</div>
+            `,
         },
       );
 
@@ -200,24 +197,21 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
     });
 
     it('should not report when snippet name is a VariableLookup', async () => {
-      const fs = new MockFileSystem({
-        'snippets/card.liquid': `
-            {% doc %}
-              @param {string} title - The title of the card
-              @param {string} description - The description of the card
-            {% enddoc %}
-            <div>{{ title }}</div>
-            <div>{{ description }}</div>
-          `,
-      });
-
       const sourceCode = `{% assign snippet_name = 'card' %}{% render snippet_name, title: 'My Card' %}`;
       const offenses = await runLiquidCheck(
         UnrecognizedRenderSnippetParams,
         sourceCode,
         undefined,
+        {},
         {
-          fs,
+          'snippets/card.liquid': `
+              {% doc %}
+                @param {string} title - The title of the card
+                @param {string} description - The description of the card
+              {% enddoc %}
+              <div>{{ title }}</div>
+              <div>{{ description }}</div>
+            `,
         },
       );
 
@@ -225,19 +219,23 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
     });
 
     it('should report when "with/for" alias syntax is used', async () => {
-      const fs = new MockFileSystem({
+      const mockTheme = {
         'snippets/card.liquid': `
           {% doc %}
             @param {string} title - The title of the card
           {% enddoc %}
           <div>{{ title }}</div>  
         `,
-      });
+      } as MockTheme;
 
       let sourceCode = `{% render 'card' with 'my-card' as unknown_param %}`;
-      let offenses = await runLiquidCheck(UnrecognizedRenderSnippetParams, sourceCode, undefined, {
-        fs,
-      });
+      let offenses = await runLiquidCheck(
+        UnrecognizedRenderSnippetParams,
+        sourceCode,
+        undefined,
+        {},
+        mockTheme,
+      );
 
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toBe(
@@ -249,9 +247,13 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
       );
 
       sourceCode = `{% render 'card' for array as unknown_param %}`;
-      offenses = await runLiquidCheck(UnrecognizedRenderSnippetParams, sourceCode, undefined, {
-        fs,
-      });
+      offenses = await runLiquidCheck(
+        UnrecognizedRenderSnippetParams,
+        sourceCode,
+        undefined,
+        {},
+        mockTheme,
+      );
 
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toBe(
@@ -264,19 +266,21 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
     });
 
     it('should correctly suggest removing aliases with variable whitespace', async () => {
-      const fs = new MockFileSystem({
-        'snippets/card.liquid': `
+      let sourceCode = `{% render 'card' with 'my-card'       as   unknown_param %}`;
+      let offenses = await runLiquidCheck(
+        UnrecognizedRenderSnippetParams,
+        sourceCode,
+        undefined,
+        {},
+        {
+          'snippets/card.liquid': `
           {% doc %}
             @param {string} title - The title of the card
           {% enddoc %}
           <div>{{ title }}</div>  
         `,
-      });
-
-      let sourceCode = `{% render 'card' with 'my-card'       as   unknown_param %}`;
-      let offenses = await runLiquidCheck(UnrecognizedRenderSnippetParams, sourceCode, undefined, {
-        fs,
-      });
+        },
+      );
 
       expect(offenses).toHaveLength(1);
       let result = applySuggestions(sourceCode, offenses[0]);
