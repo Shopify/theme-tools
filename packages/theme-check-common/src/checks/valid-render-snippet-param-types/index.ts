@@ -124,7 +124,7 @@ export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
       liquidDocParameters: Map<string, LiquidDocParameter>,
     ) {
       if (
-        node.alias?.value &&
+        node.alias &&
         node.variable?.name &&
         node.variable.name.type !== NodeTypes.VariableLookup
       ) {

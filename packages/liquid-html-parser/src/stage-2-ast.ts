@@ -431,7 +431,7 @@ export interface RenderVariableExpression extends ASTNode<NodeTypes.RenderVariab
 
 /** Represents the `as name` expressions in render nodes */
 export interface RenderAliasExpression extends ASTNode<NodeTypes.RenderAliasExpression> {
-  /** {% render 'snippet' as name %} */
+  /** {% render 'snippet' for array as name %}` or `{% render 'snippet' with object as name %} */
   value: string;
 }
 

@@ -71,29 +71,22 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
       liquidDocParameters: Map<string, LiquidDocParameter>,
       snippetName: string,
     ) {
-      if (node.alias?.value && !liquidDocParameters.has(node.alias.value) && node.variable) {
-        const source = node.source;
-        let startIndex = node.variable.position.start;
+      const alias = node.alias;
+      const variable = node.variable;
 
-        if (
-          source.slice(startIndex, node.alias.position.start).includes(' with ') ||
-          source.slice(startIndex, node.alias.position.start).includes(' for ')
-        ) {
-          startIndex = node.variable.position.start + 1;
-        } else {
-          startIndex = node.alias.position.start;
-        }
+      if (alias && !liquidDocParameters.has(alias.value) && variable) {
+        const startIndex = variable.position.start + 1;
 
         context.report({
-          message: `Unknown parameter '${node.alias.value}' in render tag for snippet '${snippetName}'`,
+          message: `Unknown parameter '${alias.value}' in render tag for snippet '${snippetName}'`,
           startIndex: startIndex,
-          endIndex: node.alias.position.end,
+          endIndex: alias.position.end,
           suggest: [
             {
-              message: `Remove '${node.alias.value}'`,
+              message: `Remove '${alias.value}'`,
               fix: (fixer: any) => {
-                if (node.variable) {
-                  return fixer.remove(node.variable.position.start, node.alias?.position.end);
+                if (variable) {
+                  return fixer.remove(variable.position.start, alias.position.end);
                 }
               },
             },
