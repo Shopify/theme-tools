@@ -10,7 +10,7 @@ import {
 } from '../../types';
 import { nodeAtPath } from '../../json';
 import { getSchema, isSectionSchema } from '../../to-schema';
-import { BlockNodeWithPath, getBlocks, reportWarning } from '../../utils';
+import { BlockDefNodeWithPath, getBlocks, reportWarning } from '../../utils';
 
 export const ValidSettingsKey: LiquidCheckDefinition = {
   meta: {
@@ -82,7 +82,7 @@ async function validateReferencedBlock(
   context: any,
   offset: number,
   settingsNode: JSONNode | undefined,
-  localBlocks: BlockNodeWithPath[],
+  localBlocks: BlockDefNodeWithPath[],
   referencedBlock: Preset.Block | Section.Block | ThemeBlock.Block,
 ) {
   if (localBlocks.length > 0) {

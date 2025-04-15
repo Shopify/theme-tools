@@ -9,6 +9,9 @@ export enum ThemeSchemaType {
   Section = 'section',
 }
 
+/** {% content_for 'block', type: type, id: id %}*/
+export type StaticBlockDef = { type: string; id: string };
+
 /**
  * A ThemeSchema represents the `{% schema %}` contents of a block or section file.
  *
@@ -50,6 +53,9 @@ export interface ThemeBlockSchema extends ThemeSchema<ThemeSchemaType.Block> {
    * }
    */
   validSchema: ThemeBlock.Schema | Error;
+
+  /** type/id pairs found in the body of the file */
+  staticBlockDefs: StaticBlockDef[];
 }
 
 /** See {@link ThemeSchema} */
@@ -65,6 +71,9 @@ export interface SectionSchema extends ThemeSchema<ThemeSchemaType.Section> {
    * }
    */
   validSchema: Section.Schema | Error;
+
+  /** type/id pairs found in the body of the file */
+  staticBlockDefs: StaticBlockDef[];
 }
 
 /** TODO setup validSchema like the other ones. */

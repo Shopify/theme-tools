@@ -1,25 +1,13 @@
-import {
-  LiquidCheckDefinition,
-  Severity,
-  SourceCodeType,
-  Preset,
-  Section,
-  ThemeBlock,
-  LiteralNode,
-} from '../../types';
 import { nodeAtPath } from '../../json';
 import { getSchema } from '../../to-schema';
+import { LiquidCheckDefinition, LiteralNode, Severity, SourceCodeType } from '../../types';
 import {
   getBlocks,
-  isInvalidPresetBlock,
-  validateNestedBlocks,
-  validateBlockFileExistence,
   reportWarning,
+  validateBlockFileExistence,
+  validateNestedBlocks,
+  isInvalidPresetBlock,
 } from '../../utils';
-type BlockNodeWithPath = {
-  node: Section.Block | ThemeBlock.Block | Preset.Block;
-  path: string[];
-};
 
 export const ValidBlockTarget: LiquidCheckDefinition = {
   meta: {
@@ -48,6 +36,7 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
         if (!validSchema || validSchema instanceof Error) return;
         if (!ast || ast instanceof Error) return;
         if (!schema) return;
+        const { staticBlockDefs } = schema;
 
         const { rootLevelThemeBlocks, rootLevelLocalBlocks, presetLevelBlocks } =
           getBlocks(validSchema);
@@ -56,7 +45,7 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
 
         let errorsInRootLevelBlocks = false;
         await Promise.all(
-          rootLevelThemeBlocks.map(async ({ node, path }: BlockNodeWithPath) => {
+          rootLevelThemeBlocks.map(async ({ node, path }) => {
             const typeNode = nodeAtPath(ast, path)! as LiteralNode;
             const exists = await validateBlockFileExistence(node.type, context);
             if (!exists) {
@@ -79,12 +68,17 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
 
           if (depth === 0) {
             await Promise.all(
-              blocks.map(async ({ node, path }: BlockNodeWithPath) => {
+              blocks.map(async ({ node, path }) => {
                 const typeNode = nodeAtPath(ast, path)! as LiteralNode;
+                const blockId = 'id' in node ? node.id! : path.at(-2)!;
                 const isPrivateBlockType = node.type.startsWith('_');
-                if (isInvalidPresetBlock(node, rootLevelThemeBlocks)) {
+                const isStaticBlock = !!node.static;
+
+                if (isInvalidPresetBlock(blockId, node, rootLevelThemeBlocks, staticBlockDefs)) {
                   errorsInPresetLevelBlocks = true;
-                  const errorMessage = isPrivateBlockType
+                  const errorMessage = isStaticBlock
+                    ? `Could not find a static block of type "${node.type}" with id "${blockId}" in this file.`
+                    : isPrivateBlockType
                     ? `Theme block type "${node.type}" is a private block so it must be explicitly allowed in "blocks" at the root of this schema.`
                     : `Theme block type "${node.type}" must be allowed in "blocks" at the root of this schema.`;
                   reportWarning(errorMessage, offset, typeNode, context);
@@ -106,7 +100,7 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
 
           if (!errorsInPresetLevelBlocks) {
             await Promise.all(
-              blocks.map(async ({ node, path }: BlockNodeWithPath) => {
+              blocks.map(async ({ node, path }) => {
                 const typeNode = nodeAtPath(ast, path)! as LiteralNode;
                 const exists = await validateBlockFileExistence(node.type, context);
                 if (!exists) {

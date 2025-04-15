@@ -6,23 +6,29 @@ import {
   SourceCodeType,
   ThemeBlock,
   Context,
+  StaticBlockDef,
 } from '../types';
 import { getLocEnd, getLocStart, nodeAtPath } from '../json';
 import { doesFileExist } from './file-utils';
 
-export type BlockNodeWithPath = {
-  node: Section.Block | ThemeBlock.Block | Preset.Block;
+export type BlockDefNodeWithPath = {
+  node: Section.Block | ThemeBlock.Block;
+  path: string[];
+};
+
+export type PresetBlockNodeWithPath = {
+  node: Preset.Block;
   path: string[];
 };
 
 export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
-  rootLevelThemeBlocks: BlockNodeWithPath[];
-  rootLevelLocalBlocks: BlockNodeWithPath[];
-  presetLevelBlocks: { [key: number]: BlockNodeWithPath[] };
+  rootLevelThemeBlocks: BlockDefNodeWithPath[];
+  rootLevelLocalBlocks: BlockDefNodeWithPath[];
+  presetLevelBlocks: { [key: number]: PresetBlockNodeWithPath[] };
 } {
-  const rootLevelThemeBlocks: BlockNodeWithPath[] = [];
-  const rootLevelLocalBlocks: BlockNodeWithPath[] = [];
-  const presetLevelBlocks: { [key: number]: BlockNodeWithPath[] } = {};
+  const rootLevelThemeBlocks: BlockDefNodeWithPath[] = [];
+  const rootLevelLocalBlocks: BlockDefNodeWithPath[] = [];
+  const presetLevelBlocks: { [key: number]: PresetBlockNodeWithPath[] } = {};
 
   const rootLevelBlocks = validSchema.blocks;
   const presets = validSchema.presets;
@@ -112,9 +118,15 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
 }
 
 export function isInvalidPresetBlock(
-  blockNode: Section.Block | ThemeBlock.Block | Preset.Block,
-  rootLevelThemeBlocks: BlockNodeWithPath[],
+  blockId: string,
+  blockNode: Preset.Block,
+  rootLevelThemeBlocks: BlockDefNodeWithPath[],
+  staticBlockDefs: StaticBlockDef[],
 ): boolean {
+  if (blockNode.static) {
+    return !staticBlockDefs.some((block) => block.type === blockNode.type && block.id === blockId);
+  }
+
   const isPrivateBlockType = blockNode.type.startsWith('_');
   const isThemeInRootLevel = rootLevelThemeBlocks.some((block) => block.node.type === '@theme');
   const needsExplicitRootBlock = isPrivateBlockType || !isThemeInRootLevel;
@@ -130,16 +142,24 @@ function validateBlockTargeting(
   nestedPath: string[],
   context: Context<SourceCodeType.LiquidHtml>,
   parentNode: Preset.PresetBlockForArray | Preset.PresetBlockForHash,
-  rootLevelThemeBlocks: BlockNodeWithPath[],
+  rootLevelThemeBlocks: BlockDefNodeWithPath[],
   allowedBlockTypes: string[],
   offset: number,
   ast: JSONNode,
+  staticBlockDefs: StaticBlockDef[] = [],
 ) {
   const typeNode = nodeAtPath(ast, nestedPath)! as LiteralNode;
+  const blockId = 'id' in nestedBlock ? nestedBlock.id! : nestedPath.at(-2)!;
 
-  if (typeNode && isInvalidPresetBlock(nestedBlock, rootLevelThemeBlocks)) {
+  if (
+    typeNode &&
+    isInvalidPresetBlock(blockId, nestedBlock, rootLevelThemeBlocks, staticBlockDefs)
+  ) {
+    const isStaticBlock = !!nestedBlock.static;
     const isPrivateBlock = nestedBlock.type.startsWith('_');
-    const errorMessage = isPrivateBlock
+    const errorMessage = isStaticBlock
+      ? `Could not find a static block of type "${nestedBlock.type}" with id "${blockId}" in "blocks/${parentNode.type}.liquid".`
+      : isPrivateBlock
       ? `Private block type "${nestedBlock.type}" is not allowed in "${parentNode.type}" blocks.`
       : `Block type "${nestedBlock.type}" is not allowed in "${
           parentNode.type
@@ -172,7 +192,7 @@ export async function validateNestedBlocks(
   const parentSchema = await context.getBlockSchema?.(parentNode.type);
   if (!parentSchema || parentSchema instanceof Error) return;
 
-  const { validSchema } = parentSchema;
+  const { validSchema, staticBlockDefs } = parentSchema;
   if (!validSchema || validSchema instanceof Error) return;
 
   const { rootLevelThemeBlocks } = getBlocks(validSchema);
@@ -190,6 +210,7 @@ export async function validateNestedBlocks(
         allowedBlockTypes,
         offset,
         ast,
+        staticBlockDefs,
       );
     });
   } else if (typeof nestedBlocks === 'object') {
@@ -204,6 +225,7 @@ export async function validateNestedBlocks(
         allowedBlockTypes,
         offset,
         ast,
+        staticBlockDefs,
       );
     });
   }

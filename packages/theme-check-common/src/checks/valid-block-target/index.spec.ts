@@ -1,6 +1,7 @@
 import { expect, describe, it } from 'vitest';
 import { ValidBlockTarget } from './index';
 import { check, MockTheme } from '../../test';
+import { Preset, Setting } from '../../types/schemas';
 
 describe('Module: ValidBlockTarget', () => {
   const paths = ['sections', 'blocks'];
@@ -735,6 +736,301 @@ describe('Module: ValidBlockTarget', () => {
         expect(offenses[0].message).to.equal(
           'Block type "image" is not allowed in "group" blocks. Allowed types are: text.',
         );
+      });
+
+      describe(`Static Blocks used in a ${path} file`, () => {
+        const textSetting: Setting.Text = {
+          type: 'text' as Setting.Type.Text,
+          id: 'text',
+          label: 'Text',
+        };
+
+        describe('When presets are defined as a hash', () => {
+          describe('When the static block is used in the same file', () => {
+            const makeTheme = (
+              preset: Preset.PresetBlockHash,
+              blocks_order: string[] = [],
+            ): MockTheme => {
+              return {
+                [`${path}/slideshow.liquid`]: `
+                  # Static block is defined in the body of the file
+                  {% content_for "block", type: "static", id: "static_id" %}
+
+                  {% schema %}
+                    {
+                      "name": "Slideshow",
+                      "presets": [
+                        {
+                          "name": "Default",
+                          "blocks": ${JSON.stringify(preset, null, 2)},
+                          "block_order": ${JSON.stringify(blocks_order)}
+                        }
+                      ]
+                    }
+                  {% endschema %}
+                `,
+                'blocks/static.liquid': `
+                  {% schema %}
+                    {
+                      "name": "some static block",
+                      "settings": [${JSON.stringify(textSetting)}]
+                    }
+                  {% endschema %}
+                `,
+              };
+            };
+
+            it(`is silent for valid static blocks references`, async () => {
+              const theme: MockTheme = makeTheme({
+                static_id: {
+                  type: 'static',
+                  static: true,
+                  settings: {
+                    text: 'some text',
+                  },
+                },
+              });
+              const offenses = await check(theme, [ValidBlockTarget]);
+              expect(offenses).to.be.empty;
+            });
+
+            it(`reports a warning for missing (or mismatching) static blocks references`, async () => {
+              const theme: MockTheme = makeTheme({
+                mismatching_id: {
+                  type: 'static',
+                  static: true,
+                  settings: {
+                    text: 'some text',
+                  },
+                },
+              });
+
+              const offenses = await check(theme, [ValidBlockTarget]);
+              expect(offenses).not.to.be.empty;
+              expect(offenses).to.containOffense(
+                'Could not find a static block of type "static" with id "mismatching_id" in this file.',
+              );
+            });
+          });
+
+          describe('When the static block preset is defined in a nested block', () => {
+            const makeTheme = (
+              preset: Preset.PresetBlockHash,
+              blocks_order: string[] = [],
+            ): MockTheme => {
+              return {
+                [`${path}/slideshow-container.liquid`]: `
+                  # This file demonstrates how a static block can be used inside a nested block's preset
+                  {% content_for "blocks" %}
+
+                  {% schema %}
+                    {
+                      "name": "Slideshow container",
+                      "blocks": [{ "type": "slideshow" }],
+                      "presets": [{
+                        "name": "default",
+                        "block_order": ["slideshow1"],
+                        "blocks": {
+                          "slideshow1": {
+                            "type": "slideshow",
+                            "blocks": ${JSON.stringify(preset, null, 2)},
+                            "block_order": ${JSON.stringify(blocks_order)}
+                          }
+                        }
+                      }]
+                    }
+                  {% endschema %}
+                `,
+                [`blocks/slideshow.liquid`]: `
+                  # Static block is defined in the body of the file
+                  {% content_for "block", type: "static", id: "static_id" %}
+                  # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+                  {% schema %}
+                    { "name": "Slideshow" }
+                  {% endschema %}
+                `,
+                'blocks/static.liquid': `
+                  {% schema %}
+                    {
+                      "name": "some static block",
+                      "settings": [${JSON.stringify(textSetting)}]
+                    }
+                  {% endschema %}
+                `,
+              };
+            };
+
+            it('is silent for valid static blocks references', async () => {
+              const theme = makeTheme({
+                static_id: {
+                  type: 'static',
+                  static: true,
+                },
+              });
+              const offenses = await check(theme, [ValidBlockTarget]);
+              expect(offenses).to.be.empty;
+            });
+
+            it('reports warnings when using a mismatching (or nonexisting) static block', async () => {
+              const theme = makeTheme({
+                mismatching_id: {
+                  type: 'static',
+                  static: true,
+                },
+              });
+              const offenses = await check(theme, [ValidBlockTarget]);
+              expect(offenses).not.to.be.empty;
+              expect(offenses).to.containOffense(
+                'Could not find a static block of type "static" with id "mismatching_id" in "blocks/slideshow.liquid".',
+              );
+            });
+          });
+        });
+
+        describe('When preset are defined as an array', () => {
+          describe('When the static block is used in the same file', () => {
+            const makeTheme = (preset: Preset.PresetBlockForArray[]): MockTheme => {
+              return {
+                'blocks/static.liquid': `
+                  {% schema %}
+                  {
+                    "name": "some static block",
+                    "settings": [{ "label": "some setting", "type": "text", "id": "text" }],
+                  }
+                  {% endschema %}
+                `,
+                [`${path}/slideshow.liquid`]: `
+
+                  # Static block is defined in the body of the file
+                  {% content_for "block", type: "static", id: "static_id" %}
+                  # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+                  {% schema %}
+                  {
+                    "name": "Slideshow",
+                    "presets": [
+                      {
+                        "name": "Default",
+                        "blocks": ${JSON.stringify(preset, null, 2)}
+                      }
+                    ]
+                  }
+                  {% endschema %}
+                `,
+              };
+            };
+
+            it(`is silent for valid static blocks references (${path} bucket)`, async () => {
+              const theme: MockTheme = makeTheme([
+                {
+                  type: 'static',
+                  id: 'static_id',
+                  static: true,
+                  settings: {
+                    text: 'some text',
+                  },
+                },
+              ]);
+              const offenses = await check(theme, [ValidBlockTarget]);
+              expect(offenses).to.be.empty;
+            });
+
+            it(`reports a warning for missing (or mismatching) static blocks references (${path} bucket)`, async () => {
+              const theme: MockTheme = makeTheme([
+                {
+                  type: 'static',
+                  id: 'mismatching_id',
+                  static: true,
+                  settings: {
+                    text: 'some text',
+                  },
+                },
+              ]);
+
+              const offenses = await check(theme, [ValidBlockTarget]);
+              expect(offenses).not.to.be.empty;
+              expect(offenses).to.containOffense(
+                'Could not find a static block of type "static" with id "mismatching_id" in this file.',
+              );
+            });
+          });
+        });
+
+        describe('When the static block preset is defined in a nested block', () => {
+          const makeTheme = (
+            preset: Preset.PresetBlockForArray[],
+            blocks_order: string[] = [],
+          ): MockTheme => {
+            return {
+              [`${path}/slideshow-container.liquid`]: `
+                # This file demonstrates how a static block can be used inside a nested block's preset
+                {% content_for "blocks" %}
+
+                {% schema %}
+                  {
+                    "name": "Slideshow container",
+                    "blocks": [{ "type": "slideshow" }],
+                    "presets": [{
+                      "name": "default",
+                      "blocks": [
+                        {
+                          "type": "slideshow",
+                          "id": "slideshow1",
+                          "blocks": ${JSON.stringify(preset, null, 2)},
+                        }
+                      ]
+                    }]
+                  }
+                {% endschema %}
+              `,
+              [`blocks/slideshow.liquid`]: `
+                # Static block is defined in the body of the file
+                {% content_for "block", type: "static", id: "static_id" %}
+                # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+                {% schema %}
+                  { "name": "Slideshow" }
+                {% endschema %}
+              `,
+              'blocks/static.liquid': `
+                {% schema %}
+                  {
+                    "name": "some static block",
+                    "settings": [${JSON.stringify(textSetting)}]
+                  }
+                {% endschema %}
+              `,
+            };
+          };
+
+          it('is silent for valid static blocks references', async () => {
+            const theme = makeTheme([
+              {
+                id: 'static_id',
+                type: 'static',
+                static: true,
+              },
+            ]);
+            const offenses = await check(theme, [ValidBlockTarget]);
+            expect(offenses).to.be.empty;
+          });
+
+          it('reports warnings when using a mismatching (or nonexisting) static block', async () => {
+            const theme = makeTheme([
+              {
+                id: 'mismatching_id',
+                type: 'static',
+                static: true,
+              },
+            ]);
+            const offenses = await check(theme, [ValidBlockTarget]);
+            expect(offenses).not.to.be.empty;
+            expect(offenses).to.containOffense(
+              'Could not find a static block of type "static" with id "mismatching_id" in "blocks/slideshow.liquid".',
+            );
+          });
+        });
       });
 
       it(`should report errors with correct indices for nested blocks when they are not allowed (${path} bucket)`, async () => {
