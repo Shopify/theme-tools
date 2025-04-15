@@ -9,6 +9,8 @@ import { CURSOR, LiquidCompletionParams } from '../params';
 import { Provider } from './common';
 import { AugmentedLiquidSourceCode } from '../../documents';
 import { DEFAULT_COMPLETION_OPTIONS } from './data/contentForParameterCompletionOptions';
+import { DocDefinition, GetDocDefinitionForURI } from '@shopify/theme-check-common';
+import { getParameterCompletionTemplate } from '../../utils/liquidDoc';
 
 /**
  * Offers completions for parameters for the `content_for` tag after a user has
@@ -17,7 +19,7 @@ import { DEFAULT_COMPLETION_OPTIONS } from './data/contentForParameterCompletion
  * @example {% content_for "block", █ %}
  */
 export class ContentForParameterCompletionProvider implements Provider {
-  constructor() {}
+  constructor(private readonly getDocDefinitionForURI: GetDocDefinitionForURI) {}
 
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
@@ -37,41 +39,41 @@ export class ContentForParameterCompletionProvider implements Provider {
       return [];
     }
 
-    let options = DEFAULT_COMPLETION_OPTIONS;
+    const completionItems = this.staticCompletions(
+      node,
+      parentNode.contentForType.value == 'blocks',
+      params.document,
+    );
 
-    const partial = node.name.replace(CURSOR, '');
+    if (parentNode.contentForType.value === 'block') {
+      const typeArg = parentNode.args.find((arg) => arg.name === 'type')?.value;
 
-    if (parentNode.contentForType.value == 'blocks') {
-      options = {
-        closest: DEFAULT_COMPLETION_OPTIONS.closest,
-      };
+      if (typeArg?.type === NodeTypes.String) {
+        const snippetDefinition = await this.getDocDefinitionForURI(
+          params.textDocument.uri,
+          'blocks',
+          typeArg.value,
+        );
+
+        completionItems.push(
+          ...this.liquidDocParameterCompletions(node, params.document, snippetDefinition),
+        );
+      }
     }
 
-    return Object.entries(options)
-      .filter(([keyword, _description]) => keyword.startsWith(partial))
-      .map(([keyword, description]): CompletionItem => {
-        const { textEdit, format } = this.textEdit(node, params.document, keyword);
+    // We need to find out existing params in the content_for tag so we don't offer it again for completion
+    const existingParams = parentNode.args
+      .filter((arg) => arg.type === NodeTypes.NamedArgument)
+      .map((arg) => arg.name);
 
-        return {
-          label: keyword,
-          kind: CompletionItemKind.Keyword,
-          documentation: {
-            kind: 'markdown',
-            value: description,
-          },
-          insertTextFormat: format,
-          // We want to force these options to appear first in the list given
-          // the context that they are being requested in.
-          sortText: `1${keyword}`,
-          textEdit,
-        };
-      });
+    return completionItems.filter((item) => !existingParams.includes(item.label));
   }
 
   textEdit(
     node: LiquidVariableLookup,
     document: AugmentedLiquidSourceCode,
     name: string,
+    textTemplate: string = `${name}: '$1'`,
   ): {
     textEdit: TextEdit;
     format: InsertTextFormat;
@@ -86,7 +88,7 @@ export class ContentForParameterCompletionProvider implements Provider {
 
     let start = document.textDocument.positionAt(node.position.start);
     let end = document.textDocument.positionAt(node.position.end + offset);
-    let newText = name === 'closest' ? `${name}.` : `${name}: '$1'`;
+    let newText = name === 'closest' ? `${name}.` : textTemplate;
     let format = name === 'closest' ? InsertTextFormat.PlainText : InsertTextFormat.Snippet;
 
     // If the cursor is inside the parameter or at the end and it's the same
@@ -123,5 +125,63 @@ export class ContentForParameterCompletionProvider implements Provider {
       ),
       format,
     };
+  }
+
+  private staticCompletions(
+    node: LiquidVariableLookup,
+    isTypeBlocks: boolean,
+    document: AugmentedLiquidSourceCode,
+  ) {
+    let options = DEFAULT_COMPLETION_OPTIONS;
+
+    const partial = node.name!.replace(CURSOR, '');
+
+    if (isTypeBlocks) {
+      options = {
+        closest: DEFAULT_COMPLETION_OPTIONS.closest,
+      };
+    }
+
+    return Object.entries(options)
+      .filter(([keyword, _description]) => keyword.startsWith(partial))
+      .map(([keyword, description]): CompletionItem => {
+        const { textEdit, format } = this.textEdit(node, document, keyword);
+        return {
+          label: keyword,
+          kind: CompletionItemKind.Keyword,
+          documentation: {
+            kind: 'markdown',
+            value: description,
+          },
+          insertTextFormat: format,
+          textEdit,
+        };
+      });
+  }
+
+  private liquidDocParameterCompletions(
+    node: LiquidVariableLookup,
+    document: AugmentedLiquidSourceCode,
+    docDefinition?: DocDefinition,
+  ) {
+    return (docDefinition?.liquidDoc?.parameters || []).map((liquidDocParam): CompletionItem => {
+      const { textEdit, format } = this.textEdit(
+        node,
+        document,
+        liquidDocParam.name,
+        getParameterCompletionTemplate(liquidDocParam.name, liquidDocParam.type),
+      );
+
+      return {
+        label: liquidDocParam.name,
+        kind: CompletionItemKind.Keyword,
+        documentation: {
+          kind: 'markdown',
+          value: liquidDocParam.description || '',
+        },
+        insertTextFormat: format,
+        textEdit,
+      };
+    });
   }
 }

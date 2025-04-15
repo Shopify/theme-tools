@@ -72,7 +72,7 @@ export class CompletionsProvider {
     this.providers = [
       new ContentForCompletionProvider(),
       new ContentForBlockTypeCompletionProvider(getThemeBlockNames),
-      new ContentForParameterCompletionProvider(),
+      new ContentForParameterCompletionProvider(getDocDefinitionForURI),
       new HtmlTagCompletionProvider(),
       new HtmlAttributeCompletionProvider(documentManager),
       new HtmlAttributeValueCompletionProvider(),

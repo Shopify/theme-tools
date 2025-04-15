@@ -1,4 +1,4 @@
-import { LiquidDocParameter } from '@shopify/theme-check-common';
+import { getDefaultValueForType, LiquidDocParameter } from '@shopify/theme-check-common';
 import { SupportedDocTagTypes, BasicParamTypes } from '@shopify/theme-check-common';
 
 export function formatLiquidDocParameter(
@@ -52,3 +52,11 @@ export const SUPPORTED_LIQUID_DOC_TAG_HANDLES = {
     template: `description $0`,
   },
 };
+
+export function getParameterCompletionTemplate(name: string, type: string | null) {
+  const paramDefaultValue = getDefaultValueForType(type);
+
+  const valueTemplate = paramDefaultValue === "''" ? `'$1'$0` : `\${1:${paramDefaultValue}}$0`;
+
+  return `${name}: ${valueTemplate}`;
+}
