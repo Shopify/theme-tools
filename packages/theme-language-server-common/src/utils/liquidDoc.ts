@@ -37,7 +37,7 @@ export const SUPPORTED_LIQUID_DOC_TAG_HANDLES = {
       "  @param {number} [fav_num] - The person's favorite number\n" +
       "  @param {product} prod - The person's chosen product\n" +
       '{% enddoc %}\n',
-    template: `param {$1} $2$0`,
+    template: `param {$2} $1$0`,
   },
   [SupportedDocTagTypes.Example]: {
     description: 'Provides an example on how to use the snippet.',
