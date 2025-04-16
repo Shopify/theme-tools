@@ -30,7 +30,7 @@ export const DuplicateRenderSnippetParams: LiquidCheckDefinition = {
         const encounteredParams = new Set<string>();
         for (const param of node.args) {
           const paramName = param.name;
-          if (encounteredParams.has(paramName) || paramName === node.alias) {
+          if (encounteredParams.has(paramName) || paramName === node.alias?.value) {
             context.report({
               message: `Duplicate parameter '${paramName}' in render tag for snippet '${snippetName}'.`,
               startIndex: param.position.start,

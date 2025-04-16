@@ -409,14 +409,18 @@ describe('Unit: Stage 2 (AST)', () => {
           {
             expression: `"snippet" as foo`,
             snippetType: 'String',
-            alias: 'foo',
+            alias: {
+              value: 'foo',
+            },
             renderVariableExpression: null,
             namedArguments: [],
           },
           {
             expression: `"snippet" with "string" as foo`,
             snippetType: 'String',
-            alias: 'foo',
+            alias: {
+              value: 'foo',
+            },
             renderVariableExpression: {
               kind: 'with',
               name: {
@@ -428,7 +432,9 @@ describe('Unit: Stage 2 (AST)', () => {
           {
             expression: `"snippet" for products as product`,
             snippetType: 'String',
-            alias: 'product',
+            alias: {
+              value: 'product',
+            },
             renderVariableExpression: {
               kind: 'for',
               name: {
@@ -440,7 +446,9 @@ describe('Unit: Stage 2 (AST)', () => {
           {
             expression: `variable with "string" as foo, key1: val1, key2: "hi"`,
             snippetType: 'VariableLookup',
-            alias: 'foo',
+            alias: {
+              value: 'foo',
+            },
             renderVariableExpression: {
               kind: 'with',
               name: {
@@ -475,7 +483,7 @@ describe('Unit: Stage 2 (AST)', () => {
               } else {
                 expectPath(ast, 'children.0.markup.variable').to.equal(null);
               }
-              expectPath(ast, 'children.0.markup.alias').to.equal(alias);
+              expectPath(ast, 'children.0.markup.alias.value').to.equal(alias?.value);
               expectPath(ast, 'children.0.markup.args').to.have.lengthOf(namedArguments.length);
               namedArguments.forEach(({ name, valueType }, i) => {
                 expectPath(ast, `children.0.markup.args.${i}.type`).to.equal('NamedArgument');

@@ -411,14 +411,14 @@ function printNode(
       const snippet = path.call((p: any) => print(p), 'snippet');
       const doc: Doc = [snippet];
       if (node.variable) {
-        const whitespace = node.alias ? line : ' ';
+        const whitespace = node.alias?.value ? line : ' ';
         doc.push(
           whitespace,
           path.call((p: any) => print(p), 'variable'),
         );
       }
-      if (node.alias) {
-        doc.push(' ', 'as', ' ', node.alias);
+      if (node.alias?.value) {
+        doc.push(' ', 'as', ' ', node.alias.value);
       }
       if (node.args.length > 0) {
         doc.push(
@@ -435,6 +435,10 @@ function printNode(
 
     case NodeTypes.RenderVariableExpression: {
       return [node.kind, ' ', path.call((p: any) => print(p), 'name')];
+    }
+
+    case NodeTypes.RenderAliasExpression: {
+      return node.value;
     }
 
     case NodeTypes.LogicalExpression: {
