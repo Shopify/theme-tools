@@ -24,6 +24,7 @@ describe('Module: ValidSchemaName', () => {
         type: ThemeSchemaType.Section,
         offset: 0,
         value: '',
+        staticBlockDefs: [],
       }),
     });
 

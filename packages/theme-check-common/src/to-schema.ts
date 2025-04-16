@@ -1,4 +1,4 @@
-import { LiquidRawTag } from '@shopify/liquid-html-parser';
+import { ContentForMarkup, LiquidRawTag, NamedTags, NodeTypes } from '@shopify/liquid-html-parser';
 import { parseJSON } from './json';
 import * as path from './path';
 import { toJSONAST } from './to-source-code';
@@ -15,6 +15,7 @@ import {
   UriString,
   Context,
   Schema,
+  StaticBlockDef,
 } from './types';
 import { visit } from './visitor';
 
@@ -85,6 +86,7 @@ export async function toBlockSchema(
 ): Promise<ThemeBlockSchema> {
   const name = path.basename(uri, '.liquid');
   const schemaNode = toSchemaNode(liquidAst);
+  const staticBlockDefs = toStaticBlockDefs(liquidAst);
   const parsed = toParsed(schemaNode, isStrict);
   const ast = toAst(schemaNode);
 
@@ -96,6 +98,7 @@ export async function toBlockSchema(
     parsed,
     ast,
     value: schemaNode instanceof Error ? '' : schemaNode.body.value,
+    staticBlockDefs,
   };
 }
 
@@ -110,6 +113,7 @@ export async function toSectionSchema(
 ): Promise<SectionSchema> {
   const name = path.basename(uri, '.liquid');
   const schemaNode = toSchemaNode(liquidAst);
+  const staticBlockDefs = toStaticBlockDefs(liquidAst);
   const parsed = toParsed(schemaNode, isStrict);
   const ast = toAst(schemaNode);
 
@@ -121,6 +125,7 @@ export async function toSectionSchema(
     parsed,
     ast,
     value: schemaNode instanceof Error ? '' : schemaNode.body.value,
+    staticBlockDefs,
   };
 }
 
@@ -156,6 +161,28 @@ function toSchemaNode(ast: LiquidHtmlNode | Error): LiquidRawTag | Error {
       },
     })[0] ?? new Error('No schema tag found')
   );
+}
+
+function toStaticBlockDefs(ast: LiquidHtmlNode | Error): StaticBlockDef[] {
+  if (ast instanceof Error) return [];
+  return visit<SourceCodeType.LiquidHtml, StaticBlockDef>(ast, {
+    LiquidTag(node) {
+      if (node.name !== NamedTags.content_for) return;
+      if (typeof node.markup === 'string') return;
+      const contentForMarkup: ContentForMarkup = node.markup;
+      if (contentForMarkup.contentForType.value !== 'block') return;
+      const type = contentForMarkup.args.find((x) => x.name === 'type');
+      const id = contentForMarkup.args.find((x) => x.name === 'id');
+      if (!type || !id) return;
+      if (type.value.type !== NodeTypes.String) return;
+      if (id.value.type !== NodeTypes.String) return;
+
+      return {
+        type: type.value.value,
+        id: id.value.value,
+      };
+    },
+  });
 }
 
 export function getSchema(context: Context<SourceCodeType.LiquidHtml, Schema>) {
