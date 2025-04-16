@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 3.14.1
+
+### Patch Changes
+
+- 906455b0: Fix ValidBlockTarget reporting of static block presets
+
 ## 3.14.0
 
 ### Minor Changes
