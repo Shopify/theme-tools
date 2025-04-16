@@ -1,5 +1,11 @@
 # @shopify/theme-language-server-common
 
+## 2.13.2
+
+### Patch Changes
+
+- d1171049: Fix LiquidDoc @param completion placeholder regression
+
 ## 2.13.1
 
 ### Patch Changes
