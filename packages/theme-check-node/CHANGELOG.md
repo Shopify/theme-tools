@@ -1,5 +1,15 @@
 # @shopify/theme-check-node
 
+## 3.14.2
+
+### Patch Changes
+
+- aa43656b: [internal] Building blocks to support LiquidDoc for blocks
+- Updated dependencies [067a75eb]
+- Updated dependencies [aa43656b]
+  - @shopify/theme-check-common@3.14.2
+  - @shopify/theme-check-docs-updater@3.14.2
+
 ## 3.14.1
 
 ### Patch Changes
