@@ -1,5 +1,14 @@
 # @shopify/theme-check-common
 
+## 3.14.2
+
+### Patch Changes
+
+- 067a75eb: Improve parsing logic around aliases
+- aa43656b: [internal] Building blocks to support LiquidDoc for blocks
+- Updated dependencies [067a75eb]
+  - @shopify/liquid-html-parser@2.8.2
+
 ## 3.14.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.8.2
+
+### Patch Changes
+
+- 067a75eb: Improve parsing logic around aliases
+
 ## 2.8.1
 
 ### Patch Changes
