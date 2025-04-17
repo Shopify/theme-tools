@@ -9,8 +9,8 @@ import {
 } from 'vscode-languageserver';
 import { CURSOR, LiquidCompletionParams } from '../params';
 import { Provider } from './common';
-import { formatLiquidDocParameter } from '../../utils/liquidDoc';
-import { GetDocDefinitionForURI, getDefaultValueForType } from '@shopify/theme-check-common';
+import { formatLiquidDocParameter, getParameterCompletionTemplate } from '../../utils/liquidDoc';
+import { GetDocDefinitionForURI } from '@shopify/theme-check-common';
 
 export type GetSnippetNamesForURI = (uri: string) => Promise<string[]>;
 
@@ -61,10 +61,6 @@ export class RenderSnippetParameterCompletionProvider implements Provider {
       .filter((liquidDocParam) => !existingRenderParams.includes(liquidDocParam.name))
       .filter((liquidDocParam) => liquidDocParam.name.startsWith(userInputStr))
       .map((liquidDocParam) => {
-        const paramDefaultValue = getDefaultValueForType(liquidDocParam.type);
-        const paramValueTemplate =
-          paramDefaultValue === "''" ? `'$1'$0` : `\${1:${paramDefaultValue}}$0`;
-
         return {
           label: liquidDocParam.name,
           kind: CompletionItemKind.Property,
@@ -74,7 +70,7 @@ export class RenderSnippetParameterCompletionProvider implements Provider {
           },
           textEdit: TextEdit.replace(
             Range.create(start, end),
-            `${liquidDocParam.name}: ${paramValueTemplate}`,
+            getParameterCompletionTemplate(liquidDocParam.name, liquidDocParam.type),
           ),
           insertTextFormat: InsertTextFormat.Snippet,
         };

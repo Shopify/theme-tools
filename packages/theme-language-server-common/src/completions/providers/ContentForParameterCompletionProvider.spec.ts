@@ -50,6 +50,12 @@ describe('Module: ContentForBlockParameterCompletionProvider', async () => {
     ]);
   });
 
+  it('does not offer completion items if they are already present', async () => {
+    const context = `{% content_for "block", type: "fake-block", id: "fake-id", █ %}`;
+
+    await expect(provider).to.complete(context, ['closest', 'testOption']);
+  });
+
   it('uses text edits to insert the completion item', async () => {
     //                               char 24 ⌄
     const context = `{% content_for "block", █ %}`;
@@ -244,6 +250,111 @@ describe('Module: ContentForBlockParameterCompletionProvider', async () => {
           `{% content_for "block", type: "button" %}`,
         );
       });
+    });
+  });
+
+  describe('when the referred block has LiquidDoc parameters', () => {
+    beforeEach(async () => {
+      provider = new CompletionsProvider({
+        documentManager: new DocumentManager(),
+        themeDocset: {
+          filters: async () => [],
+          objects: async () => [],
+          liquidDrops: async () => [],
+          tags: async () => [],
+          systemTranslations: async () => ({}),
+        },
+        getMetafieldDefinitions: async (_rootUri: string) => ({} as MetafieldDefinitionMap),
+        getDocDefinitionForURI: async (_uri, _category, _name) => {
+          return {
+            uri: 'file:///blocks/product-card.liquid',
+            liquidDoc: {
+              parameters: [
+                {
+                  nodeType: 'param',
+                  name: 'example-string-param',
+                  type: 'string',
+                  description: 'An example string parameter',
+                  required: true,
+                },
+                {
+                  nodeType: 'param',
+                  name: 'example-number-param',
+                  type: 'number',
+                  description: 'An example number parameter',
+                  required: true,
+                },
+                {
+                  nodeType: 'param',
+                  name: 'example-boolean-param',
+                  type: 'boolean',
+                  description: 'An example boolean parameter',
+                  required: true,
+                },
+                {
+                  nodeType: 'param',
+                  name: 'example-object-param',
+                  type: 'object',
+                  description: 'An example object parameter',
+                  required: true,
+                },
+                {
+                  nodeType: 'param',
+                  name: 'example-unknown-param',
+                  type: 'unknown',
+                  description: 'An example unknown parameter',
+                  required: true,
+                },
+              ],
+            },
+          };
+        },
+      });
+    });
+
+    it('offers the LiquidDoc parameters as completions', async () => {
+      const context = `{% content_for "block", type: 'fake-block', █ %}`;
+
+      await expect(provider).to.complete(
+        context,
+        expect.arrayContaining([
+          expect.objectContaining({
+            label: 'example-string-param',
+            insertTextFormat: InsertTextFormat.Snippet,
+            textEdit: expect.objectContaining({
+              newText: "example-string-param: '$1'$0",
+            }),
+          }),
+          expect.objectContaining({
+            label: 'example-number-param',
+            insertTextFormat: InsertTextFormat.Snippet,
+            textEdit: expect.objectContaining({
+              newText: 'example-number-param: ${1:0}$0',
+            }),
+          }),
+          expect.objectContaining({
+            label: 'example-boolean-param',
+            insertTextFormat: InsertTextFormat.Snippet,
+            textEdit: expect.objectContaining({
+              newText: 'example-boolean-param: ${1:false}$0',
+            }),
+          }),
+          expect.objectContaining({
+            label: 'example-object-param',
+            insertTextFormat: InsertTextFormat.Snippet,
+            textEdit: expect.objectContaining({
+              newText: 'example-object-param: ${1:}$0',
+            }),
+          }),
+          expect.objectContaining({
+            label: 'example-unknown-param',
+            insertTextFormat: InsertTextFormat.Snippet,
+            textEdit: expect.objectContaining({
+              newText: 'example-unknown-param: ${1:}$0',
+            }),
+          }),
+        ]),
+      );
     });
   });
 });
