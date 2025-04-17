@@ -245,10 +245,22 @@ describe('Module: UndefinedObject', () => {
     }
   });
 
-  it('should report an offense when object is undefined in a "snippet" file', async () => {
+  it('should not report an offense when object is undefined in a "snippet" file with no presense of doc tags', async () => {
     const sourceCode = `
       {{ my_var }}
     `;
+
+    const offenses = await runLiquidCheck(UndefinedObject, sourceCode, 'snippets/file.liquid');
+
+    expect(offenses).toHaveLength(0);
+  });
+
+  it('should report an offense when object is undefined in a "snippet" file with doc tags that are missing the associated param', async () => {
+    const sourceCode = `
+    {% doc %}
+    {% enddoc %}
+    {{ my_var }}
+      `;
 
     const offenses = await runLiquidCheck(UndefinedObject, sourceCode, 'snippets/file.liquid');
 

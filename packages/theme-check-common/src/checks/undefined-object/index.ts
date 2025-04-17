@@ -14,7 +14,8 @@ import {
   Position,
 } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType, ThemeDocset } from '../../types';
-import { last } from '../../utils';
+import { isError, last } from '../../utils';
+import { hasLiquidDoc } from '../../liquid-doc/liquidDoc';
 
 type Scope = { start?: number; end?: number };
 
@@ -35,6 +36,14 @@ export const UndefinedObject: LiquidCheckDefinition = {
 
   create(context) {
     const relativePath = context.toRelativePath(context.file.uri);
+    const ast = context.file.ast;
+
+    if (isError(ast)) return {};
+
+    /**
+     * Skip this check when a snippet does not have the presence of doc tags.
+     */
+    if (relativePath.startsWith('snippets/') && !hasLiquidDoc(ast)) return {};
 
     /**
      * Skip this check when definitions for global objects are unavailable.
