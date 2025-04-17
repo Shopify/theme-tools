@@ -45,6 +45,16 @@ export interface LiquidDocDescription extends LiquidDocNode {
   nodeType: 'description';
 }
 
+export function hasLiquidDoc(snippet: LiquidHtmlNode): boolean {
+  let foundDocTag = false;
+  visit<SourceCodeType.LiquidHtml, void>(snippet, {
+    LiquidRawTag(node) {
+      if (node.name === 'doc') foundDocTag = true;
+    },
+  });
+  return foundDocTag;
+}
+
 export function extractDocDefinition(uri: UriString, ast: LiquidHtmlNode): DocDefinition {
   let hasDocTag = false;
   const nodes: (LiquidDocParameter | LiquidDocExample | LiquidDocDescription)[] = visit<
