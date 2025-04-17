@@ -29,6 +29,7 @@ import { SchemaPresetsBlockOrder } from './schema-presets-block-order';
 import { SchemaPresetsStaticBlocks } from './schema-presets-static-blocks';
 import { RemoteAsset } from './remote-asset';
 import { RequiredLayoutThemeObject } from './required-layout-theme-object';
+import { ReservedDocParamNames } from './reserved-doc-param-names';
 import { TranslationKeyExists } from './translation-key-exists';
 import { UnclosedHTMLElement } from './unclosed-html-element';
 import { UndefinedObject } from './undefined-object';
@@ -90,6 +91,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   SchemaPresetsStaticBlocks,
   RemoteAsset,
   RequiredLayoutThemeObject,
+  ReservedDocParamNames,
   TranslationKeyExists,
   UnclosedHTMLElement,
   UndefinedObject,

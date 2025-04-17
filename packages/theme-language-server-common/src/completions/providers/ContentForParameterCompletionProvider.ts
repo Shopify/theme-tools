@@ -8,8 +8,11 @@ import {
 import { CURSOR, LiquidCompletionParams } from '../params';
 import { Provider } from './common';
 import { AugmentedLiquidSourceCode } from '../../documents';
-import { DEFAULT_COMPLETION_OPTIONS } from './data/contentForParameterCompletionOptions';
-import { DocDefinition, GetDocDefinitionForURI } from '@shopify/theme-check-common';
+import {
+  DocDefinition,
+  GetDocDefinitionForURI,
+  CONTENT_FOR_BLOCK_PARAMETERS,
+} from '@shopify/theme-check-common';
 import { getParameterCompletionTemplate } from '../../utils/liquidDoc';
 
 /**
@@ -132,13 +135,13 @@ export class ContentForParameterCompletionProvider implements Provider {
     isTypeBlocks: boolean,
     document: AugmentedLiquidSourceCode,
   ) {
-    let options = DEFAULT_COMPLETION_OPTIONS;
+    let options = CONTENT_FOR_BLOCK_PARAMETERS;
 
     const partial = node.name!.replace(CURSOR, '');
 
     if (isTypeBlocks) {
       options = {
-        closest: DEFAULT_COMPLETION_OPTIONS.closest,
+        closest: CONTENT_FOR_BLOCK_PARAMETERS.closest,
       };
     }
 
