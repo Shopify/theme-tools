@@ -1,20 +1,20 @@
 import {
   Config,
+  DocDefinition,
   JSONSourceCode,
   JSONValidator,
   LiquidSourceCode,
   Offense,
   SectionSchema,
-  SnippetDefinition,
   Theme,
   ThemeBlockSchema,
   toSourceCode as commonToSourceCode,
   check as coreCheck,
-  getSnippetDefinition,
+  extractDocDefinition,
+  filePathSupportsLiquidDoc,
   isBlock,
   isIgnored,
   isSection,
-  isSnippet,
   memo,
   path as pathUtils,
   toSchema,
@@ -120,18 +120,19 @@ export async function themeCheckRun(
     )
   ]));
   const docDefinitions = new Map(
-    theme
-      .filter((file) => isSnippet(file.uri))
-      .map((file) => [
-        path.relative(URI.file(root).toString(), file.uri),
-        memo(async (): Promise<SnippetDefinition | undefined> => {
-          const ast = file.ast;
-          if (!isLiquidHtmlNode(ast)) {
-            return undefined;
-          }
-          return getSnippetDefinition(ast, path.basename(file.uri, '.liquid'));
-        }),
-      ]),
+    theme.map((file) => [
+      path.relative(URI.file(root).toString(), file.uri),
+      memo(async (): Promise<DocDefinition | undefined> => {
+        const ast = file.ast;
+        if (!isLiquidHtmlNode(ast)) {
+          return undefined;
+        }
+        if (!filePathSupportsLiquidDoc(file.uri)) {
+          return undefined;
+        }
+        return extractDocDefinition(file.uri, ast);
+      }),
+    ]),
   );
 
   const offenses = await coreCheck(theme, config, {

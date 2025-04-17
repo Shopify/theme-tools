@@ -10,12 +10,12 @@ import {
 import { CURSOR, LiquidCompletionParams } from '../params';
 import { Provider } from './common';
 import { formatLiquidDocParameter } from '../../utils/liquidDoc';
-import { GetSnippetDefinitionForURI, getDefaultValueForType } from '@shopify/theme-check-common';
+import { GetDocDefinitionForURI, getDefaultValueForType } from '@shopify/theme-check-common';
 
 export type GetSnippetNamesForURI = (uri: string) => Promise<string[]>;
 
 export class RenderSnippetParameterCompletionProvider implements Provider {
-  constructor(private readonly getSnippetDefinitionForURI: GetSnippetDefinitionForURI) {}
+  constructor(private readonly getDocDefinitionForURI: GetDocDefinitionForURI) {}
 
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
@@ -34,8 +34,10 @@ export class RenderSnippetParameterCompletionProvider implements Provider {
     }
 
     const userInputStr = node.name?.replace(CURSOR, '') || '';
-    const snippetDefinition = await this.getSnippetDefinitionForURI(
+
+    const snippetDefinition = await this.getDocDefinitionForURI(
       params.textDocument.uri,
+      'snippets',
       parentNode.snippet.value,
     );
 

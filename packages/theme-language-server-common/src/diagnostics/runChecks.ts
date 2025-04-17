@@ -87,7 +87,7 @@ export function makeRunChecks(
           const uri = path.join(config.rootUri, relativePath);
           const doc = documentManager.get(uri);
           if (doc?.type !== SourceCodeType.LiquidHtml) return undefined;
-          return doc.getLiquidDoc(path.basename(uri, '.liquid'));
+          return doc.getLiquidDoc();
         },
       });
       const offenses = [...themeOffenses, ...cssOffenses];

@@ -1,15 +1,17 @@
-import { describe, beforeEach, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { HoverProvider } from '../HoverProvider';
 import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
-import { GetSnippetDefinitionForURI, SnippetDefinition } from '@shopify/theme-check-common';
+import { GetDocDefinitionForURI, DocDefinition } from '@shopify/theme-check-common';
 import '../../../../theme-check-common/src/test/test-setup';
+
+const uri = 'file:///snippets/product-card.liquid';
 
 describe('Module: RenderSnippetHoverProvider', async () => {
   let provider: HoverProvider;
-  let getSnippetDefinition: GetSnippetDefinitionForURI;
-  const mockSnippetDefinition: SnippetDefinition = {
-    name: 'product-card',
+  let getSnippetDefinition: GetDocDefinitionForURI;
+  const mockSnippetDefinition: DocDefinition = {
+    uri,
     liquidDoc: {
       parameters: [
         {
@@ -96,7 +98,10 @@ This is a description
     });
 
     it('should return null if no LiquidDocDefinition found', async () => {
-      getSnippetDefinition = async () => ({ name: 'unknown-snippet', liquidDoc: undefined });
+      getSnippetDefinition = async () => ({
+        uri,
+        liquidDoc: undefined,
+      });
       provider = createProvider(getSnippetDefinition);
       await expect(provider).to.hover(`{% render 'unknown-sni█ppet' %}`, `### unknown-snippet`);
     });
@@ -114,7 +119,7 @@ This is a description
 
     it('should wrap optional parameters in (Optional)', async () => {
       provider = createProvider(async () => ({
-        name: 'product-card',
+        uri,
         liquidDoc: {
           parameters: [
             {
@@ -142,7 +147,7 @@ This is a description
   });
 });
 
-const createProvider = (getSnippetDefinition: GetSnippetDefinitionForURI) => {
+const createProvider = (getSnippetDefinition: GetDocDefinitionForURI) => {
   return new HoverProvider(
     new DocumentManager(),
     {

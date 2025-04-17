@@ -11,4 +11,10 @@ export { ObjectAttributeCompletionProvider } from './ObjectAttributeCompletionPr
 export { ObjectCompletionProvider } from './ObjectCompletionProvider';
 export { TranslationCompletionProvider } from './TranslationCompletionProvider';
 export { RenderSnippetCompletionProvider } from './RenderSnippetCompletionProvider';
+export {
+  GetSnippetNamesForURI,
+  RenderSnippetParameterCompletionProvider,
+} from './RenderSnippetParameterCompletionProvider';
+export { LiquidDocTagCompletionProvider } from './LiquidDocTagCompletionProvider';
+export { LiquidDocParamTypeCompletionProvider } from './LiquidDocParamTypeCompletionProvider';
 export { Provider } from './common/Provider';

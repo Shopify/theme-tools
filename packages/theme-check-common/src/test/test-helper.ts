@@ -8,8 +8,8 @@ import {
   check as coreCheck,
   createCorrector,
   Dependencies,
+  extractDocDefinition,
   FixApplicator,
-  getSnippetDefinition,
   isBlock,
   isSection,
   JSONCorrector,
@@ -95,7 +95,7 @@ export async function check(
       if (!file || !isLiquidHtmlNode(file.ast)) {
         return undefined;
       }
-      return getSnippetDefinition(file.ast, path.basename(file.uri, '.liquid'));
+      return extractDocDefinition(file.uri, file.ast);
     },
     themeDocset: {
       async filters() {
