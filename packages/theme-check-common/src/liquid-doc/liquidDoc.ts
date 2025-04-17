@@ -5,6 +5,7 @@ import {
   LiquidDocExampleNode,
   LiquidDocParamNode,
   LiquidDocDescriptionNode,
+  LiquidDocPromptNode,
 } from '@shopify/liquid-html-parser';
 
 export type GetDocDefinitionForURI = (
@@ -25,7 +26,7 @@ type DocContent = {
 };
 
 interface LiquidDocNode {
-  nodeType: 'param' | 'example' | 'description';
+  nodeType: 'param' | 'example' | 'description' | 'prompt';
 }
 
 export interface LiquidDocParameter extends LiquidDocNode {
@@ -58,40 +59,47 @@ export function hasLiquidDoc(snippet: LiquidHtmlNode): boolean {
 
 export function extractDocDefinition(uri: UriString, ast: LiquidHtmlNode): DocDefinition {
   let hasDocTag = false;
-  const nodes: (LiquidDocParameter | LiquidDocExample | LiquidDocDescription)[] = visit<
-    SourceCodeType.LiquidHtml,
-    LiquidDocParameter | LiquidDocExample | LiquidDocDescription
-  >(ast, {
-    LiquidRawTag(node) {
-      if (node.name === 'doc') hasDocTag = true;
-      return undefined;
-    },
-    LiquidDocParamNode(node: LiquidDocParamNode) {
-      return {
-        name: node.paramName.value,
-        description: node.paramDescription?.value ?? null,
-        type: node.paramType?.value ?? null,
-        required: node.required,
-        nodeType: 'param',
-      };
-    },
-    LiquidDocExampleNode(node: LiquidDocExampleNode) {
-      return {
-        content: handleMultilineIndentation(node.content.value.trim()),
-        nodeType: 'example',
-      };
-    },
-    LiquidDocDescriptionNode(node: LiquidDocDescriptionNode) {
-      return {
-        content: handleMultilineIndentation(node.content.value.trim()),
-        nodeType: 'description',
-      };
-    },
-  });
+  const nodes: (LiquidDocParameter | LiquidDocExample | LiquidDocDescription | LiquidDocPrompt)[] =
+    visit<
+      SourceCodeType.LiquidHtml,
+      LiquidDocParameter | LiquidDocExample | LiquidDocDescription | LiquidDocPrompt
+    >(ast, {
+      LiquidRawTag(node) {
+        if (node.name === 'doc') hasDocTag = true;
+        return undefined;
+      },
+      LiquidDocParamNode(node: LiquidDocParamNode) {
+        return {
+          name: node.paramName.value,
+          description: node.paramDescription?.value ?? null,
+          type: node.paramType?.value ?? null,
+          required: node.required,
+          nodeType: 'param',
+        };
+      },
+      LiquidDocExampleNode(node: LiquidDocExampleNode) {
+        return {
+          content: handleMultilineIndentation(node.content.value.trim()),
+          nodeType: 'example',
+        };
+      },
+      LiquidDocDescriptionNode(node: LiquidDocDescriptionNode) {
+        return {
+          content: handleMultilineIndentation(node.content.value.trim()),
+          nodeType: 'description',
+        };
+      },
+      LiquidDocPromptNode(node: LiquidDocPromptNode) {
+        return {
+          content: handleMultilineIndentation(node.content.value.trim()),
+          nodeType: 'prompt',
+        };
+      },
+    });
 
   if (!hasDocTag) return { uri };
 
-  const { parameters, examples, description } = nodes.reduce(
+  const { parameters, examples, description, prompt } = nodes.reduce(
     (acc, node) => {
       if (node.nodeType === 'param') {
         acc.parameters.push(node as LiquidDocParameter);
@@ -99,6 +107,8 @@ export function extractDocDefinition(uri: UriString, ast: LiquidHtmlNode): DocDe
         acc.examples.push(node as LiquidDocExample);
       } else if (node.nodeType === 'description' && !acc.description) {
         acc.description = node as LiquidDocDescription;
+      } else if (node.nodeType === 'prompt' && !acc.prompt) {
+        acc.prompt = node as LiquidDocPrompt;
       }
       return acc;
     },
@@ -106,6 +116,7 @@ export function extractDocDefinition(uri: UriString, ast: LiquidHtmlNode): DocDe
       parameters: [] as LiquidDocParameter[],
       examples: [] as LiquidDocExample[],
       description: undefined as LiquidDocDescription | undefined,
+      prompt: undefined as LiquidDocPrompt | undefined,
     },
   );
 
@@ -115,6 +126,7 @@ export function extractDocDefinition(uri: UriString, ast: LiquidHtmlNode): DocDe
       ...(parameters.length && { parameters }),
       ...(examples.length && { examples }),
       ...(description && { description }),
+      ...(prompt && { prompt }),
     },
   };
 }
