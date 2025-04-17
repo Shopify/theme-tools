@@ -23,6 +23,7 @@ type DocContent = {
   parameters?: LiquidDocParameter[];
   examples?: LiquidDocExample[];
   description?: LiquidDocDescription;
+  prompt?: LiquidDocPrompt;
 };
 
 interface LiquidDocNode {
