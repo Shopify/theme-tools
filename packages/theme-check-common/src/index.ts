@@ -48,6 +48,7 @@ export * from './ignore';
 export * from './json';
 export * from './JSONValidator';
 export * as path from './path';
+export * from './tags/content-for';
 export * from './to-schema';
 export * from './to-source-code';
 export * from './types';

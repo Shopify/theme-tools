@@ -6,13 +6,14 @@ import { TextEdit, InsertTextFormat } from 'vscode-languageserver-protocol';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { CURSOR } from '../params';
 
-vi.mock('./data/contentForParameterCompletionOptions', async () => {
+vi.mock('@shopify/theme-check-common', async () => {
   const actual = (await vi.importActual(
-    './data/contentForParameterCompletionOptions',
-  )) as typeof import('./data/contentForParameterCompletionOptions');
+    '@shopify/theme-check-common',
+  )) as typeof import('@shopify/theme-check-common');
   return {
-    DEFAULT_COMPLETION_OPTIONS: {
-      ...actual.DEFAULT_COMPLETION_OPTIONS,
+    ...actual,
+    CONTENT_FOR_BLOCK_PARAMETERS: {
+      ...actual.CONTENT_FOR_BLOCK_PARAMETERS,
       // Add another option here so we can properly test some scenarios that
       // we wouldn't be able to otherwise.
       testOption: '',
