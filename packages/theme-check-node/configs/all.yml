@@ -52,7 +52,7 @@ DeprecatedFilter:
 DeprecatedTag:
   enabled: true
   severity: 1
-DuplicateRenderSnippetParams:
+DuplicateRenderSnippetArguments:
   enabled: true
   severity: 1
 EmptyBlockContent:
@@ -79,7 +79,7 @@ MatchingTranslations:
 MissingAsset:
   enabled: true
   severity: 0
-MissingRenderSnippetParams:
+MissingRenderSnippetArguments:
   enabled: true
   severity: 1
 MissingTemplate:
@@ -130,7 +130,7 @@ UniqueStaticBlockId:
 UnknownFilter:
   enabled: true
   severity: 0
-UnrecognizedRenderSnippetParams:
+UnrecognizedRenderSnippetArguments:
   enabled: true
   severity: 1
 UnsupportedDocTag:
@@ -163,7 +163,7 @@ ValidJSON:
 ValidLocalBlocks:
   enabled: true
   severity: 0
-ValidRenderSnippetParamTypes:
+ValidRenderSnippetArgumentTypes:
   enabled: true
   severity: 1
 ValidSchema:

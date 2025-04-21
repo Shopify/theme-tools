@@ -46,9 +46,9 @@ import { ValidJSON } from './valid-json';
 import { ValidDocParamNames } from './valid-doc-param-names';
 import { ValidDocParamTypes } from './valid-doc-param-types';
 import { ValidLocalBlocks } from './valid-local-blocks';
-import { MissingRenderSnippetParams } from './missing-render-snippet-params';
-import { UnrecognizedRenderSnippetParams } from './unrecognized-render-snippet-params';
-import { ValidRenderSnippetParamTypes } from './valid-render-snippet-param-types';
+import { MissingRenderSnippetArguments } from './missing-render-snippet-arguments';
+import { UnrecognizedRenderSnippetArguments } from './unrecognized-render-snippet-arguments';
+import { ValidRenderSnippetArgumentTypes } from './valid-render-snippet-argument-types';
 import { ValidSchema } from './valid-schema';
 import { ValidSchemaName } from './valid-schema-name';
 import { ValidSettingsKey } from './valid-settings-key';
@@ -57,7 +57,7 @@ import { ValidVisibleIf, ValidVisibleIfSettingsSchema } from './valid-visible-if
 import { VariableName } from './variable-name';
 import { AppBlockMissingSchema } from './app-block-missing-schema';
 import { UniqueSettingIds } from './unique-settings-id';
-import { DuplicateRenderSnippetParams } from './duplicate-render-snippet-params';
+import { DuplicateRenderSnippetArguments } from './duplicate-render-snippet-arguments';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -74,7 +74,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   DeprecatedFilter,
   DeprecatedTag,
   DeprecateLazysizes,
-  DuplicateRenderSnippetParams,
+  DuplicateRenderSnippetArguments,
   EmptyBlockContent,
   ImgWidthAndHeight,
   JSONMissingBlock,
@@ -115,9 +115,9 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidVisibleIf,
   ValidVisibleIfSettingsSchema,
   VariableName,
-  MissingRenderSnippetParams,
-  UnrecognizedRenderSnippetParams,
-  ValidRenderSnippetParamTypes,
+  MissingRenderSnippetArguments,
+  UnrecognizedRenderSnippetArguments,
+  ValidRenderSnippetArgumentTypes,
   ValidSchemaName,
 ];
 

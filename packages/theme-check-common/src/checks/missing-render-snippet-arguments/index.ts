@@ -4,15 +4,15 @@ import { LiquidDocParameter } from '../../liquid-doc/liquidDoc';
 import { isLiquidString } from '../utils';
 import { getDefaultValueForType } from '../../liquid-doc/utils';
 
-export const MissingRenderSnippetParams: LiquidCheckDefinition = {
+export const MissingRenderSnippetArguments: LiquidCheckDefinition = {
   meta: {
-    code: 'MissingRenderSnippetParams',
-    name: 'Missing Render Snippet Parameters',
+    code: 'MissingRenderSnippetArguments',
+    name: 'Missing Render Snippet Arguments',
     docs: {
       description:
-        'This check ensures that all required parameters are provided when rendering a snippet.',
+        'This check ensures that all required arguments are provided when rendering a snippet.',
       recommended: true,
-      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/missing-render-snippet-params',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/missing-render-snippet-arguments',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,
@@ -28,12 +28,12 @@ export const MissingRenderSnippetParams: LiquidCheckDefinition = {
     ) {
       for (const param of missingRequiredParams) {
         context.report({
-          message: `Missing required parameter '${param.name}' in render tag for snippet '${snippetName}'`,
+          message: `Missing required argument '${param.name}' in render tag for snippet '${snippetName}'`,
           startIndex: node.position.start,
           endIndex: node.position.end,
           suggest: [
             {
-              message: `Add required parameter '${param.name}'`,
+              message: `Add required argument '${param.name}'`,
               fix: (fixer) => {
                 const paramToAdd = `, ${param.name}: ${getDefaultValueForType(param.type)}`;
 

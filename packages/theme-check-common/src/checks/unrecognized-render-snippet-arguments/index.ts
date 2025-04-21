@@ -2,17 +2,17 @@ import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { LiquidNamedArgument, RenderMarkup } from '@shopify/liquid-html-parser';
 import { LiquidDocParameter } from '../../liquid-doc/liquidDoc';
 import { isLiquidString } from '../utils';
-import { isLastParam } from '../duplicate-render-snippet-params';
+import { isLastParam } from '../duplicate-render-snippet-arguments';
 
-export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
+export const UnrecognizedRenderSnippetArguments: LiquidCheckDefinition = {
   meta: {
-    code: 'UnrecognizedRenderSnippetParams',
-    name: 'Unrecognized Render Snippet Parameters',
+    code: 'UnrecognizedRenderSnippetArguments',
+    name: 'Unrecognized Render Snippet Arguments',
     docs: {
       description:
-        'This check ensures that no unknown parameters are used when rendering a snippet.',
+        'This check ensures that no unknown arguments are used when rendering a snippet.',
       recommended: true,
-      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/unrecognized-render-snippet-params',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/unrecognized-render-snippet-arguments',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,
@@ -28,14 +28,14 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
     ) {
       for (const param of unknownProvidedParams) {
         context.report({
-          message: `Unknown parameter '${param.name}' in render tag for snippet '${snippetName}'`,
+          message: `Unknown argument '${param.name}' in render tag for snippet '${snippetName}'`,
           startIndex: param.position.start,
           endIndex: param.position.end,
           suggest: [
             {
               message: `Remove '${param.name}'`,
               fix: (fixer) => {
-                // This parameter removal logic is duplicated in DuplicateRenderSnippetParams
+                // This argument removal logic is duplicated in DuplicateRenderSnippetArguments
                 // Consider extracting to a shared utility or simplifying the removal approach in the parsing steps.
                 // I chose not to do so here as I would like more examples to see how this should be done.
                 const sourceBeforeArg = node.source.slice(
@@ -78,7 +78,7 @@ export const UnrecognizedRenderSnippetParams: LiquidCheckDefinition = {
         const startIndex = variable.position.start + 1;
 
         context.report({
-          message: `Unknown parameter '${alias.value}' in render tag for snippet '${snippetName}'`,
+          message: `Unknown argument '${alias.value}' in render tag for snippet '${snippetName}'`,
           startIndex: startIndex,
           endIndex: alias.position.end,
           suggest: [

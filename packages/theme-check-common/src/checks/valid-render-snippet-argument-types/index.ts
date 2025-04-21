@@ -10,15 +10,15 @@ import {
 } from '../../liquid-doc/utils';
 import { StringCorrector } from '../../fixes';
 
-export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
+export const ValidRenderSnippetArgumentTypes: LiquidCheckDefinition = {
   meta: {
-    code: 'ValidRenderSnippetParamTypes',
-    name: 'Valid Render Snippet Parameter Types',
+    code: 'ValidRenderSnippetArgumentTypes',
+    name: 'Valid Render Snippet Argument Types',
     docs: {
       description:
-        'This check ensures that parameters passed to snippet match the expected types defined in the liquidDoc header if present.',
+        'This check ensures that arguments passed to snippet match the expected types defined in the liquidDoc header if present.',
       recommended: true,
-      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-render-snippet-param-types',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-render-snippet-argument-types',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,
@@ -105,7 +105,7 @@ export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
         );
 
         context.report({
-          message: `Type mismatch for parameter '${arg.name}': expected ${expectedType}, got ${actualType}`,
+          message: `Type mismatch for argument '${arg.name}': expected ${expectedType}, got ${actualType}`,
           startIndex: arg.value.position.start,
           endIndex: arg.value.position.end,
           suggest: suggestions,
@@ -141,7 +141,7 @@ export const ValidRenderSnippetParamTypes: LiquidCheckDefinition = {
             );
 
             context.report({
-              message: `Type mismatch for parameter '${node.alias.value}': expected ${paramIsDefinedWithType}, got ${providedParamType}`,
+              message: `Type mismatch for argument '${node.alias.value}': expected ${paramIsDefinedWithType}, got ${providedParamType}`,
               startIndex: node.variable.name.position.start,
               endIndex: node.variable.name.position.end,
               suggest: suggestions,

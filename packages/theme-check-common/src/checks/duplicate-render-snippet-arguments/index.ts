@@ -2,15 +2,15 @@ import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { LiquidNamedArgument, RenderMarkup } from '@shopify/liquid-html-parser';
 import { isLiquidString } from '../utils';
 
-export const DuplicateRenderSnippetParams: LiquidCheckDefinition = {
+export const DuplicateRenderSnippetArguments: LiquidCheckDefinition = {
   meta: {
-    code: 'DuplicateRenderSnippetParams',
-    name: 'Duplicate Render Snippet Parameters',
+    code: 'DuplicateRenderSnippetArguments',
+    name: 'Duplicate Render Snippet Arguments',
     docs: {
       description:
-        'This check ensures that no duplicate parameter names are provided when rendering a snippet.',
+        'This check ensures that no duplicate argument names are provided when rendering a snippet.',
       recommended: true,
-      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/duplicate-render-snippet-params',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/duplicate-render-snippet-arguments',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,
@@ -32,14 +32,14 @@ export const DuplicateRenderSnippetParams: LiquidCheckDefinition = {
           const paramName = param.name;
           if (encounteredParams.has(paramName) || paramName === node.alias?.value) {
             context.report({
-              message: `Duplicate parameter '${paramName}' in render tag for snippet '${snippetName}'.`,
+              message: `Duplicate argument '${paramName}' in render tag for snippet '${snippetName}'.`,
               startIndex: param.position.start,
               endIndex: param.position.end,
               suggest: [
                 {
-                  message: `Remove duplicate parameter '${paramName}'`,
+                  message: `Remove duplicate argument '${paramName}'`,
                   fix: (fixer) => {
-                    // This parameter removal logic is duplicated in UnrecognizedRenderSnippetParams
+                    // This argument removal logic is duplicated in UnrecognizedRenderSnippetArguments
                     // Consider extracting to a shared utility or simplifying the removal approach in the parsing steps.
                     // I chose not to do so here as I would like more examples to see how this should be done.
                     const sourceBeforeArg = node.source.slice(
