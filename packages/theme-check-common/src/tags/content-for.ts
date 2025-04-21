@@ -13,6 +13,9 @@ export const RESERVED_CONTENT_FOR_ARGUMENTS = [
   'settings',
   'snippet',
   'snippets',
+  'src',
+  'style',
+  'styles',
   'template',
   'templates',
 ];
