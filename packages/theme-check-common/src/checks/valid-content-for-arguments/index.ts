@@ -1,5 +1,9 @@
 import { ContentForMarkup, NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
+import {
+  REQUIRED_CONTENT_FOR_ARGUMENTS,
+  RESERVED_CONTENT_FOR_ARGUMENTS,
+} from '../../tags/content-for';
 
 export const ValidContentForArguments: LiquidCheckDefinition = {
   meta: {
@@ -32,28 +36,8 @@ export const ValidContentForArguments: LiquidCheckDefinition = {
       },
 
       block: (node: ContentForMarkup) => {
-        const requiredArguments = ['id', 'type'];
-        const reservedArguments = [
-          'attributes',
-          'block',
-          'blocks',
-          'class',
-          'context',
-          'inherit',
-          'resource',
-          'resources',
-          'schema',
-          'section',
-          'sections',
-          'settings',
-          'snippet',
-          'snippets',
-          'template',
-          'templates',
-        ];
-
         // Make sure the id and string arguments are present and are strings
-        for (const requiredArgumentName of requiredArguments) {
+        for (const requiredArgumentName of REQUIRED_CONTENT_FOR_ARGUMENTS) {
           const arg = node.args.find((arg) => arg.name === requiredArgumentName);
 
           if (!arg) {
@@ -78,7 +62,7 @@ export const ValidContentForArguments: LiquidCheckDefinition = {
         }
 
         const problematicArguments = node.args.filter((arg) =>
-          reservedArguments.includes(arg.name),
+          RESERVED_CONTENT_FOR_ARGUMENTS.includes(arg.name),
         );
 
         for (const arg of problematicArguments) {
