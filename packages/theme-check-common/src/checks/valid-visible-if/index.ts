@@ -101,9 +101,11 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
           };
 
           for (const lookup of varLookupsOrWarning) {
-            if (lookup.name === 'section' && !isSectionSchema(schema)) {
+            if (lookup.name === 'section' && isBlockSchema(schema)) {
+              //no-op, we don't know what section this block will be used in, so we can't validate that the setting exists
+            } else if (lookup.name === 'section' && !isSectionSchema(schema)) {
               report(
-                `Invalid visible_if: can't refer to "section" when not in a section file.`,
+                `Invalid visible_if: can't refer to "section" when not in a section or block file.`,
                 lookup,
               );
             } else if (lookup.name === 'block' && !isBlockSchema(schema)) {
