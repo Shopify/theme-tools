@@ -44,10 +44,10 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
 
       expect(offenses).toHaveLength(2);
       expect(offenses[0].message).toBe(
-        "Unknown argument 'unknown_param' in render tag for snippet 'card'",
+        "Unknown argument 'unknown_param' in render tag for snippet 'card'.",
       );
       expect(offenses[1].message).toBe(
-        "Unknown argument 'second_unknown_param' in render tag for snippet 'card'",
+        "Unknown argument 'second_unknown_param' in render tag for snippet 'card'.",
       );
     });
   });
@@ -139,10 +139,10 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
       const offenses = await check(defaultSnippet, sourceCode);
 
       expect(offenses[0].message).toBe(
-        "Unknown argument 'unknown_param' in render tag for snippet 'card'",
+        "Unknown argument 'unknown_param' in render tag for snippet 'card'.",
       );
       expect(offenses[1].message).toBe(
-        "Unknown argument 'second_unknown_param' in render tag for snippet 'card'",
+        "Unknown argument 'second_unknown_param' in render tag for snippet 'card'.",
       );
 
       expect(offenses).toHaveLength(2);
@@ -239,7 +239,7 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
 
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toBe(
-        "Unknown argument 'unknown_param' in render tag for snippet 'card'",
+        "Unknown argument 'unknown_param' in render tag for snippet 'card'.",
       );
       expect(offenses[0].start.index).toBe(sourceCode.indexOf('with'));
       expect(offenses[0].end.index).toBe(
@@ -257,7 +257,7 @@ describe('Module: UnrecognizedRenderSnippetParams', () => {
 
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toBe(
-        "Unknown argument 'unknown_param' in render tag for snippet 'card'",
+        "Unknown argument 'unknown_param' in render tag for snippet 'card'.",
       );
       expect(offenses[0].start.index).toBe(sourceCode.indexOf('for'));
       expect(offenses[0].end.index).toBe(

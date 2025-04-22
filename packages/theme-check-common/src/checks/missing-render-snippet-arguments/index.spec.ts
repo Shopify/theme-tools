@@ -27,23 +27,23 @@ const defaultSnippet = `
   {% enddoc %}
 `;
 
-describe('Module: MissingRenderSnippetParams', () => {
+describe('Module: MissingRenderSnippetArguments', () => {
   describe('missing required arguments', () => {
     it('should report missing required arguments', async () => {
       const offenses = await check(defaultSnippet, `{% render 'card' %}`);
 
       expect(offenses).toHaveLength(4);
       expect(offenses[0].message).toBe(
-        "Missing required argument 'required_string' in render tag for snippet 'card'",
+        "Missing required argument 'required_string' in render tag for snippet 'card'.",
       );
       expect(offenses[1].message).toBe(
-        "Missing required argument 'required_number' in render tag for snippet 'card'",
+        "Missing required argument 'required_number' in render tag for snippet 'card'.",
       );
       expect(offenses[2].message).toBe(
-        "Missing required argument 'required_boolean' in render tag for snippet 'card'",
+        "Missing required argument 'required_boolean' in render tag for snippet 'card'.",
       );
       expect(offenses[3].message).toBe(
-        "Missing required argument 'required_object' in render tag for snippet 'card'",
+        "Missing required argument 'required_object' in render tag for snippet 'card'.",
       );
     });
   });
@@ -108,7 +108,7 @@ describe('Module: MissingRenderSnippetParams', () => {
 
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toBe(
-        "Missing required argument 'description' in render tag for snippet 'card'",
+        "Missing required argument 'description' in render tag for snippet 'card'.",
       );
 
       let result = applySuggestions(sourceCode, offenses[0]);
@@ -125,7 +125,7 @@ describe('Module: MissingRenderSnippetParams', () => {
 
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toBe(
-        "Missing required argument 'description' in render tag for snippet 'card'",
+        "Missing required argument 'description' in render tag for snippet 'card'.",
       );
 
       result = applySuggestions(sourceCode, offenses[0]);
@@ -236,7 +236,7 @@ describe('Module: MissingRenderSnippetParams', () => {
 
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toEqual(
-        "Missing required argument 'title' in render tag for snippet 'card'",
+        "Missing required argument 'title' in render tag for snippet 'card'.",
       );
 
       sourceCode = `{% render 'card' for array as unknown %}`;
@@ -250,7 +250,7 @@ describe('Module: MissingRenderSnippetParams', () => {
 
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toEqual(
-        "Missing required argument 'title' in render tag for snippet 'card'",
+        "Missing required argument 'title' in render tag for snippet 'card'.",
       );
     });
   });

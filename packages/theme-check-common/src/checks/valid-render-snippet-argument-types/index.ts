@@ -1,14 +1,14 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { LiquidNamedArgument, NodeTypes, RenderMarkup } from '@shopify/liquid-html-parser';
+import { NodeTypes, RenderMarkup } from '@shopify/liquid-html-parser';
 import { LiquidDocParameter } from '../../liquid-doc/liquidDoc';
-import { isLiquidString } from '../utils';
+import { inferArgumentType, isTypeCompatible } from '../../liquid-doc/utils';
 import {
-  inferArgumentType,
-  getDefaultValueForType,
-  BasicParamTypes,
-  isTypeCompatible,
-} from '../../liquid-doc/utils';
-import { StringCorrector } from '../../fixes';
+  findTypeMismatchParams,
+  generateTypeMismatchSuggestions,
+  getLiquidDocParams,
+  getSnippetName,
+  reportTypeMismatches,
+} from '../../liquid-doc/arguments';
 
 export const ValidRenderSnippetArgumentTypes: LiquidCheckDefinition = {
   meta: {
@@ -27,92 +27,6 @@ export const ValidRenderSnippetArgumentTypes: LiquidCheckDefinition = {
   },
 
   create(context) {
-    /**
-     * Generates suggestions for type mismatches based on the expected type and node positions
-     */
-    function generateTypeMismatchSuggestions(
-      expectedType: string,
-      startPosition: number,
-      endPosition: number,
-    ) {
-      const defaultValue = getDefaultValueForType(expectedType);
-      const suggestions = [];
-
-      // Only add the "replace with default" suggestion if the default is not an empty string
-      if (defaultValue !== '') {
-        suggestions.push({
-          message: `Replace with default value '${defaultValue}' for ${expectedType}`,
-          fix: (fixer: StringCorrector) => {
-            return fixer.replace(startPosition, endPosition, defaultValue);
-          },
-        });
-      }
-
-      // Always include the "remove value" suggestion
-      suggestions.push({
-        message: `Remove value`,
-        fix: (fixer: StringCorrector) => {
-          return fixer.remove(startPosition, endPosition);
-        },
-      });
-
-      return suggestions;
-    }
-
-    function findTypeMismatchParams(
-      liquidDocParameters: Map<string, LiquidDocParameter>,
-      providedParams: LiquidNamedArgument[],
-    ) {
-      const typeMismatchParams: LiquidNamedArgument[] = [];
-
-      for (const arg of providedParams) {
-        if (arg.value.type === NodeTypes.VariableLookup) {
-          continue;
-        }
-
-        const liquidDocParamDef = liquidDocParameters.get(arg.name);
-        if (liquidDocParamDef && liquidDocParamDef.type) {
-          const paramType = liquidDocParamDef.type.toLowerCase();
-          const supportedTypes = Object.keys(BasicParamTypes).map((type) => type.toLowerCase());
-          if (!supportedTypes.includes(paramType)) {
-            continue;
-          }
-
-          if (!isTypeCompatible(paramType, inferArgumentType(arg.value))) {
-            typeMismatchParams.push(arg);
-          }
-        }
-      }
-
-      return typeMismatchParams;
-    }
-
-    function reportTypeMismatches(
-      typeMismatchParams: LiquidNamedArgument[],
-      liquidDocParameters: Map<string, LiquidDocParameter>,
-    ) {
-      for (const arg of typeMismatchParams) {
-        const paramDef = liquidDocParameters.get(arg.name);
-        if (!paramDef || !paramDef.type) continue;
-
-        const expectedType = paramDef.type.toLowerCase();
-        const actualType = inferArgumentType(arg.value);
-
-        const suggestions = generateTypeMismatchSuggestions(
-          expectedType,
-          arg.value.position.start,
-          arg.value.position.end,
-        );
-
-        context.report({
-          message: `Type mismatch for argument '${arg.name}': expected ${expectedType}, got ${actualType}`,
-          startIndex: arg.value.position.start,
-          endIndex: arg.value.position.end,
-          suggest: suggestions,
-        });
-      }
-    }
-
     /**
      * Checks for type mismatches when alias is used with `for` or `with` syntax.
      * This can be refactored at a later date to share more code with regular named arguments as they are both backed by LiquidExpression nodes.
@@ -153,27 +67,21 @@ export const ValidRenderSnippetArgumentTypes: LiquidCheckDefinition = {
 
     return {
       async RenderMarkup(node: RenderMarkup) {
-        if (!isLiquidString(node.snippet)) {
-          return;
-        }
+        const snippetName = getSnippetName(node);
 
-        const snippetName = node.snippet.value;
-        const snippetDef =
-          context.getDocDefinition &&
-          (await context.getDocDefinition(`snippets/${snippetName}.liquid`));
+        if (!snippetName) return;
 
-        if (!snippetDef?.liquidDoc?.parameters) {
-          return;
-        }
-
-        const liquidDocParameters = new Map(
-          snippetDef.liquidDoc.parameters.map((p) => [p.name, p]),
+        const liquidDocParameters = await getLiquidDocParams(
+          context,
+          `snippets/${snippetName}.liquid`,
         );
+
+        if (!liquidDocParameters) return;
 
         findAndReportAliasType(node, liquidDocParameters);
 
         const typeMismatchParams = findTypeMismatchParams(liquidDocParameters, node.args);
-        reportTypeMismatches(typeMismatchParams, liquidDocParameters);
+        reportTypeMismatches(context, typeMismatchParams, liquidDocParameters);
       },
     };
   },
