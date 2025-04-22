@@ -109,6 +109,21 @@ describe('Module: ValidVisibleIf', () => {
     expect(offenses).toEqual([]);
   });
 
+  it('reports no error for a valid reference to a section schema (simple lookup) in a block schema', async () => {
+    const themeData = structuredClone(baseThemeData);
+
+    themeData['sections/example.liquid'].settings!.push({
+      id: 'some-other-setting',
+    });
+
+    themeData['blocks/example.liquid'].settings!.push({
+      visible_if: '{{ section.settings.some-section-setting }}',
+    });
+
+    const offenses = await checkRule(themeData);
+    expect(offenses).toEqual([]);
+  });
+
   it('reports no error for a valid reference to a section schema (expression)', async () => {
     const themeData = structuredClone(baseThemeData);
 
@@ -366,40 +381,6 @@ describe('Module: ValidVisibleIf', () => {
           "suggest": undefined,
           "type": "LiquidHtml",
           "uri": "file:///sections/example.liquid",
-        },
-      ]
-    `);
-  });
-
-  it('reports a detailed error when trying to use a section var in a block', async () => {
-    const themeData = structuredClone(baseThemeData);
-
-    themeData['blocks/example.liquid'].settings!.push({
-      id: 'some-other-setting',
-      visible_if: '{{ section.settings.some-block-setting != "null" }}',
-    });
-
-    const offenses = await checkRule(themeData);
-    expect(offenses).toMatchInlineSnapshot(`
-      [
-        {
-          "check": "ValidVisibleIf",
-          "end": {
-            "character": 59,
-            "index": 205,
-            "line": 10,
-          },
-          "fix": undefined,
-          "message": "Invalid visible_if: can't refer to "section" when not in a section file.",
-          "severity": 0,
-          "start": {
-            "character": 24,
-            "index": 170,
-            "line": 10,
-          },
-          "suggest": undefined,
-          "type": "LiquidHtml",
-          "uri": "file:///blocks/example.liquid",
         },
       ]
     `);
