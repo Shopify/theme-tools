@@ -30,6 +30,9 @@ DeprecatedFilter:
 DeprecatedTag:
   enabled: true
   severity: 1
+DuplicateContentForArguments:
+  enabled: true
+  severity: 1
 DuplicateRenderSnippetArguments:
   enabled: true
   severity: 1
@@ -57,6 +60,9 @@ MatchingTranslations:
 MissingAsset:
   enabled: true
   severity: 0
+MissingContentForArguments:
+  enabled: true
+  severity: 1
 MissingRenderSnippetArguments:
   enabled: true
   severity: 1
@@ -108,6 +114,9 @@ UniqueStaticBlockId:
 UnknownFilter:
   enabled: true
   severity: 0
+UnrecognizedContentForArguments:
+  enabled: true
+  severity: 1
 UnrecognizedRenderSnippetArguments:
   enabled: true
   severity: 1
@@ -123,6 +132,9 @@ UnusedDocParam:
 ValidBlockTarget:
   enabled: true
   severity: 0
+ValidContentForArgumentTypes:
+  enabled: true
+  severity: 1
 ValidContentForArguments:
   enabled: true
   severity: 0

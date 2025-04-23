@@ -29,6 +29,7 @@ interface LiquidDocNode {
 }
 
 export interface LiquidDocParameter extends LiquidDocNode {
+  nodeType: 'param';
   name: string;
   description: string | null;
   type: string | null;

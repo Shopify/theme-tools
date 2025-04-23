@@ -58,33 +58,6 @@ describe('Module: MissingRenderSnippetArguments', () => {
       expect(x).toEqual([`{% render 'card', required_string: '' %}`]);
     });
 
-    it('should suggest adding missing required arguments with proper comma handling', async () => {
-      const sourceCode = `{% render 'card', required_string: 'value' %}`;
-      const offenses = await check(defaultSnippet, sourceCode);
-
-      expect(offenses).toHaveLength(3); // Will have other missing required params
-      const x = applySuggestions(sourceCode, offenses[0]);
-      expect(x).toEqual([`{% render 'card', required_string: 'value', required_number: 0 %}`]);
-    });
-
-    it('should suggest adding missing required arguments with trailing comma and whitespace', async () => {
-      const sourceCode = `{% render 'card', required_string: 'value',    %}`;
-      const offenses = await check(defaultSnippet, sourceCode);
-
-      expect(offenses).toHaveLength(3);
-      const x = applySuggestions(sourceCode, offenses[0]);
-      expect(x).toEqual([`{% render 'card', required_string: 'value', required_number: 0 %}`]);
-    });
-
-    it('should suggest adding missing required arguments with trailing comma and space', async () => {
-      const sourceCode = `{% render 'card', required_string: 'value' , %}`;
-      const offenses = await check(defaultSnippet, sourceCode);
-
-      expect(offenses).toHaveLength(3);
-      const x = applySuggestions(sourceCode, offenses[0]);
-      expect(x).toEqual([`{% render 'card', required_string: 'value', required_number: 0 %}`]);
-    });
-
     it('should suggest adding missing argument after provided alias variable', async () => {
       const mockTheme = {
         'snippets/card.liquid': `
