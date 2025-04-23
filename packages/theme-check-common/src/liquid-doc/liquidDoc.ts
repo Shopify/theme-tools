@@ -6,6 +6,8 @@ import {
   LiquidDocParamNode,
   LiquidDocDescriptionNode,
   LiquidDocPromptNode,
+  NodeTypes,
+  toLiquidHtmlAST,
 } from '@shopify/liquid-html-parser';
 
 export type GetDocDefinitionForURI = (
@@ -56,6 +58,43 @@ export function hasLiquidDoc(snippet: LiquidHtmlNode): boolean {
     },
   });
   return foundDocTag;
+}
+
+/**
+ * Parses Liquid documentation content and returns a DocDefinition.
+ *
+ * @param uri The URI of the file being processed
+ * @param source The full source of the file
+ * @param docContent The content of the doc tag to parse
+ * @param offset Position offset for correct source mapping
+ * @returns A DocDefinition containing the parsed documentation
+ */
+export function parseLiquidDoc(
+  uri: UriString,
+  source: string,
+  docContent: string,
+  offset: number = 0,
+): DocDefinition {
+  try {
+    // Parse the doc content using toLiquidHtmlAST with docOptions
+    const docAst = toLiquidHtmlAST(
+      source,
+      {
+        allowUnclosedDocumentNode: true,
+        mode: 'tolerant',
+      },
+      {
+        content: docContent,
+        offset,
+      },
+    );
+
+    // Extract doc definition from our AST
+    return extractDocDefinition(uri, docAst);
+  } catch (error) {
+    console.error('Error parsing Liquid doc content:', error);
+    return { uri };
+  }
 }
 
 export function extractDocDefinition(uri: UriString, ast: LiquidHtmlNode): DocDefinition {

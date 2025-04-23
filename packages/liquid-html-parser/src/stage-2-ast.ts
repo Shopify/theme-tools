@@ -74,6 +74,7 @@ import {
   LiquidHtmlConcreteNode,
   ConcreteLiquidTagBaseCase,
   ConcreteLiquidTagContentForMarkup,
+  toLiquidDocAST,
 } from './stage-1-cst';
 import { Comparators, NamedTags, NodeTypes, nonTraversableProperties, Position } from './types';
 import { assertNever, deepGet, dropLast } from './utils';
@@ -889,7 +890,40 @@ export function toLiquidHtmlAST(
     allowUnclosedDocumentNode: false,
     mode: 'tolerant',
   },
+  /**
+   * Optional parameters for parsing doc content specifically.
+   * When provided, the function will parse the content as LiquidDoc content
+   * rather than as a full HTML document.
+   */
+  docOptions?: {
+    /** The content of the doc block without the {% doc %} and {% enddoc %} tags */
+    content: string;
+    /** Position offset in the source for correct source mapping */
+    offset?: number;
+  },
 ): DocumentNode {
+  // If we have docOptions, use the specialized LiquidDoc parsing logic
+  if (docOptions) {
+    const offset = docOptions.offset ?? 0;
+
+    // Parse the doc content using toLiquidDocAST
+    const docNodes = toLiquidDocAST(source, docOptions.content, offset);
+
+    // Create a Document node with the parsed doc content as children
+    return {
+      type: NodeTypes.Document,
+      source: source,
+      _source: source,
+      children: Array.isArray(docNodes) ? docNodes : [docNodes],
+      name: '#document',
+      position: {
+        start: offset,
+        end: offset + docOptions.content.length,
+      },
+    };
+  }
+
+  // Otherwise, use the standard HTML parsing logic
   const cst = toLiquidHtmlCST(source, { mode: options.mode });
   const root: DocumentNode = {
     type: NodeTypes.Document,

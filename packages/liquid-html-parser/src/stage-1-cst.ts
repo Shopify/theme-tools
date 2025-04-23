@@ -1378,7 +1378,7 @@ function toCST<T>(
  *
  * `toCST` includes mappings and logic that are not needed for LiquidDoc so we're separating this logic
  */
-function toLiquidDocAST(source: string, matchingSource: string, offset: number) {
+export function toLiquidDocAST(source: string, matchingSource: string, offset: number) {
   // When we switch parser, our locStart and locEnd functions must account
   // for the offset of the {% doc %} markup
   const locStart = (tokens: Node[]) => offset + tokens[0].source.startIdx;
