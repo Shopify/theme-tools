@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { runLiquidCheck } from '../../test';
 import { UnrecognizedContentForArguments } from '.';
+import { RESERVED_CONTENT_FOR_ARGUMENTS } from '../../tags/content-for';
 
 function check(snippet: string, source: string) {
   return runLiquidCheck(
@@ -108,6 +109,34 @@ describe('Module: UnrecognizedContentForArguments', () => {
               <div>{{ description }}</div>
             `,
         },
+      );
+
+      expect(offenses).toHaveLength(0);
+    });
+
+    it('should not report when argument begins with `.closest`', async () => {
+      const offenses = await check(
+        `
+        {% doc %}
+          @param {string} title - The title of the card
+        {% enddoc %}
+        <div>{{ title }}</div>
+        `,
+        `{% content_for 'block', type: 'card', id: '123', closest.product: product %}`,
+      );
+
+      expect(offenses).toHaveLength(0);
+    });
+
+    it('should not report when argument is a reserved word', async () => {
+      const offenses = await check(
+        `
+        {% doc %}
+          @param {string} title - The title of the card
+        {% enddoc %}
+        <div>{{ title }}</div>
+        `,
+        `{% content_for 'block', type: 'card', id: '123', ${RESERVED_CONTENT_FOR_ARGUMENTS[0]}: product %}`,
       );
 
       expect(offenses).toHaveLength(0);

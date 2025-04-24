@@ -21,3 +21,5 @@ export const RESERVED_CONTENT_FOR_ARGUMENTS = [
 ];
 
 export const REQUIRED_CONTENT_FOR_ARGUMENTS = ['id', 'type'];
+
+export const CLOSEST_ARGUMENT = 'closest.';

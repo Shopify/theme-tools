@@ -1,6 +1,7 @@
 import { ContentForMarkup, NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import {
+  CLOSEST_ARGUMENT,
   REQUIRED_CONTENT_FOR_ARGUMENTS,
   RESERVED_CONTENT_FOR_ARGUMENTS,
 } from '../../tags/content-for';
@@ -24,7 +25,9 @@ export const ValidContentForArguments: LiquidCheckDefinition = {
   create(context) {
     const validationStrategies = {
       blocks: (node: ContentForMarkup) => {
-        const problematicArguments = node.args.filter((arg) => !arg.name.startsWith('closest.'));
+        const problematicArguments = node.args.filter(
+          (arg) => !arg.name.startsWith(CLOSEST_ARGUMENT),
+        );
 
         for (const arg of problematicArguments) {
           context.report({

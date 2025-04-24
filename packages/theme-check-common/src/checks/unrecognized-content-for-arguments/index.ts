@@ -6,6 +6,7 @@ import {
   reportUnknownArguments,
 } from '../../liquid-doc/arguments';
 import {
+  CLOSEST_ARGUMENT,
   REQUIRED_CONTENT_FOR_ARGUMENTS,
   RESERVED_CONTENT_FOR_ARGUMENTS,
 } from '../../tags/content-for';
@@ -44,7 +45,8 @@ export const UnrecognizedContentForArguments: LiquidCheckDefinition = {
 
         const unknownProvidedParams = node.args
           .filter((p) => !liquidDocParameters.has(p.name))
-          .filter((p) => !DEFAULT_CONTENT_FOR_ARGS.has(p.name));
+          .filter((p) => !DEFAULT_CONTENT_FOR_ARGS.has(p.name))
+          .filter((p) => !p.name.startsWith(CLOSEST_ARGUMENT));
 
         reportUnknownArguments(context, node, unknownProvidedParams, blockName);
       },
