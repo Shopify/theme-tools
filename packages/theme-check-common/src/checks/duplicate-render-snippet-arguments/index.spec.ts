@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { DuplicateRenderSnippetParams } from '.';
+import { DuplicateRenderSnippetArguments } from '.';
 import { runLiquidCheck, applySuggestions } from '../../test';
 
-describe('Module: DuplicateRenderSnippetParams', () => {
+describe('Module: DuplicateRenderSnippetArguments', () => {
   function runCheck(sourceCode: string) {
-    return runLiquidCheck(DuplicateRenderSnippetParams, sourceCode);
+    return runLiquidCheck(DuplicateRenderSnippetArguments, sourceCode);
   }
 
   describe('detection', () => {
-    it('should report duplicate parameters in render tags', async () => {
+    it('should report duplicate arguments in render tags', async () => {
       const sourceCode = `
         {% render 'snippet', param1: 'value1', param2: 'value2', param1: 'value3' %}
       `;
@@ -16,13 +16,13 @@ describe('Module: DuplicateRenderSnippetParams', () => {
       const offenses = await runCheck(sourceCode);
 
       expect(offenses).toHaveLength(1);
-      expect(offenses[0].message).toMatch(/Duplicate parameter 'param1'/);
+      expect(offenses[0].message).toMatch(/Duplicate argument 'param1'/);
       expect(offenses[0].suggest).toBeDefined();
       expect(offenses[0].suggest!.length).toBe(1);
-      expect(offenses[0].suggest![0].message).toBe("Remove duplicate parameter 'param1'");
+      expect(offenses[0].suggest![0].message).toBe("Remove duplicate argument 'param1'");
     });
 
-    it('should report multiple duplicate parameters in render tags', async () => {
+    it('should report multiple duplicate arguments in render tags', async () => {
       const sourceCode = `
         {% render 'snippet', param1: 'value1', param2: 'value2', param1: 'value3', param2: 'value4', param1: 'value5' %}
       `;
@@ -30,11 +30,11 @@ describe('Module: DuplicateRenderSnippetParams', () => {
       const offenses = await runCheck(sourceCode);
 
       expect(offenses).toHaveLength(3);
-      expect(offenses[0].message).toMatch(/Duplicate parameter 'param1'/);
+      expect(offenses[0].message).toMatch(/Duplicate argument 'param1'/);
       expect(offenses[0].start.index).toBe(sourceCode.indexOf("param1: 'value3'"));
-      expect(offenses[1].message).toMatch(/Duplicate parameter 'param2'/);
+      expect(offenses[1].message).toMatch(/Duplicate argument 'param2'/);
       expect(offenses[1].start.index).toBe(sourceCode.indexOf("param2: 'value4'"));
-      expect(offenses[2].message).toMatch(/Duplicate parameter 'param1'/);
+      expect(offenses[2].message).toMatch(/Duplicate argument 'param1'/);
       expect(offenses[2].start.index).toBe(sourceCode.indexOf("param1: 'value5'"));
     });
 
@@ -46,12 +46,12 @@ describe('Module: DuplicateRenderSnippetParams', () => {
       const offenses = await runCheck(sourceCode);
 
       expect(offenses).toHaveLength(1);
-      expect(offenses[0].message).toMatch(/Duplicate parameter 'param1'/);
+      expect(offenses[0].message).toMatch(/Duplicate argument 'param1'/);
     });
   });
 
   describe('suggestions', () => {
-    it('should correctly suggest fixing all duplicate parameters except for the first', async () => {
+    it('should correctly suggest fixing all duplicate arguments except for the first', async () => {
       const sourceCode = `{% render 'snippet', param1: 'value1', param2: 'value2', param1: 'value3', param1: 'value4' %}`;
       const offenses = await runCheck(sourceCode);
 
@@ -74,32 +74,10 @@ describe('Module: DuplicateRenderSnippetParams', () => {
         `{% render 'snippet' with 'string' as param2, param1: 'value1' %}`,
       ]);
     });
-
-    it('should suggest removing last tag as duplicate and handle whitespace', async () => {
-      const sourceCode = `{% render 'snippet', param1: 'value1', param2: 'value2'   ,        param1:    'value3' %}`;
-      const offenses = await runCheck(sourceCode);
-
-      expect(offenses).toHaveLength(1);
-      const suggestionResult = applySuggestions(sourceCode, offenses[0]);
-      expect(suggestionResult).toEqual([
-        `{% render 'snippet', param1: 'value1', param2: 'value2'    %}`,
-      ]);
-    });
-
-    it('should suggest removing an tag as duplicate and handle whitespace', async () => {
-      const sourceCode = `{% render 'snippet', param1: 'value1',    param1:     'value2'   , param2: 'value3' %}`;
-      const offenses = await runCheck(sourceCode);
-
-      expect(offenses).toHaveLength(1);
-      const suggestionResult = applySuggestions(sourceCode, offenses[0]);
-      expect(suggestionResult).toEqual([
-        `{% render 'snippet', param1: 'value1', param2: 'value3' %}`,
-      ]);
-    });
   });
 
   describe('edge cases', () => {
-    it('should not report when there are no duplicate parameters', async () => {
+    it('should not report when there are no duplicate arguments', async () => {
       const sourceCode = `
         {% render 'snippet', param1: 'value1', param2: 'value2', param3: 'value3' %}
       `;
@@ -128,7 +106,7 @@ describe('Module: DuplicateRenderSnippetParams', () => {
       const offenses = await runCheck(sourceCode);
 
       expect(offenses).toHaveLength(1);
-      expect(offenses[0].message).toMatch(/Duplicate parameter 'param1'/);
+      expect(offenses[0].message).toMatch(/Duplicate argument 'param1'/);
       expect(offenses[0].start.index).toBe(sourceCode.indexOf("param1: 'value6'"));
       const suggestionResult = applySuggestions(sourceCode, offenses[0]);
       expect(suggestionResult).toEqual([

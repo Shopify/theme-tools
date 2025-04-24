@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { runLiquidCheck, applySuggestions } from '../../test';
-import { ValidRenderSnippetParamTypes } from '.';
+import { ValidRenderSnippetArgumentTypes } from '.';
 import { BasicParamTypes } from '../../liquid-doc/utils';
 
 describe('Module: ValidRenderSnippetParamTypes', () => {
@@ -52,7 +52,7 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
           it(`should accept ${value} for ${test.type}`, async () => {
             const sourceCode = `{% render 'card', param: ${value} %}`;
             const offenses = await runLiquidCheck(
-              ValidRenderSnippetParamTypes,
+              ValidRenderSnippetArgumentTypes,
               sourceCode,
               undefined,
               {},
@@ -68,7 +68,7 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
           it(`should reject ${value} for ${test.type}`, async () => {
             const sourceCode = `{% render 'card', param: ${value} %}`;
             const offenses = await runLiquidCheck(
-              ValidRenderSnippetParamTypes,
+              ValidRenderSnippetArgumentTypes,
               sourceCode,
               undefined,
               {},
@@ -78,7 +78,7 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
             );
             expect(offenses).toHaveLength(1);
             expect(offenses[0].message).toBe(
-              `Type mismatch for parameter 'param': expected ${test.type}, got ${expectedType}`,
+              `Type mismatch for argument 'param': expected ${test.type}, got ${expectedType}`,
             );
           });
         });
@@ -90,7 +90,7 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
     it('should handle mixed case type annotations', async () => {
       const sourceCode = `{% render 'card', text: "hello", count: 5, flag: true, data: product %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -112,7 +112,7 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
     it('should ignore variable lookups', async () => {
       const sourceCode = `{% render 'card', title: product_title %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -131,7 +131,7 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
     it('should not report when snippet has no doc comment', async () => {
       const sourceCode = `{% render 'card', title: 123 %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -145,7 +145,7 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
     it('should not enforce unsupported types', async () => {
       const sourceCode = `{% render 'card', title: 123 %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -161,10 +161,10 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
       expect(offenses).toHaveLength(0);
     });
 
-    it('should not report for unrecognized parameters', async () => {
+    it('should not report for unrecognized arguments', async () => {
       const sourceCode = `{% render 'card', title: "hello", unrecognized: 123 %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -183,7 +183,7 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
     it('should report when `with` alias is used', async () => {
       const sourceCode = `{% render 'card' with 12 as title %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -198,14 +198,14 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
       );
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toBe(
-        "Type mismatch for parameter 'title': expected string, got number",
+        "Type mismatch for argument 'title': expected string, got number",
       );
     });
 
     it('should report when `for` alias is used', async () => {
       const sourceCode = `{% render 'card' for 123 as title %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -220,7 +220,7 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
       );
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toBe(
-        "Type mismatch for parameter 'title': expected string, got number",
+        "Type mismatch for argument 'title': expected string, got number",
       );
     });
   });
@@ -236,7 +236,7 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
     it('should suggest replacing with default value for type or removing value', async () => {
       const sourceCode = `{% render 'card', param: 123 %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -256,10 +256,10 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
       expect(suggestions?.[1]).toEqual(`{% render 'card', param:  %}`);
     });
 
-    it('should allow users to fix a single parameter when multiple are provided`', async () => {
+    it('should allow users to fix a single argument when multiple are provided`', async () => {
       const sourceCode = `{% render 'card', title: 123, count: 5 %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -276,17 +276,17 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
 
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toBe(
-        "Type mismatch for parameter 'title': expected string, got number",
+        "Type mismatch for argument 'title': expected string, got number",
       );
 
       const result = applySuggestions(sourceCode, offenses[0]);
       expect(result?.[0]).toEqual(`{% render 'card', title: '', count: 5 %}`);
     });
 
-    it('should handle parameters with trailing commas', async () => {
+    it('should handle arguments with trailing commas', async () => {
       const sourceCode = `{% render 'card', param: 123, %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -301,13 +301,13 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
       expect(result?.[0]).toEqual(`{% render 'card', param: '', %}`);
     });
 
-    it('should handle parameters with complex spacing', async () => {
+    it('should handle arguments with complex spacing', async () => {
       const sourceCode = `{% render 'card',
         title: 123,
         count: 5
       %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -330,10 +330,10 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
       %}`);
     });
 
-    it('should handle parameter with no space after colon', async () => {
+    it('should handle argument with no space after colon', async () => {
       const sourceCode = `{% render 'card', param:123 %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -348,10 +348,10 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
       expect(result?.[0]).toEqual(`{% render 'card', param:'' %}`);
     });
 
-    it('should handle parameter with multiple spaces after colon', async () => {
+    it('should handle argument with multiple spaces after colon', async () => {
       const sourceCode = `{% render 'card', param:     123 %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -366,12 +366,12 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
       expect(result?.[0]).toEqual(`{% render 'card', param:     '' %}`);
     });
 
-    it('should handle parameter with newlines', async () => {
+    it('should handle argument with newlines', async () => {
       const sourceCode = `{% render 'card', param: 
         123 
       %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -391,7 +391,7 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
     it('should suggest removal and replacement if expected type has a default value', async () => {
       const sourceCode = `{% render 'card', param: 123 %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -409,7 +409,7 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
     it("should only suggest removal if expected type default value is ''", async () => {
       const sourceCode = `{% render 'card', param: 123 %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -426,7 +426,7 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
     it('should handle when aliases `with` syntax is used', async () => {
       const sourceCode = `{% render 'card' with 123 as param %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -437,7 +437,7 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
 
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toBe(
-        "Type mismatch for parameter 'param': expected string, got number",
+        "Type mismatch for argument 'param': expected string, got number",
       );
 
       const result = applySuggestions(sourceCode, offenses[0]);
@@ -447,7 +447,7 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
     it('should handle when aliases `for` syntax is used', async () => {
       const sourceCode = `{% render 'card' for 123 as param %}`;
       const offenses = await runLiquidCheck(
-        ValidRenderSnippetParamTypes,
+        ValidRenderSnippetArgumentTypes,
         sourceCode,
         undefined,
         {},
@@ -458,7 +458,7 @@ describe('Module: ValidRenderSnippetParamTypes', () => {
 
       expect(offenses).toHaveLength(1);
       expect(offenses[0].message).toBe(
-        "Type mismatch for parameter 'param': expected string, got number",
+        "Type mismatch for argument 'param': expected string, got number",
       );
 
       const result = applySuggestions(sourceCode, offenses[0]);

@@ -14,6 +14,8 @@ import { DeprecateBgsizes } from './deprecate-bgsizes';
 import { DeprecateLazysizes } from './deprecate-lazysizes';
 import { DeprecatedFilter } from './deprecated-filter';
 import { DeprecatedTag } from './deprecated-tag';
+import { DuplicateRenderSnippetArguments } from './duplicate-render-snippet-arguments';
+import { DuplicateContentForArguments } from './duplicate-content-for-arguments';
 import { EmptyBlockContent } from './empty-block-content';
 import { ImgWidthAndHeight } from './img-width-and-height';
 import { JSONMissingBlock } from './json-missing-block';
@@ -22,6 +24,8 @@ import { LiquidFreeSettings } from './liquid-free-settings';
 import { LiquidHTMLSyntaxError } from './liquid-html-syntax-error';
 import { MatchingTranslations } from './matching-translations';
 import { MissingAsset } from './missing-asset';
+import { MissingContentForArguments } from './missing-content-for-arguments';
+import { MissingRenderSnippetArguments } from './missing-render-snippet-arguments';
 import { MissingTemplate } from './missing-template';
 import { PaginationSize } from './pagination-size';
 import { ParserBlockingScript } from './parser-blocking-script';
@@ -36,19 +40,20 @@ import { UndefinedObject } from './undefined-object';
 import { UniqueDocParamNames } from './unique-doc-param-names';
 import { UniqueStaticBlockId } from './unique-static-block-id';
 import { UnknownFilter } from './unknown-filter';
+import { UnrecognizedContentForArguments } from './unrecognized-content-for-arguments';
+import { UnrecognizedRenderSnippetArguments } from './unrecognized-render-snippet-arguments';
 import { UnusedAssign } from './unused-assign';
 import { UnsupportedDocTag } from './unsupported-doc-tag';
 import { UnusedDocParam } from './unused-doc-param';
 import { ValidContentForArguments } from './valid-content-for-arguments';
+import { ValidContentForArgumentTypes } from './valid-content-for-argument-types';
 import { ValidBlockTarget } from './valid-block-target';
 import { ValidHTMLTranslation } from './valid-html-translation';
 import { ValidJSON } from './valid-json';
 import { ValidDocParamNames } from './valid-doc-param-names';
 import { ValidDocParamTypes } from './valid-doc-param-types';
 import { ValidLocalBlocks } from './valid-local-blocks';
-import { MissingRenderSnippetParams } from './missing-render-snippet-params';
-import { UnrecognizedRenderSnippetParams } from './unrecognized-render-snippet-params';
-import { ValidRenderSnippetParamTypes } from './valid-render-snippet-param-types';
+import { ValidRenderSnippetArgumentTypes } from './valid-render-snippet-argument-types';
 import { ValidSchema } from './valid-schema';
 import { ValidSchemaName } from './valid-schema-name';
 import { ValidSettingsKey } from './valid-settings-key';
@@ -57,7 +62,6 @@ import { ValidVisibleIf, ValidVisibleIfSettingsSchema } from './valid-visible-if
 import { VariableName } from './variable-name';
 import { AppBlockMissingSchema } from './app-block-missing-schema';
 import { UniqueSettingIds } from './unique-settings-id';
-import { DuplicateRenderSnippetParams } from './duplicate-render-snippet-params';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -74,7 +78,8 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   DeprecatedFilter,
   DeprecatedTag,
   DeprecateLazysizes,
-  DuplicateRenderSnippetParams,
+  DuplicateContentForArguments,
+  DuplicateRenderSnippetArguments,
   EmptyBlockContent,
   ImgWidthAndHeight,
   JSONMissingBlock,
@@ -83,6 +88,8 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   LiquidHTMLSyntaxError,
   MatchingTranslations,
   MissingAsset,
+  MissingContentForArguments,
+  MissingRenderSnippetArguments,
   MissingTemplate,
   AppBlockMissingSchema,
   PaginationSize,
@@ -99,25 +106,26 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   UniqueSettingIds,
   UniqueStaticBlockId,
   UnknownFilter,
+  UnrecognizedContentForArguments,
+  UnrecognizedRenderSnippetArguments,
   UnsupportedDocTag,
   UnusedAssign,
   UnusedDocParam,
   ValidBlockTarget,
   ValidHTMLTranslation,
   ValidContentForArguments,
+  ValidContentForArgumentTypes,
   ValidJSON,
   ValidDocParamNames,
   ValidDocParamTypes,
   ValidLocalBlocks,
+  ValidRenderSnippetArgumentTypes,
   ValidSchema,
   ValidSettingsKey,
   ValidStaticBlockType,
   ValidVisibleIf,
   ValidVisibleIfSettingsSchema,
   VariableName,
-  MissingRenderSnippetParams,
-  UnrecognizedRenderSnippetParams,
-  ValidRenderSnippetParamTypes,
   ValidSchemaName,
 ];
 
