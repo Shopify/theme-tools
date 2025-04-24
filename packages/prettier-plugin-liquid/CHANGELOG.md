@@ -1,5 +1,13 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.9.3
+
+### Patch Changes
+
+- 067a75eb: Improve parsing logic around aliases
+- Updated dependencies [067a75eb]
+  - @shopify/liquid-html-parser@2.8.2
+
 ## 1.9.2
 
 ### Patch Changes
