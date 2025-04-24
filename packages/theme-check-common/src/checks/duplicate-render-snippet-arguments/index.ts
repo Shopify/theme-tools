@@ -6,6 +6,7 @@ export const DuplicateRenderSnippetArguments: LiquidCheckDefinition = {
   meta: {
     code: 'DuplicateRenderSnippetArguments',
     name: 'Duplicate Render Snippet Arguments',
+    aliases: ['DuplicateRenderSnippetParams'],
     docs: {
       description:
         'This check ensures that no duplicate argument names are provided when rendering a snippet.',

@@ -10,6 +10,7 @@ export const MissingRenderSnippetArguments: LiquidCheckDefinition = {
   meta: {
     code: 'MissingRenderSnippetArguments',
     name: 'Missing Render Snippet Arguments',
+    aliases: ['MissingRenderSnippetParams'],
     docs: {
       description:
         'This check ensures that all required arguments are provided when rendering a snippet.',

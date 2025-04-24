@@ -14,6 +14,7 @@ export const ValidRenderSnippetArgumentTypes: LiquidCheckDefinition = {
   meta: {
     code: 'ValidRenderSnippetArgumentTypes',
     name: 'Valid Render Snippet Argument Types',
+    aliases: ['ValidRenderSnippetParamTypes'],
     docs: {
       description:
         'This check ensures that arguments passed to snippet match the expected types defined in the liquidDoc header if present.',

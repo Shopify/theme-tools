@@ -11,6 +11,7 @@ export const UnrecognizedRenderSnippetArguments: LiquidCheckDefinition = {
   meta: {
     code: 'UnrecognizedRenderSnippetArguments',
     name: 'Unrecognized Render Snippet Arguments',
+    aliases: ['UnrecognizedRenderSnippetParams'],
     docs: {
       description:
         'This check ensures that no unknown arguments are used when rendering a snippet.',
