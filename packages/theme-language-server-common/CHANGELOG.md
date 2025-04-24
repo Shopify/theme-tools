@@ -1,5 +1,26 @@
 # @shopify/theme-language-server-common
 
+## 2.14.0
+
+### Minor Changes
+
+- a126ab54: Support `content_for` param completion using LiquidDoc
+
+### Patch Changes
+
+- 067a75eb: Improve parsing logic around aliases
+- aa43656b: [internal] Building blocks to support LiquidDoc for blocks
+- Updated dependencies [4d557619]
+- Updated dependencies [067a75eb]
+- Updated dependencies [aa43656b]
+- Updated dependencies [dccca5a5]
+- Updated dependencies [c0f42c37]
+- Updated dependencies [39339f88]
+- Updated dependencies [660bd7df]
+- Updated dependencies [c0f42c37]
+  - @shopify/theme-check-common@3.15.0
+  - @shopify/liquid-html-parser@2.8.2
+
 ## 2.13.2
 
 ### Patch Changes

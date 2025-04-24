@@ -1,5 +1,49 @@
 # @shopify/theme-check-common
 
+## 3.15.0
+
+### Minor Changes
+
+- 4d557619: Add `content_for` argument theme checks if static block has LiquidDoc
+
+  - DuplicateContentForArguments - Ensures arguments provided for `content_for` tag are unique
+  - MissingContentForArguments - Ensures all required arguments, as per LiquidDoc, are provided
+  - UnrecognizedContentForArguments - Ensures arguments provided exclusively match LiquidDoc params
+  - ValidContentForArgumentTypes - Ensures arguments match type defined in LiquidDoc
+
+- c0f42c37: Restrict LiquidDoc param names in blocks based on `content_for` tag params
+
+  - LiquidDoc inside blocks have limitations on names because `content_for` tag uses the following param names:
+    - id
+    - type
+    - attributes
+    - block
+    - blocks
+    - class
+    - context
+    - inherit
+    - resource
+    - resources
+    - schema
+    - section
+    - sections
+    - settings
+    - snippet
+    - snippets
+    - template
+    - templates
+
+### Patch Changes
+
+- 067a75eb: Improve parsing logic around aliases
+- aa43656b: [internal] Building blocks to support LiquidDoc for blocks
+- dccca5a5: Bugfix ensures `content_for` argument theme check allows `closest.` args
+- 39339f88: visible_if should not warn on use of 'section' in a block file
+- 660bd7df: Allow UndefinedObject check on snippets
+- c0f42c37: Add reserved parameters to the `content_for` tag
+- Updated dependencies [067a75eb]
+  - @shopify/liquid-html-parser@2.8.2
+
 ## 3.14.1
 
 ### Patch Changes

@@ -1,5 +1,52 @@
 # @shopify/theme-check-node
 
+## 3.15.0
+
+### Minor Changes
+
+- 4d557619: Add `content_for` argument theme checks if static block has LiquidDoc
+
+  - DuplicateContentForArguments - Ensures arguments provided for `content_for` tag are unique
+  - MissingContentForArguments - Ensures all required arguments, as per LiquidDoc, are provided
+  - UnrecognizedContentForArguments - Ensures arguments provided exclusively match LiquidDoc params
+  - ValidContentForArgumentTypes - Ensures arguments match type defined in LiquidDoc
+
+- c0f42c37: Restrict LiquidDoc param names in blocks based on `content_for` tag params
+
+  - LiquidDoc inside blocks have limitations on names because `content_for` tag uses the following param names:
+    - id
+    - type
+    - attributes
+    - block
+    - blocks
+    - class
+    - context
+    - inherit
+    - resource
+    - resources
+    - schema
+    - section
+    - sections
+    - settings
+    - snippet
+    - snippets
+    - template
+    - templates
+
+### Patch Changes
+
+- aa43656b: [internal] Building blocks to support LiquidDoc for blocks
+- Updated dependencies [4d557619]
+- Updated dependencies [067a75eb]
+- Updated dependencies [aa43656b]
+- Updated dependencies [dccca5a5]
+- Updated dependencies [c0f42c37]
+- Updated dependencies [39339f88]
+- Updated dependencies [660bd7df]
+- Updated dependencies [c0f42c37]
+  - @shopify/theme-check-common@3.15.0
+  - @shopify/theme-check-docs-updater@3.15.0
+
 ## 3.14.1
 
 ### Patch Changes
