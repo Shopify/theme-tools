@@ -54,7 +54,7 @@ export const UndefinedObject: LiquidCheckDefinition = {
 
     const themeDocset = context.themeDocset;
     const scopedVariables: Map<string, Scope[]> = new Map();
-    const globalVariables: Set<string> = new Set();
+    const fileScopedVariables: Set<string> = new Set();
     const variables: LiquidVariableLookup[] = [];
 
     function indexVariableScope(variableName: string | null, scope: Scope) {
@@ -68,7 +68,7 @@ export const UndefinedObject: LiquidCheckDefinition = {
       async LiquidDocParamNode(node: LiquidDocParamNode) {
         const paramName = node.paramName?.value;
         if (paramName) {
-          globalVariables.add(paramName);
+          fileScopedVariables.add(paramName);
         }
       },
 
@@ -144,7 +144,7 @@ export const UndefinedObject: LiquidCheckDefinition = {
       async onCodePathEnd() {
         const objects = await globalObjects(themeDocset, relativePath);
 
-        objects.forEach((obj) => globalVariables.add(obj.name));
+        objects.forEach((obj) => fileScopedVariables.add(obj.name));
 
         variables.forEach((variable) => {
           if (!variable.name) return;
@@ -152,7 +152,7 @@ export const UndefinedObject: LiquidCheckDefinition = {
           const isVariableDefined = isDefined(
             variable.name,
             variable.position,
-            globalVariables,
+            fileScopedVariables,
             scopedVariables,
           );
           if (isVariableDefined) return;
@@ -220,13 +220,13 @@ function getContextualObjects(relativePath: string): string[] {
 function isDefined(
   variableName: string,
   variablePosition: Position,
-  globalVariables: Set<string>,
+  fileScopedVariables: Set<string>,
   scopedVariables: Map<string, Scope[]>,
 ): boolean {
   /**
-   * Check if the variable is globally defined
+   * Check if the variable is defined in the file
    */
-  if (globalVariables.has(variableName)) {
+  if (fileScopedVariables.has(variableName)) {
     return true;
   }
 
@@ -236,7 +236,7 @@ function isDefined(
   const scopes = scopedVariables.get(variableName);
 
   /**
-   * If no specific scopes exist (and it wasn't global), it's undefined
+   * If no specific scopes exist (and it wasn't defined in the file), it's undefined
    */
   if (!scopes) {
     return false;
