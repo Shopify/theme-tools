@@ -1,5 +1,11 @@
 ## theme-check-vscode
 
+## 3.8.6
+
+### Patch Changes
+
+- 73ea0575: Improve syntax highlighting of Liquid as HTML attribute
+
 ## 3.8.5
 
 ### Patch Changes
