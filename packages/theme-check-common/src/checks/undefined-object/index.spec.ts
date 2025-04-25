@@ -406,4 +406,30 @@ describe('Module: UndefinedObject', () => {
     expect(offenses).toHaveLength(1);
     expect(offenses[0].message).toBe("Unknown object 'undefined_variable' used.");
   });
+
+  it('should not report an offense when a self defined variable is defined with a @param tag', async () => {
+    const sourceCode = `
+      {% doc %}
+        @param {string} text
+      {% enddoc %}
+
+      {% assign text = text | default: "value" %}
+    `;
+
+    const filePath = 'snippets/file.liquid';
+    const offenses = await runLiquidCheck(UndefinedObject, sourceCode, filePath);
+
+    expect(offenses).toHaveLength(0);
+  });
+
+  it('should report an offense when assigning an undefined variable to itself', async () => {
+    const sourceCode = `
+      {% assign my_var = my_var | default: "fallback" %}
+    `;
+
+    const offenses = await runLiquidCheck(UndefinedObject, sourceCode);
+
+    expect(offenses).toHaveLength(1);
+    expect(offenses[0].message).toBe("Unknown object 'my_var' used.");
+  });
 });
