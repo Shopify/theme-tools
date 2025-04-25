@@ -53,21 +53,22 @@ export const UndefinedObject: LiquidCheckDefinition = {
     }
 
     const themeDocset = context.themeDocset;
-    const variableScopes: Map<string, Scope[]> = new Map();
+    const scopedVariables: Map<string, Scope[]> = new Map();
+    const globalVariables: Set<string> = new Set();
     const variables: LiquidVariableLookup[] = [];
 
     function indexVariableScope(variableName: string | null, scope: Scope) {
       if (!variableName) return;
 
-      const indexedScope = variableScopes.get(variableName) ?? [];
-      variableScopes.set(variableName, indexedScope.concat(scope));
+      const indexedScope = scopedVariables.get(variableName) ?? [];
+      scopedVariables.set(variableName, indexedScope.concat(scope));
     }
 
     return {
       async LiquidDocParamNode(node: LiquidDocParamNode) {
         const paramName = node.paramName?.value;
         if (paramName) {
-          variableScopes.set(paramName, []);
+          globalVariables.add(paramName);
         }
       },
 
@@ -143,12 +144,17 @@ export const UndefinedObject: LiquidCheckDefinition = {
       async onCodePathEnd() {
         const objects = await globalObjects(themeDocset, relativePath);
 
-        objects.forEach((obj) => variableScopes.set(obj.name, []));
+        objects.forEach((obj) => globalVariables.add(obj.name));
 
         variables.forEach((variable) => {
           if (!variable.name) return;
 
-          const isVariableDefined = isDefined(variable.name, variable.position, variableScopes);
+          const isVariableDefined = isDefined(
+            variable.name,
+            variable.position,
+            globalVariables,
+            scopedVariables,
+          );
           if (isVariableDefined) return;
 
           context.report({
@@ -214,21 +220,30 @@ function getContextualObjects(relativePath: string): string[] {
 function isDefined(
   variableName: string,
   variablePosition: Position,
+  globalVariables: Set<string>,
   scopedVariables: Map<string, Scope[]>,
 ): boolean {
+  /**
+   * Check if the variable is globally defined
+   */
+  if (globalVariables.has(variableName)) {
+    return true;
+  }
+
+  /**
+   * Check if the variable is defined within a specific scope
+   */
   const scopes = scopedVariables.get(variableName);
-  /**
-   * If there's no scope, the variable is not defined.
-   */
-  if (!scopes) return false;
 
   /**
-   * If there are zero scopes, the variable is globally defined.
+   * If no specific scopes exist (and it wasn't global), it's undefined
    */
-  if (scopes.length === 0) return true;
+  if (!scopes) {
+    return false;
+  }
 
   /**
-   * Checks if a variable is defined within any of the scopes.
+   * Check if the variable's usage position falls within any of the defined scopes
    */
   return scopes.some((scope) => isDefinedInScope(variablePosition, scope));
 }
