@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 3.15.1
+
+### Patch Changes
+
+- d7949240: Fix bug where self-assigned variables were warned as an offense, even when defined by a @param
+
 ## 3.15.0
 
 ### Minor Changes
