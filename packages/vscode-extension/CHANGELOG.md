@@ -1,5 +1,11 @@
 ## theme-check-vscode
 
+## 3.8.7
+
+### Patch Changes
+
+- c0b29c44: Syntax highlighting bump of Liquid as Custom Element attribute
+
 ## 3.8.6
 
 ### Patch Changes
