@@ -244,7 +244,14 @@ describe('Module: LiquidObjectHoverProvider', async () => {
     );
   });
 
-  it('should return nothing if the thing is untyped', async () => {
-    await expect(provider).to.hover(`{{ unknown█ }}`, null);
+  it('should show a hover preview of the variable name when its type is unknown', async () => {
+    await expect(provider).to.hover(`{{ unknown█ }}`, '### unknown');
+  });
+
+  it('should return something if the thing is knowingly untyped', async () => {
+    await expect(provider).to.hover(
+      `{% assign src = product.featured_image.src %}{{ src█ }}`,
+      `### src`,
+    );
   });
 });
