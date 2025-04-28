@@ -373,14 +373,19 @@ type Identifier = string;
 type ObjectEntryName = ObjectEntry['name'];
 type FilterEntryName = FilterEntry['name'];
 
+/** Untyped is for declared variables with unknown type */
 const Untyped = 'untyped' as const;
 type Untyped = typeof Untyped;
+
+/** Unknown is for variables that don't exist, type would come from context (e.g. snippet var without LiquidDoc) */
+const Unknown = 'unknown' as const;
+type Unknown = typeof Untyped;
 
 const String = 'string' as const;
 type String = typeof String;
 
 /** A pseudo-type is the possible values of an ObjectEntry's return_type.type */
-export type PseudoType = ObjectEntryName | String | Untyped | 'number' | 'boolean';
+export type PseudoType = ObjectEntryName | String | Untyped | Unknown | 'number' | 'boolean';
 
 /**
  * A variable can have many types in the same file
@@ -743,14 +748,14 @@ function inferIdentifierType(
 
   const typeRanges = symbolsTable[identifier];
   if (!typeRanges) {
-    return Untyped;
+    return Unknown;
   }
 
   const typeRange = findLast(typeRanges, (tr) => isCorrectTypeRange(tr, node));
 
   return typeRange
     ? resolveTypeRangeType(typeRange.type, symbolsTable, objectMap, filtersMap)
-    : Untyped;
+    : Unknown;
 }
 
 /**

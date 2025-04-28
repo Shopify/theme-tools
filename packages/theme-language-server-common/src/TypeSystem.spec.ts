@@ -422,7 +422,7 @@ describe('Module: TypeSystem', () => {
         // This will be different on Windows ^^
         pathUtils.normalize(URI.from({ scheme: 'file', path: 'file.liquid' })),
       );
-      expect(inferredType).to.eql('untyped');
+      expect(inferredType).to.eql('unknown');
     }
   });
 
