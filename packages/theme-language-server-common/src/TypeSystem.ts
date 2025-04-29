@@ -638,6 +638,13 @@ function inferType(
     case NodeTypes.LiquidVariable: {
       if (thing.filters.length > 0) {
         const lastFilter = thing.filters.at(-1)!;
+        if (lastFilter.name === 'default') {
+          // default filter is a special case, we need to return the type of the expression
+          // instead of the filter.
+          if (lastFilter.args.length > 0 && lastFilter.args[0].type !== NodeTypes.NamedArgument) {
+            return inferType(lastFilter.args[0], symbolsTable, objectMap, filtersMap);
+          }
+        }
         const filterEntry = filtersMap[lastFilter.name];
         return filterEntry ? filterEntryReturnType(filterEntry) : Untyped;
       } else {

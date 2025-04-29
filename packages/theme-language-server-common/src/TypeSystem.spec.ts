@@ -36,7 +36,7 @@ describe('Module: TypeSystem', () => {
       {
         name: 'product',
         access: {
-          global: false,
+          global: true,
           parents: [],
           template: [],
         },
@@ -246,6 +246,27 @@ describe('Module: TypeSystem', () => {
     const xVariable = (ast as any).children[0].markup as AssignMarkup;
     const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
     expect(inferredType).to.equal('number');
+  });
+
+  describe('when using the default filter', () => {
+    it('should return the type of the default value literal', async () => {
+      const ast = toLiquidHtmlAST(`
+        {% assign x = x | default: 10 %}
+      `);
+      const xVariable = (ast as any).children[0].markup as AssignMarkup;
+      const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+      expect(inferredType).to.equal('number');
+    });
+
+    it('should return the type of the default value lookup', async () => {
+      const ast = toLiquidHtmlAST(`
+        {% assign d = product.featured_image %}
+        {% assign x = unknown | default: d %}
+      `);
+      const xVariable = (ast as any).children[1].markup as AssignMarkup;
+      const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+      expect(inferredType).to.equal('image');
+    });
   });
 
   it('should return the type of variables in for loop', async () => {
