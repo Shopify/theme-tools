@@ -1,5 +1,5 @@
 import { DocsetEntry, FilterEntry, ObjectEntry, TagEntry } from '@shopify/theme-check-common';
-import { ArrayType, PseudoType, docsetEntryReturnType, isArrayType } from '../TypeSystem';
+import { ArrayType, PseudoType, Unknown, docsetEntryReturnType, isArrayType } from '../TypeSystem';
 import { Attribute, Tag, Value } from './HtmlDocset';
 
 const HORIZONTAL_SEPARATOR = '\n\n---\n\n';
@@ -18,18 +18,18 @@ export function render(
 }
 
 export function renderHtmlEntry(entry: HtmlEntry, parentEntry?: HtmlEntry) {
-  return [title(entry, 'untyped'), htmlEntryBody(entry, parentEntry)].join('\n');
+  return [title(entry, Unknown), htmlEntryBody(entry, parentEntry)].join('\n');
 }
 
 function title(
   entry: DocsetEntry | ObjectEntry | FilterEntry | HtmlEntry,
   returnType?: PseudoType | ArrayType,
 ) {
-  returnType = returnType ?? docsetEntryReturnType(entry as ObjectEntry, 'untyped');
+  returnType = returnType ?? docsetEntryReturnType(entry as ObjectEntry, Unknown);
 
   if (isArrayType(returnType)) {
     return `### ${entry.name}: \`${returnType.valueType}[]\``;
-  } else if (returnType !== 'untyped') {
+  } else if (returnType !== Unknown) {
     return `### ${entry.name}: \`${returnType}\``;
   }
 
