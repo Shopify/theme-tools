@@ -10,7 +10,25 @@ import {
 import { memo } from './utils';
 
 const toFilterEntry = (name: string): FilterEntry => ({ name });
-const aliasedFilters = ['camelcase', 'handle', 't'];
+const aliasedFilters: [string, string][] = [
+  ['camelcase', 'camelize'],
+  ['handle', 'handleize'],
+  ['t', 'translate'],
+];
+
+const toAliasedFilterEntry =
+  (entries: FilterEntry[]) =>
+  ([alias, baseName]: [string, string]): FilterEntry => {
+    const baseEntry = entries.find((entry) => entry.name === baseName);
+    if (!baseEntry) {
+      return toFilterEntry(alias);
+    }
+    return {
+      ...baseEntry,
+      name: alias,
+    };
+  };
+
 const undocumentedFilters = [
   '_online_store_editor_live_setting',
   'addresses_url',
@@ -86,9 +104,10 @@ export class AugmentedThemeDocset implements ThemeDocset {
   public isAugmented = true;
 
   filters = memo(async (): Promise<FilterEntry[]> => {
+    const officialFilters = await this.themeDocset.filters();
     return [
-      ...(await this.themeDocset.filters()),
-      ...aliasedFilters.map(toFilterEntry),
+      ...officialFilters,
+      ...aliasedFilters.map(toAliasedFilterEntry(officialFilters)),
       ...undocumentedFilters.map(toFilterEntry),
     ];
   });
