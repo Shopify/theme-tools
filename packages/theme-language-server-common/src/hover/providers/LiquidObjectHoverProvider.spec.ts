@@ -251,7 +251,7 @@ describe('Module: LiquidObjectHoverProvider', async () => {
   it('should return something if the thing is knowingly untyped', async () => {
     await expect(provider).to.hover(
       `{% assign src = product.featured_image.src %}{{ src█ }}`,
-      `### src`,
+      `### src: \`untyped\``,
     );
   });
 

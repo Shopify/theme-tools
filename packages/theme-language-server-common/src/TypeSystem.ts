@@ -374,12 +374,12 @@ type ObjectEntryName = ObjectEntry['name'];
 type FilterEntryName = FilterEntry['name'];
 
 /** Untyped is for declared variables with unknown type */
-const Untyped = 'untyped' as const;
-type Untyped = typeof Untyped;
+export const Untyped = 'untyped' as const;
+export type Untyped = typeof Untyped;
 
 /** Unknown is for variables that don't exist, type would come from context (e.g. snippet var without LiquidDoc) */
-const Unknown = 'unknown' as const;
-type Unknown = typeof Untyped;
+export const Unknown = 'unknown' as const;
+export type Unknown = typeof Untyped;
 
 const String = 'string' as const;
 type String = typeof String;
