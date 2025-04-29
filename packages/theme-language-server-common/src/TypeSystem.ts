@@ -27,6 +27,7 @@ import {
   FETCHED_METAFIELD_CATEGORIES,
   BasicParamTypes,
   getValidParamTypes,
+  parseParamType,
 } from '@shopify/theme-check-common';
 import {
   GetThemeSettingsSchemaForURI,
@@ -659,20 +660,32 @@ function inferType(
 }
 
 function inferLiquidDocParamType(node: LiquidDocParamNode, liquidDrops: ObjectEntry[]) {
-  if (
-    !node.paramType ||
-    // BasicParamTypes.Object does not map to any specific
-    // type in the type system.
-    node.paramType.value === BasicParamTypes.Object
-  ) {
-    return Untyped;
+  const paramTypeValue = node.paramType?.value;
+
+  if (!paramTypeValue) return Untyped;
+
+  const validParamTypes = getValidParamTypes(liquidDrops);
+
+  const parsedParamType = parseParamType(new Set(validParamTypes.keys()), paramTypeValue);
+
+  if (!parsedParamType) return Untyped;
+
+  const [type, isArray] = parsedParamType;
+
+  let transformedParamType;
+
+  // BasicParamTypes.Object does not map to any specific type in the type system.
+  if (type === BasicParamTypes.Object) {
+    transformedParamType = Untyped;
+  } else {
+    transformedParamType = type;
   }
 
-  if (getValidParamTypes(liquidDrops).has(node.paramType.value)) {
-    return node.paramType.value;
+  if (isArray) {
+    return arrayType(transformedParamType);
   }
 
-  return Untyped;
+  return transformedParamType;
 }
 
 function inferLookupType(

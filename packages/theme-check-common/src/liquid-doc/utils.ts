@@ -107,3 +107,19 @@ export function getValidParamTypes(objectEntries: ObjectEntry[]): Map<string, st
 
   return paramTypes;
 }
+
+export function parseParamType(
+  validParamTypes: Set<string>,
+  value: string,
+): [pseudoType: string, isArray: boolean] | undefined {
+  const paramTypeMatch = value.match(/^([a-z_]+)(\[\])?$/);
+
+  if (!paramTypeMatch) return undefined;
+
+  const extractedParamType = paramTypeMatch[1];
+  const isArrayType = !!paramTypeMatch[2];
+
+  if (!validParamTypes.has(extractedParamType)) return undefined;
+
+  return [extractedParamType, isArrayType];
+}
