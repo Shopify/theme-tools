@@ -2,9 +2,9 @@ import { NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidHtmlNode, GetDocDefinitionForURI } from '@shopify/theme-check-common';
 import { Hover, HoverParams } from 'vscode-languageserver';
 import { BaseHoverProvider } from '../BaseHoverProvider';
-import { formatLiquidDocParameter } from '../../utils/liquidDoc';
+import { formatLiquidDocContentMarkdown } from '../../utils/liquidDoc';
 
-export class RenderSnippetParameterHoverProvider implements BaseHoverProvider {
+export class ContentForTypeHoverProvider implements BaseHoverProvider {
   constructor(private getDocDefinitionForURI: GetDocDefinitionForURI) {}
 
   async hover(
@@ -13,34 +13,29 @@ export class RenderSnippetParameterHoverProvider implements BaseHoverProvider {
     params: HoverParams,
   ): Promise<Hover | null> {
     const parentNode = ancestors.at(-1);
+    const grandParentNode = ancestors.at(-2);
     if (
-      currentNode.type !== NodeTypes.NamedArgument ||
+      currentNode.type !== NodeTypes.String ||
       !parentNode ||
-      parentNode.type !== NodeTypes.RenderMarkup ||
-      parentNode.snippet.type !== NodeTypes.String
+      !grandParentNode ||
+      parentNode.type !== NodeTypes.NamedArgument ||
+      parentNode.name !== 'type' ||
+      grandParentNode.type !== NodeTypes.ContentForMarkup
     ) {
       return null;
     }
 
+    const blockName = currentNode.value;
     const docDefinition = await this.getDocDefinitionForURI(
       params.textDocument.uri,
-      'snippets',
-      parentNode.snippet.value,
+      'blocks',
+      blockName,
     );
-
-    const paramName = currentNode.name;
-    const hoveredParameter = docDefinition?.liquidDoc?.parameters?.find(
-      (parameter) => parameter.name === paramName,
-    );
-
-    if (!hoveredParameter) {
-      return null;
-    }
 
     return {
       contents: {
         kind: 'markdown',
-        value: formatLiquidDocParameter(hoveredParameter, true),
+        value: formatLiquidDocContentMarkdown(blockName, docDefinition),
       },
     };
   }

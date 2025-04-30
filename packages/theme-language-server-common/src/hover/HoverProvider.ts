@@ -24,6 +24,8 @@ import { HtmlAttributeValueHoverProvider } from './providers/HtmlAttributeValueH
 import { findCurrentNode } from '@shopify/theme-check-common';
 import { GetThemeSettingsSchemaForURI } from '../settings';
 import { LiquidDocTagHoverProvider } from './providers/LiquidDocTagHoverProvider';
+import { ContentForArgumentHoverProvider } from './providers/ContentForArgumentHoverProvider';
+import { ContentForTypeHoverProvider } from './providers/ContentForTypeHoverProvider';
 export class HoverProvider {
   private providers: BaseHoverProvider[] = [];
 
@@ -41,6 +43,8 @@ export class HoverProvider {
       getMetafieldDefinitions,
     );
     this.providers = [
+      new ContentForArgumentHoverProvider(getDocDefinitionForURI),
+      new ContentForTypeHoverProvider(getDocDefinitionForURI),
       new LiquidTagHoverProvider(themeDocset),
       new LiquidFilterHoverProvider(themeDocset),
       new LiquidObjectHoverProvider(typeSystem),

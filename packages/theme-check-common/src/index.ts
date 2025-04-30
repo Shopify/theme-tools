@@ -58,6 +58,7 @@ export * from './utils/types';
 export * from './utils/object';
 export * from './visitor';
 export * from './liquid-doc/liquidDoc';
+export { getBlockName } from './liquid-doc/arguments';
 export * from './liquid-doc/utils';
 
 const defaultErrorHandler = (_error: Error): void => {

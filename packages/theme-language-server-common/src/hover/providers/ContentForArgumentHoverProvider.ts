@@ -1,10 +1,10 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
-import { LiquidHtmlNode, GetDocDefinitionForURI } from '@shopify/theme-check-common';
+import { LiquidHtmlNode, GetDocDefinitionForURI, getBlockName } from '@shopify/theme-check-common';
 import { Hover, HoverParams } from 'vscode-languageserver';
 import { BaseHoverProvider } from '../BaseHoverProvider';
 import { formatLiquidDocParameter } from '../../utils/liquidDoc';
 
-export class RenderSnippetParameterHoverProvider implements BaseHoverProvider {
+export class ContentForArgumentHoverProvider implements BaseHoverProvider {
   constructor(private getDocDefinitionForURI: GetDocDefinitionForURI) {}
 
   async hover(
@@ -16,31 +16,36 @@ export class RenderSnippetParameterHoverProvider implements BaseHoverProvider {
     if (
       currentNode.type !== NodeTypes.NamedArgument ||
       !parentNode ||
-      parentNode.type !== NodeTypes.RenderMarkup ||
-      parentNode.snippet.type !== NodeTypes.String
+      parentNode.type !== NodeTypes.ContentForMarkup ||
+      parentNode.contentForType.type !== NodeTypes.String
     ) {
+      return null;
+    }
+
+    const blockName = getBlockName(parentNode);
+
+    if (!blockName) {
       return null;
     }
 
     const docDefinition = await this.getDocDefinitionForURI(
       params.textDocument.uri,
-      'snippets',
-      parentNode.snippet.value,
+      'blocks',
+      blockName,
     );
 
-    const paramName = currentNode.name;
-    const hoveredParameter = docDefinition?.liquidDoc?.parameters?.find(
-      (parameter) => parameter.name === paramName,
+    const hoverArgument = docDefinition?.liquidDoc?.parameters?.find(
+      (argument) => argument.name === currentNode.name,
     );
 
-    if (!hoveredParameter) {
+    if (!hoverArgument) {
       return null;
     }
 
     return {
       contents: {
         kind: 'markdown',
-        value: formatLiquidDocParameter(hoveredParameter, true),
+        value: formatLiquidDocParameter(hoverArgument, true),
       },
     };
   }
