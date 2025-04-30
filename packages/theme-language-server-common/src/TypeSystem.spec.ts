@@ -493,6 +493,27 @@ describe('Module: TypeSystem', () => {
       );
       expect(inferredType).to.eql('product');
     });
+
+    it(`should support array liquid doc params type: product[]`, async () => {
+      const sourceCode = `
+        {% doc %}
+          @param {product[]} data - some data
+        {% enddoc %}
+        {{ data }}
+      `;
+      const ast = toLiquidHtmlAST(sourceCode);
+      const variableOutput = ast.children[1];
+      assert(isLiquidVariableOutput(variableOutput));
+      const inferredType = await typeSystem.inferType(
+        variableOutput.markup,
+        ast,
+        'file:///snippets/example.liquid',
+      );
+      expect(inferredType).to.eql({
+        kind: 'array',
+        valueType: 'product',
+      });
+    });
   });
 
   describe('metafieldDefinitionsObjectMap', async () => {

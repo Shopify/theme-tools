@@ -1,5 +1,5 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { getValidParamTypes, BasicParamTypes } from '../../liquid-doc/utils';
+import { getValidParamTypes, parseParamType } from '../../liquid-doc/utils';
 
 export const ValidDocParamTypes: LiquidCheckDefinition = {
   meta: {
@@ -22,22 +22,29 @@ export const ValidDocParamTypes: LiquidCheckDefinition = {
       return {};
     }
 
+    // To avoid recalculating valid param types during theme-check, constructing
+    // the promise beforehand.
+    const validParamTypesPromise = context
+      .themeDocset!.liquidDrops()
+      .then((entries) => new Set(getValidParamTypes(entries).keys()));
+
     return {
       async LiquidDocParamNode(node) {
         if (!node.paramType) {
           return;
         }
 
-        const objectEntries = await context.themeDocset!.objects();
+        const parsedParamType = parseParamType(await validParamTypesPromise, node.paramType.value);
 
-        if (getValidParamTypes(objectEntries).has(node.paramType.value)) {
+        if (parsedParamType) {
           return;
         }
 
         context.report({
           message: `The parameter type '${node.paramType.value}' is not supported.`,
-          startIndex: node.paramType.position.start,
-          endIndex: node.paramType.position.end,
+          // Index is offset to include the curly brackets around the param type
+          startIndex: node.paramType.position.start - 1,
+          endIndex: node.paramType.position.end + 1,
           suggest: [
             {
               message: 'Remove invalid parameter type',
@@ -50,7 +57,7 @@ export const ValidDocParamTypes: LiquidCheckDefinition = {
                   node.source.slice(node.position.start, node.position.end).replace(
                     // We could have padded spaces around + inside the param type
                     // e.g. `{ string }`, `{string}`, or ` { string } `
-                    new RegExp(`\\s*\\{\\s*${node.paramType.value}\\s*\\}\\s*`),
+                    /\s*\{\s*[^\s]+\s*\}\s*/,
                     ' ',
                   ),
                 );
