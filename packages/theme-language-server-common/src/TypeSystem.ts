@@ -374,7 +374,7 @@ type Identifier = string;
 type ObjectEntryName = ObjectEntry['name'];
 type FilterEntryName = FilterEntry['name'];
 
-/** Untyped is for declared variables with unknown type */
+/** Untyped is for declared variables without a type (like `any`) */
 export const Untyped = 'untyped' as const;
 export type Untyped = typeof Untyped;
 
@@ -809,7 +809,7 @@ function inferArrayTypeLookupType(curr: ArrayType, lookup: LiquidExpression) {
       }
 
       default: {
-        return Untyped;
+        return Unknown;
       }
     }
   }
@@ -827,21 +827,61 @@ function inferPseudoTypePropertyType(
 ) {
   const parentEntry: ObjectEntry | undefined = objectMap[curr];
 
+  // When doing a non string lookup, we don't really know the type. e.g.
   // products[0]
   // products[true]
   // products[(0..10)]
-  // unknown.images
-  if (!parentEntry || lookup.type !== NodeTypes.String) {
+  if (lookup.type !== NodeTypes.String) {
+    return Untyped;
+  }
+
+  // When we don't have docs for the parent entry
+  if (!parentEntry) {
+    // It might be that the parent entry is a string.
+    // We do support a couple of properties for those
+    if (curr === 'string') {
+      switch (lookup.value) {
+        // some_string.first
+        // some_string.last
+        case 'first':
+        case 'last':
+          return 'string';
+
+        // some_string.size
+        case 'size':
+          return 'number';
+
+        default: {
+          // For the string type, any property access other than first/last/size
+          // is unknown. This is different from an untyped/any object where any
+          // property access would return untyped.
+          // String is a known type with specific properties, so accessing
+          // undefined properties returns an unknown.
+          return Unknown;
+        }
+      }
+    }
+
+    // Or it might be that the parent entry is untyped, so its subproperty
+    // could also be untyped (kind of like if `foo` is `any`, then `foo.bar` is `any`)
     return Untyped;
   }
 
   const propertyName = lookup.value;
-
   const property = parentEntry.properties?.find((property) => property.name === propertyName);
+
+  // When the propety is not known, return Untyped. e.g.
+  // product.foo
+  // product.bar
   if (!property) {
+    // Debating between returning Untyped or Unknown here
+    // Might be that we have outdated docs. Prob better to return Untyped.
     return Untyped;
   }
 
+  // When the property is known & we have docs for it, return its type. e.g.
+  // product.image
+  // product.images
   return objectEntryType(property);
 }
 

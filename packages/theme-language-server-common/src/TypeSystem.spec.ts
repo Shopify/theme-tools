@@ -1,5 +1,6 @@
 import {
   AssignMarkup,
+  LiquidVariable,
   LiquidVariableOutput,
   NamedTags,
   NodeTypes,
@@ -46,6 +47,16 @@ describe('Module: TypeSystem', () => {
             name: 'featured_image',
             description: 'ze best image for ze product',
             return_type: [{ type: 'image', name: '' }],
+          },
+          {
+            name: 'images',
+            description: 'all images for ze product',
+            return_type: [{ type: 'array', array_value: 'image' }],
+          },
+          {
+            name: 'title',
+            description: 'the title of the product',
+            return_type: [{ type: 'string', name: '' }],
           },
           {
             name: 'metafields',
@@ -242,10 +253,46 @@ describe('Module: TypeSystem', () => {
   });
 
   it('should return the type of filtered variables', async () => {
-    const ast = toLiquidHtmlAST(`{% assign x = all_products | size %}`);
+    const ast = toLiquidHtmlAST(`{% assign x = product | size %}`);
     const xVariable = (ast as any).children[0].markup as AssignMarkup;
     const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
     expect(inferredType).to.equal('number');
+  });
+
+  describe('when using string builtin methods', () => {
+    it('should return number for size', async () => {
+      const ast = toLiquidHtmlAST(`{{ product.title.size }}`);
+      const xVariable = (ast as any).children[0].markup as LiquidVariable;
+      const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+      expect(inferredType).to.equal('number');
+    });
+
+    ['first', 'last'].forEach((method) => {
+      it(`should return string for ${method}`, async () => {
+        const ast = toLiquidHtmlAST(`{{ product.title.${method} }}`);
+        const xVariable = (ast as any).children[0].markup as LiquidVariable;
+        const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+        expect(inferredType).to.equal('string');
+      });
+    });
+  });
+
+  describe('when using array builtin methods', () => {
+    it('should return number for size', async () => {
+      const ast = toLiquidHtmlAST(`{{ product.images.size }}`);
+      const xVariable = (ast as any).children[0].markup as LiquidVariable;
+      const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+      expect(inferredType).to.equal('number');
+    });
+
+    ['first', 'last'].forEach((method) => {
+      it(`should return the value type of the array for ${method}`, async () => {
+        const ast = toLiquidHtmlAST(`{{ product.images.${method} }}`);
+        const xVariable = (ast as any).children[0].markup as LiquidVariable;
+        const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+        expect(inferredType).to.equal('image');
+      });
+    });
   });
 
   describe('when using the default filter', () => {
