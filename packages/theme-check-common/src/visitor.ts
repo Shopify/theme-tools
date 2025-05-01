@@ -1,3 +1,4 @@
+import { NodeTypes as LiquidHtmlNodeTypes } from '@shopify/liquid-html-parser';
 import { AST, LiquidHtmlNode, NodeOfType, SourceCodeType, NodeTypes } from './types';
 
 export type VisitorMethod<S extends SourceCodeType, T, R> = (
@@ -102,7 +103,21 @@ export function findCurrentNode(
 }
 
 function isCovered(node: LiquidHtmlNode, offset: number): boolean {
-  return node.position.start < offset && offset <= node.position.end;
+  switch (node.type) {
+    // `product.█title` should cover `title`
+    case LiquidHtmlNodeTypes.String:
+    // `if █cond` should cover `cond`
+    case LiquidHtmlNodeTypes.VariableLookup:
+    // `if █cond and other` should cover `cond`
+    case LiquidHtmlNodeTypes.LogicalExpression:
+    // `if █cond < other` should cover `cond`
+    case LiquidHtmlNodeTypes.Comparison:
+      return node.position.start <= offset && offset <= node.position.end;
+
+    // default case avoids ambiguity by having the cursor in the [excluded, included] range
+    default:
+      return node.position.start < offset && offset <= node.position.end;
+  }
 }
 
 function size(node: LiquidHtmlNode): number {

@@ -82,6 +82,7 @@ describe('Module: LiquidObjectAttributeHoverProvider', async () => {
   describe('when hovering over an array built-in method', () => {
     it('should return the hover description of the object property', async () => {
       const contexts = [
+        '{{ product.images.█first }}',
         '{{ product.images.first█ }}',
         '{{ product.images.last█ }}',
         '{% echo product.images.first█ %}',
