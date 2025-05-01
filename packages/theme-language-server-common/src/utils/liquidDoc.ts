@@ -1,5 +1,10 @@
-import { getDefaultValueForType, LiquidDocParameter } from '@shopify/theme-check-common';
-import { SupportedDocTagTypes, BasicParamTypes } from '@shopify/theme-check-common';
+import {
+  BasicParamTypes,
+  DocDefinition,
+  getDefaultValueForType,
+  LiquidDocParameter,
+  SupportedDocTagTypes,
+} from '@shopify/theme-check-common';
 
 export function formatLiquidDocParameter(
   { name, type, description, required }: LiquidDocParameter,
@@ -59,4 +64,39 @@ export function getParameterCompletionTemplate(name: string, type: string | null
   const valueTemplate = paramDefaultValue === "''" ? `'$1'$0` : `\${1:${paramDefaultValue}}$0`;
 
   return `${name}: ${valueTemplate}`;
+}
+
+export function formatLiquidDocContentMarkdown(
+  name: string,
+  docDefinition?: DocDefinition,
+): string {
+  const liquidDoc = docDefinition?.liquidDoc;
+
+  if (!liquidDoc) {
+    return `### ${name}`;
+  }
+
+  const parts = [`### ${name}`];
+
+  if (liquidDoc.description) {
+    const description = liquidDoc.description.content;
+    parts.push('', '**Description:**', '\n', description);
+  }
+
+  if (liquidDoc.parameters?.length) {
+    const parameters = liquidDoc.parameters
+      .map((param) => formatLiquidDocParameter(param))
+      .join('\n');
+    parts.push('', '**Parameters:**', parameters);
+  }
+
+  if (liquidDoc.examples?.length) {
+    const examples = liquidDoc.examples
+      ?.map(({ content }) => `\`\`\`liquid\n${content}\n\`\`\``)
+      .join('\n');
+
+    parts.push('', '**Examples:**', examples);
+  }
+
+  return parts.join('\n');
 }

@@ -4,9 +4,9 @@ import { HoverProvider } from '../HoverProvider';
 import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 import { GetDocDefinitionForURI, DocDefinition } from '@shopify/theme-check-common';
 
-const uri = 'file:///snippets/product-card.liquid';
+const uri = 'file:///blocks/product-card.liquid';
 
-describe('Module: RenderSnippetParameterHoverProvider', async () => {
+describe('Module: ContentForArgumentHoverProvider', async () => {
   let provider: HoverProvider;
   let getSnippetDefinition: GetDocDefinitionForURI;
   const mockSnippetDefinition: DocDefinition = {
@@ -32,16 +32,22 @@ describe('Module: RenderSnippetParameterHoverProvider', async () => {
     it('should return null if doc definition not found', async () => {
       getSnippetDefinition = async () => undefined;
       provider = createProvider(getSnippetDefinition);
-      await expect(provider).to.hover(`{% render 'product-card' tit█le: 'value' %}`, null);
+      await expect(provider).to.hover(
+        `{% content_for 'block', type: 'product-card', tit█le: 'value' %}`,
+        null,
+      );
     });
 
     it('should return null if parameter not found in doc definition', async () => {
-      await expect(provider).to.hover(`{% render 'product-card' unknown-para█m: 'value' %}`, null);
+      await expect(provider).to.hover(
+        `{% content_for 'block', type: unknown-para█m: 'value' %}`,
+        null,
+      );
     });
 
     it('should return parameter info from doc definition', async () => {
       await expect(provider).to.hover(
-        `{% render 'product-card' ti█tle: 'My Product' %}`,
+        `{% content_for 'block', type: 'product-card', ti█tle: 'My Product' %}`,
         '### `title`: string\n\nThe title of the product',
       );
     });

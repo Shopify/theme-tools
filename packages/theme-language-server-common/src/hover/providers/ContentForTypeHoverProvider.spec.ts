@@ -1,14 +1,13 @@
-import { describe, beforeEach, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { HoverProvider } from '../HoverProvider';
 import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 import { GetDocDefinitionForURI, DocDefinition } from '@shopify/theme-check-common';
 
-const uri = 'file:///snippets/product-card.liquid';
+const uri = 'file:///blocks/product-card.liquid';
 
-describe('Module: RenderSnippetParameterHoverProvider', async () => {
+describe('Module: ContentForTypeHoverProvider', async () => {
   let provider: HoverProvider;
-  let getSnippetDefinition: GetDocDefinitionForURI;
   const mockSnippetDefinition: DocDefinition = {
     uri,
     liquidDoc: {
@@ -21,29 +20,51 @@ describe('Module: RenderSnippetParameterHoverProvider', async () => {
           nodeType: 'param',
         },
       ],
+      description: {
+        content: 'This is a description',
+        nodeType: 'description',
+      },
+      examples: [
+        {
+          content: '{{ product }}',
+          nodeType: 'example',
+        },
+      ],
     },
   };
 
   describe('hover', () => {
-    beforeEach(() => {
+    it('should return snippet definition with all parameters', async () => {
       provider = createProvider(async () => mockSnippetDefinition);
-    });
+      // prettier-ignore
+      const expectedHoverContent = 
+`### product-card
 
-    it('should return null if doc definition not found', async () => {
-      getSnippetDefinition = async () => undefined;
-      provider = createProvider(getSnippetDefinition);
-      await expect(provider).to.hover(`{% render 'product-card' tit█le: 'value' %}`, null);
-    });
+**Description:**
 
-    it('should return null if parameter not found in doc definition', async () => {
-      await expect(provider).to.hover(`{% render 'product-card' unknown-para█m: 'value' %}`, null);
-    });
 
-    it('should return parameter info from doc definition', async () => {
+This is a description
+
+**Parameters:**
+- \`title\`: string - The title of the product
+
+**Examples:**
+\`\`\`liquid
+{{ product }}
+\`\`\``;
+
       await expect(provider).to.hover(
-        `{% render 'product-card' ti█tle: 'My Product' %}`,
-        '### `title`: string\n\nThe title of the product',
+        `{% content_for 'block', type: 'product-car█d' %}`,
+        expectedHoverContent,
       );
+    });
+
+    it("should return nothing if not in content_for tag's type argument's value", async () => {
+      await expect(provider).to.hover(
+        `{% content_for 'block', type: 'product-card', id: 'some-█string' %}`,
+        null,
+      );
+      await expect(provider).to.hover(`{{ content_for 'bl█ock', type: 'product-card' }}`, null);
     });
   });
 });
