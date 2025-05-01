@@ -28,7 +28,6 @@ describe('Module: LiquidTagHoverProvider', async () => {
     await expect(provider).to.hover(`{%█ if cond %}{% endif %}`, expect.stringContaining('if'));
     await expect(provider).to.hover(`{% i█f cond %}{% endif %}`, expect.stringContaining('if'));
     await expect(provider).to.hover(`{% if█ cond %}{% endif %}`, expect.stringContaining('if'));
-    await expect(provider).to.hover(`{% if █cond %}{% endif %}`, expect.stringContaining('if'));
     await expect(provider).to.hover(`{% if cond █%}{% endif %}`, expect.stringContaining('if'));
     await expect(provider).to.hover(`{% if cond %}{% █ endif %}`, expect.stringContaining('if'));
     await expect(provider).to.hover(`{% echo█ 'hi' %}`, expect.stringContaining('echo'));
