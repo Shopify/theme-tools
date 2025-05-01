@@ -827,6 +827,7 @@ function inferPseudoTypePropertyType(
 ) {
   const parentEntry: ObjectEntry | undefined = objectMap[curr];
 
+  // When doing a non string lookup, we don't really know the type. e.g.
   // products[0]
   // products[true]
   // products[(0..10)]
@@ -834,7 +835,10 @@ function inferPseudoTypePropertyType(
     return Untyped;
   }
 
+  // When we don't have docs for the parent entry
   if (!parentEntry) {
+    // It might be that the parent entry is a string.
+    // We do support a couple of properties for those
     if (curr === 'string') {
       switch (lookup.value) {
         // some_string.first
@@ -858,23 +862,26 @@ function inferPseudoTypePropertyType(
       }
     }
 
-    // something.foo could be anything
+    // Or it might be that the parent entry is untyped, so its subproperty
+    // could also be untyped (kind of like if `foo` is `any`, then `foo.bar` is `any`)
     return Untyped;
   }
 
   const propertyName = lookup.value;
   const property = parentEntry.properties?.find((property) => property.name === propertyName);
 
-  // product.unknown
+  // When the propety is not known, return Untyped. e.g.
+  // product.foo
+  // product.bar
   if (!property) {
     // Debating between returning Untyped or Unknown here
-    // Might be that we have outdated docs. Prob better to return untyped here.
+    // Might be that we have outdated docs. Prob better to return Untyped.
     return Untyped;
   }
 
+  // When the property is known & we have docs for it, return its type. e.g.
   // product.image
   // product.images
-  // return the type of the property
   return objectEntryType(property);
 }
 
