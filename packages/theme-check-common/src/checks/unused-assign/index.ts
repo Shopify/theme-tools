@@ -55,8 +55,10 @@ export const UnusedAssign: LiquidCheckDefinition = {
           if (!usedVariables.has(variable) && !variable.startsWith('_')) {
             context.report({
               message: `The variable '${variable}' is assigned but not used`,
-              startIndex: node.position.start,
-              endIndex: node.position.end,
+              startIndex: isLiquidTagCapture(node)
+                ? node.blockStartPosition.start
+                : node.position.start,
+              endIndex: isLiquidTagCapture(node) ? node.blockStartPosition.end : node.position.end,
               suggest: [
                 {
                   message: `Remove the unused variable '${variable}'`,

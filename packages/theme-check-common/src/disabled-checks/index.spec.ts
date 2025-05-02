@@ -2,6 +2,7 @@ import { check } from '../test';
 import { Offense } from '..';
 import { describe, it, expect } from 'vitest';
 import { LiquidFilter, RenderMarkup } from './test-checks';
+import { UndefinedObject } from '../checks/undefined-object';
 
 const commentTypes = [
   (text: string) => `{% # ${text} %}`,
@@ -153,6 +154,108 @@ ${buildComment('theme-check-enable')}
           expectLiquidFilterOffense(offenses, file, 'asset-4');
           expectRenderMarkupOffense(offenses, 'something-4.liquid');
         }
+      });
+    });
+
+    describe('disable next line', () => {
+      it('should disable the next line if there is one', async () => {
+        const file = `{% # theme-check-disable-next-line %}
+{% render 'something' %}
+{% render 'other-thing' %}`;
+
+        const offenses = await check({ 'code.liquid': file }, checks);
+        expect(offenses).to.have.length(1);
+        expectRenderMarkupOffense(offenses, 'other-thing.liquid');
+      });
+
+      it("should not disable the liquid tag's children node if theme check is disabled", async () => {
+        const file = `{% # theme-check-disable-next-line %}
+{% if condition %}
+  {% render 'something' %}
+{% endif %}
+{% render 'other-thing' %}`;
+
+        const offenses = await check({ 'code.liquid': file }, checks);
+        expect(offenses).to.have.length(2);
+        expectRenderMarkupOffense(offenses, 'something.liquid');
+        expectRenderMarkupOffense(offenses, 'other-thing.liquid');
+      });
+
+      it('should disable the next line inside a liquid tag if there is one', async () => {
+        const file = `{% liquid
+  # theme-check-disable-next-line
+  render 'something'
+  render 'other-thing'
+%}`;
+
+        const offenses = await check({ 'code.liquid': file }, checks);
+        expect(offenses).to.have.length(1);
+        expectRenderMarkupOffense(offenses, 'other-thing.liquid');
+      });
+
+      it("should disable the parent node's next node if theme check is disabled as the last child node", async () => {
+        const file = `{% liquid
+  if condition
+    # theme-check-disable-next-line
+  elsif other_condition
+  endif
+%}`;
+
+        const offenses = await check({ 'code.liquid': file }, [UndefinedObject]);
+        expect(offenses).to.have.length(1);
+        expect(offenses).toContainEqual(
+          expect.objectContaining({
+            message: "Unknown object 'condition' used.",
+          }),
+        );
+      });
+
+      it('should not disable any checks if theme-check is disabled at the end', async () => {
+        const file = `{% liquid
+  echo hello
+  echo everyone
+  # theme-check-disable-next-line
+%}`;
+
+        const offenses = await check({ 'code.liquid': file }, [UndefinedObject]);
+        expect(offenses).to.have.length(2);
+        expect(offenses).toContainEqual(
+          expect.objectContaining({
+            message: "Unknown object 'hello' used.",
+          }),
+        );
+        expect(offenses).toContainEqual(
+          expect.objectContaining({
+            message: "Unknown object 'everyone' used.",
+          }),
+        );
+      });
+
+      it('should disable the next line if the content is an HTML tag with liquid', async () => {
+        const file = `{% # theme-check-disable-next-line %}
+<div class="{{ foo }}"></div>
+<div class="{{ bar }}"></div>`;
+
+        const offenses = await check({ 'code.liquid': file }, [UndefinedObject]);
+        expect(offenses).to.have.length(1);
+        expect(offenses).toContainEqual(
+          expect.objectContaining({
+            message: "Unknown object 'bar' used.",
+          }),
+        );
+      });
+
+      it('should not disable the next line if the specified rule does not exist', async () => {
+        const file = `{% # theme-check-disable-next-line FAKE_RULE %}
+<div class="{{ foo }}"></div>`;
+
+        const offenses = await check({ 'code.liquid': file }, [UndefinedObject]);
+        expect(offenses).to.have.length(1);
+        expect(offenses).toContainEqual(
+          expect.objectContaining({
+            message: "Unknown object 'foo' used.",
+          }),
+        );
       });
     });
   });
