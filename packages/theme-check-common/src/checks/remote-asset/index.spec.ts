@@ -202,6 +202,7 @@ describe('Module: RemoteAsset', () => {
     const sourceCode = `
     <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
     <link id="ModelViewerStyle" rel="stylesheet" href="https://cdn.shopify.com/shopifycloud/model-viewer-ui/assets/v1.0/model-viewer-ui.css" media="print" onload="this.media='all'">
+    <script id="hot-reload-client" src="/cdn/shopifycloud/theme-hot-reload/theme-hot-reload.js" defer></script>
     `;
 
     const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
