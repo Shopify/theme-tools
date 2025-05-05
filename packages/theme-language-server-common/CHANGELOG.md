@@ -1,5 +1,42 @@
 # @shopify/theme-language-server-common
 
+## 2.15.0
+
+### Minor Changes
+
+- a1fa7376: Support LiquidDoc param array types
+
+  - LiquidDoc param types supports 1D arrays as param types
+  - Square brackets are placed after the param type to denote arrays
+
+  E.g.
+
+  ```
+  {% doc %}
+    @param {product[]} my_products - an array of products
+    @param {string[]} my_strings - an array of strings
+  {% enddoc %}
+  ```
+
+- 19f5589b: Add `content_for` argument hover support
+
+  - Hovering over `type` argument inside `{% content_for 'block' %}` tag shows LiquidDoc inside that block
+  - Hovering over arguments inside `{% content_for 'block' %}` shows their respective LiquidDoc parameter description
+
+### Patch Changes
+
+- 4d2a2bac: Add hover support of builtin array and string properties
+- 37d7b2f3: [BugFix] Update `doc` tag code completion template
+- 1142ffea: Make the return type of the default filter be the one of its argument
+- 90577cd2: Fix hover when cursor is directly after a `.`
+- ea6440ab: Variable hover should always show something even if its type is unknown
+- Updated dependencies [37f41c6e]
+- Updated dependencies [7f243690]
+- Updated dependencies [a1fa7376]
+- Updated dependencies [90577cd2]
+- Updated dependencies [19f5589b]
+  - @shopify/theme-check-common@3.16.0
+
 ## 2.14.1
 
 ### Patch Changes
