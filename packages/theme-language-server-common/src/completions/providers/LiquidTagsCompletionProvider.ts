@@ -327,6 +327,8 @@ function toSnippet(tag: TagEntry) {
       return '{% elsif ${1:condition} %}';
     case 'else':
       return '{% else %}';
+    case 'doc':
+      return '{% doc %}\n  $0\n{% enddoc %}';
   }
 
   if (tag.syntax) {
