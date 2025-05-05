@@ -44,6 +44,9 @@ function isLiquidVariable(node: LiquidHtmlNode | string): node is LiquidVariable
 }
 
 function isUrlHostedbyShopify(url: string, allowedDomains: string[] = []): boolean {
+  if (/^\/cdn\//.test(url)) {
+    return true;
+  }
   try {
     const urlObj = new URL(url);
     return [...SHOPIFY_CDN_DOMAINS, ...allowedDomains].includes(urlObj.hostname);
