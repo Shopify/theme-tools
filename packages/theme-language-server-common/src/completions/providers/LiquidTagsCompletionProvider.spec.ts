@@ -3,8 +3,6 @@ import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
 import { MetafieldDefinitionMap, TagEntry } from '@shopify/theme-check-common';
 import { InsertTextFormat, InsertTextMode, TextEdit } from 'vscode-languageserver-protocol';
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import { CURSOR } from '../params';
 
 const caseSyntax = `{% case variable %}
   {% when first_value %}
@@ -76,6 +74,7 @@ export const tags: TagEntry[] = [
     ],
   },
   { name: 'echo' },
+  { name: 'doc' },
 ];
 
 describe('Module: LiquidTagsCompletionProvider', async () => {
@@ -102,6 +101,7 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
     await expect(provider).to.complete('{% ren', ['render']);
     await expect(provider).to.complete('{% rend', ['render']);
     await expect(provider).to.complete('{% fo', ['for']);
+    await expect(provider).to.complete('{% d', ['doc']);
   });
 
   it('should complete end tags with the correct thing', async () => {
