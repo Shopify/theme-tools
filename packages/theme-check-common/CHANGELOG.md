@@ -1,5 +1,30 @@
 # @shopify/theme-check-common
 
+## 3.16.0
+
+### Minor Changes
+
+- a1fa7376: Support LiquidDoc param array types
+
+  - LiquidDoc param types supports 1D arrays as param types
+  - Square brackets are placed after the param type to denote arrays
+
+  E.g.
+
+  ```
+  {% doc %}
+    @param {product[]} my_products - an array of products
+    @param {string[]} my_strings - an array of strings
+  {% enddoc %}
+  ```
+
+### Patch Changes
+
+- 37f41c6e: For aliased filters, show the docs of the base docset entry
+- 7f243690: Fix RemoteAsset false positive for /cdn URLs
+- 90577cd2: Fix hover when cursor is directly after a `.`
+- 19f5589b: [internal] Export `getBlockName` helper utility
+
 ## 3.15.1
 
 ### Patch Changes
