@@ -89,7 +89,9 @@ async function validateBlock(
     const schemaIncludesAtTheme = themeBlocks.includes('@theme');
     const schemaIncludesBlockType = themeBlocks.includes(blockType);
 
-    if (!isPrivateBlock ? schemaIncludesBlockType || schemaIncludesAtTheme : schemaIncludesBlockType) {
+    if (
+      !isPrivateBlock ? schemaIncludesBlockType || schemaIncludesAtTheme : schemaIncludesBlockType
+    ) {
       return;
     } else {
       const location = isNestedBlock(currentPath) ? 'blocks' : 'sections';
@@ -118,7 +120,15 @@ export async function getAllBlocks(
         const blockPath = nodeAtPath(ast, typePath)! as JSONNode;
 
         if (blockPath) {
-          await validateBlock(block.type, block.static, blockPath, ancestorType, currentPath, offset, context);
+          await validateBlock(
+            block.type,
+            block.static,
+            blockPath,
+            ancestorType,
+            currentPath,
+            offset,
+            context,
+          );
         }
       }
 

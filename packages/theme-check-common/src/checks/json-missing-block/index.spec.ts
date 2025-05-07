@@ -353,7 +353,7 @@ describe('Module: JsonMissingBlock', () => {
             "name": "Static Block",
           }
           {% endschema %}
-        `
+        `,
       };
 
       const offenses = await check(theme, [JSONMissingBlock]);
