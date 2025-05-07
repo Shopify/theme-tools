@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 3.16.1
+
+### Patch Changes
+
+- 83b1b760: No longer lint global objects as invalid parameters in the `ValidDocParamNames` check
+
 ## 3.16.0
 
 ### Minor Changes
