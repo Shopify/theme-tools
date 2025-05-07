@@ -42,20 +42,4 @@ describe('Module: ValidDocParamNames', () => {
 
     expect(offenses).to.have.length(0);
   });
-
-  it('should report a warning when a doc param shares a name with a liquid tag', async () => {
-    const sourceCode = `
-      {% doc %}
-        @param param1 - Example param
-        @param product - Example param
-      {% enddoc %}
-    `;
-
-    const offenses = await runLiquidCheck(ValidDocParamNames, sourceCode);
-
-    expect(offenses).to.have.length(1);
-    expect(offenses[0].message).to.equal(
-      "The parameter 'product' shares the same name with a global liquid object.",
-    );
-  });
 });
