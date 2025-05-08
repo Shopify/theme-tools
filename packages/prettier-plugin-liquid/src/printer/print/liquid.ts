@@ -6,6 +6,7 @@ import {
   LiquidDocParamNode,
   LiquidDocExampleNode,
   LiquidDocDescriptionNode,
+  LiquidDocPromptNode,
 } from '@shopify/liquid-html-parser';
 import { Doc, doc } from 'prettier';
 
@@ -598,6 +599,18 @@ export function printLiquidDocDescription(
   parts.push(content.trim());
 
   return parts;
+}
+
+// This is a platform controlled tag, so we don't really want to modify this at all to preserve the additional indent
+// This DOES mean we won't fix the formatting if a developer were to manually modify the @prompt.
+export function printLiquidDocPrompt(
+  path: AstPath<LiquidDocPromptNode>,
+  options: LiquidParserOptions,
+  _print: LiquidPrinter,
+  _args: LiquidPrinterArgs,
+): Doc {
+  const node = path.getValue();
+  return ['@prompt', node.content.value.trimEnd()];
 }
 
 function innerLeadingWhitespace(node: LiquidTag | LiquidBranch) {

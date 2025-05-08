@@ -1439,6 +1439,42 @@ describe('Unit: Stage 2 (AST)', () => {
         'with a description annotation\n',
       );
       expectPath(ast, 'children.0.body.nodes.1.isImplicit').to.eql(false);
+
+      ast = toLiquidAST(`
+{% doc -%}
+  @prompt
+    This is a prompt
+    It can have multiple lines
+{% enddoc %}`);
+      expectPath(ast, 'children.0.type').to.eql('LiquidRawTag');
+      expectPath(ast, 'children.0.name').to.eql('doc');
+      expectPath(ast, 'children.0.body.nodes.0.type').to.eql('LiquidDocPromptNode');
+      expectPath(ast, 'children.0.body.nodes.0.name').to.eql('prompt');
+      expectPath(ast, 'children.0.body.nodes.0.content.value').to.eql(
+        '\n    This is a prompt\n    It can have multiple lines\n',
+      );
+
+      ast = toLiquidAST(`
+{% doc -%}
+  this block was AI generated
+
+  @prompt
+    First prompt
+
+  @param {String} paramName - param description
+{% enddoc %}
+      `);
+      expectPath(ast, 'children.0.type').to.eql('LiquidRawTag');
+      expectPath(ast, 'children.0.name').to.eql('doc');
+      expectPath(ast, 'children.0.body.nodes.0.type').to.eql('LiquidDocDescriptionNode');
+      expectPath(ast, 'children.0.body.nodes.0.content.value').to.eql(
+        'this block was AI generated\n\n',
+      );
+      expectPath(ast, 'children.0.body.nodes.1.type').to.eql('LiquidDocPromptNode');
+      expectPath(ast, 'children.0.body.nodes.1.name').to.eql('prompt');
+      expectPath(ast, 'children.0.body.nodes.1.content.value').to.eql('\n    First prompt\n\n');
+      expectPath(ast, 'children.0.body.nodes.2.type').to.eql('LiquidDocParamNode');
+      expectPath(ast, 'children.0.body.nodes.2.paramName.value').to.eql('paramName');
     });
 
     it('should parse unclosed tables with assignments', () => {

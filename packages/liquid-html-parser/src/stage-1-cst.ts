@@ -89,6 +89,7 @@ export enum ConcreteNodeTypes {
   LiquidDocParamNameNode = 'LiquidDocParamNameNode',
   LiquidDocDescriptionNode = 'LiquidDocDescriptionNode',
   LiquidDocExampleNode = 'LiquidDocExampleNode',
+  LiquidDocPromptNode = 'LiquidDocPromptNode',
 }
 
 export const LiquidLiteralValues = {
@@ -139,6 +140,12 @@ export interface ConcreteLiquidDocExampleNode
   name: 'example';
   content: ConcreteTextNode;
   isInline: boolean;
+}
+
+export interface ConcreteLiquidDocPromptNode
+  extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocPromptNode> {
+  name: 'prompt';
+  content: ConcreteTextNode;
 }
 
 export interface ConcreteHtmlNodeBase<T> extends ConcreteBasicNode<T> {
@@ -488,7 +495,8 @@ export type LiquidCST = LiquidConcreteNode[];
 export type LiquidDocConcreteNode =
   | ConcreteLiquidDocParamNode
   | ConcreteLiquidDocExampleNode
-  | ConcreteLiquidDocDescriptionNode;
+  | ConcreteLiquidDocDescriptionNode
+  | ConcreteLiquidDocPromptNode;
 
 interface Mapping {
   [k: string]: number | TemplateMapping | TopLevelFunctionMapping;
@@ -1466,6 +1474,14 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       isInline: function (this: Node) {
         return !this.children[1].sourceString.includes('\n');
       },
+    },
+    promptNode: {
+      type: ConcreteNodeTypes.LiquidDocPromptNode,
+      name: 'prompt',
+      locStart,
+      locEnd,
+      source,
+      content: 1,
     },
     multilineTextContent: textNode(),
     textValue: textNode(),

@@ -409,6 +409,7 @@ function findCurrentNode(
       case NodeTypes.LiquidDocParamNode:
       case NodeTypes.LiquidDocExampleNode:
       case NodeTypes.LiquidDocDescriptionNode:
+      case NodeTypes.LiquidDocPromptNode:
       case NodeTypes.RenderAliasExpression: {
         break;
       }
