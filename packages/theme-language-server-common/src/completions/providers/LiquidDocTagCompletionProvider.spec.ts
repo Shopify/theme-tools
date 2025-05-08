@@ -66,4 +66,78 @@ describe('Module: LiquidDocTagCompletionProvider', async () => {
       [],
     );
   });
+
+  describe('nodes that accept free-form text', () => {
+    it('offers completions when @ is at the start of a new line following an implicit description', async () => {
+      await expect(provider).to.complete(
+        {
+          source: `{% doc %}
+          This is an implicit description
+          @█`,
+          relativePath: 'file://snippets/file.liquid',
+        },
+        ['param', 'example', 'description'],
+      );
+    });
+
+    it('offers completions when @ is at the start of a new line following a node that accepts free-form text', async () => {
+      await expect(provider).to.complete(
+        {
+          source: `{% doc %}
+          @prompt Text
+          @█`,
+          relativePath: 'file://snippets/file.liquid',
+        },
+        ['param', 'example', 'description'],
+      );
+
+      await expect(provider).to.complete(
+        {
+          source: `{% doc %}
+          @description Text
+          @█`,
+          relativePath: 'file://snippets/file.liquid',
+        },
+        ['param', 'example', 'description'],
+      );
+
+      await expect(provider).to.complete(
+        {
+          source: `{% doc %}
+          @example Text
+          @█`,
+          relativePath: 'file://snippets/file.liquid',
+        },
+        ['param', 'example', 'description'],
+      );
+    });
+
+    it('does not offer completions when @ is not at the start of a line', async () => {
+      await expect(provider).to.complete(
+        {
+          source: `{% doc %}
+          @prompt This is a promptwith @█`,
+          relativePath: 'file://snippets/file.liquid',
+        },
+        [],
+      );
+      await expect(provider).to.complete(
+        {
+          source: `{% doc %}
+          @description This is a description with @█`,
+          relativePath: 'file://snippets/file.liquid',
+        },
+        [],
+      );
+
+      await expect(provider).to.complete(
+        {
+          source: `{% doc %}
+          @example Here is an example with @`,
+          relativePath: 'file://snippets/file.liquid',
+        },
+        [],
+      );
+    });
+  });
 });
