@@ -1,5 +1,19 @@
 # @shopify/theme-check-common
 
+## 3.17.0
+
+### Minor Changes
+
+- c3504252: Introduce ability the disable theme checks for the next Liquid statement
+
+  - Add `{% # theme-check-disable-next-line %}` to disable theme checks on the next Liquid statement
+  - To disable a specific theme-check rule, add the name(s) after `theme-check-disable-next-line`
+    in a comma separated format
+
+### Patch Changes
+
+- 20625a1b: Fix validation for static blocks in JSON templates
+
 ## 3.16.1
 
 ### Patch Changes
