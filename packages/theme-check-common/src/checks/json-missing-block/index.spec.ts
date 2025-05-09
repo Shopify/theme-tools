@@ -302,6 +302,63 @@ describe('Module: JsonMissingBlock', () => {
       const erroredContent = content.slice(offenses[0].start.index, offenses[0].end.index);
       expect(erroredContent).to.equal('"_private_block"');
     });
+
+    it('should not report an offense when a static block exists and is not in the block liquid schema', async () => {
+      const theme: MockTheme = {
+        'templates/product.static.json': `{
+          "sections": {
+            "custom-section": {
+              "type": "custom-section",
+              "blocks": {
+                "child_block": {
+                  "type": "text"
+                },
+                "static_block": {
+                  "type": "static_block",
+                  "static": true
+                }
+              },
+              "block_order": ["child_block"]
+            }
+          },
+          "order": ["custom-section"]
+        }`,
+        'sections/custom-section.liquid': `
+          {% schema %}
+          {
+            "name": "Custom Section",
+            "blocks": [
+              {
+                "type": "text"
+              }
+            ]
+          }
+          {% endschema %}
+        `,
+        'blocks/text.liquid': `
+        {% schema %}
+          {
+            "name": "Text Block",
+            "blocks": [
+              {
+                "type": "@theme"
+              }
+            ]
+          }
+          {% endschema %}
+        `,
+        'blocks/static_block.liquid': `
+        {% schema %}
+          {
+            "name": "Static Block",
+          }
+          {% endschema %}
+        `,
+      };
+
+      const offenses = await check(theme, [JSONMissingBlock]);
+      expect(offenses).to.have.length(0);
+    });
   });
 
   describe('Edge case validation', () => {

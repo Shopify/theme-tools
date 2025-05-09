@@ -63,6 +63,7 @@ async function getThemeBlocks(
 
 async function validateBlock(
   blockType: string,
+  blockStatic: boolean,
   blockPath: JSONNode,
   ancestorType: string,
   currentPath: string[],
@@ -80,12 +81,17 @@ async function validateBlock(
       blockPath,
       context,
     );
+  } else if (blockStatic) {
+    // Static blocks are not required to be in the schema blocks array
+    return;
   } else {
     const isPrivateBlock = blockType.startsWith('_');
-    const isThemeInRootLevel = themeBlocks.includes('@theme');
-    const isPresetInRootLevel = themeBlocks.includes(blockType);
+    const schemaIncludesAtTheme = themeBlocks.includes('@theme');
+    const schemaIncludesBlockType = themeBlocks.includes(blockType);
 
-    if (!isPrivateBlock ? isPresetInRootLevel || isThemeInRootLevel : isPresetInRootLevel) {
+    if (
+      !isPrivateBlock ? schemaIncludesBlockType || schemaIncludesAtTheme : schemaIncludesBlockType
+    ) {
       return;
     } else {
       const location = isNestedBlock(currentPath) ? 'blocks' : 'sections';
@@ -114,7 +120,15 @@ export async function getAllBlocks(
         const blockPath = nodeAtPath(ast, typePath)! as JSONNode;
 
         if (blockPath) {
-          await validateBlock(block.type, blockPath, ancestorType, currentPath, offset, context);
+          await validateBlock(
+            block.type,
+            block.static,
+            blockPath,
+            ancestorType,
+            currentPath,
+            offset,
+            context,
+          );
         }
       }
 
