@@ -1,5 +1,6 @@
 export { LiquidTagHoverProvider } from './LiquidTagHoverProvider';
 export { LiquidFilterHoverProvider } from './LiquidFilterHoverProvider';
+export { LiquidFilterArgumentHoverProvider } from './LiquidFilterArgumentHoverProvider';
 export { LiquidObjectHoverProvider } from './LiquidObjectHoverProvider';
 export { LiquidObjectAttributeHoverProvider } from './LiquidObjectAttributeHoverProvider';
 export { HtmlTagHoverProvider } from './HtmlTagHoverProvider';
