@@ -24,7 +24,7 @@ export const JSONMissingBlock: JSONCheckDefinition = {
     return {
       async onCodePathEnd() {
         const schema = await getSchemaFromJSON(context);
-        const { ast, offset } = schema ?? {};
+        const { ast } = schema ?? {};
         if (!ast || ast instanceof Error) return;
         if (!schema) return;
 
@@ -41,7 +41,7 @@ export const JSONMissingBlock: JSONCheckDefinition = {
             ) {
               await getAllBlocks(
                 ast,
-                offset,
+                0,
                 section.type,
                 section.blocks,
                 ['sections', sectionKey, 'blocks'],
