@@ -6,7 +6,7 @@ import { isBlockFile, isSectionFile } from '../../utils';
 import { deepGet, isError, SourceCodeType } from '@shopify/theme-check-common';
 import { isSectionOrBlockSchema } from './BlockTypeCompletionProvider';
 import { GetTranslationsForURI } from '../../../translations';
-import { schemaSettingsPropertyCompletionItems } from './helpers/schemaSettings';
+import { getSectionBlockByName, schemaSettingsPropertyCompletionItems } from '../../schemaSettings';
 
 /**
  * The BlockSettingsPropertyCompletionProvider offers value completions of the
@@ -64,38 +64,48 @@ export class BlockSettingsPropertyCompletionProvider implements JSONCompletionPr
       return [];
     }
 
-    if (isSectionFile(doc.uri) && !isDefaultBlocksSettingsPath(path)) {
-    }
-
     const schema = await doc.getSchema();
 
     if (!schema || !isSectionOrBlockSchema(schema) || isError(schema.parsed)) {
       return [];
     }
 
-    const blockType = deepGet(schema.parsed, [...path.slice(0, -1), 'type']);
+    const blockType: string = deepGet(schema.parsed, [...path.slice(0, -1), 'type']);
 
     if (!blockType) {
       return [];
     }
 
-    const blockOriginSchema = await this.getThemeBlockSchema(doc.uri, blockType);
-
-    if (
-      !blockOriginSchema ||
-      isError(blockOriginSchema.parsed) ||
-      !isSectionOrBlockSchema(blockOriginSchema)
-    ) {
-      return [];
-    }
-
-    if (!blockOriginSchema.parsed?.settings || !Array.isArray(blockOriginSchema.parsed?.settings)) {
-      return [];
-    }
-
     const translations = await this.getDefaultSchemaTranslations(doc.textDocument.uri);
 
-    return schemaSettingsPropertyCompletionItems(blockOriginSchema.parsed, translations);
+    const localBlock = getSectionBlockByName(schema.parsed, blockType);
+
+    if (localBlock) {
+      if (localBlock.settings) {
+        return schemaSettingsPropertyCompletionItems(localBlock.settings, translations);
+      }
+    } else {
+      const blockOriginSchema = await this.getThemeBlockSchema(doc.uri, blockType);
+
+      if (
+        !blockOriginSchema ||
+        isError(blockOriginSchema.parsed) ||
+        !isSectionOrBlockSchema(blockOriginSchema)
+      ) {
+        return [];
+      }
+
+      if (
+        !blockOriginSchema.parsed?.settings ||
+        !Array.isArray(blockOriginSchema.parsed?.settings)
+      ) {
+        return [];
+      }
+
+      return schemaSettingsPropertyCompletionItems(blockOriginSchema.parsed.settings, translations);
+    }
+
+    return [];
   }
 }
 

@@ -1,15 +1,15 @@
 import { CompletionItemKind, MarkupKind } from 'vscode-json-languageservice';
-import { renderTranslation, translationValue } from '../../../../translations';
-import { Translations } from '@shopify/theme-check-common';
-import { JSONCompletionItem } from 'vscode-json-languageservice/lib/umd/jsonContributions';
+import { renderTranslation, translationValue } from '../translations';
+import { Section, Setting, Translations } from '@shopify/theme-check-common';
+import { JSONCompletionItem } from './completions/JSONCompletionProvider';
 
 export function schemaSettingsPropertyCompletionItems(
-  parsedSchema: any,
+  parsedSettings: Partial<Setting.Any>[],
   translations: Translations,
 ): JSONCompletionItem[] {
-  return parsedSchema.settings
-    .filter((setting: any) => setting.id)
-    .map((setting: any) => {
+  return parsedSettings
+    .filter((setting) => setting.id)
+    .map((setting) => {
       let docValue = '';
 
       if (setting.label) {
@@ -36,4 +36,18 @@ export function schemaSettingsPropertyCompletionItems(
         },
       };
     });
+}
+
+/*
+ * JSONCompletionProviders have to be more fault tolerant since there can be errors
+ * while typing the schema. This is why parsedSchemas (untyped) are used instead of
+ * validSchemas (typed).
+ */
+export function getSectionBlockByName(
+  parsedSchema: any = {},
+  blockName: string,
+): Partial<Section.LocalBlock> | undefined {
+  return parsedSchema.blocks
+    ?.filter((block: any) => 'name' in block)
+    ?.find((block: any) => block.type === blockName);
 }
