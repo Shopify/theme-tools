@@ -12,6 +12,7 @@ import { BaseHoverProvider } from './BaseHoverProvider';
 import {
   HtmlAttributeHoverProvider,
   HtmlTagHoverProvider,
+  LiquidFilterArgumentHoverProvider,
   LiquidFilterHoverProvider,
   LiquidObjectAttributeHoverProvider,
   LiquidObjectHoverProvider,
@@ -46,6 +47,7 @@ export class HoverProvider {
       new ContentForArgumentHoverProvider(getDocDefinitionForURI),
       new ContentForTypeHoverProvider(getDocDefinitionForURI),
       new LiquidTagHoverProvider(themeDocset),
+      new LiquidFilterArgumentHoverProvider(themeDocset),
       new LiquidFilterHoverProvider(themeDocset),
       new LiquidObjectHoverProvider(typeSystem),
       new LiquidObjectAttributeHoverProvider(typeSystem),
