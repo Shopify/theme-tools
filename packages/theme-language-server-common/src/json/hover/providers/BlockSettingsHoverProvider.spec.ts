@@ -144,8 +144,58 @@ describe('Module: BlockSettingsHoverProvider', async () => {
     });
   });
 
+  describe('valid section block settings', async () => {
+    function hoverParams(settingId: string) {
+      const testSectionSchema = {
+        blocks: [
+          {
+            type: testBlockName,
+            name: 'Test Block',
+            settings: [
+              { id: 'custom-setting', label: 'Custom Setting' },
+              { id: 'fake-setting', label: 't:general.fake' },
+            ],
+          },
+        ],
+        presets: [
+          {
+            blocks: {
+              [testBlockName]: {
+                type: testBlockName,
+                settings: {
+                  [`${settingId}█`]: '',
+                },
+              },
+            },
+          },
+        ],
+      };
+      return getRequestParams(
+        documentManager,
+        'sections/test-section.liquid',
+        toSource(testSectionSchema),
+      );
+    }
+
+    it('provides hover when referenced block has literal settings label', async () => {
+      const params = hoverParams('custom-setting');
+      const hover = await jsonLanguageService.hover(params);
+      expect(hover).not.toBeNull();
+      expect(hover!.contents).to.have.lengthOf(1);
+      expect(hover!.contents).toEqual(['Custom Setting']);
+    });
+
+    it('provides hover when referenced block has translation settings label', async () => {
+      const params = hoverParams('fake-setting');
+      const hover = await jsonLanguageService.hover(params);
+      expect(hover).not.toBeNull();
+      expect(hover!.contents).to.have.lengthOf(1);
+      expect(hover!.contents).toEqual(['Fake Setting']);
+    });
+  });
+
   describe('invalid theme block settings', async () => {
-    it('provides no hover when block file does not exist', async () => {
+    it('provides no hover when block file nor local block exist', async () => {
       const testSectionSchema = {
         presets: [
           {
@@ -179,6 +229,37 @@ describe('Module: BlockSettingsHoverProvider', async () => {
       );
 
       const testSectionSchema = {
+        presets: [
+          {
+            blocks: {
+              [testBlockName]: {
+                type: testBlockName,
+                settings: {
+                  'nonexistent-setting█': '',
+                },
+              },
+            },
+          },
+        ],
+      };
+      const params = getRequestParams(
+        documentManager,
+        'sections/test-section.liquid',
+        toSource(testSectionSchema),
+      );
+      const hover = await jsonLanguageService.hover(params);
+      expect(hover).not.toBeNull();
+      expect(hover!.contents).to.have.lengthOf(0);
+    });
+
+    it('provides no hover when local block has no settings', async () => {
+      const testSectionSchema = {
+        blocks: [
+          {
+            type: testBlockName,
+            name: 'Test Block',
+          },
+        ],
         presets: [
           {
             blocks: {

@@ -3,6 +3,7 @@ import {
   deepGet,
   isError,
   SectionSchema,
+  Setting,
   ThemeBlockSchema,
 } from '@shopify/theme-check-common';
 import { JSONPath, MarkedString } from 'vscode-json-languageservice';
@@ -12,6 +13,7 @@ import { isSectionOrBlockFile } from '../../utils';
 import { JSONHoverProvider } from '../JSONHoverProvider';
 import { isSectionOrBlockSchema } from '../../completions/providers/BlockTypeCompletionProvider';
 import { GetThemeBlockSchema } from '../../JSONContributions';
+import { getSectionBlockByName } from '../../schemaSettings';
 
 export class BlockSettingsHoverProvider implements JSONHoverProvider {
   constructor(
@@ -40,14 +42,22 @@ export class BlockSettingsHoverProvider implements JSONHoverProvider {
 
     if (!blockType) return [];
 
-    const themeBlockSchema = await this.getThemeBlockSchema(doc.uri, blockType);
+    const sectionBlock = getSectionBlockByName(schema.parsed, blockType);
 
-    if (!isValidSchema(themeBlockSchema)) return [];
-    if (!hasValidSchemaSettings(themeBlockSchema)) return [];
+    let label: string | undefined;
 
-    const label = themeBlockSchema.parsed.settings.find(
-      (setting: any) => setting?.id === path.at(-1),
-    )?.label;
+    if (sectionBlock) {
+      if (!hasValidSettings(sectionBlock.settings)) return [];
+
+      label = getSettingLabelById(sectionBlock.settings, path.at(-1) as string);
+    } else {
+      const themeBlockSchema = await this.getThemeBlockSchema(doc.uri, blockType);
+
+      if (!isValidSchema(themeBlockSchema)) return [];
+      if (!hasValidSettings(themeBlockSchema.parsed.settings)) return [];
+
+      label = getSettingLabelById(themeBlockSchema.parsed.settings, path.at(-1) as string);
+    }
 
     if (!label) return [];
 
@@ -55,13 +65,12 @@ export class BlockSettingsHoverProvider implements JSONHoverProvider {
       return [label];
     }
 
-    return this.getDefaultSchemaTranslations(doc.uri).then((translations) => {
-      const path = label.substring(2);
-      const value = translationValue(path, translations);
-      if (!value) return undefined as any;
+    const translations = await this.getDefaultSchemaTranslations(doc.uri);
 
-      return [renderTranslation(value)];
-    });
+    const value = translationValue(label.substring(2), translations);
+    if (!value) return [];
+
+    return [renderTranslation(value)];
   }
 }
 
@@ -81,6 +90,10 @@ function isValidSchema(
   return !!schema && !isError(schema.parsed) && isSectionOrBlockSchema(schema);
 }
 
-function hasValidSchemaSettings(schema: SectionSchema | ThemeBlockSchema) {
-  return schema.parsed?.settings !== undefined && Array.isArray(schema.parsed.settings);
+function hasValidSettings(settings: any): settings is Partial<Setting.Any>[] {
+  return settings !== undefined && Array.isArray(settings);
+}
+
+function getSettingLabelById(settings: Partial<Setting.Any>[], id: string) {
+  return settings.find((setting) => setting.id === id)?.label;
 }

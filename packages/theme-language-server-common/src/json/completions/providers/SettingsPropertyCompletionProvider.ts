@@ -6,7 +6,7 @@ import { isBlockFile, isSectionFile } from '../../utils';
 import { JSONCompletionProvider } from '../JSONCompletionProvider';
 import { GetTranslationsForURI } from '../../../translations';
 import { isSectionOrBlockSchema } from './BlockTypeCompletionProvider';
-import { schemaSettingsPropertyCompletionItems } from './helpers/schemaSettings';
+import { schemaSettingsPropertyCompletionItems } from '../../schemaSettings';
 
 /**
  * The SettingsPropertyCompletionProvider offers property completions for:
@@ -62,7 +62,7 @@ export class SettingsPropertyCompletionProvider implements JSONCompletionProvide
 
     const translations = await this.getDefaultSchemaTranslations(doc.textDocument.uri);
 
-    return schemaSettingsPropertyCompletionItems(parsedSchema, translations);
+    return schemaSettingsPropertyCompletionItems(parsedSchema.settings, translations);
   }
 }
 
