@@ -48,7 +48,7 @@ export const MatchingTranslations: JSONCheckDefinition = {
     const hasDefaultTranslations = () => defaultTranslations.size > 0;
     const isTerminalNode = ({ type }: JSONNode) => type === 'Literal';
     const isPluralizationNode = (node: PropertyNode) => PLURALIZATION_KEYS.has(node.key.value);
-    const isShopifyPath = (path: string) => path.startsWith('shopify.');
+    const isShopifyPath = (path: string) => path.startsWith('shopify.') || path.startsWith('customer_accounts.');
 
     const hasDefaultTranslation = (translationPath: string) =>
       defaultTranslations.has(translationPath) ?? false;
