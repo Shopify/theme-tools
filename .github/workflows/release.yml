@@ -60,7 +60,7 @@ jobs:
         with:
           # Put date in the title and commit message
           title: "Theme Tools Release — ${{ steps.date.outputs.date }}"
-          commit: "Theme Rools Release — ${{ steps.date.outputs.date }}"
+          commit: "Theme Tools Release — ${{ steps.date.outputs.date }}"
           # When there are no changesets, this gets called
           publish: yarn changeset publish
           # When there are changesets, this gets called and then a PR is opened/updated
