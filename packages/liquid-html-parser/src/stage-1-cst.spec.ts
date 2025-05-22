@@ -1397,7 +1397,7 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.children.0.type').to.equal('LiquidDocDescriptionNode');
           expectPath(cst, '0.children.0.isImplicit').to.equal(true);
           expectPath(cst, '0.children.0.locStart').to.equal(
-            testStr.indexOf('implicit descriptions are'),
+            testStr.indexOf('implicit descriptions'),
           );
           expectPath(cst, '0.children.0.locEnd').to.equal(
             testStr.indexOf('mixed spacing') + 'mixed spacing'.length,
@@ -1433,7 +1433,7 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.children.1.content.value').to.equal('explicit content');
         });
 
-        it('should preserve special characters in implicit description', () => {
+        it('should not accept the `@` character in implicit description', () => {
           const testStr = `{% doc %}content with @-like characters: @@test{% enddoc %}`;
           cst = toCST(testStr);
 
@@ -1443,6 +1443,40 @@ describe('Unit: Stage 1 (CST)', () => {
           expectPath(cst, '0.children.0.content.value').to.equal('content with');
           expectPath(cst, '0.children.1.type').to.equal('TextNode');
           expectPath(cst, '0.children.1.value').to.equal('@-like characters: @@test');
+        });
+
+        it('should accept the `@` character in multiline annotations', () => {
+          const testStr = `
+{% doc %}
+  @description content with @-like characters: @@test
+
+  @example 
+  content with stuff and there is the potential for an "@" character
+
+  @prompt
+    All of this should be indented and may contain something like an
+    email with the @gmail.com domain
+
+    As well as linebreaks
+{% enddoc %}`;
+          cst = toCST(testStr);
+
+          expectPath(cst, '0.type').to.equal('LiquidRawTag');
+          expectPath(cst, '0.name').to.equal('doc');
+          expectPath(cst, '0.children.0.type').to.equal('LiquidDocDescriptionNode');
+          expectPath(cst, '0.children.0.content.value').to.equal(
+            'content with @-like characters: @@test\n\n',
+          );
+
+          expectPath(cst, '0.children.1.type').to.equal('LiquidDocExampleNode');
+          expectPath(cst, '0.children.1.content.value').to.equal(
+            'content with stuff and there is the potential for an "@" character\n\n',
+          );
+
+          expectPath(cst, '0.children.2.type').to.equal('LiquidDocPromptNode');
+          expectPath(cst, '0.children.2.content.value').to.equal(
+            '\n    All of this should be indented and may contain something like an\n    email with the @gmail.com domain\n\n    As well as linebreaks\n',
+          );
         });
       }
     });

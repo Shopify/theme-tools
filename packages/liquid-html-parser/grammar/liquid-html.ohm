@@ -398,6 +398,7 @@ LiquidDoc <: Helpers {
     | paramNode
     | exampleNode
     | descriptionNode
+    | promptNode
     | fallbackNode
   
   endOfDescription = strictSpace* openControl
@@ -407,9 +408,10 @@ LiquidDoc <: Helpers {
   // By default, space matches new lines as well. We override it here to make writing rules easier.
   strictSpace = " " | "\t"
   // We use this as an escape hatch to stop matching TextNode and try again when one of these characters is encountered
-  openControl:= "@" | end
+  openControl:=  strictSpace* ("@" | end)
+  // List of supported tags we use to identify boundaries
+  supportedTags = "@prompt" | "@example" | "@description" | "@param"
 
-  descriptionNode = "@description" space* descriptionContent
 
   paramNode = "@param" strictSpace* paramType? strictSpace* (optionalParamName | paramName) (strictSpace* "-")? strictSpace* paramDescription
   paramType = "{" strictSpace* paramTypeContent strictSpace* "}"
@@ -421,10 +423,16 @@ LiquidDoc <: Helpers {
 
   paramDescription = (~"]" anyExceptStar<endOfParam>)
   endOfParam = strictSpace* (newline | end)
+  
+  // Prompt node is system-controlled, so we don't strip the leading spaces to maintain indentation
+  promptNode = "@prompt"  multilineTextContent
+  exampleNode = "@example" space* multilineTextContent
+  descriptionNode = "@description" space* multilineTextContent
 
-  exampleNode = "@example" space* exampleContent
-  exampleContent = anyExceptStar<endOfExample>
-  endOfExample =  strictSpace* ("@" | end)
+  // We want multilineTextContent to be free-form, so instead of terminating the match at "@" we explicitly look for a suppported tag
+  // This means that malformed tags will be considered part of the multilineTextContent
+  multilineTextContent = anyExceptStar<endOfMultilineText>
+  endOfMultilineText =  strictSpace* (supportedTags | end)
 
   fallbackNode = "@" anyExceptStar<endOfParam>
 }

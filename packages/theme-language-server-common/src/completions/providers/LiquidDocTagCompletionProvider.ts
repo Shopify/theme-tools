@@ -4,8 +4,6 @@ import {
   CompletionItemKind,
   InsertTextFormat,
   MarkupKind,
-  Range,
-  TextEdit,
 } from 'vscode-languageserver';
 import { LiquidCompletionParams } from '../params';
 import { Provider } from './common';
@@ -25,29 +23,52 @@ export class LiquidDocTagCompletionProvider implements Provider {
     if (
       !node ||
       !parentNode ||
-      node.type !== NodeTypes.TextNode ||
       parentNode.type !== NodeTypes.LiquidRawTag ||
-      parentNode.name !== 'doc' ||
-      !node.value.startsWith('@')
+      parentNode.name !== 'doc'
     ) {
       return [];
     }
 
-    // Need to offset the '@' symbol by 1
-    let start = params.document.textDocument.positionAt(node.position.start + 1);
-    let end = params.document.textDocument.positionAt(node.position.end);
+    switch (node.type) {
+      case NodeTypes.TextNode:
+        if (!node.value.startsWith('@')) {
+          return [];
+        }
+        return this.createCompletionItems(node.value);
+      case NodeTypes.LiquidDocDescriptionNode:
+      case NodeTypes.LiquidDocExampleNode:
+      case NodeTypes.LiquidDocPromptNode:
+        // These nodes accept free-form text, so we only suggest completions if the last line starts with '@'
+        const lastLine = node.content.value.split('\n').at(-1)?.trim();
+        if (!lastLine?.startsWith('@')) {
+          return [];
+        }
+        return this.createCompletionItems(lastLine);
+      default:
+        return [];
+    }
+  }
 
-    return Object.entries(SUPPORTED_LIQUID_DOC_TAG_HANDLES)
-      .filter(([label]) => label.startsWith(node.value.slice(1)))
-      .map(([label, { description, example, template }]) => ({
+  private createCompletionItems(userInput: string): CompletionItem[] {
+    // Need to offset the '@' symbol by 1
+    const offsetInput = userInput.slice(1);
+    const entries = Object.entries(SUPPORTED_LIQUID_DOC_TAG_HANDLES).filter(
+      ([label]) => !offsetInput || label.startsWith(offsetInput),
+    );
+
+    return entries.map(([label, { description, example, template }]) => {
+      const item: CompletionItem = {
         label,
         kind: CompletionItemKind.EnumMember,
         documentation: {
           kind: MarkupKind.Markdown,
           value: formatLiquidDocTagHandle(label, description, example),
         },
-        textEdit: TextEdit.replace(Range.create(start, end), template),
+        insertText: template,
         insertTextFormat: InsertTextFormat.Snippet,
-      }));
+      };
+
+      return item;
+    });
   }
 }

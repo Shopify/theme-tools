@@ -112,6 +112,7 @@ export type LiquidHtmlNode =
   | TextNode
   | LiquidDocParamNode
   | LiquidDocExampleNode
+  | LiquidDocPromptNode
   | LiquidDocDescriptionNode;
 
 /** The root node of all LiquidHTML ASTs. */
@@ -810,6 +811,13 @@ export interface LiquidDocExampleNode extends ASTNode<NodeTypes.LiquidDocExample
   isInline: boolean;
 }
 
+/** Represents a `@prompt` node in a LiquidDoc comment - `@prompt promptContent` */
+export interface LiquidDocPromptNode extends ASTNode<NodeTypes.LiquidDocPromptNode> {
+  name: 'prompt';
+  /** The contents of the prompt (e.g. "Build me a sale sticker for my shop with a rotating @ symbol"). Can be multiline. */
+  content: TextNode;
+}
+
 export interface ASTNode<T> {
   /**
    * The type of the node, as a string.
@@ -1359,6 +1367,17 @@ function buildAst(
           source: node.source,
           content: toTextNode(node.content),
           isInline: node.isInline,
+        });
+        break;
+      }
+
+      case ConcreteNodeTypes.LiquidDocPromptNode: {
+        builder.push({
+          type: NodeTypes.LiquidDocPromptNode,
+          name: node.name,
+          position: position(node),
+          source: node.source,
+          content: toTextNode(node.content),
         });
         break;
       }
