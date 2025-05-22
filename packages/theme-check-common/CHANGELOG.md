@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 3.17.1
+
+### Patch Changes
+
+- 4d9ba806: Allow `//`, `/*`, `*/` inside of strings in template JSON
+
 ## 3.17.0
 
 ### Minor Changes
