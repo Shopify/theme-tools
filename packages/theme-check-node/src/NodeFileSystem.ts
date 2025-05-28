@@ -18,7 +18,10 @@ export const NodeFileSystem: AbstractFileSystem = {
     // console.error('fs/readDirectory', uri);
     const files = await fs.readdir(path.fsPath(uri), { withFileTypes: true });
     return files.map((file) => {
-      return [`${uri}/${file.name}`, file.isDirectory() ? FileType.Directory : FileType.File];
+      return [
+        `${uri}/${file.name}`.replace('file:////', 'file:///'), // fun edge case
+        file.isDirectory() ? FileType.Directory : FileType.File,
+      ];
     });
   },
 
