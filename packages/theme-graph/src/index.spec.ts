@@ -23,8 +23,9 @@ import {
   ModuleType,
   serializeThemeGraph,
   ThemeGraph,
+  toSourceCode,
+  Range,
 } from './index';
-import { toSourceCode } from './toSourceCode';
 
 const fixturesRoot = path.join(__dirname, '../fixtures');
 const skeleton = path.join(fixturesRoot, 'skeleton');

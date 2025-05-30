@@ -1,0 +1,62 @@
+#!/usr/bin/env node
+
+const { buildThemeGraph, serializeThemeGraph, toSourceCode } = require('@shopify/theme-graph');
+const { NodeFileSystem, memoize, toSchema, path: pathUtils } = require('@shopify/theme-check-node');
+const path = require('path');
+const { URI } = require('vscode-uri');
+
+/**
+ * @param {string} root
+ */
+async function main(root) {
+  if (!root) {
+    console.error('Usage: theme-graph <path-to-theme-directory>');
+    process.exit(1);
+  }
+
+  if (!path.isAbsolute(root)) {
+    root = path.resolve(process.cwd(), root);
+  }
+  const identity = (/** @type {any} */ x) => x;
+  const getSourceCode = makeGetSourceCode();
+  const rootUri = URI.file(root).toString(true);
+  const webComponentDefs = new Map();
+  /** @type {import('@shopify/theme-graph').Dependencies} */
+  const dependencies = {
+    fs: NodeFileSystem,
+    // @ts-ignore
+    getSectionSchema: memoize(async (name) => {
+      const uri = pathUtils.join(rootUri, 'sections', `${name}.liquid`);
+      const sourceCode = await getSourceCode(uri);
+      return await toSchema('theme', uri, sourceCode, async () => true);
+    }, identity),
+    // @ts-ignore
+    getBlockSchema: memoize(async (name) => {
+      const uri = pathUtils.join(rootUri, 'blocks', `${name}.liquid`);
+      const sourceCode = await getSourceCode(uri);
+      return await toSchema('theme', uri, sourceCode, async () => true);
+    }, identity),
+    getSourceCode,
+    getWebComponentDefinitionReference: (/** @type {string} */ customElementName) =>
+      webComponentDefs.get(customElementName),
+  };
+
+  const graph = await buildThemeGraph(URI.file(root).toString(true), dependencies);
+  const serializedGraph = serializeThemeGraph(graph);
+  console.log(JSON.stringify(serializedGraph));
+}
+
+function makeGetSourceCode() {
+  const cache = new Map();
+  return async function getSourceCode(/** @type {string} */ uri) {
+    if (cache.has(uri)) {
+      return cache.get(uri);
+    }
+    const source = await NodeFileSystem.readFile(uri);
+    const sourceCode = await toSourceCode(URI.file(uri).toString(), source);
+    cache.set(uri, sourceCode);
+    return sourceCode;
+  };
+}
+
+main(process.argv[2]);

@@ -22,7 +22,8 @@ import { toSourceCode } from './toSourceCode';
 import { CssSourceCode, JsSourceCode } from './types';
 import { assertNever, unique } from './utils';
 
-export { toCssSourceCode, toJsSourceCode } from './toSourceCode';
+export { toSourceCode, toCssSourceCode, toJsSourceCode } from './toSourceCode';
+export { getWebComponentMap } from './getWebComponentMap';
 
 export interface IDependencies {
   fs: ThemeCheckDependencies['fs'];
