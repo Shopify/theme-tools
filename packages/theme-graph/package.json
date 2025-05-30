@@ -1,0 +1,41 @@
+{
+  "name": "@shopify/theme-graph",
+  "version": "0.0.1",
+  "description": "Liquid theme graph inspector",
+  "author": "CP Clermont <cp.clermont@shopify.com>",
+  "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/theme-graph#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shopify/theme-tools.git",
+    "directory": "packages/theme-graph"
+  },
+  "bugs": {
+    "url": "https://github.com/shopify/theme-tools/issues"
+  },
+  "bin": {
+    "theme-graph": "bin/theme-graph"
+  },
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "@shopify:registry": "https://registry.npmjs.org"
+  },
+  "scripts": {
+    "build": "yarn build:ts",
+    "build:ci": "yarn build",
+    "build:ts": "tsc -p tsconfig.build.json",
+    "playground": "yarn --cwd ./playground dev",
+    "preplayground": "yarn build && bin/theme-graph-to-playground fixtures/dawn",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@shopify/liquid-html-parser": "^2.8.2",
+    "@shopify/theme-check-common": "^3.17.0",
+    "vscode-uri": "^3.0.7",
+    "@swc/core": "^1.4.8",
+    "glob": "^8.0.3",
+    "json-to-ast": "^2.1.0"
+  }
+}

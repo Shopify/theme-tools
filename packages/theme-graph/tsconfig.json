@@ -1,0 +1,31 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.json"
+  ],
+  "exclude": [
+    "./dist"
+  ],
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
+    "paths": {
+      "@shopify/liquid-html-parser": [
+        "../liquid-html-parser/src"
+      ],
+      "@shopify/theme-check-common": [
+        "../theme-check-common/src"
+      ],
+    }
+  },
+  "references": [
+    {
+      "path": "../theme-check-common"
+    },
+    {
+      "path": "../liquid-html-parser"
+    }
+  ]
+}

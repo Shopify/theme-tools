@@ -1,0 +1,22 @@
+{% doc %}
+  This block renders the private _static block. Has no schema.
+{% enddoc %}
+
+<div class="static-block-wrapper">
+  {% content_for 'block',
+    type: '_static',
+    id: 'static',
+    content: 'hello world'
+  %}
+</div>
+
+{% schema %}
+{
+  "name": "render static block",
+  "presets": [
+    {
+      "name": "Render Static Block"
+    }
+  ]
+}
+{% endschema %}

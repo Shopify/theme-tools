@@ -6,6 +6,7 @@ import {
   FileStat,
   FileTuple,
   FileType,
+  SourceCodeType,
 } from '@shopify/theme-check-common';
 
 export * from './types';
@@ -20,4 +21,5 @@ export {
   FileStat,
   FileTuple,
   FileType,
+  SourceCodeType,
 };
