@@ -27,7 +27,8 @@
     "build:ci": "yarn build",
     "build:ts": "tsc -p tsconfig.build.json",
     "playground": "yarn --cwd ./playground dev",
-    "preplayground": "yarn build && bin/theme-graph-to-playground fixtures/dawn",
+    "preplayground": "yarn build && bin/theme-graph-to-playground ../../../horizon",
+    "postinstall": "yarn --cwd ./playground",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

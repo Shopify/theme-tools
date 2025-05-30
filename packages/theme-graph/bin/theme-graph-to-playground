@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -eou pipefail
+
+dir="$(dirname "$0")"
+parentDir="$(dirname "$dir")"
+echo "$dir/theme-graph $1 | jq . > $parentDir/playground/src/graph.json"
+"$dir/theme-graph" $1 | jq . > "$parentDir/playground/src/graph.json"
