@@ -194,6 +194,7 @@ export interface SerializableEdge {
 export type SerializableNode = Pick<ThemeModule, 'uri' | 'type' | 'kind'>;
 
 export interface SerializableGraph {
+  rootUri: UriString;
   nodes: SerializableNode[];
   edges: SerializableEdge[];
 }
@@ -210,6 +211,7 @@ export function serializeThemeGraph(graph: ThemeGraph): SerializableGraph {
   );
 
   return {
+    rootUri: graph.rootUri,
     nodes,
     edges,
   };
