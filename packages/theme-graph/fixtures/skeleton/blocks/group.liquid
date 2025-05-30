@@ -1,0 +1,27 @@
+{% doc %}
+  Fixture block component that passes its blocks to the parent snippet
+{% enddoc %}
+
+{% capture children %}
+  {%- content_for "blocks" -%}
+{% endcapture %}
+
+{% render 'parent', children: children %}
+
+{% schema %}
+{
+  "name": "Group block",
+  "blocks": [{ "type": "@theme" }],
+  "presets": [
+    {
+      "name": "Group block",
+      "category": "Group",
+      "blocks": [
+        {
+          "type": "text"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
