@@ -5,7 +5,7 @@ import {
   toSourceCode as tcToSourceCode,
   UriString,
 } from '@shopify/theme-check-common';
-import { Module, parse as parseJS, Program, Script } from '@swc/core';
+import { parse as acornParse, Program } from 'acorn';
 import { CssSourceCode, JsSourceCode } from './types';
 
 export async function toCssSourceCode(uri: UriString, source: string): Promise<CssSourceCode> {
@@ -22,13 +22,15 @@ export async function toJsSourceCode(uri: UriString, source: string): Promise<Js
     type: 'javascript',
     uri,
     source,
-    ast: await parseJS(source, { syntax: 'ecmascript', script: true }),
+    ast: parseJs(source),
   };
 }
 
-export async function parseJs(source: string): Promise<Program | Script | Module | Error> {
+export function parseJs(source: string): Program | Error {
   try {
-    return parseJS(source, { syntax: 'ecmascript' });
+    return acornParse(source, {
+      ecmaVersion: 'latest',
+    });
   } catch (error) {
     return asError(error);
   }

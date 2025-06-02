@@ -1,6 +1,7 @@
 import { path, recursiveReadDirectory } from '@shopify/theme-check-common';
-import { ModuleItem, Pattern, Statement } from '@swc/core';
+import { ancestor as visit } from 'acorn-walk';
 import { Dependencies } from '.';
+import { CallExpression } from 'acorn';
 
 /**
  * Regular expression for web component names
@@ -29,7 +30,7 @@ export type WebComponentMap = Map<WebComponentName, WebComponentDefinition>;
  */
 export async function getWebComponentMap(
   rootUri: string,
-  { fs, getSourceCode }: Dependencies,
+  { fs, getSourceCode }: Pick<Dependencies, 'fs' | 'getSourceCode'>,
 ): Promise<WebComponentMap> {
   const webComponentDefs = new Map<string, { assetName: string; range: [number, number] }>();
   const assetRoot = path.join(rootUri, 'assets');
@@ -49,24 +50,26 @@ export async function getWebComponentMap(
     }
 
     for (const node of ast.body) {
-      visit(node, (item, ancestors) => {
-        if ('type' in item && item.type === 'StringLiteral' && wcre.test(item.value)) {
-          // Making sure we're looking at customElements.define calls
-          const parentNode = ancestors.at(-1);
-          if (!parentNode) return;
-          if (parentNode.type !== 'CallExpression') return;
-          const callee = parentNode.callee;
-          if (callee.type !== 'MemberExpression') return;
-          const property = callee.property;
-          if (property.type !== 'Identifier') return;
-          if (property.value !== 'define') return;
+      visit(node, {
+        Literal(node, _state, ancestors) {
+          if (typeof node.value === 'string' && wcre.test(node.value)) {
+            // Making sure we're looking at customElements.define calls
+            const parentNode = ancestors.at(-2);
+            if (!parentNode) return;
+            if (parentNode.type !== 'CallExpression') return;
+            const callee = (parentNode as CallExpression).callee;
+            if (callee.type !== 'MemberExpression') return;
+            const property = callee.property;
+            if (property.type !== 'Identifier') return;
+            if (property.name !== 'define') return;
 
-          webComponentDefs.set(item.value, {
-            assetName: path.relative(jsFile, assetRoot),
-            range: [property.span.start, node.span.end],
-          });
-        }
-        return null;
+            webComponentDefs.set(node.value, {
+              assetName: path.relative(jsFile, assetRoot),
+              range: [property.start, node.end],
+            });
+          }
+          return null;
+        },
       });
     }
   });
@@ -74,32 +77,4 @@ export async function getWebComponentMap(
   await Promise.all(promises);
 
   return webComponentDefs;
-}
-
-type SWCNode = ModuleItem | Statement | Pattern;
-
-function visit(
-  item: SWCNode,
-  visitor: (item: SWCNode, ancestors: SWCNode[]) => void,
-  ancestors: SWCNode[] = [],
-): void {
-  if (!item || typeof item !== 'object') return;
-  visitor(item, ancestors);
-
-  const ancestry = [...ancestors, item];
-  for (const [_key, value] of Object.entries(item)) {
-    if (Array.isArray(value)) {
-      value.forEach((child) => {
-        if (typeof child === 'object') {
-          if ('type' in child) {
-            visit(child, visitor, ancestry);
-          } else if ('expression' in child && 'type' in child.expression) {
-            visit(child.expression, visitor, ancestry);
-          }
-        }
-      });
-    } else if (value && typeof value === 'object' && 'type' in value) {
-      visit(value as ModuleItem | Statement, visitor, ancestry);
-    }
-  }
 }
