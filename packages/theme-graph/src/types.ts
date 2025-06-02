@@ -1,5 +1,5 @@
 import { UriString } from '@shopify/theme-check-common';
-import { Program, Script, Module } from '@swc/core';
+import { Program } from 'acorn';
 
 export interface CssSourceCode {
   type: 'css';
@@ -11,5 +11,5 @@ export interface JsSourceCode {
   type: 'javascript';
   uri: UriString;
   source: string;
-  ast: Program | Script | Module | Error;
+  ast: Program | Error;
 }
