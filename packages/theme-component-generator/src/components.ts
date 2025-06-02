@@ -62,7 +62,8 @@ export function defineComponentGenerator(server: McpServer) {
               component: componentName,
               instruction:
                 [
-                  "Create these files in the project using file system access tools. Limit the amount of files created or modified to the ones that are necessary for the component to work.",
+                  "Create these files in the project using the file system access tools. Limit the amount of files created or modified to the ones that are necessary for the component to work.",
+                  "Do not create README files, examples, or demo files.",
                   "If the file is JSON, deep-merge the contents of the file with existing files in the project on the file system.",
                   "New CSS variables added to the components should match existing naming conventions.",
                   "If the project contains other locale files (e.g. `locales/fr.json`) or locale schema files (e.g. `locales/fr.schema.json`), create the same keys as the ones from the component's `locales/en.default.json` file and `locales/en.default.schema.json` file, respectively. The values in the project's locale file should be translated to the language denoted by the file's name. E.g. if the file is `locales/fr.json`, the values should be translated to French.",
