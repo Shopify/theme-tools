@@ -1,0 +1,17 @@
+{
+  "general": {
+    "accordion": "Accordion",
+    "accordion_row": "Accordion row",
+  },
+  "settings": {
+    "body": "Body",
+    "color": "Color",
+    "content_padding": "Content padding",
+    "divider": "Divider",
+    "enabled": "Enabled",
+    "heading": "Heading",
+    "heading_padding": "Heading padding",
+    "sides": "Sides",
+    "top_and_bottom": "Top and bottom",
+  }
+}
