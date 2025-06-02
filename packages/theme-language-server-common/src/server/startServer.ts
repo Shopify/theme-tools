@@ -1,5 +1,6 @@
 import {
   AugmentedThemeDocset,
+  DocDefinition,
   FileTuple,
   findRoot as findConfigFileRoot,
   isError,
@@ -12,7 +13,6 @@ import {
   path,
   recursiveReadDirectory,
   SourceCodeType,
-  DocDefinition,
   UriString,
 } from '@shopify/theme-check-common';
 import {
@@ -29,6 +29,7 @@ import { CodeActionKinds, CodeActionsProvider } from '../codeActions';
 import { Commands, ExecuteCommandProvider } from '../commands';
 import { CompletionsProvider } from '../completions';
 import { GetSnippetNamesForURI } from '../completions/providers/RenderSnippetCompletionProvider';
+import { CSSLanguageService } from '../css/CSSLanguageService';
 import { DiagnosticsManager, makeRunChecks } from '../diagnostics';
 import { DocumentHighlightsProvider } from '../documentHighlights/DocumentHighlightsProvider';
 import { DocumentLinksProvider } from '../documentLinks';
@@ -36,7 +37,6 @@ import { DocumentManager } from '../documents';
 import { OnTypeFormattingProvider } from '../formatting';
 import { HoverProvider } from '../hover';
 import { JSONLanguageService } from '../json/JSONLanguageService';
-import { CSSLanguageService } from '../css/CSSLanguageService';
 import { LinkedEditingRangesProvider } from '../linkedEditingRanges/LinkedEditingRangesProvider';
 import { RenameProvider } from '../rename/RenameProvider';
 import { RenameHandler } from '../renamed/RenameHandler';
@@ -48,6 +48,7 @@ import { VERSION } from '../version';
 import { CachedFileSystem } from './CachedFileSystem';
 import { Configuration } from './Configuration';
 import { safe } from './safe';
+import { ThemeGraphManager } from './ThemeGraphManager';
 
 const defaultLogger = () => {};
 
@@ -93,6 +94,7 @@ export function startServer(
   const fileExists = makeFileExists(fs);
   const clientCapabilities = new ClientCapabilities();
   const configuration = new Configuration(connection, clientCapabilities);
+
   const documentManager: DocumentManager = new DocumentManager(
     fs,
     connection,
@@ -100,6 +102,7 @@ export function startServer(
     getModeForURI,
     isValidSchema,
   );
+  const themeGraphManager = new ThemeGraphManager(documentManager, fs, findThemeRootURI);
   const diagnosticsManager = new DiagnosticsManager(connection);
   const documentLinksProvider = new DocumentLinksProvider(documentManager, findThemeRootURI);
   const codeActionsProvider = new CodeActionsProvider(documentManager, diagnosticsManager);
@@ -623,6 +626,24 @@ export function startServer(
     // MissingAssets/MissingSnippet should be rerun when a file is deleted
     // since an error might be introduced (and vice versa).
     runChecks.force(triggerUris);
+  });
+
+  connection.onRequest('themeGraph/references', async (params) => {
+    if (hasUnsupportedDocument(params)) return [];
+    const { uri, offset, includeIndirect } = params;
+    return themeGraphManager.getReferences(uri, offset, { includeIndirect });
+  });
+
+  connection.onRequest('themeGraph/dependencies', async (params) => {
+    if (hasUnsupportedDocument(params)) return [];
+    const { uri, offset, includeIndirect } = params;
+    return themeGraphManager.getDependencies(uri, offset, { includeIndirect });
+  });
+
+  connection.onRequest('themeGraph/rootUri', async (params) => {
+    if (hasUnsupportedDocument(params)) return '';
+    const { uri } = params;
+    return findThemeRootURI(uri);
   });
 
   connection.listen();

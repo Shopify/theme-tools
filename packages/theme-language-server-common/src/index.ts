@@ -11,8 +11,19 @@ import {
 
 export * from './types';
 export { visit } from '@shopify/theme-check-common';
+export {
+  Reference,
+  ThemeGraph,
+  SerializableEdge,
+  SerializableNode,
+  ThemeModule,
+  CssModule,
+  JsonModule,
+  JavaScriptModule,
+  LiquidModule,
+} from '@shopify/theme-graph';
 export { debounce, memo, parseJSON, ArgumentTypes } from './utils';
-export { startServer } from './server';
+export { startServer, AugmentedLocation, AugmentedReference } from './server';
 export {
   ThemeCheckConfig,
   recommendedChecks,

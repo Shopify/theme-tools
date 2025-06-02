@@ -61,9 +61,10 @@
   "dependencies": {
     "@shopify/liquid-html-parser": "^2.8.2",
     "@shopify/prettier-plugin-liquid": "^1.9.3",
-    "@shopify/theme-language-server-browser": "^2.16.0",
-    "@shopify/theme-language-server-node": "^2.16.0",
     "@shopify/theme-check-common": "^3.17.1",
+    "@shopify/theme-language-server-browser": "^2.16.0",
+    "@shopify/theme-language-server-common": "^2.16.0",
+    "@shopify/theme-language-server-node": "^2.16.0",
     "prettier": "^2.6.2",
     "vscode-languageclient": "^8.1.0",
     "vscode-uri": "^3.0.8"
@@ -99,6 +100,10 @@
       {
         "command": "shopifyLiquid.runChecks",
         "title": "Liquid Theme Check: Run Checks"
+      },
+      {
+        "command": "shopifyLiquid.openLocation",
+        "title": "Open text document at location"
       }
     ],
     "configuration": {
@@ -138,6 +143,20 @@
           "default": true
         }
       }
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "shopify.themeGraph.references",
+          "name": "References",
+          "icon": "$(references)"
+        },
+        {
+          "id": "shopify.themeGraph.dependencies",
+          "name": "Dependencies",
+          "icon": "$(outline-view-icon)"
+        }
+      ]
     },
     "configurationDefaults": {
       "[liquid]": {

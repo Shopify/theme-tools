@@ -30,6 +30,7 @@ export function parseJs(source: string): Program | Error {
   try {
     return acornParse(source, {
       ecmaVersion: 'latest',
+      sourceType: 'module',
     });
   } catch (error) {
     return asError(error);
