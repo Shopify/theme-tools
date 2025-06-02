@@ -4,13 +4,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   DidChangeConfigurationNotification,
   DidChangeWatchedFilesNotification,
-  DidCreateFilesNotification,
-  DidDeleteFilesNotification,
   DidRenameFilesNotification,
   FileChangeType,
   PublishDiagnosticsNotification,
-  WorkDoneProgress,
-  WorkDoneProgressCreateRequest,
 } from 'vscode-languageserver';
 import { MockConnection, mockConnection } from '../test/MockConnection';
 import { Dependencies } from '../types';

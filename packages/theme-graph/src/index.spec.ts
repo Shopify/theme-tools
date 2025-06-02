@@ -240,8 +240,8 @@ describe('Module: index', () => {
           expect.objectContaining({
             uri: p('snippets/parent.liquid'),
             range: [
-              parentSource.source.indexOf('<parent-element') + 1,
-              parentSource.source.indexOf('<parent-element') + 1 + 'parent-element'.length,
+              parentSource.source.indexOf('<parent-element'),
+              parentSource.source.indexOf('<parent-element') + '<parent-element'.length,
             ],
           }),
         );

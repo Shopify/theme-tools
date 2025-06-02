@@ -22,6 +22,7 @@
         "${workspaceRoot}/packages/theme-check-common/dist/**/*.js",
         "${workspaceRoot}/packages/theme-check-node/dist/**/*.js",
         "${workspaceRoot}/packages/theme-check-docs-updater/dist/**/*.js",
+        "${workspaceRoot}/packages/theme-graph/dist/**/*.js",
         "${workspaceRoot}/packages/prettier-plugin-liquid/dist/**/*.js",
         "${workspaceRoot}/packages/liquid-html-parser/dist/**/*.js",
       ],
