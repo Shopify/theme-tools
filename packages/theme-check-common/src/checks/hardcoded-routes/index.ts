@@ -1,4 +1,4 @@
-import { NodeTypes, TextNode } from '@shopify/liquid-html-parser';
+import { LiquidFilter, NodeTypes, TextNode } from '@shopify/liquid-html-parser';
 import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
 import { isAttr, isNodeOfType, isValuedHtmlAttribute, ValuedHtmlAttribute } from '../utils';
 
@@ -59,6 +59,29 @@ export const HardcodedRoutes: LiquidCheckDefinition = {
             message: `Use routes object {{ routes.${routeURL} }} instead of hardcoding ${route}`,
             startIndex,
             endIndex,
+          });
+        }
+      },
+
+      async LiquidFilter(node) {
+        // checks for hardcoded routes in link_to values {{ 'Cart' | link_to: '/cart' }}
+        if (node.name !== 'link_to') return;
+
+        const linkToArg = node.args[0];
+        const linkToValue = linkToArg.type === 'String' ? linkToArg.value : '';
+        const route = HARDCODED_ROUTES.find((route) =>
+          route === '/' ? route === linkToValue : linkToValue.startsWith(route),
+        );
+
+        if (route) {
+          const routeURL = ROUTES[route];
+          // we add 1 to the start index to exclude the quotes
+          const startIndex = linkToArg.position.start + 1;
+
+          context.report({
+            message: `Use routes object {{ routes.${routeURL} }} instead of hardcoding ${route}`,
+            startIndex,
+            endIndex: startIndex + route.length,
           });
         }
       },
