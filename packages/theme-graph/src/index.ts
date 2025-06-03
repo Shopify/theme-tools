@@ -9,8 +9,7 @@ import {
   ObjectNode,
   parseJSON,
   path,
-  PropertyNode,
-  recursiveReadDirectory,
+  recursiveReadDirectory as findAllFiles,
   SectionSchema,
   SourceCodeType,
   Template,
@@ -24,8 +23,8 @@ import { toSourceCode } from './toSourceCode';
 import { CssSourceCode, JsSourceCode } from './types';
 import { assertNever, unique } from './utils';
 
-export { toSourceCode, toCssSourceCode, toJsSourceCode } from './toSourceCode';
 export { getWebComponentMap } from './getWebComponentMap';
+export { toCssSourceCode, toJsSourceCode, toSourceCode } from './toSourceCode';
 
 export interface IDependencies {
   fs: ThemeCheckDependencies['fs'];
@@ -239,23 +238,42 @@ export async function buildThemeGraph(
     ),
 
     getWebComponentDefinitionReference: ideps.getWebComponentDefinitionReference,
-    getThemeBlockNames: memo(() => {
-      return recursiveReadDirectory(ideps.fs, path.join(rootUri, 'blocks'), ([fileUri]) =>
-        fileUri.endsWith('.liquid'),
-      );
-    }),
+    getThemeBlockNames: memo(() =>
+      findAllFiles(ideps.fs, path.join(rootUri, 'blocks'), ([uri]) => uri.endsWith('.liquid')).then(
+        (uris) => uris.map((uri) => path.basename(uri, '.liquid')),
+      ),
+    ),
   };
 
-  const entryPoints = await recursiveReadDirectory(deps.fs, rootUri, ([fileUri]) =>
-    fileUri.startsWith(path.join(rootUri, 'templates')),
-  );
+  const [templates, sectionSchemas] = await Promise.all([
+    findAllFiles(deps.fs, rootUri, ([uri]) => uri.startsWith(path.join(rootUri, 'templates'))),
+    findAllFiles(
+      deps.fs,
+      rootUri,
+      ([uri]) => uri.startsWith(path.join(rootUri, 'sections')) && uri.endsWith('.liquid'),
+    ).then((sections) =>
+      Promise.all(
+        sections.map((sectionUri) => deps.getSectionSchema(path.basename(sectionUri, '.liquid'))),
+      ),
+    ),
+  ]);
+
   const themeGraph: ThemeGraph = {
     entryPoints: [],
     modules: {},
     rootUri,
   };
 
-  themeGraph.entryPoints = entryPoints.map((entryUri) => getTemplateModule(themeGraph, entryUri));
+  themeGraph.entryPoints = [
+    // Templates are entry points for the theme graph.
+    ...templates.map((entryUri) => getTemplateModule(themeGraph, entryUri)),
+    // Section Types can be used as IDs in the section rendering API.
+    // We can't reliably determine which sections are used by the Section Rendering API
+    // so we're forced to accept all sections as entry points.
+    ...sectionSchemas
+      .filter((schema): schema is SectionSchema => !!schema)
+      .map((schema) => getSectionModule(themeGraph, schema.name)),
+  ];
 
   await Promise.all(themeGraph.entryPoints.map((entry) => traverseModule(entry, themeGraph, deps)));
 
@@ -627,7 +645,7 @@ async function traverseLiquidSchema(
         case '@theme': {
           const publicBlocks = await deps
             .getThemeBlockNames()
-            .then((blocks) => blocks.filter((b) => !path.basename(b).startsWith('_')));
+            .then((blocks) => blocks.filter((name) => !name.startsWith('_')));
           for (const publicBlock of publicBlocks) {
             const blockModule = getThemeBlockModule(
               themeGraph,

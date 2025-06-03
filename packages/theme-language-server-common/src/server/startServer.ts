@@ -646,5 +646,14 @@ export function startServer(
     return findThemeRootURI(uri);
   });
 
+  connection.onRequest('themeGraph/deadCode', async (params) => {
+    if (hasUnsupportedDocument(params)) return [];
+    const { uri } = params;
+    const rootUri = await findThemeRootURI(uri);
+    const deadFiles = await themeGraphManager.deadCode(rootUri);
+    console.error(deadFiles.map((file) => path.relative(file, rootUri)).join('\n'));
+    return deadFiles;
+  });
+
   connection.listen();
 }

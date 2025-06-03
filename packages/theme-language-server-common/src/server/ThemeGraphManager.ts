@@ -1,6 +1,7 @@
 import {
   AbstractFileSystem,
   path,
+  recursiveReadDirectory,
   SectionSchema,
   SourceCodeType,
   ThemeBlockSchema,
@@ -38,6 +39,7 @@ export class ThemeGraphManager {
     const rootUri = await this.findThemeRootURI(uri);
     if (!this.graphs.has(rootUri)) {
       const { fs, documentManager, getSourceCode } = this;
+      await documentManager.preload(rootUri);
 
       const webComponentDefs = await getWebComponentMap(rootUri, { fs, getSourceCode });
       const dependencies: GraphDependencies = {
@@ -132,6 +134,33 @@ export class ThemeGraphManager {
       excerpt: sourceCode.source.slice(range[0], range[1]),
       position: Range.create(doc.positionAt(range[0]), doc.positionAt(range[0])),
     };
+  }
+
+  async deadCode(rootUri: string): Promise<string[]> {
+    const graph = await this.getThemeGraphForURI(rootUri);
+    if (!graph) return [];
+
+    const files = await recursiveReadDirectory(
+      this.fs,
+      rootUri,
+      ([uri]) =>
+        ['assets', 'blocks', 'layout', 'sections', 'snippets', 'templates'].some((dir) =>
+          uri.startsWith(path.join(rootUri, dir)),
+        ) &&
+        (uri.endsWith('.liquid') ||
+          uri.endsWith('.json') ||
+          uri.endsWith('.js') ||
+          uri.endsWith('.css')),
+    );
+
+    const unusedFiles = new Set<string>();
+    for (const file of files) {
+      if (!graph.modules[file]) {
+        unusedFiles.add(file);
+      }
+    }
+
+    return Array.from(unusedFiles).sort();
   }
 }
 
