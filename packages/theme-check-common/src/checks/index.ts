@@ -34,6 +34,7 @@ import { SchemaPresetsStaticBlocks } from './schema-presets-static-blocks';
 import { RemoteAsset } from './remote-asset';
 import { RequiredLayoutThemeObject } from './required-layout-theme-object';
 import { ReservedDocParamNames } from './reserved-doc-param-names';
+import { StaticStylesheetAndJavascriptTags } from './static-stylesheet-and-javascript-tags';
 import { TranslationKeyExists } from './translation-key-exists';
 import { UnclosedHTMLElement } from './unclosed-html-element';
 import { UndefinedObject } from './undefined-object';
@@ -75,9 +76,9 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   CdnPreconnect,
   ContentForHeaderModification,
   DeprecateBgsizes,
+  DeprecateLazysizes,
   DeprecatedFilter,
   DeprecatedTag,
-  DeprecateLazysizes,
   DuplicateContentForArguments,
   DuplicateRenderSnippetArguments,
   EmptyBlockContent,
@@ -99,6 +100,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   RemoteAsset,
   RequiredLayoutThemeObject,
   ReservedDocParamNames,
+  StaticStylesheetAndJavascriptTags,
   TranslationKeyExists,
   UnclosedHTMLElement,
   UndefinedObject,

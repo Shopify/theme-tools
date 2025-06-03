@@ -115,6 +115,9 @@ SchemaPresetsBlockOrder:
 SchemaPresetsStaticBlocks:
   enabled: true
   severity: 0
+StaticStylesheetAndJavascriptTags:
+  enabled: true
+  severity: 0
 TranslationKeyExists:
   enabled: true
   severity: 0
