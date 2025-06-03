@@ -33,7 +33,7 @@ export function dirname(uri: UriString | URI): UriString {
 
 export function basename(uri: UriString | URI, ext?: string): string {
   const base = Utils.basename(asUri(uri));
-  return ext ? base.replace(new RegExp(`${ext}$`), '') : base;
+  return ext ? base.replace(new RegExp(`${ext.replace(/\./g, '\\.')}$`), '') : base;
 }
 
 export function fsPath(uri: UriString | URI): string {

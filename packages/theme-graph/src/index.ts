@@ -18,6 +18,7 @@ import {
   UriString,
   visit,
   Visitor,
+  AbstractFileSystem,
 } from '@shopify/theme-check-common';
 import { toSourceCode } from './toSourceCode';
 import { CssSourceCode, JsSourceCode } from './types';
@@ -124,6 +125,13 @@ export type IThemeModule<T extends ModuleType> = T extends ModuleType
        * The target URI of all dependencies is this module.
        */
       references: Reference[];
+
+      /**
+       * Since you could have files that depend on files that don't exist,
+       *
+       * this property will be used to quickly identify those.
+       */
+      exists?: boolean;
     }
   : never;
 
@@ -450,7 +458,17 @@ async function traverseModule(
     return;
   }
 
+  // Signal to all users that the file is being traversed
+  // This will prevent multiple traversals of the same file
   themeGraph.modules[module.uri] = module;
+
+  // Check if the module exists on disk
+  module.exists = await exists(deps.fs, module.uri);
+
+  // If the module doesn't exist, we can't traverse it
+  if (!module.exists) {
+    return;
+  }
 
   switch (module.type) {
     case ModuleType.Liquid: {
@@ -886,4 +904,11 @@ async function acceptsLocalBlocks(
 
 function unexpected(): Error {
   return new Error('Unexpected code path encountered');
+}
+
+async function exists(fs: AbstractFileSystem, uri: UriString): Promise<boolean> {
+  return fs
+    .stat(uri)
+    .then(() => true)
+    .catch(() => false);
 }
