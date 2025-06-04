@@ -1,6 +1,6 @@
 import { path, recursiveReadDirectory } from '@shopify/theme-check-common';
 import { ancestor as visit } from 'acorn-walk';
-import { Dependencies } from '.';
+import { Dependencies, WebComponentMap } from './types';
 import { CallExpression } from 'acorn';
 
 /**
@@ -12,14 +12,6 @@ import { CallExpression } from 'acorn';
  */
 const wcre =
   /^[a-z][-.\d_a-z\u00B7\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u037D\u037F-\u1FFF\u200C-\u200D\u203F-\u2040\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]*([-][-.\d_a-z\u00B7\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u037D\u037F-\u1FFF\u200C-\u200D\u203F-\u2040\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]*)$/u;
-
-/** e.g. product-element, */
-export type WebComponentName = string;
-export type WebComponentDefinition = {
-  assetName: string; // Relative path to the asset file
-  range: [number, number]; // Start and end positions in the file
-};
-export type WebComponentMap = Map<WebComponentName, WebComponentDefinition>;
 
 /**
  * Find all the web component definitions from the JavaScript files in the
