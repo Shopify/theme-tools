@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 
 const { buildThemeGraph, serializeThemeGraph, toSourceCode } = require('@shopify/theme-graph');
-const { NodeFileSystem, memoize, toSchema, path: pathUtils } = require('@shopify/theme-check-node');
+const {
+  NodeFileSystem,
+  memoize,
+  toSchema,
+  path: pathUtils,
+  recursiveReadDirectory,
+} = require('@shopify/theme-check-node');
 const path = require('path');
 const { URI } = require('vscode-uri');
 
@@ -19,21 +25,39 @@ async function main(root) {
   }
   const identity = (/** @type {any} */ x) => x;
   const getSourceCode = makeGetSourceCode();
+  // preload for shits n giggles
+  const fs = NodeFileSystem;
   const rootUri = URI.file(root).toString(true);
+  const filesToPreload = await recursiveReadDirectory(fs, rootUri, ([uri]) =>
+    ['.json', '.liquid'].some((ext) => uri.endsWith(ext)),
+  );
+
+  // preload
+  await bench('Preloading files', async () => {
+    await Promise.all(
+      filesToPreload.map(async (uri) => {
+        await getSourceCode(uri);
+      }),
+    );
+  });
+
+  // @ts-ignore
   const webComponentDefs = new Map();
   /** @type {import('@shopify/theme-graph').Dependencies} */
   const dependencies = {
-    fs: NodeFileSystem,
+    fs,
     // @ts-ignore
     getSectionSchema: memoize(async (name) => {
       const uri = pathUtils.join(rootUri, 'sections', `${name}.liquid`);
       const sourceCode = await getSourceCode(uri);
+      // @ts-ignore
       return await toSchema('theme', uri, sourceCode, async () => true);
     }, identity),
     // @ts-ignore
     getBlockSchema: memoize(async (name) => {
       const uri = pathUtils.join(rootUri, 'blocks', `${name}.liquid`);
       const sourceCode = await getSourceCode(uri);
+      // @ts-ignore
       return await toSchema('theme', uri, sourceCode, async () => true);
     }, identity),
     getSourceCode,
@@ -41,22 +65,32 @@ async function main(root) {
       webComponentDefs.get(customElementName),
   };
 
-  const graph = await buildThemeGraph(URI.file(root).toString(true), dependencies);
+  const graph = await bench('Build graph', () =>
+    buildThemeGraph(URI.file(root).toString(true), dependencies),
+  );
   const serializedGraph = serializeThemeGraph(graph);
   console.log(JSON.stringify(serializedGraph));
 }
 
 function makeGetSourceCode() {
-  const cache = new Map();
-  return async function getSourceCode(/** @type {string} */ uri) {
-    if (cache.has(uri)) {
-      return cache.get(uri);
-    }
-    const source = await NodeFileSystem.readFile(uri);
-    const sourceCode = await toSourceCode(URI.file(uri).toString(), source);
-    cache.set(uri, sourceCode);
-    return sourceCode;
-  };
+  return memoize(
+    async function getSourceCode(uri) {
+      const source = await NodeFileSystem.readFile(uri);
+      return await toSourceCode(URI.file(uri).toString(), source);
+    },
+    (x) => x,
+  );
+}
+
+// @ts-ignore
+async function bench(name, fn) {
+  const start = performance.now();
+  // @ts-ignore
+  const result = await fn();
+  // @ts-ignore
+  const end = performance.now();
+  console.error(`${name} took ${end - start}ms`);
+  return result;
 }
 
 main(process.argv[2]);
