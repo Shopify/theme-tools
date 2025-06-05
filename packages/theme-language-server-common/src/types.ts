@@ -4,8 +4,11 @@ import {
   Dependencies as ThemeCheckDependencies,
 } from '@shopify/theme-check-common';
 import { URI } from 'vscode-languageserver';
+import * as rpc from 'vscode-jsonrpc';
 
 import { WithOptional } from './utils';
+import { Range } from 'vscode-json-languageservice';
+import { Reference } from '@shopify/theme-graph';
 
 export type Dependencies = WithOptional<
   RequiredDependencies,
@@ -95,4 +98,63 @@ export interface RequiredDependencies {
    * This should only be used in node environments; not on the browser.
    */
   fetchMetafieldDefinitionsForURI: (uri: URI) => Promise<void>;
+}
+
+export namespace ThemeGraphReferenceRequest {
+  export const method = 'themeGraph/references';
+  export const type = new rpc.RequestType<Params, Response, void>(method);
+  export interface Params {
+    uri: string;
+    offset?: number;
+    includeIndirect?: boolean;
+  }
+  export type Response = AugmentedReference[];
+}
+
+export namespace ThemeGraphDependenciesRequest {
+  export const method = 'themeGraph/dependencies';
+  export const type = new rpc.RequestType<Params, Response, void>(method);
+  export interface Params {
+    uri: string;
+    offset?: number;
+    includeIndirect?: boolean;
+  }
+  export type Response = AugmentedReference[];
+}
+
+export namespace ThemeGraphRootRequest {
+  export const method = 'themeGraph/rootUri';
+  export const type = new rpc.RequestType<Params, Response, void>(method);
+  export interface Params {
+    uri: string;
+  }
+  export type Response = string;
+}
+
+export namespace ThemeGraphDidUpdateNotification {
+  export const method = 'themeGraph/onDidChangeTree';
+  export const type = new rpc.NotificationType<Params>(method);
+  export interface Params {
+    uri: string;
+  }
+}
+
+export type AugmentedLocation =
+  | {
+      uri: string;
+      range: undefined;
+      excerpt: undefined;
+      position: undefined;
+    }
+  | {
+      uri: string;
+      range: [number, number];
+      excerpt: string;
+      position: Range;
+    };
+
+export interface AugmentedReference extends Reference {
+  source: AugmentedLocation;
+  target: AugmentedLocation;
+  indirect: boolean;
 }

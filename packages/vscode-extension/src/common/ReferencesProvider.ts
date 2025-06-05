@@ -1,5 +1,12 @@
 import { path } from '@shopify/theme-check-common';
-import { AugmentedLocation, AugmentedReference } from '@shopify/theme-language-server-common';
+import {
+  AugmentedLocation,
+  AugmentedReference,
+  ThemeGraphDependenciesRequest,
+  ThemeGraphDidUpdateNotification,
+  ThemeGraphReferenceRequest,
+  ThemeGraphRootRequest,
+} from '@shopify/theme-language-server-common';
 import {
   Event,
   EventEmitter,
@@ -26,6 +33,7 @@ export class ReferencesProvider implements TreeDataProvider<ReferenceItem> {
     private mode: 'references' | 'dependencies' = 'references',
   ) {
     window.onDidChangeActiveTextEditor(() => this.onActiveEditorChanged());
+    client.onNotification(ThemeGraphDidUpdateNotification.type, () => this.refresh());
     this.refresh();
   }
 
@@ -43,19 +51,17 @@ export class ReferencesProvider implements TreeDataProvider<ReferenceItem> {
     }
 
     return [];
-    // if (element) {
-    //   return Promise.resolve(this.references.filter((ref) => ref.parent === element));
-    // }
-    // return Promise.resolve(this.references.filter((ref) => !ref.parent));
   }
 
   private async refresh() {
     const uri = window.activeTextEditor?.document.uri.toString();
     const command =
-      this.mode === 'references' ? 'themeGraph/references' : 'themeGraph/dependencies';
+      this.mode === 'references'
+        ? ThemeGraphReferenceRequest.method
+        : ThemeGraphDependenciesRequest.method;
     const destination = this.mode === 'references' ? 'source' : 'target';
     const [rootUri, references] = await Promise.all([
-      this.client.sendRequest<string>('themeGraph/rootUri', { uri }),
+      this.client.sendRequest(ThemeGraphRootRequest.type, { uri }),
       this.client.sendRequest<AugmentedReference[]>(command, { uri }),
     ]);
     this.references = references
@@ -72,13 +78,11 @@ export class ReferencesProvider implements TreeDataProvider<ReferenceItem> {
       const enabled = ['liquid', 'javascript', 'json', 'jsonc', 'css'].includes(
         window.activeTextEditor.document.languageId,
       );
-      // vscode.commands.executeCommand('setContext', 'jsonOutlineEnabled', enabled);
       if (enabled) {
         this.refresh();
       }
     } else {
       this.references = null;
-      // commands.executeCommand('setContext', 'jsonOutlineEnabled', false);
     }
   }
 }
