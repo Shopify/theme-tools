@@ -41,7 +41,12 @@ import { LinkedEditingRangesProvider } from '../linkedEditingRanges/LinkedEditin
 import { RenameProvider } from '../rename/RenameProvider';
 import { RenameHandler } from '../renamed/RenameHandler';
 import { GetTranslationsForURI } from '../translations';
-import { Dependencies } from '../types';
+import {
+  Dependencies,
+  ThemeGraphDependenciesRequest,
+  ThemeGraphReferenceRequest,
+  ThemeGraphRootRequest,
+} from '../types';
 import { debounce } from '../utils';
 import { snippetName } from '../utils/uri';
 import { VERSION } from '../version';
@@ -102,7 +107,12 @@ export function startServer(
     getModeForURI,
     isValidSchema,
   );
-  const themeGraphManager = new ThemeGraphManager(documentManager, fs, findThemeRootURI);
+  const themeGraphManager = new ThemeGraphManager(
+    connection,
+    documentManager,
+    fs,
+    findThemeRootURI,
+  );
   const diagnosticsManager = new DiagnosticsManager(connection);
   const documentLinksProvider = new DocumentLinksProvider(documentManager, findThemeRootURI);
   const codeActionsProvider = new CodeActionsProvider(documentManager, diagnosticsManager);
@@ -633,19 +643,19 @@ export function startServer(
     runChecks.force(triggerUris);
   });
 
-  connection.onRequest('themeGraph/references', async (params) => {
+  connection.onRequest(ThemeGraphReferenceRequest.type, async (params) => {
     if (hasUnsupportedDocument(params)) return [];
     const { uri, offset, includeIndirect } = params;
     return themeGraphManager.getReferences(uri, offset, { includeIndirect });
   });
 
-  connection.onRequest('themeGraph/dependencies', async (params) => {
+  connection.onRequest(ThemeGraphDependenciesRequest.type, async (params) => {
     if (hasUnsupportedDocument(params)) return [];
     const { uri, offset, includeIndirect } = params;
     return themeGraphManager.getDependencies(uri, offset, { includeIndirect });
   });
 
-  connection.onRequest('themeGraph/rootUri', async (params) => {
+  connection.onRequest(ThemeGraphRootRequest.type, async (params) => {
     if (hasUnsupportedDocument(params)) return '';
     const { uri } = params;
     return findThemeRootURI(uri);

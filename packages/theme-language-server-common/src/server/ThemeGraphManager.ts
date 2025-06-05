@@ -11,23 +11,21 @@ import {
   getWebComponentMap,
   IDependencies as GraphDependencies,
   Location,
-  Operation,
-  Reference,
   toSourceCode,
   WebComponentMap,
-  updateThemeGraph,
-  findWebComponentReferences,
 } from '@shopify/theme-graph';
 import { Range } from 'vscode-json-languageservice';
+import { Connection } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DocumentManager } from '../documents';
+import { AugmentedLocation, AugmentedReference, ThemeGraphDidUpdateNotification } from '../types';
 import { debounce } from '../utils';
 
 export class ThemeGraphManager {
   graphs: Map<string, ReturnType<typeof buildThemeGraph>> = new Map();
-  webComponentMaps: Map<string, Promise<WebComponentMap>> = new Map();
 
   constructor(
+    private connection: Connection,
     private documentManager: DocumentManager,
     private fs: AbstractFileSystem,
     private findThemeRootURI: (uri: string) => Promise<string>,
@@ -139,59 +137,41 @@ export class ThemeGraphManager {
     return Array.from(unusedFiles).sort();
   }
 
-  public operationQueue: Operation[] = [];
+  public operationQueue: string[] = [];
 
   async rename(oldUri: string, newUri: string) {
-    this.operationQueue.push({ type: 'rename', oldUri, newUri });
+    this.operationQueue.push(oldUri);
+    this.operationQueue.push(newUri);
     this.processQueue();
   }
 
   async change(uri: string) {
-    this.operationQueue.push({ type: 'change', uri });
+    this.operationQueue.push(uri);
     this.processQueue();
   }
 
   async create(uri: string) {
-    this.operationQueue.push({ type: 'create', uri });
+    this.operationQueue.push(uri);
     this.processQueue();
   }
 
   async delete(uri: string) {
-    this.operationQueue.push({ type: 'delete', uri });
+    this.operationQueue.push(uri);
     this.processQueue();
   }
 
   private processQueue = debounce(async () => {
-    const operations = this.operationQueue
-      .splice(0, this.operationQueue.length)
-      .reduce(deduplicate, []);
+    const operations = [...new Set(this.operationQueue.splice(0, this.operationQueue.length))];
     if (operations.length === 0) return;
 
-    const anyUri = 'uri' in operations[0] ? operations[0].uri : operations[0].oldUri;
+    const anyUri = operations[0];
     const rootUri = await this.findThemeRootURI(anyUri);
     const graph = this.graphs.get(rootUri);
     if (!graph) return;
 
-    const webComponentMap = await this.getWebComponentMap(rootUri);
-
-    // TODO update the webcomponentMap correctly based on the operations
-    // const jsFilesModified = operations.filter((op) =>
-    //   op[('uri' in op ? 'uri' : 'newUri') as keyof typeof op].endsWith('.js'),
-    // );
-    // // Update the webComponentMap so that the ranges are correct
-    // for (const op of jsFilesModified) {
-    //   await findWebComponentReferences(
-    //     op[('uri' in op ? 'uri' : 'newUri') as keyof typeof op],
-    //     rootUri,
-    //     this.getSourceCode,
-    //     webComponentMap,
-    //   );
-    // }
-
-    const dependencies = this.graphDependencies(rootUri, webComponentMap);
-
-    // Assuming all operations are for the same root URI
-    await updateThemeGraph(await graph, dependencies, operations);
+    this.graphs.delete(rootUri);
+    await this.getThemeGraphForURI(rootUri);
+    this.connection.sendNotification(ThemeGraphDidUpdateNotification.type, { uri: rootUri });
   }, 500);
 
   private getSourceCode = async (uri: string) => {
@@ -203,11 +183,8 @@ export class ThemeGraphManager {
   };
 
   private getWebComponentMap(rootUri: string): Promise<WebComponentMap> {
-    if (!this.webComponentMaps.has(rootUri)) {
-      const { fs, getSourceCode } = this;
-      this.webComponentMaps.set(rootUri, getWebComponentMap(rootUri, { fs, getSourceCode }));
-    }
-    return this.webComponentMaps.get(rootUri)!;
+    const { fs, getSourceCode } = this;
+    return getWebComponentMap(rootUri, { fs, getSourceCode });
   }
 
   private graphDependencies(rootUri: string, webComponentDefs: WebComponentMap): GraphDependencies {
@@ -235,38 +212,5 @@ export class ThemeGraphManager {
         return webComponentDefs.get(customElementName);
       },
     };
-  }
-}
-
-export type AugmentedLocation =
-  | {
-      uri: string;
-      range: undefined;
-      excerpt: undefined;
-      position: undefined;
-    }
-  | {
-      uri: string;
-      range: [number, number];
-      excerpt: string;
-      position: Range;
-    };
-
-export interface AugmentedReference extends Reference {
-  source: AugmentedLocation;
-  target: AugmentedLocation;
-  indirect: boolean;
-}
-
-function deduplicate(acc: Operation[], op: Operation): Operation[] {
-  const last = acc.at(-1);
-
-  // Merge subsequent operations of the same type and uri
-  if (last && last.type === op.type && 'uri' in last && 'uri' in op && last.uri === op.uri) {
-    return acc;
-  } else {
-    // Add the operation to the queue
-    acc.push(op);
-    return acc;
   }
 }

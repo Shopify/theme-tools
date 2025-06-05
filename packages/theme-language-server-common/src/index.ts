@@ -23,7 +23,7 @@ export {
   LiquidModule,
 } from '@shopify/theme-graph';
 export { debounce, memo, parseJSON, ArgumentTypes } from './utils';
-export { startServer, AugmentedLocation, AugmentedReference } from './server';
+export { startServer } from './server';
 export {
   ThemeCheckConfig,
   recommendedChecks,

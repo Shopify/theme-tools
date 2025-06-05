@@ -198,22 +198,3 @@ export type WebComponentDefinition = {
   assetName: string; // Relative path to the asset file
   range: [number, number]; // Start and end positions in the file
 };
-
-export type Operation = CreateEvent | ChangeEvent | DeleteEvent | RenameEvent;
-export interface CreateEvent {
-  type: 'create';
-  uri: string;
-}
-export interface ChangeEvent {
-  type: 'change';
-  uri: string;
-}
-export interface DeleteEvent {
-  type: 'delete';
-  uri: string;
-}
-export interface RenameEvent {
-  type: 'rename';
-  oldUri: string;
-  newUri: string;
-}
