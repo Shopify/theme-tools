@@ -540,6 +540,8 @@ export function startServer(
       fs.readFile.invalidate(newUri);
       fs.stat.invalidate(oldUri);
       fs.stat.invalidate(newUri);
+
+      themeGraphManager.rename(oldUri, newUri);
     }
 
     // We should complete refactors before running theme check
@@ -586,6 +588,7 @@ export function startServer(
           fs.readDirectory.invalidate(path.dirname(change.uri));
           fs.readFile.invalidate(change.uri);
           fs.stat.invalidate(change.uri);
+          themeGraphManager.create(change.uri);
           // If a file is created under out feet, we update its contents.
           updates.push(documentManager.changeFromDisk(change.uri));
           break;
@@ -594,6 +597,7 @@ export function startServer(
           // A changed file invalidates readFile and stat (but not readDirectory)
           fs.readFile.invalidate(change.uri);
           fs.stat.invalidate(change.uri);
+          themeGraphManager.change(change.uri);
           // If the file is not open, we update its contents in the doc manager
           // If it is open, then we don't need to update it because the document manager
           // will have the version from the editor.
@@ -607,6 +611,7 @@ export function startServer(
           fs.readDirectory.invalidate(path.dirname(change.uri));
           fs.readFile.invalidate(change.uri);
           fs.stat.invalidate(change.uri);
+          themeGraphManager.delete(change.uri);
           // If a file is deleted, it's removed from the document manager
           documentManager.delete(change.uri);
           break;

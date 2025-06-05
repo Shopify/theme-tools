@@ -1,62 +1,16 @@
-import {
-  memoize,
-  path as pathUtils,
-  SectionSchema,
-  SourceCodeType,
-  ThemeBlockSchema,
-  toSchema,
-} from '@shopify/theme-check-common';
-import { NodeFileSystem } from '@shopify/theme-check-node';
-import path from 'node:path';
+import { path as pathUtils, SourceCodeType } from '@shopify/theme-check-common';
 import { assert, beforeAll, describe, expect, it } from 'vitest';
-import { URI } from 'vscode-uri';
-import { getWebComponentMap } from '../getWebComponentMap';
-import { buildThemeGraph, toSourceCode } from '../index';
-import {
-  Dependencies,
-  JsonModuleKind,
-  LiquidModuleKind,
-  ModuleType,
-  Range,
-  ThemeGraph,
-  WebComponentMap,
-} from '../types';
-
-const fixturesRoot = path.join(__dirname, '../../fixtures');
-const skeleton = path.join(fixturesRoot, 'skeleton');
-const identity = <T>(x: T): T => x;
+import { buildThemeGraph } from '../index';
+import { Dependencies, JsonModuleKind, LiquidModuleKind, ModuleType, ThemeGraph } from '../types';
+import { getDependencies, skeleton } from './test-helpers';
 
 describe('Module: index', () => {
-  const rootUri = URI.file(skeleton).toString();
+  const rootUri = skeleton;
   const p = (part: string) => pathUtils.join(rootUri, ...part.split('/'));
-  const r = (part: string, range?: Range, indirect?: boolean) => ({
-    uri: p(part),
-    range,
-    indirect,
-  });
-  let getSourceCode = makeGetSourceCode();
-  let webComponentDefs: WebComponentMap;
   let dependencies: Dependencies;
 
   beforeAll(async () => {
-    dependencies = {
-      fs: NodeFileSystem,
-      getSectionSchema: memoize(async (name: string) => {
-        const uri = pathUtils.join(skeleton, 'sections', `${name}.liquid`);
-        const sourceCode = await getSourceCode(uri);
-        return (await toSchema('theme', uri, sourceCode, async () => true)) as SectionSchema;
-      }, identity),
-      getBlockSchema: memoize(async (name: string) => {
-        const uri = pathUtils.join(skeleton, 'blocks', `${name}.liquid`);
-        const sourceCode = await getSourceCode(uri);
-        return (await toSchema('theme', uri, sourceCode, async () => true)) as ThemeBlockSchema;
-      }, identity),
-      getSourceCode,
-      getWebComponentDefinitionReference: (customElementName: string) =>
-        webComponentDefs.get(customElementName),
-    };
-
-    webComponentDefs = await getWebComponentMap(rootUri, dependencies);
+    dependencies = await getDependencies(rootUri);
   }, 15000);
 
   describe('Unit: buildThemeGraph', { timeout: 10000 }, () => {
@@ -272,17 +226,4 @@ describe('Module: index', () => {
       });
     });
   });
-
-  function makeGetSourceCode() {
-    const cache = new Map<string, any>();
-    return async function getSourceCode(uri: string) {
-      if (cache.has(uri)) {
-        return cache.get(uri);
-      }
-      const source = await NodeFileSystem.readFile(uri);
-      const sourceCode = await toSourceCode(URI.file(uri).toString(), source);
-      cache.set(uri, sourceCode);
-      return sourceCode;
-    };
-  }
 });
