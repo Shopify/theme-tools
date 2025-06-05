@@ -1,6 +1,6 @@
 import { path, recursiveReadDirectory } from '@shopify/theme-check-common';
 import { ancestor as visit } from 'acorn-walk';
-import { Dependencies, WebComponentMap } from './types';
+import { Dependencies, Void, WebComponentMap } from './types';
 import { CallExpression } from 'acorn';
 
 /**
@@ -24,49 +24,58 @@ export async function getWebComponentMap(
   rootUri: string,
   { fs, getSourceCode }: Pick<Dependencies, 'fs' | 'getSourceCode'>,
 ): Promise<WebComponentMap> {
-  const webComponentDefs = new Map<string, { assetName: string; range: [number, number] }>();
+  const webComponentDefs: WebComponentMap = new Map();
   const assetRoot = path.join(rootUri, 'assets');
   const jsFiles = await recursiveReadDirectory(fs, assetRoot, ([fileName]) =>
     fileName.endsWith('.js'),
   );
 
-  const promises = jsFiles.map(async (jsFile) => {
-    const sourceCode = await getSourceCode(jsFile);
-    if (sourceCode.type !== 'javascript') {
-      return;
-    }
-
-    const ast = sourceCode.ast;
-    if (ast instanceof Error) {
-      return;
-    }
-
-    for (const node of ast.body) {
-      visit(node, {
-        Literal(node, _state, ancestors) {
-          if (typeof node.value === 'string' && wcre.test(node.value)) {
-            // Making sure we're looking at customElements.define calls
-            const parentNode = ancestors.at(-2);
-            if (!parentNode) return;
-            if (parentNode.type !== 'CallExpression') return;
-            const callee = (parentNode as CallExpression).callee;
-            if (callee.type !== 'MemberExpression') return;
-            const property = callee.property;
-            if (property.type !== 'Identifier') return;
-            if (property.name !== 'define') return;
-
-            webComponentDefs.set(node.value, {
-              assetName: path.relative(jsFile, assetRoot),
-              range: [property.start, node.end],
-            });
-          }
-          return null;
-        },
-      });
-    }
-  });
-
-  await Promise.all(promises);
+  await Promise.all(
+    jsFiles.map((uri) =>
+      findWebComponentReferences(uri, assetRoot, getSourceCode, webComponentDefs),
+    ),
+  );
 
   return webComponentDefs;
+}
+
+export async function findWebComponentReferences(
+  uri: string,
+  assetRoot: string,
+  getSourceCode: Dependencies['getSourceCode'],
+  result: WebComponentMap,
+): Promise<Void> {
+  const sourceCode = await getSourceCode(uri);
+  if (sourceCode.type !== 'javascript') {
+    return;
+  }
+
+  const ast = sourceCode.ast;
+  if (ast instanceof Error) {
+    return;
+  }
+
+  for (const node of ast.body) {
+    visit(node, {
+      Literal(node, _state, ancestors) {
+        if (typeof node.value === 'string' && wcre.test(node.value)) {
+          // Making sure we're looking at customElements.define calls
+          const parentNode = ancestors.at(-2);
+          if (!parentNode) return;
+          if (parentNode.type !== 'CallExpression') return;
+          const callee = (parentNode as CallExpression).callee;
+          if (callee.type !== 'MemberExpression') return;
+          const property = callee.property;
+          if (property.type !== 'Identifier') return;
+          if (property.name !== 'define') return;
+
+          result.set(node.value, {
+            assetName: path.relative(uri, assetRoot),
+            range: [property.start, node.end],
+          });
+        }
+        return null;
+      },
+    });
+  }
 }
