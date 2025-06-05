@@ -34,7 +34,7 @@ export async function acceptsLocalBlocks(
   sectionType: string,
   deps: AugmentedDependencies,
 ): Promise<boolean | Error> {
-  const sectionSchema = await deps.getSectionSchema(sectionType);
+  const sectionSchema = await deps.getSectionSchema(sectionType).catch((_) => undefined);
   if (!sectionSchema) {
     return new Error('Section does not exist');
   }
