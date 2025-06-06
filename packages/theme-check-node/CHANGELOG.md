@@ -1,5 +1,19 @@
 # @shopify/theme-check-node
 
+## 3.18.0
+
+### Minor Changes
+
+- 649da6df: Introduce check that warn developers that `{% stylesheet %}` and `{% javascript %}` tags only support static content
+
+### Patch Changes
+
+- 06840d80: Fix readDirectory issue when root finding did not work
+- Updated dependencies [649da6df]
+- Updated dependencies [606053f1]
+  - @shopify/theme-check-common@3.18.0
+  - @shopify/theme-check-docs-updater@3.18.0
+
 ## 3.17.1
 
 ### Patch Changes
