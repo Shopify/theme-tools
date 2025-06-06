@@ -106,6 +106,40 @@ describe('Module: ValidBlockTarget', () => {
         );
       });
 
+      if (path === 'sections') {
+        it(`should report an error when default defined block file does not exist`, async () => {
+          const theme: MockTheme = {
+            [`${path}/invalid-file.liquid`]: `
+              {% schema %}
+              {
+                "name": "Section name",
+                "blocks": [
+                  {
+                    "type": "@theme"
+                  }
+                ],
+                "default": {
+                  "title": "Default",
+                  "blocks": [
+                    {
+                      "name": "some block",
+                      "type": "missing_block"
+                    }
+                  ]
+                }
+              }
+              {% endschema %}
+            `,
+          };
+
+          const offenses = await check(theme, [ValidBlockTarget]);
+          expect(offenses).to.have.length(1);
+          expect(offenses).to.containOffense(
+            "Theme block 'blocks/missing_block.liquid' does not exist.",
+          );
+        });
+      }
+
       it(`should not report subsequent errors in present defined blocks if error in root level (${path} bucket)`, async () => {
         const theme: MockTheme = {
           [`${path}/invalid-block.liquid`]: `
@@ -256,13 +290,54 @@ describe('Module: ValidBlockTarget', () => {
         };
 
         const offenses = await check(theme, [ValidBlockTarget]);
-        expect(offenses).to.have.length(1);
-        expect(offenses[0].message).to.equal(
+        expect(offenses).to.have.length(2);
+        expect(offenses).to.containOffense(
           'Theme block type "invalid_preset_block" must be allowed in "blocks" at the root of this schema.',
+        );
+        expect(offenses).to.containOffense(
+          "Theme block 'blocks/invalid_preset_block.liquid' does not exist.",
         );
       });
 
-      it(`should report errors for private blocks even when @theme is specified at root level (${path} bucket)`, async () => {
+      if (path === 'sections') {
+        it(`should report an error when a default defined block is not specified at root level`, async () => {
+          const theme: MockTheme = {
+            'blocks/text.liquid': '',
+            [`${path}/invalid-preset.liquid`]: `
+              {% schema %}
+              {
+                "name": "Section name",
+                "blocks": [
+                  {
+                    "type": "text"
+                  }
+                ],
+                "default": {
+                  "name": "Default",
+                  "blocks": [
+                    {
+                      "name": "invalid_preset_block",
+                      "type": "invalid_preset_block"
+                    }
+                  ]
+                }
+              }
+              {% endschema %}
+            `,
+          };
+
+          const offenses = await check(theme, [ValidBlockTarget]);
+          expect(offenses).to.have.length(2);
+          expect(offenses).to.containOffense(
+            'Theme block type "invalid_preset_block" must be allowed in "blocks" at the root of this schema.',
+          );
+          expect(offenses).to.containOffense(
+            "Theme block 'blocks/invalid_preset_block.liquid' does not exist.",
+          );
+        });
+      }
+
+      it(`should report errors in presets for private blocks even when @theme is specified at root level (${path} bucket)`, async () => {
         const theme: MockTheme = {
           'blocks/_private.liquid': '',
           [`${path}/private-blocks.liquid`]: `
@@ -291,10 +366,45 @@ describe('Module: ValidBlockTarget', () => {
 
         const offenses = await check(theme, [ValidBlockTarget]);
         expect(offenses).to.have.length(1);
-        expect(offenses[0].message).to.equal(
+        expect(offenses).to.containOffense(
           'Theme block type "_private" is a private block so it must be explicitly allowed in "blocks" at the root of this schema.',
         );
       });
+
+      if (path === 'sections') {
+        it(`should report errors in default for private blocks even when @theme is specified at root level`, async () => {
+          const theme: MockTheme = {
+            'blocks/_private.liquid': '',
+            [`${path}/private-blocks.liquid`]: `
+              {% schema %}
+              {
+                "name": "${path === 'sections' ? 'Section' : 'Block'} name",
+                "blocks": [
+                  {
+                    "type": "@theme"
+                  }
+                ],
+                "default": {
+                  "name": "Default",
+                  "blocks": [
+                    {
+                      "name": "private",
+                      "type": "_private"
+                    }
+                  ]
+                }
+              }
+              {% endschema %}
+            `,
+          };
+
+          const offenses = await check(theme, [ValidBlockTarget]);
+          expect(offenses).to.have.length(1);
+          expect(offenses).to.containOffense(
+            'Theme block type "_private" is a private block so it must be explicitly allowed in "blocks" at the root of this schema.',
+          );
+        });
+      }
 
       it(`should report errors with correct indices (${path} bucket)`, async () => {
         const theme: MockTheme = {
@@ -323,11 +433,13 @@ describe('Module: ValidBlockTarget', () => {
         };
 
         const offenses = await check(theme, [ValidBlockTarget]);
-        expect(offenses).to.have.length(1);
+        expect(offenses).to.have.length(2);
 
-        const content = theme[`${path}/private-blocks.liquid`];
-        const erroredContent = content.slice(offenses[0].start.index, offenses[0].end.index);
-        expect(erroredContent).to.equal('"_private"');
+        for (const offense of offenses) {
+          const content = theme[`${path}/private-blocks.liquid`];
+          const erroredContent = content.slice(offense.start.index, offense.end.index);
+          expect(erroredContent).to.equal('"_private"');
+        }
       });
 
       it(`should not report errors for private blocks when listed at root level (${path} bucket)`, async () => {
@@ -428,9 +540,12 @@ describe('Module: ValidBlockTarget', () => {
         };
 
         const offenses = await check(theme, [ValidBlockTarget]);
-        expect(offenses).to.have.length(1);
-        expect(offenses[0].message).to.equal(
+        expect(offenses).to.have.length(2);
+        expect(offenses).to.containOffense(
           'Theme block type "invalid_preset_block" must be allowed in "blocks" at the root of this schema.',
+        );
+        expect(offenses).to.containOffense(
+          "Theme block 'blocks/invalid_preset_block.liquid' does not exist.",
         );
       });
 

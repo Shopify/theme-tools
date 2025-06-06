@@ -21,14 +21,11 @@ export type PresetBlockNodeWithPath = {
   path: string[];
 };
 
-export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
-  rootLevelThemeBlocks: BlockDefNodeWithPath[];
-  rootLevelLocalBlocks: BlockDefNodeWithPath[];
-  presetLevelBlocks: { [key: number]: PresetBlockNodeWithPath[] };
-} {
+export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema) {
   const rootLevelThemeBlocks: BlockDefNodeWithPath[] = [];
   const rootLevelLocalBlocks: BlockDefNodeWithPath[] = [];
   const presetLevelBlocks: { [key: number]: PresetBlockNodeWithPath[] } = {};
+  const defaultLevelBlocks: BlockDefNodeWithPath[] = [];
 
   const rootLevelBlocks = validSchema.blocks;
   const presets = validSchema.presets;
@@ -84,6 +81,17 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
     }
   }
 
+  function categorizeDefaultLevelBlocks(block: Preset.Block, index: number) {
+    const hasName = 'name' in block;
+
+    if (hasName) {
+      defaultLevelBlocks.push({
+        node: block,
+        path: ['default', 'blocks', String(index), 'type'],
+      });
+    }
+  }
+
   if (Array.isArray(rootLevelBlocks)) {
     rootLevelBlocks.forEach((block, index) => {
       categorizeRootLevelBlocks(block, index);
@@ -110,10 +118,17 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema): {
     });
   }
 
+  if ('default' in validSchema) {
+    validSchema.default?.blocks?.forEach((block, index) => {
+      categorizeDefaultLevelBlocks(block, index);
+    });
+  }
+
   return {
     rootLevelThemeBlocks,
     rootLevelLocalBlocks,
     presetLevelBlocks,
+    defaultLevelBlocks,
   };
 }
 
@@ -137,7 +152,21 @@ export function isInvalidPresetBlock(
   return !isPresetInRootLevel && needsExplicitRootBlock;
 }
 
-function validateBlockTargeting(
+export function isInvalidDefaultBlock(
+  blockNode: Section.Block | ThemeBlock.Block,
+  rootLevelThemeBlocks: BlockDefNodeWithPath[],
+): boolean {
+  const isPrivateBlockType = blockNode.type.startsWith('_');
+  const isThemeInRootLevel = rootLevelThemeBlocks.some((block) => block.node.type === '@theme');
+  const needsExplicitRootBlock = isPrivateBlockType || !isThemeInRootLevel;
+  const isDefaultInRootLevel = rootLevelThemeBlocks.some(
+    (block) => block.node.type === blockNode.type,
+  );
+
+  return !isDefaultInRootLevel && needsExplicitRootBlock;
+}
+
+async function validateBlockTargeting(
   nestedBlock: Preset.PresetBlockForArray | Preset.PresetBlockForHash,
   nestedPath: string[],
   context: Context<SourceCodeType.LiquidHtml>,
@@ -151,20 +180,30 @@ function validateBlockTargeting(
   const typeNode = nodeAtPath(ast, nestedPath)! as LiteralNode;
   const blockId = 'id' in nestedBlock ? nestedBlock.id! : nestedPath.at(-2)!;
 
-  if (
-    typeNode &&
-    isInvalidPresetBlock(blockId, nestedBlock, rootLevelThemeBlocks, staticBlockDefs)
-  ) {
-    const isStaticBlock = !!nestedBlock.static;
-    const isPrivateBlock = nestedBlock.type.startsWith('_');
-    const errorMessage = isStaticBlock
-      ? `Could not find a static block of type "${nestedBlock.type}" with id "${blockId}" in "blocks/${parentNode.type}.liquid".`
-      : isPrivateBlock
-      ? `Private block type "${nestedBlock.type}" is not allowed in "${parentNode.type}" blocks.`
-      : `Block type "${nestedBlock.type}" is not allowed in "${
-          parentNode.type
-        }" blocks. Allowed types are: ${allowedBlockTypes.join(', ')}.`;
-    reportWarning(errorMessage, offset, typeNode, context);
+  if (typeNode) {
+    if (isInvalidPresetBlock(blockId, nestedBlock, rootLevelThemeBlocks, staticBlockDefs)) {
+      const isStaticBlock = !!nestedBlock.static;
+      const isPrivateBlock = nestedBlock.type.startsWith('_');
+      const errorMessage = isStaticBlock
+        ? `Could not find a static block of type "${nestedBlock.type}" with id "${blockId}" in "blocks/${parentNode.type}.liquid".`
+        : isPrivateBlock
+        ? `Private block type "${nestedBlock.type}" is not allowed in "${parentNode.type}" blocks.`
+        : `Block type "${nestedBlock.type}" is not allowed in "${
+            parentNode.type
+          }" blocks. Allowed types are: ${allowedBlockTypes.join(', ')}.`;
+      reportWarning(errorMessage, offset, typeNode, context);
+    }
+
+    const exists = await validateBlockFileExistence(nestedBlock.type, context);
+
+    if (!exists) {
+      reportWarning(
+        `Theme block 'blocks/${nestedBlock.type}.liquid' does not exist.`,
+        offset,
+        typeNode,
+        context,
+      );
+    }
   }
 
   if ('blocks' in nestedBlock && nestedBlock.blocks) {
@@ -199,35 +238,39 @@ export async function validateNestedBlocks(
   const allowedBlockTypes = rootLevelThemeBlocks.map((block) => block.node.type);
 
   if (Array.isArray(nestedBlocks)) {
-    nestedBlocks.forEach((nestedBlock, index) => {
-      const nestedPath = currentPath.concat(['blocks', String(index), 'type']);
-      validateBlockTargeting(
-        nestedBlock,
-        nestedPath,
-        context,
-        parentNode,
-        rootLevelThemeBlocks,
-        allowedBlockTypes,
-        offset,
-        ast,
-        staticBlockDefs,
-      );
-    });
+    Promise.all(
+      nestedBlocks.map((nestedBlock, index) => {
+        const nestedPath = currentPath.concat(['blocks', String(index), 'type']);
+        return validateBlockTargeting(
+          nestedBlock,
+          nestedPath,
+          context,
+          parentNode,
+          rootLevelThemeBlocks,
+          allowedBlockTypes,
+          offset,
+          ast,
+          staticBlockDefs,
+        );
+      }),
+    );
   } else if (typeof nestedBlocks === 'object') {
-    Object.entries(nestedBlocks).forEach(([key, nestedBlock]) => {
-      const nestedPath = currentPath.concat(['blocks', key, 'type']);
-      validateBlockTargeting(
-        nestedBlock,
-        nestedPath,
-        context,
-        parentNode,
-        rootLevelThemeBlocks,
-        allowedBlockTypes,
-        offset,
-        ast,
-        staticBlockDefs,
-      );
-    });
+    Promise.all(
+      Object.entries(nestedBlocks).map(([key, nestedBlock]) => {
+        const nestedPath = currentPath.concat(['blocks', key, 'type']);
+        return validateBlockTargeting(
+          nestedBlock,
+          nestedPath,
+          context,
+          parentNode,
+          rootLevelThemeBlocks,
+          allowedBlockTypes,
+          offset,
+          ast,
+          staticBlockDefs,
+        );
+      }),
+    );
   }
 }
 
