@@ -58,11 +58,15 @@ export const ValidSettingsKey: LiquidCheckDefinition = {
           validateSettingsKey(context, offset, settingsNode, validSchema.settings);
 
           // Check if default block settings match the settings defined in the block file's schema
-          validSchema.default.blocks?.forEach((block, i) => {
-            const settingsNode = nodeAtPath(ast, ['default', 'blocks', i, 'settings']);
-
-            validateReferencedBlock(context, offset, settingsNode, rootLevelLocalBlocks, block);
-          });
+          if ('blocks' in validSchema.default) {
+            const iterator = Array.isArray(validSchema.default.blocks)
+              ? validSchema.default.blocks.entries()
+              : Object.entries(validSchema.default.blocks!);
+            for (const [key, block] of iterator) {
+              const settingsNode = nodeAtPath(ast, ['default', 'blocks', key, 'settings']);
+              validateReferencedBlock(context, offset, settingsNode, rootLevelLocalBlocks, block);
+            }
+          }
         }
 
         // Check if preset block settings match the settings defined in the block file's schema

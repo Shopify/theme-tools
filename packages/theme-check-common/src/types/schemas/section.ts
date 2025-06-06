@@ -12,7 +12,7 @@ export declare namespace Section {
     max_blocks?: number;
     blocks?: Block[];
     presets?: Preset.Preset[];
-    default?: Default;
+    default?: Preset.Preset;
     locales?: Record<string, Record<string, string>>;
     enabled_on?: SectionToggle;
     disabled_on?: SectionToggle;
@@ -40,15 +40,6 @@ export declare namespace Section {
     name: string;
     settings?: Setting.Any[];
   };
-
-  // Default section configuration (kind of like presets)
-  export interface Default {
-    settings?: Record<string, string | number | boolean | string[]>;
-    blocks?: Array<{
-      type: string;
-      settings?: Record<string, string | number | boolean | string[]>;
-    }>;
-  }
 
   // Section toggle interface
   export interface SectionToggle {

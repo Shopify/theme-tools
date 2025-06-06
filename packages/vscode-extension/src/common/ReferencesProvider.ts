@@ -11,6 +11,7 @@ import {
   Event,
   EventEmitter,
   ExtensionContext,
+  ThemeColor,
   ThemeIcon,
   TreeDataProvider,
   TreeItem,
@@ -66,8 +67,13 @@ export class ReferencesProvider implements TreeDataProvider<ReferenceItem> {
     ]);
     this.references = references
       .sort((a, b) => {
-        if (a.indirect !== b.indirect) return a.indirect ? 1 : -1;
-        return a[destination].uri.localeCompare(b[destination].uri);
+        if (a.indirect === b.indirect && a.preset === b.preset) {
+          return a[destination].uri.localeCompare(b[destination].uri);
+        }
+        if (a.indirect !== b.indirect) {
+          return a.indirect ? 1 : -1; // indirect references come last
+        }
+        return a.preset ? 1 : -1; // preset references come last
       })
       .map((ref) => new ReferenceItem(rootUri, ref, undefined, destination));
     this._onDidChangeTreeData.fire(undefined);
@@ -107,7 +113,11 @@ class ReferenceItem extends TreeItem {
     this.parent = parent;
     this.description = reference.source.excerpt; // always interested in the source excerpt
     this.resourceUri = Uri.parse(dest.uri);
-    this.iconPath = reference.indirect ? new ThemeIcon('combine') : undefined;
+    this.iconPath = reference.preset
+      ? new ThemeIcon('symbol-method', new ThemeColor(''))
+      : reference.indirect
+      ? new ThemeIcon('symbol-misc', new ThemeColor('button.secondaryForeground'))
+      : undefined;
     this.command = {
       command: 'shopifyLiquid.openLocation',
       title: 'View reference',
