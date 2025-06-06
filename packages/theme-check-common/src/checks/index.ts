@@ -17,6 +17,7 @@ import { DeprecatedTag } from './deprecated-tag';
 import { DuplicateRenderSnippetArguments } from './duplicate-render-snippet-arguments';
 import { DuplicateContentForArguments } from './duplicate-content-for-arguments';
 import { EmptyBlockContent } from './empty-block-content';
+import { HardcodedRoutes } from './hardcoded-routes';
 import { ImgWidthAndHeight } from './img-width-and-height';
 import { JSONMissingBlock } from './json-missing-block';
 import { JSONSyntaxError } from './json-syntax-error';
@@ -82,6 +83,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   DuplicateContentForArguments,
   DuplicateRenderSnippetArguments,
   EmptyBlockContent,
+  HardcodedRoutes,
   ImgWidthAndHeight,
   JSONMissingBlock,
   JSONSyntaxError,

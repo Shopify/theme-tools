@@ -39,6 +39,9 @@ DuplicateRenderSnippetArguments:
 EmptyBlockContent:
   enabled: true
   severity: 1
+HardcodedRoutes:
+  enabled: true
+  severity: 1
 ImgWidthAndHeight:
   enabled: true
   severity: 0
