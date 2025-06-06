@@ -13,6 +13,7 @@
     "packages/liquid-html-parser",
     "packages/prettier-plugin-liquid",
     "packages/theme-check-*",
+    "packages/theme-graph",
     "packages/theme-language-server-*",
     "packages/vscode-extension",
     "packages/release-orchestrator"
