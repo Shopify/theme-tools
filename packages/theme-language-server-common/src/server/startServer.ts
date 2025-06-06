@@ -646,13 +646,13 @@ export function startServer(
   connection.onRequest(ThemeGraphReferenceRequest.type, async (params) => {
     if (hasUnsupportedDocument(params)) return [];
     const { uri, offset, includeIndirect } = params;
-    return themeGraphManager.getReferences(uri, offset, { includeIndirect });
+    return themeGraphManager.getReferences(uri, offset, { includeIndirect }).catch((_) => []);
   });
 
   connection.onRequest(ThemeGraphDependenciesRequest.type, async (params) => {
     if (hasUnsupportedDocument(params)) return [];
     const { uri, offset, includeIndirect } = params;
-    return themeGraphManager.getDependencies(uri, offset, { includeIndirect });
+    return themeGraphManager.getDependencies(uri, offset, { includeIndirect }).catch((_) => []);
   });
 
   connection.onRequest(ThemeGraphRootRequest.type, async (params) => {
