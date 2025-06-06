@@ -1,0 +1,34 @@
+{
+  "name": "theme-component-generator",
+  "version": "1.0.0",
+  "description": "MCP (Model Context Protocol) server to generate basic Liquid components",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "node --experimental-strip-types src/index.ts",
+    "dev": "node --experimental-strip-types --watch src/index.ts",
+    "build": "echo noop"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "liquid",
+    "theme",
+    "component",
+    "generator",
+    "server",
+    "typescript"
+  ],
+  "author": "Alok Swamy <alok.swamy@shopify.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.12.0",
+    "zod": "^3.25.32"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

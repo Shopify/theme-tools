@@ -1,0 +1,34 @@
+<details class="details">
+  <summary class="details__header">
+    {{ block.settings.heading }}
+    <span>{{- 'icon-caret.svg' | inline_asset_content -}}</span>
+  </summary>
+
+  <div class="details__content">{{ block.settings.body }}</div>
+</details>
+
+{% schema %}
+{
+  "name": "t:general.accordion_row",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:settings.heading",
+      "default": "👉 Click me to show more information"
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "t:settings.body",
+      "default": "<p><em>Add any text here! Update the code to attach blocks as the body of this block.</em></p>"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.accordion_row",
+    }
+  ]
+}
+{% endschema %}
