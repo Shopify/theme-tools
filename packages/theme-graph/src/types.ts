@@ -180,6 +180,9 @@ export type Reference = {
 
   /** An indirect reference is for things like a blocks' dependency on "@theme" blocks */
   indirect: boolean;
+
+  /** A preset reference is almost direct, but not really */
+  preset: boolean;
 };
 
 export type Range = [start: number, end: number]; // represents a range in the source code

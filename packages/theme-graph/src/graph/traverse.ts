@@ -5,9 +5,12 @@ import {
   ObjectNode,
   parseJSON,
   path,
+  Preset,
+  Section,
   SectionSchema,
   SourceCodeType,
   Template,
+  ThemeBlock,
   ThemeBlockSchema,
   visit,
   Visitor,
@@ -235,9 +238,111 @@ async function traverseLiquidSchema(
 
   // Traverse the blocks
   if (validSchema.blocks) {
-    for (const [i, blockDef] of Object.entries(validSchema.blocks)) {
-      const nodePath = ['blocks', i];
+    promises.push(traverseSchemaBlocks(schema, module, ast, validSchema.blocks, themeGraph, deps));
+  }
+
+  // Traverse the presets
+  if (validSchema.presets) {
+    promises.push(
+      traverseSchemaPresets(schema, module, ast, validSchema.presets, themeGraph, deps),
+    );
+  }
+
+  // Traverse section.default if it exists
+  if ('default' in validSchema && validSchema.default) {
+    promises.push(
+      traverseSchemaDefault(
+        schema as SectionSchema,
+        module,
+        ast,
+        validSchema.default,
+        themeGraph,
+        deps,
+      ),
+    );
+  }
+
+  return Promise.all(promises);
+}
+
+async function traverseSchemaBlocks(
+  schema: SectionSchema | ThemeBlockSchema,
+  module: LiquidModule,
+  ast: JSONNode,
+  blocks: Section.Block[] | ThemeBlock.Block[],
+  themeGraph: ThemeGraph,
+  deps: AugmentedDependencies,
+) {
+  const promises: Promise<Void>[] = [];
+
+  for (const [i, blockDef] of Object.entries(blocks)) {
+    const nodePath = ['blocks', i];
+    const node = nodeAtPath(ast, nodePath)! as ObjectNode;
+    const typeProperty = node.children.find((child) => child.key.value === 'type');
+    if (!typeProperty) continue;
+
+    const sourceRange: Range = [
+      schema.offset + typeProperty.loc.start.offset,
+      schema.offset + typeProperty.loc.end.offset,
+    ];
+
+    switch (blockDef.type) {
+      case '@theme': {
+        const publicBlocks = await deps
+          .getThemeBlockNames()
+          .then((blocks) => blocks.filter((name) => !name.startsWith('_')));
+        for (const publicBlock of publicBlocks) {
+          const blockModule = getThemeBlockModule(
+            themeGraph,
+            path.basename(publicBlock, '.liquid'),
+          );
+          bind(module, blockModule, { sourceRange, indirect: true });
+          promises.push(traverseModule(blockModule, themeGraph, deps));
+        }
+
+        break;
+      }
+
+      case '@app': {
+        break;
+      }
+
+      default: {
+        const blockModule = getThemeBlockModule(themeGraph, blockDef.type);
+        bind(module, blockModule, { sourceRange });
+        promises.push(traverseModule(blockModule, themeGraph, deps));
+      }
+    }
+  }
+
+  return Promise.all(promises);
+}
+
+async function traverseSchemaPresets(
+  schema: SectionSchema | ThemeBlockSchema,
+  module: LiquidModule,
+  ast: JSONNode,
+  presets: Preset.Preset[],
+  themeGraph: ThemeGraph,
+  deps: AugmentedDependencies,
+) {
+  const promises: Promise<Void>[] = [];
+
+  for (const [i, preset] of presets.entries()) {
+    if (!('blocks' in preset)) continue;
+
+    // Iterate over array entries or object entries depending on how the blocks are defined
+    const iterator = Array.isArray(preset.blocks)
+      ? preset.blocks.entries()
+      : Object.entries(preset.blocks!);
+
+    for (const [keyOrIndex, block] of iterator) {
+      const nodePath = ['presets', i, 'blocks', keyOrIndex];
       const node = nodeAtPath(ast, nodePath)! as ObjectNode;
+
+      const blockModule = getThemeBlockModule(themeGraph, block.type);
+      if (!blockModule) continue;
+
       const typeProperty = node.children.find((child) => child.key.value === 'type');
       if (!typeProperty) continue;
 
@@ -246,34 +351,94 @@ async function traverseLiquidSchema(
         schema.offset + typeProperty.loc.end.offset,
       ];
 
-      switch (blockDef.type) {
-        case '@theme': {
-          const publicBlocks = await deps
-            .getThemeBlockNames()
-            .then((blocks) => blocks.filter((name) => !name.startsWith('_')));
-          for (const publicBlock of publicBlocks) {
-            const blockModule = getThemeBlockModule(
-              themeGraph,
-              path.basename(publicBlock, '.liquid'),
-            );
-            bind(module, blockModule, { sourceRange, indirect: true });
-            promises.push(traverseModule(blockModule, themeGraph, deps));
-          }
-
-          break;
-        }
-
-        case '@app': {
-          break;
-        }
-
-        default: {
-          const blockModule = getThemeBlockModule(themeGraph, blockDef.type);
-          bind(module, blockModule, { sourceRange });
-          promises.push(traverseModule(blockModule, themeGraph, deps));
-        }
+      bind(module, blockModule, { sourceRange, preset: true });
+      promises.push(traverseModule(blockModule, themeGraph, deps));
+      if (block.blocks) {
+        promises.push(
+          traverseSchemaPresetBlock(schema, module, ast, block.blocks, nodePath, themeGraph, deps),
+        );
       }
     }
+  }
+
+  return Promise.all(promises);
+}
+
+async function traverseSchemaPresetBlock(
+  schema: SectionSchema | ThemeBlockSchema,
+  module: LiquidModule,
+  ast: JSONNode,
+  blocks: Preset.PresetBlockHash | Preset.PresetBlockForArray[],
+  parentPath: (string | number)[],
+  themeGraph: ThemeGraph,
+  deps: AugmentedDependencies,
+) {
+  const promises: Promise<Void>[] = [];
+
+  // Iterate over array entries or object entries depending on how the blocks are defined
+  const iterator = Array.isArray(blocks) ? blocks.entries() : Object.entries(blocks);
+
+  for (const [keyOrIndex, block] of iterator) {
+    const nodePath = [...parentPath, 'blocks', keyOrIndex];
+    const node = nodeAtPath(ast, nodePath)! as ObjectNode;
+
+    const blockModule = getThemeBlockModule(themeGraph, block.type);
+    if (!blockModule) continue;
+
+    const typeProperty = node.children.find((child) => child.key.value === 'type');
+    if (!typeProperty) continue;
+
+    const sourceRange: Range = [
+      schema.offset + typeProperty.loc.start.offset,
+      schema.offset + typeProperty.loc.end.offset,
+    ];
+
+    bind(module, blockModule, { sourceRange, preset: true });
+    promises.push(traverseModule(blockModule, themeGraph, deps));
+    if (block.blocks) {
+      promises.push(
+        traverseSchemaPresetBlock(schema, module, ast, block.blocks, nodePath, themeGraph, deps),
+      );
+    }
+  }
+
+  return Promise.all(promises);
+}
+
+async function traverseSchemaDefault(
+  schema: SectionSchema,
+  module: LiquidModule,
+  ast: JSONNode,
+  preset: Section.Default,
+  themeGraph: ThemeGraph,
+  deps: AugmentedDependencies,
+) {
+  const promises: Promise<Void>[] = [];
+
+  if (!('blocks' in preset)) return;
+
+  // Iterate over array entries or object entries depending on how the blocks are defined
+  const iterator = Array.isArray(preset.blocks)
+    ? preset.blocks.entries()
+    : Object.entries(preset.blocks!);
+
+  for (const [keyOrIndex, block] of iterator) {
+    const nodePath = ['default', 'blocks', keyOrIndex];
+    const node = nodeAtPath(ast, nodePath)! as ObjectNode;
+
+    const blockModule = getThemeBlockModule(themeGraph, block.type);
+    if (!blockModule) continue;
+
+    const typeProperty = node.children.find((child) => child.key.value === 'type');
+    if (!typeProperty) continue;
+
+    const sourceRange: Range = [
+      schema.offset + typeProperty.loc.start.offset,
+      schema.offset + typeProperty.loc.end.offset,
+    ];
+
+    bind(module, blockModule, { sourceRange, preset: true });
+    promises.push(traverseModule(blockModule, themeGraph, deps));
   }
 
   return Promise.all(promises);
@@ -453,16 +618,19 @@ export function bind(
     sourceRange,
     targetRange,
     indirect = false,
+    preset = false,
   }: {
     sourceRange?: Range; // a range in the source module that references the child
     targetRange?: Range; // a range in the child module that is being referenced
     indirect?: boolean; // if true, the source is not directly referencing the target (e.g. @theme dependency)
+    preset?: boolean; // if true, the source is a preset that references the target
   } = {},
 ): void {
   const dependency: Reference = {
     source: { uri: source.uri, range: sourceRange },
     target: { uri: target.uri, range: targetRange },
     indirect,
+    preset,
   };
 
   source.dependencies.push(dependency);

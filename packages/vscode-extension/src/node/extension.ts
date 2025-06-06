@@ -36,15 +36,17 @@ export async function activate(context: ExtensionContext) {
       client!.sendRequest('workspace/executeCommand', { command: runChecksCommand });
     }),
     commands.registerCommand('shopifyLiquid.openLocation', (ref: AugmentedLocation) => {
-      window.showTextDocument(Uri.parse(ref.uri), {
-        selection: ref.position
-          ? new Range(
-              new Position(ref.position.start.line, ref.position.start.character),
-              new Position(ref.position.end.line, ref.position.end.character),
-            )
-          : undefined,
-        preserveFocus: true,
-        preview: true,
+      workspace.openTextDocument(Uri.parse(ref.uri)).then((doc) => {
+        window.showTextDocument(doc, {
+          selection: ref.position
+            ? new Range(
+                new Position(ref.position.start.line, ref.position.start.character),
+                new Position(ref.position.end.line, ref.position.end.character),
+              )
+            : undefined,
+          preserveFocus: true,
+          preview: true,
+        });
       });
     }),
     languages.registerDocumentFormattingEditProvider(

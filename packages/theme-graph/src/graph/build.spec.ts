@@ -7,6 +7,7 @@ import { getDependencies, skeleton } from './test-helpers';
 describe('Module: index', () => {
   const rootUri = skeleton;
   const p = (part: string) => pathUtils.join(rootUri, ...part.split('/'));
+  const loc = (part: string) => expect.objectContaining({ uri: p(part) });
   let dependencies: Dependencies;
 
   beforeAll(async () => {
@@ -125,8 +126,27 @@ describe('Module: index', () => {
 
         const deps = groupBlock.dependencies;
         assert(deps.map((x) => x.source.uri).every((x) => x === groupBlock.uri));
-        expect(deps.map((x) => x.target.uri)).toEqual(
-          expect.arrayContaining([p('blocks/text.liquid'), p('snippets/parent.liquid')]),
+        expect(deps).toEqual(
+          expect.arrayContaining([
+            {
+              source: loc('blocks/group.liquid'),
+              target: loc('snippets/parent.liquid'),
+              indirect: false,
+              preset: false,
+            }, // direct dep in snippet
+            {
+              source: loc('blocks/group.liquid'),
+              target: loc('blocks/text.liquid'),
+              indirect: true,
+              preset: false,
+            }, // indirect because of @theme
+            {
+              source: loc('blocks/group.liquid'),
+              target: loc('blocks/text.liquid'),
+              indirect: false,
+              preset: true,
+            }, // direct dep in preset
+          ]),
         );
 
         const refs = groupBlock.references;

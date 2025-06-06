@@ -40,21 +40,25 @@ describe('Unit: serializeThemeGraph', () => {
           source: { uri: 'file:///theme/templates/index.json', range: [0, 5] },
           target: { uri: 'file:///theme/sections/custom-section.liquid' },
           indirect: false,
+          preset: false,
         },
         {
           source: { uri: 'file:///theme/sections/custom-section.liquid', range: [10, 15] },
           target: { uri: 'file:///theme/snippets/parent.liquid' },
           indirect: false,
+          preset: false,
         },
         {
           source: { uri: 'file:///theme/snippets/parent.liquid', range: [20, 25] },
           target: { uri: 'file:///theme/snippets/child.liquid' },
           indirect: false,
+          preset: false,
         },
         {
           source: { uri: 'file:///theme/templates/index.json', range: [20, 25] },
           target: { uri: 'file:///theme/sections/section2.liquid' },
           indirect: false,
+          preset: false,
         },
       ]),
     );
