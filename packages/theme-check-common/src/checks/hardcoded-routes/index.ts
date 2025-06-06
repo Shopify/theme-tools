@@ -1,4 +1,4 @@
-import { LiquidFilter, NodeTypes, TextNode } from '@shopify/liquid-html-parser';
+import { NodeTypes } from '@shopify/liquid-html-parser';
 import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
 import { isAttr, isNodeOfType, isValuedHtmlAttribute, ValuedHtmlAttribute } from '../utils';
 
@@ -83,61 +83,6 @@ export const HardcodedRoutes: LiquidCheckDefinition = {
             startIndex,
             endIndex: startIndex + route.length,
           });
-        }
-      },
-
-      async HtmlRawNode(node) {
-        // checks for hardcoded routes, that are not commented out, inside script tags
-        if (node.name !== 'script') {
-          return;
-        }
-
-        const textNodes = node.body.nodes.filter(
-          (node) => node.type === NodeTypes.TextNode,
-        ) as TextNode[];
-
-        for (const node of textNodes) {
-          const value = node.value;
-          const lines = value.split('\n');
-
-          let isInComment = false;
-          let position = node.position.start;
-
-          for (let line of lines) {
-            const trimmedLine = line.trim();
-            const linePosition = position;
-
-            position += line.length + 1;
-
-            if (trimmedLine.startsWith('/*')) isInComment = true;
-            if (isInComment && trimmedLine.endsWith('*/')) {
-              isInComment = false;
-              continue;
-            }
-            if (isInComment || trimmedLine.startsWith('//')) continue;
-
-            const route = HARDCODED_ROUTES.find((route) =>
-              route === '/'
-                ? trimmedLine.includes(`"/"`) ||
-                  trimmedLine.includes(`'/'`) ||
-                  trimmedLine.includes('`/`')
-                : trimmedLine.includes(route),
-            );
-
-            if (!route) {
-              continue;
-            }
-
-            const routeURL = ROUTES[route];
-            const startIndex = linePosition + line.indexOf(route);
-            const endIndex = startIndex + route.length;
-
-            context.report({
-              message: `Use routes object {{ routes.${routeURL} }} instead of hardcoding ${route}`,
-              startIndex,
-              endIndex,
-            });
-          }
         }
       },
     };
