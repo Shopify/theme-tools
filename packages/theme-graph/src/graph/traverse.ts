@@ -296,7 +296,7 @@ async function traverseSchemaBlocks(
             themeGraph,
             path.basename(publicBlock, '.liquid'),
           );
-          bind(module, blockModule, { sourceRange, indirect: true });
+          bind(module, blockModule, { sourceRange, type: 'indirect' });
           promises.push(traverseModule(blockModule, themeGraph, deps));
         }
 
@@ -351,7 +351,7 @@ async function traverseSchemaPresets(
         schema.offset + typeProperty.loc.end.offset,
       ];
 
-      bind(module, blockModule, { sourceRange, preset: true });
+      bind(module, blockModule, { sourceRange, type: 'preset' });
       promises.push(traverseModule(blockModule, themeGraph, deps));
       if (block.blocks) {
         promises.push(
@@ -393,7 +393,7 @@ async function traverseSchemaPresetBlock(
       schema.offset + typeProperty.loc.end.offset,
     ];
 
-    bind(module, blockModule, { sourceRange, preset: true });
+    bind(module, blockModule, { sourceRange, type: 'preset' });
     promises.push(traverseModule(blockModule, themeGraph, deps));
     if (block.blocks) {
       promises.push(
@@ -437,7 +437,7 @@ async function traverseSchemaDefault(
       schema.offset + typeProperty.loc.end.offset,
     ];
 
-    bind(module, blockModule, { sourceRange, preset: true });
+    bind(module, blockModule, { sourceRange, type: 'preset' });
     promises.push(traverseModule(blockModule, themeGraph, deps));
   }
 
@@ -490,7 +490,7 @@ async function traverseJsonModule(
           sourceRange = [node.loc.start.offset, node.loc.end.offset];
           indirect = false; // this is a direct reference to the layout
         }
-        bind(module, layoutModule, { sourceRange, indirect });
+        bind(module, layoutModule, { sourceRange, type: 'indirect' });
         promises.push(traverseModule(layoutModule, themeGraph, deps));
       }
 
@@ -617,20 +617,17 @@ export function bind(
   {
     sourceRange,
     targetRange,
-    indirect = false,
-    preset = false,
+    type = 'direct', // the type of dependency, can be 'direct', 'indirect' or 'preset'
   }: {
     sourceRange?: Range; // a range in the source module that references the child
     targetRange?: Range; // a range in the child module that is being referenced
-    indirect?: boolean; // if true, the source is not directly referencing the target (e.g. @theme dependency)
-    preset?: boolean; // if true, the source is a preset that references the target
+    type?: Reference['type']; // the type of dependency
   } = {},
 ): void {
   const dependency: Reference = {
     source: { uri: source.uri, range: sourceRange },
     target: { uri: target.uri, range: targetRange },
-    indirect,
-    preset,
+    type: type,
   };
 
   source.dependencies.push(dependency);

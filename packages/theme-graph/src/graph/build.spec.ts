@@ -131,20 +131,17 @@ describe('Module: index', () => {
             {
               source: loc('blocks/group.liquid'),
               target: loc('snippets/parent.liquid'),
-              indirect: false,
-              preset: false,
+              type: 'direct',
             }, // direct dep in snippet
             {
               source: loc('blocks/group.liquid'),
               target: loc('blocks/text.liquid'),
-              indirect: true,
-              preset: false,
+              type: 'indirect',
             }, // indirect because of @theme
             {
               source: loc('blocks/group.liquid'),
               target: loc('blocks/text.liquid'),
-              indirect: false,
-              preset: true,
+              type: 'preset',
             }, // direct dep in preset
           ]),
         );
@@ -163,7 +160,7 @@ describe('Module: index', () => {
         expect(refs).toContainEqual(
           // Expecting the `@theme` reference in the custom-section schema to be indirect
           expect.objectContaining({
-            indirect: true,
+            type: 'indirect',
             source: {
               uri: p('sections/custom-section.liquid'),
               range: [expect.any(Number), expect.any(Number)],

@@ -112,13 +112,11 @@ export class ReferencesProvider implements TreeDataProvider<TreeItem> {
     ]);
     this.references = references
       .sort((a, b) => {
-        if (a.indirect === b.indirect && a.preset === b.preset) {
-          return a[destination].uri.localeCompare(b[destination].uri);
+        // Sort by type first, then by URI
+        if (a.type !== b.type) {
+          return refTypes.indexOf(a.type) - refTypes.indexOf(b.type);
         }
-        if (a.indirect !== b.indirect) {
-          return a.indirect ? 1 : -1; // indirect references come last
-        }
-        return a.preset ? 1 : -1; // preset references come last
+        return a[destination].uri.localeCompare(b[destination].uri);
       })
       .map((ref) => new ReferenceItem(rootUri, ref, undefined, destination));
 
@@ -175,11 +173,7 @@ class ReferenceItem extends TreeItem {
     this.parent = parent;
     this.description = reference.source.excerpt; // always interested in the source excerpt
     this.resourceUri = Uri.parse(dest.uri);
-    this.iconPath = reference.preset
-      ? new ThemeIcon('symbol-method', new ThemeColor(''))
-      : reference.indirect
-      ? new ThemeIcon('symbol-misc', new ThemeColor('button.secondaryForeground'))
-      : undefined;
+    this.iconPath = ReferenceItem.icon(reference);
     this.command = {
       command: 'shopifyLiquid.openLocation',
       title: 'View reference',
@@ -192,4 +186,17 @@ class ReferenceItem extends TreeItem {
     const sourcePath = path.relative(dest.uri, rootUri);
     return sourcePath;
   }
+
+  static icon(ref: AugmentedReference): ThemeIcon | undefined {
+    switch (ref.type) {
+      case 'indirect':
+        return new ThemeIcon('symbol-misc', new ThemeColor('button.secondaryForeground'));
+      case 'preset':
+        return new ThemeIcon('symbol-method', new ThemeColor(''));
+      default:
+        return undefined;
+    }
+  }
 }
+
+const refTypes = ['direct', 'preset', 'indirect'] as const;

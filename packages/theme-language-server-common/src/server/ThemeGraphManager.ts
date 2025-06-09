@@ -46,14 +46,23 @@ export class ThemeGraphManager {
     return this.graphs.get(rootUri);
   }
 
-  async getReferences(uri: string, offset?: number, { includeIndirect = true } = {}) {
+  async getReferences(
+    uri: string,
+    offset?: number,
+    { includeIndirect = true, includePreset = true } = {},
+  ) {
     const graph = await this.getThemeGraphForURI(uri);
     if (!graph) return [];
 
-    let refs = graph.modules[uri]?.references ?? [];
-    if (includeIndirect === false) {
-      refs = refs.filter((ref) => ref.indirect === false);
-    }
+    const includedTypes: (AugmentedReference['type'] | undefined)[] = [
+      'direct',
+      includeIndirect ? 'indirect' : undefined,
+      includePreset ? 'preset' : undefined,
+    ];
+
+    const refs =
+      graph.modules[uri]?.references.filter((dep) => includedTypes.includes(dep.type)) ?? [];
+
     return Promise.all(
       refs.map(async (ref) => {
         const [source, target] = await Promise.all([
@@ -69,14 +78,23 @@ export class ThemeGraphManager {
     );
   }
 
-  async getDependencies(uri: string, offset?: number, { includeIndirect = true } = {}) {
+  async getDependencies(
+    uri: string,
+    offset?: number,
+    { includeIndirect = true, includePreset = true } = {},
+  ) {
     const graph = await this.getThemeGraphForURI(uri);
     if (!graph) return [];
 
-    let deps = graph.modules[uri]?.dependencies ?? [];
-    if (includeIndirect === false) {
-      deps = deps.filter((dep) => dep.indirect === false);
-    }
+    const includedTypes: (AugmentedReference['type'] | undefined)[] = [
+      'direct',
+      includeIndirect ? 'indirect' : undefined,
+      includePreset ? 'preset' : undefined,
+    ];
+
+    const deps =
+      graph.modules[uri]?.dependencies.filter((dep) => includedTypes.includes(dep.type)) ?? [];
+
     return Promise.all(
       deps.map(async (dep) => {
         const [source, target] = await Promise.all([
