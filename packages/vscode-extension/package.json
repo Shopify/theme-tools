@@ -102,6 +102,10 @@
         "title": "Liquid Theme Check: Run Checks"
       },
       {
+        "command": "shopifyLiquid.deadCode",
+        "title": "Liquid Theme Check: Find dead code"
+      },
+      {
         "command": "shopifyLiquid.openLocation",
         "title": "Open text document at location"
       }

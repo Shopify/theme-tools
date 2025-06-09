@@ -70,7 +70,7 @@ const hasUnsupportedDocument = (params: any) => {
     'textDocument' in params &&
     'uri' in params.textDocument &&
     typeof params.textDocument.uri === 'string' &&
-    params.textDocument.uri.startsWith('git:')
+    (params.textDocument.uri.startsWith('git:') || params.textDocument.uri.startsWith('output:'))
   );
 };
 
@@ -658,7 +658,11 @@ export function startServer(
   connection.onRequest(ThemeGraphRootRequest.type, async (params) => {
     if (hasUnsupportedDocument(params)) return '';
     const { uri } = params;
-    return findThemeRootURI(uri);
+    const rootUri = await findThemeRootURI(uri).catch((_) => undefined);
+    if (!rootUri || path.dirname(rootUri) === rootUri) {
+      console.error(uri);
+    }
+    return rootUri;
   });
 
   connection.onRequest('themeGraph/deadCode', async (params) => {

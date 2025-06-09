@@ -16,17 +16,59 @@ import {
   TreeDataProvider,
   TreeItem,
   TreeItemCollapsibleState,
+  TreeView,
   Uri,
   window,
 } from 'vscode';
 import { BaseLanguageClient } from 'vscode-languageclient';
 
-export class ReferencesProvider implements TreeDataProvider<ReferenceItem> {
-  private _onDidChangeTreeData: EventEmitter<ReferenceItem | undefined> = new EventEmitter<
-    ReferenceItem | undefined
+export function createReferencesTreeView(
+  viewId: string,
+  context: ExtensionContext,
+  client: BaseLanguageClient,
+  mode: 'references' | 'dependencies' = 'references',
+): TreeView<TreeItem> {
+  const provider = new ReferencesProvider(context, client!, mode);
+  const treeView = window.createTreeView(viewId, {
+    treeDataProvider: provider,
+  });
+  treeView.onDidChangeVisibility((event) => {
+    if (event.visible) {
+      provider.visible = true;
+    }
+  });
+  provider.visible = treeView.visible;
+  return treeView;
+}
+
+export class ReferencesProvider implements TreeDataProvider<TreeItem> {
+  static NoReferencesTreeItem = new TreeItem('No references found', TreeItemCollapsibleState.None);
+  static NoDependenciesTreeItem = new TreeItem(
+    'No dependencies found',
+    TreeItemCollapsibleState.None,
+  );
+  static SelectFileTreeItem = new TreeItem(
+    'Select a file to view references',
+    TreeItemCollapsibleState.None,
+  );
+
+  static LoadingTreeItem = (item: string, mode: string) =>
+    new TreeItem(`Loading ${mode} for ${item}...`, TreeItemCollapsibleState.None);
+
+  private _onDidChangeTreeData: EventEmitter<TreeItem | undefined> = new EventEmitter<
+    TreeItem | undefined
   >();
-  readonly onDidChangeTreeData: Event<ReferenceItem | undefined> = this._onDidChangeTreeData.event;
-  references: ReferenceItem[] | null = null;
+  readonly onDidChangeTreeData: Event<TreeItem | undefined> = this._onDidChangeTreeData.event;
+  _references: ReferenceItem[] | [TreeItem] = [ReferencesProvider.SelectFileTreeItem];
+
+  get references(): ReferenceItem[] | [TreeItem] {
+    return this._references;
+  }
+
+  set references(value: ReferenceItem[] | [TreeItem]) {
+    this._references = value;
+    this._onDidChangeTreeData.fire(undefined);
+  }
 
   constructor(
     private context: ExtensionContext,
@@ -35,27 +77,30 @@ export class ReferencesProvider implements TreeDataProvider<ReferenceItem> {
   ) {
     window.onDidChangeActiveTextEditor(() => this.onActiveEditorChanged());
     client.onNotification(ThemeGraphDidUpdateNotification.type, () => this.refresh());
-    this.refresh();
   }
 
   getTreeItem(element: ReferenceItem): TreeItem {
     return element;
   }
 
-  async getChildren(element?: ReferenceItem): Promise<ReferenceItem[]> {
-    if (this.references === null) {
-      await this.refresh();
-    }
-
+  async getChildren(element?: ReferenceItem): Promise<ReferenceItem[] | [TreeItem]> {
     if (!element) {
       return this.references ?? [];
     }
 
+    // Don't do anything fancy right now
     return [];
   }
 
-  private async refresh() {
+  public async refresh() {
     const uri = window.activeTextEditor?.document.uri.toString();
+    if (!uri) {
+      this.references = [ReferencesProvider.SelectFileTreeItem];
+      return;
+    }
+
+    this.references = [ReferencesProvider.LoadingTreeItem(path.basename(uri), this.mode)];
+
     const command =
       this.mode === 'references'
         ? ThemeGraphReferenceRequest.method
@@ -76,7 +121,13 @@ export class ReferencesProvider implements TreeDataProvider<ReferenceItem> {
         return a.preset ? 1 : -1; // preset references come last
       })
       .map((ref) => new ReferenceItem(rootUri, ref, undefined, destination));
-    this._onDidChangeTreeData.fire(undefined);
+
+    if (this.references.length === 0) {
+      this.references =
+        this.mode === 'references'
+          ? [ReferencesProvider.NoReferencesTreeItem]
+          : [ReferencesProvider.NoDependenciesTreeItem];
+    }
   }
 
   private onActiveEditorChanged(): void {
@@ -88,7 +139,18 @@ export class ReferencesProvider implements TreeDataProvider<ReferenceItem> {
         this.refresh();
       }
     } else {
-      this.references = null;
+      this.references = [ReferencesProvider.SelectFileTreeItem];
+    }
+  }
+
+  private _visible = false;
+  get visible(): boolean {
+    return this._visible;
+  }
+  set visible(value: boolean) {
+    this._visible = value;
+    if (value) {
+      this.refresh();
     }
   }
 }

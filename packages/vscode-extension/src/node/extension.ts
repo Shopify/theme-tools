@@ -1,15 +1,6 @@
 import { FileStat, FileTuple, path as pathUtils } from '@shopify/theme-check-common';
 import * as path from 'node:path';
-import {
-  commands,
-  ExtensionContext,
-  languages,
-  Uri,
-  workspace,
-  window,
-  Range,
-  Position,
-} from 'vscode';
+import { commands, ExtensionContext, languages, Uri, workspace } from 'vscode';
 import {
   DocumentSelector,
   LanguageClient,
@@ -20,8 +11,8 @@ import {
 import { documentSelectors } from '../common/constants';
 import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
-import { ReferencesProvider } from '../common/ReferencesProvider';
-import { AugmentedLocation } from '@shopify/theme-language-server-common';
+import { createReferencesTreeView } from '../common/ReferencesProvider';
+import { makeDeadCode, openLocation } from '../common/commands';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -35,20 +26,7 @@ export async function activate(context: ExtensionContext) {
     commands.registerCommand('shopifyLiquid.runChecks', () => {
       client!.sendRequest('workspace/executeCommand', { command: runChecksCommand });
     }),
-    commands.registerCommand('shopifyLiquid.openLocation', (ref: AugmentedLocation) => {
-      workspace.openTextDocument(Uri.parse(ref.uri)).then((doc) => {
-        window.showTextDocument(doc, {
-          selection: ref.position
-            ? new Range(
-                new Position(ref.position.start.line, ref.position.start.character),
-                new Position(ref.position.end.line, ref.position.end.character),
-              )
-            : undefined,
-          preserveFocus: true,
-          preview: true,
-        });
-      });
-    }),
+    commands.registerCommand('shopifyLiquid.openLocation', openLocation),
     languages.registerDocumentFormattingEditProvider(
       [{ language: 'liquid' }],
       new LiquidFormatter(vscodePrettierFormat),
@@ -57,16 +35,13 @@ export async function activate(context: ExtensionContext) {
 
   await startServer(context);
 
-  context.subscriptions.push(
-    window.registerTreeDataProvider(
-      'shopify.themeGraph.references',
-      new ReferencesProvider(context, client!, 'references'),
-    ),
-    window.registerTreeDataProvider(
-      'shopify.themeGraph.dependencies',
-      new ReferencesProvider(context, client!, 'dependencies'),
-    ),
-  );
+  if (client) {
+    context.subscriptions.push(
+      commands.registerCommand('shopifyLiquid.deadCode', makeDeadCode(client)),
+      createReferencesTreeView('shopify.themeGraph.references', context, client, 'references'),
+      createReferencesTreeView('shopify.themeGraph.dependencies', context, client, 'dependencies'),
+    );
+  }
 }
 
 export function deactivate() {

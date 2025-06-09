@@ -9,6 +9,8 @@ import {
 import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
 import { documentSelectors } from '../common/constants';
+import { makeDeadCode, openLocation } from '../common/commands';
+import { createReferencesTreeView } from '../common/ReferencesProvider';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -19,15 +21,10 @@ export async function activate(context: ExtensionContext) {
 
   context.subscriptions.push(
     commands.registerCommand('shopifyLiquid.restart', () => restartServer(context)),
-  );
-
-  context.subscriptions.push(
     commands.registerCommand('shopifyLiquid.runChecks', () => {
       client!.sendRequest('workspace/executeCommand', { command: runChecksCommand });
     }),
-  );
-
-  context.subscriptions.push(
+    commands.registerCommand('shopifyLiquid.openLocation', openLocation),
     languages.registerDocumentFormattingEditProvider(
       [{ language: 'liquid' }],
       new LiquidFormatter(vscodePrettierFormat),
@@ -35,6 +32,14 @@ export async function activate(context: ExtensionContext) {
   );
 
   await startServer(context);
+
+  if (client) {
+    context.subscriptions.push(
+      commands.registerCommand('shopifyLiquid.deadCode', makeDeadCode(client)),
+      createReferencesTreeView('shopify.themeGraph.references', context, client, 'references'),
+      createReferencesTreeView('shopify.themeGraph.dependencies', context, client, 'dependencies'),
+    );
+  }
 }
 
 export function deactivate() {
