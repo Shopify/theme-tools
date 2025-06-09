@@ -1,7 +1,7 @@
 {
   "name": "@shopify/theme-graph",
   "version": "0.0.1",
-  "description": "Liquid theme graph inspector",
+  "description": "Shopify Theme Graph as a data structure",
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/theme-graph#readme",
   "repository": {

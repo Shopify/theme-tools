@@ -41,9 +41,9 @@ export type AugmentedDependencies = Dependencies & {
 };
 
 export interface ThemeGraph {
+  rootUri: UriString;
   entryPoints: ThemeModule[];
   modules: Record<UriString, ThemeModule>;
-  rootUri: string;
 }
 
 export type ThemeModule = LiquidModule | JsonModule | JavaScriptModule | CssModule;
