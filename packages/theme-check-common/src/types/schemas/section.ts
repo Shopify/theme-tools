@@ -41,13 +41,15 @@ export declare namespace Section {
     settings?: Setting.Any[];
   };
 
+  export type DefaultBlock = {
+    type: string;
+    settings?: Record<string, string | number | boolean | string[]>;
+  };
+
   // Default section configuration (kind of like presets)
   export interface Default {
     settings?: Record<string, string | number | boolean | string[]>;
-    blocks?: Array<{
-      type: string;
-      settings?: Record<string, string | number | boolean | string[]>;
-    }>;
+    blocks?: Array<DefaultBlock>;
   }
 
   // Section toggle interface
