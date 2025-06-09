@@ -139,19 +139,23 @@ export namespace ThemeGraphDidUpdateNotification {
   }
 }
 
-export type AugmentedLocation =
-  | {
-      uri: string;
-      range: undefined;
-      excerpt: undefined;
-      position: undefined;
-    }
-  | {
-      uri: string;
-      range: [number, number];
-      excerpt: string;
-      position: Range;
-    };
+export type AugmentedLocationWithExistence = {
+  uri: string;
+  range: undefined;
+  excerpt: undefined;
+  position: undefined;
+  exists: boolean;
+};
+
+export type AugmentedLocationWithExcerpt = {
+  uri: string;
+  range: [number, number];
+  excerpt: string;
+  position: Range;
+  exists: boolean;
+};
+
+export type AugmentedLocation = AugmentedLocationWithExistence | AugmentedLocationWithExcerpt;
 
 export interface AugmentedReference extends Reference {
   source: AugmentedLocation;

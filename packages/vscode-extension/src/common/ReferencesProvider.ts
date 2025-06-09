@@ -173,7 +173,7 @@ class ReferenceItem extends TreeItem {
     this.parent = parent;
     this.description = reference.source.excerpt; // always interested in the source excerpt
     this.resourceUri = Uri.parse(dest.uri);
-    this.iconPath = ReferenceItem.icon(reference);
+    this.iconPath = ReferenceItem.icon(reference, dest);
     this.command = {
       command: 'shopifyLiquid.openLocation',
       title: 'View reference',
@@ -187,7 +187,11 @@ class ReferenceItem extends TreeItem {
     return sourcePath;
   }
 
-  static icon(ref: AugmentedReference): ThemeIcon | undefined {
+  static icon(ref: AugmentedReference, dest: AugmentedLocation): ThemeIcon | undefined {
+    if (dest.exists === false) {
+      return new ThemeIcon('warning', new ThemeColor('editorError.foreground'));
+    }
+
     switch (ref.type) {
       case 'indirect':
         return new ThemeIcon('symbol-misc', new ThemeColor('button.secondaryForeground'));

@@ -18,7 +18,12 @@ import { Range } from 'vscode-json-languageservice';
 import { Connection } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DocumentManager } from '../documents';
-import { AugmentedLocation, AugmentedReference, ThemeGraphDidUpdateNotification } from '../types';
+import {
+  AugmentedLocation,
+  AugmentedLocationWithExistence,
+  AugmentedReference,
+  ThemeGraphDidUpdateNotification,
+} from '../types';
 import { debounce } from '../utils';
 
 export class ThemeGraphManager {
@@ -111,9 +116,10 @@ export class ThemeGraphManager {
   }
 
   async augmentedLocation(loc: Location): Promise<AugmentedLocation> {
-    const sourceCode = await this.getSourceCode(loc.uri);
+    const sourceCode = await this.getSourceCode(loc.uri).catch(() => undefined);
     const { uri, range } = loc;
-    if (!sourceCode || !range) return loc as AugmentedLocation;
+    if (!sourceCode || !range)
+      return { exists: !!sourceCode, ...loc } as AugmentedLocationWithExistence;
 
     let doc = this.documentManager.get(loc.uri)?.textDocument;
     if (!doc) {
@@ -125,6 +131,7 @@ export class ThemeGraphManager {
       range: range,
       excerpt: sourceCode.source.slice(range[0], range[1]),
       position: Range.create(doc.positionAt(range[0]), doc.positionAt(range[0])),
+      exists: true, // implicit since sourceCode exists
     };
   }
 
