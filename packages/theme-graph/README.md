@@ -50,7 +50,7 @@ interface Reference {
 }
 ```
 
-See [types.md](./src/types.ts) for more details.
+See [types.md](./src/types.ts) for more details and [how-it-works.md](./docs/how-it-works.md) for an overview of the algorithm.
 
 ## Installation
 

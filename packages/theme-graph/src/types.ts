@@ -12,14 +12,12 @@ export interface IDependencies {
   /**
    * Asynchronously get the block schema for 'blocks/${name}.liquid'
    * May return undefined when the theme isn't preloaded.
-   * See {@link ThemeBlockSchema} for more information
    */
   getBlockSchema: NonNullable<ThemeCheckDependencies['getBlockSchema']>;
 
   /**
    * Asynchronously get the section schema for 'section/${name}.liquid'
    * May return undefined when the theme isn't preloaded or if there are none.
-   * See {@link SectionSchema} for more information
    */
   getSectionSchema: NonNullable<ThemeCheckDependencies['getSectionSchema']>;
 
