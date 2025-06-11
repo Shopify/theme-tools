@@ -42,9 +42,7 @@ export class ThemeGraphManager {
       const { documentManager } = this;
       await documentManager.preload(rootUri);
 
-      const webComponentDefs = await this.getWebComponentMap(rootUri);
-      const dependencies = this.graphDependencies(rootUri, webComponentDefs);
-
+      const dependencies = await this.graphDependencies(rootUri);
       this.graphs.set(rootUri, buildThemeGraph(rootUri, dependencies));
     }
 
@@ -59,14 +57,16 @@ export class ThemeGraphManager {
     const graph = await this.getThemeGraphForURI(uri);
     if (!graph) return [];
 
+    const module = graph.modules[uri];
+    if (!module) return [];
+
     const includedTypes: (AugmentedReference['type'] | undefined)[] = [
       'direct',
       includeIndirect ? 'indirect' : undefined,
       includePreset ? 'preset' : undefined,
     ];
 
-    const refs =
-      graph.modules[uri]?.references.filter((dep) => includedTypes.includes(dep.type)) ?? [];
+    const refs = module.references.filter((dep) => includedTypes.includes(dep.type));
 
     return Promise.all(
       refs.map(async (ref) => {
@@ -91,14 +91,27 @@ export class ThemeGraphManager {
     const graph = await this.getThemeGraphForURI(uri);
     if (!graph) return [];
 
+    let module = graph.modules[uri];
+    if (!module) {
+      // If the module is not found, we might be dealing with dead code.
+      // dead code doesn't show up in the graph, but it might still have dependencies.
+      // So we're building a smaller graph with that file as entry point to figure
+      // out what it depends on.
+      const dependencies = await this.graphDependencies(graph.rootUri);
+      const deadCodeGraph = await buildThemeGraph(graph.rootUri, dependencies, [uri]);
+      module = deadCodeGraph.modules[uri];
+    }
+
+    // If the module is still not found, we return an empty array.
+    if (!module) return [];
+
     const includedTypes: (AugmentedReference['type'] | undefined)[] = [
       'direct',
       includeIndirect ? 'indirect' : undefined,
       includePreset ? 'preset' : undefined,
     ];
 
-    const deps =
-      graph.modules[uri]?.dependencies.filter((dep) => includedTypes.includes(dep.type)) ?? [];
+    const deps = module.dependencies.filter((dep) => includedTypes.includes(dep.type)) ?? [];
 
     return Promise.all(
       deps.map(async (dep) => {
@@ -212,8 +225,9 @@ export class ThemeGraphManager {
     return getWebComponentMap(rootUri, { fs, getSourceCode });
   }
 
-  private graphDependencies(rootUri: string, webComponentDefs: WebComponentMap): GraphDependencies {
+  private async graphDependencies(rootUri: string): Promise<GraphDependencies> {
     const { documentManager, fs, getSourceCode } = this;
+    const webComponentDefs = await this.getWebComponentMap(rootUri);
     return {
       fs: fs,
       getSourceCode: getSourceCode,

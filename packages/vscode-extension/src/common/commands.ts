@@ -41,7 +41,9 @@ export function makeDeadCode(client: BaseLanguageClient) {
       if (selectedFiles) {
         selectedFiles.forEach((file) => {
           const uri = path.join(rootUri, file);
-          commands.executeCommand('vscode.open', Uri.parse(uri));
+          workspace.openTextDocument(Uri.parse(uri)).then((doc) => {
+            window.showTextDocument(doc, { preview: false, preserveFocus: true, viewColumn: 2 });
+          });
         });
       }
     }

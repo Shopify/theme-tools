@@ -3,42 +3,43 @@ import {
   path,
   UriString,
 } from '@shopify/theme-check-common';
-import { IDependencies, ThemeGraph } from '../types';
+import { IDependencies, ThemeGraph, ThemeModule } from '../types';
 import { augmentDependencies } from './augment';
-import { getSectionModule, getTemplateModule } from './module';
+import { getModule } from './module';
 import { traverseModule } from './traverse';
 
 export async function buildThemeGraph(
   rootUri: UriString,
   ideps: IDependencies,
+  entryPoints?: UriString[],
 ): Promise<ThemeGraph> {
   const deps = augmentDependencies(rootUri, ideps);
 
-  const [templates, sections] = await Promise.all([
-    findAllFiles(deps.fs, rootUri, ([uri]) => uri.startsWith(path.join(rootUri, 'templates'))),
-    findAllFiles(
-      deps.fs,
-      rootUri,
-      ([uri]) => uri.startsWith(path.join(rootUri, 'sections')) && uri.endsWith('.liquid'),
-    ),
-  ]);
+  entryPoints =
+    entryPoints ??
+    (await findAllFiles(deps.fs, rootUri, ([uri]) => {
+      // Templates are entry points in the theme graph.
+      const isTemplateFile = uri.startsWith(path.join(rootUri, 'templates'));
 
-  const themeGraph: ThemeGraph = {
+      // Since any section file can be rendered directly by the Section Rendering API,
+      // we consider all section files as entry points.
+      const isSectionFile =
+        uri.startsWith(path.join(rootUri, 'sections')) && uri.endsWith('.liquid');
+
+      return isTemplateFile || isSectionFile;
+    }));
+
+  const graph: ThemeGraph = {
     entryPoints: [],
     modules: {},
     rootUri,
   };
 
-  themeGraph.entryPoints = [
-    // Templates are entry points for the theme graph.
-    ...templates.map((entryUri) => getTemplateModule(themeGraph, entryUri)),
-    // Section Types can be used as IDs in the section rendering API.
-    // We can't reliably determine which sections are used by the Section Rendering API
-    // so we're forced to accept all sections as entry points.
-    ...sections.map((entryUri) => getSectionModule(themeGraph, path.basename(entryUri, '.liquid'))),
-  ];
+  graph.entryPoints = entryPoints
+    .map((uri) => getModule(graph, uri))
+    .filter((x): x is ThemeModule => x !== undefined);
 
-  await Promise.all(themeGraph.entryPoints.map((entry) => traverseModule(entry, themeGraph, deps)));
+  await Promise.all(graph.entryPoints.map((entry) => traverseModule(entry, graph, deps)));
 
-  return themeGraph;
+  return graph;
 }
