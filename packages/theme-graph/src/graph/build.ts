@@ -1,7 +1,6 @@
 import {
   recursiveReadDirectory as findAllFiles,
   path,
-  SectionSchema,
   UriString,
 } from '@shopify/theme-check-common';
 import { IDependencies, ThemeGraph } from '../types';
@@ -15,16 +14,12 @@ export async function buildThemeGraph(
 ): Promise<ThemeGraph> {
   const deps = augmentDependencies(rootUri, ideps);
 
-  const [templates, sectionSchemas] = await Promise.all([
+  const [templates, sections] = await Promise.all([
     findAllFiles(deps.fs, rootUri, ([uri]) => uri.startsWith(path.join(rootUri, 'templates'))),
     findAllFiles(
       deps.fs,
       rootUri,
       ([uri]) => uri.startsWith(path.join(rootUri, 'sections')) && uri.endsWith('.liquid'),
-    ).then((sections) =>
-      Promise.all(
-        sections.map((sectionUri) => deps.getSectionSchema(path.basename(sectionUri, '.liquid'))),
-      ),
     ),
   ]);
 
@@ -40,9 +35,7 @@ export async function buildThemeGraph(
     // Section Types can be used as IDs in the section rendering API.
     // We can't reliably determine which sections are used by the Section Rendering API
     // so we're forced to accept all sections as entry points.
-    ...sectionSchemas
-      .filter((schema): schema is SectionSchema => !!schema)
-      .map((schema) => getSectionModule(themeGraph, schema.name)),
+    ...sections.map((entryUri) => getSectionModule(themeGraph, path.basename(entryUri, '.liquid'))),
   ];
 
   await Promise.all(themeGraph.entryPoints.map((entry) => traverseModule(entry, themeGraph, deps)));
