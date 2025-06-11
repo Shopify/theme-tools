@@ -286,6 +286,7 @@ async function traverseSchemaBlocks(
       schema.offset + typeProperty.loc.end.offset,
     ];
 
+    // blocks: [{ "type": "@theme" }, { "type": "custom-block" }]
     switch (blockDef.type) {
       case '@theme': {
         const publicBlocks = await deps
