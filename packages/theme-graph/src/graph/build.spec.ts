@@ -1,5 +1,5 @@
 import { path as pathUtils, SourceCodeType } from '@shopify/theme-check-common';
-import { assert, beforeAll, describe, expect, it } from 'vitest';
+import { assert, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { buildThemeGraph } from '../index';
 import { Dependencies, JsonModuleKind, LiquidModuleKind, ModuleType, ThemeGraph } from '../types';
 import { getDependencies, skeleton } from './test-helpers';
@@ -23,7 +23,7 @@ describe('Module: index', () => {
     describe('with a valid theme graph', () => {
       let graph: ThemeGraph;
 
-      beforeAll(async () => {
+      beforeEach(async () => {
         graph = await buildThemeGraph(rootUri, dependencies);
       });
 

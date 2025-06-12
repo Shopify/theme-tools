@@ -75,36 +75,34 @@ export interface CssModule extends IThemeModule<ModuleType.Css> {
   kind: 'unused';
 }
 
-export type IThemeModule<T extends ModuleType> = T extends ModuleType
-  ? {
-      /** Used as a discriminant in the ThemeNode union */
-      type: T;
+export interface IThemeModule<T extends ModuleType> {
+  /** Used as a discriminant in the ThemeNode union */
+  type: T;
 
-      /** Should be normalized. Used as key. */
-      uri: UriString;
+  /** Should be normalized. Used as key. */
+  uri: UriString;
 
-      /**
-       * Outgoing references to other modules. e.g. {% render 'child' %} from parent
-       *
-       * The source URI of all dependencies is this module.
-       */
-      dependencies: Reference[];
+  /**
+   * Outgoing references to other modules. e.g. {% render 'child' %} from parent
+   *
+   * The source URI of all dependencies is this module.
+   */
+  dependencies: Reference[];
 
-      /**
-       * Ingoing references from other modules. e.g. {% render 'child' %} in parent
-       *
-       * The target URI of all dependencies is this module.
-       */
-      references: Reference[];
+  /**
+   * Ingoing references from other modules. e.g. {% render 'child' %} in parent
+   *
+   * The target URI of all dependencies is this module.
+   */
+  references: Reference[];
 
-      /**
-       * Since you could have files that depend on files that don't exist,
-       *
-       * this property will be used to quickly identify those.
-       */
-      exists?: boolean;
-    }
-  : never;
+  /**
+   * Since you could have files that depend on files that don't exist,
+   *
+   * this property will be used to quickly identify those.
+   */
+  exists?: boolean;
+}
 
 export const enum ModuleType {
   Liquid = 'Liquid',
