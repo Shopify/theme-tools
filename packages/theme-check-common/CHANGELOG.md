@@ -1,5 +1,20 @@
 # @shopify/theme-check-common
 
+## 3.18.0
+
+### Minor Changes
+
+- 649da6df: Introduce check that warn developers that `{% stylesheet %}` and `{% javascript %}` tags only support static content
+- 444c9edc: Add hardcoded-routes theme check which reports a warning when hardcoded routes are used instead of the routes object
+
+### Patch Changes
+
+- 4477a6d9: Fix small bug in path.basename
+- 606053f1: Fix ValidBlockTarget for blocks in `default` and `presets`
+
+  - Solves issue so nested blocks inside of `presets` are now validated
+  - Solves issue so block types inside of `default` are now validated
+
 ## 3.17.1
 
 ### Patch Changes

@@ -1,5 +1,23 @@
 ## theme-check-vscode
 
+## 3.9.0
+
+### Minor Changes
+
+- 4477a6d9: Add dependencies, references and dead code identification support
+
+### Patch Changes
+
+- Updated dependencies [649da6df]
+- Updated dependencies [4477a6d9]
+- Updated dependencies [606053f1]
+- Updated dependencies [4477a6d9]
+- Updated dependencies [444c9edc]
+  - @shopify/theme-check-common@3.18.0
+  - @shopify/theme-language-server-common@2.17.0
+  - @shopify/theme-language-server-node@2.17.0
+  - @shopify/theme-language-server-browser@2.17.0
+
 ## 3.8.12
 
 ### Patch Changes
