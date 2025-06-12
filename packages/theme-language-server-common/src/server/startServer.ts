@@ -43,6 +43,7 @@ import { RenameHandler } from '../renamed/RenameHandler';
 import { GetTranslationsForURI } from '../translations';
 import {
   Dependencies,
+  ThemeGraphDeadCodeRequest,
   ThemeGraphDependenciesRequest,
   ThemeGraphReferenceRequest,
   ThemeGraphRootRequest,
@@ -675,12 +676,11 @@ export function startServer(
     return rootUri;
   });
 
-  connection.onRequest('themeGraph/deadCode', async (params) => {
+  connection.onRequest(ThemeGraphDeadCodeRequest.type, async (params) => {
     if (hasUnsupportedDocument(params)) return [];
     const { uri } = params;
     const rootUri = await findThemeRootURI(uri);
     const deadFiles = await themeGraphManager.deadCode(rootUri);
-    console.error(deadFiles.map((file) => path.relative(file, rootUri)).join('\n'));
     return deadFiles;
   });
 

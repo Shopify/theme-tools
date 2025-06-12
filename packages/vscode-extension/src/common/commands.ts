@@ -1,5 +1,9 @@
 import { path } from '@shopify/theme-check-common';
-import { AugmentedLocation } from '@shopify/theme-language-server-common';
+import {
+  AugmentedLocation,
+  ThemeGraphDeadCodeRequest,
+  ThemeGraphRootRequest,
+} from '@shopify/theme-language-server-common';
 import { commands, Position, Range, Uri, window, workspace } from 'vscode';
 import { BaseLanguageClient } from 'vscode-languageclient';
 
@@ -26,8 +30,8 @@ export function makeDeadCode(client: BaseLanguageClient) {
     const uri = window.activeTextEditor?.document.uri.toString();
     if (!uri) return;
     const [rootUri, deadCode] = await Promise.all([
-      client.sendRequest<string>('themeGraph/rootUri', { uri }),
-      client.sendRequest<string[]>('themeGraph/deadCode', { uri }),
+      client.sendRequest(ThemeGraphRootRequest.type, { uri }),
+      client.sendRequest(ThemeGraphDeadCodeRequest.type, { uri }),
     ]);
 
     if (deadCode.length === 0) {

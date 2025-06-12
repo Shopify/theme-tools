@@ -131,6 +131,15 @@ export namespace ThemeGraphRootRequest {
   export type Response = string;
 }
 
+export namespace ThemeGraphDeadCodeRequest {
+  export const method = 'themeGraph/deadCode';
+  export const type = new rpc.RequestType<Params, Response, void>(method);
+  export interface Params {
+    uri: string;
+  }
+  export type Response = string[];
+}
+
 export namespace ThemeGraphDidUpdateNotification {
   export const method = 'themeGraph/onDidChangeTree';
   export const type = new rpc.NotificationType<Params>(method);
