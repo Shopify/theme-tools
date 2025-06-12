@@ -39,11 +39,7 @@ export class ThemeGraphManager {
   async getThemeGraphForURI(uri: string) {
     const rootUri = await this.findThemeRootURI(uri);
     if (!this.graphs.has(rootUri)) {
-      const { documentManager } = this;
-      await documentManager.preload(rootUri);
-
-      const dependencies = await this.graphDependencies(rootUri);
-      this.graphs.set(rootUri, buildThemeGraph(rootUri, dependencies));
+      this.graphs.set(rootUri, this.buildThemeGraph(rootUri));
     }
 
     return this.graphs.get(rootUri);
@@ -211,6 +207,14 @@ export class ThemeGraphManager {
     await this.getThemeGraphForURI(rootUri);
     this.connection.sendNotification(ThemeGraphDidUpdateNotification.type, { uri: rootUri });
   }, 500);
+
+  private buildThemeGraph = async (rootUri: string) => {
+    const { documentManager } = this;
+    await documentManager.preload(rootUri);
+
+    const dependencies = await this.graphDependencies(rootUri);
+    return buildThemeGraph(rootUri, dependencies);
+  };
 
   private getSourceCode = async (uri: string) => {
     const doc = this.documentManager.get(uri);
