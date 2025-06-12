@@ -88,7 +88,7 @@ export function startServer(
   connection: Connection,
   {
     fs: injectedFs,
-    loadConfig,
+    loadConfig: injectedLoadConfig,
     log = defaultLogger,
     jsonValidationSet,
     themeDocset: remoteThemeDocset,
@@ -97,6 +97,7 @@ export function startServer(
 ) {
   const fs = new CachedFileSystem(injectedFs);
   const fileExists = makeFileExists(fs);
+  const loadConfig = memoize(injectedLoadConfig, (uri: string) => uri);
   const clientCapabilities = new ClientCapabilities();
   const configuration = new Configuration(connection, clientCapabilities);
 
@@ -153,7 +154,7 @@ export function startServer(
 
   const getMetafieldDefinitionsForRootUri = memoize(
     makeGetMetafieldDefinitions(fs),
-    (rootUri: string) => rootUri,
+    (rootUri) => rootUri,
   );
 
   const getMetafieldDefinitions = async (uri: string) => {
@@ -391,6 +392,9 @@ export function startServer(
     configuration.registerDidChangeWatchedFilesNotification({
       watchers: [
         {
+          globPattern: '**/.theme-check.yml',
+        },
+        {
           globPattern: '**/.shopify/*',
         },
         {
@@ -586,6 +590,12 @@ export function startServer(
     const triggerUris = params.changes.map((change) => change.uri);
     const updates: Promise<any>[] = [];
     for (const change of params.changes) {
+      // Theme Check config changes should clear the config cache
+      if (change.uri.endsWith('.theme-check.yml')) {
+        loadConfig.clearCache();
+        continue;
+      }
+
       // Rename cache invalidation is handled by onDidRenameFiles
       if (documentManager.hasRecentRename(change.uri)) {
         documentManager.clearRecentRename(change.uri);

@@ -46,27 +46,34 @@ export function memo<F extends (...args: any[]) => any>(fn: F): MemoedFunction<F
  * fastOnSubsequentCalls(thing1);
  * fastOnSubsequentCalls(thing1);
  */
-export function memoize<AT, RT>(fn: (arg: AT) => RT, keyFn: (arg: AT) => string) {
-  const cache: Record<string, RT> = {};
+export function memoize<AT extends any[], RT>(
+  fn: (...args: AT) => RT,
+  keyFn: (...args: AT) => string,
+) {
+  let cache: Record<string, RT> = {};
 
-  const memoedFunction = (arg: AT): RT => {
-    const key = keyFn(arg);
+  const memoedFunction = (...args: AT): RT => {
+    const key = keyFn(...args);
 
     if (!cache[key]) {
-      cache[key] = fn(arg);
+      cache[key] = fn(...args);
     }
 
     return cache[key];
   };
 
-  memoedFunction.force = (arg: AT): RT => {
-    memoedFunction.invalidate(arg);
-    return memoedFunction(arg);
+  memoedFunction.force = (...args: AT): RT => {
+    memoedFunction.invalidate(...args);
+    return memoedFunction(...args);
   };
 
-  memoedFunction.invalidate = (arg: AT): void => {
-    const key = keyFn(arg);
+  memoedFunction.invalidate = (...args: AT): void => {
+    const key = keyFn(...args);
     delete cache[key];
+  };
+
+  memoedFunction.clearCache = () => {
+    cache = {};
   };
 
   return memoedFunction;
