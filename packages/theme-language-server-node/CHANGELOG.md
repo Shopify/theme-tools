@@ -1,5 +1,22 @@
 # @shopify/theme-language-server-node
 
+## 2.17.0
+
+### Minor Changes
+
+- 4477a6d9: Add dependencies, references and dead code identification support
+
+### Patch Changes
+
+- Updated dependencies [4477a6d9]
+- Updated dependencies [649da6df]
+- Updated dependencies [06840d80]
+- Updated dependencies [4477a6d9]
+- Updated dependencies [444c9edc]
+  - @shopify/theme-check-node@3.18.0
+  - @shopify/theme-language-server-common@2.17.0
+  - @shopify/theme-check-docs-updater@3.18.0
+
 ## 2.16.0
 
 ### Patch Changes
