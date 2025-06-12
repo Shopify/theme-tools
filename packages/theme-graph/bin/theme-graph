@@ -1,0 +1,107 @@
+#!/usr/bin/env node
+
+const { buildThemeGraph, serializeThemeGraph, toSourceCode } = require('@shopify/theme-graph');
+const {
+  NodeFileSystem,
+  memoize,
+  toSchema,
+  path: pathUtils,
+  recursiveReadDirectory,
+} = require('@shopify/theme-check-node');
+const path = require('path');
+const { URI } = require('vscode-uri');
+
+const usage = `
+Usage:
+  theme-graph <path-to-theme-directory>
+
+Example:
+  theme-graph horizon > graph.json
+`;
+
+const identity = (/** @type {any} */ x) => x;
+
+/**
+ * Outputs the JSON representing the theme graph for a Shopify theme directory.
+ *
+ * @param {string} root
+ */
+async function main(root) {
+  if (!root) {
+    console.error(usage);
+    process.exit(1);
+  }
+
+  if (!path.isAbsolute(root)) {
+    root = path.resolve(process.cwd(), root);
+  }
+
+  const getSourceCode = makeGetSourceCode();
+
+  // Preload files to get a sense of what is slow
+  const fs = NodeFileSystem;
+  const rootUri = URI.file(root).toString(true);
+  const filesToPreload = await recursiveReadDirectory(fs, rootUri, ([uri]) =>
+    ['.json', '.liquid'].some((ext) => uri.endsWith(ext)),
+  );
+  await bench('Preloading files', async () => {
+    await Promise.all(
+      filesToPreload.map(async (uri) => {
+        await getSourceCode(uri);
+      }),
+    );
+  });
+
+  /** @type {import('@shopify/theme-graph').WebComponentMap} */
+  const webComponentDefs = new Map();
+
+  /** @type {import('@shopify/theme-graph').Dependencies} */
+  const dependencies = {
+    fs,
+    // @ts-ignore
+    getSectionSchema: memoize(async (name) => {
+      const uri = pathUtils.join(rootUri, 'sections', `${name}.liquid`);
+      const sourceCode = await getSourceCode(uri);
+      return toSchema('theme', uri, /** @type {any} */ (sourceCode), async () => true);
+    }, identity),
+    // @ts-ignore
+    getBlockSchema: memoize(async (name) => {
+      const uri = pathUtils.join(rootUri, 'blocks', `${name}.liquid`);
+      const sourceCode = await getSourceCode(uri);
+      return toSchema('theme', uri, /** @type {any} */ (sourceCode), async () => true);
+    }, identity),
+    getSourceCode,
+    getWebComponentDefinitionReference: (customElementName) =>
+      webComponentDefs.get(customElementName),
+  };
+
+  // Build graph
+  const graph = await bench('Build graph', () => buildThemeGraph(rootUri, dependencies));
+
+  // Serialize into JSON
+  const serializedGraph = serializeThemeGraph(graph);
+
+  // Print result to STDOUT
+  console.log(JSON.stringify(serializedGraph));
+}
+
+function makeGetSourceCode() {
+  return memoize(async function getSourceCode(uri) {
+    const source = await NodeFileSystem.readFile(uri);
+    return await toSourceCode(URI.file(uri).toString(), source);
+  }, identity);
+}
+
+/**
+ * @param {string} name
+ * @param {(...args: any[]) => Promise<any>} fn
+ */
+async function bench(name, fn) {
+  const start = performance.now();
+  const result = await fn();
+  const end = performance.now();
+  console.error(`${name} took ${end - start}ms`);
+  return result;
+}
+
+main(process.argv[2]);

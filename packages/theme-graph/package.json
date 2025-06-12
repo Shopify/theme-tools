@@ -1,0 +1,41 @@
+{
+  "name": "@shopify/theme-graph",
+  "version": "0.0.1",
+  "description": "Shopify Theme Graph as a data structure",
+  "author": "CP Clermont <cp.clermont@shopify.com>",
+  "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/theme-graph#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shopify/theme-tools.git",
+    "directory": "packages/theme-graph"
+  },
+  "bugs": {
+    "url": "https://github.com/shopify/theme-tools/issues"
+  },
+  "bin": {
+    "theme-graph": "bin/theme-graph"
+  },
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "@shopify:registry": "https://registry.npmjs.org"
+  },
+  "scripts": {
+    "build": "yarn build:ts",
+    "build:ci": "yarn build",
+    "build:ts": "tsc -p tsconfig.build.json",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@shopify/liquid-html-parser": "^2.8.2",
+    "@shopify/theme-check-common": "^3.17.0",
+    "acorn": "^8.14.1",
+    "acorn-walk": "^8.3.4",
+    "vscode-uri": "^3.0.7"
+  },
+  "devDependencies": {
+    "@shopify/theme-check-node": "^3.17.0"
+  }
+}

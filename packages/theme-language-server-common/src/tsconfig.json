@@ -9,12 +9,14 @@
     "tsBuildInfoFile": "../dist/tsconfig.tsbuildinfo",
     "paths": {
       "@shopify/theme-check-common": ["../../theme-check-common/src"],
-      "@shopify/liquid-html-parser": ["../../liquid-html-parser/src"]
+      "@shopify/liquid-html-parser": ["../../liquid-html-parser/src"],
+      "@shopify/theme-graph": ["../../theme-graph/src"]
     }
   },
   "references": [
     { "path": ".." },
     { "path": "../../theme-check-common" },
-    { "path": "../../liquid-html-parser" }
+    { "path": "../../liquid-html-parser" },
+    { "path": "../../theme-graph" }
   ]
 }

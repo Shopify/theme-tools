@@ -6,6 +6,7 @@
     ["@shopify/prettier-plugin-liquid"],
     ["@shopify/theme-language-server-*"],
     ["@shopify/theme-check-*"],
+    ["@shopify/theme-graph"],
     ["theme-check-vscode"]
   ],
   "linked": [],

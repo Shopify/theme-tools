@@ -1,8 +1,6 @@
 //@ts-check
 /** @typedef {import('webpack').Configuration} WebpackConfig **/
 
-'use strict';
-
 const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const { default: TsconfigPathsPlugin } = require('tsconfig-paths-webpack-plugin');

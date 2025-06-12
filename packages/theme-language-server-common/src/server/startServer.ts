@@ -1,5 +1,6 @@
 import {
   AugmentedThemeDocset,
+  DocDefinition,
   FileTuple,
   findRoot as findConfigFileRoot,
   isError,
@@ -12,7 +13,6 @@ import {
   path,
   recursiveReadDirectory,
   SourceCodeType,
-  DocDefinition,
   UriString,
 } from '@shopify/theme-check-common';
 import {
@@ -29,6 +29,7 @@ import { CodeActionKinds, CodeActionsProvider } from '../codeActions';
 import { Commands, ExecuteCommandProvider } from '../commands';
 import { CompletionsProvider } from '../completions';
 import { GetSnippetNamesForURI } from '../completions/providers/RenderSnippetCompletionProvider';
+import { CSSLanguageService } from '../css/CSSLanguageService';
 import { DiagnosticsManager, makeRunChecks } from '../diagnostics';
 import { DocumentHighlightsProvider } from '../documentHighlights/DocumentHighlightsProvider';
 import { DocumentLinksProvider } from '../documentLinks';
@@ -36,18 +37,24 @@ import { DocumentManager } from '../documents';
 import { OnTypeFormattingProvider } from '../formatting';
 import { HoverProvider } from '../hover';
 import { JSONLanguageService } from '../json/JSONLanguageService';
-import { CSSLanguageService } from '../css/CSSLanguageService';
 import { LinkedEditingRangesProvider } from '../linkedEditingRanges/LinkedEditingRangesProvider';
 import { RenameProvider } from '../rename/RenameProvider';
 import { RenameHandler } from '../renamed/RenameHandler';
 import { GetTranslationsForURI } from '../translations';
-import { Dependencies } from '../types';
+import {
+  Dependencies,
+  ThemeGraphDeadCodeRequest,
+  ThemeGraphDependenciesRequest,
+  ThemeGraphReferenceRequest,
+  ThemeGraphRootRequest,
+} from '../types';
 import { debounce } from '../utils';
 import { snippetName } from '../utils/uri';
 import { VERSION } from '../version';
 import { CachedFileSystem } from './CachedFileSystem';
 import { Configuration } from './Configuration';
 import { safe } from './safe';
+import { ThemeGraphManager } from './ThemeGraphManager';
 
 const defaultLogger = () => {};
 
@@ -64,7 +71,7 @@ const hasUnsupportedDocument = (params: any) => {
     'textDocument' in params &&
     'uri' in params.textDocument &&
     typeof params.textDocument.uri === 'string' &&
-    params.textDocument.uri.startsWith('git:')
+    (params.textDocument.uri.startsWith('git:') || params.textDocument.uri.startsWith('output:'))
   );
 };
 
@@ -82,7 +89,7 @@ export function startServer(
   connection: Connection,
   {
     fs: injectedFs,
-    loadConfig,
+    loadConfig: injectedLoadConfig,
     log = defaultLogger,
     jsonValidationSet,
     themeDocset: remoteThemeDocset,
@@ -91,14 +98,22 @@ export function startServer(
 ) {
   const fs = new CachedFileSystem(injectedFs);
   const fileExists = makeFileExists(fs);
+  const loadConfig = memoize(injectedLoadConfig, (uri: string) => uri);
   const clientCapabilities = new ClientCapabilities();
   const configuration = new Configuration(connection, clientCapabilities);
+
   const documentManager: DocumentManager = new DocumentManager(
     fs,
     connection,
     clientCapabilities,
     getModeForURI,
     isValidSchema,
+  );
+  const themeGraphManager = new ThemeGraphManager(
+    connection,
+    documentManager,
+    fs,
+    findThemeRootURI,
   );
   const diagnosticsManager = new DiagnosticsManager(connection);
   const documentLinksProvider = new DocumentLinksProvider(documentManager, findThemeRootURI);
@@ -140,7 +155,7 @@ export function startServer(
 
   const getMetafieldDefinitionsForRootUri = memoize(
     makeGetMetafieldDefinitions(fs),
-    (rootUri: string) => rootUri,
+    (rootUri) => rootUri,
   );
 
   const getMetafieldDefinitions = async (uri: string) => {
@@ -378,6 +393,9 @@ export function startServer(
     configuration.registerDidChangeWatchedFilesNotification({
       watchers: [
         {
+          globPattern: '**/.theme-check.yml',
+        },
+        {
           globPattern: '**/.shopify/*',
         },
         {
@@ -537,6 +555,8 @@ export function startServer(
       fs.readFile.invalidate(newUri);
       fs.stat.invalidate(oldUri);
       fs.stat.invalidate(newUri);
+
+      themeGraphManager.rename(oldUri, newUri);
     }
 
     // We should complete refactors before running theme check
@@ -571,6 +591,12 @@ export function startServer(
     const triggerUris = params.changes.map((change) => change.uri);
     const updates: Promise<any>[] = [];
     for (const change of params.changes) {
+      // Theme Check config changes should clear the config cache
+      if (change.uri.endsWith('.theme-check.yml')) {
+        loadConfig.clearCache();
+        continue;
+      }
+
       // Rename cache invalidation is handled by onDidRenameFiles
       if (documentManager.hasRecentRename(change.uri)) {
         documentManager.clearRecentRename(change.uri);
@@ -583,6 +609,7 @@ export function startServer(
           fs.readDirectory.invalidate(path.dirname(change.uri));
           fs.readFile.invalidate(change.uri);
           fs.stat.invalidate(change.uri);
+          themeGraphManager.create(change.uri);
           // If a file is created under out feet, we update its contents.
           updates.push(documentManager.changeFromDisk(change.uri));
           break;
@@ -591,6 +618,7 @@ export function startServer(
           // A changed file invalidates readFile and stat (but not readDirectory)
           fs.readFile.invalidate(change.uri);
           fs.stat.invalidate(change.uri);
+          themeGraphManager.change(change.uri);
           // If the file is not open, we update its contents in the doc manager
           // If it is open, then we don't need to update it because the document manager
           // will have the version from the editor.
@@ -604,6 +632,7 @@ export function startServer(
           fs.readDirectory.invalidate(path.dirname(change.uri));
           fs.readFile.invalidate(change.uri);
           fs.stat.invalidate(change.uri);
+          themeGraphManager.delete(change.uri);
           // If a file is deleted, it's removed from the document manager
           documentManager.delete(change.uri);
           break;
@@ -623,6 +652,36 @@ export function startServer(
     // MissingAssets/MissingSnippet should be rerun when a file is deleted
     // since an error might be introduced (and vice versa).
     runChecks.force(triggerUris);
+  });
+
+  connection.onRequest(ThemeGraphReferenceRequest.type, async (params) => {
+    if (hasUnsupportedDocument(params)) return [];
+    const { uri, offset, includeIndirect } = params;
+    return themeGraphManager.getReferences(uri, offset, { includeIndirect }).catch((_) => []);
+  });
+
+  connection.onRequest(ThemeGraphDependenciesRequest.type, async (params) => {
+    if (hasUnsupportedDocument(params)) return [];
+    const { uri, offset, includeIndirect } = params;
+    return themeGraphManager.getDependencies(uri, offset, { includeIndirect }).catch((_) => []);
+  });
+
+  connection.onRequest(ThemeGraphRootRequest.type, async (params) => {
+    if (hasUnsupportedDocument(params)) return '';
+    const { uri } = params;
+    const rootUri = await findThemeRootURI(uri).catch((_) => undefined);
+    if (!rootUri || path.dirname(rootUri) === rootUri) {
+      console.error(uri);
+    }
+    return rootUri;
+  });
+
+  connection.onRequest(ThemeGraphDeadCodeRequest.type, async (params) => {
+    if (hasUnsupportedDocument(params)) return [];
+    const { uri } = params;
+    const rootUri = await findThemeRootURI(uri);
+    const deadFiles = await themeGraphManager.deadCode(rootUri);
+    return deadFiles;
   });
 
   connection.listen();

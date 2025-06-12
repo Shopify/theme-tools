@@ -1,0 +1,36 @@
+{
+  "sections": {
+    "header": {
+      "type": "custom-section",
+      "block_order": [
+        "header",
+        "render-static",
+      ],
+      "blocks": {
+        "header": {
+          "type": "group",
+          "block_order": [
+            "text"
+          ],
+          "blocks": {
+            "text": {
+              "type": "text",
+            }
+          },
+        },
+        "render-static": {
+          "type": "render-static",
+          "blocks": {
+            "static": {
+              "type": "_static",
+              "static": true,
+            }
+          }
+        }
+      }
+    }
+  },
+  "order": [
+    "header"
+  ],
+}
