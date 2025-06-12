@@ -1,5 +1,11 @@
 # @shopify/theme-language-server-common
 
+## 2.17.1
+
+### Patch Changes
+
+- 8781b269: Fix race condition from JSONLanguageService setup
+
 ## 2.17.0
 
 ### Minor Changes
