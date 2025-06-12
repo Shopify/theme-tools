@@ -93,8 +93,7 @@ export class ThemeGraphManager {
       // dead code doesn't show up in the graph, but it might still have dependencies.
       // So we're building a smaller graph with that file as entry point to figure
       // out what it depends on.
-      const dependencies = await this.graphDependencies(graph.rootUri);
-      const deadCodeGraph = await buildThemeGraph(graph.rootUri, dependencies, [uri]);
+      const deadCodeGraph = await this.buildThemeGraph(graph.rootUri, [uri]);
       module = deadCodeGraph.modules[uri];
     }
 
@@ -200,7 +199,7 @@ export class ThemeGraphManager {
 
     const anyUri = operations[0];
     const rootUri = await this.findThemeRootURI(anyUri);
-    const graph = this.graphs.get(rootUri);
+    const graph = await this.graphs.get(rootUri);
     if (!graph) return;
 
     this.graphs.delete(rootUri);
@@ -208,12 +207,12 @@ export class ThemeGraphManager {
     this.connection.sendNotification(ThemeGraphDidUpdateNotification.type, { uri: rootUri });
   }, 500);
 
-  private buildThemeGraph = async (rootUri: string) => {
+  private buildThemeGraph = async (rootUri: string, entryPoints?: string[]) => {
     const { documentManager } = this;
     await documentManager.preload(rootUri);
 
     const dependencies = await this.graphDependencies(rootUri);
-    return buildThemeGraph(rootUri, dependencies);
+    return buildThemeGraph(rootUri, dependencies, entryPoints);
   };
 
   private getSourceCode = async (uri: string) => {

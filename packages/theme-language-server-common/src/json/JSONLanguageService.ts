@@ -34,6 +34,10 @@ export class JSONLanguageService {
   // One record for all modes since collisions on URIs should point to the same schema
   private schemas: Record<string, SchemaDefinition>;
 
+  // Setup state
+  public initialized: Promise<void>;
+  private initialize: () => void = () => {};
+
   constructor(
     private documentManager: DocumentManager,
     private jsonValidationSet: JsonValidationSet,
@@ -44,60 +48,65 @@ export class JSONLanguageService {
   ) {
     this.services = Object.fromEntries(Modes.map((mode) => [mode, null])) as typeof this.services;
     this.schemas = {};
+    this.initialized = new Promise((resolve) => {
+      this.initialize = resolve;
+    });
   }
 
   async setup(clientCapabilities: LSPClientCapabilities) {
-    await Promise.all(
-      Modes.map(async (mode) => {
-        const schemas = await this.jsonValidationSet.schemas(mode);
-        for (const schema of schemas) {
-          this.schemas[schema.uri] = schema;
-        }
+    const promises = Modes.map(async (mode) => {
+      const schemas = await this.jsonValidationSet.schemas(mode);
+      for (const schema of schemas) {
+        this.schemas[schema.uri] = schema;
+      }
 
-        if (!schemas.length) return;
+      if (!schemas.length) return;
 
-        const service = getLanguageService({
-          clientCapabilities,
+      const service = getLanguageService({
+        clientCapabilities,
 
-          // Map URIs to schemas without making network requests. Removes the
-          // network dependency.
-          schemaRequestService: this.getSchemaForURI.bind(this),
+        // Map URIs to schemas without making network requests. Removes the
+        // network dependency.
+        schemaRequestService: this.getSchemaForURI.bind(this),
 
-          // This is how we make sure that our "$ref": "./inputSettings.json" in
-          // our JSON schemas resolve correctly.
-          workspaceContext: {
-            resolveRelativePath: (relativePath, resource) => {
-              const url = new URL(relativePath, resource);
-              return url.toString();
-            },
+        // This is how we make sure that our "$ref": "./inputSettings.json" in
+        // our JSON schemas resolve correctly.
+        workspaceContext: {
+          resolveRelativePath: (relativePath, resource) => {
+            const url = new URL(relativePath, resource);
+            return url.toString();
           },
+        },
 
-          contributions: [
-            new JSONContributions(
-              this.documentManager,
-              this.getDefaultSchemaTranslations,
-              this.getThemeBlockNames,
-              this.getThemeBlockSchema,
-            ),
-          ],
-        });
+        contributions: [
+          new JSONContributions(
+            this.documentManager,
+            this.getDefaultSchemaTranslations,
+            this.getThemeBlockNames,
+            this.getThemeBlockSchema,
+          ),
+        ],
+      });
 
-        service.configure({
-          // This is what we use to map file names to JSON schemas. Without
-          // this, we'd need folks to use the `$schema` field in their JSON
-          // blobs. That ain't fun nor is going to happen.
-          schemas: schemas.map((schemaDefinition) => ({
-            uri: schemaDefinition.uri,
-            fileMatch: schemaDefinition.fileMatch,
-          })),
-        });
+      service.configure({
+        // This is what we use to map file names to JSON schemas. Without
+        // this, we'd need folks to use the `$schema` field in their JSON
+        // blobs. That ain't fun nor is going to happen.
+        schemas: schemas.map((schemaDefinition) => ({
+          uri: schemaDefinition.uri,
+          fileMatch: schemaDefinition.fileMatch,
+        })),
+      });
 
-        this.services[mode] = service;
-      }),
-    );
+      this.services[mode] = service;
+    });
+
+    await Promise.all(promises);
+    this.initialize();
   }
 
   async completions(params: CompletionParams): Promise<null | CompletionList | CompletionItem[]> {
+    await this.initialized;
     const mode = await this.getModeForURI(params.textDocument.uri);
     const service = this.services[mode];
     if (!service) return null;
@@ -108,6 +117,7 @@ export class JSONLanguageService {
   }
 
   async hover(params: HoverParams): Promise<Hover | null> {
+    await this.initialized;
     const mode = await this.getModeForURI(params.textDocument.uri);
     const service = this.services[mode];
     if (!service) return null;
@@ -117,7 +127,8 @@ export class JSONLanguageService {
     return service.doHover(jsonTextDocument, params.position, jsonDocument);
   }
 
-  public isValidSchema: IsValidSchema = async (uri: string, jsonString: string) => {
+  public isValidSchema = async (uri: string, jsonString: string) => {
+    await this.initialized;
     const mode = await this.getModeForURI(uri);
     const service = this.services[mode];
     if (!service) return false;
