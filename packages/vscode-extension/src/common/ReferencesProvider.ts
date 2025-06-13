@@ -8,6 +8,7 @@ import {
   ThemeGraphRootRequest,
 } from '@shopify/theme-language-server-common';
 import {
+  commands,
   Event,
   EventEmitter,
   ExtensionContext,
@@ -21,6 +22,11 @@ import {
   window,
 } from 'vscode';
 import { BaseLanguageClient } from 'vscode-languageclient';
+
+export function setupContext() {
+  commands.executeCommand('setContext', 'shopify.themeGraph.references.enabled', true);
+  commands.executeCommand('setContext', 'shopify.themeGraph.dependencies.enabled', true);
+}
 
 export function createReferencesTreeView(
   viewId: string,
