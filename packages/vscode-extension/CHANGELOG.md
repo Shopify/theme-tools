@@ -1,5 +1,11 @@
 ## theme-check-vscode
 
+## 3.9.2
+
+### Patch Changes
+
+- b50d876c: Only show deps and references when the extension is activated
+
 ## 3.9.1
 
 ### Patch Changes
