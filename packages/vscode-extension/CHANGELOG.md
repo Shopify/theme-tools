@@ -1,5 +1,11 @@
 ## theme-check-vscode
 
+## 3.9.3
+
+### Patch Changes
+
+- 88b21779: Fix URI normalization bug in ReferencesProvider
+
 ## 3.9.2
 
 ### Patch Changes
