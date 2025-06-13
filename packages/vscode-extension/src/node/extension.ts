@@ -11,7 +11,7 @@ import {
 import { documentSelectors } from '../common/constants';
 import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
-import { createReferencesTreeView } from '../common/ReferencesProvider';
+import { createReferencesTreeView, setupContext } from '../common/ReferencesProvider';
 import { makeDeadCode, openLocation } from '../common/commands';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
@@ -36,6 +36,7 @@ export async function activate(context: ExtensionContext) {
   await startServer(context);
 
   if (client) {
+    setupContext();
     context.subscriptions.push(
       commands.registerCommand('shopifyLiquid.deadCode', makeDeadCode(client)),
       createReferencesTreeView('shopify.themeGraph.references', context, client, 'references'),

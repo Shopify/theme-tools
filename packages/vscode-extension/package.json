@@ -153,12 +153,14 @@
         {
           "id": "shopify.themeGraph.references",
           "name": "References",
-          "icon": "$(references)"
+          "icon": "$(references)",
+          "when": "shopify.themeGraph.references.enabled"
         },
         {
           "id": "shopify.themeGraph.dependencies",
           "name": "Dependencies",
-          "icon": "$(outline-view-icon)"
+          "icon": "$(outline-view-icon)",
+          "when": "shopify.themeGraph.dependencies.enabled"
         }
       ]
     },
