@@ -99,12 +99,13 @@ export class ReferencesProvider implements TreeDataProvider<TreeItem> {
   }
 
   public async refresh() {
-    const uri = window.activeTextEditor?.document.uri.toString();
-    if (!uri) {
+    const activeDocument = window.activeTextEditor?.document;
+    if (!activeDocument) {
       this.references = [ReferencesProvider.SelectFileTreeItem];
       return;
     }
 
+    const uri = path.normalize(activeDocument.uri.toString(true));
     this.references = [ReferencesProvider.LoadingTreeItem(path.basename(uri), this.mode)];
 
     const command =
