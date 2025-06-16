@@ -20,12 +20,22 @@ import {
   TreeView,
   Uri,
   window,
+  workspace,
 } from 'vscode';
 import { BaseLanguageClient } from 'vscode-languageclient';
 
 export function setupContext() {
-  commands.executeCommand('setContext', 'shopify.themeGraph.references.enabled', true);
-  commands.executeCommand('setContext', 'shopify.themeGraph.dependencies.enabled', true);
+  const enabled = workspace.getConfiguration().get('themeCheck.preloadOnBoot', true);
+  commands.executeCommand('setContext', 'shopify.themeGraph.references.enabled', enabled);
+  commands.executeCommand('setContext', 'shopify.themeGraph.dependencies.enabled', enabled);
+}
+
+export function watchReferencesTreeViewConfig() {
+  return workspace.onDidChangeConfiguration((event) => {
+    if (event.affectsConfiguration('themeCheck.preloadOnBoot')) {
+      setupContext();
+    }
+  });
 }
 
 export function createReferencesTreeView(
