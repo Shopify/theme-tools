@@ -25,6 +25,7 @@ import {
   ThemeGraphDidUpdateNotification,
 } from '../types';
 import { debounce } from '../utils';
+import { FindThemeRootURI } from '../internal-types';
 
 export class ThemeGraphManager {
   graphs: Map<string, ReturnType<typeof buildThemeGraph>> = new Map();
@@ -33,11 +34,15 @@ export class ThemeGraphManager {
     private connection: Connection,
     private documentManager: DocumentManager,
     private fs: AbstractFileSystem,
-    private findThemeRootURI: (uri: string) => Promise<string>,
+    private findThemeRootURI: FindThemeRootURI,
   ) {}
 
   async getThemeGraphForURI(uri: string) {
     const rootUri = await this.findThemeRootURI(uri);
+    if (!rootUri) {
+      return undefined;
+    }
+
     if (!this.graphs.has(rootUri)) {
       this.graphs.set(rootUri, this.buildThemeGraph(rootUri));
     }
@@ -199,6 +204,8 @@ export class ThemeGraphManager {
 
     const anyUri = operations[0];
     const rootUri = await this.findThemeRootURI(anyUri);
+    if (!rootUri) return;
+
     const graph = await this.graphs.get(rootUri);
     if (!graph) return;
 

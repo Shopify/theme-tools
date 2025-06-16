@@ -12,6 +12,7 @@ import { ClientCapabilities } from '../../ClientCapabilities';
 import { DocumentManager, isLiquidSourceCode } from '../../documents';
 import { isSnippet, snippetName } from '../../utils/uri';
 import { BaseRenameHandler } from '../BaseRenameHandler';
+import { FindThemeRootURI } from '../../internal-types';
 
 /**
  * The SnippetRenameHandler will handle snippet renames.
@@ -30,7 +31,7 @@ export class SnippetRenameHandler implements BaseRenameHandler {
     private documentManager: DocumentManager,
     private connection: Connection,
     private capabilities: ClientCapabilities,
-    private findThemeRootURI: (uri: string) => Promise<string>,
+    private findThemeRootURI: FindThemeRootURI,
   ) {}
 
   async onDidRenameFiles(params: RenameFilesParams): Promise<void> {
@@ -43,6 +44,7 @@ export class SnippetRenameHandler implements BaseRenameHandler {
     if (relevantRenames.length !== 1) return;
     const rename = relevantRenames[0];
     const rootUri = await this.findThemeRootURI(path.dirname(params.files[0].oldUri));
+    if (!rootUri) return;
     await this.documentManager.preload(rootUri);
     const theme = this.documentManager.theme(rootUri, true);
     const liquidSourceCodes = theme.filter(isLiquidSourceCode);

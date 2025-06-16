@@ -34,6 +34,10 @@ const dependencies: Dependencies = {
   loadConfig: async (uri, fs) => {
     const fileExists = makeFileExists(fs);
     const rootUri = await findRoot(uri, fileExists);
+    if (!rootUri) {
+      throw new Error(`Could not find theme root for ${uri}`);
+    }
+
     return {
       context: 'theme',
       settings: {},

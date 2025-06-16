@@ -145,6 +145,13 @@
           ],
           "description": "When true, theme check runs on file save.",
           "default": true
+        },
+        "themeCheck.preloadOnBoot": {
+          "type": [
+            "boolean"
+          ],
+          "description": "When true, theme check preloads all the files from your theme for fast rename handling and theme graph generation.",
+          "default": true
         }
       }
     },

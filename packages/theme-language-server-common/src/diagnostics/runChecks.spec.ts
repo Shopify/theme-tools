@@ -1,4 +1,5 @@
 import {
+  AbstractFileSystem,
   allChecks,
   LiquidCheckDefinition,
   path,
@@ -44,6 +45,9 @@ describe('Module: runChecks', () => {
   let documentManager: DocumentManager;
   let connection: { sendDiagnostics: ReturnType<typeof vi.fn> };
   let runChecks: ReturnType<typeof makeRunChecks>;
+  let fs: MockFileSystem;
+  const rootUri = path.normalize('browser:///theme');
+  const fileUri = path.join(rootUri, 'snippets', 'input.liquid');
 
   beforeEach(() => {
     connection = {
@@ -52,13 +56,20 @@ describe('Module: runChecks', () => {
 
     documentManager = new DocumentManager();
     diagnosticsManager = new DiagnosticsManager(connection as any as Connection);
+    fs = new MockFileSystem(
+      {
+        '.theme-check.yml': '',
+        'snippets/input.liquid': `{{ 'any' | filter }}`,
+      },
+      rootUri,
+    );
     runChecks = makeRunChecks(documentManager, diagnosticsManager, {
-      fs: new MockFileSystem({}, 'browser:/'),
+      fs,
       loadConfig: async () => ({
-        context: 'theme',
+        context: 'theme' as const,
         settings: {},
         checks: [LiquidFilter],
-        rootUri: 'browser:/',
+        rootUri,
       }),
       themeDocset: {
         filters: async () => [],
@@ -74,15 +85,14 @@ describe('Module: runChecks', () => {
   });
 
   it('should send diagnostics when there are errors', async () => {
-    const fileURI = 'browser:/input.liquid';
-    const fileContents = `{{ 'any' | filter }}`;
+    const fileContents = await fs.readFile(fileUri);
     const fileVersion = 0;
-    documentManager.open(fileURI, fileContents, fileVersion);
+    documentManager.open(fileUri, fileContents, fileVersion);
 
-    await runChecks(['browser:/input.liquid']);
+    await runChecks([fileUri]);
     expect(connection.sendDiagnostics).toBeCalled();
     expect(connection.sendDiagnostics).toBeCalledWith({
-      uri: fileURI,
+      uri: fileUri,
       version: fileVersion,
       diagnostics: [
         {
@@ -106,23 +116,22 @@ describe('Module: runChecks', () => {
   });
 
   it('should send an empty array when the errors were cleared', async () => {
-    const fileURI = 'browser:/input.liquid';
     const fileContentsWithError = `{{ 'any' | filter }}`;
     const fileContentsWithoutError = `{{ 'any' }}`;
     let fileVersion = 1;
 
     // Open and have errors
-    documentManager.open(fileURI, fileContentsWithError, fileVersion);
-    await runChecks(['browser:/input.liquid']);
+    documentManager.open(fileUri, fileContentsWithError, fileVersion);
+    await runChecks([fileUri]);
 
     // Change doc to fix errors
     fileVersion = 2;
-    documentManager.change(fileURI, fileContentsWithoutError, fileVersion);
-    await runChecks(['browser:/input.liquid']);
+    documentManager.change(fileUri, fileContentsWithoutError, fileVersion);
+    await runChecks([fileUri]);
 
     expect(connection.sendDiagnostics).toBeCalledTimes(2);
     expect(connection.sendDiagnostics).toHaveBeenLastCalledWith({
-      uri: fileURI,
+      uri: fileUri,
       version: fileVersion,
       diagnostics: [],
     });
@@ -131,7 +140,7 @@ describe('Module: runChecks', () => {
   it('should send diagnostics per URI when there are errors', async () => {
     const files = [
       {
-        fileURI: 'browser:/input1.liquid',
+        fileURI: path.join(rootUri, 'snippets', 'input1.liquid'),
         fileContents: `{{ 'any' | filter }}`,
         fileVersion: 0,
         diagnostics: [
@@ -154,7 +163,7 @@ describe('Module: runChecks', () => {
         ],
       },
       {
-        fileURI: 'browser:/input2.liquid',
+        fileURI: path.join(rootUri, 'snippets', 'input2.liquid'),
         // same but on a new line
         fileContents: `\n{{ 'any' | filter }}`,
         fileVersion: 0,
@@ -183,7 +192,7 @@ describe('Module: runChecks', () => {
       documentManager.open(fileURI, fileContents, fileVersion);
     });
 
-    await runChecks(['browser:/input1.liquid']);
+    await runChecks([path.join(rootUri, 'snippets', 'input1.liquid')]);
 
     files.forEach(({ fileURI, fileVersion, diagnostics }) => {
       expect(connection.sendDiagnostics).toBeCalledWith({
@@ -196,10 +205,11 @@ describe('Module: runChecks', () => {
 
   it('should use the contents of the default translations file buffer (if any) instead of the result of the factory', async () => {
     const defaultPath = 'locales/en.default.json';
-    const defaultURI = `browser:/${defaultPath}`;
+    const defaultURI = path.join(rootUri, ...defaultPath.split('/'));
     const frPath = 'locales/fr.json';
-    const frURI = `browser:/${frPath}`;
+    const frURI = path.join(rootUri, ...frPath.split('/'));
     const files = {
+      '.theme-check.yml': '',
       [defaultPath]: JSON.stringify({ hello: 'hello' }),
       [frPath]: JSON.stringify({ hello: 'bonjour', hi: 'salut' }),
     };
@@ -207,12 +217,12 @@ describe('Module: runChecks', () => {
     const matchingTranslation = allChecks.filter((c) => c.meta.code === 'MatchingTranslations');
     expect(matchingTranslation).to.have.lengthOf(1);
     runChecks = makeRunChecks(documentManager, diagnosticsManager, {
-      fs: new MockFileSystem(files, path.normalize('browser:/')),
+      fs: new MockFileSystem(files, rootUri),
       loadConfig: async () => ({
         context: 'theme',
         settings: {},
         checks: matchingTranslation,
-        rootUri: path.normalize('browser:/'),
+        rootUri: rootUri,
       }),
       themeDocset: {
         filters: async () => [],
@@ -229,29 +239,31 @@ describe('Module: runChecks', () => {
     // Open and have errors
     documentManager.open(frURI, files[frPath], 0);
     await runChecks([frURI]);
-    expect(connection.sendDiagnostics).toHaveBeenCalledWith({
-      uri: frURI,
-      version: 0,
-      diagnostics: [
-        {
-          source: 'theme-check',
-          code: 'MatchingTranslations',
-          codeDescription: { href: expect.any(String) },
-          message: `A default translation for 'hi' does not exist`,
-          severity: 1,
-          range: {
-            end: {
-              character: 31,
-              line: 0,
-            },
-            start: {
-              character: 19,
-              line: 0,
+    expect(connection.sendDiagnostics).toHaveBeenCalledWith(
+      expect.objectContaining({
+        uri: frURI,
+        version: 0,
+        diagnostics: expect.arrayContaining([
+          {
+            source: 'theme-check',
+            code: 'MatchingTranslations',
+            codeDescription: { href: expect.any(String) },
+            message: `A default translation for 'hi' does not exist`,
+            severity: 1,
+            range: {
+              end: {
+                character: 31,
+                line: 0,
+              },
+              start: {
+                character: 19,
+                line: 0,
+              },
             },
           },
-        },
-      ],
-    });
+        ]),
+      }),
+    );
 
     // Change the contents of the defaultURI buffer, expect frURI to be fixed
     documentManager.open(defaultURI, files[defaultPath], 0);

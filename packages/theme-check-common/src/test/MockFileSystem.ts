@@ -2,6 +2,7 @@ import { AbstractFileSystem, FileStat, FileTuple, FileType } from '../AbstractFi
 import { deepGet } from '../utils';
 import { normalize, relative } from '../path';
 import { MockTheme } from './MockTheme';
+import * as path from '../path';
 
 interface FileTree {
   [fileName: string]: string | FileTree;
@@ -24,14 +25,15 @@ export class MockFileSystem implements AbstractFileSystem {
   }
 
   async readDirectory(uri: string): Promise<FileTuple[]> {
+    // eslint-disable-next-line no-param-reassign
     uri = uri.replace(/\/$/, '');
     const relativePath = this.rootRelative(uri);
     const tree =
-      normalize(uri) === this.rootUri
+      path.normalize(uri) === this.rootUri
         ? this.fileTree
         : deepGet(this.fileTree, relativePath.split('/'));
-    if (tree === undefined) {
-      throw new Error(`Directory not found: ${uri} in ${this.rootUri}`);
+    if (tree === undefined || tree === null) {
+      throw new Error(`Directory not found: ${uri} for ${this.rootUri}`);
     }
 
     if (typeof tree === 'string') {
@@ -46,32 +48,37 @@ export class MockFileSystem implements AbstractFileSystem {
   async stat(uri: string): Promise<FileStat> {
     const relativePath = this.rootRelative(uri);
     const source = this.mockTheme[relativePath];
-    if (source === undefined) {
-      throw new Error('File not found');
+    if (source) {
+      return {
+        type: FileType.File,
+        size: source.length ?? 0,
+      };
     }
-    return {
-      type: FileType.File,
-      size: source.length ?? 0,
-    };
+
+    const readdirResult = await this.readDirectory(uri);
+    if (readdirResult) {
+      return {
+        type: FileType.Directory,
+        size: 0, // Size is not applicable for directories
+      };
+    }
+
+    throw new Error(`File not found: ${uri} for ${this.rootUri}`);
   }
 
-  private _fileTree: FileTree | null = null;
-
   private get fileTree(): FileTree {
-    if (!this._fileTree) {
-      this._fileTree = {};
-      for (const [relativePath, source] of Object.entries(this.mockTheme)) {
-        const segments = relativePath.split('/');
-        let current = this._fileTree;
-        for (let i = 0; i < segments.length - 1; i++) {
-          const segment = segments[i];
-          current[segment] ??= {};
-          current = current[segment] as FileTree;
-        }
-        current[segments[segments.length - 1]] = source;
+    const result: FileTree = {};
+    for (const [relativePath, source] of Object.entries(this.mockTheme)) {
+      const segments = relativePath.split('/');
+      let current = result;
+      for (let i = 0; i < segments.length - 1; i++) {
+        const segment = segments[i];
+        current[segment] ??= {};
+        current = current[segment] as FileTree;
       }
+      current[segments[segments.length - 1]] = source;
     }
-    return this._fileTree;
+    return result;
   }
 
   private rootRelative(uri: string) {

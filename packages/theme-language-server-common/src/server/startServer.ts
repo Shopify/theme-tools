@@ -9,6 +9,7 @@ import {
   makeGetDefaultTranslations,
   makeGetMetafieldDefinitions,
   memoize,
+  MetafieldDefinitionMap,
   parseJSON,
   path,
   recursiveReadDirectory,
@@ -147,8 +148,9 @@ export function startServer(
     findThemeRootURI,
   );
 
-  async function findThemeRootURI(uri: string) {
+  async function findThemeRootURI(uri: string): Promise<string | null> {
     const rootUri = await findConfigFileRoot(uri, fileExists);
+    if (!rootUri) return null;
     const config = await loadConfig(rootUri, fs);
     return config.rootUri;
   }
@@ -158,8 +160,13 @@ export function startServer(
     (rootUri) => rootUri,
   );
 
-  const getMetafieldDefinitions = async (uri: string) => {
+  const getMetafieldDefinitions: NonNullable<Dependencies['getMetafieldDefinitions']> = async (
+    uri: string,
+  ) => {
     const rootUri = await findThemeRootURI(uri);
+    if (!rootUri) {
+      return {} as MetafieldDefinitionMap;
+    }
 
     return getMetafieldDefinitionsForRootUri(rootUri);
   };
@@ -181,6 +188,8 @@ export function startServer(
 
   const getTranslationsForURI: GetTranslationsForURI = async (uri) => {
     const rootURI = await findThemeRootURI(uri);
+    if (!rootURI) return {};
+
     const theme = documentManager.theme(rootURI);
     const getDefaultTranslations = makeGetDefaultTranslations(fs, theme, rootURI);
     const [defaultTranslations, shopifyTranslations] = await Promise.all([
@@ -193,6 +202,8 @@ export function startServer(
 
   const getSchemaTranslationsForURI: GetTranslationsForURI = async (uri) => {
     const rootURI = await findThemeRootURI(uri);
+    if (!rootURI) return {};
+
     const theme = documentManager.theme(rootURI);
     const getDefaultSchemaTranslations = makeGetDefaultSchemaTranslations(fs, theme, rootURI);
     return getDefaultSchemaTranslations();
@@ -204,6 +215,8 @@ export function startServer(
     name: string,
   ): Promise<DocDefinition | undefined> => {
     const rootUri = await findThemeRootURI(uri);
+    if (!rootUri) return undefined;
+
     const fileUri = path.join(rootUri, category, `${name}.liquid`);
     const file = documentManager.get(fileUri);
 
@@ -217,12 +230,16 @@ export function startServer(
   const snippetFilter = ([uri]: FileTuple) => /\.liquid$/.test(uri) && /snippets/.test(uri);
   const getSnippetNamesForURI: GetSnippetNamesForURI = safe(async (uri: string) => {
     const rootUri = await findThemeRootURI(uri);
+    if (!rootUri) return [];
+
     const snippetUris = await recursiveReadDirectory(fs, rootUri, snippetFilter);
     return snippetUris.map(snippetName);
   }, []);
 
   const getThemeSettingsSchemaForURI = safe(async (uri: string) => {
     const rootUri = await findThemeRootURI(uri);
+    if (!rootUri) return [];
+
     const settingsSchemaUri = path.join(rootUri, 'config', 'settings_schema.json');
     const contents = await fs.readFile(settingsSchemaUri);
     const json = parseJSON(contents);
@@ -234,12 +251,15 @@ export function startServer(
 
   async function getModeForURI(uri: string) {
     const rootUri = await findConfigFileRoot(uri, fileExists);
+    if (!rootUri) return 'theme';
     const config = await loadConfig(rootUri, fs);
     return config.context;
   }
 
   const getThemeBlockNames = safe(async (uri: string, includePrivate: boolean) => {
     const rootUri = await findThemeRootURI(uri);
+    if (!rootUri) return [];
+
     const blocks = await fs.readDirectory(path.join(rootUri, 'blocks'));
     const blockNames = blocks.map(([uri]) => path.basename(uri, '.liquid'));
 
@@ -252,6 +272,8 @@ export function startServer(
 
   async function getThemeBlockSchema(uri: string, name: string) {
     const rootUri = await findThemeRootURI(uri);
+    if (!rootUri) return;
+
     const blockUri = path.join(rootUri, 'blocks', `${name}.liquid`);
     const doc = documentManager.get(blockUri);
     if (!doc || doc.type !== SourceCodeType.LiquidHtml) {
@@ -449,7 +471,9 @@ export function startServer(
     // we'll find a theme root and we'll preload that.
     if (await configuration.shouldPreloadOnBoot()) {
       const rootUri = await findThemeRootURI(uri);
-      documentManager.preload(rootUri);
+      if (rootUri) {
+        documentManager.preload(rootUri);
+      }
     }
   });
 
@@ -640,9 +664,11 @@ export function startServer(
 
       if (change.uri.endsWith('metafields.json')) {
         updates.push(
-          findThemeRootURI(change.uri).then((rootUri) =>
-            getMetafieldDefinitionsForRootUri.invalidate(rootUri),
-          ),
+          findThemeRootURI(change.uri).then((rootUri) => {
+            if (rootUri) {
+              getMetafieldDefinitionsForRootUri.invalidate(rootUri);
+            }
+          }),
         );
       }
     }
@@ -680,6 +706,7 @@ export function startServer(
     if (hasUnsupportedDocument(params)) return [];
     const { uri } = params;
     const rootUri = await findThemeRootURI(uri);
+    if (!rootUri) return [];
     const deadFiles = await themeGraphManager.deadCode(rootUri);
     return deadFiles;
   });
