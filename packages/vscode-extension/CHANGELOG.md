@@ -1,5 +1,11 @@
 ## theme-check-vscode
 
+## 3.9.4
+
+### Patch Changes
+
+- d83036b3: Disable theme graph if `themeCheck.preloadOnBoot` is false
+
 ## 3.9.3
 
 ### Patch Changes
