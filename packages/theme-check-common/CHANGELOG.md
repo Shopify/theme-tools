@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 3.18.1
+
+### Patch Changes
+
+- ce5cb33a: Gracefully handle files that are not part of a theme
+
 ## 3.18.0
 
 ### Minor Changes
