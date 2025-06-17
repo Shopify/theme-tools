@@ -1,5 +1,15 @@
 # @shopify/theme-language-server-common
 
+## 2.17.2
+
+### Patch Changes
+
+- ce5cb33a: Gracefully handle files that are not part of a theme
+- Updated dependencies
+- Updated dependencies [ce5cb33a]
+  - @shopify/theme-graph@0.1.1
+  - @shopify/theme-check-common@3.18.1
+
 ## 2.17.1
 
 ### Patch Changes

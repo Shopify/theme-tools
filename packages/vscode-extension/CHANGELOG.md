@@ -1,5 +1,16 @@
 ## theme-check-vscode
 
+## 3.9.5
+
+### Patch Changes
+
+- ce5cb33a: Gracefully handle files that are not part of a theme
+- Updated dependencies [ce5cb33a]
+  - @shopify/theme-language-server-common@2.17.2
+  - @shopify/theme-language-server-node@2.17.2
+  - @shopify/theme-check-common@3.18.1
+  - @shopify/theme-language-server-browser@2.17.2
+
 ## 3.9.4
 
 ### Patch Changes
