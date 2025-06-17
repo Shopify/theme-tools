@@ -2,11 +2,12 @@ import { Connection } from 'vscode-languageserver';
 import { RenameFilesParams } from 'vscode-languageserver-protocol';
 import { ClientCapabilities } from '../ClientCapabilities';
 import { DocumentManager } from '../documents';
+import { FindThemeRootURI } from '../internal-types';
 import { BaseRenameHandler } from './BaseRenameHandler';
 import { AssetRenameHandler } from './handlers/AssetRenameHandler';
 import { BlockRenameHandler } from './handlers/BlockRenameHandler';
-import { SnippetRenameHandler } from './handlers/SnippetRenameHandler';
 import { SectionRenameHandler } from './handlers/SectionRenameHandler';
+import { SnippetRenameHandler } from './handlers/SnippetRenameHandler';
 
 /**
  * The RenameHandler is responsible for handling workspace/didRenameFiles notifications.
@@ -22,7 +23,7 @@ export class RenameHandler {
     connection: Connection,
     capabilities: ClientCapabilities,
     documentManager: DocumentManager,
-    findThemeRootURI: (uri: string) => Promise<string>,
+    findThemeRootURI: FindThemeRootURI,
   ) {
     this.handlers = [
       new SnippetRenameHandler(documentManager, connection, capabilities, findThemeRootURI),

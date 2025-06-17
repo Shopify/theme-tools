@@ -4,6 +4,10 @@ import { NodeFileSystem } from './NodeFileSystem';
 import { makeTempWorkspace, Workspace } from './test/test-helpers';
 
 const theme = {
+  assets: {
+    'theme.js': '',
+    'theme.css': '',
+  },
   locales: {
     'en.default.json': JSON.stringify({ beverage: 'coffee' }),
     'fr.json': '{}',

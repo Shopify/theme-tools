@@ -43,7 +43,7 @@ export function makeRunChecks(
     // then we recheck theme1
     const fileExists = makeFileExists(fs);
     const rootURIs = await Promise.all(triggerURIs.map((uri) => findRoot(uri, fileExists)));
-    const deduplicatedRootURIs = new Set(rootURIs);
+    const deduplicatedRootURIs = new Set<string>(rootURIs.filter((x): x is string => !!x));
     await Promise.all([...deduplicatedRootURIs].map(runChecksForRoot));
 
     return;

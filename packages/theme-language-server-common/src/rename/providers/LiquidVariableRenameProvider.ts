@@ -1,18 +1,17 @@
-import { BaseRenameProvider } from '../BaseRenameProvider';
-import { AugmentedLiquidSourceCode, DocumentManager, isLiquidSourceCode } from '../../documents';
 import {
+  AssignMarkup,
+  ForMarkup,
   LiquidHtmlNode,
   LiquidTagFor,
   LiquidTagTablerow,
+  LiquidVariableLookup,
   NamedTags,
   NodeTypes,
   Position,
   RenderMarkup,
-  AssignMarkup,
   TextNode,
-  LiquidVariableLookup,
-  ForMarkup,
 } from '@shopify/liquid-html-parser';
+import { JSONNode, SourceCodeType, visit } from '@shopify/theme-check-common';
 import { Connection, Range } from 'vscode-languageserver';
 import {
   ApplyWorkspaceEditRequest,
@@ -24,16 +23,18 @@ import {
   WorkspaceEdit,
 } from 'vscode-languageserver-protocol';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { JSONNode, SourceCodeType, visit } from '@shopify/theme-check-common';
-import { snippetName } from '../../utils/uri';
 import { ClientCapabilities } from '../../ClientCapabilities';
+import { AugmentedLiquidSourceCode, DocumentManager, isLiquidSourceCode } from '../../documents';
+import { FindThemeRootURI } from '../../internal-types';
+import { snippetName } from '../../utils/uri';
+import { BaseRenameProvider } from '../BaseRenameProvider';
 
 export class LiquidVariableRenameProvider implements BaseRenameProvider {
   constructor(
     private connection: Connection,
     private clientCapabilities: ClientCapabilities,
     private documentManager: DocumentManager,
-    private findThemeRootURI: (uri: string) => Promise<string>,
+    private findThemeRootURI: FindThemeRootURI,
   ) {}
 
   async prepare(
@@ -71,7 +72,7 @@ export class LiquidVariableRenameProvider implements BaseRenameProvider {
     const rootUri = await this.findThemeRootURI(params.textDocument.uri);
     const textDocument = document?.textDocument;
 
-    if (!textDocument || !node || !ancestors) return null;
+    if (!rootUri || !textDocument || !node || !ancestors) return null;
     if (document.ast instanceof Error) return null;
     if (!supportedTags(node, ancestors)) return null;
 

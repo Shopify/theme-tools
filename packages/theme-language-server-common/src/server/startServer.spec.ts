@@ -58,7 +58,7 @@ describe('Module: server', () => {
       }
     });
 
-    fileTree = { 'snippets/code.liquid': fileContents };
+    fileTree = { '.theme-check.yml': '', 'snippets/code.liquid': fileContents };
     logger = vi.fn();
     dependencies = getDependencies(logger, fileTree);
 

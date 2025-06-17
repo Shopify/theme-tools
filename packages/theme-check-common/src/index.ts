@@ -144,7 +144,7 @@ function createContext<T extends SourceCodeType, S extends Schema>(
     ...dependencies,
     validateJSON,
     settings: createSettings(checkSettings, check.meta.schema),
-    toUri: (relativePath) => path.join(config.rootUri, relativePath),
+    toUri: (relativePath) => path.join(config.rootUri, ...relativePath.split('/')),
     toRelativePath: (uri) => path.relative(uri, config.rootUri),
     report(problem: Problem<T>): void {
       offenses.push({

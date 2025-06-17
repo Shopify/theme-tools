@@ -4,13 +4,14 @@ import { DocumentLink, Range } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI, Utils } from 'vscode-uri';
 
-import { DocumentManager } from '../documents';
 import { visit, Visitor } from '@shopify/theme-check-common';
+import { DocumentManager } from '../documents';
+import { FindThemeRootURI } from '../internal-types';
 
 export class DocumentLinksProvider {
   constructor(
     private documentManager: DocumentManager,
-    private findThemeRootURI: (uri: string) => Promise<string>,
+    private findThemeRootURI: FindThemeRootURI,
   ) {}
 
   async documentLinks(uriString: string): Promise<DocumentLink[]> {
@@ -24,6 +25,10 @@ export class DocumentLinksProvider {
     }
 
     const rootUri = await this.findThemeRootURI(uriString);
+    if (!rootUri) {
+      return [];
+    }
+
     const visitor = documentLinksVisitor(sourceCode.textDocument, URI.parse(rootUri));
     return visit(sourceCode.ast, visitor);
   }

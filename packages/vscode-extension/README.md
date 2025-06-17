@@ -40,6 +40,7 @@ This VS Code extensions comes with batteries included.
 - `"themeCheck.checkOnOpen": boolean`, (default: `true`) makes it so theme check runs on file open.
 - `"themeCheck.checkOnChange": boolean`, (default: `true`) makes it so theme check runs on file change.
 - `"themeCheck.checkOnSave": boolean`, (default: `true`) makes it so theme check runs on file save.
+- `"themeCheck.preloadOnBoot": boolean`, (default: `true`) makes it so all files are preloaded on extension activation.
 
 ## License
 

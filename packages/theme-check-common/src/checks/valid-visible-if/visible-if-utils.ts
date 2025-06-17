@@ -1,13 +1,6 @@
-import {
-  type LiquidVariableLookup,
-  toLiquidHtmlAST,
-  NodeTypes,
-  LiquidVariableOutput,
-} from '@shopify/liquid-html-parser';
+import { type LiquidVariableLookup, NodeTypes, toLiquidHtmlAST } from '@shopify/liquid-html-parser';
 import { Context, SourceCodeType } from '../..';
-import { findRoot } from '../../find-root';
 import { parseJSON } from '../../json';
-import { join } from '../../path';
 import { visit } from '../../visitor';
 
 export type Vars = { [key: string]: Vars | true };
@@ -140,11 +133,8 @@ export async function getGlobalSettings(context: Context<SourceCodeType>) {
   const globalSettings: string[] = [];
 
   try {
-    const path = join(
-      await findRoot(context.file.uri, context.fileExists),
-      'config/settings_schema.json',
-    );
-    const settingsFile = await context.fs.readFile(path);
+    const uri = context.toUri('config/settings_schema.json');
+    const settingsFile = await context.fs.readFile(uri);
     const settings = parseJSON(settingsFile);
     if (Array.isArray(settings)) {
       for (const group of settings) {

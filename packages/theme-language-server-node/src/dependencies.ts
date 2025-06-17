@@ -31,7 +31,12 @@ const hasThemeAppExtensionConfig = async (rootUri: string, fs: AbstractFileSyste
 export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(uriString, fs) {
   const fileUri = path.normalize(uriString);
   const fileExists = makeFileExists(fs);
-  const rootUri = URI.parse(await findRoot(fileUri, fileExists));
+  const rootUriString = await findRoot(fileUri, fileExists);
+  if (!rootUriString) {
+    throw new Error(`Could not find theme root for ${fileUri}`);
+  }
+
+  const rootUri = URI.parse(rootUriString);
   const scheme = rootUri.scheme;
   const configUri = Utils.joinPath(rootUri, '.theme-check.yml');
   const [configExists, isDefinitelyThemeAppExtension] = await Promise.all([

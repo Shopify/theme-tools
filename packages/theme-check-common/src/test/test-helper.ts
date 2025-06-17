@@ -75,7 +75,7 @@ export async function check(
   const isValidSchema = async () => true;
 
   const defaultMockDependencies: Dependencies = {
-    fs: new MockFileSystem(themeDesc),
+    fs: new MockFileSystem({ '.theme-check.yml': '', ...themeDesc }),
     async getBlockSchema(name) {
       const block = blocks.get(name);
       if (!block) return undefined;

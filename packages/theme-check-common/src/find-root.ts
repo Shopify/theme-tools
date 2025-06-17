@@ -7,12 +7,19 @@ async function isRoot(dir: UriString, fileExists: FileExists) {
   return or(
     fileExists(path.join(dir, 'shopify.extension.toml')), // for theme-app-extensions
     fileExists(path.join(dir, '.theme-check.yml')),
-    fileExists(path.join(dir, '.git')),
 
-    // zip files and TAEs might not have config files, but they should have a
-    // snippets directory but in case they do specify a .theme-check.yml a
+    // Maybe the root of the workspace has an assets + snippets directory, we'll accept that
+    and(
+      fileExists(path.join(dir, '.git')),
+      fileExists(path.join(dir, 'assets')),
+      fileExists(path.join(dir, 'snippets')),
+    ),
+
+    // zip files and TAEs might not have config files, but they should have an
+    // assets & snippets directory but in case they do specify a .theme-check.yml a
     // couple of directories up, we should respect that
     and(
+      fileExists(path.join(dir, 'assets')),
       fileExists(path.join(dir, 'snippets')),
       not(fileExists(path.join(path.dirname(dir), '.theme-check.yml'))),
       not(fileExists(path.join(path.dirname(path.dirname(dir)), '.theme-check.yml'))),
@@ -49,7 +56,7 @@ async function not(ap: Promise<boolean>) {
  * Note: that this is not the theme root. The config file might have a `root` entry in it
  * that points to somewhere else.
  */
-export async function findRoot(curr: UriString, fileExists: FileExists): Promise<UriString> {
+export async function findRoot(curr: UriString, fileExists: FileExists): Promise<UriString | null> {
   const currIsRoot = await isRoot(curr, fileExists);
   if (currIsRoot) {
     return curr;
@@ -58,7 +65,7 @@ export async function findRoot(curr: UriString, fileExists: FileExists): Promise
   const dir = path.dirname(curr);
   const currIsAbsoluteRoot = dir === curr;
   if (currIsAbsoluteRoot) {
-    return curr;
+    return null; // Root not found.
   }
 
   return findRoot(dir, fileExists);
