@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-language-server-node",
-  "version": "2.17.2",
+  "version": "2.17.3",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "CP Clermont <cp.clermont@shopify.com>",
@@ -27,9 +27,9 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/theme-check-docs-updater": "^3.18.1",
-    "@shopify/theme-check-node": "^3.18.1",
-    "@shopify/theme-language-server-common": "2.17.2",
+    "@shopify/theme-check-docs-updater": "^3.19.0",
+    "@shopify/theme-check-node": "^3.19.0",
+    "@shopify/theme-language-server-common": "2.17.3",
     "glob": "^8.0.3",
     "node-fetch": "^2.6.11",
     "vscode-languageserver": "^8.0.2",

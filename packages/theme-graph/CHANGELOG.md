@@ -1,5 +1,13 @@
 # shopify/theme-graph
 
+## 0.1.2
+
+### Patch Changes
+
+- ce7c01e5: Allow SVGs and images to appear on theme-graph dependencies
+- Updated dependencies [a3a513dc]
+  - @shopify/theme-check-common@3.19.0
+
 ## 0.1.1
 
 ### Patch Changes
