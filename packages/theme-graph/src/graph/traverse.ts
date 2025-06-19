@@ -73,7 +73,9 @@ export async function traverseModule(
       return; // TODO graph import/exports ?
     }
 
-    case ModuleType.Css: {
+    case ModuleType.Css:
+    case ModuleType.Svg:
+    case ModuleType.Image: {
       return; // Nothing to do??
     }
 
@@ -97,9 +99,10 @@ async function traverseLiquidModule(
     { target: ThemeModule; sourceRange: Range; targetRange?: Range }
   > = {
     // {{ 'theme.js' | asset_url }}
-    // {{ 'theme.css' | asset_url }}
+    // {{ 'image.png' | asset_img_url }}
+    // {{ 'icon.svg' | inline_asset_content }}
     LiquidFilter: (node, ancestors) => {
-      if (node.name === 'asset_url') {
+      if (['asset_url', 'asset_img_url', 'inline_asset_content'].includes(node.name)) {
         const parentNode = ancestors[ancestors.length - 1]!;
         if (parentNode.type !== NodeTypes.LiquidVariable) return;
         if (parentNode.expression.type !== NodeTypes.String) return;

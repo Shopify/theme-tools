@@ -22,9 +22,7 @@ export interface IDependencies {
   getSectionSchema: NonNullable<ThemeCheckDependencies['getSectionSchema']>;
 
   /** Optional perf improvement if you somehow have access to pre-computed source code info */
-  getSourceCode?: (
-    uri: UriString,
-  ) => Promise<JSONSourceCode | LiquidSourceCode | JsSourceCode | CssSourceCode>;
+  getSourceCode?: (uri: UriString) => Promise<FileSourceCode>;
 
   /** A way to link <custom-element> to its window.customElements.define statement */
   getWebComponentDefinitionReference: (
@@ -44,7 +42,21 @@ export interface ThemeGraph {
   modules: Record<UriString, ThemeModule>;
 }
 
-export type ThemeModule = LiquidModule | JsonModule | JavaScriptModule | CssModule;
+export type ThemeModule =
+  | LiquidModule
+  | JsonModule
+  | JavaScriptModule
+  | CssModule
+  | SvgModule
+  | ImageModule;
+
+export type FileSourceCode =
+  | LiquidSourceCode
+  | JSONSourceCode
+  | JsSourceCode
+  | CssSourceCode
+  | SvgSourceCode
+  | ImageSourceCode;
 
 export interface SerializableGraph {
   rootUri: UriString;
@@ -72,6 +84,14 @@ export interface JavaScriptModule extends IThemeModule<ModuleType.JavaScript> {
 }
 
 export interface CssModule extends IThemeModule<ModuleType.Css> {
+  kind: 'unused';
+}
+
+export interface SvgModule extends IThemeModule<ModuleType.Svg> {
+  kind: 'unused';
+}
+
+export interface ImageModule extends IThemeModule<ModuleType.Image> {
   kind: 'unused';
 }
 
@@ -109,6 +129,8 @@ export const enum ModuleType {
   JavaScript = 'JavaScript',
   Json = 'JSON',
   Css = 'CSS',
+  Svg = 'SVG',
+  Image = 'Image',
 }
 
 export const enum JsonModuleKind {
@@ -136,8 +158,32 @@ export const enum LiquidModuleKind {
   Template = 'template',
 }
 
+export const SUPPORTED_ASSET_IMAGE_EXTENSIONS = [
+  'jpg',
+  'jpeg',
+  'png',
+  'gif',
+  'webp',
+  'heic',
+  'ico',
+];
+
 export interface CssSourceCode {
   type: 'css';
+  uri: UriString;
+  source: string;
+  ast: any | Error;
+}
+
+export interface SvgSourceCode {
+  type: 'svg';
+  uri: UriString;
+  source: string;
+  ast: any | Error;
+}
+
+export interface ImageSourceCode {
+  type: 'image';
   uri: UriString;
   source: string;
   ast: any | Error;

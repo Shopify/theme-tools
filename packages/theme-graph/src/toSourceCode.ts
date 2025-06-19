@@ -1,19 +1,39 @@
-import {
-  asError,
-  JSONSourceCode,
-  LiquidSourceCode,
-  toSourceCode as tcToSourceCode,
-  UriString,
-} from '@shopify/theme-check-common';
+import { asError, toSourceCode as tcToSourceCode, UriString } from '@shopify/theme-check-common';
 import { parse as acornParse, Program } from 'acorn';
-import { CssSourceCode, JsSourceCode } from './types';
+import {
+  CssSourceCode,
+  FileSourceCode,
+  ImageSourceCode,
+  JsSourceCode,
+  SUPPORTED_ASSET_IMAGE_EXTENSIONS,
+  SvgSourceCode,
+} from './types';
+import { extname } from './utils';
 
 export async function toCssSourceCode(uri: UriString, source: string): Promise<CssSourceCode> {
   return {
     type: 'css',
     uri,
     source,
-    ast: new Error('CSS parsing not implemented yet'), // Placeholder for CSS parsing
+    ast: new Error('File parsing not implemented yet'), // Placeholder for CSS parsing
+  };
+}
+
+export async function toSvgSourceCode(uri: UriString, source: string): Promise<SvgSourceCode> {
+  return {
+    type: 'svg',
+    uri,
+    source,
+    ast: new Error('File parsing not implemented yet'), // Placeholder for SVG parsing
+  };
+}
+
+async function toImageSourceCode(uri: UriString, source: string): Promise<ImageSourceCode> {
+  return {
+    type: 'image',
+    uri,
+    source,
+    ast: new Error('Image files are not parsed'),
   };
 }
 
@@ -37,16 +57,19 @@ export function parseJs(source: string): Program | Error {
   }
 }
 
-export async function toSourceCode(
-  uri: UriString,
-  source: string,
-): Promise<JSONSourceCode | LiquidSourceCode | JsSourceCode | CssSourceCode> {
-  if (uri.endsWith('.json') || uri.endsWith('.liquid')) {
+export async function toSourceCode(uri: UriString, source: string): Promise<FileSourceCode> {
+  const extension = extname(uri);
+
+  if (extension === 'json' || extension === 'liquid') {
     return tcToSourceCode(uri, source);
-  } else if (uri.endsWith('.js')) {
+  } else if (extension === 'js') {
     return toJsSourceCode(uri, source);
-  } else if (uri.endsWith('.css')) {
+  } else if (extension === 'css') {
     return toCssSourceCode(uri, source);
+  } else if (extension === 'svg') {
+    return toCssSourceCode(uri, source);
+  } else if (SUPPORTED_ASSET_IMAGE_EXTENSIONS.includes(extension)) {
+    return toImageSourceCode(uri, source);
   } else {
     throw new Error(`Unknown source code type for ${uri}`);
   }

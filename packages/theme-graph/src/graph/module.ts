@@ -1,12 +1,15 @@
 import { path, UriString } from '@shopify/theme-check-common';
 import {
   CssModule,
+  ImageModule,
   JavaScriptModule,
   JsonModule,
   JsonModuleKind,
   LiquidModule,
   LiquidModuleKind,
   ModuleType,
+  SUPPORTED_ASSET_IMAGE_EXTENSIONS,
+  SvgModule,
   ThemeGraph,
   ThemeModule,
 } from '../types';
@@ -134,36 +137,32 @@ export function getSectionGroupModule(
 export function getAssetModule(
   themeGraph: ThemeGraph,
   asset: string,
-): JavaScriptModule | CssModule | undefined {
-  // return undefined;
+): JavaScriptModule | CssModule | SvgModule | ImageModule | undefined {
   const extension = extname(asset);
-  switch (extension) {
-    case 'js': {
-      const uri = path.join(themeGraph.rootUri, 'assets', asset);
-      return module(themeGraph, {
-        type: ModuleType.JavaScript,
-        kind: 'unused',
-        dependencies: [],
-        references: [],
-        uri: uri,
-      });
-    }
 
-    case 'css': {
-      const uri = path.join(themeGraph.rootUri, 'assets', asset);
-      return module(themeGraph, {
-        type: ModuleType.Css,
-        kind: 'unused',
-        dependencies: [],
-        references: [],
-        uri: uri,
-      });
-    }
+  let type: ModuleType | undefined = undefined;
 
-    default: {
-      return undefined;
-    }
+  if (SUPPORTED_ASSET_IMAGE_EXTENSIONS.includes(extension)) {
+    type = ModuleType.Image;
+  } else if (extension === 'js') {
+    type = ModuleType.JavaScript;
+  } else if (extension === 'css') {
+    type = ModuleType.Css;
+  } else if (extension === 'svg') {
+    type = ModuleType.Svg;
   }
+
+  if (!type) {
+    return undefined;
+  }
+
+  return module(themeGraph, {
+    type,
+    kind: 'unused',
+    dependencies: [],
+    references: [],
+    uri: path.join(themeGraph.rootUri, 'assets', asset),
+  });
 }
 
 export function getSnippetModule(themeGraph: ThemeGraph, snippet: string): LiquidModule {
