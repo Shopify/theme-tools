@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 3.19.0
+
+### Minor Changes
+
+- a3a513dc: Introduce new DeprecatedFontsOnSectionsAndBlocks check
+
 ## 3.18.1
 
 ### Patch Changes
