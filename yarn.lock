@@ -635,10 +635,10 @@
     globby "^11.0.0"
     read-yaml-file "^1.1.0"
 
-"@modelcontextprotocol/sdk@1.12.0":
-  version "1.12.0"
-  resolved "https://registry.yarnpkg.com/@modelcontextprotocol/sdk/-/sdk-1.12.0.tgz#c3ac98b7f31db068c218a4ce8c9013ac3f5713ce"
-  integrity sha512-m//7RlINx1F3sz3KqwY1WWzVgTcYX52HYk4bJ1hkBXV3zccAEth+jRvG8DBRrdaQuRsPAJOx2MH3zaHNCKL7Zg==
+"@modelcontextprotocol/sdk@1.13.1":
+  version "1.13.1"
+  resolved "https://registry.yarnpkg.com/@modelcontextprotocol/sdk/-/sdk-1.13.1.tgz#d0e8666eb16c54488e0e83105604b9618d8d46aa"
+  integrity sha512-8q6+9aF0yA39/qWT/uaIj6zTpC+Qu07DnN/lb9mjoquCJsAh6l3HyYqc9O3t2j7GilseOQOQimLg7W3By6jqvg==
   dependencies:
     ajv "^6.12.6"
     content-type "^1.0.5"

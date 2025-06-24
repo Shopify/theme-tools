@@ -22,7 +22,7 @@
   "author": "Alok Swamy <alok.swamy@shopify.com>",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.12.0",
+    "@modelcontextprotocol/sdk": "1.13.1",
     "zod": "^3.25.32"
   },
   "devDependencies": {
