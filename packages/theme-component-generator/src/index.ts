@@ -1,11 +1,11 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
-import { defineComponentGenerator } from "./components.ts";
+import { defineComponentGenerator } from './components.ts';
 
 const server = new McpServer({
-  name: "theme-component-generator",
-  version: "1.0.0",
+  name: 'theme-component-generator',
+  version: '1.0.0',
 });
 
 defineComponentGenerator(server);

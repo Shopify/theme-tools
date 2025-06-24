@@ -168,15 +168,19 @@ async function createMCPConfig(configPath: string) {
   }
 
   /*
-  * The path ONLY works on local environments.
-  * To be able to reference the MCP in production, we need to update the path to be a reference to a published
-  * NPM package.
-  */
+   * The path ONLY works on local environments.
+   * To be able to reference the MCP in production, we need to update the path to be a reference to a published
+   * NPM package.
+   */
   const mcpConfig = {
-    [ detectEditor() === 'vscode' ? 'servers': 'mcpServers' ]: {
+    [detectEditor() === 'vscode' ? 'servers' : 'mcpServers']: {
       themeComponentGenerator: {
         command: 'node',
-        args: ["--experimental-strip-types", __dirname.match(/^.*?theme-tools\/packages/)?.[0] + "/theme-component-generator/src/index.ts"],
+        args: [
+          '--experimental-strip-types',
+          __dirname.match(/^.*?theme-tools\/packages/)?.[0] +
+            '/theme-component-generator/src/index.ts',
+        ],
         env: {},
       },
     },
@@ -193,13 +197,9 @@ function detectEditor(): string | undefined {
     return 'cursor';
   }
 
-  if (
-    appName.includes('vscode') ||
-    appName.includes('visual studio code')
-  ) {
+  if (appName.includes('vscode') || appName.includes('visual studio code')) {
     return 'vscode';
   }
 
   return;
 }
-
