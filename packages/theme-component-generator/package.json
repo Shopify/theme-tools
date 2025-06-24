@@ -13,7 +13,7 @@
     "postbuild:ts": "echo noop",
     "generate-factory-configs": "echo noop",
     "type-check": "echo noop",
-    "test": "echo noop"
+    "test": "npx promptfoo eval -c tests/mcp.yaml"
   },
   "keywords": [
     "mcp",
