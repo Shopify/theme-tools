@@ -1,16 +1,6 @@
 on:
   # allow manual triggering of the workflow
   workflow_dispatch:
-  # Required for Repository Ruleset workflows
-  push:
-
-# Add this permissions block
-permissions:
-  actions: read
-  pull-requests: read
-  security-events: write
-  id-token: write
-  contents: read
 
 jobs:
   Security-Code-Scanner:
