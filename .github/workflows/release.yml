@@ -9,6 +9,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 env:
   VSCE_PAT: ${{ secrets.VSCE_PAT }}
+  OVSX_PAT: ${{ secrets.OPENVSX_TOKEN }}
   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   npm_config_registry: "https://registry.npmjs.org"
@@ -73,3 +74,7 @@ jobs:
       - name: VS Code Marketplace publish
         if: steps.changesets.outputs.hasChangesets == 'false' && steps.marketplace-version.outputs.version != steps.package-version.outputs.version
         run: yarn publish:vsce
+
+      - name: Open VSX Registry publish
+        if: steps.changesets.outputs.hasChangesets == 'false' && steps.marketplace-version.outputs.version != steps.package-version.outputs.version
+        run: yarn publish:ovsx
