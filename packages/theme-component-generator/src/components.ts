@@ -5,6 +5,14 @@ import fs from 'fs';
 
 const COMPONENTS_PATH = path.join(import.meta.dirname, '..', 'resources', 'library');
 
+/**
+ * @deprecated This function and file are deprecated in favor of
+ * packages/theme-component-generator/src/tools.ts (keeping this for now for
+ * reference)
+ *
+ * @param server - The MCP server instance
+ * @returns void
+ */
 export function defineComponentGenerator(server: McpServer) {
   const a = server.server.getClientCapabilities();
 
