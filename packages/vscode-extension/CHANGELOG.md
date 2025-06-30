@@ -1,5 +1,11 @@
 ## theme-check-vscode
 
+## 3.9.7
+
+### Patch Changes
+
+- afcccaf7: Fixup open-vsx deploy
+
 ## 3.9.6
 
 ### Patch Changes
