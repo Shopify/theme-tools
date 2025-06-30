@@ -50,7 +50,7 @@
     "preinstall": "sh scripts/fetch-syntaxes.sh",
     "pretest": "yarn run test:build && yarn run dev:build && yarn run lint",
     "publish:vsce": "vsce publish --no-dependencies $npm_package_version",
-    "publish:ovsx": "ovsx publish $npm_package_version",
+    "publish:ovsx": "ovsx publish --yarn",
     "test": "vitest",
     "test:build": "tsc -p . --outDir out",
     "test:watch": "tsc -p . -w --outDir out",
