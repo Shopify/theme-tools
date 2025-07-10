@@ -52,6 +52,9 @@ DeprecatedFilter:
 DeprecatedFontsOnSectionsAndBlocks:
   enabled: true
   severity: 1
+DeprecatedFontsOnSettingsSchema:
+  enabled: true
+  severity: 1
 DeprecatedTag:
   enabled: true
   severity: 1
