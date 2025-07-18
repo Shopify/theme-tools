@@ -46,6 +46,8 @@ This section is intended for internal folks.
 
 2. Make your PR
 
+3. [Create a patch release](https://vault.shopify.io/teams/2493/pages/Releasing~FkHb.md#creating-a-new-patch-version) if [the next minor release](https://vault.shopify.io/teams/2493/pages/Releasing~FkHb.md#release-schedule) is more than one week away
+
 ### Online Store Code Editor
 
 1. Upgrade deps and bump fallback docsets
@@ -87,9 +89,9 @@ No, while this package sits within the `packages/` directory of the `theme-tools
 The use of pure functions to compose a release pipeline here helps make sure that we can develop this complex flow in a simple and maintainable way. Each step of the pipeline can be enabled or disabled to do isolated tophatting. Additionally because each step is written as pure functions, this helps make unit testing easier.
 
 ### Does this release strategy violate semantic versioning(semver)?
-We can understand how some might think that but we disagree. In semantic versioning, when a package releases a minor update, all packages that depend on it should update their dependency range to include the new version, but they do not bump their own version unless they have changes of their own. 
+We can understand how some might think that but we disagree. In semantic versioning, when a package releases a minor update, all packages that depend on it should update their dependency range to include the new version, but they do not bump their own version unless they have changes of their own.
 
-By that ommission, one might think we should not update these internal dependencies. Our counter point to this is that there's no other way for these internal dependencies packages to get access to potentially important changes upstream. 
+By that ommission, one might think we should not update these internal dependencies. Our counter point to this is that there's no other way for these internal dependencies packages to get access to potentially important changes upstream.
 
 #### Consider the example:
 
