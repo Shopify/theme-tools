@@ -6,10 +6,7 @@ import {
   NodeTypes,
 } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, SchemaProp, Severity, SourceCodeType } from '../../types';
-
-import camelCase from 'lodash/camelCase';
-import kebabCase from 'lodash/kebabCase';
-import snakeCase from 'lodash/snakeCase';
+import { camelCase, kebabCase, snakeCase } from 'lodash';
 
 const pascalCase = (string: string) => {
   const camelCased = camelCase(string);
