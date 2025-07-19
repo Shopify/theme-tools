@@ -105,7 +105,7 @@ PaginationSize:
   enabled: true
   severity: 1
   minSize: 1
-  maxSize: 50
+  maxSize: 250
 ParserBlockingScript:
   enabled: true
   severity: 0
