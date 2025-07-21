@@ -1,5 +1,4 @@
-import lodashSet from 'lodash/set';
-import lodashUnset from 'lodash/unset';
+import { set as lodashSet, unset as lodashUnset } from 'lodash';
 import { Fix } from '../../types';
 import { BaseCorrector } from './base-corrector';
 
