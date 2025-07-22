@@ -11,7 +11,7 @@ import { parseJSON } from '../../json';
 
 const schema = {
   minSize: SchemaProp.number(1),
-  maxSize: SchemaProp.number(250),
+  maxSize: SchemaProp.number(50),
 };
 
 export const PaginationSize: LiquidCheckDefinition<typeof schema> = {

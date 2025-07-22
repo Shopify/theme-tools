@@ -12,7 +12,7 @@ describe('Module: PaginationSize', () => {
 
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).to.equal(
-      'Pagination size must be a positive integer between 1 and 250.',
+      'Pagination size must be a positive integer between 1 and 50.',
     );
 
     const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
@@ -21,7 +21,7 @@ describe('Module: PaginationSize', () => {
 
   it('should report an offense when paginate size is greater than maxSize', async () => {
     const sourceCode = `
-      {% paginate collection.products by 251 %}
+      {% paginate collection.products by 100 %}
       {% endpaginate %}
     `;
 
@@ -29,11 +29,11 @@ describe('Module: PaginationSize', () => {
 
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).to.equal(
-      'Pagination size must be a positive integer between 1 and 250.',
+      'Pagination size must be a positive integer between 1 and 50.',
     );
 
     const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
-    expect(highlights).to.eql(['251']);
+    expect(highlights).to.eql(['100']);
   });
 
   it('should not report an offense when paginate size is within the minSize and maxSize range', async () => {
@@ -86,7 +86,7 @@ describe('Module: PaginationSize', () => {
               "type": "number",
               "id": "products_per_page",
               "label": "Products per Page",
-              "default": 251
+              "default": 51
             }
           ]
         }
@@ -96,7 +96,7 @@ describe('Module: PaginationSize', () => {
     const offenses = await runLiquidCheck(PaginationSize, sourceCode);
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).to.equal(
-      `This setting's default value should be between 1 and 250 but is currently 251.`,
+      `This setting's default value should be between 1 and 50 but is currently 51.`,
     );
     const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
     expect(highlights).to.eql(['section.settings.products_per_page']);
