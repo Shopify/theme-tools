@@ -1,5 +1,17 @@
 # @shopify/theme-check-common
 
+## 3.20.0
+
+### Minor Changes
+
+- 4ae72589: Introduce "Deprecated Fonts on Settings Schema" check
+
+### Patch Changes
+
+- f28daa84: [Internal] Fix incorrect references to libraries
+- 23992051: Update liquid paginate max limit rule from 50 to 250
+- 8ab6a8e7: Update list of deprecated fonts
+
 ## 3.19.0
 
 ### Minor Changes

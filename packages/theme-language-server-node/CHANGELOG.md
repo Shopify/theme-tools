@@ -1,5 +1,14 @@
 # @shopify/theme-language-server-node
 
+## 2.17.4
+
+### Patch Changes
+
+- Updated dependencies [23992051]
+  - @shopify/theme-check-node@3.20.0
+  - @shopify/theme-language-server-common@2.17.4
+  - @shopify/theme-check-docs-updater@3.20.0
+
 ## 2.17.3
 
 ### Patch Changes
