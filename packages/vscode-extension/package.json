@@ -89,7 +89,8 @@
     "vscode-test": "^1.3.0"
   },
   "activationEvents": [
-    "workspaceContains:**/.theme-check.yml"
+    "workspaceContains:**/.theme-check.yml",
+    "workspaceContains:**/*.liquid"
   ],
   "main": "./dist/node/extension.js",
   "browser": "./dist/browser/extension.js",
