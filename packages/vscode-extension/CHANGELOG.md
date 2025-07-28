@@ -1,5 +1,11 @@
 ## theme-check-vscode
 
+## 3.9.9
+
+### Patch Changes
+
+- d4b08f3d: [Bugfix] Start extension whenever liquid files are detected in repo
+
 ## 3.9.8
 
 ### Patch Changes
