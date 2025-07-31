@@ -5,8 +5,8 @@ import { LiquidFilter, RenderMarkup } from './test-checks';
 import { UndefinedObject } from '../checks/undefined-object';
 
 const commentTypes = [
-  (text: string) => `{% # ${text} %}`,
-  (text: string) => `{% comment %}${text}{% endcomment %}`,
+  (text: string) => `{% # ${text.replace(/\s+/g, ' ').trim()} %}`,
+  (text: string) => `{% comment %}${text.replace(/\s+/g, ' ').trim()} {% endcomment %}`,
 ];
 
 function expectLiquidFilterOffense(offenses: Offense[], file: string, assetName: string) {
