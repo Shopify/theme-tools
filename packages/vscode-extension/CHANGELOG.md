@@ -1,5 +1,16 @@
 ## theme-check-vscode
 
+## 3.9.9
+
+### Patch Changes
+
+- d4b08f3d: [Bugfix] Start extension whenever liquid files are detected in repo
+- Updated dependencies [d605777f]
+  - @shopify/theme-check-common@3.20.1
+  - @shopify/theme-language-server-common@2.17.5
+  - @shopify/theme-language-server-browser@2.17.5
+  - @shopify/theme-language-server-node@2.17.5
+
 ## 3.9.8
 
 ### Patch Changes

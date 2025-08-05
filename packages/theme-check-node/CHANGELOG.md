@@ -1,5 +1,14 @@
 # @shopify/theme-check-node
 
+## 3.20.1
+
+### Patch Changes
+
+- d605777f: Remove theme-check ValidDocParamNames
+- Updated dependencies [d605777f]
+  - @shopify/theme-check-common@3.20.1
+  - @shopify/theme-check-docs-updater@3.20.1
+
 ## 3.20.0
 
 ### Patch Changes
