@@ -1,5 +1,13 @@
 # shopify/theme-graph
 
+## 0.1.4
+
+### Patch Changes
+
+- Patch bump because it depends on @shopify/theme-check-common
+- Updated dependencies [d605777f]
+  - @shopify/theme-check-common@3.20.1
+
 ## 0.1.3
 
 ### Patch Changes

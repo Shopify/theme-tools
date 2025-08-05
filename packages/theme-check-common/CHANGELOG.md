@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 3.20.1
+
+### Patch Changes
+
+- d605777f: Remove theme-check ValidDocParamNames
+
 ## 3.20.0
 
 ### Minor Changes
