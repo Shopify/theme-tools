@@ -267,6 +267,36 @@ describe('Module: MatchingTranslations', async () => {
     }
   });
 
+  it('should not report offenses and ignore Shopify keys for Accounts (New)', async () => {
+    for (const prefix of ['', '.schema']) {
+      const theme = {
+        [`locales/en.default${prefix}.json`]: JSON.stringify({
+          hello: 'Hello',
+          customer_accounts: {
+            account_information: {
+              title: 'Account',
+            }
+          }
+        }),
+        [`locales/pt-BR${prefix}.json`]: JSON.stringify({
+          hello: 'Olá',
+          customer_accounts: {
+            navigation_and_structure: {
+              account_menu: {
+                label: 'Compte',
+              }
+            }
+          }
+        }),
+      };
+
+      const offenses = await check(theme, [MatchingTranslations]);
+      console.log(offenses);
+
+      expect(offenses).to.be.of.length(0);
+    }
+  });
+
   it('should not report offenses and ignore "*.schema.json" files', async () => {
     const theme = {
       'locales/en.default.json': JSON.stringify({ hello: 'Hello' }),
