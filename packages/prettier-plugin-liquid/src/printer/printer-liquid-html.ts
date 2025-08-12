@@ -506,6 +506,16 @@ function printNode(
       return ['---', hardline, node.body, '---'];
     }
 
+    case NodeTypes.BooleanExpression: {
+      return [
+        path.call((p: any) => print(p), 'left'),
+        line,
+        node.comparator,
+        ' ',
+        path.call((p: any) => print(p), 'right'),
+      ];
+    }
+
     case NodeTypes.String: {
       const preferredQuote = options.liquidSingleQuote ? `'` : `"`;
       const valueHasQuotes = node.value.includes(preferredQuote);

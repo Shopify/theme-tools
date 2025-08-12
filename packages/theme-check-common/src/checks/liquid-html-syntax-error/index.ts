@@ -35,7 +35,22 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
 
   create(context) {
     const error = context.file.ast;
-    if (!isError(error)) return {};
+    if (!isError(error)) return {
+      async BooleanExpression(node) {
+        context.report({
+          message: "Syntax is not supported",
+          startIndex: node.position.start,
+          endIndex: node.position.end,
+          fix: (corrector) => {
+            corrector.replace(
+              node.position.start,
+              node.position.end,
+              node.source.slice(node.left.position.start, node.left.position.end)
+            );
+          }
+        });
+      },
+    };
 
     return {
       async onCodePathStart(file) {

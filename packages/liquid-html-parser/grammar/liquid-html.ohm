@@ -240,12 +240,14 @@ Liquid <: Helpers {
   liquidVariable<delim> = liquidExpression<delim> liquidFilter<delim>* space* &delim
 
   liquidExpression<delim> =
+    | liquidBooleanExpression<delim>
     | liquidString<delim>
     | liquidNumber
     | liquidLiteral
     | liquidRange<delim>
     | liquidVariableLookup<delim>
 
+  liquidBooleanExpression<delim> = liquidExpression<delim> space* comparator space* liquidExpression<delim>
   liquidString<delim> = liquidSingleQuotedString<delim> | liquidDoubleQuotedString<delim>
   liquidSingleQuotedString<delim> = "'" anyExceptStar<("'"| delim)> "'"
   liquidDoubleQuotedString<delim> = "\"" anyExceptStar<("\""| delim)> "\""

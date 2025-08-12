@@ -519,6 +519,7 @@ export interface LiquidVariable extends ASTNode<NodeTypes.LiquidVariable> {
 
 /** The union type of all Liquid expression nodes */
 export type LiquidExpression =
+  | LiquidBooleanExpression
   | LiquidString
   | LiquidNumber
   | LiquidLiteral
@@ -543,6 +544,12 @@ export interface LiquidNamedArgument extends ASTNode<NodeTypes.NamedArgument> {
 
   /** name: value */
   value: LiquidExpression;
+}
+
+export interface LiquidBooleanExpression extends ASTNode<NodeTypes.BooleanExpression> {
+  comparator: '==' | '!=' | '>' | '<' | '>=' | '<=';
+  left: LiquidExpression;
+  right: LiquidExpression;
 }
 
 /** https://shopify.dev/docs/api/liquid/basics#string */
@@ -1951,6 +1958,16 @@ function toLiquidVariable(node: ConcreteLiquidVariable): LiquidVariable {
 
 function toExpression(node: ConcreteLiquidExpression): LiquidExpression {
   switch (node.type) {
+    case ConcreteNodeTypes.BooleanExpression: {
+      return {
+        type: NodeTypes.BooleanExpression,
+        position: position(node),
+        comparator: node.comparator,
+        left: toExpression(node.left),
+        right: toExpression(node.right),
+        source: node.source,
+      };
+    }
     case ConcreteNodeTypes.String: {
       return {
         type: NodeTypes.String,

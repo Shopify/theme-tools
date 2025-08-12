@@ -69,6 +69,7 @@ export enum ConcreteNodeTypes {
   NamedArgument = 'NamedArgument',
   LiquidLiteral = 'LiquidLiteral',
   VariableLookup = 'VariableLookup',
+  BooleanExpression = 'BooleanExpression',
   String = 'String',
   Number = 'Number',
   Range = 'Range',
@@ -428,12 +429,19 @@ export interface ConcreteLiquidNamedArgument
 }
 
 export type ConcreteLiquidExpression =
+  | ConcreteLiquidBooleanExpression
   | ConcreteStringLiteral
   | ConcreteNumberLiteral
   | ConcreteLiquidLiteral
   | ConcreteLiquidRange
   | ConcreteLiquidVariableLookup;
 
+export interface ConcreteLiquidBooleanExpression
+  extends ConcreteBasicNode<ConcreteNodeTypes.BooleanExpression> {
+  comparator: '==' | '!=' | '>' | '<' | '>=' | '<=';
+  left: ConcreteLiquidExpression;
+  right: ConcreteLiquidExpression;
+}
 export interface ConcreteStringLiteral extends ConcreteBasicNode<ConcreteNodeTypes.String> {
   value: string;
   single: boolean;
@@ -1004,6 +1012,15 @@ function toCST<T>(
       source,
     },
 
+    liquidBooleanExpression: {
+      type: ConcreteNodeTypes.BooleanExpression,
+      comparator: 2,
+      left: 0,
+      right: 4,
+      locStart,
+      locEnd,
+      source,
+    },
     liquidString: 0,
     liquidDoubleQuotedString: {
       type: ConcreteNodeTypes.String,
