@@ -70,6 +70,8 @@ export enum ConcreteNodeTypes {
   LiquidLiteral = 'LiquidLiteral',
   VariableLookup = 'VariableLookup',
   BooleanExpression = 'BooleanExpression',
+  MultipleConditions = 'MultipleConditions',
+  SingleCondition = 'SingleCondition',
   String = 'String',
   Number = 'Number',
   Range = 'Range',
@@ -436,11 +438,16 @@ export type ConcreteLiquidExpression =
   | ConcreteLiquidRange
   | ConcreteLiquidVariableLookup;
 
-export interface ConcreteLiquidBooleanExpression
-  extends ConcreteBasicNode<ConcreteNodeTypes.BooleanExpression> {
-  comparator: '==' | '!=' | '>' | '<' | '>=' | '<=';
-  left: ConcreteLiquidExpression;
-  right: ConcreteLiquidExpression;
+export type ConcreteLiquidBooleanExpression =
+  | ConcreteLiquidSingleConditionExpression
+  | ConcreteLiquidMultipleConditionsExpression;
+export interface ConcreteLiquidSingleConditionExpression
+  extends ConcreteBasicNode<ConcreteNodeTypes.SingleCondition> {
+  comparison: ConcreteLiquidComparison;
+}
+export interface ConcreteLiquidMultipleConditionsExpression
+  extends ConcreteBasicNode<ConcreteNodeTypes.MultipleConditions> {
+  conditions: ConcreteLiquidCondition[];
 }
 export interface ConcreteStringLiteral extends ConcreteBasicNode<ConcreteNodeTypes.String> {
   value: string;
@@ -942,6 +949,7 @@ function toCST<T>(
 
     liquidDropCases: 0,
     liquidExpression: 0,
+    liquidComplexExpression: 0,
     liquidDropBaseCase: (sw: Node) => sw.sourceString.trimEnd(),
     liquidVariable: {
       type: ConcreteNodeTypes.LiquidVariable,
@@ -1012,11 +1020,30 @@ function toCST<T>(
       source,
     },
 
-    liquidBooleanExpression: {
-      type: ConcreteNodeTypes.BooleanExpression,
-      comparator: 2,
-      left: 0,
-      right: 4,
+    liquidBooleanExpression: 0,
+    liquidMultipleConditions: {
+      type: ConcreteNodeTypes.MultipleConditions,
+      locStart,
+      locEnd,
+      source,
+      conditions: (tokens: Node[]) => {
+        return tokens
+        //.filter((_node, index) => index % 2 === 0)
+        .map((node) => {
+          return toCST(
+            source,
+            grammars,
+            grammars.LiquidStatement,
+            ['HelperMappings', 'LiquidMappings', 'LiquidStatement'],
+            node.sourceString,
+            offset + node.source.startIdx,
+          )
+        });
+      },
+    },
+    liquidSingleCondition: {
+      type: ConcreteNodeTypes.SingleCondition,
+      comparison: 0,
       locStart,
       locEnd,
       source,

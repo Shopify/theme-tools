@@ -547,9 +547,7 @@ export interface LiquidNamedArgument extends ASTNode<NodeTypes.NamedArgument> {
 }
 
 export interface LiquidBooleanExpression extends ASTNode<NodeTypes.BooleanExpression> {
-  comparator: '==' | '!=' | '>' | '<' | '>=' | '<=';
-  left: LiquidExpression;
-  right: LiquidExpression;
+  conditions: LiquidConditionalExpression;
 }
 
 /** https://shopify.dev/docs/api/liquid/basics#string */
@@ -1958,13 +1956,28 @@ function toLiquidVariable(node: ConcreteLiquidVariable): LiquidVariable {
 
 function toExpression(node: ConcreteLiquidExpression): LiquidExpression {
   switch (node.type) {
-    case ConcreteNodeTypes.BooleanExpression: {
+    case ConcreteNodeTypes.SingleCondition: {
+      // Create a single condition from the comparison
+      const condition: ConcreteLiquidCondition = {
+        type: ConcreteNodeTypes.Condition,
+        relation: null,
+        expression: node.comparison,
+        locStart: node.locStart,
+        locEnd: node.locEnd,
+        source: node.source,
+      };
       return {
         type: NodeTypes.BooleanExpression,
         position: position(node),
-        comparator: node.comparator,
-        left: toExpression(node.left),
-        right: toExpression(node.right),
+        conditions: toConditionalExpression([condition]),
+        source: node.source,
+      };
+    }
+    case ConcreteNodeTypes.MultipleConditions: {
+      return {
+        type: NodeTypes.BooleanExpression,
+        position: position(node),
+        conditions: toConditionalExpression(node.conditions),
         source: node.source,
       };
     }

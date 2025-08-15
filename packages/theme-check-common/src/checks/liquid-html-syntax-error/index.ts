@@ -45,7 +45,7 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
             corrector.replace(
               node.position.start,
               node.position.end,
-              node.source.slice(node.left.position.start, node.left.position.end)
+              node.source.slice(node.conditions.position.start, node.conditions.position.end)
             );
           }
         });

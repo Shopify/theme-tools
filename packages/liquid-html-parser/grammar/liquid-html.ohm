@@ -134,7 +134,7 @@ Liquid <: Helpers {
 
   contentForTagArgument = listOf<contentForNamedArgument<delimTag>, argumentSeparatorOptionalComma>
   completionModeContentForTagArgument = listOf<contentForNamedArgument<delimTag>, argumentSeparatorOptionalComma> (argumentSeparator? (liquidVariableLookup<delimTag>))?
-  contentForNamedArgument<delim> = (variableSegment ("." variableSegment)*) space* ":" space* (liquidExpression<delim>)
+  contentForNamedArgument<delim> = (variableSegment ("." variableSegment)*) space* ":" space* (liquidComplexExpression<delim>)
 
   contentForType = liquidString<delimTag>
 
@@ -164,7 +164,7 @@ Liquid <: Helpers {
   liquidTagOpenTablerow = liquidTagOpenRule<"tablerow", liquidTagOpenForMarkup>
 
   liquidTagOpenCase = liquidTagOpenRule<"case", liquidTagOpenCaseMarkup>
-  liquidTagOpenCaseMarkup = liquidExpression<delimTag> space*
+  liquidTagOpenCaseMarkup = liquidComplexExpression<delimTag> space*
 
   liquidTagWhen = liquidTagRule<"when", liquidTagWhenMarkup>
   liquidTagWhenMarkup = nonemptyListOf<liquidExpression<delimTag>, whenMarkupSep> space*
@@ -237,17 +237,26 @@ Liquid <: Helpers {
   // because we'd otherwise positively match the following string
   // instead of falling back to the other rule:
   // {{ 'string' | some_filter }}
-  liquidVariable<delim> = liquidExpression<delim> liquidFilter<delim>* space* &delim
+  liquidVariable<delim> = liquidComplexExpression<delim> liquidFilter<delim>* space* &delim
 
   liquidExpression<delim> =
-    | liquidBooleanExpression<delim>
     | liquidString<delim>
     | liquidNumber
     | liquidLiteral
     | liquidRange<delim>
     | liquidVariableLookup<delim>
 
-  liquidBooleanExpression<delim> = liquidExpression<delim> space* comparator space* liquidExpression<delim>
+  liquidComplexExpression<delim> =
+    | liquidBooleanExpression<delim>
+    | liquidExpression<delim>
+
+  liquidBooleanExpression<delim> =
+    | liquidMultipleConditions<delim>
+    | liquidSingleCondition<delim>
+
+  liquidMultipleConditions<delim> = condition<delim> conditionSeparator condition<delim> (conditionSeparator condition<delim>)* space*
+  liquidSingleCondition<delim> = comparison<delim> space*
+
   liquidString<delim> = liquidSingleQuotedString<delim> | liquidDoubleQuotedString<delim>
   liquidSingleQuotedString<delim> = "'" anyExceptStar<("'"| delim)> "'"
   liquidDoubleQuotedString<delim> = "\"" anyExceptStar<("\""| delim)> "\""
@@ -282,8 +291,8 @@ Liquid <: Helpers {
   arguments<delim> = nonemptyOrderedListOf<positionalArgument<delim>, namedArgument<delim>, argumentSeparator>
   argumentSeparator = space* "," space*
   argumentSeparatorOptionalComma = space* ","? space*
-  positionalArgument<delim> = liquidExpression<delim> ~(space* ":")
-  namedArgument<delim> = variableSegment space* ":" space* liquidExpression<delim>
+  positionalArgument<delim> = liquidComplexExpression<delim> ~(space* ":")
+  namedArgument<delim> = variableSegment space* ":" space* liquidComplexExpression<delim>
   tagArguments = listOf<namedArgument<delimTag>, argumentSeparatorOptionalComma>
   filterArguments<delim> =
     | complexArguments<delim>

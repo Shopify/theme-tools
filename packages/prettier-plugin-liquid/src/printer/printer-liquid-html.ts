@@ -507,13 +507,7 @@ function printNode(
     }
 
     case NodeTypes.BooleanExpression: {
-      return [
-        path.call((p: any) => print(p), 'left'),
-        line,
-        node.comparator,
-        ' ',
-        path.call((p: any) => print(p), 'right'),
-      ];
+      return path.map((p) => print(p), 'markup');
     }
 
     case NodeTypes.String: {
