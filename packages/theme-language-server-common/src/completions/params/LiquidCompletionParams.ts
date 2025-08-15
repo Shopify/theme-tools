@@ -404,6 +404,7 @@ function findCurrentNode(
       // That's the current node.
       case NodeTypes.TextNode:
       case NodeTypes.LiquidLiteral:
+      case NodeTypes.BooleanExpression:
       case NodeTypes.String:
       case NodeTypes.Number:
       case NodeTypes.LiquidDocParamNode:

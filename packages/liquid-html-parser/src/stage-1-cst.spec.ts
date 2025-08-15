@@ -39,6 +39,45 @@ describe('Unit: Stage 1 (CST)', () => {
         }
       });
 
+      it('should parse single conditions', () => {
+        [
+          { expression: `"1" == "1"`, comparator: '==' },
+          { expression: `1 == 1`, comparator: '==' },
+          { expression: `1 != 1`, comparator: '!=' },
+          { expression: `1 > 1`, comparator: '>' },
+          { expression: `1 < 1`, comparator: '<' },
+          { expression: `1 >= 1`, comparator: '>=' },
+          { expression: `1 <= 1`, comparator: '<=' },
+        ].forEach(({ expression, comparator }) => {
+          for (const { toCST, expectPath } of testCases) {
+            cst = toCST(`{{ ${expression} }}`);
+            expectPath(cst, '0.type').to.equal('LiquidVariableOutput');
+            expectPath(cst, '0.markup.type').to.equal('LiquidVariable');
+            expectPath(cst, '0.markup.expression.type').to.equal('SingleCondition');
+            expectPath(cst, '0.markup.expression.comparison.type').to.equal('Comparison');
+            expectPath(cst, '0.markup.expression.comparison.comparator').to.equal(comparator);
+            expectPath(cst, '0.markup.expression.comparison.left.value').to.equal('1');
+            expectPath(cst, '0.markup.expression.comparison.right.value').to.equal('1');
+          }
+        })
+      });
+
+      it('should parse multiple conditions', () => {
+        [
+          { expression: `1 == 1 and 2 == 2` },
+          { expression: `1 == 1 or 2 == 2` },
+          { expression: `1 == 1 and 2 == 2 or 3 == 3` },
+        ].forEach(({ expression }) => {
+          for (const { toCST, expectPath } of testCases) {
+            cst = toCST(`{{ ${expression} }}`);
+            expectPath(cst, '0.type').to.equal('LiquidVariableOutput');
+            expectPath(cst, '0.markup.type').to.equal('LiquidVariable');
+            expectPath(cst, '0.markup.expression.type').to.equal('MultipleConditions');
+            expectPath(cst, '0.markup.expression.conditions.length').to.equal(expression.split(/and|or/).length);
+          }
+        });
+      });
+
       it('should parse strings', () => {
         [
           { expression: `"string o' string"`, value: `string o' string`, single: false },

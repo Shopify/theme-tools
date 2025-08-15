@@ -272,6 +272,8 @@ function getConditionIdentifierForMarkup(condition: string | LiquidConditionalEx
         condition.relation,
         getConditionIdentifierForMarkup(condition.right),
       ].join(' ');
+    case NodeTypes.BooleanExpression:
+      return getConditionIdentifierForMarkup(condition.conditions);
     default: {
       return assertNever(condition);
     }

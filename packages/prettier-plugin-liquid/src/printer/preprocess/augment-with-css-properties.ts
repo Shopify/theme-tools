@@ -115,6 +115,7 @@ function getCssDisplay(node: AugmentedNode<WithSiblings>, options: LiquidParserO
     case NodeTypes.LiquidFilter:
     case NodeTypes.NamedArgument:
     case NodeTypes.LiquidLiteral:
+    case NodeTypes.BooleanExpression:
     case NodeTypes.String:
     case NodeTypes.Number:
     case NodeTypes.Range:
@@ -225,6 +226,7 @@ function getNodeCssStyleWhiteSpace(
     case NodeTypes.LiquidFilter:
     case NodeTypes.NamedArgument:
     case NodeTypes.LiquidLiteral:
+    case NodeTypes.BooleanExpression:
     case NodeTypes.String:
     case NodeTypes.Number:
     case NodeTypes.Range:
