@@ -78,25 +78,32 @@
             <summary>Options</summary>
             <label title="The line length where Prettier will try wrap.">
               --print-width
-              <input
-                id="printWidthRange"
-                type="range"
-                min="0"
-                max="200"
-                step="10"
-                value="120"
-              />
-              <input
-                id="printWidthNumber"
-                type="number"
-                min="0"
-                step="10"
-                value="120"
-              />
+              <input id="printWidth" type="number" min="0" step="1" value="120">
             </label>
-            <label
-              title="How meaningful whitespace is handled between HTML nodes"
-            >
+
+            <label title="Number of spaces per indentation level.">
+              --tab-width
+              <input id="tabWidth" type="number" min="0" step="1" value="2">
+            </label>
+
+            <label title="Indent with tabs instead of spaces.">
+              <input id="useTabs" type="checkbox" /> --use-tabs
+            </label>
+
+            <label title="Put &gt; of opening tags on the last line instead of on a new line.">
+              <input id="bracketSameLine" type="checkbox" /> --bracket-same-line
+            </label>
+
+            <label title="Use single quotes instead of double quotes in Liquid tags and objects.">
+              <input id="liquidSingleQuote" type="checkbox" checked />
+              --liquid-single-quote
+            </label>
+
+            <label title="Use single quotes instead of double quotes in embedded languages (JavaScript, CSS, TypeScript inside <script>, <style> or Liquid equivalent).">
+              <input id="embeddedSingleQuote" type="checkbox" checked /> --embedded-single-quote
+            </label>
+
+            <label title="How to handle whitespaces in HTML.">
               --html-whitespace-sensitivity
               <select id="htmlWhitespaceSensitivity">
                 <option value="css">css</option>
@@ -104,12 +111,23 @@
                 <option value="ignore">ignore</option>
               </select>
             </label>
-            <label title="Use single quotes instead of double quotes.">
-              <input id="singleQuote" type="checkbox" /> --single-quote
+
+            <label title="Specify the default whitespace sensitivity of the capture Liquid tag.">
+              --capture-whitespace-sensitivity
+              <select id="captureWhitespaceSensitivity">
+                <option value="strict">strict</option>
+                <option value="ignore">ignore</option>
+              </select>
             </label>
-            <label title="Use single quotes in Liquid.">
-              <input id="liquidSingleQuote" type="checkbox" checked />
-              --liquid-single-quote
+
+            <label title="Always print link tags on a single line to remove clutter">
+              <input id="singleLineLinkTags" type="checkbox" />
+              --single-line-link-tags
+            </label>
+
+            <label title="Indent the contents of the {% schema %} tag">
+              <input id="indentSchema" type="checkbox" />
+              --indent-schema
             </label>
           </details>
         </div>

@@ -2,9 +2,16 @@ const options = {
   printWidth: 120,
 };
 
-const numInputs = ['printWidth'];
-const boolInputs = ['liquidSingleQuote', 'singleQuote'];
-const selectInputs = ['htmlWhitespaceSensitivity'];
+const numInputs = ['printWidth', 'tabWidth'];
+const boolInputs = [
+  'useTabs',
+  'bracketSameLine',
+  'liquidSingleQuote',
+  'embeddedSingleQuote',
+  'singleLineLinkTags',
+  'indentSchema',
+];
+const selectInputs = ['htmlWhitespaceSensitivity', 'captureWhitespaceSensitivity'];
 
 const waitFor = (pred) => {
   return new Promise((resolve) => {
@@ -18,20 +25,11 @@ const waitFor = (pred) => {
 };
 
 numInputs.forEach((input) => {
-  const rangeEl = document.getElementById(input + 'Number');
-  const inputEl = document.getElementById(input + 'Range');
-
-  inputEl.addEventListener('input', (e) => {
+  const el = document.getElementById(input);
+  el.addEventListener('input', (e) => {
     const value = parseInt(e.target.value, 10);
-    options[input.replace('Number', '')] = value;
-    rangeEl.value = value;
-    format();
-  });
-
-  rangeEl.addEventListener('input', (e) => {
-    const value = parseInt(e.target.value, 10);
-    options[input.replace('Range', '')] = value;
-    inputEl.value = value;
+    options[input] = value;
+    el.value = value;
     format();
   });
 });
