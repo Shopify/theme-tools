@@ -9,6 +9,22 @@ export interface AbstractFileSystem {
   stat(uri: string): Promise<FileStat>;
   readFile(uri: string): Promise<string>;
   readDirectory(uri: string): Promise<FileTuple[]>;
+
+  /**
+   * Optional batch read method for reading multiple files at once.
+   * Returns a Map of URI to file content.
+   * @param uris Array of URIs to read
+   * @returns Map where keys are URIs and values are file contents
+   */
+  readFiles?(uris: string[]): Promise<Map<string, string>>;
+
+  /**
+   * Optional batch read method for reading multiple directories at once.
+   * Returns a Map of URI to directory contents.
+   * @param uris Array of directory URIs to read
+   * @returns Map where keys are URIs and values are arrays of FileTuples
+   */
+  readDirectories?(uris: string[]): Promise<Map<string, FileTuple[]>>;
 }
 
 export enum FileType {

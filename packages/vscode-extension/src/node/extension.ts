@@ -89,6 +89,50 @@ async function startServer(context: ExtensionContext) {
     return workspace.fs.stat(Uri.parse(uriString));
   });
 
+  client.onRequest('fs/readFiles', async (uriStrings: string[]): Promise<Map<string, string>> => {
+    const result = new Map<string, string>();
+    const promises = uriStrings.map(async (uriString) => {
+      try {
+        const bytes = await workspace.fs.readFile(Uri.parse(uriString));
+        const content = Buffer.from(bytes).toString('utf8');
+        return { uri: uriString, content };
+      } catch (error) {
+        console.error(`Failed to read file ${uriString}:`, error);
+        return { uri: uriString, content: '' };
+      }
+    });
+    const results = await Promise.all(promises);
+    for (const { uri, content } of results) {
+      result.set(uri, content);
+    }
+    return result;
+  });
+
+  client.onRequest(
+    'fs/readDirectories',
+    async (uriStrings: string[]): Promise<Map<string, FileTuple[]>> => {
+      const result = new Map<string, FileTuple[]>();
+      const promises = uriStrings.map(async (uriString) => {
+        try {
+          const results = await workspace.fs.readDirectory(Uri.parse(uriString));
+          const files: FileTuple[] = results.map(([name, type]) => [
+            pathUtils.join(uriString, name),
+            type,
+          ]);
+          return { uri: uriString, files };
+        } catch (error) {
+          console.error(`Failed to read directory ${uriString}:`, error);
+          return { uri: uriString, files: [] };
+        }
+      });
+      const results = await Promise.all(promises);
+      for (const { uri, files } of results) {
+        result.set(uri, files);
+      }
+      return result;
+    },
+  );
+
   client.start();
 }
 

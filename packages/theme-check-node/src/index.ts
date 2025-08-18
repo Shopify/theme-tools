@@ -180,8 +180,28 @@ export async function getTheme(config: Config): Promise<Theme> {
     // Global ignored paths should not be part of the theme
     result.filter((filePath) => !isIgnored(filePath, config)),
   );
-  const sourceCodes = await Promise.all(paths.map(toSourceCode));
-  return sourceCodes.filter((x): x is LiquidSourceCode | JSONSourceCode => x !== undefined);
+
+  // Use batch reading if available
+  if (NodeFileSystem.readFiles) {
+    // Convert absolute paths to URIs for the file system
+    const uris = paths.map((absolutePath) => pathUtils.normalize(URI.file(absolutePath)));
+
+    // Batch read all files
+    const fileContents = await NodeFileSystem.readFiles(uris);
+
+    // Convert to source codes
+    const sourceCodes: (LiquidSourceCode | JSONSourceCode | undefined)[] = [];
+    for (const [uri, content] of fileContents) {
+      const sourceCode = commonToSourceCode(uri, content);
+      sourceCodes.push(sourceCode);
+    }
+
+    return sourceCodes.filter((x): x is LiquidSourceCode | JSONSourceCode => x !== undefined);
+  } else {
+    // Fallback to individual reads
+    const sourceCodes = await Promise.all(paths.map(toSourceCode));
+    return sourceCodes.filter((x): x is LiquidSourceCode | JSONSourceCode => x !== undefined);
+  }
 }
 
 export function getThemeFilesPathPattern(rootUri: string) {

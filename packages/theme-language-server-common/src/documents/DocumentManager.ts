@@ -13,6 +13,7 @@ import {
   memo,
   Mode,
   isError,
+  getFileSystemBatchSize,
 } from '@shopify/theme-check-common';
 import { Connection } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -141,24 +142,63 @@ export class DocumentManager {
 
       progress.report(10, 'Preloading files');
 
-      let [i, n] = [0, filesToLoad.length];
-      await Promise.all(
-        filesToLoad.map(async (file) => {
-          // This is what is important, we are loading the file from the file system
-          // And setting their initial version to `undefined` to mean "on disk".
+      const n = filesToLoad.length;
+
+      // Use batch reading if available
+      if (fs.readFiles) {
+        // Batch read all files at once (or in chunks if very large)
+        const batchSize = getFileSystemBatchSize();
+        for (let i = 0; i < filesToLoad.length; i += batchSize) {
+          const batch = filesToLoad.slice(i, i + batchSize);
+
           try {
-            this.set(file, await fs.readFile(file), undefined);
+            const fileContents = await fs.readFiles(batch);
+
+            // Process each file from the batch
+            for (const [uri, content] of fileContents) {
+              this.set(uri, content, undefined);
+            }
           } catch (error) {
-            console.error('Failed to preload', file, error);
+            console.error('Failed to batch preload files', error);
+            // Fallback to individual reads for this batch
+            await Promise.all(
+              batch.map(async (file) => {
+                try {
+                  this.set(file, await fs.readFile(file), undefined);
+                } catch (error) {
+                  console.error('Failed to preload', file, error);
+                }
+              }),
+            );
           }
 
-          // This is just doing progress reporting
-          if (++i % 10 === 0) {
-            const message = `Preloading files [${i}/${n}]`;
-            progress.report(percent(i, n, 10), message);
-          }
-        }),
-      );
+          // Progress reporting
+          const currentProgress = Math.min(i + batchSize, n);
+          const message = `Preloading files [${currentProgress}/${n}]`;
+          progress.report(percent(currentProgress, n, 10), message);
+        }
+      } else {
+        // Fallback to original Promise.all approach
+        let i = 0;
+        await Promise.all(
+          filesToLoad.map(async (file) => {
+            // This is what is important, we are loading the file from the file system
+            // And setting their initial version to `undefined` to mean "on disk".
+            try {
+              this.set(file, await fs.readFile(file), undefined);
+            } catch (error) {
+              console.error('Failed to preload', file, error);
+            }
+
+            // This is just doing progress reporting
+            if (++i % 10 === 0) {
+              const message = `Preloading files [${i}/${n}]`;
+              progress.report(percent(i, n, 10), message);
+            }
+          }),
+        );
+      }
+
       progress.end('Completed');
     },
     (rootUri) => rootUri,
