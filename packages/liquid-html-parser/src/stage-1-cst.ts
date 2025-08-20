@@ -69,6 +69,7 @@ export enum ConcreteNodeTypes {
   NamedArgument = 'NamedArgument',
   LiquidLiteral = 'LiquidLiteral',
   VariableLookup = 'VariableLookup',
+  BooleanExpression = 'BooleanExpression',
   String = 'String',
   Number = 'Number',
   Range = 'Range',
@@ -433,6 +434,15 @@ export type ConcreteLiquidExpression =
   | ConcreteLiquidLiteral
   | ConcreteLiquidRange
   | ConcreteLiquidVariableLookup;
+
+export type ConcreteComplexLiquidExpression =
+  | ConcreteLiquidBooleanExpression
+  | ConcreteLiquidExpression;
+
+export interface ConcreteLiquidBooleanExpression
+  extends ConcreteBasicNode<ConcreteNodeTypes.BooleanExpression> {
+  conditions: ConcreteLiquidCondition[];
+}
 
 export interface ConcreteStringLiteral extends ConcreteBasicNode<ConcreteNodeTypes.String> {
   value: string;
@@ -934,6 +944,7 @@ function toCST<T>(
 
     liquidDropCases: 0,
     liquidExpression: 0,
+    liquidComplexExpression: 0,
     liquidDropBaseCase: (sw: Node) => sw.sourceString.trimEnd(),
     liquidVariable: {
       type: ConcreteNodeTypes.LiquidVariable,
@@ -999,6 +1010,50 @@ function toCST<T>(
       type: ConcreteNodeTypes.NamedArgument,
       name: (node) => node[0].sourceString + node[1].sourceString,
       value: 6,
+      locStart,
+      locEnd,
+      source,
+    },
+
+    liquidBooleanExpression(initialCondition: Node, subsequentConditions: Node) {
+      const initialConditionAst = initialCondition.toAST(
+        (this as any).args.mapping,
+      ) as ConcreteLiquidCondition;
+      const subsequentConditionAsts = subsequentConditions.toAST(
+        (this as any).args.mapping,
+      ) as ConcreteLiquidCondition[];
+
+      // liquidBooleanExpression can capture too much. If there are no comparisons (e.g. `==`, `>`, etc.)
+      // and we only have a single condition (i.e. no `and` or `or` operators), we can return the expression directly.
+      if (
+        subsequentConditionAsts.length === 0 &&
+        initialConditionAst.expression.type !== ConcreteNodeTypes.Comparison
+      ) {
+        return initialConditionAst.expression;
+      }
+
+      const asts = [initialConditionAst, ...subsequentConditionAsts];
+
+      return {
+        type: ConcreteNodeTypes.BooleanExpression,
+        conditions: asts,
+        locStart: asts.at(0)!.locStart,
+        locEnd: asts.at(-1)!.locEnd,
+        source,
+      };
+    },
+    booleanExpressionCondition: {
+      type: ConcreteNodeTypes.Condition,
+      relation: null,
+      expression: 0,
+      locStart,
+      locEnd,
+      source,
+    },
+    booleanExpressionSubsequentCondition: {
+      type: ConcreteNodeTypes.Condition,
+      relation: 1,
+      expression: 3,
       locStart,
       locEnd,
       source,
