@@ -65,6 +65,7 @@ import { ValidVisibleIf, ValidVisibleIfSettingsSchema } from './valid-visible-if
 import { VariableName } from './variable-name';
 import { AppBlockMissingSchema } from './app-block-missing-schema';
 import { UniqueSettingIds } from './unique-settings-id';
+import { BooleanExpression } from './boolean-expression';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -92,6 +93,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   JSONSyntaxError,
   LiquidFreeSettings,
   LiquidHTMLSyntaxError,
+  BooleanExpression,
   MatchingTranslations,
   MissingAsset,
   MissingContentForArguments,
