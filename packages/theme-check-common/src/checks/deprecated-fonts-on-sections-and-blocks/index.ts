@@ -21,7 +21,7 @@ export const DeprecatedFontsOnSectionsAndBlocks: LiquidCheckDefinition = {
     docs: {
       description: 'Warns on deprecated fonts in section and block schema settings values.',
       recommended: true,
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/deprecated-fonts-on-sections-and-blocks',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/deprecated-fonts-on-sections-and-blocks',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,
