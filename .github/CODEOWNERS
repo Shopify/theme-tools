@@ -1,2 +1,1 @@
-# A Developer Tools team member should validate that any public changeset items are valid and complete
-.changeset/* @shopify/developer-tools
+* @shopify/developer-tools
