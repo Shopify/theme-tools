@@ -1,5 +1,11 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.9.4
+
+### Patch Changes
+
+- e6b1b636: Update playground to v1.9.3
+
 ## 1.9.3
 
 ### Patch Changes
