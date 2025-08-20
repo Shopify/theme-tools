@@ -3,6 +3,7 @@ import { getOffset, isError } from '../../utils';
 import { detectMultipleAssignValues } from './checks/MultipleAssignValues';
 import { detectInvalidBooleanExpressions } from './checks/InvalidBooleanExpressions';
 import { detectInvalidEchoValue } from './checks/InvalidEchoValue';
+import { detectInvalidConditionalBooleanExpression } from './checks/InvalidConditionalBooleanExpression';
 
 type LineColPosition = {
   line: number;
