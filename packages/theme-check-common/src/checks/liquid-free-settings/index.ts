@@ -15,7 +15,7 @@ export const LiquidFreeSettings: LiquidCheckDefinition = {
     docs: {
       description: 'Ensures settings values are liquid free.',
       recommended: true,
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/liquid-free-settings',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/liquid-free-settings',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,

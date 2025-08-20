@@ -15,7 +15,7 @@ export const DeprecatedFontsOnSettingsSchema: JSONCheckDefinition = {
     docs: {
       description: 'Warns on deprecated fonts in settings_schema settings values.',
       recommended: true,
-      url: 'https://shopify.dev/docs/themes/tools/theme-check/checks/deprecated-fonts-on-settings-schema',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/deprecated-fonts-on-settings-schema',
     },
     type: SourceCodeType.JSON,
     severity: Severity.WARNING,
