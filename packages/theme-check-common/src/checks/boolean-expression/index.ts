@@ -1,29 +1,13 @@
 import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
 
-// This is a lot of regex.
-const IDENT = String.raw`[A-Za-z_][A-Za-z0-9_]*`;
-const VARIABLE = String.raw`${IDENT}(?:\.(?:${IDENT})|\[[^\]]*\])*`;
-const NUMBER = String.raw`\d+(?:\.\d+)?`;
-const STRING = String.raw`"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'`;
-const LITERAL = String.raw`(?:true|false|null|nil)`;
-const PRIMARY = String.raw`(?:${NUMBER}|${STRING}|${LITERAL}|${VARIABLE})`;
-const COMPARATOR = String.raw`(?:==|!=|>=|<=|>|<|\bcontains\b)`;
-const COMPARISON = String.raw`${PRIMARY}\s*${COMPARATOR}\s*${PRIMARY}`;
-const ATOMIC = String.raw`(?:${COMPARISON}|${PRIMARY})`;
-const LOGICAL = String.raw`${ATOMIC}(?:\s+(?:and|or)\s+${ATOMIC})*`;
-
-const ANYWHERE_EXPR_RE = new RegExp(`${LOGICAL}`, 'i');
-const COMPLEX = String.raw`(?:${COMPARISON}|${ATOMIC}\s+(?:and|or)\s+${ATOMIC})(?:\s+(?:and|or)\s+${ATOMIC})*`;
-const COMPLEX_EXPR_RE = new RegExp(`${COMPLEX}`, 'i');
-
 export const BooleanExpression: LiquidCheckDefinition = {
   meta: {
     code: 'BooleanExpression',
     name: 'Validate boolean expressions in Liquid tags',
     docs: {
       description:
-        'Flags trailing tokens after a boolean expression in conditional tags (if/elsif/unless) and offers a fix to remove them.',
-      recommended: false,
+        'Removes tokens in conditional tags that Liquid ignores due to its lax parsing.',
+      recommended: true,
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.ERROR,
@@ -32,6 +16,180 @@ export const BooleanExpression: LiquidCheckDefinition = {
   },
 
   create(context) {
+    function isWhitespace(char: string) {
+      return /\s/.test(char);
+    }
+
+    function readWhile(src: string, i: number, pred: (c: string) => boolean) {
+      let j = i;
+      while (j < src.length && pred(src[j]!)) j++;
+      return j;
+    }
+
+    function skipSpaces(src: string, i: number) {
+      return readWhile(src, i, isWhitespace);
+    }
+
+    function readString(src: string, i: number) {
+      const quote = src[i]!;
+      if (quote !== "'" && quote !== '"') return null as null | { end: number; text: string };
+      let j = i + 1;
+      while (j < src.length) {
+        const ch = src[j]!;
+        if (ch === '\\') {
+          j += 2;
+          continue;
+        }
+        if (ch === quote) {
+          return { end: j + 1, text: src.slice(i, j + 1) };
+        }
+        j++;
+      }
+      return { end: src.length, text: src.slice(i) };
+    }
+
+    function readNumber(src: string, i: number) {
+      const m = /^(?:\d[\d_]*)(?:\.\d+)?/.exec(src.slice(i));
+      if (!m) return null as null | { end: number; text: string };
+      return { end: i + m[0].length, text: m[0] };
+    }
+
+    function readIdentifier(src: string, i: number) {
+      const m = /^[A-Za-z_][A-Za-z0-9_]*/.exec(src.slice(i));
+      if (!m) return null as null | { end: number; text: string };
+      return { end: i + m[0].length, text: m[0] };
+    }
+
+    function readSymbolComparator(src: string, i: number) {
+      const symbols = ['==', '!=', '>=', '<=', '>', '<'];
+      for (const sym of symbols) {
+        if (src.startsWith(sym, i)) return { end: i + sym.length, text: sym };
+      }
+      return null as null | { end: number; text: string };
+    }
+
+    function readWord(src: string, i: number, word: string) {
+      if (src.startsWith(word, i)) {
+        const ahead = i + word.length;
+        const beforeOk = i === 0 || /\W/.test(src[i - 1]!);
+        const afterOk = ahead >= src.length || /\W/.test(src[ahead]!);
+        if (beforeOk && afterOk) return { end: ahead, text: word } as const;
+      }
+      return null;
+    }
+
+    const literalKeywords = new Set(['true', 'false', 'nil', 'null', 'blank', 'empty']);
+
+    function parseExpression(src: string, i: number):
+      | null
+      | { end: number; text: string; kind: 'id' | 'num' | 'str' | 'lit' } {
+      i = skipSpaces(src, i);
+      if (i >= src.length) return null;
+      const str = readString(src, i);
+      if (str) return { ...str, kind: 'str' };
+      const num = readNumber(src, i);
+      if (num) return { ...num, kind: 'num' };
+      const id = readIdentifier(src, i);
+      if (id) return { ...id, kind: literalKeywords.has(id.text) ? 'lit' : 'id' };
+      return null;
+    }
+
+    function cleanConditionalMarkup(original: string): string | null {
+      // Build a cleaned conditional by mimicking Liquid's lax parsing behavior.
+      let i = 0;
+      let out = '';
+      let aborted = false;
+
+      function appendToken(txt: string) {
+        if (out.length > 0 && !/\s$/.test(out)) out += ' ';
+        out += txt;
+      }
+
+      function parseSingleCondition() {
+        // left expression
+        const left = parseExpression(original, i);
+        if (!left) return false;
+        appendToken(original.slice(i, left.end).trim());
+        i = left.end;
+
+        // try to find comparator; skip stray identifier words (treated as unknown operators)
+        while (true) {
+          const before = i;
+          i = skipSpaces(original, i);
+          // comparator by symbol
+          const sym = readSymbolComparator(original, i);
+          if (sym) {
+            appendToken(sym.text);
+            i = sym.end;
+            const right = parseExpression(original, i);
+            if (!right) return true;
+            appendToken(original.slice(i, right.end).trim());
+            i = right.end;
+            return true;
+          }
+          // comparator by word 'contains'
+          const contains = readWord(original, i, 'contains');
+          if (contains) {
+            appendToken(contains.text);
+            i = contains.end;
+            const right = parseExpression(original, i);
+            if (!right) return true;
+            appendToken(original.slice(i, right.end).trim());
+            i = right.end;
+            return true;
+          }
+          // if next token is an identifier that is not logic operator, skip it (unknown operator noise)
+          const maybeId = readIdentifier(original, i);
+          const andOp = readWord(original, i, 'and');
+          const orOp = readWord(original, i, 'or');
+          if (andOp || orOp) {
+            // no comparator, end condition here; logic handled by caller
+            i = (andOp ?? orOp)!.end;
+            // push back to let caller see logic token
+            i -= (andOp ?? orOp)!.text.length;
+            return true;
+          }
+          if (maybeId) {
+            // If the left term was an identifier, an immediate identifier is an unknown operator -> abort
+            if (left.kind === 'id') {
+              aborted = true;
+              return true;
+            }
+            // Otherwise, the condition is already complete (e.g., numbers/strings/literals)
+            // Stop here and let outer logic handle chaining or end of condition.
+            return true;
+          }
+          // if we see a number or string here, Liquid would stop (left truthiness only)
+          const maybeNum = readNumber(original, i) || readString(original, i);
+          if (maybeNum) {
+            return true;
+          }
+          // nothing useful; stop
+          if (before === i) return true;
+        }
+      }
+
+      // first condition
+      if (!parseSingleCondition()) return null;
+
+      // chain logic operators
+      while (true) {
+        const before = i;
+        i = skipSpaces(original, i);
+        const andOp = readWord(original, i, 'and');
+        const orOp = readWord(original, i, 'or');
+        const logic = andOp ?? orOp;
+        if (!logic) break;
+        appendToken(logic.text);
+        i = logic.end;
+        const ok = parseSingleCondition();
+        if (!ok) break;
+      }
+
+      if (aborted) return null;
+      return out.trim();
+    }
+
     return {
       async LiquidTag(node) {
         if (!('name' in node) || !node.name) return;
@@ -41,85 +199,29 @@ export const BooleanExpression: LiquidCheckDefinition = {
         const markup: any = (node as any).markup;
         if (typeof markup !== 'string') return;
 
+        const cleaned = cleanConditionalMarkup(markup);
+        if (!cleaned || cleaned === markup.trim()) return;
 
-        // Very fast pre-filter: if there are no obvious boolean operators, skip
-        if (!(/[<>=]/.test(markup) || /\b(?:and|or|contains)\b/i.test(markup))) return;
-        // Find the first complex expression (prefers operator presence), otherwise fallback to any expression
-        const exprMatch = COMPLEX_EXPR_RE.exec(markup) || ANYWHERE_EXPR_RE.exec(markup);
-        if (!exprMatch) return;
-
-        const exprStartInMarkup = exprMatch.index;
-        const exprEndInMarkup = exprStartInMarkup + exprMatch[0].length;
-
-        // Compute left junk (before expression)
-        const leftJunk = markup.slice(0, exprStartInMarkup);
-        const hasLeftJunk = /\S/.test(leftJunk);
-
-        // Compute trailing junk (after expression)
-        const trailing = markup.slice(exprEndInMarkup);
-        const ws = /^\s+/.exec(trailing)?.[0] ?? '';
-        const tail = trailing.slice(ws.length);
-        const hasRightJunk = tail.length > 0;
-
-        if (!hasLeftJunk && !hasRightJunk) return; // nothing to do
-
-        // Map to absolute source indices inside the opening tag
-        const { blockStartPosition } = node as any;
-        const tagStart = blockStartPosition.start as number;
-        const tagEnd = blockStartPosition.end as number;
-        const tagText = context.file.source.slice(tagStart, tagEnd);
-
-        const markupOffsetInTag = tagText.indexOf(markup);
-        if (markupOffsetInTag < 0) return; // safety: unexpected, bail out
-
-        const markupAbsStart = tagStart + markupOffsetInTag;
-
-        const leftAbsStart = markupAbsStart;
-        const leftAbsEnd = markupAbsStart + exprStartInMarkup;
-
-        const rightAbsStart = markupAbsStart + exprEndInMarkup + ws.length;
-        const rightAbsEnd = markupAbsStart + markup.length;
-
-        // Attempt normalization: keep first PRIMARY, first operator, then next PRIMARY
-        const PRIMARY_RE = new RegExp(PRIMARY, 'i');
-        const OP_RE = new RegExp(`(?:${COMPARATOR}|\\b(?:and|or)\\b)`, 'i');
-
-        const firstM = PRIMARY_RE.exec(markup);
-        let normalized: string | undefined;
-        if (firstM) {
-          const afterFirst = markup.slice(firstM.index + firstM[0].length);
-          const opM = OP_RE.exec(afterFirst);
-          if (opM) {
-            const afterOp = afterFirst.slice(opM.index + opM[0].length);
-            const secondM = PRIMARY_RE.exec(afterOp);
-            if (secondM) {
-              const first = firstM[0].trim();
-              const op = opM[0].trim();
-              const second = secondM[0].trim();
-              normalized = `${first} ${op} ${second}`;
-            }
-          }
+        // Safety: avoid auto-fixing patterns like "id id > expr" which would error at runtime
+        if (/^\s*[A-Za-z_][A-Za-z0-9_]*\s+[A-Za-z_][A-Za-z0-9_]*/.test(markup) &&
+            !/^\s*[A-Za-z_][A-Za-z0-9_]*\s+(and|or|contains)\b/.test(markup)) {
+          return;
         }
 
-        const message = normalized
-          ? `Normalize boolean expression to "${normalized}"`
-          : hasLeftJunk && hasRightJunk
-          ? 'Remove extraneous tokens before and after the boolean expression.'
-          : hasLeftJunk
-          ? 'Remove extraneous tokens before the boolean expression.'
-          : `Trailing tokens after the boolean expression are ignored by Liquid. Remove "${tail}"`;
+        const openingTagRange = (node as any).blockStartPosition;
+        const openingTag = (node as any).source.slice(openingTagRange.start, openingTagRange.end);
+        const markupOffsetInOpening = openingTag.indexOf(markup);
+        if (markupOffsetInOpening < 0) return;
+
+        const startIndex = openingTagRange.start + markupOffsetInOpening;
+        const endIndex = startIndex + markup.length;
 
         context.report({
-          message,
-          startIndex: normalized ? markupAbsStart : hasLeftJunk ? leftAbsStart : rightAbsStart,
-          endIndex: normalized ? markupAbsStart + markup.length : hasRightJunk ? rightAbsEnd : leftAbsEnd,
-          fix(corrector) {
-            if (normalized) {
-              corrector.replace(markupAbsStart, markupAbsStart + markup.length, normalized!);
-              return;
-            }
-            if (hasRightJunk) corrector.remove(rightAbsStart, rightAbsEnd);
-            if (hasLeftJunk) corrector.remove(leftAbsStart, leftAbsEnd);
+          message: 'Remove ignored tokens in boolean expression',
+          startIndex,
+          endIndex,
+          fix: (corrector) => {
+            corrector.replace(startIndex, endIndex, cleaned);
           },
         });
       },

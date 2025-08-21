@@ -9,6 +9,9 @@ AssetPreload:
 BlockIdUsage:
   enabled: true
   severity: 1
+BooleanExpression:
+  enabled: true
+  severity: 0
 CaptureOnContentForBlock:
   enabled: true
   severity: 0
