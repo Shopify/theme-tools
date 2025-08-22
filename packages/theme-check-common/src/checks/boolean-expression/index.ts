@@ -19,30 +19,32 @@ export const BooleanExpression: LiquidCheckDefinition = {
     function checkLaxParsing(markup: string): { issue: string; fix: string } | null {
       const trimmed = markup.trim();
 
-      // Pattern 1: Left-side evaluation - truthy literal/number/string followed by junk
-      // Examples: "7 1 > 100", "'hello' some stuff", "0 2 > 5"
-      const leftSideMatch = /^(['"].*?['"]|\d+(?:\.\d+)?|true|empty|blank)\s+(.+)/.exec(trimmed);
-      if (leftSideMatch) {
-        const [, leftValue, rest] = leftSideMatch;
-        // Skip if it looks like a valid comparison (has operator)
-        if (!/^\s*(==|!=|>=|<=|>|<|contains)\s/.test(rest)) {
+      // Pattern 1: Unknown operator - any value followed by non-operator identifier
+      // Examples: "my_var word > 5", "'' some > thing", "jake johnson > 5"
+      const unknownOpMatch = /^((['"].*?['"]|\d+(?:\.\d+)?|true|empty|blank)|[a-zA-Z_][a-zA-Z0-9_]*)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*[><=!]/.exec(trimmed);
+      if (unknownOpMatch) {
+        const [, leftValue, , badOp] = unknownOpMatch;
+        // Make sure it's not a valid logical operator
+        if (!['and', 'or', 'contains'].includes(badOp)) {
+          const leftType = /^(['"].*?['"]|\d+(?:\.\d+)?|true|empty|blank)$/.test(leftValue) ? 'value' : 'variable';
           return {
-            issue: `Expression stops at truthy value '${leftValue}', ignoring: '${rest}'`,
+            issue: `Unknown operator '${badOp}' after ${leftType} '${leftValue}'`,
             fix: leftValue
           };
         }
       }
 
-      // Pattern 2: Unknown operator - variable followed by non-operator identifier
-      // Examples: "my_var word > 5", "jake johnson > 5"
-      const unknownOpMatch = /^([a-zA-Z_][a-zA-Z0-9_]*)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*[><=!]/.exec(trimmed);
-      if (unknownOpMatch) {
-        const [, varName, badOp] = unknownOpMatch;
-        // Make sure it's not a valid logical operator
-        if (!['and', 'or', 'contains'].includes(badOp)) {
+      // Pattern 2: Left-side evaluation - truthy literal/number/string stops parsing early
+      // Examples: "7 1 > 100", "'hello' 1 > 100", "0 2 > 5"
+      const leftSideMatch = /^(['"].*?['"]|\d+(?:\.\d+)?|true|empty|blank)\s+(.+)/.exec(trimmed);
+      if (leftSideMatch) {
+        const [, leftValue, rest] = leftSideMatch;
+        // Skip if it looks like a valid comparison or unknown operator (handled above)
+        if (!/^\s*(==|!=|>=|<=|>|<|contains)\s/.test(rest) &&
+            !/^\s*[a-zA-Z_][a-zA-Z0-9_]*\s*[><=!]/.test(rest)) {
           return {
-            issue: `Unknown operator '${badOp}' after variable '${varName}'`,
-            fix: varName
+            issue: `Expression stops at truthy value '${leftValue}', ignoring: '${rest}'`,
+            fix: leftValue
           };
         }
       }
@@ -64,33 +66,42 @@ export const BooleanExpression: LiquidCheckDefinition = {
       return null;
     }
 
+    async function checkConditional(node: any) {
+      if (!('name' in node) || !node.name) return;
+      if (!['if', 'elsif', 'unless'].includes(String(node.name))) return;
+
+      const markup: any = (node as any).markup;
+      if (typeof markup !== 'string' || !markup.trim()) return;
+
+      const issue = checkLaxParsing(markup);
+      if (!issue) return;
+
+      const openingTagRange = (node as any).blockStartPosition || (node as any).position;
+      const openingTag = (node as any).source.slice(openingTagRange.start, openingTagRange.end);
+      const markupOffsetInOpening = openingTag.indexOf(markup);
+      if (markupOffsetInOpening < 0) return;
+
+      const startIndex = openingTagRange.start + markupOffsetInOpening;
+      const endIndex = startIndex + markup.length;
+
+      context.report({
+        message: `Liquid rendering issue: ${issue.issue}`,
+        startIndex,
+        endIndex,
+        fix: (corrector) => {
+          corrector.replace(startIndex, endIndex, issue.fix);
+        },
+      });
+    }
+
     return {
+      // Check for if tags
       async LiquidTag(node) {
-        if (!('name' in node) || !node.name) return;
-        if (!['if', 'elsif', 'unless'].includes(String(node.name))) return;
-
-        const markup: any = (node as any).markup;
-        if (typeof markup !== 'string' || !markup.trim()) return;
-
-        const issue = checkLaxParsing(markup);
-        if (!issue) return;
-
-        const openingTagRange = (node as any).blockStartPosition;
-        const openingTag = (node as any).source.slice(openingTagRange.start, openingTagRange.end);
-        const markupOffsetInOpening = openingTag.indexOf(markup);
-        if (markupOffsetInOpening < 0) return;
-
-        const startIndex = openingTagRange.start + markupOffsetInOpening;
-        const endIndex = startIndex + markup.length;
-
-        context.report({
-          message: `Lax parsing issue: ${issue.issue}`,
-          startIndex,
-          endIndex,
-          fix: (corrector) => {
-            corrector.replace(startIndex, endIndex, issue.fix);
-          },
-        });
+        await checkConditional(node);
+      },
+      // Check for elsif
+      async LiquidBranch(node) {
+        await checkConditional(node);
       },
     };
   },
