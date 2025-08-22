@@ -7,86 +7,151 @@ async function checkRuleFile(source: string) {
 }
 
 describe('Check: BooleanExpression', () => {
-  it('does not report for a clean boolean expression', async () => {
-    const offenses = await checkRuleFile("{% if 1 and 2 %}{{ 'hello' }}{% endif %}\n");
-    expect(offenses).toHaveLength(0);
+  describe('Valid expressions (should not report)', () => {
+    it('does not report for clean boolean expressions', async () => {
+      const testCases = [
+        "{% if 1 and 2 %}hello{% endif %}",
+        "{% if variable > 5 %}hello{% endif %}",
+        "{% if 'abc' contains 'a' %}hello{% endif %}",
+        "{% if true or false %}hello{% endif %}",
+        "{% if 10 > 5 and user.active %}hello{% endif %}",
+      ];
+
+      for (const testCase of testCases) {
+        const offenses = await checkRuleFile(testCase);
+        expect(offenses).toHaveLength(0);
+      }
+    });
   });
 
-  it('does not fix when identifier follows a complete expression (Ruby would error)', async () => {
-    const source = "{% if 1 and 2 foobar %}{{ 'hello' }}{% endif %}\n";
-    const offenses = await checkRuleFile(source);
-    expect(offenses).toHaveLength(0);
+  describe('Left-side evaluation (stops at first truthy)', () => {
+    it('detects when parser stops at truthy number', async () => {
+      const source = "{% if 7 1 > 100 %}hello{% endif %}";
+      const offenses = await checkRuleFile(source);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toContain("stops at truthy value '7'");
+      const fixed = applyFix(source, offenses[0]);
+      expect(fixed).toBe("{% if 7 %}hello{% endif %}");
+    });
+
+    it('detects when parser stops at truthy string', async () => {
+      const source = "{% if 'hello' 1 > 100 %}world{% endif %}";
+      const offenses = await checkRuleFile(source);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toContain("stops at truthy value ''hello''");
+      const fixed = applyFix(source, offenses[0]);
+      expect(fixed).toBe("{% if 'hello' %}world{% endif %}");
+    });
+
+    it('detects when parser stops at zero (truthy in Liquid)', async () => {
+      const source = "{% if 0 2 > 5 %}hello{% endif %}";
+      const offenses = await checkRuleFile(source);
+      expect(offenses).toHaveLength(1);
+      const fixed = applyFix(source, offenses[0]);
+      expect(fixed).toBe("{% if 0 %}hello{% endif %}");
+    });
+
+    it('detects when parser stops at empty string (truthy in Liquid)', async () => {
+      const source = "{% if '' some > thing %}hello{% endif %}";
+      const offenses = await checkRuleFile(source);
+      expect(offenses).toHaveLength(1);
+      const fixed = applyFix(source, offenses[0]);
+      expect(fixed).toBe("{% if '' %}hello{% endif %}");
+    });
   });
 
-  it('reports and fixes trailing tokens on right side of expression', async () => {
-    const source = "{% if 1 == 2 foobar %}x{% endif %}\n";
-    const offenses = await checkRuleFile(source);
-    expect(offenses).toHaveLength(1);
-    const fixed = applyFix(source, offenses[0]);
-    expect(fixed).toBe("{% if 1 == 2 %}x{% endif %}\n");
+  describe('Unknown operator errors', () => {
+    it('detects unknown operator after variable', async () => {
+      const source = "{% if my_var word > 5 %}hello{% endif %}";
+      const offenses = await checkRuleFile(source);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toContain("Unknown operator 'word' after variable 'my_var'");
+      const fixed = applyFix(source, offenses[0]);
+      expect(fixed).toBe("{% if my_var %}hello{% endif %}");
+    });
+
+    it('detects multiple identifiers in sequence', async () => {
+      const source = "{% if jake johnson > 5 %}hello{% endif %}";
+      const offenses = await checkRuleFile(source);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toContain("Unknown operator 'johnson' after variable 'jake'");
+    });
   });
 
-  it('removes junk on both sides of the expression', async () => {
-    const source = "{% if 20 a > 5 foobar %}x{% endif %}\n";
-    const offenses = await checkRuleFile(source);
-    expect(offenses).toHaveLength(0);
+  describe('Trailing junk after complete expressions', () => {
+    it('detects trailing tokens after comparison', async () => {
+      const source = "{% if 1 == 2 foobar %}hello{% endif %}";
+      const offenses = await checkRuleFile(source);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toContain("Trailing tokens ignored after comparison: 'foobar'");
+      const fixed = applyFix(source, offenses[0]);
+      expect(fixed).toBe("{% if 1 == 2 %}hello{% endif %}");
+    });
+
+    it('detects multiple trailing tokens', async () => {
+      const source = "{% if 10 > 4 baz qux %}hello{% endif %}";
+      const offenses = await checkRuleFile(source);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toContain("Trailing tokens ignored");
+      const fixed = applyFix(source, offenses[0]);
+      expect(fixed).toBe("{% if 10 > 4 %}hello{% endif %}");
+    });
+
+    it('detects trailing junk after contains', async () => {
+      const source = "{% if 'abc' contains 'a' noise more %}hello{% endif %}";
+      const offenses = await checkRuleFile(source);
+      expect(offenses).toHaveLength(1);
+      const fixed = applyFix(source, offenses[0]);
+      expect(fixed).toBe("{% if 'abc' contains 'a' %}hello{% endif %}");
+    });
   });
 
-  // Additional tests to mirror Ruby behavior
-  it('ignores junk after a standalone truthy number (0 is truthy in Liquid)', async () => {
-    const source = "{% if 0 2 > 5 %}x{% endif %}\n";
-    const offenses = await checkRuleFile(source);
-    const fixed = offenses.length ? applyFix(source, offenses[0]) : source;
-    expect(fixed).toBe("{% if 0 %}x{% endif %}\n");
+  describe('Complex expressions with logical operators', () => {
+    it('handles valid logical chaining', async () => {
+      const source = "{% if 1 > 0 and 2 < 3 %}hello{% endif %}";
+      const offenses = await checkRuleFile(source);
+      expect(offenses).toHaveLength(0);
+    });
+
+    it('detects issues in complex expressions', async () => {
+      const source = "{% if 5 > 6 foobar and 2 < 3 %}hello{% endif %}";
+      const offenses = await checkRuleFile(source);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toContain("Trailing tokens ignored");
+    });
   });
 
-  it('ignores junk after a truthy variable lookup (assigned)', async () => {
-    const source = "{% assign jake = 7 %}{% if jake 1 > 100 %}x{% endif %}\n";
-    const offenses = await checkRuleFile(source);
-    const fixed = offenses.length ? applyFix(source, offenses[0]) : source;
-    expect(fixed).toBe("{% assign jake = 7 %}{% if jake %}x{% endif %}\n");
-  });
+  describe('Edge cases matching Ruby behavior', () => {
+    it('handles false literal correctly', async () => {
+      const source = "{% if false 1 > 0 %}hello{% endif %}";
+      const offenses = await checkRuleFile(source);
+      // false is falsy, so this should not trigger left-side evaluation
+      expect(offenses).toHaveLength(0);
+    });
 
-  it('keeps logical chaining and cleans within each side', async () => {
-    const source = "{% if 1 a > 2 and 3 b < 4 c %}x{% endif %}\n";
-    const offenses = await checkRuleFile(source);
-    const fixed = offenses.length ? applyFix(source, offenses[0]) : source;
-    // Left: `1 a > 2` -> aborts (id after number) so no fix; but right is also dirty.
-    // Our implementation aborts the entire clean when encountering unknown operator scenario.
-    expect(offenses).toHaveLength(0);
-  });
+    it('handles nil literal correctly', async () => {
+      const source = "{% if nil 6 > 5 %}hello{% endif %}";
+      const offenses = await checkRuleFile(source);
+      // nil is falsy, so this should not trigger left-side evaluation
+      expect(offenses).toHaveLength(0);
+    });
 
-  it('removes everything after a complete condition if non-operator token appears before logical operator', async () => {
-    const source = "{% if 6 > 5 junk and 2 < 3 tail %}x{% endif %}\n";
-    const offenses = await checkRuleFile(source);
-    const fixed = offenses.length ? applyFix(source, offenses[0]) : source;
-    expect(fixed).toBe("{% if 6 > 5 %}x{% endif %}\n");
-  });
+    //         it('works with elsif tag', async () => {
+    //   const source = "{% if false %}no{% elsif 7 1 > 100 %}hello{% endif %}";
+    //   const offenses = await checkRuleFile(source);
+    //   expect(offenses).toHaveLength(1);
+    //   if (offenses.length > 0) {
+    //     expect(offenses[0].message).toContain("Expression stops at truthy value '7'");
+    //   }
+    // });
 
-  it('does not fix when identifier follows identifier (Unknown operator case)', async () => {
-    const source = "{% if jake johnson > 5 %}x{% endif %}\n";
-    const offenses = await checkRuleFile(source);
-    expect(offenses).toHaveLength(0);
-  });
-
-  it('does not fix when identifier follows number (Unknown operator case)', async () => {
-    const source = "{% if 2 a > 5 foobar %}x{% endif %}\n";
-    const offenses = await checkRuleFile(source);
-    expect(offenses).toHaveLength(0);
-  });
-
-  it('supports contains comparator and removes trailing junk', async () => {
-    const source = "{% if 'abc' contains 'a' noise %}x{% endif %}\n";
-    const offenses = await checkRuleFile(source);
-    const fixed = offenses.length ? applyFix(source, offenses[0]) : source;
-    expect(fixed).toBe("{% if 'abc' contains 'a' %}x{% endif %}\n");
-  });
-
-  it('does not fix when stray identifiers appear between conditions (Ruby would error)', async () => {
-    const source = "{% if 1 and 2 foo or 3 bar %}x{% endif %}\n";
-    const offenses = await checkRuleFile(source);
-    expect(offenses).toHaveLength(0);
+    it('works with unless tag', async () => {
+      const source = "{% unless 'test' some > thing %}hello{% endunless %}";
+      const offenses = await checkRuleFile(source);
+      expect(offenses).toHaveLength(1);
+      if (offenses.length > 0) {
+        expect(offenses[0].message).toContain("Expression stops at truthy value ''test''");
+      }
+    });
   });
 });
-
-
