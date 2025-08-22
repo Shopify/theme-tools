@@ -15,6 +15,7 @@ describe('Check: BooleanExpression', () => {
         "{% if 'abc' contains 'a' %}hello{% endif %}",
         "{% if true or false %}hello{% endif %}",
         "{% if 10 > 5 and user.active %}hello{% endif %}",
+        "{% if > 2 %}hello{% endif %}",
       ];
 
       for (const testCase of testCases) {
@@ -51,12 +52,22 @@ describe('Check: BooleanExpression', () => {
       expect(fixed).toBe("{% if 0 %}hello{% endif %}");
     });
 
-    it('detects when parser stops at empty string (truthy in Liquid)', async () => {
+    it('detects unknown operator after empty string (should error like Ruby)', async () => {
       const source = "{% if '' some > thing %}hello{% endif %}";
       const offenses = await checkRuleFile(source);
       expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toContain("Unknown operator 'some' after value");
       const fixed = applyFix(source, offenses[0]);
       expect(fixed).toBe("{% if '' %}hello{% endif %}");
+    });
+
+    it('detects left-side evaluation with number after string (Ruby Test 8)', async () => {
+      const source = "{% if 'hello' 1 > 100 %}world{% endif %}";
+      const offenses = await checkRuleFile(source);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toContain("Expression stops at truthy value ''hello''");
+      const fixed = applyFix(source, offenses[0]);
+      expect(fixed).toBe("{% if 'hello' %}world{% endif %}");
     });
   });
 
@@ -137,9 +148,13 @@ describe('Check: BooleanExpression', () => {
     });
 
     it('works with elsif tag', async () => {
+      // Test just the elsif condition directly
       const source = "{% if false %}no{% elsif 7 1 > 100 %}hello{% endif %}";
       const offenses = await checkRuleFile(source);
-      expect(offenses).toHaveLength(0);
+      expect(offenses).toHaveLength(1);
+      if (offenses.length > 0) {
+        expect(offenses[0].message).toContain("Expression stops at truthy value '7'");
+      }
     });
 
     it('works with unless tag', async () => {
@@ -147,7 +162,7 @@ describe('Check: BooleanExpression', () => {
       const offenses = await checkRuleFile(source);
       expect(offenses).toHaveLength(1);
       if (offenses.length > 0) {
-        expect(offenses[0].message).toContain("Expression stops at truthy value ''test''");
+        expect(offenses[0].message).toContain("Unknown operator 'some' after value ''test''");
       }
     });
   });
