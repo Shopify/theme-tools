@@ -16,227 +16,52 @@ export const BooleanExpression: LiquidCheckDefinition = {
   },
 
   create(context) {
-    // Token types for simplified parsing
-    type Token = {
-      type: 'identifier' | 'number' | 'string' | 'literal' | 'operator' | 'logical' | 'unknown';
-      value: string;
-      start: number;
-      end: number;
-    };
+    function checkLaxParsing(markup: string): { issue: string; fix: string } | null {
+      const trimmed = markup.trim();
 
-    const LOGICAL_OPS = ['and', 'or'];
-    const COMPARISON_OPS = ['==', '!=', '>=', '<=', '>', '<', 'contains'];
-    const LITERALS = ['true', 'false', 'nil', 'null', 'blank', 'empty'];
-
-    function tokenize(markup: string): Token[] {
-      const tokens: Token[] = [];
-      let i = 0;
-
-      while (i < markup.length) {
-        // Skip whitespace
-        if (/\s/.test(markup[i]!)) {
-          i++;
-          continue;
-        }
-
-        const start = i;
-
-        // String literals
-        if (markup[i] === '"' || markup[i] === "'") {
-          const quote = markup[i]!;
-          i++; // Skip opening quote
-          while (i < markup.length && markup[i] !== quote) {
-            if (markup[i] === '\\') i++; // Skip escaped char
-            i++;
-          }
-          if (i < markup.length) i++; // Skip closing quote
-          tokens.push({
-            type: 'string',
-            value: markup.slice(start, i),
-            start,
-            end: i
-          });
-          continue;
-        }
-
-        // Numbers
-        const numMatch = /^[\d_]+(\.\d+)?/.exec(markup.slice(i));
-        if (numMatch) {
-          i += numMatch[0].length;
-          tokens.push({
-            type: 'number',
-            value: numMatch[0],
-            start,
-            end: i
-          });
-          continue;
-        }
-
-        // Comparison operators (check longer ones first)
-        const opMatch = COMPARISON_OPS.find(op => markup.startsWith(op, i));
-        if (opMatch) {
-          i += opMatch.length;
-          tokens.push({
-            type: 'operator',
-            value: opMatch,
-            start,
-            end: i
-          });
-          continue;
-        }
-
-        // Words (identifiers, literals, logical operators)
-        const wordMatch = /^[A-Za-z_][A-Za-z0-9_]*/.exec(markup.slice(i));
-        if (wordMatch) {
-          const word = wordMatch[0];
-          i += word.length;
-
-          let type: Token['type'];
-          if (LOGICAL_OPS.includes(word)) {
-            type = 'logical';
-          } else if (LITERALS.includes(word)) {
-            type = 'literal';
-          } else {
-            type = 'identifier';
-          }
-
-          tokens.push({
-            type,
-            value: word,
-            start,
-            end: i
-          });
-          continue;
-        }
-
-        // Unknown token
-        const unknownChar = markup[i]!;
-        i++;
-        tokens.push({
-          type: 'unknown',
-          value: unknownChar,
-          start,
-          end: i
-        });
-      }
-
-      return tokens;
-    }
-
-    function simulateLiquidParsing(tokens: Token[]): {
-      actualExpression: string,
-      issues: Array<{
-        message: string,
-        suggestion: string,
-        wouldError: boolean
-      }>
-    } {
-      const issues: Array<{message: string, suggestion: string, wouldError: boolean}> = [];
-      const result: string[] = [];
-      let i = 0;
-
-      function isTruthy(token: Token): boolean {
-        // In Liquid: numbers and strings are truthy, only 'false' and 'nil' are falsy
-        if (token.type === 'number' || token.type === 'string') return true;
-        if (token.type === 'literal') return !['false', 'nil', 'null'].includes(token.value);
-        if (token.type === 'identifier') return false; // Depends on runtime value, assume falsy for analysis
-        return false;
-      }
-
-            function parseCondition(): boolean {
-        if (i >= tokens.length) return false;
-
-        const leftToken = tokens[i]!;
-        result.push(leftToken.value);
-        i++;
-
-        // Look for comparison operator first (both symbol and word operators like 'contains')
-        if (i < tokens.length && (tokens[i]!.type === 'operator' ||
-                                 (tokens[i]!.type === 'identifier' && tokens[i]!.value === 'contains'))) {
-          const op = tokens[i]!;
-          result.push(op.value);
-          i++;
-
-          // Get right operand
-          if (i < tokens.length && (tokens[i]!.type === 'identifier' || tokens[i]!.type === 'number' ||
-                                   tokens[i]!.type === 'string' || tokens[i]!.type === 'literal')) {
-            const rightToken = tokens[i]!;
-            result.push(rightToken.value);
-            i++;
-
-            // Check for trailing junk after complete comparison
-            const trailingTokens: string[] = [];
-            while (i < tokens.length && tokens[i]!.type !== 'logical') {
-              trailingTokens.push(tokens[i]!.value);
-              i++;
-            }
-
-            if (trailingTokens.length > 0) {
-              issues.push({
-                message: `Trailing tokens ignored after comparison: '${trailingTokens.join(' ')}'`,
-                suggestion: `${leftToken.value} ${op.value} ${rightToken.value}`,
-                wouldError: false
-              });
-            }
-            return true;
-          }
-        }
-
-        // Check for unknown operator pattern (identifier followed by non-operator identifier)
-        if (leftToken.type === 'identifier' && i < tokens.length) {
-          const nextToken = tokens[i]!;
-          if (nextToken.type === 'identifier' && !LOGICAL_OPS.includes(nextToken.value)) {
-            issues.push({
-              message: `Unknown operator '${nextToken.value}' after variable '${leftToken.value}'`,
-              suggestion: leftToken.value,
-              wouldError: true
-            });
-            return true;
-          }
-        }
-
-        // If left side is a truthy literal/number/string and no operator found, check for "left-side evaluation"
-        if (isTruthy(leftToken) && leftToken.type !== 'identifier') {
-          // Look for tokens after this that would be ignored
-          const nextTokens = tokens.slice(i).filter(t => t.type !== 'logical');
-          if (nextTokens.length > 0) {
-            const ignoredTokens = nextTokens.map(t => t.value).join(' ');
-            issues.push({
-              message: `Expression stops at truthy value '${leftToken.value}', ignoring: '${ignoredTokens}'`,
-              suggestion: leftToken.value,
-              wouldError: false
-            });
-            // Skip to next logical operator or end
-            while (i < tokens.length && tokens[i]!.type !== 'logical') {
-              i++;
-            }
-            return true;
-          }
-        }
-
-        return true;
-      }
-
-      // Parse first condition
-      if (!parseCondition()) {
-        return { actualExpression: '', issues };
-      }
-
-      // Handle logical operators
-      while (i < tokens.length && tokens[i]!.type === 'logical') {
-        const logicalOp = tokens[i]!;
-        result.push(logicalOp.value);
-        i++;
-
-        if (!parseCondition()) {
-          break;
+      // Pattern 1: Left-side evaluation - truthy literal/number/string followed by junk
+      // Examples: "7 1 > 100", "'hello' some stuff", "0 2 > 5"
+      const leftSideMatch = /^(['"].*?['"]|\d+(?:\.\d+)?|true|empty|blank)\s+(.+)/.exec(trimmed);
+      if (leftSideMatch) {
+        const [, leftValue, rest] = leftSideMatch;
+        // Skip if it looks like a valid comparison (has operator)
+        if (!/^\s*(==|!=|>=|<=|>|<|contains)\s/.test(rest)) {
+          return {
+            issue: `Expression stops at truthy value '${leftValue}', ignoring: '${rest}'`,
+            fix: leftValue
+          };
         }
       }
 
-      return {
-        actualExpression: result.join(' '),
-        issues
-      };
+      // Pattern 2: Unknown operator - variable followed by non-operator identifier
+      // Examples: "my_var word > 5", "jake johnson > 5"
+      const unknownOpMatch = /^([a-zA-Z_][a-zA-Z0-9_]*)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*[><=!]/.exec(trimmed);
+      if (unknownOpMatch) {
+        const [, varName, badOp] = unknownOpMatch;
+        // Make sure it's not a valid logical operator
+        if (!['and', 'or', 'contains'].includes(badOp)) {
+          return {
+            issue: `Unknown operator '${badOp}' after variable '${varName}'`,
+            fix: varName
+          };
+        }
+      }
+
+      // Pattern 3: Trailing junk after complete comparison
+      // Examples: "1 == 2 foobar", "10 > 4 baz qux", "'abc' contains 'a' noise"
+      const trailingMatch = /^(.+?(?:==|!=|>=|<=|>|<|contains)\s+\S+)\s+(.+?)(?:\s+(?:and|or)\s|$)/.exec(trimmed);
+      if (trailingMatch) {
+        const [, comparison, trailing] = trailingMatch;
+        // Make sure the trailing part isn't just another logical condition
+        if (!/^(?:and|or)\s/.test(trailing)) {
+          return {
+            issue: `Trailing tokens ignored after comparison: '${trailing.trim()}'`,
+            fix: comparison.trim()
+          };
+        }
+      }
+
+      return null;
     }
 
     return {
@@ -245,15 +70,10 @@ export const BooleanExpression: LiquidCheckDefinition = {
         if (!['if', 'elsif', 'unless'].includes(String(node.name))) return;
 
         const markup: any = (node as any).markup;
-        if (typeof markup !== 'string') return;
+        if (typeof markup !== 'string' || !markup.trim()) return;
 
-        const tokens = tokenize(markup);
-        if (tokens.length === 0) return;
-
-        const analysis = simulateLiquidParsing(tokens);
-
-        // Only report if there are actual issues
-        if (analysis.issues.length === 0) return;
+        const issue = checkLaxParsing(markup);
+        if (!issue) return;
 
         const openingTagRange = (node as any).blockStartPosition;
         const openingTag = (node as any).source.slice(openingTagRange.start, openingTagRange.end);
@@ -263,15 +83,12 @@ export const BooleanExpression: LiquidCheckDefinition = {
         const startIndex = openingTagRange.start + markupOffsetInOpening;
         const endIndex = startIndex + markup.length;
 
-        // Report the most significant issue
-        const primaryIssue = analysis.issues.find(i => i.wouldError) || analysis.issues[0]!;
-
         context.report({
-          message: `Lax parsing issue: ${primaryIssue.message}`,
+          message: `Lax parsing issue: ${issue.issue}`,
           startIndex,
           endIndex,
           fix: (corrector) => {
-            corrector.replace(startIndex, endIndex, primaryIssue.suggestion);
+            corrector.replace(startIndex, endIndex, issue.fix);
           },
         });
       },

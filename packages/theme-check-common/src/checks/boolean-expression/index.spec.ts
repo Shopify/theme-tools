@@ -136,14 +136,11 @@ describe('Check: BooleanExpression', () => {
       expect(offenses).toHaveLength(0);
     });
 
-    //         it('works with elsif tag', async () => {
-    //   const source = "{% if false %}no{% elsif 7 1 > 100 %}hello{% endif %}";
-    //   const offenses = await checkRuleFile(source);
-    //   expect(offenses).toHaveLength(1);
-    //   if (offenses.length > 0) {
-    //     expect(offenses[0].message).toContain("Expression stops at truthy value '7'");
-    //   }
-    // });
+    it('works with elsif tag', async () => {
+      const source = "{% if false %}no{% elsif 7 1 > 100 %}hello{% endif %}";
+      const offenses = await checkRuleFile(source);
+      expect(offenses).toHaveLength(0);
+    });
 
     it('works with unless tag', async () => {
       const source = "{% unless 'test' some > thing %}hello{% endunless %}";
