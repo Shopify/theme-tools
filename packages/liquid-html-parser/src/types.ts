@@ -29,6 +29,7 @@ export enum NodeTypes {
   LiquidFilter = 'LiquidFilter',
   NamedArgument = 'NamedArgument',
   LiquidLiteral = 'LiquidLiteral',
+  BooleanExpression = 'BooleanExpression',
   String = 'String',
   Number = 'Number',
   Range = 'Range',

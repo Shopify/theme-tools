@@ -1,4 +1,5 @@
-import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
+import { NodeTypes } from '@shopify/liquid-html-parser';
+import { Severity, SourceCodeType, LiquidCheckDefinition, Check, Context } from '../../types';
 import { getOffset, isError } from '../../utils';
 
 type LineColPosition = {
@@ -34,25 +35,29 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
   },
 
   create(context) {
-    const error = context.file.ast;
-    if (!isError(error)) return {};
+    const ast = context.file.ast;
+    if (!isError(ast)) {
+      return {
+        ...detectInvalidBooleanExpressions(context),
+      };
+    }
 
     return {
       async onCodePathStart(file) {
-        if (isParsingErrorWithLocation(error)) {
-          const { start, end } = error.loc;
+        if (isParsingErrorWithLocation(ast)) {
+          const { start, end } = ast.loc;
           const startIndex = getOffset(file.source, start.line, start.column);
           let endIndex = getOffset(file.source, end.line, end.column);
           if (startIndex === endIndex) endIndex += 1;
           const highlight = file.source.slice(startIndex, endIndex);
           context.report({
-            message: cleanErrorMessage(error.message, highlight),
+            message: cleanErrorMessage(ast.message, highlight),
             startIndex,
             endIndex: endIndex,
           });
         } else {
           context.report({
-            message: error.message,
+            message: ast.message,
             startIndex: 0,
             endIndex: file.source.length,
           });
@@ -61,3 +66,33 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
     };
   },
 };
+
+function detectInvalidBooleanExpressions(
+  context: Context<SourceCodeType.LiquidHtml>,
+): Check<SourceCodeType.LiquidHtml> {
+  return {
+    async BooleanExpression(node) {
+      const condition = node.condition;
+
+      if (
+        condition.type !== NodeTypes.Comparison &&
+        condition.type !== NodeTypes.LogicalExpression
+      ) {
+        return;
+      }
+
+      context.report({
+        message: 'Syntax is not supported',
+        startIndex: node.position.start,
+        endIndex: node.position.end,
+        fix: (corrector) => {
+          corrector.replace(
+            node.position.start,
+            node.position.end,
+            node.source.slice(condition.left.position.start, condition.left.position.end),
+          );
+        },
+      });
+    },
+  };
+}

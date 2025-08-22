@@ -1,5 +1,6 @@
 import {
   AssignMarkup,
+  ComplexLiquidExpression,
   LiquidDocParamNode,
   LiquidExpression,
   LiquidHtmlNode,
@@ -46,7 +47,7 @@ export class TypeSystem {
   ) {}
 
   async inferType(
-    thing: Identifier | LiquidExpression | LiquidVariable | AssignMarkup,
+    thing: Identifier | ComplexLiquidExpression | LiquidVariable | AssignMarkup,
     partialAst: LiquidHtmlNode,
     uri: string,
   ): Promise<PseudoType | ArrayType> {
@@ -595,7 +596,7 @@ function resolveTypeRangeType(
 }
 
 function inferType(
-  thing: Identifier | LiquidExpression | LiquidVariable | AssignMarkup,
+  thing: Identifier | ComplexLiquidExpression | LiquidVariable | AssignMarkup,
   symbolsTable: SymbolsTable,
   objectMap: ObjectMap,
   filtersMap: FiltersMap,
@@ -614,6 +615,10 @@ function inferType(
     }
 
     case NodeTypes.LiquidLiteral: {
+      return 'boolean';
+    }
+
+    case NodeTypes.BooleanExpression: {
       return 'boolean';
     }
 

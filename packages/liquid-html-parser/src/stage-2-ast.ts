@@ -74,6 +74,7 @@ import {
   LiquidHtmlConcreteNode,
   ConcreteLiquidTagBaseCase,
   ConcreteLiquidTagContentForMarkup,
+  ConcreteComplexLiquidExpression,
 } from './stage-1-cst';
 import { Comparators, NamedTags, NodeTypes, nonTraversableProperties, Position } from './types';
 import { assertNever, deepGet, dropLast } from './utils';
@@ -95,7 +96,7 @@ export type LiquidHtmlNode =
   | HtmlNode
   | AttributeNode
   | LiquidVariable
-  | LiquidExpression
+  | ComplexLiquidExpression
   | LiquidFilter
   | LiquidNamedArgument
   | AssignMarkup
@@ -508,7 +509,7 @@ export interface LiquidVariableOutput extends ASTNode<NodeTypes.LiquidVariableOu
 /** Represents an expression and filters, e.g. expression | filter1 | filter2 */
 export interface LiquidVariable extends ASTNode<NodeTypes.LiquidVariable> {
   /** expression | filter1 | filter2 */
-  expression: LiquidExpression;
+  expression: ComplexLiquidExpression;
 
   /** expression | filter1 | filter2 */
   filters: LiquidFilter[];
@@ -524,6 +525,8 @@ export type LiquidExpression =
   | LiquidLiteral
   | LiquidRange
   | LiquidVariableLookup;
+
+export type ComplexLiquidExpression = LiquidBooleanExpression | LiquidExpression;
 
 /** https://shopify.dev/docs/api/liquid/filters */
 export interface LiquidFilter extends ASTNode<NodeTypes.LiquidFilter> {
@@ -543,6 +546,10 @@ export interface LiquidNamedArgument extends ASTNode<NodeTypes.NamedArgument> {
 
   /** name: value */
   value: LiquidExpression;
+}
+
+export interface LiquidBooleanExpression extends ASTNode<NodeTypes.BooleanExpression> {
+  condition: LiquidConditionalExpression;
 }
 
 /** https://shopify.dev/docs/api/liquid/basics#string */
@@ -1941,12 +1948,28 @@ function toLiquidVariableOutput(node: ConcreteLiquidVariableOutput): LiquidVaria
 function toLiquidVariable(node: ConcreteLiquidVariable): LiquidVariable {
   return {
     type: NodeTypes.LiquidVariable,
-    expression: toExpression(node.expression),
+    expression: toComplexExpression(node.expression),
     filters: node.filters.map(toFilter),
     position: position(node),
     rawSource: node.rawSource,
     source: node.source,
   };
+}
+
+function toComplexExpression(node: ConcreteComplexLiquidExpression): ComplexLiquidExpression {
+  switch (node.type) {
+    case ConcreteNodeTypes.BooleanExpression: {
+      return {
+        type: NodeTypes.BooleanExpression,
+        position: position(node),
+        condition: toConditionalExpression(node.conditions),
+        source: node.source,
+      };
+    }
+    default: {
+      return toExpression(node);
+    }
+  }
 }
 
 function toExpression(node: ConcreteLiquidExpression): LiquidExpression {

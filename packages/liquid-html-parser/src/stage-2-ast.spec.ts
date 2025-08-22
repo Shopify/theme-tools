@@ -30,6 +30,55 @@ describe('Unit: Stage 2 (AST)', () => {
         }
       });
 
+      it('should parse comparisons as LiquidVariable > BooleanExpression > Comparison', () => {
+        [
+          { expression: `1 == 1` },
+          { expression: `1 != 1` },
+          { expression: `1 > 1` },
+          { expression: `1 < 1` },
+          { expression: `1 >= 1` },
+          { expression: `1 <= 1` },
+        ].forEach(({ expression }) => {
+          for (const { toAST, expectPath, expectPosition } of testCases) {
+            ast = toAST(`{{ ${expression} }}`);
+            expectPath(ast, 'children.0').to.exist;
+            expectPath(ast, 'children.0.type').to.eql('LiquidVariableOutput');
+            expectPath(ast, 'children.0.markup.type').to.eql('LiquidVariable');
+            expectPath(ast, 'children.0.markup.rawSource').to.eql(expression);
+            expectPath(ast, 'children.0.markup.expression.type').to.eql('BooleanExpression');
+            expectPath(ast, 'children.0.markup.expression.condition.type').to.eql('Comparison');
+            expectPosition(ast, 'children.0');
+            expectPosition(ast, 'children.0.markup');
+            expectPosition(ast, 'children.0.markup.expression');
+          }
+        });
+      });
+
+      it('should parse logical operations as LiquidVariable > BooleanExpression > LogicalExpression', () => {
+        [
+          { expression: `1 == 1 and 2 == 2` },
+          { expression: `1 == 1 or 2 == 2` },
+          { expression: `1 == 1 and 2 == 2 or 3 == 3` },
+          { expression: `1 == 1 and some_variable or 3 == 3` },
+          { expression: `some_var and 'raw string'` },
+        ].forEach(({ expression }) => {
+          for (const { toAST, expectPath, expectPosition } of testCases) {
+            ast = toAST(`{{ ${expression} }}`);
+            expectPath(ast, 'children.0').to.exist;
+            expectPath(ast, 'children.0.type').to.eql('LiquidVariableOutput');
+            expectPath(ast, 'children.0.markup.type').to.eql('LiquidVariable');
+            expectPath(ast, 'children.0.markup.rawSource').to.eql(expression);
+            expectPath(ast, 'children.0.markup.expression.type').to.eql('BooleanExpression');
+            expectPath(ast, 'children.0.markup.expression.condition.type').to.eql(
+              'LogicalExpression',
+            );
+            expectPosition(ast, 'children.0');
+            expectPosition(ast, 'children.0.markup');
+            expectPosition(ast, 'children.0.markup.expression');
+          }
+        });
+      });
+
       it('should parse strings as LiquidVariable > String', () => {
         [
           { expression: `"string o' string"`, value: `string o' string`, single: false },
