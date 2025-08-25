@@ -52,13 +52,11 @@ describe('Check: BooleanExpression', () => {
       expect(fixed).toBe("{% if 0 %}hello{% endif %}");
     });
 
-    it('detects unknown operator after empty string (should error like Ruby)', async () => {
+    it('does not detect unknown operator cases (Liquid itself catches these)', async () => {
       const source = "{% if '' some > thing %}hello{% endif %}";
       const offenses = await checkRuleFile(source);
-      expect(offenses).toHaveLength(1);
-      expect(offenses[0].message).toContain("Unknown operator 'some' after value");
-      const fixed = applyFix(source, offenses[0]);
-      expect(fixed).toBe("{% if '' %}hello{% endif %}");
+      // This would be an "Unknown operator" error in Liquid, so we don't catch it
+      expect(offenses).toHaveLength(0);
     });
 
     it('detects left-side evaluation with number after string (Ruby Test 8)', async () => {
@@ -71,21 +69,19 @@ describe('Check: BooleanExpression', () => {
     });
   });
 
-  describe('Unknown operator errors', () => {
-    it('detects unknown operator after variable', async () => {
+  describe('Unknown operator errors (should NOT be caught)', () => {
+    it('does not detect unknown operator after variable (Liquid catches this)', async () => {
       const source = "{% if my_var word > 5 %}hello{% endif %}";
       const offenses = await checkRuleFile(source);
-      expect(offenses).toHaveLength(1);
-      expect(offenses[0].message).toContain("Unknown operator 'word' after variable 'my_var'");
-      const fixed = applyFix(source, offenses[0]);
-      expect(fixed).toBe("{% if my_var %}hello{% endif %}");
+      // This would be an "Unknown operator word" error in Liquid, so we don't catch it
+      expect(offenses).toHaveLength(0);
     });
 
-    it('detects multiple identifiers in sequence', async () => {
+    it('does not detect multiple identifiers in sequence (Liquid catches this)', async () => {
       const source = "{% if jake johnson > 5 %}hello{% endif %}";
       const offenses = await checkRuleFile(source);
-      expect(offenses).toHaveLength(1);
-      expect(offenses[0].message).toContain("Unknown operator 'johnson' after variable 'jake'");
+      // This would be an "Unknown operator johnson" error in Liquid, so we don't catch it
+      expect(offenses).toHaveLength(0);
     });
   });
 
@@ -133,18 +129,24 @@ describe('Check: BooleanExpression', () => {
   });
 
   describe('Edge cases matching Ruby behavior', () => {
-    it('handles false literal correctly', async () => {
+    it('detects false literal with malformed syntax (lax works, strict fails)', async () => {
       const source = "{% if false 1 > 0 %}hello{% endif %}";
       const offenses = await checkRuleFile(source);
-      // false is falsy, so this should not trigger left-side evaluation
-      expect(offenses).toHaveLength(0);
+      // Even though false is falsy, this still works in lax mode but fails in strict mode
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toContain("Expression stops at truthy value 'false'");
+      const fixed = applyFix(source, offenses[0]);
+      expect(fixed).toBe("{% if false %}hello{% endif %}");
     });
 
-    it('handles nil literal correctly', async () => {
+    it('detects nil literal with malformed syntax (lax works, strict fails)', async () => {
       const source = "{% if nil 6 > 5 %}hello{% endif %}";
       const offenses = await checkRuleFile(source);
-      // nil is falsy, so this should not trigger left-side evaluation
-      expect(offenses).toHaveLength(0);
+      // Even though nil is falsy, this still works in lax mode but fails in strict mode
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toContain("Expression stops at truthy value 'nil'");
+      const fixed = applyFix(source, offenses[0]);
+      expect(fixed).toBe("{% if nil %}hello{% endif %}");
     });
 
     it('works with elsif tag', async () => {
@@ -157,13 +159,11 @@ describe('Check: BooleanExpression', () => {
       }
     });
 
-    it('works with unless tag', async () => {
+    it('does not catch unknown operator in unless tag (Liquid catches this)', async () => {
       const source = "{% unless 'test' some > thing %}hello{% endunless %}";
       const offenses = await checkRuleFile(source);
-      expect(offenses).toHaveLength(1);
-      if (offenses.length > 0) {
-        expect(offenses[0].message).toContain("Unknown operator 'some' after value ''test''");
-      }
+      // This would be an "Unknown operator some" error in Liquid, so we don't catch it
+      expect(offenses).toHaveLength(0);
     });
   });
 });
