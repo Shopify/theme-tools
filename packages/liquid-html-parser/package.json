@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "line-column": "^1.0.2",
-    "ohm-js": "^16.3.0"
+    "ohm-js": "^17.0.0"
   },
   "devDependencies": {
     "@types/line-column": "^1.0.0"

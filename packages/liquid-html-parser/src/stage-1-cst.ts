@@ -31,7 +31,7 @@
  */
 
 import { Parser } from 'prettier';
-import ohm, { Node } from 'ohm-js';
+import { Grammar, Node } from 'ohm-js';
 import { toAST } from 'ohm-js/extras';
 import {
   LiquidDocGrammar,
@@ -568,7 +568,7 @@ export function toLiquidCST(
 function toCST<T>(
   source: string /* the original file */,
   grammars: LiquidGrammars,
-  grammar: ohm.Grammar,
+  grammar: Grammar,
   cstMappings: ('HelperMappings' | 'LiquidMappings' | 'LiquidHTMLMappings' | 'LiquidStatement')[],
   matchingSource: string = source /* for subtree parsing */,
   offset: number = 0 /* for subtree parsing location offsets */,
