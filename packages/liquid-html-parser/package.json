@@ -1,6 +1,6 @@
 {
   "name": "@shopify/liquid-html-parser",
-  "version": "2.8.2",
+  "version": "2.9.0",
   "description": "Liquid HTML parser by Shopify",
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/liquid-html-parser#readme",
