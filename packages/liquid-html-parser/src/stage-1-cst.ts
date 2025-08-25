@@ -599,14 +599,7 @@ function toCST<T>(
     TextNode: textNode,
     orderedListOf: 0,
 
-    listOf: 0,
     empty: () => null,
-    emptyListOf: () => [],
-    nonemptyListOf(first: any, _sep: any, rest: any) {
-      const self = this as any;
-      return [first.toAST(self.args.mapping)].concat(rest.toAST(self.args.mapping));
-    },
-
     nonemptyOrderedListOf: 0,
     nonemptyOrderedListOfBoth(nonemptyListOfA: Node, _sep: Node, nonemptyListOfB: Node) {
       const self = this as any;
