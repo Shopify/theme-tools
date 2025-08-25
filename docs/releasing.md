@@ -32,7 +32,7 @@ This section is intended for internal folks.
    ```sh
    git fetch origin main
    git checkout origin/main
-   branch="bump/theme-tools-$(date -u '+%Y-%m-%d')"
+   branch="bump-theme-tools-$(date -u '+%Y-%m-%d')"
    git checkout -b $branch
    pnpm recursive --filter @shopify/theme update --latest @shopify/theme-language-server-node @shopify/theme-check-node
    pnpm recursive --filter @shopify/app update --latest @shopify/theme-check-node
@@ -47,22 +47,6 @@ This section is intended for internal folks.
 2. Make your PR
 
 3. [Create a patch release](https://vault.shopify.io/teams/2493/pages/Releasing~FkHb.md#creating-a-new-patch-version) if [the next minor release](https://vault.shopify.io/teams/2493/pages/Releasing~FkHb.md#release-schedule) is more than one week away
-
-### Online Store Code Editor
-
-1. Upgrade deps and bump fallback docsets
-
-   ```sh
-   yarn upgrade --latest @shopify/codemirror-language-client @shopify/theme-check-docs-updater @shopify/theme-language-server-browser @shopify/prettier-plugin-liquid
-   yarn theme-docs:fallback-update
-   branch="bump/theme-tools-$(date -u '+%Y-%m-%d')"
-   git checkout -b $branch
-   git add .
-   git commit -m 'Bump Shopify/theme-tools packages'
-   git push origin "$branch"
-   ```
-
-2. Make your PR
 
 ## Release Orchestrator FAQ
 ### What does this project do?
