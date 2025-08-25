@@ -1,6 +1,7 @@
-import { NodeTypes } from '@shopify/liquid-html-parser';
-import { Severity, SourceCodeType, LiquidCheckDefinition, Check, Context } from '../../types';
+import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
 import { getOffset, isError } from '../../utils';
+import { detectMultipleAssignValues } from './checks/MultipleAssignValues';
+import { detectInvalidBooleanExpressions } from './checks/InvalidBooleanExpressions';
 
 type LineColPosition = {
   line: number;
@@ -39,6 +40,7 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
     if (!isError(ast)) {
       return {
         ...detectInvalidBooleanExpressions(context),
+        ...detectMultipleAssignValues(context),
       };
     }
 
@@ -66,33 +68,3 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
     };
   },
 };
-
-function detectInvalidBooleanExpressions(
-  context: Context<SourceCodeType.LiquidHtml>,
-): Check<SourceCodeType.LiquidHtml> {
-  return {
-    async BooleanExpression(node) {
-      const condition = node.condition;
-
-      if (
-        condition.type !== NodeTypes.Comparison &&
-        condition.type !== NodeTypes.LogicalExpression
-      ) {
-        return;
-      }
-
-      context.report({
-        message: 'Syntax is not supported',
-        startIndex: node.position.start,
-        endIndex: node.position.end,
-        fix: (corrector) => {
-          corrector.replace(
-            node.position.start,
-            node.position.end,
-            node.source.slice(condition.left.position.start, condition.left.position.end),
-          );
-        },
-      });
-    },
-  };
-}

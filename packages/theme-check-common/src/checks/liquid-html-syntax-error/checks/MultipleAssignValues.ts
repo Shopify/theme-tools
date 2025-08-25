@@ -1,0 +1,97 @@
+import { Check, Context, SourceCodeType } from '../../..';
+import { ensureValidAst, INVALID_SYNTAX_MESSAGE } from './utils';
+
+export function detectMultipleAssignValues(
+  context: Context<SourceCodeType.LiquidHtml>,
+): Check<SourceCodeType.LiquidHtml> {
+  // Using a regex to match the markup like we do in Shopify/liquid
+  // https://github.com/Shopify/liquid/blob/9bb7fbf123e6e2bd61e00189b1c83159f375d3f3/lib/liquid/tags/assign.rb#L21
+  //
+  // We've broken it up into four groups:
+  // 1. The variable name
+  // 2. The assignment operator
+  // 3. The value section
+  // 4. The filter section (non-captured)
+  const ASSIGN_MARKUP_REGEX = /([^=]+)(=\s*)([^|]+)(?:\s*\|\s*.*)?$/m;
+
+  return {
+    async LiquidTag(node) {
+      if (node.name !== 'assign') {
+        return;
+      }
+
+      const markup = node.markup;
+
+      if (typeof markup !== 'string') {
+        return;
+      }
+
+      const match = markup.match(ASSIGN_MARKUP_REGEX);
+      if (!match) {
+        return;
+      }
+
+      // If we have a markup 'foo    =    "123" something | upcase: 123', we have the following groups
+      const [
+        // 'foo    =    "123" something | upcase: 123'
+        _fullMatch,
+        // 'foo    '
+        assignmentVariable,
+        // '=    '
+        assignmentOperator,
+        // '"123" something'
+        assignmentValue,
+      ] = match;
+
+      // Only capture the first item in the value section
+      const firstValueMatch = assignmentValue.match(/"[^"]*"|'[^']*'|\S+/);
+      const firstAssignmentValue = firstValueMatch ? firstValueMatch[0] : null;
+
+      if (!firstAssignmentValue) {
+        return;
+      }
+
+      const removalIndices = (source: string) => {
+        const offset = source.indexOf(markup);
+
+        return {
+          startIndex:
+            offset +
+            assignmentVariable.length +
+            assignmentOperator.length +
+            firstAssignmentValue.length,
+          endIndex:
+            offset +
+            assignmentVariable.length +
+            assignmentOperator.length +
+            assignmentValue.trimEnd().length,
+        };
+      };
+
+      const tagSource = node.source.slice(node.position.start, node.position.end);
+      const { startIndex: tagSourceRemovalStartIndex, endIndex: tagSourceRemovalEndIndex } =
+        removalIndices(tagSource);
+
+      if (
+        !ensureValidAst(
+          tagSource.slice(0, tagSourceRemovalStartIndex) +
+            tagSource.slice(tagSourceRemovalEndIndex),
+        )
+      ) {
+        // If the new AST is invalid, we don't want to auto-fix it
+        return;
+      }
+
+      const { startIndex, endIndex } = removalIndices(node.source);
+
+      context.report({
+        message: INVALID_SYNTAX_MESSAGE,
+        startIndex,
+        endIndex,
+        fix: (corrector) => {
+          corrector.replace(startIndex, endIndex, '');
+        },
+      });
+    },
+  };
+}
