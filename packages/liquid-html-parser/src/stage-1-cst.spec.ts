@@ -1500,7 +1500,7 @@ describe('Unit: Stage 1 (CST)', () => {
 {% doc %}
   @description content with @-like characters: @@test
 
-  @example 
+  @example
   content with stuff and there is the potential for an "@" character
 
   @prompt

@@ -31,7 +31,7 @@
  */
 
 import { Parser } from 'prettier';
-import ohm, { Node } from 'ohm-js';
+import { Grammar, Node } from 'ohm-js';
 import { toAST } from 'ohm-js/extras';
 import {
   LiquidDocGrammar,
@@ -568,7 +568,7 @@ export function toLiquidCST(
 function toCST<T>(
   source: string /* the original file */,
   grammars: LiquidGrammars,
-  grammar: ohm.Grammar,
+  grammar: Grammar,
   cstMappings: ('HelperMappings' | 'LiquidMappings' | 'LiquidHTMLMappings' | 'LiquidStatement')[],
   matchingSource: string = source /* for subtree parsing */,
   offset: number = 0 /* for subtree parsing location offsets */,
@@ -599,14 +599,7 @@ function toCST<T>(
     TextNode: textNode,
     orderedListOf: 0,
 
-    listOf: 0,
     empty: () => null,
-    emptyListOf: () => [],
-    nonemptyListOf(first: any, _sep: any, rest: any) {
-      const self = this as any;
-      return [first.toAST(self.args.mapping)].concat(rest.toAST(self.args.mapping));
-    },
-
     nonemptyOrderedListOf: 0,
     nonemptyOrderedListOfBoth(nonemptyListOfA: Node, _sep: Node, nonemptyListOfB: Node) {
       const self = this as any;
