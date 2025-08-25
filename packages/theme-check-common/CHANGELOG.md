@@ -1,5 +1,17 @@
 # @shopify/theme-check-common
 
+## 3.21.0
+
+### Minor Changes
+
+- 1ebf9246: Detect and fix use of boolean expressions
+
+### Patch Changes
+
+- Updated dependencies [6a1512db]
+- Updated dependencies [1ebf9246]
+  - @shopify/liquid-html-parser@2.9.0
+
 ## 3.20.1
 
 ### Patch Changes
