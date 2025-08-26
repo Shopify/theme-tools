@@ -11,3 +11,8 @@ export function ensureValidAst(source: string) {
     return false;
   }
 }
+
+export function getFirstValueInMarkup(markup: string) {
+  const match = markup.match(/"[^"]*"|'[^']*'|\S+/);
+  return match?.at(0);
+}

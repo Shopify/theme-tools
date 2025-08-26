@@ -16,9 +16,14 @@ vi.mock('@shopify/liquid-html-parser', async (importOriginal) => {
   };
 });
 
-describe('detectMultipleAssignValues', async () => {
+describe('detectMultipleEchoValues', async () => {
   it('should not report when there are no trailing values', async () => {
-    const testCases = [`{% assign foo = '123' %}`, `{% assign foo = '123' | upcase %}`];
+    const testCases = [
+      `{% echo '123' %}`,
+      `{% echo '123' | upcase %}`,
+      `{{ '123' }}`,
+      `{{ '123' | upcase }}`,
+    ];
 
     for (const sourceCode of testCases) {
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
@@ -28,10 +33,14 @@ describe('detectMultipleAssignValues', async () => {
 
   it('should report when there are multiple values (no filters)', async () => {
     const testCases = [
-      [`{% assign foo = '123' 555 text %}`, "{% assign foo = '123' %}"],
-      [`{% assign foo = "123" 555 text %}`, '{% assign foo = "123" %}'],
-      [`{% assign foo = 123 555 text %}`, '{% assign foo = 123 %}'],
-      [`{% assign foo = true 555 text %}`, '{% assign foo = true %}'],
+      [`{% echo '123' 555 text %}`, "{% echo '123' %}"],
+      [`{% echo "123" 555 text %}`, '{% echo "123" %}'],
+      [`{% echo 123 555 text %}`, '{% echo 123 %}'],
+      [`{% echo true 555 text %}`, '{% echo true %}'],
+      [`{{ '123' 555 text }}`, `{{ '123' }}`],
+      [`{{ "123" 555 text }}`, `{{ "123" }}`],
+      [`{{ 123 555 text }}`, `{{ 123 }}`],
+      [`{{ true 555 text }}`, `{{ true }}`],
     ];
 
     for (const [sourceCode, expected] of testCases) {
@@ -46,13 +55,14 @@ describe('detectMultipleAssignValues', async () => {
 
   it('should report when there are multiple values (with filters)', async () => {
     const testCases = [
-      [`{% assign foo = '123' 555 text | upcase %}`, "{% assign foo = '123' | upcase %}"],
-      [`{% assign foo = "123" 555 text | upcase %}`, '{% assign foo = "123" | upcase %}'],
-      [`{% assign foo = 123 555 text | default: 0 %}`, '{% assign foo = 123 | default: 0 %}'],
-      [
-        `{% assign foo = true 555 text | fake-filter: 'yes' %}`,
-        "{% assign foo = true | fake-filter: 'yes' %}",
-      ],
+      [`{% echo '123' 555 text | upcase %}`, "{% echo '123' | upcase %}"],
+      [`{% echo "123" 555 text | upcase %}`, '{% echo "123" | upcase %}'],
+      [`{% echo 123 555 text | default: 0 %}`, '{% echo 123 | default: 0 %}'],
+      [`{% echo true 555 text | fake-filter: 'yes' %}`, "{% echo true | fake-filter: 'yes' %}"],
+      [`{{ '123' 555 text | upcase }}`, `{{ '123' | upcase }}`],
+      [`{{ "123" 555 text | default: 0 }}`, `{{ "123" | default: 0 }}`],
+      [`{{ 123 555 text | fake-filter: 'yes' }}`, `{{ 123 | fake-filter: 'yes' }}`],
+      [`{{ true 555 text | fake-filter: 'yes' }}`, `{{ true | fake-filter: 'yes' }}`],
     ];
 
     for (const [sourceCode, expected] of testCases) {
@@ -66,7 +76,7 @@ describe('detectMultipleAssignValues', async () => {
   });
 
   it('should not report when the fixed code produces an invalid AST', async () => {
-    const sourceCode = `{% assign foo = '123' 555 text %}`;
+    const sourceCode = `{% echo '123' 555 text %}`;
 
     vi.mocked(toLiquidAST).mockImplementation((_source, _options) => {
       throw new SyntaxError('Invalid AST');
