@@ -39,8 +39,24 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
     const ast = context.file.ast;
     if (!isError(ast)) {
       return {
-        ...detectInvalidBooleanExpressions(context),
-        ...detectMultipleAssignValues(context),
+        async BooleanExpression(node, ancestors) {
+          const problem = detectInvalidBooleanExpressions(node, ancestors);
+
+          if (!problem) {
+            return;
+          }
+
+          context.report(problem);
+        },
+        async LiquidTag(node) {
+          const problem = detectMultipleAssignValues(node);
+
+          if (!problem) {
+            return;
+          }
+
+          context.report(problem);
+        },
       };
     }
 
