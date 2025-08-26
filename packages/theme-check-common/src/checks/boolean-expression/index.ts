@@ -23,10 +23,11 @@ export const BooleanExpression: LiquidCheckDefinition = {
     function checkLaxParsing(markup: string): { issue: string; fix: string } | null {
       const trimmed = markup.trim();
 
+      // Pattern 1: Left-side evaluation - parser stops at first complete value
       const leftSideMatch = LeftSideEvaluation.exec(trimmed);
       if (leftSideMatch) {
         const [, leftValue, rest] = leftSideMatch;
-        // Check if the remaining string is a valid comparison
+        // Check if the remaining string would create a valid comparison
         if (!Comparison.test(rest)) {
           return {
             issue: `Expression stops at truthy value '${leftValue}', ignoring: '${rest}'`,
@@ -35,6 +36,16 @@ export const BooleanExpression: LiquidCheckDefinition = {
         }
       }
 
+      // Pattern 2: Malformed expression starting with invalid token
+      const malformedStart = /^([^a-zA-Z_'"\d\s(][^\s]*)/.exec(trimmed);
+      if (malformedStart) {
+        return {
+          issue: `Malformed expression starting with invalid token '${malformedStart[1]}'`,
+          fix: 'false'
+        };
+      }
+
+      // Pattern 3: Trailing junk after complete comparison
       const trailingMatch = TrailingJunk.exec(trimmed);
       if (trailingMatch) {
         const [, comparison, trailing] = trailingMatch;
