@@ -18,3 +18,31 @@ export function getValuesInMarkup(markup: string) {
     index: match.index,
   }));
 }
+
+export function combineChecks(...checks: any[]) {
+  const combined: any = {};
+  const handlerGroups: { [key: string]: any[] } = {};
+
+  for (const check of checks) {
+    for (const [handlerName, handler] of Object.entries(check)) {
+      if (!handlerGroups[handlerName]) {
+        handlerGroups[handlerName] = [];
+      }
+      handlerGroups[handlerName].push(handler);
+    }
+  }
+
+  for (const [handlerName, handlers] of Object.entries(handlerGroups)) {
+    if (handlers.length === 1) {
+      combined[handlerName] = handlers[0];
+    } else {
+      combined[handlerName] = async (...args: any[]) => {
+        for (const handler of handlers) {
+          await handler(...args);
+        }
+      };
+    }
+  }
+
+  return combined;
+}

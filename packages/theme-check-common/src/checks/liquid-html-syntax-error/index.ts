@@ -4,6 +4,7 @@ import { detectMultipleAssignValues } from './checks/MultipleAssignValues';
 import { detectInvalidBooleanExpressions } from './checks/InvalidBooleanExpressions';
 import { detectInvalidEchoValue } from './checks/InvalidEchoValue';
 import { detectInvalidConditionalBooleanExpression } from './checks/InvalidConditionalBooleanExpression';
+import { combineChecks } from './checks/utils';
 
 type LineColPosition = {
   line: number;
