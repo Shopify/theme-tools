@@ -1,6 +1,6 @@
 import { LiquidTag } from '@shopify/liquid-html-parser';
 import { Problem, SourceCodeType } from '../../..';
-import { ensureValidAst, INVALID_SYNTAX_MESSAGE } from './utils';
+import { ensureValidAst, getFirstValueInMarkup, INVALID_SYNTAX_MESSAGE } from './utils';
 
 export function detectMultipleAssignValues(
   node: LiquidTag,
@@ -42,9 +42,7 @@ export function detectMultipleAssignValues(
     assignmentValue,
   ] = match;
 
-  // Only capture the first item in the value section
-  const firstValueMatch = assignmentValue.match(/"[^"]*"|'[^']*'|\S+/);
-  const firstAssignmentValue = firstValueMatch ? firstValueMatch[0] : null;
+  const firstAssignmentValue = getFirstValueInMarkup(assignmentValue);
 
   if (!firstAssignmentValue) {
     return;
