@@ -3,8 +3,7 @@ import { getOffset, isError } from '../../utils';
 import { detectMultipleAssignValues } from './checks/MultipleAssignValues';
 import { detectInvalidBooleanExpressions } from './checks/InvalidBooleanExpressions';
 import { detectInvalidEchoValue } from './checks/InvalidEchoValue';
-import { detectInvalidConditionalBooleanExpression } from './checks/InvalidConditionalBooleanExpression';
-import { combineChecks } from './checks/utils';
+import { detectInvalidConditionalNode } from './checks/InvalidConditionalNode';
 
 type LineColPosition = {
   line: number;
@@ -52,7 +51,19 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
           context.report(problem);
         },
         async LiquidTag(node) {
-          const problem = detectMultipleAssignValues(node) || detectInvalidEchoValue(node);
+          const problem =
+            detectMultipleAssignValues(node) ||
+            detectInvalidEchoValue(node) ||
+            detectInvalidConditionalNode(node);
+
+          if (!problem) {
+            return;
+          }
+
+          context.report(problem);
+        },
+        async LiquidBranch(node) {
+          const problem = detectInvalidConditionalNode(node);
 
           if (!problem) {
             return;

@@ -280,6 +280,8 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
       '{% if variable unknown > 5 %}hello{% endif %}',
       "{% if user.role badop 'admin' %}hello{% endif %}",
       '{% if price fake 100 %}hello{% endif %}',
+      '{% if "str" blue == something %}hello{% endif %}',
+      '{% if red blue > something %}hello{% endif %}',
     ];
 
     for (const testCase of testCases) {
@@ -293,6 +295,15 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
       "{% if user.active and name fake 'test' %}hello{% endif %}",
       "{% unless 'test' some > thing %}hello{% endunless %}",
     ];
+
+    for (const testCase of testCases) {
+      const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, testCase);
+      expect(offenses).to.have.length(0);
+    }
+  });
+
+  it('should not report an offense for pipe filter expressions', async () => {
+    const testCases = ['{% if wat | something == something %}hello{% endif %}'];
 
     for (const testCase of testCases) {
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, testCase);
