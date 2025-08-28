@@ -2,7 +2,7 @@ import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
 import { getOffset, isError } from '../../utils';
 import { detectMultipleAssignValues } from './checks/MultipleAssignValues';
 import { detectInvalidBooleanExpressions } from './checks/InvalidBooleanExpressions';
-import { detectMultipleEchoValues as detectMultipleEchoValues } from './checks/MultipleEchoValues';
+import { detectInvalidEchoValue } from './checks/InvalidEchoValue';
 
 type LineColPosition = {
   line: number;
@@ -50,7 +50,7 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
           context.report(problem);
         },
         async LiquidTag(node) {
-          const problem = detectMultipleAssignValues(node) || detectMultipleEchoValues(node);
+          const problem = detectMultipleAssignValues(node) || detectInvalidEchoValue(node);
 
           if (!problem) {
             return;
@@ -59,7 +59,7 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
           context.report(problem);
         },
         async LiquidVariableOutput(node) {
-          const problem = detectMultipleEchoValues(node);
+          const problem = detectInvalidEchoValue(node);
 
           if (!problem) {
             return;

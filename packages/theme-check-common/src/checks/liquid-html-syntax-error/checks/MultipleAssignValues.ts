@@ -1,6 +1,6 @@
 import { LiquidTag } from '@shopify/liquid-html-parser';
 import { Problem, SourceCodeType } from '../../..';
-import { ensureValidAst, getFirstValueInMarkup, INVALID_SYNTAX_MESSAGE } from './utils';
+import { ensureValidAst, getValuesInMarkup, INVALID_SYNTAX_MESSAGE } from './utils';
 
 export function detectMultipleAssignValues(
   node: LiquidTag,
@@ -42,7 +42,7 @@ export function detectMultipleAssignValues(
     assignmentValue,
   ] = match;
 
-  const firstAssignmentValue = getFirstValueInMarkup(assignmentValue);
+  const firstAssignmentValue = getValuesInMarkup(assignmentValue).at(0)?.value;
 
   if (!firstAssignmentValue) {
     return;

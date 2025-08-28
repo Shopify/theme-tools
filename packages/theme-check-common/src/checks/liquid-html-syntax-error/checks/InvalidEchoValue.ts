@@ -1,8 +1,8 @@
 import { LiquidTag, LiquidVariableOutput, NodeTypes } from '@shopify/liquid-html-parser';
 import { Problem, SourceCodeType } from '../../..';
-import { ensureValidAst, getFirstValueInMarkup, INVALID_SYNTAX_MESSAGE } from './utils';
+import { ensureValidAst, getValuesInMarkup, INVALID_SYNTAX_MESSAGE } from './utils';
 
-export function detectMultipleEchoValues(
+export function detectInvalidEchoValue(
   node: LiquidTag | LiquidVariableOutput,
 ): Problem<SourceCodeType.LiquidHtml> | undefined {
   // We've broken it up into two groups:
@@ -16,7 +16,12 @@ export function detectMultipleEchoValues(
 
   const markup = node.markup;
 
-  if (typeof markup !== 'string') {
+  if (
+    typeof markup !== 'string' ||
+    // echo tags and variable outputs without markup are strict-valid:
+    // e.g. {{ }}, {% echo %}, and {% liquid echo %}
+    !markup
+  ) {
     return;
   }
 
@@ -27,10 +32,20 @@ export function detectMultipleEchoValues(
 
   const [, echoValue] = match;
 
-  const firstEchoValue = getFirstValueInMarkup(echoValue);
+  const firstEchoValue = getValuesInMarkup(echoValue).at(0)?.value;
 
   if (!firstEchoValue) {
-    return;
+    const startIndex = node.source.indexOf(markup, node.position.start);
+    const endIndex = startIndex + markup.length;
+
+    return {
+      message: INVALID_SYNTAX_MESSAGE,
+      startIndex,
+      endIndex,
+      fix: (corrector) => {
+        corrector.replace(startIndex, endIndex, 'blank');
+      },
+    };
   }
 
   const removalIndices = (source: string) => {

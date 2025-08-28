@@ -16,13 +16,16 @@ vi.mock('@shopify/liquid-html-parser', async (importOriginal) => {
   };
 });
 
-describe('detectMultipleEchoValues', async () => {
-  it('should not report when there are no trailing values', async () => {
+describe('detectInvalidEchoValue', async () => {
+  it('should not report when echo value is valid', async () => {
     const testCases = [
       `{% echo '123' %}`,
       `{% echo '123' | upcase %}`,
       `{{ '123' }}`,
       `{{ '123' | upcase }}`,
+      `{{ }}`,
+      `{{ echo }}`,
+      `{% liquid echo %}`,
     ];
 
     for (const sourceCode of testCases) {
@@ -63,6 +66,23 @@ describe('detectMultipleEchoValues', async () => {
       [`{{ "123" 555 text | default: 0 }}`, `{{ "123" | default: 0 }}`],
       [`{{ 123 555 text | fake-filter: 'yes' }}`, `{{ 123 | fake-filter: 'yes' }}`],
       [`{{ true 555 text | fake-filter: 'yes' }}`, `{{ true | fake-filter: 'yes' }}`],
+    ];
+
+    for (const [sourceCode, expected] of testCases) {
+      const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
+      expect(offenses).to.have.length(1);
+      expect(offenses[0].message).to.equal('Syntax is not supported');
+
+      const fixed = applyFix(sourceCode, offenses[0]);
+      expect(fixed).to.equal(expected);
+    }
+  });
+
+  it('should report when there is no value', async () => {
+    const testCases = [
+      [`{% echo | upcase %}`, '{% echo blank %}'],
+      [`{{ | upcase }}`, `{{ blank }}`],
+      [`{% liquid echo | upcase %}`, `{% liquid echo blank %}`],
     ];
 
     for (const [sourceCode, expected] of testCases) {

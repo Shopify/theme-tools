@@ -12,7 +12,9 @@ export function ensureValidAst(source: string) {
   }
 }
 
-export function getFirstValueInMarkup(markup: string) {
-  const match = markup.match(/"[^"]*"|'[^']*'|\S+/);
-  return match?.at(0);
+export function getValuesInMarkup(markup: string) {
+  return [...markup.matchAll(/"[^"]*"|'[^']*'|\S+/g)].map((match) => ({
+    value: match[0],
+    index: match.index,
+  }));
 }
