@@ -48,8 +48,8 @@ export function detectInvalidEchoValue(
     };
   }
 
-  const removalIndices = (source: string) => {
-    const offset = source.indexOf(markup);
+  const removalIndices = (source: string, startingIndex: number) => {
+    const offset = source.indexOf(markup, startingIndex);
 
     return {
       startIndex: offset + firstEchoValue.length,
@@ -57,20 +57,17 @@ export function detectInvalidEchoValue(
     };
   };
 
-  const tagSource = node.source.slice(node.position.start, node.position.end);
-  const { startIndex: tagSourceRemovalStartIndex, endIndex: tagSourceRemovalEndIndex } =
-    removalIndices(tagSource);
+  const { startIndex, endIndex } = removalIndices(node.source, node.position.start);
 
   if (
     !ensureValidAst(
-      tagSource.slice(0, tagSourceRemovalStartIndex) + tagSource.slice(tagSourceRemovalEndIndex),
+      node.source.slice(node.position.start, startIndex) +
+        node.source.slice(endIndex, node.position.end),
     )
   ) {
     // If the new AST is invalid, we don't want to auto-fix it
     return;
   }
-
-  const { startIndex, endIndex } = removalIndices(node.source);
 
   return {
     message: INVALID_SYNTAX_MESSAGE,
