@@ -1,4 +1,4 @@
-import { expect, describe, it, vi } from 'vitest';
+import { expect, describe, it, vi, beforeEach } from 'vitest';
 import { applyFix, runLiquidCheck } from '../../../test';
 import { LiquidHTMLSyntaxError } from '../index';
 import { toLiquidAST } from '@shopify/liquid-html-parser';
@@ -17,6 +17,10 @@ vi.mock('@shopify/liquid-html-parser', async (importOriginal) => {
 });
 
 describe('detectMultipleAssignValues', async () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('should not report when there are no trailing values', async () => {
     const testCases = [`{% assign foo = '123' %}`, `{% assign foo = '123' | upcase %}`];
 
@@ -42,6 +46,31 @@ describe('detectMultipleAssignValues', async () => {
       const fixed = applyFix(sourceCode, offenses[0]);
       expect(fixed).to.equal(expected);
     }
+  });
+
+  it('should report when there are multiple instances of the error', async () => {
+    const sourceCode = `{% assign foo = blank %} {% assign foo = '123' 555 text %} {% assign foo = '123' 555 text %}`;
+
+    const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
+    expect(offenses).to.have.length(2);
+    expect(offenses[0].message).to.equal('Syntax is not supported');
+    expect(offenses[1].message).to.equal('Syntax is not supported');
+
+    expect(toLiquidAST).toHaveBeenCalledTimes(2);
+    expect(toLiquidAST).toHaveBeenCalledWith(`{% assign foo = '123' %}`, {
+      allowUnclosedDocumentNode: false,
+      mode: 'strict',
+    });
+
+    const fixed = applyFix(sourceCode, offenses[0]);
+    expect(fixed).to.equal(
+      `{% assign foo = blank %} {% assign foo = '123' %} {% assign foo = '123' 555 text %}`,
+    );
+
+    const fixed2 = applyFix(sourceCode, offenses[1]);
+    expect(fixed2).to.equal(
+      `{% assign foo = blank %} {% assign foo = '123' 555 text %} {% assign foo = '123' %}`,
+    );
   });
 
   it('should report when there are multiple values (with filters)', async () => {

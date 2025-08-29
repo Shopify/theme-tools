@@ -1,4 +1,4 @@
-import { expect, describe, it, vi } from 'vitest';
+import { expect, describe, it, vi, beforeEach } from 'vitest';
 import { applyFix, runLiquidCheck } from '../../../test';
 import { LiquidHTMLSyntaxError } from '../index';
 import { toLiquidAST } from '@shopify/liquid-html-parser';
@@ -17,6 +17,10 @@ vi.mock('@shopify/liquid-html-parser', async (importOriginal) => {
 });
 
 describe('detectInvalidEchoValue', async () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('should not report when echo value is valid', async () => {
     const testCases = [
       `{% echo '123' %}`,
@@ -76,6 +80,27 @@ describe('detectInvalidEchoValue', async () => {
       const fixed = applyFix(sourceCode, offenses[0]);
       expect(fixed).to.equal(expected);
     }
+  });
+
+  it('should report when there are multiple instances of the error', async () => {
+    const sourceCode = `{% echo zero %} {% echo one two %} {% echo one two %}`;
+
+    const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
+    expect(offenses).to.have.length(2);
+    expect(offenses[0].message).to.equal('Syntax is not supported');
+    expect(offenses[1].message).to.equal('Syntax is not supported');
+
+    expect(toLiquidAST).toHaveBeenCalledTimes(2);
+    expect(toLiquidAST).toHaveBeenCalledWith(`{% echo one %}`, {
+      allowUnclosedDocumentNode: false,
+      mode: 'strict',
+    });
+
+    const fixed = applyFix(sourceCode, offenses[0]);
+    expect(fixed).to.equal(`{% echo zero %} {% echo one %} {% echo one two %}`);
+
+    const fixed2 = applyFix(sourceCode, offenses[1]);
+    expect(fixed2).to.equal(`{% echo zero %} {% echo one two %} {% echo one %}`);
   });
 
   it('should report when there is no value', async () => {
