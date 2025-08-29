@@ -1,5 +1,22 @@
 # shopify/theme-graph
 
+## 0.1.5
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/liquid-html-parser
+  - @shopify/theme-check-common
+- Updated dependencies [6a1512db]
+- Updated dependencies [a7d0e2d0]
+- Updated dependencies [e1bf12c7]
+- Updated dependencies [1ebf9246]
+- Updated dependencies [374ff3de]
+- Updated dependencies [b226e52c]
+- Updated dependencies [0bfc7859]
+  - @shopify/liquid-html-parser@2.9.0
+  - @shopify/theme-check-common@3.21.0
+
 ## 0.1.4
 
 ### Patch Changes

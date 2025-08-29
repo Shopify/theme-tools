@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-graph",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Shopify Theme Graph as a data structure",
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/theme-graph#readme",
@@ -29,13 +29,13 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/liquid-html-parser": "^2.8.2",
-    "@shopify/theme-check-common": "^3.20.1",
+    "@shopify/liquid-html-parser": "^2.9.0",
+    "@shopify/theme-check-common": "^3.21.0",
     "acorn": "^8.14.1",
     "acorn-walk": "^8.3.4",
     "vscode-uri": "^3.0.7"
   },
   "devDependencies": {
-    "@shopify/theme-check-node": "^3.20.1"
+    "@shopify/theme-check-node": "^3.21.0"
   }
 }

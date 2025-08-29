@@ -1,5 +1,15 @@
 # @shopify/liquid-html-parser
 
+## 2.9.0
+
+### Minor Changes
+
+- 1ebf9246: Detect and fix use of boolean expressions
+
+### Patch Changes
+
+- 6a1512db: Bump ohm-js to v17
+
 ## 2.8.2
 
 ### Patch Changes
