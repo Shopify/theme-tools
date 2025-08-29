@@ -1,5 +1,22 @@
 # @shopify/theme-check-common
 
+## 3.21.0
+
+### Minor Changes
+
+- 1ebf9246: Detect and fix use of boolean expressions
+
+### Patch Changes
+
+- a7d0e2d0: Find+fix echo tags & variable output with no value
+- e1bf12c7: Introduce fix for invalid `assign` tag values
+- 374ff3de: Allow boolean expressions in schema tag
+- b226e52c: Fix syntax check for tags where multiple instances of same error occur
+- 0bfc7859: Find/fix multiple `echo` values
+- Updated dependencies [6a1512db]
+- Updated dependencies [1ebf9246]
+  - @shopify/liquid-html-parser@2.9.0
+
 ## 3.20.1
 
 ### Patch Changes
