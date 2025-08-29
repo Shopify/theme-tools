@@ -187,6 +187,29 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
     expect(fixed).to.equal('{% if 1 == 2 %}hello{% endif %}');
   });
 
+  it('should report an offense for malformed comparisons like missing quotes', async () => {
+    const testCases = [
+      {
+        source: "{% if 'wat' == 'squat > 2 %}hello{% endif %}",
+        description: 'missing closing quote creates trailing comparison',
+      },
+      {
+        source: "{% if 'wat' == 'squat' > 2 %}hello{% endif %}",
+        description: 'extra comparison after valid comparison',
+      },
+      {
+        source: "{% if price == 'test' != 5 %}hello{% endif %}",
+        description: 'chained comparisons without logical operators',
+      },
+    ];
+
+    for (const testCase of testCases) {
+      const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, testCase.source);
+      expect(offenses, `Failed for: ${testCase.description}`).to.have.length(1);
+      expect(offenses[0].message).to.contain('Trailing tokens ignored');
+    }
+  });
+
   it('should report an offense for multiple trailing tokens', async () => {
     const source = '{% if 10 > 4 baz qux %}hello{% endif %}';
     const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, source);
@@ -306,6 +329,43 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
     const testCases = ['{% if wat | something == something %}hello{% endif %}'];
 
     for (const testCase of testCases) {
+      const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, testCase);
+      expect(offenses).to.have.length(0);
+    }
+  });
+
+  it('should report an offense for misspelled logical operators', async () => {
+    const testCases = [
+      {
+        source: '{% if "wat" == "squat" adn "wat" == "squat" %}hello{% endif %}',
+        misspelled: 'adn',
+        expectedFix: '"wat" == "squat"',
+      },
+      {
+        source: '{% if variable > 5 andd other < 10 %}hello{% endif %}',
+        misspelled: 'andd',
+        expectedFix: 'variable > 5',
+      },
+    ];
+
+    for (const testCase of testCases) {
+      const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, testCase.source);
+      expect(offenses).to.have.length(1);
+      expect(offenses[0].message).to.contain('Trailing tokens ignored after comparison');
+
+      const fixed = applyFix(testCase.source, offenses[0]);
+      expect(fixed).to.contain(testCase.expectedFix);
+    }
+  });
+
+  it('should NOT report an offense for valid logical operators', async () => {
+    const validCases = [
+      '{% if price > 100 and discount < 50 %}hello{% endif %}',
+      '{% if user.active or user.premium %}hello{% endif %}',
+      '{% if x == 1 and y == 2 or z == 3 %}hello{% endif %}',
+    ];
+
+    for (const testCase of validCases) {
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, testCase);
       expect(offenses).to.have.length(0);
     }
