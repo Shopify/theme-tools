@@ -4,6 +4,7 @@ import { detectMultipleAssignValues } from './checks/MultipleAssignValues';
 import { detectInvalidBooleanExpressions } from './checks/InvalidBooleanExpressions';
 import { detectInvalidEchoValue } from './checks/InvalidEchoValue';
 import { detectInvalidConditionalNode } from './checks/InvalidConditionalNode';
+import { detectInvalidLoopRange } from './checks/InvalidLoopRange';
 
 type LineColPosition = {
   line: number;
@@ -54,7 +55,8 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
           const problem =
             detectMultipleAssignValues(node) ||
             detectInvalidEchoValue(node) ||
-            detectInvalidConditionalNode(node);
+            detectInvalidConditionalNode(node) ||
+            detectInvalidLoopRange(node);
 
           if (!problem) {
             return;
