@@ -1,5 +1,12 @@
 # @shopify/theme-check-common
 
+## 3.21.1
+
+### Patch Changes
+
+- c2228360: Detect and report invalid ranges in loops
+- 2784a83b: Change wording around syntax errors for invalid conditional nodes in Liquid HTML Syntax check
+
 ## 3.21.0
 
 ### Minor Changes
