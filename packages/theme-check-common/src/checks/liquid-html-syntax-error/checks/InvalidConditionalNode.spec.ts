@@ -47,7 +47,7 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
 
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).to.equal(
-      "Liquid lax parsing issue: Expression stops at truthy value '7', ignoring: '1 > 100'",
+      "Syntax is not supported: Expression stops at truthy value '7', and will ignore: '1 > 100'",
     );
 
     const fixed = applyFix(source, offenses[0]);
@@ -60,7 +60,7 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
 
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).to.equal(
-      "Liquid lax parsing issue: Expression stops at truthy value ''hello'', ignoring: '1 > 100'",
+      "Syntax is not supported: Expression stops at truthy value ''hello'', and will ignore: '1 > 100'",
     );
 
     const fixed = applyFix(source, offenses[0]);
@@ -108,7 +108,7 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
 
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).to.equal(
-      "Liquid lax parsing issue: Malformed expression starting with invalid token '>'",
+      "Syntax is not supported: Conditional cannot start with '>'. Use a variable or value instead",
     );
 
     const fixed = applyFix(source, offenses[0]);
@@ -128,9 +128,7 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
     for (const testCase of testCases) {
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, testCase.source);
       expect(offenses).to.have.length(1);
-      expect(offenses[0].message).to.contain(
-        `Malformed expression starting with invalid token '${testCase.token}'`,
-      );
+      expect(offenses[0].message).to.contain(`Conditional cannot start with '${testCase.token}'`);
 
       const fixed = applyFix(testCase.source, offenses[0]);
       expect(fixed).to.equal('{% if false %}hello{% endif %}');
@@ -148,9 +146,7 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
     for (const testCase of testCases) {
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, testCase.source);
       expect(offenses).to.have.length(1);
-      expect(offenses[0].message).to.contain(
-        `Malformed expression starting with invalid token '${testCase.token}'`,
-      );
+      expect(offenses[0].message).to.contain(`Conditional cannot start with '${testCase.token}'`);
 
       const fixed = applyFix(testCase.source, offenses[0]);
       expect(fixed).to.equal('{% if false %}hello{% endif %}');
@@ -167,7 +163,7 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
     for (const testCase of testCases) {
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, testCase);
       expect(offenses).to.have.length(1);
-      expect(offenses[0].message).to.contain('Malformed expression starting with invalid token');
+      expect(offenses[0].message).to.contain('Conditional cannot start with');
 
       const fixed = applyFix(testCase, offenses[0]);
       expect(fixed).to.equal('{% if false %}hello{% endif %}');
@@ -180,7 +176,7 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
 
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).to.equal(
-      "Liquid lax parsing issue: Trailing tokens ignored after comparison: 'foobar'",
+      "Syntax is not supported: Conditional is invalid. Anything after '1 == 2' will be ignored",
     );
 
     const fixed = applyFix(source, offenses[0]);
@@ -206,7 +202,7 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
     for (const testCase of testCases) {
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, testCase.source);
       expect(offenses, `Failed for: ${testCase.description}`).to.have.length(1);
-      expect(offenses[0].message).to.contain('Trailing tokens ignored');
+      expect(offenses[0].message).to.contain('Anything after');
     }
   });
 
@@ -215,7 +211,7 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
     const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, source);
 
     expect(offenses).to.have.length(1);
-    expect(offenses[0].message).to.contain('Trailing tokens ignored');
+    expect(offenses[0].message).to.contain('Anything after');
 
     const fixed = applyFix(source, offenses[0]);
     expect(fixed).to.equal('{% if 10 > 4 %}hello{% endif %}');
@@ -231,7 +227,7 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
     for (const testCase of testCases) {
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, testCase);
       expect(offenses).to.have.length(1);
-      expect(offenses[0].message).to.contain('Trailing tokens ignored');
+      expect(offenses[0].message).to.contain('Anything after');
     }
   });
 
@@ -351,10 +347,27 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
     for (const testCase of testCases) {
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, testCase.source);
       expect(offenses).to.have.length(1);
-      expect(offenses[0].message).to.contain('Trailing tokens ignored after comparison');
+      expect(offenses[0].message).to.contain('Anything after');
 
       const fixed = applyFix(testCase.source, offenses[0]);
       expect(fixed).to.contain(testCase.expectedFix);
+    }
+  });
+
+  it('should report special message for JavaScript-style operators after literal values', async () => {
+    const testCases = [
+      '{% if true && false %}hello{% endif %}',
+      '{% if false || true %}hello{% endif %}',
+      '{% if "hello" && world %}hello{% endif %}',
+      '{% if 42 || something %}hello{% endif %}',
+    ];
+
+    for (const source of testCases) {
+      const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, source);
+      expect(offenses).to.have.length(1);
+      expect(offenses[0].message).to.contain(
+        "Use 'and'/'or' instead of '&&'/'||' for multiple conditions",
+      );
     }
   });
 

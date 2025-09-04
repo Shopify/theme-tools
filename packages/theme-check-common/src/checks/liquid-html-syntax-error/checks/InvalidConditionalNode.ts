@@ -1,6 +1,6 @@
 import { LiquidBranch, LiquidTag } from '@shopify/liquid-html-parser';
 import { SourceCodeType, Problem } from '../../..';
-import { getValuesInMarkup } from './utils';
+import { getValuesInMarkup, INVALID_SYNTAX_MESSAGE } from './utils';
 
 type TokenType = 'variable' | keyof typeof TOKEN_PATTERNS;
 
@@ -51,7 +51,7 @@ export function detectInvalidConditionalNode(
   const endIndex = startIndex + markup.length;
 
   return {
-    message: `Liquid lax parsing issue: ${issue.message}`,
+    message: `${INVALID_SYNTAX_MESSAGE}: ${issue.message}`,
     startIndex,
     endIndex,
     fix: (corrector) => {
@@ -72,7 +72,7 @@ function checkInvalidStartingToken(tokens: Token[]): ExpressionIssue | null {
   const firstToken = tokens[0];
   if (firstToken.type === 'invalid' || firstToken.type === 'comparison') {
     return {
-      message: `Malformed expression starting with invalid token '${firstToken.value}'`,
+      message: `Conditional cannot start with '${firstToken.value}'. Use a variable or value instead`,
       fix: 'false',
     };
   }
@@ -95,10 +95,19 @@ function checkTrailingTokensAfterComparison(tokens: Token[]): ExpressionIssue | 
             .map((t) => t.value)
             .join(' ');
           const junk = remaining.map((t) => t.value).join(' ');
-          return {
-            message: `Trailing tokens ignored after comparison: '${junk.trim()}'`,
-            fix: validExpr,
-          };
+          const containsLogicalOperators = /&&|\|\|/.test(junk);
+
+          if (containsLogicalOperators) {
+            return {
+              message: `Conditional is invalid. Anything after '${validExpr}' will be ignored. Use 'and'/'or' instead of '&&'/'||' for multiple conditions`,
+              fix: validExpr,
+            };
+          } else {
+            return {
+              message: `Conditional is invalid. Anything after '${validExpr}' will be ignored`,
+              fix: validExpr,
+            };
+          }
         }
       }
     }
@@ -118,10 +127,19 @@ function checkLaxParsingIssues(tokens: Token[]): ExpressionIssue | null {
 
       if (!hasUnknownOperator) {
         const ignored = remaining.map((t) => t.value).join(' ');
-        return {
-          message: `Expression stops at truthy value '${current.value}', ignoring: '${ignored}'`,
-          fix: current.value,
-        };
+        const containsLogicalOperators = /&&|\|\|/.test(ignored);
+
+        if (containsLogicalOperators) {
+          return {
+            message: `Expression stops at truthy value '${current.value}', and will ignore: '${ignored}'. Use 'and'/'or' instead of '&&'/'||' for multiple conditions`,
+            fix: current.value,
+          };
+        } else {
+          return {
+            message: `Expression stops at truthy value '${current.value}', and will ignore: '${ignored}'`,
+            fix: current.value,
+          };
+        }
       }
     }
   }
