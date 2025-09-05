@@ -59,6 +59,10 @@ export function detectInvalidEchoValue(
 
   const { startIndex, endIndex } = removalIndices(node.source, node.position.start);
 
+  if (endIndex <= startIndex) {
+    return;
+  }
+
   return {
     message: INVALID_SYNTAX_MESSAGE,
     startIndex,
