@@ -1,10 +1,11 @@
-import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
+import { Severity, SourceCodeType, LiquidCheckDefinition, Problem } from '../../types';
 import { getOffset, isError } from '../../utils';
 import { detectMultipleAssignValues } from './checks/MultipleAssignValues';
 import { detectInvalidBooleanExpressions } from './checks/InvalidBooleanExpressions';
 import { detectInvalidEchoValue } from './checks/InvalidEchoValue';
 import { detectInvalidConditionalNode } from './checks/InvalidConditionalNode';
 import { detectInvalidLoopRange } from './checks/InvalidLoopRange';
+import { detectInvalidLoopArguments } from './checks/InvalidLoopArguments';
 
 type LineColPosition = {
   line: number;
@@ -40,6 +41,8 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
 
   create(context) {
     const ast = context.file.ast;
+    const tagsPromise = context.themeDocset?.tags();
+
     if (!isError(ast)) {
       return {
         async BooleanExpression(node, ancestors) {
@@ -52,17 +55,19 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
           context.report(problem);
         },
         async LiquidTag(node) {
-          const problem =
-            detectMultipleAssignValues(node) ||
-            detectInvalidEchoValue(node) ||
-            detectInvalidConditionalNode(node) ||
-            detectInvalidLoopRange(node);
+          const problems = [
+            detectMultipleAssignValues(node),
+            detectInvalidEchoValue(node),
+            detectInvalidConditionalNode(node),
+            detectInvalidLoopRange(node),
+            detectInvalidLoopArguments(node, await tagsPromise),
+          ].filter(Boolean) as Problem<SourceCodeType.LiquidHtml>[];
 
-          if (!problem) {
+          if (!problems.length) {
             return;
           }
 
-          context.report(problem);
+          problems.forEach(context.report);
         },
         async LiquidBranch(node) {
           const problem = detectInvalidConditionalNode(node);

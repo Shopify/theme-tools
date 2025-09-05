@@ -1,6 +1,6 @@
 import { LiquidTag, LiquidVariableOutput, NodeTypes } from '@shopify/liquid-html-parser';
 import { Problem, SourceCodeType } from '../../..';
-import { ensureValidAst, getValuesInMarkup, INVALID_SYNTAX_MESSAGE } from './utils';
+import { ensureValidAst, getFragmentsInMarkup, getValuesInMarkup, INVALID_SYNTAX_MESSAGE } from './utils';
 
 export function detectInvalidEchoValue(
   node: LiquidTag | LiquidVariableOutput,
@@ -8,7 +8,7 @@ export function detectInvalidEchoValue(
   // We've broken it up into two groups:
   // 1. The variable(s)
   // 2. The filter section (non-captured)
-  const ECHO_MARKUP_REGEX = /([^|]*)(?:\s*\|\s*.*)?$/m;
+  const ECHO_MARKUP_REGEX = /([^|]*)(\s*\|\s*.*)?$/m;
 
   if (node.type === NodeTypes.LiquidTag && node.name !== 'echo') {
     return;
@@ -30,7 +30,9 @@ export function detectInvalidEchoValue(
     return;
   }
 
-  const [, echoValue] = match;
+  const [, echoValue, filterValue] = match;
+
+  const fragments = getFragmentsInMarkup(filterValue);
 
   const firstEchoValue = getValuesInMarkup(echoValue).at(0)?.value;
 
