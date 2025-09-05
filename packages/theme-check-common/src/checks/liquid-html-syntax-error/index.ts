@@ -5,6 +5,7 @@ import { detectInvalidBooleanExpressions } from './checks/InvalidBooleanExpressi
 import { detectInvalidEchoValue } from './checks/InvalidEchoValue';
 import { detectInvalidConditionalNode } from './checks/InvalidConditionalNode';
 import { detectInvalidLoopRange } from './checks/InvalidLoopRange';
+import { detectInvalidFilterName } from './checks/InvalidFilterName';
 
 type LineColPosition = {
   line: number;
@@ -40,6 +41,7 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
 
   create(context) {
     const ast = context.file.ast;
+    const filtersPromise = context.themeDocset?.filters();
     if (!isError(ast)) {
       return {
         async BooleanExpression(node, ancestors) {
@@ -58,11 +60,14 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
             detectInvalidConditionalNode(node) ||
             detectInvalidLoopRange(node);
 
-          if (!problem) {
-            return;
+          if (problem) {
+            context.report(problem);
           }
 
-          context.report(problem);
+          const filterProblems = await detectInvalidFilterName(node, await filtersPromise);
+          if (filterProblems.length > 0) {
+            filterProblems.forEach((filterProblem) => context.report(filterProblem));
+          }
         },
         async LiquidBranch(node) {
           const problem = detectInvalidConditionalNode(node);
@@ -74,13 +79,15 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
           context.report(problem);
         },
         async LiquidVariableOutput(node) {
-          const problem = detectInvalidEchoValue(node);
-
-          if (!problem) {
-            return;
+          const filterProblems = await detectInvalidFilterName(node, await filtersPromise);
+          if (filterProblems.length > 0) {
+            filterProblems.forEach((problem) => context.report(problem));
           }
 
-          context.report(problem);
+          const problem = detectInvalidEchoValue(node);
+          if (problem) {
+            context.report(problem);
+          }
         },
       };
     }
