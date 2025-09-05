@@ -71,6 +71,10 @@ export function detectMultipleAssignValues(
     return;
   }
 
+  if (endIndex <= startIndex) {
+    return;
+  }
+
   return {
     message: INVALID_SYNTAX_MESSAGE,
     startIndex,
