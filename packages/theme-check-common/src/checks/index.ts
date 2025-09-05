@@ -30,6 +30,7 @@ import { MissingAsset } from './missing-asset';
 import { MissingContentForArguments } from './missing-content-for-arguments';
 import { MissingRenderSnippetArguments } from './missing-render-snippet-arguments';
 import { MissingTemplate } from './missing-template';
+import { OrphanedSnippet } from './orphaned-snippet';
 import { PaginationSize } from './pagination-size';
 import { ParserBlockingScript } from './parser-blocking-script';
 import { SchemaPresetsBlockOrder } from './schema-presets-block-order';
@@ -98,6 +99,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   MissingRenderSnippetArguments,
   MissingTemplate,
   AppBlockMissingSchema,
+  OrphanedSnippet,
   PaginationSize,
   ParserBlockingScript,
   SchemaPresetsBlockOrder,
