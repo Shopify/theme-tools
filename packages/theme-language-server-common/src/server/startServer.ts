@@ -182,6 +182,7 @@ export function startServer(
       jsonValidationSet,
       getMetafieldDefinitions,
       cssLanguageService,
+      themeGraphManager,
     }),
     100,
   );

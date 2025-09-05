@@ -79,6 +79,9 @@ MissingTemplate:
   enabled: true
   severity: 0
   ignoreMissing: []
+OrphanedSnippet:
+  enabled: true
+  severity: 1
 PaginationSize:
   enabled: true
   severity: 1

@@ -4,6 +4,7 @@ import {
   makeFileExists,
   Offense,
   path,
+  Reference,
   SectionSchema,
   Severity,
   SourceCodeType,
@@ -15,6 +16,7 @@ import { AugmentedSourceCode, DocumentManager } from '../documents';
 import { Dependencies } from '../types';
 import { DiagnosticsManager } from './DiagnosticsManager';
 import { offenseSeverity } from './offenseToDiagnostic';
+import { ThemeGraphManager } from '../server/ThemeGraphManager';
 
 export function makeRunChecks(
   documentManager: DocumentManager,
@@ -26,10 +28,11 @@ export function makeRunChecks(
     jsonValidationSet,
     getMetafieldDefinitions,
     cssLanguageService,
+    themeGraphManager,
   }: Pick<
     Dependencies,
     'fs' | 'loadConfig' | 'themeDocset' | 'jsonValidationSet' | 'getMetafieldDefinitions'
-  > & { cssLanguageService?: CSSLanguageService },
+  > & { cssLanguageService?: CSSLanguageService; themeGraphManager?: ThemeGraphManager },
 ) {
   return async function runChecks(triggerURIs: string[]): Promise<void> {
     // This function takes an array of triggerURIs so that we can correctly
@@ -63,6 +66,11 @@ export function makeRunChecks(
         themeDocset,
         jsonValidationSet,
         getMetafieldDefinitions,
+
+        async getReferences(uri: string): Promise<Reference[]> {
+          if (!themeGraphManager) return [];
+          return themeGraphManager.getReferences(uri);
+        },
 
         // TODO should do something for app blocks?
         async getBlockSchema(name) {
