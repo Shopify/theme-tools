@@ -386,6 +386,12 @@ export interface Dependencies {
    * Used in theme-checks for cross-file checks rather that going through fs.
    */
   getDocDefinition?: (relativePath: string) => Promise<DocDefinition | undefined>;
+
+  /**
+   * Get references to a file (which files reference this file)
+   * Returns an empty array if no files reference this file
+   */
+  getReferences?: (uri: string) => Promise<Reference[]>;
 }
 
 export type ValidateJSON = (
