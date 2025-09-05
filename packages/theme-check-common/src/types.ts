@@ -306,6 +306,44 @@ export type Translations = {
   [k in string]: string | Translations;
 };
 
+/**
+ * A reference is a link between two modules.
+ *
+ * @example
+ *
+ * It could be a specific range that points to a whole file
+ * {
+ *   source: { uri: 'file:///templates/index.json', range: [167, 190] },
+ *   target: 'file:///sections/custom-section.liquid'
+ * }
+ *
+ * It could be a specific range that points to a specific range
+ * {
+ *   // e.g. `<parent-component></parent-component>`
+ *   source: { uri: 'file:///snippets/parent.liquid', range: [167, 190] },
+ *
+ *   // e.g. window.customElements.define('parent-component', ParentComponent);
+ *   target: { uri: 'file:///assets/theme.js', range: [0, undefined] }
+ * }
+ */
+export type Reference = {
+  source: Location;
+  target: Location;
+
+  type:
+    | 'direct' // explicit dependency, e.g. {% render 'child' %}
+    | 'indirect' // indirect dependency, e.g. "blocks": [{ "type": "@theme" }]
+    | 'preset'; // preset dependency
+};
+
+export type Range = [start: number, end: number]; // represents a range in the source code
+export type Location = {
+  /** The URI of the module */
+  uri: UriString;
+  /** Optional range inside that module */
+  range?: Range;
+};
+
 export interface Dependencies {
   /** The file system abstraction used to read files. */
   fs: AbstractFileSystem;
