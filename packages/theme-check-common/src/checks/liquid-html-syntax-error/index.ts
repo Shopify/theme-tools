@@ -5,6 +5,7 @@ import { detectInvalidBooleanExpressions } from './checks/InvalidBooleanExpressi
 import { detectInvalidEchoValue } from './checks/InvalidEchoValue';
 import { detectInvalidConditionalNode } from './checks/InvalidConditionalNode';
 import { detectInvalidLoopRange } from './checks/InvalidLoopRange';
+import { detectInvalidFilterName } from './checks/InvalidFilterName';
 
 type LineColPosition = {
   line: number;
@@ -75,6 +76,15 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
         },
         async LiquidVariableOutput(node) {
           const problem = detectInvalidEchoValue(node);
+
+          if (!problem) {
+            return;
+          }
+
+          context.report(problem);
+        },
+        async LiquidFilter(node) {
+          const problem = await detectInvalidFilterName(node, context);
 
           if (!problem) {
             return;
