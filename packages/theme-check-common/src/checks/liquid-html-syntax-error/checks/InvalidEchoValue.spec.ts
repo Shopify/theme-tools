@@ -93,7 +93,7 @@ describe('detectInvalidEchoValue', async () => {
     expect(toLiquidAST).toHaveBeenCalledTimes(2);
     expect(toLiquidAST).toHaveBeenCalledWith(`{% echo one %}`, {
       allowUnclosedDocumentNode: false,
-      mode: 'strict',
+      mode: 'tolerant',
     });
 
     const fixed = applyFix(sourceCode, offenses[0]);

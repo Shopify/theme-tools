@@ -1,16 +1,10 @@
 import { LiquidTag, LiquidTagFor, LiquidTagTablerow, NodeTypes } from '@shopify/liquid-html-parser';
 import { Problem, SourceCodeType } from '../../..';
-import { ensureValidAst } from './utils';
+import { ensureValidAst, getRangeMatch } from './utils';
 import { isLoopLiquidTag } from '../../utils';
 
-// Lax parser does NOT complain about leading/trailing spaces inside ranges (e.g. `(1 .. 10 )`) and
-// within the parenthesis (e.g. `( 1 .. 10 )`), but fails to render the liquid when using the gem.
-// Strict parser does NOT complain, but still renders it.
-// To avoid any issues, we will remove extra spaces.
-const RANGE_MARKUP_REGEX = /\(\s*(\w+)\s*(\.{2,})\s*(\w+)\s*\)/;
-
 export const INVALID_LOOP_RANGE_MESSAGE =
-  'Ranges must be in the following format: (<start>..<end>)';
+  'Ranges must be in the format `(<start>..<end>)`. The start and end of the range must be whole numbers or variables.';
 
 export function detectInvalidLoopRange(
   node: LiquidTag,
@@ -41,23 +35,33 @@ function validateMarkup(
   node: LiquidTag,
   markup: string,
 ): Problem<SourceCodeType.LiquidHtml> | undefined {
-  const match = markup.match(RANGE_MARKUP_REGEX);
+  const match = getRangeMatch(markup);
   if (!match || match.index === undefined) {
     return;
   }
 
-  const [, start, , end] = match;
+  const [fullMatch, start, , end] = match;
 
-  const expectedRangeMarkup = `(${start}..${end})`;
+  let startCleaned = start;
+  let endCleaned = end;
 
-  if (markup.slice(match.index) === expectedRangeMarkup) {
+  if (!isNaN(Number(start)) && Number(start) % 1 !== 0) {
+    startCleaned = `${Math.trunc(Number(start))}`;
+  }
+  if (!isNaN(Number(end)) && Number(end) % 1 !== 0) {
+    endCleaned = `${Math.trunc(Number(end))}`;
+  }
+
+  const expectedRangeMarkup = `(${startCleaned}..${endCleaned})`;
+
+  if (markup.slice(match.index, match.index + fullMatch.length) === expectedRangeMarkup) {
     return;
   }
 
   const markupIndex = node.source.indexOf(markup, node.position.start);
 
   const startIndex = markupIndex + match.index;
-  const endIndex = markupIndex + markup.length;
+  const endIndex = startIndex + fullMatch.length;
 
   if (
     !ensureValidAst(

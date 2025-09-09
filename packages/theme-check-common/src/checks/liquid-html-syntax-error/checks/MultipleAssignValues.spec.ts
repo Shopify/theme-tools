@@ -59,7 +59,7 @@ describe('detectMultipleAssignValues', async () => {
     expect(toLiquidAST).toHaveBeenCalledTimes(2);
     expect(toLiquidAST).toHaveBeenCalledWith(`{% assign foo = '123' %}`, {
       allowUnclosedDocumentNode: false,
-      mode: 'strict',
+      mode: 'tolerant',
     });
 
     const fixed = applyFix(sourceCode, offenses[0]);

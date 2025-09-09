@@ -61,6 +61,22 @@ describe('detectInvalidLoopRange', async () => {
     }
   });
 
+  it('should report when the range contains a real number', async () => {
+    const sourceCode = `{% for i in (-2.9..2.9) %}{% endfor %}`;
+    const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
+    expect(offenses).to.have.length(1);
+    expect(offenses[0].message).to.equal(INVALID_LOOP_RANGE_MESSAGE);
+
+    const fixed = applyFix(sourceCode, offenses[0]);
+    expect(fixed).to.equal(`{% for i in (-2..2) %}{% endfor %}`);
+  });
+
+  it('should report when the range contains a nested variable', async () => {
+    const sourceCode = `{% for i in (some.var..some.other.var) %}{% endfor %}`;
+    const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
+    expect(offenses).to.have.length(0);
+  });
+
   it('should report when there are multiple instances of the error', async () => {
     const sourceCode = `{% for i in (1...10) %}{% endfor %} {% tablerow x in (a...b) %}{% endtablerow %}`;
 
@@ -72,11 +88,11 @@ describe('detectInvalidLoopRange', async () => {
     expect(toLiquidAST).toHaveBeenCalledTimes(2);
     expect(toLiquidAST).toHaveBeenCalledWith(`{% for i in (1..10) %}{% endfor %}`, {
       allowUnclosedDocumentNode: false,
-      mode: 'strict',
+      mode: 'tolerant',
     });
     expect(toLiquidAST).toHaveBeenCalledWith(`{% tablerow x in (a..b) %}{% endtablerow %}`, {
       allowUnclosedDocumentNode: false,
-      mode: 'strict',
+      mode: 'tolerant',
     });
 
     const fixed = applyFix(sourceCode, offenses[0]);
