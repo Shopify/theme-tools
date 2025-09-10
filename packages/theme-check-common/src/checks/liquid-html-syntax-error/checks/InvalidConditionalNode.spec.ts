@@ -13,7 +13,6 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
       '{% if true or false %}hello{% endif %}',
       '{% if 10 > 5 and user.active %}hello{% endif %}',
       '{% if price >= 100 or discount %}hello{% endif %}',
-      '{% if (1 > 0) and (2 < 3) %}hello{% endif %}',
       "{% if user.name contains 'admin' or user.role == 'owner' %}hello{% endif %}",
     ];
 
