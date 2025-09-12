@@ -1,5 +1,5 @@
 import { LiquidHtmlNode, LiquidString, NamedTags, NodeTypes } from '@shopify/liquid-html-parser';
-import { SourceCodeType } from '@shopify/theme-check-common';
+import { SourceCodeType, toJSONAST } from '@shopify/theme-check-common';
 import { DocumentLink, Range } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI, Utils } from 'vscode-uri';
@@ -7,6 +7,7 @@ import { URI, Utils } from 'vscode-uri';
 import { visit, Visitor } from '@shopify/theme-check-common';
 import { DocumentManager } from '../documents';
 import { FindThemeRootURI } from '../internal-types';
+import { createJSONDocumentLinksVisitor } from '../json/documentLinks/DocumentLinksProvider';
 
 export class DocumentLinksProvider {
   constructor(
@@ -16,11 +17,7 @@ export class DocumentLinksProvider {
 
   async documentLinks(uriString: string): Promise<DocumentLink[]> {
     const sourceCode = this.documentManager.get(uriString);
-    if (
-      !sourceCode ||
-      sourceCode.type !== SourceCodeType.LiquidHtml ||
-      sourceCode.ast instanceof Error
-    ) {
+    if (!sourceCode || sourceCode.ast instanceof Error) {
       return [];
     }
 
@@ -29,8 +26,17 @@ export class DocumentLinksProvider {
       return [];
     }
 
-    const visitor = documentLinksVisitor(sourceCode.textDocument, URI.parse(rootUri));
-    return visit(sourceCode.ast, visitor);
+    if (sourceCode.type === SourceCodeType.JSON) {
+      const visitor = createJSONDocumentLinksVisitor(sourceCode.textDocument, URI.parse(rootUri));
+      return visit(sourceCode.ast, visitor);
+    }
+
+    if (sourceCode.type === SourceCodeType.LiquidHtml) {
+      const visitor = documentLinksVisitor(sourceCode.textDocument, URI.parse(rootUri));
+      return visit(sourceCode.ast, visitor);
+    }
+
+    return [];
   }
 }
 
@@ -76,6 +82,22 @@ function documentLinksVisitor(
             Utils.resolvePath(root, 'blocks', typeArg.value.value + '.liquid').toString(),
           );
         }
+      }
+    },
+
+    LiquidRawTag(node) {
+      if (node.name === 'schema') {
+        const jsonAST = toJSONAST(node.body.value);
+        if (jsonAST instanceof Error) {
+          return;
+        }
+
+        const visitor = createJSONDocumentLinksVisitor(
+          textDocument,
+          root,
+          node.body.position.start,
+        );
+        return visit(jsonAST, visitor);
       }
     },
 

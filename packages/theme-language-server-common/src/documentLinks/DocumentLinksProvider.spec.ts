@@ -63,4 +63,37 @@ describe('DocumentLinksProvider', () => {
       expect(result[i].target).toBe(expectedUrls[i]);
     }
   });
+
+  it('should handle both liquid tags and schema tags in the same file', async () => {
+    uriString = 'file:///path/to/sections/mixed.liquid';
+    rootUri = 'file:///path/to/project';
+
+    const liquidContent = `
+      {% render 'icon' %}
+      {{ 'section.css' | asset_url }}
+      
+      {% schema %}
+      {
+        "name": "Mixed Section",
+        "blocks": [
+          { "type": "text" }
+        ]
+      }
+      {% endschema %}
+    `;
+
+    documentManager.open(uriString, liquidContent, 1);
+
+    const result = await documentLinksProvider.documentLinks(uriString);
+    const expectedUrls = [
+      'file:///path/to/project/snippets/icon.liquid',
+      'file:///path/to/project/assets/section.css',
+      'file:///path/to/project/blocks/text.liquid',
+    ];
+
+    expect(result.length).toBe(expectedUrls.length);
+    for (let i = 0; i < expectedUrls.length; i++) {
+      expect(result[i].target).toBe(expectedUrls[i]);
+    }
+  });
 });
