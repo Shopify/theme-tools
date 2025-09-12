@@ -17,11 +17,7 @@ export class DocumentLinksProvider {
 
   async documentLinks(uriString: string): Promise<DocumentLink[]> {
     const sourceCode = this.documentManager.get(uriString);
-    if (
-      !sourceCode ||
-      sourceCode.type !== SourceCodeType.LiquidHtml ||
-      sourceCode.ast instanceof Error
-    ) {
+    if (!sourceCode || sourceCode.ast instanceof Error) {
       return [];
     }
 
@@ -30,8 +26,17 @@ export class DocumentLinksProvider {
       return [];
     }
 
-    const visitor = documentLinksVisitor(sourceCode.textDocument, URI.parse(rootUri));
-    return visit(sourceCode.ast, visitor);
+    if (sourceCode.type === SourceCodeType.JSON) {
+      const visitor = createJSONDocumentLinksVisitor(sourceCode.textDocument, URI.parse(rootUri));
+      return visit(sourceCode.ast, visitor);
+    }
+
+    if (sourceCode.type === SourceCodeType.LiquidHtml) {
+      const visitor = documentLinksVisitor(sourceCode.textDocument, URI.parse(rootUri));
+      return visit(sourceCode.ast, visitor);
+    }
+
+    return [];
   }
 }
 
