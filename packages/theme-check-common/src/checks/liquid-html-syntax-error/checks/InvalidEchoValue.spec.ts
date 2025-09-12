@@ -24,6 +24,12 @@ describe('detectInvalidEchoValue', async () => {
     }
   });
 
+  it('should not report when there are no filters provided', async () => {
+    const sourceCode = `{% echo '123' | %}`;
+    const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
+    expect(offenses).to.have.length(0);
+  });
+
   it('should report when there are multiple values (no filters)', async () => {
     const testCases = [
       [`{% echo '123' 555 text %}`, "{% echo '123' %}"],

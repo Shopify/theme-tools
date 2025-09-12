@@ -7,6 +7,7 @@ import { detectInvalidConditionalNode } from './checks/InvalidConditionalNode';
 import { detectInvalidLoopRange } from './checks/InvalidLoopRange';
 import { detectInvalidLoopArguments } from './checks/InvalidLoopArguments';
 import { detectConditionalNodeUnsupportedParenthesis } from './checks/InvalidConditionalNodeParenthesis';
+import { detectInvalidFilterName } from './checks/InvalidFilterName';
 
 type LineColPosition = {
   line: number;
@@ -42,6 +43,7 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
 
   create(context) {
     const ast = context.file.ast;
+    const filtersPromise = context.themeDocset?.filters();
     const tagsPromise = context.themeDocset?.tags();
 
     if (!isError(ast)) {
@@ -73,6 +75,11 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
           }
 
           problems.forEach(context.report);
+
+          const filterProblems = await detectInvalidFilterName(node, await filtersPromise);
+          if (filterProblems.length > 0) {
+            filterProblems.forEach((filterProblem) => context.report(filterProblem));
+          }
         },
         async LiquidBranch(node) {
           const problem = detectInvalidConditionalNode(node);
@@ -84,13 +91,15 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
           context.report(problem);
         },
         async LiquidVariableOutput(node) {
-          const problem = detectInvalidEchoValue(node);
-
-          if (!problem) {
-            return;
+          const filterProblems = await detectInvalidFilterName(node, await filtersPromise);
+          if (filterProblems.length > 0) {
+            filterProblems.forEach((problem) => context.report(problem));
           }
 
-          context.report(problem);
+          const problem = detectInvalidEchoValue(node);
+          if (problem) {
+            context.report(problem);
+          }
         },
       };
     }

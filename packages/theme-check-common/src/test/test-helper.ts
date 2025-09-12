@@ -104,6 +104,8 @@ export async function check(
           { name: 'link_to_type' },
           { name: 'link_to_vendor' },
           { name: 'append' },
+          { name: 'upcase' },
+          { name: 'downcase' },
           { name: 'color_to_rgb' },
           {
             name: 'hex_to_rgba',
