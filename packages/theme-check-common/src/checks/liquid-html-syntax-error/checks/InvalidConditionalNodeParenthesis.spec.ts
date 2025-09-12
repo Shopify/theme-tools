@@ -1,4 +1,4 @@
-import { expect, describe, it, vi, beforeEach } from 'vitest';
+import { expect, describe, it } from 'vitest';
 import { applyFix, runLiquidCheck } from '../../../test';
 import { LiquidHTMLSyntaxError } from '../index';
 

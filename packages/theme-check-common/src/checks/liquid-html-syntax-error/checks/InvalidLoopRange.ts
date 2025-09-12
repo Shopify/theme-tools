@@ -1,6 +1,6 @@
 import { LiquidTag, LiquidTagFor, LiquidTagTablerow, NodeTypes } from '@shopify/liquid-html-parser';
 import { Problem, SourceCodeType } from '../../..';
-import { ensureValidAst, getRangeMatch } from './utils';
+import { getRangeMatch } from './utils';
 import { isLoopLiquidTag } from '../../utils';
 
 export const INVALID_LOOP_RANGE_MESSAGE =
@@ -62,17 +62,6 @@ function validateMarkup(
 
   const startIndex = markupIndex + match.index;
   const endIndex = startIndex + fullMatch.length;
-
-  if (
-    !ensureValidAst(
-      node.source.slice(node.position.start, startIndex) +
-        expectedRangeMarkup +
-        node.source.slice(endIndex, node.position.end),
-    )
-  ) {
-    // If the new AST is invalid, we don't want to auto-fix it
-    return;
-  }
 
   return {
     message: INVALID_LOOP_RANGE_MESSAGE,

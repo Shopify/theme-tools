@@ -1,16 +1,4 @@
-import { toLiquidAST } from '@shopify/liquid-html-parser';
-import { isError } from '../../../utils';
-
 export const INVALID_SYNTAX_MESSAGE = 'Syntax is not supported';
-
-export function ensureValidAst(source: string) {
-  try {
-    const ast = toLiquidAST(source, { allowUnclosedDocumentNode: false, mode: 'tolerant' });
-    return !isError(ast);
-  } catch (_error) {
-    return false;
-  }
-}
 
 export function getValuesInMarkup(markup: string) {
   return [...markup.matchAll(new RegExp(VALUE_PATTERN, 'g'))].map((match) => ({
@@ -27,7 +15,7 @@ const SINGLE_QUOTED_STRING = `'[^']*'`;
 // To avoid any issues, we will remove extra spaces.
 const RANGE_MARKUP_COMPONENT_REGEX = `\\s*(-?\\d+(?:\\.\\d+)?|\\w+(?:\\.\\w+)*)\\s*`;
 const RANGE_MARKUP_REGEX = `\\(\\s*${RANGE_MARKUP_COMPONENT_REGEX}(\\.{2,})\\s*${RANGE_MARKUP_COMPONENT_REGEX}\\s*\\)`;
-const REGULAR_TOKEN = `[^\\s,|]+`; // tokens separated by commas, spaces, or pipes
+const REGULAR_TOKEN = `[^\\s,]+`; // tokens separated by commas or spaces
 
 // Quoted strings pattern (combination of double and single quoted)
 const QUOTED_STRING = `(${DOUBLE_QUOTED_STRING}|${SINGLE_QUOTED_STRING})`;

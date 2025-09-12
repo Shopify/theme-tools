@@ -1,20 +1,6 @@
 import { expect, describe, it, vi, beforeEach } from 'vitest';
 import { applyFix, runLiquidCheck } from '../../../test';
 import { LiquidHTMLSyntaxError } from '../index';
-import { toLiquidAST } from '@shopify/liquid-html-parser';
-
-vi.mock('@shopify/liquid-html-parser', async (importOriginal) => {
-  const original: any = await importOriginal();
-
-  return {
-    ...original,
-
-    // we will be mocked later on
-    toLiquidAST: vi.fn().mockImplementation((source, options) => {
-      return original.toLiquidAST(source, options);
-    }),
-  };
-});
 
 describe('detectInvalidEchoValue', async () => {
   beforeEach(() => {
@@ -90,12 +76,6 @@ describe('detectInvalidEchoValue', async () => {
     expect(offenses[0].message).to.equal('Syntax is not supported');
     expect(offenses[1].message).to.equal('Syntax is not supported');
 
-    expect(toLiquidAST).toHaveBeenCalledTimes(2);
-    expect(toLiquidAST).toHaveBeenCalledWith(`{% echo one %}`, {
-      allowUnclosedDocumentNode: false,
-      mode: 'tolerant',
-    });
-
     const fixed = applyFix(sourceCode, offenses[0]);
     expect(fixed).to.equal(`{% echo zero %} {% echo one %} {% echo one two %}`);
 
@@ -118,16 +98,5 @@ describe('detectInvalidEchoValue', async () => {
       const fixed = applyFix(sourceCode, offenses[0]);
       expect(fixed).to.equal(expected);
     }
-  });
-
-  it('should not report when the fixed code produces an invalid AST', async () => {
-    const sourceCode = `{% echo '123' 555 text %}`;
-
-    vi.mocked(toLiquidAST).mockImplementation((_source, _options) => {
-      throw new SyntaxError('Invalid AST');
-    });
-
-    const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
-    expect(offenses).to.have.length(0);
   });
 });
