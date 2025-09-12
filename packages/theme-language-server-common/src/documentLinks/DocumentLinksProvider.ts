@@ -1,5 +1,5 @@
 import { LiquidHtmlNode, LiquidString, NamedTags, NodeTypes } from '@shopify/liquid-html-parser';
-import { SourceCodeType } from '@shopify/theme-check-common';
+import { SourceCodeType, toJSONAST } from '@shopify/theme-check-common';
 import { DocumentLink, Range } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI, Utils } from 'vscode-uri';
@@ -7,6 +7,7 @@ import { URI, Utils } from 'vscode-uri';
 import { visit, Visitor } from '@shopify/theme-check-common';
 import { DocumentManager } from '../documents';
 import { FindThemeRootURI } from '../internal-types';
+import { createJSONDocumentLinksVisitor } from '../json/documentLinks/DocumentLinksProvider';
 
 export class DocumentLinksProvider {
   constructor(
@@ -76,6 +77,22 @@ function documentLinksVisitor(
             Utils.resolvePath(root, 'blocks', typeArg.value.value + '.liquid').toString(),
           );
         }
+      }
+    },
+
+    LiquidRawTag(node) {
+      if (node.name === 'schema') {
+        const jsonAST = toJSONAST(node.body.value);
+        if (jsonAST instanceof Error) {
+          return;
+        }
+
+        const visitor = createJSONDocumentLinksVisitor(
+          textDocument,
+          root,
+          node.body.position.start,
+        );
+        return visit(jsonAST, visitor);
       }
     },
 
