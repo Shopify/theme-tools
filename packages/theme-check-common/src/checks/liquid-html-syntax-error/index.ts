@@ -6,6 +6,7 @@ import { detectInvalidEchoValue } from './checks/InvalidEchoValue';
 import { detectInvalidConditionalNode } from './checks/InvalidConditionalNode';
 import { detectInvalidLoopRange } from './checks/InvalidLoopRange';
 import { detectInvalidLoopArguments } from './checks/InvalidLoopArguments';
+import { detectConditionalNodeUnsupportedParenthesis } from './checks/InvalidConditionalNodeParenthesis';
 
 type LineColPosition = {
   line: number;
@@ -58,13 +59,17 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
           const problems = [
             detectMultipleAssignValues(node),
             detectInvalidEchoValue(node),
-            detectInvalidConditionalNode(node),
             detectInvalidLoopRange(node),
             detectInvalidLoopArguments(node, await tagsPromise),
           ].filter(Boolean) as Problem<SourceCodeType.LiquidHtml>[];
 
-          if (!problems.length) {
-            return;
+          // Fixers for `detectConditionalNodeUnsupportedParenthesis` and `detectInvalidConditionalNode` consume
+          // the whole node markup, so we MUST not run both.
+          const conditionalNodeProblem =
+            detectConditionalNodeUnsupportedParenthesis(node) || detectInvalidConditionalNode(node);
+
+          if (conditionalNodeProblem) {
+            problems.push(conditionalNodeProblem);
           }
 
           problems.forEach(context.report);
