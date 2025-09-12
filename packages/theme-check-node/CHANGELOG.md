@@ -1,5 +1,22 @@
 # @shopify/theme-check-node
 
+## 3.22.0
+
+### Minor Changes
+
+- 0380e438: Added a new OrphanedSnippet theme check to discover and warn if a snippet isn't referenced anywhere
+
+### Patch Changes
+
+- Updated dependencies [2fb378ca]
+- Updated dependencies [0c0f6c06]
+- Updated dependencies [c2228360]
+- Updated dependencies [0380e438]
+- Updated dependencies [2784a83b]
+- Updated dependencies [39a6e632]
+  - @shopify/theme-check-common@3.22.0
+  - @shopify/theme-check-docs-updater@3.22.0
+
 ## 3.21.0
 
 ### Patch Changes

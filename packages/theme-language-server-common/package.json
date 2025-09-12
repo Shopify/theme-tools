@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-language-server-common",
-  "version": "2.18.0",
+  "version": "2.19.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "CP Clermont <cp.clermont@shopify.com>",
@@ -28,8 +28,8 @@
   },
   "dependencies": {
     "@shopify/liquid-html-parser": "^2.9.0",
-    "@shopify/theme-check-common": "3.21.0",
-    "@shopify/theme-graph": "^0.1.5",
+    "@shopify/theme-check-common": "3.22.0",
+    "@shopify/theme-graph": "^0.2.0",
     "@vscode/web-custom-data": "^0.4.6",
     "vscode-json-languageservice": "^5.3.10",
     "vscode-languageserver": "^8.0.2",

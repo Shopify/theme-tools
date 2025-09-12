@@ -1,5 +1,19 @@
 # @shopify/theme-check-common
 
+## 3.22.0
+
+### Minor Changes
+
+- 0380e438: Added a new OrphanedSnippet theme check to discover and warn if a snippet isn't referenced anywhere
+
+### Patch Changes
+
+- 2fb378ca: Add check to find/fix unsupported parenthesis
+- 0c0f6c06: Add check for invalid loop arguments for `for` and `tablerow` tags
+- c2228360: Detect and report invalid ranges in loops
+- 2784a83b: Change wording around syntax errors for invalid conditional nodes in Liquid HTML Syntax check
+- 39a6e632: Remove AST check on fixed code suggestions
+
 ## 3.21.0
 
 ### Minor Changes
