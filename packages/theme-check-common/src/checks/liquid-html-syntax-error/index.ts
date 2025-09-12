@@ -6,6 +6,7 @@ import { detectInvalidEchoValue } from './checks/InvalidEchoValue';
 import { detectInvalidConditionalNode } from './checks/InvalidConditionalNode';
 import { detectInvalidLoopRange } from './checks/InvalidLoopRange';
 import { detectInvalidFilterName } from './checks/InvalidFilterName';
+import { detectInvalidPipeSyntax } from './checks/InvalidPipeSyntax';
 
 type LineColPosition = {
   line: number;
@@ -68,6 +69,11 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
           if (filterProblems.length > 0) {
             filterProblems.forEach((filterProblem) => context.report(filterProblem));
           }
+
+          const pipeProblems = await detectInvalidPipeSyntax(node);
+          if (pipeProblems.length > 0) {
+            pipeProblems.forEach((pipeProblem) => context.report(pipeProblem));
+          }
         },
         async LiquidBranch(node) {
           const problem = detectInvalidConditionalNode(node);
@@ -82,6 +88,11 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
           const filterProblems = await detectInvalidFilterName(node, await filtersPromise);
           if (filterProblems.length > 0) {
             filterProblems.forEach((problem) => context.report(problem));
+          }
+
+          const pipeProblems = await detectInvalidPipeSyntax(node);
+          if (pipeProblems.length > 0) {
+            pipeProblems.forEach((pipeProblem) => context.report(pipeProblem));
           }
 
           const problem = detectInvalidEchoValue(node);
