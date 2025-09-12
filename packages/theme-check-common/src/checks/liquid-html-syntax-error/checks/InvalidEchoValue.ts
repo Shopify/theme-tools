@@ -1,6 +1,6 @@
 import { LiquidTag, LiquidVariableOutput, NodeTypes } from '@shopify/liquid-html-parser';
 import { Problem, SourceCodeType } from '../../..';
-import { ensureValidAst, getValuesInMarkup, INVALID_SYNTAX_MESSAGE } from './utils';
+import { getValuesInMarkup, INVALID_SYNTAX_MESSAGE } from './utils';
 
 export function detectInvalidEchoValue(
   node: LiquidTag | LiquidVariableOutput,
@@ -58,16 +58,6 @@ export function detectInvalidEchoValue(
   };
 
   const { startIndex, endIndex } = removalIndices(node.source, node.position.start);
-
-  if (
-    !ensureValidAst(
-      node.source.slice(node.position.start, startIndex) +
-        node.source.slice(endIndex, node.position.end),
-    )
-  ) {
-    // If the new AST is invalid, we don't want to auto-fix it
-    return;
-  }
 
   return {
     message: INVALID_SYNTAX_MESSAGE,

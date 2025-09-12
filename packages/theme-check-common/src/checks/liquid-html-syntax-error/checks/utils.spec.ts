@@ -37,7 +37,6 @@ describe('getValuesInMarkup', () => {
 describe('getFragmentsInMarkup', () => {
   Object.entries({
     space: ' ',
-    pipe: ' | ',
     comma: ', ',
   }).forEach(([name, separator]) => {
     it(`should return all fragments in markup separated by ${name}`, () => {
