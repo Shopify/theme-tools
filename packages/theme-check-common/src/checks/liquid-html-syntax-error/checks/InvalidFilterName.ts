@@ -58,7 +58,7 @@ async function detectInvalidFilterNameInMarkup(
     const afterFilter = trimmedMarkup.slice(filterEndIndex);
 
     const invalidSegment = afterFilter.match(
-      /^(?!\s*(?::|$|\|\s*[a-zA-Z]))([^:|]+?)(?=\s*(?::|$|\|))/,
+      /^(?!\s*(?::|$|\|\s*[a-zA-Z]|\|\s*\||\s*\|\s*(?:[}%]|$|[\r\n])))([^:|]+?)(?=\s*(?::|$|\|))/,
     )?.[1];
     if (!invalidSegment) {
       continue;
