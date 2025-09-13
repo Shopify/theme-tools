@@ -31,9 +31,6 @@ AssetSizeJavaScript:
 BlockIdUsage:
   enabled: true
   severity: 1
-CaptureOnContentForBlock:
-  enabled: true
-  severity: 0
 CdnPreconnect:
   enabled: true
   severity: 0
