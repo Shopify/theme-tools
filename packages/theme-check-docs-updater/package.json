@@ -19,13 +19,13 @@
     "@shopify:registry": "https://registry.npmjs.org"
   },
   "bin": {
-    "theme-docs": "./scripts/cli.js"
+    "theme-docs": "./dist/cli.js"
   },
   "scripts": {
     "build": "yarn build:ts",
     "build:ci": "yarn build",
     "build:ts": "tsc -b tsconfig.build.json",
-    "postbuild": "node scripts/cli.js download data",
+    "postbuild": "chmod u+x dist/cli.js && node dist/cli.js download data",
     "test": "vitest",
     "type-check": "tsc --noEmit"
   },
