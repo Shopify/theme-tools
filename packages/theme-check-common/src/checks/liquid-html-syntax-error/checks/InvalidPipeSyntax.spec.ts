@@ -8,7 +8,7 @@ describe('Module: InvalidPipeSyntax', () => {
       const sourceCode = `{{ 'hello' | upcase | | downcase }}`;
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
       expect(offenses).toHaveLength(1);
-      expect(offenses[0].message).toContain('Double pipe detected');
+      expect(offenses[0].message).toContain('Remove extra `|` character(s)');
       expect(offenses[0].fix).toBeDefined();
 
       const fixedCode = applyFix(sourceCode, offenses[0]);
@@ -19,7 +19,7 @@ describe('Module: InvalidPipeSyntax', () => {
       const sourceCode = `{{ 'hello' | upcase |   | downcase }}`;
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
       expect(offenses).toHaveLength(1);
-      expect(offenses[0].message).toContain('Double pipe detected');
+      expect(offenses[0].message).toContain('Remove extra `|` character(s)');
       expect(offenses[0].fix).toBeDefined();
 
       const fixedCode = applyFix(sourceCode, offenses[0]);
@@ -30,7 +30,7 @@ describe('Module: InvalidPipeSyntax', () => {
       const sourceCode = `{% assign result = 'hello' | upcase | | downcase %}`;
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
       expect(offenses).toHaveLength(1);
-      expect(offenses[0].message).toContain('Double pipe detected');
+      expect(offenses[0].message).toContain('Remove extra `|` character(s)');
       expect(offenses[0].fix).toBeDefined();
 
       const fixedCode = applyFix(sourceCode, offenses[0]);
@@ -41,7 +41,7 @@ describe('Module: InvalidPipeSyntax', () => {
       const sourceCode = `{% echo 'hello' | upcase | | downcase %}`;
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
       expect(offenses).toHaveLength(1);
-      expect(offenses[0].message).toContain('Double pipe detected');
+      expect(offenses[0].message).toContain('Remove extra `|` character(s)');
       expect(offenses[0].fix).toBeDefined();
 
       const fixedCode = applyFix(sourceCode, offenses[0]);
@@ -53,8 +53,8 @@ describe('Module: InvalidPipeSyntax', () => {
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
       expect(offenses).toHaveLength(2);
 
-      expect(offenses[0].message).toContain('Double pipe detected');
-      expect(offenses[1].message).toContain('Double pipe detected');
+      expect(offenses[0].message).toContain('Remove extra `|` character(s)');
+      expect(offenses[1].message).toContain('Remove extra `|` character(s)');
 
       expect(offenses[0].fix).toBeDefined();
       expect(offenses[1].fix).toBeDefined();
@@ -66,7 +66,7 @@ describe('Module: InvalidPipeSyntax', () => {
       const sourceCode = `{{ 'hello' | upcase | }}`;
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
       expect(offenses).toHaveLength(1);
-      expect(offenses[0].message).toContain('Trailing pipe detected');
+      expect(offenses[0].message).toContain('Remove the trailing `|` character');
       expect(offenses[0].fix).toBeDefined();
 
       const fixedCode = applyFix(sourceCode, offenses[0]);
@@ -77,7 +77,7 @@ describe('Module: InvalidPipeSyntax', () => {
       const sourceCode = `{% assign result = 'hello' | upcase | %}`;
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
       expect(offenses).toHaveLength(1);
-      expect(offenses[0].message).toContain('Trailing pipe detected');
+      expect(offenses[0].message).toContain('Remove the trailing `|` character');
       expect(offenses[0].fix).toBeDefined();
 
       const fixedCode = applyFix(sourceCode, offenses[0]);
@@ -88,7 +88,7 @@ describe('Module: InvalidPipeSyntax', () => {
       const sourceCode = `{% echo 'hello' | upcase | %}`;
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
       expect(offenses).toHaveLength(1);
-      expect(offenses[0].message).toContain('Trailing pipe detected');
+      expect(offenses[0].message).toContain('Remove the trailing `|` character');
       expect(offenses[0].fix).toBeDefined();
 
       const fixedCode = applyFix(sourceCode, offenses[0]);
@@ -99,8 +99,8 @@ describe('Module: InvalidPipeSyntax', () => {
       const sourceCode = `{{ 'hello' | upcase | | }}`;
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
       expect(offenses).toHaveLength(2); // Double pipe AND trailing pipe
-      expect(offenses[0].message).toContain('Double pipe detected');
-      expect(offenses[1].message).toContain('Trailing pipe detected');
+      expect(offenses[0].message).toContain('Remove extra `|` character(s)');
+      expect(offenses[1].message).toContain('Remove the trailing `|` character');
       expect(offenses[0].fix).toBeDefined();
       expect(offenses[1].fix).toBeDefined();
     });
@@ -113,9 +113,9 @@ describe('Module: InvalidPipeSyntax', () => {
       expect(offenses).toHaveLength(2);
 
       // First should be double pipe
-      expect(offenses[0].message).toContain('Double pipe detected');
+      expect(offenses[0].message).toContain('Remove extra `|` character(s)');
       // Second should be trailing pipe
-      expect(offenses[1].message).toContain('Trailing pipe detected');
+      expect(offenses[1].message).toContain('Remove the trailing `|` character');
     });
 
     it('should not interfere with valid filter parameter syntax', async () => {
@@ -131,8 +131,8 @@ describe('Module: InvalidPipeSyntax', () => {
       %}`;
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
       expect(offenses).toHaveLength(2);
-      expect(offenses[0].message).toContain('Double pipe detected');
-      expect(offenses[1].message).toContain('Trailing pipe detected');
+      expect(offenses[0].message).toContain('Remove extra `|` character(s)');
+      expect(offenses[1].message).toContain('Remove the trailing `|` character');
     });
   });
 

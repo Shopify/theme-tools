@@ -37,11 +37,11 @@ async function detectPipeSyntaxInMarkup(
   const problems: Problem<SourceCodeType.LiquidHtml>[] = [];
   const trimmedMarkup = markup.trim();
 
-  // Check for double pipes
-  const doublePipePattern = /\|\s*\|\s*/g;
-  const doublePipeMatches = Array.from(trimmedMarkup.matchAll(doublePipePattern));
+  // Check for multiple consecutive pipes
+  const extraPipesPattern = /(\|\s*){2,}/g;
+  const extraPipesMatches = Array.from(trimmedMarkup.matchAll(extraPipesPattern));
 
-  for (const match of doublePipeMatches) {
+  for (const match of extraPipesMatches) {
     const markupStartInSource = node.source.indexOf(markup, node.position.start);
     if (markupStartInSource === -1) {
       continue;
@@ -50,7 +50,7 @@ async function detectPipeSyntaxInMarkup(
     const problemEndInSource = problemStartInSource + match[0].length;
 
     problems.push({
-      message: `${INVALID_SYNTAX_MESSAGE} Double pipe detected. Remove the extra pipe.`,
+      message: `${INVALID_SYNTAX_MESSAGE}. Remove extra \`|\` character(s).`,
       startIndex: problemStartInSource,
       endIndex: problemEndInSource,
       fix: (corrector) => {
@@ -73,7 +73,7 @@ async function detectPipeSyntaxInMarkup(
     const problemEndInSource = problemStartInSource + trailingPipeMatch[0].length;
 
     problems.push({
-      message: `${INVALID_SYNTAX_MESSAGE} Trailing pipe detected. Remove the trailing pipe.`,
+      message: `${INVALID_SYNTAX_MESSAGE}. Remove the trailing \`|\` character.`,
       startIndex: problemStartInSource,
       endIndex: problemEndInSource,
       fix: (corrector) => {

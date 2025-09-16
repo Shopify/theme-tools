@@ -57,8 +57,13 @@ async function detectInvalidFilterNameInMarkup(
     const filterEndIndex = match.index! + match[0].length;
     const afterFilter = trimmedMarkup.slice(filterEndIndex);
 
+    // This regex finds invalid trailing characters after a filter name using lookaheads:
+    // 1. Skip valid syntax like ": parameter" or "| nextfilter"
+    // 2. Capture any junk characters that shouldn't be there
+    // 3. Stop before valid boundaries like colons or pipes
+    // e.g. "upcase xyz" finds "xyz", but "upcase | downcase" is ignored as valid
     const invalidSegment = afterFilter.match(
-      /^(?!\s*(?::|$|\|\s*[a-zA-Z]|\|\s*\||\s*\|\s*(?:[}%]|$|[\r\n])))([^:|]+?)(?=\s*(?::|$|\|))/,
+      /^(?!\s*(?::|$|\|\s*[a-zA-Z]|\|\s*\||\s*\|\s*(?:[}%]|$)))([^:|]+?)(?=\s*(?::|$|\|))/,
     )?.[1];
     if (!invalidSegment) {
       continue;
