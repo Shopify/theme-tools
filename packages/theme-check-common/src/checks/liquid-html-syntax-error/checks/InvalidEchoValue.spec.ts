@@ -25,7 +25,7 @@ describe('detectInvalidEchoValue', async () => {
   });
 
   it('should not report when there are no filters provided', async () => {
-    const sourceCode = `{% echo '123' | %}`;
+    const sourceCode = `{% echo '123' %}`;
     const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
     expect(offenses).to.have.length(0);
   });
