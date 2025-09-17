@@ -8,12 +8,16 @@ import {
   SourceCodeType,
   findCurrentNode,
   isValid,
+  toJSONAST,
+  visit,
 } from '@shopify/theme-check-common';
 import { JSONDocument, LanguageService, getLanguageService } from 'vscode-json-languageservice';
 import {
   CompletionItem,
   CompletionList,
   CompletionParams,
+  DocumentLink,
+  DocumentLinkParams,
   Hover,
   HoverParams,
   ClientCapabilities as LSPClientCapabilities,
@@ -22,6 +26,9 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DocumentManager } from '../documents';
 import { GetTranslationsForURI } from '../translations';
 import { JSONContributions, GetThemeBlockNames, GetThemeBlockSchema } from './JSONContributions';
+import { createJSONDocumentLinksVisitor } from './documentLinks/DocumentLinksProvider';
+import { URI } from 'vscode-uri';
+import { FindThemeRootURI } from '../internal-types';
 
 export class JSONLanguageService {
   // We index by Mode here because I don't want to reconfigure the service depending on the URI.
@@ -45,6 +52,7 @@ export class JSONLanguageService {
     private getModeForURI: (uri: string) => Promise<Mode>,
     private getThemeBlockNames: GetThemeBlockNames,
     private getThemeBlockSchema: GetThemeBlockSchema,
+    private findThemeRootURI: FindThemeRootURI,
   ) {
     this.services = Object.fromEntries(Modes.map((mode) => [mode, null])) as typeof this.services;
     this.schemas = {};
@@ -125,6 +133,39 @@ export class JSONLanguageService {
     if (!documents) return null;
     const [jsonTextDocument, jsonDocument] = documents;
     return service.doHover(jsonTextDocument, params.position, jsonDocument);
+  }
+
+  async documentLinks(params: DocumentLinkParams): Promise<DocumentLink[]> {
+    await this.initialized;
+    const rootUri = await this.findThemeRootURI(params.textDocument.uri);
+    if (!rootUri) return [];
+
+    const document = this.documentManager.get(params.textDocument.uri);
+    if (!document) return [];
+
+    switch (document.type) {
+      case SourceCodeType.LiquidHtml: {
+        if (document.ast instanceof Error) return [];
+        const textDocument = document.textDocument;
+        const links: DocumentLink[] = [];
+
+        const schema = await document.getSchema();
+        if (schema && !(schema.ast instanceof Error)) {
+          const visitor = createJSONDocumentLinksVisitor(
+            textDocument,
+            URI.parse(rootUri),
+            schema.offset,
+          );
+          const schemaLinks = visit(schema.ast, visitor);
+          links.push(...schemaLinks);
+        }
+
+        return links;
+      }
+
+      default:
+        return [];
+    }
   }
 
   public isValidSchema = async (uri: string, jsonString: string) => {
