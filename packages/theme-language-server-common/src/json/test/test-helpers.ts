@@ -63,5 +63,6 @@ export function mockJSONLanguageService(
       }
       return doc.getSchema();
     },
+    async () => rootUri,
   );
 }
