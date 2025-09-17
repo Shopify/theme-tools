@@ -144,6 +144,12 @@ export class JSONLanguageService {
     if (!document) return [];
 
     switch (document.type) {
+      case SourceCodeType.JSON: {
+        if (document.ast instanceof Error) return [];
+        const visitor = createJSONDocumentLinksVisitor(document.textDocument, URI.parse(rootUri));
+        return visit(document.ast, visitor);
+      }
+
       case SourceCodeType.LiquidHtml: {
         if (document.ast instanceof Error) return [];
         const textDocument = document.textDocument;
