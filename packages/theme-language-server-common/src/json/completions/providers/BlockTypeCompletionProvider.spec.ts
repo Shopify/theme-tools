@@ -64,6 +64,7 @@ describe('Unit: BlockTypeCompletionProvider', () => {
       async () => 'theme',
       async () => blockNames,
       async () => undefined,
+      async () => 'file:///test-root',
     );
 
     await jsonLanguageService.setup({
