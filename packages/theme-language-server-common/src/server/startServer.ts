@@ -509,13 +509,11 @@ export function startServer(
   connection.onDocumentLinks(async (params) => {
     if (hasUnsupportedDocument(params)) return [];
 
-    const document = documentManager.get(params.textDocument.uri);
-    if (!document || document.type !== SourceCodeType.LiquidHtml) return [];
-
     const [liquidLinks, jsonLinks] = await Promise.all([
       documentLinksProvider.documentLinks(params.textDocument.uri),
       jsonLanguageService.documentLinks(params),
     ]);
+
     return [...liquidLinks, ...jsonLinks];
   });
 
