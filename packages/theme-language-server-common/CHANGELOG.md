@@ -1,5 +1,19 @@
 # @shopify/theme-language-server-common
 
+## 2.20.0
+
+### Minor Changes
+
+- dae70e0a: Added document linking inside schema tags, which enhances developer experience
+- 089d8c0c: Added document linking inside json files
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [f00a1620]
+  - @shopify/theme-graph@0.2.1
+  - @shopify/theme-check-common@3.23.0
+
 ## 2.19.0
 
 ### Minor Changes

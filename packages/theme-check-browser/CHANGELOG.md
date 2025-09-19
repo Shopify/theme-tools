@@ -1,5 +1,12 @@
 # @shopify/theme-check-browser
 
+## 3.23.0
+
+### Patch Changes
+
+- Updated dependencies [f00a1620]
+  - @shopify/theme-check-common@3.23.0
+
 ## 3.22.0
 
 ### Patch Changes
