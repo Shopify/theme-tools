@@ -909,6 +909,11 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@ohm-js/miniohm-js@^0.3.6":
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/@ohm-js/miniohm-js/-/miniohm-js-0.3.6.tgz#d6bafe987db7e1963e703ab9040ae3af474883f4"
+  integrity sha512-GWsbhyRdKxxhM2MG8z40/dgQe0w3rZCOdzHXJVfTpUxN1k0gFy+dNyJWtVr9XCZfXQ+p0EV/0HkN48pmQo0xVg==
+
 "@ohm-js/wasm@^0.6.2":
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/@ohm-js/wasm/-/wasm-0.6.2.tgz#a1c33a859cb62e2f87541f42a8a729b7a0b9aaa3"
