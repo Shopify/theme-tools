@@ -945,7 +945,7 @@ function toCST<T>(
       expression: 0,
       filters: 1,
       rawSource: (tokens: Node[]) =>
-        source.slice(locStart(tokens), tokens[tokens.length - 2].source.endIdx).trimEnd(),
+        source.slice(locStart(tokens), tokens[tokens.length - 1].source.endIdx).trimEnd(),
       locStart,
       // The last node of this rule is a positive lookahead, we don't
       // want its endIdx, we want the endIdx of the previous one.
@@ -960,13 +960,13 @@ function toCST<T>(
       locEnd,
       source,
       args(nodes: Node[]) {
-        // Traditinally, this would get transformed into null or array. But
-        // it's better if we have an empty array instead of null here.
-        if (nodes[7].sourceString === '') {
+        if (nodes[4].sourceString === '') {
+          // Traditionally, this would get transformed into null or array. But
+          // it's better if we have an empty array instead of null here.
           return [];
-        } else {
-          return this.toAst(nodes[7]);
         }
+        const argumentsNode = nodes[4].children[3];
+        return this.toAst(argumentsNode);
       },
     },
     filterArguments: 0,

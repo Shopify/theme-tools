@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@ohm-js/miniohm-js": "^0.3.6",
+    "@ohm-js/wasm": "^0.3.3",
     "@types/line-column": "^1.0.0"
   }
 }
