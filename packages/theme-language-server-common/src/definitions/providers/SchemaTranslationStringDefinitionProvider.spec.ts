@@ -5,13 +5,19 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { AugmentedJsonSourceCode, DocumentManager } from '../../documents';
 import { DefinitionProvider } from '../DefinitionProvider';
 
-describe('Module: TranslationStringDefinitionProvider', () => {
+describe('Module: SchemaTranslationStringDefinitionProvider', () => {
   let provider: DefinitionProvider;
   let documentManager: DocumentManager;
-  let mockGetDefaultLocaleSourceCode: (uri: string) => Promise<any>;
+  let mockGetDefaultSchemaLocaleSourceCode: (uri: string) => Promise<any>;
 
   beforeEach(() => {
-    documentManager = new DocumentManager();
+    documentManager = new DocumentManager(
+      undefined,
+      undefined,
+      undefined,
+      async () => 'theme',
+      async () => true,
+    );
 
     const translationFileContents = JSON.stringify(
       {
@@ -23,10 +29,10 @@ describe('Module: TranslationStringDefinitionProvider', () => {
       2,
     );
 
-    const uri = 'file:///locales/en.default.json';
+    const uri = 'file:///locales/en.default.schema.json';
     const sourceCode = toSourceCode(uri, translationFileContents) as JSONSourceCode;
     const textDocument = TextDocument.create(uri, sourceCode.type, 1, sourceCode.source);
-    mockGetDefaultLocaleSourceCode = async (_uri: string): Promise<AugmentedJsonSourceCode> => {
+    mockGetDefaultSchemaLocaleSourceCode = async (): Promise<AugmentedJsonSourceCode> => {
       return {
         ...sourceCode,
         textDocument,
@@ -35,16 +41,23 @@ describe('Module: TranslationStringDefinitionProvider', () => {
 
     provider = new DefinitionProvider(
       documentManager,
-      mockGetDefaultLocaleSourceCode,
       async () => null,
+      mockGetDefaultSchemaLocaleSourceCode,
     );
   });
 
   it('finds the definition of existing translation keys', async () => {
-    documentManager.open('file:///test.liquid', '{{ "hello.world" | t }}', 1);
+    const source = `
+      {% schema %}
+        {
+          "name": "t:hello.world"
+        }
+      {% endschema %}
+    `;
+    documentManager.open('file:///blocks/test.liquid', source, 1);
     const params: DefinitionParams = {
-      textDocument: { uri: 'file:///test.liquid' },
-      position: { line: 0, character: 5 }, // Position within "hello.world"
+      textDocument: { uri: 'file:///blocks/test.liquid' },
+      position: { line: 3, character: 26 }, // Position within "t:hello.world"
     };
 
     const result = await provider.definitions(params);
@@ -53,7 +66,7 @@ describe('Module: TranslationStringDefinitionProvider', () => {
     expect(result).toHaveLength(1);
     assert(LocationLink.is(result[0]));
     expect(result[0]).toMatchObject({
-      targetUri: 'file:///locales/en.default.json',
+      targetUri: 'file:///locales/en.default.schema.json',
       targetRange: {
         start: { line: 2, character: expect.any(Number) },
         end: { line: 2, character: expect.any(Number) },
@@ -62,11 +75,17 @@ describe('Module: TranslationStringDefinitionProvider', () => {
   });
 
   it('returns null for non-existent translation key', async () => {
-    const liquidContent = '{{ "unknown.key" | t }}';
-    documentManager.open('file:///templates/products.liquid', liquidContent, 1);
+    const source = `
+      {% schema %}
+        {
+          "name": "t:hello.world"
+        }
+      {% endschema %}
+    `;
+    documentManager.open('file:///blocks/products.liquid', source, 1);
 
     const params: DefinitionParams = {
-      textDocument: { uri: 'file:///templates/products.liquid' },
+      textDocument: { uri: 'file:///blocks/products.liquid' },
       position: { line: 0, character: 7 }, // Position within "unknown.key"
     };
 

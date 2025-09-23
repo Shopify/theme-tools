@@ -1,5 +1,5 @@
 import { NodeTypes as LiquidHtmlNodeTypes } from '@shopify/liquid-html-parser';
-import { AST, LiquidHtmlNode, NodeOfType, SourceCodeType, NodeTypes } from './types';
+import { AST, LiquidHtmlNode, NodeOfType, SourceCodeType, NodeTypes, JSONNode } from './types';
 
 export type VisitorMethod<S extends SourceCodeType, T, R> = (
   node: NodeOfType<S, T>,
@@ -131,4 +131,26 @@ function isUnclosed(node: LiquidHtmlNode): boolean {
     return node.children!.length > 0;
   }
   return false;
+}
+
+export function findJSONNode(
+  ast: JSONNode,
+  cursorPosition: number,
+): [node: JSONNode, ancestors: JSONNode[]] {
+  let prev: JSONNode | undefined;
+  let current: JSONNode = ast;
+  let ancestors: JSONNode[] = [];
+  const offset = cursorPosition;
+
+  while (current !== prev) {
+    prev = current;
+    forEachChildNodes<SourceCodeType.JSON>(current, ancestors.concat(current), (child, lineage) => {
+      if (child.loc.start.offset <= offset && offset < child.loc.end.offset) {
+        current = child;
+        ancestors = lineage;
+      }
+    });
+  }
+
+  return [current, ancestors];
 }
