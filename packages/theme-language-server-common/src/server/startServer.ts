@@ -5,6 +5,7 @@ import {
   findRoot as findConfigFileRoot,
   isError,
   makeFileExists,
+  makeGetDefaultLocaleFileUri,
   makeGetDefaultSchemaTranslations,
   makeGetDefaultTranslations,
   makeGetMetafieldDefinitions,
@@ -34,7 +35,7 @@ import { CSSLanguageService } from '../css/CSSLanguageService';
 import { DiagnosticsManager, makeRunChecks } from '../diagnostics';
 import { DocumentHighlightsProvider } from '../documentHighlights/DocumentHighlightsProvider';
 import { DocumentLinksProvider } from '../documentLinks';
-import { DocumentManager } from '../documents';
+import { AugmentedJsonSourceCode, DocumentManager } from '../documents';
 import { OnTypeFormattingProvider } from '../formatting';
 import { HoverProvider } from '../hover';
 import { JSONLanguageService } from '../json/JSONLanguageService';
@@ -56,6 +57,7 @@ import { CachedFileSystem } from './CachedFileSystem';
 import { Configuration } from './Configuration';
 import { safe } from './safe';
 import { ThemeGraphManager } from './ThemeGraphManager';
+import { DefinitionProvider } from '../definitions/DefinitionProvider';
 
 const defaultLogger = () => {};
 
@@ -289,6 +291,18 @@ export function startServer(
     return jsonLanguageService.isValidSchema(uri, jsonString);
   }
 
+  const getDefaultLocaleFileUri = makeGetDefaultLocaleFileUri(fs);
+  async function getDefaultLocaleSourceCode(uri: string) {
+    const rootUri = await findThemeRootURI(uri);
+    if (!rootUri) return null;
+
+    const defaultLocaleFileUri = await getDefaultLocaleFileUri(rootUri);
+    if (!defaultLocaleFileUri) return null;
+
+    return (documentManager.get(defaultLocaleFileUri) as AugmentedJsonSourceCode) ?? null;
+  }
+
+  const definitionsProvider = new DefinitionProvider(documentManager, getDefaultLocaleSourceCode);
   const jsonLanguageService = new JSONLanguageService(
     documentManager,
     jsonValidationSet,
@@ -372,6 +386,7 @@ export function startServer(
         completionProvider: {
           triggerCharacters: ['.', '{{ ', '{% ', '<', '/', '[', '"', "'", ':', '@'],
         },
+        definitionProvider: true,
         documentOnTypeFormattingProvider: {
           firstTriggerCharacter: ' ',
           moreTriggerCharacter: ['{', '%', '-', '>'],
@@ -515,6 +530,11 @@ export function startServer(
     ]);
 
     return [...liquidLinks, ...jsonLinks];
+  });
+
+  connection.onDefinition(async (params) => {
+    if (hasUnsupportedDocument(params)) return [];
+    return definitionsProvider.definitions(params);
   });
 
   connection.onCodeAction(async (params) => {
