@@ -867,7 +867,7 @@ function toCST<T>(
     liquidTagCycleMarkup: {
       type: ConcreteNodeTypes.CycleMarkup,
       groupName: 0,
-      args: 3,
+      args: 2,
       locStart,
       locEnd,
       source,
@@ -997,7 +997,7 @@ function toCST<T>(
     contentForNamedArgument: {
       type: ConcreteNodeTypes.NamedArgument,
       name: (node) => node[0].sourceString + node[1].sourceString,
-      value: 6,
+      value: 5,
       locStart,
       locEnd,
       source,
@@ -1228,8 +1228,8 @@ function toCST<T>(
       source,
       blockStartLocStart: (tokens: Node[]) => offset + tokens[0].source.startIdx,
       blockStartLocEnd: (tokens: Node[]) => offset + tokens[0].source.endIdx,
-      blockEndLocStart: (tokens: Node[]) => offset + tokens[4].source.startIdx,
-      blockEndLocEnd: (tokens: Node[]) => offset + tokens[4].source.endIdx,
+      blockEndLocStart: (tokens: Node[]) => offset + tokens[3].source.startIdx,
+      blockEndLocEnd: (tokens: Node[]) => offset + tokens[3].source.endIdx,
     },
 
     liquidInlineComment: {
