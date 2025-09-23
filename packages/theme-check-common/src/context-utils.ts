@@ -33,6 +33,11 @@ export const makeFileSize = (fs: AbstractFileSystem) =>
     }
   };
 
+export const makeGetDefaultLocaleFileUri = (fs: AbstractFileSystem) =>
+  async function getDefaultLocaleFileUri(rootUri: string, postfix = '.default.json') {
+    return getDefaultLocaleFile(fs, rootUri, postfix);
+  };
+
 export const makeGetDefaultLocale = getDefaultLocaleFactoryFactory('.default.json');
 export const makeGetDefaultSchemaLocale = getDefaultLocaleFactoryFactory('.default.schema.json');
 function getDefaultLocaleFactoryFactory(postfix = '.default.json') {
