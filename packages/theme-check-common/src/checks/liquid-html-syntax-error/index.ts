@@ -9,6 +9,7 @@ import { detectInvalidLoopArguments } from './checks/InvalidLoopArguments';
 import { detectConditionalNodeUnsupportedParenthesis } from './checks/InvalidConditionalNodeParenthesis';
 import { detectInvalidFilterName } from './checks/InvalidFilterName';
 import { detectInvalidPipeSyntax } from './checks/InvalidPipeSyntax';
+import { isWithinRawTagThatDoesNotParseItsContents } from '../utils';
 
 type LineColPosition = {
   line: number;
@@ -50,6 +51,8 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
     if (!isError(ast)) {
       return {
         async BooleanExpression(node, ancestors) {
+          if (isWithinRawTagThatDoesNotParseItsContents(ancestors)) return;
+
           const problem = detectInvalidBooleanExpressions(node, ancestors);
 
           if (!problem) {
@@ -58,7 +61,9 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
 
           context.report(problem);
         },
-        async LiquidTag(node) {
+        async LiquidTag(node, ancestors) {
+          if (isWithinRawTagThatDoesNotParseItsContents(ancestors)) return;
+
           const problems = [
             detectMultipleAssignValues(node),
             detectInvalidEchoValue(node),
@@ -87,7 +92,10 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
             pipeProblems.forEach((pipeProblem) => context.report(pipeProblem));
           }
         },
-        async LiquidBranch(node) {
+
+        async LiquidBranch(node, ancestors) {
+          if (isWithinRawTagThatDoesNotParseItsContents(ancestors)) return;
+
           const problem = detectInvalidConditionalNode(node);
 
           if (!problem) {
@@ -96,7 +104,10 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
 
           context.report(problem);
         },
-        async LiquidVariableOutput(node) {
+
+        async LiquidVariableOutput(node, ancestors) {
+          if (isWithinRawTagThatDoesNotParseItsContents(ancestors)) return;
+
           const filterProblems = await detectInvalidFilterName(node, await filtersPromise);
           if (filterProblems.length > 0) {
             filterProblems.forEach((problem) => context.report(problem));

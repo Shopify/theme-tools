@@ -620,6 +620,8 @@ function toCST<T>(
         const nameNode = tokens[3];
         const rawMarkupStringNode = tokens[9];
         switch (nameNode.sourceString) {
+          // {% schema %} parses its content as a string and should not be visited
+          case 'schema':
           // {% raw %} accepts syntax errors, we shouldn't try to parse that
           case 'raw': {
             return toCST(
@@ -632,7 +634,10 @@ function toCST<T>(
             );
           }
 
-          // {% javascript %}, {% style %}
+          // {% style %} actually parses its child nodes, so they are part of the AST
+          // {% javascript %}, {% stylesheet %} don't, but we want to flag folks that
+          // those are not supported in StaticStylesheetAndJavascriptTags, so we put
+          // them in the AST
           default: {
             return toCST(
               source,

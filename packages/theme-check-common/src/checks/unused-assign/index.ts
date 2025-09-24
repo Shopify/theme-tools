@@ -6,6 +6,7 @@ import {
   NodeTypes,
 } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
+import { isWithinRawTagThatDoesNotParseItsContents } from '../utils';
 
 export const UnusedAssign: LiquidCheckDefinition = {
   meta: {
@@ -34,7 +35,8 @@ export const UnusedAssign: LiquidCheckDefinition = {
     }
 
     return {
-      async LiquidTag(node) {
+      async LiquidTag(node, ancestors) {
+        if (isWithinRawTagThatDoesNotParseItsContents(ancestors)) return;
         if (isLiquidTagAssign(node)) {
           assignedVariables.set(node.markup.name, node);
         } else if (isLiquidTagCapture(node) && node.markup.name) {
@@ -43,6 +45,7 @@ export const UnusedAssign: LiquidCheckDefinition = {
       },
 
       async VariableLookup(node, ancestors) {
+        if (isWithinRawTagThatDoesNotParseItsContents(ancestors)) return;
         const parentNode = ancestors.at(-1);
         if (parentNode && isLiquidTagCapture(parentNode)) {
           return;

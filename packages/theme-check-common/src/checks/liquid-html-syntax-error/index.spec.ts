@@ -95,6 +95,11 @@ describe('Module: LiquidHTMLSyntaxError', () => {
       {% if some_variable %}
         Hello, world!
       {% endif %}
+      {% schema %}
+      {
+        "settings": [{ "visible_if": "{{ foo.bar == true }}" }]
+      }
+      {% endschema %}
     `;
 
     const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
