@@ -103,3 +103,15 @@ export function isLoopScopedVariable(variableName: string, ancestors: LiquidHtml
 export function isLoopLiquidTag(tag: LiquidTag): tag is LiquidTagFor | LiquidTagTablerow {
   return LoopNamedTags.includes(tag.name as any);
 }
+
+const RawTagsThatDoNotParseTheirContents = ['raw', 'stylesheet', 'javascript', 'schema'];
+
+function isRawTagThatDoesNotParseItsContent(node: LiquidHtmlNode) {
+  return (
+    node.type === NodeTypes.LiquidRawTag && RawTagsThatDoNotParseTheirContents.includes(node.name)
+  );
+}
+
+export function isWithinRawTagThatDoesNotParseItsContents(ancestors: LiquidHtmlNode[]) {
+  return ancestors.some(isRawTagThatDoesNotParseItsContent);
+}

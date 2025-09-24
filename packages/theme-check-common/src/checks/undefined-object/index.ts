@@ -16,6 +16,7 @@ import {
 import { LiquidCheckDefinition, Severity, SourceCodeType, ThemeDocset } from '../../types';
 import { isError, last } from '../../utils';
 import { hasLiquidDoc } from '../../liquid-doc/liquidDoc';
+import { isWithinRawTagThatDoesNotParseItsContents } from '../utils';
 
 type Scope = { start?: number; end?: number };
 
@@ -72,7 +73,9 @@ export const UndefinedObject: LiquidCheckDefinition = {
         }
       },
 
-      async LiquidTag(node) {
+      async LiquidTag(node, ancestors) {
+        if (isWithinRawTagThatDoesNotParseItsContents(ancestors)) return;
+
         if (isLiquidTagAssign(node)) {
           indexVariableScope(node.markup.name, {
             start: node.blockStartPosition.end,
@@ -134,8 +137,9 @@ export const UndefinedObject: LiquidCheckDefinition = {
       },
 
       async VariableLookup(node, ancestors) {
-        const parent = last(ancestors);
+        if (isWithinRawTagThatDoesNotParseItsContents(ancestors)) return;
 
+        const parent = last(ancestors);
         if (isLiquidTag(parent) && isLiquidTagCapture(parent)) return;
 
         variables.push(node);
