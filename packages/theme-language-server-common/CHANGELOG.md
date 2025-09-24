@@ -1,5 +1,24 @@
 # @shopify/theme-language-server-common
 
+## 2.20.0
+
+### Minor Changes
+
+- 450b3f28: Add schema translation go-to-definition support
+- dae70e0a: Added document linking inside schema tags, which enhances developer experience
+- 4bcb1126: Add translation key go-to-definition support
+- 089d8c0c: Added document linking inside json files
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [f00a1620]
+- Updated dependencies [450b3f28]
+- Updated dependencies [4bcb1126]
+- Updated dependencies [dd1f4c8f]
+  - @shopify/theme-graph@0.2.1
+  - @shopify/theme-check-common@3.23.0
+
 ## 2.19.0
 
 ### Minor Changes
