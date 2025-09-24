@@ -1,5 +1,17 @@
 # @shopify/theme-check-common
 
+## 3.23.0
+
+### Minor Changes
+
+- f00a1620: Remove 'CaptureOnContentForBlock' check — Theme development standards have evolved and changed, and this check has been fully deactivated on major themes. With more intense use blocks, this technique proven as a good approach to avoid duplication and promote reusability
+
+### Patch Changes
+
+- 450b3f28: Add schema translation go-to-definition support
+- 4bcb1126: Add translation key go-to-definition support
+- dd1f4c8f: Fix false-positive reporting of UndefinedObject within {% schema %} tags
+
 ## 3.22.0
 
 ### Minor Changes

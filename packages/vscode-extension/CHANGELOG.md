@@ -1,5 +1,25 @@
 ## theme-check-vscode
 
+## 3.10.0
+
+### Minor Changes
+
+- 450b3f28: Add schema translation go-to-definition support
+- 4bcb1126: Add translation key go-to-definition support
+
+### Patch Changes
+
+- Updated dependencies [f00a1620]
+- Updated dependencies [450b3f28]
+- Updated dependencies [dae70e0a]
+- Updated dependencies [4bcb1126]
+- Updated dependencies [089d8c0c]
+- Updated dependencies [dd1f4c8f]
+  - @shopify/theme-check-common@3.23.0
+  - @shopify/theme-language-server-common@2.20.0
+  - @shopify/theme-language-server-browser@2.20.0
+  - @shopify/theme-language-server-node@2.20.0
+
 ## 3.9.11
 
 ### Patch Changes
