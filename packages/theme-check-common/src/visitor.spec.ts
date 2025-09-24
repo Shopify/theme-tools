@@ -1,7 +1,7 @@
 import { LiquidHtmlNode, LiquidHtmlNodeTypes, SourceCodeType } from './types';
-import { toLiquidHTMLAST, toSourceCode } from './to-source-code';
+import { toJSONAST, toLiquidHTMLAST, toSourceCode } from './to-source-code';
 import { expect, describe, it, assert } from 'vitest';
-import { Visitor, findCurrentNode, visit } from './visitor';
+import { Visitor, findCurrentNode, findJSONNode, visit } from './visitor';
 import { NodeTypes } from '@shopify/liquid-html-parser';
 
 describe('Module: visitor', () => {
@@ -123,5 +123,41 @@ describe('findCurrentNode', () => {
 
     expect(actualAncestors.map((x) => x.type)).to.eql(ancestors, `In "${source}"`);
     expect(currentNode.type).to.equal(expected, `In "${source}"`);
+  });
+
+  describe('findJSONNode', () => {
+    it.each([
+      {
+        desc: 'string value',
+        source: '{ "key": "█t:value" }',
+        expected: 'Literal',
+        ancestors: ['Object', 'Property'],
+      },
+      {
+        desc: 'string key',
+        source: '{ "█key": "t:value" }',
+        expected: 'Identifier',
+        ancestors: ['Object', 'Property'],
+      },
+      {
+        desc: 'nested string value',
+        source: '{ "key": { "key2": "█t:value" } }',
+        expected: 'Literal',
+        ancestors: ['Object', 'Property', 'Object', 'Property'],
+      },
+    ])(
+      'should find the current node when the target is $desc',
+      ({ source, expected, ancestors }) => {
+        const CURSOR = '█';
+        const offset = source.indexOf(CURSOR);
+        const ast = toJSONAST(source.replace(CURSOR, ''));
+        assert(!(ast instanceof Error), 'AST should not be an error');
+
+        const [currentNode, actualAncestors] = findJSONNode(ast, offset);
+
+        expect(actualAncestors.map((x) => x.type)).to.eql(ancestors, `In "${source}"`);
+        expect(currentNode.type).to.equal(expected, `In "${source}"`);
+      },
+    );
   });
 });

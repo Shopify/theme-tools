@@ -6,6 +6,7 @@ import {
   isError,
   makeFileExists,
   makeGetDefaultLocaleFileUri,
+  makeGetDefaultSchemaLocaleFileUri,
   makeGetDefaultSchemaTranslations,
   makeGetDefaultTranslations,
   makeGetMetafieldDefinitions,
@@ -32,6 +33,7 @@ import { Commands, ExecuteCommandProvider } from '../commands';
 import { CompletionsProvider } from '../completions';
 import { GetSnippetNamesForURI } from '../completions/providers/RenderSnippetCompletionProvider';
 import { CSSLanguageService } from '../css/CSSLanguageService';
+import { DefinitionProvider } from '../definitions/DefinitionProvider';
 import { DiagnosticsManager, makeRunChecks } from '../diagnostics';
 import { DocumentHighlightsProvider } from '../documentHighlights/DocumentHighlightsProvider';
 import { DocumentLinksProvider } from '../documentLinks';
@@ -57,7 +59,6 @@ import { CachedFileSystem } from './CachedFileSystem';
 import { Configuration } from './Configuration';
 import { safe } from './safe';
 import { ThemeGraphManager } from './ThemeGraphManager';
-import { DefinitionProvider } from '../definitions/DefinitionProvider';
 
 const defaultLogger = () => {};
 
@@ -302,7 +303,21 @@ export function startServer(
     return (documentManager.get(defaultLocaleFileUri) as AugmentedJsonSourceCode) ?? null;
   }
 
-  const definitionsProvider = new DefinitionProvider(documentManager, getDefaultLocaleSourceCode);
+  const getDefaultSchemaLocaleFileUri = makeGetDefaultSchemaLocaleFileUri(fs);
+  async function getDefaultSchemaLocaleSourceCode(uri: string) {
+    const rootUri = await findThemeRootURI(uri);
+    if (!rootUri) return null;
+
+    const defaultLocaleFileUri = await getDefaultSchemaLocaleFileUri(rootUri);
+    if (!defaultLocaleFileUri) return null;
+
+    return (documentManager.get(defaultLocaleFileUri) as AugmentedJsonSourceCode) ?? null;
+  }
+  const definitionsProvider = new DefinitionProvider(
+    documentManager,
+    getDefaultLocaleSourceCode,
+    getDefaultSchemaLocaleSourceCode,
+  );
   const jsonLanguageService = new JSONLanguageService(
     documentManager,
     jsonValidationSet,
