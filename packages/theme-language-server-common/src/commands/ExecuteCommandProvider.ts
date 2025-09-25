@@ -3,9 +3,15 @@ import { ClientCapabilities } from '../ClientCapabilities';
 import { DiagnosticsManager } from '../diagnostics';
 import { DocumentManager } from '../documents';
 import { BaseExecuteCommandProvider } from './BaseExecuteCommandProvider';
-import { ApplyFixesProvider, ApplySuggestionProvider, RunChecksProvider } from './providers';
+import {
+  ApplyDisableCheckProvider,
+  ApplyFixesProvider,
+  ApplySuggestionProvider,
+  RunChecksProvider,
+} from './providers';
 
 export const Commands = [
+  ApplyDisableCheckProvider.command,
   ApplyFixesProvider.command,
   ApplySuggestionProvider.command,
   RunChecksProvider.command,
@@ -28,6 +34,12 @@ export class ExecuteCommandProvider {
     connection: Connection,
   ) {
     this.commands = {
+      [ApplyDisableCheckProvider.command]: new ApplyDisableCheckProvider(
+        documentManager,
+        diagnosticsManager,
+        clientCapabilities,
+        connection,
+      ),
       [ApplyFixesProvider.command]: new ApplyFixesProvider(
         documentManager,
         diagnosticsManager,
