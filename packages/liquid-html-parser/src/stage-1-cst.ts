@@ -578,7 +578,6 @@ function toCST<T>(
   // for the offset of the {% liquid %} markup
   const locStart = (tokens: Node[]) => offset + tokens[0].source.startIdx;
   const locEnd = (tokens: Node[]) => offset + tokens[tokens.length - 1].source.endIdx;
-  const locEndSecondToLast = (tokens: Node[]) => offset + tokens[tokens.length - 2].source.endIdx;
 
   const textNode = {
     type: ConcreteNodeTypes.TextNode,
@@ -947,9 +946,7 @@ function toCST<T>(
       rawSource: (tokens: Node[]) =>
         source.slice(locStart(tokens), tokens[tokens.length - 1].source.endIdx).trimEnd(),
       locStart,
-      // The last node of this rule is a positive lookahead, we don't
-      // want its endIdx, we want the endIdx of the previous one.
-      locEnd: locEndSecondToLast,
+      locEnd,
       source,
     },
 
@@ -1138,7 +1135,7 @@ function toCST<T>(
       whitespaceStart: null,
       whitespaceEnd: null,
       locStart,
-      locEnd: locEndSecondToLast,
+      locEnd,
       source,
     },
 
@@ -1148,7 +1145,7 @@ function toCST<T>(
       whitespaceStart: null,
       whitespaceEnd: null,
       locStart,
-      locEnd: locEndSecondToLast,
+      locEnd,
       source,
     },
 
@@ -1166,7 +1163,7 @@ function toCST<T>(
       whitespaceStart: null,
       whitespaceEnd: null,
       locStart,
-      locEnd: locEndSecondToLast,
+      locEnd,
       source,
     },
 
@@ -1189,7 +1186,7 @@ function toCST<T>(
       delimiterWhitespaceStart: null,
       delimiterWhitespaceEnd: null,
       locStart,
-      locEnd: locEndSecondToLast,
+      locEnd,
       source,
       blockStartLocStart: (tokens: Node[]) => offset + tokens[0].source.startIdx,
       blockStartLocEnd: (tokens: Node[]) => offset + tokens[2].source.endIdx,
@@ -1239,7 +1236,7 @@ function toCST<T>(
       whitespaceStart: null,
       whitespaceEnd: null,
       locStart,
-      locEnd: locEndSecondToLast,
+      locEnd,
       source,
     },
   };
