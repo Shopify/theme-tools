@@ -591,7 +591,9 @@ function toCST<T>(
 
   const res = grammar.match(matchingSource, 'Node');
   if (res.failed()) {
-    throw new LiquidHTMLCSTParsingError(res);
+    res.use(r => {
+      throw new LiquidHTMLCSTParsingError(r);
+    });
   }
 
   const HelperMappings: Mapping = {
@@ -1402,7 +1404,7 @@ function toCST<T>(
     }),
     {},
   );
-  return new AstBuilder(selectedMappings).toAst(res) as T;
+  return res.use(r => new AstBuilder(selectedMappings).toAst(r) as T);
 }
 
 /**
@@ -1418,7 +1420,9 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
 
   const res = LiquidDocGrammar.match(matchingSource, 'Node');
   if (res.failed()) {
-    throw new LiquidHTMLCSTParsingError(res);
+    res.use(r => {
+      throw new LiquidHTMLCSTParsingError(r);
+    });
   }
 
   /**
@@ -1517,5 +1521,5 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
     fallbackNode: textNode(),
   };
 
-  return toAST(res, LiquidDocMappings);
+  return res.use(r => new AstBuilder(LiquidDocMappings).toAst(r));
 }
