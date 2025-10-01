@@ -70,6 +70,7 @@ export enum NamedTags {
   layout = 'layout',
   liquid = 'liquid',
   paginate = 'paginate',
+  snippet = 'snippet',
   render = 'render',
   section = 'section',
   sections = 'sections',
