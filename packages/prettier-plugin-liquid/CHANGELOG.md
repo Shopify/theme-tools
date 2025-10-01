@@ -1,5 +1,13 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.10.1
+
+### Patch Changes
+
+- 8f523617: Bump to TypeScript 5
+- Updated dependencies [8f523617]
+  - @shopify/liquid-html-parser@2.9.1
+
 ## 1.10.0
 
 ### Minor Changes
