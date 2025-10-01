@@ -1,9 +1,9 @@
 import { expect, it, describe, afterEach, afterAll, vi, Mock } from 'vitest';
-import fs from 'fs';
+import fs from 'fs/promises';
 import { getPackageJsonRecord } from './getPackageJsonRecord';
 // import { promisify } from 'node:util';
 
-vi.mock('fs', async () => ({
+vi.mock('fs/promises', async () => ({
   default: { readFile: vi.fn() },
 }));
 

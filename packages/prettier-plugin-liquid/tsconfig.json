@@ -5,7 +5,7 @@
     "lib": ["es2020"],
     "outDir": "dist",
     "module": "commonjs",
-    "target": "ES6",
+    "target": "es2020",
     "rootDir": "src",
     "esModuleInterop": true,
     "paths": {
