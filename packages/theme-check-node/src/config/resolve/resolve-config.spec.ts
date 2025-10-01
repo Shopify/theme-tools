@@ -63,7 +63,7 @@ SomeCheck:
     // mock recommended.yml file
     await fs.writeFile(
       path.join(mockNodeModulePath, 'recommended.yml'),
-      await fs.readFile(path.join(__dirname, '..', 'fixtures', 'node-module-rec.yml')),
+      await fs.readFile(path.join(__dirname, '..', 'fixtures', 'node-module-rec.yml'), 'utf8'),
       'utf8',
     );
 

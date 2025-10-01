@@ -1,11 +1,11 @@
 import { exec } from 'child_process';
 import crypto from 'crypto';
-import fs from 'fs';
+import fs from 'fs/promises';
 import { promisify } from 'node:util';
 import type { RunOptions, StepFunction } from './types';
 
 const execAsync = promisify(exec);
-export const readFile = promisify(fs.readFile);
+export const readFile = fs.readFile;
 
 /**
  * Creates a memoized version of a function.
@@ -54,7 +54,9 @@ export const run = async (cmd: string, runInRepoRoot = true): Promise<string> =>
   const execOptions: RunOptions = runInRepoRoot
     ? { encoding: 'utf-8', cwd: await getRepoRoot() }
     : { encoding: 'utf-8' };
-  const { stdout, stderr } = await execAsync(cmd, execOptions);
+  let { stdout, stderr } = await execAsync(cmd, execOptions);
+  stdout = Buffer.isBuffer(stdout) ? stdout.toString('utf-8') : stdout;
+  stderr = Buffer.isBuffer(stderr) ? stderr.toString('utf-8') : stderr;
   if (stderr) {
     console.error(stderr);
     return stderr.trim();

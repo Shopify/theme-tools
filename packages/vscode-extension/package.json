@@ -73,9 +73,9 @@
   "devDependencies": {
     "@shopify/theme-check-docs-updater": "^3.23.0",
     "@types/glob": "^8.0.0",
-    "@types/node": "16.x",
+    "@types/node": "^22",
     "@types/prettier": "^2.4.2",
-    "@types/vscode": "^1.85.0",
+    "@types/vscode": "^1.104.0",
     "@typescript-eslint/eslint-plugin": "^5.45.0",
     "@typescript-eslint/parser": "^5.45.0",
     "@vscode/test-electron": "^2.2.0",

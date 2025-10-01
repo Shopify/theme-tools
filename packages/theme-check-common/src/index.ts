@@ -157,7 +157,7 @@ function createContext<T extends SourceCodeType, S extends Schema>(
         end: getPosition(file.source, problem.endIndex),
         fix: problem.fix,
         suggest: problem.suggest,
-      } as Offense<T>);
+      } as Offense<T> as Offense);
     },
     file,
   } as Context<T, S>;
