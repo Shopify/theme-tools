@@ -794,6 +794,17 @@ describe('Unit: Stage 1 (CST)', () => {
         });
       });
 
+      it('should parse snippet arguments as a singular liquid variable lookup', () => {
+        const expression = `var`;
+        const type = 'VariableLookup';
+        for (const { toCST, expectPath } of testCases) {
+          cst = toCST(`{% snippet ${expression} -%}`);
+          expectPath(cst, '0.type').to.equal('LiquidTagOpen');
+          expectPath(cst, '0.name').to.equal('snippet');
+          expectPath(cst, '0.markup.type').to.equal(type);
+        }
+      });
+
       it('should parse when arguments as an array of liquid expressions', () => {
         [
           { expression: `"string"`, args: [{ type: 'String' }] },
