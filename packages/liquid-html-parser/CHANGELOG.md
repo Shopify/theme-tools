@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.9.1
+
+### Patch Changes
+
+- 8f523617: Bump to TypeScript 5
+
 ## 2.9.0
 
 ### Minor Changes
