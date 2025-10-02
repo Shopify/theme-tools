@@ -637,6 +637,25 @@ describe('Unit: Stage 2 (AST)', () => {
         });
       });
 
+      it('should parse snippet blocks', () => {
+        for (const { toAST, expectPath, expectPosition } of testCases) {
+          ast = toAST(`{% snippet hello_snippet %}{% echo "Hello content" %}{% endsnippet %}`);
+          expectPath(ast, 'children.0').to.exist;
+          expectPath(ast, 'children.0.type').to.eql('LiquidTag');
+          expectPath(ast, 'children.0.name').to.eql('snippet');
+          expectPath(ast, 'children.0.markup.type').to.eql('VariableLookup');
+          expectPath(ast, 'children.0.markup.name').to.eql('hello_snippet');
+
+          expectPath(ast, 'children.0.children.0.type').to.eql('LiquidTag');
+          expectPath(ast, 'children.0.children.0.name').to.eql('echo');
+          expectPath(ast, 'children.0.children.0.markup.type').to.eql('LiquidVariable');
+          expectPath(ast, 'children.0.children.0.markup.expression.value').to.eql('Hello content');
+
+          expectPosition(ast, 'children.0');
+          expectPosition(ast, 'children.0.markup');
+        }
+      });
+
       describe('Case: content_for', () => {
         it('should parse content_for tags with no arguments', () => {
           for (const { toAST, expectPath, expectPosition } of testCases) {
@@ -1228,6 +1247,25 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPosition(ast, 'children.0.body.nodes.0').toEqual(':root { --bg:');
       expectPosition(ast, 'children.0.body.nodes.1').toEqual('{{ settings.bg }}');
       expectPosition(ast, 'children.0.body.nodes.2').toEqual('}');
+      expectPosition(ast, 'children.0');
+    });
+
+    it('should parse snippet blocks with HTML content', () => {
+      ast = toLiquidHtmlAST(
+        `{% snippet hello_snippet %}<div class="component"><p>Hello</p></div>{% endsnippet %}`,
+      );
+      expectPath(ast, 'children.0.type').to.eql('LiquidTag');
+      expectPath(ast, 'children.0.name').to.eql('snippet');
+      expectPath(ast, 'children.0.markup.type').to.eql('VariableLookup');
+      expectPath(ast, 'children.0.markup.name').to.eql('hello_snippet');
+      expectPath(ast, 'children.0.children.0.type').to.eql('HtmlElement');
+      expectPath(ast, 'children.0.children.0.name.0.value').to.eql('div');
+      expectPath(ast, 'children.0.children.0.attributes.0.name.0.value').to.eql('class');
+      expectPath(ast, 'children.0.children.0.attributes.0.value.0.value').to.eql('component');
+      expectPath(ast, 'children.0.children.0.children.0.type').to.eql('HtmlElement');
+      expectPath(ast, 'children.0.children.0.children.0.name.0.value').to.eql('p');
+      expectPath(ast, 'children.0.children.0.children.0.children.0.type').to.eql('TextNode');
+      expectPath(ast, 'children.0.children.0.children.0.children.0.value').to.eql('Hello');
       expectPosition(ast, 'children.0');
     });
   });
