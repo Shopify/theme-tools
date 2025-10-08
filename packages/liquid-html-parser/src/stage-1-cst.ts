@@ -577,8 +577,8 @@ function toCST<T>(
 
   const textNode = {
     type: ConcreteNodeTypes.TextNode,
-    value: function () {
-      return this.currNode.sourceString;
+    value: function (this: AstBuilder<T>) {
+      return this.currNode!.sourceString;
     },
     locStart,
     locEnd,
@@ -587,12 +587,12 @@ function toCST<T>(
 
   const res = grammar.match(matchingSource, 'Node');
   if (res.failed()) {
-    res.use(r => {
+    res.use((r) => {
       throw new LiquidHTMLCSTParsingError(r);
     });
   }
 
-  const HelperMappings: Mapping = {
+  const HelperMappings: Mapping<T | null> = {
     Node: 0,
     TextNode: textNode,
     orderedListOf: 0,
@@ -604,7 +604,7 @@ function toCST<T>(
     },
   };
 
-  const LiquidMappings: Mapping = {
+  const LiquidMappings: Mapping<T | null | string> = {
     liquidNode: 0,
     liquidRawTag: 0,
     liquidRawTagImpl: {
@@ -1117,7 +1117,7 @@ function toCST<T>(
     tagMarkup: (n: Node) => n.sourceString.trim(),
   };
 
-  const LiquidStatement: Mapping = {
+  const LiquidStatement: Mapping<T> = {
     LiquidStatement: 0,
     liquidTagOpenRule: {
       type: ConcreteNodeTypes.LiquidTagOpen,
@@ -1239,9 +1239,9 @@ function toCST<T>(
     },
   };
 
-  const LiquidHTMLMappings: Mapping = {
+  const LiquidHTMLMappings: Mapping<T | T[]> = {
     Node(frontmatter: Node, nodes: Node) {
-      const frontmatterNode =
+      const frontmatterNode: T[] =
         frontmatter.sourceString.length === 0 ? [] : [this.toAst(frontmatter)];
 
       return frontmatterNode.concat(this.toAst(nodes));
@@ -1400,7 +1400,7 @@ function toCST<T>(
     }),
     {},
   );
-  return res.use(r => new AstBuilder(selectedMappings).toAst(r) as T);
+  return res.use((r) => new AstBuilder<T>(selectedMappings).toAst(r) as T);
 }
 
 /**
@@ -1416,7 +1416,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
 
   const res = LiquidDocGrammar.match(matchingSource, 'Node');
   if (res.failed()) {
-    res.use(r => {
+    res.use((r) => {
       throw new LiquidHTMLCSTParsingError(r);
     });
   }
@@ -1426,15 +1426,15 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
    */
   const textNode = () => ({
     type: ConcreteNodeTypes.TextNode,
-    value: function () {
-      return this.currNode.sourceString;
+    value: function (this: AstBuilder): string {
+      return this.currNode!.sourceString;
     },
     locStart,
     locEnd,
     source,
   });
 
-  const LiquidDocMappings: Mapping = {
+  const LiquidDocMappings: Mapping<LiquidDocConcreteNode | LiquidDocConcreteNode[]> = {
     Node(implicitDescription: Node, body: Node) {
       const implicitDescriptionNode =
         implicitDescription.sourceString.length === 0 ? [] : [this.toAst(implicitDescription)];
@@ -1517,5 +1517,5 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
     fallbackNode: textNode(),
   };
 
-  return res.use(r => new AstBuilder(LiquidDocMappings).toAst(r));
+  return res.use((r) => new AstBuilder(LiquidDocMappings).toAst(r));
 }
