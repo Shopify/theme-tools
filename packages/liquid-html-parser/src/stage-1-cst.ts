@@ -998,6 +998,7 @@ function toCST<T>(
       source,
     },
 
+    // @ts-ignore
     liquidBooleanExpression(initialCondition: Node, subsequentConditions: Node) {
       const initialConditionAst = this.toAst(initialCondition) as ConcreteLiquidCondition;
       const subsequentConditionAsts = this.toAst(subsequentConditions) as ConcreteLiquidCondition[];
