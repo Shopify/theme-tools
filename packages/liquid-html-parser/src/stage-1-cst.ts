@@ -31,8 +31,8 @@
  */
 
 import { Parser } from 'prettier';
-import { Grammar, Node } from 'ohm-js';
-import { AstBuilder } from '@ohm-js/wasm';
+import { AstBuilder, CstNode as Node, AstMapping as Mapping } from '@ohm-js/wasm';
+import { Grammar } from '@ohm-js/wasm/compat';
 
 import {
   LiquidDocGrammar,
@@ -508,10 +508,6 @@ export type LiquidDocConcreteNode =
   | ConcreteLiquidDocExampleNode
   | ConcreteLiquidDocDescriptionNode
   | ConcreteLiquidDocPromptNode;
-
-interface Mapping {
-  [k: string]: number | TemplateMapping | TopLevelFunctionMapping;
-}
 
 interface TemplateMapping {
   type: ConcreteNodeTypes;
