@@ -14,7 +14,7 @@ describe('Module: UnsupportedDocTag', () => {
 
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).to.equal(
-      'The `doc` tag can only be used within a snippet or block.',
+      'The `doc` must be placed directly within an inline snippet tag, not nested inside other tags',
     );
   });
 
@@ -41,5 +41,40 @@ describe('Module: UnsupportedDocTag', () => {
     );
 
     expect(offenses).to.be.empty;
+  });
+
+  it('should not report an error when `doc` tag is used inside inline snippet', async () => {
+    const layoutSourceCode = `
+      {% snippet %}
+        ${sourceCode}
+      {% endsnippet %}
+    `;
+
+    const offenses = await runLiquidCheck(
+      UnsupportedDocTag,
+      layoutSourceCode,
+      'file://layout/theme.liquid',
+    );
+
+    expect(offenses).to.be.empty;
+  });
+
+  it('should report an error when `doc` tag is nested inside a block within a snippet file', async () => {
+    const nestedSourceCode = `
+      {% if true %}
+        ${sourceCode}
+      {% endif %}
+    `;
+
+    const offenses = await runLiquidCheck(
+      UnsupportedDocTag,
+      nestedSourceCode,
+      'file://snippets/file.liquid',
+    );
+
+    expect(offenses).to.have.length(1);
+    expect(offenses[0].message).to.equal(
+      'The `doc` tag cannot be nested inside any Liquid tags in a snippet or block file',
+    );
   });
 });
