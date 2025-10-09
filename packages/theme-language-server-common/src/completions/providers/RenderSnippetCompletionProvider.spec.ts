@@ -33,4 +33,22 @@ describe('Module: RenderSnippetCompletionProvider', async () => {
       }),
     ]);
   });
+
+  it('should complete inline snippets', async () => {
+    const template = `{% snippet my-inline-snippet %}
+  {% echo 'hello' %}
+{% endsnippet %}
+
+{% render m`;
+
+    await expect(provider).to.complete(template, ['my-inline-snippet']);
+    await expect(provider).to.complete(template, [
+      expect.objectContaining({
+        documentation: {
+          kind: 'markdown',
+          value: `Inline snippet (defined in this file)`,
+        },
+      }),
+    ]);
+  });
 });
