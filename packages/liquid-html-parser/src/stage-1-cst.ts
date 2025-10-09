@@ -891,19 +891,12 @@ function toCST<T>(
       source,
     },
     renderArguments: 1,
-    completionModeRenderArguments: function (
-      _0,
-      namedArguments,
-      _2,
-      _3,
-      _4,
-      _5,
-      variableLookup,
-      _7,
-    ) {
-      // variableLookup.sourceString can be '' when there are no incomplete params
+    completionModeRenderArguments: function (_0, namedArguments, _2, _3, opt) {
       return this.toAst(namedArguments).concat(
-        variableLookup.sourceString === '' ? [] : this.toAst(variableLookup),
+        opt.when({
+          Some: (_sep, variableLookup, _space) => this.toAst(variableLookup),
+          None: () => [],
+        }),
       );
     },
     snippetExpression: 0,
@@ -954,29 +947,34 @@ function toCST<T>(
       locStart,
       locEnd,
       source,
-      args(nodes: Node[]) {
-        if (nodes[4].sourceString === '') {
-          // Traditionally, this would get transformed into null or array. But
-          // it's better if we have an empty array instead of null here.
-          return [];
-        }
-        const argumentsNode = nodes[4].children[3];
-        return this.toAst(argumentsNode);
+      args([_sp1, _bar, _sp2, ident, opt]: Node[]) {
+        // Traditionally, this would get transformed into null or array. But
+        // it's better if we have an empty array instead of null here.
+        return opt.when({
+          Some: (_sp1, _colon, _sp2, args, _opt) => this.toAst(args),
+          None: () => [],
+        });
       },
     },
     filterArguments: 0,
     arguments: 0,
-    complexArguments: function (completeParams, _space1, _comma, _space2, incompleteParam) {
+    complexArguments: function (completeParams, opt) {
       return this.toAst(completeParams).concat(
-        incompleteParam.sourceString === '' ? [] : this.toAst(incompleteParam),
+        opt.when({
+          Some: (_space1, _comma, _space2, incompleteParam) => this.toAst(incompleteParam),
+          None: () => [],
+        }),
       );
     },
     simpleArgument: 0,
     tagArguments: 0,
     contentForTagArgument: 0,
-    completionModeContentForTagArgument: function (namedArguments, _separator, variableLookup) {
+    completionModeContentForTagArgument: function (namedArguments, opt) {
       return this.toAst(namedArguments).concat(
-        variableLookup.sourceString === '' ? [] : this.toAst(variableLookup),
+        opt.when({
+          Some: (_sep, variableLookup) => this.toAst(variableLookup),
+          None: () => [],
+        }),
       );
     },
     positionalArgument: 0,

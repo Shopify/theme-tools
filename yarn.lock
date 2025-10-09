@@ -909,10 +909,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@ohm-js/wasm@^0.6.5":
-  version "0.6.5"
-  resolved "https://registry.yarnpkg.com/@ohm-js/wasm/-/wasm-0.6.5.tgz#9b924ca390f31cc6114e281fbc61a2667022ed6e"
-  integrity sha512-9V9UGFti7sMnUN5jjbGYW2Mqq8qsMYZnGRL3u4xvv18TQkQpAF9RTY5oovFEHPn1XweYjPmBKCvoPxbfZ5k5Ug==
+"@ohm-js/wasm@^0.6.8":
+  version "0.6.8"
+  resolved "https://registry.yarnpkg.com/@ohm-js/wasm/-/wasm-0.6.8.tgz#9436eccee089dcfc4dd79bb493905abd4e7f96df"
+  integrity sha512-Z8zXCT8A9lTcMgTvLKjx2ZxDL67esf+9P0ymXWoCIBgIEtTswoluW4g/edjXE4WnjhTTQDbPc+bP7IXLgYfefg==
   dependencies:
     "@wasmgroundup/emit" "^1.0.2"
 
