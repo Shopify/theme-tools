@@ -142,6 +142,10 @@ export const UndefinedObject: LiquidCheckDefinition = {
         const parent = last(ancestors);
         if (isLiquidTag(parent) && isLiquidTagCapture(parent)) return;
 
+        if (parent?.type === NodeTypes.RenderMarkup && parent.snippet === node) return;
+
+        if (isLiquidTag(parent) && parent.name === 'snippet' && parent.markup === node) return;
+
         variables.push(node);
       },
 
