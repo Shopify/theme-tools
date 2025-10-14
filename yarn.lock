@@ -909,6 +909,13 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@ohm-js/wasm@^0.6.8":
+  version "0.6.8"
+  resolved "https://registry.yarnpkg.com/@ohm-js/wasm/-/wasm-0.6.8.tgz#9436eccee089dcfc4dd79bb493905abd4e7f96df"
+  integrity sha512-Z8zXCT8A9lTcMgTvLKjx2ZxDL67esf+9P0ymXWoCIBgIEtTswoluW4g/edjXE4WnjhTTQDbPc+bP7IXLgYfefg==
+  dependencies:
+    "@wasmgroundup/emit" "^1.0.2"
+
 "@playwright/browser-chromium@^1.47.2":
   version "1.48.0"
   resolved "https://registry.npmjs.org/@playwright/browser-chromium/-/browser-chromium-1.48.0.tgz#780ca1ebe1aa34dbffa117267c5a84077ed784d0"
@@ -1757,6 +1764,11 @@
   version "0.4.6"
   resolved "https://registry.npmjs.org/@vscode/web-custom-data/-/web-custom-data-0.4.6.tgz"
   integrity sha512-4zen0CzChZ0cvVqttxe9B+G56M3A0pMoaG6Y9784EN2zvr5n61m6JebfYhJ5rzINbTqePEqmwG+7tsdr5g9BJA==
+
+"@wasmgroundup/emit@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@wasmgroundup/emit/-/emit-1.0.2.tgz#8d428e98468562b745aa584ac259334765c7826b"
+  integrity sha512-9FupNg9RUOQIBe2zNp0DY78Rb03xeElaL9NQB4haz+JDOF+0Bq4tNSuB/vwG4DFTKSffBKFCa85YdVZaf5vQPw==
 
 "@webassemblyjs/ast@1.14.1", "@webassemblyjs/ast@^1.12.1":
   version "1.14.1"
