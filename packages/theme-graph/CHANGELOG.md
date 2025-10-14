@@ -1,5 +1,15 @@
 # shopify/theme-graph
 
+## 0.2.2
+
+### Patch Changes
+
+- 8f523617: Bump to TypeScript 5
+- Updated dependencies [dc679574]
+- Updated dependencies [8f523617]
+  - @shopify/liquid-html-parser@2.10.0
+  - @shopify/theme-check-common@3.23.1
+
 ## 0.2.1
 
 ### Patch Changes
