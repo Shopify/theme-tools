@@ -60,6 +60,38 @@ This is a description
       await expect(provider).to.hover(`{% assign asdf = 'snip█pet' %}`, null);
       await expect(provider).to.hover(`{{ 'snip█pet' }}`, null);
     });
+
+    it('should return snippet definition with all parameters for inline snippet', async () => {
+      provider = createProvider(async () => undefined); // No file-based snippets
+
+      const source = `
+        {% snippet inline_product_card %}
+          {% doc %}
+            @param {string} title - The title of the inline product card
+
+            @example
+            {% render inline_product_card, title: 'My Product' %}
+          {% enddoc %}
+          <div>{{ title }}</div>
+        {% endsnippet %}
+        
+        {% render inline_produc█t_card %}
+      `;
+
+      // prettier-ignore
+      const expectedHoverContent = 
+`### inline_product_card
+
+**Parameters:**
+- \`title\`: string - The title of the inline product card
+
+**Examples:**
+\`\`\`liquid
+{% render inline_product_card, title: 'My Product' %}
+\`\`\``;
+
+      await expect(provider).to.hover(source, expectedHoverContent);
+    });
   });
 });
 

@@ -2,6 +2,7 @@ import { expect, it, describe } from 'vitest';
 import { toSourceCode } from '../to-source-code';
 import { LiquidHtmlNode } from '../types';
 import { extractDocDefinition } from './liquidDoc';
+import { DocumentNode } from '@shopify/liquid-html-parser';
 
 describe('Unit: extractDocDefinition', () => {
   const uri = 'file:///snippets/fake.liquid';
@@ -291,6 +292,159 @@ describe('Unit: extractDocDefinition', () => {
           },
         ],
       },
+    });
+  });
+
+  describe('Inline snippet support', () => {
+    it('should extract doc from inline snippet when passed the snippet node', async () => {
+      const fileAST = toAST(`
+        {% snippet my_snippet %}
+          {% doc %}
+            @param {String} title - The title
+            @param {Number} count - The count
+          {% enddoc %}
+          <div>{{ title }}: {{ count }}</div>
+        {% endsnippet %}
+      `);
+
+      // Get the snippet node from the document
+      const snippetNode = (fileAST as DocumentNode).children.find(
+        (node) => node.type === 'LiquidTag' && (node as any).name === 'snippet',
+      )!;
+
+      const result = extractDocDefinition(uri, snippetNode);
+      expect(result).to.deep.equal({
+        uri,
+        liquidDoc: {
+          parameters: [
+            {
+              name: 'title',
+              description: 'The title',
+              type: 'String',
+              required: true,
+              nodeType: 'param',
+            },
+            {
+              name: 'count',
+              description: 'The count',
+              type: 'Number',
+              required: true,
+              nodeType: 'param',
+            },
+          ],
+        },
+      });
+    });
+
+    it('should NOT include inline snippet docs when extracting from file level', async () => {
+      const ast = toAST(`
+        {% doc %}
+          @param {String} fileParam - File level parameter
+        {% enddoc %}
+        
+        {% snippet inline_snippet %}
+          {% doc %}
+            @param {Number} snippetParam - Snippet level parameter
+          {% enddoc %}
+          <div>Snippet content</div>
+        {% endsnippet %}
+      `);
+
+      const result = extractDocDefinition(uri, ast);
+      expect(result).to.deep.equal({
+        uri,
+        liquidDoc: {
+          parameters: [
+            {
+              name: 'fileParam',
+              description: 'File level parameter',
+              type: 'String',
+              required: true,
+              nodeType: 'param',
+            },
+          ],
+        },
+      });
+    });
+
+    it('should NOT include inline snippet docs when multiple inline snippets exist', async () => {
+      const ast = toAST(`
+        {% doc %}
+          @param {String} mainParam - Main file parameter
+        {% enddoc %}
+        
+        {% snippet first_snippet %}
+          {% doc %}
+            @param {String} firstParam - First snippet parameter
+          {% enddoc %}
+          <div>First</div>
+        {% endsnippet %}
+        
+        {% snippet second_snippet %}
+          {% doc %}
+            @param {Number} secondParam - Second snippet parameter
+          {% enddoc %}
+          <div>Second</div>
+        {% endsnippet %}
+      `);
+
+      const result = extractDocDefinition(uri, ast);
+      expect(result).to.deep.equal({
+        uri,
+        liquidDoc: {
+          parameters: [
+            {
+              name: 'mainParam',
+              description: 'Main file parameter',
+              type: 'String',
+              required: true,
+              nodeType: 'param',
+            },
+          ],
+        },
+      });
+    });
+
+    it('should extract docs from specific inline snippet when passed that snippet node', async () => {
+      const fileAST = toAST(`
+        {% snippet first_snippet %}
+          {% doc %}
+            @param {String} first - First parameter
+          {% enddoc %}
+          <div>First</div>
+        {% endsnippet %}
+        
+        {% snippet second_snippet %}
+          {% doc %}
+            @param {Number} second - Second parameter
+          {% enddoc %}
+          <div>Second</div>
+        {% endsnippet %}
+      `);
+
+      // Get the second snippet node
+      const secondSnippet = (fileAST as DocumentNode).children.find(
+        (node) =>
+          node.type === 'LiquidTag' &&
+          (node as any).name === 'snippet' &&
+          (node as any).markup.name === 'second_snippet',
+      )!;
+
+      const result = extractDocDefinition(uri, secondSnippet);
+      expect(result).to.deep.equal({
+        uri,
+        liquidDoc: {
+          parameters: [
+            {
+              name: 'second',
+              description: 'Second parameter',
+              type: 'Number',
+              required: true,
+              nodeType: 'param',
+            },
+          ],
+        },
+      });
     });
   });
 });
