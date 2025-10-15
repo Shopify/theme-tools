@@ -1,7 +1,8 @@
-import { NodeTypes } from '@shopify/liquid-html-parser';
+import { LiquidHtmlNode, LiquidTag, NodeTypes } from '@shopify/liquid-html-parser';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { LiquidCompletionParams } from '../params';
 import { Provider } from './common';
+import { SourceCodeType, visit } from '@shopify/theme-check-common';
 
 export type GetSnippetNamesForURI = (uri: string) => Promise<string[]>;
 
@@ -14,21 +15,13 @@ export class RenderSnippetCompletionProvider implements Provider {
     const { node, ancestors } = params.completionContext;
     const parentNode = ancestors.at(-1);
 
-    if (
-      !node ||
-      !parentNode ||
-      node.type !== NodeTypes.String ||
-      parentNode.type !== NodeTypes.RenderMarkup
-    ) {
+    if (!node || !parentNode || parentNode.type !== NodeTypes.RenderMarkup) {
       return [];
     }
 
-    const options = await this.getSnippetNamesForURI(params.textDocument.uri);
-    const partial = node.value;
-
-    return options
-      .filter((option) => option.startsWith(partial))
-      .map(
+    if (node.type === NodeTypes.String) {
+      const fileSnippets = await this.getSnippetNamesForURI(params.textDocument.uri);
+      const fileCompletionItems = fileSnippets.map(
         (option: string): CompletionItem => ({
           label: option,
           kind: CompletionItemKind.Snippet,
@@ -38,5 +31,32 @@ export class RenderSnippetCompletionProvider implements Provider {
           },
         }),
       );
+      return fileCompletionItems;
+    } else if (node.type === NodeTypes.VariableLookup) {
+      const inlineSnippets = getInlineSnippetsNames(params.completionContext.partialAst);
+      const inlineCompletionItems = inlineSnippets.map(
+        (option: string): CompletionItem => ({
+          label: option,
+          kind: CompletionItemKind.Snippet,
+          documentation: {
+            kind: 'markdown',
+            value: `Inline snippet "${option}"`,
+          },
+        }),
+      );
+      return inlineCompletionItems;
+    } else {
+      return [];
+    }
   }
+}
+
+function getInlineSnippetsNames(ast: LiquidHtmlNode): string[] {
+  return visit<SourceCodeType.LiquidHtml, string>(ast, {
+    LiquidTag(node: LiquidTag) {
+      if (node.name === 'snippet' && typeof node.markup !== 'string' && node.markup.name) {
+        return node.markup.name;
+      }
+    },
+  });
 }
