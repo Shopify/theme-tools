@@ -5,6 +5,10 @@ import {
   LiquidDocExampleNode,
   LiquidDocParamNode,
   LiquidDocDescriptionNode,
+  LiquidTagSnippet,
+  NamedTags,
+  LiquidTag,
+  NodeTypes,
 } from '@shopify/liquid-html-parser';
 
 export type GetDocDefinitionForURI = (
@@ -58,15 +62,28 @@ export function hasLiquidDoc(snippet: LiquidHtmlNode): boolean {
 
 export function extractDocDefinition(uri: UriString, ast: LiquidHtmlNode): DocDefinition {
   let hasDocTag = false;
+
+  const isSnippetTag = (node: LiquidHtmlNode): boolean => {
+    return node.type === NodeTypes.LiquidTag && (node as LiquidTag).name === NamedTags.snippet;
+  };
+
+  const isInsideInlineSnippet = (ancestors: LiquidHtmlNode[]) => {
+    return !isSnippetTag(ast) && ancestors.some(isSnippetTag);
+  };
+
   const nodes: (LiquidDocParameter | LiquidDocExample | LiquidDocDescription)[] = visit<
     SourceCodeType.LiquidHtml,
     LiquidDocParameter | LiquidDocExample | LiquidDocDescription
   >(ast, {
-    LiquidRawTag(node) {
-      if (node.name === 'doc') hasDocTag = true;
+    LiquidRawTag(node, ancestors) {
+      if (node.name === 'doc' && !isInsideInlineSnippet(ancestors)) {
+        hasDocTag = true;
+      }
       return undefined;
     },
-    LiquidDocParamNode(node: LiquidDocParamNode) {
+    LiquidDocParamNode(node: LiquidDocParamNode, ancestors) {
+      if (isInsideInlineSnippet(ancestors)) return undefined;
+
       return {
         name: node.paramName.value,
         description: node.paramDescription?.value ?? null,
@@ -75,13 +92,17 @@ export function extractDocDefinition(uri: UriString, ast: LiquidHtmlNode): DocDe
         nodeType: 'param',
       };
     },
-    LiquidDocExampleNode(node: LiquidDocExampleNode) {
+    LiquidDocExampleNode(node: LiquidDocExampleNode, ancestors) {
+      if (isInsideInlineSnippet(ancestors)) return undefined;
+
       return {
         content: handleMultilineIndentation(node.content.value.trim()),
         nodeType: 'example',
       };
     },
-    LiquidDocDescriptionNode(node: LiquidDocDescriptionNode) {
+    LiquidDocDescriptionNode(node: LiquidDocDescriptionNode, ancestors) {
+      if (isInsideInlineSnippet(ancestors)) return undefined;
+
       return {
         content: handleMultilineIndentation(node.content.value.trim()),
         nodeType: 'description',
