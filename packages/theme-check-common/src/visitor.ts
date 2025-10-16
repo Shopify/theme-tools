@@ -1,4 +1,8 @@
-import { NodeTypes as LiquidHtmlNodeTypes } from '@shopify/liquid-html-parser';
+import {
+  NodeTypes as LiquidHtmlNodeTypes,
+  NamedTags,
+  LiquidTagSnippet,
+} from '@shopify/liquid-html-parser';
 import { AST, LiquidHtmlNode, NodeOfType, SourceCodeType, NodeTypes, JSONNode } from './types';
 
 export type VisitorMethod<S extends SourceCodeType, T, R> = (
@@ -153,4 +157,26 @@ export function findJSONNode(
   }
 
   return [current, ancestors];
+}
+
+export function findInlineSnippet(
+  ast: LiquidHtmlNode,
+  snippetName: string,
+): LiquidTagSnippet | null {
+  let foundSnippet: LiquidTagSnippet | null = null;
+
+  visit<SourceCodeType.LiquidHtml, void>(ast, {
+    LiquidTag(node) {
+      if (
+        node.name === NamedTags.snippet &&
+        typeof node.markup !== 'string' &&
+        node.markup.type === 'VariableLookup' &&
+        node.markup.name === snippetName
+      ) {
+        foundSnippet = node as LiquidTagSnippet;
+      }
+    },
+  });
+
+  return foundSnippet;
 }
