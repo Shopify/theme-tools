@@ -1,6 +1,7 @@
 import { isSnippet, isBlock } from '../../to-schema';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { filePathSupportsLiquidDoc } from '../../liquid-doc/utils';
+import { LiquidRawTag, NodeTypes, LiquidHtmlNode } from '@shopify/liquid-html-parser';
 
 export const UnsupportedDocTag: LiquidCheckDefinition = {
   meta: {
@@ -19,18 +20,30 @@ export const UnsupportedDocTag: LiquidCheckDefinition = {
 
   create(context) {
     const docTagName = 'doc';
-
-    if (filePathSupportsLiquidDoc(context.file.uri)) {
-      return {};
-    }
+    const snippetTagName = 'snippet';
 
     return {
-      async LiquidRawTag(node) {
+      async LiquidRawTag(node: LiquidRawTag, ancestors: LiquidHtmlNode[]) {
         if (node.name !== docTagName) {
           return;
         }
+
+        const isInSnippetOrBlockFile = filePathSupportsLiquidDoc(context.file.uri);
+        const immediateParent = ancestors.at(-1);
+        const isTopLevelInFile = immediateParent?.type === NodeTypes.Document;
+        const isDirectChildOfSnippetTag =
+          immediateParent?.type === NodeTypes.LiquidTag && immediateParent.name === snippetTagName;
+
+        if ((isInSnippetOrBlockFile && isTopLevelInFile) || isDirectChildOfSnippetTag) {
+          return;
+        }
+
+        const message = isInSnippetOrBlockFile
+          ? `The \`${docTagName}\` tag must be a top-level tag within a snippet/block file`
+          : `The \`${docTagName}\` must be placed directly within an inline snippet tag, not nested inside other tags`;
+
         context.report({
-          message: `The \`${docTagName}\` tag can only be used within a snippet or block.`,
+          message,
           startIndex: node.position.start,
           endIndex: node.position.end,
           suggest: [
