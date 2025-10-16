@@ -86,4 +86,44 @@ describe('Module: UnusedDocParam', () => {
       expect(offenses[0]!.suggest![0].message).to.equal("Remove unused parameter 'param2'");
     });
   });
+
+  it('should report a warning when a variable is defined but not used in an inline snippet', async () => {
+    const sourceCode = `
+      {% snippet %}
+        {% doc %}
+          @param param1 - Example param
+        {% enddoc %}
+      {% endsnippet %}
+    `;
+
+    const offenses = await runLiquidCheck(UnusedDocParam, sourceCode);
+
+    expect(offenses).to.have.length(1);
+    expect(offenses[0].message).to.equal(
+      "The parameter 'param1' is defined but not used in this inline snippet.",
+    );
+    expect(offenses[0].suggest).to.have.length(1);
+    expect(offenses[0]!.suggest![0].message).to.equal("Remove unused parameter 'param1'");
+  });
+
+  it('should report a warning when a variable is defined but used outside of the snippet tag', async () => {
+    const sourceCode = `
+      {% snippet %}
+        {% doc %}
+          @param param1 - Example param
+        {% enddoc %}
+      {% endsnippet %}
+
+      {{ param1 }}
+    `;
+
+    const offenses = await runLiquidCheck(UnusedDocParam, sourceCode);
+
+    expect(offenses).to.have.length(1);
+    expect(offenses[0].message).to.equal(
+      "The parameter 'param1' is defined but not used in this inline snippet.",
+    );
+    expect(offenses[0].suggest).to.have.length(1);
+    expect(offenses[0]!.suggest![0].message).to.equal("Remove unused parameter 'param1'");
+  });
 });
