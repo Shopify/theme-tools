@@ -459,4 +459,18 @@ describe('Module: UndefinedObject', () => {
     assert(offenses.length == 0);
     expect(offenses).to.be.empty;
   });
+
+  it('should not report an offense for inline snippet names in snippet and render tags', async () => {
+    const sourceCode = `
+      {% snippet my_inline_snippet %}
+        {% echo 'hello' %}
+      {% endsnippet %}
+
+      {% render my_inline_snippet %}
+    `;
+
+    const offenses = await runLiquidCheck(UndefinedObject, sourceCode);
+
+    expect(offenses).toHaveLength(0);
+  });
 });

@@ -7,6 +7,7 @@ import {
   LiquidTagDecrement,
   LiquidTagFor,
   LiquidTagIncrement,
+  LiquidTagSnippet,
   LiquidTagTablerow,
   LiquidVariableLookup,
   NamedTags,
@@ -16,7 +17,7 @@ import {
 import { LiquidCheckDefinition, Severity, SourceCodeType, ThemeDocset } from '../../types';
 import { isError, last } from '../../utils';
 import { hasLiquidDoc } from '../../liquid-doc/liquidDoc';
-import { isWithinRawTagThatDoesNotParseItsContents } from '../utils';
+import { isWithinRawTagThatDoesNotParseItsContents, findInlineSnippetAncestor } from '../utils';
 
 type Scope = { start?: number; end?: number };
 
@@ -66,9 +67,16 @@ export const UndefinedObject: LiquidCheckDefinition = {
     }
 
     return {
-      async LiquidDocParamNode(node: LiquidDocParamNode) {
+      async LiquidDocParamNode(node: LiquidDocParamNode, ancestors: LiquidHtmlNode[]) {
         const paramName = node.paramName?.value;
-        if (paramName) {
+        if (!paramName) return;
+        const snippetAncestor = findInlineSnippetAncestor(ancestors);
+        if (snippetAncestor) {
+          indexVariableScope(paramName, {
+            start: snippetAncestor.blockStartPosition.end,
+            end: snippetAncestor.blockEndPosition?.start,
+          });
+        } else {
           fileScopedVariables.add(paramName);
         }
       },
@@ -141,6 +149,10 @@ export const UndefinedObject: LiquidCheckDefinition = {
 
         const parent = last(ancestors);
         if (isLiquidTag(parent) && isLiquidTagCapture(parent)) return;
+
+        if (isLiquidTag(parent) && isLiquidTagSnippet(parent) && parent.markup === node) return;
+
+        if (parent?.type === NodeTypes.RenderMarkup && parent.snippet === node) return;
 
         variables.push(node);
       },
@@ -266,6 +278,10 @@ function isLiquidTag(node?: LiquidHtmlNode): node is LiquidTag {
 
 function isLiquidTagCapture(node: LiquidTag): node is LiquidTagCapture {
   return node.name === NamedTags.capture;
+}
+
+function isLiquidTagSnippet(node: LiquidTag): node is LiquidTagSnippet {
+  return node.name === NamedTags.snippet;
 }
 
 function isLiquidTagAssign(node: LiquidTag): node is LiquidTagAssign {
