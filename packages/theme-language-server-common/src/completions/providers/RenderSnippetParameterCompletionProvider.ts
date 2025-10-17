@@ -1,4 +1,13 @@
-import { NodeTypes } from '@shopify/liquid-html-parser';
+import {
+  LiquidDocParamNode,
+  NodeTypes,
+  LiquidHtmlNode,
+  LiquidTag,
+  LiquidVariableLookup,
+  RenderMarkup,
+  LiquidRawTag,
+  LiquidTagSnippet,
+} from '@shopify/liquid-html-parser';
 import {
   CompletionItem,
   CompletionItemKind,
@@ -10,7 +19,7 @@ import {
 import { CURSOR, LiquidCompletionParams } from '../params';
 import { Provider } from './common';
 import { formatLiquidDocParameter, getParameterCompletionTemplate } from '../../utils/liquidDoc';
-import { GetDocDefinitionForURI } from '@shopify/theme-check-common';
+import { GetDocDefinitionForURI, LiquidDocParameter, visit } from '@shopify/theme-check-common';
 
 export type GetSnippetNamesForURI = (uri: string) => Promise<string[]>;
 
@@ -27,21 +36,25 @@ export class RenderSnippetParameterCompletionProvider implements Provider {
       !node ||
       !parentNode ||
       node.type !== NodeTypes.VariableLookup ||
-      parentNode.type !== NodeTypes.RenderMarkup ||
-      parentNode.snippet.type !== 'String'
+      parentNode.type !== NodeTypes.RenderMarkup
     ) {
       return [];
     }
 
     const userInputStr = node.name?.replace(CURSOR, '') || '';
+    let liquidDocParams;
 
-    const snippetDefinition = await this.getDocDefinitionForURI(
-      params.textDocument.uri,
-      'snippets',
-      parentNode.snippet.value,
-    );
+    if (parentNode.snippet.type === 'String') {
+      const snippetDefinition = await this.getDocDefinitionForURI(
+        params.textDocument.uri,
+        'snippets',
+        parentNode.snippet.value,
+      );
 
-    const liquidDocParams = snippetDefinition?.liquidDoc?.parameters;
+      liquidDocParams = snippetDefinition?.liquidDoc?.parameters;
+    } else if (parentNode.snippet.type === NodeTypes.VariableLookup) {
+      liquidDocParams = getInlineSnippetDocParams(params, parentNode.snippet);
+    }
 
     if (!liquidDocParams) {
       return [];
@@ -76,4 +89,51 @@ export class RenderSnippetParameterCompletionProvider implements Provider {
         };
       });
   }
+}
+
+function getInlineSnippetDocParams(
+  params: LiquidCompletionParams,
+  snippet: LiquidVariableLookup,
+): LiquidDocParameter[] {
+  const ast = params.document.ast;
+  if (ast instanceof Error || ast.type !== NodeTypes.Document) return [];
+
+  if (!snippet.name) return [];
+
+  let snippetNode: LiquidTagSnippet | undefined;
+
+  visit(ast, {
+    LiquidTag(node: LiquidTag) {
+      if (
+        node.name === 'snippet' &&
+        typeof node.markup !== 'string' &&
+        node.markup.type === NodeTypes.VariableLookup &&
+        node.markup.name === snippet.name
+      ) {
+        snippetNode = node as LiquidTagSnippet;
+      }
+    },
+  });
+
+  if (!snippetNode?.children) return [];
+
+  const docNode = snippetNode.children.find(
+    (node): node is LiquidRawTag => node.type === NodeTypes.LiquidRawTag && node.name === 'doc',
+  );
+
+  if (!docNode) return [];
+
+  const paramNodes = (docNode.body.nodes as LiquidHtmlNode[]).filter(
+    (node): node is LiquidDocParamNode => node.type === NodeTypes.LiquidDocParamNode,
+  );
+
+  return paramNodes.map(
+    (node): LiquidDocParameter => ({
+      nodeType: 'param',
+      name: node.paramName.value,
+      description: node.paramDescription?.value ?? null,
+      type: node.paramType?.value ?? null,
+      required: node.required,
+    }),
+  );
 }
