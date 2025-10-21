@@ -1,5 +1,19 @@
 ## theme-check-vscode
 
+## 3.10.1
+
+### Patch Changes
+
+- 8f523617: Bump to TypeScript 5
+- Updated dependencies [dc679574]
+- Updated dependencies [8f523617]
+  - @shopify/prettier-plugin-liquid@1.11.0
+  - @shopify/liquid-html-parser@2.10.0
+  - @shopify/theme-check-common@3.23.1
+  - @shopify/theme-language-server-browser@2.20.1
+  - @shopify/theme-language-server-common@2.20.1
+  - @shopify/theme-language-server-node@2.20.1
+
 ## 3.10.0
 
 ### Minor Changes
