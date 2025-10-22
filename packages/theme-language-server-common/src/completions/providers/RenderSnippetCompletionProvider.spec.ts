@@ -24,11 +24,23 @@ describe('Module: RenderSnippetCompletionProvider', async () => {
 
   it('should complete snippets correctly', async () => {
     await expect(provider).to.complete('{% render "', ['product-card', 'image']);
-    await expect(provider).to.complete('{% render "product', [
+    // VSCode handles filtering
+  });
+
+  it('should complete inline snippets', async () => {
+    const template = `{% snippet my-inline-snippet %}
+  {% echo 'hello' %}
+{% endsnippet %}
+
+{% render m█ %}`;
+
+    await expect(provider).to.complete(template, ['my-inline-snippet']);
+    // VSCode handles filtering
+    await expect(provider).to.complete(template, [
       expect.objectContaining({
         documentation: {
           kind: 'markdown',
-          value: 'snippets/product-card.liquid',
+          value: `Inline snippet "my-inline-snippet"`,
         },
       }),
     ]);
