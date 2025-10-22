@@ -1,7 +1,7 @@
 import { LiquidHtmlNode, LiquidHtmlNodeTypes, SourceCodeType } from './types';
 import { toJSONAST, toLiquidHTMLAST, toSourceCode } from './to-source-code';
 import { expect, describe, it, assert } from 'vitest';
-import { Visitor, findCurrentNode, findJSONNode, visit } from './visitor';
+import { Visitor, findCurrentNode, findJSONNode, visit, findInlineSnippet } from './visitor';
 import { NodeTypes } from '@shopify/liquid-html-parser';
 
 describe('Module: visitor', () => {
@@ -159,5 +159,59 @@ describe('findCurrentNode', () => {
         expect(currentNode.type).to.equal(expected, `In "${source}"`);
       },
     );
+  });
+});
+
+describe('findInlineSnippet', () => {
+  function toAST(code: string) {
+    return toSourceCode('/tmp/foo.liquid', code).ast as LiquidHtmlNode;
+  }
+
+  it('should find an inline snippet by name', () => {
+    const ast = toAST(`
+      {% snippet my_snippet %}
+        <div>Content</div>
+      {% endsnippet %}
+    `);
+
+    const result = findInlineSnippet(ast, 'my_snippet');
+
+    expect(result).not.to.be.null;
+    expect(result?.name).to.equal('snippet');
+    expect(result?.markup.type).to.equal(NodeTypes.VariableLookup);
+    expect(result?.markup.name).to.equal('my_snippet');
+  });
+
+  it('should return null if snippet is not found', () => {
+    const ast = toAST(`
+      {% snippet my_snippet %}
+        <div>Content</div>
+      {% endsnippet %}
+    `);
+
+    const result = findInlineSnippet(ast, 'nonexistent');
+
+    expect(result).to.be.null;
+  });
+
+  it('should find the correct snippet when multiple snippets exist', () => {
+    const ast = toAST(`
+      {% snippet first_snippet %}
+        <div>First</div>
+      {% endsnippet %}
+      
+      {% snippet second_snippet %}
+        <div>Second</div>
+      {% endsnippet %}
+      
+      {% snippet third_snippet %}
+        <div>Third</div>
+      {% endsnippet %}
+    `);
+
+    const result = findInlineSnippet(ast, 'second_snippet');
+
+    expect(result).not.to.be.null;
+    expect(result?.markup.name).to.equal('second_snippet');
   });
 });

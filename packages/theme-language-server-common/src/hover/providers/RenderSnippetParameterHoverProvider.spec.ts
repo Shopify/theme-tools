@@ -46,6 +46,67 @@ describe('Module: RenderSnippetParameterHoverProvider', async () => {
       );
     });
   });
+
+  describe('hover on inline snippet parameters', () => {
+    it('should return parameter info for inline snippet', async () => {
+      provider = createProvider(async () => undefined); // No file-based snippets
+
+      const source = `
+        {% snippet product_card %}
+          {% doc %}
+            @param {string} title - The title of the product
+            @param {number} price - The price of the product
+          {% enddoc %}
+          <div>{{ title }}: {{ price }}</div>
+        {% endsnippet %}
+        
+        {% render product_card, ti█tle: 'My Product', price: 99 %}
+      `;
+
+      await expect(provider).to.hover(source, '### `title`: string\n\nThe title of the product');
+    });
+
+    it('should return null if parameter not found in inline snippet doc', async () => {
+      provider = createProvider(async () => undefined);
+
+      const source = `
+        {% snippet product_card %}
+          {% doc %}
+            @param {string} title - The title of the product
+          {% enddoc %}
+          <div>{{ title }}</div>
+        {% endsnippet %}
+        
+        {% render product_card, unknown_para█m: 'value' %}
+      `;
+
+      await expect(provider).to.hover(source, null);
+    });
+
+    it('should handle multiple inline snippets correctly', async () => {
+      provider = createProvider(async () => undefined);
+
+      const source = `
+        {% snippet first_snippet %}
+          {% doc %}
+            @param {string} first_param - First parameter
+          {% enddoc %}
+          <div>{{ first_param }}</div>
+        {% endsnippet %}
+        
+        {% snippet second_snippet %}
+          {% doc %}
+            @param {number} second_param - Second parameter
+          {% enddoc %}
+          <div>{{ second_param }}</div>
+        {% endsnippet %}
+        
+        {% render second_snippet, second_para█m: 42 %}
+      `;
+
+      await expect(provider).to.hover(source, '### `second_param`: number\n\nSecond parameter');
+    });
+  });
 });
 
 const createProvider = (getSnippetDefinition: GetDocDefinitionForURI) => {
