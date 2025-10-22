@@ -473,4 +473,96 @@ describe('Module: UndefinedObject', () => {
 
     expect(offenses).toHaveLength(0);
   });
+
+  describe('Scope-aware checking for inline snippets', () => {
+    it('No doc tags anywhere - should skip all checks', async () => {
+      const sourceCode = `
+        {{ undefined_in_parent }}
+
+        {% snippet inline_one %}
+          {{ undefined_in_inline }}
+        {% endsnippet %}
+      `;
+
+      const filePath = 'snippets/file.liquid';
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode, filePath);
+
+      expect(offenses).toHaveLength(0);
+    });
+
+    it('Doc tag in parent only - should check parent, skip inline snippets', async () => {
+      const sourceCode = `
+        {% doc %}
+          @param {string} parent_param
+        {% enddoc %}
+
+        {{ parent_param }}
+        {{ undefined_in_parent }}
+
+        {% snippet inline_one %}
+          {{ undefined_in_inline }}
+        {% endsnippet %}
+      `;
+
+      const filePath = 'snippets/file.liquid';
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode, filePath);
+
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toBe("Unknown object 'undefined_in_parent' used.");
+    });
+
+    it('Doc tag in inline snippet only - should skip parent, check inline snippet', async () => {
+      const sourceCode = `
+        {{ undefined_in_parent }}
+
+        {% snippet inline_one %}
+          {% doc %}
+            @param {string} inline_param
+          {% enddoc %}
+          
+          {{ inline_param }}
+          {{ undefined_in_inline }}
+        {% endsnippet %}
+      `;
+
+      const filePath = 'snippets/file.liquid';
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode, filePath);
+
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toBe("Unknown object 'undefined_in_inline' used.");
+    });
+
+    it('Doc tags in both - should check both, but skip inline snippets without docs', async () => {
+      const sourceCode = `
+        {% doc %}
+          @param {string} parent_param
+        {% enddoc %}
+
+        {{ parent_param }}
+        {{ undefined_in_parent }}
+
+        {% snippet inline_one %}
+          {% doc %}
+            @param {string} inline_param
+          {% enddoc %}
+          
+          {{ inline_param }}
+          {{ undefined_in_inline }}
+        {% endsnippet %}
+
+        {% snippet inline_two %}
+          {{ anything }}
+        {% endsnippet %}
+      `;
+
+      const filePath = 'snippets/file.liquid';
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode, filePath);
+
+      expect(offenses).toHaveLength(2);
+      expect(offenses.map((o) => o.message)).toEqual([
+        "Unknown object 'undefined_in_parent' used.",
+        "Unknown object 'undefined_in_inline' used.",
+      ]);
+    });
+  });
 });
