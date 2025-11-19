@@ -31,11 +31,9 @@
   "dependencies": {
     "@shopify/liquid-html-parser": "^2.9.0",
     "@shopify/theme-check-common": "^3.23.0",
+    "@shopify/theme-check-node": "^3.23.0",
     "acorn": "^8.14.1",
     "acorn-walk": "^8.3.4",
     "vscode-uri": "^3.0.7"
-  },
-  "devDependencies": {
-    "@shopify/theme-check-node": "^3.23.0"
   }
 }
