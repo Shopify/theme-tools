@@ -78,7 +78,6 @@ Liquid <: Helpers {
     | liquidTagOpenIf
     | liquidTagOpenPaginate
     | liquidTagOpenUnless
-    | liquidTagOpenSnippet
 
   liquidTagOpen =
     | liquidTagOpenStrict
@@ -106,7 +105,6 @@ Liquid <: Helpers {
   liquidTagIncrement = liquidTagRule<"increment", variableSegmentAsLookupMarkup>
   liquidTagDecrement = liquidTagRule<"decrement", variableSegmentAsLookupMarkup>
   liquidTagOpenCapture = liquidTagOpenRule<"capture", variableSegmentAsLookupMarkup>
-  liquidTagOpenSnippet = liquidTagOpenRule<"snippet", variableSegmentAsLookupMarkup>
   variableSegmentAsLookupMarkup = variableSegmentAsLookup space*
 
   liquidTagSection = liquidTagRule<"section", liquidTagSectionMarkup>
@@ -324,7 +322,6 @@ Liquid <: Helpers {
     | "if"
     | "unless"
     | "tablerow"
-    | "snippet"
     ) endOfIdentifier
 
   delimTag = "-%}" | "%}"

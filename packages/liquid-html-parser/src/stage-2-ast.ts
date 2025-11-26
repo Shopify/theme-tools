@@ -212,7 +212,6 @@ export type LiquidTagNamed =
   | LiquidTagRender
   | LiquidTagSection
   | LiquidTagSections
-  | LiquidTagSnippet
   | LiquidTagTablerow
   | LiquidTagUnless;
 
@@ -278,9 +277,6 @@ export interface LiquidTagDecrement
 
 /** https://shopify.dev/docs/api/liquid/tags#capture */
 export interface LiquidTagCapture extends LiquidTagNode<NamedTags.capture, LiquidVariableLookup> {}
-
-/** https://shopify.dev/docs/api/liquid/tags#snippet */
-export interface LiquidTagSnippet extends LiquidTagNode<NamedTags.snippet, LiquidVariableLookup> {}
 
 /** https://shopify.dev/docs/api/liquid/tags#cycle */
 export interface LiquidTagCycle extends LiquidTagNode<NamedTags.cycle, CycleMarkup> {}
@@ -1540,15 +1536,6 @@ function toNamedLiquidTag(
     }
 
     case NamedTags.capture: {
-      return {
-        ...liquidTagBaseAttributes(node),
-        name: node.name,
-        markup: toExpression(node.markup) as LiquidVariableLookup,
-        children: [],
-      };
-    }
-
-    case NamedTags.snippet: {
       return {
         ...liquidTagBaseAttributes(node),
         name: node.name,

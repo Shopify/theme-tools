@@ -237,7 +237,6 @@ export type ConcreteLiquidTagOpen = ConcreteLiquidTagOpenBaseCase | ConcreteLiqu
 export type ConcreteLiquidTagOpenNamed =
   | ConcreteLiquidTagOpenCase
   | ConcreteLiquidTagOpenCapture
-  | ConcreteLiquidTagOpenSnippet
   | ConcreteLiquidTagOpenIf
   | ConcreteLiquidTagOpenUnless
   | ConcreteLiquidTagOpenForm
@@ -255,8 +254,6 @@ export interface ConcreteLiquidTagOpenBaseCase extends ConcreteLiquidTagOpenNode
 
 export interface ConcreteLiquidTagOpenCapture
   extends ConcreteLiquidTagOpenNode<NamedTags.capture, ConcreteLiquidVariableLookup> {}
-export interface ConcreteLiquidTagOpenSnippet
-  extends ConcreteLiquidTagOpenNode<NamedTags.snippet, ConcreteLiquidVariableLookup> {}
 
 export interface ConcreteLiquidTagOpenCase
   extends ConcreteLiquidTagOpenNode<NamedTags.case, ConcreteLiquidExpression> {}
@@ -749,7 +746,6 @@ function toCST<T>(
     },
 
     liquidTagOpenCapture: 0,
-    liquidTagOpenSnippet: 0,
     liquidTagOpenForm: 0,
     liquidTagOpenFormMarkup: 0,
     liquidTagOpenFor: 0,
