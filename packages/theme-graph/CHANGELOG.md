@@ -1,5 +1,18 @@
 # shopify/theme-graph
 
+## 0.2.2
+
+### Patch Changes
+
+- a7444f17: Include @shopify/theme-check-node as a dependency
+- 8f523617: Bump to TypeScript 5
+- Updated dependencies [dc679574]
+- Updated dependencies [8f523617]
+- Updated dependencies [7a8b3cce]
+  - @shopify/liquid-html-parser@2.10.0
+  - @shopify/theme-check-common@3.24.0
+  - @shopify/theme-check-node@3.24.0
+
 ## 0.2.1
 
 ### Patch Changes
