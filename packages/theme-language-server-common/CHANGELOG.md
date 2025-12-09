@@ -1,5 +1,18 @@
 # @shopify/theme-language-server-common
 
+## 2.20.1
+
+### Patch Changes
+
+- 8f523617: Bump to TypeScript 5
+- Updated dependencies [a7444f17]
+- Updated dependencies [dc679574]
+- Updated dependencies [8f523617]
+- Updated dependencies [7a8b3cce]
+  - @shopify/theme-graph@0.2.2
+  - @shopify/liquid-html-parser@2.10.0
+  - @shopify/theme-check-common@3.24.0
+
 ## 2.20.0
 
 ### Minor Changes
