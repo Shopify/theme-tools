@@ -87,4 +87,95 @@ describe('Module: RenderSnippetParameterCompletionProvider', async () => {
   it('does not provide completion options if the snippet does not exist', async () => {
     await expect(provider).to.complete(`{% render 'fake-snippet', █ %}`, []);
   });
+
+  describe('inline snippets', () => {
+    it('provide completion options', async () => {
+      const content = `
+      {% snippet example %}
+        {% doc %}
+          @param {string} title 
+          @param {number} count 
+          @param description 
+        {% enddoc %}
+        <div>{{ title }} - {{ count }}</div>
+      {% endsnippet %}
+
+      {% render example, █ %}
+    `;
+      await expect(provider).to.complete(content, ['title', 'count', 'description']);
+    });
+
+    it('provide completion options and exclude already specified params', async () => {
+      const content = `
+      {% snippet example %}
+        {% doc %}
+          @param {string} title
+          @param {number} count
+          @param {boolean} active
+        {% enddoc %}
+        <div>{{ title }}</div>
+      {% endsnippet %}
+
+      {% render example, title: 'foo', █ %}
+    `;
+      await expect(provider).to.complete(content, ['count', 'active']);
+    });
+
+    it('do not provide completion options if there is no doc tag', async () => {
+      const content = `
+      {% snippet example %}
+        <div>No doc block here</div>
+      {% endsnippet %}
+
+      {% render example, █ %}
+    `;
+      await expect(provider).to.complete(content, []);
+    });
+
+    it('do not provide completion options if the snippet does not exist', async () => {
+      const content = `
+      {% snippet example %}
+        {% doc %}
+          @param {string} title
+        {% enddoc %}
+      {% endsnippet %}
+
+      {% render nonexistent, █ %}
+    `;
+      await expect(provider).to.complete(content, []);
+    });
+
+    it('provide completion options from the doc tag in the current scope', async () => {
+      let content = `
+        {% snippet outer %}
+          {% doc %}
+            @param {string} outerParam
+          {% enddoc %}
+          {% snippet inner %}
+            {% doc %}
+              @param {string} innerParam
+            {% enddoc %}
+            <div>{{ innerParam }}</div>
+          {% endsnippet %}
+          {% render inner, █ %}
+        {% endsnippet %}
+      `;
+      await expect(provider).to.complete(content, ['innerParam']);
+      content = `
+        {% snippet outer %}
+          {% doc %}
+            @param {string} outerParam
+          {% enddoc %}
+          {% snippet inner %}
+            {% doc %}
+              @param {string} innerParam
+            {% enddoc %}
+            <div>{{ innerParam }}</div>
+          {% endsnippet %}
+        {% endsnippet %}
+        {% render outer, █ %}
+      `;
+      await expect(provider).to.complete(content, ['outerParam']);
+    });
+  });
 });
