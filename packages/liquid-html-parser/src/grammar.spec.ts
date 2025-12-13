@@ -101,7 +101,7 @@ describe('Unit: liquidHtmlGrammar', () => {
         expectMatchSucceeded('<6h>').to.be.false;
 
         function expectMatchSucceeded(text: string) {
-          const match = grammar.LiquidHTML.match(text, 'Node');
+          using match = grammar.LiquidHTML.match(text, 'Node');
           return expect(match.succeeded(), text);
         }
       });
@@ -129,7 +129,7 @@ describe('Unit: liquidHtmlGrammar', () => {
         `).to.be.true;
 
         function expectMatchSucceeded(text: string) {
-          const match = grammar.LiquidStatement.match(text.trimStart(), 'Node');
+          using match = grammar.LiquidStatement.match(text.trimStart(), 'Node');
           return expect(match.succeeded(), text);
         }
       });
@@ -156,7 +156,7 @@ describe('Unit: liquidHtmlGrammar', () => {
     });
 
     function expectMatchSucceeded(text: string) {
-      const match = placeholderGrammars.LiquidHTML.match(text.trimStart(), 'Node');
+      using match = placeholderGrammars.LiquidHTML.match(text.trimStart(), 'Node');
       return expect(match.succeeded(), text);
     }
   });
