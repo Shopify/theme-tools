@@ -1,5 +1,20 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.11.0
+
+### Minor Changes
+
+- dc679574: Added parsing support for the `snippet` tag by updating the ohm rules
+- 7a8b3cce: Reach parity with Liquid 5.11.0
+
+### Patch Changes
+
+- 8f523617: Bump to TypeScript 5
+- Updated dependencies [dc679574]
+- Updated dependencies [8f523617]
+- Updated dependencies [7a8b3cce]
+  - @shopify/liquid-html-parser@2.10.0
+
 ## 1.10.0
 
 ### Minor Changes
