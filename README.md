@@ -14,7 +14,7 @@
 
 <div align="center">
 
-🗣 [Slack](https://join.slack.com/t/shopifypartners/shared_invite/zt-sdr2quab-mGkzkttZ2hnVm0~8noSyvw) | 📝 [Changelog](https://github.com/Shopify/theme-tools/blob/main/packages/vscode-extension/CHANGELOG.md)
+🗣 [Dev Community](https://community.shopify.dev/) | 📝 [Changelog](https://github.com/Shopify/theme-tools/blob/main/packages/vscode-extension/CHANGELOG.md)
 
 </div>
 
