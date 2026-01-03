@@ -40,21 +40,26 @@ export const LiquidFreeSettings: LiquidCheckDefinition = {
 
         visit<SourceCodeType.JSON, void>(jsonFile, {
           Property(schemaNode, ancestors) {
-            if (isInArrayWithParentKey(ancestors, 'settings') && isLiteralNode(schemaNode.value)) {
-              const { value, loc } = schemaNode.value;
-              const propertyValue = schemaNode.key.value;
-              if (
-                typeof value === 'string' &&
-                propertyValue !== 'visible_if' &&
-                value.includes('{%') &&
-                value.includes('%}')
-              ) {
-                context.report({
-                  message: 'Settings values cannot contain liquid logic.',
-                  startIndex: node.blockStartPosition.end + loc!.start.offset,
-                  endIndex: node.blockStartPosition.end + loc!.end.offset,
-                });
-              }
+            if (
+              !isInArrayWithParentKey(ancestors, 'settings') ||
+              !isLiteralNode(schemaNode.value)
+            ) {
+              return;
+            }
+
+            const { value, loc } = schemaNode.value;
+            const propertyValue = schemaNode.key.value;
+            if (
+              typeof value === 'string' &&
+              propertyValue !== 'visible_if' &&
+              value.includes('{%') &&
+              value.includes('%}')
+            ) {
+              context.report({
+                message: 'Settings values cannot contain liquid logic.',
+                startIndex: node.blockStartPosition.end + loc!.start.offset,
+                endIndex: node.blockStartPosition.end + loc!.end.offset,
+              });
             }
           },
         });
