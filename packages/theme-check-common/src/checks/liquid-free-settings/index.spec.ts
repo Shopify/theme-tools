@@ -51,6 +51,29 @@ describe('LiquidFreeSettings validation', () => {
       expect(offenses).to.have.length(0);
     });
 
+    it(`should not report errors for valid settings with liquid type field in ${path} bucket`, async () => {
+      const theme: MockTheme = {
+        [`${path}/test-section.liquid`]: `
+        {% schema %}
+        {
+          "name": "Section name",
+          "settings": [
+            {
+              "id": "text_value",
+              "type": "liquid",
+              "label": "Text Value",
+              "default": "{% render 'block' %}"
+            }
+          ]
+        }
+        {% endschema %}
+      `,
+      };
+
+      const offenses = await check(theme, [LiquidFreeSettings]);
+      expect(offenses).to.have.length(0);
+    });
+
     it(`should report an error when settings value contains Liquid logic in ${path} bucket`, async () => {
       const theme: MockTheme = {
         [`${path}/test-section.liquid`]: `
