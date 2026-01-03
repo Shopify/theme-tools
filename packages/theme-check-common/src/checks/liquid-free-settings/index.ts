@@ -42,7 +42,8 @@ export const LiquidFreeSettings: LiquidCheckDefinition = {
           Property(schemaNode, ancestors) {
             if (
               !isInArrayWithParentKey(ancestors, 'settings') ||
-              !isLiteralNode(schemaNode.value)
+              !isLiteralNode(schemaNode.value) ||
+              isLiquidType(ancestors)
             ) {
               return;
             }
@@ -70,6 +71,22 @@ export const LiquidFreeSettings: LiquidCheckDefinition = {
 
 function isLiteralNode(node: JSONNode): node is LiteralNode {
   return node.type === 'Literal';
+}
+
+function isLiquidType(ancestors: JSONNode[]): boolean {
+  return ancestors.some((ancestor) => {
+    if (ancestor.type !== 'Object') {
+      return false;
+    }
+
+    return ancestor.children.some(({ key, value }) => {
+      if (key.value !== 'type' || !isLiteralNode(value)) {
+        return false;
+      }
+
+      return value.value === 'liquid';
+    });
+  });
 }
 
 function isInArrayWithParentKey(ancestors: JSONNode[], parentKey: string): boolean {
