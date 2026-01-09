@@ -4,7 +4,16 @@ import {
   getDefaultValueForType,
   LiquidDocParameter,
   SupportedDocTagTypes,
+  visit,
 } from '@shopify/theme-check-common';
+import {
+  LiquidDocParamNode,
+  LiquidHtmlNode,
+  LiquidRawTag,
+  LiquidTag,
+  LiquidTagSnippet,
+  NodeTypes,
+} from '@shopify/liquid-html-parser';
 
 export function formatLiquidDocParameter(
   { name, type, description, required }: LiquidDocParameter,
@@ -99,4 +108,48 @@ export function formatLiquidDocContentMarkdown(
   }
 
   return parts.join('\n');
+}
+
+export function getInlineSnippetDocParams(
+  ast: LiquidHtmlNode | Error,
+  snippetName: string,
+): LiquidDocParameter[] {
+  if (ast instanceof Error || ast.type !== NodeTypes.Document) return [];
+
+  let snippetNode: LiquidTagSnippet | undefined;
+
+  visit(ast, {
+    LiquidTag(node: LiquidTag) {
+      if (
+        node.name === 'snippet' &&
+        typeof node.markup !== 'string' &&
+        node.markup.type === NodeTypes.VariableLookup &&
+        node.markup.name === snippetName
+      ) {
+        snippetNode = node as LiquidTagSnippet;
+      }
+    },
+  });
+
+  if (!snippetNode?.children) return [];
+
+  const docNode = snippetNode.children.find(
+    (node): node is LiquidRawTag => node.type === NodeTypes.LiquidRawTag && node.name === 'doc',
+  );
+
+  if (!docNode) return [];
+
+  const paramNodes = (docNode.body.nodes as LiquidHtmlNode[]).filter(
+    (node): node is LiquidDocParamNode => node.type === NodeTypes.LiquidDocParamNode,
+  );
+
+  return paramNodes.map(
+    (node): LiquidDocParameter => ({
+      nodeType: 'param',
+      name: node.paramName.value,
+      description: node.paramDescription?.value ?? null,
+      type: node.paramType?.value ?? null,
+      required: node.required,
+    }),
+  );
 }
