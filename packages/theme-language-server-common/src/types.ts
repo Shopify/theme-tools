@@ -98,6 +98,14 @@ export interface RequiredDependencies {
    * This should only be used in node environments; not on the browser.
    */
   fetchMetafieldDefinitionsForURI: (uri: URI) => Promise<void>;
+
+  /**
+   * Controls augmentation of the provided ThemeDocset.
+   *
+   * - true (default): wrap with AugmentedThemeDocset
+   * - false: use the provided ThemeDocset as-is
+   */
+  augmentDocset?: boolean;
 }
 
 export namespace ThemeGraphReferenceRequest {
