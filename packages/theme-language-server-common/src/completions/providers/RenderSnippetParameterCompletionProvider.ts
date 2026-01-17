@@ -9,7 +9,11 @@ import {
 } from 'vscode-languageserver';
 import { CURSOR, LiquidCompletionParams } from '../params';
 import { Provider } from './common';
-import { formatLiquidDocParameter, getParameterCompletionTemplate } from '../../utils/liquidDoc';
+import {
+  formatLiquidDocParameter,
+  getInlineSnippetDocParams,
+  getParameterCompletionTemplate,
+} from '../../utils/liquidDoc';
 import { GetDocDefinitionForURI } from '@shopify/theme-check-common';
 
 export type GetSnippetNamesForURI = (uri: string) => Promise<string[]>;
@@ -27,21 +31,25 @@ export class RenderSnippetParameterCompletionProvider implements Provider {
       !node ||
       !parentNode ||
       node.type !== NodeTypes.VariableLookup ||
-      parentNode.type !== NodeTypes.RenderMarkup ||
-      parentNode.snippet.type !== 'String'
+      parentNode.type !== NodeTypes.RenderMarkup
     ) {
       return [];
     }
 
     const userInputStr = node.name?.replace(CURSOR, '') || '';
+    let liquidDocParams;
 
-    const snippetDefinition = await this.getDocDefinitionForURI(
-      params.textDocument.uri,
-      'snippets',
-      parentNode.snippet.value,
-    );
+    if (parentNode.snippet.type === 'String') {
+      const snippetDefinition = await this.getDocDefinitionForURI(
+        params.textDocument.uri,
+        'snippets',
+        parentNode.snippet.value,
+      );
 
-    const liquidDocParams = snippetDefinition?.liquidDoc?.parameters;
+      liquidDocParams = snippetDefinition?.liquidDoc?.parameters;
+    } else if (parentNode.snippet.type === NodeTypes.VariableLookup && parentNode.snippet.name) {
+      liquidDocParams = getInlineSnippetDocParams(params.document.ast, parentNode.snippet.name);
+    }
 
     if (!liquidDocParams) {
       return [];
