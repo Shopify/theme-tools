@@ -100,6 +100,7 @@ export function startServer(
     jsonValidationSet,
     themeDocset: remoteThemeDocset,
     fetchMetafieldDefinitionsForURI,
+    augmentDocset = true,
   }: Dependencies,
 ) {
   const fs = new CachedFileSystem(injectedFs);
@@ -177,7 +178,9 @@ export function startServer(
   };
 
   // These are augmented here so that the caching is maintained over different runs.
-  const themeDocset = new AugmentedThemeDocset(remoteThemeDocset);
+  // Allow consumers to disable augmentation for vanilla liquid LSP
+  const themeDocset =
+    augmentDocset ? new AugmentedThemeDocset(remoteThemeDocset) : remoteThemeDocset;
   const cssLanguageService = new CSSLanguageService(documentManager);
   const runChecks = debounce(
     makeRunChecks(documentManager, diagnosticsManager, {
