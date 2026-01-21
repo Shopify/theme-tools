@@ -1,5 +1,23 @@
 ## theme-check-vscode
 
+## 3.11.0
+
+### Minor Changes
+
+- 56a8aeeb: Respect .prettierignore when formatting local VSCode files
+
+### Patch Changes
+
+- 8f523617: Bump to TypeScript 5
+- Updated dependencies [8f523617]
+- Updated dependencies [4fca8ef6]
+  - @shopify/prettier-plugin-liquid@1.10.1
+  - @shopify/theme-check-common@3.23.1
+  - @shopify/liquid-html-parser@2.9.1
+  - @shopify/theme-language-server-browser@2.20.1
+  - @shopify/theme-language-server-common@2.20.1
+  - @shopify/theme-language-server-node@2.20.1
+
 ## 3.10.0
 
 ### Minor Changes

@@ -1,5 +1,16 @@
 # @shopify/theme-language-server-node
 
+## 2.20.1
+
+### Patch Changes
+
+- 8f523617: Bump to TypeScript 5
+- Updated dependencies [8f523617]
+- Updated dependencies [4fca8ef6]
+  - @shopify/theme-check-node@3.23.1
+  - @shopify/theme-check-docs-updater@3.23.1
+  - @shopify/theme-language-server-common@2.20.1
+
 ## 2.20.0
 
 ### Patch Changes

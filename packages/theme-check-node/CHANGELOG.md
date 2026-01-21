@@ -1,5 +1,14 @@
 # @shopify/theme-check-node
 
+## 3.23.1
+
+### Patch Changes
+
+- 8f523617: Bump to TypeScript 5
+- Updated dependencies [8f523617]
+  - @shopify/theme-check-common@3.23.1
+  - @shopify/theme-check-docs-updater@3.23.1
+
 ## 3.23.0
 
 ### Minor Changes
