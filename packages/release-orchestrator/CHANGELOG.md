@@ -1,5 +1,11 @@
 # release-orchestrator
 
+## 1.2.1
+
+### Patch Changes
+
+- 8f523617: Bump to TypeScript 5
+
 ## 1.2.0
 
 ### Minor Changes
