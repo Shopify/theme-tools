@@ -30,7 +30,7 @@
     "cross-fetch": "^4.0.0",
     "jsonc-parser": "^3.2.0",
     "line-column": "^1.0.2",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "minimatch": "^9.0.1",
     "vscode-json-languageservice": "^5.3.10",
     "vscode-uri": "^3.0.7"
