@@ -113,6 +113,7 @@ const browserClientConfig = {
     ...baseConfig.resolve,
     fallback: {
       assert: require.resolve('assert'),
+      process: require.resolve('process/browser.js'),
     },
   },
   output: {
@@ -125,6 +126,9 @@ const browserClientConfig = {
     vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded
   },
   plugins: [
+    new webpack.ProvidePlugin({
+      process: 'process/browser.js',
+    }),
     new webpack.DefinePlugin({
       // A flag that lets us do fun webpack-only shenanigans...
       'process.env.WEBPACK_MODE': true,
