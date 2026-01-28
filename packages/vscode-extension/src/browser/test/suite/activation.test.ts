@@ -2,10 +2,11 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 
 suite('Extension Activation', () => {
-  const originalError = console.error;
   const errors: string[] = [];
+  const originalError = console.error;
 
   suiteSetup(() => {
+    // Intercept console.error to catch "require is not defined" type errors
     console.error = (...args: unknown[]) => {
       errors.push(args.map(String).join(' '));
       originalError.apply(console, args);
@@ -16,17 +17,20 @@ suite('Extension Activation', () => {
     console.error = originalError;
   });
 
-  test('extension should activate without errors', async () => {
-    const ext = vscode.extensions.getExtension('shopify.theme-check-vscode');
-    assert.ok(ext, 'Extension should be found');
+  test('Extension should activate without errors', async () => {
+    const extension = vscode.extensions.getExtension('Shopify.theme-check-vscode');
+    assert.ok(extension, 'Extension should be present');
 
-    await ext.activate();
-    assert.strictEqual(ext.isActive, true, 'Extension should be active');
+    await extension.activate();
+    assert.ok(extension.isActive, 'Extension should be active');
 
-    // Filter for critical errors (like "require is not defined")
-    const criticalErrors = errors.filter(
-      (e) => e.includes('require is not defined') || e.includes('ReferenceError'),
+    // Check no "require is not defined" or similar errors
+    const criticalErrors = errors.filter(e =>
+      e.includes('require is not defined') ||
+      e.includes('is not a function') ||
+      e.includes('Cannot read properties of undefined')
     );
-    assert.strictEqual(criticalErrors.length, 0, `No critical errors expected, got: ${criticalErrors.join(', ')}`);
+    assert.strictEqual(criticalErrors.length, 0,
+      `Critical errors detected: ${criticalErrors.join('; ')}`);
   });
 });
