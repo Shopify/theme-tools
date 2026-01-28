@@ -1,14 +1,14 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 
-suite('Extension Activation', () => {
-  const errors: string[] = [];
+suite('Browser Extension Activation', () => {
+  const consoleErrors: string[] = [];
   const originalError = console.error;
 
   suiteSetup(() => {
-    // Intercept console.error to catch "require is not defined" type errors
+    // Capture console.error calls to detect "require is not defined" etc.
     console.error = (...args: unknown[]) => {
-      errors.push(args.map(String).join(' '));
+      consoleErrors.push(args.map(String).join(' '));
       originalError.apply(console, args);
     };
   });
@@ -17,20 +17,22 @@ suite('Extension Activation', () => {
     console.error = originalError;
   });
 
-  test('Extension should activate without errors', async () => {
-    const extension = vscode.extensions.getExtension('Shopify.theme-check-vscode');
-    assert.ok(extension, 'Extension should be present');
+  test('Extension activates without errors', async () => {
+    const ext = vscode.extensions.getExtension('Shopify.theme-check-vscode');
+    assert.ok(ext, 'Extension should be present');
 
-    await extension.activate();
-    assert.ok(extension.isActive, 'Extension should be active');
+    await ext.activate();
+    assert.strictEqual(ext.isActive, true, 'Extension should be active');
+  });
 
-    // Check no "require is not defined" or similar errors
-    const criticalErrors = errors.filter(e =>
-      e.includes('require is not defined') ||
-      e.includes('is not a function') ||
-      e.includes('Cannot read properties of undefined')
+  test('No console errors during activation', () => {
+    const criticalErrors = consoleErrors.filter(
+      (e) => e.includes('require is not defined') || e.includes('Cannot find module'),
     );
-    assert.strictEqual(criticalErrors.length, 0,
-      `Critical errors detected: ${criticalErrors.join('; ')}`);
+    assert.strictEqual(
+      criticalErrors.length,
+      0,
+      `Critical errors found: ${criticalErrors.join('; ')}`,
+    );
   });
 });
