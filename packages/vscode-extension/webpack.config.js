@@ -105,7 +105,16 @@ const desktopConfig = {
 const browserClientConfig = {
   ...baseConfig,
   target: 'webworker',
-  entry: { extension: './src/browser/extension.ts', },
+  entry: {
+    extension: './src/browser/extension.ts',
+    'test/suite/index': './src/browser/test/suite/index.ts',
+  },
+  resolve: {
+    ...baseConfig.resolve,
+    fallback: {
+      assert: require.resolve('assert'),
+    },
+  },
   output: {
     path: path.resolve(__dirname, 'dist', 'browser'),
     filename: '[name].js',
