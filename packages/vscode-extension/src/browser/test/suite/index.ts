@@ -4,8 +4,7 @@ require('mocha/mocha');
 export function run(): Promise<void> {
   return new Promise((resolve, reject) => {
     mocha.setup({
-      ui: 'bdd',
-      timeout: 2000,
+      ui: 'tdd',
       reporter: undefined,
     });
 
