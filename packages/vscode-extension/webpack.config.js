@@ -105,7 +105,17 @@ const desktopConfig = {
 const browserClientConfig = {
   ...baseConfig,
   target: 'webworker',
-  entry: { extension: './src/browser/extension.ts', },
+  entry: {
+    extension: './src/browser/extension.ts',
+    'test/suite/index': './src/browser/test/suite/index.ts',
+  },
+  resolve: {
+    ...baseConfig.resolve,
+    fallback: {
+      assert: require.resolve('assert'),
+      process: require.resolve('process/browser.js'),
+    },
+  },
   output: {
     path: path.resolve(__dirname, 'dist', 'browser'),
     filename: '[name].js',
@@ -116,6 +126,9 @@ const browserClientConfig = {
     vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded
   },
   plugins: [
+    new webpack.ProvidePlugin({
+      process: 'process/browser.js',
+    }),
     new webpack.DefinePlugin({
       // A flag that lets us do fun webpack-only shenanigans...
       'process.env.WEBPACK_MODE': true,
