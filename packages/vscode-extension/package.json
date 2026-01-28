@@ -52,6 +52,7 @@
     "publish:vsce": "vsce publish --no-dependencies $npm_package_version",
     "publish:ovsx": "ovsx publish --yarn",
     "test": "vitest",
+    "test:web": "yarn build && vscode-test-web --browserType=chromium --headless --extensionDevelopmentPath=. --extensionTestsPath=./dist/browser/test/suite/index.js",
     "test:build": "tsc -p . --outDir out",
     "test:watch": "tsc -p . -w --outDir out",
     "type-check": "tsc --noEmit"
