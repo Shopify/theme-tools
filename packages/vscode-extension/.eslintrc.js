@@ -19,4 +19,12 @@ module.exports = {
     'node': true,
   },
   ignorePatterns: ['out', 'dist', '**/*.d.ts'],
+  overrides: [
+    {
+      files: ['test/**/*.ts'],
+      env: {
+        mocha: true,
+      },
+    },
+  ],
 };
