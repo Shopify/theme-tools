@@ -35,6 +35,7 @@
     "postrelease": "yarn --cwd packages/prettier-plugin-liquid prerelease",
     "reset": "find . -name \"node_modules\" -type d -prune -exec rm -rf '{}' +",
     "test": "vitest",
+    "test:e2e:browser": "yarn --cwd packages/vscode-extension test:web",
     "theme-check": "node packages/theme-check-node/dist/cli.js",
     "type-check": "yarn workspaces run type-check"
   },
