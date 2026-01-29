@@ -47,6 +47,7 @@ export * from './fixes';
 export * from './ignore';
 export * from './json';
 export * from './JSONValidator';
+export * from './CSSValidator';
 export * as path from './path';
 export * from './to-schema';
 export * from './to-source-code';

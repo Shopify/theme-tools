@@ -65,6 +65,8 @@ import { ValidVisibleIf, ValidVisibleIfSettingsSchema } from './valid-visible-if
 import { VariableName } from './variable-name';
 import { AppBlockMissingSchema } from './app-block-missing-schema';
 import { UniqueSettingIds } from './unique-settings-id';
+import { ValidScopedStylesheetContent } from './valid-scoped-stylesheet-content';
+import { ValidStylesheetContent } from './valid-stylesheet-content';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -133,6 +135,8 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidVisibleIfSettingsSchema,
   VariableName,
   ValidSchemaName,
+  ValidScopedStylesheetContent,
+  ValidStylesheetContent,
 ];
 
 /**
