@@ -1,7 +1,14 @@
 // Required: Mocha in browser context
 require('mocha/mocha');
 
-export function run(): Promise<void> {
+export async function run(): Promise<void> {
+  // Debug delay: allows attaching debugger before tests run
+  const delay = process.env.DEBUG_DELAY ? parseInt(process.env.DEBUG_DELAY, 10) : 0;
+  if (delay > 0) {
+    console.log(`[DEBUG] Waiting ${delay}ms for debugger attachment...`);
+    await new Promise((r) => setTimeout(r, delay));
+  }
+
   return new Promise((resolve, reject) => {
     mocha.setup({
       ui: 'tdd',

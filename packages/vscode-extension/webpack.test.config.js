@@ -70,6 +70,7 @@ const browserTestConfig = {
     }),
     new webpack.DefinePlugin({
       'process.env.WEBPACK_MODE': true,
+      'process.env.DEBUG_DELAY': JSON.stringify(process.env.DEBUG_DELAY || '0'),
     }),
   ],
   devtool: 'source-map',
