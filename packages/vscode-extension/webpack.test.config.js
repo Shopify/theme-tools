@@ -71,6 +71,7 @@ const browserTestConfig = {
     new webpack.DefinePlugin({
       'process.env.WEBPACK_MODE': true,
       'process.env.DEBUG_DELAY': JSON.stringify(process.env.DEBUG_DELAY || '0'),
+      'process.env.WATCH_MODE': JSON.stringify(process.env.WATCH_MODE || ''),
     }),
   ],
   devtool: 'source-map',
