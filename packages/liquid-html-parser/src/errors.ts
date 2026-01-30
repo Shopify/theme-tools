@@ -1,5 +1,5 @@
 import lineColumn from 'line-column';
-import { MatchResult } from 'ohm-js';
+import { MatchResult } from '@ohm-js/wasm';
 import { NodeTypes, Position } from './types';
 
 interface LineColPosition {

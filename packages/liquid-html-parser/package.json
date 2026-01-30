@@ -32,6 +32,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@ohm-js/wasm": "^0.6.8",
     "line-column": "^1.0.2",
     "ohm-js": "^17.0.0"
   },
