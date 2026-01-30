@@ -9,6 +9,8 @@ import {
   createCorrector,
   Dependencies,
   extractDocDefinition,
+  extractStylesheetFromCSS,
+  extractStylesheetSelectors,
   FixApplicator,
   isBlock,
   isSection,
@@ -19,6 +21,7 @@ import {
   recommended,
   SectionSchema,
   SourceCodeType,
+  Stylesheet,
   StringCorrector,
   Theme,
   ThemeBlockSchema,
@@ -96,6 +99,28 @@ export async function check(
         return undefined;
       }
       return extractDocDefinition(file.uri, file.ast);
+    },
+    async getStylesheetTagSelectors() {
+      const result = new Map<string, Stylesheet>();
+      for (const file of theme) {
+        if (!isLiquidHtmlNode(file.ast)) continue;
+        const relativePath = path.relative(file.uri, rootUri);
+        const selectors = extractStylesheetSelectors(file.uri, file.ast);
+        result.set(relativePath, selectors);
+      }
+      return result;
+    },
+    async getAssetStylesheetSelectors() {
+      const result = new Map<string, Stylesheet>();
+      // Find all .css files in assets folder
+      for (const [relativePath, content] of Object.entries(themeDesc)) {
+        if (relativePath.startsWith('assets/') && relativePath.endsWith('.css')) {
+          const uri = path.join(rootUri, relativePath);
+          const stylesheet = extractStylesheetFromCSS(uri, content);
+          result.set(relativePath, stylesheet);
+        }
+      }
+      return result;
     },
     themeDocset: {
       async filters() {

@@ -3,21 +3,29 @@ import {
   DocDefinition,
   JSONSourceCode,
   JSONValidator,
+  LiquidHtmlNodeTypes,
   LiquidSourceCode,
   Offense,
+  Reference,
   SectionSchema,
+  SourceCodeType,
+  Stylesheet,
   Theme,
   ThemeBlockSchema,
   toSourceCode as commonToSourceCode,
   check as coreCheck,
   extractDocDefinition,
+  extractStylesheetFromCSS,
+  extractStylesheetSelectors,
   filePathSupportsLiquidDoc,
   isBlock,
   isIgnored,
   isSection,
+  parseJSON,
   memo,
   path as pathUtils,
   toSchema,
+  visit,
 } from '@shopify/theme-check-common';
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
 import { isLiquidHtmlNode } from '@shopify/liquid-html-parser';
@@ -134,6 +142,100 @@ export async function themeCheckRun(
       }),
     ]),
   );
+  const stylesheetTagSelectors = new Map(
+    theme.map((file) => [
+      path.relative(URI.file(root).toString(), file.uri),
+      memo(async (): Promise<Stylesheet | undefined> => {
+        const ast = file.ast;
+        if (!isLiquidHtmlNode(ast)) {
+          return undefined;
+        }
+        return extractStylesheetSelectors(file.uri, ast);
+      }),
+    ]),
+  );
+
+  // Get all CSS files in assets folder
+  const assetsPath = path.join(root, 'assets');
+  let cssFilePaths: string[] = [];
+  try {
+    cssFilePaths = await asyncGlob('**/*.css', { cwd: assetsPath });
+  } catch {
+    // Ignore errors (e.g., assets folder doesn't exist)
+  }
+
+  const assetStylesheetSelectors = new Map(
+    cssFilePaths.map((cssFile) => [
+      `assets/${cssFile}`,
+      memo(async (): Promise<Stylesheet | undefined> => {
+        const absolutePath = path.join(assetsPath, cssFile);
+        try {
+          const cssContent = await fs.readFile(absolutePath, 'utf-8');
+          const uri = URI.file(absolutePath).toString();
+          return extractStylesheetFromCSS(uri, cssContent);
+        } catch {
+          return undefined;
+        }
+      }),
+    ]),
+  );
+
+  // Build a reverse reference map so getReferences works in CLI mode.
+  // Covers {% render 'snippet' %}, {% section 'name' %}, and
+  // {% content_for 'block', type: '<block-name>' %} (direct references).
+  const referencesByTarget = new Map<string, Reference[]>();
+  const rootUri = URI.file(root).toString();
+  for (const file of theme) {
+    const ast = file.ast;
+    if (!isLiquidHtmlNode(ast)) continue;
+    visit<SourceCodeType.LiquidHtml, void>(ast, {
+      RenderMarkup(node) {
+        const snippet = node.snippet;
+        if (typeof snippet !== 'string' && snippet.type === LiquidHtmlNodeTypes.String) {
+          const snippetUri = pathUtils.join(rootUri, 'snippets', `${snippet.value}.liquid`);
+          const refs = referencesByTarget.get(snippetUri) ?? [];
+          refs.push({ type: 'direct', source: { uri: file.uri }, target: { uri: snippetUri } });
+          referencesByTarget.set(snippetUri, refs);
+        }
+      },
+      LiquidTag(node) {
+        const markup = node.markup;
+        if (typeof markup === 'string' || Array.isArray(markup)) return;
+
+        if (node.name === 'section') {
+          if ((markup as any).type !== LiquidHtmlNodeTypes.String) return;
+          const sectionName = (markup as any).value as string;
+          const sectionUri = pathUtils.join(rootUri, 'sections', `${sectionName}.liquid`);
+          const refs = referencesByTarget.get(sectionUri) ?? [];
+          refs.push({ type: 'direct', source: { uri: file.uri }, target: { uri: sectionUri } });
+          referencesByTarget.set(sectionUri, refs);
+        } else if (node.name === 'content_for') {
+          if ((markup as any).contentForType?.value !== 'block') return;
+          const blockTypeArg = (markup as any).args?.find((arg: any) => arg.name === 'type');
+          if (!blockTypeArg || blockTypeArg.value.type !== LiquidHtmlNodeTypes.String) return;
+          const blockName = blockTypeArg.value.value as string;
+          const blockUri = pathUtils.join(rootUri, 'blocks', `${blockName}.liquid`);
+          const refs = referencesByTarget.get(blockUri) ?? [];
+          refs.push({ type: 'direct', source: { uri: file.uri }, target: { uri: blockUri } });
+          referencesByTarget.set(blockUri, refs);
+        }
+      },
+      LiquidRawTag(node) {
+        if (node.name !== 'schema') return;
+        if (!isSection(file.uri) && !isBlock(file.uri)) return;
+        const parsed = parseJSON(node.body.value, undefined, false);
+        if (parsed instanceof Error || !Array.isArray(parsed?.blocks)) return;
+        for (const block of parsed.blocks) {
+          const blockType = block?.type;
+          if (typeof blockType !== 'string' || !blockType.startsWith('_')) continue;
+          const blockUri = pathUtils.join(rootUri, 'blocks', `${blockType}.liquid`);
+          const refs = referencesByTarget.get(blockUri) ?? [];
+          refs.push({ type: 'direct', source: { uri: file.uri }, target: { uri: blockUri } });
+          referencesByTarget.set(blockUri, refs);
+        }
+      },
+    });
+  }
 
   const offenses = await coreCheck(theme, config, {
     fs: NodeFileSystem,
@@ -147,6 +249,27 @@ export async function themeCheckRun(
     getBlockSchema: async (name) => blockSchemas.get(name)?.(),
     getAppBlockSchema: async (name) => blockSchemas.get(name)?.() as any, // cheating... but TODO
     getDocDefinition: async (relativePath) => docDefinitions.get(relativePath)?.(),
+    getReferences: async (uri: string) => referencesByTarget.get(uri) ?? [],
+    getStylesheetTagSelectors: async () => {
+      const result = new Map<string, Stylesheet>();
+      for (const [relativePath, getSelectors] of stylesheetTagSelectors) {
+        const selectors = await getSelectors();
+        if (selectors) {
+          result.set(relativePath, selectors);
+        }
+      }
+      return result;
+    },
+    getAssetStylesheetSelectors: async () => {
+      const result = new Map<string, Stylesheet>();
+      for (const [relativePath, getSelectors] of assetStylesheetSelectors) {
+        const selectors = await getSelectors();
+        if (selectors) {
+          result.set(relativePath, selectors);
+        }
+      }
+      return result;
+    },
   });
 
   return {
