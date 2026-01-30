@@ -21,6 +21,12 @@ export async function run(): Promise<void> {
 
     try {
       mocha.run((failures) => {
+        // In watch mode, never resolve the promise so browser stays open
+        if (process.env.WATCH_MODE) {
+          console.log('[Watch Mode] Tests complete. Browser staying open. Refresh to re-run.');
+          return; // Never resolve - browser stays open
+        }
+
         if (failures > 0) {
           reject(new Error(`${failures} tests failed.`));
         } else {
