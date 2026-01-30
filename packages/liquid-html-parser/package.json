@@ -28,7 +28,7 @@
     "build": "yarn build:ts",
     "build:ci": "yarn build",
     "build:ts": "tsc -p tsconfig.build.json",
-    "prebuild:ts": "node build/shims.js",
+    "prebuild:ts": "node build/shims.cjs",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

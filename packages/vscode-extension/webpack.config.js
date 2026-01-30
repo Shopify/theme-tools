@@ -124,6 +124,8 @@ const browserClientConfig = {
     new webpack.DefinePlugin({
       // A flag that lets us do fun webpack-only shenanigans...
       'process.env.WEBPACK_MODE': true,
+      // @ohm-js/wasm Compiler references process.env.OHM_DEBUG for debug logging
+      'process.env.OHM_DEBUG': JSON.stringify(false),
     }),
   ],
 };
@@ -153,6 +155,8 @@ const browserServerConfig = async () => {
       new webpack.DefinePlugin({
         // A flag that lets us do fun webpack-only shenanigans...
         'process.env.WEBPACK_MODE': true,
+        // @ohm-js/wasm Compiler references process.env.OHM_DEBUG for debug logging
+        'process.env.OHM_DEBUG': JSON.stringify(false),
         WEBPACK_TAGS: JSON.stringify(tags),
         WEBPACK_FILTERS: JSON.stringify(filters),
         WEBPACK_OBJECTS: JSON.stringify(objects),

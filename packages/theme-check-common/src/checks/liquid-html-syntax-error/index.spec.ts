@@ -65,7 +65,7 @@ describe('Module: LiquidHTMLSyntaxError', () => {
 
     const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
     expect(offenses).to.have.length(1);
-    expect(offenses[0].message).to.equal(`SyntaxError: expected "%}"`);
+    expect(offenses[0].message).to.equal(`Match failed at pos 25`);
   });
 
   it('should report unexpected tokens (2)', async () => {
@@ -75,7 +75,7 @@ describe('Module: LiquidHTMLSyntaxError', () => {
 
     const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
     expect(offenses).to.have.length(1);
-    expect(offenses[0].message).to.equal(`SyntaxError: expected ">", not """`);
+    expect(offenses[0].message).to.equal(`Match failed at pos 21`);
   });
 
   it('should report unexpected tokens (3)', async () => {
@@ -85,9 +85,7 @@ describe('Module: LiquidHTMLSyntaxError', () => {
 
     const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
     expect(offenses).to.have.length(1);
-    expect(offenses[0].message).to.equal(
-      `SyntaxError: expected "#", a letter, "when", "sections", "section", "render", "liquid", "layout", "increment", "include", "elsif", "else", "echo", "decrement", "content_for", "cycle", "continue", "break", "assign", "tablerow", "unless", "if", "ifchanged", "for", "case", "capture", "paginate", "form", "end", "style", "stylesheet", "schema", "javascript", "raw", "comment", or "doc"`,
-    );
+    expect(offenses[0].message).to.equal(`Match failed at pos 23`);
   });
 
   it('should not report syntax error in valid Liquid code', async () => {
