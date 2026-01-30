@@ -9,6 +9,9 @@ AssetPreload:
 BlockIdUsage:
   enabled: true
   severity: 1
+CSSClassWithinStylesheet:
+  enabled: true
+  severity: 1
 CdnPreconnect:
   enabled: true
   severity: 0

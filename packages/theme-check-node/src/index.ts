@@ -6,11 +6,14 @@ import {
   LiquidSourceCode,
   Offense,
   SectionSchema,
+  Stylesheet,
   Theme,
   ThemeBlockSchema,
   toSourceCode as commonToSourceCode,
   check as coreCheck,
   extractDocDefinition,
+  extractStylesheetFromCSS,
+  extractStylesheetSelectors,
   filePathSupportsLiquidDoc,
   isBlock,
   isIgnored,
@@ -134,6 +137,43 @@ export async function themeCheckRun(
       }),
     ]),
   );
+  const stylesheetTagSelectors = new Map(
+    theme.map((file) => [
+      path.relative(URI.file(root).toString(), file.uri),
+      memo(async (): Promise<Stylesheet | undefined> => {
+        const ast = file.ast;
+        if (!isLiquidHtmlNode(ast)) {
+          return undefined;
+        }
+        return extractStylesheetSelectors(file.uri, ast);
+      }),
+    ]),
+  );
+
+  // Get all CSS files in assets folder
+  const assetsPath = path.join(root, 'assets');
+  let cssFilePaths: string[] = [];
+  try {
+    cssFilePaths = await asyncGlob('**/*.css', { cwd: assetsPath });
+  } catch {
+    // Ignore errors (e.g., assets folder doesn't exist)
+  }
+
+  const assetStylesheetSelectors = new Map(
+    cssFilePaths.map((cssFile) => [
+      `assets/${cssFile}`,
+      memo(async (): Promise<Stylesheet | undefined> => {
+        const absolutePath = path.join(assetsPath, cssFile);
+        try {
+          const cssContent = await fs.readFile(absolutePath, 'utf-8');
+          const uri = URI.file(absolutePath).toString();
+          return extractStylesheetFromCSS(uri, cssContent);
+        } catch {
+          return undefined;
+        }
+      }),
+    ]),
+  );
 
   const offenses = await coreCheck(theme, config, {
     fs: NodeFileSystem,
@@ -147,6 +187,26 @@ export async function themeCheckRun(
     getBlockSchema: async (name) => blockSchemas.get(name)?.(),
     getAppBlockSchema: async (name) => blockSchemas.get(name)?.() as any, // cheating... but TODO
     getDocDefinition: async (relativePath) => docDefinitions.get(relativePath)?.(),
+    getStylesheetTagSelectors: async () => {
+      const result = new Map<string, Stylesheet>();
+      for (const [relativePath, getSelectors] of stylesheetTagSelectors) {
+        const selectors = await getSelectors();
+        if (selectors) {
+          result.set(relativePath, selectors);
+        }
+      }
+      return result;
+    },
+    getAssetStylesheetSelectors: async () => {
+      const result = new Map<string, Stylesheet>();
+      for (const [relativePath, getSelectors] of assetStylesheetSelectors) {
+        const selectors = await getSelectors();
+        if (selectors) {
+          result.set(relativePath, selectors);
+        }
+      }
+      return result;
+    },
   });
 
   return {
