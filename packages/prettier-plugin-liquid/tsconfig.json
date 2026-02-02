@@ -8,8 +8,11 @@
     "target": "es2020",
     "rootDir": "src",
     "esModuleInterop": true,
+    "baseUrl": ".",
     "paths": {
-      "@shopify/liquid-html-parser": ["../liquid-html-parser/src"]
+      "@shopify/liquid-html-parser": ["../liquid-html-parser/src"],
+      "prettier": ["../../node_modules/@types/prettier"],
+      "prettier/doc": ["../../node_modules/@types/prettier/doc.d.ts"]
     }
   },
   "include": ["src/**/*"],

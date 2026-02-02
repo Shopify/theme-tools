@@ -90,7 +90,7 @@ const desktopConfig = {
           to: 'data',
         },
         {
-          from: path.resolve(__dirname, '../../node_modules/prettier'),
+          from: path.resolve(__dirname, '../../node_modules/prettier2'),
           to: 'prettier',
           globOptions: {
             ignore: ['**/esm/**'],
@@ -110,6 +110,9 @@ const browserClientConfig = {
   },
   resolve: {
     ...baseConfig.resolve,
+    alias: {
+      prettier: path.resolve(__dirname, '../../node_modules/prettier2'),
+    },
   },
   output: {
     path: path.resolve(__dirname, 'dist', 'browser'),
@@ -142,6 +145,12 @@ const browserServerConfig = async () => {
     ...baseConfig,
     target: 'webworker',
     entry: { server: './src/browser/server.ts', },
+    resolve: {
+      ...baseConfig.resolve,
+      alias: {
+        prettier: path.resolve(__dirname, '../../node_modules/prettier2'),
+      },
+    },
     output: {
       path: path.resolve(__dirname, 'dist', 'browser'),
       filename: '[name].js',

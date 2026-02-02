@@ -61,7 +61,7 @@ describe('Module: RenderSnippetParameterCompletionProvider', async () => {
         tags: async () => [],
         systemTranslations: async () => ({}),
       },
-      getMetafieldDefinitions: async (_rootUri: string) => ({} as MetafieldDefinitionMap),
+      getMetafieldDefinitions: async (_rootUri: string) => ({}) as MetafieldDefinitionMap,
       getDocDefinitionForURI: async (_uri, _type, snippetName) => {
         if (mockSnippetName === snippetName) {
           return mockSnippetDefinition;

@@ -90,7 +90,7 @@ describe('Module: LiquidTagsCompletionProvider', async () => {
         tags: async () => tags,
         systemTranslations: async () => ({}),
       },
-      getMetafieldDefinitions: async (_rootUri: string) => ({} as MetafieldDefinitionMap),
+      getMetafieldDefinitions: async (_rootUri: string) => ({}) as MetafieldDefinitionMap,
     });
   });
 

@@ -17,7 +17,7 @@ describe('Module: ContentForBlockTypeCompletionProvider', async () => {
         tags: async () => [],
         systemTranslations: async () => ({}),
       },
-      getMetafieldDefinitions: async (_rootUri: string) => ({} as MetafieldDefinitionMap),
+      getMetafieldDefinitions: async (_rootUri: string) => ({}) as MetafieldDefinitionMap,
       getThemeBlockNames: async (_rootUri: string, _includePrivate: boolean) => [
         'block-1',
         'block-2',

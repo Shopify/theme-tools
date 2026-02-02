@@ -11,7 +11,10 @@ interface FileTree {
 export class MockFileSystem implements AbstractFileSystem {
   private rootUri: string;
 
-  constructor(private mockTheme: MockTheme, rootUri = 'file:///') {
+  constructor(
+    private mockTheme: MockTheme,
+    rootUri = 'file:///',
+  ) {
     this.rootUri = normalize(rootUri);
   }
 

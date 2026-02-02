@@ -187,10 +187,10 @@ async function validateBlockTargeting(
       const errorMessage = isStaticBlock
         ? `Could not find a static block of type "${nestedBlock.type}" with id "${blockId}" in "blocks/${parentNode.type}.liquid".`
         : isPrivateBlock
-        ? `Private block type "${nestedBlock.type}" is not allowed in "${parentNode.type}" blocks.`
-        : `Block type "${nestedBlock.type}" is not allowed in "${
-            parentNode.type
-          }" blocks. Allowed types are: ${allowedBlockTypes.join(', ')}.`;
+          ? `Private block type "${nestedBlock.type}" is not allowed in "${parentNode.type}" blocks.`
+          : `Block type "${nestedBlock.type}" is not allowed in "${
+              parentNode.type
+            }" blocks. Allowed types are: ${allowedBlockTypes.join(', ')}.`;
       reportWarning(errorMessage, offset, typeNode, context);
     }
 

@@ -82,7 +82,7 @@ export class TranslationCompletionProvider implements Provider {
 
     return options.map(({ path, translation }): CompletionItem => {
       const params = extractParams(
-        typeof translation === 'string' ? translation : Object.values(translation)[0] ?? '',
+        typeof translation === 'string' ? translation : (Object.values(translation)[0] ?? ''),
       );
       const parameters = paramsString(params);
       return {

@@ -76,7 +76,7 @@ describe('Module: ObjectAttributeCompletionProvider', async () => {
         systemTranslations: async () => ({}),
       },
       getThemeSettingsSchemaForURI: settingsProvider,
-      getMetafieldDefinitions: async (_rootUri: string) => ({} as MetafieldDefinitionMap),
+      getMetafieldDefinitions: async (_rootUri: string) => ({}) as MetafieldDefinitionMap,
     });
   });
 
