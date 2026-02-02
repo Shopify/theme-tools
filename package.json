@@ -7,6 +7,9 @@
   "author": "Albert Chu <albert.chu@shopify.com>",
   "license": "MIT",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "workspaces": [
     "packages/lang-*",
     "packages/codemirror-language-client",

@@ -15,12 +15,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20
           cache: "yarn"
           cache-dependency-path: "yarn.lock"
 
       - name: Install the packages
-        run: yarn install --frozen-lockfile --ignore-engines
+        run: yarn install --frozen-lockfile
 
       - name: Build the code
         run: yarn build:ci
@@ -61,7 +61,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
-        node-version: [18, 20]
+        node-version: [20]
 
     name: Tests / OS ${{ matrix.os }} / NodeJS ${{ matrix.node-version }}
 
@@ -78,7 +78,7 @@ jobs:
           cache-dependency-path: "yarn.lock"
 
       - name: Install the packages
-        run: yarn install --frozen-lockfile --ignore-engines
+        run: yarn install --frozen-lockfile
 
       - name: Build the code
         run: yarn build:ts
