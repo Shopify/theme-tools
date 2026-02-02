@@ -46,7 +46,7 @@
     "css-loader": "^6.7.3",
     "html-webpack-plugin": "^5.5.0",
     "jsdom": "^22.1.0",
-    "prettier": "^2.8.4",
+    "prettier": "^3.0.0",
     "ts-loader": "^9.4.2",
     "ts-node": "^10.9.1",
     "tsconfig-paths-webpack-plugin": "^4.1.0",

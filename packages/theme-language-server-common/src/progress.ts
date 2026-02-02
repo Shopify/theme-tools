@@ -20,7 +20,10 @@ export interface IProgress {
  * await progress.end('Finished');
  */
 export class Progress {
-  constructor(private connection: Connection, private progressToken: string) {}
+  constructor(
+    private connection: Connection,
+    private progressToken: string,
+  ) {}
 
   static create(
     connection: Connection | undefined,

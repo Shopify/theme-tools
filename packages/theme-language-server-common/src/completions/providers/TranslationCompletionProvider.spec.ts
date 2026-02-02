@@ -16,7 +16,7 @@ describe('Module: TranslationCompletionProvider', async () => {
         tags: async () => [],
         systemTranslations: async () => ({}),
       },
-      getMetafieldDefinitions: async (_rootUri: string) => ({} as MetafieldDefinitionMap),
+      getMetafieldDefinitions: async (_rootUri: string) => ({}) as MetafieldDefinitionMap,
       getTranslationsForURI: async (_) => ({
         general: {
           username_html: '<b>username</b>',
