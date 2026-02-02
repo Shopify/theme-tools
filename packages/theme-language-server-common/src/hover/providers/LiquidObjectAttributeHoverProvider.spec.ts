@@ -56,7 +56,7 @@ describe('Module: LiquidObjectAttributeHoverProvider', async () => {
         tags: async () => [],
         systemTranslations: async () => ({}),
       },
-      async (_rootUri: string) => ({} as MetafieldDefinitionMap),
+      async (_rootUri: string) => ({}) as MetafieldDefinitionMap,
     );
   });
 

@@ -20,7 +20,7 @@ describe('Module: HtmlTagCompletionProvider', async () => {
         tags: async () => [],
         systemTranslations: async () => ({}),
       },
-      getMetafieldDefinitions: async (_rootUri: string) => ({} as MetafieldDefinitionMap),
+      getMetafieldDefinitions: async (_rootUri: string) => ({}) as MetafieldDefinitionMap,
     });
   });
 

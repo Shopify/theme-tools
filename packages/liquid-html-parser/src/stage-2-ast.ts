@@ -268,12 +268,16 @@ export interface AssignMarkup extends ASTNode<NodeTypes.AssignMarkup> {
 }
 
 /** https://shopify.dev/docs/api/liquid/tags#increment */
-export interface LiquidTagIncrement
-  extends LiquidTagNode<NamedTags.increment, LiquidVariableLookup> {}
+export interface LiquidTagIncrement extends LiquidTagNode<
+  NamedTags.increment,
+  LiquidVariableLookup
+> {}
 
 /** https://shopify.dev/docs/api/liquid/tags#decrement */
-export interface LiquidTagDecrement
-  extends LiquidTagNode<NamedTags.decrement, LiquidVariableLookup> {}
+export interface LiquidTagDecrement extends LiquidTagNode<
+  NamedTags.decrement,
+  LiquidVariableLookup
+> {}
 
 /** https://shopify.dev/docs/api/liquid/tags#capture */
 export interface LiquidTagCapture extends LiquidTagNode<NamedTags.capture, LiquidVariableLookup> {}
@@ -329,12 +333,16 @@ export interface LiquidTagIf extends LiquidTagConditional<NamedTags.if> {}
 export interface LiquidTagUnless extends LiquidTagConditional<NamedTags.unless> {}
 
 /** {% elsif cond %} */
-export interface LiquidBranchElsif
-  extends LiquidBranchNode<NamedTags.elsif, LiquidConditionalExpression> {}
+export interface LiquidBranchElsif extends LiquidBranchNode<
+  NamedTags.elsif,
+  LiquidConditionalExpression
+> {}
 
 // Helper for creating the types of if and unless
-export interface LiquidTagConditional<Name>
-  extends LiquidTagNode<Name, LiquidConditionalExpression> {}
+export interface LiquidTagConditional<Name> extends LiquidTagNode<
+  Name,
+  LiquidConditionalExpression
+> {}
 
 /** The union type of all conditional expression nodes */
 export type LiquidConditionalExpression =
@@ -370,8 +378,10 @@ export interface PaginateMarkup extends ASTNode<NodeTypes.PaginateMarkup> {
 }
 
 /** https://shopify.dev/docs/api/liquid/tags#content_for */
-export interface LiquidTagContentFor
-  extends LiquidTagNode<NamedTags.content_for, ContentForMarkup> {}
+export interface LiquidTagContentFor extends LiquidTagNode<
+  NamedTags.content_for,
+  ContentForMarkup
+> {}
 
 /** https://shopify.dev/docs/api/liquid/tags#render */
 export interface LiquidTagRender extends LiquidTagNode<NamedTags.render, RenderMarkup> {}

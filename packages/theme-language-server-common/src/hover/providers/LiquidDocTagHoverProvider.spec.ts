@@ -18,7 +18,7 @@ describe('Module: RenderSnippetParameterHoverProvider', async () => {
         tags: async () => [],
         systemTranslations: async () => ({}),
       },
-      async (_rootUri: string) => ({} as MetafieldDefinitionMap),
+      async (_rootUri: string) => ({}) as MetafieldDefinitionMap,
     );
   });
 
