@@ -70,6 +70,8 @@ const browserTestConfig = {
     }),
     new webpack.DefinePlugin({
       'process.env.WEBPACK_MODE': true,
+      // @ohm-js/wasm checks this at runtime; define it to avoid "process is not defined" errors
+      'process.env.OHM_DEBUG': JSON.stringify(false),
       'process.env.DEBUG_DELAY': JSON.stringify(process.env.DEBUG_DELAY || '0'),
       'process.env.WATCH_MODE': JSON.stringify(process.env.WATCH_MODE || ''),
     }),
