@@ -3,7 +3,7 @@ require('mocha/mocha');
 
 export async function run(): Promise<void> {
   // Debug delay: allows attaching debugger before tests run
-  const delay = process.env.DEBUG_DELAY ? parseInt(process.env.DEBUG_DELAY, 10) : 0;
+  const delay = process.env.WATCH_MODE ? 5000 : 0;
   if (delay > 0) {
     console.log(`[DEBUG] Waiting ${delay}ms for debugger attachment...`);
     await new Promise((r) => setTimeout(r, delay));

@@ -37,6 +37,16 @@ yarn test:web
 yarn build:test
 ```
 
+## Watch mode
+
+```
+# terminal 1
+yarn build:test:watch
+
+# terminal 2 (refresh for changes, no hmr)
+yarn test:web:watch
+```
+
 ## Adding Tests
 
 ### Browser Tests
