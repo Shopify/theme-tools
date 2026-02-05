@@ -55,7 +55,7 @@
     "pretest:web": "[ -d .tmp/dawn ] || git clone --depth 1 https://github.com/Shopify/dawn.git .tmp/dawn",
     "build:test": "webpack --config webpack.test.config.js --mode development",
     "build:test:watch": "WATCH_MODE=1 webpack --config webpack.test.config.js --mode development --watch",
-    "test:web": "yarn build:test && vscode-test-web --headless --extensionDevelopmentPath=. --extensionTestsPath=./dist/browser/test/suite/index.js .tmp/dawn",
+    "test:web": "yarn build:test && vscode-test-web --quality=stable --headless --extensionDevelopmentPath=. --extensionTestsPath=./dist/browser/test/suite/index.js .tmp/dawn",
     "test:web:watch": "vscode-test-web --open-devtools --extensionDevelopmentPath=. --extensionTestsPath=./dist/browser/test/suite/index.js .tmp/dawn",
     "type-check:test": "tsc --project test/tsconfig.json --noEmit",
     "type-check": "tsc --noEmit"
