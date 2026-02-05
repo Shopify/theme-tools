@@ -183,19 +183,39 @@ describe('Module: RemoteAsset', () => {
     );
   });
 
-  it('should report an offense for image drops without img_url filter', async () => {
+  it('should not report an offense for variable-based URLs', async () => {
     const sourceCode = `
       <img src="{{ image }}">
       <img src="{{ image.src }}">
+      <source src="{{ source.url }}" type="{{ source.mime_type }}">
+      <source src="{{ video_source.url }}">
     `;
 
     const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
-    expect(offenses).to.have.length(2);
-    offenses.forEach((offense) => {
-      expect(offense.message).to.equal(
-        'Use one of the asset_url filters to serve assets for better performance.',
-      );
-    });
+    expect(offenses).to.be.empty;
+  });
+
+  it('should not report an offense for hash URLs', async () => {
+    const sourceCode = `
+      <link rel="expect" href="#MainContent" blocking="render">
+      <link href="#section-header" rel="preload">
+      <img src="#placeholder">
+    `;
+
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
+    expect(offenses).to.be.empty;
+  });
+
+  it('should still report an offense for string literals without asset_url filter', async () => {
+    const sourceCode = `
+      <img src="{{ 'image.png' }}" />
+    `;
+
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
+    expect(offenses).to.have.length(1);
+    expect(offenses[0].message).to.equal(
+      'Use one of the asset_url filters to serve assets for better performance.',
+    );
   });
 
   it('should not report an offence if url is a shopify CDN', async () => {
