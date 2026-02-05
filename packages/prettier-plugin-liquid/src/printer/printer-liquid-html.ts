@@ -633,5 +633,8 @@ function hasOrIsNode<N extends LiquidHtmlNode, K extends keyof N>(node: N, key: 
   // this works because there's no ()[] type that is string | Node, it only
   // happens for singular nodes such as name: string | LiquidDrop, etc.
   // Note: isNode logic inlined to avoid terser const reassignment in standalone build
-  return Array.isArray(v) || (v !== null && typeof v === 'object' && 'type' in v && typeof v.type === 'string');
+  return (
+    Array.isArray(v) ||
+    (v !== null && typeof v === 'object' && 'type' in v && typeof v.type === 'string')
+  );
 }
