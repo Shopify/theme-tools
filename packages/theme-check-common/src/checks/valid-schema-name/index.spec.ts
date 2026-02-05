@@ -69,26 +69,6 @@ describe('Module: ValidSchemaName', () => {
     expect(offenses).toHaveLength(0);
   });
 
-  it('reports an offense with schema name translation is missing', async () => {
-    const offenses = await check(
-      {
-        'locales/en.default.schema.json': '{ "another_translation_key": "Another translation"}',
-        'sections/file.liquid': `
-          {% schema %}
-            {
-              "name": "t:my_translation_key"
-            }
-          {% endschema %}`,
-      },
-      [ValidSchemaName],
-    );
-
-    expect(offenses).toHaveLength(1);
-    expect(offenses[0].message).toEqual(
-      "'t:my_translation_key' does not have a matching entry in 'locales/en.default.schema.json'",
-    );
-  });
-
   it('reports an offense with schema name translation that exists and is over 25 chars long', async () => {
     const offenses = await check(
       {

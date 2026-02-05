@@ -47,14 +47,6 @@ export const ValidSchemaName: LiquidCheckDefinition = {
           const defaultTranslations = await context.getDefaultSchemaTranslations();
           const translation = deepGet(defaultTranslations, key.split('.'));
 
-          if (translation === undefined) {
-            context.report({
-              message: `'${name}' does not have a matching entry in 'locales/${defaultLocale}.default.schema.json'`,
-              startIndex,
-              endIndex,
-            });
-          }
-
           if (translation !== undefined && translation.length > MAX_SCHEMA_NAME_LENGTH) {
             context.report({
               message: `Schema name '${translation}' from 'locales/${defaultLocale}.default.schema.json' is too long (max 25 characters)`,
