@@ -1,4 +1,4 @@
-import { grammars, Grammar } from 'ohm-js';
+import { grammars, Grammar } from '@ohm-js/wasm/compat';
 
 export const liquidHtmlGrammars = grammars(require('../grammar/liquid-html.ohm.js'));
 
