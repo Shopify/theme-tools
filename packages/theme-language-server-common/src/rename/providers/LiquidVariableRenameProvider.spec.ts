@@ -159,7 +159,7 @@ describe('LiquidVariableRenameProvider', () => {
     it('returns new name when cursor is at first character of liquid doc param name', async () => {
       const params = {
         textDocument,
-        position: Position.create(0, 25),
+        position: Position.create(0, documentSource.indexOf('food')),
         newName: 'meal',
       };
 
@@ -179,6 +179,17 @@ describe('LiquidVariableRenameProvider', () => {
 {% assign paintings = 'starry night, sunday afternoon, the scream' %}
 <p>I have a cool animal, a great plant, and my favorite food</p>`,
       );
+    });
+
+    it('does not trigger rename when cursor is on type annotation', async () => {
+      const params = {
+        textDocument,
+        position: Position.create(0, documentSource.indexOf('{string}') + 1),
+        newName: 'meal',
+      };
+
+      const result = await provider.rename(params);
+      expect(result).to.be.null;
     });
 
     it('returns new name after liquid doc param is renamed on variable usage', async () => {
@@ -354,7 +365,7 @@ describe('LiquidVariableRenameProvider', () => {
       it('returns new name when cursor is at first character of untyped param name', async () => {
         const params = {
           textDocument,
-          position: Position.create(0, 16),
+          position: Position.create(0, documentSource.indexOf('prod')),
           newName: 'ppp',
         };
         const result = await provider.rename(params);
@@ -372,15 +383,27 @@ describe('LiquidVariableRenameProvider', () => {
         );
       });
 
-      it('does not trigger rename when cursor is at @ symbol position', async () => {
-        const params = {
-          textDocument,
-          position: Position.create(0, 9),
-          newName: 'ppp',
-        };
+      [
+        { desc: 'at @ symbol', position: Position.create(0, documentSource.indexOf('@param')) },
+        {
+          desc: 'at @param keyword',
+          position: Position.create(0, documentSource.indexOf('@param') + 1),
+        },
+        {
+          desc: 'at space before param name',
+          position: Position.create(0, documentSource.indexOf('@param') + '@param'.length),
+        },
+      ].forEach(({ desc, position }) => {
+        it(`does not trigger rename when cursor is ${desc}`, async () => {
+          const params = {
+            textDocument,
+            position,
+            newName: 'ppp',
+          };
 
-        const result = await provider.rename(params);
-        expect(result).to.be.null;
+          const result = await provider.rename(params);
+          expect(result).to.be.null;
+        });
       });
 
       it('returns new name after variable is renamed inside loop, but is scoped outside it', async () => {
