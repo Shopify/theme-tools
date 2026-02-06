@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-language-server-common",
-  "version": "2.20.1",
+  "version": "2.20.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "CP Clermont <cp.clermont@shopify.com>",
@@ -27,9 +27,9 @@
     "type-check": "tsc --noEmit -p src/tsconfig.json"
   },
   "dependencies": {
-    "@shopify/liquid-html-parser": "^2.9.1",
-    "@shopify/theme-check-common": "3.23.1",
-    "@shopify/theme-graph": "^0.2.2",
+    "@shopify/liquid-html-parser": "^2.9.2",
+    "@shopify/theme-check-common": "3.24.0",
+    "@shopify/theme-graph": "^0.2.3",
     "@vscode/web-custom-data": "^0.4.6",
     "vscode-json-languageservice": "^5.3.10",
     "vscode-languageserver": "^8.0.2",
