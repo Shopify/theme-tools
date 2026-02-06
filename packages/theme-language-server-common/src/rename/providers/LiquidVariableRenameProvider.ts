@@ -98,7 +98,9 @@ export class LiquidVariableRenameProvider implements BaseRenameProvider {
       AssignMarkup: replaceRange,
       ForMarkup: replaceRange,
       TextNode: (node: LiquidHtmlNode, ancestors: (LiquidHtmlNode | JSONNode)[]) => {
-        if (ancestors.at(-1)?.type !== NodeTypes.LiquidDocParamNode) return;
+        const parentNode = ancestors.at(-1);
+        if (parentNode?.type !== NodeTypes.LiquidDocParamNode || parentNode?.paramName !== node)
+          return;
 
         liquidDocParamUpdated = true;
 
