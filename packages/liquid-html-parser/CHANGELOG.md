@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.9.2
+
+### Patch Changes
+
+- b1bca3f9: Upgrade prettier to v3 (internal)
+
 ## 2.9.1
 
 ### Patch Changes
@@ -59,12 +65,10 @@
 - d9dbc265: - Support parsing incomplete content_for tags in completion context
   - Support content_for param completion
 - 2db3047f: Support `render` param completion based on liquid docs
-
   - If you defined liquid doc parameters on a snippet, they will appear as completion options
     for parameters when rendered by a `render` tag.
 
 - 261c2958: Support liquid doc inner tags completion + hover
-
   - `@param`, `@description`, `@example` will support code completion
     whenever being typed inside of `doc` tag
   - `@param`, `@description`, `@example` can be hovered to show their
@@ -181,17 +185,17 @@
 - 636895f: Add support for unclosed HTML Element nodes inside branching code
 
   **Breaking changes**
-
   - `HtmlDanglingMarkerOpen` nodes are folded into `HtmlElement` nodes
-
     - You can identify a node without its closing tag by looking at `blockEndPosition`
 
       ```js
-      node.source.slice(node.blockEndPosition.start, node.blockEndPosition.end) === '';
+      node.source.slice(
+        node.blockEndPosition.start,
+        node.blockEndPosition.end,
+      ) === "";
       ```
 
   **Why the change**?
-
   - `HtmlDanglingMarkerOpen` nodes did not have children, since we added support for nodes without closing markers, we removed that node type entirely.
 
 ### Minor Changes
@@ -209,7 +213,6 @@
 ### Minor Changes
 
 - 0d71145: Add `nodes` property to RawMarkupKind to allow for subtree visiting
-
   - Partially breaking in the sense where Liquid (not LiquidHTML) syntax errors will be reported from within scripts, styles, and JSON blobs
 
 ## 1.0.0
