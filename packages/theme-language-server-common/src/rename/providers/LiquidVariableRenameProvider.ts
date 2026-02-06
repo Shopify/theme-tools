@@ -1,6 +1,7 @@
 import {
   AssignMarkup,
   ForMarkup,
+  LiquidDocParamNode,
   LiquidHtmlNode,
   LiquidTagFor,
   LiquidTagTablerow,
@@ -48,15 +49,18 @@ export class LiquidVariableRenameProvider implements BaseRenameProvider {
     if (!textDocument || !node || !ancestors) return null;
     if (!supportedTags(node, ancestors)) return null;
 
+    const targetNode = node.type === NodeTypes.LiquidDocParamNode ? node.paramName : node;
     const oldName = variableName(node);
-    const offsetOfVariableNameEnd = node.position.start + oldName.length;
+    const cursorOffset = textDocument.offsetAt(params.position);
+    const offsetOfVariableNameEnd = targetNode.position.start + oldName.length;
 
-    // The cursor could be past the end of the variable name
-    if (textDocument.offsetAt(params.position) > offsetOfVariableNameEnd) return null;
+    // The cursor must be within the variable name range
+    if (cursorOffset < targetNode.position.start || cursorOffset > offsetOfVariableNameEnd)
+      return null;
 
     return {
       range: Range.create(
-        textDocument.positionAt(node.position.start),
+        textDocument.positionAt(targetNode.position.start),
         textDocument.positionAt(offsetOfVariableNameEnd),
       ),
       placeholder: oldName,
@@ -75,6 +79,13 @@ export class LiquidVariableRenameProvider implements BaseRenameProvider {
     if (!rootUri || !textDocument || !node || !ancestors) return null;
     if (document.ast instanceof Error) return null;
     if (!supportedTags(node, ancestors)) return null;
+
+    // When node is a LiquidDocParamNode, ensure cursor is on the param name, not the @ prefix
+    if (node.type === NodeTypes.LiquidDocParamNode) {
+      const cursorOffset = textDocument.offsetAt(params.position);
+      const nameEnd = node.paramName.position.start + node.paramName.value.length;
+      if (cursorOffset < node.paramName.position.start || cursorOffset > nameEnd) return null;
+    }
 
     const oldName = variableName(node);
     const scope = variableNameBlockScope(oldName, ancestors);
@@ -117,12 +128,13 @@ export class LiquidVariableRenameProvider implements BaseRenameProvider {
 function supportedTags(
   node: LiquidHtmlNode,
   ancestors: LiquidHtmlNode[],
-): node is AssignMarkup | LiquidVariableLookup | ForMarkup | TextNode {
+): node is AssignMarkup | LiquidVariableLookup | ForMarkup | TextNode | LiquidDocParamNode {
   return (
     node.type === NodeTypes.AssignMarkup ||
     node.type === NodeTypes.VariableLookup ||
     node.type === NodeTypes.ForMarkup ||
-    isLiquidDocParamNameNode(node, ancestors)
+    isLiquidDocParamNameNode(node, ancestors) ||
+    isLiquidDocParamNode(node)
   );
 }
 
@@ -140,6 +152,10 @@ function isLiquidDocParamNameNode(
   );
 }
 
+function isLiquidDocParamNode(node: LiquidHtmlNode): node is LiquidDocParamNode {
+  return node.type === NodeTypes.LiquidDocParamNode && node.paramName?.type === NodeTypes.TextNode;
+}
+
 function variableName(node: LiquidHtmlNode): string {
   switch (node.type) {
     case NodeTypes.VariableLookup:
@@ -149,6 +165,8 @@ function variableName(node: LiquidHtmlNode): string {
       return node.variableName ?? '';
     case NodeTypes.TextNode:
       return node.value;
+    case NodeTypes.LiquidDocParamNode:
+      return node.paramName.value;
     default:
       return '';
   }
