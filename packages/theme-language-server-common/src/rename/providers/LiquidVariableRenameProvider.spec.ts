@@ -156,6 +156,32 @@ describe('LiquidVariableRenameProvider', () => {
       );
     });
 
+    it('does not rename type annotation when type and param name share the same text', async () => {
+      const collisionSource = `{% doc %}@param {food} food - favorite food{% enddoc %}
+{% liquid
+  echo food
+%}`;
+      const collisionDoc = TextDocument.create(textDocumentUri, 'liquid', 1, collisionSource);
+      documentManager.open(collisionDoc.uri, collisionSource, 1);
+
+      const params = {
+        textDocument: collisionDoc,
+        position: Position.create(0, collisionSource.indexOf('} food') + 2),
+        newName: 'meal',
+      };
+
+      const result = await provider.rename(params);
+      assert(result);
+      assert(result.documentChanges);
+      expect((result.documentChanges[0] as TextDocumentEdit).edits).to.applyEdits(
+        collisionDoc,
+        `{% doc %}@param {food} meal - favorite food{% enddoc %}
+{% liquid
+  echo meal
+%}`,
+      );
+    });
+
     it('returns new name when cursor is at first character of liquid doc param name', async () => {
       const params = {
         textDocument,
