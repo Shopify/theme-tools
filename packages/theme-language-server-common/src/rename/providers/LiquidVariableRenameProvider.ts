@@ -80,7 +80,7 @@ export class LiquidVariableRenameProvider implements BaseRenameProvider {
     if (document.ast instanceof Error) return null;
     if (!supportedTags(node, ancestors)) return null;
 
-    // When node is a LiquidDocParamNode, ensure cursor is on the param name, not the @ prefix
+    // When node is a LiquidDocParamNode, ensure cursor is on the param name, not the @param keyword or type annotation
     if (node.type === NodeTypes.LiquidDocParamNode) {
       const cursorOffset = textDocument.offsetAt(params.position);
       const nameEnd = node.paramName.position.start + node.paramName.value.length;
