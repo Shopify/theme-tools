@@ -156,6 +156,31 @@ describe('LiquidVariableRenameProvider', () => {
       );
     });
 
+    it('returns new name when cursor is at first character of liquid doc param name', async () => {
+      const params = {
+        textDocument,
+        position: Position.create(0, 25),
+        newName: 'meal',
+      };
+
+      const result = await provider.rename(params);
+      assert(result);
+      assert(result.documentChanges);
+      expect((result.documentChanges[0] as TextDocumentEdit).edits).to.applyEdits(
+        textDocument,
+        `{% doc %}@param {string} meal - favorite food{% enddoc %}
+{% assign animal = 'dog' %}
+{% assign plant = 'cactus' %}
+{% liquid
+  echo plant
+  echo meal
+%}
+{% assign painting = 'mona lisa' %}
+{% assign paintings = 'starry night, sunday afternoon, the scream' %}
+<p>I have a cool animal, a great plant, and my favorite food</p>`,
+      );
+    });
+
     it('returns new name after liquid doc param is renamed on variable usage', async () => {
       const params = {
         textDocument,
@@ -324,6 +349,38 @@ describe('LiquidVariableRenameProvider', () => {
   echo ppp
 %}`,
         );
+      });
+
+      it('returns new name when cursor is at first character of untyped param name', async () => {
+        const params = {
+          textDocument,
+          position: Position.create(0, 16),
+          newName: 'ppp',
+        };
+        const result = await provider.rename(params);
+        assert(result);
+        assert(result.documentChanges);
+        expect((result.documentChanges[0] as TextDocumentEdit).edits).to.applyEdits(
+          textDocument,
+          `{% doc %}@param ppp - product{% enddoc %}
+{% liquid
+  for prod in products
+    echo prod.title
+  endfor
+  echo ppp
+%}`,
+        );
+      });
+
+      it('does not trigger rename when cursor is at @ symbol position', async () => {
+        const params = {
+          textDocument,
+          position: Position.create(0, 9),
+          newName: 'ppp',
+        };
+
+        const result = await provider.rename(params);
+        expect(result).to.be.null;
       });
 
       it('returns new name after variable is renamed inside loop, but is scoped outside it', async () => {
