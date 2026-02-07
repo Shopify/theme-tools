@@ -7,6 +7,7 @@ import {
   LiquidTagDecrement,
   LiquidTagFor,
   LiquidTagIncrement,
+  LiquidTagSnippet,
   LiquidTagTablerow,
   LiquidVariableLookup,
   NamedTags,
@@ -16,7 +17,7 @@ import {
 import { LiquidCheckDefinition, Severity, SourceCodeType, ThemeDocset } from '../../types';
 import { isError, last } from '../../utils';
 import { hasLiquidDoc } from '../../liquid-doc/liquidDoc';
-import { isWithinRawTagThatDoesNotParseItsContents } from '../utils';
+import { isWithinRawTagThatDoesNotParseItsContents, findInlineSnippetAncestor } from '../utils';
 
 type Scope = { start?: number; end?: number };
 
@@ -38,13 +39,14 @@ export const UndefinedObject: LiquidCheckDefinition = {
   create(context) {
     const relativePath = context.toRelativePath(context.file.uri);
     const ast = context.file.ast;
+    const isSnippetFile = relativePath.startsWith('snippets/');
 
     if (isError(ast)) return {};
 
     /**
      * Skip this check when a snippet does not have the presence of doc tags.
      */
-    if (relativePath.startsWith('snippets/') && !hasLiquidDoc(ast)) return {};
+    if (isSnippetFile && !hasLiquidDoc(ast)) return {};
 
     /**
      * Skip this check when definitions for global objects are unavailable.
@@ -56,7 +58,9 @@ export const UndefinedObject: LiquidCheckDefinition = {
     const themeDocset = context.themeDocset;
     const scopedVariables: Map<string, Scope[]> = new Map();
     const fileScopedVariables: Set<string> = new Set();
-    const variables: LiquidVariableLookup[] = [];
+    const variables: Array<{ node: LiquidVariableLookup; inlineSnippet: LiquidTag | null }> = [];
+    const inlineSnippetsWithDocTags: Set<number> = new Set();
+    let snippetFileHasDocTag = false;
 
     function indexVariableScope(variableName: string | null, scope: Scope) {
       if (!variableName) return;
@@ -66,9 +70,27 @@ export const UndefinedObject: LiquidCheckDefinition = {
     }
 
     return {
-      async LiquidDocParamNode(node: LiquidDocParamNode) {
+      async LiquidRawTag(node, ancestors) {
+        if (!isSnippetFile || node.name !== 'doc') return;
+
+        const parent = last(ancestors);
+        if (isLiquidTag(parent) && isLiquidTagSnippet(parent)) {
+          inlineSnippetsWithDocTags.add(parent.position.start);
+        } else {
+          snippetFileHasDocTag = true;
+        }
+      },
+
+      async LiquidDocParamNode(node: LiquidDocParamNode, ancestors: LiquidHtmlNode[]) {
         const paramName = node.paramName?.value;
-        if (paramName) {
+        if (!paramName) return;
+        const snippetAncestor = findInlineSnippetAncestor(ancestors);
+        if (snippetAncestor) {
+          indexVariableScope(paramName, {
+            start: snippetAncestor.blockStartPosition.end,
+            end: snippetAncestor.blockEndPosition?.start,
+          });
+        } else {
           fileScopedVariables.add(paramName);
         }
       },
@@ -134,6 +156,10 @@ export const UndefinedObject: LiquidCheckDefinition = {
             end: node.blockEndPosition?.start,
           });
         }
+
+        if (isLiquidTagSnippet(node) && node.markup.name) {
+          fileScopedVariables.add(node.markup.name);
+        }
       },
 
       async VariableLookup(node, ancestors) {
@@ -142,7 +168,10 @@ export const UndefinedObject: LiquidCheckDefinition = {
         const parent = last(ancestors);
         if (isLiquidTag(parent) && isLiquidTagCapture(parent)) return;
 
-        variables.push(node);
+        if (isLiquidTag(parent) && isLiquidTagSnippet(parent)) return;
+
+        const inlineSnippet = findInlineSnippetAncestor(ancestors);
+        variables.push({ node, inlineSnippet });
       },
 
       async onCodePathEnd() {
@@ -150,8 +179,21 @@ export const UndefinedObject: LiquidCheckDefinition = {
 
         objects.forEach((obj) => fileScopedVariables.add(obj.name));
 
-        variables.forEach((variable) => {
+        variables.forEach(({ node: variable, inlineSnippet }) => {
           if (!variable.name) return;
+
+          // For snippet files: only check variables if they're in a scope with a doc tag.
+          if (isSnippetFile) {
+            if (inlineSnippet) {
+              if (!inlineSnippetsWithDocTags.has(inlineSnippet.position.start)) {
+                return;
+              }
+            } else {
+              if (!snippetFileHasDocTag) {
+                return;
+              }
+            }
+          }
 
           const isVariableDefined = isDefined(
             variable.name,
@@ -266,6 +308,10 @@ function isLiquidTag(node?: LiquidHtmlNode): node is LiquidTag {
 
 function isLiquidTagCapture(node: LiquidTag): node is LiquidTagCapture {
   return node.name === NamedTags.capture;
+}
+
+function isLiquidTagSnippet(node: LiquidTag): node is LiquidTagSnippet {
+  return node.name === NamedTags.snippet;
 }
 
 function isLiquidTagAssign(node: LiquidTag): node is LiquidTagAssign {
