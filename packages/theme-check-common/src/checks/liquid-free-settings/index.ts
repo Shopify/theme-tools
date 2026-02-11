@@ -74,18 +74,18 @@ function isLiteralNode(node: JSONNode): node is LiteralNode {
 }
 
 function isLiquidType(ancestors: JSONNode[]): boolean {
-  return ancestors.some((ancestor) => {
-    if (ancestor.type !== 'Object') {
+  const parentJsonNode = ancestors.at(-1)
+  
+  if (!parentJsonNode || parentJsonNode.type !== 'Object') {
+    return false;
+  }
+
+  return parentJsonNode.children.some(({ key, value }) => {
+    if (key.value !== 'type' || !isLiteralNode(value)) {
       return false;
     }
 
-    return ancestor.children.some(({ key, value }) => {
-      if (key.value !== 'type' || !isLiteralNode(value)) {
-        return false;
-      }
-
-      return value.value === 'liquid';
-    });
+    return value.value === 'liquid';
   });
 }
 
