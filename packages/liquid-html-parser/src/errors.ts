@@ -1,5 +1,5 @@
 import lineColumn from 'line-column';
-import { MatchResult } from 'ohm-js';
+import { FailedMatchResult } from 'ohm-js';
 import { NodeTypes, Position } from './types';
 
 interface LineColPosition {
@@ -10,12 +10,12 @@ interface LineColPosition {
 export class LiquidHTMLCSTParsingError extends SyntaxError {
   loc?: { start: LineColPosition; end: LineColPosition };
 
-  constructor(ohm: MatchResult) {
+  constructor(ohm: FailedMatchResult) {
     super(ohm.shortMessage);
     this.name = 'LiquidHTMLParsingError';
 
-    const input = (ohm as any).input;
-    const errorPos = (ohm as any)._rightmostFailurePosition;
+    const input = ohm.input;
+    const errorPos = ohm.getRightmostFailurePosition();
     const lineCol = lineColumn(input).fromIndex(Math.min(errorPos, input.length - 1));
 
     // Plugging ourselves into @babel/code-frame since this is how

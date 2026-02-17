@@ -909,6 +909,16 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@ohm-js/compiler@18.0.0-beta.7":
+  version "18.0.0-beta.7"
+  resolved "https://registry.yarnpkg.com/@ohm-js/compiler/-/compiler-18.0.0-beta.7.tgz#815ef1fdc1c8d67d268af412a09866d298c830e9"
+  integrity sha512-0WzEdoMKwqKHuSyoXmQErdpI7TuvfEyJmIGOY6ASftHX6oLlHAviCsvbHsGFr8S6vhwJZlOUSAeFeuVuNO1yaA==
+
+"@ohm-js/to-ast-compat@18.0.0-beta.7":
+  version "18.0.0-beta.7"
+  resolved "https://registry.yarnpkg.com/@ohm-js/to-ast-compat/-/to-ast-compat-18.0.0-beta.7.tgz#075ea5637a0705f36fe5074da1b18c49b5d621da"
+  integrity sha512-xjVtVQLs+zQfphkMtziOC9tD5C32+TzAILxbzbNmX0kTmX49GqgmmhnD6FQN105JIQLLgAPI6IiJparINU27bw==
+
 "@playwright/browser-chromium@^1.47.2":
   version "1.48.0"
   resolved "https://registry.npmjs.org/@playwright/browser-chromium/-/browser-chromium-1.48.0.tgz#780ca1ebe1aa34dbffa117267c5a84077ed784d0"
@@ -5687,10 +5697,10 @@ obuf@^1.0.0, obuf@^1.1.2:
   resolved "https://registry.yarnpkg.com/obuf/-/obuf-1.1.2.tgz#09bea3343d41859ebd446292d11c9d4db619084e"
   integrity sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==
 
-ohm-js@^17.0.0:
-  version "17.2.1"
-  resolved "https://registry.npmjs.org/ohm-js/-/ohm-js-17.2.1.tgz#77d7d4910134c9e3c7a1b068a878499c68edf92f"
-  integrity sha512-4cXF0G09fAYU9z61kTfkNbKK1Kz/sGEZ5NbVWHoe9Qi7VB7y+Spwk051CpUTfUENdlIr+vt8tMV4/LosTE2cDQ==
+ohm-js@18.0.0-beta.7:
+  version "18.0.0-beta.7"
+  resolved "https://registry.yarnpkg.com/ohm-js/-/ohm-js-18.0.0-beta.7.tgz#c2a336d065ee380277d9c8a2b1be7b1db17b15e2"
+  integrity sha512-tiaU/rb57ADd5aILVhHdwVwPaA74T3kS/z5NN8HbdiaPDbAe8yAli1XrYks1r4R5c9jr/NhvFD6seKZY2j9PSA==
 
 on-finished@2.4.1, on-finished@^2.3.0:
   version "2.4.1"
