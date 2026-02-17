@@ -74,8 +74,8 @@ function isLiteralNode(node: JSONNode): node is LiteralNode {
 }
 
 function isLiquidType(ancestors: JSONNode[]): boolean {
-  const parentJsonNode = ancestors.at(-1)
-  
+  const parentJsonNode = ancestors.at(-1);
+
   if (!parentJsonNode || parentJsonNode.type !== 'Object') {
     return false;
   }
