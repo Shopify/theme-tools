@@ -156,6 +156,68 @@ describe('LiquidVariableRenameProvider', () => {
       );
     });
 
+    it('does not rename type annotation when type and param name share the same text', async () => {
+      const collisionSource = `{% doc %}@param {food} food - favorite food{% enddoc %}
+{% liquid
+  echo food
+%}`;
+      const collisionDoc = TextDocument.create(textDocumentUri, 'liquid', 1, collisionSource);
+      documentManager.open(collisionDoc.uri, collisionSource, 1);
+
+      const params = {
+        textDocument: collisionDoc,
+        position: Position.create(0, collisionSource.indexOf('} food') + 2),
+        newName: 'meal',
+      };
+
+      const result = await provider.rename(params);
+      assert(result);
+      assert(result.documentChanges);
+      expect((result.documentChanges[0] as TextDocumentEdit).edits).to.applyEdits(
+        collisionDoc,
+        `{% doc %}@param {food} meal - favorite food{% enddoc %}
+{% liquid
+  echo meal
+%}`,
+      );
+    });
+
+    it('returns new name when cursor is at first character of liquid doc param name', async () => {
+      const params = {
+        textDocument,
+        position: Position.create(0, documentSource.indexOf('food')),
+        newName: 'meal',
+      };
+
+      const result = await provider.rename(params);
+      assert(result);
+      assert(result.documentChanges);
+      expect((result.documentChanges[0] as TextDocumentEdit).edits).to.applyEdits(
+        textDocument,
+        `{% doc %}@param {string} meal - favorite food{% enddoc %}
+{% assign animal = 'dog' %}
+{% assign plant = 'cactus' %}
+{% liquid
+  echo plant
+  echo meal
+%}
+{% assign painting = 'mona lisa' %}
+{% assign paintings = 'starry night, sunday afternoon, the scream' %}
+<p>I have a cool animal, a great plant, and my favorite food</p>`,
+      );
+    });
+
+    it('does not trigger rename when cursor is on type annotation', async () => {
+      const params = {
+        textDocument,
+        position: Position.create(0, documentSource.indexOf('{string}') + 1),
+        newName: 'meal',
+      };
+
+      const result = await provider.rename(params);
+      expect(result).to.be.null;
+    });
+
     it('returns new name after liquid doc param is renamed on variable usage', async () => {
       const params = {
         textDocument,
@@ -324,6 +386,50 @@ describe('LiquidVariableRenameProvider', () => {
   echo ppp
 %}`,
         );
+      });
+
+      it('returns new name when cursor is at first character of untyped param name', async () => {
+        const params = {
+          textDocument,
+          position: Position.create(0, documentSource.indexOf('prod')),
+          newName: 'ppp',
+        };
+        const result = await provider.rename(params);
+        assert(result);
+        assert(result.documentChanges);
+        expect((result.documentChanges[0] as TextDocumentEdit).edits).to.applyEdits(
+          textDocument,
+          `{% doc %}@param ppp - product{% enddoc %}
+{% liquid
+  for prod in products
+    echo prod.title
+  endfor
+  echo ppp
+%}`,
+        );
+      });
+
+      [
+        { desc: 'at @ symbol', position: Position.create(0, documentSource.indexOf('@param')) },
+        {
+          desc: 'at @param keyword',
+          position: Position.create(0, documentSource.indexOf('@param') + 1),
+        },
+        {
+          desc: 'at space before param name',
+          position: Position.create(0, documentSource.indexOf('@param') + '@param'.length),
+        },
+      ].forEach(({ desc, position }) => {
+        it(`does not trigger rename when cursor is ${desc}`, async () => {
+          const params = {
+            textDocument,
+            position,
+            newName: 'ppp',
+          };
+
+          const result = await provider.rename(params);
+          expect(result).to.be.null;
+        });
       });
 
       it('returns new name after variable is renamed inside loop, but is scoped outside it', async () => {

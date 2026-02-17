@@ -59,6 +59,7 @@ import { ValidLocalBlocks } from './valid-local-blocks';
 import { ValidRenderSnippetArgumentTypes } from './valid-render-snippet-argument-types';
 import { ValidSchema } from './valid-schema';
 import { ValidSchemaName } from './valid-schema-name';
+import { ValidSchemaTranslations } from './valid-schema-translations';
 import { ValidSettingsKey } from './valid-settings-key';
 import { ValidStaticBlockType } from './valid-static-block-type';
 import { ValidVisibleIf, ValidVisibleIfSettingsSchema } from './valid-visible-if';
@@ -133,6 +134,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidVisibleIfSettingsSchema,
   VariableName,
   ValidSchemaName,
+  ValidSchemaTranslations,
 ];
 
 /**

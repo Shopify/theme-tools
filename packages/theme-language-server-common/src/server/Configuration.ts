@@ -24,7 +24,10 @@ export class Configuration {
   [CHECK_ON_CHANGE]: boolean = true;
   [PRELOAD_ON_BOOT]: boolean = true;
 
-  constructor(private connection: Connection, private capabilities: ClientCapabilities) {
+  constructor(
+    private connection: Connection,
+    private capabilities: ClientCapabilities,
+  ) {
     this.connection = connection;
     this.capabilities = capabilities;
   }

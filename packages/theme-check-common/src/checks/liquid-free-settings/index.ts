@@ -40,21 +40,27 @@ export const LiquidFreeSettings: LiquidCheckDefinition = {
 
         visit<SourceCodeType.JSON, void>(jsonFile, {
           Property(schemaNode, ancestors) {
-            if (isInArrayWithParentKey(ancestors, 'settings') && isLiteralNode(schemaNode.value)) {
-              const { value, loc } = schemaNode.value;
-              const propertyValue = schemaNode.key.value;
-              if (
-                typeof value === 'string' &&
-                propertyValue !== 'visible_if' &&
-                value.includes('{%') &&
-                value.includes('%}')
-              ) {
-                context.report({
-                  message: 'Settings values cannot contain liquid logic.',
-                  startIndex: node.blockStartPosition.end + loc!.start.offset,
-                  endIndex: node.blockStartPosition.end + loc!.end.offset,
-                });
-              }
+            if (
+              !isInArrayWithParentKey(ancestors, 'settings') ||
+              !isLiteralNode(schemaNode.value) ||
+              isLiquidType(ancestors)
+            ) {
+              return;
+            }
+
+            const { value, loc } = schemaNode.value;
+            const propertyValue = schemaNode.key.value;
+            if (
+              typeof value === 'string' &&
+              propertyValue !== 'visible_if' &&
+              value.includes('{%') &&
+              value.includes('%}')
+            ) {
+              context.report({
+                message: 'Settings values cannot contain liquid logic.',
+                startIndex: node.blockStartPosition.end + loc!.start.offset,
+                endIndex: node.blockStartPosition.end + loc!.end.offset,
+              });
             }
           },
         });
@@ -65,6 +71,22 @@ export const LiquidFreeSettings: LiquidCheckDefinition = {
 
 function isLiteralNode(node: JSONNode): node is LiteralNode {
   return node.type === 'Literal';
+}
+
+function isLiquidType(ancestors: JSONNode[]): boolean {
+  const parentJsonNode = ancestors.at(-1);
+
+  if (!parentJsonNode || parentJsonNode.type !== 'Object') {
+    return false;
+  }
+
+  return parentJsonNode.children.some(({ key, value }) => {
+    if (key.value !== 'type' || !isLiteralNode(value)) {
+      return false;
+    }
+
+    return value.value === 'liquid';
+  });
 }
 
 function isInArrayWithParentKey(ancestors: JSONNode[], parentKey: string): boolean {

@@ -565,9 +565,8 @@ describe('Module: TypeSystem', () => {
 
   describe('metafieldDefinitionsObjectMap', async () => {
     it('should convert metafield definitions into types', async () => {
-      const metafieldObjectMap = await typeSystem.metafieldDefinitionsObjectMap(
-        'file:///any/file.liquid',
-      );
+      const metafieldObjectMap =
+        await typeSystem.metafieldDefinitionsObjectMap('file:///any/file.liquid');
 
       assert(metafieldObjectMap['product_metafields']);
       assert(metafieldObjectMap['product_metafield_custom']);
@@ -575,9 +574,8 @@ describe('Module: TypeSystem', () => {
     });
 
     it('should group metafield definitions by namespace', async () => {
-      const metafieldObjectMap = await typeSystem.metafieldDefinitionsObjectMap(
-        'file:///any/file.liquid',
-      );
+      const metafieldObjectMap =
+        await typeSystem.metafieldDefinitionsObjectMap('file:///any/file.liquid');
       const properties = metafieldObjectMap['product_metafields'].properties;
 
       assert(properties);
@@ -628,9 +626,8 @@ describe('Module: TypeSystem', () => {
     });
 
     it('should have `metafield_x_array` return_type for array of references', async () => {
-      const metafieldObjectMap = await typeSystem.metafieldDefinitionsObjectMap(
-        'file:///any/file.liquid',
-      );
+      const metafieldObjectMap =
+        await typeSystem.metafieldDefinitionsObjectMap('file:///any/file.liquid');
       const relatedProperties = metafieldObjectMap['order_metafield_related'].properties;
 
       assert(relatedProperties);

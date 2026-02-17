@@ -18,7 +18,7 @@ describe('Module: RenderSnippetCompletionProvider', async () => {
       },
       getTranslationsForURI: async (_) => ({}),
       getSnippetNamesForURI: async (_) => ['product-card', 'image'],
-      getMetafieldDefinitions: async (_rootUri: string) => ({} as MetafieldDefinitionMap),
+      getMetafieldDefinitions: async (_rootUri: string) => ({}) as MetafieldDefinitionMap,
     });
   });
 

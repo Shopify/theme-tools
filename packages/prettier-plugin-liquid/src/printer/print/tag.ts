@@ -195,8 +195,8 @@ function printAttributes(
   const whitespaceBetweenAttributes = forceNotToBreakAttrContent
     ? ' '
     : options.singleAttributePerLine && node.attributes.length > 1
-    ? hardline
-    : line;
+      ? hardline
+      : line;
 
   const attributes = prettierIgnoreAttributes
     ? replaceEndOfLine(
@@ -232,8 +232,8 @@ function printAttributes(
         ? ' '
         : ''
       : isSelfClosing(node)
-      ? line
-      : softline;
+        ? line
+        : softline;
   }
 
   return [
@@ -274,8 +274,8 @@ export function printOpeningTagPrefix(node: LiquidHtmlNode, options: LiquidParse
   return needsToBorrowParentOpeningTagEndMarker(node)
     ? printOpeningTagEndMarker(node.parentNode) // opening tag '>' of parent
     : needsToBorrowPrevClosingTagEndMarker(node)
-    ? printClosingTagEndMarker(node.prev, options) // closing '>' of previous
-    : '';
+      ? printClosingTagEndMarker(node.prev, options) // closing '>' of previous
+      : '';
 }
 
 // Will maybe print the `>` of the node.
@@ -346,8 +346,8 @@ export function printClosingTagSuffix(node: LiquidHtmlNode, options: LiquidParse
   return needsToBorrowParentClosingTagStartMarker(node)
     ? printClosingTagStartMarker(node.parentNode, options)
     : needsToBorrowNextOpeningTagStartMarker(node)
-    ? printOpeningTagStartMarker(node.next)
-    : '';
+      ? printOpeningTagStartMarker(node.next)
+      : '';
 }
 
 export function printClosingTagStartMarker(

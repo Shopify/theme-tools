@@ -5,8 +5,6 @@ Thank you for your interest in contributing to theme-tools! Your contributions w
 ## Table of Contents
 
 - [Setting Up Your Environment](#setting-up-your-environment)
-- [Setup for the VS Code Extension](#setup-for-the-vscode-extension)
-- [Setup for the Online Store](#setup-for-the-online-store)
 - [Submitting a Pull Request](#submitting-a-pull-request)
 - [Reporting Issues](#reporting-issues)
 - [Code of Conduct](#code-of-conduct)
@@ -39,10 +37,10 @@ Before you can start contributing to theme-tools, you'll need to set up your dev
    ```bash
    yarn test
    ```
+
 5. **Start developing**: If you're developing changes to test against the vscode extension, all you need to do is add a breakpoint anywhere in a package used within the VS Code extension, hit `f5` in VS Code and your development instance of theme-check will automatically open.
 
-### Developing for online-store-web
-It is strongly recommended that you use the spin constellation: `theme-tools:online-store` as your development environment for this.
+### Developing for online-store-web (Shopifolk only)
 
 To set up the package links to online-store-web, within this repo root run: `yarn admin:init`
 
@@ -54,7 +52,7 @@ Once you've made some changes to your local theme-tools packages, to see those c
 
 Run the following command to start a browser instance that runs `@shopify/theme-language-server-browser`.
 
-```
+```bash
 yarn playground
 ```
 
@@ -80,45 +78,45 @@ If ever you want to see how the VS Code extension or playground would behave bef
 
 1. In a terminal, with VS Code closed, go to the Shopify/theme-liquid-docs directory.
 
-    ```sh
-    # Shopifolk
-    dev cd theme-liquid-docs
+   ```sh
+   # Shopifolk
+   dev cd theme-liquid-docs
 
-    # External
-    cd /path/to/theme-liquid-docs
-    ```
+   # External
+   cd /path/to/theme-liquid-docs
+   ```
 
 2. Export the root of that repository in the `SHOPIFY_TLD_ROOT` environment variable
 
-    ```sh
-    export SHOPIFY_TLD_ROOT=$(pwd)
-    ```
+   ```sh
+   export SHOPIFY_TLD_ROOT=$(pwd)
+   ```
 
 3. Go to the Shopify/theme-tools directory.
 
-    ```sh
-    # Shopifolk
-    dev cd theme-tools
+   ```sh
+   # Shopifolk
+   dev cd theme-tools
 
-    # External
-    cd /path/to/theme-tools
-    ```
+   # External
+   cd /path/to/theme-tools
+   ```
 
 4. Update the docs and start VS Code from that directory.
 
-    ```sh
-    # update the docs
-    theme-docs download
+   ```sh
+   # update the docs
+   theme-docs download
 
-    # start vscode
-    code .
-    ```
+   # start vscode
+   code .
+   ```
 
 5. (Repeat) You can repeat the `theme-docs download` command to have updated changes.
 
-    ```sh
-    theme-docs download
-    ```
+   ```sh
+   theme-docs download
+   ```
 
 6. Proceed to debug the VS Code extension or playground as usual.
 

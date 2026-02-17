@@ -52,9 +52,7 @@ const defer = (fn: () => void) => setTimeout(fn, 10);
  *  </div>
  * ```
  */
-export class HtmlElementAutoclosingOnTypeFormattingProvider
-  implements BaseOnTypeFormattingProvider
-{
+export class HtmlElementAutoclosingOnTypeFormattingProvider implements BaseOnTypeFormattingProvider {
   constructor(private setCursorPosition: SetCursorPosition) {}
 
   onTypeFormatting(

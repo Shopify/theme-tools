@@ -114,38 +114,33 @@ export interface ConcreteBasicNode<T> {
   locEnd: number;
 }
 
-export interface ConcreteLiquidDocParamNode
-  extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocParamNode> {
+export interface ConcreteLiquidDocParamNode extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocParamNode> {
   name: 'param';
   paramName: ConcreteLiquidDocParamNameNode;
   paramDescription: ConcreteTextNode | null;
   paramType: ConcreteTextNode | null;
 }
 
-export interface ConcreteLiquidDocParamNameNode
-  extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocParamNameNode> {
+export interface ConcreteLiquidDocParamNameNode extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocParamNameNode> {
   name: 'paramName';
   content: ConcreteTextNode;
   required: boolean;
 }
 
-export interface ConcreteLiquidDocDescriptionNode
-  extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocDescriptionNode> {
+export interface ConcreteLiquidDocDescriptionNode extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocDescriptionNode> {
   name: 'description';
   content: ConcreteTextNode;
   isImplicit: boolean;
   isInline: boolean;
 }
 
-export interface ConcreteLiquidDocExampleNode
-  extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocExampleNode> {
+export interface ConcreteLiquidDocExampleNode extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocExampleNode> {
   name: 'example';
   content: ConcreteTextNode;
   isInline: boolean;
 }
 
-export interface ConcreteLiquidDocPromptNode
-  extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocPromptNode> {
+export interface ConcreteLiquidDocPromptNode extends ConcreteBasicNode<ConcreteNodeTypes.LiquidDocPromptNode> {
   name: 'prompt';
   content: ConcreteTextNode;
 }
@@ -171,12 +166,10 @@ export interface ConcreteHtmlRawTag extends ConcreteHtmlNodeBase<ConcreteNodeTyp
   blockEndLocStart: number;
   blockEndLocEnd: number;
 }
-export interface ConcreteHtmlVoidElement
-  extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlVoidElement> {
+export interface ConcreteHtmlVoidElement extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlVoidElement> {
   name: string;
 }
-export interface ConcreteHtmlSelfClosingElement
-  extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlSelfClosingElement> {
+export interface ConcreteHtmlSelfClosingElement extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlSelfClosingElement> {
   name: (ConcreteTextNode | ConcreteLiquidVariableOutput)[];
 }
 export interface ConcreteHtmlTagOpen extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlTagOpen> {
@@ -198,12 +191,9 @@ export type ConcreteAttributeNode =
   | ConcreteAttrUnquoted
   | ConcreteAttrEmpty;
 
-export interface ConcreteAttrSingleQuoted
-  extends ConcreteAttributeNodeBase<ConcreteNodeTypes.AttrSingleQuoted> {}
-export interface ConcreteAttrDoubleQuoted
-  extends ConcreteAttributeNodeBase<ConcreteNodeTypes.AttrDoubleQuoted> {}
-export interface ConcreteAttrUnquoted
-  extends ConcreteAttributeNodeBase<ConcreteNodeTypes.AttrUnquoted> {}
+export interface ConcreteAttrSingleQuoted extends ConcreteAttributeNodeBase<ConcreteNodeTypes.AttrSingleQuoted> {}
+export interface ConcreteAttrDoubleQuoted extends ConcreteAttributeNodeBase<ConcreteNodeTypes.AttrDoubleQuoted> {}
+export interface ConcreteAttrUnquoted extends ConcreteAttributeNodeBase<ConcreteNodeTypes.AttrUnquoted> {}
 export interface ConcreteAttrEmpty extends ConcreteBasicNode<ConcreteNodeTypes.AttrEmpty> {
   name: (ConcreteLiquidVariableOutput | ConcreteTextNode)[];
 }
@@ -220,8 +210,7 @@ interface ConcreteBasicLiquidNode<T> extends ConcreteBasicNode<T> {
   whitespaceEnd: null | '-';
 }
 
-export interface ConcreteLiquidRawTag
-  extends ConcreteBasicLiquidNode<ConcreteNodeTypes.LiquidRawTag> {
+export interface ConcreteLiquidRawTag extends ConcreteBasicLiquidNode<ConcreteNodeTypes.LiquidRawTag> {
   name: string;
   body: string;
   children: (ConcreteTextNode | ConcreteLiquidNode)[];
@@ -245,28 +234,42 @@ export type ConcreteLiquidTagOpenNamed =
   | ConcreteLiquidTagOpenPaginate
   | ConcreteLiquidTagOpenTablerow;
 
-export interface ConcreteLiquidTagOpenNode<Name, Markup>
-  extends ConcreteBasicLiquidNode<ConcreteNodeTypes.LiquidTagOpen> {
+export interface ConcreteLiquidTagOpenNode<
+  Name,
+  Markup,
+> extends ConcreteBasicLiquidNode<ConcreteNodeTypes.LiquidTagOpen> {
   name: Name;
   markup: Markup;
 }
 
 export interface ConcreteLiquidTagOpenBaseCase extends ConcreteLiquidTagOpenNode<string, string> {}
 
-export interface ConcreteLiquidTagOpenCapture
-  extends ConcreteLiquidTagOpenNode<NamedTags.capture, ConcreteLiquidVariableLookup> {}
+export interface ConcreteLiquidTagOpenCapture extends ConcreteLiquidTagOpenNode<
+  NamedTags.capture,
+  ConcreteLiquidVariableLookup
+> {}
 
-export interface ConcreteLiquidTagOpenCase
-  extends ConcreteLiquidTagOpenNode<NamedTags.case, ConcreteLiquidExpression> {}
-export interface ConcreteLiquidTagWhen
-  extends ConcreteLiquidTagNode<NamedTags.when, ConcreteLiquidExpression[]> {}
+export interface ConcreteLiquidTagOpenCase extends ConcreteLiquidTagOpenNode<
+  NamedTags.case,
+  ConcreteLiquidExpression
+> {}
+export interface ConcreteLiquidTagWhen extends ConcreteLiquidTagNode<
+  NamedTags.when,
+  ConcreteLiquidExpression[]
+> {}
 
-export interface ConcreteLiquidTagOpenIf
-  extends ConcreteLiquidTagOpenNode<NamedTags.if, ConcreteLiquidCondition[]> {}
-export interface ConcreteLiquidTagOpenUnless
-  extends ConcreteLiquidTagOpenNode<NamedTags.unless, ConcreteLiquidCondition[]> {}
-export interface ConcreteLiquidTagElsif
-  extends ConcreteLiquidTagNode<NamedTags.elsif, ConcreteLiquidCondition[]> {}
+export interface ConcreteLiquidTagOpenIf extends ConcreteLiquidTagOpenNode<
+  NamedTags.if,
+  ConcreteLiquidCondition[]
+> {}
+export interface ConcreteLiquidTagOpenUnless extends ConcreteLiquidTagOpenNode<
+  NamedTags.unless,
+  ConcreteLiquidCondition[]
+> {}
+export interface ConcreteLiquidTagElsif extends ConcreteLiquidTagNode<
+  NamedTags.elsif,
+  ConcreteLiquidCondition[]
+> {}
 
 export interface ConcreteLiquidCondition extends ConcreteBasicNode<ConcreteNodeTypes.Condition> {
   relation: 'and' | 'or' | null;
@@ -279,11 +282,15 @@ export interface ConcreteLiquidComparison extends ConcreteBasicNode<ConcreteNode
   right: ConcreteLiquidExpression;
 }
 
-export interface ConcreteLiquidTagOpenForm
-  extends ConcreteLiquidTagOpenNode<NamedTags.form, ConcreteLiquidArgument[]> {}
+export interface ConcreteLiquidTagOpenForm extends ConcreteLiquidTagOpenNode<
+  NamedTags.form,
+  ConcreteLiquidArgument[]
+> {}
 
-export interface ConcreteLiquidTagOpenFor
-  extends ConcreteLiquidTagOpenNode<NamedTags.for, ConcreteLiquidTagForMarkup> {}
+export interface ConcreteLiquidTagOpenFor extends ConcreteLiquidTagOpenNode<
+  NamedTags.for,
+  ConcreteLiquidTagForMarkup
+> {}
 export interface ConcreteLiquidTagForMarkup extends ConcreteBasicNode<ConcreteNodeTypes.ForMarkup> {
   variableName: string;
   collection: ConcreteLiquidExpression;
@@ -291,21 +298,23 @@ export interface ConcreteLiquidTagForMarkup extends ConcreteBasicNode<ConcreteNo
   args: ConcreteLiquidNamedArgument[];
 }
 
-export interface ConcreteLiquidTagOpenTablerow
-  extends ConcreteLiquidTagOpenNode<NamedTags.tablerow, ConcreteLiquidTagForMarkup> {}
+export interface ConcreteLiquidTagOpenTablerow extends ConcreteLiquidTagOpenNode<
+  NamedTags.tablerow,
+  ConcreteLiquidTagForMarkup
+> {}
 
-export interface ConcreteLiquidTagOpenPaginate
-  extends ConcreteLiquidTagOpenNode<NamedTags.paginate, ConcretePaginateMarkup> {}
+export interface ConcreteLiquidTagOpenPaginate extends ConcreteLiquidTagOpenNode<
+  NamedTags.paginate,
+  ConcretePaginateMarkup
+> {}
 
-export interface ConcretePaginateMarkup
-  extends ConcreteBasicNode<ConcreteNodeTypes.PaginateMarkup> {
+export interface ConcretePaginateMarkup extends ConcreteBasicNode<ConcreteNodeTypes.PaginateMarkup> {
   collection: ConcreteLiquidExpression;
   pageSize: ConcreteLiquidExpression;
   args: ConcreteLiquidNamedArgument[] | null;
 }
 
-export interface ConcreteLiquidTagClose
-  extends ConcreteBasicLiquidNode<ConcreteNodeTypes.LiquidTagClose> {
+export interface ConcreteLiquidTagClose extends ConcreteBasicLiquidNode<ConcreteNodeTypes.LiquidTagClose> {
   name: string;
 }
 
@@ -326,91 +335,109 @@ export type ConcreteLiquidTagNamed =
   | ConcreteLiquidTagSections
   | ConcreteLiquidTagWhen;
 
-export interface ConcreteLiquidTagNode<Name, Markup>
-  extends ConcreteBasicLiquidNode<ConcreteNodeTypes.LiquidTag> {
+export interface ConcreteLiquidTagNode<
+  Name,
+  Markup,
+> extends ConcreteBasicLiquidNode<ConcreteNodeTypes.LiquidTag> {
   markup: Markup;
   name: Name;
 }
 
 export interface ConcreteLiquidTagBaseCase extends ConcreteLiquidTagNode<string, string> {}
-export interface ConcreteLiquidTagEcho
-  extends ConcreteLiquidTagNode<NamedTags.echo, ConcreteLiquidVariable> {}
-export interface ConcreteLiquidTagIncrement
-  extends ConcreteLiquidTagNode<NamedTags.increment, ConcreteLiquidVariableLookup> {}
-export interface ConcreteLiquidTagDecrement
-  extends ConcreteLiquidTagNode<NamedTags.decrement, ConcreteLiquidVariableLookup> {}
-export interface ConcreteLiquidTagSection
-  extends ConcreteLiquidTagNode<NamedTags.section, ConcreteStringLiteral> {}
-export interface ConcreteLiquidTagSections
-  extends ConcreteLiquidTagNode<NamedTags.sections, ConcreteStringLiteral> {}
-export interface ConcreteLiquidTagLayout
-  extends ConcreteLiquidTagNode<NamedTags.layout, ConcreteLiquidExpression> {}
+export interface ConcreteLiquidTagEcho extends ConcreteLiquidTagNode<
+  NamedTags.echo,
+  ConcreteLiquidVariable
+> {}
+export interface ConcreteLiquidTagIncrement extends ConcreteLiquidTagNode<
+  NamedTags.increment,
+  ConcreteLiquidVariableLookup
+> {}
+export interface ConcreteLiquidTagDecrement extends ConcreteLiquidTagNode<
+  NamedTags.decrement,
+  ConcreteLiquidVariableLookup
+> {}
+export interface ConcreteLiquidTagSection extends ConcreteLiquidTagNode<
+  NamedTags.section,
+  ConcreteStringLiteral
+> {}
+export interface ConcreteLiquidTagSections extends ConcreteLiquidTagNode<
+  NamedTags.sections,
+  ConcreteStringLiteral
+> {}
+export interface ConcreteLiquidTagLayout extends ConcreteLiquidTagNode<
+  NamedTags.layout,
+  ConcreteLiquidExpression
+> {}
 
-export interface ConcreteLiquidTagLiquid
-  extends ConcreteLiquidTagNode<NamedTags.liquid, ConcreteLiquidLiquidTagNode[]> {}
+export interface ConcreteLiquidTagLiquid extends ConcreteLiquidTagNode<
+  NamedTags.liquid,
+  ConcreteLiquidLiquidTagNode[]
+> {}
 export type ConcreteLiquidLiquidTagNode =
   | ConcreteLiquidTagOpen
   | ConcreteLiquidTagClose
   | ConcreteLiquidTag
   | ConcreteLiquidRawTag;
 
-export interface ConcreteLiquidTagAssign
-  extends ConcreteLiquidTagNode<NamedTags.assign, ConcreteLiquidTagAssignMarkup> {}
-export interface ConcreteLiquidTagAssignMarkup
-  extends ConcreteBasicNode<ConcreteNodeTypes.AssignMarkup> {
+export interface ConcreteLiquidTagAssign extends ConcreteLiquidTagNode<
+  NamedTags.assign,
+  ConcreteLiquidTagAssignMarkup
+> {}
+export interface ConcreteLiquidTagAssignMarkup extends ConcreteBasicNode<ConcreteNodeTypes.AssignMarkup> {
   name: string;
   value: ConcreteLiquidVariable;
 }
 
-export interface ConcreteLiquidTagCycle
-  extends ConcreteLiquidTagNode<NamedTags.cycle, ConcreteLiquidTagCycleMarkup> {}
-export interface ConcreteLiquidTagCycleMarkup
-  extends ConcreteBasicNode<ConcreteNodeTypes.CycleMarkup> {
+export interface ConcreteLiquidTagCycle extends ConcreteLiquidTagNode<
+  NamedTags.cycle,
+  ConcreteLiquidTagCycleMarkup
+> {}
+export interface ConcreteLiquidTagCycleMarkup extends ConcreteBasicNode<ConcreteNodeTypes.CycleMarkup> {
   groupName: ConcreteLiquidExpression | null;
   args: ConcreteLiquidExpression[];
 }
 
-export interface ConcreteLiquidTagContentFor
-  extends ConcreteLiquidTagNode<NamedTags.content_for, ConcreteLiquidTagContentForMarkup> {}
+export interface ConcreteLiquidTagContentFor extends ConcreteLiquidTagNode<
+  NamedTags.content_for,
+  ConcreteLiquidTagContentForMarkup
+> {}
 
-export interface ConcreteLiquidTagRender
-  extends ConcreteLiquidTagNode<NamedTags.render, ConcreteLiquidTagRenderMarkup> {}
-export interface ConcreteLiquidTagInclude
-  extends ConcreteLiquidTagNode<NamedTags.include, ConcreteLiquidTagRenderMarkup> {}
+export interface ConcreteLiquidTagRender extends ConcreteLiquidTagNode<
+  NamedTags.render,
+  ConcreteLiquidTagRenderMarkup
+> {}
+export interface ConcreteLiquidTagInclude extends ConcreteLiquidTagNode<
+  NamedTags.include,
+  ConcreteLiquidTagRenderMarkup
+> {}
 
-export interface ConcreteLiquidTagContentForMarkup
-  extends ConcreteBasicNode<ConcreteNodeTypes.ContentForMarkup> {
+export interface ConcreteLiquidTagContentForMarkup extends ConcreteBasicNode<ConcreteNodeTypes.ContentForMarkup> {
   contentForType: ConcreteStringLiteral;
   args: ConcreteLiquidNamedArgument[];
 }
 
-export interface ConcreteLiquidTagRenderMarkup
-  extends ConcreteBasicNode<ConcreteNodeTypes.RenderMarkup> {
+export interface ConcreteLiquidTagRenderMarkup extends ConcreteBasicNode<ConcreteNodeTypes.RenderMarkup> {
   snippet: ConcreteStringLiteral | ConcreteLiquidVariableLookup;
   variable: ConcreteRenderVariableExpression | null;
   alias: ConcreteRenderAliasExpression | null;
   renderArguments: ConcreteLiquidNamedArgument[];
 }
 
-export interface ConcreteRenderVariableExpression
-  extends ConcreteBasicNode<ConcreteNodeTypes.RenderVariableExpression> {
+export interface ConcreteRenderVariableExpression extends ConcreteBasicNode<ConcreteNodeTypes.RenderVariableExpression> {
   kind: 'for' | 'with';
   name: ConcreteLiquidExpression;
 }
 
-export interface ConcreteRenderAliasExpression
-  extends ConcreteBasicNode<ConcreteNodeTypes.RenderAliasExpression> {
+export interface ConcreteRenderAliasExpression extends ConcreteBasicNode<ConcreteNodeTypes.RenderAliasExpression> {
   value: string;
 }
 
-export interface ConcreteLiquidVariableOutput
-  extends ConcreteBasicLiquidNode<ConcreteNodeTypes.LiquidVariableOutput> {
+export interface ConcreteLiquidVariableOutput extends ConcreteBasicLiquidNode<ConcreteNodeTypes.LiquidVariableOutput> {
   markup: ConcreteLiquidVariable | string;
 }
 
 // The variable is the name + filters, like shopify/liquid.
-export interface ConcreteLiquidVariable
-  extends ConcreteBasicNode<ConcreteNodeTypes.LiquidVariable> {
+export interface ConcreteLiquidVariable extends ConcreteBasicNode<ConcreteNodeTypes.LiquidVariable> {
   expression: ConcreteLiquidExpression;
   filters: ConcreteLiquidFilter[];
   rawSource: string;
@@ -423,8 +450,7 @@ export interface ConcreteLiquidFilter extends ConcreteBasicNode<ConcreteNodeType
 
 export type ConcreteLiquidArgument = ConcreteLiquidExpression | ConcreteLiquidNamedArgument;
 
-export interface ConcreteLiquidNamedArgument
-  extends ConcreteBasicNode<ConcreteNodeTypes.NamedArgument> {
+export interface ConcreteLiquidNamedArgument extends ConcreteBasicNode<ConcreteNodeTypes.NamedArgument> {
   name: string;
   value: ConcreteLiquidExpression;
 }
@@ -440,8 +466,7 @@ export type ConcreteComplexLiquidExpression =
   | ConcreteLiquidBooleanExpression
   | ConcreteLiquidExpression;
 
-export interface ConcreteLiquidBooleanExpression
-  extends ConcreteBasicNode<ConcreteNodeTypes.BooleanExpression> {
+export interface ConcreteLiquidBooleanExpression extends ConcreteBasicNode<ConcreteNodeTypes.BooleanExpression> {
   conditions: ConcreteLiquidCondition[];
 }
 
@@ -464,8 +489,7 @@ export interface ConcreteLiquidRange extends ConcreteBasicNode<ConcreteNodeTypes
   end: ConcreteLiquidExpression;
 }
 
-export interface ConcreteLiquidVariableLookup
-  extends ConcreteBasicNode<ConcreteNodeTypes.VariableLookup> {
+export interface ConcreteLiquidVariableLookup extends ConcreteBasicNode<ConcreteNodeTypes.VariableLookup> {
   name: string | null;
   lookups: ConcreteLiquidExpression[];
 }
@@ -483,8 +507,7 @@ export interface ConcreteTextNode extends ConcreteBasicNode<ConcreteNodeTypes.Te
   value: string;
 }
 
-export interface ConcreteYamlFrontmatterNode
-  extends ConcreteBasicNode<ConcreteNodeTypes.YAMLFrontmatter> {
+export interface ConcreteYamlFrontmatterNode extends ConcreteBasicNode<ConcreteNodeTypes.YAMLFrontmatter> {
   body: string;
 }
 

@@ -75,7 +75,9 @@ const hasUnsupportedDocument = (params: any) => {
     'textDocument' in params &&
     'uri' in params.textDocument &&
     typeof params.textDocument.uri === 'string' &&
-    (params.textDocument.uri.startsWith('git:') || params.textDocument.uri.startsWith('output:'))
+    (params.textDocument.uri.startsWith('jj:') ||
+      params.textDocument.uri.startsWith('git:') ||
+      params.textDocument.uri.startsWith('output:'))
   );
 };
 

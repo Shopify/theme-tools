@@ -1,3 +1,5 @@
+import path from 'node:path';
+import { workspace } from 'vscode';
 import LiquidPrettierPlugin from '@shopify/prettier-plugin-liquid';
 import * as prettier from 'prettier';
 import { Format } from '../common/formatter';
@@ -18,6 +20,18 @@ export const vscodePrettierFormat: Format = async (textDocument) => {
 
 export const nodePrettierFormat: Format = async (textDocument) => {
   const text = textDocument.getText();
+
+  const workspaceFolder = workspace.getWorkspaceFolder(textDocument.uri);
+  const fileInfo =
+    workspaceFolder &&
+    (await prettier.getFileInfo(textDocument.uri.fsPath, {
+      ignorePath: path.join(workspaceFolder.uri.fsPath, '.prettierignore'),
+    }));
+
+  if (fileInfo?.ignored) {
+    return text;
+  }
+
   const options = await prettier.resolveConfig(textDocument.uri.fsPath, { useCache: false });
   return prettier.format(text, {
     ...options,

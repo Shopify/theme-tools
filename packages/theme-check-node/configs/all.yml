@@ -193,6 +193,9 @@ ValidSchema:
 ValidSchemaName:
   enabled: true
   severity: 0
+ValidSchemaTranslations:
+  enabled: true
+  severity: 0
 ValidSettingsKey:
   enabled: true
   severity: 0

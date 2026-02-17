@@ -43,6 +43,29 @@ function isLiquidVariable(node: LiquidHtmlNode | string): node is LiquidVariable
   return typeof node !== 'string' && node.type === NodeTypes.LiquidVariable;
 }
 
+function isHashUrl(url: string): boolean {
+  return url.startsWith('#');
+}
+
+/**
+ * Checks if the attribute value starts with a variable lookup.
+ * When a value starts with a VariableLookup (e.g., {{ source.url }}, {{ image }}),
+ * we can't statically analyze what it contains, so we skip linting.
+ * This prevents false positives for cases like video_source.url which already
+ * returns CDN-hosted URLs.
+ */
+function startsWithVariableLookup(attr: ValuedHtmlAttribute): boolean {
+  const firstNode = attr.value[0];
+  if (!firstNode) return false;
+
+  if (!isLiquidVariableOutput(firstNode)) return false;
+
+  const variable = firstNode.markup;
+  if (!isLiquidVariable(variable)) return false;
+
+  return variable.expression.type === NodeTypes.VariableLookup;
+}
+
 function isUrlHostedbyShopify(url: string, allowedDomains: string[] = []): boolean {
   if (/^\/cdn\//.test(url)) {
     return true;
@@ -156,6 +179,13 @@ export const RemoteAsset: LiquidCheckDefinition<typeof schema> = {
         .find((attr: ValuedHtmlAttribute) => isAttr(attr, 'src') || isAttr(attr, 'href'));
 
       if (!urlAttribute) return;
+
+      const firstTextNode = urlAttribute.value.find(
+        (node): node is TextNode => node.type === NodeTypes.TextNode,
+      );
+      if (firstTextNode && isHashUrl(firstTextNode.value)) return;
+
+      if (startsWithVariableLookup(urlAttribute)) return;
 
       const isShopifyUrl = urlAttribute.value
         .filter((node): node is TextNode => node.type === NodeTypes.TextNode)
