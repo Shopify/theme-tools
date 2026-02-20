@@ -1,5 +1,20 @@
 # @shopify/theme-language-server-common
 
+## 2.20.2
+
+### Patch Changes
+
+- bf2d6b02: Fix rename not triggering when cursor is at the first character of a LiquidDoc param name
+- b1bca3f9: Upgrade prettier to v3 (internal)
+- Updated dependencies
+- Updated dependencies [346cc150]
+- Updated dependencies [2df8b65e]
+- Updated dependencies [bc8002ba]
+- Updated dependencies [b1bca3f9]
+  - @shopify/theme-graph@0.2.3
+  - @shopify/theme-check-common@3.24.0
+  - @shopify/liquid-html-parser@2.9.2
+
 ## 2.20.1
 
 ### Patch Changes
@@ -140,7 +155,6 @@
 ### Patch Changes
 
 - c183dfd3: Add completion + hover support for presets/default section block settings
-
   - Preset + Default block settings will pick up Section block for completion + hover support
     - If the setting label is a translation, it will be translated during hover
 
@@ -205,7 +219,6 @@
 ### Minor Changes
 
 - a1fa7376: Support LiquidDoc param array types
-
   - LiquidDoc param types supports 1D arrays as param types
   - Square brackets are placed after the param type to denote arrays
 
@@ -219,7 +232,6 @@
   ```
 
 - 19f5589b: Add `content_for` argument hover support
-
   - Hovering over `type` argument inside `{% content_for 'block' %}` tag shows LiquidDoc inside that block
   - Hovering over arguments inside `{% content_for 'block' %}` shows their respective LiquidDoc parameter description
 
@@ -283,7 +295,6 @@
 ### Minor Changes
 
 - e75f896d: [Feature] Support more types for LiquidDoc param
-
   - Support [liquid objects](https://shopify.dev/docs/api/liquid/objects) as LiquidDoc param type
     - Object is NOT supported if it is exclusively a global liquid variable
     - Object is NOT supported if it is deprecated
@@ -346,7 +357,6 @@
 ### Patch Changes
 
 - 9ffbe27d: Remove `brand` from list of metafield owner types being fetched
-
   - Brand is removed from ownerType
   - https://shopify.dev/docs/api/admin-graphql/latest/queries/metafieldDefinitions
 
@@ -359,7 +369,6 @@
 
 - 1dc03172: Display completion suggestions while typing for liquiddoc annotations
 - d9fc9d03: Support LiquidDoc param code completion within snippet
-
   - When a param is defined in LiquidDoc, it will appear as code completion suggestion
     when performing a variable lookup in the file
 
@@ -369,7 +378,6 @@
 ### Patch Changes
 
 - 110bb005: Renaming variables inside snippets also renames the LiquidDoc parameters
-
   - You can rename doc params or variable usage in the file
 
 - 3a68fe5f: Update hover behaviour for the {% render %} tag to render new lines for multi-line descriptions
@@ -412,7 +420,6 @@
 ### Minor Changes
 
 - f077a9ec: Adding liquid doc param type completion
-
   - render param completion supports default values based on param type
 
 ### Patch Changes
@@ -439,12 +446,10 @@
   - Support content_for param completion
 - e9c1d98a: Move `getSnippetDefinition` to theme-check-common
 - 2db3047f: Support `render` param completion based on liquid docs
-
   - If you defined liquid doc parameters on a snippet, they will appear as completion options
     for parameters when rendered by a `render` tag.
 
 - 261c2958: Support liquid doc inner tags completion + hover
-
   - `@param`, `@description`, `@example` will support code completion
     whenever being typed inside of `doc` tag
   - `@param`, `@description`, `@example` can be hovered to show their
@@ -471,7 +476,6 @@
 ### Minor Changes
 
 - 2ef93d17: Support completion + hover for presets blocks settings under `{% schema %}` tag
-
   - Hover + Completion description for `presets.[].blocks.[].settings` and `default.blocks.[].settings`
     will be from the referenced block's setting's label - i.e. `settings.[].label`
     - The label will be translated if it contains a translation key
@@ -503,7 +507,6 @@
 - c85a6131: Cache liquidDoc fetch results
 - 931dc9b9: Add hover support for Liquid snippets using {% doc %} annotations
 - 9765bece: Support `default.settings` completion + hover
-
   - Fix bug where `presets.[].settings` hover only worked on first setting
   - Fix bug where preset block completion creates an error when `blocks` isn't defined
 
@@ -523,7 +526,6 @@
 ### Minor Changes
 
 - ccc0c952: Support `content_for` block type completion + document link
-
   - The following code will offer completion suggestions based on public blocks
     within the blocks folder.
 
@@ -552,7 +554,6 @@
 - c74850c8: Add "On section rename" handling
 
   When `sections/*.liquid` files are renamed, we will update all references to these files in their previous locations. This includes:
-
   - `templates/*.json` files that referenced the old file name
   - `sections/*.json` files that referenced the old file name
   - Static section calls formatted as `{% section 'old-name' %}`
@@ -560,7 +561,6 @@
 - b31e0f85: Add "On theme block rename" handling
 
   Whenever a theme block gets renamed, the following will now happen:
-
   1. References in files with a `{% schema %}` will be updated automatically
   2. References in template files will be updated automatically
   3. References in section groups will be updated automatically
@@ -689,7 +689,6 @@
 - 8f3bc18: Add "block" or "blocks" completion for the `content_for` Liquid tag (Thanks @Smintfy)
 - 568d53b: Add support for the `content_for` Liquid tag
 - 6014dfd: Support metafield auto-completion based on .shopify/metafields.json file
-
   - The metafield definitions can be fetched from Admin API
   - The format of the JSON needs to be the following:
 
@@ -712,7 +711,6 @@
   ```
 
   The definition group needs to be one of the following:
-
   - 'article'
   - 'blog'
   - 'brand'
@@ -744,7 +742,6 @@
 - 4b574c1: [Breaking] Replace absolute path concerns with URIs
 
   This implies a couple of changes:
-
   - `Config` now holds a `rootUri` instead of `root` path.
   - `loadConfig` injections needs to change their return value accordingly
   - In checks,
@@ -782,14 +779,12 @@
 - 5fab0e9: Add on snippet rename automatic refactor support
 
   When `snippets/*.liquid` files are renamed, we'll change all the old references to point to the new files:
-
   - `{% render 'oldName' %}` -> `{% render 'newName' %}`
   - `{% include 'oldName' %}` -> `{% include 'newName' %}`
 
 - 5fab0e9: Add on asset rename automatic refactor support
 
   When `assets/*` files are renamed, we'll change all the old references to point to the new files:
-
   - `{{ 'oldName.js' | asset_url }}` -> `{{ 'newName.js' | asset_url }}`
   - `{% echo 'oldName.js' | asset_url %}` -> `{% echo 'newName.js' | asset_url %}`
 
@@ -807,7 +802,6 @@
 ### Minor Changes
 
 - a0ba46d: Add Liquid tag snippet completion
-
   - Accept the completion item for `if` and get `{% if ${1:condition} %}\n  $0\n{% endif %}` with tabulated placeholders
     - `${1:condition}` is the first placeholder, press tab to reach the next one
     - `$0` is the last one
@@ -818,12 +812,10 @@
     - Will not snippet complete if markup is already present in the tag definition
 
 - e36ed42: Improve HTML attribute auto-completion
-
   - Add `=""` to attributes that should have a value when relevant
   - Override entire attribute even if the cursor was in the middle of it
 
 - 9bff5bd: Support renaming liquid variable names
-
   - only renames liquid variables enclosed within liquid tags
 
 ## 1.13.1
@@ -978,7 +970,6 @@
 - 03b41e1: Add support for the schemas manifest on Shopify/theme-liquid-docs
 
   Shopify/theme-liquid-docs now supports composable JSON schemas (with relative paths). To solve the `blocks/*.liquid` file match JSON schema overload depending on the context (`app` or `theme`), we defined two manifests that describe the schemas required by your solution and define the fileMatch rules:
-
   - [manifest_theme.json](https://github.com/Shopify/theme-liquid-docs/blob/main/schemas/manifest_theme.json)
   - [manifest_theme_app_extension.json](https://github.com/Shopify/theme-liquid-docs/blob/main/schemas/manifest_theme.json)
 
@@ -1112,7 +1103,6 @@
 - 042f1e0: Add section schema and translation file JSON completion and hover support
 
   JSON object authoring and editing should be better in the following contexts:
-
   - `sections/*.liquid` `{% schema %}` bodies
   - `locales/*.json` files
 
@@ -1192,7 +1182,6 @@
 
 - 772a1ce: Update `translation-key-exists` check and intelligent code completion to always stay up-to-date with Shopify translation keys
 - b05a6a8: Add support for the following Language Server configurations:
-
   - `themeCheck.checkOnOpen`
   - `themeCheck.checkOnSave`
   - `themeCheck.checkOnChange`
@@ -1210,7 +1199,6 @@
 ### Minor Changes
 
 - a120393: Add better auto-closing UX for Liquid pairs
-
   - Type `{{` get `{{ | }}` (cursor at `|`)
   - Type `{{-` get `{{- | -}}`
   - Type `{%` get `{% | %}`
@@ -1472,7 +1460,6 @@
 ### Minor Changes
 
 - 0c50ec1: Bump theme-check to v1.6.0
-
   - e0c131a: Breaking: `SourceCode` can take `ast: AST[T] | Error`, where `Error` is a parsing error
   - 9e99728: Add `UnusedAssign`
   - f99c896: Add `LiquidHTMLSyntaxError`
@@ -1513,7 +1500,6 @@
 
 - 6f5c92c: Start listening for workspace/did{Create,Rename,Delete}Files notifications
 - Bump @shopify/theme-check-common to v1.4.0
-
   - Adds new check: `TranslationKeyExists`
 
 ## 1.2.2
@@ -1533,7 +1519,6 @@
 ### Minor Changes
 
 - 19efbcf: Bump theme-check to v1.2.0
-
   - Adds MatchingTranslations check
   - Adds `{% # theme-check-disable %}`
 
