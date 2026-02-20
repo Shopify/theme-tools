@@ -1,5 +1,20 @@
 # @shopify/theme-check-node
 
+## 3.24.0
+
+### Minor Changes
+
+- bc8002ba: New theme check to ensure translation values inside of `schema` tag are valid
+
+### Patch Changes
+
+- Updated dependencies [346cc150]
+- Updated dependencies [2df8b65e]
+- Updated dependencies [bc8002ba]
+- Updated dependencies [b1bca3f9]
+  - @shopify/theme-check-common@3.24.0
+  - @shopify/theme-check-docs-updater@3.24.0
+
 ## 3.23.1
 
 ### Patch Changes
@@ -159,14 +174,12 @@
 ### Minor Changes
 
 - 4d557619: Add `content_for` argument theme checks if static block has LiquidDoc
-
   - DuplicateContentForArguments - Ensures arguments provided for `content_for` tag are unique
   - MissingContentForArguments - Ensures all required arguments, as per LiquidDoc, are provided
   - UnrecognizedContentForArguments - Ensures arguments provided exclusively match LiquidDoc params
   - ValidContentForArgumentTypes - Ensures arguments match type defined in LiquidDoc
 
 - c0f42c37: Restrict LiquidDoc param names in blocks based on `content_for` tag params
-
   - LiquidDoc inside blocks have limitations on names because `content_for` tag uses the following param names:
     - id
     - type
@@ -265,7 +278,6 @@
 ### Minor Changes
 
 - 8a0393a1: Theme check to ensure liquid doc param names don't collide with reserved words
-
   - Theme check will report a warning if param name collides with global liquid objects
   - Theme check will report a warning if param name collides with liquid tags
 
@@ -273,7 +285,6 @@
 - a851f379: Add DuplicateRenderSnippetParams theme check
 
   Introduces a new theme check to detect and report duplicate parameters in Liquid render tags. The check:
-
   - Identifies duplicate parameter names in render snippets
   - Provides suggestions to remove redundant parameters
 
@@ -294,11 +305,9 @@
 ### Minor Changes
 
 - 10493c9d: New `UnusedDocParam` theme-check rule
-
   - Theme check will verify that parameters defined within a snippet's `doc` header are used within the body
 
 - f130a78f: Introduce a new theme check which validates the types of parameters passed to snippets against the liquidDoc header.
-
   - Reports type mismatches
   - Suggests autofixes (replace with default or remove value)
   - Skips type checking for variable lookups
@@ -306,7 +315,6 @@
   - Skips type checking for unknown types
 
 - 1a4482eb: New theme checks to validate liquid doc params
-
   - `UniqueDocParamNames` will check if param names are unique within the `doc` tag
   - `ValidDocParamTypes` will check if the param types defined in the `doc` tag are supported
 
@@ -339,12 +347,10 @@
 ### Minor Changes
 
 - fe84a17a: Add ValidRenderSnippetParams check which validates args passed to snippets with LiquidDoc definitions
-
   - Checks that required parameters are provided
   - Checks that unknown parameters are not provided
 
 - 055cef77: Theme check verifies if setting key exists within block schemas and section schemas
-
   - Check if the keys inside `presets.[].settings` and `default.settings` exist as `settings.[].id` in the same file
   - Check if the keys inside `presets.[](recursive .blocks.[]).settings` and `default.blocks.[].settings` exist as `settings.[].id` inside the referenced block's file
 
@@ -621,7 +627,6 @@
 - 03b41e1: Add support for the schemas manifest on Shopify/theme-liquid-docs
 
   Shopify/theme-liquid-docs now supports composable JSON schemas (with relative paths). To solve the `blocks/*.liquid` file match JSON schema overload depending on the context (`app` or `theme`), we defined two manifests that describe the schemas required by your solution and define the fileMatch rules:
-
   - [manifest_theme.json](https://github.com/Shopify/theme-liquid-docs/blob/main/schemas/manifest_theme.json)
   - [manifest_theme_app_extension.json](https://github.com/Shopify/theme-liquid-docs/blob/main/schemas/manifest_theme.json)
 
@@ -691,7 +696,6 @@
 - d66d49c: Improve root finding of theme app extensions and zipped themes
 
   Folders for which all the following is true are considered a root:
-
   - have a `snippets/` folder, and
   - don't have a `../.theme-check.yml`,
   - don't have a `../../.theme-check.yml`.
@@ -783,7 +787,6 @@
   What is is: A TypeScript rewrite of [Theme Check](https://github.com/Shopify/theme-check).
 
   But... _why_? A couple of reasons:
-
   - To lint Liquid files, we prefer _one_ Abstract Syntax Tree (AST) per file. Not one Liquid AST _and_ one HTML AST.
     - Theme Check Ruby had weird duplicated checks because of that (such as `ParserBlockingJavaScript` and `ParserBlockingScriptTag`)
     - For that we reused the `@shopify/liquid-html-parser` we wrote for the prettier plugin.
@@ -896,7 +899,6 @@
 ### Minor Changes
 
 - 2cf7a11: Rename and alias a couple of checks
-
   - `DeprecatedFilters` -> `DeprecatedFilter`
   - `DeprecatedTags` -> `DeprecatedTag`
   - Alias `LiquidHTMLSyntaxError` with `SyntaxError` and `HtmlParsingError`
@@ -1080,7 +1082,6 @@
 - 8e76424: Add support for `.theme-check.yml` config files
 
   **New features**:
-
   - Developers can write their own checks and publish them to [npm](https://npmjs.com)
 
     Modules that follow the `@scope/theme-check-*` or `theme-check-*` naming conventions are automatically loaded.
@@ -1097,16 +1098,13 @@
     - `theme-check:theme-app-extension` for theme app extensions
 
   **Removed features**:
-
   - `include_categories: []`
   - `exclude_categories: []`
 
   **Replaced features**:
-
   - `require: []` this can be used to load unconventional (or private) `theme-check-js` checks. Ruby checks are not supported.
 
   **Breaking changes**:
-
   - Custom checks written in Ruby won't work Theme Check in TypeScript
   - The `*` (star) glob in `ignore` configurations does not capture the forward slash (`/`) unless at the end of the pattern.
 
@@ -1211,9 +1209,7 @@
 - 71e6b44: Add support for fixes and suggestions
 
   **New**: `context.report` now accepts two new properties:
-
   - `fix: Fixer`, accepts a callback that is given a corrector and produces transformations that are deemed **safe to apply without confirmation** on the initial document.
-
     - JSON checks will receive a [`JSONCorrector` (API)](packages/common/src/fixes/correctors/json-corrector.ts)
     - LiquidHTML checks will receive a [`StringCorrector` (API)](packages/common/src/fixes/correctors/string-corrector)
 
@@ -1268,7 +1264,6 @@
   Under the hood, corrector calls will be converted into a list of `Fix` objects.
 
   One can implement a `FixApplicator` (a async function that takes a `SourceCode` and `Fix` objects) to apply fixes in different contexts.
-
   - In Node.js, we'll implement a `FixApplicator` that applies the fixes to the initial file and then save the changes to disk.
   - In the Language Server, we'll implement `FixApplicator`s that turn the `Fix`es into `TextEdit` objects.
 
@@ -1332,14 +1327,12 @@
 - f4a2f27: Simplify public API
 
   Breaking changes:
-
   - `Theme` is `SourceCode<S>[]` instead of `{ files: Map<string, SourceCode<S>> }`
   - `SourceCode` no longer has a `relativePath` property
   - `toSourceCode` no longer takes a `relativePath` as argument
   - `Config` has a `root` property
 
 - 37fc98a: Add dependencies to public API
-
   - `fileExists(absolutePath: string): Promise<boolean>` returns true when a file exists
   - `getDefaultTranslations(): Promise<JSONObject>` returns the parsed JSON contents of the default translations file
 

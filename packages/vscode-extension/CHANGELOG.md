@@ -1,5 +1,22 @@
 ## theme-check-vscode
 
+## 3.11.1
+
+### Patch Changes
+
+- b1bca3f9: Upgrade prettier to v3 (internal)
+- Updated dependencies [346cc150]
+- Updated dependencies [bf2d6b02]
+- Updated dependencies [2df8b65e]
+- Updated dependencies [bc8002ba]
+- Updated dependencies [b1bca3f9]
+  - @shopify/theme-check-common@3.24.0
+  - @shopify/theme-language-server-common@2.20.2
+  - @shopify/prettier-plugin-liquid@1.10.2
+  - @shopify/liquid-html-parser@2.9.2
+  - @shopify/theme-language-server-browser@2.20.2
+  - @shopify/theme-language-server-node@2.20.2
+
 ## 3.11.0
 
 ### Minor Changes
@@ -574,7 +591,6 @@
 - c74850c8: Add "On section rename" handling
 
   When `sections/*.liquid` files are renamed, we will update all references to these files in their previous locations. This includes:
-
   - `templates/*.json` files that referenced the old file name
   - `sections/*.json` files that referenced the old file name
   - Static section calls formatted as `{% section 'old-name' %}`
@@ -582,7 +598,6 @@
 - b31e0f85: Add "On theme block rename" handling
 
   Whenever a theme block gets renamed, the following will now happen:
-
   1. References in files with a `{% schema %}` will be updated automatically
   2. References in template files will be updated automatically
   3. References in section groups will be updated automatically
@@ -760,7 +775,6 @@
 - 4b574c1: Add support for virtual file systems
 
   The Shopify Liquid VS Code extension now works in a large set of new environments:
-
   - Remote files
   - Git backed files
   - VS Code for the Web
@@ -772,14 +786,12 @@
 - 5fab0e9: Add on snippet rename automatic refactor support
 
   When `snippets/*.liquid` files are renamed, we'll change all the old references to point to the new files:
-
   - `{% render 'oldName' %}` -> `{% render 'newName' %}`
   - `{% include 'oldName' %}` -> `{% include 'newName' %}`
 
 - 5fab0e9: Add on asset rename automatic refactor support
 
   When `assets/*` files are renamed, we'll change all the old references to point to the new files:
-
   - `{{ 'oldName.js' | asset_url }}` -> `{{ 'newName.js' | asset_url }}`
   - `{% echo 'oldName.js' | asset_url %}` -> `{% echo 'newName.js' | asset_url %}`
 
@@ -801,7 +813,6 @@
 ### Minor Changes
 
 - a0ba46d: Add Liquid tag snippet completion
-
   - Accept the completion item for `if` and get `{% if ${1:condition} %}\n  $0\n{% endif %}` with tabulated placeholders
     - `${1:condition}` is the first placeholder, press tab to reach the next one
     - `$0` is the last one
@@ -1040,7 +1051,6 @@
 - d66d49c: Improve root finding of theme app extensions and zipped themes
 
   Folders for which all the following is true are considered a root:
-
   - have a `snippets/` folder, and
   - don't have a `../.theme-check.yml`,
   - don't have a `../../.theme-check.yml`.
@@ -1058,7 +1068,6 @@
 - 042f1e0: Add section schema and translation file JSON completion and hover support
 
   JSON object authoring and editing should be better in the following contexts:
-
   - `sections/*.liquid` `{% schema %}` bodies
   - `locales/*.json` files
 
@@ -1083,7 +1092,6 @@
 - 84f9eda: Include docset fallbacks in the theme-check-docs-updater package
 
   For when a user’s Internet connection is down or https://raw.githubusercontent.com is not accessible.
-
   - @shopify/theme-language-server-node@1.7.7
 
 ## 2.0.3
@@ -1126,7 +1134,6 @@
   It includes a re-architecture of the linter and Language Server to work on a LiquidHTML AST.
 
   **Major changes:**
-
   - Hover documentation support
   - New completion providers
     - HTML tag, attribute and value
@@ -1210,7 +1217,6 @@
 ### Minor Changes
 
 - b05a6a8: Add support for the following Language Server configurations:
-
   - `themeCheck.checkOnOpen`
   - `themeCheck.checkOnSave`
   - `themeCheck.checkOnChange`
@@ -1232,7 +1238,6 @@
 ### Minor Changes
 
 - a120393: Add better auto-closing UX for Liquid pairs
-
   - Type `{{` get `{{ | }}` (cursor at `|`)
   - Type `{{-` get `{{- | -}}`
   - Type `{%` get `{% | %}`

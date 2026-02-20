@@ -1,6 +1,6 @@
 {
   "name": "@shopify/codemirror-language-client",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "A Language Client for CodeMirror",
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/codemirror-language-client#readme",
@@ -51,8 +51,8 @@
     "@codemirror/theme-one-dark": "^6.1.2",
     "@codemirror/view": "^6.9.2",
     "@replit/codemirror-vim": "^6.2.1",
-    "@shopify/theme-check-docs-updater": "^3.14.0",
-    "@shopify/theme-language-server-browser": "^2.13.0",
+    "@shopify/theme-check-docs-updater": "^3.24.0",
+    "@shopify/theme-language-server-browser": "^2.20.2",
     "@shopify/lang-jsonc": "^1.0.1",
     "@types/markdown-it": "^13.0.4",
     "codemirror": "^6.0.1",
