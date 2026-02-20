@@ -18,6 +18,7 @@ import {
 import { JsonValidationSet, ThemeDocset } from './types/theme-liquid-docs';
 import { AppBlockSchema, SectionSchema, ThemeBlockSchema } from './types/theme-schemas';
 import { DocDefinition } from './liquid-doc/liquidDoc';
+import { Stylesheet } from './stylesheet/stylesheetSelectors';
 
 export * from './jsonc/types';
 export * from './types/schema-prop-factory';
@@ -392,6 +393,24 @@ export interface Dependencies {
    * Returns an empty array if no files reference this file
    */
   getReferences?: (uri: string) => Promise<Reference[]>;
+
+  /**
+   * Asynchronously get all CSS selectors defined in {% stylesheet %} tags across all liquid files.
+   * Returns a Map where the key is the relative URI of the file and the value is the Stylesheet.
+   * May return undefined when the theme isn't preloaded.
+   *
+   * Used in theme-checks for cross-file checks.
+   */
+  getStylesheetTagSelectors?: () => Promise<Map<string, Stylesheet>>;
+
+  /**
+   * Asynchronously get all CSS selectors defined in .css files under the assets folder.
+   * Returns a Map where the key is the relative path to the CSS file and the value is the Stylesheet.
+   * May return undefined when the theme isn't preloaded.
+   *
+   * Used in theme-checks for cross-file checks.
+   */
+  getAssetStylesheetSelectors?: () => Promise<Map<string, Stylesheet>>;
 }
 
 export type ValidateJSON = (

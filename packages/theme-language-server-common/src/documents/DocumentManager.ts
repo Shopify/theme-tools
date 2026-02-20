@@ -19,7 +19,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { ClientCapabilities } from '../ClientCapabilities';
 import { percent, Progress } from '../progress';
 import { AugmentedSourceCode } from './types';
-import { extractDocDefinition } from '@shopify/theme-check-common';
+import { extractDocDefinition, extractStylesheetSelectors } from '@shopify/theme-check-common';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -200,6 +200,13 @@ export class DocumentManager {
             if (isError(ast)) return undefined;
 
             return extractDocDefinition(uri, ast);
+          }),
+          /** Lazy and only computed once per file version */
+          getStylesheetSelectors: memo(async () => {
+            const ast = sourceCode.ast;
+            if (isError(ast)) return undefined;
+
+            return extractStylesheetSelectors(uri, ast);
           }),
         };
       default:
