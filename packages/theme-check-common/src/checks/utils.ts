@@ -13,6 +13,7 @@ import {
   LiquidTagTablerow,
   LiquidTag,
   LoopNamedTags,
+  NamedTags,
 } from '@shopify/liquid-html-parser';
 import { LiquidHtmlNodeOfType as NodeOfType } from '../types';
 
@@ -102,6 +103,16 @@ export function isLoopScopedVariable(variableName: string, ancestors: LiquidHtml
 
 export function isLoopLiquidTag(tag: LiquidTag): tag is LiquidTagFor | LiquidTagTablerow {
   return LoopNamedTags.includes(tag.name as any);
+}
+
+export function findInlineSnippetAncestor(ancestors: LiquidHtmlNode[]) {
+  for (let i = ancestors.length - 1; i >= 0; i--) {
+    const ancestor = ancestors[i];
+    if (ancestor.type === NodeTypes.LiquidTag && ancestor.name === NamedTags.snippet) {
+      return ancestor;
+    }
+  }
+  return null;
 }
 
 const RawTagsThatDoNotParseTheirContents = ['raw', 'stylesheet', 'javascript', 'schema'];
