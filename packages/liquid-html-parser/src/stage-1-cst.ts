@@ -31,8 +31,8 @@
  */
 
 import { Parser } from 'prettier';
-import { Grammar, Node } from 'ohm-js';
-import { toAST } from 'ohm-js/extras';
+import { Grammar, createToAst, AstMapping as Mapping } from '@ohm-js/wasm/compat';
+import { CstNode as Node, OptNode, MatchResult } from '@ohm-js/wasm';
 import {
   LiquidDocGrammar,
   LiquidGrammars,
@@ -531,20 +531,34 @@ export type LiquidDocConcreteNode =
   | ConcreteLiquidDocDescriptionNode
   | ConcreteLiquidDocPromptNode;
 
-interface Mapping {
-  [k: string]: number | TemplateMapping | TopLevelFunctionMapping;
+/**
+ * Marker for deferred child parsing.
+ *
+ * When parsing nested content (like children of raw tags), we can't call toCST()
+ * or toLiquidDocAST() directly because we're inside a mapping function where
+ * the outer MatchResult is still active. @ohm-js/wasm doesn't allow creating
+ * new MatchResults while another is unmanaged.
+ *
+ * Instead, we return a DeferredChildren marker with the info needed to parse later,
+ * then resolve all deferred children after the outer match is disposed.
+ */
+interface DeferredChildren {
+  __deferred: true;
+  sourceString: string;
+  offset: number;
+  parserType: 'liquid' | 'text' | 'liquidDoc' | 'liquidStatement';
+  /** For liquidRawTagImpl, the tag name determines parser type */
+  tagName?: string;
 }
 
-interface TemplateMapping {
-  type: ConcreteNodeTypes;
-  locStart: (node: Node[]) => number;
-  locEnd: (node: Node[]) => number;
-  source: string;
-  [k: string]: FunctionMapping | string | number | boolean | object | null;
+function isDeferredChildren(value: unknown): value is DeferredChildren {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    '__deferred' in value &&
+    (value as DeferredChildren).__deferred === true
+  );
 }
-
-type TopLevelFunctionMapping = (...nodes: Node[]) => any;
-type FunctionMapping = (nodes: Node[]) => any;
 
 const markup = (i: number) => (tokens: Node[]) => tokens[i].sourceString.trim();
 const markupTrimEnd = (i: number) => (tokens: Node[]) => tokens[i].sourceString.trimEnd();
@@ -588,7 +602,34 @@ export function toLiquidCST(
   return toCST(source, grammars, grammar, ['HelperMappings', 'LiquidMappings']);
 }
 
+/**
+ * Main entry point for CST building. Creates AST from source with deferred markers resolved.
+ * This is the public-facing function that should be called for top-level parsing.
+ */
 function toCST<T>(
+  source: string /* the original file */,
+  grammars: LiquidGrammars,
+  grammar: Grammar,
+  cstMappings: ('HelperMappings' | 'LiquidMappings' | 'LiquidHTMLMappings' | 'LiquidStatement')[],
+  matchingSource: string = source /* for subtree parsing */,
+  offset: number = 0 /* for subtree parsing location offsets */,
+): T {
+  const result = toCSTWithoutDeferredResolution<T>(
+    source,
+    grammars,
+    grammar,
+    cstMappings,
+    matchingSource,
+    offset,
+  );
+  return resolveDeferredChildren(result, source, grammars);
+}
+
+/**
+ * Internal function that builds CST but leaves DeferredChildren markers unresolved.
+ * Used by resolveDeferredNode to avoid nested resolution.
+ */
+function toCSTWithoutDeferredResolution<T>(
   source: string /* the original file */,
   grammars: LiquidGrammars,
   grammar: Grammar,
@@ -600,24 +641,37 @@ function toCST<T>(
   // for the offset of the {% liquid %} markup
   const locStart = (tokens: Node[]) => offset + tokens[0].source.startIdx;
   const locEnd = (tokens: Node[]) => offset + tokens[tokens.length - 1].source.endIdx;
-  const locEndSecondToLast = (tokens: Node[]) => offset + tokens[tokens.length - 2].source.endIdx;
 
+  // In v0.6.17, `this` in mapping functions is the CstNode itself, not AstBuilder.
+  // So `this.sourceString` gives the current node's source string directly.
   const textNode = {
     type: ConcreteNodeTypes.TextNode,
-    value: function () {
-      return (this as any).sourceString;
+    value: function (this: Node) {
+      return this.sourceString;
     },
     locStart,
     locEnd,
     source,
   };
 
-  const res = grammar.match(matchingSource, 'Node');
-  if (res.failed()) {
-    throw new LiquidHTMLCSTParsingError(res);
+  const match = grammar.match(matchingSource, 'Node');
+  if (match.failed()) {
+    // Construct error BEFORE disposing - the error constructor needs to access match properties
+    const error = new LiquidHTMLCSTParsingError(match);
+    match[Symbol.dispose]();
+    throw error;
   }
 
-  const HelperMappings: Mapping = {
+  // In v0.6.17, `this` in mapping functions is the CstNode, not AstBuilder,
+  // so we need to capture toAst in a closure instead of using this.toAst().
+  // We declare toAstFn first, then define mappings that reference it via closure,
+  // then assign toAstFn. This works because the closure captures the variable,
+  // not its value, so by the time mapping functions run, toAstFn is assigned.
+  let toAst: (nodeOrResult: Node | MatchResult) => T;
+
+  // Cast to any because the actual mapping functions have varied return types
+  // (T, T[], null, string) that don't fit the strict Mapping type
+  const HelperMappings: Mapping<any> = {
     Node: 0,
     TextNode: textNode,
     orderedListOf: 0,
@@ -625,36 +679,34 @@ function toCST<T>(
     empty: () => null,
     nonemptyOrderedListOf: 0,
     nonemptyOrderedListOfBoth(nonemptyListOfA: Node, _sep: Node, nonemptyListOfB: Node) {
-      const self = this as any;
-      return nonemptyListOfA
-        .toAST(self.args.mapping)
-        .concat(nonemptyListOfB.toAST(self.args.mapping));
+      return (toAst(nonemptyListOfA) as T[]).concat(toAst(nonemptyListOfB) as T[]);
     },
   };
 
-  const LiquidMappings: Mapping = {
+  const LiquidMappings: Mapping<any> = {
     liquidNode: 0,
     liquidRawTag: 0,
     liquidRawTagImpl: {
       type: ConcreteNodeTypes.LiquidRawTag,
       name: 3,
       body: 9,
-      children: (tokens: Node[]) => {
+      children: (tokens: Node[]): DeferredChildren => {
         const nameNode = tokens[3];
         const rawMarkupStringNode = tokens[9];
+        // Return a deferred marker instead of calling toCST directly.
+        // This avoids creating a new MatchResult while the outer match is still active.
+        // The deferred marker will be resolved after the outer match is disposed.
         switch (nameNode.sourceString) {
           // {% schema %} parses its content as a string and should not be visited
           case 'schema':
           // {% raw %} accepts syntax errors, we shouldn't try to parse that
           case 'raw': {
-            return toCST(
-              source,
-              grammars,
-              TextNodeGrammar,
-              ['HelperMappings'],
-              rawMarkupStringNode.sourceString,
-              offset + rawMarkupStringNode.source.startIdx,
-            );
+            return {
+              __deferred: true,
+              sourceString: rawMarkupStringNode.sourceString,
+              offset: offset + rawMarkupStringNode.source.startIdx,
+              parserType: 'text',
+            };
           }
 
           // {% style %} actually parses its child nodes, so they are part of the AST
@@ -662,14 +714,12 @@ function toCST<T>(
           // those are not supported in StaticStylesheetAndJavascriptTags, so we put
           // them in the AST
           default: {
-            return toCST(
-              source,
-              grammars,
-              grammars.Liquid,
-              ['HelperMappings', 'LiquidMappings'],
-              rawMarkupStringNode.sourceString,
-              offset + rawMarkupStringNode.source.startIdx,
-            );
+            return {
+              __deferred: true,
+              sourceString: rawMarkupStringNode.sourceString,
+              offset: offset + rawMarkupStringNode.source.startIdx,
+              parserType: 'liquid',
+            };
           }
         }
       },
@@ -690,15 +740,14 @@ function toCST<T>(
       type: ConcreteNodeTypes.LiquidRawTag,
       name: 'comment',
       body: (tokens: Node[]) => tokens[1].sourceString,
-      children: (tokens: Node[]) => {
-        return toCST(
-          source,
-          grammars,
-          TextNodeGrammar,
-          ['HelperMappings'],
-          tokens[1].sourceString,
-          offset + tokens[1].source.startIdx,
-        );
+      children: (tokens: Node[]): DeferredChildren => {
+        // Return a deferred marker instead of calling toCST directly.
+        return {
+          __deferred: true,
+          sourceString: tokens[1].sourceString,
+          offset: offset + tokens[1].source.startIdx,
+          parserType: 'text',
+        };
       },
       whitespaceStart: (tokens: Node[]) => tokens[0].children[1].sourceString,
       whitespaceEnd: (tokens: Node[]) => tokens[0].children[7].sourceString,
@@ -716,13 +765,15 @@ function toCST<T>(
       type: ConcreteNodeTypes.LiquidRawTag,
       name: 'doc',
       body: (tokens: Node[]) => tokens[1].sourceString,
-      children: (tokens: Node[]) => {
+      children: (tokens: Node[]): DeferredChildren => {
         const contentNode = tokens[1];
-        return toLiquidDocAST(
-          source,
-          contentNode.sourceString,
-          offset + contentNode.source.startIdx,
-        );
+        // Return a deferred marker instead of calling toLiquidDocAST directly.
+        return {
+          __deferred: true,
+          sourceString: contentNode.sourceString,
+          offset: offset + contentNode.source.startIdx,
+          parserType: 'liquidDoc',
+        };
       },
       whitespaceStart: (tokens: Node[]) => tokens[0].children[1].sourceString,
       whitespaceEnd: (tokens: Node[]) => tokens[0].children[7].sourceString,
@@ -757,7 +808,7 @@ function toCST<T>(
         const markupNode = nodes[6];
         const nameNode = nodes[3];
         if (NamedTags.hasOwnProperty(nameNode.sourceString)) {
-          return markupNode.toAST((this as any).args.mapping);
+          return toAst(markupNode);
         }
         return markupNode.sourceString.trim();
       },
@@ -776,8 +827,29 @@ function toCST<T>(
       type: ConcreteNodeTypes.ForMarkup,
       variableName: 0,
       collection: 4,
-      reversed: 6,
-      args: 8,
+      reversed: (children: Node[]) => {
+        // The optional group (space* "reversed")? is at index 5.
+        // When matched, it contains [space*, "reversed"].
+        // In @ohm-js/wasm v0.6.17, iteration nodes might be handled differently.
+        // Let's check both index 5 and 6 for the optional.
+        const optNode = children[5] as OptNode;
+        if (optNode && typeof optNode.ifPresent === 'function') {
+          return optNode.ifPresent(
+            (_space: Node, reversed: Node) => reversed.sourceString.trim(),
+            () => null,
+          );
+        }
+        // Fallback: check if children[6] is the optional
+        const alt = children[6] as OptNode;
+        if (alt && typeof alt.ifPresent === 'function') {
+          return alt.ifPresent(
+            (_space: Node, reversed: Node) => reversed.sourceString.trim(),
+            () => null,
+          );
+        }
+        return null;
+      },
+      args: 7,
       locStart,
       locEnd,
       source,
@@ -853,7 +925,7 @@ function toCST<T>(
         const markupNode = nodes[6];
         const nameNode = nodes[3];
         if (NamedTags.hasOwnProperty(nameNode.sourceString)) {
-          return markupNode.toAST((this as any).args.mapping);
+          return toAst(markupNode);
         }
         return markupNode.sourceString.trim();
       },
@@ -865,15 +937,14 @@ function toCST<T>(
     },
 
     liquidTagLiquid: 0,
-    liquidTagLiquidMarkup(tagMarkup: Node) {
-      return toCST(
-        source,
-        grammars,
-        grammars.LiquidStatement,
-        ['HelperMappings', 'LiquidMappings', 'LiquidStatement'],
-        tagMarkup.sourceString,
-        offset + tagMarkup.source.startIdx,
-      );
+    liquidTagLiquidMarkup(tagMarkup: Node): DeferredChildren {
+      // Return a deferred marker instead of calling toCST directly.
+      return {
+        __deferred: true,
+        sourceString: tagMarkup.sourceString,
+        offset: offset + tagMarkup.source.startIdx,
+        parserType: 'liquidStatement',
+      };
     },
 
     liquidTagEchoMarkup: 0,
@@ -891,8 +962,15 @@ function toCST<T>(
 
     liquidTagCycleMarkup: {
       type: ConcreteNodeTypes.CycleMarkup,
-      groupName: 0,
-      args: 3,
+      groupName: (tokens: Node[]) => {
+        // The optional group (liquidExpression<delimTag> ":")? has 2 children when matched.
+        // We need to explicitly handle this with ifPresent to get the expression.
+        return (tokens[0] as OptNode).ifPresent(
+          (expr: Node, _colon: Node) => toAst(expr),
+          () => null,
+        );
+      },
+      args: 2,
       locStart,
       locEnd,
       source,
@@ -920,21 +998,35 @@ function toCST<T>(
     },
     renderArguments: 1,
     completionModeRenderArguments: function (
-      _0,
-      namedArguments,
-      _2,
-      _3,
-      _4,
-      _5,
-      variableLookup,
-      _7,
+      _argSepOptComma: Node,
+      tagArguments: Node,
+      _optComma: Node,
+      _space: Node,
+      opt: Node,
     ) {
-      const self = this as any;
+      // Grammar: (argumentSeparatorOptionalComma tagArguments) (space* ",")? space* (argumentSeparator? liquidVariableLookup<delimTag> space*)?
+      // In v0.6.17, parentheses don't create a Seq - children are passed individually:
+      // - Child 0: argumentSeparatorOptionalComma
+      // - Child 1: tagArguments
+      // - Child 2: OptNode for (space* ",")?
+      // - Child 3: IterNode for space*
+      // - Child 4: OptNode for (argumentSeparator? liquidVariableLookup<delimTag> space*)?
+      const namedArgs = toAst(tagArguments) as T[];
 
-      // variableLookup.sourceString can be '' when there are no incomplete params
-      return namedArguments
-        .toAST(self.args.mapping)
-        .concat(variableLookup.sourceString === '' ? [] : variableLookup.toAST(self.args.mapping));
+      // The final optional group is: (argumentSeparator? liquidVariableLookup<delimTag> space*)?
+      // When matched, it has 3 children: argumentSeparator?, variableLookup, space*
+      const optNode = opt as OptNode;
+      if (typeof optNode.ifPresent !== 'function') {
+        // Not an optional node - might be a different structure in this grammar version
+        return namedArgs;
+      }
+      return namedArgs.concat(
+        optNode.ifPresent(
+          (_argSep: Node, variableLookup: Node, _spaceAfter: Node) =>
+            variableLookup.sourceString === '' ? [] : ([toAst(variableLookup)] as T[]),
+          () => [],
+        ),
+      );
     },
     snippetExpression: 0,
     renderVariableExpression: {
@@ -972,11 +1064,9 @@ function toCST<T>(
       expression: 0,
       filters: 1,
       rawSource: (tokens: Node[]) =>
-        source.slice(locStart(tokens), tokens[tokens.length - 2].source.endIdx).trimEnd(),
+        source.slice(locStart(tokens), tokens[tokens.length - 1].source.endIdx).trimEnd(),
       locStart,
-      // The last node of this rule is a positive lookahead, we don't
-      // want its endIdx, we want the endIdx of the previous one.
-      locEnd: locEndSecondToLast,
+      locEnd,
       source,
     },
 
@@ -987,35 +1077,40 @@ function toCST<T>(
       locEnd,
       source,
       args(nodes: Node[]) {
-        // Traditinally, this would get transformed into null or array. But
+        // In v0.6.17, the grammar rule:
+        //   liquidFilter<delim> = space* "|" space* identifier (space* ":" space* arguments<delim> (space* ",")?)?
+        // produces children: [space*, "|", space*, identifier, (optional group)?]
+        // Child 4 is the OptNode for the optional group (was index 6 in older versions)
+        // Traditionally, this would get transformed into null or array. But
         // it's better if we have an empty array instead of null here.
-        if (nodes[7].sourceString === '') {
-          return [];
-        } else {
-          return nodes[7].toAST((this as any).args.mapping);
-        }
+        return (nodes[4] as OptNode).ifPresent(
+          (_space1: Node, _colon: Node, _space2: Node, args: Node, _optComma: Node) =>
+            toAst(args) as any,
+          () => [] as any,
+        );
       },
     },
     filterArguments: 0,
     arguments: 0,
-    complexArguments: function (completeParams, _space1, _comma, _space2, incompleteParam) {
-      const self = this as any;
-
-      return completeParams
-        .toAST(self.args.mapping)
-        .concat(
-          incompleteParam.sourceString === '' ? [] : incompleteParam.toAST(self.args.mapping),
-        );
+    complexArguments: function (completeParams: Node, opt: Node) {
+      return (toAst(completeParams) as T[]).concat(
+        (opt as OptNode).ifPresent(
+          (_space1: Node, _comma: Node, _space2: Node, incompleteParam: Node) =>
+            toAst(incompleteParam) as T[],
+          () => [],
+        ),
+      );
     },
     simpleArgument: 0,
     tagArguments: 0,
     contentForTagArgument: 0,
-    completionModeContentForTagArgument: function (namedArguments, _separator, variableLookup) {
-      const self = this as any;
-
-      return namedArguments
-        .toAST(self.args.mapping)
-        .concat(variableLookup.sourceString === '' ? [] : variableLookup.toAST(self.args.mapping));
+    completionModeContentForTagArgument: function (namedArguments: Node, opt: Node) {
+      return (toAst(namedArguments) as T[]).concat(
+        (opt as OptNode).ifPresent(
+          (_separator: Node, variableLookup: Node) => toAst(variableLookup) as T[],
+          () => [],
+        ),
+      );
     },
     positionalArgument: 0,
     namedArgument: {
@@ -1029,20 +1124,18 @@ function toCST<T>(
 
     contentForNamedArgument: {
       type: ConcreteNodeTypes.NamedArgument,
-      name: (node) => node[0].sourceString + node[1].sourceString,
-      value: 6,
+      name: (node: Node[]) => node[0].sourceString + node[1].sourceString,
+      value: 5,
       locStart,
       locEnd,
       source,
     },
 
     liquidBooleanExpression(initialCondition: Node, subsequentConditions: Node) {
-      const initialConditionAst = initialCondition.toAST(
-        (this as any).args.mapping,
-      ) as ConcreteLiquidCondition;
-      const subsequentConditionAsts = subsequentConditions.toAST(
-        (this as any).args.mapping,
-      ) as ConcreteLiquidCondition[];
+      const initialConditionAst = toAst(initialCondition) as unknown as ConcreteLiquidCondition;
+      const subsequentConditionAsts = toAst(
+        subsequentConditions,
+      ) as unknown as ConcreteLiquidCondition[];
 
       // liquidBooleanExpression can capture too much. If there are no comparisons (e.g. `==`, `>`, etc.)
       // and we only have a single condition (i.e. no `and` or `or` operators), we can return the expression directly.
@@ -1159,7 +1252,7 @@ function toCST<T>(
     tagMarkup: (n: Node) => n.sourceString.trim(),
   };
 
-  const LiquidStatement: Mapping = {
+  const LiquidStatement: Mapping<any> = {
     LiquidStatement: 0,
     liquidTagOpenRule: {
       type: ConcreteNodeTypes.LiquidTagOpen,
@@ -1168,14 +1261,14 @@ function toCST<T>(
         const markupNode = nodes[2];
         const nameNode = nodes[0];
         if (NamedTags.hasOwnProperty(nameNode.sourceString)) {
-          return markupNode.toAST((this as any).args.mapping);
+          return toAst(markupNode);
         }
         return markupNode.sourceString.trim();
       },
       whitespaceStart: null,
       whitespaceEnd: null,
       locStart,
-      locEnd: locEndSecondToLast,
+      locEnd,
       source,
     },
 
@@ -1185,7 +1278,7 @@ function toCST<T>(
       whitespaceStart: null,
       whitespaceEnd: null,
       locStart,
-      locEnd: locEndSecondToLast,
+      locEnd,
       source,
     },
 
@@ -1196,14 +1289,14 @@ function toCST<T>(
         const markupNode = nodes[2];
         const nameNode = nodes[0];
         if (NamedTags.hasOwnProperty(nameNode.sourceString)) {
-          return markupNode.toAST((this as any).args.mapping);
+          return toAst(markupNode);
         }
         return markupNode.sourceString.trim();
       },
       whitespaceStart: null,
       whitespaceEnd: null,
       locStart,
-      locEnd: locEndSecondToLast,
+      locEnd,
       source,
     },
 
@@ -1211,22 +1304,21 @@ function toCST<T>(
       type: ConcreteNodeTypes.LiquidRawTag,
       name: 0,
       body: 4,
-      children(nodes) {
-        return toCST(
-          source,
-          grammars,
-          TextNodeGrammar,
-          ['HelperMappings'],
-          nodes[4].sourceString,
-          offset + nodes[4].source.startIdx,
-        );
+      children(nodes: Node[]): DeferredChildren {
+        // Return a deferred marker instead of calling toCST directly.
+        return {
+          __deferred: true,
+          sourceString: nodes[4].sourceString,
+          offset: offset + nodes[4].source.startIdx,
+          parserType: 'text',
+        };
       },
       whitespaceStart: null,
       whitespaceEnd: null,
       delimiterWhitespaceStart: null,
       delimiterWhitespaceEnd: null,
       locStart,
-      locEnd: locEndSecondToLast,
+      locEnd,
       source,
       blockStartLocStart: (tokens: Node[]) => offset + tokens[0].source.startIdx,
       blockStartLocEnd: (tokens: Node[]) => offset + tokens[2].source.endIdx,
@@ -1245,16 +1337,15 @@ function toCST<T>(
         // We're stripping the newline from the statementSep, that's why we
         // slice(1). Since statementSep = newline (space | newline)*
         tokens[1].sourceString.slice(1) + tokens[2].sourceString,
-      children(tokens) {
+      children(tokens: Node[]): DeferredChildren {
         const commentSource = tokens[1].sourceString.slice(1) + tokens[2].sourceString;
-        return toCST(
-          source,
-          grammars,
-          TextNodeGrammar,
-          ['HelperMappings'],
-          commentSource,
-          offset + tokens[1].source.startIdx + 1,
-        );
+        // Return a deferred marker instead of calling toCST directly.
+        return {
+          __deferred: true,
+          sourceString: commentSource,
+          offset: offset + tokens[1].source.startIdx + 1,
+          parserType: 'text',
+        };
       },
       whitespaceStart: '',
       whitespaceEnd: '',
@@ -1265,8 +1356,8 @@ function toCST<T>(
       source,
       blockStartLocStart: (tokens: Node[]) => offset + tokens[0].source.startIdx,
       blockStartLocEnd: (tokens: Node[]) => offset + tokens[0].source.endIdx,
-      blockEndLocStart: (tokens: Node[]) => offset + tokens[4].source.startIdx,
-      blockEndLocEnd: (tokens: Node[]) => offset + tokens[4].source.endIdx,
+      blockEndLocStart: (tokens: Node[]) => offset + tokens[3].source.startIdx,
+      blockEndLocEnd: (tokens: Node[]) => offset + tokens[3].source.endIdx,
     },
 
     liquidInlineComment: {
@@ -1276,18 +1367,17 @@ function toCST<T>(
       whitespaceStart: null,
       whitespaceEnd: null,
       locStart,
-      locEnd: locEndSecondToLast,
+      locEnd,
       source,
     },
   };
 
-  const LiquidHTMLMappings: Mapping = {
+  const LiquidHTMLMappings: Mapping<any> = {
     Node(frontmatter: Node, nodes: Node) {
-      const self = this as any;
       const frontmatterNode =
-        frontmatter.sourceString.length === 0 ? [] : [frontmatter.toAST(self.args.mapping)];
+        frontmatter.sourceString.length === 0 ? [] : [toAst(frontmatter) as T];
 
-      return frontmatterNode.concat(nodes.toAST(self.args.mapping));
+      return frontmatterNode.concat(toAst(nodes) as T[]);
     },
 
     yamlFrontmatter: {
@@ -1318,20 +1408,18 @@ function toCST<T>(
       type: ConcreteNodeTypes.HtmlRawTag,
       name: (tokens: Node[]) => tokens[0].children[1].sourceString,
       attrList(tokens: Node[]) {
-        const mappings = (this as any).args.mapping;
-        return tokens[0].children[2].toAST(mappings);
+        return toAst(tokens[0].children[2]);
       },
       body: (tokens: Node[]) => source.slice(tokens[0].source.endIdx, tokens[2].source.startIdx),
-      children: (tokens: Node[]) => {
+      children: (tokens: Node[]): DeferredChildren => {
         const rawMarkup = source.slice(tokens[0].source.endIdx, tokens[2].source.startIdx);
-        return toCST(
-          source,
-          grammars,
-          grammars.Liquid,
-          ['HelperMappings', 'LiquidMappings'],
-          rawMarkup,
-          tokens[0].source.endIdx,
-        );
+        // Return a deferred marker instead of calling toCST directly.
+        return {
+          __deferred: true,
+          sourceString: rawMarkup,
+          offset: tokens[0].source.endIdx,
+          parserType: 'liquid',
+        };
       },
       locStart,
       locEnd,
@@ -1345,7 +1433,7 @@ function toCST<T>(
     HtmlVoidElement: {
       type: ConcreteNodeTypes.HtmlVoidElement,
       name: 1,
-      attrList: 3,
+      attrList: 2,
       locStart,
       locEnd,
       source,
@@ -1382,8 +1470,7 @@ function toCST<T>(
     trailingTagNamePart: 0,
     trailingTagNameTextNode: textNode,
     tagName(leadingPart: Node, trailingParts: Node) {
-      const mappings = (this as any).args.mapping;
-      return [leadingPart.toAST(mappings)].concat(trailingParts.toAST(mappings));
+      return [toAst(leadingPart) as T].concat(toAst(trailingParts) as T[]);
     },
 
     AttrUnquoted: {
@@ -1446,7 +1533,154 @@ function toCST<T>(
     {},
   );
 
-  return toAST(res, selectedMappings) as T;
+  // Create the toAst function now that mappings are defined.
+  // The mappings reference toAst via closure, which works because the closure
+  // captures the variable (not its value), so by the time mapping functions
+  // execute, toAst will be assigned.
+  // Cast to any to work around @ohm-js/wasm AstMapping type declaration limitations
+  // The AstMapping type is too restrictive for functions returning arrays
+  toAst = createToAst<T>(selectedMappings as any);
+
+  // Build the AST. At this point, children that need nested parsing
+  // are represented as DeferredChildren markers (instead of calling toCST directly).
+  const result = toAst(match);
+
+  // Explicitly dispose the match before resolving deferred children.
+  // Dispose the match now that we're done with it.
+  // This frees up resources and allows subsequent toCST calls.
+  match[Symbol.dispose]();
+
+  // Return result with deferred markers still in place.
+  // The caller (toCST) will resolve them after this function returns.
+  return result;
+}
+
+/**
+ * Collects all DeferredChildren markers from the AST tree along with their paths.
+ * Returns an array of [path, deferred] pairs for later resolution.
+ */
+function collectDeferredMarkers(
+  node: unknown,
+  path: (string | number)[] = [],
+): Array<{ path: (string | number)[]; deferred: DeferredChildren }> {
+  if (node === null || node === undefined) {
+    return [];
+  }
+
+  if (Array.isArray(node)) {
+    const results: Array<{ path: (string | number)[]; deferred: DeferredChildren }> = [];
+    for (let i = 0; i < node.length; i++) {
+      results.push(...collectDeferredMarkers(node[i], [...path, i]));
+    }
+    return results;
+  }
+
+  if (typeof node !== 'object') {
+    return [];
+  }
+
+  // Check if this is a deferred children marker
+  if (isDeferredChildren(node)) {
+    return [{ path, deferred: node }];
+  }
+
+  // Recursively process object properties
+  const results: Array<{ path: (string | number)[]; deferred: DeferredChildren }> = [];
+  for (const key of Object.keys(node)) {
+    results.push(...collectDeferredMarkers((node as Record<string, unknown>)[key], [...path, key]));
+  }
+  return results;
+}
+
+/**
+ * Sets a value at the given path in the object tree.
+ */
+function setAtPath(obj: unknown, path: (string | number)[], value: unknown): void {
+  if (path.length === 0) {
+    return;
+  }
+  let current = obj as Record<string | number, unknown>;
+  for (let i = 0; i < path.length - 1; i++) {
+    current = current[path[i]] as Record<string | number, unknown>;
+  }
+  current[path[path.length - 1]] = value;
+}
+
+/**
+ * Resolves all DeferredChildren markers in the AST tree.
+ *
+ * This uses a two-phase approach:
+ * 1. First, collect all deferred markers and their paths
+ * 2. Then resolve each one sequentially, ensuring each match is disposed before the next
+ *
+ * This is necessary because nested deferred markers (e.g., a raw tag inside an HTML raw tag)
+ * need to be resolved one at a time to avoid having multiple active MatchResults.
+ */
+function resolveDeferredChildren<T>(node: T, source: string, grammars: LiquidGrammars): T {
+  // Keep resolving until no more deferred markers are found
+  // (resolution can produce new deferred markers for nested content)
+  let result = node;
+  let markers = collectDeferredMarkers(result);
+
+  while (markers.length > 0) {
+    for (const { path, deferred } of markers) {
+      const resolved = resolveDeferredNode(deferred, source, grammars);
+      if (path.length === 0) {
+        // The root itself is a deferred marker (unlikely but possible)
+        result = resolved as T;
+      } else {
+        setAtPath(result, path, resolved);
+      }
+    }
+    // Check for any new deferred markers created by resolution
+    markers = collectDeferredMarkers(result);
+  }
+
+  return result;
+}
+
+/**
+ * Resolves a single DeferredChildren marker by calling the appropriate parser.
+ * The caller is responsible for ensuring no other MatchResults are active.
+ */
+function resolveDeferredNode(
+  deferred: DeferredChildren,
+  source: string,
+  grammars: LiquidGrammars,
+): unknown {
+  switch (deferred.parserType) {
+    case 'text':
+      return toCSTWithoutDeferredResolution(
+        source,
+        grammars,
+        TextNodeGrammar,
+        ['HelperMappings'],
+        deferred.sourceString,
+        deferred.offset,
+      );
+    case 'liquid':
+      return toCSTWithoutDeferredResolution(
+        source,
+        grammars,
+        grammars.Liquid,
+        ['HelperMappings', 'LiquidMappings'],
+        deferred.sourceString,
+        deferred.offset,
+      );
+    case 'liquidStatement':
+      return toCSTWithoutDeferredResolution(
+        source,
+        grammars,
+        grammars.LiquidStatement,
+        ['HelperMappings', 'LiquidMappings', 'LiquidStatement'],
+        deferred.sourceString,
+        deferred.offset,
+      );
+    case 'liquidDoc':
+      return toLiquidDocAST(source, deferred.sourceString, deferred.offset);
+    default:
+      throw new Error(`Unknown deferred parser type: ${(deferred as DeferredChildren).parserType}`);
+  }
 }
 
 /**
@@ -1455,37 +1689,43 @@ function toCST<T>(
  * `toCST` includes mappings and logic that are not needed for LiquidDoc so we're separating this logic
  */
 function toLiquidDocAST(source: string, matchingSource: string, offset: number) {
+  type T = LiquidDocConcreteNode;
+
   // When we switch parser, our locStart and locEnd functions must account
   // for the offset of the {% doc %} markup
   const locStart = (tokens: Node[]) => offset + tokens[0].source.startIdx;
   const locEnd = (tokens: Node[]) => offset + tokens[tokens.length - 1].source.endIdx;
 
-  const res = LiquidDocGrammar.match(matchingSource, 'Node');
-  if (res.failed()) {
-    throw new LiquidHTMLCSTParsingError(res);
+  using match = LiquidDocGrammar.match(matchingSource, 'Node');
+  if (match.failed()) {
+    throw new LiquidHTMLCSTParsingError(match);
   }
+
+  // In v0.6.17, `this` in mapping functions is the CstNode, not AstBuilder,
+  // so we need to capture toAst in a closure instead of using this.toAst().
+  // We declare toAst first, then define mappings that reference it via closure.
+  let toAst: (nodeOrResult: Node | MatchResult) => T;
 
   /**
    * Reusable text node type
+   * In v0.6.17, `this` is the CstNode itself, so `this.sourceString` gives
+   * the current node's source string directly.
    */
   const textNode = () => ({
     type: ConcreteNodeTypes.TextNode,
-    value: function () {
-      return (this as any).sourceString;
+    value: function (this: Node) {
+      return this.sourceString;
     },
     locStart,
     locEnd,
     source,
   });
 
-  const LiquidDocMappings: Mapping = {
+  const LiquidDocMappings: Mapping<any> = {
     Node(implicitDescription: Node, body: Node) {
-      const self = this as any;
-      const implicitDescriptionNode =
-        implicitDescription.sourceString.length === 0
-          ? []
-          : [implicitDescription.toAST(self.args.mapping)];
-      return implicitDescriptionNode.concat(body.toAST(self.args.mapping));
+      const implicitDescriptionNode: T[] =
+        implicitDescription.sourceString.length === 0 ? [] : [toAst(implicitDescription) as T];
+      return implicitDescriptionNode.concat(toAst(body) as unknown as T[]);
     },
     ImplicitDescription: {
       type: ConcreteNodeTypes.LiquidDocDescriptionNode,
@@ -1506,7 +1746,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       source,
       paramType: 2,
       paramName: 4,
-      paramDescription: 8,
+      paramDescription: 7,
     },
     descriptionNode: {
       type: ConcreteNodeTypes.LiquidDocDescriptionNode,
@@ -1516,9 +1756,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       source,
       content: 2,
       isImplicit: false,
-      isInline: function (this: Node) {
-        return !this.children[1].sourceString.includes('\n');
-      },
+      isInline: (children: Node[]) => !children[1].sourceString.includes('\n'),
     },
     descriptionContent: textNode(),
     paramType: 2,
@@ -1547,9 +1785,7 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
       locEnd,
       source,
       content: 2,
-      isInline: function (this: Node) {
-        return !this.children[1].sourceString.includes('\n');
-      },
+      isInline: (children: Node[]) => !children[1].sourceString.includes('\n'),
     },
     promptNode: {
       type: ConcreteNodeTypes.LiquidDocPromptNode,
@@ -1564,5 +1800,8 @@ function toLiquidDocAST(source: string, matchingSource: string, offset: number) 
     fallbackNode: textNode(),
   };
 
-  return toAST(res, LiquidDocMappings);
+  // Create the toAst function now that mappings are defined.
+  // Cast to any to work around @ohm-js/wasm AstMapping type declaration limitations
+  toAst = createToAst<T>(LiquidDocMappings as any);
+  return toAst(match);
 }

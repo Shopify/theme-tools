@@ -71,6 +71,8 @@ const desktopConfig = {
     new webpack.DefinePlugin({
       // A flag that lets us do fun webpack-only shenanigans...
       'process.env.WEBPACK_MODE': true,
+      // @ohm-js/wasm checks this at runtime; define it to avoid "process is not defined" errors
+      'process.env.OHM_DEBUG': JSON.stringify(false),
     }),
     new CopyPlugin({
       patterns: [
@@ -127,6 +129,8 @@ const browserClientConfig = {
     new webpack.DefinePlugin({
       // A flag that lets us do fun webpack-only shenanigans...
       'process.env.WEBPACK_MODE': true,
+      // @ohm-js/wasm checks this at runtime; define it to avoid "process is not defined" errors
+      'process.env.OHM_DEBUG': JSON.stringify(false),
     }),
   ],
 };
@@ -162,6 +166,8 @@ const browserServerConfig = async () => {
       new webpack.DefinePlugin({
         // A flag that lets us do fun webpack-only shenanigans...
         'process.env.WEBPACK_MODE': true,
+        // @ohm-js/wasm checks this at runtime; define it to avoid "process is not defined" errors
+        'process.env.OHM_DEBUG': JSON.stringify(false),
         WEBPACK_TAGS: JSON.stringify(tags),
         WEBPACK_FILTERS: JSON.stringify(filters),
         WEBPACK_OBJECTS: JSON.stringify(objects),
