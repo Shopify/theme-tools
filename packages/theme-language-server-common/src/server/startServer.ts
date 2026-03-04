@@ -319,6 +319,7 @@ export function startServer(
     documentManager,
     getDefaultLocaleSourceCode,
     getDefaultSchemaLocaleSourceCode,
+    findThemeRootURI,
   );
   const jsonLanguageService = new JSONLanguageService(
     documentManager,
