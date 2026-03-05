@@ -123,7 +123,7 @@ export class TypeSystem {
    */
   public objectMap = async (uri: string, ast: LiquidHtmlNode): Promise<ObjectMap> => {
     const [objectMap, themeSettingProperties, metafieldDefinitionsObjectMap] = await Promise.all([
-      this._objectMap(),
+      this._objectMap(uri),
       this.themeSettingProperties(uri),
       this.metafieldDefinitionsObjectMap(uri),
     ]);
@@ -261,14 +261,13 @@ export class TypeSystem {
     return result;
   }
 
-  // This is the big one we reuse (memoized)
-  private _objectMap = memo(async (): Promise<ObjectMap> => {
-    const entries = await this.objectEntries();
+  private async _objectMap(uri?: string): Promise<ObjectMap> {
+    const entries = await this.objectEntries(uri);
     return entries.reduce((map, entry) => {
       map[entry.name] = entry;
       return map;
     }, {} as ObjectMap);
-  });
+  }
 
   /** An indexed representation of filters.json by name */
   public filtersMap = memo(async (): Promise<FiltersMap> => {
@@ -283,9 +282,13 @@ export class TypeSystem {
     return this.themeDocset.filters();
   });
 
-  public objectEntries = memo(async () => {
+  public async objectEntries(uri?: string): Promise<ObjectEntry[]> {
+    if (uri && this.themeDocset.getObjectsForURI) {
+      const perURI = this.themeDocset.getObjectsForURI(uri);
+      if (perURI) return perURI;
+    }
     return this.themeDocset.objects();
-  });
+  }
 
   private async symbolsTable(partialAst: LiquidHtmlNode, uri: string): Promise<SymbolsTable> {
     const seedSymbolsTable = await this.seedSymbolsTable(uri);
@@ -303,7 +306,7 @@ export class TypeSystem {
    */
   private seedSymbolsTable = async (uri: string) => {
     const [globalVariables, contextualVariables] = await Promise.all([
-      this.globalVariables(),
+      this.globalVariables(uri),
       this.contextualVariables(uri),
     ]);
     return globalVariables.concat(contextualVariables).reduce((table, objectEntry) => {
@@ -317,15 +320,15 @@ export class TypeSystem {
     }, {} as SymbolsTable);
   };
 
-  private globalVariables = memo(async () => {
-    const entries = await this.objectEntries();
+  private globalVariables = async (uri?: string) => {
+    const entries = await this.objectEntries(uri);
     return entries.filter(
       (entry) => !entry.access || entry.access.global === true || entry.access.template.length > 0,
     );
-  });
+  };
 
   private contextualVariables = async (uri: string) => {
-    const [entries, mode] = await Promise.all([this.objectEntries(), this.getModeForURI(uri)]);
+    const [entries, mode] = await Promise.all([this.objectEntries(uri), this.getModeForURI(uri)]);
     const contextualEntries = getContextualEntries(uri, mode);
     return entries.filter((entry) => contextualEntries.includes(entry.name));
   };

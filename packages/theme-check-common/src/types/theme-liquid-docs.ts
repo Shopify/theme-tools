@@ -21,6 +21,9 @@ export interface ThemeDocset {
 
   /** Returns system translations available on themes. */
   systemTranslations(): Promise<Translations>;
+
+  /** Returns objects scoped to a specific URI, if available. */
+  getObjectsForURI?(uri: string): ObjectEntry[] | undefined;
 }
 
 /** A URI that will uniquely describe the schema */
