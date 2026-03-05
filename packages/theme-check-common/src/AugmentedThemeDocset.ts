@@ -103,6 +103,25 @@ export class AugmentedThemeDocset implements ThemeDocset {
 
   public isAugmented = true;
 
+  private objectsByPrefix = new Map<string, ObjectEntry[]>();
+
+  setObjectsForURI(uri: string, objects: ObjectEntry[]) {
+    this.objectsByPrefix.set(uri, objects);
+  }
+
+  getObjectsForURI(uri: string): ObjectEntry[] | undefined {
+    // Exact match first
+    const exact = this.objectsByPrefix.get(uri);
+    if (exact) return exact;
+
+    // Prefix match: allows registering by step path and matching file URIs within it
+    for (const [prefix, objects] of this.objectsByPrefix) {
+      if (uri.startsWith(prefix)) return objects;
+    }
+
+    return undefined;
+  }
+
   filters = memo(async (): Promise<FilterEntry[]> => {
     const officialFilters = await this.themeDocset.filters();
     return [

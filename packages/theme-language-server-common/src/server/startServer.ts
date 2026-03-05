@@ -47,6 +47,7 @@ import { RenameHandler } from '../renamed/RenameHandler';
 import { GetTranslationsForURI } from '../translations';
 import {
   Dependencies,
+  SetObjectsNotification,
   ThemeGraphDeadCodeRequest,
   ThemeGraphDependenciesRequest,
   ThemeGraphReferenceRequest,
@@ -754,6 +755,10 @@ export function startServer(
     if (!rootUri) return [];
     const deadFiles = await themeGraphManager.deadCode(rootUri);
     return deadFiles;
+  });
+
+  connection.onNotification(SetObjectsNotification.type, ({ uri, objects }) => {
+    themeDocset.setObjectsForURI(uri, objects);
   });
 
   connection.listen();
