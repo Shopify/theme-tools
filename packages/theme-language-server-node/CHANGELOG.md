@@ -1,5 +1,16 @@
 # @shopify/theme-language-server-node
 
+## 2.20.2
+
+### Patch Changes
+
+- Updated dependencies [bf2d6b02]
+- Updated dependencies [bc8002ba]
+- Updated dependencies [b1bca3f9]
+  - @shopify/theme-language-server-common@2.20.2
+  - @shopify/theme-check-node@3.24.0
+  - @shopify/theme-check-docs-updater@3.24.0
+
 ## 2.20.1
 
 ### Patch Changes
@@ -302,7 +313,6 @@
 ### Minor Changes
 
 - 2ef93d17: Support completion + hover for presets blocks settings under `{% schema %}` tag
-
   - Hover + Completion description for `presets.[].blocks.[].settings` and `default.blocks.[].settings`
     will be from the referenced block's setting's label - i.e. `settings.[].label`
     - The label will be translated if it contains a translation key
@@ -500,18 +510,18 @@
     getConnection,
     startServer,
     AbstractFileSystem,
-  } from '@shopify/theme-language-server-browser';
+  } from "@shopify/theme-language-server-browser";
 
   class MainThreadFileSystem implements AbstractFileSystem {
     constructor(private connection) {}
     readFile(uri) {
-      return this.connection.sendRequest('fs/readFile', uri);
+      return this.connection.sendRequest("fs/readFile", uri);
     }
     readDirectory(uri) {
-      return this.connection.sendRequest('fs/readDirectory', uri);
+      return this.connection.sendRequest("fs/readDirectory", uri);
     }
     readFile(uri) {
-      return this.connection.sendRequest('fs/stat', uri);
+      return this.connection.sendRequest("fs/stat", uri);
     }
   }
 
@@ -722,7 +732,6 @@
 - d66d49c: Improve root finding of theme app extensions and zipped themes
 
   Folders for which all the following is true are considered a root:
-
   - have a `snippets/` folder, and
   - don't have a `../.theme-check.yml`,
   - don't have a `../../.theme-check.yml`.
@@ -750,7 +759,6 @@
 - 042f1e0: Add section schema and translation file JSON completion and hover support
 
   JSON object authoring and editing should be better in the following contexts:
-
   - `sections/*.liquid` `{% schema %}` bodies
   - `locales/*.json` files
 
@@ -1120,7 +1128,6 @@
 ### Minor Changes
 
 - 0c50ec1: Bump theme-check to v1.6.0
-
   - e0c131a: Breaking: `SourceCode` can take `ast: AST[T] | Error`, where `Error` is a parsing error
   - 9e99728: Add `UnusedAssign`
   - f99c896: Add `LiquidHTMLSyntaxError`
@@ -1176,7 +1183,6 @@
 ### Minor Changes
 
 - Bump @shopify/theme-check-common to v1.4.0
-
   - Adds new check: `TranslationKeyExists`
 
 ### Patch Changes

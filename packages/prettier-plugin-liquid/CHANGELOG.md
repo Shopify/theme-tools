@@ -1,5 +1,13 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.10.2
+
+### Patch Changes
+
+- b1bca3f9: Upgrade prettier to v3 (internal)
+- Updated dependencies [b1bca3f9]
+  - @shopify/liquid-html-parser@2.9.2
+
 ## 1.10.1
 
 ### Patch Changes
@@ -55,7 +63,6 @@
 ### Minor Changes
 
 - 8ff89592: Adjust LiquidDoc formatting rules for single-line and multi-line examples and descriptions
-
   - Multi-line content starts on a new line
   - Single-line content is kept on the same line or a new line as it was provided
 
@@ -200,7 +207,6 @@
 ### Minor Changes
 
 - a07a064: Add `captureWhitespaceSensitivity` configuration option.
-
   - When `strict` (default), behaves as before: treats the child nodes of `{% capture var %}` child nodes as strictly whitespace sensitive, therefore does not reformat contents.
   - When `ignore` (new), makes it behave like tags that are not whitespace sensitive. Warning: blindly running this will alter the string value of variables captured by the capture tag.
 
@@ -367,7 +373,6 @@
   ```
 
   The heuristic we're going for is the following:
-
   - Only supported inside a LiquidBranch (if,else,when)
   - At most 2 of the same type (2 dangling open, or 2 dangling close)
 
