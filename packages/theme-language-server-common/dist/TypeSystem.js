@@ -244,6 +244,10 @@ class TypeSystem {
             return map;
         }, {});
     }
+    hasObjectsForURI(uri) {
+        var _a, _b;
+        return !!((_b = (_a = this.themeDocset).getObjectsForURI) === null || _b === void 0 ? void 0 : _b.call(_a, uri));
+    }
     async objectEntries(uri) {
         if (uri && this.themeDocset.getObjectsForURI) {
             const perURI = this.themeDocset.getObjectsForURI(uri);

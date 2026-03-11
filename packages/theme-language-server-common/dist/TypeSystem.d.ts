@@ -23,6 +23,7 @@ export declare class TypeSystem {
     /** An indexed representation of filters.json by name */
     filtersMap: import("@shopify/theme-check-common").MemoedFunction<() => Promise<FiltersMap>>;
     filterEntries: import("@shopify/theme-check-common").MemoedFunction<() => Promise<FilterEntry[]>>;
+    hasObjectsForURI(uri: string): boolean;
     objectEntries(uri?: string): Promise<ObjectEntry[]>;
     private symbolsTable;
     /**

@@ -278,6 +278,10 @@ export class TypeSystem {
     return this.themeDocset.filters();
   });
 
+  public hasObjectsForURI(uri: string): boolean {
+    return !!this.themeDocset.getObjectsForURI?.(uri);
+  }
+
   public async objectEntries(uri?: string): Promise<ObjectEntry[]> {
     if (uri && this.themeDocset.getObjectsForURI) {
       const perURI = this.themeDocset.getObjectsForURI(uri);

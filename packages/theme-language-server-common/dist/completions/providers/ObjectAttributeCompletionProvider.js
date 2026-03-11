@@ -36,10 +36,15 @@ class ObjectAttributeCompletionProvider {
         parentLookup.lookups = [...parentLookup.lookups];
         parentLookup.lookups.pop();
         const parentType = await this.typeSystem.inferType(parentLookup, partialAst, params.textDocument.uri);
+        const hasCustomObjects = this.typeSystem.hasObjectsForURI(params.textDocument.uri);
         if ((0, TypeSystem_1.isArrayType)(parentType)) {
+            if (hasCustomObjects)
+                return [];
             return completionItems(ArrayCoreProperties.map((name) => ({ name })), partial);
         }
         else if (parentType === 'string') {
+            if (hasCustomObjects)
+                return [];
             return completionItems(StringCoreProperties.map((name) => ({ name })), partial);
         }
         const objectMap = await this.typeSystem.objectMap(params.textDocument.uri, partialAst);
