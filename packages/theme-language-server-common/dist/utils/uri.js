@@ -1,0 +1,30 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isTemplate = exports.templateName = exports.isSectionGroup = exports.sectionGroupName = exports.isSection = exports.sectionName = exports.isBlock = exports.blockName = exports.isAsset = exports.assetName = exports.isSnippet = exports.snippetName = void 0;
+const theme_check_common_1 = require("@shopify/theme-check-common");
+const snippetName = (uri) => theme_check_common_1.path.basename(uri, '.liquid');
+exports.snippetName = snippetName;
+const isSnippet = (uri) => /\bsnippets(\\|\/)[^\\\/]*\.liquid/.test(uri);
+exports.isSnippet = isSnippet;
+// asset urls have their `.liquid`` removed (if present) and require the other extension */
+const assetName = (uri) => theme_check_common_1.path.basename(uri, '.liquid');
+exports.assetName = assetName;
+const isAsset = (uri) => /\bassets(\\|\/)[^\\\/]/.test(uri);
+exports.isAsset = isAsset;
+const blockName = (uri) => theme_check_common_1.path.basename(uri, '.liquid');
+exports.blockName = blockName;
+const isBlock = (uri) => /\bblocks(\\|\/)[^\\\/]/.test(uri);
+exports.isBlock = isBlock;
+const sectionName = (uri) => theme_check_common_1.path.basename(uri, '.liquid');
+exports.sectionName = sectionName;
+const isSection = (uri) => /\bsections(\\|\/)[^\\\/]/.test(uri) && /.liquid$/.test(uri);
+exports.isSection = isSection;
+const sectionGroupName = (uri) => theme_check_common_1.path.basename(uri, '.json');
+exports.sectionGroupName = sectionGroupName;
+const isSectionGroup = (uri) => /\bsections(\\|\/)[^\\\/]/.test(uri) && /.json$/.test(uri);
+exports.isSectionGroup = isSectionGroup;
+const templateName = (uri) => theme_check_common_1.path.basename(uri, '.json');
+exports.templateName = templateName;
+const isTemplate = (uri) => /\btemplates(\\|\/)[^\\\/]/.test(uri);
+exports.isTemplate = isTemplate;
+//# sourceMappingURL=uri.js.map

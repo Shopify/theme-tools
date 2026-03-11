@@ -1,0 +1,15 @@
+import { AbstractFileSystem, FileTuple, UriString } from './AbstractFileSystem';
+import { MetafieldCategory, MetafieldDefinitionMap, Theme, Translations } from './types';
+export type FileExists = (uri: string) => Promise<boolean>;
+export declare const makeFileExists: (fs: AbstractFileSystem) => FileExists;
+export declare const makeFileSize: (fs: AbstractFileSystem) => (uri: string) => Promise<number>;
+export declare const makeGetDefaultLocaleFileUri: (fs: AbstractFileSystem) => (rootUri: string) => Promise<string | undefined>;
+export declare const makeGetDefaultSchemaLocaleFileUri: (fs: AbstractFileSystem) => (rootUri: string) => Promise<string | undefined>;
+export declare const makeGetDefaultLocale: (fs: AbstractFileSystem, rootUri: string) => () => Promise<string>;
+export declare const makeGetDefaultSchemaLocale: (fs: AbstractFileSystem, rootUri: string) => () => Promise<string>;
+export declare const makeGetDefaultTranslations: (fs: AbstractFileSystem, theme: Theme, rootUri: string) => () => Promise<Translations>;
+export declare const makeGetDefaultSchemaTranslations: (fs: AbstractFileSystem, theme: Theme, rootUri: string) => () => Promise<Translations>;
+export declare function recursiveReadDirectory(fs: AbstractFileSystem, uri: string, filter: (fileTuple: FileTuple) => boolean): Promise<UriString[]>;
+export declare function isDirectory([_, type]: FileTuple): boolean;
+export declare const FETCHED_METAFIELD_CATEGORIES: MetafieldCategory[];
+export declare const makeGetMetafieldDefinitions: (fs: AbstractFileSystem) => (rootUri: string) => Promise<MetafieldDefinitionMap>;

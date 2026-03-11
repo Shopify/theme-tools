@@ -1,0 +1,1 @@
+{"version":3,"file":"BaseCodeActionsProvider.js","sourceRoot":"","sources":["../../src/codeActions/BaseCodeActionsProvider.ts"],"names":[],"mappings":";;;AAIA,MAAsB,uBAAuB;IAG3C,YACY,eAAgC,EAChC,kBAAsC;QADtC,oBAAe,GAAf,eAAe,CAAiB;QAChC,uBAAkB,GAAlB,kBAAkB,CAAoB;IAC/C,CAAC;IAEJ,IAAI,IAAI;QACN,OAAQ,IAAI,CAAC,WAA8C,CAAC,IAAI,CAAC;IACnE,CAAC;CAGF;AAbD,0DAaC"}

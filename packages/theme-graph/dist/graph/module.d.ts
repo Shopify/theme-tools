@@ -1,0 +1,10 @@
+import { UriString } from '@shopify/theme-check-common';
+import { CssModule, ImageModule, JavaScriptModule, JsonModule, LiquidModule, SvgModule, ThemeGraph, ThemeModule } from '../types';
+export declare function getModule(themeGraph: ThemeGraph, uri: UriString): ThemeModule | undefined;
+export declare function getTemplateModule(themeGraph: ThemeGraph, uri: UriString): ThemeModule;
+export declare function getThemeBlockModule(themeGraph: ThemeGraph, blockType: string): LiquidModule;
+export declare function getSectionModule(themeGraph: ThemeGraph, sectionType: string): LiquidModule;
+export declare function getSectionGroupModule(themeGraph: ThemeGraph, sectionGroupType: string): JsonModule;
+export declare function getAssetModule(themeGraph: ThemeGraph, asset: string): JavaScriptModule | CssModule | SvgModule | ImageModule | undefined;
+export declare function getSnippetModule(themeGraph: ThemeGraph, snippet: string): LiquidModule;
+export declare function getLayoutModule(themeGraph: ThemeGraph, layoutName?: string | false | undefined): LiquidModule | undefined;

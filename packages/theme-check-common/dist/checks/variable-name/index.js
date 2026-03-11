@@ -1,0 +1,93 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.VariableName = void 0;
+const liquid_html_parser_1 = require("@shopify/liquid-html-parser");
+const types_1 = require("../../types");
+const lodash_1 = require("lodash");
+const pascalCase = (string) => {
+    const camelCased = (0, lodash_1.camelCase)(string);
+    return camelCased.charAt(0).toUpperCase() + camelCased.slice(1);
+};
+const isLiquidTagAssign = (node) => {
+    return node.name === 'assign' && typeof node.markup !== 'string';
+};
+const isLiquidTagCapture = (node) => {
+    return (node.type == liquid_html_parser_1.NodeTypes.LiquidTag && node.name === 'capture' && typeof node.markup !== 'string');
+};
+const formatTypes = {
+    camelCase: lodash_1.camelCase,
+    PascalCase: pascalCase,
+    snake_case: lodash_1.snakeCase,
+    'kebab-case': lodash_1.kebabCase,
+};
+const schema = {
+    format: types_1.SchemaProp.string('snake_case'),
+};
+// It's impossible to make an idempotent rule that works for all cases. We
+// have to accept whatever spacing the user has input as valid.
+// This function strips dash/underscores around digits so that we can at least
+// make sure that the variable name is in the "correct" format. (e.g. snake case)
+const collapseNumberSpacing = (varName) => varName.replace(/[-_]?\d[-_]?/g, '');
+exports.VariableName = {
+    meta: {
+        code: 'VariableName',
+        name: 'Invalid variable naming format',
+        docs: {
+            description: 'This check is aimed at using certain variable naming conventions',
+            url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/variable-name',
+            recommended: true,
+        },
+        type: types_1.SourceCodeType.LiquidHtml,
+        severity: types_1.Severity.WARNING,
+        schema,
+        targets: [],
+    },
+    create(context) {
+        const formatter = (node) => {
+            if (!node.markup.name) {
+                return {
+                    valid: false,
+                };
+            }
+            const formatter = formatTypes[context.settings.format];
+            const suggestion = formatter(node.markup.name);
+            return {
+                valid: collapseNumberSpacing(node.markup.name) === collapseNumberSpacing(suggestion),
+                suggestion,
+            };
+        };
+        const reportHandler = (node) => {
+            return context.report({
+                message: `The variable '${node.markup.name}' uses wrong naming format`,
+                startIndex: node.markup.position.start,
+                endIndex: node.markup.position.end,
+                suggest: [
+                    {
+                        message: `Change variable '${node.markup.name}' to '${formatter(node).suggestion}'`,
+                        fix: (corrector) => {
+                            const { position, name, source } = node.markup;
+                            return corrector.replace(position.start, position.end, source
+                                .slice(position.start, position.end)
+                                .replace(name, formatter(node).suggestion));
+                        },
+                    },
+                ],
+            });
+        };
+        return {
+            async LiquidTag(node) {
+                if (isLiquidTagAssign(node)) {
+                    if (!formatter(node).valid) {
+                        reportHandler(node);
+                    }
+                }
+                else if (isLiquidTagCapture(node) && node.markup.name) {
+                    if (!formatter(node).valid) {
+                        reportHandler(node);
+                    }
+                }
+            },
+        };
+    },
+};
+//# sourceMappingURL=index.js.map

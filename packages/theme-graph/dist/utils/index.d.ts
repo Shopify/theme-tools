@@ -1,0 +1,10 @@
+import { AbstractFileSystem, UriString } from '@shopify/theme-check-common';
+import { AugmentedDependencies } from '../types';
+export declare function unique<T>(array: T[]): T[];
+export declare function assertNever(module: never): void;
+export declare function unexpected(): Error;
+export declare const identity: <T>(x: T) => T;
+export declare function isString(x: unknown): x is string;
+export declare function extname(uri: UriString): string;
+export declare function exists(fs: AbstractFileSystem, uri: UriString): Promise<boolean>;
+export declare function acceptsLocalBlocks(sectionType: string, deps: AugmentedDependencies): Promise<boolean | Error>;

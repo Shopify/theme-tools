@@ -1,0 +1,15 @@
+import { Position } from '@shopify/liquid-html-parser';
+import { LiquidAstPath, LiquidParserOptions } from '../../types';
+export declare function isWhitespace(source: string, loc: number): boolean;
+export declare const trim: (x: string) => string;
+export declare const trimEnd: (x: string) => string;
+export declare function bodyLines(str: string): string[];
+export declare function markupLines(markup: string): string[];
+export declare function reindent(lines: string[], skipFirst?: boolean): string[];
+export declare function originallyHadLineBreaks(path: LiquidAstPath, { locStart, locEnd }: LiquidParserOptions): boolean;
+export declare function hasLineBreakInRange(source: string, locStart: number, locEnd: number): boolean;
+export declare function hasMoreThanOneNewLineBetweenNodes(source: string, prev: {
+    position: Position;
+} | undefined, next: {
+    position: Position;
+} | undefined): boolean;

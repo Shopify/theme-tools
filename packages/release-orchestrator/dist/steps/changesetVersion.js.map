@@ -1,0 +1,1 @@
+{"version":3,"file":"changesetVersion.js","sourceRoot":"","sources":["../../src/steps/changesetVersion.ts"],"names":[],"mappings":";;;AAAA,oCAA+B;AAExB,MAAM,gBAAgB,GAAG,KAAK,IAAI,EAAE;IACzC,OAAO,CAAC,GAAG,CAAC,gCAAgC,CAAC,CAAC;IAC9C,OAAO,CAAC,GAAG,CAAC,MAAM,IAAA,WAAG,EAAC,wBAAwB,CAAC,CAAC,CAAC;AACnD,CAAC,CAAC;AAHW,QAAA,gBAAgB,oBAG3B"}

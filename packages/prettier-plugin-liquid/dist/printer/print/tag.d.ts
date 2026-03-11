@@ -1,0 +1,23 @@
+import { Position } from '@shopify/liquid-html-parser';
+import { doc } from 'prettier';
+import { AstPath, HtmlNode, LiquidHtmlNode, LiquidParserOptions, LiquidPrinter } from '../../types';
+export declare function needsToBorrowPrevClosingTagEndMarker(node: LiquidHtmlNode): boolean | undefined;
+export declare function needsToBorrowLastChildClosingTagEndMarker(node: LiquidHtmlNode): boolean | undefined;
+export declare function needsToBorrowParentClosingTagStartMarker(node: LiquidHtmlNode): boolean;
+export declare function needsToBorrowNextOpeningTagStartMarker(node: LiquidHtmlNode): boolean | undefined;
+export declare function needsToBorrowParentOpeningTagEndMarker(node: LiquidHtmlNode): boolean;
+export declare function printOpeningTag(path: AstPath<HtmlNode>, options: LiquidParserOptions, print: LiquidPrinter, attrGroupId: symbol): (string | (string | doc.builders.Indent | doc.builders.Line)[])[];
+export declare function printOpeningTagStart(node: LiquidHtmlNode, options: LiquidParserOptions): string[] | "";
+export declare function printOpeningTagPrefix(node: LiquidHtmlNode, options: LiquidParserOptions): "" | "-->" | ">" | "/>";
+export declare function printOpeningTagStartMarker(node: LiquidHtmlNode | undefined): string;
+export declare function printClosingTag(node: LiquidHtmlNode, options: LiquidParserOptions): (string | string[])[];
+export declare function printClosingTagStart(node: LiquidHtmlNode, options: LiquidParserOptions): string[] | "";
+export declare function printClosingTagEnd(node: LiquidHtmlNode, options: LiquidParserOptions): string[] | "";
+export declare function printClosingTagSuffix(node: LiquidHtmlNode, options: LiquidParserOptions): string;
+export declare function printClosingTagStartMarker(node: LiquidHtmlNode | undefined, options: LiquidParserOptions): string;
+export declare function printClosingTagEndMarker(node: LiquidHtmlNode | undefined, options: LiquidParserOptions): "" | ">" | "/>";
+export declare function printOpeningTagEndMarker(node: LiquidHtmlNode | undefined): "" | "-->" | ">";
+export declare function getNodeContent(node: Extract<HtmlNode, {
+    blockStartPosition: Position;
+    blockEndPosition: Position;
+}>, options: LiquidParserOptions): string;

@@ -1,0 +1,10 @@
+import { RelativePath, UriString } from './types';
+import { URI, Utils } from 'vscode-uri';
+export { URI, Utils };
+export declare function relative(uri: UriString | URI, rootUri: UriString): RelativePath;
+export declare function join(rootUri: UriString | URI, ...paths: string[]): string;
+export declare function resolve(uri: UriString | URI, path: string): string;
+export declare function normalize(uri: UriString | URI): UriString;
+export declare function dirname(uri: UriString | URI): UriString;
+export declare function basename(uri: UriString | URI, ext?: string): string;
+export declare function fsPath(uri: UriString | URI): string;

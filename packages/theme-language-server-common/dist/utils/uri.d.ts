@@ -1,0 +1,12 @@
+export declare const snippetName: (uri: string) => string;
+export declare const isSnippet: (uri: string) => boolean;
+export declare const assetName: (uri: string) => string;
+export declare const isAsset: (uri: string) => boolean;
+export declare const blockName: (uri: string) => string;
+export declare const isBlock: (uri: string) => boolean;
+export declare const sectionName: (uri: string) => string;
+export declare const isSection: (uri: string) => boolean;
+export declare const sectionGroupName: (uri: string) => string;
+export declare const isSectionGroup: (uri: string) => boolean;
+export declare const templateName: (uri: string) => string;
+export declare const isTemplate: (uri: string) => boolean;
