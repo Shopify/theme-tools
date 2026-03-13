@@ -8,7 +8,7 @@
   "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/theme-check-docs-updater#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Shopify/theme-tools.git",
+    "url": "git+https://github.com/Shopify/theme-tools.git",
     "directory": "packages/theme-check-docs-updater"
   },
   "bugs": {
@@ -19,7 +19,7 @@
     "@shopify:registry": "https://registry.npmjs.org"
   },
   "bin": {
-    "theme-docs": "./scripts/cli.js"
+    "theme-docs": "scripts/cli.js"
   },
   "scripts": {
     "build": "yarn build:ts",
