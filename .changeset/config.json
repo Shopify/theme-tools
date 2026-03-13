@@ -10,7 +10,7 @@
     ["theme-check-vscode"]
   ],
   "linked": [],
-  "access": "restricted",
+  "access": "public",
   "baseBranch": "origin/main",
   "updateInternalDependencies": "patch"
 }

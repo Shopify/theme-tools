@@ -56,7 +56,6 @@ jobs:
         run: echo "version=$(jq -r .version packages/vscode-extension/package.json)" >> $GITHUB_OUTPUT
 
       - name: Test OIDC Token
-        if: steps.version.outputs.NEXT_VERSION
         run: |
           TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
             "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=npm" | jq -r '.value')
@@ -75,7 +74,6 @@ jobs:
           version: yarn release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: '' # Empty string forces OIDC
           NPM_CONFIG_PROVENANCE: true
 
       - name: VS Code Marketplace publish
