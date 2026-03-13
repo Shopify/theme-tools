@@ -30,7 +30,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
-          node-version: 20
+          node-version: 24 # Needed for npm@11 for Trusted Publishing
           registry-url: "https://registry.npmjs.org"
           cache: "yarn"
           cache-dependency-path: "yarn.lock"
@@ -54,6 +54,13 @@ jobs:
       - name: Query VS Code Package version (Before running changeset version)
         id: package-version
         run: echo "version=$(jq -r .version packages/vscode-extension/package.json)" >> $GITHUB_OUTPUT
+
+      - name: Test OIDC Token
+        if: steps.version.outputs.NEXT_VERSION
+        run: |
+          TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=npm" | jq -r '.value')
+          [ -n "$TOKEN" ] && echo "✅ OIDC working" || exit 1
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
