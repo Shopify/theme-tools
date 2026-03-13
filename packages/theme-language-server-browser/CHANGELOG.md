@@ -1,5 +1,13 @@
 # @shopify/theme-language-server-browser
 
+## 2.20.2
+
+### Patch Changes
+
+- Updated dependencies [bf2d6b02]
+- Updated dependencies [b1bca3f9]
+  - @shopify/theme-language-server-common@2.20.2
+
 ## 2.20.1
 
 ### Patch Changes
@@ -372,18 +380,18 @@
     getConnection,
     startServer,
     AbstractFileSystem,
-  } from '@shopify/theme-language-server-browser';
+  } from "@shopify/theme-language-server-browser";
 
   class MainThreadFileSystem implements AbstractFileSystem {
     constructor(private connection) {}
     readFile(uri) {
-      return this.connection.sendRequest('fs/readFile', uri);
+      return this.connection.sendRequest("fs/readFile", uri);
     }
     readDirectory(uri) {
-      return this.connection.sendRequest('fs/readDirectory', uri);
+      return this.connection.sendRequest("fs/readDirectory", uri);
     }
     readFile(uri) {
-      return this.connection.sendRequest('fs/stat', uri);
+      return this.connection.sendRequest("fs/stat", uri);
     }
   }
 
@@ -488,7 +496,6 @@
 - 03b41e1: Add support for the schemas manifest on Shopify/theme-liquid-docs
 
   Shopify/theme-liquid-docs now supports composable JSON schemas (with relative paths). To solve the `blocks/*.liquid` file match JSON schema overload depending on the context (`app` or `theme`), we defined two manifests that describe the schemas required by your solution and define the fileMatch rules:
-
   - [manifest_theme.json](https://github.com/Shopify/theme-liquid-docs/blob/main/schemas/manifest_theme.json)
   - [manifest_theme_app_extension.json](https://github.com/Shopify/theme-liquid-docs/blob/main/schemas/manifest_theme.json)
 
@@ -588,7 +595,6 @@
 - 042f1e0: Add section schema and translation file JSON completion and hover support
 
   JSON object authoring and editing should be better in the following contexts:
-
   - `sections/*.liquid` `{% schema %}` bodies
   - `locales/*.json` files
 
@@ -876,7 +882,6 @@
 ### Minor Changes
 
 - 0c50ec1: Bump theme-check to v1.6.0
-
   - e0c131a: Breaking: `SourceCode` can take `ast: AST[T] | Error`, where `Error` is a parsing error
   - 9e99728: Add `UnusedAssign`
   - f99c896: Add `LiquidHTMLSyntaxError`
@@ -932,7 +937,6 @@
 ### Minor Changes
 
 - Bump @shopify/theme-check-common to v1.4.0
-
   - Adds new check: `TranslationKeyExists`
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # @shopify/theme-check-docs-updater
 
+## 3.24.0
+
+### Patch Changes
+
+- Updated dependencies [346cc150]
+- Updated dependencies [2df8b65e]
+- Updated dependencies [bc8002ba]
+- Updated dependencies [b1bca3f9]
+  - @shopify/theme-check-common@3.24.0
+
 ## 3.23.1
 
 ### Patch Changes
@@ -417,7 +427,6 @@
 - 03b41e1: Add support for the schemas manifest on Shopify/theme-liquid-docs
 
   Shopify/theme-liquid-docs now supports composable JSON schemas (with relative paths). To solve the `blocks/*.liquid` file match JSON schema overload depending on the context (`app` or `theme`), we defined two manifests that describe the schemas required by your solution and define the fileMatch rules:
-
   - [manifest_theme.json](https://github.com/Shopify/theme-liquid-docs/blob/main/schemas/manifest_theme.json)
   - [manifest_theme_app_extension.json](https://github.com/Shopify/theme-liquid-docs/blob/main/schemas/manifest_theme.json)
 
@@ -526,7 +535,6 @@
 - 84f9eda: Include docset fallbacks in the theme-check-docs-updater package
 
   For when a user’s Internet connection is down or https://raw.githubusercontent.com is not accessible.
-
   - @shopify/theme-check-common@2.0.4
 
 ## 2.0.3
