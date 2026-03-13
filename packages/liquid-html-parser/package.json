@@ -6,7 +6,7 @@
   "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/liquid-html-parser#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Shopify/theme-tools.git",
+    "url": "git+https://github.com/Shopify/theme-tools.git",
     "directory": "packages/liquid-html-parser"
   },
   "bugs": {

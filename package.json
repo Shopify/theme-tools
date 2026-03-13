@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "The Swiss Army Knife for Shopify Liquid themes. Everything you need in one handy monorepo!",
   "main": "index.js",
-  "repository": "https://github.com/Shopify/theme-tools",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shopify/theme-tools.git"
+  },
   "author": "Albert Chu <albert.chu@shopify.com>",
   "license": "MIT",
   "private": true,
