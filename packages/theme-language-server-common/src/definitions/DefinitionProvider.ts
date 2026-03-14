@@ -2,7 +2,9 @@ import { findCurrentNode, SourceCodeType } from '@shopify/theme-check-common';
 import { DefinitionLink, DefinitionParams } from 'vscode-languageserver';
 
 import { AugmentedJsonSourceCode, DocumentManager } from '../documents';
+import { FindThemeRootURI } from '../internal-types';
 import { BaseDefinitionProvider } from './BaseDefinitionProvider';
+import { DocumentLinksDefinitionProvider } from './providers/DocumentLinksDefinitionProvider';
 import { SchemaTranslationStringDefinitionProvider } from './providers/SchemaTranslationStringDefinitionProvider';
 import { TranslationStringDefinitionProvider } from './providers/TranslationStringDefinitionProvider';
 
@@ -13,8 +15,10 @@ export class DefinitionProvider {
     private documentManager: DocumentManager,
     getDefaultLocaleSourceCode: (uri: string) => Promise<AugmentedJsonSourceCode | null>,
     getDefaultSchemaLocaleSourceCode: (uri: string) => Promise<AugmentedJsonSourceCode | null>,
+    findThemeRootURI: FindThemeRootURI,
   ) {
     this.providers = [
+      new DocumentLinksDefinitionProvider(documentManager, findThemeRootURI),
       new TranslationStringDefinitionProvider(documentManager, getDefaultLocaleSourceCode),
       new SchemaTranslationStringDefinitionProvider(
         documentManager,

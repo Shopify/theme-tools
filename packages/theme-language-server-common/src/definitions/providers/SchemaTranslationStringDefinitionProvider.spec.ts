@@ -43,6 +43,7 @@ describe('Module: SchemaTranslationStringDefinitionProvider', () => {
       documentManager,
       async () => null,
       mockGetDefaultSchemaLocaleSourceCode,
+      async () => null,
     );
   });
 

@@ -37,6 +37,7 @@ describe('Module: TranslationStringDefinitionProvider', () => {
       documentManager,
       mockGetDefaultLocaleSourceCode,
       async () => null,
+      async () => null,
     );
   });
 
