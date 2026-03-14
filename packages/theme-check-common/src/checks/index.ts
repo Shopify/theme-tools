@@ -9,6 +9,7 @@ import { AssetSizeJavaScript } from './asset-size-javascript';
 import { BlockIdUsage } from './block-id-usage';
 import { CdnPreconnect } from './cdn-preconnect';
 import { ContentForHeaderModification } from './content-for-header-modification';
+import { CSSClassWithinStylesheet } from './css-class-within-stylesheet';
 import { DeprecateBgsizes } from './deprecate-bgsizes';
 import { DeprecateLazysizes } from './deprecate-lazysizes';
 import { DeprecatedFilter } from './deprecated-filter';
@@ -77,6 +78,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   BlockIdUsage,
   CdnPreconnect,
   ContentForHeaderModification,
+  CSSClassWithinStylesheet,
   DeprecateBgsizes,
   DeprecateLazysizes,
   DeprecatedFilter,
