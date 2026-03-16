@@ -24,6 +24,11 @@ interface AssignDefinition {
  * When the cursor is on a `VariableLookup` (e.g. `{{ my_var }}`), this provider
  * finds the `{% assign my_var = ... %}` that defines it.
  *
+ * Returns **all** assigns before the cursor, not just the last one. This handles
+ * conditional branches (if/else) where multiple assigns could be the "real"
+ * definition at runtime. With a single result the editor jumps directly; with
+ * multiple results the editor shows a peek list.
+ *
  * For now, this only handles `assign` tags. Future expansion will add support
  * for `capture`, `for`, `tablerow`, and `@param`.
  */
@@ -71,40 +76,35 @@ export class VariableDefinitionProvider implements BaseDefinitionProvider {
       return [];
     }
 
-    // Find the last assign that appears before the cursor position.
-    // This handles shadowing: later assigns win for later references.
-    let bestDefinition: AssignDefinition | undefined;
-    for (const def of assignDefinitions) {
-      if (def.nameStart < cursorOffset) {
-        if (!bestDefinition || def.nameStart > bestDefinition.nameStart) {
-          bestDefinition = def;
-        }
-      }
-    }
+    // Return all assigns that appear before the cursor position.
+    // When there's one (the common case), the editor jumps directly.
+    // When there are multiple (conditional branches, re-assignment),
+    // the editor shows a peek list so the user can pick.
+    const defsBeforeCursor = assignDefinitions.filter((def) => def.nameStart < cursorOffset);
 
-    if (!bestDefinition) {
+    if (defsBeforeCursor.length === 0) {
       return [];
     }
 
     const { textDocument } = sourceCode;
-
-    const targetRange = Range.create(
-      textDocument.positionAt(bestDefinition.nameStart),
-      textDocument.positionAt(bestDefinition.nameEnd),
-    );
 
     const originRange = Range.create(
       textDocument.positionAt(node.position.start),
       textDocument.positionAt(node.position.end),
     );
 
-    return [
-      LocationLink.create(
+    return defsBeforeCursor.map((def) => {
+      const targetRange = Range.create(
+        textDocument.positionAt(def.nameStart),
+        textDocument.positionAt(def.nameEnd),
+      );
+
+      return LocationLink.create(
         params.textDocument.uri,
         targetRange,
         targetRange,
         originRange,
-      ),
-    ];
+      );
+    });
   }
 }

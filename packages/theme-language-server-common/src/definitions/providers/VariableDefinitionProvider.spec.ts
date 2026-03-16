@@ -38,12 +38,11 @@ describe('Module: VariableDefinitionProvider', () => {
     expect(result[0].targetRange).toEqual(result[0].targetSelectionRange);
   });
 
-  it('handles variable shadowing — each reference jumps to the correct assign', async () => {
+  it('returns all preceding assigns — single assign yields direct jump', async () => {
     const source = ['{% assign x = 1 %}', '{{ x }}', '{% assign x = 2 %}', '{{ x }}'].join('\n');
     documentManager.open('file:///test.liquid', source, 1);
 
-    // First {{ x }} on line 1 — should jump to first assign (line 0)
-    // character 4 = end of 'x' (offset lands inside VariableLookup range)
+    // First {{ x }} on line 1 — only one assign before it → single result (direct jump)
     const params1: DefinitionParams = {
       textDocument: { uri: 'file:///test.liquid' },
       position: { line: 1, character: 4 },
@@ -54,16 +53,18 @@ describe('Module: VariableDefinitionProvider', () => {
     assert(LocationLink.is(result1[0]));
     expect(result1[0].targetRange.start.line).toBe(0);
 
-    // Second {{ x }} on line 3 — should jump to second assign (line 2)
+    // Second {{ x }} on line 3 — two assigns before it → both returned (peek menu)
     const params2: DefinitionParams = {
       textDocument: { uri: 'file:///test.liquid' },
       position: { line: 3, character: 4 },
     };
     const result2 = await provider.definitions(params2);
     assert(result2);
-    expect(result2).toHaveLength(1);
+    expect(result2).toHaveLength(2);
     assert(LocationLink.is(result2[0]));
-    expect(result2[0].targetRange.start.line).toBe(2);
+    assert(LocationLink.is(result2[1]));
+    expect(result2[0].targetRange.start.line).toBe(0);
+    expect(result2[1].targetRange.start.line).toBe(2);
   });
 
   it('returns null for global/contextual variables (no assign exists)', async () => {
@@ -148,6 +149,32 @@ describe('Module: VariableDefinitionProvider', () => {
     expect(result).toHaveLength(1);
     assert(LocationLink.is(result[0]));
     expect(result[0].targetRange.start.line).toBe(0);
+  });
+
+  it('returns all branch assigns for conditional assignment', async () => {
+    const source = [
+      '{% if condition %}',
+      '  {% assign x = "from if" %}',
+      '{% else %}',
+      '  {% assign x = "from else" %}',
+      '{% endif %}',
+      '{{ x }}',
+    ].join('\n');
+    documentManager.open('file:///test.liquid', source, 1);
+
+    const params: DefinitionParams = {
+      textDocument: { uri: 'file:///test.liquid' },
+      position: { line: 5, character: 4 },
+    };
+
+    const result = await provider.definitions(params);
+    assert(result);
+    // Both branch assigns are returned — editor shows peek menu
+    expect(result).toHaveLength(2);
+    assert(LocationLink.is(result[0]));
+    assert(LocationLink.is(result[1]));
+    expect(result[0].targetRange.start.line).toBe(1);
+    expect(result[1].targetRange.start.line).toBe(3);
   });
 
   it('distinguishes between different variable names', async () => {
