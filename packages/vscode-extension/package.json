@@ -61,7 +61,7 @@
     "type-check": "tsc --noEmit"
   },
   "engines": {
-    "vscode": "^1.85.0"
+    "vscode": "^1.104.0"
   },
   "dependencies": {
     "@shopify/liquid-html-parser": "^2.9.2",
