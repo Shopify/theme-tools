@@ -5,6 +5,7 @@ import { AugmentedJsonSourceCode, DocumentManager } from '../documents';
 import { BaseDefinitionProvider } from './BaseDefinitionProvider';
 import { SchemaTranslationStringDefinitionProvider } from './providers/SchemaTranslationStringDefinitionProvider';
 import { TranslationStringDefinitionProvider } from './providers/TranslationStringDefinitionProvider';
+import { VariableDefinitionProvider } from './providers/VariableDefinitionProvider';
 
 export class DefinitionProvider {
   private providers: BaseDefinitionProvider[];
@@ -20,6 +21,7 @@ export class DefinitionProvider {
         documentManager,
         getDefaultSchemaLocaleSourceCode,
       ),
+      new VariableDefinitionProvider(documentManager),
     ];
   }
 
