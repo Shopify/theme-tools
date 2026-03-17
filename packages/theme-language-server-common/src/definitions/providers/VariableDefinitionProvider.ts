@@ -1,4 +1,4 @@
-import { LiquidHtmlNode, NodeTypes } from '@shopify/liquid-html-parser';
+import { LiquidHtmlNode, NamedTags, NodeTypes } from '@shopify/liquid-html-parser';
 import { SourceCodeType, visit } from '@shopify/theme-check-common';
 import {
   DefinitionLink,
@@ -10,12 +10,19 @@ import { DocumentManager } from '../../documents';
 import { BaseDefinitionProvider } from '../BaseDefinitionProvider';
 
 interface AssignDefinition {
-  /** The name of the variable being assigned */
-  name: string;
+  /** The offset of the start of the assign markup */
+  assignStart: number;
+  /** The offset of the end of the assign markup */
+  assignEnd: number;
   /** The offset of the start of the name within the assign markup */
   nameStart: number;
   /** The offset of the end of the name within the assign markup */
   nameEnd: number;
+}
+
+interface Scope {
+  start: number;
+  end: number;
 }
 
 /**
@@ -24,10 +31,9 @@ interface AssignDefinition {
  * When the cursor is on a `VariableLookup` (e.g. `{{ my_var }}`), this provider
  * finds the `{% assign my_var = ... %}` that defines it.
  *
- * Returns **all** assigns before the cursor, not just the last one. This handles
- * conditional branches (if/else) where multiple assigns could be the "real"
- * definition at runtime. With a single result the editor jumps directly; with
- * multiple results the editor shows a peek list.
+ * Returns all matching assigns that are visible from the lookup location.
+ * With a single result the editor jumps directly; with multiple results the
+ * editor shows a peek list.
  *
  * For now, this only handles `assign` tags. Future expansion will add support
  * for `capture`, `for`, `tablerow`, and `@param`.
@@ -38,7 +44,7 @@ export class VariableDefinitionProvider implements BaseDefinitionProvider {
   async definitions(
     params: DefinitionParams,
     node: LiquidHtmlNode,
-    _ancestors: LiquidHtmlNode[],
+    ancestors: LiquidHtmlNode[],
   ): Promise<DefinitionLink[]> {
     // Only handle VariableLookup nodes with a non-null name
     if (node.type !== NodeTypes.VariableLookup || node.name === null) {
@@ -47,6 +53,7 @@ export class VariableDefinitionProvider implements BaseDefinitionProvider {
 
     const variableName = node.name;
     const cursorOffset = node.position.start;
+    const visibleAssignScope = localAssignScope(variableName, node, ancestors);
 
     const sourceCode = this.documentManager.get(params.textDocument.uri);
     if (
@@ -62,7 +69,8 @@ export class VariableDefinitionProvider implements BaseDefinitionProvider {
       AssignMarkup(assignNode) {
         if (assignNode.name !== variableName) return;
         return {
-          name: assignNode.name,
+          assignStart: assignNode.position.start,
+          assignEnd: assignNode.position.end,
           nameStart: assignNode.position.start,
           nameEnd: assignNode.position.start + assignNode.name.length,
         };
@@ -73,11 +81,20 @@ export class VariableDefinitionProvider implements BaseDefinitionProvider {
       return [];
     }
 
-    // Return all assigns that appear before the cursor position.
-    // When there's one (the common case), the editor jumps directly.
-    // When there are multiple (conditional branches, re-assignment),
-    // the editor shows a peek list so the user can pick.
-    const defsBeforeCursor = assignDefinitions.filter((def) => def.nameStart < cursorOffset);
+    // Only return assigns that are visible from the lookup location.
+    // Using assignEnd avoids treating the current assign as a definition for
+    // self-referential lookups like `{% assign x = x | plus: 1 %}`.
+    const defsBeforeCursor = assignDefinitions.filter((def) => {
+      if (def.assignEnd > cursorOffset) {
+        return false;
+      }
+
+      if (!visibleAssignScope) {
+        return true;
+      }
+
+      return def.assignStart >= visibleAssignScope.start && def.assignEnd <= visibleAssignScope.end;
+    });
 
     if (defsBeforeCursor.length === 0) {
       return [];
@@ -98,5 +115,31 @@ export class VariableDefinitionProvider implements BaseDefinitionProvider {
 
       return LocationLink.create(params.textDocument.uri, targetRange, targetRange, originRange);
     });
+  }
+}
+
+function localAssignScope(
+  variableName: string,
+  node: LiquidHtmlNode,
+  ancestors: LiquidHtmlNode[],
+): Scope | undefined {
+  for (let index = ancestors.length - 1; index >= 0; index--) {
+    const ancestor = ancestors[index];
+
+    if (
+      ancestor.type === NodeTypes.LiquidTag &&
+      (ancestor.name === NamedTags.for || ancestor.name === NamedTags.tablerow) &&
+      typeof ancestor.markup !== 'string' &&
+      ancestor.markup.variableName === variableName &&
+      ancestor.blockStartPosition &&
+      ancestor.blockEndPosition &&
+      node.position.start >= ancestor.blockStartPosition.start &&
+      node.position.start <= ancestor.blockEndPosition.end
+    ) {
+      return {
+        start: ancestor.blockStartPosition.start,
+        end: ancestor.blockEndPosition.end,
+      };
+    }
   }
 }
