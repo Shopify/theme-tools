@@ -58,19 +58,16 @@ export class VariableDefinitionProvider implements BaseDefinitionProvider {
     }
 
     // Collect all assign definitions for this variable name
-    const assignDefinitions = visit<SourceCodeType.LiquidHtml, AssignDefinition>(
-      sourceCode.ast,
-      {
-        AssignMarkup(assignNode) {
-          if (assignNode.name !== variableName) return;
-          return {
-            name: assignNode.name,
-            nameStart: assignNode.position.start,
-            nameEnd: assignNode.position.start + assignNode.name.length,
-          };
-        },
+    const assignDefinitions = visit<SourceCodeType.LiquidHtml, AssignDefinition>(sourceCode.ast, {
+      AssignMarkup(assignNode) {
+        if (assignNode.name !== variableName) return;
+        return {
+          name: assignNode.name,
+          nameStart: assignNode.position.start,
+          nameEnd: assignNode.position.start + assignNode.name.length,
+        };
       },
-    );
+    });
 
     if (assignDefinitions.length === 0) {
       return [];
@@ -99,12 +96,7 @@ export class VariableDefinitionProvider implements BaseDefinitionProvider {
         textDocument.positionAt(def.nameEnd),
       );
 
-      return LocationLink.create(
-        params.textDocument.uri,
-        targetRange,
-        targetRange,
-        originRange,
-      );
+      return LocationLink.create(params.textDocument.uri, targetRange, targetRange, originRange);
     });
   }
 }

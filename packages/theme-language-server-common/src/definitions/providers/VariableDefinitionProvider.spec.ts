@@ -205,4 +205,51 @@ describe('Module: VariableDefinitionProvider', () => {
     assert(LocationLink.is(resultBar[0]));
     expect(resultBar[0].targetRange.start.line).toBe(1);
   });
+
+  it('returns null for variables shadowed by a for loop binding', async () => {
+    const source = [
+      '{% assign x = 1 %}',
+      '{% for x in (1..2) %}',
+      '  {{ x }}',
+      '{% endfor %}',
+    ].join('\n');
+    documentManager.open('file:///test.liquid', source, 1);
+
+    const params: DefinitionParams = {
+      textDocument: { uri: 'file:///test.liquid' },
+      position: { line: 2, character: 6 },
+    };
+
+    const result = await provider.definitions(params);
+    expect(result).toBeNull();
+  });
+
+  it('does not treat the current assign as a definition for a self-referential RHS lookup', async () => {
+    const source = ['{% assign x = 1 %}', '{% assign x = x | plus: 1 %}'].join('\n');
+    documentManager.open('file:///test.liquid', source, 1);
+
+    const params: DefinitionParams = {
+      textDocument: { uri: 'file:///test.liquid' },
+      position: { line: 1, character: 15 },
+    };
+
+    const result = await provider.definitions(params);
+    assert(result);
+    expect(result).toHaveLength(1);
+    assert(LocationLink.is(result[0]));
+    expect(result[0].targetRange.start.line).toBe(0);
+  });
+
+  it('returns null for a self-referential assign with no prior definition', async () => {
+    const source = '{% assign x = x | plus: 1 %}';
+    documentManager.open('file:///test.liquid', source, 1);
+
+    const params: DefinitionParams = {
+      textDocument: { uri: 'file:///test.liquid' },
+      position: { line: 0, character: 15 },
+    };
+
+    const result = await provider.definitions(params);
+    expect(result).toBeNull();
+  });
 });
