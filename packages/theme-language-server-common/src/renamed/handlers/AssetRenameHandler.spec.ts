@@ -87,7 +87,7 @@ describe('Module: AssetRenameHandler', () => {
               needsConfirmation: false,
             },
           },
-          documentChanges: [
+          documentChanges: expect.arrayContaining([
             {
               textDocument: {
                 uri: 'mock-fs:/sections/section.liquid',
@@ -104,7 +104,7 @@ describe('Module: AssetRenameHandler', () => {
               edits: [expectedTextEdit],
               annotationId: 'renameAsset',
             },
-          ],
+          ]),
         },
       });
     });

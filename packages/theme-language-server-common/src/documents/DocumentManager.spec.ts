@@ -43,8 +43,8 @@ describe('Module: DocumentManager', () => {
     beforeEach(async () => {
       fs = new MockFileSystem(
         {
-          'snippet/foo.liquid': `hello {% render 'bar' %}`,
-          'snippet/bar.liquid': `world`,
+          'snippets/foo.liquid': `hello {% render 'bar' %}`,
+          'snippets/bar.liquid': `world`,
         },
         'mock-fs:',
       );
@@ -58,14 +58,14 @@ describe('Module: DocumentManager', () => {
       });
 
       it('preloads source codes with a version of undefined', async () => {
-        const sc = documentManager.get('mock-fs:/snippet/foo.liquid');
+        const sc = documentManager.get('mock-fs:/snippets/foo.liquid');
         assert(sc);
         expect(sc.version).to.equal(undefined);
       });
 
       it('returns defined versions of opened files', () => {
-        documentManager.open('mock-fs:/snippet/foo.liquid', 'hello {% render "bar" %}', 0);
-        const sc = documentManager.get('mock-fs:/snippet/foo.liquid');
+        documentManager.open('mock-fs:/snippets/foo.liquid', 'hello {% render "bar" %}', 0);
+        const sc = documentManager.get('mock-fs:/snippets/foo.liquid');
         assert(sc);
         expect(sc.version).to.equal(0);
       });
@@ -84,9 +84,9 @@ describe('Module: DocumentManager', () => {
 
       describe('Unit: close(uri)', () => {
         it('sets the source version to undefined (value is on disk)', () => {
-          documentManager.open('mock-fs:/snippet/foo.liquid', 'hello {% render "bar" %}', 10);
-          documentManager.close('mock-fs:/snippet/foo.liquid');
-          const sc = documentManager.get('mock-fs:/snippet/foo.liquid');
+          documentManager.open('mock-fs:/snippets/foo.liquid', 'hello {% render "bar" %}', 10);
+          documentManager.close('mock-fs:/snippets/foo.liquid');
+          const sc = documentManager.get('mock-fs:/snippets/foo.liquid');
           assert(sc);
           expect(sc.source).to.equal('hello {% render "bar" %}');
           expect(sc.version).to.equal(undefined);
@@ -96,9 +96,9 @@ describe('Module: DocumentManager', () => {
       describe('Unit: delete(uri)', () => {
         it('deletes the source code from the document manager', () => {
           // as though the file no longer exists
-          documentManager.open('mock-fs:/snippet/foo.liquid', 'hello {% render "bar" %}', 10);
-          documentManager.delete('mock-fs:/snippet/foo.liquid');
-          const sc = documentManager.get('mock-fs:/snippet/foo.liquid');
+          documentManager.open('mock-fs:/snippets/foo.liquid', 'hello {% render "bar" %}', 10);
+          documentManager.delete('mock-fs:/snippets/foo.liquid');
+          const sc = documentManager.get('mock-fs:/snippets/foo.liquid');
           assert(!sc);
         });
       });
@@ -137,16 +137,16 @@ describe('Module: DocumentManager', () => {
 
       fs = new MockFileSystem(
         {
-          'snippet/1.liquid': `hello {% render 'bar' %}`,
-          'snippet/2.liquid': `hello {% render 'bar' %}`,
-          'snippet/3.liquid': `hello {% render 'bar' %}`,
-          'snippet/4.liquid': `hello {% render 'bar' %}`,
-          'snippet/5.liquid': `hello {% render 'bar' %}`,
-          'snippet/6.liquid': `hello {% render 'bar' %}`,
-          'snippet/7.liquid': `hello {% render 'bar' %}`,
-          'snippet/8.liquid': `hello {% render 'bar' %}`,
-          'snippet/9.liquid': `hello {% render 'bar' %}`,
-          'snippet/10.liquid': `hello {% render 'bar' %}`,
+          'snippets/1.liquid': `hello {% render 'bar' %}`,
+          'snippets/2.liquid': `hello {% render 'bar' %}`,
+          'snippets/3.liquid': `hello {% render 'bar' %}`,
+          'snippets/4.liquid': `hello {% render 'bar' %}`,
+          'snippets/5.liquid': `hello {% render 'bar' %}`,
+          'snippets/6.liquid': `hello {% render 'bar' %}`,
+          'snippets/7.liquid': `hello {% render 'bar' %}`,
+          'snippets/8.liquid': `hello {% render 'bar' %}`,
+          'snippets/9.liquid': `hello {% render 'bar' %}`,
+          'snippets/10.liquid': `hello {% render 'bar' %}`,
         },
         mockRoot,
       );
