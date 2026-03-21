@@ -186,6 +186,12 @@
     "configurationDefaults": {
       "[liquid]": {
         "editor.formatOnType": true
+      },
+      "emmet.triggerExpansionOnTab": true,
+      "emmet.includeLanguages": {
+        "liquid": "html",
+        "liquid-css": "css",
+        "liquid-scss": "scss"
       }
     },
     "jsonValidation": [
