@@ -133,10 +133,18 @@ export class DocumentManager {
 
       // We'll only load the files that aren't already in the store. No need to
       // parse a file we already parsed.
+      //
+      // NOTE: We restrict to Shopify theme directories to avoid loading large
+      // data files (e.g. data/*.json) that are not part of the theme itself.
+      // A 175MB JSON file parsed into an AST can easily consume 1–2 GB of heap.
+      const THEME_DIRS = /\/(assets|blocks|config|layout|locales|sections|snippets|templates)\//;
       const filesToLoad = await recursiveReadDirectory(
         this.fs,
         rootUri,
-        ([uri]) => /\.(liquid|json)$/.test(uri) && !this.sourceCodes.has(uri),
+        ([uri]) =>
+          /\.(liquid|json)$/.test(uri) &&
+          THEME_DIRS.test(uri) &&
+          !this.sourceCodes.has(uri),
       );
 
       progress.report(10, 'Preloading files');
