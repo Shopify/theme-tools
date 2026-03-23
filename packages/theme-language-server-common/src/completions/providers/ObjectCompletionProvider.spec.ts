@@ -43,6 +43,14 @@ describe('Module: ObjectCompletionProvider', async () => {
         },
       },
       {
+        name: 'app',
+        access: {
+          global: false,
+          template: [],
+          parents: [],
+        },
+      },
+      {
         name: 'product',
         properties: [
           {
@@ -214,6 +222,46 @@ describe('Module: ObjectCompletionProvider', async () => {
       await expect(provider, source).to.complete({ source, relativePath }, [object]);
       await expect(provider, source).to.complete({ source, relativePath: 'file.liquid' }, []);
     }
+  });
+
+  it('should complete block-level contextual variables in snippets when in app mode', async () => {
+    const appModeProvider = new CompletionsProvider({
+      documentManager: new DocumentManager(),
+      themeDocset: provider.themeDocset,
+      getMetafieldDefinitions: async () =>
+        ({
+          article: [],
+          blog: [],
+          collection: [],
+          company: [],
+          company_location: [],
+          location: [],
+          market: [],
+          order: [],
+          page: [],
+          product: [],
+          variant: [],
+          shop: [],
+        }) as MetafieldDefinitionMap,
+      getModeForURI: async () => 'app',
+    });
+
+    const blockLevelObjects = ['section', 'block', 'recommendations', 'app'];
+    for (const object of blockLevelObjects) {
+      const source = `{{ ${object}█ }}`;
+      await expect(appModeProvider, source).to.complete(
+        { source, relativePath: 'snippets/my-snippet.liquid' },
+        expect.arrayContaining([expect.objectContaining({ label: object })]),
+      );
+    }
+  });
+
+  it('should not complete block-level contextual variables in snippets when in theme mode', async () => {
+    const source = `{{ section█ }}`;
+    await expect(provider, source).to.complete(
+      { source, relativePath: 'snippets/my-snippet.liquid' },
+      [],
+    );
   });
 
   it('should not complete anything if there is nothing to complete', async () => {

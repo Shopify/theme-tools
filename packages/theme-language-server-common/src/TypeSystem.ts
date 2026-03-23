@@ -336,6 +336,8 @@ const BLOCK_FILE_REGEX = /blocks[\/\\][^.\\\/]*\.liquid$/;
 const SNIPPET_FILE_REGEX = /snippets[\/\\][^.\\\/]*\.liquid$/;
 const LAYOUT_FILE_REGEX = /layout[\/\\]checkout\.liquid$/;
 
+const BLOCK_CONTEXTUAL_ENTRIES = ['app', 'section', 'recommendations', 'block'];
+
 function getContextualEntries(uri: string, mode: Mode = 'theme'): string[] {
   const normalizedUri = path.normalize(uri);
   if (LAYOUT_FILE_REGEX.test(normalizedUri)) {
@@ -359,9 +361,12 @@ function getContextualEntries(uri: string, mode: Mode = 'theme'): string[] {
     return ['section', 'predictive_search', 'recommendations', 'comment'];
   }
   if (BLOCK_FILE_REGEX.test(normalizedUri)) {
-    return ['app', 'section', 'recommendations', 'block'];
+    return BLOCK_CONTEXTUAL_ENTRIES;
   }
   if (SNIPPET_FILE_REGEX.test(normalizedUri)) {
+    // In a theme app extension, snippets can only be rendered from blocks,
+    // so they have access to the same contextual objects as blocks.
+    if (mode === 'app') return BLOCK_CONTEXTUAL_ENTRIES;
     return ['app'];
   }
   return [];

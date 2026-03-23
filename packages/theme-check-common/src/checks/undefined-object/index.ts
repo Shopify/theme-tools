@@ -188,6 +188,8 @@ async function globalObjects(themeDocset: ThemeDocset, relativePath: string, mod
   return globalObjects;
 }
 
+const BLOCK_CONTEXTUAL_OBJECTS = ['app', 'section', 'recommendations', 'block'];
+
 function getContextualObjects(relativePath: string, mode: Mode = 'theme'): string[] {
   if (relativePath.startsWith('layout/checkout.liquid')) {
     return [
@@ -211,10 +213,13 @@ function getContextualObjects(relativePath: string, mode: Mode = 'theme'): strin
   }
 
   if (relativePath.startsWith('blocks/')) {
-    return ['app', 'section', 'recommendations', 'block'];
+    return BLOCK_CONTEXTUAL_OBJECTS;
   }
 
   if (relativePath.startsWith('snippets/')) {
+    // In a theme app extension, snippets can only be rendered from blocks,
+    // so they have access to the same contextual objects as blocks.
+    if (mode === 'app') return BLOCK_CONTEXTUAL_OBJECTS;
     return ['app'];
   }
 
