@@ -15,6 +15,7 @@ import {
   JSONCorrector,
   JSONSourceCode,
   LiquidSourceCode,
+  Mode,
   Offense,
   recommended,
   SectionSchema,
@@ -44,10 +45,11 @@ export async function check(
   checks: CheckDefinition[] = recommended,
   mockDependencies: Partial<Dependencies> = {},
   checkSettings: ChecksSettings = {},
+  mode: Mode = 'theme',
 ): Promise<Offense[]> {
   const theme = getTheme(themeDesc);
   const config: Config = {
-    context: 'theme',
+    context: mode,
     settings: { ...checkSettings },
     checks,
     rootUri,
@@ -236,11 +238,14 @@ export async function runLiquidCheck(
   fileName: string = 'file.liquid',
   mockDependencies: Partial<Dependencies> = {},
   existingThemeFiles?: MockTheme,
+  mode: Mode = 'theme',
 ): Promise<Offense[]> {
   const offenses = await check(
     { ...existingThemeFiles, [fileName]: sourceCode },
     [checkDef],
     mockDependencies,
+    {},
+    mode,
   );
   return offenses.filter((offense) => offense.uri === path.join(rootUri, fileName));
 }

@@ -18,6 +18,7 @@ import {
   FilterEntry,
   MetafieldDefinitionMap,
   MetafieldDefinition,
+  Mode,
   ObjectEntry,
   ReturnType,
   SourceCodeType,
@@ -39,11 +40,14 @@ import {
 import { findLast, memo } from './utils';
 import { visit } from '@shopify/theme-check-common';
 
+export type GetModeForURI = (uri: string) => Promise<Mode>;
+
 export class TypeSystem {
   constructor(
     private readonly themeDocset: ThemeDocset,
     private readonly getThemeSettingsSchemaForURI: GetThemeSettingsSchemaForURI,
     private readonly getMetafieldDefinitions: (rootUri: string) => Promise<MetafieldDefinitionMap>,
+    private readonly getModeForURI: GetModeForURI = async () => 'theme',
   ) {}
 
   async inferType(
@@ -321,8 +325,8 @@ export class TypeSystem {
   });
 
   private contextualVariables = async (uri: string) => {
-    const entries = await this.objectEntries();
-    const contextualEntries = getContextualEntries(uri);
+    const [entries, mode] = await Promise.all([this.objectEntries(), this.getModeForURI(uri)]);
+    const contextualEntries = getContextualEntries(uri, mode);
     return entries.filter((entry) => contextualEntries.includes(entry.name));
   };
 }
@@ -332,7 +336,7 @@ const BLOCK_FILE_REGEX = /blocks[\/\\][^.\\\/]*\.liquid$/;
 const SNIPPET_FILE_REGEX = /snippets[\/\\][^.\\\/]*\.liquid$/;
 const LAYOUT_FILE_REGEX = /layout[\/\\]checkout\.liquid$/;
 
-function getContextualEntries(uri: string): string[] {
+function getContextualEntries(uri: string, mode: Mode = 'theme'): string[] {
   const normalizedUri = path.normalize(uri);
   if (LAYOUT_FILE_REGEX.test(normalizedUri)) {
     return [

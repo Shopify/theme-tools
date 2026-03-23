@@ -1,6 +1,7 @@
 import {
   GetDocDefinitionForURI,
   MetafieldDefinitionMap,
+  Mode,
   SourceCodeType,
   ThemeDocset,
 } from '@shopify/theme-check-common';
@@ -40,6 +41,7 @@ export interface CompletionProviderDependencies {
   getMetafieldDefinitions: (rootUri: string) => Promise<MetafieldDefinitionMap>;
   getDocDefinitionForURI?: GetDocDefinitionForURI;
   getThemeBlockNames?: (rootUri: string, includePrivate: boolean) => Promise<string[]>;
+  getModeForURI?: (uri: string) => Promise<Mode>;
   log?: (message: string) => void;
 }
 
@@ -58,6 +60,7 @@ export class CompletionsProvider {
     getThemeSettingsSchemaForURI = async () => [],
     getDocDefinitionForURI = async (uri, _relativePath) => ({ uri }),
     getThemeBlockNames = async (_rootUri: string, _includePrivate: boolean) => [],
+    getModeForURI,
     log = () => {},
   }: CompletionProviderDependencies) {
     this.documentManager = documentManager;
@@ -67,6 +70,7 @@ export class CompletionsProvider {
       themeDocset,
       getThemeSettingsSchemaForURI,
       getMetafieldDefinitions,
+      getModeForURI,
     );
 
     this.providers = [

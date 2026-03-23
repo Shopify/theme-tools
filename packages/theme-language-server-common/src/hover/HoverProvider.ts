@@ -1,6 +1,7 @@
 import {
   GetDocDefinitionForURI,
   MetafieldDefinitionMap,
+  Mode,
   SourceCodeType,
   ThemeDocset,
 } from '@shopify/theme-check-common';
@@ -37,11 +38,13 @@ export class HoverProvider {
     readonly getTranslationsForURI: GetTranslationsForURI = async () => ({}),
     readonly getSettingsSchemaForURI: GetThemeSettingsSchemaForURI = async () => [],
     readonly getDocDefinitionForURI: GetDocDefinitionForURI = async () => undefined,
+    readonly getModeForURI: (uri: string) => Promise<Mode> = async () => 'theme',
   ) {
     const typeSystem = new TypeSystem(
       themeDocset,
       getSettingsSchemaForURI,
       getMetafieldDefinitions,
+      getModeForURI,
     );
     this.providers = [
       new ContentForArgumentHoverProvider(getDocDefinitionForURI),
