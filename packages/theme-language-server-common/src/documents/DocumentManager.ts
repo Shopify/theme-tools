@@ -131,13 +131,29 @@ export class DocumentManager {
 
       progress.start('Initializing Liquid LSP');
 
-      // We'll only load the files that aren't already in the store. No need to
-      // parse a file we already parsed.
-      const filesToLoad = await recursiveReadDirectory(
-        this.fs,
-        rootUri,
-        ([uri]) => /\.(liquid|json)$/.test(uri) && !this.sourceCodes.has(uri),
-      );
+      // NOTE: Only read known theme dirs, a stray 100MB JSON file can consume 1-2GB of heap.
+      // See https://shopify.dev/docs/storefronts/themes/architecture#directory-structure-and-component-types
+      if (!rootUri.endsWith('/')) rootUri += '/';
+      const filesToLoad = (
+        await Promise.all(
+          [
+            'assets',
+            'blocks',
+            'config',
+            'layout',
+            'locales',
+            'sections',
+            'snippets',
+            'templates',
+          ].map((dir) =>
+            recursiveReadDirectory(
+              fs,
+              path.join(rootUri, dir),
+              ([uri]) => /\.(liquid|json)$/.test(uri) && !this.sourceCodes.has(uri),
+            ).catch(() => []),
+          ),
+        )
+      ).flat();
 
       progress.report(10, 'Preloading files');
 

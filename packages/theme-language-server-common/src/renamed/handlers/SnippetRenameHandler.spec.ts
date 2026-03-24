@@ -87,7 +87,7 @@ describe('Module: SnippetRenameHandler', () => {
               needsConfirmation: false,
             },
           },
-          documentChanges: [
+          documentChanges: expect.arrayContaining([
             {
               textDocument: {
                 uri: 'mock-fs:/sections/section.liquid',
@@ -112,7 +112,7 @@ describe('Module: SnippetRenameHandler', () => {
               edits: [expectedTextEdit],
               annotationId: 'renameSnippet',
             },
-          ],
+          ]),
         },
       });
     });
