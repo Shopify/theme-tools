@@ -327,6 +327,35 @@ describe('Module: UndefinedObject', () => {
     }
   });
 
+  it('should allow block-level objects in snippets when in app mode', async () => {
+    const blockLevelObjects = ['section', 'block', 'recommendations', 'app'];
+    for (const object of blockLevelObjects) {
+      const sourceCode = `{% doc %} @param {string} x - x {% enddoc %}{{ ${object} }}`;
+      const offenses = await runLiquidCheck(
+        UndefinedObject,
+        sourceCode,
+        'snippets/my-snippet.liquid',
+        {},
+        undefined,
+        'app',
+      );
+      expect(offenses, `Expected no offense for '${object}' in app mode snippet`).toHaveLength(0);
+    }
+  });
+
+  it('should still flag block-level objects in snippets when in theme mode', async () => {
+    const blockOnlyObjects = ['section', 'block', 'recommendations'];
+    for (const object of blockOnlyObjects) {
+      const sourceCode = `{% doc %} @param {string} x - x {% enddoc %}{{ ${object} }}`;
+      const offenses = await runLiquidCheck(
+        UndefinedObject,
+        sourceCode,
+        'snippets/my-snippet.liquid',
+      );
+      expect(offenses, `Expected offense for '${object}' in theme mode snippet`).toHaveLength(1);
+    }
+  });
+
   it('should support contextual exceptions for checkout.liquid', async () => {
     let offenses: Offense[];
     const contexts: [string, string][] = [

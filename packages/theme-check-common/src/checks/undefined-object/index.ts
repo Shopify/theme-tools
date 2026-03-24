@@ -13,7 +13,7 @@ import {
   NodeTypes,
   Position,
 } from '@shopify/liquid-html-parser';
-import { LiquidCheckDefinition, Severity, SourceCodeType, ThemeDocset } from '../../types';
+import { LiquidCheckDefinition, Mode, Severity, SourceCodeType, ThemeDocset } from '../../types';
 import { isError, last } from '../../utils';
 import { hasLiquidDoc } from '../../liquid-doc/liquidDoc';
 import { isWithinRawTagThatDoesNotParseItsContents } from '../utils';
@@ -146,7 +146,7 @@ export const UndefinedObject: LiquidCheckDefinition = {
       },
 
       async onCodePathEnd() {
-        const objects = await globalObjects(themeDocset, relativePath);
+        const objects = await globalObjects(themeDocset, relativePath, context.mode);
 
         objects.forEach((obj) => fileScopedVariables.add(obj.name));
 
@@ -172,9 +172,9 @@ export const UndefinedObject: LiquidCheckDefinition = {
   },
 };
 
-async function globalObjects(themeDocset: ThemeDocset, relativePath: string) {
+async function globalObjects(themeDocset: ThemeDocset, relativePath: string, mode: Mode = 'theme') {
   const objects = await themeDocset.objects();
-  const contextualObjects = getContextualObjects(relativePath);
+  const contextualObjects = getContextualObjects(relativePath, mode);
 
   const globalObjects = objects.filter(({ access, name }) => {
     return (
@@ -188,7 +188,9 @@ async function globalObjects(themeDocset: ThemeDocset, relativePath: string) {
   return globalObjects;
 }
 
-function getContextualObjects(relativePath: string): string[] {
+const BLOCK_CONTEXTUAL_OBJECTS = ['app', 'section', 'recommendations', 'block'];
+
+function getContextualObjects(relativePath: string, mode: Mode = 'theme'): string[] {
   if (relativePath.startsWith('layout/checkout.liquid')) {
     return [
       'locale',
@@ -211,10 +213,13 @@ function getContextualObjects(relativePath: string): string[] {
   }
 
   if (relativePath.startsWith('blocks/')) {
-    return ['app', 'section', 'recommendations', 'block'];
+    return BLOCK_CONTEXTUAL_OBJECTS;
   }
 
   if (relativePath.startsWith('snippets/')) {
+    // In a theme app extension, snippets can only be rendered from blocks,
+    // so they have access to the same contextual objects as blocks.
+    if (mode === 'app') return BLOCK_CONTEXTUAL_OBJECTS;
     return ['app'];
   }
 
