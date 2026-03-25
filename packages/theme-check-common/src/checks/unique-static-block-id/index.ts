@@ -1,6 +1,15 @@
 import { NamedTags, NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
+import {
+  REQUIRED_CONTENT_FOR_ARGUMENTS,
+  RESERVED_CONTENT_FOR_ARGUMENTS,
+} from '../../tags/content-for';
 import { isContentForBlock } from '../../utils/markup';
+
+const FRAMEWORK_ARGS = new Set([
+  ...REQUIRED_CONTENT_FOR_ARGUMENTS,
+  ...RESERVED_CONTENT_FOR_ARGUMENTS,
+]);
 
 export const UniqueStaticBlockId: LiquidCheckDefinition = {
   meta: {
@@ -19,8 +28,7 @@ export const UniqueStaticBlockId: LiquidCheckDefinition = {
   },
 
   create(context) {
-    const usedIds: Set<string> = new Set();
-    const idRegex = /id:\s*["'](\S+)["']/;
+    const usedCompositeKeys: Set<string> = new Set();
     return {
       async LiquidTag(node) {
         if (node.name !== NamedTags.content_for) {
@@ -42,17 +50,31 @@ export const UniqueStaticBlockId: LiquidCheckDefinition = {
           return; // covered by VariableContentForArguments
         }
 
-        const id = idValueNode.value;
+        const idValue = idValueNode.value;
 
-        if (usedIds.has(id)) {
+        const arbitraryArgs = node.markup.args.filter((arg) => !FRAMEWORK_ARGS.has(arg.name));
+
+        const argParts: string[] = [];
+        for (const arg of arbitraryArgs) {
+          if (arg.value.type !== NodeTypes.String) {
+            return;
+          }
+          argParts.push(`${arg.name}=${arg.value.value}`);
+        }
+        argParts.sort();
+        const argsSuffix = argParts.join(',');
+
+        const compositeKey = `${idValue}::${argsSuffix}`;
+
+        if (usedCompositeKeys.has(compositeKey)) {
           context.report({
-            message: `The id '${id}' is already being used by another static block`,
+            message: `The id '${idValue}' is already being used by another static block`,
             startIndex: idValueNode.position.start,
             endIndex: idValueNode.position.end,
             suggest: [],
           });
         } else {
-          usedIds.add(id);
+          usedCompositeKeys.add(compositeKey);
         }
       },
     };
