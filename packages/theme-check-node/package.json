@@ -37,7 +37,7 @@
     "@shopify/theme-check-docs-updater": "3.24.0",
     "glob": "^8.0.3",
     "vscode-uri": "^3.0.7",
-    "yaml": "^2.3.0"
+    "yaml": "^2.8.3"
   },
   "devDependencies": {
     "@types/glob": "^8.0.0"
