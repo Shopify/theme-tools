@@ -81,3 +81,8 @@ export function paramsString(params: string[]) {
   if (params.length === 0) return '';
   return `: ` + params.map((param) => `${param}: ${param}`).join(', ');
 }
+
+export function paramsWithTabstops(params: string[]) {
+  if (params.length === 0) return '';
+  return ': ' + params.map((param, index) => `${param}: \${${index + 1}:${param}}`).join(', ');
+}
