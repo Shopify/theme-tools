@@ -1,5 +1,5 @@
 import lineColumn from 'line-column';
-import { MatchResult } from 'ohm-js';
+import { MatchResult, FailedMatchResult } from '@ohm-js/wasm';
 import { NodeTypes, Position } from './types';
 
 interface LineColPosition {
@@ -11,10 +11,11 @@ export class LiquidHTMLCSTParsingError extends SyntaxError {
   loc?: { start: LineColPosition; end: LineColPosition };
 
   constructor(ohm: MatchResult) {
-    super(ohm.shortMessage);
+    super((ohm as FailedMatchResult).shortMessage);
     this.name = 'LiquidHTMLParsingError';
 
-    const input = (ohm as any).input;
+    // In @ohm-js/wasm v0.6.17, input is accessed via _ctx.input instead of directly on the match
+    const input = (ohm as any)._ctx?.input ?? (ohm as any).input;
     const errorPos = (ohm as any)._rightmostFailurePosition;
     const lineCol = lineColumn(input).fromIndex(Math.min(errorPos, input.length - 1));
 
