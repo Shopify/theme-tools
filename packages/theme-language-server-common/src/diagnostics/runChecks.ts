@@ -1,13 +1,16 @@
 import {
   check,
+  extractStylesheetFromCSS,
   findRoot,
   makeFileExists,
   Offense,
   path,
+  recursiveReadDirectory,
   Reference,
   SectionSchema,
   Severity,
   SourceCodeType,
+  Stylesheet,
   ThemeBlockSchema,
 } from '@shopify/theme-check-common';
 
@@ -96,6 +99,41 @@ export function makeRunChecks(
           const doc = documentManager.get(uri);
           if (doc?.type !== SourceCodeType.LiquidHtml) return undefined;
           return doc.getLiquidDoc();
+        },
+
+        async getStylesheetTagSelectors() {
+          const result = new Map<string, Stylesheet>();
+          await documentManager.preload(config.rootUri);
+
+          for (const sourceCode of documentManager.theme(config.rootUri, true)) {
+            if (sourceCode.type !== SourceCodeType.LiquidHtml) continue;
+            const relativePath = path.relative(sourceCode.uri, config.rootUri);
+            const selectors = await sourceCode.getStylesheetSelectors();
+            if (selectors) {
+              result.set(relativePath, selectors);
+            }
+          }
+          return result;
+        },
+
+        async getAssetStylesheetSelectors() {
+          const result = new Map<string, Stylesheet>();
+          await documentManager.preload(config.rootUri);
+
+          const assetsUri = path.join(config.rootUri, 'assets');
+          const cssFiles = await recursiveReadDirectory(
+            fs,
+            assetsUri,
+            ([uri]) => uri.endsWith('.css'),
+          );
+
+          for (const fileUri of cssFiles) {
+            const cssContent = await fs.readFile(fileUri);
+            const relativePath = path.relative(fileUri, config.rootUri);
+            const stylesheet = extractStylesheetFromCSS(fileUri, cssContent);
+            result.set(relativePath, stylesheet);
+          }
+          return result;
         },
       });
       const offenses = [...themeOffenses, ...cssOffenses];
