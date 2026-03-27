@@ -1,4 +1,5 @@
 import { describe, beforeEach, it, expect } from 'vitest';
+import { InsertTextFormat } from 'vscode-languageserver';
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
 import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
@@ -59,6 +60,20 @@ describe('Module: TranslationCompletionProvider', async () => {
         }),
       }),
       '"general.comments" | t',
+    ]);
+  });
+
+  it('should add snippet tab stops for translation variables', async () => {
+    await expect(provider).to.complete('{{ "general.comments█" }}', [
+      '"general.username_html" | t',
+      '"general.password" | t',
+      expect.objectContaining({
+        label: '"general.comments" | t',
+        insertTextFormat: InsertTextFormat.Snippet,
+        textEdit: expect.objectContaining({
+          newText: expect.stringContaining('count: ${1:count}'),
+        }),
+      }),
     ]);
   });
 });
