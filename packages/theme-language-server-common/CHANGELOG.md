@@ -1,5 +1,18 @@
 # @shopify/theme-language-server-common
 
+## 2.20.3
+
+### Patch Changes
+
+- b049a84c: Read only liquid and JSON files from theme directories (assets, blocks, config, layout, locales, sections, snippets, templates) when preloading files
+- f15566c5: add tabstops to translations variables
+- 69513792: Allow theme app extensions to use block-level completion items in snippets
+- Updated dependencies [e10da7cc]
+- Updated dependencies
+- Updated dependencies [69513792]
+  - @shopify/theme-check-common@3.24.1
+  - @shopify/theme-graph@0.2.4
+
 ## 2.20.2
 
 ### Patch Changes
