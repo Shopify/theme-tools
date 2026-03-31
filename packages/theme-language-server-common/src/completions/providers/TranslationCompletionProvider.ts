@@ -1,10 +1,16 @@
 import { LiquidHtmlNode, NodeTypes } from '@shopify/liquid-html-parser';
-import { CompletionItem, CompletionItemKind, Range, TextEdit } from 'vscode-languageserver';
+import {
+  CompletionItem,
+  CompletionItemKind,
+  InsertTextFormat,
+  Range,
+  TextEdit,
+} from 'vscode-languageserver';
 import { DocumentManager } from '../../documents';
 import {
   GetTranslationsForURI,
   extractParams,
-  paramsString,
+  paramsWithTabstops,
   renderTranslation,
   translationOptions,
 } from '../../translations';
@@ -84,11 +90,12 @@ export class TranslationCompletionProvider implements Provider {
       const params = extractParams(
         typeof translation === 'string' ? translation : (Object.values(translation)[0] ?? ''),
       );
-      const parameters = paramsString(params);
+      const parameters = paramsWithTabstops(params);
       return {
         label: quote + path.join('.') + quote + ' | t', // don't want the count here because it feels noisy(?)
         insertText: path.join('.').slice(insertTextStartIndex), // for editors that don't support textEdit
         kind: CompletionItemKind.Field,
+        insertTextFormat: parameters ? InsertTextFormat.Snippet : InsertTextFormat.PlainText,
         textEdit: TextEdit.replace(
           replaceRange,
           path.join('.') + postFix + (shouldAppendTranslateFilter ? parameters : ''),
