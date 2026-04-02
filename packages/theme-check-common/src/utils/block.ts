@@ -143,6 +143,15 @@ export function isInvalidPresetBlock(
   }
 
   const isPrivateBlockType = blockNode.type.startsWith('_');
+  const hasNoRootBlocks = rootLevelThemeBlocks.length === 0;
+
+  // Local blocks referenced in presets are valid when no root-level blocks
+  // are defined. They reference block files (blocks/_name.liquid) directly
+  // and their existence is validated separately.
+  if (isPrivateBlockType && hasNoRootBlocks) {
+    return false;
+  }
+
   const isThemeInRootLevel = rootLevelThemeBlocks.some((block) => block.node.type === '@theme');
   const needsExplicitRootBlock = isPrivateBlockType || !isThemeInRootLevel;
   const isPresetInRootLevel = rootLevelThemeBlocks.some(
