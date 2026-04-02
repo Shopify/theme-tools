@@ -139,6 +139,13 @@ export const UnclosedHTMLElement: LiquidCheckDefinition = {
 
       async onCodePathEnd() {
         for (const [grandparent, stacks] of stacksByGrandparent) {
+          // First pass: match opens/closes within each condition identifier.
+          // Collect unmatched nodes with their identifier for cross-identifier balancing.
+          const unmatchedByIdentifier = new Map<
+            ConditionIdentifer,
+            (HtmlElement | HtmlDanglingMarkerClose)[]
+          >();
+
           for (const identifier of stacks.identifiers) {
             const openNodes = stacks.open.get(identifier) ?? [];
             const closeNodes = stacks.close.get(identifier) ?? [];
@@ -170,8 +177,44 @@ export const UnclosedHTMLElement: LiquidCheckDefinition = {
               }
             }
 
-            // At the end, whatever is left in the stack is a reported offense.
-            for (const node of stack) {
+            unmatchedByIdentifier.set(identifier, stack);
+          }
+
+          // Second pass: try to balance unmatched opens from one condition
+          // identifier against unmatched closes from sibling condition identifiers
+          // within the same grandparent.
+          //
+          // This handles patterns like the bento-grid where an open tag is inside
+          // `{% if forloop.first %}` and the matching close is inside
+          // `{% if forloop.last %}` -- different conditions but semantically paired.
+          const allUnmatched = ([] as (HtmlElement | HtmlDanglingMarkerClose)[])
+            .concat(...unmatchedByIdentifier.values())
+            .sort((a, b) => a.position.start - b.position.start);
+
+          const crossBalancedStack = [] as (HtmlElement | HtmlDanglingMarkerClose)[];
+          for (const node of allUnmatched) {
+            if (node.type === NodeTypes.HtmlElement) {
+              crossBalancedStack.push(node);
+            } else if (
+              crossBalancedStack.length > 0 &&
+              getName(node) === getName(crossBalancedStack.at(-1)!) &&
+              crossBalancedStack.at(-1)!.type === NodeTypes.HtmlElement &&
+              node.type === NodeTypes.HtmlDanglingMarkerClose
+            ) {
+              crossBalancedStack.pop();
+            } else {
+              crossBalancedStack.push(node);
+            }
+          }
+
+          // Build a set of nodes that were resolved by cross-identifier balancing
+          // so we can skip reporting them.
+          const crossBalancedRemaining = new Set(crossBalancedStack);
+
+          for (const [identifier, unmatched] of unmatchedByIdentifier) {
+            for (const node of unmatched) {
+              if (!crossBalancedRemaining.has(node)) continue;
+
               if (node.type === NodeTypes.HtmlDanglingMarkerClose) {
                 context.report({
                   message: `Closing tag does not have a matching opening tag for condition \`${identifier}\` in ${
