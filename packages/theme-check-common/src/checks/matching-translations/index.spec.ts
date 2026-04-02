@@ -267,6 +267,33 @@ describe('Module: MatchingTranslations', async () => {
     }
   });
 
+  it('should not report offenses and ignore keys provided by customer accounts', async () => {
+    for (const prefix of ['', '.schema']) {
+      const theme = {
+        [`locales/en.default${prefix}.json`]: JSON.stringify({
+          hello: 'Hello',
+          customer_accounts: {
+            order: {
+              title: 'Order',
+            },
+          },
+        }),
+        [`locales/pt-BR${prefix}.json`]: JSON.stringify({
+          hello: 'Olá',
+          customer_accounts: {
+            profile: {
+              title: 'Perfil',
+            },
+          },
+        }),
+      };
+
+      const offenses = await check(theme, [MatchingTranslations]);
+
+      expect(offenses).to.be.of.length(0);
+    }
+  });
+
   it('should not report offenses and ignore "*.schema.json" files', async () => {
     const theme = {
       'locales/en.default.json': JSON.stringify({ hello: 'Hello' }),
