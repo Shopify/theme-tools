@@ -60,6 +60,7 @@ export * from './visitor';
 export * from './liquid-doc/liquidDoc';
 export { getBlockName } from './liquid-doc/arguments';
 export * from './liquid-doc/utils';
+export * from './stylesheet/stylesheetSelectors';
 
 const defaultErrorHandler = (_error: Error): void => {
   // Silently ignores errors by default.
