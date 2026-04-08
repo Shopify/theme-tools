@@ -34,6 +34,7 @@ export declare namespace Setting {
     | ColorBackground
     | ColorScheme
     | ColorSchemeGroup
+    | ColorPalette
     | ImagePicker
     | Video
     | VideoUrl
@@ -81,6 +82,7 @@ export declare namespace Setting {
     ColorBackground = 'color_background',
     ColorScheme = 'color_scheme',
     ColorSchemeGroup = 'color_scheme_group',
+    ColorPalette = 'color_palette',
 
     // Media Settings
     ImagePicker = 'image_picker',
@@ -200,6 +202,9 @@ export declare namespace Setting {
     default?: string;
   }
   export interface ColorSchemeGroup extends Base<Type.ColorSchemeGroup> {}
+  export interface ColorPalette extends Base<Type.ColorPalette> {
+    default?: Record<string, string>;
+  }
 
   // Media Settings
   export interface ImagePicker extends Base<Type.ImagePicker> {

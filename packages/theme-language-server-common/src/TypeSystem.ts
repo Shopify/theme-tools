@@ -998,6 +998,9 @@ function settingReturnType(setting: InputSetting): ObjectEntry['return_type'] {
     case 'color_scheme_group':
       return [];
 
+    case 'color_palette':
+      return [{ type: 'string', name: '' }];
+
     case 'font_picker':
       return [{ type: 'font', name: '' }];
 
