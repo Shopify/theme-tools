@@ -4,9 +4,10 @@ import {
   SectionSchema,
   ThemeBlockSchema,
   AppBlockSchema,
+  DocDefinition,
+  Stylesheet,
 } from '@shopify/theme-check-common';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { DocDefinition } from '@shopify/theme-check-common';
 
 /** Util type to add the common `textDocument` property to the SourceCode. */
 type _AugmentedSourceCode<SCT extends SourceCodeType = SourceCodeType> = SourceCode<SCT> & {
@@ -25,6 +26,7 @@ export type AugmentedJsonSourceCode = _AugmentedSourceCode<SourceCodeType.JSON>;
 export type AugmentedLiquidSourceCode = _AugmentedSourceCode<SourceCodeType.LiquidHtml> & {
   getSchema: () => Promise<SectionSchema | ThemeBlockSchema | AppBlockSchema | undefined>;
   getLiquidDoc: () => Promise<DocDefinition | undefined>;
+  getStylesheetSelectors: () => Promise<Stylesheet | undefined>;
 };
 
 /**
