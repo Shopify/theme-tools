@@ -1,6 +1,7 @@
 import { CheckSettings, Modes, Severity } from '@shopify/theme-check-common';
 import { realpathSync } from 'node:fs';
 import fs from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { parse } from 'yaml';
 import { AbsolutePath } from '../../temp';
@@ -172,7 +173,14 @@ function resolvePath(
     return path.resolve(root, pathLike);
   }
 
-  return realpathSync(require.resolve(pathLike, { paths: getAncestorNodeModules(root)! }));
+  // Use createRequire to get the real Node.js require rather than webpack's
+  // substitute. When the VSCode extension server is bundled, `require.resolve`
+  // becomes webpack's version which doesn't support the `paths` option and
+  // returns a numeric module ID instead of a file path. createRequire creates
+  // a real Node.js require function that resolves from the given directory,
+  // traversing ancestor node_modules automatically.
+  const req = createRequire(path.join(root, '__placeholder.js'));
+  return realpathSync(req.resolve(pathLike));
 }
 
 /**
@@ -236,16 +244,4 @@ function isString(thing: unknown): thing is string {
 
 function asArray<T>(thing: T | T[]): T[] {
   return Array.isArray(thing) ? thing : [thing];
-}
-
-function getAncestorNodeModules(dir: string): string[] {
-  const root = path.parse(dir).root;
-  const nodeModulesPaths: string[] = [];
-
-  while (dir !== root) {
-    nodeModulesPaths.push(path.join(dir, 'node_modules'));
-    dir = path.dirname(dir);
-  }
-
-  return nodeModulesPaths;
 }
