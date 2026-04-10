@@ -388,10 +388,24 @@ export interface Dependencies {
   getDocDefinition?: (relativePath: string) => Promise<DocDefinition | undefined>;
 
   /**
+   * Get CSS class names defined in a file.
+   * For .css asset files, returns all class selectors in the file.
+   * For .liquid files, extracts class selectors from {% stylesheet %} tags.
+   * Returns undefined when unavailable.
+   */
+  getCSSClassesForURI?: (uri: string) => Promise<Set<string>>;
+
+  /**
    * Get references to a file (which files reference this file)
    * Returns an empty array if no files reference this file
    */
   getReferences?: (uri: string) => Promise<Reference[]>;
+
+  /**
+   * Get dependencies of a file (which files this file references/renders)
+   * Returns an empty array if no dependencies found
+   */
+  getDependencies?: (uri: string) => Promise<Reference[]>;
 }
 
 export type ValidateJSON = (

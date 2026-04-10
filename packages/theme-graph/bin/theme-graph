@@ -2,12 +2,13 @@
 
 const { buildThemeGraph, serializeThemeGraph, toSourceCode } = require('@shopify/theme-graph');
 const {
-  NodeFileSystem,
   memoize,
   toSchema,
   path: pathUtils,
   recursiveReadDirectory,
-} = require('@shopify/theme-check-node');
+  FileType,
+} = require('@shopify/theme-check-common');
+const fs = require('node:fs/promises');
 const path = require('path');
 const { URI } = require('vscode-uri');
 
@@ -20,6 +21,26 @@ Example:
 `;
 
 const identity = (/** @type {any} */ x) => x;
+
+/** @type {import('@shopify/theme-check-common').AbstractFileSystem} */
+const NodeFileSystem = {
+  async readFile(uri) {
+    return fs.readFile(pathUtils.fsPath(uri), 'utf8');
+  },
+  async readDirectory(uri) {
+    const files = await fs.readdir(pathUtils.fsPath(uri), { withFileTypes: true });
+    return files.map((file) => {
+      return [pathUtils.join(uri, file.name), file.isDirectory() ? FileType.Directory : FileType.File];
+    });
+  },
+  async stat(uri) {
+    const stats = await fs.stat(pathUtils.fsPath(uri));
+    return {
+      type: stats.isDirectory() ? FileType.Directory : FileType.File,
+      size: stats.size,
+    };
+  },
+};
 
 /**
  * Outputs the JSON representing the theme graph for a Shopify theme directory.
@@ -39,9 +60,8 @@ async function main(root) {
   const getSourceCode = makeGetSourceCode();
 
   // Preload files to get a sense of what is slow
-  const fs = NodeFileSystem;
   const rootUri = URI.file(root).toString(true);
-  const filesToPreload = await recursiveReadDirectory(fs, rootUri, ([uri]) =>
+  const filesToPreload = await recursiveReadDirectory(NodeFileSystem, rootUri, ([uri]) =>
     ['.json', '.liquid'].some((ext) => uri.endsWith(ext)),
   );
   await bench('Preloading files', async () => {
@@ -57,7 +77,7 @@ async function main(root) {
 
   /** @type {import('@shopify/theme-graph').Dependencies} */
   const dependencies = {
-    fs,
+    fs: NodeFileSystem,
     // @ts-ignore
     getSectionSchema: memoize(async (name) => {
       const uri = pathUtils.join(rootUri, 'sections', `${name}.liquid`);

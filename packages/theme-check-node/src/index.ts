@@ -5,11 +5,14 @@ import {
   JSONValidator,
   LiquidSourceCode,
   Offense,
+  Reference,
   SectionSchema,
   Theme,
   ThemeBlockSchema,
   toSourceCode as commonToSourceCode,
   check as coreCheck,
+  extractCSSClassesFromAssetUri,
+  extractCSSClassesFromLiquidUri,
   extractDocDefinition,
   filePathSupportsLiquidDoc,
   isBlock,
@@ -19,6 +22,7 @@ import {
   path as pathUtils,
   toSchema,
 } from '@shopify/theme-check-common';
+import { buildThemeGraph, ThemeGraph } from '@shopify/theme-graph';
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
 import { isLiquidHtmlNode } from '@shopify/liquid-html-parser';
 import fs from 'node:fs/promises';
@@ -134,6 +138,43 @@ export async function themeCheckRun(
       }),
     ]),
   );
+  const cssClassesForURI = new Map<string, () => Promise<Set<string>>>(
+    theme
+      .filter((source) => source.uri.endsWith('.liquid'))
+      .map((source) => [
+        source.uri,
+        memo(async () => extractCSSClassesFromLiquidUri(source.uri, NodeFileSystem)),
+      ]),
+  );
+  // Also include CSS asset files
+  try {
+    const assetsUri = pathUtils.join(config.rootUri, 'assets');
+    const files = await NodeFileSystem.readDirectory(assetsUri);
+    for (const [uri] of files.filter(([u]) => u.endsWith('.css'))) {
+      cssClassesForURI.set(
+        uri,
+        memo(async () => extractCSSClassesFromAssetUri(uri, NodeFileSystem)),
+      );
+    }
+  } catch {
+    // assets directory might not exist
+  }
+
+  // Build theme graph for cross-file checks (e.g. ValidScopedCSSClass)
+  const getSectionSchema = async (name: string) => sectionSchemas.get(name)?.();
+  const getBlockSchema = async (name: string) => blockSchemas.get(name)?.();
+
+  let themeGraph: ThemeGraph | undefined;
+  try {
+    themeGraph = await buildThemeGraph(config.rootUri, {
+      fs: NodeFileSystem,
+      getSectionSchema,
+      getBlockSchema,
+      getWebComponentDefinitionReference: () => undefined,
+    });
+  } catch {
+    // If graph building fails, cross-file checks will gracefully degrade
+  }
 
   const offenses = await coreCheck(theme, config, {
     fs: NodeFileSystem,
@@ -143,10 +184,23 @@ export async function themeCheckRun(
     // This is kind of gross, but we want those things to be lazy and called by name so...
     // In the language server, this is memo'ed in DocumentManager, but we don't have that kind
     // of luxury in CLI-mode.
-    getSectionSchema: async (name) => sectionSchemas.get(name)?.(),
-    getBlockSchema: async (name) => blockSchemas.get(name)?.(),
+    getSectionSchema,
+    getBlockSchema,
     getAppBlockSchema: async (name) => blockSchemas.get(name)?.() as any, // cheating... but TODO
     getDocDefinition: async (relativePath) => docDefinitions.get(relativePath)?.(),
+    getCSSClassesForURI: async (uri: string) => cssClassesForURI.get(uri)?.() ?? new Set(),
+
+    async getReferences(uri: string): Promise<Reference[]> {
+      if (!themeGraph) return [];
+      const mod = themeGraph.modules[uri];
+      return mod?.references ?? [];
+    },
+
+    async getDependencies(uri: string): Promise<Reference[]> {
+      if (!themeGraph) return [];
+      const mod = themeGraph.modules[uri];
+      return mod?.dependencies ?? [];
+    },
   });
 
   return {

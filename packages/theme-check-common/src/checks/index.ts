@@ -52,6 +52,7 @@ import { UnusedDocParam } from './unused-doc-param';
 import { ValidContentForArguments } from './valid-content-for-arguments';
 import { ValidContentForArgumentTypes } from './valid-content-for-argument-types';
 import { ValidBlockTarget } from './valid-block-target';
+import { ValidScopedCSSClass } from './valid-scoped-css-class';
 import { ValidHTMLTranslation } from './valid-html-translation';
 import { ValidJSON } from './valid-json';
 import { ValidDocParamTypes } from './valid-doc-param-types';
@@ -123,6 +124,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidHTMLTranslation,
   ValidContentForArguments,
   ValidContentForArgumentTypes,
+  ValidScopedCSSClass,
   ValidJSON,
   ValidDocParamTypes,
   ValidLocalBlocks,

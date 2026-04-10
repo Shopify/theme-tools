@@ -8,6 +8,8 @@ import {
   check as coreCheck,
   createCorrector,
   Dependencies,
+  extractCSSClassesFromAssetUri,
+  extractCSSClassesFromLiquidUri,
   extractDocDefinition,
   FixApplicator,
   isBlock,
@@ -98,6 +100,13 @@ export async function check(
         return undefined;
       }
       return extractDocDefinition(file.uri, file.ast);
+    },
+    async getCSSClassesForURI(uri) {
+      const mockFs = new MockFileSystem({ '.theme-check.yml': '', ...themeDesc });
+      if (uri.endsWith('.css')) {
+        return extractCSSClassesFromAssetUri(uri, mockFs);
+      }
+      return extractCSSClassesFromLiquidUri(uri, mockFs);
     },
     themeDocset: {
       async filters() {
