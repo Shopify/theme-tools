@@ -129,6 +129,7 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema) {
     rootLevelLocalBlocks,
     presetLevelBlocks,
     defaultLevelBlocks,
+    hasRootBlocksDeclaration: Array.isArray(rootLevelBlocks),
   };
 }
 
@@ -137,12 +138,21 @@ export function isInvalidPresetBlock(
   blockNode: Preset.Block,
   rootLevelThemeBlocks: BlockDefNodeWithPath[],
   staticBlockDefs: StaticBlockDef[],
+  hasRootBlocksDeclaration: boolean = true,
 ): boolean {
   if (blockNode.static) {
     return !staticBlockDefs.some((block) => block.type === blockNode.type && block.id === blockId);
   }
 
   const isPrivateBlockType = blockNode.type.startsWith('_');
+
+  // Local blocks referenced in presets are valid when the schema has no
+  // root-level blocks array. They reference block files (blocks/_name.liquid)
+  // directly and their existence is validated separately.
+  if (isPrivateBlockType && !hasRootBlocksDeclaration) {
+    return false;
+  }
+
   const isThemeInRootLevel = rootLevelThemeBlocks.some((block) => block.node.type === '@theme');
   const needsExplicitRootBlock = isPrivateBlockType || !isThemeInRootLevel;
   const isPresetInRootLevel = rootLevelThemeBlocks.some(
@@ -155,8 +165,14 @@ export function isInvalidPresetBlock(
 export function isInvalidDefaultBlock(
   blockNode: Section.Block | ThemeBlock.Block,
   rootLevelThemeBlocks: BlockDefNodeWithPath[],
+  hasRootBlocksDeclaration: boolean = true,
 ): boolean {
   const isPrivateBlockType = blockNode.type.startsWith('_');
+
+  if (isPrivateBlockType && !hasRootBlocksDeclaration) {
+    return false;
+  }
+
   const isThemeInRootLevel = rootLevelThemeBlocks.some((block) => block.node.type === '@theme');
   const needsExplicitRootBlock = isPrivateBlockType || !isThemeInRootLevel;
   const isDefaultInRootLevel = rootLevelThemeBlocks.some(

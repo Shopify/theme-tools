@@ -48,7 +48,8 @@ export const MatchingTranslations: JSONCheckDefinition = {
     const hasDefaultTranslations = () => defaultTranslations.size > 0;
     const isTerminalNode = ({ type }: JSONNode) => type === 'Literal';
     const isPluralizationNode = (node: PropertyNode) => PLURALIZATION_KEYS.has(node.key.value);
-    const isShopifyPath = (path: string) => path.startsWith('shopify.');
+    const isExternalPath = (path: string) =>
+      path.startsWith('shopify.') || path.startsWith('customer_accounts.');
 
     const hasDefaultTranslation = (translationPath: string) =>
       defaultTranslations.has(translationPath) ?? false;
@@ -129,7 +130,7 @@ export const MatchingTranslations: JSONCheckDefinition = {
         if (!hasDefaultTranslations()) return;
         if (isPluralizationNode(node)) return;
         if (!isTerminalNode(node.value)) return;
-        if (isShopifyPath(path)) return;
+        if (isExternalPath(path)) return;
 
         if (hasDefaultTranslation(path)) {
           // As `path` is present, we remove it from the
@@ -158,7 +159,7 @@ export const MatchingTranslations: JSONCheckDefinition = {
           const closest = closestTranslationKey(path);
 
           if (isPluralizationPath(path)) return;
-          if (isShopifyPath(path)) return;
+          if (isExternalPath(path)) return;
 
           context.report({
             message: `The translation for '${path}' is missing`,

@@ -1310,6 +1310,75 @@ describe('Module: ValidBlockTarget', () => {
         expect(offenses[0].uri).to.equal(`file:///${path}/slideshow.liquid`);
       });
 
+      it(`should not report errors for local blocks in presets when no root-level blocks array exists (${path} bucket)`, async () => {
+        const theme: MockTheme = {
+          'blocks/_card.liquid': `
+            {% schema %}
+            {
+              "name": "Card",
+              "blocks": [
+                { "type": "_title" },
+                { "type": "_image" }
+              ]
+            }
+            {% endschema %}
+          `,
+          'blocks/_title.liquid': '',
+          'blocks/_image.liquid': '',
+          [`${path}/cards.liquid`]: `
+            {% schema %}
+            {
+              "name": "Cards",
+              "presets": [
+                {
+                  "name": "Default",
+                  "blocks": {
+                    "card-1": {
+                      "type": "_card",
+                      "blocks": {
+                        "title-1": { "type": "_title" },
+                        "image-1": { "type": "_image" }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+        };
+
+        const offenses = await check(theme, [ValidBlockTarget]);
+        expect(offenses).to.be.empty;
+      });
+
+      it(`should still report errors for local blocks in presets when root-level blocks array contains only @app (${path} bucket)`, async () => {
+        const theme: MockTheme = {
+          'blocks/_card.liquid': '',
+          [`${path}/cards.liquid`]: `
+            {% schema %}
+            {
+              "name": "Cards",
+              "blocks": [
+                { "type": "@app" }
+              ],
+              "presets": [
+                {
+                  "name": "Default",
+                  "blocks": {
+                    "card-1": { "type": "_card" }
+                  }
+                }
+              ]
+            }
+            {% endschema %}
+          `,
+        };
+
+        const offenses = await check(theme, [ValidBlockTarget]);
+        expect(offenses).not.to.be.empty;
+      });
+
       it('should not crash or timeout with cyclical nested block relationships', async () => {
         const theme: MockTheme = {
           'blocks/block-b.liquid': `

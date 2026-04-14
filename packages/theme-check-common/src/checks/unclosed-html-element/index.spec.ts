@@ -188,6 +188,61 @@ describe('Module: UnclosedHTMLElement', () => {
     expect(highlightedOffenses(file, offenses)).to.include('</summary>');
   });
 
+  it('should not report for paired conditional open/close in for-loop boundary conditions', async () => {
+    const testCases = [
+      // Open on forloop.first, close on forloop.last
+      `
+        {% for item in items %}
+          {% if forloop.first or item_modulo == 1 %}
+            <div class="grid-row">
+          {% endif %}
+
+          <div class="grid-item">{{ item }}</div>
+
+          {% if forloop.last or item_modulo == 0 %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      `,
+      // Simpler variant: different conditions but balanced open/close in same grandparent
+      `
+        <div>
+          {% if condition_a %}
+            <section>
+          {% endif %}
+
+          {% if condition_b %}
+            </section>
+          {% endif %}
+        </div>
+      `,
+    ];
+
+    for (const file of testCases) {
+      const offenses = await runLiquidCheck(UnclosedHTMLElement, file);
+      expect(offenses, file).to.have.length(0);
+    }
+  });
+
+  it('should still report when cross-identifier tags do not balance by name', async () => {
+    const file = `
+      <div>
+        {% if condition_a %}
+          <section>
+        {% endif %}
+
+        {% if condition_b %}
+          </article>
+        {% endif %}
+      </div>
+    `;
+
+    const offenses = await runLiquidCheck(UnclosedHTMLElement, file);
+    expect(offenses).to.have.length(2);
+    expect(highlightedOffenses(file, offenses)).to.include('<section>');
+    expect(highlightedOffenses(file, offenses)).to.include('</article>');
+  });
+
   it('should report offenses when conditions do not match', async () => {
     const file = `
       <div>
