@@ -1,5 +1,24 @@
 # @shopify/theme-check-common
 
+## 3.25.0
+
+### Minor Changes
+
+- 78a55fc0: Introduce new theme-check to detect invalid CSS class usage in HTML
+
+  `ValidScopedCSSClass` detects invalid CSS classes in HTML if it deems them being out of scope.
+  A CSS class is in-scope if it matches any of the following:
+  - The CSS class is declared in `assets/*.css` file
+  - The CSS class is declared in the file's `stylesheet` tag
+  - The CSS class is declared in a _direct_ ancestor's `stylesheet` tag
+  - The CSS class is declared in a snippet file's `stylesheet` tag that is rendered by this file or its direct ancestor (recursive)
+
+### Patch Changes
+
+- e10da7cc: Fix UniqueStaticBlockId false positive when same block id is used with different variants
+- 020d34fd: Add support for color_palette input type
+- 69513792: Allow theme app extensions to use block-level completion items in snippets
+
 ## 3.24.0
 
 ### Minor Changes
