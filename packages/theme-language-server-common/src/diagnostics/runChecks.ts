@@ -1,5 +1,7 @@
 import {
   check,
+  extractCSSClassesFromLiquidUri,
+  extractCSSClassesFromAssetUri,
   findRoot,
   makeFileExists,
   Offense,
@@ -70,6 +72,18 @@ export function makeRunChecks(
         async getReferences(uri: string): Promise<Reference[]> {
           if (!themeGraphManager) return [];
           return themeGraphManager.getReferences(uri);
+        },
+
+        async getDependencies(uri: string): Promise<Reference[]> {
+          if (!themeGraphManager) return [];
+          return themeGraphManager.getDependencies(uri);
+        },
+
+        async getCSSClassesForURI(uri: string): Promise<Set<string>> {
+          if (uri.endsWith('.css')) {
+            return extractCSSClassesFromAssetUri(uri, fs);
+          }
+          return extractCSSClassesFromLiquidUri(uri, fs);
         },
 
         // TODO should do something for app blocks?

@@ -460,6 +460,9 @@ export function startServer(
           globPattern: '**/*.liquid',
         },
         {
+          globPattern: '**/assets/*.css',
+        },
+        {
           globPattern: '**/{locales,sections,templates,customers}/*.json',
         },
         {

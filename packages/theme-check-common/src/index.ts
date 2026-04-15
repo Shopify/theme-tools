@@ -56,6 +56,8 @@ export * from './utils/indexBy';
 export * from './utils/memo';
 export * from './utils/types';
 export * from './utils/object';
+export * from './utils/styles';
+export * from './utils/traversal';
 export * from './visitor';
 export * from './liquid-doc/liquidDoc';
 export { getBlockName } from './liquid-doc/arguments';
