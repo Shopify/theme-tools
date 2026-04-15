@@ -1,5 +1,29 @@
 # @shopify/theme-check-node
 
+## 3.25.0
+
+### Minor Changes
+
+- 78a55fc0: Introduce new theme-check to detect invalid CSS class usage in HTML
+
+  `ValidScopedCSSClass` detects invalid CSS classes in HTML if it deems them being out of scope.
+  A CSS class is in-scope if it matches any of the following:
+  - The CSS class is declared in `assets/*.css` file
+  - The CSS class is declared in the file's `stylesheet` tag
+  - The CSS class is declared in a _direct_ ancestor's `stylesheet` tag
+  - The CSS class is declared in a snippet file's `stylesheet` tag that is rendered by this file or its direct ancestor (recursive)
+
+### Patch Changes
+
+- Updated dependencies [e10da7cc]
+- Updated dependencies [020d34fd]
+- Updated dependencies [78a55fc0]
+- Updated dependencies [69513792]
+- Updated dependencies [78a55fc0]
+  - @shopify/theme-check-common@3.25.0
+  - @shopify/theme-graph@0.2.4
+  - @shopify/theme-check-docs-updater@3.25.0
+
 ## 3.24.0
 
 ### Minor Changes

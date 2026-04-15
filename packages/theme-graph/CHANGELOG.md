@@ -1,5 +1,16 @@
 # shopify/theme-graph
 
+## 0.2.4
+
+### Patch Changes
+
+- 78a55fc0: [internal] Moving @shopify/theme-check-node to being a dev-dependency of the package
+- Updated dependencies [e10da7cc]
+- Updated dependencies [020d34fd]
+- Updated dependencies [69513792]
+- Updated dependencies [78a55fc0]
+  - @shopify/theme-check-common@3.25.0
+
 ## 0.2.3
 
 ### Patch Changes
