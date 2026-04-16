@@ -19,7 +19,7 @@ export class LiquidHTMLCSTParsingError extends SyntaxError {
     const lineCol = lineColumn(input).fromIndex(Math.min(errorPos, input.length - 1));
 
     // Plugging ourselves into @babel/code-frame since this is how
-    // the babel parser can print where the parsing error occured.
+    // the babel parser can print where the parsing error occurred.
     // https://github.com/prettier/prettier/blob/cd4a57b113177c105a7ceb94e71f3a5a53535b81/src/main/parser.js
     if (lineCol) {
       this.loc = {
@@ -58,7 +58,7 @@ export class LiquidHTMLASTParsingError extends SyntaxError {
     const end = lc.fromIndex(Math.min(endIndex, source.length - 1));
 
     // Plugging ourselves into @babel/code-frame since this is how
-    // the babel parser can print where the parsing error occured.
+    // the babel parser can print where the parsing error occurred.
     // https://github.com/prettier/prettier/blob/cd4a57b113177c105a7ceb94e71f3a5a53535b81/src/main/parser.js
     this.loc = {
       start: {
