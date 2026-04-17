@@ -1,5 +1,20 @@
 ## theme-check-vscode
 
+## 3.11.3
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/theme-check-common
+  - @shopify/theme-language-server-browser
+  - @shopify/theme-language-server-common
+  - @shopify/theme-language-server-node
+- Updated dependencies [5f098a2d]
+  - @shopify/theme-check-common@3.25.1
+  - @shopify/theme-language-server-common@2.21.1
+  - @shopify/theme-language-server-browser@2.21.1
+  - @shopify/theme-language-server-node@2.21.1
+
 ## 3.11.2
 
 ### Patch Changes

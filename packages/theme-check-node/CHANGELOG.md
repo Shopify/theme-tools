@@ -1,5 +1,17 @@
 # @shopify/theme-check-node
 
+## 3.25.1
+
+### Patch Changes
+
+- 5f098a2d: Temporarily remove `ValidScopedCSSClass` from the recommended config. The check causes severe save lag in VS Code on larger themes (see [#1179](https://github.com/Shopify/theme-tools/issues/1179)) because it re-parses every `{% stylesheet %}` tag in the theme on every save. It remains available as an opt-in check. Will be re-enabled once the performance issue is resolved.
+- 54e1418b: Fix VSCode extension failing to resolve custom check packages from node_modules (e.g. `extends: '@acme/theme-check-extension/recommended.yml'`). The extension server is webpack-bundled, so `require.resolve` was being handled by webpack instead of Node.js, returning a module ID rather than a file path. Now uses `createRequire` from `node:module` to get real Node.js resolution.
+- Updated dependencies
+- Updated dependencies [5f098a2d]
+  - @shopify/theme-graph@0.2.5
+  - @shopify/theme-check-common@3.25.1
+  - @shopify/theme-check-docs-updater@3.25.1
+
 ## 3.25.0
 
 ### Minor Changes
