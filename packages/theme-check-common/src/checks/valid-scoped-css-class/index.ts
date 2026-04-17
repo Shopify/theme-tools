@@ -76,7 +76,7 @@ export const ValidScopedCSSClass: LiquidCheckDefinition = {
     docs: {
       description:
         'Reports CSS classes used in HTML class attributes that are not defined in any in-scope stylesheet tag or CSS asset file.',
-      recommended: true,
+      recommended: false,
       url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-scoped-css-class',
     },
     type: SourceCodeType.LiquidHtml,
