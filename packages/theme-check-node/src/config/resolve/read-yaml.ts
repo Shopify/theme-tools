@@ -179,7 +179,7 @@ function resolvePath(
   // returns a numeric module ID instead of a file path. createRequire creates
   // a real Node.js require function that resolves from the given directory,
   // traversing ancestor node_modules automatically.
-  const req = createRequire(path.join(root, '__placeholder.js'));
+  const req = createRequire(path.join(root, '__placeholder'));
   return realpathSync(req.resolve(pathLike));
 }
 
