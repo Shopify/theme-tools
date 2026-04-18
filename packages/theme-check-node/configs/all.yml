@@ -49,6 +49,9 @@ DeprecatedFilter:
 DeprecatedFontsOnSectionsAndBlocks:
   enabled: true
   severity: 1
+DeprecatedFontsOnSettingsData:
+  enabled: true
+  severity: 1
 DeprecatedFontsOnSettingsSchema:
   enabled: true
   severity: 1
