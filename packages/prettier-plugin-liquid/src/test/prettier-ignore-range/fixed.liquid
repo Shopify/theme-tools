@@ -1,0 +1,41 @@
+It should preserve formatting inside html prettier-ignore-start / prettier-ignore-end range
+<!-- prettier-ignore-start -->
+<div class="custom-layout">
+  {{ some_variable | complicated_filter: foo: bar }}
+  {% render 'component', foo: bar %}
+</div>
+<!-- prettier-ignore-end -->
+
+It should preserve formatting inside liquid comment prettier-ignore-start / prettier-ignore-end range
+{% # prettier-ignore-start %}
+<div class="custom-layout">
+  {{ some_variable | complicated_filter: foo: bar }}
+  {% render 'component', foo: bar %}
+</div>
+{% # prettier-ignore-end %}
+
+It should only ignore nodes between start and end, formatting nodes outside normally
+printWidth: 40
+<p>{{ a | append: 'b' }}</p>
+<!-- prettier-ignore-start -->
+<div>{{ some_variable   |   complicated_filter: foo: bar }}</div>
+<!-- prettier-ignore-end -->
+<p>{{ a | append: 'b' }}</p>
+
+It should handle multiple ignore ranges in the same parent
+printWidth: 40
+<p>{{ a | append: 'b' }}</p>
+<!-- prettier-ignore-start -->
+<div>{{ x   |   y: z }}</div>
+<!-- prettier-ignore-end -->
+<p>{{ a | append: 'b' }}</p>
+<!-- prettier-ignore-start -->
+<span>{{ m   |   n: o }}</span>
+<!-- prettier-ignore-end -->
+<p>{{ a | append: 'b' }}</p>
+
+It should handle liquid comment ranges with multiple nodes
+{% # prettier-ignore-start %}
+{%capture foo%}{% for x in (0 .. 1) %}{% cycle a,b,c %}{% endfor %}{%endcapture%}
+<div>{{ x   |   y: z }}</div>
+{% # prettier-ignore-end %}
