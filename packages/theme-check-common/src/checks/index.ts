@@ -13,6 +13,7 @@ import { DeprecateBgsizes } from './deprecate-bgsizes';
 import { DeprecateLazysizes } from './deprecate-lazysizes';
 import { DeprecatedFilter } from './deprecated-filter';
 import { DeprecatedFontsOnSectionsAndBlocks } from './deprecated-fonts-on-sections-and-blocks';
+import { DeprecatedFontsOnSettingsData } from './deprecated-fonts-on-settings-data';
 import { DeprecatedFontsOnSettingsSchema } from './deprecated-fonts-on-settings-schema';
 import { DeprecatedTag } from './deprecated-tag';
 import { DuplicateRenderSnippetArguments } from './duplicate-render-snippet-arguments';
@@ -82,6 +83,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   DeprecateLazysizes,
   DeprecatedFilter,
   DeprecatedFontsOnSectionsAndBlocks,
+  DeprecatedFontsOnSettingsData,
   DeprecatedFontsOnSettingsSchema,
   DeprecatedTag,
   DuplicateContentForArguments,
