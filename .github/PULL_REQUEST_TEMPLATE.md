@@ -11,6 +11,11 @@
 
 <!-- Totally optional. But... If you learned something interesting, why not share it? -->
 
+## Tophatting
+
+<!-- Instructions on how you test your changes as a human -->
+- [ ] I added screenshots of the changes (before and after the changes if applicable)
+
 ## Before you deploy
 
 <!-- Delete the checklists you don't need -->
@@ -18,13 +23,12 @@
 <!-- Check changes -->
 - [ ] This PR includes a new checks or changes the configuration of a check
   - [ ] I included a minor bump `changeset`
-  - [ ] It's in the `allChecks` array in `src/checks/index.ts`
   - [ ] I ran `yarn build` and committed the updated configuration files
     <!-- It might be that a check doesn't make sense in a theme-app-extension context -->
     <!-- When that happens, the check's config should be updated/overridden in the theme-app-extension config -->
     <!-- see packages/node/configs/theme-app-extension.yml -->
     - [ ] If applicable, I've updated the `theme-app-extension.yml` config
-  - [ ] I've made a PR to update the [shopify.dev theme check docs](https://github.com/Shopify/shopify-dev/tree/main/content/storefronts/themes/tools/theme-check/checks) if applicable (link PR here).
+  - [ ] [Shopifolk] I've made a PR to update the [shopify.dev theme check docs](https://github.com/Shopify/shopify-dev/tree/main/content/storefronts/themes/tools/theme-check/checks) if applicable (link PR here).
 
 <!-- Public API changes, new features -->
 - [ ] I included a minor bump `changeset`
