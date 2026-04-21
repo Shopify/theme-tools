@@ -958,6 +958,29 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.name.1.value').to.eql('--header');
     });
 
+    it('should parse HTML tags with dynamic liquid tag names', () => {
+      ast = toLiquidHtmlAST(`<{% if true %}div{% endif %}></{% if true %}div{% endif %}>`);
+      expectPath(ast, 'children.0').to.exist;
+      expectPath(ast, 'children.0.type').to.eql('HtmlElement');
+      expectPath(ast, 'children.0.name.0.type').to.eql('LiquidTag');
+      expectPath(ast, 'children.0.name.0.name').to.eql('if');
+      // The `div` text is inside the LiquidTag's branch children
+      expectPath(ast, 'children.0.name.0.children.0.type').to.eql('LiquidBranch');
+      expectPath(ast, 'children.0.name.0.children.0.children.0.type').to.eql('TextNode');
+      expectPath(ast, 'children.0.name.0.children.0.children.0.value').to.eql('div');
+    });
+
+    it('should parse HTML tags with mixed liquid drop and liquid tag names', () => {
+      ast = toLiquidHtmlAST(`<{{ prefix }}-{% if cond %}suffix{% endif %}></{{ prefix }}-{% if cond %}suffix{% endif %}>`);
+      expectPath(ast, 'children.0').to.exist;
+      expectPath(ast, 'children.0.type').to.eql('HtmlElement');
+      expectPath(ast, 'children.0.name.0.type').to.eql('LiquidVariableOutput');
+      expectPath(ast, 'children.0.name.1.type').to.eql('TextNode');
+      expectPath(ast, 'children.0.name.1.value').to.eql('-');
+      expectPath(ast, 'children.0.name.2.type').to.eql('LiquidTag');
+      expectPath(ast, 'children.0.name.2.name').to.eql('if');
+    });
+
     it('should allow unclosed nodes inside conditional and case branches', () => {
       let testCases = [
         // one unclosed
