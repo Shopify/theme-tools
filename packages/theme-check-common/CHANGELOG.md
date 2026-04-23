@@ -1,5 +1,15 @@
 # @shopify/theme-check-common
 
+## 3.26.0
+
+### Minor Changes
+
+- e330f115: Add DeprecatedFontsOnSettingsData check for config/settings_data.json
+
+### Patch Changes
+
+- 892683dc: Restore `ValidScopedCSSClass` to the recommended config after fixing its save-latency regression on large themes. The check's per-file CSS class extraction now lives on the language server's document model, so it is memoized per file version and invalidated automatically when a file changes — no more full-theme rescan on every save. Also skips syntax-tree parsing for Liquid files that have no stylesheet tag. Resolves [#1179](https://github.com/Shopify/theme-tools/issues/1179) and reverses the temporary opt-out from [#1180](https://github.com/Shopify/theme-tools/pull/1180).
+
 ## 3.25.1
 
 ### Patch Changes
