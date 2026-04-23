@@ -604,6 +604,29 @@ function resolveTypeRangeType(
   }
 }
 
+/**
+ * Filters whose return type is an array of the same element type as their
+ * input. The filter docs in `filters.json` declare `array_value: "untyped"`
+ * for these, which would make every pipeline collapse to `untyped[]`. We
+ * special-case them here to preserve the element type of the input.
+ *
+ * Intentionally excluded:
+ *  - `map` — projects a property, needs lookup resolution on the element type.
+ *  - `concat` — merges two arrays, element type would be a union.
+ */
+const ARRAY_PASSTHROUGH_FILTERS: ReadonlySet<string> = new Set([
+  'sort',
+  'sort_natural',
+  'reverse',
+  'uniq',
+  'compact',
+  'where',
+]);
+
+function elementTypeOf(t: PseudoType | ArrayType): PseudoType {
+  return isArrayType(t) ? t.valueType : t;
+}
+
 function inferType(
   thing: Identifier | ComplexLiquidExpression | LiquidVariable | AssignMarkup,
   symbolsTable: SymbolsTable,
@@ -651,20 +674,38 @@ function inferType(
     // The type is the return value of the last filter
     // {{ y.property | filter1 | filter2 }}
     case NodeTypes.LiquidVariable: {
-      if (thing.filters.length > 0) {
-        const lastFilter = thing.filters.at(-1)!;
-        if (lastFilter.name === 'default') {
-          // default filter is a special case, we need to return the type of the expression
-          // instead of the filter.
-          if (lastFilter.args.length > 0 && lastFilter.args[0].type !== NodeTypes.NamedArgument) {
-            return inferType(lastFilter.args[0], symbolsTable, objectMap, filtersMap);
-          }
-        }
-        const filterEntry = filtersMap[lastFilter.name];
-        return filterEntry ? filterEntryReturnType(filterEntry) : Untyped;
-      } else {
+      if (thing.filters.length === 0) {
         return inferType(thing.expression, symbolsTable, objectMap, filtersMap);
       }
+
+      const lastFilter = thing.filters.at(-1)!;
+      if (lastFilter.name === 'default') {
+        // default filter is a special case, we need to return the type of the expression
+        // instead of the filter.
+        if (lastFilter.args.length > 0 && lastFilter.args[0].type !== NodeTypes.NamedArgument) {
+          return inferType(lastFilter.args[0], symbolsTable, objectMap, filtersMap);
+        }
+      }
+
+      // Reduce left-to-right through the filter chain so that array-returning
+      // filters that preserve the element type (e.g. `sort`, `where`, `reverse`)
+      // can thread the inferred type through the pipeline instead of collapsing
+      // everything to `untyped[]`.
+      let current: PseudoType | ArrayType = inferType(
+        thing.expression,
+        symbolsTable,
+        objectMap,
+        filtersMap,
+      );
+      for (const filter of thing.filters) {
+        if (ARRAY_PASSTHROUGH_FILTERS.has(filter.name)) {
+          current = arrayType(elementTypeOf(current));
+          continue;
+        }
+        const filterEntry = filtersMap[filter.name];
+        current = filterEntry ? filterEntryReturnType(filterEntry) : Untyped;
+      }
+      return current;
     }
 
     default: {
