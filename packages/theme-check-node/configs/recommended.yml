@@ -177,6 +177,9 @@ ValidSchemaName:
 ValidSchemaTranslations:
   enabled: true
   severity: 0
+ValidScopedCSSClass:
+  enabled: true
+  severity: 1
 ValidSettingsKey:
   enabled: true
   severity: 0

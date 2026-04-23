@@ -4,8 +4,6 @@ import {
   extractCSSClassNames,
   extractCSSClassesFromLiquidUri,
   extractCSSClassesFromAssetUri,
-  extractCSSClassesFromAssets,
-  extractAllThemeCSSClasses,
   collectUsedClasses,
   collectUsedClassesFromSvg,
 } from './styles';
@@ -265,48 +263,6 @@ describe('extractCSSClassesFromAssetUri', () => {
   it('returns empty set for missing file', async () => {
     const fs = new MockFileSystem({});
     const classes = await extractCSSClassesFromAssetUri('file:///missing.css', fs);
-    expect(classes.size).toBe(0);
-  });
-});
-
-describe('extractCSSClassesFromAssets', () => {
-  it('collects classes from all .css files in assets', async () => {
-    const fs = new MockFileSystem({
-      'assets/base.css': '.base { color: red; }',
-      'assets/theme.css': '.theme { color: blue; }',
-      'assets/app.js': 'console.log("not css")',
-    });
-    const toUri = (rel: string) => `file:///${rel}`;
-    const classes = await extractCSSClassesFromAssets(fs, toUri);
-    expect(classes).toEqual(new Set(['base', 'theme']));
-  });
-
-  it('returns empty set when assets directory does not exist', async () => {
-    const fs = new MockFileSystem({});
-    const toUri = (rel: string) => `file:///${rel}`;
-    const classes = await extractCSSClassesFromAssets(fs, toUri);
-    expect(classes.size).toBe(0);
-  });
-});
-
-describe('extractAllThemeCSSClasses', () => {
-  it('collects classes from both liquid stylesheets and CSS assets', async () => {
-    const fs = new MockFileSystem({
-      'assets/theme.css': '.asset-class { color: red; }',
-      'sections/section.liquid':
-        '{% stylesheet %} .section-class { color: blue; } {% endstylesheet %}',
-      'snippets/snippet.liquid':
-        '{% stylesheet %} .snippet-class { font-size: 14px; } {% endstylesheet %}',
-    });
-    const toUri = (rel: string) => `file:///${rel}`;
-    const classes = await extractAllThemeCSSClasses(fs, toUri);
-    expect(classes).toEqual(new Set(['asset-class', 'section-class', 'snippet-class']));
-  });
-
-  it('returns empty set for empty theme', async () => {
-    const fs = new MockFileSystem({});
-    const toUri = (rel: string) => `file:///${rel}`;
-    const classes = await extractAllThemeCSSClasses(fs, toUri);
     expect(classes.size).toBe(0);
   });
 });
