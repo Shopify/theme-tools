@@ -174,6 +174,9 @@ describe('Unit: Stage 1 (CST)', () => {
           { expression: `x["y"].z`, name: 'x', lookups: ['y', 'z'] },
           { expression: `["product"]`, name: null, lookups: ['product'] },
           { expression: `page.about-us`, name: 'page', lookups: ['about-us'] },
+          // Property names (dot lookup targets) can start with a digit
+          { expression: `address.2country`, name: 'address', lookups: ['2country'] },
+          { expression: `address.2country.name`, name: 'address', lookups: ['2country', 'name'] },
           { expression: `["x"].y`, name: null, lookups: ['x', 'y'] },
           { expression: `["x"]["y"]`, name: null, lookups: ['x', 'y'] },
           { expression: `x[y]`, name: 'x', lookups: [v('y')] },
@@ -1881,6 +1884,17 @@ describe('Unit: Stage 1 (CST)', () => {
       expectPath(cst, '0.markup.expression.type').to.eql('VariableLookup');
       expectPath(cst, '0.markup.expression.lookups.0.type').to.eql('VariableLookup');
       expectPath(cst, '0.markup.expression.lookups.0.name').to.eql('█');
+
+      // Completion after a property whose name starts with a digit
+      cst = toCST('{{ address.2country.█ }}');
+      expectPath(cst, '0.type').to.eql('LiquidVariableOutput');
+      expectPath(cst, '0.markup.type').to.eql('LiquidVariable');
+      expectPath(cst, '0.markup.expression.type').to.eql('VariableLookup');
+      expectPath(cst, '0.markup.expression.name').to.eql('address');
+      expectPath(cst, '0.markup.expression.lookups.0.type').to.eql('String');
+      expectPath(cst, '0.markup.expression.lookups.0.value').to.eql('2country');
+      expectPath(cst, '0.markup.expression.lookups.1.type').to.eql('String');
+      expectPath(cst, '0.markup.expression.lookups.1.value').to.eql('█');
 
       cst = toCST('{% echo █ %}');
       expectPath(cst, '0.type').to.eql('LiquidTag');

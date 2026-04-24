@@ -285,7 +285,12 @@ Liquid <: Helpers {
     | indexLookup<delim>
     | dotLookup
   indexLookup<delim> = space* "[" space* liquidExpression<delim> space* "]"
-  dotLookup = space* "." space* identifier
+  dotLookup = space* "." space* propertyName
+  // Property names accessed via dot lookup can start with a digit
+  // (e.g. `settings.2country`). This differs from `variableSegment`, which
+  // is used for variable declarations and filter names where leading
+  // digits are not allowed.
+  propertyName = (letter | "_" | digit) (~endOfTagName identifierCharacter)* "?"?
 
   liquidFilter<delim> = space* "|" space* identifier (space* ":" space* arguments<delim> (space* ",")?)?
 
@@ -583,6 +588,7 @@ WithPlaceholderLiquid <: Liquid {
     snippetExpression renderVariableExpression? renderAliasExpression? completionModeRenderArguments
   liquidTagName := (letter | "█") (alnum | "_")*
   variableSegment := (letter | "_" | "█") (identifierCharacter | "█")*
+  propertyName := (letter | "_" | digit | "█") (identifierCharacter | "█")* "?"?
   liquidDoc :=
     liquidDocStart
       liquidDocBody
@@ -597,6 +603,7 @@ WithPlaceholderLiquidStatement <: LiquidStatement {
     snippetExpression renderVariableExpression? renderAliasExpression? completionModeRenderArguments
   liquidTagName := (letter | "█") (alnum | "_")*
   variableSegment := (letter | "_" | "█") (identifierCharacter | "█")*
+  propertyName := (letter | "_" | digit | "█") (identifierCharacter | "█")* "?"?
   liquidDoc :=
     liquidDocStart
       liquidDocBody
@@ -611,6 +618,7 @@ WithPlaceholderLiquidHTML <: LiquidHTML {
     snippetExpression renderVariableExpression? renderAliasExpression? completionModeRenderArguments
   liquidTagName := (letter | "█") (alnum | "_")*
   variableSegment := (letter | "_" | "█") (identifierCharacter | "█")*
+  propertyName := (letter | "_" | digit | "█") (identifierCharacter | "█")* "?"?
   leadingTagNameTextNode := (letter | "█") (alnum | "-" | ":" | "█")*
   trailingTagNameTextNode := (alnum | "-" | ":" | "█")+
   liquidDoc :=
