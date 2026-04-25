@@ -158,7 +158,19 @@ function printTextNode(
 
   if (isYamlFrontMatter(node)) return node.value;
 
-  if (node.value.match(/^\s*$/)) return '';
+  // Only ASCII/HTML whitespace is collapsible. Do not treat U+00A0 (NBSP) or
+  // other unicode "whitespace" as collapsible, since they are meaningful
+  // characters in the rendered output.
+  const HTML_WHITESPACE_RUN = /[ \t\n\r\f]+/g;
+  const HTML_WHITESPACE_TRIM = /^[ \t\n\r\f]+|[ \t\n\r\f]+$/g;
+
+  // If the text is purely collapsible whitespace we still need to emit the
+  // open/close prefixes so that any tag markers borrowed from the parent
+  // aren't lost (see needsToBorrowParentClosingTagStartMarker).
+  if (node.value.replace(HTML_WHITESPACE_RUN, '') === '') {
+    return [printOpeningTagPrefix(node, options), printClosingTagSuffix(node, options)];
+  }
+
   const text = node.value;
 
   const paragraphs = text
@@ -166,7 +178,7 @@ function printTextNode(
     .filter(Boolean) // removes empty paragraphs (trailingWhitespace)
     .map((curr) => {
       let doc = [];
-      const words = curr.trim().split(/\s+/g);
+      const words = curr.replace(HTML_WHITESPACE_TRIM, '').split(HTML_WHITESPACE_RUN);
       let isFirst = true;
       for (let j = 0; j < words.length; j++) {
         const word = words[j];
