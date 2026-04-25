@@ -621,8 +621,9 @@ export interface HtmlElement extends HtmlNodeBase<NodeTypes.HtmlElement> {
   /**
    * The name of the tag can be compound
    * e.g. `<{{ header_type }}--header />`
+   * e.g. `<{% if true %}div{% endif %}>`
    */
-  name: (TextNode | LiquidVariableOutput)[];
+  name: (TextNode | LiquidNode)[];
 
   /** The child nodes delimited by the start and end tags */
   children: LiquidHtmlNode[];
@@ -646,8 +647,9 @@ export interface HtmlDanglingMarkerClose extends ASTNode<NodeTypes.HtmlDanglingM
   /**
    * The name of the tag can be compound
    * e.g. `<{{ header_type }}--header />`
+   * e.g. `</{% if true %}div{% endif %}>`
    */
-  name: (TextNode | LiquidVariableOutput)[];
+  name: (TextNode | LiquidNode)[];
 
   /** The range covered by the dangling end tag */
   blockStartPosition: Position;
@@ -657,8 +659,9 @@ export interface HtmlSelfClosingElement extends HtmlNodeBase<NodeTypes.HtmlSelfC
   /**
    * The name of the tag can be compound
    * @example `<{{ header_type }}--header />`
+   * @example `<{% if true %}div{% endif %} />`
    */
-  name: (TextNode | LiquidVariableOutput)[];
+  name: (TextNode | LiquidNode)[];
 }
 
 /**
@@ -1134,10 +1137,22 @@ export function getName(
         .map((part) => {
           if (part.type === NodeTypes.TextNode || part.type == ConcreteNodeTypes.TextNode) {
             return part.value;
-          } else if (typeof part.markup === 'string') {
-            return `{{${part.markup.trim()}}}`;
-          } else {
+          } else if (
+            part.type === NodeTypes.LiquidVariableOutput ||
+            part.type === ConcreteNodeTypes.LiquidVariableOutput
+          ) {
+            if (typeof part.markup === 'string') {
+              return `{{${part.markup.trim()}}}`;
+            }
             return `{{${part.markup.rawSource}}}`;
+          } else {
+            // LiquidTag, LiquidTagOpen, LiquidTagClose, etc. inside tag names
+            // (e.g. `<{% if true %}div{% endif %}>`). Use the raw source span
+            // so open/close matching compares byte-for-byte. CST concrete
+            // nodes expose locStart/locEnd; AST nodes expose position.
+            const start = 'position' in part ? part.position.start : part.locStart;
+            const end = 'position' in part ? part.position.end : part.locEnd;
+            return part.source.slice(start, end);
           }
         })
         .join('');
