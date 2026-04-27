@@ -338,9 +338,7 @@ function isLiquidTagDecrement(node: LiquidTag): node is LiquidTagDecrement {
  * so they cannot contribute to a reference outside the original HTML
  * comment.
  */
-function* collectFileScopeDefiningTags(
-  nodes: LiquidHtmlNode[],
-): Generator<{ name: string }> {
+function* collectFileScopeDefiningTags(nodes: LiquidHtmlNode[]): Generator<{ name: string }> {
   for (const node of nodes) {
     if (node.type === NodeTypes.LiquidTag) {
       const tag = node as LiquidTag;
