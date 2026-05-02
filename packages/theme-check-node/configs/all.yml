@@ -31,6 +31,9 @@ AssetSizeJavaScript:
 BlockIdUsage:
   enabled: true
   severity: 1
+BlockMissingShopifyAttributes:
+  enabled: true
+  severity: 1
 CdnPreconnect:
   enabled: true
   severity: 0
