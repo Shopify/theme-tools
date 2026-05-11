@@ -25,7 +25,7 @@ function isParsingErrorWithLocation(
 function cleanErrorMessage(message: string, highlight: string): string {
   return message
     .replace(/Line \d+, col \d+:\s+/, 'SyntaxError: ')
-    .replace(/(?!<expected ".+",) not .*/, ` not "${highlight}"`);
+    .replace(/ not (?:\(.*?\)|.*?)(?=, | or |$)/, ` not "${highlight}"`);
 }
 
 export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
