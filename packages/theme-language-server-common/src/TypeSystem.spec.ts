@@ -316,6 +316,84 @@ describe('Module: TypeSystem', () => {
     });
   });
 
+  describe('when using array-returning filters that preserve the element type', () => {
+    it('should preserve the element type for sort on a typed array', async () => {
+      const ast = toLiquidHtmlAST(`{% assign x = product.images | sort %}`);
+      const xVariable = (ast as any).children[0].markup as AssignMarkup;
+      const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+      expect(inferredType).to.eql({ kind: 'array', valueType: 'image' });
+    });
+
+    it('should preserve the element type for where on a typed array', async () => {
+      const ast = toLiquidHtmlAST(`{% assign x = product.images | where: 'featured', true %}`);
+      const xVariable = (ast as any).children[0].markup as AssignMarkup;
+      const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+      expect(inferredType).to.eql({ kind: 'array', valueType: 'image' });
+    });
+
+    ['reverse', 'uniq', 'compact', 'sort_natural'].forEach((name) => {
+      it(`should preserve the element type for ${name} on a typed array`, async () => {
+        const ast = toLiquidHtmlAST(`{% assign x = product.images | ${name} %}`);
+        const xVariable = (ast as any).children[0].markup as AssignMarkup;
+        const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+        expect(inferredType).to.eql({ kind: 'array', valueType: 'image' });
+      });
+    });
+
+    it('should wrap a scalar input into an array with the scalar type (issue #1086)', async () => {
+      const ast = toLiquidHtmlAST(`
+        {% for media in product.images %}
+          {% assign media_as_array = media | sort %}
+        {% endfor %}
+      `);
+      const forLoop = ast.children[0];
+      assert(isNamedLiquidTag(forLoop, NamedTags.for) && forLoop.children?.length === 1);
+      const branch = forLoop.children[0];
+      assert(branch.type === NodeTypes.LiquidBranch);
+      const assignTag = branch.children.find(
+        (c: any) => c.type === NodeTypes.LiquidTag && c.name === NamedTags.assign,
+      );
+      assert(assignTag && (assignTag as any).markup);
+      const inferredType = await typeSystem.inferType(
+        (assignTag as any).markup as AssignMarkup,
+        ast,
+        'file:///file.liquid',
+      );
+      expect(inferredType).to.eql({ kind: 'array', valueType: 'image' });
+    });
+
+    it('should thread the element type through a chain of pass-through filters', async () => {
+      const ast = toLiquidHtmlAST(`{% assign x = product.images | sort | reverse %}`);
+      const xVariable = (ast as any).children[0].markup as AssignMarkup;
+      const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+      expect(inferredType).to.eql({ kind: 'array', valueType: 'image' });
+    });
+
+    it('should defer to a non-pass-through filter at the end of the chain', async () => {
+      const ast = toLiquidHtmlAST(`{% assign x = product.images | sort | size %}`);
+      const xVariable = (ast as any).children[0].markup as AssignMarkup;
+      const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+      expect(inferredType).to.equal('number');
+    });
+
+    it('should fall back to untyped when an unknown filter follows a pass-through', async () => {
+      const ast = toLiquidHtmlAST(`{% assign x = product.images | sort | not_a_real_filter %}`);
+      const xVariable = (ast as any).children[0].markup as AssignMarkup;
+      const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+      expect(inferredType).to.equal('untyped');
+    });
+
+    it('should still honor `default` as the terminal filter', async () => {
+      const ast = toLiquidHtmlAST(`
+        {% assign d = product.featured_image %}
+        {% assign x = unknown | sort | default: d %}
+      `);
+      const xVariable = (ast as any).children[1].markup as AssignMarkup;
+      const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+      expect(inferredType).to.equal('image');
+    });
+  });
+
   it('should return the type of variables in for loop', async () => {
     const ast = toLiquidHtmlAST(`{% for item in all_products %}{{ item }}{% endfor %}`);
     const forLoop = ast.children[0];
