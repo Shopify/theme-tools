@@ -1212,14 +1212,38 @@ function toCST<T>(
       name: 0,
       body: 4,
       children(nodes) {
-        return toCST(
-          source,
-          grammars,
-          TextNodeGrammar,
-          ['HelperMappings'],
-          nodes[4].sourceString,
-          offset + nodes[4].source.startIdx,
-        );
+        const nameNode = nodes[0];
+        const rawMarkupStringNode = nodes[4];
+        switch (nameNode.sourceString) {
+          // {% schema %} parses its content as a string and should not be visited
+          case 'schema':
+          // {% raw %} accepts syntax errors, we shouldn't try to parse that
+          case 'raw': {
+            return toCST(
+              source,
+              grammars,
+              TextNodeGrammar,
+              ['HelperMappings'],
+              rawMarkupStringNode.sourceString,
+              offset + rawMarkupStringNode.source.startIdx,
+            );
+          }
+
+          // Match the top-level liquidRawTagImpl behavior so variables
+          // referenced inside {% liquid ... style ... endstyle %} are
+          // detected as used by checks that walk the AST. The body is
+          // still inline-liquid, so re-parse with LiquidStatement.
+          default: {
+            return toCST(
+              source,
+              grammars,
+              grammars.LiquidStatement,
+              ['HelperMappings', 'LiquidMappings', 'LiquidStatement'],
+              rawMarkupStringNode.sourceString,
+              offset + rawMarkupStringNode.source.startIdx,
+            );
+          }
+        }
       },
       whitespaceStart: null,
       whitespaceEnd: null,

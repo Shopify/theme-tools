@@ -114,6 +114,25 @@ describe('Module: UnusedAssign', () => {
     }
   });
 
+  it('should not report unused assigns for variables used inside a style block within {% liquid %}', async () => {
+    const sourceCode = `
+      {%- liquid
+        assign shopName = shop.name
+        capture example
+          echo 'Shopify'
+        endcapture
+
+        style
+          echo example
+          echo shopName
+        endstyle
+      -%}
+    `;
+
+    const offenses = await runLiquidCheck(UnusedAssign, sourceCode);
+    expect(offenses).to.be.empty;
+  });
+
   it('should not report unused assigns for things used in a HTML raw-like tag', async () => {
     const tags = ['style', 'script'];
     for (const tag of tags) {
