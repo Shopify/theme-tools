@@ -3,6 +3,7 @@ import { Offense } from '..';
 import { describe, it, expect } from 'vitest';
 import { LiquidFilter, RenderMarkup } from './test-checks';
 import { UndefinedObject } from '../checks/undefined-object';
+import { UniqueDocParamNames } from '../checks/unique-doc-param-names';
 
 const commentTypes = [
   (text: string) => `{% # ${text} %}`,
@@ -254,6 +255,43 @@ ${buildComment('theme-check-enable')}
         expect(offenses).toContainEqual(
           expect.objectContaining({
             message: "Unknown object 'foo' used.",
+          }),
+        );
+      });
+
+      it('should disable checks inside doc tags when disable-next-line is placed before the doc tag', async () => {
+        const file = `{% # theme-check-disable-next-line UniqueDocParamNames %}
+{% doc %}
+  @param foo - first param
+  @param foo - duplicate param
+{% enddoc %}`;
+
+        const offenses = await check({ 'code.liquid': file }, [UniqueDocParamNames]);
+        expect(offenses).to.have.length(0);
+      });
+
+      it('should disable all checks inside doc tags when disable-next-line is used without specific check names', async () => {
+        const file = `{% # theme-check-disable-next-line %}
+{% doc %}
+  @param bar - first param
+  @param bar - duplicate param
+{% enddoc %}`;
+
+        const offenses = await check({ 'code.liquid': file }, [UniqueDocParamNames]);
+        expect(offenses).to.have.length(0);
+      });
+
+      it('should still report offenses in doc tags when disable-next-line is not present', async () => {
+        const file = `{% doc %}
+  @param baz - first param
+  @param baz - duplicate param
+{% enddoc %}`;
+
+        const offenses = await check({ 'code.liquid': file }, [UniqueDocParamNames]);
+        expect(offenses).to.have.length(1);
+        expect(offenses).toContainEqual(
+          expect.objectContaining({
+            message: "The parameter 'baz' is defined more than once.",
           }),
         );
       });
