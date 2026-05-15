@@ -1,5 +1,11 @@
 # @shopify/theme-check-common
 
+## 3.26.1
+
+### Patch Changes
+
+- 3cc63ff2: Fix theme-check-disable-next-line not working for checks inside doc tags
+
 ## 3.26.0
 
 ### Minor Changes
