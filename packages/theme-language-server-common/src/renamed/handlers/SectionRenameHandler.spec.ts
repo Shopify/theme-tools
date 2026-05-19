@@ -54,6 +54,17 @@ describe('Module: SectionRenameHandler', () => {
               },
               "order": ["section-id"]
             }`,
+
+        'config/settings_data.json': `
+            {
+              "current": {
+                "sections": {
+                  "section-id": {
+                    "type": "old-name"
+                  }
+                }
+              }
+            }`,
       },
       mockRoot,
     );
@@ -132,6 +143,11 @@ describe('Module: SectionRenameHandler', () => {
         replaceWithNewNameTextEditAtAnyLocation,
       ];
 
+      const settingsDataTextEdits = [
+        // Section type is updated in config/settings_data.json
+        replaceWithNewNameTextEditAtAnyLocation,
+      ];
+
       expect(connection.spies.sendRequest).toHaveBeenCalledWith('workspace/applyEdit', {
         label: "Rename section 'old-name' to 'new-name'",
         edit: {
@@ -162,6 +178,13 @@ describe('Module: SectionRenameHandler', () => {
                 version: null,
               },
               edits: sectionGroupTextEdits,
+            },
+            {
+              textDocument: {
+                uri: 'mock-fs:/config/settings_data.json',
+                version: null,
+              },
+              edits: settingsDataTextEdits,
             },
           ]),
         },
@@ -212,6 +235,17 @@ describe('Module: SectionRenameHandler', () => {
                 }
               },
               "order": ["section-id"]
+            }`,
+
+          'config/settings_data.json': `
+            {
+              "current": {
+                "sections": {
+                  "section-id": {
+                    "type": "new-name"
+                  }
+                }
+              }
             }`,
         },
         mockRoot,
