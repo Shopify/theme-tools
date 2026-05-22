@@ -30,7 +30,7 @@ describe('changeset', () => {
 
     await changesetTag();
 
-    expect(run).toHaveBeenCalledWith('yarn changeset tag');
+    expect(run).toHaveBeenCalledWith('pnpm exec changeset tag');
     expect(console.log).toHaveBeenCalledWith('Creating git tags for package versions...');
     expect(console.log).toHaveBeenCalledWith('test output');
   });
@@ -40,7 +40,7 @@ describe('changeset', () => {
 
     await changesetVersion();
 
-    expect(run).toHaveBeenCalledWith('yarn changeset version');
+    expect(run).toHaveBeenCalledWith('pnpm exec changeset version');
     expect(console.log).toHaveBeenCalledWith('Running `changeset version`...');
     expect(console.log).toHaveBeenCalledWith('test output');
   });
@@ -55,7 +55,7 @@ describe('changeset', () => {
     const result = await changesetStatus();
     const expectedStatusPath = path.join('/path', 'to', 'repo', 'changeset-status.json');
 
-    expect(run).toHaveBeenCalledWith('yarn changeset status --output=changeset-status.json');
+    expect(run).toHaveBeenCalledWith('pnpm exec changeset status --output=changeset-status.json');
     expect(run).toHaveBeenCalledWith(`rm ${expectedStatusPath}`);
     expect(readFile).toHaveBeenCalledWith(`${expectedStatusPath}`, 'utf-8');
     expect(result).toEqual({ releasedPackages: ['package1', 'package2'] });

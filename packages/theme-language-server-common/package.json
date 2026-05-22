@@ -19,8 +19,8 @@
     "@shopify:registry": "https://registry.npmjs.org"
   },
   "scripts": {
-    "build": "yarn build:ts",
-    "build:ci": "yarn build",
+    "build": "pnpm build:ts",
+    "build:ci": "pnpm build",
     "build:ts": "tsc -b src/tsconfig.build.json",
     "dev": "tsc -b src --watch",
     "test": "vitest",
@@ -31,10 +31,14 @@
     "@shopify/theme-check-common": "3.26.0",
     "@shopify/theme-graph": "^0.2.6",
     "@vscode/web-custom-data": "^0.4.6",
-    "vscode-json-languageservice": "^5.3.10",
-    "vscode-languageserver": "^8.0.2",
     "vscode-css-languageservice": "6.3.2",
+    "vscode-json-languageservice": "^5.3.10",
+    "vscode-jsonrpc": "^8.1.0",
+    "vscode-languageserver": "^8.0.2",
     "vscode-languageserver-textdocument": "^1.0.8",
     "vscode-uri": "^3.0.7"
+  },
+  "devDependencies": {
+    "@vitest/expect": "2.1.9"
   }
 }

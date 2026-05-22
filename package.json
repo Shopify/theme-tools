@@ -24,24 +24,24 @@
   "scripts": {
     "admin:build": "sh ./scripts/dev-admin-build.sh",
     "admin:init": "sh ./scripts/dev-admin-init.sh",
-    "build": "yarn workspaces run build",
-    "build:ci": "yarn workspaces run build:ci",
-    "build:ts": "yarn workspaces run build:ts",
-    "dev:web": "yarn --cwd packages/vscode-extension dev:web",
+    "build": "pnpm -r --workspace-concurrency=1 build",
+    "build:ci": "pnpm -r --workspace-concurrency=1 build:ci",
+    "build:ts": "pnpm -r --workspace-concurrency=1 build:ts",
+    "dev:web": "pnpm --dir packages/vscode-extension dev:web",
     "format": "prettier --write \"packages/*/src/**/*.ts\"",
     "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
-    "playground": "yarn --cwd packages/codemirror-language-client run dev:playground",
+    "playground": "pnpm --dir packages/codemirror-language-client dev:playground",
     "prebuild:ts": "rm -rf packages/*/dist",
-    "publish:vsce": "yarn --cwd packages/vscode-extension publish:vsce",
-    "publish:ovsx": "yarn --cwd packages/vscode-extension publish:ovsx",
-    "release": "yarn workspace release-orchestrator run start",
-    "postrelease": "yarn --cwd packages/prettier-plugin-liquid prerelease",
+    "publish:vsce": "pnpm --dir packages/vscode-extension publish:vsce",
+    "publish:ovsx": "pnpm --dir packages/vscode-extension publish:ovsx",
+    "release": "pnpm --filter release-orchestrator start",
+    "postrelease": "pnpm --dir packages/prettier-plugin-liquid prerelease",
     "reset": "find . -name \"node_modules\" -type d -prune -exec rm -rf '{}' +",
     "test": "vitest",
-    "test:e2e": "yarn test:e2e:browser",
-    "test:e2e:browser": "yarn --cwd packages/vscode-extension test:web",
+    "test:e2e": "pnpm test:e2e:browser",
+    "test:e2e:browser": "pnpm --dir packages/vscode-extension test:web",
     "theme-check": "node packages/theme-check-node/dist/cli.js",
-    "type-check": "yarn workspaces run type-check"
+    "type-check": "pnpm -r --workspace-concurrency=1 type-check"
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.0",
@@ -54,6 +54,7 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
     "typescript": "^5.9.0",
+    "vite": "^5.4.21",
     "vitest": "^2.1.9",
     "vscode-languageserver-protocol": "^3.17.3",
     "vscode-languageserver-textdocument": "^1.0.8",
@@ -61,5 +62,13 @@
     "webpack-cli": "^5.0.0",
     "webpack-dev-server": "^4.11.1"
   },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "packageManager": "pnpm@10.16.1",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@playwright/browser-chromium",
+      "@vscode/vsce-sign",
+      "esbuild",
+      "keytar"
+    ]
+  }
 }

@@ -25,14 +25,14 @@
     "@shopify:registry": "https://registry.npmjs.org"
   },
   "scripts": {
-    "build": "yarn build:esm && yarn build:umd",
-    "build:ci": "yarn build",
+    "build": "pnpm build:esm && pnpm build:umd",
+    "build:ci": "pnpm build",
     "build:ts": "true",
     "build:esm": "tsc -b tsconfig.json",
     "build:umd": "tsc -b tsconfig.umd.json",
     "build:playground": "tsc -b playground/tsconfig.json",
-    "dev": "yarn dev:client",
-    "dev:client": "yarn build:esm --watch",
+    "dev": "pnpm dev:client",
+    "dev:client": "pnpm build:esm --watch",
     "dev:playground": "webpack serve -c ./playground/webpack.config.js",
     "format": "prettier --write \"packages/*/src/**/*.ts\"",
     "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",

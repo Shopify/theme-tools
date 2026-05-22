@@ -7,6 +7,9 @@ const { default: TsconfigPathsPlugin } = require('tsconfig-paths-webpack-plugin'
 const path = require('path');
 const { ThemeLiquidDocsManager } = require('@shopify/theme-check-docs-updater');
 
+const prettierPath = path.dirname(require.resolve('prettier/package.json'));
+const prettierStandalonePath = require.resolve('prettier/standalone');
+
 /** @type WebpackConfig */
 const baseConfig = {
   context: path.resolve(__dirname),
@@ -90,7 +93,7 @@ const desktopConfig = {
           to: 'data',
         },
         {
-          from: path.resolve(__dirname, '../../node_modules/prettier2'),
+          from: prettierPath,
           to: 'prettier',
           globOptions: {
             ignore: ['**/esm/**'],
@@ -111,7 +114,7 @@ const browserClientConfig = {
   resolve: {
     ...baseConfig.resolve,
     alias: {
-      prettier: path.resolve(__dirname, '../../node_modules/prettier2'),
+      'prettier$': prettierStandalonePath,
     },
   },
   output: {
@@ -148,7 +151,7 @@ const browserServerConfig = async () => {
     resolve: {
       ...baseConfig.resolve,
       alias: {
-        prettier: path.resolve(__dirname, '../../node_modules/prettier2'),
+        'prettier$': prettierStandalonePath,
       },
     },
     output: {

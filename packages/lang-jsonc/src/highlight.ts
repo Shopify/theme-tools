@@ -1,6 +1,7 @@
+import type { NodePropSource } from '@lezer/common';
 import { styleTags, tags as t } from '@lezer/highlight';
 
-export const jsonHighlighting = styleTags({
+export const jsonHighlighting: NodePropSource = styleTags({
   String: t.string,
   Number: t.number,
   'True False': t.bool,

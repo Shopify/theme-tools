@@ -3,12 +3,12 @@
 Requirements:
 
 - Node v16+
-- Yarn
+- pnpm
 
 ```
 git clone git@github.com:Shopify/prettier-plugin-liquid.git
-yarn
-yarn test
+pnpm install
+pnpm test
 ```
 
 ## Context
@@ -32,7 +32,7 @@ The source code for this plugin is in TypeScript.
 This plugin uses prettier to format its TypeScript codebase. To format your code before a commit, run the following command:
 
 ```
-yarn format
+pnpm format
 ```
 
 ## Testing
@@ -42,31 +42,31 @@ This prettier plugin has two suites of tests: unit tests and integration tests.
 To run the unit tests:
 
 ```bash
-yarn test:unit
+pnpm test:unit
 ```
 
 To run the integration tests (where we make sure an input file gets transformed into another after running prettier):
 
 ```bash
-yarn test:integration
+pnpm test:integration
 ```
 
 To run the idempotence tests (where we make sure running prettier twice on an input file returns the same result):
 ```bash
-yarn test:idempotence
+pnpm test:idempotence
 ```
 
 To run all tests:
 
 ```bash
-yarn test
+pnpm test
 ```
 
 To run from source on another repo or file:
 
 ```bash
 # build the code so you can run it (only need to do it once)
-yarn build
+pnpm build
 
 # run prettier on a file or folder
 prettier --plugin . --write path/to/files.liquid

@@ -23,37 +23,37 @@ Before you can start contributing to theme-tools, you'll need to set up your dev
 
    ```bash
    cd theme-tools
-   yarn
+   pnpm install
    ```
 
 3. **Build monorepo packages**: Ensure that all packages can be buildable:
 
    ```bash
-   yarn build
+   pnpm build
    ```
 
 4. **Run tests**: Ensure that all tests pass by running:
 
    ```bash
-   yarn test
+   pnpm test
    ```
 
 5. **Start developing**: If you're developing changes to test against the vscode extension, all you need to do is add a breakpoint anywhere in a package used within the VS Code extension, hit `f5` in VS Code and your development instance of theme-check will automatically open.
 
 ### Developing for online-store-web (Shopifolk only)
 
-To set up the package links to online-store-web, within this repo root run: `yarn admin:init`
+To set up the package links to online-store-web, within this repo root run: `pnpm admin:init`
 
 This process has a small gotcha: online-store-web needs to use the built assets from theme-tools. This means that hot-reload is off the table.
 
-Once you've made some changes to your local theme-tools packages, to see those changes represented in online-store-web; within this repo root run: `yarn admin:build`
+Once you've made some changes to your local theme-tools packages, to see those changes represented in online-store-web; within this repo root run: `pnpm admin:build`
 
 ### Developing for codemirror-language-client
 
 Run the following command to start a browser instance that runs `@shopify/theme-language-server-browser`.
 
 ```bash
-yarn playground
+pnpm playground
 ```
 
 ### Developing for VS Code for Web
@@ -63,7 +63,7 @@ yarn playground
 Run the following command to start a `@vscode/test-web` instance in Chrome with the Shopify Liquid extension loaded.
 
 ```bash
-yarn dev:web
+pnpm dev:web
 ```
 
 #### In the desktop app

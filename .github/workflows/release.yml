@@ -27,19 +27,24 @@ jobs:
           submodules: true
           fetch-depth: 0
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          run_install: false
+
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: 24 # Needed for npm@11 for Trusted Publishing
           registry-url: "https://registry.npmjs.org"
-          cache: "yarn"
-          cache-dependency-path: "yarn.lock"
+          cache: "pnpm"
+          cache-dependency-path: "pnpm-lock.yaml"
 
       - name: Install the packages
-        run: yarn install --frozen-lockfile --ignore-engines
+        run: pnpm install --frozen-lockfile
 
       - name: Build the code
-        run: yarn build
+        run: pnpm build
         env:
           NODE_ENV: production
 
@@ -49,7 +54,7 @@ jobs:
 
       - name: Query VS Code Marketplace version
         id: marketplace-version
-        run: echo "version=$(yarn --silent vsce show --json Shopify.theme-check-vscode | jq -r .versions[0].version)" >> $GITHUB_OUTPUT
+        run: echo "version=$(pnpm --dir packages/vscode-extension exec vsce show --json Shopify.theme-check-vscode | jq -r .versions[0].version)" >> $GITHUB_OUTPUT
 
       - name: Query VS Code Package version (Before running changeset version)
         id: package-version
@@ -69,17 +74,17 @@ jobs:
           title: "Theme Tools Release — ${{ steps.date.outputs.date }}"
           commit: "Theme Tools Release — ${{ steps.date.outputs.date }}"
           # When there are no changesets, this gets called
-          publish: yarn changeset publish
+          publish: pnpm changeset publish
           # When there are changesets, this gets called and then a PR is opened/updated
-          version: yarn release
+          version: pnpm release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
 
       - name: VS Code Marketplace publish
         if: steps.changesets.outputs.hasChangesets == 'false' && steps.marketplace-version.outputs.version != steps.package-version.outputs.version
-        run: yarn publish:vsce
+        run: pnpm publish:vsce
 
       - name: Open VSX Registry publish
         if: steps.changesets.outputs.hasChangesets == 'false' && steps.marketplace-version.outputs.version != steps.package-version.outputs.version
-        run: yarn publish:ovsx
+        run: pnpm publish:ovsx

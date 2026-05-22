@@ -18,23 +18,28 @@ jobs:
         with:
           submodules: true
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          run_install: false
+
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: 20
-          cache: "yarn"
-          cache-dependency-path: "yarn.lock"
+          cache: "pnpm"
+          cache-dependency-path: "pnpm-lock.yaml"
 
       - name: Install the packages
-        run: yarn install --frozen-lockfile --ignore-engines
+        run: pnpm install --frozen-lockfile
 
       - name: Build the code
-        run: yarn build
+        run: pnpm build
         env:
           NODE_ENV: production
 
       - name: VS Code Marketplace publish
-        run: yarn publish:vsce
+        run: pnpm publish:vsce
 
       - name: Open VSX Registry publish
-        run: yarn publish:ovsx
+        run: pnpm publish:ovsx

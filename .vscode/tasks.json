@@ -3,7 +3,7 @@
   "tasks": [
     {
       "type": "shell",
-      "command": "yarn --cwd packages/vscode-extension build:extension:dev",
+      "command": "pnpm --dir packages/vscode-extension run build:extension:dev",
       "group": "build",
       "label": "vscode dev",
       "dependsOrder": "parallel",
@@ -17,29 +17,29 @@
     {
       "label": "parser pre build",
       "type": "shell",
-      "command": "yarn --cwd packages/liquid-html-parser prebuild:ts"
+      "command": "pnpm --dir packages/liquid-html-parser run prebuild:ts"
     },
     {
       "label": "language-config",
       "type": "shell",
-      "command": "yarn --cwd packages/vscode-extension build:language-config"
+      "command": "pnpm --dir packages/vscode-extension run build:language-config"
     },
     {
       "label": "theme check build",
       "type": "shell",
-      "command": "yarn --cwd packages/theme-check-node build:ts"
+      "command": "pnpm --dir packages/theme-check-node run build:ts"
     },
     {
       "label": "playground",
       "type": "shell",
-      "command": "yarn playground",
+      "command": "pnpm playground",
       "isBackground": true,
       "problemMatcher": "$ts-webpack-watch"
     },
     {
       "label": "vscode-test-web",
       "type": "shell",
-      "command": "yarn dev:web",
+      "command": "pnpm dev:web",
       "isBackground": true
     }
   ],

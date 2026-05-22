@@ -24,15 +24,16 @@
     "dist/**/*.ts"
   ],
   "scripts": {
-    "build": "yarn build:ts",
-    "build:ci": "yarn build",
+    "build": "pnpm build:ts",
+    "build:ci": "pnpm build",
     "build:ts": "tsc -b tsconfig.build.json",
-    "postbuild:ts": "yarn generate-factory-configs",
+    "postbuild:ts": "pnpm generate-factory-configs",
     "generate-factory-configs": "node scripts/generate-factory-configs",
     "test": "vitest",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@shopify/liquid-html-parser": "2.9.2",
     "@shopify/theme-check-common": "3.26.0",
     "@shopify/theme-check-docs-updater": "3.26.0",
     "@shopify/theme-graph": "^0.2.6",
@@ -41,6 +42,7 @@
     "yaml": "^2.8.3"
   },
   "devDependencies": {
-    "@types/glob": "^8.0.0"
+    "@types/glob": "^8.0.0",
+    "mktemp": "^1.0.1"
   }
 }

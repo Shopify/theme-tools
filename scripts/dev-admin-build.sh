@@ -7,7 +7,7 @@ set -ex
 # This script assumes that the online-store-web repo is present. 
 # We recommend that this is run in spin instances created through the theme-tools:online-store constellation
 
-# This script assumes that you ran `yarn admin:init` already and then made changes to the theme-tools packages
+# This script assumes that you ran `pnpm admin:init` already and then made changes to the theme-tools packages
 # Now you want to see those new changes in the Admin Theme Code Editor
 
 # New changes need to be compiled for the linked packages to reflect correctly

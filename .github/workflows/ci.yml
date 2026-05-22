@@ -12,24 +12,29 @@ jobs:
         with:
           submodules: true
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          run_install: false
+
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: "yarn"
-          cache-dependency-path: "yarn.lock"
+          node-version: 20
+          cache: "pnpm"
+          cache-dependency-path: "pnpm-lock.yaml"
 
       - name: Install the packages
-        run: yarn install --frozen-lockfile --ignore-engines
+        run: pnpm install --frozen-lockfile
 
       - name: Build the code
-        run: yarn build:ci
+        run: pnpm build:ci
 
       - name: Type check (for tests)
-        run: yarn type-check
+        run: pnpm type-check
 
       - name: Check formatting
-        run: yarn format:check
+        run: pnpm format:check
 
   e2e:
     runs-on: ubuntu-latest
@@ -40,21 +45,31 @@ jobs:
         with:
           submodules: true
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          run_install: false
+
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: 20
-          cache: "yarn"
-          cache-dependency-path: "yarn.lock"
+          cache: "pnpm"
+          cache-dependency-path: "pnpm-lock.yaml"
 
       - name: Install the packages
-        run: yarn install --frozen-lockfile --ignore-engines
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        working-directory: packages/vscode-extension
+        run: |
+          node -e "const path = require('node:path'); const testWeb = path.dirname(require.resolve('@vscode/test-web/package.json')); const browser = path.dirname(require.resolve('@playwright/browser-chromium/package.json', { paths: [testWeb] })); require(path.join(browser, 'install.js'));"
 
       - name: Build the code
-        run: yarn build
+        run: pnpm build
 
       - name: Run the E2E tests
-        run: yarn test:e2e
+        run: pnpm test:e2e
 
   tests:
     runs-on: ${{ matrix.os }}
@@ -71,30 +86,35 @@ jobs:
         with:
           submodules: true
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          run_install: false
+
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "yarn"
-          cache-dependency-path: "yarn.lock"
+          cache: "pnpm"
+          cache-dependency-path: "pnpm-lock.yaml"
 
       - name: Install the packages
-        run: yarn install --frozen-lockfile --ignore-engines
+        run: pnpm install --frozen-lockfile
 
       - name: Build the code
-        run: yarn build:ts
+        run: pnpm build:ts
 
       - name: Run the unit tests
-        run: yarn test
+        run: pnpm test
 
       - name: Run the prettier2 unit tests
-        run: yarn --cwd packages/prettier-plugin-liquid test
+        run: pnpm --dir packages/prettier-plugin-liquid test
 
       - name: Run the prettier2 idempotence tests
-        run: yarn --cwd packages/prettier-plugin-liquid test:idempotence
+        run: pnpm --dir packages/prettier-plugin-liquid test:idempotence
 
       - name: Run the prettier3 unit tests
-        run: yarn --cwd packages/prettier-plugin-liquid test:3
+        run: pnpm --dir packages/prettier-plugin-liquid test:3
 
       - name: Run the prettier3 idempotence tests
-        run: yarn --cwd packages/prettier-plugin-liquid test:idempotence:3
+        run: pnpm --dir packages/prettier-plugin-liquid test:idempotence:3

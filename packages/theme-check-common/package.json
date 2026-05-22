@@ -19,8 +19,8 @@
     "@shopify:registry": "https://registry.npmjs.org"
   },
   "scripts": {
-    "build": "yarn build:ts",
-    "build:ci": "yarn build",
+    "build": "pnpm build:ts",
+    "build:ci": "pnpm build",
     "build:ts": "tsc -b tsconfig.build.json",
     "test": "vitest",
     "type-check": "tsc --noEmit"
@@ -41,6 +41,7 @@
   "devDependencies": {
     "@types/line-column": "^1.0.0",
     "@types/lodash": "^4.17.20",
-    "@types/postcss-safe-parser": "^5.0.4"
+    "@types/postcss-safe-parser": "^5.0.4",
+    "@vitest/expect": "2.1.9"
   }
 }
