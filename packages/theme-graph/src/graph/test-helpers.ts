@@ -23,18 +23,19 @@ export function makeGetSourceCode(fs: AbstractFileSystem) {
 
 export const fixturesRoot = pathUtils.join(URI.file(__dirname), ...'../../fixtures'.split('/'));
 export const skeleton = pathUtils.join(fixturesRoot, 'skeleton');
+export const themeAppExtension = pathUtils.join(fixturesRoot, 'theme-app-extension');
 
 export async function getDependencies(rootUri: string, fs: AbstractFileSystem = NodeFileSystem) {
   const getSourceCode = makeGetSourceCode(fs);
   const deps = {
     fs,
     getSectionSchema: memoize(async (name: string) => {
-      const uri = pathUtils.join(skeleton, 'sections', `${name}.liquid`);
+      const uri = pathUtils.join(rootUri, 'sections', `${name}.liquid`);
       const sourceCode = (await getSourceCode(uri)) as LiquidSourceCode;
       return (await toSchema('theme', uri, sourceCode, async () => true)) as SectionSchema;
     }, identity),
     getBlockSchema: memoize(async (name: string) => {
-      const uri = pathUtils.join(skeleton, 'blocks', `${name}.liquid`);
+      const uri = pathUtils.join(rootUri, 'blocks', `${name}.liquid`);
       const sourceCode = (await getSourceCode(uri)) as LiquidSourceCode;
       return (await toSchema('theme', uri, sourceCode, async () => true)) as ThemeBlockSchema;
     }, identity),

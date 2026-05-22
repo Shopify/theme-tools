@@ -2,7 +2,7 @@ import { path as pathUtils, SourceCodeType } from '@shopify/theme-check-common';
 import { assert, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { buildThemeGraph } from '../index';
 import { Dependencies, JsonModuleKind, LiquidModuleKind, ModuleType, ThemeGraph } from '../types';
-import { getDependencies, skeleton } from './test-helpers';
+import { getDependencies, skeleton, themeAppExtension } from './test-helpers';
 
 describe('Module: index', () => {
   const rootUri = skeleton;
@@ -25,6 +25,20 @@ describe('Module: index', () => {
 
       beforeEach(async () => {
         graph = await buildThemeGraph(rootUri, dependencies);
+      });
+
+      it('uses app blocks as entry points in app mode', async () => {
+        const appDependencies = await getDependencies(themeAppExtension);
+        const appGraph = await buildThemeGraph(themeAppExtension, {
+          ...appDependencies,
+          mode: 'app',
+        });
+        const app = (part: string) => pathUtils.join(themeAppExtension, ...part.split('/'));
+
+        expect(appGraph.entryPoints.map((x) => x.uri)).toEqual([app('blocks/app-block.liquid')]);
+        expect(
+          appGraph.modules[app('snippets/shared.liquid')].references.map((x) => x.source.uri),
+        ).toEqual([app('blocks/app-block.liquid')]);
       });
 
       it('have a root URI', () => {
