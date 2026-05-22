@@ -1,0 +1,10 @@
+packages:
+  - packages/codemirror-language-client
+  - packages/lang-*
+  - packages/liquid-html-parser
+  - packages/prettier-plugin-liquid
+  - packages/release-orchestrator
+  - packages/theme-check-*
+  - packages/theme-graph
+  - packages/theme-language-server-*
+  - packages/vscode-extension

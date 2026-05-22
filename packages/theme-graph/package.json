@@ -23,8 +23,8 @@
     "@shopify:registry": "https://registry.npmjs.org"
   },
   "scripts": {
-    "build": "yarn build:ts",
-    "build:ci": "yarn build",
+    "build": "pnpm build:ts",
+    "build:ci": "pnpm build",
     "build:ts": "tsc -p tsconfig.build.json",
     "type-check": "tsc --noEmit"
   },

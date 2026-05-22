@@ -6,7 +6,7 @@
 
    ```bash
    export VERSION="X.X.X"
-   yarn prerelease
+   pnpm prerelease
    ```
 
 3. Run [`git changelog`](https://github.com/tj/git-extras) to update `CHANGELOG.md`.

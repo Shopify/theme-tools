@@ -25,8 +25,8 @@
     "dist/**/*.ts"
   ],
   "scripts": {
-    "build": "yarn build:ts",
-    "build:ci": "yarn build",
+    "build": "pnpm build:ts",
+    "build:ci": "pnpm build",
     "build:ts": "tsc -p tsconfig.build.json",
     "prebuild:ts": "node build/shims.js",
     "type-check": "tsc --noEmit"
@@ -36,6 +36,7 @@
     "ohm-js": "^17.0.0"
   },
   "devDependencies": {
-    "@types/line-column": "^1.0.0"
+    "@types/line-column": "^1.0.0",
+    "@types/node": "^22.18.8"
   }
 }

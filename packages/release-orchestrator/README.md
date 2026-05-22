@@ -12,7 +12,7 @@ Please note that this package is solely intended for internal usage within this 
 
 ## Usage
 
-To use this package, please run `yarn release` from the repo root. Additionally please ensure that you are on the `main` branch and have no unstaged changes within your repo.
+To use this package, please run `pnpm release` from the repo root. Additionally please ensure that you are on the `main` branch and have no unstaged changes within your repo.
 
 ## Contributing
 

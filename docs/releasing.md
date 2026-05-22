@@ -5,7 +5,7 @@
 1. Add a changeset. This will prompt you for additional information.
 
    ```bash
-   yarn changeset add
+   pnpm changeset add
    ```
 
 2. Commit the changeset as part of your PR.
