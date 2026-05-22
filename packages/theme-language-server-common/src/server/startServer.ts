@@ -120,6 +120,7 @@ export function startServer(
     documentManager,
     fs,
     findThemeRootURI,
+    getModeForURI,
   );
   const diagnosticsManager = new DiagnosticsManager(connection);
   const documentLinksProvider = new DocumentLinksProvider(documentManager, findThemeRootURI);
