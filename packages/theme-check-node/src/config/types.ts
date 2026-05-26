@@ -42,8 +42,13 @@ export type ModernIdentifier = (typeof ModernIdentifiers)[number];
 export const LegacyIdentifiers = new Map(
   Object.entries({
     default: 'theme-check:recommended',
+    recommended: 'theme-check:recommended',
+    all: 'theme-check:all',
     nothing: 'theme-check:nothing',
+    theme_app_extension: 'theme-check:theme-app-extension',
     theme_app_extensions: 'theme-check:theme-app-extension',
+    'theme-app-extension': 'theme-check:theme-app-extension',
+    'theme-app-extensions': 'theme-check:theme-app-extension',
   }),
 );
 
