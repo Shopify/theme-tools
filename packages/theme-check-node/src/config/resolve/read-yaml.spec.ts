@@ -146,13 +146,43 @@ describe('Unit: readYamlConfigDescription', () => {
           expected: ['theme-check:recommended'],
         },
         {
+          testCase: 'translates legacy `recommended` to `theme-check:recommended`',
+          extendsValue: 'recommended',
+          expected: ['theme-check:recommended'],
+        },
+        {
+          testCase: 'translates legacy `all` to `theme-check:all`',
+          extendsValue: 'all',
+          expected: ['theme-check:all'],
+        },
+        {
           testCase:
             'translates legacy `:theme_app_extensions` to `theme-check:theme-app-extension`',
           extendsValue: [':theme_app_extensions'],
           expected: ['theme-check:theme-app-extension'],
         },
         {
-          testCase: 'translates legacy [`:nothing`] to []',
+          testCase: 'translates legacy `theme_app_extension` to `theme-check:theme-app-extension`',
+          extendsValue: 'theme_app_extension',
+          expected: ['theme-check:theme-app-extension'],
+        },
+        {
+          testCase: 'translates legacy `:theme_app_extension` to `theme-check:theme-app-extension`',
+          extendsValue: [':theme_app_extension'],
+          expected: ['theme-check:theme-app-extension'],
+        },
+        {
+          testCase: 'translates legacy `theme-app-extension` to `theme-check:theme-app-extension`',
+          extendsValue: 'theme-app-extension',
+          expected: ['theme-check:theme-app-extension'],
+        },
+        {
+          testCase: 'translates legacy `theme-app-extensions` to `theme-check:theme-app-extension`',
+          extendsValue: 'theme-app-extensions',
+          expected: ['theme-check:theme-app-extension'],
+        },
+        {
+          testCase: 'translates legacy [`:nothing`] to `theme-check:nothing`',
           extendsValue: [':nothing'],
           expected: ['theme-check:nothing'],
         },
