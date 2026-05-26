@@ -171,6 +171,7 @@ export async function themeCheckRun(
       getSectionSchema,
       getBlockSchema,
       getWebComponentDefinitionReference: () => undefined,
+      mode: config.context,
     });
   } catch {
     // If graph building fails, cross-file checks will gracefully degrade

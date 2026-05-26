@@ -5,6 +5,7 @@ import {
   SectionSchema,
   SourceCodeType,
   ThemeBlockSchema,
+  Mode,
 } from '@shopify/theme-check-common';
 import {
   buildThemeGraph,
@@ -35,6 +36,7 @@ export class ThemeGraphManager {
     private documentManager: DocumentManager,
     private fs: AbstractFileSystem,
     private findThemeRootURI: FindThemeRootURI,
+    private getModeForURI: (uri: string) => Promise<Mode> = async () => 'theme',
   ) {}
 
   async getThemeGraphForURI(uri: string) {
@@ -237,10 +239,14 @@ export class ThemeGraphManager {
 
   private async graphDependencies(rootUri: string): Promise<GraphDependencies> {
     const { documentManager, fs, getSourceCode } = this;
-    const webComponentDefs = await this.getWebComponentMap(rootUri);
+    const [webComponentDefs, mode] = await Promise.all([
+      this.getWebComponentMap(rootUri),
+      this.getModeForURI(rootUri),
+    ]);
     return {
       fs: fs,
       getSourceCode: getSourceCode,
+      mode,
       async getBlockSchema(name: string) {
         const blockUri = path.join(rootUri, 'blocks', `${name}.liquid`);
         const doc = documentManager.get(blockUri);

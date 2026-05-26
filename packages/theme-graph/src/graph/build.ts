@@ -26,7 +26,14 @@ export async function buildThemeGraph(
       const isSectionFile =
         uri.startsWith(path.join(rootUri, 'sections')) && uri.endsWith('.liquid');
 
-      return isTemplateFile || isSectionFile;
+      // Theme app extension app blocks and app embed blocks are independently
+      // renderable by Shopify, so treat them as graph entry points too.
+      const isThemeAppExtensionBlockFile =
+        deps.mode === 'app' &&
+        uri.startsWith(path.join(rootUri, 'blocks')) &&
+        uri.endsWith('.liquid');
+
+      return isTemplateFile || isSectionFile || isThemeAppExtensionBlockFile;
     }));
 
   const graph: ThemeGraph = {

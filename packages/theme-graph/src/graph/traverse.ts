@@ -212,7 +212,7 @@ async function traverseLiquidModule(
     const sectionName = path.basename(module.uri, '.liquid');
     const sectionSchema = await deps.getSectionSchema(sectionName);
     promises.push(traverseLiquidSchema(sectionSchema, module, themeGraph, deps));
-  } else if (module.kind === LiquidModuleKind.Block) {
+  } else if (module.kind === LiquidModuleKind.Block && deps.mode === 'theme') {
     const blockName = path.basename(module.uri, '.liquid');
     const blockSchema = await deps.getBlockSchema(blockName);
     promises.push(traverseLiquidSchema(blockSchema, module, themeGraph, deps));
