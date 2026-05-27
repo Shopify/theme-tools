@@ -36,6 +36,8 @@ import {
   ValidateJSON,
 } from './types';
 import { getPosition } from './utils';
+import { memo } from './utils/memo';
+import { findTranslationReferences } from './utils/translation-references';
 import { visitJSON, visitLiquid } from './visitors';
 
 export * from './AbstractFileSystem';
@@ -58,6 +60,7 @@ export * from './utils/types';
 export * from './utils/object';
 export * from './utils/styles';
 export * from './utils/traversal';
+export * from './utils/translation-references';
 export * from './visitor';
 export * from './liquid-doc/liquidDoc';
 export { getBlockName } from './liquid-doc/arguments';
@@ -87,6 +90,9 @@ export async function check(
     getDefaultSchemaTranslations: makeGetDefaultSchemaTranslations(fs, theme, rootUri),
     getMetafieldDefinitions:
       injectedDependencies.getMetafieldDefinitions ?? makeGetMetafieldDefinitions(fs),
+    getTranslationReferences:
+      injectedDependencies.getTranslationReferences ??
+      memo(() => Promise.resolve(findTranslationReferences(theme))),
   };
 
   const { DisabledChecksVisitor, isDisabled } = createDisabledChecksModule();

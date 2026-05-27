@@ -166,6 +166,12 @@ UnusedAssign:
 UnusedDocParam:
   enabled: true
   severity: 1
+UnusedTranslationKey:
+  enabled: true
+  severity: 1
+  ignoreKeys:
+    - shopify.*
+    - customer_accounts.*
 ValidBlockTarget:
   enabled: true
   severity: 0

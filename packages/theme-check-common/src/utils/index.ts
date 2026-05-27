@@ -8,3 +8,4 @@ export * from './indexBy';
 export * from './block';
 export * from './styles';
 export * from './traversal';
+export * from './translation-references';

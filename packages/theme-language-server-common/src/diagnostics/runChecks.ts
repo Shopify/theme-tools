@@ -3,7 +3,10 @@ import {
   extractCSSClassesFromLiquidUri,
   extractCSSClassesFromAssetUri,
   findRoot,
+  findTranslationReferences,
+  isIgnored,
   makeFileExists,
+  memo,
   Offense,
   path,
   Reference,
@@ -56,6 +59,14 @@ export function makeRunChecks(
     async function runChecksForRoot(configFileRootUri: string) {
       const config = await loadConfig(configFileRootUri, fs);
       const theme = documentManager.theme(config.rootUri);
+      const getTranslationReferences = memo(async () => {
+        await documentManager.preload(config.rootUri);
+        const fullTheme = documentManager
+          .theme(config.rootUri, true)
+          .filter((sourceCode) => !isIgnored(sourceCode.uri, config));
+
+        return findTranslationReferences(fullTheme);
+      });
 
       const cssOffenses = cssLanguageService
         ? await Promise.all(
@@ -68,6 +79,7 @@ export function makeRunChecks(
         themeDocset,
         jsonValidationSet,
         getMetafieldDefinitions,
+        getTranslationReferences,
 
         async getReferences(uri: string): Promise<Reference[]> {
           if (!themeGraphManager) return [];

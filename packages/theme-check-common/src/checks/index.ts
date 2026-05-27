@@ -50,6 +50,7 @@ import { UnrecognizedRenderSnippetArguments } from './unrecognized-render-snippe
 import { UnusedAssign } from './unused-assign';
 import { UnsupportedDocTag } from './unsupported-doc-tag';
 import { UnusedDocParam } from './unused-doc-param';
+import { UnusedTranslationKey } from './unused-translation-key';
 import { ValidContentForArguments } from './valid-content-for-arguments';
 import { ValidContentForArgumentTypes } from './valid-content-for-argument-types';
 import { ValidBlockTarget } from './valid-block-target';
@@ -122,6 +123,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   UnsupportedDocTag,
   UnusedAssign,
   UnusedDocParam,
+  UnusedTranslationKey,
   ValidBlockTarget,
   ValidHTMLTranslation,
   ValidContentForArguments,
