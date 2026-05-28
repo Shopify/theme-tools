@@ -1,0 +1,1142 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: assign-mut-end-trail-close_round
+  error: 'Liquid syntax error: Expected end_of_string but found close_round in "x
+    = x )"'
+  type: SyntaxError
+- id: assign-mut-end-trail-close_square
+  error: 'Liquid syntax error: Expected end_of_string but found close_square in "x
+    = x ]"'
+  type: SyntaxError
+- id: assign-mut-end-trail-colon
+  error: 'Liquid syntax error: Expected end_of_string but found colon in "x = x :"'
+  type: SyntaxError
+- id: assign-mut-end-trail-comma
+  error: 'Liquid syntax error: Expected end_of_string but found comma in "x = x ,"'
+  type: SyntaxError
+- id: assign-mut-end-trail-comparison
+  error: 'Liquid syntax error: Expected end_of_string but found comparison in "x =
+    x =="'
+  type: SyntaxError
+- id: assign-mut-end-trail-dash
+  error: 'Liquid syntax error: Expected end_of_string but found dash in "x = x -"'
+  type: SyntaxError
+- id: assign-mut-end-trail-dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x = x ."'
+  type: SyntaxError
+- id: assign-mut-end-trail-id
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x = x extra"'
+  type: SyntaxError
+- id: assign-mut-end-trail-number
+  error: 'Liquid syntax error: Expected end_of_string but found number in "x = x 42"'
+  type: SyntaxError
+- id: assign-mut-end-trail-open_round
+  error: 'Liquid syntax error: Expected end_of_string but found open_round in "x =
+    x ("'
+  type: SyntaxError
+- id: assign-mut-end-trail-open_square
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x =
+    x ["'
+  type: SyntaxError
+- id: assign-mut-end-trail-pipe
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x = x |"'
+  type: SyntaxError
+- id: assign-mut-end-trail-question
+  error: 'Liquid syntax error: Expected end_of_string but found question in "x = x
+    ?"'
+  type: SyntaxError
+- id: assign-mut-end-trail-string
+  error: 'Liquid syntax error: Expected end_of_string but found string in "x = x ''hi''"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-bare_bracket
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , [0]"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-close_round-004
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , )"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-close_square-003
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , ]"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-colon-002
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , :"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , ,"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-comparison-009
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , =="'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-comparison-010
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , !="'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-comparison-011
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , <"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-comparison-012
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , >"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-comparison-013
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , <="'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-comparison-014
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , >="'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-comparison-015
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , contains"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-dash-006
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , -"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-dot-007
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , ."'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-dotdot-008
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , .."'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-eos-016
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , ,"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "x = x | x : x , , &"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "x = x | x : x , , *"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "x = x | x : x , , @"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "x = x | x : x , , \"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "x = x | x : x , , `"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "x = x | x : x , , ^"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "x = x | x : x , , $"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "x = x | x : x , , #"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "x = x | x : x , , ;"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "x = x | x : x , , ~"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "x = x | x : x , , "hello"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "x = x | x : x , , ''hello"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x[,]"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lookup-dot_number
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x.123"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lookup-dot_string
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x."y""'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lookup-range_bad_separator
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , (1, 5)"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lookup-range_missing_end
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , (1..)"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lookup-trailing_dot
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x."'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lookup-unclosed_bracket
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x[0"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-lookup-unclosed_range
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , (1..5"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-pipe-000
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , |"'
+  type: SyntaxError
+- id: assign-mut-filter_arg_value-question-005
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , ?"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-bare_bracket
+  error: 'Liquid syntax error: Bare bracket access is not allowed in strict2 mode.
+    Use self[''...''] instead in "x = x | x : [0]"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-close_round-004
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "x
+    = x | x : )"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-close_square-003
+  error: 'Liquid syntax error: [:close_square, "]"] is not a valid expression in "x
+    = x | x : ]"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-colon-002
+  error: 'Liquid syntax error: [:colon, ":"] is not a valid expression in "x = x |
+    x : :"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : ,"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-comparison-009
+  error: 'Liquid syntax error: [:comparison, "=="] is not a valid expression in "x
+    = x | x : =="'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-comparison-010
+  error: 'Liquid syntax error: [:comparison, "!="] is not a valid expression in "x
+    = x | x : !="'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-comparison-011
+  error: 'Liquid syntax error: [:comparison, "<"] is not a valid expression in "x
+    = x | x : <"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-comparison-012
+  error: 'Liquid syntax error: [:comparison, ">"] is not a valid expression in "x
+    = x | x : >"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-comparison-013
+  error: 'Liquid syntax error: [:comparison, "<="] is not a valid expression in "x
+    = x | x : <="'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-comparison-014
+  error: 'Liquid syntax error: [:comparison, ">="] is not a valid expression in "x
+    = x | x : >="'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-comparison-015
+  error: 'Liquid syntax error: [:comparison, "contains"] is not a valid expression
+    in "x = x | x : contains"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-dash-006
+  error: 'Liquid syntax error: [:dash, "-"] is not a valid expression in "x = x |
+    x : -"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-dot-007
+  error: 'Liquid syntax error: [:dot, "."] is not a valid expression in "x = x | x
+    : ."'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-dotdot-008
+  error: 'Liquid syntax error: [:dotdot, ".."] is not a valid expression in "x = x
+    | x : .."'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-eos-016
+  error:
+  type:
+- id: assign-mut-filter_first_arg-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "x = x | x : &"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "x = x | x : *"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "x = x | x : @"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "x = x | x : \"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "x = x | x : `"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "x = x | x : ^"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "x = x | x : $"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "x = x | x : #"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "x = x | x : ;"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "x = x | x : ~"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "x = x | x : "hello"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "x = x | x : ''hello"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x[,]"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lookup-dot_number
+  error: 'Liquid syntax error: Expected id but found number in "x = x | x : x.123"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lookup-dot_string
+  error: 'Liquid syntax error: Expected id but found string in "x = x | x : x."y""'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lookup-range_bad_separator
+  error: 'Liquid syntax error: Expected dotdot but found comma in "x = x | x : (1,
+    5)"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lookup-range_missing_end
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "x
+    = x | x : (1..)"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lookup-trailing_dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x = x | x :
+    x."'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lookup-unclosed_bracket
+  error: 'Liquid syntax error: Expected close_square but found end_of_string in "x
+    = x | x : x[0"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-lookup-unclosed_range
+  error: 'Liquid syntax error: Expected close_round but found end_of_string in "x
+    = x | x : (1..5"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-pipe-000
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x = x | x :
+    |"'
+  type: SyntaxError
+- id: assign-mut-filter_first_arg-question-005
+  error: 'Liquid syntax error: [:question, "?"] is not a valid expression in "x =
+    x | x : ?"'
+  type: SyntaxError
+- id: assign-mut-filter_name-eos
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x = x |"'
+  type: SyntaxError
+- id: assign-mut-filter_name-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "x = x | &"'
+  type: SyntaxError
+- id: assign-mut-filter_name-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "x = x | *"'
+  type: SyntaxError
+- id: assign-mut-filter_name-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "x = x | @"'
+  type: SyntaxError
+- id: assign-mut-filter_name-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "x = x | \"'
+  type: SyntaxError
+- id: assign-mut-filter_name-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "x = x | `"'
+  type: SyntaxError
+- id: assign-mut-filter_name-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "x = x | ^"'
+  type: SyntaxError
+- id: assign-mut-filter_name-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "x = x | $"'
+  type: SyntaxError
+- id: assign-mut-filter_name-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "x = x | #"'
+  type: SyntaxError
+- id: assign-mut-filter_name-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "x = x | ;"'
+  type: SyntaxError
+- id: assign-mut-filter_name-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "x = x | ~"'
+  type: SyntaxError
+- id: assign-mut-filter_name-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "x = x | "hello"'
+  type: SyntaxError
+- id: assign-mut-filter_name-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "x = x | ''hello"'
+  type: SyntaxError
+- id: assign-mut-filter_name-number
+  error: 'Liquid syntax error: Expected id but found number in "x = x | 42"'
+  type: SyntaxError
+- id: assign-mut-kwarg_colon-eos
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x"'
+  type: SyntaxError
+- id: assign-mut-kwarg_colon-number
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x 42"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-bare_bracket
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : [0]"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-close_round-004
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : )"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-close_square-003
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : ]"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-colon-002
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : :"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : ,"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-comparison-009
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : =="'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-comparison-010
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : !="'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-comparison-011
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : <"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-comparison-012
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : >"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-comparison-013
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : <="'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-comparison-014
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : >="'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-comparison-015
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : contains"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-dash-006
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : -"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-dot-007
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : ."'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-dotdot-008
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : .."'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-eos-016
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x :"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "x = x | x : x , , x : &"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "x = x | x : x , , x : *"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "x = x | x : x , , x : @"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "x = x | x : x , , x : \"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "x = x | x : x , , x : `"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "x = x | x : x , , x : ^"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "x = x | x : x , , x : $"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "x = x | x : x , , x : #"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "x = x | x : x , , x : ;"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "x = x | x : x , , x : ~"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "x = x | x : x , , x : "hello"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "x = x | x : x , , x : ''hello"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : x[,]"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lookup-dot_number
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : x.123"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lookup-dot_string
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : x."y""'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lookup-range_bad_separator
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : (1, 5)"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lookup-range_missing_end
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : (1..)"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lookup-trailing_dot
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : x."'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lookup-unclosed_bracket
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : x[0"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-lookup-unclosed_range
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : (1..5"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-pipe-000
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : |"'
+  type: SyntaxError
+- id: assign-mut-kwarg_value-question-005
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x |
+    x : x , , x : ?"'
+  type: SyntaxError
+- id: assign-mut-lhs_eos-trail-close_round
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "x ) = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_eos-trail-close_square
+  error: 'Liquid syntax error: Expected id but found close_square in "x ] = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_eos-trail-colon
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "x : = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_eos-trail-comma
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "x , = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_eos-trail-comparison
+  error: 'Liquid syntax error: Unexpected character = in "x == = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_eos-trail-dash
+  error: 'Liquid syntax error: Expected id but found dash in "x - = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_eos-trail-dot
+  error: 'Liquid syntax error: Expected id but found dot in "x . = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_eos-trail-id
+  error:
+  type:
+- id: assign-mut-lhs_eos-trail-number
+  error: 'Liquid syntax error: Expected id but found number in "x 42 = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_eos-trail-open_round
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "x ( = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_eos-trail-open_square
+  error: 'Liquid syntax error: Expected id but found open_square in "x [ = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_eos-trail-pipe
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "x | = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_eos-trail-question
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "x ? = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_eos-trail-string
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "x ''hi'' = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_id-eos
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "= x"'
+  type: SyntaxError
+- id: assign-mut-lhs_id-lexerr-ampersand
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "& = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_id-lexerr-asterisk
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "* = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_id-lexerr-at
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "@ = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_id-lexerr-backslash
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "\ = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_id-lexerr-backtick
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "` = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_id-lexerr-caret
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "^ = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_id-lexerr-dollar
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "$ = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_id-lexerr-hash
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "# = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_id-lexerr-semicolon
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "; = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_id-lexerr-tilde
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "~ = x"'
+  type: SyntaxError
+- id: assign-mut-lhs_id-lexerr-unclosed_double_quote
+  error:
+  type:
+- id: assign-mut-lhs_id-lexerr-unclosed_single_quote
+  error:
+  type:
+- id: assign-mut-lhs_id-number
+  error: 'Liquid syntax error: Expected id but found number in "42 = x"'
+  type: SyntaxError
+- id: assign-mut-pregate-000
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "= x"'
+  type: SyntaxError
+- id: assign-mut-pregate-000-2
+  error:
+  type:
+- id: assign-mut-pregate-001
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "= = x"'
+  type: SyntaxError
+- id: assign-mut-pregate-001-2
+  error: 'Liquid syntax error: Unexpected character = in "x = ="'
+  type: SyntaxError
+- id: assign-mut-pregate-002
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "? = x"'
+  type: SyntaxError
+- id: assign-mut-pregate-002-2
+  error: 'Liquid syntax error: [:question, "?"] is not a valid expression in "x =
+    ?"'
+  type: SyntaxError
+- id: assign-mut-pregate-003
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in ""hi" = x"'
+  type: SyntaxError
+- id: assign-mut-pregate-003-2
+  error:
+  type:
+- id: assign-mut-pregate-004
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "@ = x"'
+  type: SyntaxError
+- id: assign-mut-pregate-004-2
+  error: 'Liquid syntax error: Unexpected character @ in "x = @"'
+  type: SyntaxError
+- id: assign-mut-pregate-005
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "# = x"'
+  type: SyntaxError
+- id: assign-mut-pregate-005-2
+  error: 'Liquid syntax error: Unexpected character # in "x = #"'
+  type: SyntaxError
+- id: assign-mut-pregate-006
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "$ = x"'
+  type: SyntaxError
+- id: assign-mut-pregate-006-2
+  error: 'Liquid syntax error: Unexpected character $ in "x = $"'
+  type: SyntaxError
+- id: assign-mut-pregate-007
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "^ = x"'
+  type: SyntaxError
+- id: assign-mut-pregate-007-2
+  error: 'Liquid syntax error: Unexpected character ^ in "x = ^"'
+  type: SyntaxError
+- id: assign-mut-pregate-008
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "& = x"'
+  type: SyntaxError
+- id: assign-mut-pregate-008-2
+  error: 'Liquid syntax error: Unexpected character & in "x = &"'
+  type: SyntaxError
+- id: assign-mut-pregate-009
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "* = x"'
+  type: SyntaxError
+- id: assign-mut-pregate-009-2
+  error: 'Liquid syntax error: Unexpected character * in "x = *"'
+  type: SyntaxError
+- id: assign-mut-pregate-010
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "~ = x"'
+  type: SyntaxError
+- id: assign-mut-pregate-010-2
+  error: 'Liquid syntax error: Unexpected character ~ in "x = ~"'
+  type: SyntaxError
+- id: assign-mut-pregate-011
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "; = x"'
+  type: SyntaxError
+- id: assign-mut-pregate-011-2
+  error: 'Liquid syntax error: Unexpected character ; in "x = ;"'
+  type: SyntaxError
+- id: assign-mut-pregate-012
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in "| = x"'
+  type: SyntaxError
+- id: assign-mut-pregate-012-2
+  error: 'Liquid syntax error: [:pipe, "|"] is not a valid expression in "x = |"'
+  type: SyntaxError
+- id: assign-mut-valid-000
+  error:
+  type:
+- id: assign-mut-valid-001
+  error:
+  type:
+- id: assign-mut-valid-002
+  error:
+  type:
+- id: assign-mut-valid-003
+  error:
+  type:
+- id: assign-mut-valid-004
+  error:
+  type:
+- id: assign-mut-valid-005
+  error:
+  type:
+- id: assign-mut-valid-006
+  error:
+  type:
+- id: assign-mut-valid-007
+  error:
+  type:
+- id: assign-mut-valid-008
+  error:
+  type:
+- id: assign-mut-valid-009
+  error:
+  type:
+- id: assign-mut-valid-010
+  error:
+  type:
+- id: assign-mut-valid-011
+  error:
+  type:
+- id: assign-mut-valid-012
+  error:
+  type:
+- id: assign-mut-valid-013
+  error:
+  type:
+- id: assign-mut-valid-014
+  error:
+  type:
+- id: assign-mut-valid-filter-015
+  error:
+  type:
+- id: assign-mut-valid-filter-016
+  error:
+  type:
+- id: assign-mut-valid-filter-017
+  error:
+  type:
+- id: assign-mut-valid-filter-018
+  error:
+  type:
+- id: assign-mut-valid-filter-019
+  error:
+  type:
+- id: assign-mut-valid-filter-020
+  error:
+  type:
+- id: assign-mut-valid-filter-021
+  error:
+  type:
+- id: assign-mut-valid-filter-022
+  error:
+  type:
+- id: assign-mut-valid-filter-023
+  error:
+  type:
+- id: assign-mut-valid-filter-024
+  error:
+  type:
+- id: assign-mut-valid-filter-025
+  error:
+  type:
+- id: assign-mut-valid-filter-026
+  error:
+  type:
+- id: assign-mut-valid-filter-027
+  error:
+  type:
+- id: assign-mut-valid-filter-028
+  error:
+  type:
+- id: assign-mut-valid-filter-029
+  error:
+  type:
+- id: assign-mut-valid-filter-030
+  error:
+  type:
+- id: assign-mut-valid-filter-031
+  error:
+  type:
+- id: assign-mut-valid-filter-032
+  error:
+  type:
+- id: assign-mut-valid-filter-033
+  error:
+  type:
+- id: assign-mut-valid-filter-034
+  error:
+  type:
+- id: assign-mut-valid-filter-035
+  error:
+  type:
+- id: assign-mut-valid-filter-036
+  error:
+  type:
+- id: assign-mut-valid-filter-037
+  error:
+  type:
+- id: assign-mut-valid-filter-038
+  error:
+  type:
+- id: assign-mut-valid-filter-039
+  error:
+  type:
+- id: assign-mut-valid-filter-040
+  error:
+  type:
+- id: assign-mut-valid-filter-041
+  error:
+  type:
+- id: assign-mut-valid-filter-042
+  error:
+  type:
+- id: assign-mut-valid-filter-043
+  error:
+  type:
+- id: assign-mut-valid-filter-044
+  error:
+  type:
+- id: assign-mut-valid-filter-045
+  error:
+  type:
+- id: assign-mut-valid-filter-046
+  error:
+  type:
+- id: assign-mut-valid-filter-047
+  error:
+  type:
+- id: assign-mut-valid-filter-048
+  error:
+  type:
+- id: assign-mut-valid-filter-049
+  error:
+  type:
+- id: assign-mut-valid-filter-050
+  error:
+  type:
+- id: assign-mut-valid-filter-051
+  error:
+  type:
+- id: assign-mut-valid-filter-052
+  error:
+  type:
+- id: assign-mut-valid-filter-053
+  error:
+  type:
+- id: assign-mut-valid-filter-054
+  error:
+  type:
+- id: assign-mut-valid-filter-055
+  error:
+  type:
+- id: assign-mut-valid-filter-056
+  error:
+  type:
+- id: assign-mut-valid-filter-057
+  error:
+  type:
+- id: assign-mut-valid-filter-058
+  error:
+  type:
+- id: assign-mut-valid-filter-059
+  error:
+  type:
+- id: assign-mut-valid-filter-060
+  error:
+  type:
+- id: assign-mut-valid-filter-061
+  error:
+  type:
+- id: assign-mut-valid-filter-062
+  error:
+  type:
+- id: assign-mut-valid-filter-063
+  error:
+  type:
+- id: assign-mut-valid-filter-064
+  error:
+  type:
+- id: assign-mut-valid-filter-065
+  error:
+  type:
+- id: assign-mut-valid-filter-066
+  error:
+  type:
+- id: assign-mut-valid-filter-067
+  error:
+  type:
+- id: assign-mut-valid-filter-068
+  error:
+  type:
+- id: assign-mut-valid-filter-069
+  error:
+  type:
+- id: assign-mut-valid-filter-070
+  error:
+  type:
+- id: assign-mut-valid-filter-071
+  error:
+  type:
+- id: assign-mut-valid-filter-072
+  error:
+  type:
+- id: assign-mut-valid-filter-073
+  error:
+  type:
+- id: assign-mut-valid-filter-074
+  error:
+  type:
+- id: assign-mut-valid-filter-075
+  error:
+  type:
+- id: assign-mut-valid-filter-076
+  error:
+  type:
+- id: assign-mut-valid-filter-077
+  error:
+  type:
+- id: assign-mut-valid-filter-078
+  error:
+  type:
+- id: assign-mut-valid-filter-079
+  error:
+  type:
+- id: assign-mut-valid-filter-080
+  error:
+  type:
+- id: assign-mut-valid-filter-081
+  error:
+  type:
+- id: assign-mut-valid-filter-082
+  error:
+  type:
+- id: assign-mut-valid-filter-083
+  error:
+  type:
+- id: assign-mut-valid-filter-084
+  error:
+  type:
+- id: assign-mut-valid-filter-085
+  error:
+  type:
+- id: assign-mut-valid-filter-086
+  error:
+  type:
+- id: assign-mut-valid-filter-087
+  error:
+  type:
+- id: assign-mut-valid-filter-088
+  error:
+  type:
+- id: assign-mut-valid-filter-089
+  error:
+  type:
+- id: assign-mut-valid-lhs-000
+  error:
+  type:
+- id: assign-mut-valid-lhs-001
+  error:
+  type:
+- id: assign-mut-valid-lhs-002
+  error:
+  type:
+- id: assign-mut-valid-lhs-003
+  error:
+  type:
+- id: assign-mut-valid-lhs-004
+  error:
+  type:
+- id: assign-mut-valid-lhs-005
+  error:
+  type:
+- id: assign-mut-valid-lhs-006
+  error:
+  type:
+- id: assign-mut-valid-lhs-007
+  error:
+  type:
+- id: assign-mut-valid-lhs-008
+  error:
+  type:
+- id: assign-mut-valid-lhs-009
+  error:
+  type:
+- id: assign-mut-valid-lhs-010
+  error:
+  type:
+- id: assign-mut-value-bare_bracket
+  error: 'Liquid syntax error: Bare bracket access is not allowed in strict2 mode.
+    Use self[''...''] instead in "x = [0]"'
+  type: SyntaxError
+- id: assign-mut-value-close_round-004
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "x
+    = )"'
+  type: SyntaxError
+- id: assign-mut-value-close_square-003
+  error: 'Liquid syntax error: [:close_square, "]"] is not a valid expression in "x
+    = ]"'
+  type: SyntaxError
+- id: assign-mut-value-colon-002
+  error: 'Liquid syntax error: [:colon, ":"] is not a valid expression in "x = :"'
+  type: SyntaxError
+- id: assign-mut-value-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = ,"'
+  type: SyntaxError
+- id: assign-mut-value-comparison-009
+  error: 'Liquid syntax error: [:comparison, "=="] is not a valid expression in "x
+    = =="'
+  type: SyntaxError
+- id: assign-mut-value-comparison-010
+  error: 'Liquid syntax error: [:comparison, "!="] is not a valid expression in "x
+    = !="'
+  type: SyntaxError
+- id: assign-mut-value-comparison-011
+  error: 'Liquid syntax error: [:comparison, "<"] is not a valid expression in "x
+    = <"'
+  type: SyntaxError
+- id: assign-mut-value-comparison-012
+  error: 'Liquid syntax error: [:comparison, ">"] is not a valid expression in "x
+    = >"'
+  type: SyntaxError
+- id: assign-mut-value-comparison-013
+  error: 'Liquid syntax error: [:comparison, "<="] is not a valid expression in "x
+    = <="'
+  type: SyntaxError
+- id: assign-mut-value-comparison-014
+  error: 'Liquid syntax error: [:comparison, ">="] is not a valid expression in "x
+    = >="'
+  type: SyntaxError
+- id: assign-mut-value-comparison-015
+  error: 'Liquid syntax error: [:comparison, "contains"] is not a valid expression
+    in "x = contains"'
+  type: SyntaxError
+- id: assign-mut-value-dash-006
+  error: 'Liquid syntax error: [:dash, "-"] is not a valid expression in "x = -"'
+  type: SyntaxError
+- id: assign-mut-value-dot-007
+  error: 'Liquid syntax error: [:dot, "."] is not a valid expression in "x = ."'
+  type: SyntaxError
+- id: assign-mut-value-dotdot-008
+  error: 'Liquid syntax error: [:dotdot, ".."] is not a valid expression in "x = .."'
+  type: SyntaxError
+- id: assign-mut-value-eos-016
+  error:
+  type:
+- id: assign-mut-value-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "x = &"'
+  type: SyntaxError
+- id: assign-mut-value-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "x = *"'
+  type: SyntaxError
+- id: assign-mut-value-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "x = @"'
+  type: SyntaxError
+- id: assign-mut-value-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "x = \"'
+  type: SyntaxError
+- id: assign-mut-value-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "x = `"'
+  type: SyntaxError
+- id: assign-mut-value-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "x = ^"'
+  type: SyntaxError
+- id: assign-mut-value-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "x = $"'
+  type: SyntaxError
+- id: assign-mut-value-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "x = #"'
+  type: SyntaxError
+- id: assign-mut-value-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "x = ;"'
+  type: SyntaxError
+- id: assign-mut-value-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "x = ~"'
+  type: SyntaxError
+- id: assign-mut-value-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "x = "hello"'
+  type: SyntaxError
+- id: assign-mut-value-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "x = ''hello"'
+  type: SyntaxError
+- id: assign-mut-value-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x = x[,]"'
+  type: SyntaxError
+- id: assign-mut-value-lookup-dot_number
+  error: 'Liquid syntax error: Expected id but found number in "x = x.123"'
+  type: SyntaxError
+- id: assign-mut-value-lookup-dot_string
+  error: 'Liquid syntax error: Expected id but found string in "x = x."y""'
+  type: SyntaxError
+- id: assign-mut-value-lookup-range_bad_separator
+  error: 'Liquid syntax error: Expected dotdot but found comma in "x = (1, 5)"'
+  type: SyntaxError
+- id: assign-mut-value-lookup-range_missing_end
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "x
+    = (1..)"'
+  type: SyntaxError
+- id: assign-mut-value-lookup-trailing_dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x = x."'
+  type: SyntaxError
+- id: assign-mut-value-lookup-unclosed_bracket
+  error: 'Liquid syntax error: Expected close_square but found end_of_string in "x
+    = x[0"'
+  type: SyntaxError
+- id: assign-mut-value-lookup-unclosed_range
+  error: 'Liquid syntax error: Expected close_round but found end_of_string in "x
+    = (1..5"'
+  type: SyntaxError
+- id: assign-mut-value-pipe-000
+  error: 'Liquid syntax error: [:pipe, "|"] is not a valid expression in "x = |"'
+  type: SyntaxError
+- id: assign-mut-value-question-005
+  error: 'Liquid syntax error: [:question, "?"] is not a valid expression in "x =
+    ?"'
+  type: SyntaxError

@@ -1,0 +1,96 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: comment-001
+  template: "{% comment %}hello"
+  error_path: 1
+- id: comment-002
+  template: "{% comment foo %}hello"
+  error_path: 1
+- id: comment-003
+  template: "{% comment %}{% comment %}inner{% endcomment %}"
+  error_path: 1
+- id: comment-004
+  template: "{% comment %}"
+  error_path: 1
+- id: comment-005
+  template: "{%- comment -%}hello"
+  error_path: 1
+- id: comment-020
+  template: "{% comment %}{% raw %}hello{% endcomment %}"
+  error_path: 2
+- id: comment-021
+  template: "{% comment %}{% raw %}hello"
+  error_path: 2
+- id: comment-100
+  template: "{% comment %}hello{% endcomment %}"
+  error_path: 0
+- id: comment-101
+  template: "{% comment %}{% endcomment %}"
+  error_path: 0
+- id: comment-102
+  template: "{% comment foo %}hello{% endcomment %}"
+  error_path: 0
+- id: comment-103
+  template: "{% comment foo bar baz %}hello{% endcomment %}"
+  error_path: 0
+- id: comment-104
+  template: "{% comment | filter %}hello{% endcomment %}"
+  error_path: 0
+- id: comment-105
+  template: "{% comment 123 %}hello{% endcomment %}"
+  error_path: 0
+- id: comment-106
+  template: '{% comment "hello" %}hello{% endcomment %}'
+  error_path: 0
+- id: comment-107
+  template: "{% comment = + - %}hello{% endcomment %}"
+  error_path: 0
+- id: comment-108
+  template: "{%- comment %}hello{% endcomment %}"
+  error_path: 0
+- id: comment-109
+  template: "{% comment -%}hello{% endcomment %}"
+  error_path: 0
+- id: comment-110
+  template: "{%- comment -%}hello{%- endcomment -%}"
+  error_path: 0
+- id: comment-111
+  template: "{%  comment   %}hello{% endcomment %}"
+  error_path: 0
+- id: comment-120
+  template: "{% comment %}{% if %}{% endcomment %}"
+  error_path: 0
+- id: comment-121
+  template: "{% comment %}this is {{{ not }}} valid{{ liquid{% endcomment %}"
+  error_path: 0
+- id: comment-122
+  template: '{% comment %}<div class="test">{% endcomment %}'
+  error_path: 0
+- id: comment-123
+  template: "{% comment %}{% for x in y %}{% endcomment %}"
+  error_path: 0
+- id: comment-130
+  template: "{% comment %}{% comment %}inner{% endcomment %}{% endcomment %}"
+  error_path: 0
+- id: comment-131
+  template: "{% comment %}{% comment %}{% comment %}deep{% endcomment %}{% endcomment
+    %}{% endcomment %}"
+  error_path: 0
+- id: comment-140
+  template: "{% comment %}{% raw %}hello{% endraw %}{% endcomment %}"
+  error_path: 0
+- id: comment-141
+  template: "{% comment %}{% raw %}{% endcomment %}{% endraw %}{% endcomment %}"
+  error_path: 0
+- id: comment-150
+  template: "{% comment %}a{% endcomment %}{% comment %}b{% endcomment %}"
+  error_path: 0
+- id: comment-151
+  template: hello{% comment %}world{% endcomment %}goodbye
+  error_path: 0
+- id: comment-160
+  template: "{{ shop.name }}"
+  error_path: 0
+- id: comment-161
+  template: "{% endcomment %}"
+  error_path: 0

@@ -1,0 +1,44 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: style-mut-end-trail-id
+  template: "{% style extra %}{% endstyle %}"
+  error_path: end
+- id: style-mut-end-trail-number
+  template: "{% style 42 %}{% endstyle %}"
+  error_path: end
+- id: style-mut-end-trail-string
+  template: "{% style 'hi' %}{% endstyle %}"
+  error_path: end
+- id: style-mut-end-trail-pipe
+  template: "{% style | %}{% endstyle %}"
+  error_path: end
+- id: style-mut-end-trail-colon
+  template: "{% style : %}{% endstyle %}"
+  error_path: end
+- id: style-mut-end-trail-comma
+  template: "{% style , %}{% endstyle %}"
+  error_path: end
+- id: style-mut-end-trail-open_square
+  template: "{% style [ %}{% endstyle %}"
+  error_path: end
+- id: style-mut-end-trail-close_square
+  template: "{% style ] %}{% endstyle %}"
+  error_path: end
+- id: style-mut-end-trail-open_round
+  template: "{% style ( %}{% endstyle %}"
+  error_path: end
+- id: style-mut-end-trail-close_round
+  template: "{% style ) %}{% endstyle %}"
+  error_path: end
+- id: style-mut-end-trail-question
+  template: "{% style ? %}{% endstyle %}"
+  error_path: end
+- id: style-mut-end-trail-dot
+  template: "{% style . %}{% endstyle %}"
+  error_path: end
+- id: style-mut-end-trail-comparison
+  template: "{% style == %}{% endstyle %}"
+  error_path: end
+- id: style-mut-end-trail-dash
+  template: "{% style - %}{% endstyle %}"
+  error_path: end

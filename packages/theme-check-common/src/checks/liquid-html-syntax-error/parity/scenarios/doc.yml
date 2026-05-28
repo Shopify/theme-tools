@@ -1,0 +1,138 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: doc-001
+  template: "{% doc foo %}{% enddoc %}"
+  error_path: 1
+- id: doc-002
+  template: "{% doc foo bar %}{% enddoc %}"
+  error_path: 1
+- id: doc-003
+  template: "{% doc 123 %}{% enddoc %}"
+  error_path: 1
+- id: doc-004
+  template: "{% doc 'hello' %}{% enddoc %}"
+  error_path: 1
+- id: doc-005
+  template: "{% doc == %}{% enddoc %}"
+  error_path: 1
+- id: doc-006
+  template: "{% doc | %}{% enddoc %}"
+  error_path: 1
+- id: doc-007
+  template: "{% doc @#$ %}{% enddoc %}"
+  error_path: 1
+- id: doc-008
+  template: "{%- doc foo -%}{%- enddoc -%}"
+  error_path: 1
+- id: doc-009
+  template: "{% doc foo %}{% enddoc %}"
+  error_path: 1
+- id: doc-010
+  template: "{% doc foo %}some content"
+  error_path: 1
+- id: doc-020
+  template: "{% doc %}{% doc %}{% enddoc %}{% enddoc %}"
+  error_path: 2
+- id: doc-021
+  template: "{% doc %}hello{% doc %}world{% enddoc %}{% enddoc %}"
+  error_path: 2
+- id: doc-022
+  template: "{% doc %}{% doc %}{% enddoc %}"
+  error_path: 2
+- id: doc-023
+  template: "{% doc %}{% doc %}content"
+  error_path: 2
+- id: doc-024
+  template: "{% doc %}{% doc %}{% doc %}{% enddoc %}"
+  error_path: 2
+- id: doc-025
+  template: "{% doc %}{% doc foo %}{% enddoc %}"
+  error_path: 2
+- id: doc-040
+  template: "{% doc %}"
+  error_path: 3
+- id: doc-041
+  template: "{% doc %}some content here"
+  error_path: 3
+- id: doc-042
+  template: "{% doc %}{% if true %}hello{% endif %}"
+  error_path: 3
+- id: doc-043
+  template: "{%- doc -%}content"
+  error_path: 3
+- id: doc-044
+  template: |-
+    hello
+
+    {% doc %}content
+  error_path: 3
+- id: doc-045
+  template: "{% doc %}a{% enddoc %}{% doc %}b"
+  error_path: 3
+- id: doc-100
+  template: "{% doc %}{% enddoc %}"
+  error_path: 0
+- id: doc-101
+  template: "{% doc %}This is documentation{% enddoc %}"
+  error_path: 0
+- id: doc-102
+  template: |-
+    {% doc %}
+    line1
+    line2
+    {% enddoc %}
+  error_path: 0
+- id: doc-103
+  template: "{% doc %}{% if true %}hello{% endif %}{% enddoc %}"
+  error_path: 0
+- id: doc-104
+  template: '{% doc %}<div class="test">content</div>{% enddoc %}'
+  error_path: 0
+- id: doc-105
+  template: "{% doc %}{{ variable }} and {{{ triple }}}{% enddoc %}"
+  error_path: 0
+- id: doc-106
+  template: "{%- doc %}content{% enddoc %}"
+  error_path: 0
+- id: doc-107
+  template: "{% doc -%}content{% enddoc %}"
+  error_path: 0
+- id: doc-108
+  template: "{%- doc -%}content{%- enddoc -%}"
+  error_path: 0
+- id: doc-109
+  template: "{%  doc   %}content{%  enddoc   %}"
+  error_path: 0
+- id: doc-110
+  template: hello{% doc %}world{% enddoc %}goodbye
+  error_path: 0
+- id: doc-111
+  template: "{% doc %}a{% enddoc %}{% doc %}b{% enddoc %}"
+  error_path: 0
+- id: doc-112
+  template: |-
+    line1
+    {% doc %}
+    content
+    {% enddoc %}
+    line5
+  error_path: 0
+- id: doc-113
+  template: "{{ shop.name }}"
+  error_path: 0
+- id: doc-114
+  template: "{% enddoc %}"
+  error_path: 0
+- id: doc-115
+  template: "{% doc %}content{% enddoc foo %}"
+  error_path: 0
+- id: doc-116
+  template: "{% doc %}   {% enddoc %}"
+  error_path: 0
+- id: doc-117
+  template: |-
+    {% doc %}
+
+
+    {% enddoc %}
+  error_path: 0

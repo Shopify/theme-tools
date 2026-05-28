@@ -1,0 +1,99 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: javascript-001
+  template: "{% javascript foo %}{% endjavascript %}"
+  error_path: markup
+- id: javascript-002
+  template: "{% javascript foo bar %}{% endjavascript %}"
+  error_path: markup
+- id: javascript-003
+  template: "{% javascript 123 %}{% endjavascript %}"
+  error_path: markup
+- id: javascript-004
+  template: "{% javascript 'hello' %}{% endjavascript %}"
+  error_path: markup
+- id: javascript-005
+  template: "{% javascript == %}{% endjavascript %}"
+  error_path: markup
+- id: javascript-006
+  template: "{% javascript | %}{% endjavascript %}"
+  error_path: markup
+- id: javascript-007
+  template: "{% javascript @#$ %}{% endjavascript %}"
+  error_path: markup
+- id: javascript-008
+  template: "{% javascript . %}{% endjavascript %}"
+  error_path: markup
+- id: javascript-009
+  template: "{% javascript : %}{% endjavascript %}"
+  error_path: markup
+- id: javascript-010
+  template: "{% javascript x = 1 %}{% endjavascript %}"
+  error_path: markup
+- id: javascript-011
+  template: "{%- javascript foo -%}{%- endjavascript -%}"
+  error_path: markup
+- id: javascript-012
+  template: "{% javascript foo %}content"
+  error_path: markup
+- id: javascript-020
+  template: "{% javascript %}"
+  error_path: unclosed
+- id: javascript-021
+  template: "{% javascript %}some content"
+  error_path: unclosed
+- id: javascript-022
+  template: "{% javascript %}{% if true %}{% endif %}"
+  error_path: unclosed
+- id: javascript-023
+  template: "{%- javascript -%}content"
+  error_path: unclosed
+- id: javascript-024
+  template: "{% javascript %}a{% endjavascript %}{% javascript %}b"
+  error_path: unclosed
+- id: javascript-025
+  template: |-
+    hello
+
+    {% javascript %}content
+  error_path: unclosed
+- id: javascript-026
+  template: "{% javascript %}{% javascript %}content"
+  error_path: unclosed
+- id: javascript-100
+  template: "{% javascript %}content{% endjavascript %}"
+  error_path: valid
+- id: javascript-101
+  template: "{% javascript %}{% endjavascript %}"
+  error_path: valid
+- id: javascript-102
+  template: "{% javascript %}{{ x }} {% if true %}{% endif %}{% endjavascript %}"
+  error_path: valid
+- id: javascript-103
+  template: "{%- javascript -%}c{%- endjavascript -%}"
+  error_path: valid
+- id: javascript-104
+  template: "{%  javascript   %}c{%  endjavascript   %}"
+  error_path: valid
+- id: javascript-105
+  template: "{% javascript %}a{% endjavascript %}{% javascript %}b{% endjavascript %}"
+  error_path: valid
+- id: javascript-106
+  template: hello{% javascript %}world{% endjavascript %}bye
+  error_path: valid
+- id: javascript-107
+  template: "{% javascript %}c{% endjavascript foo %}"
+  error_path: valid
+- id: javascript-108
+  template: |-
+    {% javascript %}
+    line1
+    line2
+    {% endjavascript %}
+  error_path: valid
+- id: javascript-109
+  template: "{% javascript %}{% javascript %}inner{% endjavascript %}"
+  error_path: valid
+- id: javascript-200
+  template: "{% endjavascript %}"
+  error_path: unknown_end_tag

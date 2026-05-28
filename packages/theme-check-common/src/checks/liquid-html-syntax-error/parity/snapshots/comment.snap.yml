@@ -1,0 +1,95 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: comment-001
+  error: 'Liquid syntax error: ''comment'' tag was never closed'
+  type: SyntaxError
+- id: comment-002
+  error: 'Liquid syntax error: ''comment'' tag was never closed'
+  type: SyntaxError
+- id: comment-003
+  error: 'Liquid syntax error: ''comment'' tag was never closed'
+  type: SyntaxError
+- id: comment-004
+  error: 'Liquid syntax error: ''comment'' tag was never closed'
+  type: SyntaxError
+- id: comment-005
+  error: 'Liquid syntax error: ''comment'' tag was never closed'
+  type: SyntaxError
+- id: comment-020
+  error: 'Liquid syntax error: ''raw'' tag was never closed'
+  type: SyntaxError
+- id: comment-021
+  error: 'Liquid syntax error: ''raw'' tag was never closed'
+  type: SyntaxError
+- id: comment-100
+  error:
+  type:
+- id: comment-101
+  error:
+  type:
+- id: comment-102
+  error:
+  type:
+- id: comment-103
+  error:
+  type:
+- id: comment-104
+  error:
+  type:
+- id: comment-105
+  error:
+  type:
+- id: comment-106
+  error:
+  type:
+- id: comment-107
+  error:
+  type:
+- id: comment-108
+  error:
+  type:
+- id: comment-109
+  error:
+  type:
+- id: comment-110
+  error:
+  type:
+- id: comment-111
+  error:
+  type:
+- id: comment-120
+  error:
+  type:
+- id: comment-121
+  error: 'Liquid syntax error: ''comment'' tag was never closed'
+  type: SyntaxError
+- id: comment-122
+  error:
+  type:
+- id: comment-123
+  error:
+  type:
+- id: comment-130
+  error:
+  type:
+- id: comment-131
+  error:
+  type:
+- id: comment-140
+  error:
+  type:
+- id: comment-141
+  error:
+  type:
+- id: comment-150
+  error:
+  type:
+- id: comment-151
+  error:
+  type:
+- id: comment-160
+  error:
+  type:
+- id: comment-161
+  error: 'Liquid syntax error: Unknown tag ''endcomment'''
+  type: SyntaxError

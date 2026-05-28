@@ -1,0 +1,63 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: break-100
+  template: "{% for i in (1..5) %}{% break %}{% endfor %}"
+  error_path: 0
+- id: break-101
+  template: "{% for i in (1..5) %}{%- break %}{% endfor %}"
+  error_path: 0
+- id: break-102
+  template: "{% for i in (1..5) %}{% break -%}{% endfor %}"
+  error_path: 0
+- id: break-103
+  template: "{% for i in (1..5) %}{%- break -%}{% endfor %}"
+  error_path: 0
+- id: break-104
+  template: "{% for i in (1..5) %}{%  break   %}{% endfor %}"
+  error_path: 0
+- id: break-200
+  template: "{% for i in (1..5) %}{% break x %}{% endfor %}"
+  error_path: 0
+- id: break-201
+  template: "{% for i in (1..5) %}{% break 123 %}{% endfor %}"
+  error_path: 0
+- id: break-202
+  template: "{% for i in (1..5) %}{% break 'hello' %}{% endfor %}"
+  error_path: 0
+- id: break-203
+  template: "{% for i in (1..5) %}{% break i | plus: 1 %}{% endfor %}"
+  error_path: 0
+- id: break-204
+  template: "{% for i in (1..5) %}{% break == %}{% endfor %}"
+  error_path: 0
+- id: break-205
+  template: "{% for i in (1..5) %}{% break x y z %}{% endfor %}"
+  error_path: 0
+- id: break-206
+  template: "{% for i in (1..5) %}{% break @ # $ %}{% endfor %}"
+  error_path: 0
+- id: break-207
+  template: "{% for i in (1..5) %}{% break | %}{% endfor %}"
+  error_path: 0
+- id: break-208
+  template: "{% for i in (1..5) %}{% break . %}{% endfor %}"
+  error_path: 0
+- id: break-209
+  template: "{% for i in (1..5) %}{% break [0] %}{% endfor %}"
+  error_path: 0
+- id: break-300
+  template: "{% break %}"
+  error_path: 0
+- id: break-301
+  template: "{% break garbage %}"
+  error_path: 0
+- id: break-302
+  template: "{% for i in (1..5) %}{% break %}{% break %}{% endfor %}"
+  error_path: 0
+- id: break-303
+  template: "{% for i in (1..3) %}{% for j in (1..3) %}{% break %}{% endfor %}{% endfor
+    %}"
+  error_path: 0
+- id: break-304
+  template: "{{ shop.name }}"
+  error_path: 0

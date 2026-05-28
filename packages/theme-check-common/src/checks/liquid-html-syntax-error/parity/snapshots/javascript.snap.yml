@@ -1,0 +1,92 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: javascript-001
+  error: 'Liquid syntax error: Syntax Error in ''javascript'' - Valid syntax: javascript'
+  type: SyntaxError
+- id: javascript-002
+  error: 'Liquid syntax error: Syntax Error in ''javascript'' - Valid syntax: javascript'
+  type: SyntaxError
+- id: javascript-003
+  error: 'Liquid syntax error: Syntax Error in ''javascript'' - Valid syntax: javascript'
+  type: SyntaxError
+- id: javascript-004
+  error: 'Liquid syntax error: Syntax Error in ''javascript'' - Valid syntax: javascript'
+  type: SyntaxError
+- id: javascript-005
+  error: 'Liquid syntax error: Syntax Error in ''javascript'' - Valid syntax: javascript'
+  type: SyntaxError
+- id: javascript-006
+  error: 'Liquid syntax error: Syntax Error in ''javascript'' - Valid syntax: javascript'
+  type: SyntaxError
+- id: javascript-007
+  error: 'Liquid syntax error: Syntax Error in ''javascript'' - Valid syntax: javascript'
+  type: SyntaxError
+- id: javascript-008
+  error: 'Liquid syntax error: Syntax Error in ''javascript'' - Valid syntax: javascript'
+  type: SyntaxError
+- id: javascript-009
+  error: 'Liquid syntax error: Syntax Error in ''javascript'' - Valid syntax: javascript'
+  type: SyntaxError
+- id: javascript-010
+  error: 'Liquid syntax error: Syntax Error in ''javascript'' - Valid syntax: javascript'
+  type: SyntaxError
+- id: javascript-011
+  error: 'Liquid syntax error: Syntax Error in ''javascript'' - Valid syntax: javascript'
+  type: SyntaxError
+- id: javascript-012
+  error: 'Liquid syntax error: Syntax Error in ''javascript'' - Valid syntax: javascript'
+  type: SyntaxError
+- id: javascript-020
+  error: 'Liquid syntax error: ''javascript'' tag was never closed'
+  type: SyntaxError
+- id: javascript-021
+  error: 'Liquid syntax error: ''javascript'' tag was never closed'
+  type: SyntaxError
+- id: javascript-022
+  error: 'Liquid syntax error: ''javascript'' tag was never closed'
+  type: SyntaxError
+- id: javascript-023
+  error: 'Liquid syntax error: ''javascript'' tag was never closed'
+  type: SyntaxError
+- id: javascript-024
+  error: 'Liquid syntax error: ''javascript'' tag was never closed'
+  type: SyntaxError
+- id: javascript-025
+  error: 'Liquid syntax error: ''javascript'' tag was never closed'
+  type: SyntaxError
+- id: javascript-026
+  error: 'Liquid syntax error: ''javascript'' tag was never closed'
+  type: SyntaxError
+- id: javascript-100
+  error:
+  type:
+- id: javascript-101
+  error:
+  type:
+- id: javascript-102
+  error:
+  type:
+- id: javascript-103
+  error:
+  type:
+- id: javascript-104
+  error:
+  type:
+- id: javascript-105
+  error:
+  type:
+- id: javascript-106
+  error:
+  type:
+- id: javascript-107
+  error:
+  type:
+- id: javascript-108
+  error:
+  type:
+- id: javascript-109
+  error:
+  type:
+- id: javascript-200
+  error: 'Liquid syntax error: Unknown tag ''endjavascript'''
+  type: SyntaxError

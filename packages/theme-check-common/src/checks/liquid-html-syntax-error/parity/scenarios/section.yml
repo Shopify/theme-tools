@@ -1,0 +1,50 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: section-mut-section_name-eos
+  template: "{% section  %}"
+  error_path: section_name
+- id: section-mut-section_name-id
+  template: "{% section x %}"
+  error_path: section_name
+- id: section-mut-end-trail-id
+  template: "{% section 'snippet' extra %}"
+  error_path: end
+- id: section-mut-end-trail-number
+  template: "{% section 'snippet' 42 %}"
+  error_path: end
+- id: section-mut-end-trail-string
+  template: "{% section 'snippet' 'hi' %}"
+  error_path: end
+- id: section-mut-end-trail-pipe
+  template: "{% section 'snippet' | %}"
+  error_path: end
+- id: section-mut-end-trail-colon
+  template: "{% section 'snippet' : %}"
+  error_path: end
+- id: section-mut-end-trail-comma
+  template: "{% section 'snippet' , %}"
+  error_path: end
+- id: section-mut-end-trail-open_square
+  template: "{% section 'snippet' [ %}"
+  error_path: end
+- id: section-mut-end-trail-close_square
+  template: "{% section 'snippet' ] %}"
+  error_path: end
+- id: section-mut-end-trail-open_round
+  template: "{% section 'snippet' ( %}"
+  error_path: end
+- id: section-mut-end-trail-close_round
+  template: "{% section 'snippet' ) %}"
+  error_path: end
+- id: section-mut-end-trail-question
+  template: "{% section 'snippet' ? %}"
+  error_path: end
+- id: section-mut-end-trail-dot
+  template: "{% section 'snippet' . %}"
+  error_path: end
+- id: section-mut-end-trail-comparison
+  template: "{% section 'snippet' == %}"
+  error_path: end
+- id: section-mut-end-trail-dash
+  template: "{% section 'snippet' - %}"
+  error_path: end

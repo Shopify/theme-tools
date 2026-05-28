@@ -1,0 +1,427 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: table_row-mut-attr_colon-eos
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step ,"'
+  type: SyntaxError
+- id: table_row-mut-attr_colon-number
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , 42"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-bare_bracket
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : [0]"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-close_round-004
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : )"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-close_square-003
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : ]"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-colon-002
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : :"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-comma-001
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : ,"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-comparison-009
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : =="'
+  type: SyntaxError
+- id: table_row-mut-attr_value-comparison-010
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : !="'
+  type: SyntaxError
+- id: table_row-mut-attr_value-comparison-011
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : <"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-comparison-012
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : >"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-comparison-013
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : <="'
+  type: SyntaxError
+- id: table_row-mut-attr_value-comparison-014
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : >="'
+  type: SyntaxError
+- id: table_row-mut-attr_value-comparison-015
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : contains"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-dash-006
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : -"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-dot-007
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : ."'
+  type: SyntaxError
+- id: table_row-mut-attr_value-dotdot-008
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : .."'
+  type: SyntaxError
+- id: table_row-mut-attr_value-eos-016
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , :"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "x in x step , : &"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "x in x step , : *"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "x in x step , : @"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "x in x step , : \"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "x in x step , : `"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "x in x step , : ^"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "x in x step , : $"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "x in x step , : #"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "x in x step , : ;"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "x in x step , : ~"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "x in x step , : "hello"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "x in x step , : ''hello"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : x[,]"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lookup-dot_number
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : x.123"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lookup-dot_string
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : x."y""'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lookup-range_bad_separator
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : (1, 5)"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lookup-range_missing_end
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : (1..)"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lookup-trailing_dot
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : x."'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lookup-unclosed_bracket
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : x[0"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-lookup-unclosed_range
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : (1..5"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-pipe-000
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : |"'
+  type: SyntaxError
+- id: table_row-mut-attr_value-question-005
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step , : ?"'
+  type: SyntaxError
+- id: table_row-mut-collection-bare_bracket
+  error: 'Liquid syntax error: Bare bracket access is not allowed in strict2 mode.
+    Use self[''...''] instead in "x in [0]"'
+  type: SyntaxError
+- id: table_row-mut-collection-close_round-004
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "x
+    in )"'
+  type: SyntaxError
+- id: table_row-mut-collection-close_square-003
+  error: 'Liquid syntax error: [:close_square, "]"] is not a valid expression in "x
+    in ]"'
+  type: SyntaxError
+- id: table_row-mut-collection-colon-002
+  error: 'Liquid syntax error: [:colon, ":"] is not a valid expression in "x in :"'
+  type: SyntaxError
+- id: table_row-mut-collection-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x in ,"'
+  type: SyntaxError
+- id: table_row-mut-collection-comparison-009
+  error: 'Liquid syntax error: [:comparison, "=="] is not a valid expression in "x
+    in =="'
+  type: SyntaxError
+- id: table_row-mut-collection-comparison-010
+  error: 'Liquid syntax error: [:comparison, "!="] is not a valid expression in "x
+    in !="'
+  type: SyntaxError
+- id: table_row-mut-collection-comparison-011
+  error: 'Liquid syntax error: [:comparison, "<"] is not a valid expression in "x
+    in <"'
+  type: SyntaxError
+- id: table_row-mut-collection-comparison-012
+  error: 'Liquid syntax error: [:comparison, ">"] is not a valid expression in "x
+    in >"'
+  type: SyntaxError
+- id: table_row-mut-collection-comparison-013
+  error: 'Liquid syntax error: [:comparison, "<="] is not a valid expression in "x
+    in <="'
+  type: SyntaxError
+- id: table_row-mut-collection-comparison-014
+  error: 'Liquid syntax error: [:comparison, ">="] is not a valid expression in "x
+    in >="'
+  type: SyntaxError
+- id: table_row-mut-collection-comparison-015
+  error: 'Liquid syntax error: [:comparison, "contains"] is not a valid expression
+    in "x in contains"'
+  type: SyntaxError
+- id: table_row-mut-collection-dash-006
+  error: 'Liquid syntax error: [:dash, "-"] is not a valid expression in "x in -"'
+  type: SyntaxError
+- id: table_row-mut-collection-dot-007
+  error: 'Liquid syntax error: [:dot, "."] is not a valid expression in "x in ."'
+  type: SyntaxError
+- id: table_row-mut-collection-dotdot-008
+  error: 'Liquid syntax error: [:dotdot, ".."] is not a valid expression in "x in
+    .."'
+  type: SyntaxError
+- id: table_row-mut-collection-eos-016
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x in"'
+  type: SyntaxError
+- id: table_row-mut-collection-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "x in &"'
+  type: SyntaxError
+- id: table_row-mut-collection-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "x in *"'
+  type: SyntaxError
+- id: table_row-mut-collection-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "x in @"'
+  type: SyntaxError
+- id: table_row-mut-collection-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "x in \"'
+  type: SyntaxError
+- id: table_row-mut-collection-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "x in `"'
+  type: SyntaxError
+- id: table_row-mut-collection-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "x in ^"'
+  type: SyntaxError
+- id: table_row-mut-collection-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "x in $"'
+  type: SyntaxError
+- id: table_row-mut-collection-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "x in #"'
+  type: SyntaxError
+- id: table_row-mut-collection-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "x in ;"'
+  type: SyntaxError
+- id: table_row-mut-collection-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "x in ~"'
+  type: SyntaxError
+- id: table_row-mut-collection-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "x in "hello"'
+  type: SyntaxError
+- id: table_row-mut-collection-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "x in ''hello"'
+  type: SyntaxError
+- id: table_row-mut-collection-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x in x[,]"'
+  type: SyntaxError
+- id: table_row-mut-collection-lookup-dot_number
+  error: 'Liquid syntax error: Expected id but found number in "x in x.123"'
+  type: SyntaxError
+- id: table_row-mut-collection-lookup-dot_string
+  error: 'Liquid syntax error: Expected id but found string in "x in x."y""'
+  type: SyntaxError
+- id: table_row-mut-collection-lookup-range_bad_separator
+  error: 'Liquid syntax error: Expected dotdot but found comma in "x in (1, 5)"'
+  type: SyntaxError
+- id: table_row-mut-collection-lookup-range_missing_end
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "x
+    in (1..)"'
+  type: SyntaxError
+- id: table_row-mut-collection-lookup-trailing_dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x in x."'
+  type: SyntaxError
+- id: table_row-mut-collection-lookup-unclosed_bracket
+  error: 'Liquid syntax error: Expected close_square but found end_of_string in "x
+    in x[0"'
+  type: SyntaxError
+- id: table_row-mut-collection-lookup-unclosed_range
+  error: 'Liquid syntax error: Expected close_round but found end_of_string in "x
+    in (1..5"'
+  type: SyntaxError
+- id: table_row-mut-collection-pipe-000
+  error: 'Liquid syntax error: [:pipe, "|"] is not a valid expression in "x in |"'
+  type: SyntaxError
+- id: table_row-mut-collection-question-005
+  error: 'Liquid syntax error: [:question, "?"] is not a valid expression in "x in
+    ?"'
+  type: SyntaxError
+- id: table_row-mut-end-trail-close_round
+  error: 'Liquid syntax error: Expected end_of_string but found close_round in "x
+    in x )"'
+  type: SyntaxError
+- id: table_row-mut-end-trail-close_square
+  error: 'Liquid syntax error: Expected end_of_string but found close_square in "x
+    in x ]"'
+  type: SyntaxError
+- id: table_row-mut-end-trail-colon
+  error: 'Liquid syntax error: Expected end_of_string but found colon in "x in x :"'
+  type: SyntaxError
+- id: table_row-mut-end-trail-comma
+  error:
+  type:
+- id: table_row-mut-end-trail-comparison
+  error: 'Liquid syntax error: Expected end_of_string but found comparison in "x in
+    x =="'
+  type: SyntaxError
+- id: table_row-mut-end-trail-dash
+  error: 'Liquid syntax error: Expected end_of_string but found dash in "x in x -"'
+  type: SyntaxError
+- id: table_row-mut-end-trail-dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x in x ."'
+  type: SyntaxError
+- id: table_row-mut-end-trail-id
+  error: 'Liquid syntax error: Invalid attribute ''extra'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x extra"'
+  type: SyntaxError
+- id: table_row-mut-end-trail-number
+  error: 'Liquid syntax error: Expected end_of_string but found number in "x in x
+    42"'
+  type: SyntaxError
+- id: table_row-mut-end-trail-open_round
+  error: 'Liquid syntax error: Expected end_of_string but found open_round in "x in
+    x ("'
+  type: SyntaxError
+- id: table_row-mut-end-trail-open_square
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x in
+    x ["'
+  type: SyntaxError
+- id: table_row-mut-end-trail-pipe
+  error: 'Liquid syntax error: Expected end_of_string but found pipe in "x in x |"'
+  type: SyntaxError
+- id: table_row-mut-end-trail-question
+  error: 'Liquid syntax error: Expected end_of_string but found question in "x in
+    x ?"'
+  type: SyntaxError
+- id: table_row-mut-end-trail-string
+  error: 'Liquid syntax error: Expected end_of_string but found string in "x in x
+    ''hi''"'
+  type: SyntaxError
+- id: table_row-mut-in_keyword-eos
+  error: 'Liquid syntax error: For loops require an ''in'' clause in "x"'
+  type: SyntaxError
+- id: table_row-mut-in_keyword-id
+  error: 'Liquid syntax error: For loops require an ''in'' clause in "x of"'
+  type: SyntaxError
+- id: table_row-mut-invalid_attribute-invalid
+  error: 'Liquid syntax error: Invalid attribute ''step'' in tablerow loop. Valid
+    attributes are cols, limit, offset, and range in "x in x step ,"'
+  type: SyntaxError
+- id: table_row-mut-valid-000
+  error:
+  type:
+- id: table_row-mut-valid-001
+  error:
+  type:
+- id: table_row-mut-valid-002
+  error:
+  type:
+- id: table_row-mut-valid-003
+  error:
+  type:
+- id: table_row-mut-valid-004
+  error:
+  type:
+- id: table_row-mut-valid-005
+  error:
+  type:
+- id: table_row-mut-valid-006
+  error:
+  type:
+- id: table_row-mut-valid-007
+  error:
+  type:
+- id: table_row-mut-valid-008
+  error:
+  type:
+- id: table_row-mut-valid-009
+  error:
+  type:
+- id: table_row-mut-valid-010
+  error:
+  type:
+- id: table_row-mut-valid-011
+  error:
+  type:
+- id: table_row-mut-valid-012
+  error:
+  type:
+- id: table_row-mut-valid-013
+  error:
+  type:
+- id: table_row-mut-valid-014
+  error:
+  type:
+- id: table_row-mut-variable_name-eos
+  error: 'Liquid syntax error: Expected id but found end_of_string in ""'
+  type: SyntaxError
+- id: table_row-mut-variable_name-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "&"'
+  type: SyntaxError
+- id: table_row-mut-variable_name-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "*"'
+  type: SyntaxError
+- id: table_row-mut-variable_name-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "@"'
+  type: SyntaxError
+- id: table_row-mut-variable_name-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "\"'
+  type: SyntaxError
+- id: table_row-mut-variable_name-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "`"'
+  type: SyntaxError
+- id: table_row-mut-variable_name-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "^"'
+  type: SyntaxError
+- id: table_row-mut-variable_name-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "$"'
+  type: SyntaxError
+- id: table_row-mut-variable_name-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "#"'
+  type: SyntaxError
+- id: table_row-mut-variable_name-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in ";"'
+  type: SyntaxError
+- id: table_row-mut-variable_name-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "~"'
+  type: SyntaxError
+- id: table_row-mut-variable_name-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in ""hello"'
+  type: SyntaxError
+- id: table_row-mut-variable_name-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "''hello"'
+  type: SyntaxError
+- id: table_row-mut-variable_name-number
+  error: 'Liquid syntax error: Expected id but found number in "42"'
+  type: SyntaxError

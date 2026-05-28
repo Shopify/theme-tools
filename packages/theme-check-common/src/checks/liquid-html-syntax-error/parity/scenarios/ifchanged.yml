@@ -1,0 +1,60 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: ifchanged-100
+  template: "{% ifchanged %}hello{% endifchanged %}"
+  error_path: 0
+- id: ifchanged-101
+  template: "{%- ifchanged %}hello{% endifchanged %}"
+  error_path: 0
+- id: ifchanged-102
+  template: "{% ifchanged -%}hello{% endifchanged %}"
+  error_path: 0
+- id: ifchanged-103
+  template: "{%- ifchanged -%}hello{% endifchanged %}"
+  error_path: 0
+- id: ifchanged-104
+  template: "{%  ifchanged   %}hello{% endifchanged %}"
+  error_path: 0
+- id: ifchanged-200
+  template: "{% ifchanged x %}hello{% endifchanged %}"
+  error_path: 0
+- id: ifchanged-201
+  template: "{% ifchanged 123 %}hello{% endifchanged %}"
+  error_path: 0
+- id: ifchanged-202
+  template: "{% ifchanged 'hello' %}world{% endifchanged %}"
+  error_path: 0
+- id: ifchanged-203
+  template: "{% ifchanged i | plus: 1 %}hello{% endifchanged %}"
+  error_path: 0
+- id: ifchanged-204
+  template: "{% ifchanged == %}hello{% endifchanged %}"
+  error_path: 0
+- id: ifchanged-205
+  template: "{% ifchanged x y z %}hello{% endifchanged %}"
+  error_path: 0
+- id: ifchanged-206
+  template: "{% ifchanged @ # $ %}hello{% endifchanged %}"
+  error_path: 0
+- id: ifchanged-207
+  template: "{% ifchanged | %}hello{% endifchanged %}"
+  error_path: 0
+- id: ifchanged-208
+  template: "{% ifchanged . %}hello{% endifchanged %}"
+  error_path: 0
+- id: ifchanged-209
+  template: "{% ifchanged [0] %}hello{% endifchanged %}"
+  error_path: 0
+- id: ifchanged-300
+  template: "{% ifchanged %}{% endifchanged %}"
+  error_path: 0
+- id: ifchanged-301
+  template: "{% ifchanged garbage %}{% endifchanged %}"
+  error_path: 0
+- id: ifchanged-302
+  template: "{% for i in (1..5) %}{% ifchanged %}{{ i }}{% endifchanged %}{% endfor
+    %}"
+  error_path: 0
+- id: ifchanged-303
+  template: "{{ shop.name }}"
+  error_path: 0

@@ -1,0 +1,47 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: liquid-100
+  error:
+  type:
+- id: liquid-101
+  error:
+  type:
+- id: liquid-102
+  error:
+  type:
+- id: liquid-103
+  error:
+  type:
+- id: liquid-104
+  error:
+  type:
+- id: liquid-105
+  error:
+  type:
+- id: liquid-200
+  error: 'Liquid syntax error: Unknown tag ''hello'''
+  type: SyntaxError
+- id: liquid-201
+  error: 'Liquid syntax error: Unknown tag ''foobar'''
+  type: SyntaxError
+- id: liquid-203
+  error: 'Liquid syntax error: ''endfor'' is not a valid delimiter for liquid tags.
+    use %}'
+  type: SyntaxError
+- id: liquid-204
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in ""'
+  type: SyntaxError
+- id: liquid-205
+  error: 'Liquid syntax error: Syntax Error in ''assign'' - Valid syntax: assign [var]
+    = [source] in ""'
+  type: SyntaxError
+- id: liquid-206
+  error:
+  type:
+- id: liquid-207
+  error: 'Liquid syntax error: For loops require an ''in'' clause in "i"'
+  type: SyntaxError
+- id: liquid-208
+  error: 'Liquid syntax error: ''for'' tag was never closed'
+  type: SyntaxError

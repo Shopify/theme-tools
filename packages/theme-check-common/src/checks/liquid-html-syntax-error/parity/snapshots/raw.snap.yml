@@ -1,0 +1,99 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: liquid-endraw
+  error: 'Liquid syntax error: ''endraw'' is not a valid delimiter for liquid tags.
+    use %}'
+  type: SyntaxError
+- id: raw-001
+  error: 'Liquid syntax error: Syntax Error in ''raw'' - Valid syntax: raw'
+  type: SyntaxError
+- id: raw-002
+  error: 'Liquid syntax error: Syntax Error in ''raw'' - Valid syntax: raw'
+  type: SyntaxError
+- id: raw-003
+  error: 'Liquid syntax error: Syntax Error in ''raw'' - Valid syntax: raw'
+  type: SyntaxError
+- id: raw-004
+  error: 'Liquid syntax error: Syntax Error in ''raw'' - Valid syntax: raw'
+  type: SyntaxError
+- id: raw-005
+  error: 'Liquid syntax error: Syntax Error in ''raw'' - Valid syntax: raw'
+  type: SyntaxError
+- id: raw-006
+  error: 'Liquid syntax error: Syntax Error in ''raw'' - Valid syntax: raw'
+  type: SyntaxError
+- id: raw-007
+  error: 'Liquid syntax error: Syntax Error in ''raw'' - Valid syntax: raw'
+  type: SyntaxError
+- id: raw-008
+  error: 'Liquid syntax error: Syntax Error in ''raw'' - Valid syntax: raw'
+  type: SyntaxError
+- id: raw-009
+  error: 'Liquid syntax error: Syntax Error in ''raw'' - Valid syntax: raw'
+  type: SyntaxError
+- id: raw-010
+  error: 'Liquid syntax error: Syntax Error in ''raw'' - Valid syntax: raw'
+  type: SyntaxError
+- id: raw-011
+  error: 'Liquid syntax error: Syntax Error in ''raw'' - Valid syntax: raw'
+  type: SyntaxError
+- id: raw-012
+  error: 'Liquid syntax error: Syntax Error in ''raw'' - Valid syntax: raw'
+  type: SyntaxError
+- id: raw-020
+  error: 'Liquid syntax error: ''raw'' tag was never closed'
+  type: SyntaxError
+- id: raw-021
+  error: 'Liquid syntax error: ''raw'' tag was never closed'
+  type: SyntaxError
+- id: raw-022
+  error: 'Liquid syntax error: ''raw'' tag was never closed'
+  type: SyntaxError
+- id: raw-023
+  error: 'Liquid syntax error: ''raw'' tag was never closed'
+  type: SyntaxError
+- id: raw-024
+  error: 'Liquid syntax error: ''raw'' tag was never closed'
+  type: SyntaxError
+- id: raw-025
+  error: 'Liquid syntax error: ''raw'' tag was never closed'
+  type: SyntaxError
+- id: raw-026
+  error: 'Liquid syntax error: ''raw'' tag was never closed'
+  type: SyntaxError
+- id: raw-100
+  error:
+  type:
+- id: raw-101
+  error:
+  type:
+- id: raw-102
+  error:
+  type:
+- id: raw-103
+  error:
+  type:
+- id: raw-104
+  error:
+  type:
+- id: raw-105
+  error:
+  type:
+- id: raw-106
+  error:
+  type:
+- id: raw-107
+  error: 'Liquid syntax error: Unknown tag ''endraw'''
+  type: SyntaxError
+- id: raw-108
+  error:
+  type:
+- id: raw-109
+  error:
+  type:
+- id: raw-110
+  error:
+  type:
+- id: raw-111
+  error:
+  type:

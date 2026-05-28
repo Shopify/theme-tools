@@ -1,0 +1,647 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: elsif-mut-elsif_boolean_comparison_rhs-bare_bracket
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    [0]"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-close_round-004
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    )"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-close_square-003
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    ]"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-colon-002
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    :"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-comma-001
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    ,"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-comparison-009
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    =="'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-comparison-010
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    !="'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-comparison-011
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    <"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-comparison-012
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    >"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-comparison-013
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    <="'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-comparison-014
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    >="'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-comparison-015
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    contains"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-dash-006
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    -"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-dot-007
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    ."'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-dotdot-008
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    .."'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-eos-016
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x =="'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "x and x x == &"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "x and x x == *"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "x and x x == @"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "x and x x == \"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "x and x x == `"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "x and x x == ^"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "x and x x == $"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "x and x x == #"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "x and x x == ;"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "x and x x == ~"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "x and x x == "hello"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "x and x x == ''hello"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    x[,]"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lookup-dot_number
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    x.123"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lookup-dot_string
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    x."y""'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lookup-range_bad_separator
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    (1, 5)"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lookup-range_missing_end
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    (1..)"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lookup-trailing_dot
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    x."'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lookup-unclosed_bracket
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    x[0"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-lookup-unclosed_range
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    (1..5"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-pipe-000
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    |"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_comparison_rhs-question-005
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x ==
+    ?"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-bare_bracket
+  error:
+  type:
+- id: elsif-mut-elsif_boolean_expr-close_round-004
+  error: 'Liquid syntax error: Expected end_of_string but found close_round in "x
+    and x )"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-close_square-003
+  error: 'Liquid syntax error: Expected end_of_string but found close_square in "x
+    and x ]"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-colon-002
+  error: 'Liquid syntax error: Expected end_of_string but found colon in "x and x
+    :"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-comma-001
+  error: 'Liquid syntax error: Expected end_of_string but found comma in "x and x
+    ,"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-comparison-009
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x and
+    x =="'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-comparison-010
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x and
+    x !="'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-comparison-011
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x and
+    x <"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-comparison-012
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x and
+    x >"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-comparison-013
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x and
+    x <="'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-comparison-014
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x and
+    x >="'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-comparison-015
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x and
+    x contains"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-dash-006
+  error: 'Liquid syntax error: Expected end_of_string but found dash in "x and x -"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-dot-007
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x and x ."'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-dotdot-008
+  error: 'Liquid syntax error: Expected end_of_string but found dotdot in "x and x
+    .."'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-eos-016
+  error:
+  type:
+- id: elsif-mut-elsif_boolean_expr-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "x and x &"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "x and x *"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "x and x @"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "x and x \"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "x and x `"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "x and x ^"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "x and x $"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "x and x #"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "x and x ;"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "x and x ~"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "x and x "hello"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "x and x ''hello"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x[,]"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lookup-dot_number
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x.123"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lookup-dot_string
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x."y""'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lookup-range_bad_separator
+  error: 'Liquid syntax error: Expected end_of_string but found open_round in "x and
+    x (1, 5)"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lookup-range_missing_end
+  error: 'Liquid syntax error: Expected end_of_string but found open_round in "x and
+    x (1..)"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lookup-trailing_dot
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x."'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lookup-unclosed_bracket
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x and x x[0"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-lookup-unclosed_range
+  error: 'Liquid syntax error: Expected end_of_string but found open_round in "x and
+    x (1..5"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-pipe-000
+  error: 'Liquid syntax error: Expected end_of_string but found pipe in "x and x |"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_expr-question-005
+  error: 'Liquid syntax error: Expected end_of_string but found question in "x and
+    x ?"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_op-eos
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x and"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_op-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "x and &"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_op-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "x and *"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_op-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "x and @"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_op-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "x and \"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_op-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "x and `"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_op-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "x and ^"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_op-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "x and $"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_op-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "x and #"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_op-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "x and ;"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_op-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "x and ~"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_op-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "x and "hello"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_op-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "x and ''hello"'
+  type: SyntaxError
+- id: elsif-mut-elsif_boolean_op-number
+  error:
+  type:
+- id: elsif-mut-elsif_comparison_rhs-bare_bracket
+  error: 'Liquid syntax error: Bare bracket access is not allowed in strict2 mode.
+    Use self[''...''] instead in "x == [0]"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-close_round-004
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "x
+    == )"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-close_square-003
+  error: 'Liquid syntax error: [:close_square, "]"] is not a valid expression in "x
+    == ]"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-colon-002
+  error: 'Liquid syntax error: [:colon, ":"] is not a valid expression in "x == :"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x == ,"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-comparison-009
+  error: 'Liquid syntax error: [:comparison, "=="] is not a valid expression in "x
+    == =="'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-comparison-010
+  error: 'Liquid syntax error: [:comparison, "!="] is not a valid expression in "x
+    == !="'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-comparison-011
+  error: 'Liquid syntax error: [:comparison, "<"] is not a valid expression in "x
+    == <"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-comparison-012
+  error: 'Liquid syntax error: [:comparison, ">"] is not a valid expression in "x
+    == >"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-comparison-013
+  error: 'Liquid syntax error: [:comparison, "<="] is not a valid expression in "x
+    == <="'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-comparison-014
+  error: 'Liquid syntax error: [:comparison, ">="] is not a valid expression in "x
+    == >="'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-comparison-015
+  error: 'Liquid syntax error: [:comparison, "contains"] is not a valid expression
+    in "x == contains"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-dash-006
+  error: 'Liquid syntax error: [:dash, "-"] is not a valid expression in "x == -"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-dot-007
+  error: 'Liquid syntax error: [:dot, "."] is not a valid expression in "x == ."'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-dotdot-008
+  error: 'Liquid syntax error: [:dotdot, ".."] is not a valid expression in "x ==
+    .."'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-eos-016
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x =="'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "x == &"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "x == *"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "x == @"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "x == \"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "x == `"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "x == ^"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "x == $"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "x == #"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "x == ;"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "x == ~"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "x == "hello"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "x == ''hello"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x == x[,]"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lookup-dot_number
+  error: 'Liquid syntax error: Expected id but found number in "x == x.123"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lookup-dot_string
+  error: 'Liquid syntax error: Expected id but found string in "x == x."y""'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lookup-range_bad_separator
+  error: 'Liquid syntax error: Expected dotdot but found comma in "x == (1, 5)"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lookup-range_missing_end
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "x
+    == (1..)"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lookup-trailing_dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x == x."'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lookup-unclosed_bracket
+  error: 'Liquid syntax error: Expected close_square but found end_of_string in "x
+    == x[0"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-lookup-unclosed_range
+  error: 'Liquid syntax error: Expected close_round but found end_of_string in "x
+    == (1..5"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-pipe-000
+  error: 'Liquid syntax error: [:pipe, "|"] is not a valid expression in "x == |"'
+  type: SyntaxError
+- id: elsif-mut-elsif_comparison_rhs-question-005
+  error: 'Liquid syntax error: [:question, "?"] is not a valid expression in "x ==
+    ?"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-bare_bracket
+  error: 'Liquid syntax error: Bare bracket access is not allowed in strict2 mode.
+    Use self[''...''] instead in "[0]"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-close_round-004
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in ")"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-close_square-003
+  error: 'Liquid syntax error: [:close_square, "]"] is not a valid expression in "]"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-colon-002
+  error: 'Liquid syntax error: [:colon, ":"] is not a valid expression in ":"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in ","'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-comparison-009
+  error: 'Liquid syntax error: [:comparison, "=="] is not a valid expression in "=="'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-comparison-010
+  error: 'Liquid syntax error: [:comparison, "!="] is not a valid expression in "!="'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-comparison-011
+  error: 'Liquid syntax error: [:comparison, "<"] is not a valid expression in "<"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-comparison-012
+  error: 'Liquid syntax error: [:comparison, ">"] is not a valid expression in ">"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-comparison-013
+  error: 'Liquid syntax error: [:comparison, "<="] is not a valid expression in "<="'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-comparison-014
+  error: 'Liquid syntax error: [:comparison, ">="] is not a valid expression in ">="'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-comparison-015
+  error: 'Liquid syntax error: [:comparison, "contains"] is not a valid expression
+    in "contains"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-dash-006
+  error: 'Liquid syntax error: [:dash, "-"] is not a valid expression in "-"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-dot-007
+  error: 'Liquid syntax error: [:dot, "."] is not a valid expression in "."'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-dotdot-008
+  error: 'Liquid syntax error: [:dotdot, ".."] is not a valid expression in ".."'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-eos-016
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in ""'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "&"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "*"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "@"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "\"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "`"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "^"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "$"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "#"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in ";"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "~"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in ""hello"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "''hello"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x[,]"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lookup-dot_number
+  error: 'Liquid syntax error: Expected id but found number in "x.123"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lookup-dot_string
+  error: 'Liquid syntax error: Expected id but found string in "x."y""'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lookup-range_bad_separator
+  error: 'Liquid syntax error: Expected dotdot but found comma in "(1, 5)"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lookup-range_missing_end
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "(1..)"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lookup-trailing_dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x."'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lookup-unclosed_bracket
+  error: 'Liquid syntax error: Expected close_square but found end_of_string in "x[0"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-lookup-unclosed_range
+  error: 'Liquid syntax error: Expected close_round but found end_of_string in "(1..5"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-pipe-000
+  error: 'Liquid syntax error: [:pipe, "|"] is not a valid expression in "|"'
+  type: SyntaxError
+- id: elsif-mut-elsif_condition-question-005
+  error: 'Liquid syntax error: [:question, "?"] is not a valid expression in "?"'
+  type: SyntaxError
+- id: elsif-mut-elsif_end-trail-close_round
+  error: 'Liquid syntax error: Expected end_of_string but found close_round in "x
+    )"'
+  type: SyntaxError
+- id: elsif-mut-elsif_end-trail-close_square
+  error: 'Liquid syntax error: Expected end_of_string but found close_square in "x
+    ]"'
+  type: SyntaxError
+- id: elsif-mut-elsif_end-trail-colon
+  error: 'Liquid syntax error: Expected end_of_string but found colon in "x :"'
+  type: SyntaxError
+- id: elsif-mut-elsif_end-trail-comma
+  error: 'Liquid syntax error: Expected end_of_string but found comma in "x ,"'
+  type: SyntaxError
+- id: elsif-mut-elsif_end-trail-comparison
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x =="'
+  type: SyntaxError
+- id: elsif-mut-elsif_end-trail-dash
+  error: 'Liquid syntax error: Expected end_of_string but found dash in "x -"'
+  type: SyntaxError
+- id: elsif-mut-elsif_end-trail-dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x ."'
+  type: SyntaxError
+- id: elsif-mut-elsif_end-trail-id
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x extra"'
+  type: SyntaxError
+- id: elsif-mut-elsif_end-trail-number
+  error: 'Liquid syntax error: Expected end_of_string but found number in "x 42"'
+  type: SyntaxError
+- id: elsif-mut-elsif_end-trail-open_round
+  error: 'Liquid syntax error: Expected end_of_string but found open_round in "x ("'
+  type: SyntaxError
+- id: elsif-mut-elsif_end-trail-open_square
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x ["'
+  type: SyntaxError
+- id: elsif-mut-elsif_end-trail-pipe
+  error: 'Liquid syntax error: Expected end_of_string but found pipe in "x |"'
+  type: SyntaxError
+- id: elsif-mut-elsif_end-trail-question
+  error: 'Liquid syntax error: Expected end_of_string but found question in "x ?"'
+  type: SyntaxError
+- id: elsif-mut-elsif_end-trail-string
+  error: 'Liquid syntax error: Expected end_of_string but found string in "x ''hi''"'
+  type: SyntaxError
+- id: elsif-mut-valid-000
+  error:
+  type:
+- id: elsif-mut-valid-001
+  error:
+  type:
+- id: elsif-mut-valid-002
+  error:
+  type:
+- id: elsif-mut-valid-003
+  error:
+  type:
+- id: elsif-mut-valid-004
+  error:
+  type:
+- id: elsif-mut-valid-005
+  error:
+  type:
+- id: elsif-mut-valid-006
+  error:
+  type:
+- id: elsif-mut-valid-007
+  error:
+  type:
+- id: elsif-mut-valid-008
+  error:
+  type:
+- id: elsif-mut-valid-009
+  error:
+  type:
+- id: elsif-mut-valid-010
+  error:
+  type:
+- id: elsif-mut-valid-011
+  error:
+  type:
+- id: elsif-mut-valid-012
+  error:
+  type:
+- id: elsif-mut-valid-013
+  error:
+  type:
+- id: elsif-mut-valid-014
+  error:
+  type:

@@ -1,0 +1,89 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: content_for-100
+  template: "{% content_for 'blocks' %}"
+  error_path:
+- id: content_for-101
+  template: "{% content_for 'block', type: 'text', id: 'my-id' %}"
+  error_path:
+- id: content_for-102
+  template: "{% content_for 'blocks', closest.product: product %}"
+  error_path:
+- id: content_for-103
+  template: "{% content_for 'block', type: 'slide', id: 'slide-1', closest.product:
+    product %}"
+  error_path:
+- id: content_for-104
+  template: "{% content_for 'block', type: 'text', id: 'my-id', color: 'red' %}"
+  error_path:
+- id: content_for-200
+  template: "{% content_for blocks %}"
+  error_path: 1
+- id: content_for-201
+  template: "{% content_for ??? %}"
+  error_path: 1
+- id: content_for-202
+  template: "{% content_for 'block', closest.: 'text' %}"
+  error_path: 1
+- id: content_for-203
+  template: '{% content_for ''blocks'', type "text" %}'
+  error_path: 1
+- id: content_for-204
+  template: "{% content_for 'blocks', closest.product: | %}"
+  error_path: 1
+- id: content_for-205
+  template: "{% content_for 'blocks' trailing garbage %}"
+  error_path: 1
+- id: content_for-206
+  template: "{% content_for 'block', type: foo=>bar %}"
+  error_path: 1
+- id: content_for-300
+  template: "{% content_for %}"
+  error_path: 1
+- id: content_for-301
+  template: "{% content_for 'invalid' %}"
+  error_path: 1
+- id: content_for-302
+  template: "{% content_for 'block', type: 'text', id: 'x', color: 'red', color: 'blue'
+    %}"
+  error_path: 1
+- id: content_for-303
+  template: "{% content_for 'block', type: 'text', id: 'x', schema: 'y' %}"
+  error_path: 1
+- id: content_for-304
+  template: "{% content_for 'block', type: myvar, id: 'x' %}"
+  error_path: 1
+- id: content_for-305
+  template: "{% content_for 'block', type: '', id: 'x' %}"
+  error_path: 1
+- id: content_for-306
+  template: "{% content_for 'block', id: '', type: 'x' %}"
+  error_path: 1
+- id: content_for-307
+  template: "{% content_for 'blocks', closest.product: 'invalid' %}"
+  error_path: 1
+- id: content_for-308
+  template: "{% content_for 'blocks', extra: 'val' %}"
+  error_path: 1
+- id: content_for-309
+  template: "{% content_for 'blocks', closest.product: p, closest.article: a %}"
+  error_path: 1
+- id: content_for-310
+  template: "{% content_for 'blocks', closest.settings: true %}"
+  error_path: 1
+- id: content_for-311
+  template: "{% content_for 'block', type: 'text' %}"
+  error_path: 1
+- id: content_for-312
+  template: "{% content_for 'block', id: 'x' %}"
+  error_path: 1
+- id: content_for-313
+  template: "{% content_for 'block', type: 'text', id: 'x', block: 'y' %}"
+  error_path: 1
+- id: content_for-314
+  template: "{% content_for 'block', type: 'text', id: 'x', closest.product: p, color:
+    'red' %}"
+  error_path: 1
+- id: content_for-llm-900
+  template: "{% content_for block %}"
+  error_path: CONTENT_FOR-PARSE-CON-string

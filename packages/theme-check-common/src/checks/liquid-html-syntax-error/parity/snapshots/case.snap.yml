@@ -1,0 +1,526 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: case-mut-case_expression-bare_bracket
+  error: 'Liquid syntax error: Bare bracket access is not allowed in strict2 mode.
+    Use self[''...''] instead in "[0]"'
+  type: SyntaxError
+- id: case-mut-case_expression-close_round-004
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in ")"'
+  type: SyntaxError
+- id: case-mut-case_expression-close_square-003
+  error: 'Liquid syntax error: [:close_square, "]"] is not a valid expression in "]"'
+  type: SyntaxError
+- id: case-mut-case_expression-colon-002
+  error: 'Liquid syntax error: [:colon, ":"] is not a valid expression in ":"'
+  type: SyntaxError
+- id: case-mut-case_expression-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in ","'
+  type: SyntaxError
+- id: case-mut-case_expression-comparison-009
+  error: 'Liquid syntax error: [:comparison, "=="] is not a valid expression in "=="'
+  type: SyntaxError
+- id: case-mut-case_expression-comparison-010
+  error: 'Liquid syntax error: [:comparison, "!="] is not a valid expression in "!="'
+  type: SyntaxError
+- id: case-mut-case_expression-comparison-011
+  error: 'Liquid syntax error: [:comparison, "<"] is not a valid expression in "<"'
+  type: SyntaxError
+- id: case-mut-case_expression-comparison-012
+  error: 'Liquid syntax error: [:comparison, ">"] is not a valid expression in ">"'
+  type: SyntaxError
+- id: case-mut-case_expression-comparison-013
+  error: 'Liquid syntax error: [:comparison, "<="] is not a valid expression in "<="'
+  type: SyntaxError
+- id: case-mut-case_expression-comparison-014
+  error: 'Liquid syntax error: [:comparison, ">="] is not a valid expression in ">="'
+  type: SyntaxError
+- id: case-mut-case_expression-comparison-015
+  error: 'Liquid syntax error: [:comparison, "contains"] is not a valid expression
+    in "contains"'
+  type: SyntaxError
+- id: case-mut-case_expression-dash-006
+  error: 'Liquid syntax error: [:dash, "-"] is not a valid expression in "-"'
+  type: SyntaxError
+- id: case-mut-case_expression-dot-007
+  error: 'Liquid syntax error: [:dot, "."] is not a valid expression in "."'
+  type: SyntaxError
+- id: case-mut-case_expression-dotdot-008
+  error: 'Liquid syntax error: [:dotdot, ".."] is not a valid expression in ".."'
+  type: SyntaxError
+- id: case-mut-case_expression-eos-016
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in ""'
+  type: SyntaxError
+- id: case-mut-case_expression-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "&"'
+  type: SyntaxError
+- id: case-mut-case_expression-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "*"'
+  type: SyntaxError
+- id: case-mut-case_expression-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "@"'
+  type: SyntaxError
+- id: case-mut-case_expression-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "\"'
+  type: SyntaxError
+- id: case-mut-case_expression-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "`"'
+  type: SyntaxError
+- id: case-mut-case_expression-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "^"'
+  type: SyntaxError
+- id: case-mut-case_expression-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "$"'
+  type: SyntaxError
+- id: case-mut-case_expression-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "#"'
+  type: SyntaxError
+- id: case-mut-case_expression-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in ";"'
+  type: SyntaxError
+- id: case-mut-case_expression-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "~"'
+  type: SyntaxError
+- id: case-mut-case_expression-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in ""hello"'
+  type: SyntaxError
+- id: case-mut-case_expression-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "''hello"'
+  type: SyntaxError
+- id: case-mut-case_expression-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x[,]"'
+  type: SyntaxError
+- id: case-mut-case_expression-lookup-dot_number
+  error: 'Liquid syntax error: Expected id but found number in "x.123"'
+  type: SyntaxError
+- id: case-mut-case_expression-lookup-dot_string
+  error: 'Liquid syntax error: Expected id but found string in "x."y""'
+  type: SyntaxError
+- id: case-mut-case_expression-lookup-range_bad_separator
+  error: 'Liquid syntax error: Expected dotdot but found comma in "(1, 5)"'
+  type: SyntaxError
+- id: case-mut-case_expression-lookup-range_missing_end
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "(1..)"'
+  type: SyntaxError
+- id: case-mut-case_expression-lookup-trailing_dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x."'
+  type: SyntaxError
+- id: case-mut-case_expression-lookup-unclosed_bracket
+  error: 'Liquid syntax error: Expected close_square but found end_of_string in "x[0"'
+  type: SyntaxError
+- id: case-mut-case_expression-lookup-unclosed_range
+  error: 'Liquid syntax error: Expected close_round but found end_of_string in "(1..5"'
+  type: SyntaxError
+- id: case-mut-case_expression-pipe-000
+  error: 'Liquid syntax error: [:pipe, "|"] is not a valid expression in "|"'
+  type: SyntaxError
+- id: case-mut-case_expression-question-005
+  error: 'Liquid syntax error: [:question, "?"] is not a valid expression in "?"'
+  type: SyntaxError
+- id: case-mut-end-trail-close_round
+  error: 'Liquid syntax error: Expected end_of_string but found close_round in "x
+    )"'
+  type: SyntaxError
+- id: case-mut-end-trail-close_square
+  error: 'Liquid syntax error: Expected end_of_string but found close_square in "x
+    ]"'
+  type: SyntaxError
+- id: case-mut-end-trail-colon
+  error: 'Liquid syntax error: Expected end_of_string but found colon in "x :"'
+  type: SyntaxError
+- id: case-mut-end-trail-comma
+  error: 'Liquid syntax error: Expected end_of_string but found comma in "x ,"'
+  type: SyntaxError
+- id: case-mut-end-trail-comparison
+  error: 'Liquid syntax error: Expected end_of_string but found comparison in "x =="'
+  type: SyntaxError
+- id: case-mut-end-trail-dash
+  error: 'Liquid syntax error: Expected end_of_string but found dash in "x -"'
+  type: SyntaxError
+- id: case-mut-end-trail-dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x ."'
+  type: SyntaxError
+- id: case-mut-end-trail-id
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x extra"'
+  type: SyntaxError
+- id: case-mut-end-trail-number
+  error: 'Liquid syntax error: Expected end_of_string but found number in "x 42"'
+  type: SyntaxError
+- id: case-mut-end-trail-open_round
+  error: 'Liquid syntax error: Expected end_of_string but found open_round in "x ("'
+  type: SyntaxError
+- id: case-mut-end-trail-open_square
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x ["'
+  type: SyntaxError
+- id: case-mut-end-trail-pipe
+  error: 'Liquid syntax error: Expected end_of_string but found pipe in "x |"'
+  type: SyntaxError
+- id: case-mut-end-trail-question
+  error: 'Liquid syntax error: Expected end_of_string but found question in "x ?"'
+  type: SyntaxError
+- id: case-mut-end-trail-string
+  error: 'Liquid syntax error: Expected end_of_string but found string in "x ''hi''"'
+  type: SyntaxError
+- id: case-mut-valid-000
+  error:
+  type:
+- id: case-mut-valid-000-2
+  error:
+  type:
+- id: case-mut-valid-001
+  error:
+  type:
+- id: case-mut-valid-001-2
+  error:
+  type:
+- id: case-mut-valid-002
+  error:
+  type:
+- id: case-mut-valid-002-2
+  error:
+  type:
+- id: case-mut-valid-003
+  error:
+  type:
+- id: case-mut-valid-003-2
+  error:
+  type:
+- id: case-mut-valid-004
+  error:
+  type:
+- id: case-mut-valid-004-2
+  error:
+  type:
+- id: case-mut-valid-005
+  error:
+  type:
+- id: case-mut-valid-005-2
+  error:
+  type:
+- id: case-mut-valid-006
+  error:
+  type:
+- id: case-mut-valid-006-2
+  error:
+  type:
+- id: case-mut-valid-007
+  error:
+  type:
+- id: case-mut-valid-007-2
+  error:
+  type:
+- id: case-mut-valid-008
+  error:
+  type:
+- id: case-mut-valid-008-2
+  error:
+  type:
+- id: case-mut-valid-009
+  error:
+  type:
+- id: case-mut-valid-009-2
+  error:
+  type:
+- id: case-mut-valid-010
+  error:
+  type:
+- id: case-mut-valid-010-2
+  error:
+  type:
+- id: case-mut-valid-011
+  error:
+  type:
+- id: case-mut-valid-011-2
+  error:
+  type:
+- id: case-mut-valid-012
+  error:
+  type:
+- id: case-mut-valid-012-2
+  error:
+  type:
+- id: case-mut-valid-013
+  error:
+  type:
+- id: case-mut-valid-013-2
+  error:
+  type:
+- id: case-mut-valid-014
+  error:
+  type:
+- id: case-mut-valid-014-2
+  error:
+  type:
+- id: case-mut-when_end-trail-close_round
+  error: 'Liquid syntax error: Expected end_of_string but found close_round'
+  type: SyntaxError
+- id: case-mut-when_end-trail-close_square
+  error: 'Liquid syntax error: Expected end_of_string but found close_square'
+  type: SyntaxError
+- id: case-mut-when_end-trail-colon
+  error: 'Liquid syntax error: Expected end_of_string but found colon'
+  type: SyntaxError
+- id: case-mut-when_end-trail-comma
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_end-trail-comparison
+  error: 'Liquid syntax error: Expected end_of_string but found comparison'
+  type: SyntaxError
+- id: case-mut-when_end-trail-dash
+  error: 'Liquid syntax error: Expected end_of_string but found dash'
+  type: SyntaxError
+- id: case-mut-when_end-trail-dot
+  error: 'Liquid syntax error: Expected id but found end_of_string'
+  type: SyntaxError
+- id: case-mut-when_end-trail-id
+  error: 'Liquid syntax error: Expected end_of_string but found id'
+  type: SyntaxError
+- id: case-mut-when_end-trail-number
+  error: 'Liquid syntax error: Expected end_of_string but found number'
+  type: SyntaxError
+- id: case-mut-when_end-trail-open_round
+  error: 'Liquid syntax error: Expected end_of_string but found open_round'
+  type: SyntaxError
+- id: case-mut-when_end-trail-open_square
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_end-trail-pipe
+  error: 'Liquid syntax error: Expected end_of_string but found pipe'
+  type: SyntaxError
+- id: case-mut-when_end-trail-question
+  error: 'Liquid syntax error: Expected end_of_string but found question'
+  type: SyntaxError
+- id: case-mut-when_end-trail-string
+  error: 'Liquid syntax error: Expected end_of_string but found string'
+  type: SyntaxError
+- id: case-mut-when_next_value-bare_bracket
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-close_round-004
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-close_square-003
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-colon-002
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-comparison-009
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-comparison-010
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-comparison-011
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-comparison-012
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-comparison-013
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-comparison-014
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-comparison-015
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-dash-006
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-dot-007
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-dotdot-008
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-eos-016
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character &'
+  type: SyntaxError
+- id: case-mut-when_next_value-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character *'
+  type: SyntaxError
+- id: case-mut-when_next_value-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @'
+  type: SyntaxError
+- id: case-mut-when_next_value-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \'
+  type: SyntaxError
+- id: case-mut-when_next_value-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character `'
+  type: SyntaxError
+- id: case-mut-when_next_value-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^'
+  type: SyntaxError
+- id: case-mut-when_next_value-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $'
+  type: SyntaxError
+- id: case-mut-when_next_value-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character #'
+  type: SyntaxError
+- id: case-mut-when_next_value-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ;'
+  type: SyntaxError
+- id: case-mut-when_next_value-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~'
+  type: SyntaxError
+- id: case-mut-when_next_value-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character "'
+  type: SyntaxError
+- id: case-mut-when_next_value-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '''
+  type: SyntaxError
+- id: case-mut-when_next_value-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-lookup-dot_number
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-lookup-dot_string
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-lookup-range_bad_separator
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-lookup-range_missing_end
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-lookup-trailing_dot
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-lookup-unclosed_bracket
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-lookup-unclosed_range
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-pipe-000
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_next_value-question-005
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-bare_bracket
+  error: 'Liquid syntax error: Bare bracket access is not allowed in strict2 mode.
+    Use self[''...''] instead'
+  type: SyntaxError
+- id: case-mut-when_value-close_round-004
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-close_square-003
+  error: 'Liquid syntax error: [:close_square, "]"] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-colon-002
+  error: 'Liquid syntax error: [:colon, ":"] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-comparison-009
+  error: 'Liquid syntax error: [:comparison, "=="] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-comparison-010
+  error: 'Liquid syntax error: [:comparison, "!="] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-comparison-011
+  error: 'Liquid syntax error: [:comparison, "<"] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-comparison-012
+  error: 'Liquid syntax error: [:comparison, ">"] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-comparison-013
+  error: 'Liquid syntax error: [:comparison, "<="] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-comparison-014
+  error: 'Liquid syntax error: [:comparison, ">="] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-comparison-015
+  error: 'Liquid syntax error: [:comparison, "contains"] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-dash-006
+  error: 'Liquid syntax error: [:dash, "-"] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-dot-007
+  error: 'Liquid syntax error: [:dot, "."] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-dotdot-008
+  error: 'Liquid syntax error: [:dotdot, ".."] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-eos-016
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character &'
+  type: SyntaxError
+- id: case-mut-when_value-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character *'
+  type: SyntaxError
+- id: case-mut-when_value-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @'
+  type: SyntaxError
+- id: case-mut-when_value-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \'
+  type: SyntaxError
+- id: case-mut-when_value-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character `'
+  type: SyntaxError
+- id: case-mut-when_value-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^'
+  type: SyntaxError
+- id: case-mut-when_value-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $'
+  type: SyntaxError
+- id: case-mut-when_value-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character #'
+  type: SyntaxError
+- id: case-mut-when_value-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ;'
+  type: SyntaxError
+- id: case-mut-when_value-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~'
+  type: SyntaxError
+- id: case-mut-when_value-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character "'
+  type: SyntaxError
+- id: case-mut-when_value-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '''
+  type: SyntaxError
+- id: case-mut-when_value-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-lookup-dot_number
+  error: 'Liquid syntax error: Expected id but found number'
+  type: SyntaxError
+- id: case-mut-when_value-lookup-dot_string
+  error: 'Liquid syntax error: Expected id but found string'
+  type: SyntaxError
+- id: case-mut-when_value-lookup-range_bad_separator
+  error: 'Liquid syntax error: Expected dotdot but found comma'
+  type: SyntaxError
+- id: case-mut-when_value-lookup-range_missing_end
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-lookup-trailing_dot
+  error: 'Liquid syntax error: Expected id but found end_of_string'
+  type: SyntaxError
+- id: case-mut-when_value-lookup-unclosed_bracket
+  error: 'Liquid syntax error: Expected close_square but found end_of_string'
+  type: SyntaxError
+- id: case-mut-when_value-lookup-unclosed_range
+  error: 'Liquid syntax error: Expected close_round but found end_of_string'
+  type: SyntaxError
+- id: case-mut-when_value-pipe-000
+  error: 'Liquid syntax error: [:pipe, "|"] is not a valid expression'
+  type: SyntaxError
+- id: case-mut-when_value-question-005
+  error: 'Liquid syntax error: [:question, "?"] is not a valid expression'
+  type: SyntaxError
+- id: case-parity-elsif-in-case
+  error: 'Liquid syntax error: Unknown tag ''elsif'''
+  type: SyntaxError

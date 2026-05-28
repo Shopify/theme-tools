@@ -1,0 +1,119 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: content_for-100
+  error:
+  type:
+- id: content_for-101
+  error:
+  type:
+- id: content_for-102
+  error:
+  type:
+- id: content_for-103
+  error:
+  type:
+- id: content_for-104
+  error:
+  type:
+- id: content_for-200
+  error: 'Liquid syntax error: in ''content_for'' - ''type'' must be a quoted string.
+    in "blocks"'
+  type: SyntaxError
+- id: content_for-201
+  error: 'Liquid syntax error: in ''content_for'' - ''type'' must be a quoted string.
+    in "???"'
+  type: SyntaxError
+- id: content_for-202
+  error: 'Liquid syntax error: Expected id but found colon in "''block'', closest.:
+    ''text''"'
+  type: SyntaxError
+- id: content_for-203
+  error: 'Liquid syntax error: Expected colon but found string in "''blocks'', type
+    "text""'
+  type: SyntaxError
+- id: content_for-204
+  error: 'Liquid syntax error: [:pipe, "|"] is not a valid expression in "''blocks'',
+    closest.product: |"'
+  type: SyntaxError
+- id: content_for-205
+  error: 'Liquid syntax error: Expected end_of_string but found id in "''blocks''
+    trailing garbage"'
+  type: SyntaxError
+- id: content_for-206
+  error: 'Liquid syntax error: Unexpected character = in "''block'', type: foo=>bar"'
+  type: SyntaxError
+- id: content_for-300
+  error: 'Liquid syntax error: in ''content_for'' - Valid syntax: content_for ''[type]'''
+  type: SyntaxError
+- id: content_for-301
+  error: 'Liquid error: in ''content_for'' - "invalid" must be one of []'
+  type: ArgumentError
+- id: content_for-302
+  error: 'Liquid syntax error: Error in tag ''content_for "block"'' - Duplicated attribute:
+    color in "''block'', type: ''text'', id: ''x'', color: ''red'', color: ''blue''"'
+  type: SyntaxError
+- id: content_for-303
+  error: 'Liquid syntax error: Error in tag ''content_for ''block'' - The following
+    attributes are reserved and cannot be used: schema in "''block'', type: ''text'',
+    id: ''x'', schema: ''y''"'
+  type: SyntaxError
+- id: content_for-304
+  error: |-
+    Liquid syntax error: Error in tag 'content_for 'block' - Valid syntax:
+     {% content_for 'block', type: '[block_type]', id: '[block_id]' %}
+     Or
+     {% content_for 'block', id: '[block_id]', type: '[block_type]' %} in "'block', type: myvar, id: 'x'"
+  type: SyntaxError
+- id: content_for-305
+  error: 'Liquid syntax error: Error in tag ''content_for ''block'' - Value must be
+    set for key: type in "''block'', type: '''', id: ''x''"'
+  type: SyntaxError
+- id: content_for-306
+  error: 'Liquid syntax error: Error in tag ''content_for ''block'' - Value must be
+    set for key: id in "''block'', id: '''', type: ''x''"'
+  type: SyntaxError
+- id: content_for-307
+  error: 'Liquid syntax error: Error in tag ''content_for "blocks"'' - String is not
+    allowed for closest.<type> argument. Use compatible variable instead in "''blocks'',
+    closest.product: ''invalid''"'
+  type: SyntaxError
+- id: content_for-308
+  error: 'Liquid syntax error: Error in tag ''content_for "blocks"'' - Unknown attributes:
+    extra in "''blocks'', extra: ''val''"'
+  type: SyntaxError
+- id: content_for-309
+  error: 'Liquid syntax error: Error in tag ''content_for "blocks"'' - Only one closest.<type>
+    argument is allowed in "''blocks'', closest.product: p, closest.article: a"'
+  type: SyntaxError
+- id: content_for-310
+  error: 'Liquid syntax error: Error in tag ''content_for "blocks"'' - Only one of
+    the following context arguments is allowed in this format: closest.article, closest.blog,
+    closest.collection, closest.page, closest.product or closest.metaobject.<metaobject
+    type> in "''blocks'', closest.settings: true"'
+  type: SyntaxError
+- id: content_for-311
+  error: |-
+    Liquid syntax error: Error in tag 'content_for 'block' - Valid syntax:
+     {% content_for 'block', type: '[block_type]', id: '[block_id]' %}
+     Or
+     {% content_for 'block', id: '[block_id]', type: '[block_type]' %} in "'block', type: 'text'"
+  type: SyntaxError
+- id: content_for-312
+  error: |-
+    Liquid syntax error: Error in tag 'content_for 'block' - Valid syntax:
+     {% content_for 'block', type: '[block_type]', id: '[block_id]' %}
+     Or
+     {% content_for 'block', id: '[block_id]', type: '[block_type]' %} in "'block', id: 'x'"
+  type: SyntaxError
+- id: content_for-313
+  error: 'Liquid syntax error: Error in tag ''content_for ''block'' - The following
+    attributes are reserved and cannot be used: block in "''block'', type: ''text'',
+    id: ''x'', block: ''y''"'
+  type: SyntaxError
+- id: content_for-314
+  error:
+  type:
+- id: content_for-llm-900
+  error: 'Liquid syntax error: in ''content_for'' - ''type'' must be a quoted string.
+    in "block"'
+  type: SyntaxError

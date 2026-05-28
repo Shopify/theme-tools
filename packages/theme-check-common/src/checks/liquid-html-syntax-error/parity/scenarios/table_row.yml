@@ -1,0 +1,374 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: table_row-mut-variable_name-eos
+  template: "{% tablerow  %}{% endtablerow %}"
+  error_path: variable_name
+- id: table_row-mut-variable_name-number
+  template: "{% tablerow 42 %}{% endtablerow %}"
+  error_path: variable_name
+- id: table_row-mut-variable_name-lexerr-at
+  template: "{% tablerow @ %}{% endtablerow %}"
+  error_path: variable_name
+- id: table_row-mut-variable_name-lexerr-hash
+  template: "{% tablerow # %}{% endtablerow %}"
+  error_path: variable_name
+- id: table_row-mut-variable_name-lexerr-dollar
+  template: "{% tablerow $ %}{% endtablerow %}"
+  error_path: variable_name
+- id: table_row-mut-variable_name-lexerr-caret
+  template: "{% tablerow ^ %}{% endtablerow %}"
+  error_path: variable_name
+- id: table_row-mut-variable_name-lexerr-ampersand
+  template: "{% tablerow & %}{% endtablerow %}"
+  error_path: variable_name
+- id: table_row-mut-variable_name-lexerr-asterisk
+  template: "{% tablerow * %}{% endtablerow %}"
+  error_path: variable_name
+- id: table_row-mut-variable_name-lexerr-tilde
+  template: "{% tablerow ~ %}{% endtablerow %}"
+  error_path: variable_name
+- id: table_row-mut-variable_name-lexerr-backtick
+  template: "{% tablerow ` %}{% endtablerow %}"
+  error_path: variable_name
+- id: table_row-mut-variable_name-lexerr-backslash
+  template: "{% tablerow \\ %}{% endtablerow %}"
+  error_path: variable_name
+- id: table_row-mut-variable_name-lexerr-semicolon
+  template: "{% tablerow ; %}{% endtablerow %}"
+  error_path: variable_name
+- id: table_row-mut-variable_name-lexerr-unclosed_double_quote
+  template: '{% tablerow "hello %}{% endtablerow %}'
+  error_path: variable_name
+- id: table_row-mut-variable_name-lexerr-unclosed_single_quote
+  template: "{% tablerow 'hello %}{% endtablerow %}"
+  error_path: variable_name
+- id: table_row-mut-in_keyword-eos
+  template: "{% tablerow x %}{% endtablerow %}"
+  error_path: in_keyword
+- id: table_row-mut-in_keyword-id
+  template: "{% tablerow x of %}{% endtablerow %}"
+  error_path: in_keyword
+- id: table_row-mut-collection-pipe-000
+  template: "{% tablerow x in | %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-comma-001
+  template: "{% tablerow x in , %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-colon-002
+  template: "{% tablerow x in : %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-close_square-003
+  template: "{% tablerow x in ] %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-close_round-004
+  template: "{% tablerow x in ) %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-question-005
+  template: "{% tablerow x in ? %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-dash-006
+  template: "{% tablerow x in - %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-dot-007
+  template: "{% tablerow x in . %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-dotdot-008
+  template: "{% tablerow x in .. %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-comparison-009
+  template: "{% tablerow x in == %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-comparison-010
+  template: "{% tablerow x in != %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-comparison-011
+  template: "{% tablerow x in < %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-comparison-012
+  template: "{% tablerow x in > %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-comparison-013
+  template: "{% tablerow x in <= %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-comparison-014
+  template: "{% tablerow x in >= %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-comparison-015
+  template: "{% tablerow x in contains %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-eos-016
+  template: "{% tablerow x in %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-bare_bracket
+  template: "{% tablerow x in [0] %}{% endtablerow %}"
+  error_path: collection/bad_start
+- id: table_row-mut-collection-lookup-trailing_dot
+  template: "{% tablerow x in x. %}{% endtablerow %}"
+  error_path: collection/lookup
+- id: table_row-mut-collection-lookup-dot_number
+  template: "{% tablerow x in x.123 %}{% endtablerow %}"
+  error_path: collection/lookup
+- id: table_row-mut-collection-lookup-dot_string
+  template: '{% tablerow x in x."y" %}{% endtablerow %}'
+  error_path: collection/lookup
+- id: table_row-mut-collection-lookup-unclosed_bracket
+  template: "{% tablerow x in x[0 %}{% endtablerow %}"
+  error_path: collection/lookup
+- id: table_row-mut-collection-lookup-bracket_wrong_content
+  template: "{% tablerow x in x[,] %}{% endtablerow %}"
+  error_path: collection/lookup
+- id: table_row-mut-collection-lookup-unclosed_range
+  template: "{% tablerow x in (1..5 %}{% endtablerow %}"
+  error_path: collection/lookup
+- id: table_row-mut-collection-lookup-range_bad_separator
+  template: "{% tablerow x in (1, 5) %}{% endtablerow %}"
+  error_path: collection/lookup
+- id: table_row-mut-collection-lookup-range_missing_end
+  template: "{% tablerow x in (1..) %}{% endtablerow %}"
+  error_path: collection/lookup
+- id: table_row-mut-collection-lexerr-at
+  template: "{% tablerow x in @ %}{% endtablerow %}"
+  error_path: collection/lexer
+- id: table_row-mut-collection-lexerr-hash
+  template: "{% tablerow x in # %}{% endtablerow %}"
+  error_path: collection/lexer
+- id: table_row-mut-collection-lexerr-dollar
+  template: "{% tablerow x in $ %}{% endtablerow %}"
+  error_path: collection/lexer
+- id: table_row-mut-collection-lexerr-caret
+  template: "{% tablerow x in ^ %}{% endtablerow %}"
+  error_path: collection/lexer
+- id: table_row-mut-collection-lexerr-ampersand
+  template: "{% tablerow x in & %}{% endtablerow %}"
+  error_path: collection/lexer
+- id: table_row-mut-collection-lexerr-asterisk
+  template: "{% tablerow x in * %}{% endtablerow %}"
+  error_path: collection/lexer
+- id: table_row-mut-collection-lexerr-tilde
+  template: "{% tablerow x in ~ %}{% endtablerow %}"
+  error_path: collection/lexer
+- id: table_row-mut-collection-lexerr-backtick
+  template: "{% tablerow x in ` %}{% endtablerow %}"
+  error_path: collection/lexer
+- id: table_row-mut-collection-lexerr-backslash
+  template: "{% tablerow x in \\ %}{% endtablerow %}"
+  error_path: collection/lexer
+- id: table_row-mut-collection-lexerr-semicolon
+  template: "{% tablerow x in ; %}{% endtablerow %}"
+  error_path: collection/lexer
+- id: table_row-mut-collection-lexerr-unclosed_double_quote
+  template: '{% tablerow x in "hello %}{% endtablerow %}'
+  error_path: collection/lexer
+- id: table_row-mut-collection-lexerr-unclosed_single_quote
+  template: "{% tablerow x in 'hello %}{% endtablerow %}"
+  error_path: collection/lexer
+- id: table_row-mut-invalid_attribute-invalid
+  template: "{% tablerow x in x step , %}{% endtablerow %}"
+  error_path: invalid_attribute
+- id: table_row-mut-attr_colon-eos
+  template: "{% tablerow x in x step , %}{% endtablerow %}"
+  error_path: attr_colon
+- id: table_row-mut-attr_colon-number
+  template: "{% tablerow x in x step , 42 %}{% endtablerow %}"
+  error_path: attr_colon
+- id: table_row-mut-attr_value-pipe-000
+  template: "{% tablerow x in x step , : | %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-comma-001
+  template: "{% tablerow x in x step , : , %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-colon-002
+  template: "{% tablerow x in x step , : : %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-close_square-003
+  template: "{% tablerow x in x step , : ] %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-close_round-004
+  template: "{% tablerow x in x step , : ) %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-question-005
+  template: "{% tablerow x in x step , : ? %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-dash-006
+  template: "{% tablerow x in x step , : - %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-dot-007
+  template: "{% tablerow x in x step , : . %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-dotdot-008
+  template: "{% tablerow x in x step , : .. %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-comparison-009
+  template: "{% tablerow x in x step , : == %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-comparison-010
+  template: "{% tablerow x in x step , : != %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-comparison-011
+  template: "{% tablerow x in x step , : < %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-comparison-012
+  template: "{% tablerow x in x step , : > %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-comparison-013
+  template: "{% tablerow x in x step , : <= %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-comparison-014
+  template: "{% tablerow x in x step , : >= %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-comparison-015
+  template: "{% tablerow x in x step , : contains %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-eos-016
+  template: "{% tablerow x in x step , : %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-bare_bracket
+  template: "{% tablerow x in x step , : [0] %}{% endtablerow %}"
+  error_path: attr_value/bad_start
+- id: table_row-mut-attr_value-lookup-trailing_dot
+  template: "{% tablerow x in x step , : x. %}{% endtablerow %}"
+  error_path: attr_value/lookup
+- id: table_row-mut-attr_value-lookup-dot_number
+  template: "{% tablerow x in x step , : x.123 %}{% endtablerow %}"
+  error_path: attr_value/lookup
+- id: table_row-mut-attr_value-lookup-dot_string
+  template: '{% tablerow x in x step , : x."y" %}{% endtablerow %}'
+  error_path: attr_value/lookup
+- id: table_row-mut-attr_value-lookup-unclosed_bracket
+  template: "{% tablerow x in x step , : x[0 %}{% endtablerow %}"
+  error_path: attr_value/lookup
+- id: table_row-mut-attr_value-lookup-bracket_wrong_content
+  template: "{% tablerow x in x step , : x[,] %}{% endtablerow %}"
+  error_path: attr_value/lookup
+- id: table_row-mut-attr_value-lookup-unclosed_range
+  template: "{% tablerow x in x step , : (1..5 %}{% endtablerow %}"
+  error_path: attr_value/lookup
+- id: table_row-mut-attr_value-lookup-range_bad_separator
+  template: "{% tablerow x in x step , : (1, 5) %}{% endtablerow %}"
+  error_path: attr_value/lookup
+- id: table_row-mut-attr_value-lookup-range_missing_end
+  template: "{% tablerow x in x step , : (1..) %}{% endtablerow %}"
+  error_path: attr_value/lookup
+- id: table_row-mut-attr_value-lexerr-at
+  template: "{% tablerow x in x step , : @ %}{% endtablerow %}"
+  error_path: attr_value/lexer
+- id: table_row-mut-attr_value-lexerr-hash
+  template: "{% tablerow x in x step , : # %}{% endtablerow %}"
+  error_path: attr_value/lexer
+- id: table_row-mut-attr_value-lexerr-dollar
+  template: "{% tablerow x in x step , : $ %}{% endtablerow %}"
+  error_path: attr_value/lexer
+- id: table_row-mut-attr_value-lexerr-caret
+  template: "{% tablerow x in x step , : ^ %}{% endtablerow %}"
+  error_path: attr_value/lexer
+- id: table_row-mut-attr_value-lexerr-ampersand
+  template: "{% tablerow x in x step , : & %}{% endtablerow %}"
+  error_path: attr_value/lexer
+- id: table_row-mut-attr_value-lexerr-asterisk
+  template: "{% tablerow x in x step , : * %}{% endtablerow %}"
+  error_path: attr_value/lexer
+- id: table_row-mut-attr_value-lexerr-tilde
+  template: "{% tablerow x in x step , : ~ %}{% endtablerow %}"
+  error_path: attr_value/lexer
+- id: table_row-mut-attr_value-lexerr-backtick
+  template: "{% tablerow x in x step , : ` %}{% endtablerow %}"
+  error_path: attr_value/lexer
+- id: table_row-mut-attr_value-lexerr-backslash
+  template: "{% tablerow x in x step , : \\ %}{% endtablerow %}"
+  error_path: attr_value/lexer
+- id: table_row-mut-attr_value-lexerr-semicolon
+  template: "{% tablerow x in x step , : ; %}{% endtablerow %}"
+  error_path: attr_value/lexer
+- id: table_row-mut-attr_value-lexerr-unclosed_double_quote
+  template: '{% tablerow x in x step , : "hello %}{% endtablerow %}'
+  error_path: attr_value/lexer
+- id: table_row-mut-attr_value-lexerr-unclosed_single_quote
+  template: "{% tablerow x in x step , : 'hello %}{% endtablerow %}"
+  error_path: attr_value/lexer
+- id: table_row-mut-end-trail-id
+  template: "{% tablerow x in x extra %}{% endtablerow %}"
+  error_path: end
+- id: table_row-mut-end-trail-number
+  template: "{% tablerow x in x 42 %}{% endtablerow %}"
+  error_path: end
+- id: table_row-mut-end-trail-string
+  template: "{% tablerow x in x 'hi' %}{% endtablerow %}"
+  error_path: end
+- id: table_row-mut-end-trail-pipe
+  template: "{% tablerow x in x | %}{% endtablerow %}"
+  error_path: end
+- id: table_row-mut-end-trail-colon
+  template: "{% tablerow x in x : %}{% endtablerow %}"
+  error_path: end
+- id: table_row-mut-end-trail-comma
+  template: "{% tablerow x in x , %}{% endtablerow %}"
+  error_path: end
+- id: table_row-mut-end-trail-open_square
+  template: "{% tablerow x in x [ %}{% endtablerow %}"
+  error_path: end
+- id: table_row-mut-end-trail-close_square
+  template: "{% tablerow x in x ] %}{% endtablerow %}"
+  error_path: end
+- id: table_row-mut-end-trail-open_round
+  template: "{% tablerow x in x ( %}{% endtablerow %}"
+  error_path: end
+- id: table_row-mut-end-trail-close_round
+  template: "{% tablerow x in x ) %}{% endtablerow %}"
+  error_path: end
+- id: table_row-mut-end-trail-question
+  template: "{% tablerow x in x ? %}{% endtablerow %}"
+  error_path: end
+- id: table_row-mut-end-trail-dot
+  template: "{% tablerow x in x . %}{% endtablerow %}"
+  error_path: end
+- id: table_row-mut-end-trail-comparison
+  template: "{% tablerow x in x == %}{% endtablerow %}"
+  error_path: end
+- id: table_row-mut-end-trail-dash
+  template: "{% tablerow x in x - %}{% endtablerow %}"
+  error_path: end
+- id: table_row-mut-valid-000
+  template: "{% tablerow x in x %}{% endtablerow %}"
+  error_path: valid
+- id: table_row-mut-valid-001
+  template: "{% tablerow x in 42 %}{% endtablerow %}"
+  error_path: valid
+- id: table_row-mut-valid-002
+  template: "{% tablerow x in 3.14 %}{% endtablerow %}"
+  error_path: valid
+- id: table_row-mut-valid-003
+  template: "{% tablerow x in -5 %}{% endtablerow %}"
+  error_path: valid
+- id: table_row-mut-valid-004
+  template: "{% tablerow x in 'hello' %}{% endtablerow %}"
+  error_path: valid
+- id: table_row-mut-valid-005
+  template: "{% tablerow x in true %}{% endtablerow %}"
+  error_path: valid
+- id: table_row-mut-valid-006
+  template: "{% tablerow x in false %}{% endtablerow %}"
+  error_path: valid
+- id: table_row-mut-valid-007
+  template: "{% tablerow x in nil %}{% endtablerow %}"
+  error_path: valid
+- id: table_row-mut-valid-008
+  template: "{% tablerow x in blank %}{% endtablerow %}"
+  error_path: valid
+- id: table_row-mut-valid-009
+  template: "{% tablerow x in empty %}{% endtablerow %}"
+  error_path: valid
+- id: table_row-mut-valid-010
+  template: "{% tablerow x in product.title %}{% endtablerow %}"
+  error_path: valid
+- id: table_row-mut-valid-011
+  template: "{% tablerow x in products[0] %}{% endtablerow %}"
+  error_path: valid
+- id: table_row-mut-valid-012
+  template: "{% tablerow x in a.b.c %}{% endtablerow %}"
+  error_path: valid
+- id: table_row-mut-valid-013
+  template: "{% tablerow x in a[0].b %}{% endtablerow %}"
+  error_path: valid
+- id: table_row-mut-valid-014
+  template: "{% tablerow x in (1..5) %}{% endtablerow %}"
+  error_path: valid

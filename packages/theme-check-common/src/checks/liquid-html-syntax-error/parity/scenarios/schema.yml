@@ -1,0 +1,44 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: schema-mut-end-trail-id
+  template: "{% schema extra %}{{ x }} {% if true %}{% endif %}{% endschema %}"
+  error_path: end
+- id: schema-mut-end-trail-number
+  template: "{% schema 42 %}{{ x }} {% if true %}{% endif %}{% endschema %}"
+  error_path: end
+- id: schema-mut-end-trail-string
+  template: "{% schema 'hi' %}{{ x }} {% if true %}{% endif %}{% endschema %}"
+  error_path: end
+- id: schema-mut-end-trail-pipe
+  template: "{% schema | %}{{ x }} {% if true %}{% endif %}{% endschema %}"
+  error_path: end
+- id: schema-mut-end-trail-colon
+  template: "{% schema : %}{{ x }} {% if true %}{% endif %}{% endschema %}"
+  error_path: end
+- id: schema-mut-end-trail-comma
+  template: "{% schema , %}{{ x }} {% if true %}{% endif %}{% endschema %}"
+  error_path: end
+- id: schema-mut-end-trail-open_square
+  template: "{% schema [ %}{{ x }} {% if true %}{% endif %}{% endschema %}"
+  error_path: end
+- id: schema-mut-end-trail-close_square
+  template: "{% schema ] %}{{ x }} {% if true %}{% endif %}{% endschema %}"
+  error_path: end
+- id: schema-mut-end-trail-open_round
+  template: "{% schema ( %}{{ x }} {% if true %}{% endif %}{% endschema %}"
+  error_path: end
+- id: schema-mut-end-trail-close_round
+  template: "{% schema ) %}{{ x }} {% if true %}{% endif %}{% endschema %}"
+  error_path: end
+- id: schema-mut-end-trail-question
+  template: "{% schema ? %}{{ x }} {% if true %}{% endif %}{% endschema %}"
+  error_path: end
+- id: schema-mut-end-trail-dot
+  template: "{% schema . %}{{ x }} {% if true %}{% endif %}{% endschema %}"
+  error_path: end
+- id: schema-mut-end-trail-comparison
+  template: "{% schema == %}{{ x }} {% if true %}{% endif %}{% endschema %}"
+  error_path: end
+- id: schema-mut-end-trail-dash
+  template: "{% schema - %}{{ x }} {% if true %}{% endif %}{% endschema %}"
+  error_path: end

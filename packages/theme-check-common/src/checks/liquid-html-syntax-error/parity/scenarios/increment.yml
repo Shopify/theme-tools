@@ -1,0 +1,86 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: increment-mut-variable_name-eos
+  template: "{% increment  %}"
+  error_path: variable_name
+- id: increment-mut-variable_name-number
+  template: "{% increment 42 %}"
+  error_path: variable_name
+- id: increment-mut-variable_name-lexerr-at
+  template: "{% increment @ %}"
+  error_path: variable_name/lexer
+- id: increment-mut-variable_name-lexerr-hash
+  template: "{% increment # %}"
+  error_path: variable_name/lexer
+- id: increment-mut-variable_name-lexerr-dollar
+  template: "{% increment $ %}"
+  error_path: variable_name/lexer
+- id: increment-mut-variable_name-lexerr-caret
+  template: "{% increment ^ %}"
+  error_path: variable_name/lexer
+- id: increment-mut-variable_name-lexerr-ampersand
+  template: "{% increment & %}"
+  error_path: variable_name/lexer
+- id: increment-mut-variable_name-lexerr-asterisk
+  template: "{% increment * %}"
+  error_path: variable_name/lexer
+- id: increment-mut-variable_name-lexerr-tilde
+  template: "{% increment ~ %}"
+  error_path: variable_name/lexer
+- id: increment-mut-variable_name-lexerr-backtick
+  template: "{% increment ` %}"
+  error_path: variable_name/lexer
+- id: increment-mut-variable_name-lexerr-backslash
+  template: "{% increment \\ %}"
+  error_path: variable_name/lexer
+- id: increment-mut-variable_name-lexerr-semicolon
+  template: "{% increment ; %}"
+  error_path: variable_name/lexer
+- id: increment-mut-variable_name-lexerr-unclosed_double_quote
+  template: '{% increment "hello %}'
+  error_path: variable_name/lexer
+- id: increment-mut-variable_name-lexerr-unclosed_single_quote
+  template: "{% increment 'hello %}"
+  error_path: variable_name/lexer
+- id: increment-mut-end-trail-id
+  template: "{% increment x extra %}"
+  error_path: end
+- id: increment-mut-end-trail-number
+  template: "{% increment x 42 %}"
+  error_path: end
+- id: increment-mut-end-trail-string
+  template: "{% increment x 'hi' %}"
+  error_path: end
+- id: increment-mut-end-trail-pipe
+  template: "{% increment x | %}"
+  error_path: end
+- id: increment-mut-end-trail-colon
+  template: "{% increment x : %}"
+  error_path: end
+- id: increment-mut-end-trail-comma
+  template: "{% increment x , %}"
+  error_path: end
+- id: increment-mut-end-trail-open_square
+  template: "{% increment x [ %}"
+  error_path: end
+- id: increment-mut-end-trail-close_square
+  template: "{% increment x ] %}"
+  error_path: end
+- id: increment-mut-end-trail-open_round
+  template: "{% increment x ( %}"
+  error_path: end
+- id: increment-mut-end-trail-close_round
+  template: "{% increment x ) %}"
+  error_path: end
+- id: increment-mut-end-trail-question
+  template: "{% increment x ? %}"
+  error_path: end
+- id: increment-mut-end-trail-dot
+  template: "{% increment x . %}"
+  error_path: end
+- id: increment-mut-end-trail-comparison
+  template: "{% increment x == %}"
+  error_path: end
+- id: increment-mut-end-trail-dash
+  template: "{% increment x - %}"
+  error_path: end
