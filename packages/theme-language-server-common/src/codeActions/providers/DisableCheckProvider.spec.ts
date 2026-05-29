@@ -33,7 +33,7 @@ describe('Unit: DisableCheckProvider', () => {
       severity: Severity.ERROR,
       start: { ...document.positionAt(start), index: start },
       end: { ...document.positionAt(end), index: end },
-    } as Offense<SourceCodeType.LiquidHtml>;
+    };
   }
 
   function cursorAt(needle: string) {
