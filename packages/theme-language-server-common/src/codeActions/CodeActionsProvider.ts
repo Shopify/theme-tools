@@ -1,12 +1,7 @@
 import { CodeAction, CodeActionParams, Command } from 'vscode-languageserver';
 import { DiagnosticsManager } from '../diagnostics';
 import { DocumentManager } from '../documents';
-import {
-  DisableCheckProvider,
-  FixAllProvider,
-  FixProvider,
-  SuggestionProvider,
-} from './providers';
+import { DisableCheckProvider, FixAllProvider, FixProvider, SuggestionProvider } from './providers';
 import { BaseCodeActionsProvider } from './BaseCodeActionsProvider';
 
 export const CodeActionKinds = Array.from(

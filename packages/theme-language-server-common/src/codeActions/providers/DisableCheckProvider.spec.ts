@@ -19,10 +19,7 @@ describe('Unit: DisableCheckProvider', () => {
   let diagnosticsManager: DiagnosticsManager;
   let provider: DisableCheckProvider;
 
-  function makeOffense(
-    checkName: string,
-    needle: string,
-  ): Offense<SourceCodeType.LiquidHtml> {
+  function makeOffense(checkName: string, needle: string): Offense<SourceCodeType.LiquidHtml> {
     const start = contents.indexOf(needle);
     const end = start + needle.length;
     return {
