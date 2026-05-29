@@ -47,6 +47,17 @@ describe('Unit: DisableCheckProvider', () => {
     };
   }
 
+  function rangeFromTo(startNeedle: string, endNeedle: string) {
+    return {
+      textDocument: { uri },
+      range: {
+        start: document.positionAt(contents.indexOf(startNeedle)),
+        end: document.positionAt(contents.indexOf(endNeedle) + endNeedle.length),
+      },
+      context: { diagnostics: [] },
+    };
+  }
+
   beforeEach(() => {
     documentManager = new DocumentManager();
     diagnosticsManager = new DiagnosticsManager({ sendDiagnostics: vi.fn() } as any);
@@ -116,5 +127,39 @@ describe('Unit: DisableCheckProvider', () => {
     const codeActions = provider.codeActions(cursorAt('assign x = 1'));
 
     expect(codeActions.length).toBe(0);
+  });
+
+  it('emits only one action pair per check when several offenses of the same check are selected', () => {
+    diagnosticsManager.set(uri, version, [
+      makeOffense('ParserBlockingScript', '<script src="2.js"></script>'),
+      makeOffense('ParserBlockingScript', '<script src="3.js"></script>'),
+    ]);
+
+    const codeActions = provider.codeActions(rangeFromTo('2.js', '3.js'));
+
+    expect(codeActions.length).toBe(2);
+    expect(codeActions.map((a) => a.title)).toEqual([
+      'Disable ParserBlockingScript for this line',
+      'Disable ParserBlockingScript for entire file',
+    ]);
+  });
+
+  it('emits one action pair per distinct check when multiple checks are selected', () => {
+    diagnosticsManager.set(uri, version, [
+      makeOffense('UnusedAssign', '{% assign x = 1 %}'),
+      makeOffense('ParserBlockingScript', '<script src="2.js"></script>'),
+    ]);
+
+    const codeActions = provider.codeActions(rangeFromTo('assign x = 1', '2.js'));
+
+    expect(codeActions.length).toBe(4);
+    expect(codeActions.map((a) => a.title).sort()).toEqual(
+      [
+        'Disable ParserBlockingScript for entire file',
+        'Disable ParserBlockingScript for this line',
+        'Disable UnusedAssign for entire file',
+        'Disable UnusedAssign for this line',
+      ].sort(),
+    );
   });
 });

@@ -1,9 +1,10 @@
-import { SourceCodeType } from '@shopify/theme-check-common';
+import { Offense, SourceCodeType } from '@shopify/theme-check-common';
 import {
   CodeAction,
   CodeActionKind,
   CodeActionParams,
   Command,
+  Diagnostic,
   TextEdit,
   WorkspaceEdit,
 } from 'vscode-languageserver';
@@ -28,23 +29,35 @@ export class DisableCheckProvider extends BaseCodeActionsProvider {
     const anomaliesUnderCursor = anomalies.filter((anomaly) => isInRange(anomaly, start, end));
     if (anomaliesUnderCursor.length === 0) return [];
 
-    const { offense, diagnostic } = anomaliesUnderCursor[0];
-    const check = offense.check;
+    const byCheck = new Map<string, { offense: Offense; diagnostics: Diagnostic[] }>();
+    for (const { offense, diagnostic } of anomaliesUnderCursor) {
+      const existing = byCheck.get(offense.check);
+      if (existing) {
+        existing.diagnostics.push(diagnostic);
+      } else {
+        byCheck.set(offense.check, { offense, diagnostics: [diagnostic] });
+      }
+    }
 
-    return [
-      toEditCodeAction(
-        `Disable ${check} for this line`,
-        disableNextLineEdit(uri, textDocument, offense.start.line, check),
-        [diagnostic],
-        DisableCheckProvider.kind,
-      ),
-      toEditCodeAction(
-        `Disable ${check} for entire file`,
-        disableFileEdit(uri, check),
-        [diagnostic],
-        DisableCheckProvider.kind,
-      ),
-    ];
+    const actions: CodeAction[] = [];
+    for (const [check, { offense, diagnostics: groupDiagnostics }] of byCheck) {
+      actions.push(
+        toEditCodeAction(
+          `Disable ${check} for this line`,
+          disableNextLineEdit(uri, textDocument, offense.start.line, check),
+          groupDiagnostics,
+          DisableCheckProvider.kind,
+        ),
+        toEditCodeAction(
+          `Disable ${check} for entire file`,
+          disableFileEdit(uri, check),
+          groupDiagnostics,
+          DisableCheckProvider.kind,
+        ),
+      );
+    }
+
+    return actions;
   }
 }
 
