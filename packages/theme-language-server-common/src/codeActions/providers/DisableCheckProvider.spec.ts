@@ -168,7 +168,8 @@ describe('Unit: DisableCheckProvider — {% liquid %} blocks', () => {
   const uri = path.normalize(URI.file('/path/to/file.liquid'));
   const contents = `{% liquid
   assign x = 1
-%}`;
+%}
+{% assign y = 2 %}`;
   const version = 0;
   const document = TextDocument.create(uri, 'liquid', version, contents);
   let documentManager: DocumentManager;
@@ -209,5 +210,23 @@ describe('Unit: DisableCheckProvider — {% liquid %} blocks', () => {
     });
 
     expect(codeActions.map((a) => a.title)).toEqual(['Disable UnusedAssign for entire file']);
+  });
+
+  it('still offers "this line" for an offense outside the {% liquid %} block in the same file', () => {
+    diagnosticsManager.set(uri, version, [makeOffense('UnusedAssign', 'assign y = 2')]);
+
+    const codeActions = provider.codeActions({
+      textDocument: { uri },
+      range: {
+        start: document.positionAt(contents.indexOf('assign y = 2')),
+        end: document.positionAt(contents.indexOf('assign y = 2')),
+      },
+      context: { diagnostics: [] },
+    });
+
+    expect(codeActions.map((a) => a.title)).toEqual([
+      'Disable UnusedAssign for this line',
+      'Disable UnusedAssign for entire file',
+    ]);
   });
 });

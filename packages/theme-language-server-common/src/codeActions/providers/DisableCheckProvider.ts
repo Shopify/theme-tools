@@ -1,5 +1,5 @@
 import { Offense, SourceCodeType, findCurrentNode, isError } from '@shopify/theme-check-common';
-import { LiquidHtmlNode, NodeTypes } from '@shopify/liquid-html-parser';
+import { LiquidHtmlNode, NamedTags, NodeTypes } from '@shopify/liquid-html-parser';
 import {
   CodeAction,
   CodeActionKind,
@@ -42,7 +42,7 @@ export class DisableCheckProvider extends BaseCodeActionsProvider {
 
     const actions: CodeAction[] = [];
     for (const [check, { offense, diagnostics: groupDiagnostics }] of byCheck) {
-      if (!isInsideLiquidTag(document.ast, offense.start.index)) {
+      if (!isInsideLiquidLiquidTag(document.ast, offense.start.index)) {
         actions.push(
           toEditCodeAction(
             `Disable ${check} for this line`,
@@ -86,10 +86,10 @@ function disableNextLineEdit(
   return { changes: { [uri]: [TextEdit.insert({ line, character: 0 }, newText)] } };
 }
 
-function isInsideLiquidTag(ast: LiquidHtmlNode | Error, index: number): boolean {
+function isInsideLiquidLiquidTag(ast: LiquidHtmlNode | Error, index: number): boolean {
   if (isError(ast)) return false;
   const [currentNode, ancestors] = findCurrentNode(ast, index);
   return [currentNode, ...ancestors].some(
-    (node) => node.type === NodeTypes.LiquidTag && node.name === 'liquid',
+    (node) => node.type === NodeTypes.LiquidTag && node.name === NamedTags.liquid,
   );
 }
