@@ -38,8 +38,7 @@ function title(
 
 function sanitize(s: string | undefined) {
   return s
-    ?.replace(/(^|\n+)&gt;/g, ' ')
-    .replace(/&gt;/g, '>')
+    ?.replace(/&gt;/g, '>')
     .replace(/&lt;/g, '<')
     .replace(/\]\(\//g, '](https://shopify.dev/')
     .trim();

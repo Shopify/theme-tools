@@ -36,6 +36,21 @@ describe('MarkdownRenderer', () => {
         });
       });
     });
+
+    describe('when the description contains a blockquote (e.g. a Caution/Note warning)', () => {
+      it('preserves the blockquote on its own line instead of collapsing it onto the previous line', () => {
+        const entry: DocsetEntry = {
+          name: 'image_url',
+          description:
+            'Use it on image objects.\n\n&gt; Caution:\n&gt; You must specify either a width or height parameter.',
+          deprecated: false,
+        };
+
+        expect(render(entry)).toEqual(
+          '### image_url\nUse it on image objects.\n\n> Caution:\n> You must specify either a width or height parameter.',
+        );
+      });
+    });
   });
 
   describe('renderHtmlEntry()', () => {
