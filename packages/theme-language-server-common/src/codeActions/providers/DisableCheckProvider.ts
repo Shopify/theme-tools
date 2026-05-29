@@ -38,8 +38,19 @@ export class DisableCheckProvider extends BaseCodeActionsProvider {
         [diagnostic],
         DisableCheckProvider.kind,
       ),
+      toEditCodeAction(
+        `Disable ${check} for entire file`,
+        disableFileEdit(uri, check),
+        [diagnostic],
+        DisableCheckProvider.kind,
+      ),
     ];
   }
+}
+
+function disableFileEdit(uri: string, check: string): WorkspaceEdit {
+  const newText = `{% # theme-check-disable ${check} %}\n`;
+  return { changes: { [uri]: [TextEdit.insert({ line: 0, character: 0 }, newText)] } };
 }
 
 function disableNextLineEdit(

@@ -81,6 +81,33 @@ describe('Unit: DisableCheckProvider', () => {
     });
   });
 
+  it('offers "disable for entire file" inserting a disable comment at the top of the file', () => {
+    diagnosticsManager.set(uri, version, [makeOffense('UnusedAssign', '{% assign x = 1 %}')]);
+
+    const codeActions = provider.codeActions(cursorAt('assign x = 1'));
+    const action = codeActions.find((a) => a.title === 'Disable UnusedAssign for entire file');
+
+    expect(action).toEqual({
+      title: 'Disable UnusedAssign for entire file',
+      kind: 'quickfix',
+      diagnostics: expect.any(Array),
+      isPreferred: false,
+      edit: {
+        changes: {
+          [uri]: [
+            {
+              range: {
+                start: { line: 0, character: 0 },
+                end: { line: 0, character: 0 },
+              },
+              newText: '{% # theme-check-disable UnusedAssign %}\n',
+            },
+          ],
+        },
+      },
+    });
+  });
+
   it('offers no actions when the cursor does not overlap any offense', () => {
     diagnosticsManager.set(uri, version, [
       makeOffense('ParserBlockingScript', '<script src="2.js"></script>'),
