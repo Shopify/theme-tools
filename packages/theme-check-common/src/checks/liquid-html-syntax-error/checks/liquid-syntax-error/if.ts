@@ -1,17 +1,11 @@
 import type { LiquidTag, LiquidConditionalExpression } from './parser-compat';
 import type { Context } from './context';
 import {
+  analyzeMarkup,
   conditionalHasBareArrayAccess,
-  hasInvalidBooleanExpressionComparisonMarkup,
-  hasInvalidBooleanExpressionLexerMarkup,
-  hasInvalidBooleanExpressionLookupMarkup,
-  hasInvalidBooleanExpressionTokenMarkup,
-  hasInvalidBooleanComparisonRhsMarkup,
-  hasInvalidBooleanComparisonRhsLookupMarkup,
-  hasInvalidComparisonRhsMarkup,
+  hasBooleanExpressionLiquidSyntaxError,
+  hasConditionalLiquidSyntaxError,
   hasInvalidConditionalLookupMarkup,
-  hasInvalidLogicalOperandMarkup,
-  hasInvalidStandaloneConditionalLexerMarkup,
   hasInvalidStandaloneConditionalTokenMarkup,
   hasSkippedCharacters,
   hasSkippedPrefixCharacters,
@@ -26,20 +20,12 @@ const LIQUID_SYNTAX_ERROR = `Liquid syntax error: ${SYNTAX_ERROR}`;
 
 export function checkIfTag(node: LiquidTag, context: Context): void {
   if (typeof node.markup === 'string') {
+    const markupAnalysis = analyzeMarkup(node.markup);
+
     context.report({
       message:
-        hasSingleTrailingConditionalToken(node.markup) ||
-        hasInvalidBooleanExpressionComparisonMarkup(node.markup) ||
-        hasInvalidBooleanExpressionLexerMarkup(node.markup) ||
-        hasInvalidBooleanExpressionLookupMarkup(node.markup) ||
-        hasInvalidBooleanExpressionTokenMarkup(node.markup) ||
-        hasInvalidBooleanComparisonRhsMarkup(node.markup) ||
-        hasInvalidConditionalLookupMarkup(node.markup) ||
-        hasInvalidBooleanComparisonRhsLookupMarkup(node.markup) ||
-        hasInvalidComparisonRhsMarkup(node.markup) ||
-        hasInvalidLogicalOperandMarkup(node.markup) ||
-        hasInvalidStandaloneConditionalLexerMarkup(node.markup) ||
-        hasInvalidStandaloneConditionalTokenMarkup(node.markup)
+        hasSingleTrailingConditionalToken(markupAnalysis) ||
+        hasConditionalLiquidSyntaxError(markupAnalysis)
           ? LIQUID_SYNTAX_ERROR
           : SYNTAX_ERROR,
       startIndex: node.position.start,
@@ -50,16 +36,9 @@ export function checkIfTag(node: LiquidTag, context: Context): void {
 
   const markup = node.markup as LiquidConditionalExpression;
   const tagMarkup = rawMarkup(node);
+  const tagMarkupAnalysis = analyzeMarkup(tagMarkup);
 
-  if (
-    hasInvalidBooleanExpressionComparisonMarkup(tagMarkup) ||
-    hasInvalidBooleanExpressionLexerMarkup(tagMarkup) ||
-    hasInvalidBooleanExpressionLookupMarkup(tagMarkup) ||
-    hasInvalidBooleanExpressionTokenMarkup(tagMarkup) ||
-    hasInvalidBooleanComparisonRhsMarkup(tagMarkup) ||
-    hasInvalidBooleanComparisonRhsLookupMarkup(tagMarkup) ||
-    hasInvalidComparisonRhsMarkup(tagMarkup)
-  ) {
+  if (hasBooleanExpressionLiquidSyntaxError(tagMarkupAnalysis)) {
     context.report({
       message: LIQUID_SYNTAX_ERROR,
       startIndex: node.position.start,
@@ -68,7 +47,7 @@ export function checkIfTag(node: LiquidTag, context: Context): void {
     return;
   }
 
-  if (hasInvalidConditionalLookupMarkup(tagMarkup)) {
+  if (hasInvalidConditionalLookupMarkup(tagMarkupAnalysis)) {
     context.report({
       message: LIQUID_SYNTAX_ERROR,
       startIndex: node.position.start,
@@ -77,7 +56,7 @@ export function checkIfTag(node: LiquidTag, context: Context): void {
     return;
   }
 
-  if (hasInvalidStandaloneConditionalTokenMarkup(tagMarkup)) {
+  if (hasInvalidStandaloneConditionalTokenMarkup(tagMarkupAnalysis)) {
     context.report({
       message: LIQUID_SYNTAX_ERROR,
       startIndex: node.position.start,
@@ -86,7 +65,7 @@ export function checkIfTag(node: LiquidTag, context: Context): void {
     return;
   }
 
-  if (hasUnclosedQuotedString(tagMarkup)) {
+  if (hasUnclosedQuotedString(tagMarkupAnalysis)) {
     context.report({
       message: SYNTAX_ERROR,
       startIndex: node.position.start,
@@ -114,22 +93,12 @@ export function checkIfTag(node: LiquidTag, context: Context): void {
   }
 
   const parsedMarkup = node.source.slice(markup.position.start, node.markupPosition.end);
-  if (hasSkippedCharacters(parsedMarkup)) {
+  const parsedMarkupAnalysis = analyzeMarkup(parsedMarkup);
+  if (hasSkippedCharacters(parsedMarkupAnalysis)) {
     context.report({
-      message:
-        hasInvalidConditionalLookupMarkup(parsedMarkup) ||
-        hasInvalidBooleanExpressionComparisonMarkup(parsedMarkup) ||
-        hasInvalidBooleanExpressionLexerMarkup(parsedMarkup) ||
-        hasInvalidBooleanExpressionLookupMarkup(parsedMarkup) ||
-        hasInvalidBooleanExpressionTokenMarkup(parsedMarkup) ||
-        hasInvalidBooleanComparisonRhsMarkup(parsedMarkup) ||
-        hasInvalidBooleanComparisonRhsLookupMarkup(parsedMarkup) ||
-        hasInvalidComparisonRhsMarkup(parsedMarkup) ||
-        hasInvalidLogicalOperandMarkup(parsedMarkup) ||
-        hasInvalidStandaloneConditionalLexerMarkup(parsedMarkup) ||
-        hasInvalidStandaloneConditionalTokenMarkup(parsedMarkup)
-          ? LIQUID_SYNTAX_ERROR
-          : SYNTAX_ERROR,
+      message: hasConditionalLiquidSyntaxError(parsedMarkupAnalysis)
+        ? LIQUID_SYNTAX_ERROR
+        : SYNTAX_ERROR,
       startIndex: node.position.start,
       endIndex: node.position.end,
     });

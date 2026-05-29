@@ -171,6 +171,33 @@ export function rawMarkup(node: LiquidTag | LiquidRawTag): string {
   return node.source.slice(node.markupPosition.start, node.markupPosition.end);
 }
 
+export interface MarkupAnalysis {
+  source: string;
+  tokens: MarkupToken[];
+  uncoveredCharacters: UncoveredCharacter[];
+  uncoveredCharactersAllowingPrefixQuotes: UncoveredCharacter[];
+  hasSkippedCharacters: boolean;
+  hasSkippedCharactersAllowingPrefixQuotes: boolean;
+}
+
+export type MarkupAnalysisInput = string | MarkupAnalysis;
+
+export function analyzeMarkup(markup: string): MarkupAnalysis {
+  const tokens = tokenizeMarkup(markup);
+  const meaningful = meaningfulTokensFromTokens(tokens);
+  const uncovered = uncoveredCharactersFromTokens(markup, tokens);
+  const uncoveredAllowingPrefixQuotes = uncoveredCharactersFromTokens(markup, tokens, true);
+
+  return {
+    source: markup,
+    tokens: meaningful,
+    uncoveredCharacters: uncovered,
+    uncoveredCharactersAllowingPrefixQuotes: uncoveredAllowingPrefixQuotes,
+    hasSkippedCharacters: uncovered.length > 0,
+    hasSkippedCharactersAllowingPrefixQuotes: uncoveredAllowingPrefixQuotes.length > 0,
+  };
+}
+
 /**
  * Returns +true+ when +markup+ has unclaimed non-whitespace bytes.
  *
@@ -184,8 +211,8 @@ export function rawMarkup(node: LiquidTag | LiquidRawTag): string {
  *   +{% cycle @foo, 'bar' %}+     => true   (+@+ is uncovered)
  *   +{% assign x = #val %}+       => true   (+#+ is uncovered)
  */
-export function hasSkippedCharacters(markup: string): boolean {
-  return uncoveredCharacters(markup).length > 0;
+export function hasSkippedCharacters(markup: MarkupAnalysisInput): boolean {
+  return markupAnalysis(markup).hasSkippedCharacters;
 }
 
 /**
@@ -367,94 +394,126 @@ export function hasTrailingParsedConditionalMarkup(
   return hasSkippedCharacters(trailingMarkup) || meaningfulTokens(trailingMarkup).length > 0;
 }
 
-export function hasSingleTrailingConditionalToken(markup: string): boolean {
-  const tokens = meaningfulTokens(markup);
+export function hasSingleTrailingConditionalToken(markup: MarkupAnalysisInput): boolean {
+  const analysis = markupAnalysis(markup);
+  const source = analysis.source;
+  const tokens = analysis.tokens;
   if (tokens.length === 0) return false;
 
   const lastToken = tokens[tokens.length - 1];
   if (hasCompleteVariableLookup(tokens)) {
-    return hasSkippedCharacters(markup.slice(lastToken.end));
+    return hasSkippedCharacters(source.slice(lastToken.end));
   }
 
-  return hasCompleteVariableLookup(tokens.slice(0, -1)) && !hasSkippedCharacters(markup);
+  return hasCompleteVariableLookup(tokens.slice(0, -1)) && !analysis.hasSkippedCharacters;
 }
 
-export function hasInvalidLogicalOperandMarkup(markup: string): boolean {
-  const tokens = meaningfulTokens(markup);
+export function hasBooleanExpressionLiquidSyntaxError(markup: MarkupAnalysisInput): boolean {
+  return (
+    hasInvalidBooleanExpressionComparisonMarkup(markup) ||
+    hasInvalidBooleanExpressionLexerMarkup(markup) ||
+    hasInvalidBooleanExpressionLookupMarkup(markup) ||
+    hasInvalidBooleanExpressionTokenMarkup(markup) ||
+    hasInvalidBooleanComparisonRhsMarkup(markup) ||
+    hasInvalidBooleanComparisonRhsLookupMarkup(markup) ||
+    hasInvalidComparisonRhsMarkup(markup)
+  );
+}
+
+export function hasConditionalLiquidSyntaxError(markup: MarkupAnalysisInput): boolean {
+  return (
+    hasInvalidConditionalLookupMarkup(markup) ||
+    hasBooleanExpressionLiquidSyntaxError(markup) ||
+    hasInvalidLogicalOperandMarkup(markup) ||
+    hasInvalidStandaloneConditionalLexerMarkup(markup) ||
+    hasInvalidStandaloneConditionalTokenMarkup(markup)
+  );
+}
+
+export function hasInvalidLogicalOperandMarkup(markup: MarkupAnalysisInput): boolean {
+  const analysis = markupAnalysis(markup);
+  const source = analysis.source;
+  const tokens = analysis.tokens;
 
   return tokens.some((token, index) => {
     if (!isLogicalToken(token)) return false;
 
-    const prefix = markup.slice(0, token.start);
+    const prefix = source.slice(0, token.start);
     if (!hasCompleteConditionalPrefix(tokens.slice(0, index), prefix)) return false;
 
-    const suffix = markup.slice(token.end);
+    const suffix = source.slice(token.end);
     return hasOnlyInvalidLogicalOperandMarkup(suffix);
   });
 }
 
-export function hasInvalidComparisonRhsMarkup(markup: string): boolean {
-  const tokens = meaningfulTokens(markup);
+export function hasInvalidComparisonRhsMarkup(markup: MarkupAnalysisInput): boolean {
+  const analysis = markupAnalysis(markup);
+  const source = analysis.source;
+  const tokens = analysis.tokens;
   const lastToken = tokens[tokens.length - 1];
 
   if (!lastToken) return false;
 
-  if (hasSkippedCharacters(markup) && hasInvalidComparisonRhsSkippedMarkup(tokens, markup)) {
+  if (analysis.hasSkippedCharacters && hasInvalidComparisonRhsSkippedMarkup(tokens, source)) {
     return true;
   }
 
-  if (hasSkippedCharacters(markup) && isTerminalSkippedComparisonToken(markup, lastToken.end)) {
-    return hasCompleteComparisonPrefix(tokens, markup.slice(0, lastToken.end));
+  if (analysis.hasSkippedCharacters && isTerminalSkippedComparisonToken(source, lastToken.end)) {
+    return hasCompleteComparisonPrefix(tokens, source.slice(0, lastToken.end));
   }
 
   if (isComparisonToken(lastToken)) {
-    return hasCompleteComparisonPrefix(tokens.slice(0, -1), markup.slice(0, lastToken.start));
+    return hasCompleteComparisonPrefix(tokens.slice(0, -1), source.slice(0, lastToken.start));
   }
 
   if (isInvalidComparisonRhsToken(lastToken)) {
-    if (hasCompleteComparisonPrefix(tokens.slice(0, -1), markup.slice(0, lastToken.start))) {
+    if (hasCompleteComparisonPrefix(tokens.slice(0, -1), source.slice(0, lastToken.start))) {
       return true;
     }
   }
 
   return (
-    hasInvalidComparisonRhsLookup(tokens, markup) ||
-    hasInvalidComparisonRhsRangeLiteral(tokens, markup)
+    hasInvalidComparisonRhsLookup(tokens, source) ||
+    hasInvalidComparisonRhsRangeLiteral(tokens, source)
   );
 }
 
-export function hasInvalidBooleanComparisonRhsLookupMarkup(markup: string): boolean {
-  if (hasSkippedCharacters(markup)) return false;
+export function hasInvalidBooleanComparisonRhsLookupMarkup(markup: MarkupAnalysisInput): boolean {
+  const analysis = markupAnalysis(markup);
+  if (analysis.hasSkippedCharacters) return false;
 
-  const tokens = meaningfulTokens(markup);
+  const source = analysis.source;
+  const tokens = analysis.tokens;
 
   return tokens.some((token, index) => {
     if (!isComparisonToken(token)) return false;
 
     const prefixTokens = tokens.slice(0, index);
-    if (!hasCompleteConditionalPrefix(prefixTokens, markup.slice(0, token.start))) return false;
+    if (!hasCompleteConditionalPrefix(prefixTokens, source.slice(0, token.start))) return false;
 
     const rhsTokens = tokens.slice(index + 1);
     return hasInvalidVariableLookup(rhsTokens) || hasInvalidRangeLiteral(rhsTokens);
   });
 }
 
-export function hasInvalidBooleanComparisonRhsMarkup(markup: string): boolean {
-  const tokens = meaningfulTokens(markup);
+export function hasInvalidBooleanComparisonRhsMarkup(markup: MarkupAnalysisInput): boolean {
+  const analysis = markupAnalysis(markup);
+  const source = analysis.source;
+  const tokens = analysis.tokens;
 
   return tokens.some((token, index) => {
     if (!isComparisonToken(token)) return false;
 
     const prefixTokens = tokens.slice(0, index);
-    if (!hasCompleteBooleanComparisonPrefix(prefixTokens, markup.slice(0, token.start))) {
+    if (!hasCompleteBooleanComparisonPrefix(prefixTokens, source.slice(0, token.start))) {
       return false;
     }
 
     const rhsTokens = tokens.slice(index + 1);
-    if (hasSkippedCharacters(markup)) {
+    if (analysis.hasSkippedCharacters) {
       return (
-        (rhsTokens.length === 0 && isTerminalSkippedComparisonToken(markup, token.end)) ||
-        hasOnlyInvalidComparisonRhsMarkup(markup.slice(token.end))
+        (rhsTokens.length === 0 && isTerminalSkippedComparisonToken(source, token.end)) ||
+        hasOnlyInvalidComparisonRhsMarkup(source.slice(token.end))
       );
     }
 
@@ -467,32 +526,36 @@ export function hasInvalidBooleanComparisonRhsMarkup(markup: string): boolean {
   });
 }
 
-export function hasInvalidBooleanExpressionComparisonMarkup(markup: string): boolean {
-  const tokens = meaningfulTokens(markup);
+export function hasInvalidBooleanExpressionComparisonMarkup(markup: MarkupAnalysisInput): boolean {
+  const analysis = markupAnalysis(markup);
+  const source = analysis.source;
+  const tokens = analysis.tokens;
   const lastToken = tokens[tokens.length - 1];
   if (!lastToken) return false;
 
-  if (hasSkippedCharacters(markup)) {
-    if (!isTerminalSkippedAngleComparisonToken(markup, lastToken.end)) return false;
+  if (analysis.hasSkippedCharacters) {
+    if (!isTerminalSkippedAngleComparisonToken(source, lastToken.end)) return false;
 
-    return hasCompleteBooleanComparisonPrefix(tokens, markup.slice(0, lastToken.end));
+    return hasCompleteBooleanComparisonPrefix(tokens, source.slice(0, lastToken.end));
   }
 
   if (!isComparisonToken(lastToken)) return false;
 
-  return hasCompleteBooleanComparisonPrefix(tokens.slice(0, -1), markup.slice(0, lastToken.start));
+  return hasCompleteBooleanComparisonPrefix(tokens.slice(0, -1), source.slice(0, lastToken.start));
 }
 
-export function hasInvalidBooleanExpressionLookupMarkup(markup: string): boolean {
-  if (hasSkippedCharacters(markup)) return false;
+export function hasInvalidBooleanExpressionLookupMarkup(markup: MarkupAnalysisInput): boolean {
+  const analysis = markupAnalysis(markup);
+  if (analysis.hasSkippedCharacters) return false;
 
-  const tokens = meaningfulTokens(markup);
+  const source = analysis.source;
+  const tokens = analysis.tokens;
 
   return tokens.some((token, index) => {
     if (index === 0) return false;
 
     const prefixTokens = tokens.slice(0, index);
-    if (!hasCompleteBooleanComparisonPrefix(prefixTokens, markup.slice(0, token.start))) {
+    if (!hasCompleteBooleanComparisonPrefix(prefixTokens, source.slice(0, token.start))) {
       return false;
     }
 
@@ -501,16 +564,18 @@ export function hasInvalidBooleanExpressionLookupMarkup(markup: string): boolean
   });
 }
 
-export function hasInvalidBooleanExpressionTokenMarkup(markup: string): boolean {
-  const tokens = meaningfulTokens(markup);
+export function hasInvalidBooleanExpressionTokenMarkup(markup: MarkupAnalysisInput): boolean {
+  const analysis = markupAnalysis(markup);
+  const source = analysis.source;
+  const tokens = analysis.tokens;
   const lastToken = tokens[tokens.length - 1];
 
   if (!lastToken) return false;
 
-  if (hasSkippedCharacters(markup)) {
-    if (!isTerminalSkippedBooleanExpressionToken(markup, lastToken.end)) return false;
+  if (analysis.hasSkippedCharacters) {
+    if (!isTerminalSkippedBooleanExpressionToken(source, lastToken.end)) return false;
 
-    return hasCompleteBooleanComparisonPrefix(tokens, markup.slice(0, lastToken.end));
+    return hasCompleteBooleanComparisonPrefix(tokens, source.slice(0, lastToken.end));
   }
 
   if (!isInvalidBooleanExpressionToken(lastToken)) return false;
@@ -521,50 +586,57 @@ export function hasInvalidBooleanExpressionTokenMarkup(markup: string): boolean 
     return false;
   }
 
-  return hasCompleteBooleanComparisonPrefix(tokens.slice(0, -1), markup.slice(0, lastToken.start));
+  return hasCompleteBooleanComparisonPrefix(tokens.slice(0, -1), source.slice(0, lastToken.start));
 }
 
-export function hasInvalidBooleanExpressionLexerMarkup(markup: string): boolean {
-  if (!hasSkippedCharacters(markup)) return false;
+export function hasInvalidBooleanExpressionLexerMarkup(markup: MarkupAnalysisInput): boolean {
+  const analysis = markupAnalysis(markup);
+  if (!analysis.hasSkippedCharacters) return false;
 
-  const tokens = meaningfulTokens(markup);
+  const source = analysis.source;
+  const tokens = analysis.tokens;
 
   return tokens.some((token, index) => {
     const prefixTokens = tokens.slice(0, index + 1);
-    if (!hasCompleteBooleanComparisonPrefix(prefixTokens, markup.slice(0, token.end))) {
+    if (!hasCompleteBooleanComparisonPrefix(prefixTokens, source.slice(0, token.end))) {
       return false;
     }
 
-    return hasOnlyInvalidComparisonRhsMarkup(markup.slice(token.end));
+    return hasOnlyInvalidComparisonRhsMarkup(source.slice(token.end));
   });
 }
 
-export function hasInvalidConditionalLookupMarkup(markup: string): boolean {
-  if (hasSkippedCharacters(markup)) return false;
+export function hasInvalidConditionalLookupMarkup(markup: MarkupAnalysisInput): boolean {
+  const analysis = markupAnalysis(markup);
+  if (analysis.hasSkippedCharacters) return false;
 
-  return hasInvalidVariableLookup(meaningfulTokens(markup), true);
+  return hasInvalidVariableLookup(analysis.tokens, true);
 }
 
-export function hasInvalidStandaloneConditionalRangeMarkup(markup: string): boolean {
-  if (hasSkippedCharacters(markup)) return false;
+export function hasInvalidStandaloneConditionalRangeMarkup(markup: MarkupAnalysisInput): boolean {
+  const analysis = markupAnalysis(markup);
+  if (analysis.hasSkippedCharacters) return false;
 
-  return hasInvalidRangeLiteral(meaningfulTokens(markup));
+  return hasInvalidRangeLiteral(analysis.tokens);
 }
 
-export function hasInvalidStandaloneConditionalLexerMarkup(markup: string): boolean {
-  if (!hasSkippedCharacters(markup)) return false;
+export function hasInvalidStandaloneConditionalLexerMarkup(markup: MarkupAnalysisInput): boolean {
+  const analysis = markupAnalysis(markup);
+  if (!analysis.hasSkippedCharacters) return false;
 
-  const tokens = meaningfulTokens(markup);
+  const source = analysis.source;
+  const tokens = analysis.tokens;
   if (tokens.length === 0) return true;
 
-  const start = firstNonWhitespaceIndex(markup);
-  return isQuote(markup[start]) && countCharacter(markup, markup[start]) === 1;
+  const start = firstNonWhitespaceIndex(source);
+  return isQuote(source[start]) && countCharacter(source, source[start]) === 1;
 }
 
-export function hasInvalidStandaloneConditionalTokenMarkup(markup: string): boolean {
-  if (hasSkippedCharacters(markup)) return false;
+export function hasInvalidStandaloneConditionalTokenMarkup(markup: MarkupAnalysisInput): boolean {
+  const analysis = markupAnalysis(markup);
+  if (analysis.hasSkippedCharacters) return false;
 
-  const tokens = meaningfulTokens(markup);
+  const tokens = analysis.tokens;
   if (tokens.length === 0) return true;
   if (tokens.length !== 1) return false;
 
@@ -908,12 +980,20 @@ export function hasRubyAcceptedWhitespaceSeparatedQuotePrefix(prefix: string): b
   return false;
 }
 
-export function hasUnclosedQuotedString(markup: string): boolean {
-  return uncoveredCharacters(markup).some(({ value }) => isQuote(value));
+export function hasUnclosedQuotedString(markup: MarkupAnalysisInput): boolean {
+  return markupAnalysis(markup).uncoveredCharacters.some(({ value }) => isQuote(value));
 }
 
 function uncoveredCharacters(markup: string, allowPrefixQuotes = false): UncoveredCharacter[] {
   const tokens = tokenizeMarkup(markup);
+  return uncoveredCharactersFromTokens(markup, tokens, allowPrefixQuotes);
+}
+
+function uncoveredCharactersFromTokens(
+  markup: string,
+  tokens: MarkupToken[],
+  allowPrefixQuotes = false,
+): UncoveredCharacter[] {
   const covered = new Set<number>();
   const uncovered: UncoveredCharacter[] = [];
 
@@ -936,7 +1016,15 @@ function uncoveredCharacters(markup: string, allowPrefixQuotes = false): Uncover
 }
 
 function meaningfulTokens(markup: string): MarkupToken[] {
-  return tokenizeMarkup(markup).filter((token) => token.type !== MarkupTokenType.EndOfString);
+  return meaningfulTokensFromTokens(tokenizeMarkup(markup));
+}
+
+function meaningfulTokensFromTokens(tokens: MarkupToken[]): MarkupToken[] {
+  return tokens.filter((token) => token.type !== MarkupTokenType.EndOfString);
+}
+
+function markupAnalysis(input: MarkupAnalysisInput): MarkupAnalysis {
+  return typeof input === 'string' ? analyzeMarkup(input) : input;
 }
 
 function inlineCommentLines(markup: string): InlineCommentLine[] {
@@ -1330,7 +1418,7 @@ interface LiquidTagMarkup {
   hasSkippedCharacters: boolean;
 }
 
-interface UncoveredCharacter {
+export interface UncoveredCharacter {
   value: string;
   start: number;
   end: number;

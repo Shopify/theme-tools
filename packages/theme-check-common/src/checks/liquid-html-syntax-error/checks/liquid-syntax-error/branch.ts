@@ -8,6 +8,7 @@ import { NodeTypes } from './parser-compat';
 import type { LiquidHtmlNode } from '../../../../types';
 import type { Context } from './context';
 import {
+  analyzeMarkup,
   conditionalHasBareArrayAccess,
   expressionsHaveBareContainsValueExpression,
   hasBareArrayAccess,
@@ -28,6 +29,7 @@ import {
   hasSingleTrailingConditionalToken,
   hasTrailingParsedConditionalMarkup,
   hasUnclosedQuotedString,
+  type MarkupAnalysisInput,
 } from './utils';
 
 const ELSIF_BARE_ARRAY_ACCESS = 'Bare bracket access is not allowed in strict2 mode';
@@ -119,7 +121,9 @@ function reportWhenSyntaxError(node: LiquidBranch, context: Context): void {
 
 function checkElsifBranch(node: LiquidBranch, context: Context): void {
   if (typeof node.markup === 'string') {
-    if (hasStringMarkupLiquidSyntaxError(node.markup)) {
+    const markupAnalysis = analyzeMarkup(node.markup);
+
+    if (hasStringMarkupLiquidSyntaxError(markupAnalysis)) {
       reportLiquidSyntaxError(node, context);
     } else {
       reportSyntaxError(node, context);
@@ -129,13 +133,14 @@ function checkElsifBranch(node: LiquidBranch, context: Context): void {
 
   const markup = node.markup as LiquidConditionalExpression;
   const rawMarkup = node.source.slice(node.markupPosition.start, node.markupPosition.end);
+  const rawMarkupAnalysis = analyzeMarkup(rawMarkup);
 
-  if (hasRawMarkupLiquidSyntaxError(rawMarkup)) {
+  if (hasRawMarkupLiquidSyntaxError(rawMarkupAnalysis)) {
     reportLiquidSyntaxError(node, context);
     return;
   }
 
-  if (hasUnclosedQuotedString(rawMarkup)) {
+  if (hasUnclosedQuotedString(rawMarkupAnalysis)) {
     reportSyntaxError(node, context);
     return;
   }
@@ -155,8 +160,9 @@ function checkElsifBranch(node: LiquidBranch, context: Context): void {
   }
 
   const parsedMarkup = node.source.slice(markup.position.start, node.markupPosition.end);
-  if (hasSkippedCharacters(parsedMarkup)) {
-    if (hasParsedMarkupLiquidSyntaxError(parsedMarkup)) {
+  const parsedMarkupAnalysis = analyzeMarkup(parsedMarkup);
+  if (hasSkippedCharacters(parsedMarkupAnalysis)) {
+    if (hasParsedMarkupLiquidSyntaxError(parsedMarkupAnalysis)) {
       reportLiquidSyntaxError(node, context);
     } else {
       reportSyntaxError(node, context);
@@ -171,11 +177,11 @@ function checkElsifBranch(node: LiquidBranch, context: Context): void {
   }
 }
 
-function hasStringMarkupLiquidSyntaxError(markup: string): boolean {
+function hasStringMarkupLiquidSyntaxError(markup: MarkupAnalysisInput): boolean {
   return hasSingleTrailingConditionalToken(markup) || hasParsedMarkupLiquidSyntaxError(markup);
 }
 
-function hasRawMarkupLiquidSyntaxError(markup: string): boolean {
+function hasRawMarkupLiquidSyntaxError(markup: MarkupAnalysisInput): boolean {
   return (
     hasInvalidConditionalLookupMarkup(markup) ||
     hasInvalidBooleanExpressionComparisonMarkup(markup) ||
@@ -190,7 +196,7 @@ function hasRawMarkupLiquidSyntaxError(markup: string): boolean {
   );
 }
 
-function hasParsedMarkupLiquidSyntaxError(markup: string): boolean {
+function hasParsedMarkupLiquidSyntaxError(markup: MarkupAnalysisInput): boolean {
   return (
     hasRawMarkupLiquidSyntaxError(markup) ||
     hasInvalidLogicalOperandMarkup(markup) ||
