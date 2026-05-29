@@ -1,4 +1,5 @@
-import { Offense, SourceCodeType } from '@shopify/theme-check-common';
+import { Offense, SourceCodeType, findCurrentNode, isError } from '@shopify/theme-check-common';
+import { LiquidHtmlNode, NodeTypes } from '@shopify/liquid-html-parser';
 import {
   CodeAction,
   CodeActionKind,
@@ -41,13 +42,17 @@ export class DisableCheckProvider extends BaseCodeActionsProvider {
 
     const actions: CodeAction[] = [];
     for (const [check, { offense, diagnostics: groupDiagnostics }] of byCheck) {
+      if (!isInsideLiquidTag(document.ast, offense.start.index)) {
+        actions.push(
+          toEditCodeAction(
+            `Disable ${check} for this line`,
+            disableNextLineEdit(uri, textDocument, offense.start.line, check),
+            groupDiagnostics,
+            DisableCheckProvider.kind,
+          ),
+        );
+      }
       actions.push(
-        toEditCodeAction(
-          `Disable ${check} for this line`,
-          disableNextLineEdit(uri, textDocument, offense.start.line, check),
-          groupDiagnostics,
-          DisableCheckProvider.kind,
-        ),
         toEditCodeAction(
           `Disable ${check} for entire file`,
           disableFileEdit(uri, check),
@@ -79,4 +84,12 @@ function disableNextLineEdit(
   const indent = lineText.match(/^[ \t]*/)?.[0] ?? '';
   const newText = `${indent}{% # theme-check-disable-next-line ${check} %}\n`;
   return { changes: { [uri]: [TextEdit.insert({ line, character: 0 }, newText)] } };
+}
+
+function isInsideLiquidTag(ast: LiquidHtmlNode | Error, index: number): boolean {
+  if (isError(ast)) return false;
+  const [currentNode, ancestors] = findCurrentNode(ast, index);
+  return [currentNode, ...ancestors].some(
+    (node) => node.type === NodeTypes.LiquidTag && node.name === 'liquid',
+  );
 }

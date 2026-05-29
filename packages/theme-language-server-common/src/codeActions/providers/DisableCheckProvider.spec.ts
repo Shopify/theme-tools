@@ -163,3 +163,51 @@ describe('Unit: DisableCheckProvider', () => {
     );
   });
 });
+
+describe('Unit: DisableCheckProvider — {% liquid %} blocks', () => {
+  const uri = path.normalize(URI.file('/path/to/file.liquid'));
+  const contents = `{% liquid
+  assign x = 1
+%}`;
+  const version = 0;
+  const document = TextDocument.create(uri, 'liquid', version, contents);
+  let documentManager: DocumentManager;
+  let diagnosticsManager: DiagnosticsManager;
+  let provider: DisableCheckProvider;
+
+  function makeOffense(checkName: string, needle: string): Offense<SourceCodeType.LiquidHtml> {
+    const start = contents.indexOf(needle);
+    const end = start + needle.length;
+    return {
+      type: SourceCodeType.LiquidHtml,
+      check: checkName,
+      message: `${checkName} problem`,
+      uri: 'file:///path/to/file.liquid',
+      severity: Severity.ERROR,
+      start: { ...document.positionAt(start), index: start },
+      end: { ...document.positionAt(end), index: end },
+    };
+  }
+
+  beforeEach(() => {
+    documentManager = new DocumentManager();
+    diagnosticsManager = new DiagnosticsManager({ sendDiagnostics: vi.fn() } as any);
+    documentManager.open(uri, contents, version);
+    provider = new DisableCheckProvider(documentManager, diagnosticsManager);
+  });
+
+  it('does not offer "this line" inside a {% liquid %} block, but still offers "entire file"', () => {
+    diagnosticsManager.set(uri, version, [makeOffense('UnusedAssign', 'assign x = 1')]);
+
+    const codeActions = provider.codeActions({
+      textDocument: { uri },
+      range: {
+        start: document.positionAt(contents.indexOf('assign x = 1')),
+        end: document.positionAt(contents.indexOf('assign x = 1')),
+      },
+      context: { diagnostics: [] },
+    });
+
+    expect(codeActions.map((a) => a.title)).toEqual(['Disable UnusedAssign for entire file']);
+  });
+});
