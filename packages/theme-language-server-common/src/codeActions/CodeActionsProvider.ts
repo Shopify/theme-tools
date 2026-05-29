@@ -1,11 +1,21 @@
 import { CodeAction, CodeActionParams, Command } from 'vscode-languageserver';
 import { DiagnosticsManager } from '../diagnostics';
 import { DocumentManager } from '../documents';
-import { FixAllProvider, FixProvider, SuggestionProvider } from './providers';
+import {
+  DisableCheckProvider,
+  FixAllProvider,
+  FixProvider,
+  SuggestionProvider,
+} from './providers';
 import { BaseCodeActionsProvider } from './BaseCodeActionsProvider';
 
 export const CodeActionKinds = Array.from(
-  new Set([FixAllProvider.kind, FixProvider.kind, SuggestionProvider.kind]),
+  new Set([
+    FixAllProvider.kind,
+    FixProvider.kind,
+    SuggestionProvider.kind,
+    DisableCheckProvider.kind,
+  ]),
 );
 
 export class CodeActionsProvider {
@@ -16,6 +26,7 @@ export class CodeActionsProvider {
       new FixAllProvider(documentManager, diagnosticsManager),
       new FixProvider(documentManager, diagnosticsManager),
       new SuggestionProvider(documentManager, diagnosticsManager),
+      new DisableCheckProvider(documentManager, diagnosticsManager),
     ];
   }
 
