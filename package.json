@@ -64,6 +64,11 @@
   },
   "packageManager": "pnpm@10.16.1",
   "pnpm": {
+    "overrides": {
+      "@playwright/browser-chromium": "1.60.0",
+      "playwright": "1.60.0",
+      "playwright-core": "1.60.0"
+    },
     "onlyBuiltDependencies": [
       "@playwright/browser-chromium",
       "@vscode/vsce-sign",
