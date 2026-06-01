@@ -240,12 +240,15 @@ importers:
       '@types/lodash':
         specifier: ^4.17.20
         version: 4.17.20
+      '@types/node':
+        specifier: ^22.18.8
+        version: 22.18.8
       '@types/postcss-safe-parser':
         specifier: ^5.0.4
         version: 5.0.4
       '@vitest/expect':
-        specifier: 2.1.9
-        version: 2.1.9
+        specifier: 4.1.0
+        version: 4.1.0
 
   packages/theme-check-docs-updater:
     dependencies:
@@ -315,6 +318,9 @@ importers:
       '@shopify/theme-check-node':
         specifier: ^3.26.0
         version: 3.26.0
+      '@types/node':
+        specifier: ^22.18.8
+        version: 22.18.8
 
   packages/theme-language-server-browser:
     dependencies:
@@ -358,9 +364,12 @@ importers:
         specifier: ^3.0.7
         version: 3.1.0
     devDependencies:
+      '@types/node':
+        specifier: ^22.18.8
+        version: 22.18.8
       '@vitest/expect':
-        specifier: 2.1.9
-        version: 2.1.9
+        specifier: 4.1.0
+        version: 4.1.0
 
   packages/theme-language-server-node:
     dependencies:

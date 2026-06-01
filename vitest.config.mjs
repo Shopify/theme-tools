@@ -11,12 +11,8 @@ export default defineConfig({
   test: {
     exclude: [...configDefaults.exclude, ...alwaysExclude, ...(CI ? ciExclude : [])],
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true,
-        isolate: true,
-      },
-    },
+    maxWorkers: 1,
+    isolate: true,
     setupFiles: [
       './packages/theme-check-common/src/test/test-setup.ts',
       './packages/theme-language-server-common/src/test/test-setup.ts',

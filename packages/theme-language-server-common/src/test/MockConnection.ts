@@ -16,6 +16,26 @@ import {
 } from 'vscode-languageserver';
 import { path } from '@shopify/theme-check-common';
 
+type MockFn = ReturnType<typeof vi.fn>;
+
+type ProtocolConnectionSpies = {
+  dispose: MockFn;
+  end: MockFn;
+  hasPendingResponse: MockFn;
+  listen: MockFn;
+  onClose: MockFn;
+  onDispose: MockFn;
+  onError: MockFn;
+  onProgress: MockFn;
+  onNotification: MockFn;
+  onRequest: MockFn;
+  onUnhandledNotification: MockFn;
+  sendNotification: MockFn;
+  sendProgress: MockFn;
+  sendRequest: MockFn;
+  trace: MockFn;
+};
+
 type MockConnectionMethods = {
   /** Trigger all appropriate onNotification handlers on the connection */
   triggerNotification: ReturnType<typeof createConnection>['sendNotification'];
@@ -38,7 +58,7 @@ type MockConnectionMethods = {
   /** Perform the textDocument/didSave notification */
   saveDocument(relativePath: string): void;
 
-  spies: ReturnType<typeof protocolConnection>;
+  spies: ProtocolConnectionSpies;
 };
 
 /**
@@ -47,7 +67,10 @@ type MockConnectionMethods = {
  */
 export type MockConnection = ReturnType<typeof createConnection> & MockConnectionMethods;
 
-function protocolConnection(requests: EventEmitter, notifications: EventEmitter) {
+function protocolConnection(
+  requests: EventEmitter,
+  notifications: EventEmitter,
+): ProtocolConnectionSpies {
   return {
     dispose: vi.fn(),
     end: vi.fn(),
@@ -68,7 +91,7 @@ function protocolConnection(requests: EventEmitter, notifications: EventEmitter)
     sendProgress: vi.fn(),
     sendRequest: vi.fn(),
     trace: vi.fn().mockReturnValue(Promise.resolve()),
-  } satisfies ProtocolConnection;
+  };
 }
 
 export function mockConnection(rootUri: string): MockConnection {
@@ -83,7 +106,7 @@ export function mockConnection(rootUri: string): MockConnection {
   const spies = protocolConnection(requests, notifications);
 
   // Create a real "connection" with the fake communication channel
-  const connection = createConnection(() => spies, watchDog);
+  const connection = createConnection(() => spies as unknown as ProtocolConnection, watchDog);
 
   // Create a mock way to trigger notification in our tests
   const triggerNotification: MockConnection['sendNotification'] = async (...args: any[]) => {

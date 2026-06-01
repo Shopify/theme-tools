@@ -36,6 +36,7 @@
     "vscode-uri": "^3.0.7"
   },
   "devDependencies": {
-    "@shopify/theme-check-node": "^3.26.0"
+    "@shopify/theme-check-node": "^3.26.0",
+    "@types/node": "^22.18.8"
   }
 }
