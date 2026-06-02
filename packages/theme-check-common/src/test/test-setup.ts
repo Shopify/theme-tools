@@ -3,16 +3,6 @@ import { containOffense } from './contain-offense';
 import { OfferFixAssertion } from './chai-offer-fix-assertion';
 import { SuggestAssertion } from './chai-suggest-assertion';
 
-// Undocumented, but chai/utils has `.eql` for deep equality checks
-declare global {
-  export namespace Chai {
-    interface ChaiUtils {
-      /** deep equality */
-      eql: (a: any, b: any) => boolean;
-    }
-  }
-}
-
 /**
  * Setup chai extensions
  *

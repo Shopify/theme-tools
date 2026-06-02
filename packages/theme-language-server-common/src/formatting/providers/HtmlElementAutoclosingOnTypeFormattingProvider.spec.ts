@@ -2,6 +2,7 @@ import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DocumentOnTypeFormattingParams } from 'vscode-languageserver';
 import { DocumentManager } from '../../documents';
 import { OnTypeFormattingProvider } from '../OnTypeFormattingProvider';
+import type { SetCursorPosition } from '../types';
 
 const options: DocumentOnTypeFormattingParams['options'] = {
   insertSpaces: true,
@@ -11,11 +12,11 @@ const options: DocumentOnTypeFormattingParams['options'] = {
 describe('Module: HtmlElementAutoclosingOnTypeFormattingProvider', () => {
   let documentManager: DocumentManager;
   let onTypeFormattingProvider: OnTypeFormattingProvider;
-  let setCursorPositionSpy: ReturnType<typeof vi.fn>;
+  let setCursorPositionSpy: ReturnType<typeof vi.fn<SetCursorPosition>>;
   const uri = 'file:///path/to/document.liquid';
 
   beforeEach(() => {
-    setCursorPositionSpy = vi.fn();
+    setCursorPositionSpy = vi.fn<SetCursorPosition>();
     documentManager = new DocumentManager();
     onTypeFormattingProvider = new OnTypeFormattingProvider(documentManager, setCursorPositionSpy);
     vi.useFakeTimers();

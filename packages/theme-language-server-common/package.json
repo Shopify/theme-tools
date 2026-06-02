@@ -39,6 +39,7 @@
     "vscode-uri": "^3.0.7"
   },
   "devDependencies": {
-    "@vitest/expect": "2.1.9"
+    "@types/node": "^22.18.8",
+    "@vitest/expect": "4.1.0"
   }
 }

@@ -41,7 +41,8 @@
   "devDependencies": {
     "@types/line-column": "^1.0.0",
     "@types/lodash": "^4.17.20",
+    "@types/node": "^22.18.8",
     "@types/postcss-safe-parser": "^5.0.4",
-    "@vitest/expect": "2.1.9"
+    "@vitest/expect": "4.1.0"
   }
 }
