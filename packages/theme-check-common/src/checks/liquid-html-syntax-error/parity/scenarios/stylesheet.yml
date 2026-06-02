@@ -1,0 +1,50 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: stylesheet-mut-scss_arg-eos
+  template: "{% stylesheet  %}{% endstylesheet %}"
+  error_path: scss_arg
+- id: stylesheet-mut-scss_arg-id
+  template: "{% stylesheet x %}{% endstylesheet %}"
+  error_path: scss_arg
+- id: stylesheet-mut-end-trail-id
+  template: "{% stylesheet 'snippet' extra %}{% endstylesheet %}"
+  error_path: end
+- id: stylesheet-mut-end-trail-number
+  template: "{% stylesheet 'snippet' 42 %}{% endstylesheet %}"
+  error_path: end
+- id: stylesheet-mut-end-trail-string
+  template: "{% stylesheet 'snippet' 'hi' %}{% endstylesheet %}"
+  error_path: end
+- id: stylesheet-mut-end-trail-pipe
+  template: "{% stylesheet 'snippet' | %}{% endstylesheet %}"
+  error_path: end
+- id: stylesheet-mut-end-trail-colon
+  template: "{% stylesheet 'snippet' : %}{% endstylesheet %}"
+  error_path: end
+- id: stylesheet-mut-end-trail-comma
+  template: "{% stylesheet 'snippet' , %}{% endstylesheet %}"
+  error_path: end
+- id: stylesheet-mut-end-trail-open_square
+  template: "{% stylesheet 'snippet' [ %}{% endstylesheet %}"
+  error_path: end
+- id: stylesheet-mut-end-trail-close_square
+  template: "{% stylesheet 'snippet' ] %}{% endstylesheet %}"
+  error_path: end
+- id: stylesheet-mut-end-trail-open_round
+  template: "{% stylesheet 'snippet' ( %}{% endstylesheet %}"
+  error_path: end
+- id: stylesheet-mut-end-trail-close_round
+  template: "{% stylesheet 'snippet' ) %}{% endstylesheet %}"
+  error_path: end
+- id: stylesheet-mut-end-trail-question
+  template: "{% stylesheet 'snippet' ? %}{% endstylesheet %}"
+  error_path: end
+- id: stylesheet-mut-end-trail-dot
+  template: "{% stylesheet 'snippet' . %}{% endstylesheet %}"
+  error_path: end
+- id: stylesheet-mut-end-trail-comparison
+  template: "{% stylesheet 'snippet' == %}{% endstylesheet %}"
+  error_path: end
+- id: stylesheet-mut-end-trail-dash
+  template: "{% stylesheet 'snippet' - %}{% endstylesheet %}"
+  error_path: end

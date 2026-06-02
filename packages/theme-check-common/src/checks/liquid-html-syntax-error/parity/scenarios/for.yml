@@ -1,0 +1,377 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: for-mut-variable_name-eos
+  template: "{% for  %}{% endfor %}"
+  error_path: variable_name
+- id: for-mut-variable_name-number
+  template: "{% for 42 %}{% endfor %}"
+  error_path: variable_name
+- id: for-mut-variable_name-lexerr-at
+  template: "{% for @ %}{% endfor %}"
+  error_path: variable_name
+- id: for-mut-variable_name-lexerr-hash
+  template: "{% for # %}{% endfor %}"
+  error_path: variable_name
+- id: for-mut-variable_name-lexerr-dollar
+  template: "{% for $ %}{% endfor %}"
+  error_path: variable_name
+- id: for-mut-variable_name-lexerr-caret
+  template: "{% for ^ %}{% endfor %}"
+  error_path: variable_name
+- id: for-mut-variable_name-lexerr-ampersand
+  template: "{% for & %}{% endfor %}"
+  error_path: variable_name
+- id: for-mut-variable_name-lexerr-asterisk
+  template: "{% for * %}{% endfor %}"
+  error_path: variable_name
+- id: for-mut-variable_name-lexerr-tilde
+  template: "{% for ~ %}{% endfor %}"
+  error_path: variable_name
+- id: for-mut-variable_name-lexerr-backtick
+  template: "{% for ` %}{% endfor %}"
+  error_path: variable_name
+- id: for-mut-variable_name-lexerr-backslash
+  template: "{% for \\ %}{% endfor %}"
+  error_path: variable_name
+- id: for-mut-variable_name-lexerr-semicolon
+  template: "{% for ; %}{% endfor %}"
+  error_path: variable_name
+- id: for-mut-variable_name-lexerr-unclosed_double_quote
+  template: '{% for "hello %}{% endfor %}'
+  error_path: variable_name
+- id: for-mut-variable_name-lexerr-unclosed_single_quote
+  template: "{% for 'hello %}{% endfor %}"
+  error_path: variable_name
+- id: for-mut-in_keyword-eos
+  template: "{% for x %}{% endfor %}"
+  error_path: in_keyword
+- id: for-mut-in_keyword-id
+  template: "{% for x of %}{% endfor %}"
+  error_path: in_keyword
+- id: for-mut-collection-pipe-000
+  template: "{% for x in | %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-comma-001
+  template: "{% for x in , %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-colon-002
+  template: "{% for x in : %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-close_square-003
+  template: "{% for x in ] %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-close_round-004
+  template: "{% for x in ) %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-question-005
+  template: "{% for x in ? %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-dash-006
+  template: "{% for x in - %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-dot-007
+  template: "{% for x in . %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-dotdot-008
+  template: "{% for x in .. %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-comparison-009
+  template: "{% for x in == %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-comparison-010
+  template: "{% for x in != %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-comparison-011
+  template: "{% for x in < %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-comparison-012
+  template: "{% for x in > %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-comparison-013
+  template: "{% for x in <= %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-comparison-014
+  template: "{% for x in >= %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-comparison-015
+  template: "{% for x in contains %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-eos-016
+  template: "{% for x in %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-bare_bracket
+  template: "{% for x in [0] %}{% endfor %}"
+  error_path: collection/bad_start
+- id: for-mut-collection-lookup-trailing_dot
+  template: "{% for x in x. %}{% endfor %}"
+  error_path: collection/lookup
+- id: for-mut-collection-lookup-dot_number
+  template: "{% for x in x.123 %}{% endfor %}"
+  error_path: collection/lookup
+- id: for-mut-collection-lookup-dot_string
+  template: '{% for x in x."y" %}{% endfor %}'
+  error_path: collection/lookup
+- id: for-mut-collection-lookup-unclosed_bracket
+  template: "{% for x in x[0 %}{% endfor %}"
+  error_path: collection/lookup
+- id: for-mut-collection-lookup-bracket_wrong_content
+  template: "{% for x in x[,] %}{% endfor %}"
+  error_path: collection/lookup
+- id: for-mut-collection-lookup-unclosed_range
+  template: "{% for x in (1..5 %}{% endfor %}"
+  error_path: collection/lookup
+- id: for-mut-collection-lookup-range_bad_separator
+  template: "{% for x in (1, 5) %}{% endfor %}"
+  error_path: collection/lookup
+- id: for-mut-collection-lookup-range_missing_end
+  template: "{% for x in (1..) %}{% endfor %}"
+  error_path: collection/lookup
+- id: for-mut-collection-lexerr-at
+  template: "{% for x in @ %}{% endfor %}"
+  error_path: collection/lexer
+- id: for-mut-collection-lexerr-hash
+  template: "{% for x in # %}{% endfor %}"
+  error_path: collection/lexer
+- id: for-mut-collection-lexerr-dollar
+  template: "{% for x in $ %}{% endfor %}"
+  error_path: collection/lexer
+- id: for-mut-collection-lexerr-caret
+  template: "{% for x in ^ %}{% endfor %}"
+  error_path: collection/lexer
+- id: for-mut-collection-lexerr-ampersand
+  template: "{% for x in & %}{% endfor %}"
+  error_path: collection/lexer
+- id: for-mut-collection-lexerr-asterisk
+  template: "{% for x in * %}{% endfor %}"
+  error_path: collection/lexer
+- id: for-mut-collection-lexerr-tilde
+  template: "{% for x in ~ %}{% endfor %}"
+  error_path: collection/lexer
+- id: for-mut-collection-lexerr-backtick
+  template: "{% for x in ` %}{% endfor %}"
+  error_path: collection/lexer
+- id: for-mut-collection-lexerr-backslash
+  template: "{% for x in \\ %}{% endfor %}"
+  error_path: collection/lexer
+- id: for-mut-collection-lexerr-semicolon
+  template: "{% for x in ; %}{% endfor %}"
+  error_path: collection/lexer
+- id: for-mut-collection-lexerr-unclosed_double_quote
+  template: '{% for x in "hello %}{% endfor %}'
+  error_path: collection/lexer
+- id: for-mut-collection-lexerr-unclosed_single_quote
+  template: "{% for x in 'hello %}{% endfor %}"
+  error_path: collection/lexer
+- id: for-mut-invalid_attribute-invalid
+  template: "{% for x in x step , %}{% endfor %}"
+  error_path: invalid_attribute
+- id: for-mut-attr_colon-eos
+  template: "{% for x in x step , %}{% endfor %}"
+  error_path: attr_colon
+- id: for-mut-attr_colon-number
+  template: "{% for x in x step , 42 %}{% endfor %}"
+  error_path: attr_colon
+- id: for-mut-attr_value-pipe-000
+  template: "{% for x in x step , : | %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-comma-001
+  template: "{% for x in x step , : , %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-colon-002
+  template: "{% for x in x step , : : %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-close_square-003
+  template: "{% for x in x step , : ] %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-close_round-004
+  template: "{% for x in x step , : ) %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-question-005
+  template: "{% for x in x step , : ? %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-dash-006
+  template: "{% for x in x step , : - %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-dot-007
+  template: "{% for x in x step , : . %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-dotdot-008
+  template: "{% for x in x step , : .. %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-comparison-009
+  template: "{% for x in x step , : == %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-comparison-010
+  template: "{% for x in x step , : != %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-comparison-011
+  template: "{% for x in x step , : < %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-comparison-012
+  template: "{% for x in x step , : > %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-comparison-013
+  template: "{% for x in x step , : <= %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-comparison-014
+  template: "{% for x in x step , : >= %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-comparison-015
+  template: "{% for x in x step , : contains %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-eos-016
+  template: "{% for x in x step , : %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-bare_bracket
+  template: "{% for x in x step , : [0] %}{% endfor %}"
+  error_path: attr_value/bad_start
+- id: for-mut-attr_value-lookup-trailing_dot
+  template: "{% for x in x step , : x. %}{% endfor %}"
+  error_path: attr_value/lookup
+- id: for-mut-attr_value-lookup-dot_number
+  template: "{% for x in x step , : x.123 %}{% endfor %}"
+  error_path: attr_value/lookup
+- id: for-mut-attr_value-lookup-dot_string
+  template: '{% for x in x step , : x."y" %}{% endfor %}'
+  error_path: attr_value/lookup
+- id: for-mut-attr_value-lookup-unclosed_bracket
+  template: "{% for x in x step , : x[0 %}{% endfor %}"
+  error_path: attr_value/lookup
+- id: for-mut-attr_value-lookup-bracket_wrong_content
+  template: "{% for x in x step , : x[,] %}{% endfor %}"
+  error_path: attr_value/lookup
+- id: for-mut-attr_value-lookup-unclosed_range
+  template: "{% for x in x step , : (1..5 %}{% endfor %}"
+  error_path: attr_value/lookup
+- id: for-mut-attr_value-lookup-range_bad_separator
+  template: "{% for x in x step , : (1, 5) %}{% endfor %}"
+  error_path: attr_value/lookup
+- id: for-mut-attr_value-lookup-range_missing_end
+  template: "{% for x in x step , : (1..) %}{% endfor %}"
+  error_path: attr_value/lookup
+- id: for-mut-attr_value-lexerr-at
+  template: "{% for x in x step , : @ %}{% endfor %}"
+  error_path: attr_value/lexer
+- id: for-mut-attr_value-lexerr-hash
+  template: "{% for x in x step , : # %}{% endfor %}"
+  error_path: attr_value/lexer
+- id: for-mut-attr_value-lexerr-dollar
+  template: "{% for x in x step , : $ %}{% endfor %}"
+  error_path: attr_value/lexer
+- id: for-mut-attr_value-lexerr-caret
+  template: "{% for x in x step , : ^ %}{% endfor %}"
+  error_path: attr_value/lexer
+- id: for-mut-attr_value-lexerr-ampersand
+  template: "{% for x in x step , : & %}{% endfor %}"
+  error_path: attr_value/lexer
+- id: for-mut-attr_value-lexerr-asterisk
+  template: "{% for x in x step , : * %}{% endfor %}"
+  error_path: attr_value/lexer
+- id: for-mut-attr_value-lexerr-tilde
+  template: "{% for x in x step , : ~ %}{% endfor %}"
+  error_path: attr_value/lexer
+- id: for-mut-attr_value-lexerr-backtick
+  template: "{% for x in x step , : ` %}{% endfor %}"
+  error_path: attr_value/lexer
+- id: for-mut-attr_value-lexerr-backslash
+  template: "{% for x in x step , : \\ %}{% endfor %}"
+  error_path: attr_value/lexer
+- id: for-mut-attr_value-lexerr-semicolon
+  template: "{% for x in x step , : ; %}{% endfor %}"
+  error_path: attr_value/lexer
+- id: for-mut-attr_value-lexerr-unclosed_double_quote
+  template: '{% for x in x step , : "hello %}{% endfor %}'
+  error_path: attr_value/lexer
+- id: for-mut-attr_value-lexerr-unclosed_single_quote
+  template: "{% for x in x step , : 'hello %}{% endfor %}"
+  error_path: attr_value/lexer
+- id: for-mut-end-trail-id
+  template: "{% for x in x extra %}{% endfor %}"
+  error_path: end
+- id: for-mut-end-trail-number
+  template: "{% for x in x 42 %}{% endfor %}"
+  error_path: end
+- id: for-mut-end-trail-string
+  template: "{% for x in x 'hi' %}{% endfor %}"
+  error_path: end
+- id: for-mut-end-trail-pipe
+  template: "{% for x in x | %}{% endfor %}"
+  error_path: end
+- id: for-mut-end-trail-colon
+  template: "{% for x in x : %}{% endfor %}"
+  error_path: end
+- id: for-mut-end-trail-comma
+  template: "{% for x in x , %}{% endfor %}"
+  error_path: end
+- id: for-mut-end-trail-open_square
+  template: "{% for x in x [ %}{% endfor %}"
+  error_path: end
+- id: for-mut-end-trail-close_square
+  template: "{% for x in x ] %}{% endfor %}"
+  error_path: end
+- id: for-mut-end-trail-open_round
+  template: "{% for x in x ( %}{% endfor %}"
+  error_path: end
+- id: for-mut-end-trail-close_round
+  template: "{% for x in x ) %}{% endfor %}"
+  error_path: end
+- id: for-mut-end-trail-question
+  template: "{% for x in x ? %}{% endfor %}"
+  error_path: end
+- id: for-mut-end-trail-dot
+  template: "{% for x in x . %}{% endfor %}"
+  error_path: end
+- id: for-mut-end-trail-comparison
+  template: "{% for x in x == %}{% endfor %}"
+  error_path: end
+- id: for-mut-end-trail-dash
+  template: "{% for x in x - %}{% endfor %}"
+  error_path: end
+- id: for-mut-valid-000
+  template: "{% for x in x %}{% endfor %}"
+  error_path: valid
+- id: for-mut-valid-001
+  template: "{% for x in 42 %}{% endfor %}"
+  error_path: valid
+- id: for-mut-valid-002
+  template: "{% for x in 3.14 %}{% endfor %}"
+  error_path: valid
+- id: for-mut-valid-003
+  template: "{% for x in -5 %}{% endfor %}"
+  error_path: valid
+- id: for-mut-valid-004
+  template: "{% for x in 'hello' %}{% endfor %}"
+  error_path: valid
+- id: for-mut-valid-005
+  template: "{% for x in true %}{% endfor %}"
+  error_path: valid
+- id: for-mut-valid-006
+  template: "{% for x in false %}{% endfor %}"
+  error_path: valid
+- id: for-mut-valid-007
+  template: "{% for x in nil %}{% endfor %}"
+  error_path: valid
+- id: for-mut-valid-008
+  template: "{% for x in blank %}{% endfor %}"
+  error_path: valid
+- id: for-mut-valid-009
+  template: "{% for x in empty %}{% endfor %}"
+  error_path: valid
+- id: for-mut-valid-010
+  template: "{% for x in product.title %}{% endfor %}"
+  error_path: valid
+- id: for-mut-valid-011
+  template: "{% for x in products[0] %}{% endfor %}"
+  error_path: valid
+- id: for-mut-valid-012
+  template: "{% for x in a.b.c %}{% endfor %}"
+  error_path: valid
+- id: for-mut-valid-013
+  template: "{% for x in a[0].b %}{% endfor %}"
+  error_path: valid
+- id: for-mut-valid-014
+  template: "{% for x in (1..5) %}{% endfor %}"
+  error_path: valid
+- id: for-parity-elsif-in-for
+  template: "{% for i in (1..3) %}{% elsif %}{% endfor %}"
+  error_path: unknown_tag

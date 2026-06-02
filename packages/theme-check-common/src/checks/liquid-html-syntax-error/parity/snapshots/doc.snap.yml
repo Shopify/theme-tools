@@ -1,0 +1,132 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: doc-001
+  error: 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{%
+    enddoc %}'
+  type: SyntaxError
+- id: doc-002
+  error: 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{%
+    enddoc %}'
+  type: SyntaxError
+- id: doc-003
+  error: 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{%
+    enddoc %}'
+  type: SyntaxError
+- id: doc-004
+  error: 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{%
+    enddoc %}'
+  type: SyntaxError
+- id: doc-005
+  error: 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{%
+    enddoc %}'
+  type: SyntaxError
+- id: doc-006
+  error: 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{%
+    enddoc %}'
+  type: SyntaxError
+- id: doc-007
+  error: 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{%
+    enddoc %}'
+  type: SyntaxError
+- id: doc-008
+  error: 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{%
+    enddoc %}'
+  type: SyntaxError
+- id: doc-009
+  error: 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{%
+    enddoc %}'
+  type: SyntaxError
+- id: doc-010
+  error: 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{%
+    enddoc %}'
+  type: SyntaxError
+- id: doc-020
+  error: 'Liquid syntax error: Syntax Error in ''doc'' - Nested doc tags are not allowed'
+  type: SyntaxError
+- id: doc-021
+  error: 'Liquid syntax error: Syntax Error in ''doc'' - Nested doc tags are not allowed'
+  type: SyntaxError
+- id: doc-022
+  error: 'Liquid syntax error: Syntax Error in ''doc'' - Nested doc tags are not allowed'
+  type: SyntaxError
+- id: doc-023
+  error: 'Liquid syntax error: Syntax Error in ''doc'' - Nested doc tags are not allowed'
+  type: SyntaxError
+- id: doc-024
+  error: 'Liquid syntax error: Syntax Error in ''doc'' - Nested doc tags are not allowed'
+  type: SyntaxError
+- id: doc-025
+  error: 'Liquid syntax error: Syntax Error in ''doc'' - Nested doc tags are not allowed'
+  type: SyntaxError
+- id: doc-040
+  error: 'Liquid syntax error: ''doc'' tag was never closed'
+  type: SyntaxError
+- id: doc-041
+  error: 'Liquid syntax error: ''doc'' tag was never closed'
+  type: SyntaxError
+- id: doc-042
+  error: 'Liquid syntax error: ''doc'' tag was never closed'
+  type: SyntaxError
+- id: doc-043
+  error: 'Liquid syntax error: ''doc'' tag was never closed'
+  type: SyntaxError
+- id: doc-044
+  error: 'Liquid syntax error: ''doc'' tag was never closed'
+  type: SyntaxError
+- id: doc-045
+  error: 'Liquid syntax error: ''doc'' tag was never closed'
+  type: SyntaxError
+- id: doc-100
+  error:
+  type:
+- id: doc-101
+  error:
+  type:
+- id: doc-102
+  error:
+  type:
+- id: doc-103
+  error:
+  type:
+- id: doc-104
+  error:
+  type:
+- id: doc-105
+  error:
+  type:
+- id: doc-106
+  error:
+  type:
+- id: doc-107
+  error:
+  type:
+- id: doc-108
+  error:
+  type:
+- id: doc-109
+  error:
+  type:
+- id: doc-110
+  error:
+  type:
+- id: doc-111
+  error:
+  type:
+- id: doc-112
+  error:
+  type:
+- id: doc-113
+  error:
+  type:
+- id: doc-114
+  error: 'Liquid syntax error: Unknown tag ''enddoc'''
+  type: SyntaxError
+- id: doc-115
+  error:
+  type:
+- id: doc-116
+  error:
+  type:
+- id: doc-117
+  error:
+  type:

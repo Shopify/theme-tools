@@ -1,0 +1,595 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: cycle-mut-cycle_value-bare_bracket
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , [0]"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-bare_bracket-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , [0]"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-close_round-004
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , )"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-close_round-004-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , )"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-close_square-003
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , ]"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-close_square-003-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , ]"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-colon-002
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , :"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-colon-002-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , :"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , ,"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-comma-001-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , ,"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-comparison-009
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , =="'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-comparison-009-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , =="'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-comparison-010
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , !="'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-comparison-010-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , !="'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-comparison-011
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , <"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-comparison-011-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , <"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-comparison-012
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , >"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-comparison-012-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , >"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-comparison-013
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , <="'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-comparison-013-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , <="'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-comparison-014
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , >="'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-comparison-014-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , >="'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-comparison-015
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , contains"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-comparison-015-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , contains"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-dash-006
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , -"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-dash-006-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , -"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-dot-007
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , ."'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-dot-007-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , ."'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-dotdot-008
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , .."'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-dotdot-008-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , .."'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-eos-016
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    ,"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-eos-016-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , ,"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "x : x , , &"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-ampersand-2
+  error: 'Liquid syntax error: Unexpected character & in "x , , &"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "x : x , , *"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-asterisk-2
+  error: 'Liquid syntax error: Unexpected character * in "x , , *"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "x : x , , @"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-at-2
+  error: 'Liquid syntax error: Unexpected character @ in "x , , @"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "x : x , , \"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-backslash-2
+  error: 'Liquid syntax error: Unexpected character \ in "x , , \"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "x : x , , `"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-backtick-2
+  error: 'Liquid syntax error: Unexpected character ` in "x , , `"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "x : x , , ^"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-caret-2
+  error: 'Liquid syntax error: Unexpected character ^ in "x , , ^"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "x : x , , $"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-dollar-2
+  error: 'Liquid syntax error: Unexpected character $ in "x , , $"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "x : x , , #"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-hash-2
+  error: 'Liquid syntax error: Unexpected character # in "x , , #"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "x : x , , ;"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-semicolon-2
+  error: 'Liquid syntax error: Unexpected character ; in "x , , ;"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "x : x , , ~"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-tilde-2
+  error: 'Liquid syntax error: Unexpected character ~ in "x , , ~"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "x : x , , "hello"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-unclosed_double_quote-2
+  error: 'Liquid syntax error: Unexpected character " in "x , , "hello"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "x : x , , ''hello"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lexerr-unclosed_single_quote-2
+  error: 'Liquid syntax error: Unexpected character '' in "x , , ''hello"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , x[,]"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lookup-bracket_wrong_content-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , x[,]"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lookup-dot_number
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , x.123"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lookup-dot_number-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , x.123"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lookup-dot_string
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , x."y""'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lookup-dot_string-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , x."y""'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lookup-range_bad_separator
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , (1, 5)"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lookup-range_bad_separator-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , (1,
+    5)"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lookup-range_missing_end
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , (1..)"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lookup-range_missing_end-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , (1..)"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lookup-trailing_dot
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , x."'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lookup-trailing_dot-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , x."'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lookup-unclosed_bracket
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , x[0"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lookup-unclosed_bracket-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , x[0"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lookup-unclosed_range
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , (1..5"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-lookup-unclosed_range-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , (1..5"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-pipe-000
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , |"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-pipe-000-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , |"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-question-005
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x ,
+    , ?"'
+  type: SyntaxError
+- id: cycle-mut-cycle_value-question-005-2
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x , , ?"'
+  type: SyntaxError
+- id: cycle-mut-end-trail-close_round
+  error: 'Liquid syntax error: Expected end_of_string but found close_round in "x
+    )"'
+  type: SyntaxError
+- id: cycle-mut-end-trail-close_square
+  error: 'Liquid syntax error: Expected end_of_string but found close_square in "x
+    ]"'
+  type: SyntaxError
+- id: cycle-mut-end-trail-colon
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x :"'
+  type: SyntaxError
+- id: cycle-mut-end-trail-comma
+  error:
+  type:
+- id: cycle-mut-end-trail-comparison
+  error: 'Liquid syntax error: Expected end_of_string but found comparison in "x =="'
+  type: SyntaxError
+- id: cycle-mut-end-trail-dash
+  error: 'Liquid syntax error: Expected end_of_string but found dash in "x -"'
+  type: SyntaxError
+- id: cycle-mut-end-trail-dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x ."'
+  type: SyntaxError
+- id: cycle-mut-end-trail-id
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x extra"'
+  type: SyntaxError
+- id: cycle-mut-end-trail-number
+  error: 'Liquid syntax error: Expected end_of_string but found number in "x 42"'
+  type: SyntaxError
+- id: cycle-mut-end-trail-open_round
+  error: 'Liquid syntax error: Expected end_of_string but found open_round in "x ("'
+  type: SyntaxError
+- id: cycle-mut-end-trail-open_square
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x ["'
+  type: SyntaxError
+- id: cycle-mut-end-trail-pipe
+  error: 'Liquid syntax error: Expected end_of_string but found pipe in "x |"'
+  type: SyntaxError
+- id: cycle-mut-end-trail-question
+  error: 'Liquid syntax error: Expected end_of_string but found question in "x ?"'
+  type: SyntaxError
+- id: cycle-mut-end-trail-string
+  error: 'Liquid syntax error: Expected end_of_string but found string in "x ''hi''"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-bare_bracket
+  error: 'Liquid syntax error: Bare bracket access is not allowed in strict2 mode.
+    Use self[''...''] instead in "x : [0]"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-close_round-004
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "x
+    : )"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-close_square-003
+  error: 'Liquid syntax error: [:close_square, "]"] is not a valid expression in "x
+    : ]"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-colon-002
+  error: 'Liquid syntax error: [:colon, ":"] is not a valid expression in "x : :"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : ,"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-comparison-009
+  error: 'Liquid syntax error: [:comparison, "=="] is not a valid expression in "x
+    : =="'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-comparison-010
+  error: 'Liquid syntax error: [:comparison, "!="] is not a valid expression in "x
+    : !="'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-comparison-011
+  error: 'Liquid syntax error: [:comparison, "<"] is not a valid expression in "x
+    : <"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-comparison-012
+  error: 'Liquid syntax error: [:comparison, ">"] is not a valid expression in "x
+    : >"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-comparison-013
+  error: 'Liquid syntax error: [:comparison, "<="] is not a valid expression in "x
+    : <="'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-comparison-014
+  error: 'Liquid syntax error: [:comparison, ">="] is not a valid expression in "x
+    : >="'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-comparison-015
+  error: 'Liquid syntax error: [:comparison, "contains"] is not a valid expression
+    in "x : contains"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-dash-006
+  error: 'Liquid syntax error: [:dash, "-"] is not a valid expression in "x : -"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-dot-007
+  error: 'Liquid syntax error: [:dot, "."] is not a valid expression in "x : ."'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-dotdot-008
+  error: 'Liquid syntax error: [:dotdot, ".."] is not a valid expression in "x : .."'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-eos-016
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x :"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "x : &"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "x : *"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "x : @"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "x : \"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "x : `"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "x : ^"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "x : $"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "x : #"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "x : ;"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "x : ~"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "x : "hello"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "x : ''hello"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x : x[,]"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lookup-dot_number
+  error: 'Liquid syntax error: Expected id but found number in "x : x.123"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lookup-dot_string
+  error: 'Liquid syntax error: Expected id but found string in "x : x."y""'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lookup-range_bad_separator
+  error: 'Liquid syntax error: Expected dotdot but found comma in "x : (1, 5)"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lookup-range_missing_end
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "x
+    : (1..)"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lookup-trailing_dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x : x."'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lookup-unclosed_bracket
+  error: 'Liquid syntax error: Expected close_square but found end_of_string in "x
+    : x[0"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-lookup-unclosed_range
+  error: 'Liquid syntax error: Expected close_round but found end_of_string in "x
+    : (1..5"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-pipe-000
+  error: 'Liquid syntax error: [:pipe, "|"] is not a valid expression in "x : |"'
+  type: SyntaxError
+- id: cycle-mut-first_cycle_value-question-005
+  error: 'Liquid syntax error: [:question, "?"] is not a valid expression in "x :
+    ?"'
+  type: SyntaxError
+- id: cycle-mut-first_value-bare_bracket
+  error: 'Liquid syntax error: Bare bracket access is not allowed in strict2 mode.
+    Use self[''...''] instead in "[0]"'
+  type: SyntaxError
+- id: cycle-mut-first_value-close_round-004
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in ")"'
+  type: SyntaxError
+- id: cycle-mut-first_value-close_square-003
+  error: 'Liquid syntax error: [:close_square, "]"] is not a valid expression in "]"'
+  type: SyntaxError
+- id: cycle-mut-first_value-colon-002
+  error: 'Liquid syntax error: [:colon, ":"] is not a valid expression in ":"'
+  type: SyntaxError
+- id: cycle-mut-first_value-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in ","'
+  type: SyntaxError
+- id: cycle-mut-first_value-comparison-009
+  error: 'Liquid syntax error: [:comparison, "=="] is not a valid expression in "=="'
+  type: SyntaxError
+- id: cycle-mut-first_value-comparison-010
+  error: 'Liquid syntax error: [:comparison, "!="] is not a valid expression in "!="'
+  type: SyntaxError
+- id: cycle-mut-first_value-comparison-011
+  error: 'Liquid syntax error: [:comparison, "<"] is not a valid expression in "<"'
+  type: SyntaxError
+- id: cycle-mut-first_value-comparison-012
+  error: 'Liquid syntax error: [:comparison, ">"] is not a valid expression in ">"'
+  type: SyntaxError
+- id: cycle-mut-first_value-comparison-013
+  error: 'Liquid syntax error: [:comparison, "<="] is not a valid expression in "<="'
+  type: SyntaxError
+- id: cycle-mut-first_value-comparison-014
+  error: 'Liquid syntax error: [:comparison, ">="] is not a valid expression in ">="'
+  type: SyntaxError
+- id: cycle-mut-first_value-comparison-015
+  error: 'Liquid syntax error: [:comparison, "contains"] is not a valid expression
+    in "contains"'
+  type: SyntaxError
+- id: cycle-mut-first_value-dash-006
+  error: 'Liquid syntax error: [:dash, "-"] is not a valid expression in "-"'
+  type: SyntaxError
+- id: cycle-mut-first_value-dot-007
+  error: 'Liquid syntax error: [:dot, "."] is not a valid expression in "."'
+  type: SyntaxError
+- id: cycle-mut-first_value-dotdot-008
+  error: 'Liquid syntax error: [:dotdot, ".."] is not a valid expression in ".."'
+  type: SyntaxError
+- id: cycle-mut-first_value-eos-016
+  error: 'Liquid syntax error: Syntax Error in ''cycle'' - Valid syntax: cycle [name
+    :] var [, var2, var3 ...] in ""'
+  type: SyntaxError
+- id: cycle-mut-first_value-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "&"'
+  type: SyntaxError
+- id: cycle-mut-first_value-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "*"'
+  type: SyntaxError
+- id: cycle-mut-first_value-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "@"'
+  type: SyntaxError
+- id: cycle-mut-first_value-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "\"'
+  type: SyntaxError
+- id: cycle-mut-first_value-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "`"'
+  type: SyntaxError
+- id: cycle-mut-first_value-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "^"'
+  type: SyntaxError
+- id: cycle-mut-first_value-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "$"'
+  type: SyntaxError
+- id: cycle-mut-first_value-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "#"'
+  type: SyntaxError
+- id: cycle-mut-first_value-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in ";"'
+  type: SyntaxError
+- id: cycle-mut-first_value-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "~"'
+  type: SyntaxError
+- id: cycle-mut-first_value-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in ""hello"'
+  type: SyntaxError
+- id: cycle-mut-first_value-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "''hello"'
+  type: SyntaxError
+- id: cycle-mut-first_value-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x[,]"'
+  type: SyntaxError
+- id: cycle-mut-first_value-lookup-dot_number
+  error: 'Liquid syntax error: Expected id but found number in "x.123"'
+  type: SyntaxError
+- id: cycle-mut-first_value-lookup-dot_string
+  error: 'Liquid syntax error: Expected id but found string in "x."y""'
+  type: SyntaxError
+- id: cycle-mut-first_value-lookup-range_bad_separator
+  error: 'Liquid syntax error: Expected dotdot but found comma in "(1, 5)"'
+  type: SyntaxError
+- id: cycle-mut-first_value-lookup-range_missing_end
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "(1..)"'
+  type: SyntaxError
+- id: cycle-mut-first_value-lookup-trailing_dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x."'
+  type: SyntaxError
+- id: cycle-mut-first_value-lookup-unclosed_bracket
+  error: 'Liquid syntax error: Expected close_square but found end_of_string in "x[0"'
+  type: SyntaxError
+- id: cycle-mut-first_value-lookup-unclosed_range
+  error: 'Liquid syntax error: Expected close_round but found end_of_string in "(1..5"'
+  type: SyntaxError
+- id: cycle-mut-first_value-pipe-000
+  error: 'Liquid syntax error: [:pipe, "|"] is not a valid expression in "|"'
+  type: SyntaxError
+- id: cycle-mut-first_value-question-005
+  error: 'Liquid syntax error: [:question, "?"] is not a valid expression in "?"'
+  type: SyntaxError
+- id: cycle-mut-pregate-000
+  error: 'Liquid syntax error: Syntax Error in ''cycle'' - Valid syntax: cycle [name
+    :] var [, var2, var3 ...] in ""'
+  type: SyntaxError
+- id: cycle-mut-valid-000
+  error:
+  type:
+- id: cycle-mut-valid-001
+  error:
+  type:
+- id: cycle-mut-valid-002
+  error:
+  type:
+- id: cycle-mut-valid-003
+  error:
+  type:
+- id: cycle-mut-valid-004
+  error:
+  type:
+- id: cycle-mut-valid-005
+  error:
+  type:
+- id: cycle-mut-valid-006
+  error:
+  type:
+- id: cycle-mut-valid-007
+  error:
+  type:
+- id: cycle-mut-valid-008
+  error:
+  type:
+- id: cycle-mut-valid-009
+  error:
+  type:
+- id: cycle-mut-valid-010
+  error:
+  type:
+- id: cycle-mut-valid-011
+  error:
+  type:
+- id: cycle-mut-valid-012
+  error:
+  type:
+- id: cycle-mut-valid-013
+  error:
+  type:
+- id: cycle-mut-valid-014
+  error:
+  type:

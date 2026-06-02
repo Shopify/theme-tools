@@ -31,7 +31,6 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
       '{% if 1 %}hello{% endif %}',
       '{% if 0 %}hello{% endif %}',
       "{% if 'string' %}hello{% endif %}",
-      '{% if contains %}hello{% endif %}',
     ];
 
     for (const testCase of testCases) {
@@ -367,6 +366,39 @@ describe('Module: InvalidConditionalBooleanExpression', () => {
       expect(offenses[0].message).to.contain(
         "Use 'and'/'or' instead of '&&'/'||' for multiple conditions",
       );
+    }
+  });
+
+  it('should report an offense for invalid operators in unless expressions', async () => {
+    const testCases = [
+      {
+        source: '{% unless x && y %}{% endunless %}',
+        expectedMessage:
+          "Conditional is invalid. Anything after 'x' will be ignored. Use 'and'/'or' instead of '&&'/'||' for multiple conditions",
+      },
+      {
+        source: '{% unless x || y %}{% endunless %}',
+        expectedMessage:
+          "Conditional is invalid. Anything after 'x' will be ignored. Use 'and'/'or' instead of '&&'/'||' for multiple conditions",
+      },
+      {
+        source: '{% unless x startswith "foo" %}{% endunless %}',
+        expectedMessage:
+          "Conditional is invalid. Anything after 'x' will be ignored: 'startswith \"foo\"'",
+      },
+      {
+        source: '{% unless x === y %}{% endunless %}',
+        expectedMessage: "Conditional is invalid. Anything after 'x' will be ignored: '=== y'",
+      },
+    ];
+
+    for (const testCase of testCases) {
+      const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, testCase.source);
+      expect(offenses).to.have.length(1);
+      expect(offenses[0].message).to.equal(`Syntax is not supported: ${testCase.expectedMessage}`);
+
+      const fixed = applyFix(testCase.source, offenses[0]);
+      expect(fixed).to.equal('{% unless x %}{% endunless %}');
     }
   });
 

@@ -1,0 +1,485 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: paginate-mut-collection_expr-pipe-000
+  template: "{% paginate | %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-comma-001
+  template: "{% paginate , %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-colon-002
+  template: "{% paginate : %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-close_square-003
+  template: "{% paginate ] %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-close_round-004
+  template: "{% paginate ) %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-question-005
+  template: "{% paginate ? %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-dash-006
+  template: "{% paginate - %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-dot-007
+  template: "{% paginate . %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-dotdot-008
+  template: "{% paginate .. %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-comparison-009
+  template: "{% paginate == %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-comparison-010
+  template: "{% paginate != %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-comparison-011
+  template: "{% paginate < %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-comparison-012
+  template: "{% paginate > %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-comparison-013
+  template: "{% paginate <= %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-comparison-014
+  template: "{% paginate >= %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-comparison-015
+  template: "{% paginate contains %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-eos-016
+  template: "{% paginate  %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-bare_bracket
+  template: "{% paginate [0] %}{% endpaginate %}"
+  error_path: collection_expr/bad_start
+- id: paginate-mut-collection_expr-lookup-trailing_dot
+  template: "{% paginate x. %}{% endpaginate %}"
+  error_path: collection_expr/lookup
+- id: paginate-mut-collection_expr-lookup-dot_number
+  template: "{% paginate x.123 %}{% endpaginate %}"
+  error_path: collection_expr/lookup
+- id: paginate-mut-collection_expr-lookup-dot_string
+  template: '{% paginate x."y" %}{% endpaginate %}'
+  error_path: collection_expr/lookup
+- id: paginate-mut-collection_expr-lookup-unclosed_bracket
+  template: "{% paginate x[0 %}{% endpaginate %}"
+  error_path: collection_expr/lookup
+- id: paginate-mut-collection_expr-lookup-bracket_wrong_content
+  template: "{% paginate x[,] %}{% endpaginate %}"
+  error_path: collection_expr/lookup
+- id: paginate-mut-collection_expr-lookup-unclosed_range
+  template: "{% paginate (1..5 %}{% endpaginate %}"
+  error_path: collection_expr/lookup
+- id: paginate-mut-collection_expr-lookup-range_bad_separator
+  template: "{% paginate (1, 5) %}{% endpaginate %}"
+  error_path: collection_expr/lookup
+- id: paginate-mut-collection_expr-lookup-range_missing_end
+  template: "{% paginate (1..) %}{% endpaginate %}"
+  error_path: collection_expr/lookup
+- id: paginate-mut-collection_expr-lexerr-at
+  template: "{% paginate @ %}{% endpaginate %}"
+  error_path: collection_expr/lexer
+- id: paginate-mut-collection_expr-lexerr-hash
+  template: "{% paginate # %}{% endpaginate %}"
+  error_path: collection_expr/lexer
+- id: paginate-mut-collection_expr-lexerr-dollar
+  template: "{% paginate $ %}{% endpaginate %}"
+  error_path: collection_expr/lexer
+- id: paginate-mut-collection_expr-lexerr-caret
+  template: "{% paginate ^ %}{% endpaginate %}"
+  error_path: collection_expr/lexer
+- id: paginate-mut-collection_expr-lexerr-ampersand
+  template: "{% paginate & %}{% endpaginate %}"
+  error_path: collection_expr/lexer
+- id: paginate-mut-collection_expr-lexerr-asterisk
+  template: "{% paginate * %}{% endpaginate %}"
+  error_path: collection_expr/lexer
+- id: paginate-mut-collection_expr-lexerr-tilde
+  template: "{% paginate ~ %}{% endpaginate %}"
+  error_path: collection_expr/lexer
+- id: paginate-mut-collection_expr-lexerr-backtick
+  template: "{% paginate ` %}{% endpaginate %}"
+  error_path: collection_expr/lexer
+- id: paginate-mut-collection_expr-lexerr-backslash
+  template: "{% paginate \\ %}{% endpaginate %}"
+  error_path: collection_expr/lexer
+- id: paginate-mut-collection_expr-lexerr-semicolon
+  template: "{% paginate ; %}{% endpaginate %}"
+  error_path: collection_expr/lexer
+- id: paginate-mut-collection_expr-lexerr-unclosed_double_quote
+  template: '{% paginate "hello %}{% endpaginate %}'
+  error_path: collection_expr/lexer
+- id: paginate-mut-collection_expr-lexerr-unclosed_single_quote
+  template: "{% paginate 'hello %}{% endpaginate %}"
+  error_path: collection_expr/lexer
+- id: paginate-mut-by_keyword-eos
+  template: "{% paginate x %}{% endpaginate %}"
+  error_path: by_keyword
+- id: paginate-mut-by_keyword-id
+  template: "{% paginate x of %}{% endpaginate %}"
+  error_path: by_keyword
+- id: paginate-mut-page_size_expr-pipe-000
+  template: "{% paginate x by | %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-comma-001
+  template: "{% paginate x by , %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-colon-002
+  template: "{% paginate x by : %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-close_square-003
+  template: "{% paginate x by ] %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-close_round-004
+  template: "{% paginate x by ) %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-question-005
+  template: "{% paginate x by ? %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-dash-006
+  template: "{% paginate x by - %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-dot-007
+  template: "{% paginate x by . %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-dotdot-008
+  template: "{% paginate x by .. %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-comparison-009
+  template: "{% paginate x by == %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-comparison-010
+  template: "{% paginate x by != %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-comparison-011
+  template: "{% paginate x by < %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-comparison-012
+  template: "{% paginate x by > %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-comparison-013
+  template: "{% paginate x by <= %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-comparison-014
+  template: "{% paginate x by >= %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-comparison-015
+  template: "{% paginate x by contains %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-eos-016
+  template: "{% paginate x by %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-bare_bracket
+  template: "{% paginate x by [0] %}{% endpaginate %}"
+  error_path: page_size_expr/bad_start
+- id: paginate-mut-page_size_expr-lookup-trailing_dot
+  template: "{% paginate x by x. %}{% endpaginate %}"
+  error_path: page_size_expr/lookup
+- id: paginate-mut-page_size_expr-lookup-dot_number
+  template: "{% paginate x by x.123 %}{% endpaginate %}"
+  error_path: page_size_expr/lookup
+- id: paginate-mut-page_size_expr-lookup-dot_string
+  template: '{% paginate x by x."y" %}{% endpaginate %}'
+  error_path: page_size_expr/lookup
+- id: paginate-mut-page_size_expr-lookup-unclosed_bracket
+  template: "{% paginate x by x[0 %}{% endpaginate %}"
+  error_path: page_size_expr/lookup
+- id: paginate-mut-page_size_expr-lookup-bracket_wrong_content
+  template: "{% paginate x by x[,] %}{% endpaginate %}"
+  error_path: page_size_expr/lookup
+- id: paginate-mut-page_size_expr-lookup-unclosed_range
+  template: "{% paginate x by (1..5 %}{% endpaginate %}"
+  error_path: page_size_expr/lookup
+- id: paginate-mut-page_size_expr-lookup-range_bad_separator
+  template: "{% paginate x by (1, 5) %}{% endpaginate %}"
+  error_path: page_size_expr/lookup
+- id: paginate-mut-page_size_expr-lookup-range_missing_end
+  template: "{% paginate x by (1..) %}{% endpaginate %}"
+  error_path: page_size_expr/lookup
+- id: paginate-mut-page_size_expr-lexerr-at
+  template: "{% paginate x by @ %}{% endpaginate %}"
+  error_path: page_size_expr/lexer
+- id: paginate-mut-page_size_expr-lexerr-hash
+  template: "{% paginate x by # %}{% endpaginate %}"
+  error_path: page_size_expr/lexer
+- id: paginate-mut-page_size_expr-lexerr-dollar
+  template: "{% paginate x by $ %}{% endpaginate %}"
+  error_path: page_size_expr/lexer
+- id: paginate-mut-page_size_expr-lexerr-caret
+  template: "{% paginate x by ^ %}{% endpaginate %}"
+  error_path: page_size_expr/lexer
+- id: paginate-mut-page_size_expr-lexerr-ampersand
+  template: "{% paginate x by & %}{% endpaginate %}"
+  error_path: page_size_expr/lexer
+- id: paginate-mut-page_size_expr-lexerr-asterisk
+  template: "{% paginate x by * %}{% endpaginate %}"
+  error_path: page_size_expr/lexer
+- id: paginate-mut-page_size_expr-lexerr-tilde
+  template: "{% paginate x by ~ %}{% endpaginate %}"
+  error_path: page_size_expr/lexer
+- id: paginate-mut-page_size_expr-lexerr-backtick
+  template: "{% paginate x by ` %}{% endpaginate %}"
+  error_path: page_size_expr/lexer
+- id: paginate-mut-page_size_expr-lexerr-backslash
+  template: "{% paginate x by \\ %}{% endpaginate %}"
+  error_path: page_size_expr/lexer
+- id: paginate-mut-page_size_expr-lexerr-semicolon
+  template: "{% paginate x by ; %}{% endpaginate %}"
+  error_path: page_size_expr/lexer
+- id: paginate-mut-page_size_expr-lexerr-unclosed_double_quote
+  template: '{% paginate x by "hello %}{% endpaginate %}'
+  error_path: page_size_expr/lexer
+- id: paginate-mut-page_size_expr-lexerr-unclosed_single_quote
+  template: "{% paginate x by 'hello %}{% endpaginate %}"
+  error_path: page_size_expr/lexer
+- id: paginate-mut-kwarg_name-eos
+  template: "{% paginate x by x , , %}{% endpaginate %}"
+  error_path: kwarg_name
+- id: paginate-mut-kwarg_name-number
+  template: "{% paginate x by x , , 42 %}{% endpaginate %}"
+  error_path: kwarg_name
+- id: paginate-mut-kwarg_name-lexerr-at
+  template: "{% paginate x by x , , @ %}{% endpaginate %}"
+  error_path: kwarg_name
+- id: paginate-mut-kwarg_name-lexerr-hash
+  template: "{% paginate x by x , , # %}{% endpaginate %}"
+  error_path: kwarg_name
+- id: paginate-mut-kwarg_name-lexerr-dollar
+  template: "{% paginate x by x , , $ %}{% endpaginate %}"
+  error_path: kwarg_name
+- id: paginate-mut-kwarg_name-lexerr-caret
+  template: "{% paginate x by x , , ^ %}{% endpaginate %}"
+  error_path: kwarg_name
+- id: paginate-mut-kwarg_name-lexerr-ampersand
+  template: "{% paginate x by x , , & %}{% endpaginate %}"
+  error_path: kwarg_name
+- id: paginate-mut-kwarg_name-lexerr-asterisk
+  template: "{% paginate x by x , , * %}{% endpaginate %}"
+  error_path: kwarg_name
+- id: paginate-mut-kwarg_name-lexerr-tilde
+  template: "{% paginate x by x , , ~ %}{% endpaginate %}"
+  error_path: kwarg_name
+- id: paginate-mut-kwarg_name-lexerr-backtick
+  template: "{% paginate x by x , , ` %}{% endpaginate %}"
+  error_path: kwarg_name
+- id: paginate-mut-kwarg_name-lexerr-backslash
+  template: "{% paginate x by x , , \\ %}{% endpaginate %}"
+  error_path: kwarg_name
+- id: paginate-mut-kwarg_name-lexerr-semicolon
+  template: "{% paginate x by x , , ; %}{% endpaginate %}"
+  error_path: kwarg_name
+- id: paginate-mut-kwarg_name-lexerr-unclosed_double_quote
+  template: '{% paginate x by x , , "hello %}{% endpaginate %}'
+  error_path: kwarg_name
+- id: paginate-mut-kwarg_name-lexerr-unclosed_single_quote
+  template: "{% paginate x by x , , 'hello %}{% endpaginate %}"
+  error_path: kwarg_name
+- id: paginate-mut-kwarg_colon-eos
+  template: "{% paginate x by x , , x %}{% endpaginate %}"
+  error_path: kwarg_colon
+- id: paginate-mut-kwarg_colon-number
+  template: "{% paginate x by x , , x 42 %}{% endpaginate %}"
+  error_path: kwarg_colon
+- id: paginate-mut-kwarg_value-pipe-000
+  template: "{% paginate x by x , , x : | %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-comma-001
+  template: "{% paginate x by x , , x : , %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-colon-002
+  template: "{% paginate x by x , , x : : %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-close_square-003
+  template: "{% paginate x by x , , x : ] %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-close_round-004
+  template: "{% paginate x by x , , x : ) %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-question-005
+  template: "{% paginate x by x , , x : ? %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-dash-006
+  template: "{% paginate x by x , , x : - %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-dot-007
+  template: "{% paginate x by x , , x : . %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-dotdot-008
+  template: "{% paginate x by x , , x : .. %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-comparison-009
+  template: "{% paginate x by x , , x : == %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-comparison-010
+  template: "{% paginate x by x , , x : != %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-comparison-011
+  template: "{% paginate x by x , , x : < %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-comparison-012
+  template: "{% paginate x by x , , x : > %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-comparison-013
+  template: "{% paginate x by x , , x : <= %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-comparison-014
+  template: "{% paginate x by x , , x : >= %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-comparison-015
+  template: "{% paginate x by x , , x : contains %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-eos-016
+  template: "{% paginate x by x , , x : %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-bare_bracket
+  template: "{% paginate x by x , , x : [0] %}{% endpaginate %}"
+  error_path: kwarg_value/bad_start
+- id: paginate-mut-kwarg_value-lookup-trailing_dot
+  template: "{% paginate x by x , , x : x. %}{% endpaginate %}"
+  error_path: kwarg_value/lookup
+- id: paginate-mut-kwarg_value-lookup-dot_number
+  template: "{% paginate x by x , , x : x.123 %}{% endpaginate %}"
+  error_path: kwarg_value/lookup
+- id: paginate-mut-kwarg_value-lookup-dot_string
+  template: '{% paginate x by x , , x : x."y" %}{% endpaginate %}'
+  error_path: kwarg_value/lookup
+- id: paginate-mut-kwarg_value-lookup-unclosed_bracket
+  template: "{% paginate x by x , , x : x[0 %}{% endpaginate %}"
+  error_path: kwarg_value/lookup
+- id: paginate-mut-kwarg_value-lookup-bracket_wrong_content
+  template: "{% paginate x by x , , x : x[,] %}{% endpaginate %}"
+  error_path: kwarg_value/lookup
+- id: paginate-mut-kwarg_value-lookup-unclosed_range
+  template: "{% paginate x by x , , x : (1..5 %}{% endpaginate %}"
+  error_path: kwarg_value/lookup
+- id: paginate-mut-kwarg_value-lookup-range_bad_separator
+  template: "{% paginate x by x , , x : (1, 5) %}{% endpaginate %}"
+  error_path: kwarg_value/lookup
+- id: paginate-mut-kwarg_value-lookup-range_missing_end
+  template: "{% paginate x by x , , x : (1..) %}{% endpaginate %}"
+  error_path: kwarg_value/lookup
+- id: paginate-mut-kwarg_value-lexerr-at
+  template: "{% paginate x by x , , x : @ %}{% endpaginate %}"
+  error_path: kwarg_value/lexer
+- id: paginate-mut-kwarg_value-lexerr-hash
+  template: "{% paginate x by x , , x : # %}{% endpaginate %}"
+  error_path: kwarg_value/lexer
+- id: paginate-mut-kwarg_value-lexerr-dollar
+  template: "{% paginate x by x , , x : $ %}{% endpaginate %}"
+  error_path: kwarg_value/lexer
+- id: paginate-mut-kwarg_value-lexerr-caret
+  template: "{% paginate x by x , , x : ^ %}{% endpaginate %}"
+  error_path: kwarg_value/lexer
+- id: paginate-mut-kwarg_value-lexerr-ampersand
+  template: "{% paginate x by x , , x : & %}{% endpaginate %}"
+  error_path: kwarg_value/lexer
+- id: paginate-mut-kwarg_value-lexerr-asterisk
+  template: "{% paginate x by x , , x : * %}{% endpaginate %}"
+  error_path: kwarg_value/lexer
+- id: paginate-mut-kwarg_value-lexerr-tilde
+  template: "{% paginate x by x , , x : ~ %}{% endpaginate %}"
+  error_path: kwarg_value/lexer
+- id: paginate-mut-kwarg_value-lexerr-backtick
+  template: "{% paginate x by x , , x : ` %}{% endpaginate %}"
+  error_path: kwarg_value/lexer
+- id: paginate-mut-kwarg_value-lexerr-backslash
+  template: "{% paginate x by x , , x : \\ %}{% endpaginate %}"
+  error_path: kwarg_value/lexer
+- id: paginate-mut-kwarg_value-lexerr-semicolon
+  template: "{% paginate x by x , , x : ; %}{% endpaginate %}"
+  error_path: kwarg_value/lexer
+- id: paginate-mut-kwarg_value-lexerr-unclosed_double_quote
+  template: '{% paginate x by x , , x : "hello %}{% endpaginate %}'
+  error_path: kwarg_value/lexer
+- id: paginate-mut-kwarg_value-lexerr-unclosed_single_quote
+  template: "{% paginate x by x , , x : 'hello %}{% endpaginate %}"
+  error_path: kwarg_value/lexer
+- id: paginate-mut-end-trail-id
+  template: "{% paginate x by x extra %}{% endpaginate %}"
+  error_path: end
+- id: paginate-mut-end-trail-number
+  template: "{% paginate x by x 42 %}{% endpaginate %}"
+  error_path: end
+- id: paginate-mut-end-trail-string
+  template: "{% paginate x by x 'hi' %}{% endpaginate %}"
+  error_path: end
+- id: paginate-mut-end-trail-pipe
+  template: "{% paginate x by x | %}{% endpaginate %}"
+  error_path: end
+- id: paginate-mut-end-trail-colon
+  template: "{% paginate x by x : %}{% endpaginate %}"
+  error_path: end
+- id: paginate-mut-end-trail-comma
+  template: "{% paginate x by x , %}{% endpaginate %}"
+  error_path: end
+- id: paginate-mut-end-trail-open_square
+  template: "{% paginate x by x [ %}{% endpaginate %}"
+  error_path: end
+- id: paginate-mut-end-trail-close_square
+  template: "{% paginate x by x ] %}{% endpaginate %}"
+  error_path: end
+- id: paginate-mut-end-trail-open_round
+  template: "{% paginate x by x ( %}{% endpaginate %}"
+  error_path: end
+- id: paginate-mut-end-trail-close_round
+  template: "{% paginate x by x ) %}{% endpaginate %}"
+  error_path: end
+- id: paginate-mut-end-trail-question
+  template: "{% paginate x by x ? %}{% endpaginate %}"
+  error_path: end
+- id: paginate-mut-end-trail-dot
+  template: "{% paginate x by x . %}{% endpaginate %}"
+  error_path: end
+- id: paginate-mut-end-trail-comparison
+  template: "{% paginate x by x == %}{% endpaginate %}"
+  error_path: end
+- id: paginate-mut-end-trail-dash
+  template: "{% paginate x by x - %}{% endpaginate %}"
+  error_path: end
+- id: paginate-mut-valid-000
+  template: "{% paginate x by x %}{% endpaginate %}"
+  error_path: valid
+- id: paginate-mut-valid-001
+  template: "{% paginate 42 by x %}{% endpaginate %}"
+  error_path: valid
+- id: paginate-mut-valid-002
+  template: "{% paginate 3.14 by x %}{% endpaginate %}"
+  error_path: valid
+- id: paginate-mut-valid-003
+  template: "{% paginate -5 by x %}{% endpaginate %}"
+  error_path: valid
+- id: paginate-mut-valid-004
+  template: "{% paginate 'hello' by x %}{% endpaginate %}"
+  error_path: valid
+- id: paginate-mut-valid-005
+  template: "{% paginate true by x %}{% endpaginate %}"
+  error_path: valid
+- id: paginate-mut-valid-006
+  template: "{% paginate false by x %}{% endpaginate %}"
+  error_path: valid
+- id: paginate-mut-valid-007
+  template: "{% paginate nil by x %}{% endpaginate %}"
+  error_path: valid
+- id: paginate-mut-valid-008
+  template: "{% paginate blank by x %}{% endpaginate %}"
+  error_path: valid
+- id: paginate-mut-valid-009
+  template: "{% paginate empty by x %}{% endpaginate %}"
+  error_path: valid
+- id: paginate-mut-valid-010
+  template: "{% paginate product.title by x %}{% endpaginate %}"
+  error_path: valid
+- id: paginate-mut-valid-011
+  template: "{% paginate products[0] by x %}{% endpaginate %}"
+  error_path: valid
+- id: paginate-mut-valid-012
+  template: "{% paginate a.b.c by x %}{% endpaginate %}"
+  error_path: valid
+- id: paginate-mut-valid-013
+  template: "{% paginate a[0].b by x %}{% endpaginate %}"
+  error_path: valid
+- id: paginate-mut-valid-014
+  template: "{% paginate (1..5) by x %}{% endpaginate %}"
+  error_path: valid

@@ -1,0 +1,63 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: continue-100
+  template: "{% for i in (1..5) %}{% continue %}{% endfor %}"
+  error_path: 0
+- id: continue-101
+  template: "{% for i in (1..5) %}{%- continue %}{% endfor %}"
+  error_path: 0
+- id: continue-102
+  template: "{% for i in (1..5) %}{% continue -%}{% endfor %}"
+  error_path: 0
+- id: continue-103
+  template: "{% for i in (1..5) %}{%- continue -%}{% endfor %}"
+  error_path: 0
+- id: continue-104
+  template: "{% for i in (1..5) %}{%  continue   %}{% endfor %}"
+  error_path: 0
+- id: continue-200
+  template: "{% for i in (1..5) %}{% continue x %}{% endfor %}"
+  error_path: 0
+- id: continue-201
+  template: "{% for i in (1..5) %}{% continue 123 %}{% endfor %}"
+  error_path: 0
+- id: continue-202
+  template: "{% for i in (1..5) %}{% continue 'hello' %}{% endfor %}"
+  error_path: 0
+- id: continue-203
+  template: "{% for i in (1..5) %}{% continue i | plus: 1 %}{% endfor %}"
+  error_path: 0
+- id: continue-204
+  template: "{% for i in (1..5) %}{% continue == %}{% endfor %}"
+  error_path: 0
+- id: continue-205
+  template: "{% for i in (1..5) %}{% continue x y z %}{% endfor %}"
+  error_path: 0
+- id: continue-206
+  template: "{% for i in (1..5) %}{% continue @ # $ %}{% endfor %}"
+  error_path: 0
+- id: continue-207
+  template: "{% for i in (1..5) %}{% continue | %}{% endfor %}"
+  error_path: 0
+- id: continue-208
+  template: "{% for i in (1..5) %}{% continue . %}{% endfor %}"
+  error_path: 0
+- id: continue-209
+  template: "{% for i in (1..5) %}{% continue [0] %}{% endfor %}"
+  error_path: 0
+- id: continue-300
+  template: "{% continue %}"
+  error_path: 0
+- id: continue-301
+  template: "{% continue garbage %}"
+  error_path: 0
+- id: continue-302
+  template: "{% for i in (1..5) %}{% continue %}{% continue %}{% endfor %}"
+  error_path: 0
+- id: continue-303
+  template: "{% for i in (1..3) %}{% for j in (1..3) %}{% continue %}{% endfor %}{%
+    endfor %}"
+  error_path: 0
+- id: continue-304
+  template: "{{ shop.name }}"
+  error_path: 0

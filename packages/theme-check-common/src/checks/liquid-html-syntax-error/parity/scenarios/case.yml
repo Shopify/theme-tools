@@ -1,0 +1,521 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: case-mut-case_expression-pipe-000
+  template: "{% case | %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-comma-001
+  template: "{% case , %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-colon-002
+  template: "{% case : %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-close_square-003
+  template: "{% case ] %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-close_round-004
+  template: "{% case ) %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-question-005
+  template: "{% case ? %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-dash-006
+  template: "{% case - %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-dot-007
+  template: "{% case . %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-dotdot-008
+  template: "{% case .. %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-comparison-009
+  template: "{% case == %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-comparison-010
+  template: "{% case != %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-comparison-011
+  template: "{% case < %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-comparison-012
+  template: "{% case > %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-comparison-013
+  template: "{% case <= %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-comparison-014
+  template: "{% case >= %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-comparison-015
+  template: "{% case contains %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-eos-016
+  template: "{% case  %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-bare_bracket
+  template: "{% case [0] %}{% endcase %}"
+  error_path: case_expression/bad_start
+- id: case-mut-case_expression-lookup-trailing_dot
+  template: "{% case x. %}{% endcase %}"
+  error_path: case_expression/lookup
+- id: case-mut-case_expression-lookup-dot_number
+  template: "{% case x.123 %}{% endcase %}"
+  error_path: case_expression/lookup
+- id: case-mut-case_expression-lookup-dot_string
+  template: '{% case x."y" %}{% endcase %}'
+  error_path: case_expression/lookup
+- id: case-mut-case_expression-lookup-unclosed_bracket
+  template: "{% case x[0 %}{% endcase %}"
+  error_path: case_expression/lookup
+- id: case-mut-case_expression-lookup-bracket_wrong_content
+  template: "{% case x[,] %}{% endcase %}"
+  error_path: case_expression/lookup
+- id: case-mut-case_expression-lookup-unclosed_range
+  template: "{% case (1..5 %}{% endcase %}"
+  error_path: case_expression/lookup
+- id: case-mut-case_expression-lookup-range_bad_separator
+  template: "{% case (1, 5) %}{% endcase %}"
+  error_path: case_expression/lookup
+- id: case-mut-case_expression-lookup-range_missing_end
+  template: "{% case (1..) %}{% endcase %}"
+  error_path: case_expression/lookup
+- id: case-mut-case_expression-lexerr-at
+  template: "{% case @ %}{% endcase %}"
+  error_path: case_expression/lexer
+- id: case-mut-case_expression-lexerr-hash
+  template: "{% case # %}{% endcase %}"
+  error_path: case_expression/lexer
+- id: case-mut-case_expression-lexerr-dollar
+  template: "{% case $ %}{% endcase %}"
+  error_path: case_expression/lexer
+- id: case-mut-case_expression-lexerr-caret
+  template: "{% case ^ %}{% endcase %}"
+  error_path: case_expression/lexer
+- id: case-mut-case_expression-lexerr-ampersand
+  template: "{% case & %}{% endcase %}"
+  error_path: case_expression/lexer
+- id: case-mut-case_expression-lexerr-asterisk
+  template: "{% case * %}{% endcase %}"
+  error_path: case_expression/lexer
+- id: case-mut-case_expression-lexerr-tilde
+  template: "{% case ~ %}{% endcase %}"
+  error_path: case_expression/lexer
+- id: case-mut-case_expression-lexerr-backtick
+  template: "{% case ` %}{% endcase %}"
+  error_path: case_expression/lexer
+- id: case-mut-case_expression-lexerr-backslash
+  template: "{% case \\ %}{% endcase %}"
+  error_path: case_expression/lexer
+- id: case-mut-case_expression-lexerr-semicolon
+  template: "{% case ; %}{% endcase %}"
+  error_path: case_expression/lexer
+- id: case-mut-case_expression-lexerr-unclosed_double_quote
+  template: '{% case "hello %}{% endcase %}'
+  error_path: case_expression/lexer
+- id: case-mut-case_expression-lexerr-unclosed_single_quote
+  template: "{% case 'hello %}{% endcase %}"
+  error_path: case_expression/lexer
+- id: case-mut-end-trail-id
+  template: "{% case x extra %}{% endcase %}"
+  error_path: end
+- id: case-mut-end-trail-number
+  template: "{% case x 42 %}{% endcase %}"
+  error_path: end
+- id: case-mut-end-trail-string
+  template: "{% case x 'hi' %}{% endcase %}"
+  error_path: end
+- id: case-mut-end-trail-pipe
+  template: "{% case x | %}{% endcase %}"
+  error_path: end
+- id: case-mut-end-trail-colon
+  template: "{% case x : %}{% endcase %}"
+  error_path: end
+- id: case-mut-end-trail-comma
+  template: "{% case x , %}{% endcase %}"
+  error_path: end
+- id: case-mut-end-trail-open_square
+  template: "{% case x [ %}{% endcase %}"
+  error_path: end
+- id: case-mut-end-trail-close_square
+  template: "{% case x ] %}{% endcase %}"
+  error_path: end
+- id: case-mut-end-trail-open_round
+  template: "{% case x ( %}{% endcase %}"
+  error_path: end
+- id: case-mut-end-trail-close_round
+  template: "{% case x ) %}{% endcase %}"
+  error_path: end
+- id: case-mut-end-trail-question
+  template: "{% case x ? %}{% endcase %}"
+  error_path: end
+- id: case-mut-end-trail-dot
+  template: "{% case x . %}{% endcase %}"
+  error_path: end
+- id: case-mut-end-trail-comparison
+  template: "{% case x == %}{% endcase %}"
+  error_path: end
+- id: case-mut-end-trail-dash
+  template: "{% case x - %}{% endcase %}"
+  error_path: end
+- id: case-mut-valid-000
+  template: "{% case x %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-001
+  template: "{% case 42 %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-002
+  template: "{% case 3.14 %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-003
+  template: "{% case -5 %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-004
+  template: "{% case 'hello' %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-005
+  template: "{% case true %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-006
+  template: "{% case false %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-007
+  template: "{% case nil %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-008
+  template: "{% case blank %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-009
+  template: "{% case empty %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-010
+  template: "{% case product.title %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-011
+  template: "{% case products[0] %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-012
+  template: "{% case a.b.c %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-013
+  template: "{% case a[0].b %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-014
+  template: "{% case (1..5) %}{% endcase %}"
+  error_path: valid
+- id: case-mut-when_value-pipe-000
+  template: "{% case x %}{% when | %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-comma-001
+  template: "{% case x %}{% when , %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-colon-002
+  template: "{% case x %}{% when : %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-close_square-003
+  template: "{% case x %}{% when ] %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-close_round-004
+  template: "{% case x %}{% when ) %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-question-005
+  template: "{% case x %}{% when ? %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-dash-006
+  template: "{% case x %}{% when - %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-dot-007
+  template: "{% case x %}{% when . %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-dotdot-008
+  template: "{% case x %}{% when .. %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-comparison-009
+  template: "{% case x %}{% when == %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-comparison-010
+  template: "{% case x %}{% when != %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-comparison-011
+  template: "{% case x %}{% when < %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-comparison-012
+  template: "{% case x %}{% when > %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-comparison-013
+  template: "{% case x %}{% when <= %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-comparison-014
+  template: "{% case x %}{% when >= %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-comparison-015
+  template: "{% case x %}{% when contains %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-eos-016
+  template: "{% case x %}{% when  %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-bare_bracket
+  template: "{% case x %}{% when [0] %}{% endcase %}"
+  error_path: when_value/bad_start
+- id: case-mut-when_value-lookup-trailing_dot
+  template: "{% case x %}{% when x. %}{% endcase %}"
+  error_path: when_value/lookup
+- id: case-mut-when_value-lookup-dot_number
+  template: "{% case x %}{% when x.123 %}{% endcase %}"
+  error_path: when_value/lookup
+- id: case-mut-when_value-lookup-dot_string
+  template: '{% case x %}{% when x."y" %}{% endcase %}'
+  error_path: when_value/lookup
+- id: case-mut-when_value-lookup-unclosed_bracket
+  template: "{% case x %}{% when x[0 %}{% endcase %}"
+  error_path: when_value/lookup
+- id: case-mut-when_value-lookup-bracket_wrong_content
+  template: "{% case x %}{% when x[,] %}{% endcase %}"
+  error_path: when_value/lookup
+- id: case-mut-when_value-lookup-unclosed_range
+  template: "{% case x %}{% when (1..5 %}{% endcase %}"
+  error_path: when_value/lookup
+- id: case-mut-when_value-lookup-range_bad_separator
+  template: "{% case x %}{% when (1, 5) %}{% endcase %}"
+  error_path: when_value/lookup
+- id: case-mut-when_value-lookup-range_missing_end
+  template: "{% case x %}{% when (1..) %}{% endcase %}"
+  error_path: when_value/lookup
+- id: case-mut-when_value-lexerr-at
+  template: "{% case x %}{% when @ %}{% endcase %}"
+  error_path: when_value/lexer
+- id: case-mut-when_value-lexerr-hash
+  template: "{% case x %}{% when # %}{% endcase %}"
+  error_path: when_value/lexer
+- id: case-mut-when_value-lexerr-dollar
+  template: "{% case x %}{% when $ %}{% endcase %}"
+  error_path: when_value/lexer
+- id: case-mut-when_value-lexerr-caret
+  template: "{% case x %}{% when ^ %}{% endcase %}"
+  error_path: when_value/lexer
+- id: case-mut-when_value-lexerr-ampersand
+  template: "{% case x %}{% when & %}{% endcase %}"
+  error_path: when_value/lexer
+- id: case-mut-when_value-lexerr-asterisk
+  template: "{% case x %}{% when * %}{% endcase %}"
+  error_path: when_value/lexer
+- id: case-mut-when_value-lexerr-tilde
+  template: "{% case x %}{% when ~ %}{% endcase %}"
+  error_path: when_value/lexer
+- id: case-mut-when_value-lexerr-backtick
+  template: "{% case x %}{% when ` %}{% endcase %}"
+  error_path: when_value/lexer
+- id: case-mut-when_value-lexerr-backslash
+  template: "{% case x %}{% when \\ %}{% endcase %}"
+  error_path: when_value/lexer
+- id: case-mut-when_value-lexerr-semicolon
+  template: "{% case x %}{% when ; %}{% endcase %}"
+  error_path: when_value/lexer
+- id: case-mut-when_value-lexerr-unclosed_double_quote
+  template: '{% case x %}{% when "hello %}{% endcase %}'
+  error_path: when_value/lexer
+- id: case-mut-when_value-lexerr-unclosed_single_quote
+  template: "{% case x %}{% when 'hello %}{% endcase %}"
+  error_path: when_value/lexer
+- id: case-mut-when_next_value-pipe-000
+  template: "{% case x %}{% when x , , | %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-comma-001
+  template: "{% case x %}{% when x , , , %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-colon-002
+  template: "{% case x %}{% when x , , : %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-close_square-003
+  template: "{% case x %}{% when x , , ] %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-close_round-004
+  template: "{% case x %}{% when x , , ) %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-question-005
+  template: "{% case x %}{% when x , , ? %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-dash-006
+  template: "{% case x %}{% when x , , - %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-dot-007
+  template: "{% case x %}{% when x , , . %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-dotdot-008
+  template: "{% case x %}{% when x , , .. %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-comparison-009
+  template: "{% case x %}{% when x , , == %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-comparison-010
+  template: "{% case x %}{% when x , , != %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-comparison-011
+  template: "{% case x %}{% when x , , < %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-comparison-012
+  template: "{% case x %}{% when x , , > %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-comparison-013
+  template: "{% case x %}{% when x , , <= %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-comparison-014
+  template: "{% case x %}{% when x , , >= %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-comparison-015
+  template: "{% case x %}{% when x , , contains %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-eos-016
+  template: "{% case x %}{% when x , , %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-bare_bracket
+  template: "{% case x %}{% when x , , [0] %}{% endcase %}"
+  error_path: when_next_value/bad_start
+- id: case-mut-when_next_value-lookup-trailing_dot
+  template: "{% case x %}{% when x , , x. %}{% endcase %}"
+  error_path: when_next_value/lookup
+- id: case-mut-when_next_value-lookup-dot_number
+  template: "{% case x %}{% when x , , x.123 %}{% endcase %}"
+  error_path: when_next_value/lookup
+- id: case-mut-when_next_value-lookup-dot_string
+  template: '{% case x %}{% when x , , x."y" %}{% endcase %}'
+  error_path: when_next_value/lookup
+- id: case-mut-when_next_value-lookup-unclosed_bracket
+  template: "{% case x %}{% when x , , x[0 %}{% endcase %}"
+  error_path: when_next_value/lookup
+- id: case-mut-when_next_value-lookup-bracket_wrong_content
+  template: "{% case x %}{% when x , , x[,] %}{% endcase %}"
+  error_path: when_next_value/lookup
+- id: case-mut-when_next_value-lookup-unclosed_range
+  template: "{% case x %}{% when x , , (1..5 %}{% endcase %}"
+  error_path: when_next_value/lookup
+- id: case-mut-when_next_value-lookup-range_bad_separator
+  template: "{% case x %}{% when x , , (1, 5) %}{% endcase %}"
+  error_path: when_next_value/lookup
+- id: case-mut-when_next_value-lookup-range_missing_end
+  template: "{% case x %}{% when x , , (1..) %}{% endcase %}"
+  error_path: when_next_value/lookup
+- id: case-mut-when_next_value-lexerr-at
+  template: "{% case x %}{% when x , , @ %}{% endcase %}"
+  error_path: when_next_value/lexer
+- id: case-mut-when_next_value-lexerr-hash
+  template: "{% case x %}{% when x , , # %}{% endcase %}"
+  error_path: when_next_value/lexer
+- id: case-mut-when_next_value-lexerr-dollar
+  template: "{% case x %}{% when x , , $ %}{% endcase %}"
+  error_path: when_next_value/lexer
+- id: case-mut-when_next_value-lexerr-caret
+  template: "{% case x %}{% when x , , ^ %}{% endcase %}"
+  error_path: when_next_value/lexer
+- id: case-mut-when_next_value-lexerr-ampersand
+  template: "{% case x %}{% when x , , & %}{% endcase %}"
+  error_path: when_next_value/lexer
+- id: case-mut-when_next_value-lexerr-asterisk
+  template: "{% case x %}{% when x , , * %}{% endcase %}"
+  error_path: when_next_value/lexer
+- id: case-mut-when_next_value-lexerr-tilde
+  template: "{% case x %}{% when x , , ~ %}{% endcase %}"
+  error_path: when_next_value/lexer
+- id: case-mut-when_next_value-lexerr-backtick
+  template: "{% case x %}{% when x , , ` %}{% endcase %}"
+  error_path: when_next_value/lexer
+- id: case-mut-when_next_value-lexerr-backslash
+  template: "{% case x %}{% when x , , \\ %}{% endcase %}"
+  error_path: when_next_value/lexer
+- id: case-mut-when_next_value-lexerr-semicolon
+  template: "{% case x %}{% when x , , ; %}{% endcase %}"
+  error_path: when_next_value/lexer
+- id: case-mut-when_next_value-lexerr-unclosed_double_quote
+  template: '{% case x %}{% when x , , "hello %}{% endcase %}'
+  error_path: when_next_value/lexer
+- id: case-mut-when_next_value-lexerr-unclosed_single_quote
+  template: "{% case x %}{% when x , , 'hello %}{% endcase %}"
+  error_path: when_next_value/lexer
+- id: case-mut-when_end-trail-id
+  template: "{% case x %}{% when x extra %}{% endcase %}"
+  error_path: when_end
+- id: case-mut-when_end-trail-number
+  template: "{% case x %}{% when x 42 %}{% endcase %}"
+  error_path: when_end
+- id: case-mut-when_end-trail-string
+  template: "{% case x %}{% when x 'hi' %}{% endcase %}"
+  error_path: when_end
+- id: case-mut-when_end-trail-pipe
+  template: "{% case x %}{% when x | %}{% endcase %}"
+  error_path: when_end
+- id: case-mut-when_end-trail-colon
+  template: "{% case x %}{% when x : %}{% endcase %}"
+  error_path: when_end
+- id: case-mut-when_end-trail-comma
+  template: "{% case x %}{% when x , %}{% endcase %}"
+  error_path: when_end
+- id: case-mut-when_end-trail-open_square
+  template: "{% case x %}{% when x [ %}{% endcase %}"
+  error_path: when_end
+- id: case-mut-when_end-trail-close_square
+  template: "{% case x %}{% when x ] %}{% endcase %}"
+  error_path: when_end
+- id: case-mut-when_end-trail-open_round
+  template: "{% case x %}{% when x ( %}{% endcase %}"
+  error_path: when_end
+- id: case-mut-when_end-trail-close_round
+  template: "{% case x %}{% when x ) %}{% endcase %}"
+  error_path: when_end
+- id: case-mut-when_end-trail-question
+  template: "{% case x %}{% when x ? %}{% endcase %}"
+  error_path: when_end
+- id: case-mut-when_end-trail-dot
+  template: "{% case x %}{% when x . %}{% endcase %}"
+  error_path: when_end
+- id: case-mut-when_end-trail-comparison
+  template: "{% case x %}{% when x == %}{% endcase %}"
+  error_path: when_end
+- id: case-mut-when_end-trail-dash
+  template: "{% case x %}{% when x - %}{% endcase %}"
+  error_path: when_end
+- id: case-mut-valid-000-2
+  template: "{% case x %}{% when x %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-001-2
+  template: "{% case x %}{% when 42 %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-002-2
+  template: "{% case x %}{% when 3.14 %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-003-2
+  template: "{% case x %}{% when -5 %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-004-2
+  template: "{% case x %}{% when 'hello' %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-005-2
+  template: "{% case x %}{% when true %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-006-2
+  template: "{% case x %}{% when false %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-007-2
+  template: "{% case x %}{% when nil %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-008-2
+  template: "{% case x %}{% when blank %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-009-2
+  template: "{% case x %}{% when empty %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-010-2
+  template: "{% case x %}{% when product.title %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-011-2
+  template: "{% case x %}{% when products[0] %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-012-2
+  template: "{% case x %}{% when a.b.c %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-013-2
+  template: "{% case x %}{% when a[0].b %}{% endcase %}"
+  error_path: valid
+- id: case-mut-valid-014-2
+  template: "{% case x %}{% when (1..5) %}{% endcase %}"
+  error_path: valid
+- id: case-parity-elsif-in-case
+  template: "{% case x %}{% elsif %}{% endcase %}"
+  error_path: unknown_tag

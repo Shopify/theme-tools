@@ -1,0 +1,593 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: variable-mut-value-pipe-000
+  template: "{{ | }}"
+  error_path: value/bad_start
+- id: variable-mut-value-comma-001
+  template: "{{ , }}"
+  error_path: value/bad_start
+- id: variable-mut-value-colon-002
+  template: "{{ : }}"
+  error_path: value/bad_start
+- id: variable-mut-value-close_square-003
+  template: "{{ ] }}"
+  error_path: value/bad_start
+- id: variable-mut-value-close_round-004
+  template: "{{ ) }}"
+  error_path: value/bad_start
+- id: variable-mut-value-question-005
+  template: "{{ ? }}"
+  error_path: value/bad_start
+- id: variable-mut-value-dash-006
+  template: "{{ - }}"
+  error_path: value/bad_start
+- id: variable-mut-value-dot-007
+  template: "{{ . }}"
+  error_path: value/bad_start
+- id: variable-mut-value-dotdot-008
+  template: "{{ .. }}"
+  error_path: value/bad_start
+- id: variable-mut-value-comparison-009
+  template: "{{ == }}"
+  error_path: value/bad_start
+- id: variable-mut-value-comparison-010
+  template: "{{ != }}"
+  error_path: value/bad_start
+- id: variable-mut-value-comparison-011
+  template: "{{ < }}"
+  error_path: value/bad_start
+- id: variable-mut-value-comparison-012
+  template: "{{ > }}"
+  error_path: value/bad_start
+- id: variable-mut-value-comparison-013
+  template: "{{ <= }}"
+  error_path: value/bad_start
+- id: variable-mut-value-comparison-014
+  template: "{{ >= }}"
+  error_path: value/bad_start
+- id: variable-mut-value-comparison-015
+  template: "{{ contains }}"
+  error_path: value/bad_start
+- id: variable-mut-value-eos-016
+  template: "{{  }}"
+  error_path: value/bad_start
+- id: variable-mut-value-bare_bracket
+  template: "{{ [0] }}"
+  error_path: value/bad_start
+- id: variable-mut-value-lookup-trailing_dot
+  template: "{{ x. }}"
+  error_path: value/lookup
+- id: variable-mut-value-lookup-dot_number
+  template: "{{ x.123 }}"
+  error_path: value/lookup
+- id: variable-mut-value-lookup-dot_string
+  template: '{{ x."y" }}'
+  error_path: value/lookup
+- id: variable-mut-value-lookup-unclosed_bracket
+  template: "{{ x[0 }}"
+  error_path: value/lookup
+- id: variable-mut-value-lookup-bracket_wrong_content
+  template: "{{ x[,] }}"
+  error_path: value/lookup
+- id: variable-mut-value-lookup-unclosed_range
+  template: "{{ (1..5 }}"
+  error_path: value/lookup
+- id: variable-mut-value-lookup-range_bad_separator
+  template: "{{ (1, 5) }}"
+  error_path: value/lookup
+- id: variable-mut-value-lookup-range_missing_end
+  template: "{{ (1..) }}"
+  error_path: value/lookup
+- id: variable-mut-value-lexerr-at
+  template: "{{ @ }}"
+  error_path: value/lexer
+- id: variable-mut-value-lexerr-hash
+  template: "{{ # }}"
+  error_path: value/lexer
+- id: variable-mut-value-lexerr-dollar
+  template: "{{ $ }}"
+  error_path: value/lexer
+- id: variable-mut-value-lexerr-caret
+  template: "{{ ^ }}"
+  error_path: value/lexer
+- id: variable-mut-value-lexerr-ampersand
+  template: "{{ & }}"
+  error_path: value/lexer
+- id: variable-mut-value-lexerr-asterisk
+  template: "{{ * }}"
+  error_path: value/lexer
+- id: variable-mut-value-lexerr-tilde
+  template: "{{ ~ }}"
+  error_path: value/lexer
+- id: variable-mut-value-lexerr-backtick
+  template: "{{ ` }}"
+  error_path: value/lexer
+- id: variable-mut-value-lexerr-backslash
+  template: "{{ \\ }}"
+  error_path: value/lexer
+- id: variable-mut-value-lexerr-semicolon
+  template: "{{ ; }}"
+  error_path: value/lexer
+- id: variable-mut-value-lexerr-unclosed_double_quote
+  template: '{{ "hello }}'
+  error_path: value/lexer
+- id: variable-mut-value-lexerr-unclosed_single_quote
+  template: "{{ 'hello }}"
+  error_path: value/lexer
+- id: variable-mut-filter_name-eos
+  template: "{{ x | }}"
+  error_path: filter_name
+- id: variable-mut-filter_name-number
+  template: "{{ x | 42 }}"
+  error_path: filter_name
+- id: variable-mut-filter_name-lexerr-at
+  template: "{{ x | @ }}"
+  error_path: filter_name
+- id: variable-mut-filter_name-lexerr-hash
+  template: "{{ x | # }}"
+  error_path: filter_name
+- id: variable-mut-filter_name-lexerr-dollar
+  template: "{{ x | $ }}"
+  error_path: filter_name
+- id: variable-mut-filter_name-lexerr-caret
+  template: "{{ x | ^ }}"
+  error_path: filter_name
+- id: variable-mut-filter_name-lexerr-ampersand
+  template: "{{ x | & }}"
+  error_path: filter_name
+- id: variable-mut-filter_name-lexerr-asterisk
+  template: "{{ x | * }}"
+  error_path: filter_name
+- id: variable-mut-filter_name-lexerr-tilde
+  template: "{{ x | ~ }}"
+  error_path: filter_name
+- id: variable-mut-filter_name-lexerr-backtick
+  template: "{{ x | ` }}"
+  error_path: filter_name
+- id: variable-mut-filter_name-lexerr-backslash
+  template: "{{ x | \\ }}"
+  error_path: filter_name
+- id: variable-mut-filter_name-lexerr-semicolon
+  template: "{{ x | ; }}"
+  error_path: filter_name
+- id: variable-mut-filter_name-lexerr-unclosed_double_quote
+  template: '{{ x | "hello }}'
+  error_path: filter_name
+- id: variable-mut-filter_name-lexerr-unclosed_single_quote
+  template: "{{ x | 'hello }}"
+  error_path: filter_name
+- id: variable-mut-filter_first_arg-pipe-000
+  template: "{{ x | x : | }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-comma-001
+  template: "{{ x | x : , }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-colon-002
+  template: "{{ x | x : : }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-close_square-003
+  template: "{{ x | x : ] }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-close_round-004
+  template: "{{ x | x : ) }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-question-005
+  template: "{{ x | x : ? }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-dash-006
+  template: "{{ x | x : - }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-dot-007
+  template: "{{ x | x : . }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-dotdot-008
+  template: "{{ x | x : .. }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-comparison-009
+  template: "{{ x | x : == }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-comparison-010
+  template: "{{ x | x : != }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-comparison-011
+  template: "{{ x | x : < }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-comparison-012
+  template: "{{ x | x : > }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-comparison-013
+  template: "{{ x | x : <= }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-comparison-014
+  template: "{{ x | x : >= }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-comparison-015
+  template: "{{ x | x : contains }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-eos-016
+  template: "{{ x | x : }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-bare_bracket
+  template: "{{ x | x : [0] }}"
+  error_path: filter_first_arg/bad_start
+- id: variable-mut-filter_first_arg-lookup-trailing_dot
+  template: "{{ x | x : x. }}"
+  error_path: filter_first_arg/lookup
+- id: variable-mut-filter_first_arg-lookup-dot_number
+  template: "{{ x | x : x.123 }}"
+  error_path: filter_first_arg/lookup
+- id: variable-mut-filter_first_arg-lookup-dot_string
+  template: '{{ x | x : x."y" }}'
+  error_path: filter_first_arg/lookup
+- id: variable-mut-filter_first_arg-lookup-unclosed_bracket
+  template: "{{ x | x : x[0 }}"
+  error_path: filter_first_arg/lookup
+- id: variable-mut-filter_first_arg-lookup-bracket_wrong_content
+  template: "{{ x | x : x[,] }}"
+  error_path: filter_first_arg/lookup
+- id: variable-mut-filter_first_arg-lookup-unclosed_range
+  template: "{{ x | x : (1..5 }}"
+  error_path: filter_first_arg/lookup
+- id: variable-mut-filter_first_arg-lookup-range_bad_separator
+  template: "{{ x | x : (1, 5) }}"
+  error_path: filter_first_arg/lookup
+- id: variable-mut-filter_first_arg-lookup-range_missing_end
+  template: "{{ x | x : (1..) }}"
+  error_path: filter_first_arg/lookup
+- id: variable-mut-filter_first_arg-lexerr-at
+  template: "{{ x | x : @ }}"
+  error_path: filter_first_arg/lexer
+- id: variable-mut-filter_first_arg-lexerr-hash
+  template: "{{ x | x : # }}"
+  error_path: filter_first_arg/lexer
+- id: variable-mut-filter_first_arg-lexerr-dollar
+  template: "{{ x | x : $ }}"
+  error_path: filter_first_arg/lexer
+- id: variable-mut-filter_first_arg-lexerr-caret
+  template: "{{ x | x : ^ }}"
+  error_path: filter_first_arg/lexer
+- id: variable-mut-filter_first_arg-lexerr-ampersand
+  template: "{{ x | x : & }}"
+  error_path: filter_first_arg/lexer
+- id: variable-mut-filter_first_arg-lexerr-asterisk
+  template: "{{ x | x : * }}"
+  error_path: filter_first_arg/lexer
+- id: variable-mut-filter_first_arg-lexerr-tilde
+  template: "{{ x | x : ~ }}"
+  error_path: filter_first_arg/lexer
+- id: variable-mut-filter_first_arg-lexerr-backtick
+  template: "{{ x | x : ` }}"
+  error_path: filter_first_arg/lexer
+- id: variable-mut-filter_first_arg-lexerr-backslash
+  template: "{{ x | x : \\ }}"
+  error_path: filter_first_arg/lexer
+- id: variable-mut-filter_first_arg-lexerr-semicolon
+  template: "{{ x | x : ; }}"
+  error_path: filter_first_arg/lexer
+- id: variable-mut-filter_first_arg-lexerr-unclosed_double_quote
+  template: '{{ x | x : "hello }}'
+  error_path: filter_first_arg/lexer
+- id: variable-mut-filter_first_arg-lexerr-unclosed_single_quote
+  template: "{{ x | x : 'hello }}"
+  error_path: filter_first_arg/lexer
+- id: variable-mut-kwarg_colon-eos
+  template: "{{ x | x : x , , x }}"
+  error_path: kwarg_colon
+- id: variable-mut-kwarg_colon-number
+  template: "{{ x | x : x , , x 42 }}"
+  error_path: kwarg_colon
+- id: variable-mut-kwarg_value-pipe-000
+  template: "{{ x | x : x , , x : | }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-comma-001
+  template: "{{ x | x : x , , x : , }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-colon-002
+  template: "{{ x | x : x , , x : : }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-close_square-003
+  template: "{{ x | x : x , , x : ] }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-close_round-004
+  template: "{{ x | x : x , , x : ) }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-question-005
+  template: "{{ x | x : x , , x : ? }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-dash-006
+  template: "{{ x | x : x , , x : - }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-dot-007
+  template: "{{ x | x : x , , x : . }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-dotdot-008
+  template: "{{ x | x : x , , x : .. }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-comparison-009
+  template: "{{ x | x : x , , x : == }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-comparison-010
+  template: "{{ x | x : x , , x : != }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-comparison-011
+  template: "{{ x | x : x , , x : < }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-comparison-012
+  template: "{{ x | x : x , , x : > }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-comparison-013
+  template: "{{ x | x : x , , x : <= }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-comparison-014
+  template: "{{ x | x : x , , x : >= }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-comparison-015
+  template: "{{ x | x : x , , x : contains }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-eos-016
+  template: "{{ x | x : x , , x : }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-bare_bracket
+  template: "{{ x | x : x , , x : [0] }}"
+  error_path: kwarg_value/bad_start
+- id: variable-mut-kwarg_value-lookup-trailing_dot
+  template: "{{ x | x : x , , x : x. }}"
+  error_path: kwarg_value/lookup
+- id: variable-mut-kwarg_value-lookup-dot_number
+  template: "{{ x | x : x , , x : x.123 }}"
+  error_path: kwarg_value/lookup
+- id: variable-mut-kwarg_value-lookup-dot_string
+  template: '{{ x | x : x , , x : x."y" }}'
+  error_path: kwarg_value/lookup
+- id: variable-mut-kwarg_value-lookup-unclosed_bracket
+  template: "{{ x | x : x , , x : x[0 }}"
+  error_path: kwarg_value/lookup
+- id: variable-mut-kwarg_value-lookup-bracket_wrong_content
+  template: "{{ x | x : x , , x : x[,] }}"
+  error_path: kwarg_value/lookup
+- id: variable-mut-kwarg_value-lookup-unclosed_range
+  template: "{{ x | x : x , , x : (1..5 }}"
+  error_path: kwarg_value/lookup
+- id: variable-mut-kwarg_value-lookup-range_bad_separator
+  template: "{{ x | x : x , , x : (1, 5) }}"
+  error_path: kwarg_value/lookup
+- id: variable-mut-kwarg_value-lookup-range_missing_end
+  template: "{{ x | x : x , , x : (1..) }}"
+  error_path: kwarg_value/lookup
+- id: variable-mut-kwarg_value-lexerr-at
+  template: "{{ x | x : x , , x : @ }}"
+  error_path: kwarg_value/lexer
+- id: variable-mut-kwarg_value-lexerr-hash
+  template: "{{ x | x : x , , x : # }}"
+  error_path: kwarg_value/lexer
+- id: variable-mut-kwarg_value-lexerr-dollar
+  template: "{{ x | x : x , , x : $ }}"
+  error_path: kwarg_value/lexer
+- id: variable-mut-kwarg_value-lexerr-caret
+  template: "{{ x | x : x , , x : ^ }}"
+  error_path: kwarg_value/lexer
+- id: variable-mut-kwarg_value-lexerr-ampersand
+  template: "{{ x | x : x , , x : & }}"
+  error_path: kwarg_value/lexer
+- id: variable-mut-kwarg_value-lexerr-asterisk
+  template: "{{ x | x : x , , x : * }}"
+  error_path: kwarg_value/lexer
+- id: variable-mut-kwarg_value-lexerr-tilde
+  template: "{{ x | x : x , , x : ~ }}"
+  error_path: kwarg_value/lexer
+- id: variable-mut-kwarg_value-lexerr-backtick
+  template: "{{ x | x : x , , x : ` }}"
+  error_path: kwarg_value/lexer
+- id: variable-mut-kwarg_value-lexerr-backslash
+  template: "{{ x | x : x , , x : \\ }}"
+  error_path: kwarg_value/lexer
+- id: variable-mut-kwarg_value-lexerr-semicolon
+  template: "{{ x | x : x , , x : ; }}"
+  error_path: kwarg_value/lexer
+- id: variable-mut-kwarg_value-lexerr-unclosed_double_quote
+  template: '{{ x | x : x , , x : "hello }}'
+  error_path: kwarg_value/lexer
+- id: variable-mut-kwarg_value-lexerr-unclosed_single_quote
+  template: "{{ x | x : x , , x : 'hello }}"
+  error_path: kwarg_value/lexer
+- id: variable-mut-filter_arg_value-pipe-000
+  template: "{{ x | x : x , , | }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-comma-001
+  template: "{{ x | x : x , , , }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-colon-002
+  template: "{{ x | x : x , , : }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-close_square-003
+  template: "{{ x | x : x , , ] }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-close_round-004
+  template: "{{ x | x : x , , ) }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-question-005
+  template: "{{ x | x : x , , ? }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-dash-006
+  template: "{{ x | x : x , , - }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-dot-007
+  template: "{{ x | x : x , , . }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-dotdot-008
+  template: "{{ x | x : x , , .. }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-comparison-009
+  template: "{{ x | x : x , , == }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-comparison-010
+  template: "{{ x | x : x , , != }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-comparison-011
+  template: "{{ x | x : x , , < }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-comparison-012
+  template: "{{ x | x : x , , > }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-comparison-013
+  template: "{{ x | x : x , , <= }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-comparison-014
+  template: "{{ x | x : x , , >= }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-comparison-015
+  template: "{{ x | x : x , , contains }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-eos-016
+  template: "{{ x | x : x , , }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-bare_bracket
+  template: "{{ x | x : x , , [0] }}"
+  error_path: filter_arg_value/bad_start
+- id: variable-mut-filter_arg_value-lookup-trailing_dot
+  template: "{{ x | x : x , , x. }}"
+  error_path: filter_arg_value/lookup
+- id: variable-mut-filter_arg_value-lookup-dot_number
+  template: "{{ x | x : x , , x.123 }}"
+  error_path: filter_arg_value/lookup
+- id: variable-mut-filter_arg_value-lookup-dot_string
+  template: '{{ x | x : x , , x."y" }}'
+  error_path: filter_arg_value/lookup
+- id: variable-mut-filter_arg_value-lookup-unclosed_bracket
+  template: "{{ x | x : x , , x[0 }}"
+  error_path: filter_arg_value/lookup
+- id: variable-mut-filter_arg_value-lookup-bracket_wrong_content
+  template: "{{ x | x : x , , x[,] }}"
+  error_path: filter_arg_value/lookup
+- id: variable-mut-filter_arg_value-lookup-unclosed_range
+  template: "{{ x | x : x , , (1..5 }}"
+  error_path: filter_arg_value/lookup
+- id: variable-mut-filter_arg_value-lookup-range_bad_separator
+  template: "{{ x | x : x , , (1, 5) }}"
+  error_path: filter_arg_value/lookup
+- id: variable-mut-filter_arg_value-lookup-range_missing_end
+  template: "{{ x | x : x , , (1..) }}"
+  error_path: filter_arg_value/lookup
+- id: variable-mut-filter_arg_value-lexerr-at
+  template: "{{ x | x : x , , @ }}"
+  error_path: filter_arg_value/lexer
+- id: variable-mut-filter_arg_value-lexerr-hash
+  template: "{{ x | x : x , , # }}"
+  error_path: filter_arg_value/lexer
+- id: variable-mut-filter_arg_value-lexerr-dollar
+  template: "{{ x | x : x , , $ }}"
+  error_path: filter_arg_value/lexer
+- id: variable-mut-filter_arg_value-lexerr-caret
+  template: "{{ x | x : x , , ^ }}"
+  error_path: filter_arg_value/lexer
+- id: variable-mut-filter_arg_value-lexerr-ampersand
+  template: "{{ x | x : x , , & }}"
+  error_path: filter_arg_value/lexer
+- id: variable-mut-filter_arg_value-lexerr-asterisk
+  template: "{{ x | x : x , , * }}"
+  error_path: filter_arg_value/lexer
+- id: variable-mut-filter_arg_value-lexerr-tilde
+  template: "{{ x | x : x , , ~ }}"
+  error_path: filter_arg_value/lexer
+- id: variable-mut-filter_arg_value-lexerr-backtick
+  template: "{{ x | x : x , , ` }}"
+  error_path: filter_arg_value/lexer
+- id: variable-mut-filter_arg_value-lexerr-backslash
+  template: "{{ x | x : x , , \\ }}"
+  error_path: filter_arg_value/lexer
+- id: variable-mut-filter_arg_value-lexerr-semicolon
+  template: "{{ x | x : x , , ; }}"
+  error_path: filter_arg_value/lexer
+- id: variable-mut-filter_arg_value-lexerr-unclosed_double_quote
+  template: '{{ x | x : x , , "hello }}'
+  error_path: filter_arg_value/lexer
+- id: variable-mut-filter_arg_value-lexerr-unclosed_single_quote
+  template: "{{ x | x : x , , 'hello }}"
+  error_path: filter_arg_value/lexer
+- id: variable-mut-end-trail-id
+  template: "{{ x extra }}"
+  error_path: end
+- id: variable-mut-end-trail-number
+  template: "{{ x 42 }}"
+  error_path: end
+- id: variable-mut-end-trail-string
+  template: "{{ x 'hi' }}"
+  error_path: end
+- id: variable-mut-end-trail-pipe
+  template: "{{ x | }}"
+  error_path: end
+- id: variable-mut-end-trail-colon
+  template: "{{ x : }}"
+  error_path: end
+- id: variable-mut-end-trail-comma
+  template: "{{ x , }}"
+  error_path: end
+- id: variable-mut-end-trail-open_square
+  template: "{{ x [ }}"
+  error_path: end
+- id: variable-mut-end-trail-close_square
+  template: "{{ x ] }}"
+  error_path: end
+- id: variable-mut-end-trail-open_round
+  template: "{{ x ( }}"
+  error_path: end
+- id: variable-mut-end-trail-close_round
+  template: "{{ x ) }}"
+  error_path: end
+- id: variable-mut-end-trail-question
+  template: "{{ x ? }}"
+  error_path: end
+- id: variable-mut-end-trail-dot
+  template: "{{ x . }}"
+  error_path: end
+- id: variable-mut-end-trail-comparison
+  template: "{{ x == }}"
+  error_path: end
+- id: variable-mut-end-trail-dash
+  template: "{{ x - }}"
+  error_path: end
+- id: variable-mut-valid-000
+  template: "{{ x }}"
+  error_path: valid
+- id: variable-mut-valid-001
+  template: "{{ 42 }}"
+  error_path: valid
+- id: variable-mut-valid-002
+  template: "{{ 3.14 }}"
+  error_path: valid
+- id: variable-mut-valid-003
+  template: "{{ -5 }}"
+  error_path: valid
+- id: variable-mut-valid-004
+  template: "{{ 'hello' }}"
+  error_path: valid
+- id: variable-mut-valid-005
+  template: "{{ true }}"
+  error_path: valid
+- id: variable-mut-valid-006
+  template: "{{ false }}"
+  error_path: valid
+- id: variable-mut-valid-007
+  template: "{{ nil }}"
+  error_path: valid
+- id: variable-mut-valid-008
+  template: "{{ blank }}"
+  error_path: valid
+- id: variable-mut-valid-009
+  template: "{{ empty }}"
+  error_path: valid
+- id: variable-mut-valid-010
+  template: "{{ product.title }}"
+  error_path: valid
+- id: variable-mut-valid-011
+  template: "{{ products[0] }}"
+  error_path: valid
+- id: variable-mut-valid-012
+  template: "{{ a.b.c }}"
+  error_path: valid
+- id: variable-mut-valid-013
+  template: "{{ a[0].b }}"
+  error_path: valid
+- id: variable-mut-valid-014
+  template: "{{ (1..5) }}"
+  error_path: valid

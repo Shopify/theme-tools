@@ -1,0 +1,89 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: liquid-100
+  template: "{% liquid %}"
+  error_path:
+- id: liquid-101
+  template: |-
+    {% liquid
+    assign x = 1
+    %}
+  error_path:
+- id: liquid-102
+  template: |-
+    {% liquid
+    assign x = 1
+    echo x
+    %}
+  error_path:
+- id: liquid-103
+  template: |-
+    {% liquid
+    for i in (1..3)
+    echo i
+    endfor
+    %}
+  error_path:
+- id: liquid-104
+  template: |-
+    {%- liquid
+    assign x = 1
+    -%}
+  error_path:
+- id: liquid-105
+  template: |-
+    {% liquid
+
+
+    %}
+  error_path:
+- id: liquid-200
+  template: |-
+    {% liquid
+    hello world
+    %}
+  error_path: 1
+- id: liquid-201
+  template: |-
+    {% liquid
+    foobar baz
+    %}
+  error_path: 1
+- id: liquid-203
+  template: |-
+    {% liquid
+    endfor
+    %}
+  error_path: 1
+- id: liquid-204
+  template: |-
+    {% liquid
+    assign
+    %}
+  error_path: 1
+- id: liquid-205
+  template: |-
+    {% liquid
+    assign x = 1
+    assign
+    %}
+  error_path: 1
+- id: liquid-206
+  template: |-
+    {% liquid
+    echo
+    %}
+  error_path:
+- id: liquid-207
+  template: |-
+    {% liquid
+    for i
+    %}
+  error_path: 1
+- id: liquid-208
+  template: |-
+    {% liquid
+    for i in (1..3)
+    echo i
+    %}
+  error_path: 1

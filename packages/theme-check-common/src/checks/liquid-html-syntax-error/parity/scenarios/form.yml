@@ -1,0 +1,479 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: form-mut-type_expr-pipe-000
+  template: "{% form | %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-comma-001
+  template: "{% form , %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-colon-002
+  template: "{% form : %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-close_square-003
+  template: "{% form ] %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-close_round-004
+  template: "{% form ) %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-question-005
+  template: "{% form ? %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-dash-006
+  template: "{% form - %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-dot-007
+  template: "{% form . %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-dotdot-008
+  template: "{% form .. %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-comparison-009
+  template: "{% form == %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-comparison-010
+  template: "{% form != %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-comparison-011
+  template: "{% form < %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-comparison-012
+  template: "{% form > %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-comparison-013
+  template: "{% form <= %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-comparison-014
+  template: "{% form >= %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-comparison-015
+  template: "{% form contains %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-eos-016
+  template: "{% form  %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-bare_bracket
+  template: "{% form [0] %}{% endform %}"
+  error_path: type_expr/bad_start
+- id: form-mut-type_expr-lookup-trailing_dot
+  template: "{% form x. %}{% endform %}"
+  error_path: type_expr/lookup
+- id: form-mut-type_expr-lookup-dot_number
+  template: "{% form x.123 %}{% endform %}"
+  error_path: type_expr/lookup
+- id: form-mut-type_expr-lookup-dot_string
+  template: '{% form x."y" %}{% endform %}'
+  error_path: type_expr/lookup
+- id: form-mut-type_expr-lookup-unclosed_bracket
+  template: "{% form x[0 %}{% endform %}"
+  error_path: type_expr/lookup
+- id: form-mut-type_expr-lookup-bracket_wrong_content
+  template: "{% form x[,] %}{% endform %}"
+  error_path: type_expr/lookup
+- id: form-mut-type_expr-lookup-unclosed_range
+  template: "{% form (1..5 %}{% endform %}"
+  error_path: type_expr/lookup
+- id: form-mut-type_expr-lookup-range_bad_separator
+  template: "{% form (1, 5) %}{% endform %}"
+  error_path: type_expr/lookup
+- id: form-mut-type_expr-lookup-range_missing_end
+  template: "{% form (1..) %}{% endform %}"
+  error_path: type_expr/lookup
+- id: form-mut-type_expr-lexerr-at
+  template: "{% form @ %}{% endform %}"
+  error_path: type_expr/lexer
+- id: form-mut-type_expr-lexerr-hash
+  template: "{% form # %}{% endform %}"
+  error_path: type_expr/lexer
+- id: form-mut-type_expr-lexerr-dollar
+  template: "{% form $ %}{% endform %}"
+  error_path: type_expr/lexer
+- id: form-mut-type_expr-lexerr-caret
+  template: "{% form ^ %}{% endform %}"
+  error_path: type_expr/lexer
+- id: form-mut-type_expr-lexerr-ampersand
+  template: "{% form & %}{% endform %}"
+  error_path: type_expr/lexer
+- id: form-mut-type_expr-lexerr-asterisk
+  template: "{% form * %}{% endform %}"
+  error_path: type_expr/lexer
+- id: form-mut-type_expr-lexerr-tilde
+  template: "{% form ~ %}{% endform %}"
+  error_path: type_expr/lexer
+- id: form-mut-type_expr-lexerr-backtick
+  template: "{% form ` %}{% endform %}"
+  error_path: type_expr/lexer
+- id: form-mut-type_expr-lexerr-backslash
+  template: "{% form \\ %}{% endform %}"
+  error_path: type_expr/lexer
+- id: form-mut-type_expr-lexerr-semicolon
+  template: "{% form ; %}{% endform %}"
+  error_path: type_expr/lexer
+- id: form-mut-type_expr-lexerr-unclosed_double_quote
+  template: '{% form "hello %}{% endform %}'
+  error_path: type_expr/lexer
+- id: form-mut-type_expr-lexerr-unclosed_single_quote
+  template: "{% form 'hello %}{% endform %}"
+  error_path: type_expr/lexer
+- id: form-mut-variable_name-pipe-000
+  template: "{% form x , | %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-comma-001
+  template: "{% form x , , %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-colon-002
+  template: "{% form x , : %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-close_square-003
+  template: "{% form x , ] %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-close_round-004
+  template: "{% form x , ) %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-question-005
+  template: "{% form x , ? %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-dash-006
+  template: "{% form x , - %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-dot-007
+  template: "{% form x , . %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-dotdot-008
+  template: "{% form x , .. %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-comparison-009
+  template: "{% form x , == %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-comparison-010
+  template: "{% form x , != %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-comparison-011
+  template: "{% form x , < %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-comparison-012
+  template: "{% form x , > %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-comparison-013
+  template: "{% form x , <= %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-comparison-014
+  template: "{% form x , >= %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-comparison-015
+  template: "{% form x , contains %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-eos-016
+  template: "{% form x , %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-bare_bracket
+  template: "{% form x , [0] %}{% endform %}"
+  error_path: variable_name/bad_start
+- id: form-mut-variable_name-lookup-trailing_dot
+  template: "{% form x , x. %}{% endform %}"
+  error_path: variable_name/lookup
+- id: form-mut-variable_name-lookup-dot_number
+  template: "{% form x , x.123 %}{% endform %}"
+  error_path: variable_name/lookup
+- id: form-mut-variable_name-lookup-dot_string
+  template: '{% form x , x."y" %}{% endform %}'
+  error_path: variable_name/lookup
+- id: form-mut-variable_name-lookup-unclosed_bracket
+  template: "{% form x , x[0 %}{% endform %}"
+  error_path: variable_name/lookup
+- id: form-mut-variable_name-lookup-bracket_wrong_content
+  template: "{% form x , x[,] %}{% endform %}"
+  error_path: variable_name/lookup
+- id: form-mut-variable_name-lookup-unclosed_range
+  template: "{% form x , (1..5 %}{% endform %}"
+  error_path: variable_name/lookup
+- id: form-mut-variable_name-lookup-range_bad_separator
+  template: "{% form x , (1, 5) %}{% endform %}"
+  error_path: variable_name/lookup
+- id: form-mut-variable_name-lookup-range_missing_end
+  template: "{% form x , (1..) %}{% endform %}"
+  error_path: variable_name/lookup
+- id: form-mut-variable_name-lexerr-at
+  template: "{% form x , @ %}{% endform %}"
+  error_path: variable_name/lexer
+- id: form-mut-variable_name-lexerr-hash
+  template: "{% form x , # %}{% endform %}"
+  error_path: variable_name/lexer
+- id: form-mut-variable_name-lexerr-dollar
+  template: "{% form x , $ %}{% endform %}"
+  error_path: variable_name/lexer
+- id: form-mut-variable_name-lexerr-caret
+  template: "{% form x , ^ %}{% endform %}"
+  error_path: variable_name/lexer
+- id: form-mut-variable_name-lexerr-ampersand
+  template: "{% form x , & %}{% endform %}"
+  error_path: variable_name/lexer
+- id: form-mut-variable_name-lexerr-asterisk
+  template: "{% form x , * %}{% endform %}"
+  error_path: variable_name/lexer
+- id: form-mut-variable_name-lexerr-tilde
+  template: "{% form x , ~ %}{% endform %}"
+  error_path: variable_name/lexer
+- id: form-mut-variable_name-lexerr-backtick
+  template: "{% form x , ` %}{% endform %}"
+  error_path: variable_name/lexer
+- id: form-mut-variable_name-lexerr-backslash
+  template: "{% form x , \\ %}{% endform %}"
+  error_path: variable_name/lexer
+- id: form-mut-variable_name-lexerr-semicolon
+  template: "{% form x , ; %}{% endform %}"
+  error_path: variable_name/lexer
+- id: form-mut-variable_name-lexerr-unclosed_double_quote
+  template: '{% form x , "hello %}{% endform %}'
+  error_path: variable_name/lexer
+- id: form-mut-variable_name-lexerr-unclosed_single_quote
+  template: "{% form x , 'hello %}{% endform %}"
+  error_path: variable_name/lexer
+- id: form-mut-kwarg_name-eos
+  template: "{% form x step , %}{% endform %}"
+  error_path: kwarg_name
+- id: form-mut-kwarg_name-number
+  template: "{% form x step , 42 %}{% endform %}"
+  error_path: kwarg_name
+- id: form-mut-kwarg_name-lexerr-at
+  template: "{% form x step , @ %}{% endform %}"
+  error_path: kwarg_name
+- id: form-mut-kwarg_name-lexerr-hash
+  template: "{% form x step , # %}{% endform %}"
+  error_path: kwarg_name
+- id: form-mut-kwarg_name-lexerr-dollar
+  template: "{% form x step , $ %}{% endform %}"
+  error_path: kwarg_name
+- id: form-mut-kwarg_name-lexerr-caret
+  template: "{% form x step , ^ %}{% endform %}"
+  error_path: kwarg_name
+- id: form-mut-kwarg_name-lexerr-ampersand
+  template: "{% form x step , & %}{% endform %}"
+  error_path: kwarg_name
+- id: form-mut-kwarg_name-lexerr-asterisk
+  template: "{% form x step , * %}{% endform %}"
+  error_path: kwarg_name
+- id: form-mut-kwarg_name-lexerr-tilde
+  template: "{% form x step , ~ %}{% endform %}"
+  error_path: kwarg_name
+- id: form-mut-kwarg_name-lexerr-backtick
+  template: "{% form x step , ` %}{% endform %}"
+  error_path: kwarg_name
+- id: form-mut-kwarg_name-lexerr-backslash
+  template: "{% form x step , \\ %}{% endform %}"
+  error_path: kwarg_name
+- id: form-mut-kwarg_name-lexerr-semicolon
+  template: "{% form x step , ; %}{% endform %}"
+  error_path: kwarg_name
+- id: form-mut-kwarg_name-lexerr-unclosed_double_quote
+  template: '{% form x step , "hello %}{% endform %}'
+  error_path: kwarg_name
+- id: form-mut-kwarg_name-lexerr-unclosed_single_quote
+  template: "{% form x step , 'hello %}{% endform %}"
+  error_path: kwarg_name
+- id: form-mut-kwarg_colon-eos
+  template: "{% form x step , x %}{% endform %}"
+  error_path: kwarg_colon
+- id: form-mut-kwarg_colon-number
+  template: "{% form x step , x 42 %}{% endform %}"
+  error_path: kwarg_colon
+- id: form-mut-kwarg_value-pipe-000
+  template: "{% form x step , x : | %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-comma-001
+  template: "{% form x step , x : , %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-colon-002
+  template: "{% form x step , x : : %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-close_square-003
+  template: "{% form x step , x : ] %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-close_round-004
+  template: "{% form x step , x : ) %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-question-005
+  template: "{% form x step , x : ? %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-dash-006
+  template: "{% form x step , x : - %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-dot-007
+  template: "{% form x step , x : . %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-dotdot-008
+  template: "{% form x step , x : .. %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-comparison-009
+  template: "{% form x step , x : == %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-comparison-010
+  template: "{% form x step , x : != %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-comparison-011
+  template: "{% form x step , x : < %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-comparison-012
+  template: "{% form x step , x : > %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-comparison-013
+  template: "{% form x step , x : <= %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-comparison-014
+  template: "{% form x step , x : >= %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-comparison-015
+  template: "{% form x step , x : contains %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-eos-016
+  template: "{% form x step , x : %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-bare_bracket
+  template: "{% form x step , x : [0] %}{% endform %}"
+  error_path: kwarg_value/bad_start
+- id: form-mut-kwarg_value-lookup-trailing_dot
+  template: "{% form x step , x : x. %}{% endform %}"
+  error_path: kwarg_value/lookup
+- id: form-mut-kwarg_value-lookup-dot_number
+  template: "{% form x step , x : x.123 %}{% endform %}"
+  error_path: kwarg_value/lookup
+- id: form-mut-kwarg_value-lookup-dot_string
+  template: '{% form x step , x : x."y" %}{% endform %}'
+  error_path: kwarg_value/lookup
+- id: form-mut-kwarg_value-lookup-unclosed_bracket
+  template: "{% form x step , x : x[0 %}{% endform %}"
+  error_path: kwarg_value/lookup
+- id: form-mut-kwarg_value-lookup-bracket_wrong_content
+  template: "{% form x step , x : x[,] %}{% endform %}"
+  error_path: kwarg_value/lookup
+- id: form-mut-kwarg_value-lookup-unclosed_range
+  template: "{% form x step , x : (1..5 %}{% endform %}"
+  error_path: kwarg_value/lookup
+- id: form-mut-kwarg_value-lookup-range_bad_separator
+  template: "{% form x step , x : (1, 5) %}{% endform %}"
+  error_path: kwarg_value/lookup
+- id: form-mut-kwarg_value-lookup-range_missing_end
+  template: "{% form x step , x : (1..) %}{% endform %}"
+  error_path: kwarg_value/lookup
+- id: form-mut-kwarg_value-lexerr-at
+  template: "{% form x step , x : @ %}{% endform %}"
+  error_path: kwarg_value/lexer
+- id: form-mut-kwarg_value-lexerr-hash
+  template: "{% form x step , x : # %}{% endform %}"
+  error_path: kwarg_value/lexer
+- id: form-mut-kwarg_value-lexerr-dollar
+  template: "{% form x step , x : $ %}{% endform %}"
+  error_path: kwarg_value/lexer
+- id: form-mut-kwarg_value-lexerr-caret
+  template: "{% form x step , x : ^ %}{% endform %}"
+  error_path: kwarg_value/lexer
+- id: form-mut-kwarg_value-lexerr-ampersand
+  template: "{% form x step , x : & %}{% endform %}"
+  error_path: kwarg_value/lexer
+- id: form-mut-kwarg_value-lexerr-asterisk
+  template: "{% form x step , x : * %}{% endform %}"
+  error_path: kwarg_value/lexer
+- id: form-mut-kwarg_value-lexerr-tilde
+  template: "{% form x step , x : ~ %}{% endform %}"
+  error_path: kwarg_value/lexer
+- id: form-mut-kwarg_value-lexerr-backtick
+  template: "{% form x step , x : ` %}{% endform %}"
+  error_path: kwarg_value/lexer
+- id: form-mut-kwarg_value-lexerr-backslash
+  template: "{% form x step , x : \\ %}{% endform %}"
+  error_path: kwarg_value/lexer
+- id: form-mut-kwarg_value-lexerr-semicolon
+  template: "{% form x step , x : ; %}{% endform %}"
+  error_path: kwarg_value/lexer
+- id: form-mut-kwarg_value-lexerr-unclosed_double_quote
+  template: '{% form x step , x : "hello %}{% endform %}'
+  error_path: kwarg_value/lexer
+- id: form-mut-kwarg_value-lexerr-unclosed_single_quote
+  template: "{% form x step , x : 'hello %}{% endform %}"
+  error_path: kwarg_value/lexer
+- id: form-mut-end-trail-id
+  template: "{% form x extra %}{% endform %}"
+  error_path: end
+- id: form-mut-end-trail-number
+  template: "{% form x 42 %}{% endform %}"
+  error_path: end
+- id: form-mut-end-trail-string
+  template: "{% form x 'hi' %}{% endform %}"
+  error_path: end
+- id: form-mut-end-trail-pipe
+  template: "{% form x | %}{% endform %}"
+  error_path: end
+- id: form-mut-end-trail-colon
+  template: "{% form x : %}{% endform %}"
+  error_path: end
+- id: form-mut-end-trail-comma
+  template: "{% form x , %}{% endform %}"
+  error_path: end
+- id: form-mut-end-trail-open_square
+  template: "{% form x [ %}{% endform %}"
+  error_path: end
+- id: form-mut-end-trail-close_square
+  template: "{% form x ] %}{% endform %}"
+  error_path: end
+- id: form-mut-end-trail-open_round
+  template: "{% form x ( %}{% endform %}"
+  error_path: end
+- id: form-mut-end-trail-close_round
+  template: "{% form x ) %}{% endform %}"
+  error_path: end
+- id: form-mut-end-trail-question
+  template: "{% form x ? %}{% endform %}"
+  error_path: end
+- id: form-mut-end-trail-dot
+  template: "{% form x . %}{% endform %}"
+  error_path: end
+- id: form-mut-end-trail-comparison
+  template: "{% form x == %}{% endform %}"
+  error_path: end
+- id: form-mut-end-trail-dash
+  template: "{% form x - %}{% endform %}"
+  error_path: end
+- id: form-mut-valid-000
+  template: "{% form x %}{% endform %}"
+  error_path: valid
+- id: form-mut-valid-001
+  template: "{% form 42 %}{% endform %}"
+  error_path: valid
+- id: form-mut-valid-002
+  template: "{% form 3.14 %}{% endform %}"
+  error_path: valid
+- id: form-mut-valid-003
+  template: "{% form -5 %}{% endform %}"
+  error_path: valid
+- id: form-mut-valid-004
+  template: "{% form 'hello' %}{% endform %}"
+  error_path: valid
+- id: form-mut-valid-005
+  template: "{% form true %}{% endform %}"
+  error_path: valid
+- id: form-mut-valid-006
+  template: "{% form false %}{% endform %}"
+  error_path: valid
+- id: form-mut-valid-007
+  template: "{% form nil %}{% endform %}"
+  error_path: valid
+- id: form-mut-valid-008
+  template: "{% form blank %}{% endform %}"
+  error_path: valid
+- id: form-mut-valid-009
+  template: "{% form empty %}{% endform %}"
+  error_path: valid
+- id: form-mut-valid-010
+  template: "{% form product.title %}{% endform %}"
+  error_path: valid
+- id: form-mut-valid-011
+  template: "{% form products[0] %}{% endform %}"
+  error_path: valid
+- id: form-mut-valid-012
+  template: "{% form a.b.c %}{% endform %}"
+  error_path: valid
+- id: form-mut-valid-013
+  template: "{% form a[0].b %}{% endform %}"
+  error_path: valid
+- id: form-mut-valid-014
+  template: "{% form (1..5) %}{% endform %}"
+  error_path: valid

@@ -1,0 +1,524 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: include-mut-template_expr-pipe-000
+  template: "{% include | %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-comma-001
+  template: "{% include , %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-colon-002
+  template: "{% include : %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-close_square-003
+  template: "{% include ] %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-close_round-004
+  template: "{% include ) %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-question-005
+  template: "{% include ? %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-dash-006
+  template: "{% include - %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-dot-007
+  template: "{% include . %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-dotdot-008
+  template: "{% include .. %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-comparison-009
+  template: "{% include == %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-comparison-010
+  template: "{% include != %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-comparison-011
+  template: "{% include < %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-comparison-012
+  template: "{% include > %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-comparison-013
+  template: "{% include <= %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-comparison-014
+  template: "{% include >= %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-comparison-015
+  template: "{% include contains %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-eos-016
+  template: "{% include  %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-bare_bracket
+  template: "{% include [0] %}"
+  error_path: template_expr/bad_start
+- id: include-mut-template_expr-lookup-trailing_dot
+  template: "{% include x. %}"
+  error_path: template_expr/lookup
+- id: include-mut-template_expr-lookup-dot_number
+  template: "{% include x.123 %}"
+  error_path: template_expr/lookup
+- id: include-mut-template_expr-lookup-dot_string
+  template: '{% include x."y" %}'
+  error_path: template_expr/lookup
+- id: include-mut-template_expr-lookup-unclosed_bracket
+  template: "{% include x[0 %}"
+  error_path: template_expr/lookup
+- id: include-mut-template_expr-lookup-bracket_wrong_content
+  template: "{% include x[,] %}"
+  error_path: template_expr/lookup
+- id: include-mut-template_expr-lookup-unclosed_range
+  template: "{% include (1..5 %}"
+  error_path: template_expr/lookup
+- id: include-mut-template_expr-lookup-range_bad_separator
+  template: "{% include (1, 5) %}"
+  error_path: template_expr/lookup
+- id: include-mut-template_expr-lookup-range_missing_end
+  template: "{% include (1..) %}"
+  error_path: template_expr/lookup
+- id: include-mut-template_expr-lexerr-at
+  template: "{% include @ %}"
+  error_path: template_expr/lexer
+- id: include-mut-template_expr-lexerr-hash
+  template: "{% include # %}"
+  error_path: template_expr/lexer
+- id: include-mut-template_expr-lexerr-dollar
+  template: "{% include $ %}"
+  error_path: template_expr/lexer
+- id: include-mut-template_expr-lexerr-caret
+  template: "{% include ^ %}"
+  error_path: template_expr/lexer
+- id: include-mut-template_expr-lexerr-ampersand
+  template: "{% include & %}"
+  error_path: template_expr/lexer
+- id: include-mut-template_expr-lexerr-asterisk
+  template: "{% include * %}"
+  error_path: template_expr/lexer
+- id: include-mut-template_expr-lexerr-tilde
+  template: "{% include ~ %}"
+  error_path: template_expr/lexer
+- id: include-mut-template_expr-lexerr-backtick
+  template: "{% include ` %}"
+  error_path: template_expr/lexer
+- id: include-mut-template_expr-lexerr-backslash
+  template: "{% include \\ %}"
+  error_path: template_expr/lexer
+- id: include-mut-template_expr-lexerr-semicolon
+  template: "{% include ; %}"
+  error_path: template_expr/lexer
+- id: include-mut-template_expr-lexerr-unclosed_double_quote
+  template: '{% include "hello %}'
+  error_path: template_expr/lexer
+- id: include-mut-template_expr-lexerr-unclosed_single_quote
+  template: "{% include 'hello %}"
+  error_path: template_expr/lexer
+- id: include-mut-binding_keyword-id
+  template: "{% include x with %}"
+  error_path: binding_keyword
+- id: include-mut-binding_value-pipe-000
+  template: "{% include x for | %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-comma-001
+  template: "{% include x for , %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-colon-002
+  template: "{% include x for : %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-close_square-003
+  template: "{% include x for ] %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-close_round-004
+  template: "{% include x for ) %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-question-005
+  template: "{% include x for ? %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-dash-006
+  template: "{% include x for - %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-dot-007
+  template: "{% include x for . %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-dotdot-008
+  template: "{% include x for .. %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-comparison-009
+  template: "{% include x for == %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-comparison-010
+  template: "{% include x for != %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-comparison-011
+  template: "{% include x for < %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-comparison-012
+  template: "{% include x for > %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-comparison-013
+  template: "{% include x for <= %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-comparison-014
+  template: "{% include x for >= %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-comparison-015
+  template: "{% include x for contains %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-eos-016
+  template: "{% include x for %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-bare_bracket
+  template: "{% include x for [0] %}"
+  error_path: binding_value/bad_start
+- id: include-mut-binding_value-lookup-trailing_dot
+  template: "{% include x for x. %}"
+  error_path: binding_value/lookup
+- id: include-mut-binding_value-lookup-dot_number
+  template: "{% include x for x.123 %}"
+  error_path: binding_value/lookup
+- id: include-mut-binding_value-lookup-dot_string
+  template: '{% include x for x."y" %}'
+  error_path: binding_value/lookup
+- id: include-mut-binding_value-lookup-unclosed_bracket
+  template: "{% include x for x[0 %}"
+  error_path: binding_value/lookup
+- id: include-mut-binding_value-lookup-bracket_wrong_content
+  template: "{% include x for x[,] %}"
+  error_path: binding_value/lookup
+- id: include-mut-binding_value-lookup-unclosed_range
+  template: "{% include x for (1..5 %}"
+  error_path: binding_value/lookup
+- id: include-mut-binding_value-lookup-range_bad_separator
+  template: "{% include x for (1, 5) %}"
+  error_path: binding_value/lookup
+- id: include-mut-binding_value-lookup-range_missing_end
+  template: "{% include x for (1..) %}"
+  error_path: binding_value/lookup
+- id: include-mut-binding_value-lexerr-at
+  template: "{% include x for @ %}"
+  error_path: binding_value/lexer
+- id: include-mut-binding_value-lexerr-hash
+  template: "{% include x for # %}"
+  error_path: binding_value/lexer
+- id: include-mut-binding_value-lexerr-dollar
+  template: "{% include x for $ %}"
+  error_path: binding_value/lexer
+- id: include-mut-binding_value-lexerr-caret
+  template: "{% include x for ^ %}"
+  error_path: binding_value/lexer
+- id: include-mut-binding_value-lexerr-ampersand
+  template: "{% include x for & %}"
+  error_path: binding_value/lexer
+- id: include-mut-binding_value-lexerr-asterisk
+  template: "{% include x for * %}"
+  error_path: binding_value/lexer
+- id: include-mut-binding_value-lexerr-tilde
+  template: "{% include x for ~ %}"
+  error_path: binding_value/lexer
+- id: include-mut-binding_value-lexerr-backtick
+  template: "{% include x for ` %}"
+  error_path: binding_value/lexer
+- id: include-mut-binding_value-lexerr-backslash
+  template: "{% include x for \\ %}"
+  error_path: binding_value/lexer
+- id: include-mut-binding_value-lexerr-semicolon
+  template: "{% include x for ; %}"
+  error_path: binding_value/lexer
+- id: include-mut-binding_value-lexerr-unclosed_double_quote
+  template: '{% include x for "hello %}'
+  error_path: binding_value/lexer
+- id: include-mut-binding_value-lexerr-unclosed_single_quote
+  template: "{% include x for 'hello %}"
+  error_path: binding_value/lexer
+- id: include-mut-alias_name-eos
+  template: "{% include x as %}"
+  error_path: alias_name
+- id: include-mut-alias_name-number
+  template: "{% include x as 42 %}"
+  error_path: alias_name
+- id: include-mut-alias_name-lexerr-at
+  template: "{% include x as @ %}"
+  error_path: alias_name
+- id: include-mut-alias_name-lexerr-hash
+  template: "{% include x as # %}"
+  error_path: alias_name
+- id: include-mut-alias_name-lexerr-dollar
+  template: "{% include x as $ %}"
+  error_path: alias_name
+- id: include-mut-alias_name-lexerr-caret
+  template: "{% include x as ^ %}"
+  error_path: alias_name
+- id: include-mut-alias_name-lexerr-ampersand
+  template: "{% include x as & %}"
+  error_path: alias_name
+- id: include-mut-alias_name-lexerr-asterisk
+  template: "{% include x as * %}"
+  error_path: alias_name
+- id: include-mut-alias_name-lexerr-tilde
+  template: "{% include x as ~ %}"
+  error_path: alias_name
+- id: include-mut-alias_name-lexerr-backtick
+  template: "{% include x as ` %}"
+  error_path: alias_name
+- id: include-mut-alias_name-lexerr-backslash
+  template: "{% include x as \\ %}"
+  error_path: alias_name
+- id: include-mut-alias_name-lexerr-semicolon
+  template: "{% include x as ; %}"
+  error_path: alias_name
+- id: include-mut-alias_name-lexerr-unclosed_double_quote
+  template: '{% include x as "hello %}'
+  error_path: alias_name
+- id: include-mut-alias_name-lexerr-unclosed_single_quote
+  template: "{% include x as 'hello %}"
+  error_path: alias_name
+- id: include-mut-kwarg_name-eos
+  template: "{% include x step , %}"
+  error_path: kwarg_name
+- id: include-mut-kwarg_name-number
+  template: "{% include x step , 42 %}"
+  error_path: kwarg_name
+- id: include-mut-kwarg_name-lexerr-at
+  template: "{% include x step , @ %}"
+  error_path: kwarg_name
+- id: include-mut-kwarg_name-lexerr-hash
+  template: "{% include x step , # %}"
+  error_path: kwarg_name
+- id: include-mut-kwarg_name-lexerr-dollar
+  template: "{% include x step , $ %}"
+  error_path: kwarg_name
+- id: include-mut-kwarg_name-lexerr-caret
+  template: "{% include x step , ^ %}"
+  error_path: kwarg_name
+- id: include-mut-kwarg_name-lexerr-ampersand
+  template: "{% include x step , & %}"
+  error_path: kwarg_name
+- id: include-mut-kwarg_name-lexerr-asterisk
+  template: "{% include x step , * %}"
+  error_path: kwarg_name
+- id: include-mut-kwarg_name-lexerr-tilde
+  template: "{% include x step , ~ %}"
+  error_path: kwarg_name
+- id: include-mut-kwarg_name-lexerr-backtick
+  template: "{% include x step , ` %}"
+  error_path: kwarg_name
+- id: include-mut-kwarg_name-lexerr-backslash
+  template: "{% include x step , \\ %}"
+  error_path: kwarg_name
+- id: include-mut-kwarg_name-lexerr-semicolon
+  template: "{% include x step , ; %}"
+  error_path: kwarg_name
+- id: include-mut-kwarg_name-lexerr-unclosed_double_quote
+  template: '{% include x step , "hello %}'
+  error_path: kwarg_name
+- id: include-mut-kwarg_name-lexerr-unclosed_single_quote
+  template: "{% include x step , 'hello %}"
+  error_path: kwarg_name
+- id: include-mut-kwarg_colon-eos
+  template: "{% include x step , x %}"
+  error_path: kwarg_colon
+- id: include-mut-kwarg_colon-number
+  template: "{% include x step , x 42 %}"
+  error_path: kwarg_colon
+- id: include-mut-kwarg_value-pipe-000
+  template: "{% include x step , x : | %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-comma-001
+  template: "{% include x step , x : , %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-colon-002
+  template: "{% include x step , x : : %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-close_square-003
+  template: "{% include x step , x : ] %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-close_round-004
+  template: "{% include x step , x : ) %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-question-005
+  template: "{% include x step , x : ? %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-dash-006
+  template: "{% include x step , x : - %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-dot-007
+  template: "{% include x step , x : . %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-dotdot-008
+  template: "{% include x step , x : .. %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-comparison-009
+  template: "{% include x step , x : == %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-comparison-010
+  template: "{% include x step , x : != %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-comparison-011
+  template: "{% include x step , x : < %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-comparison-012
+  template: "{% include x step , x : > %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-comparison-013
+  template: "{% include x step , x : <= %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-comparison-014
+  template: "{% include x step , x : >= %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-comparison-015
+  template: "{% include x step , x : contains %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-eos-016
+  template: "{% include x step , x : %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-bare_bracket
+  template: "{% include x step , x : [0] %}"
+  error_path: kwarg_value/bad_start
+- id: include-mut-kwarg_value-lookup-trailing_dot
+  template: "{% include x step , x : x. %}"
+  error_path: kwarg_value/lookup
+- id: include-mut-kwarg_value-lookup-dot_number
+  template: "{% include x step , x : x.123 %}"
+  error_path: kwarg_value/lookup
+- id: include-mut-kwarg_value-lookup-dot_string
+  template: '{% include x step , x : x."y" %}'
+  error_path: kwarg_value/lookup
+- id: include-mut-kwarg_value-lookup-unclosed_bracket
+  template: "{% include x step , x : x[0 %}"
+  error_path: kwarg_value/lookup
+- id: include-mut-kwarg_value-lookup-bracket_wrong_content
+  template: "{% include x step , x : x[,] %}"
+  error_path: kwarg_value/lookup
+- id: include-mut-kwarg_value-lookup-unclosed_range
+  template: "{% include x step , x : (1..5 %}"
+  error_path: kwarg_value/lookup
+- id: include-mut-kwarg_value-lookup-range_bad_separator
+  template: "{% include x step , x : (1, 5) %}"
+  error_path: kwarg_value/lookup
+- id: include-mut-kwarg_value-lookup-range_missing_end
+  template: "{% include x step , x : (1..) %}"
+  error_path: kwarg_value/lookup
+- id: include-mut-kwarg_value-lexerr-at
+  template: "{% include x step , x : @ %}"
+  error_path: kwarg_value/lexer
+- id: include-mut-kwarg_value-lexerr-hash
+  template: "{% include x step , x : # %}"
+  error_path: kwarg_value/lexer
+- id: include-mut-kwarg_value-lexerr-dollar
+  template: "{% include x step , x : $ %}"
+  error_path: kwarg_value/lexer
+- id: include-mut-kwarg_value-lexerr-caret
+  template: "{% include x step , x : ^ %}"
+  error_path: kwarg_value/lexer
+- id: include-mut-kwarg_value-lexerr-ampersand
+  template: "{% include x step , x : & %}"
+  error_path: kwarg_value/lexer
+- id: include-mut-kwarg_value-lexerr-asterisk
+  template: "{% include x step , x : * %}"
+  error_path: kwarg_value/lexer
+- id: include-mut-kwarg_value-lexerr-tilde
+  template: "{% include x step , x : ~ %}"
+  error_path: kwarg_value/lexer
+- id: include-mut-kwarg_value-lexerr-backtick
+  template: "{% include x step , x : ` %}"
+  error_path: kwarg_value/lexer
+- id: include-mut-kwarg_value-lexerr-backslash
+  template: "{% include x step , x : \\ %}"
+  error_path: kwarg_value/lexer
+- id: include-mut-kwarg_value-lexerr-semicolon
+  template: "{% include x step , x : ; %}"
+  error_path: kwarg_value/lexer
+- id: include-mut-kwarg_value-lexerr-unclosed_double_quote
+  template: '{% include x step , x : "hello %}'
+  error_path: kwarg_value/lexer
+- id: include-mut-kwarg_value-lexerr-unclosed_single_quote
+  template: "{% include x step , x : 'hello %}"
+  error_path: kwarg_value/lexer
+- id: include-mut-end-trail-id
+  template: "{% include x extra %}"
+  error_path: end
+- id: include-mut-end-trail-number
+  template: "{% include x 42 %}"
+  error_path: end
+- id: include-mut-end-trail-string
+  template: "{% include x 'hi' %}"
+  error_path: end
+- id: include-mut-end-trail-pipe
+  template: "{% include x | %}"
+  error_path: end
+- id: include-mut-end-trail-colon
+  template: "{% include x : %}"
+  error_path: end
+- id: include-mut-end-trail-comma
+  template: "{% include x , %}"
+  error_path: end
+- id: include-mut-end-trail-open_square
+  template: "{% include x [ %}"
+  error_path: end
+- id: include-mut-end-trail-close_square
+  template: "{% include x ] %}"
+  error_path: end
+- id: include-mut-end-trail-open_round
+  template: "{% include x ( %}"
+  error_path: end
+- id: include-mut-end-trail-close_round
+  template: "{% include x ) %}"
+  error_path: end
+- id: include-mut-end-trail-question
+  template: "{% include x ? %}"
+  error_path: end
+- id: include-mut-end-trail-dot
+  template: "{% include x . %}"
+  error_path: end
+- id: include-mut-end-trail-comparison
+  template: "{% include x == %}"
+  error_path: end
+- id: include-mut-end-trail-dash
+  template: "{% include x - %}"
+  error_path: end
+- id: include-mut-valid-000
+  template: "{% include x %}"
+  error_path: valid
+- id: include-mut-valid-001
+  template: "{% include 42 %}"
+  error_path: valid
+- id: include-mut-valid-002
+  template: "{% include 3.14 %}"
+  error_path: valid
+- id: include-mut-valid-003
+  template: "{% include -5 %}"
+  error_path: valid
+- id: include-mut-valid-004
+  template: "{% include 'hello' %}"
+  error_path: valid
+- id: include-mut-valid-005
+  template: "{% include true %}"
+  error_path: valid
+- id: include-mut-valid-006
+  template: "{% include false %}"
+  error_path: valid
+- id: include-mut-valid-007
+  template: "{% include nil %}"
+  error_path: valid
+- id: include-mut-valid-008
+  template: "{% include blank %}"
+  error_path: valid
+- id: include-mut-valid-009
+  template: "{% include empty %}"
+  error_path: valid
+- id: include-mut-valid-010
+  template: "{% include product.title %}"
+  error_path: valid
+- id: include-mut-valid-011
+  template: "{% include products[0] %}"
+  error_path: valid
+- id: include-mut-valid-012
+  template: "{% include a.b.c %}"
+  error_path: valid
+- id: include-mut-valid-013
+  template: "{% include a[0].b %}"
+  error_path: valid
+- id: include-mut-valid-014
+  template: "{% include (1..5) %}"
+  error_path: valid

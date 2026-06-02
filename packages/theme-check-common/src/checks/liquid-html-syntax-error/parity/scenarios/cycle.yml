@@ -1,0 +1,548 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: cycle-mut-pregate-000
+  template: "{% cycle  %}"
+  error_path: pre_gate
+- id: cycle-mut-first_value-pipe-000
+  template: "{% cycle | %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-comma-001
+  template: "{% cycle , %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-colon-002
+  template: "{% cycle : %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-close_square-003
+  template: "{% cycle ] %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-close_round-004
+  template: "{% cycle ) %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-question-005
+  template: "{% cycle ? %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-dash-006
+  template: "{% cycle - %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-dot-007
+  template: "{% cycle . %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-dotdot-008
+  template: "{% cycle .. %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-comparison-009
+  template: "{% cycle == %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-comparison-010
+  template: "{% cycle != %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-comparison-011
+  template: "{% cycle < %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-comparison-012
+  template: "{% cycle > %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-comparison-013
+  template: "{% cycle <= %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-comparison-014
+  template: "{% cycle >= %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-comparison-015
+  template: "{% cycle contains %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-eos-016
+  template: "{% cycle  %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-bare_bracket
+  template: "{% cycle [0] %}"
+  error_path: first_value/bad_start
+- id: cycle-mut-first_value-lookup-trailing_dot
+  template: "{% cycle x. %}"
+  error_path: first_value/lookup
+- id: cycle-mut-first_value-lookup-dot_number
+  template: "{% cycle x.123 %}"
+  error_path: first_value/lookup
+- id: cycle-mut-first_value-lookup-dot_string
+  template: '{% cycle x."y" %}'
+  error_path: first_value/lookup
+- id: cycle-mut-first_value-lookup-unclosed_bracket
+  template: "{% cycle x[0 %}"
+  error_path: first_value/lookup
+- id: cycle-mut-first_value-lookup-bracket_wrong_content
+  template: "{% cycle x[,] %}"
+  error_path: first_value/lookup
+- id: cycle-mut-first_value-lookup-unclosed_range
+  template: "{% cycle (1..5 %}"
+  error_path: first_value/lookup
+- id: cycle-mut-first_value-lookup-range_bad_separator
+  template: "{% cycle (1, 5) %}"
+  error_path: first_value/lookup
+- id: cycle-mut-first_value-lookup-range_missing_end
+  template: "{% cycle (1..) %}"
+  error_path: first_value/lookup
+- id: cycle-mut-first_value-lexerr-at
+  template: "{% cycle @ %}"
+  error_path: first_value/lexer
+- id: cycle-mut-first_value-lexerr-hash
+  template: "{% cycle # %}"
+  error_path: first_value/lexer
+- id: cycle-mut-first_value-lexerr-dollar
+  template: "{% cycle $ %}"
+  error_path: first_value/lexer
+- id: cycle-mut-first_value-lexerr-caret
+  template: "{% cycle ^ %}"
+  error_path: first_value/lexer
+- id: cycle-mut-first_value-lexerr-ampersand
+  template: "{% cycle & %}"
+  error_path: first_value/lexer
+- id: cycle-mut-first_value-lexerr-asterisk
+  template: "{% cycle * %}"
+  error_path: first_value/lexer
+- id: cycle-mut-first_value-lexerr-tilde
+  template: "{% cycle ~ %}"
+  error_path: first_value/lexer
+- id: cycle-mut-first_value-lexerr-backtick
+  template: "{% cycle ` %}"
+  error_path: first_value/lexer
+- id: cycle-mut-first_value-lexerr-backslash
+  template: "{% cycle \\ %}"
+  error_path: first_value/lexer
+- id: cycle-mut-first_value-lexerr-semicolon
+  template: "{% cycle ; %}"
+  error_path: first_value/lexer
+- id: cycle-mut-first_value-lexerr-unclosed_double_quote
+  template: '{% cycle "hello %}'
+  error_path: first_value/lexer
+- id: cycle-mut-first_value-lexerr-unclosed_single_quote
+  template: "{% cycle 'hello %}"
+  error_path: first_value/lexer
+- id: cycle-mut-first_cycle_value-pipe-000
+  template: "{% cycle x : | %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-comma-001
+  template: "{% cycle x : , %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-colon-002
+  template: "{% cycle x : : %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-close_square-003
+  template: "{% cycle x : ] %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-close_round-004
+  template: "{% cycle x : ) %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-question-005
+  template: "{% cycle x : ? %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-dash-006
+  template: "{% cycle x : - %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-dot-007
+  template: "{% cycle x : . %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-dotdot-008
+  template: "{% cycle x : .. %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-comparison-009
+  template: "{% cycle x : == %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-comparison-010
+  template: "{% cycle x : != %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-comparison-011
+  template: "{% cycle x : < %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-comparison-012
+  template: "{% cycle x : > %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-comparison-013
+  template: "{% cycle x : <= %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-comparison-014
+  template: "{% cycle x : >= %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-comparison-015
+  template: "{% cycle x : contains %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-eos-016
+  template: "{% cycle x : %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-bare_bracket
+  template: "{% cycle x : [0] %}"
+  error_path: first_cycle_value/bad_start
+- id: cycle-mut-first_cycle_value-lookup-trailing_dot
+  template: "{% cycle x : x. %}"
+  error_path: first_cycle_value/lookup
+- id: cycle-mut-first_cycle_value-lookup-dot_number
+  template: "{% cycle x : x.123 %}"
+  error_path: first_cycle_value/lookup
+- id: cycle-mut-first_cycle_value-lookup-dot_string
+  template: '{% cycle x : x."y" %}'
+  error_path: first_cycle_value/lookup
+- id: cycle-mut-first_cycle_value-lookup-unclosed_bracket
+  template: "{% cycle x : x[0 %}"
+  error_path: first_cycle_value/lookup
+- id: cycle-mut-first_cycle_value-lookup-bracket_wrong_content
+  template: "{% cycle x : x[,] %}"
+  error_path: first_cycle_value/lookup
+- id: cycle-mut-first_cycle_value-lookup-unclosed_range
+  template: "{% cycle x : (1..5 %}"
+  error_path: first_cycle_value/lookup
+- id: cycle-mut-first_cycle_value-lookup-range_bad_separator
+  template: "{% cycle x : (1, 5) %}"
+  error_path: first_cycle_value/lookup
+- id: cycle-mut-first_cycle_value-lookup-range_missing_end
+  template: "{% cycle x : (1..) %}"
+  error_path: first_cycle_value/lookup
+- id: cycle-mut-first_cycle_value-lexerr-at
+  template: "{% cycle x : @ %}"
+  error_path: first_cycle_value/lexer
+- id: cycle-mut-first_cycle_value-lexerr-hash
+  template: "{% cycle x : # %}"
+  error_path: first_cycle_value/lexer
+- id: cycle-mut-first_cycle_value-lexerr-dollar
+  template: "{% cycle x : $ %}"
+  error_path: first_cycle_value/lexer
+- id: cycle-mut-first_cycle_value-lexerr-caret
+  template: "{% cycle x : ^ %}"
+  error_path: first_cycle_value/lexer
+- id: cycle-mut-first_cycle_value-lexerr-ampersand
+  template: "{% cycle x : & %}"
+  error_path: first_cycle_value/lexer
+- id: cycle-mut-first_cycle_value-lexerr-asterisk
+  template: "{% cycle x : * %}"
+  error_path: first_cycle_value/lexer
+- id: cycle-mut-first_cycle_value-lexerr-tilde
+  template: "{% cycle x : ~ %}"
+  error_path: first_cycle_value/lexer
+- id: cycle-mut-first_cycle_value-lexerr-backtick
+  template: "{% cycle x : ` %}"
+  error_path: first_cycle_value/lexer
+- id: cycle-mut-first_cycle_value-lexerr-backslash
+  template: "{% cycle x : \\ %}"
+  error_path: first_cycle_value/lexer
+- id: cycle-mut-first_cycle_value-lexerr-semicolon
+  template: "{% cycle x : ; %}"
+  error_path: first_cycle_value/lexer
+- id: cycle-mut-first_cycle_value-lexerr-unclosed_double_quote
+  template: '{% cycle x : "hello %}'
+  error_path: first_cycle_value/lexer
+- id: cycle-mut-first_cycle_value-lexerr-unclosed_single_quote
+  template: "{% cycle x : 'hello %}"
+  error_path: first_cycle_value/lexer
+- id: cycle-mut-cycle_value-pipe-000
+  template: "{% cycle x : x , , | %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-comma-001
+  template: "{% cycle x : x , , , %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-colon-002
+  template: "{% cycle x : x , , : %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-close_square-003
+  template: "{% cycle x : x , , ] %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-close_round-004
+  template: "{% cycle x : x , , ) %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-question-005
+  template: "{% cycle x : x , , ? %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-dash-006
+  template: "{% cycle x : x , , - %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-dot-007
+  template: "{% cycle x : x , , . %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-dotdot-008
+  template: "{% cycle x : x , , .. %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-comparison-009
+  template: "{% cycle x : x , , == %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-comparison-010
+  template: "{% cycle x : x , , != %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-comparison-011
+  template: "{% cycle x : x , , < %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-comparison-012
+  template: "{% cycle x : x , , > %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-comparison-013
+  template: "{% cycle x : x , , <= %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-comparison-014
+  template: "{% cycle x : x , , >= %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-comparison-015
+  template: "{% cycle x : x , , contains %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-eos-016
+  template: "{% cycle x : x , , %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-bare_bracket
+  template: "{% cycle x : x , , [0] %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-lookup-trailing_dot
+  template: "{% cycle x : x , , x. %}"
+  error_path: cycle_value/lookup
+- id: cycle-mut-cycle_value-lookup-dot_number
+  template: "{% cycle x : x , , x.123 %}"
+  error_path: cycle_value/lookup
+- id: cycle-mut-cycle_value-lookup-dot_string
+  template: '{% cycle x : x , , x."y" %}'
+  error_path: cycle_value/lookup
+- id: cycle-mut-cycle_value-lookup-unclosed_bracket
+  template: "{% cycle x : x , , x[0 %}"
+  error_path: cycle_value/lookup
+- id: cycle-mut-cycle_value-lookup-bracket_wrong_content
+  template: "{% cycle x : x , , x[,] %}"
+  error_path: cycle_value/lookup
+- id: cycle-mut-cycle_value-lookup-unclosed_range
+  template: "{% cycle x : x , , (1..5 %}"
+  error_path: cycle_value/lookup
+- id: cycle-mut-cycle_value-lookup-range_bad_separator
+  template: "{% cycle x : x , , (1, 5) %}"
+  error_path: cycle_value/lookup
+- id: cycle-mut-cycle_value-lookup-range_missing_end
+  template: "{% cycle x : x , , (1..) %}"
+  error_path: cycle_value/lookup
+- id: cycle-mut-cycle_value-lexerr-at
+  template: "{% cycle x : x , , @ %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-hash
+  template: "{% cycle x : x , , # %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-dollar
+  template: "{% cycle x : x , , $ %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-caret
+  template: "{% cycle x : x , , ^ %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-ampersand
+  template: "{% cycle x : x , , & %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-asterisk
+  template: "{% cycle x : x , , * %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-tilde
+  template: "{% cycle x : x , , ~ %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-backtick
+  template: "{% cycle x : x , , ` %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-backslash
+  template: "{% cycle x : x , , \\ %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-semicolon
+  template: "{% cycle x : x , , ; %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-unclosed_double_quote
+  template: '{% cycle x : x , , "hello %}'
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-unclosed_single_quote
+  template: "{% cycle x : x , , 'hello %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-pipe-000-2
+  template: "{% cycle x , , | %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-comma-001-2
+  template: "{% cycle x , , , %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-colon-002-2
+  template: "{% cycle x , , : %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-close_square-003-2
+  template: "{% cycle x , , ] %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-close_round-004-2
+  template: "{% cycle x , , ) %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-question-005-2
+  template: "{% cycle x , , ? %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-dash-006-2
+  template: "{% cycle x , , - %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-dot-007-2
+  template: "{% cycle x , , . %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-dotdot-008-2
+  template: "{% cycle x , , .. %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-comparison-009-2
+  template: "{% cycle x , , == %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-comparison-010-2
+  template: "{% cycle x , , != %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-comparison-011-2
+  template: "{% cycle x , , < %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-comparison-012-2
+  template: "{% cycle x , , > %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-comparison-013-2
+  template: "{% cycle x , , <= %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-comparison-014-2
+  template: "{% cycle x , , >= %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-comparison-015-2
+  template: "{% cycle x , , contains %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-eos-016-2
+  template: "{% cycle x , , %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-bare_bracket-2
+  template: "{% cycle x , , [0] %}"
+  error_path: cycle_value/bad_start
+- id: cycle-mut-cycle_value-lookup-trailing_dot-2
+  template: "{% cycle x , , x. %}"
+  error_path: cycle_value/lookup
+- id: cycle-mut-cycle_value-lookup-dot_number-2
+  template: "{% cycle x , , x.123 %}"
+  error_path: cycle_value/lookup
+- id: cycle-mut-cycle_value-lookup-dot_string-2
+  template: '{% cycle x , , x."y" %}'
+  error_path: cycle_value/lookup
+- id: cycle-mut-cycle_value-lookup-unclosed_bracket-2
+  template: "{% cycle x , , x[0 %}"
+  error_path: cycle_value/lookup
+- id: cycle-mut-cycle_value-lookup-bracket_wrong_content-2
+  template: "{% cycle x , , x[,] %}"
+  error_path: cycle_value/lookup
+- id: cycle-mut-cycle_value-lookup-unclosed_range-2
+  template: "{% cycle x , , (1..5 %}"
+  error_path: cycle_value/lookup
+- id: cycle-mut-cycle_value-lookup-range_bad_separator-2
+  template: "{% cycle x , , (1, 5) %}"
+  error_path: cycle_value/lookup
+- id: cycle-mut-cycle_value-lookup-range_missing_end-2
+  template: "{% cycle x , , (1..) %}"
+  error_path: cycle_value/lookup
+- id: cycle-mut-cycle_value-lexerr-at-2
+  template: "{% cycle x , , @ %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-hash-2
+  template: "{% cycle x , , # %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-dollar-2
+  template: "{% cycle x , , $ %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-caret-2
+  template: "{% cycle x , , ^ %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-ampersand-2
+  template: "{% cycle x , , & %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-asterisk-2
+  template: "{% cycle x , , * %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-tilde-2
+  template: "{% cycle x , , ~ %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-backtick-2
+  template: "{% cycle x , , ` %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-backslash-2
+  template: "{% cycle x , , \\ %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-semicolon-2
+  template: "{% cycle x , , ; %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-unclosed_double_quote-2
+  template: '{% cycle x , , "hello %}'
+  error_path: cycle_value/lexer
+- id: cycle-mut-cycle_value-lexerr-unclosed_single_quote-2
+  template: "{% cycle x , , 'hello %}"
+  error_path: cycle_value/lexer
+- id: cycle-mut-end-trail-id
+  template: "{% cycle x extra %}"
+  error_path: end
+- id: cycle-mut-end-trail-number
+  template: "{% cycle x 42 %}"
+  error_path: end
+- id: cycle-mut-end-trail-string
+  template: "{% cycle x 'hi' %}"
+  error_path: end
+- id: cycle-mut-end-trail-pipe
+  template: "{% cycle x | %}"
+  error_path: end
+- id: cycle-mut-end-trail-colon
+  template: "{% cycle x : %}"
+  error_path: end
+- id: cycle-mut-end-trail-comma
+  template: "{% cycle x , %}"
+  error_path: end
+- id: cycle-mut-end-trail-open_square
+  template: "{% cycle x [ %}"
+  error_path: end
+- id: cycle-mut-end-trail-close_square
+  template: "{% cycle x ] %}"
+  error_path: end
+- id: cycle-mut-end-trail-open_round
+  template: "{% cycle x ( %}"
+  error_path: end
+- id: cycle-mut-end-trail-close_round
+  template: "{% cycle x ) %}"
+  error_path: end
+- id: cycle-mut-end-trail-question
+  template: "{% cycle x ? %}"
+  error_path: end
+- id: cycle-mut-end-trail-dot
+  template: "{% cycle x . %}"
+  error_path: end
+- id: cycle-mut-end-trail-comparison
+  template: "{% cycle x == %}"
+  error_path: end
+- id: cycle-mut-end-trail-dash
+  template: "{% cycle x - %}"
+  error_path: end
+- id: cycle-mut-valid-000
+  template: "{% cycle x %}"
+  error_path: valid
+- id: cycle-mut-valid-001
+  template: "{% cycle 42 %}"
+  error_path: valid
+- id: cycle-mut-valid-002
+  template: "{% cycle 3.14 %}"
+  error_path: valid
+- id: cycle-mut-valid-003
+  template: "{% cycle -5 %}"
+  error_path: valid
+- id: cycle-mut-valid-004
+  template: "{% cycle 'hello' %}"
+  error_path: valid
+- id: cycle-mut-valid-005
+  template: "{% cycle true %}"
+  error_path: valid
+- id: cycle-mut-valid-006
+  template: "{% cycle false %}"
+  error_path: valid
+- id: cycle-mut-valid-007
+  template: "{% cycle nil %}"
+  error_path: valid
+- id: cycle-mut-valid-008
+  template: "{% cycle blank %}"
+  error_path: valid
+- id: cycle-mut-valid-009
+  template: "{% cycle empty %}"
+  error_path: valid
+- id: cycle-mut-valid-010
+  template: "{% cycle product.title %}"
+  error_path: valid
+- id: cycle-mut-valid-011
+  template: "{% cycle products[0] %}"
+  error_path: valid
+- id: cycle-mut-valid-012
+  template: "{% cycle a.b.c %}"
+  error_path: valid
+- id: cycle-mut-valid-013
+  template: "{% cycle a[0].b %}"
+  error_path: valid
+- id: cycle-mut-valid-014
+  template: "{% cycle (1..5) %}"
+  error_path: valid

@@ -1,0 +1,203 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: layout-mut-layout_expr-pipe-000
+  template: "{% layout | %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-comma-001
+  template: "{% layout , %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-colon-002
+  template: "{% layout : %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-close_square-003
+  template: "{% layout ] %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-close_round-004
+  template: "{% layout ) %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-question-005
+  template: "{% layout ? %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-dash-006
+  template: "{% layout - %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-dot-007
+  template: "{% layout . %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-dotdot-008
+  template: "{% layout .. %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-comparison-009
+  template: "{% layout == %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-comparison-010
+  template: "{% layout != %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-comparison-011
+  template: "{% layout < %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-comparison-012
+  template: "{% layout > %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-comparison-013
+  template: "{% layout <= %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-comparison-014
+  template: "{% layout >= %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-comparison-015
+  template: "{% layout contains %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-eos-016
+  template: "{% layout  %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-bare_bracket
+  template: "{% layout [0] %}"
+  error_path: layout_expr/bad_start
+- id: layout-mut-layout_expr-lookup-trailing_dot
+  template: "{% layout x. %}"
+  error_path: layout_expr/lookup
+- id: layout-mut-layout_expr-lookup-dot_number
+  template: "{% layout x.123 %}"
+  error_path: layout_expr/lookup
+- id: layout-mut-layout_expr-lookup-dot_string
+  template: '{% layout x."y" %}'
+  error_path: layout_expr/lookup
+- id: layout-mut-layout_expr-lookup-unclosed_bracket
+  template: "{% layout x[0 %}"
+  error_path: layout_expr/lookup
+- id: layout-mut-layout_expr-lookup-bracket_wrong_content
+  template: "{% layout x[,] %}"
+  error_path: layout_expr/lookup
+- id: layout-mut-layout_expr-lookup-unclosed_range
+  template: "{% layout (1..5 %}"
+  error_path: layout_expr/lookup
+- id: layout-mut-layout_expr-lookup-range_bad_separator
+  template: "{% layout (1, 5) %}"
+  error_path: layout_expr/lookup
+- id: layout-mut-layout_expr-lookup-range_missing_end
+  template: "{% layout (1..) %}"
+  error_path: layout_expr/lookup
+- id: layout-mut-layout_expr-lexerr-at
+  template: "{% layout @ %}"
+  error_path: layout_expr/lexer
+- id: layout-mut-layout_expr-lexerr-hash
+  template: "{% layout # %}"
+  error_path: layout_expr/lexer
+- id: layout-mut-layout_expr-lexerr-dollar
+  template: "{% layout $ %}"
+  error_path: layout_expr/lexer
+- id: layout-mut-layout_expr-lexerr-caret
+  template: "{% layout ^ %}"
+  error_path: layout_expr/lexer
+- id: layout-mut-layout_expr-lexerr-ampersand
+  template: "{% layout & %}"
+  error_path: layout_expr/lexer
+- id: layout-mut-layout_expr-lexerr-asterisk
+  template: "{% layout * %}"
+  error_path: layout_expr/lexer
+- id: layout-mut-layout_expr-lexerr-tilde
+  template: "{% layout ~ %}"
+  error_path: layout_expr/lexer
+- id: layout-mut-layout_expr-lexerr-backtick
+  template: "{% layout ` %}"
+  error_path: layout_expr/lexer
+- id: layout-mut-layout_expr-lexerr-backslash
+  template: "{% layout \\ %}"
+  error_path: layout_expr/lexer
+- id: layout-mut-layout_expr-lexerr-semicolon
+  template: "{% layout ; %}"
+  error_path: layout_expr/lexer
+- id: layout-mut-layout_expr-lexerr-unclosed_double_quote
+  template: '{% layout "hello %}'
+  error_path: layout_expr/lexer
+- id: layout-mut-layout_expr-lexerr-unclosed_single_quote
+  template: "{% layout 'hello %}"
+  error_path: layout_expr/lexer
+- id: layout-mut-end-trail-id
+  template: "{% layout x extra %}"
+  error_path: end
+- id: layout-mut-end-trail-number
+  template: "{% layout x 42 %}"
+  error_path: end
+- id: layout-mut-end-trail-string
+  template: "{% layout x 'hi' %}"
+  error_path: end
+- id: layout-mut-end-trail-pipe
+  template: "{% layout x | %}"
+  error_path: end
+- id: layout-mut-end-trail-colon
+  template: "{% layout x : %}"
+  error_path: end
+- id: layout-mut-end-trail-comma
+  template: "{% layout x , %}"
+  error_path: end
+- id: layout-mut-end-trail-open_square
+  template: "{% layout x [ %}"
+  error_path: end
+- id: layout-mut-end-trail-close_square
+  template: "{% layout x ] %}"
+  error_path: end
+- id: layout-mut-end-trail-open_round
+  template: "{% layout x ( %}"
+  error_path: end
+- id: layout-mut-end-trail-close_round
+  template: "{% layout x ) %}"
+  error_path: end
+- id: layout-mut-end-trail-question
+  template: "{% layout x ? %}"
+  error_path: end
+- id: layout-mut-end-trail-dot
+  template: "{% layout x . %}"
+  error_path: end
+- id: layout-mut-end-trail-comparison
+  template: "{% layout x == %}"
+  error_path: end
+- id: layout-mut-end-trail-dash
+  template: "{% layout x - %}"
+  error_path: end
+- id: layout-mut-valid-000
+  template: "{% layout x %}"
+  error_path: valid
+- id: layout-mut-valid-001
+  template: "{% layout 42 %}"
+  error_path: valid
+- id: layout-mut-valid-002
+  template: "{% layout 3.14 %}"
+  error_path: valid
+- id: layout-mut-valid-003
+  template: "{% layout -5 %}"
+  error_path: valid
+- id: layout-mut-valid-004
+  template: "{% layout 'hello' %}"
+  error_path: valid
+- id: layout-mut-valid-005
+  template: "{% layout true %}"
+  error_path: valid
+- id: layout-mut-valid-006
+  template: "{% layout false %}"
+  error_path: valid
+- id: layout-mut-valid-007
+  template: "{% layout nil %}"
+  error_path: valid
+- id: layout-mut-valid-008
+  template: "{% layout blank %}"
+  error_path: valid
+- id: layout-mut-valid-009
+  template: "{% layout empty %}"
+  error_path: valid
+- id: layout-mut-valid-010
+  template: "{% layout product.title %}"
+  error_path: valid
+- id: layout-mut-valid-011
+  template: "{% layout products[0] %}"
+  error_path: valid
+- id: layout-mut-valid-012
+  template: "{% layout a.b.c %}"
+  error_path: valid
+- id: layout-mut-valid-013
+  template: "{% layout a[0].b %}"
+  error_path: valid
+- id: layout-mut-valid-014
+  template: "{% layout (1..5) %}"
+  error_path: valid

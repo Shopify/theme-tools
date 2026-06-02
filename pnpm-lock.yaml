@@ -246,6 +246,9 @@ importers:
       '@vitest/expect':
         specifier: 2.1.9
         version: 2.1.9
+      yaml:
+        specifier: ^2.8.3
+        version: 2.8.3
 
   packages/theme-check-docs-updater:
     dependencies:

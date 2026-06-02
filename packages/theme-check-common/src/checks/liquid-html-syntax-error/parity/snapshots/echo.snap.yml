@@ -1,0 +1,697 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: echo-mut-end-trail-close_round
+  error: 'Liquid syntax error: Expected end_of_string but found close_round in "{{x
+    ) }}"'
+  type: SyntaxError
+- id: echo-mut-end-trail-close_square
+  error: 'Liquid syntax error: Expected end_of_string but found close_square in "{{x
+    ] }}"'
+  type: SyntaxError
+- id: echo-mut-end-trail-colon
+  error: 'Liquid syntax error: Expected end_of_string but found colon in "{{x : }}"'
+  type: SyntaxError
+- id: echo-mut-end-trail-comma
+  error: 'Liquid syntax error: Expected end_of_string but found comma in "{{x , }}"'
+  type: SyntaxError
+- id: echo-mut-end-trail-comparison
+  error: 'Liquid syntax error: Expected end_of_string but found comparison in "{{x
+    == }}"'
+  type: SyntaxError
+- id: echo-mut-end-trail-dash
+  error: 'Liquid syntax error: Expected end_of_string but found dash in "{{x - }}"'
+  type: SyntaxError
+- id: echo-mut-end-trail-dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "{{x . }}"'
+  type: SyntaxError
+- id: echo-mut-end-trail-id
+  error: 'Liquid syntax error: Expected end_of_string but found id in "{{x extra }}"'
+  type: SyntaxError
+- id: echo-mut-end-trail-number
+  error: 'Liquid syntax error: Expected end_of_string but found number in "{{x 42
+    }}"'
+  type: SyntaxError
+- id: echo-mut-end-trail-open_round
+  error: 'Liquid syntax error: Expected end_of_string but found open_round in "{{x
+    ( }}"'
+  type: SyntaxError
+- id: echo-mut-end-trail-open_square
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "{{x
+    [ }}"'
+  type: SyntaxError
+- id: echo-mut-end-trail-pipe
+  error: 'Liquid syntax error: Expected id but found end_of_string in "{{x | }}"'
+  type: SyntaxError
+- id: echo-mut-end-trail-question
+  error: 'Liquid syntax error: Expected end_of_string but found question in "{{x ?
+    }}"'
+  type: SyntaxError
+- id: echo-mut-end-trail-string
+  error: 'Liquid syntax error: Expected end_of_string but found string in "{{x ''hi''
+    }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-bare_bracket
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , [0] }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-close_round-004
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , ) }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-close_square-003
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , ] }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-colon-002
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , : }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , , }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-comparison-009
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , == }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-comparison-010
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , != }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-comparison-011
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , < }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-comparison-012
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , > }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-comparison-013
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , <= }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-comparison-014
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , >= }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-comparison-015
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , contains }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-dash-006
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , - }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-dot-007
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , . }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-dotdot-008
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , .. }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-eos-016
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "{{x | x : x , , & }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "{{x | x : x , , * }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "{{x | x : x , , @ }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "{{x | x : x , , \ }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "{{x | x : x , , ` }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "{{x | x : x , , ^ }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "{{x | x : x , , $ }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "{{x | x : x , , # }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "{{x | x : x , , ; }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "{{x | x : x , , ~ }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "{{x | x : x , , "hello }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "{{x | x : x , , ''hello
+    }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x[,] }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lookup-dot_number
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x.123 }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lookup-dot_string
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x."y" }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lookup-range_bad_separator
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , (1, 5) }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lookup-range_missing_end
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , (1..) }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lookup-trailing_dot
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x. }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lookup-unclosed_bracket
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x[0 }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-lookup-unclosed_range
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , (1..5 }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-pipe-000
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , | }}"'
+  type: SyntaxError
+- id: echo-mut-filter_arg_value-question-005
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , ? }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-bare_bracket
+  error: 'Liquid syntax error: Bare bracket access is not allowed in strict2 mode.
+    Use self[''...''] instead in "{{x | x : [0] }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-close_round-004
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "{{x
+    | x : ) }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-close_square-003
+  error: 'Liquid syntax error: [:close_square, "]"] is not a valid expression in "{{x
+    | x : ] }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-colon-002
+  error: 'Liquid syntax error: [:colon, ":"] is not a valid expression in "{{x | x
+    : : }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : , }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-comparison-009
+  error: 'Liquid syntax error: [:comparison, "=="] is not a valid expression in "{{x
+    | x : == }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-comparison-010
+  error: 'Liquid syntax error: [:comparison, "!="] is not a valid expression in "{{x
+    | x : != }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-comparison-011
+  error: 'Liquid syntax error: [:comparison, "<"] is not a valid expression in "{{x
+    | x : < }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-comparison-012
+  error: 'Liquid syntax error: [:comparison, ">"] is not a valid expression in "{{x
+    | x : > }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-comparison-013
+  error: 'Liquid syntax error: [:comparison, "<="] is not a valid expression in "{{x
+    | x : <= }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-comparison-014
+  error: 'Liquid syntax error: [:comparison, ">="] is not a valid expression in "{{x
+    | x : >= }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-comparison-015
+  error: 'Liquid syntax error: [:comparison, "contains"] is not a valid expression
+    in "{{x | x : contains }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-dash-006
+  error: 'Liquid syntax error: [:dash, "-"] is not a valid expression in "{{x | x
+    : - }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-dot-007
+  error: 'Liquid syntax error: [:dot, "."] is not a valid expression in "{{x | x :
+    . }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-dotdot-008
+  error: 'Liquid syntax error: [:dotdot, ".."] is not a valid expression in "{{x |
+    x : .. }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-eos-016
+  error:
+  type:
+- id: echo-mut-filter_first_arg-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "{{x | x : & }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "{{x | x : * }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "{{x | x : @ }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "{{x | x : \ }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "{{x | x : ` }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "{{x | x : ^ }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "{{x | x : $ }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "{{x | x : # }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "{{x | x : ; }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "{{x | x : ~ }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "{{x | x : "hello }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "{{x | x : ''hello }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x[,] }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lookup-dot_number
+  error: 'Liquid syntax error: Expected id but found number in "{{x | x : x.123 }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lookup-dot_string
+  error: 'Liquid syntax error: Expected id but found string in "{{x | x : x."y" }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lookup-range_bad_separator
+  error: 'Liquid syntax error: Expected dotdot but found comma in "{{x | x : (1, 5)
+    }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lookup-range_missing_end
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "{{x
+    | x : (1..) }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lookup-trailing_dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "{{x | x : x.
+    }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lookup-unclosed_bracket
+  error: 'Liquid syntax error: Expected close_square but found end_of_string in "{{x
+    | x : x[0 }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-lookup-unclosed_range
+  error: 'Liquid syntax error: Expected close_round but found end_of_string in "{{x
+    | x : (1..5 }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-pipe-000
+  error: 'Liquid syntax error: Expected id but found end_of_string in "{{x | x : |
+    }}"'
+  type: SyntaxError
+- id: echo-mut-filter_first_arg-question-005
+  error: 'Liquid syntax error: [:question, "?"] is not a valid expression in "{{x
+    | x : ? }}"'
+  type: SyntaxError
+- id: echo-mut-filter_name-eos
+  error: 'Liquid syntax error: Expected id but found end_of_string in "{{x | }}"'
+  type: SyntaxError
+- id: echo-mut-filter_name-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "{{x | & }}"'
+  type: SyntaxError
+- id: echo-mut-filter_name-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "{{x | * }}"'
+  type: SyntaxError
+- id: echo-mut-filter_name-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "{{x | @ }}"'
+  type: SyntaxError
+- id: echo-mut-filter_name-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "{{x | \ }}"'
+  type: SyntaxError
+- id: echo-mut-filter_name-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "{{x | ` }}"'
+  type: SyntaxError
+- id: echo-mut-filter_name-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "{{x | ^ }}"'
+  type: SyntaxError
+- id: echo-mut-filter_name-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "{{x | $ }}"'
+  type: SyntaxError
+- id: echo-mut-filter_name-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "{{x | # }}"'
+  type: SyntaxError
+- id: echo-mut-filter_name-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "{{x | ; }}"'
+  type: SyntaxError
+- id: echo-mut-filter_name-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "{{x | ~ }}"'
+  type: SyntaxError
+- id: echo-mut-filter_name-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "{{x | "hello }}"'
+  type: SyntaxError
+- id: echo-mut-filter_name-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "{{x | ''hello }}"'
+  type: SyntaxError
+- id: echo-mut-filter_name-number
+  error: 'Liquid syntax error: Expected id but found number in "{{x | 42 }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_colon-eos
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_colon-number
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x 42 }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-bare_bracket
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : [0] }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-close_round-004
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : ) }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-close_square-003
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : ] }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-colon-002
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : : }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : , }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-comparison-009
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : == }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-comparison-010
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : != }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-comparison-011
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : < }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-comparison-012
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : > }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-comparison-013
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : <= }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-comparison-014
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : >= }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-comparison-015
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : contains }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-dash-006
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : - }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-dot-007
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : . }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-dotdot-008
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : .. }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-eos-016
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "{{x | x : x , , x : & }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "{{x | x : x , , x : * }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "{{x | x : x , , x : @ }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "{{x | x : x , , x : \ }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "{{x | x : x , , x : ` }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "{{x | x : x , , x : ^ }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "{{x | x : x , , x : $ }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "{{x | x : x , , x : # }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "{{x | x : x , , x : ; }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "{{x | x : x , , x : ~ }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "{{x | x : x , , x : "hello
+    }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "{{x | x : x , , x : ''hello
+    }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : x[,] }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lookup-dot_number
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : x.123 }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lookup-dot_string
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : x."y" }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lookup-range_bad_separator
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : (1, 5) }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lookup-range_missing_end
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : (1..) }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lookup-trailing_dot
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : x. }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lookup-unclosed_bracket
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : x[0 }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-lookup-unclosed_range
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : (1..5 }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-pipe-000
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : | }}"'
+  type: SyntaxError
+- id: echo-mut-kwarg_value-question-005
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x | x
+    : x , , x : ? }}"'
+  type: SyntaxError
+- id: echo-mut-valid-000
+  error:
+  type:
+- id: echo-mut-valid-001
+  error:
+  type:
+- id: echo-mut-valid-002
+  error:
+  type:
+- id: echo-mut-valid-003
+  error:
+  type:
+- id: echo-mut-valid-004
+  error:
+  type:
+- id: echo-mut-valid-005
+  error:
+  type:
+- id: echo-mut-valid-006
+  error:
+  type:
+- id: echo-mut-valid-007
+  error:
+  type:
+- id: echo-mut-valid-008
+  error:
+  type:
+- id: echo-mut-valid-009
+  error:
+  type:
+- id: echo-mut-valid-010
+  error:
+  type:
+- id: echo-mut-valid-011
+  error:
+  type:
+- id: echo-mut-valid-012
+  error:
+  type:
+- id: echo-mut-valid-013
+  error:
+  type:
+- id: echo-mut-valid-014
+  error:
+  type:
+- id: echo-mut-value-bare_bracket
+  error: 'Liquid syntax error: Bare bracket access is not allowed in strict2 mode.
+    Use self[''...''] instead in "{{[0] }}"'
+  type: SyntaxError
+- id: echo-mut-value-close_round-004
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "{{)
+    }}"'
+  type: SyntaxError
+- id: echo-mut-value-close_square-003
+  error: 'Liquid syntax error: [:close_square, "]"] is not a valid expression in "{{]
+    }}"'
+  type: SyntaxError
+- id: echo-mut-value-colon-002
+  error: 'Liquid syntax error: [:colon, ":"] is not a valid expression in "{{: }}"'
+  type: SyntaxError
+- id: echo-mut-value-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{, }}"'
+  type: SyntaxError
+- id: echo-mut-value-comparison-009
+  error: 'Liquid syntax error: [:comparison, "=="] is not a valid expression in "{{==
+    }}"'
+  type: SyntaxError
+- id: echo-mut-value-comparison-010
+  error: 'Liquid syntax error: [:comparison, "!="] is not a valid expression in "{{!=
+    }}"'
+  type: SyntaxError
+- id: echo-mut-value-comparison-011
+  error: 'Liquid syntax error: [:comparison, "<"] is not a valid expression in "{{<
+    }}"'
+  type: SyntaxError
+- id: echo-mut-value-comparison-012
+  error: 'Liquid syntax error: [:comparison, ">"] is not a valid expression in "{{>
+    }}"'
+  type: SyntaxError
+- id: echo-mut-value-comparison-013
+  error: 'Liquid syntax error: [:comparison, "<="] is not a valid expression in "{{<=
+    }}"'
+  type: SyntaxError
+- id: echo-mut-value-comparison-014
+  error: 'Liquid syntax error: [:comparison, ">="] is not a valid expression in "{{>=
+    }}"'
+  type: SyntaxError
+- id: echo-mut-value-comparison-015
+  error: 'Liquid syntax error: [:comparison, "contains"] is not a valid expression
+    in "{{contains }}"'
+  type: SyntaxError
+- id: echo-mut-value-dash-006
+  error: 'Liquid syntax error: [:dash, "-"] is not a valid expression in "{{- }}"'
+  type: SyntaxError
+- id: echo-mut-value-dot-007
+  error: 'Liquid syntax error: [:dot, "."] is not a valid expression in "{{. }}"'
+  type: SyntaxError
+- id: echo-mut-value-dotdot-008
+  error: 'Liquid syntax error: [:dotdot, ".."] is not a valid expression in "{{..
+    }}"'
+  type: SyntaxError
+- id: echo-mut-value-eos-016
+  error:
+  type:
+- id: echo-mut-value-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "{{& }}"'
+  type: SyntaxError
+- id: echo-mut-value-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "{{* }}"'
+  type: SyntaxError
+- id: echo-mut-value-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "{{@ }}"'
+  type: SyntaxError
+- id: echo-mut-value-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "{{\ }}"'
+  type: SyntaxError
+- id: echo-mut-value-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "{{` }}"'
+  type: SyntaxError
+- id: echo-mut-value-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "{{^ }}"'
+  type: SyntaxError
+- id: echo-mut-value-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "{{$ }}"'
+  type: SyntaxError
+- id: echo-mut-value-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "{{# }}"'
+  type: SyntaxError
+- id: echo-mut-value-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "{{; }}"'
+  type: SyntaxError
+- id: echo-mut-value-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "{{~ }}"'
+  type: SyntaxError
+- id: echo-mut-value-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "{{"hello }}"'
+  type: SyntaxError
+- id: echo-mut-value-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "{{''hello }}"'
+  type: SyntaxError
+- id: echo-mut-value-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "{{x[,]
+    }}"'
+  type: SyntaxError
+- id: echo-mut-value-lookup-dot_number
+  error: 'Liquid syntax error: Expected id but found number in "{{x.123 }}"'
+  type: SyntaxError
+- id: echo-mut-value-lookup-dot_string
+  error: 'Liquid syntax error: Expected id but found string in "{{x."y" }}"'
+  type: SyntaxError
+- id: echo-mut-value-lookup-range_bad_separator
+  error: 'Liquid syntax error: Expected dotdot but found comma in "{{(1, 5) }}"'
+  type: SyntaxError
+- id: echo-mut-value-lookup-range_missing_end
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "{{(1..)
+    }}"'
+  type: SyntaxError
+- id: echo-mut-value-lookup-trailing_dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "{{x. }}"'
+  type: SyntaxError
+- id: echo-mut-value-lookup-unclosed_bracket
+  error: 'Liquid syntax error: Expected close_square but found end_of_string in "{{x[0
+    }}"'
+  type: SyntaxError
+- id: echo-mut-value-lookup-unclosed_range
+  error: 'Liquid syntax error: Expected close_round but found end_of_string in "{{(1..5
+    }}"'
+  type: SyntaxError
+- id: echo-mut-value-pipe-000
+  error: 'Liquid syntax error: [:pipe, "|"] is not a valid expression in "{{| }}"'
+  type: SyntaxError
+- id: echo-mut-value-question-005
+  error: 'Liquid syntax error: [:question, "?"] is not a valid expression in "{{?
+    }}"'
+  type: SyntaxError

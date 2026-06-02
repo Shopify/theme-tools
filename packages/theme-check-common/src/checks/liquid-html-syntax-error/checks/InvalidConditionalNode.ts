@@ -68,6 +68,10 @@ function isOperatorToken(token: Token): boolean {
   return token.type === 'logical' || token.type === 'comparison';
 }
 
+function isUnsupportedOperatorToken(token: Token): boolean {
+  return !isOperatorToken(token) && /^(&&|\|\||===|startswith)$/.test(token.value);
+}
+
 function checkInvalidStartingToken(tokens: Token[]): ExpressionIssue | null {
   const firstToken = tokens[0];
   if (firstToken.type === 'invalid' || firstToken.type === 'comparison') {
@@ -146,6 +150,38 @@ function checkLaxParsingIssues(tokens: Token[]): ExpressionIssue | null {
   return null;
 }
 
+function checkInvalidOperatorsAfterValue(tokens: Token[]): ExpressionIssue | null {
+  for (let i = 1; i < tokens.length; i++) {
+    const current = tokens[i];
+    const previous = tokens[i - 1];
+
+    if (!isValueToken(previous) || !isUnsupportedOperatorToken(current)) continue;
+
+    const validExpr = tokens
+      .slice(0, i)
+      .map((t) => t.value)
+      .join(' ');
+    const ignored = tokens
+      .slice(i)
+      .map((t) => t.value)
+      .join(' ');
+
+    if (/&&|\|\|/.test(ignored)) {
+      return {
+        message: `Conditional is invalid. Anything after '${validExpr}' will be ignored. Use 'and'/'or' instead of '&&'/'||' for multiple conditions`,
+        fix: validExpr,
+      };
+    }
+
+    return {
+      message: `Conditional is invalid. Anything after '${validExpr}' will be ignored: '${ignored}'`,
+      fix: validExpr,
+    };
+  }
+
+  return null;
+}
+
 function analyzeConditionalExpression(markup: string): ExpressionIssue | null {
   const trimmed = markup.trim();
   if (!trimmed) return null;
@@ -160,6 +196,7 @@ function analyzeConditionalExpression(markup: string): ExpressionIssue | null {
   return (
     checkInvalidStartingToken(tokens) ||
     checkTrailingTokensAfterComparison(tokens) ||
-    checkLaxParsingIssues(tokens)
+    checkLaxParsingIssues(tokens) ||
+    checkInvalidOperatorsAfterValue(tokens)
   );
 }

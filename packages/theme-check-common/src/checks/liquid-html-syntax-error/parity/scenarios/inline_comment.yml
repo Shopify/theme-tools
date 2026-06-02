@@ -1,0 +1,174 @@
+# Auto-generated - see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: inline_comment-001
+  template: |-
+    {% #
+    foo %}
+  error_path: 0
+- id: inline_comment-002
+  template: |-
+    {% #
+      foo %}
+  error_path: 0
+- id: inline_comment-003
+  template: |-
+    {% # ok
+    foo %}
+  error_path: 1
+- id: inline_comment-014
+  template: |-
+    {% #ok
+    foo %}
+  error_path: 1
+- id: inline_comment-004
+  template: |-
+    {% # ok
+    # ok
+    foo %}
+  error_path: 1
+- id: inline_comment-005
+  template: |-
+    {% # ok
+
+    foo %}
+  error_path: 1
+- id: inline_comment-006
+  template: "{% #\n\tfoo %}"
+  error_path: 0
+- id: inline_comment-007
+  template: "{% # ok\n \t foo %}"
+  error_path: 1
+- id: inline_comment-008
+  template: |-
+    {% #
+    foo
+    bar %}
+  error_path: 1
+- id: inline_comment-009
+  template: |-
+    {% #
+    123 %}
+  error_path: 0
+- id: inline_comment-010
+  template: |-
+    {% #
+    @ %}
+  error_path: 0
+- id: inline_comment-011
+  template: |-
+    {%- #
+    foo %}
+  error_path: 0
+- id: inline_comment-012
+  template: |-
+    {% #
+    foo -%}
+  error_path: 0
+- id: inline_comment-013
+  template: |-
+    {%- #
+    foo -%}
+  error_path: 0
+- id: inline_comment-100
+  template: "{% # this is a comment %}"
+  error_path: 0
+- id: inline_comment-101
+  template: "{% # %}"
+  error_path: 0
+- id: inline_comment-102
+  template: "{% #%}"
+  error_path: 0
+- id: inline_comment-103
+  template: |-
+    {% # line 1
+    # line 2 %}
+  error_path: 0
+- id: inline_comment-104
+  template: |-
+    {% # line 1
+      # line 2 %}
+  error_path: 0
+- id: inline_comment-105
+  template: |-
+    {% # a
+    # b
+    # c %}
+  error_path: 0
+- id: inline_comment-106
+  template: |-
+    {% # a
+
+    # b %}
+  error_path: 0
+- id: inline_comment-107
+  template: "{% # a\n   \n# b %}"
+  error_path: 0
+- id: inline_comment-108
+  template: "{% # a\n\t\t\n# b %}"
+  error_path: 0
+- id: inline_comment-109
+  template: "{%- # comment %}"
+  error_path: 0
+- id: inline_comment-110
+  template: "{% # comment -%}"
+  error_path: 0
+- id: inline_comment-111
+  template: "{%- # comment -%}"
+  error_path: 0
+- id: inline_comment-112
+  template: "{%  # comment %}"
+  error_path: 0
+- id: inline_comment-113
+  template: "{% # @$%^&* %}"
+  error_path: 0
+- id: inline_comment-114
+  template: "{% # {% if true %} %}"
+  error_path: 0
+- id: inline_comment-115
+  template: |-
+    {% # line
+    #   indented %}
+  error_path: 0
+- id: inline_comment-116
+  template: |-
+    {% # a
+
+
+
+    # b %}
+  error_path: 0
+- id: inline_comment-117
+  template: |-
+    {% # a
+    # %}
+  error_path: 0
+- id: inline_comment-118
+  template: |-
+    {% #
+
+
+     %}
+  error_path: 0
+- id: inline_comment-200
+  template: "{{ shop.name }}"
+  error_path: 0
+- id: inline_comment-201
+  template: "{% comment %}hello{% endcomment %}"
+  error_path: 0
+- id: inline_comment-202
+  template: |-
+    {% # a %}
+    {% # b %}
+  error_path: 0
+- id: inline_comment-203
+  template: |-
+    {% # ok %}
+    {% #
+    foo %}
+  error_path: 0
+- id: inline_comment-204
+  template: "{{ '#' }}"
+  error_path: 0
+- id: inline_comment-205
+  template: "{% assign x = '#' %}"
+  error_path: 0

@@ -1,0 +1,125 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: inline_comment-001
+  error:
+  type:
+- id: inline_comment-002
+  error:
+  type:
+- id: inline_comment-003
+  error: 'Liquid syntax error: Syntax error in tag ''#'' - Each line of comments must
+    be prefixed by the ''#'' character'
+  type: SyntaxError
+- id: inline_comment-004
+  error: 'Liquid syntax error: Syntax error in tag ''#'' - Each line of comments must
+    be prefixed by the ''#'' character'
+  type: SyntaxError
+- id: inline_comment-005
+  error: 'Liquid syntax error: Syntax error in tag ''#'' - Each line of comments must
+    be prefixed by the ''#'' character'
+  type: SyntaxError
+- id: inline_comment-006
+  error:
+  type:
+- id: inline_comment-007
+  error: 'Liquid syntax error: Syntax error in tag ''#'' - Each line of comments must
+    be prefixed by the ''#'' character'
+  type: SyntaxError
+- id: inline_comment-008
+  error: 'Liquid syntax error: Syntax error in tag ''#'' - Each line of comments must
+    be prefixed by the ''#'' character'
+  type: SyntaxError
+- id: inline_comment-009
+  error:
+  type:
+- id: inline_comment-010
+  error:
+  type:
+- id: inline_comment-011
+  error:
+  type:
+- id: inline_comment-012
+  error:
+  type:
+- id: inline_comment-013
+  error:
+  type:
+- id: inline_comment-014
+  error: 'Liquid syntax error: Syntax error in tag ''#'' - Each line of comments must
+    be prefixed by the ''#'' character'
+  type: SyntaxError
+- id: inline_comment-100
+  error:
+  type:
+- id: inline_comment-101
+  error:
+  type:
+- id: inline_comment-102
+  error:
+  type:
+- id: inline_comment-103
+  error:
+  type:
+- id: inline_comment-104
+  error:
+  type:
+- id: inline_comment-105
+  error:
+  type:
+- id: inline_comment-106
+  error:
+  type:
+- id: inline_comment-107
+  error:
+  type:
+- id: inline_comment-108
+  error:
+  type:
+- id: inline_comment-109
+  error:
+  type:
+- id: inline_comment-110
+  error:
+  type:
+- id: inline_comment-111
+  error:
+  type:
+- id: inline_comment-112
+  error:
+  type:
+- id: inline_comment-113
+  error:
+  type:
+- id: inline_comment-114
+  error:
+  type:
+- id: inline_comment-115
+  error:
+  type:
+- id: inline_comment-116
+  error:
+  type:
+- id: inline_comment-117
+  error:
+  type:
+- id: inline_comment-118
+  error:
+  type:
+- id: inline_comment-200
+  error:
+  type:
+- id: inline_comment-201
+  error:
+  type:
+- id: inline_comment-202
+  error:
+  type:
+- id: inline_comment-203
+  error:
+  type:
+- id: inline_comment-204
+  error:
+  type:
+- id: inline_comment-205
+  error:
+  type:

@@ -1,0 +1,66 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: section-mut-end-trail-close_round
+  error: 'Liquid syntax error: Error in tag ''section'' - Valid syntax: section ''[type]''
+    in "''snippet'' )"'
+  type: SyntaxError
+- id: section-mut-end-trail-close_square
+  error: 'Liquid syntax error: Error in tag ''section'' - Valid syntax: section ''[type]''
+    in "''snippet'' ]"'
+  type: SyntaxError
+- id: section-mut-end-trail-colon
+  error: 'Liquid syntax error: Error in tag ''section'' - Valid syntax: section ''[type]''
+    in "''snippet'' :"'
+  type: SyntaxError
+- id: section-mut-end-trail-comma
+  error: 'Liquid syntax error: Error in tag ''section'' - Valid syntax: section ''[type]''
+    in "''snippet'' ,"'
+  type: SyntaxError
+- id: section-mut-end-trail-comparison
+  error: 'Liquid syntax error: Error in tag ''section'' - Valid syntax: section ''[type]''
+    in "''snippet'' =="'
+  type: SyntaxError
+- id: section-mut-end-trail-dash
+  error: 'Liquid syntax error: Error in tag ''section'' - Valid syntax: section ''[type]''
+    in "''snippet'' -"'
+  type: SyntaxError
+- id: section-mut-end-trail-dot
+  error: 'Liquid syntax error: Error in tag ''section'' - Valid syntax: section ''[type]''
+    in "''snippet'' ."'
+  type: SyntaxError
+- id: section-mut-end-trail-id
+  error: 'Liquid syntax error: Error in tag ''section'' - Valid syntax: section ''[type]''
+    in "''snippet'' extra"'
+  type: SyntaxError
+- id: section-mut-end-trail-number
+  error: 'Liquid syntax error: Error in tag ''section'' - Valid syntax: section ''[type]''
+    in "''snippet'' 42"'
+  type: SyntaxError
+- id: section-mut-end-trail-open_round
+  error: 'Liquid syntax error: Error in tag ''section'' - Valid syntax: section ''[type]''
+    in "''snippet'' ("'
+  type: SyntaxError
+- id: section-mut-end-trail-open_square
+  error: 'Liquid syntax error: Error in tag ''section'' - Valid syntax: section ''[type]''
+    in "''snippet'' ["'
+  type: SyntaxError
+- id: section-mut-end-trail-pipe
+  error: 'Liquid syntax error: Error in tag ''section'' - Valid syntax: section ''[type]''
+    in "''snippet'' |"'
+  type: SyntaxError
+- id: section-mut-end-trail-question
+  error: 'Liquid syntax error: Error in tag ''section'' - Valid syntax: section ''[type]''
+    in "''snippet'' ?"'
+  type: SyntaxError
+- id: section-mut-end-trail-string
+  error: 'Liquid syntax error: Error in tag ''section'' - Valid syntax: section ''[type]''
+    in "''snippet'' ''hi''"'
+  type: SyntaxError
+- id: section-mut-section_name-eos
+  error: 'Liquid syntax error: Error in tag ''section'' - Valid syntax: section ''[type]''
+    in ""'
+  type: SyntaxError
+- id: section-mut-section_name-id
+  error: 'Liquid syntax error: Error in tag ''section'' - Valid syntax: section ''[type]''
+    in "x"'
+  type: SyntaxError

@@ -1,0 +1,511 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: paginate-mut-by_keyword-eos
+  error: 'Liquid syntax error: Expected ''by'' but found '''' in "x"'
+  type: SyntaxError
+- id: paginate-mut-by_keyword-id
+  error: 'Liquid syntax error: Expected ''by'' but found ''of'' in "x of"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-bare_bracket
+  error: 'Liquid syntax error: Bare bracket access is not allowed in strict2 mode.
+    Use self[''...''] instead in "[0]"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-close_round-004
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in ")"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-close_square-003
+  error: 'Liquid syntax error: [:close_square, "]"] is not a valid expression in "]"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-colon-002
+  error: 'Liquid syntax error: [:colon, ":"] is not a valid expression in ":"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in ","'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-comparison-009
+  error: 'Liquid syntax error: [:comparison, "=="] is not a valid expression in "=="'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-comparison-010
+  error: 'Liquid syntax error: [:comparison, "!="] is not a valid expression in "!="'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-comparison-011
+  error: 'Liquid syntax error: [:comparison, "<"] is not a valid expression in "<"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-comparison-012
+  error: 'Liquid syntax error: [:comparison, ">"] is not a valid expression in ">"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-comparison-013
+  error: 'Liquid syntax error: [:comparison, "<="] is not a valid expression in "<="'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-comparison-014
+  error: 'Liquid syntax error: [:comparison, ">="] is not a valid expression in ">="'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-comparison-015
+  error: 'Liquid syntax error: [:comparison, "contains"] is not a valid expression
+    in "contains"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-dash-006
+  error: 'Liquid syntax error: [:dash, "-"] is not a valid expression in "-"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-dot-007
+  error: 'Liquid syntax error: [:dot, "."] is not a valid expression in "."'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-dotdot-008
+  error: 'Liquid syntax error: [:dotdot, ".."] is not a valid expression in ".."'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-eos-016
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in ""'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "&"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "*"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "@"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "\"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "`"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "^"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "$"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "#"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in ";"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "~"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in ""hello"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "''hello"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x[,]"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lookup-dot_number
+  error: 'Liquid syntax error: Expected id but found number in "x.123"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lookup-dot_string
+  error: 'Liquid syntax error: Expected id but found string in "x."y""'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lookup-range_bad_separator
+  error: 'Liquid syntax error: Expected dotdot but found comma in "(1, 5)"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lookup-range_missing_end
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "(1..)"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lookup-trailing_dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x."'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lookup-unclosed_bracket
+  error: 'Liquid syntax error: Expected close_square but found end_of_string in "x[0"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-lookup-unclosed_range
+  error: 'Liquid syntax error: Expected close_round but found end_of_string in "(1..5"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-pipe-000
+  error: 'Liquid syntax error: [:pipe, "|"] is not a valid expression in "|"'
+  type: SyntaxError
+- id: paginate-mut-collection_expr-question-005
+  error: 'Liquid syntax error: [:question, "?"] is not a valid expression in "?"'
+  type: SyntaxError
+- id: paginate-mut-end-trail-close_round
+  error: 'Liquid syntax error: Expected end_of_string but found close_round in "x
+    by x )"'
+  type: SyntaxError
+- id: paginate-mut-end-trail-close_square
+  error: 'Liquid syntax error: Expected end_of_string but found close_square in "x
+    by x ]"'
+  type: SyntaxError
+- id: paginate-mut-end-trail-colon
+  error: 'Liquid syntax error: Expected end_of_string but found colon in "x by x :"'
+  type: SyntaxError
+- id: paginate-mut-end-trail-comma
+  error:
+  type:
+- id: paginate-mut-end-trail-comparison
+  error: 'Liquid syntax error: Expected end_of_string but found comparison in "x by
+    x =="'
+  type: SyntaxError
+- id: paginate-mut-end-trail-dash
+  error: 'Liquid syntax error: Expected end_of_string but found dash in "x by x -"'
+  type: SyntaxError
+- id: paginate-mut-end-trail-dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x by x ."'
+  type: SyntaxError
+- id: paginate-mut-end-trail-id
+  error: 'Liquid syntax error: Expected end_of_string but found id in "x by x extra"'
+  type: SyntaxError
+- id: paginate-mut-end-trail-number
+  error: 'Liquid syntax error: Expected end_of_string but found number in "x by x
+    42"'
+  type: SyntaxError
+- id: paginate-mut-end-trail-open_round
+  error: 'Liquid syntax error: Expected end_of_string but found open_round in "x by
+    x ("'
+  type: SyntaxError
+- id: paginate-mut-end-trail-open_square
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x by
+    x ["'
+  type: SyntaxError
+- id: paginate-mut-end-trail-pipe
+  error: 'Liquid syntax error: Expected end_of_string but found pipe in "x by x |"'
+  type: SyntaxError
+- id: paginate-mut-end-trail-question
+  error: 'Liquid syntax error: Expected end_of_string but found question in "x by
+    x ?"'
+  type: SyntaxError
+- id: paginate-mut-end-trail-string
+  error: 'Liquid syntax error: Expected end_of_string but found string in "x by x
+    ''hi''"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_colon-eos
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_colon-number
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x 42"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_name-eos
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , ,"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_name-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "x by x , , &"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_name-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "x by x , , *"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_name-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "x by x , , @"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_name-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "x by x , , \"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_name-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "x by x , , `"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_name-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "x by x , , ^"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_name-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "x by x , , $"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_name-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "x by x , , #"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_name-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "x by x , , ;"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_name-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "x by x , , ~"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_name-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "x by x , , "hello"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_name-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "x by x , , ''hello"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_name-number
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , 42"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-bare_bracket
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : [0]"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-close_round-004
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : )"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-close_square-003
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : ]"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-colon-002
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : :"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-comma-001
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : ,"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-comparison-009
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : =="'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-comparison-010
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : !="'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-comparison-011
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : <"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-comparison-012
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : >"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-comparison-013
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : <="'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-comparison-014
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : >="'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-comparison-015
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : contains"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-dash-006
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : -"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-dot-007
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : ."'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-dotdot-008
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : .."'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-eos-016
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x :"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "x by x , , x : &"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "x by x , , x : *"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "x by x , , x : @"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "x by x , , x : \"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "x by x , , x : `"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "x by x , , x : ^"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "x by x , , x : $"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "x by x , , x : #"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "x by x , , x : ;"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "x by x , , x : ~"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "x by x , , x : "hello"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "x by x , , x : ''hello"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : x[,]"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lookup-dot_number
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : x.123"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lookup-dot_string
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : x."y""'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lookup-range_bad_separator
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : (1,
+    5)"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lookup-range_missing_end
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : (1..)"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lookup-trailing_dot
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : x."'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lookup-unclosed_bracket
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : x[0"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-lookup-unclosed_range
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : (1..5"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-pipe-000
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : |"'
+  type: SyntaxError
+- id: paginate-mut-kwarg_value-question-005
+  error: 'Liquid syntax error: Expected id but found comma in "x by x , , x : ?"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-bare_bracket
+  error: 'Liquid syntax error: Bare bracket access is not allowed in strict2 mode.
+    Use self[''...''] instead in "x by [0]"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-close_round-004
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "x
+    by )"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-close_square-003
+  error: 'Liquid syntax error: [:close_square, "]"] is not a valid expression in "x
+    by ]"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-colon-002
+  error: 'Liquid syntax error: [:colon, ":"] is not a valid expression in "x by :"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-comma-001
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x by ,"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-comparison-009
+  error: 'Liquid syntax error: [:comparison, "=="] is not a valid expression in "x
+    by =="'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-comparison-010
+  error: 'Liquid syntax error: [:comparison, "!="] is not a valid expression in "x
+    by !="'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-comparison-011
+  error: 'Liquid syntax error: [:comparison, "<"] is not a valid expression in "x
+    by <"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-comparison-012
+  error: 'Liquid syntax error: [:comparison, ">"] is not a valid expression in "x
+    by >"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-comparison-013
+  error: 'Liquid syntax error: [:comparison, "<="] is not a valid expression in "x
+    by <="'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-comparison-014
+  error: 'Liquid syntax error: [:comparison, ">="] is not a valid expression in "x
+    by >="'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-comparison-015
+  error: 'Liquid syntax error: [:comparison, "contains"] is not a valid expression
+    in "x by contains"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-dash-006
+  error: 'Liquid syntax error: [:dash, "-"] is not a valid expression in "x by -"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-dot-007
+  error: 'Liquid syntax error: [:dot, "."] is not a valid expression in "x by ."'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-dotdot-008
+  error: 'Liquid syntax error: [:dotdot, ".."] is not a valid expression in "x by
+    .."'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-eos-016
+  error: 'Liquid syntax error: [:end_of_string] is not a valid expression in "x by"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lexerr-ampersand
+  error: 'Liquid syntax error: Unexpected character & in "x by &"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lexerr-asterisk
+  error: 'Liquid syntax error: Unexpected character * in "x by *"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lexerr-at
+  error: 'Liquid syntax error: Unexpected character @ in "x by @"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lexerr-backslash
+  error: 'Liquid syntax error: Unexpected character \ in "x by \"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lexerr-backtick
+  error: 'Liquid syntax error: Unexpected character ` in "x by `"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lexerr-caret
+  error: 'Liquid syntax error: Unexpected character ^ in "x by ^"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lexerr-dollar
+  error: 'Liquid syntax error: Unexpected character $ in "x by $"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lexerr-hash
+  error: 'Liquid syntax error: Unexpected character # in "x by #"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lexerr-semicolon
+  error: 'Liquid syntax error: Unexpected character ; in "x by ;"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lexerr-tilde
+  error: 'Liquid syntax error: Unexpected character ~ in "x by ~"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lexerr-unclosed_double_quote
+  error: 'Liquid syntax error: Unexpected character " in "x by "hello"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lexerr-unclosed_single_quote
+  error: 'Liquid syntax error: Unexpected character '' in "x by ''hello"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lookup-bracket_wrong_content
+  error: 'Liquid syntax error: [:comma, ","] is not a valid expression in "x by x[,]"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lookup-dot_number
+  error: 'Liquid syntax error: Expected id but found number in "x by x.123"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lookup-dot_string
+  error: 'Liquid syntax error: Expected id but found string in "x by x."y""'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lookup-range_bad_separator
+  error: 'Liquid syntax error: Expected dotdot but found comma in "x by (1, 5)"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lookup-range_missing_end
+  error: 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "x
+    by (1..)"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lookup-trailing_dot
+  error: 'Liquid syntax error: Expected id but found end_of_string in "x by x."'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lookup-unclosed_bracket
+  error: 'Liquid syntax error: Expected close_square but found end_of_string in "x
+    by x[0"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-lookup-unclosed_range
+  error: 'Liquid syntax error: Expected close_round but found end_of_string in "x
+    by (1..5"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-pipe-000
+  error: 'Liquid syntax error: [:pipe, "|"] is not a valid expression in "x by |"'
+  type: SyntaxError
+- id: paginate-mut-page_size_expr-question-005
+  error: 'Liquid syntax error: [:question, "?"] is not a valid expression in "x by
+    ?"'
+  type: SyntaxError
+- id: paginate-mut-valid-000
+  error:
+  type:
+- id: paginate-mut-valid-001
+  error:
+  type:
+- id: paginate-mut-valid-002
+  error:
+  type:
+- id: paginate-mut-valid-003
+  error:
+  type:
+- id: paginate-mut-valid-004
+  error:
+  type:
+- id: paginate-mut-valid-005
+  error:
+  type:
+- id: paginate-mut-valid-006
+  error:
+  type:
+- id: paginate-mut-valid-007
+  error:
+  type:
+- id: paginate-mut-valid-008
+  error:
+  type:
+- id: paginate-mut-valid-009
+  error:
+  type:
+- id: paginate-mut-valid-010
+  error:
+  type:
+- id: paginate-mut-valid-011
+  error:
+  type:
+- id: paginate-mut-valid-012
+  error:
+  type:
+- id: paginate-mut-valid-013
+  error:
+  type:
+- id: paginate-mut-valid-014
+  error:
+  type:

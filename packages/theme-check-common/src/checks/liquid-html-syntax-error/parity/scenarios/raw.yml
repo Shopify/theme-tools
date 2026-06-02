@@ -1,0 +1,107 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: raw-001
+  template: "{% raw foo %}{% endraw %}"
+  error_path: 1
+- id: raw-002
+  template: "{% raw foo bar %}{% endraw %}"
+  error_path: 1
+- id: raw-003
+  template: "{% raw 123 %}{% endraw %}"
+  error_path: 1
+- id: raw-004
+  template: "{% raw 'hello' %}{% endraw %}"
+  error_path: 1
+- id: raw-005
+  template: "{% raw == %}{% endraw %}"
+  error_path: 1
+- id: raw-006
+  template: "{% raw | %}{% endraw %}"
+  error_path: 1
+- id: raw-007
+  template: "{% raw @#$ %}{% endraw %}"
+  error_path: 1
+- id: raw-008
+  template: "{% raw . %}{% endraw %}"
+  error_path: 1
+- id: raw-009
+  template: "{% raw : %}{% endraw %}"
+  error_path: 1
+- id: raw-010
+  template: "{% raw x = 1 %}{% endraw %}"
+  error_path: 1
+- id: raw-011
+  template: "{%- raw foo -%}{%- endraw -%}"
+  error_path: 1
+- id: raw-012
+  template: "{% raw foo %}content"
+  error_path: 1
+- id: raw-020
+  template: "{% raw %}"
+  error_path: 2
+- id: raw-021
+  template: "{% raw %}some content"
+  error_path: 2
+- id: raw-022
+  template: "{% raw %}{% if true %}{% endif %}"
+  error_path: 2
+- id: raw-023
+  template: "{%- raw -%}content"
+  error_path: 2
+- id: raw-024
+  template: "{% raw %}a{% endraw %}{% raw %}b"
+  error_path: 2
+- id: raw-025
+  template: |-
+    hello
+
+    {% raw %}content
+  error_path: 2
+- id: raw-026
+  template: "{% raw %}{% raw %}content"
+  error_path: 2
+- id: raw-100
+  template: "{% raw %}content{% endraw %}"
+  error_path:
+- id: raw-101
+  template: "{% raw %}{% endraw %}"
+  error_path:
+- id: raw-102
+  template: "{% raw %}{{ x }} {% if true %}{% endif %}{% endraw %}"
+  error_path:
+- id: raw-103
+  template: "{%- raw -%}c{%- endraw -%}"
+  error_path:
+- id: raw-104
+  template: "{%  raw   %}c{%  endraw   %}"
+  error_path:
+- id: raw-105
+  template: "{% raw %}a{% endraw %}{% raw %}b{% endraw %}"
+  error_path:
+- id: raw-106
+  template: "{{ shop.name }}"
+  error_path:
+- id: raw-107
+  template: "{% endraw %}"
+  error_path:
+- id: raw-108
+  template: hello{% raw %}world{% endraw %}bye
+  error_path:
+- id: raw-109
+  template: "{% raw %}c{% endraw foo %}"
+  error_path:
+- id: raw-110
+  template: |-
+    {% raw %}
+    line1
+    line2
+    {% endraw %}
+  error_path:
+- id: raw-111
+  template: "{% raw %}{% raw %}inner{% endraw %}"
+  error_path:
+- id: liquid-endraw
+  template: |-
+    {% liquid
+      endraw
+    %}

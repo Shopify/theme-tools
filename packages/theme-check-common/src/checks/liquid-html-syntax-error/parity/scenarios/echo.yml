@@ -1,0 +1,593 @@
+# Auto-generated — see https://github.com/shopify-playground/liquid-spec-errors to regenerate
+---
+- id: echo-mut-value-pipe-000
+  template: "{% echo | %}"
+  error_path: value/bad_start
+- id: echo-mut-value-comma-001
+  template: "{% echo , %}"
+  error_path: value/bad_start
+- id: echo-mut-value-colon-002
+  template: "{% echo : %}"
+  error_path: value/bad_start
+- id: echo-mut-value-close_square-003
+  template: "{% echo ] %}"
+  error_path: value/bad_start
+- id: echo-mut-value-close_round-004
+  template: "{% echo ) %}"
+  error_path: value/bad_start
+- id: echo-mut-value-question-005
+  template: "{% echo ? %}"
+  error_path: value/bad_start
+- id: echo-mut-value-dash-006
+  template: "{% echo - %}"
+  error_path: value/bad_start
+- id: echo-mut-value-dot-007
+  template: "{% echo . %}"
+  error_path: value/bad_start
+- id: echo-mut-value-dotdot-008
+  template: "{% echo .. %}"
+  error_path: value/bad_start
+- id: echo-mut-value-comparison-009
+  template: "{% echo == %}"
+  error_path: value/bad_start
+- id: echo-mut-value-comparison-010
+  template: "{% echo != %}"
+  error_path: value/bad_start
+- id: echo-mut-value-comparison-011
+  template: "{% echo < %}"
+  error_path: value/bad_start
+- id: echo-mut-value-comparison-012
+  template: "{% echo > %}"
+  error_path: value/bad_start
+- id: echo-mut-value-comparison-013
+  template: "{% echo <= %}"
+  error_path: value/bad_start
+- id: echo-mut-value-comparison-014
+  template: "{% echo >= %}"
+  error_path: value/bad_start
+- id: echo-mut-value-comparison-015
+  template: "{% echo contains %}"
+  error_path: value/bad_start
+- id: echo-mut-value-eos-016
+  template: "{% echo  %}"
+  error_path: value/bad_start
+- id: echo-mut-value-bare_bracket
+  template: "{% echo [0] %}"
+  error_path: value/bad_start
+- id: echo-mut-value-lookup-trailing_dot
+  template: "{% echo x. %}"
+  error_path: value/lookup
+- id: echo-mut-value-lookup-dot_number
+  template: "{% echo x.123 %}"
+  error_path: value/lookup
+- id: echo-mut-value-lookup-dot_string
+  template: '{% echo x."y" %}'
+  error_path: value/lookup
+- id: echo-mut-value-lookup-unclosed_bracket
+  template: "{% echo x[0 %}"
+  error_path: value/lookup
+- id: echo-mut-value-lookup-bracket_wrong_content
+  template: "{% echo x[,] %}"
+  error_path: value/lookup
+- id: echo-mut-value-lookup-unclosed_range
+  template: "{% echo (1..5 %}"
+  error_path: value/lookup
+- id: echo-mut-value-lookup-range_bad_separator
+  template: "{% echo (1, 5) %}"
+  error_path: value/lookup
+- id: echo-mut-value-lookup-range_missing_end
+  template: "{% echo (1..) %}"
+  error_path: value/lookup
+- id: echo-mut-value-lexerr-at
+  template: "{% echo @ %}"
+  error_path: value/lexer
+- id: echo-mut-value-lexerr-hash
+  template: "{% echo # %}"
+  error_path: value/lexer
+- id: echo-mut-value-lexerr-dollar
+  template: "{% echo $ %}"
+  error_path: value/lexer
+- id: echo-mut-value-lexerr-caret
+  template: "{% echo ^ %}"
+  error_path: value/lexer
+- id: echo-mut-value-lexerr-ampersand
+  template: "{% echo & %}"
+  error_path: value/lexer
+- id: echo-mut-value-lexerr-asterisk
+  template: "{% echo * %}"
+  error_path: value/lexer
+- id: echo-mut-value-lexerr-tilde
+  template: "{% echo ~ %}"
+  error_path: value/lexer
+- id: echo-mut-value-lexerr-backtick
+  template: "{% echo ` %}"
+  error_path: value/lexer
+- id: echo-mut-value-lexerr-backslash
+  template: "{% echo \\ %}"
+  error_path: value/lexer
+- id: echo-mut-value-lexerr-semicolon
+  template: "{% echo ; %}"
+  error_path: value/lexer
+- id: echo-mut-value-lexerr-unclosed_double_quote
+  template: '{% echo "hello %}'
+  error_path: value/lexer
+- id: echo-mut-value-lexerr-unclosed_single_quote
+  template: "{% echo 'hello %}"
+  error_path: value/lexer
+- id: echo-mut-filter_name-eos
+  template: "{% echo x | %}"
+  error_path: filter_name
+- id: echo-mut-filter_name-number
+  template: "{% echo x | 42 %}"
+  error_path: filter_name
+- id: echo-mut-filter_name-lexerr-at
+  template: "{% echo x | @ %}"
+  error_path: filter_name
+- id: echo-mut-filter_name-lexerr-hash
+  template: "{% echo x | # %}"
+  error_path: filter_name
+- id: echo-mut-filter_name-lexerr-dollar
+  template: "{% echo x | $ %}"
+  error_path: filter_name
+- id: echo-mut-filter_name-lexerr-caret
+  template: "{% echo x | ^ %}"
+  error_path: filter_name
+- id: echo-mut-filter_name-lexerr-ampersand
+  template: "{% echo x | & %}"
+  error_path: filter_name
+- id: echo-mut-filter_name-lexerr-asterisk
+  template: "{% echo x | * %}"
+  error_path: filter_name
+- id: echo-mut-filter_name-lexerr-tilde
+  template: "{% echo x | ~ %}"
+  error_path: filter_name
+- id: echo-mut-filter_name-lexerr-backtick
+  template: "{% echo x | ` %}"
+  error_path: filter_name
+- id: echo-mut-filter_name-lexerr-backslash
+  template: "{% echo x | \\ %}"
+  error_path: filter_name
+- id: echo-mut-filter_name-lexerr-semicolon
+  template: "{% echo x | ; %}"
+  error_path: filter_name
+- id: echo-mut-filter_name-lexerr-unclosed_double_quote
+  template: '{% echo x | "hello %}'
+  error_path: filter_name
+- id: echo-mut-filter_name-lexerr-unclosed_single_quote
+  template: "{% echo x | 'hello %}"
+  error_path: filter_name
+- id: echo-mut-filter_first_arg-pipe-000
+  template: "{% echo x | x : | %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-comma-001
+  template: "{% echo x | x : , %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-colon-002
+  template: "{% echo x | x : : %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-close_square-003
+  template: "{% echo x | x : ] %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-close_round-004
+  template: "{% echo x | x : ) %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-question-005
+  template: "{% echo x | x : ? %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-dash-006
+  template: "{% echo x | x : - %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-dot-007
+  template: "{% echo x | x : . %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-dotdot-008
+  template: "{% echo x | x : .. %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-comparison-009
+  template: "{% echo x | x : == %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-comparison-010
+  template: "{% echo x | x : != %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-comparison-011
+  template: "{% echo x | x : < %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-comparison-012
+  template: "{% echo x | x : > %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-comparison-013
+  template: "{% echo x | x : <= %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-comparison-014
+  template: "{% echo x | x : >= %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-comparison-015
+  template: "{% echo x | x : contains %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-eos-016
+  template: "{% echo x | x : %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-bare_bracket
+  template: "{% echo x | x : [0] %}"
+  error_path: filter_first_arg/bad_start
+- id: echo-mut-filter_first_arg-lookup-trailing_dot
+  template: "{% echo x | x : x. %}"
+  error_path: filter_first_arg/lookup
+- id: echo-mut-filter_first_arg-lookup-dot_number
+  template: "{% echo x | x : x.123 %}"
+  error_path: filter_first_arg/lookup
+- id: echo-mut-filter_first_arg-lookup-dot_string
+  template: '{% echo x | x : x."y" %}'
+  error_path: filter_first_arg/lookup
+- id: echo-mut-filter_first_arg-lookup-unclosed_bracket
+  template: "{% echo x | x : x[0 %}"
+  error_path: filter_first_arg/lookup
+- id: echo-mut-filter_first_arg-lookup-bracket_wrong_content
+  template: "{% echo x | x : x[,] %}"
+  error_path: filter_first_arg/lookup
+- id: echo-mut-filter_first_arg-lookup-unclosed_range
+  template: "{% echo x | x : (1..5 %}"
+  error_path: filter_first_arg/lookup
+- id: echo-mut-filter_first_arg-lookup-range_bad_separator
+  template: "{% echo x | x : (1, 5) %}"
+  error_path: filter_first_arg/lookup
+- id: echo-mut-filter_first_arg-lookup-range_missing_end
+  template: "{% echo x | x : (1..) %}"
+  error_path: filter_first_arg/lookup
+- id: echo-mut-filter_first_arg-lexerr-at
+  template: "{% echo x | x : @ %}"
+  error_path: filter_first_arg/lexer
+- id: echo-mut-filter_first_arg-lexerr-hash
+  template: "{% echo x | x : # %}"
+  error_path: filter_first_arg/lexer
+- id: echo-mut-filter_first_arg-lexerr-dollar
+  template: "{% echo x | x : $ %}"
+  error_path: filter_first_arg/lexer
+- id: echo-mut-filter_first_arg-lexerr-caret
+  template: "{% echo x | x : ^ %}"
+  error_path: filter_first_arg/lexer
+- id: echo-mut-filter_first_arg-lexerr-ampersand
+  template: "{% echo x | x : & %}"
+  error_path: filter_first_arg/lexer
+- id: echo-mut-filter_first_arg-lexerr-asterisk
+  template: "{% echo x | x : * %}"
+  error_path: filter_first_arg/lexer
+- id: echo-mut-filter_first_arg-lexerr-tilde
+  template: "{% echo x | x : ~ %}"
+  error_path: filter_first_arg/lexer
+- id: echo-mut-filter_first_arg-lexerr-backtick
+  template: "{% echo x | x : ` %}"
+  error_path: filter_first_arg/lexer
+- id: echo-mut-filter_first_arg-lexerr-backslash
+  template: "{% echo x | x : \\ %}"
+  error_path: filter_first_arg/lexer
+- id: echo-mut-filter_first_arg-lexerr-semicolon
+  template: "{% echo x | x : ; %}"
+  error_path: filter_first_arg/lexer
+- id: echo-mut-filter_first_arg-lexerr-unclosed_double_quote
+  template: '{% echo x | x : "hello %}'
+  error_path: filter_first_arg/lexer
+- id: echo-mut-filter_first_arg-lexerr-unclosed_single_quote
+  template: "{% echo x | x : 'hello %}"
+  error_path: filter_first_arg/lexer
+- id: echo-mut-kwarg_colon-eos
+  template: "{% echo x | x : x , , x %}"
+  error_path: kwarg_colon
+- id: echo-mut-kwarg_colon-number
+  template: "{% echo x | x : x , , x 42 %}"
+  error_path: kwarg_colon
+- id: echo-mut-kwarg_value-pipe-000
+  template: "{% echo x | x : x , , x : | %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-comma-001
+  template: "{% echo x | x : x , , x : , %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-colon-002
+  template: "{% echo x | x : x , , x : : %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-close_square-003
+  template: "{% echo x | x : x , , x : ] %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-close_round-004
+  template: "{% echo x | x : x , , x : ) %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-question-005
+  template: "{% echo x | x : x , , x : ? %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-dash-006
+  template: "{% echo x | x : x , , x : - %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-dot-007
+  template: "{% echo x | x : x , , x : . %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-dotdot-008
+  template: "{% echo x | x : x , , x : .. %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-comparison-009
+  template: "{% echo x | x : x , , x : == %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-comparison-010
+  template: "{% echo x | x : x , , x : != %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-comparison-011
+  template: "{% echo x | x : x , , x : < %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-comparison-012
+  template: "{% echo x | x : x , , x : > %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-comparison-013
+  template: "{% echo x | x : x , , x : <= %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-comparison-014
+  template: "{% echo x | x : x , , x : >= %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-comparison-015
+  template: "{% echo x | x : x , , x : contains %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-eos-016
+  template: "{% echo x | x : x , , x : %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-bare_bracket
+  template: "{% echo x | x : x , , x : [0] %}"
+  error_path: kwarg_value/bad_start
+- id: echo-mut-kwarg_value-lookup-trailing_dot
+  template: "{% echo x | x : x , , x : x. %}"
+  error_path: kwarg_value/lookup
+- id: echo-mut-kwarg_value-lookup-dot_number
+  template: "{% echo x | x : x , , x : x.123 %}"
+  error_path: kwarg_value/lookup
+- id: echo-mut-kwarg_value-lookup-dot_string
+  template: '{% echo x | x : x , , x : x."y" %}'
+  error_path: kwarg_value/lookup
+- id: echo-mut-kwarg_value-lookup-unclosed_bracket
+  template: "{% echo x | x : x , , x : x[0 %}"
+  error_path: kwarg_value/lookup
+- id: echo-mut-kwarg_value-lookup-bracket_wrong_content
+  template: "{% echo x | x : x , , x : x[,] %}"
+  error_path: kwarg_value/lookup
+- id: echo-mut-kwarg_value-lookup-unclosed_range
+  template: "{% echo x | x : x , , x : (1..5 %}"
+  error_path: kwarg_value/lookup
+- id: echo-mut-kwarg_value-lookup-range_bad_separator
+  template: "{% echo x | x : x , , x : (1, 5) %}"
+  error_path: kwarg_value/lookup
+- id: echo-mut-kwarg_value-lookup-range_missing_end
+  template: "{% echo x | x : x , , x : (1..) %}"
+  error_path: kwarg_value/lookup
+- id: echo-mut-kwarg_value-lexerr-at
+  template: "{% echo x | x : x , , x : @ %}"
+  error_path: kwarg_value/lexer
+- id: echo-mut-kwarg_value-lexerr-hash
+  template: "{% echo x | x : x , , x : # %}"
+  error_path: kwarg_value/lexer
+- id: echo-mut-kwarg_value-lexerr-dollar
+  template: "{% echo x | x : x , , x : $ %}"
+  error_path: kwarg_value/lexer
+- id: echo-mut-kwarg_value-lexerr-caret
+  template: "{% echo x | x : x , , x : ^ %}"
+  error_path: kwarg_value/lexer
+- id: echo-mut-kwarg_value-lexerr-ampersand
+  template: "{% echo x | x : x , , x : & %}"
+  error_path: kwarg_value/lexer
+- id: echo-mut-kwarg_value-lexerr-asterisk
+  template: "{% echo x | x : x , , x : * %}"
+  error_path: kwarg_value/lexer
+- id: echo-mut-kwarg_value-lexerr-tilde
+  template: "{% echo x | x : x , , x : ~ %}"
+  error_path: kwarg_value/lexer
+- id: echo-mut-kwarg_value-lexerr-backtick
+  template: "{% echo x | x : x , , x : ` %}"
+  error_path: kwarg_value/lexer
+- id: echo-mut-kwarg_value-lexerr-backslash
+  template: "{% echo x | x : x , , x : \\ %}"
+  error_path: kwarg_value/lexer
+- id: echo-mut-kwarg_value-lexerr-semicolon
+  template: "{% echo x | x : x , , x : ; %}"
+  error_path: kwarg_value/lexer
+- id: echo-mut-kwarg_value-lexerr-unclosed_double_quote
+  template: '{% echo x | x : x , , x : "hello %}'
+  error_path: kwarg_value/lexer
+- id: echo-mut-kwarg_value-lexerr-unclosed_single_quote
+  template: "{% echo x | x : x , , x : 'hello %}"
+  error_path: kwarg_value/lexer
+- id: echo-mut-filter_arg_value-pipe-000
+  template: "{% echo x | x : x , , | %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-comma-001
+  template: "{% echo x | x : x , , , %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-colon-002
+  template: "{% echo x | x : x , , : %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-close_square-003
+  template: "{% echo x | x : x , , ] %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-close_round-004
+  template: "{% echo x | x : x , , ) %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-question-005
+  template: "{% echo x | x : x , , ? %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-dash-006
+  template: "{% echo x | x : x , , - %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-dot-007
+  template: "{% echo x | x : x , , . %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-dotdot-008
+  template: "{% echo x | x : x , , .. %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-comparison-009
+  template: "{% echo x | x : x , , == %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-comparison-010
+  template: "{% echo x | x : x , , != %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-comparison-011
+  template: "{% echo x | x : x , , < %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-comparison-012
+  template: "{% echo x | x : x , , > %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-comparison-013
+  template: "{% echo x | x : x , , <= %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-comparison-014
+  template: "{% echo x | x : x , , >= %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-comparison-015
+  template: "{% echo x | x : x , , contains %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-eos-016
+  template: "{% echo x | x : x , , %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-bare_bracket
+  template: "{% echo x | x : x , , [0] %}"
+  error_path: filter_arg_value/bad_start
+- id: echo-mut-filter_arg_value-lookup-trailing_dot
+  template: "{% echo x | x : x , , x. %}"
+  error_path: filter_arg_value/lookup
+- id: echo-mut-filter_arg_value-lookup-dot_number
+  template: "{% echo x | x : x , , x.123 %}"
+  error_path: filter_arg_value/lookup
+- id: echo-mut-filter_arg_value-lookup-dot_string
+  template: '{% echo x | x : x , , x."y" %}'
+  error_path: filter_arg_value/lookup
+- id: echo-mut-filter_arg_value-lookup-unclosed_bracket
+  template: "{% echo x | x : x , , x[0 %}"
+  error_path: filter_arg_value/lookup
+- id: echo-mut-filter_arg_value-lookup-bracket_wrong_content
+  template: "{% echo x | x : x , , x[,] %}"
+  error_path: filter_arg_value/lookup
+- id: echo-mut-filter_arg_value-lookup-unclosed_range
+  template: "{% echo x | x : x , , (1..5 %}"
+  error_path: filter_arg_value/lookup
+- id: echo-mut-filter_arg_value-lookup-range_bad_separator
+  template: "{% echo x | x : x , , (1, 5) %}"
+  error_path: filter_arg_value/lookup
+- id: echo-mut-filter_arg_value-lookup-range_missing_end
+  template: "{% echo x | x : x , , (1..) %}"
+  error_path: filter_arg_value/lookup
+- id: echo-mut-filter_arg_value-lexerr-at
+  template: "{% echo x | x : x , , @ %}"
+  error_path: filter_arg_value/lexer
+- id: echo-mut-filter_arg_value-lexerr-hash
+  template: "{% echo x | x : x , , # %}"
+  error_path: filter_arg_value/lexer
+- id: echo-mut-filter_arg_value-lexerr-dollar
+  template: "{% echo x | x : x , , $ %}"
+  error_path: filter_arg_value/lexer
+- id: echo-mut-filter_arg_value-lexerr-caret
+  template: "{% echo x | x : x , , ^ %}"
+  error_path: filter_arg_value/lexer
+- id: echo-mut-filter_arg_value-lexerr-ampersand
+  template: "{% echo x | x : x , , & %}"
+  error_path: filter_arg_value/lexer
+- id: echo-mut-filter_arg_value-lexerr-asterisk
+  template: "{% echo x | x : x , , * %}"
+  error_path: filter_arg_value/lexer
+- id: echo-mut-filter_arg_value-lexerr-tilde
+  template: "{% echo x | x : x , , ~ %}"
+  error_path: filter_arg_value/lexer
+- id: echo-mut-filter_arg_value-lexerr-backtick
+  template: "{% echo x | x : x , , ` %}"
+  error_path: filter_arg_value/lexer
+- id: echo-mut-filter_arg_value-lexerr-backslash
+  template: "{% echo x | x : x , , \\ %}"
+  error_path: filter_arg_value/lexer
+- id: echo-mut-filter_arg_value-lexerr-semicolon
+  template: "{% echo x | x : x , , ; %}"
+  error_path: filter_arg_value/lexer
+- id: echo-mut-filter_arg_value-lexerr-unclosed_double_quote
+  template: '{% echo x | x : x , , "hello %}'
+  error_path: filter_arg_value/lexer
+- id: echo-mut-filter_arg_value-lexerr-unclosed_single_quote
+  template: "{% echo x | x : x , , 'hello %}"
+  error_path: filter_arg_value/lexer
+- id: echo-mut-end-trail-id
+  template: "{% echo x extra %}"
+  error_path: end
+- id: echo-mut-end-trail-number
+  template: "{% echo x 42 %}"
+  error_path: end
+- id: echo-mut-end-trail-string
+  template: "{% echo x 'hi' %}"
+  error_path: end
+- id: echo-mut-end-trail-pipe
+  template: "{% echo x | %}"
+  error_path: end
+- id: echo-mut-end-trail-colon
+  template: "{% echo x : %}"
+  error_path: end
+- id: echo-mut-end-trail-comma
+  template: "{% echo x , %}"
+  error_path: end
+- id: echo-mut-end-trail-open_square
+  template: "{% echo x [ %}"
+  error_path: end
+- id: echo-mut-end-trail-close_square
+  template: "{% echo x ] %}"
+  error_path: end
+- id: echo-mut-end-trail-open_round
+  template: "{% echo x ( %}"
+  error_path: end
+- id: echo-mut-end-trail-close_round
+  template: "{% echo x ) %}"
+  error_path: end
+- id: echo-mut-end-trail-question
+  template: "{% echo x ? %}"
+  error_path: end
+- id: echo-mut-end-trail-dot
+  template: "{% echo x . %}"
+  error_path: end
+- id: echo-mut-end-trail-comparison
+  template: "{% echo x == %}"
+  error_path: end
+- id: echo-mut-end-trail-dash
+  template: "{% echo x - %}"
+  error_path: end
+- id: echo-mut-valid-000
+  template: "{% echo x %}"
+  error_path: valid
+- id: echo-mut-valid-001
+  template: "{% echo 42 %}"
+  error_path: valid
+- id: echo-mut-valid-002
+  template: "{% echo 3.14 %}"
+  error_path: valid
+- id: echo-mut-valid-003
+  template: "{% echo -5 %}"
+  error_path: valid
+- id: echo-mut-valid-004
+  template: "{% echo 'hello' %}"
+  error_path: valid
+- id: echo-mut-valid-005
+  template: "{% echo true %}"
+  error_path: valid
+- id: echo-mut-valid-006
+  template: "{% echo false %}"
+  error_path: valid
+- id: echo-mut-valid-007
+  template: "{% echo nil %}"
+  error_path: valid
+- id: echo-mut-valid-008
+  template: "{% echo blank %}"
+  error_path: valid
+- id: echo-mut-valid-009
+  template: "{% echo empty %}"
+  error_path: valid
+- id: echo-mut-valid-010
+  template: "{% echo product.title %}"
+  error_path: valid
+- id: echo-mut-valid-011
+  template: "{% echo products[0] %}"
+  error_path: valid
+- id: echo-mut-valid-012
+  template: "{% echo a.b.c %}"
+  error_path: valid
+- id: echo-mut-valid-013
+  template: "{% echo a[0].b %}"
+  error_path: valid
+- id: echo-mut-valid-014
+  template: "{% echo (1..5) %}"
+  error_path: valid
