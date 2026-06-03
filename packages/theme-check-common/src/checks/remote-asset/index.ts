@@ -48,7 +48,7 @@ function isHashUrl(url: string): boolean {
 }
 
 function isDataUri(url: string): boolean {
-  return url.startsWith('data:');
+  return /^data:/i.test(url);
 }
 
 /**
