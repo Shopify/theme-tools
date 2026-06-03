@@ -240,6 +240,9 @@ export const RemoteAsset: LiquidCheckDefinition<typeof schema> = {
       if (hasAsset) return;
 
       const urlNode = parentNode.expression;
+
+      if (urlNode.type === NodeTypes.String && isDataUri(urlNode.value)) return;
+
       if (
         urlNode.type === NodeTypes.String &&
         !isUrlHostedbyShopify(urlNode.value, allowedDomains)

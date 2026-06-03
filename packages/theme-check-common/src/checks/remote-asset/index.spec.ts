@@ -242,6 +242,15 @@ describe('Module: RemoteAsset', () => {
     );
   });
 
+  it('should not report an offense for data URIs used with img_tag filter', async () => {
+    const sourceCode = `
+      {{ 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==' | img_tag }}
+    `;
+
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
+    expect(offenses).to.be.empty;
+  });
+
   it('should still report an offense for string literals without asset_url filter', async () => {
     const sourceCode = `
       <img src="{{ 'image.png' }}" />
