@@ -47,6 +47,10 @@ function isHashUrl(url: string): boolean {
   return url.startsWith('#');
 }
 
+function isDataUri(url: string): boolean {
+  return /^data:/i.test(url);
+}
+
 /**
  * Checks if the attribute value starts with a variable lookup.
  * When a value starts with a VariableLookup (e.g., {{ source.url }}, {{ image }}),
@@ -184,6 +188,7 @@ export const RemoteAsset: LiquidCheckDefinition<typeof schema> = {
         (node): node is TextNode => node.type === NodeTypes.TextNode,
       );
       if (firstTextNode && isHashUrl(firstTextNode.value)) return;
+      if (firstTextNode && isDataUri(firstTextNode.value)) return;
 
       if (startsWithVariableLookup(urlAttribute)) return;
 
@@ -235,6 +240,9 @@ export const RemoteAsset: LiquidCheckDefinition<typeof schema> = {
       if (hasAsset) return;
 
       const urlNode = parentNode.expression;
+
+      if (urlNode.type === NodeTypes.String && isDataUri(urlNode.value)) return;
+
       if (
         urlNode.type === NodeTypes.String &&
         !isUrlHostedbyShopify(urlNode.value, allowedDomains)

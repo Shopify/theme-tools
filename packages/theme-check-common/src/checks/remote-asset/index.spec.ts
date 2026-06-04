@@ -206,6 +206,51 @@ describe('Module: RemoteAsset', () => {
     expect(offenses).to.be.empty;
   });
 
+  it('should not report an offense for base64 encoded data URIs', async () => {
+    const sourceCode = `
+      <img
+        src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+      />
+    `;
+
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
+    expect(offenses).to.be.empty;
+  });
+
+  it('should not report an offense for various base64 data URI image formats', async () => {
+    const sourceCode = `
+      <img src="data:image/png;base64,iVBORw0KGgo=" />
+      <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgAB" />
+      <img src="data:image/svg+xml;base64,PHN2Zy8+" />
+      <img src="data:image/webp;base64,UklGRlYA" />
+    `;
+
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
+    expect(offenses).to.be.empty;
+  });
+
+  it('should still report an offense for remote images alongside base64 images', async () => {
+    const sourceCode = `
+      <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
+      <img src="https://example.com/remote-image.png" />
+    `;
+
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
+    expect(offenses).to.have.length(1);
+    expect(offenses[0].message).to.equal(
+      'Asset should be served by the Shopify CDN for better performance.',
+    );
+  });
+
+  it('should not report an offense for data URIs used with img_tag filter', async () => {
+    const sourceCode = `
+      {{ 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==' | img_tag }}
+    `;
+
+    const offenses = await runLiquidCheck(RemoteAsset, sourceCode);
+    expect(offenses).to.be.empty;
+  });
+
   it('should still report an offense for string literals without asset_url filter', async () => {
     const sourceCode = `
       <img src="{{ 'image.png' }}" />
