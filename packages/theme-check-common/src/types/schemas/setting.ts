@@ -200,7 +200,7 @@ export declare namespace Setting {
     placeholder?: string;
     alpha?: boolean;
   }
-  
+
   export interface ColorBackground extends ColorBase<Type.ColorBackground> {}
   export interface ColorScheme extends Base<Type.ColorScheme> {
     default?: string;
