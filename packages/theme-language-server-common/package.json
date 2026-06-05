@@ -27,9 +27,9 @@
     "type-check": "tsc --noEmit -p src/tsconfig.json"
   },
   "dependencies": {
-    "@shopify/liquid-html-parser": "^2.9.2",
-    "@shopify/theme-check-common": "3.26.0",
-    "@shopify/theme-graph": "^0.2.6",
+    "@shopify/liquid-html-parser": "workspace:^2.9.2",
+    "@shopify/theme-check-common": "workspace:3.26.0",
+    "@shopify/theme-graph": "workspace:^0.2.6",
     "@vscode/web-custom-data": "^0.4.6",
     "vscode-css-languageservice": "6.3.2",
     "vscode-json-languageservice": "^5.3.10",

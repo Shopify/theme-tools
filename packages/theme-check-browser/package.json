@@ -26,6 +26,6 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/theme-check-common": "3.26.0"
+    "@shopify/theme-check-common": "workspace:3.26.0"
   }
 }
