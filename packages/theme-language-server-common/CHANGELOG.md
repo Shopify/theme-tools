@@ -1,5 +1,19 @@
 # @shopify/theme-language-server-common
 
+## 2.21.3
+
+### Patch Changes
+
+- e7226d80: Fix tag/filter doc warnings collapsing onto the previous line on hover. Blockquote admonitions (e.g. the `image_url` filter's Caution/Note) are now preserved on their own lines instead of being flattened into the surrounding text.
+- 8e63afac: Treat theme app extension blocks as theme graph entry points so snippets rendered by app blocks are not reported as orphaned.
+- cacd8f32: [internal] local development fix for breakpoints
+- Updated dependencies [388cd60b]
+- Updated dependencies [3cc63ff2]
+- Updated dependencies [8e63afac]
+- Updated dependencies [cacd8f32]
+  - @shopify/theme-check-common@3.26.1
+  - @shopify/theme-graph@0.2.7
+
 ## 2.21.2
 
 ### Patch Changes

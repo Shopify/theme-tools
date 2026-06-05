@@ -1,5 +1,11 @@
 # @shopify/codemirror-language-client
 
+## 0.7.6
+
+### Patch Changes
+
+- cacd8f32: [internal] local development fix for breakpoints
+
 ## 0.7.5
 
 ### Patch Changes

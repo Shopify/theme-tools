@@ -1,5 +1,15 @@
 # @shopify/theme-check-docs-updater
 
+## 3.26.1
+
+### Patch Changes
+
+- cacd8f32: [internal] local development fix for breakpoints
+- Updated dependencies [388cd60b]
+- Updated dependencies [3cc63ff2]
+- Updated dependencies [cacd8f32]
+  - @shopify/theme-check-common@3.26.1
+
 ## 3.26.0
 
 ### Patch Changes

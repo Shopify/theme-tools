@@ -1,5 +1,21 @@
 # @shopify/theme-check-node
 
+## 3.26.1
+
+### Patch Changes
+
+- 7b107b4f: Fix RemoteAsset check incorrectly flagging base64 data URIs as external assets
+- ab6c8369: Accept common aliases for built-in Theme Check configs in YAML `extends` values.
+- 8e63afac: Treat theme app extension blocks as theme graph entry points so snippets rendered by app blocks are not reported as orphaned.
+- cacd8f32: [internal] local development fix for breakpoints
+- Updated dependencies [388cd60b]
+- Updated dependencies [3cc63ff2]
+- Updated dependencies [8e63afac]
+- Updated dependencies [cacd8f32]
+  - @shopify/theme-check-common@3.26.1
+  - @shopify/theme-graph@0.2.7
+  - @shopify/theme-check-docs-updater@3.26.1
+
 ## 3.26.0
 
 ### Patch Changes

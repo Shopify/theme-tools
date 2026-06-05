@@ -1,5 +1,13 @@
 # @shopify/theme-check-common
 
+## 3.26.1
+
+### Patch Changes
+
+- 388cd60b: Allow `placeholder` and `alpha` on `color` settings in theme schemas.
+- 3cc63ff2: Fix theme-check-disable-next-line not working for checks inside doc tags
+- cacd8f32: [internal] local development fix for breakpoints
+
 ## 3.26.0
 
 ### Minor Changes

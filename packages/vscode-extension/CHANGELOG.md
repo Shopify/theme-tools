@@ -1,5 +1,21 @@
 ## theme-check-vscode
 
+## 3.11.5
+
+### Patch Changes
+
+- cacd8f32: [internal] local development fix for breakpoints
+- Updated dependencies [388cd60b]
+- Updated dependencies [3cc63ff2]
+- Updated dependencies [e7226d80]
+- Updated dependencies [8e63afac]
+- Updated dependencies [cacd8f32]
+  - @shopify/theme-check-common@3.26.1
+  - @shopify/theme-language-server-common@2.21.3
+  - @shopify/theme-language-server-browser@2.21.3
+  - @shopify/theme-language-server-node@2.21.3
+  - @shopify/prettier-plugin-liquid@1.10.3
+
 ## 3.11.4
 
 ### Patch Changes
