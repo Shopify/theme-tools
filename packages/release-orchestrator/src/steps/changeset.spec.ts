@@ -36,13 +36,18 @@ describe('changeset', () => {
   });
 
   it('changesetVersion should call run with correct arguments', async () => {
-    (run as Mock).mockResolvedValueOnce('test output');
+    (run as Mock)
+      .mockResolvedValueOnce('changeset version output')
+      .mockResolvedValueOnce('lockfile output');
 
     await changesetVersion();
 
     expect(run).toHaveBeenCalledWith('pnpm exec changeset version');
+    expect(run).toHaveBeenCalledWith('pnpm install --lockfile-only');
     expect(console.log).toHaveBeenCalledWith('Running `changeset version`...');
-    expect(console.log).toHaveBeenCalledWith('test output');
+    expect(console.log).toHaveBeenCalledWith('changeset version output');
+    expect(console.log).toHaveBeenCalledWith('Updating `pnpm-lock.yaml`...');
+    expect(console.log).toHaveBeenCalledWith('lockfile output');
   });
 
   it('changesetStatus should call run with correct arguments and return changeset status', async () => {
