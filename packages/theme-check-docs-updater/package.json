@@ -30,7 +30,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/theme-check-common": "^3.26.0",
+    "@shopify/theme-check-common": "workspace:^3.26.0",
     "env-paths": "^2.2.1",
     "node-fetch": "^2.6.11"
   },
