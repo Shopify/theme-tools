@@ -1,5 +1,11 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.10.3
+
+### Patch Changes
+
+- cacd8f32: [internal] local development fix for breakpoints
+
 ## 1.10.2
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # shopify/theme-graph
 
+## 0.2.7
+
+### Patch Changes
+
+- 8e63afac: Treat theme app extension blocks as theme graph entry points so snippets rendered by app blocks are not reported as orphaned.
+- cacd8f32: [internal] local development fix for breakpoints
+- Updated dependencies [388cd60b]
+- Updated dependencies [3cc63ff2]
+- Updated dependencies [cacd8f32]
+  - @shopify/theme-check-common@3.26.1
+
 ## 0.2.6
 
 ### Patch Changes

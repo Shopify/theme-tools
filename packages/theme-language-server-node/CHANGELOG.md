@@ -1,5 +1,19 @@
 # @shopify/theme-language-server-node
 
+## 2.21.3
+
+### Patch Changes
+
+- cacd8f32: [internal] local development fix for breakpoints
+- Updated dependencies [7b107b4f]
+- Updated dependencies [e7226d80]
+- Updated dependencies [ab6c8369]
+- Updated dependencies [8e63afac]
+- Updated dependencies [cacd8f32]
+  - @shopify/theme-check-node@3.26.1
+  - @shopify/theme-language-server-common@2.21.3
+  - @shopify/theme-check-docs-updater@3.26.1
+
 ## 2.21.2
 
 ### Patch Changes
