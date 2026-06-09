@@ -26,6 +26,7 @@ import { JSONSyntaxError } from './json-syntax-error';
 import { LiquidFreeSettings } from './liquid-free-settings';
 import { LiquidHTMLSyntaxError } from './liquid-html-syntax-error';
 import { MatchingTranslations } from './matching-translations';
+import { MaxLines } from './max-lines';
 import { MissingAsset } from './missing-asset';
 import { MissingContentForArguments } from './missing-content-for-arguments';
 import { MissingRenderSnippetArguments } from './missing-render-snippet-arguments';
@@ -96,6 +97,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   LiquidFreeSettings,
   LiquidHTMLSyntaxError,
   MatchingTranslations,
+  MaxLines,
   MissingAsset,
   MissingContentForArguments,
   MissingRenderSnippetArguments,
