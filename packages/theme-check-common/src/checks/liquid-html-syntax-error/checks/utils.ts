@@ -9,16 +9,15 @@ export function getValuesInMarkup(markup: string) {
 
 const DOUBLE_QUOTED_STRING = `"[^"]*"`;
 const SINGLE_QUOTED_STRING = `'[^']*'`;
+const QUOTED_STRING = `(${DOUBLE_QUOTED_STRING}|${SINGLE_QUOTED_STRING})`;
+const VARIABLE_LOOKUP_WITH_QUOTED_INDEX = `[^\\s,\\[]+(?:\\s*\\[\\s*${QUOTED_STRING}\\s*\\][^\\s,\\[]*)+`;
 // Lax parser does NOT complain about leading/trailing spaces inside ranges (e.g. `(1 .. 10 )`) and
 // within the parenthesis (e.g. `( 1 .. 10 )`), but fails to render the liquid when using the gem.
 // Strict parser does NOT complain, but still renders it.
 // To avoid any issues, we will remove extra spaces.
 const RANGE_MARKUP_COMPONENT_REGEX = `\\s*(-?\\d+(?:\\.\\d+)?|\\w+(?:\\.\\w+)*)\\s*`;
 const RANGE_MARKUP_REGEX = `\\(\\s*${RANGE_MARKUP_COMPONENT_REGEX}(\\.{2,})\\s*${RANGE_MARKUP_COMPONENT_REGEX}\\s*\\)`;
-const REGULAR_TOKEN = `[^\\s,]+`; // tokens separated by commas or spaces
-
-// Quoted strings pattern (combination of double and single quoted)
-const QUOTED_STRING = `(${DOUBLE_QUOTED_STRING}|${SINGLE_QUOTED_STRING})`;
+const REGULAR_TOKEN = `(${VARIABLE_LOOKUP_WITH_QUOTED_INDEX}|[^\\s,]+)`; // tokens separated by commas or spaces
 
 // Value pattern for key-value pairs (can be quoted, parenthesized, or regular token)
 const VALUE_PATTERN = `(${QUOTED_STRING}|${RANGE_MARKUP_REGEX}|${REGULAR_TOKEN})`;
