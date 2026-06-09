@@ -1,4 +1,5 @@
 import {
+  HtmlComment,
   LiquidDocParamNode,
   LiquidHtmlNode,
   LiquidTag,
@@ -12,6 +13,7 @@ import {
   NamedTags,
   NodeTypes,
   Position,
+  toLiquidAST,
 } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Mode, Severity, SourceCodeType, ThemeDocset } from '../../types';
 import { isError, last } from '../../utils';
@@ -70,6 +72,38 @@ export const UndefinedObject: LiquidCheckDefinition = {
         const paramName = node.paramName?.value;
         if (paramName) {
           fileScopedVariables.add(paramName);
+        }
+      },
+
+      async HtmlComment(node: HtmlComment) {
+        // Liquid inside HTML comments is still executed at runtime: the
+        // browser strips the `<!-- ... -->` after Liquid has already run.
+        // The HTML grammar treats `HtmlComment.body` as opaque text, so the
+        // visitor never reaches Liquid nodes nested inside one. We compensate
+        // by re-parsing the comment body and pre-registering any file-scoped
+        // variable declarations (`assign`, `capture`, `increment`,
+        // `decrement`) so references after the comment do not get flagged
+        // as undefined.
+        //
+        // We only register variables whose effect is visible *outside* the
+        // comment. Block-local definitions (`for`, `tablerow`, `form`,
+        // `paginate`, `layout none`) cannot leak past the closing `-->` and
+        // any references to them inside the comment are themselves
+        // unreachable to the visitor, so there is nothing to track.
+        if (typeof node.body !== 'string' || node.body.length === 0) return;
+
+        let commentAst;
+        try {
+          commentAst = toLiquidAST(node.body);
+        } catch {
+          // The body is malformed Liquid (or just plain text). Treat the
+          // comment as opaque rather than failing the entire check run.
+          return;
+        }
+
+        const scopeStart = node.position.end;
+        for (const child of collectFileScopeDefiningTags(commentAst.children)) {
+          indexVariableScope(child.name, { start: scopeStart });
         }
       },
 
@@ -291,4 +325,44 @@ function isLiquidTagIncrement(node: LiquidTag): node is LiquidTagIncrement {
 
 function isLiquidTagDecrement(node: LiquidTag): node is LiquidTagDecrement {
   return node.name === NamedTags.decrement && typeof node.markup !== 'string';
+}
+
+/**
+ * Walk a Liquid sub-AST (for example, the parsed body of an HTML comment)
+ * and yield the names of every `assign`, `capture`, `increment`, and
+ * `decrement` tag found. These are the four tag types whose variable
+ * declarations remain in scope after their enclosing block ends.
+ *
+ * Block-local declarations from `for`, `tablerow`, `form`, `paginate`, and
+ * `layout` are intentionally skipped: their scope cannot escape the block,
+ * so they cannot contribute to a reference outside the original HTML
+ * comment.
+ */
+function* collectFileScopeDefiningTags(nodes: LiquidHtmlNode[]): Generator<{ name: string }> {
+  for (const node of nodes) {
+    if (node.type === NodeTypes.LiquidTag) {
+      const tag = node as LiquidTag;
+
+      if (isLiquidTagAssign(tag) && tag.markup.name) {
+        yield { name: tag.markup.name };
+      } else if (isLiquidTagCapture(tag) && tag.markup.name) {
+        yield { name: tag.markup.name };
+      } else if (
+        (isLiquidTagIncrement(tag) || isLiquidTagDecrement(tag)) &&
+        tag.markup.name !== null
+      ) {
+        yield { name: tag.markup.name };
+      }
+
+      // `capture`, `if`, `unless`, `case`, `for`, `tablerow`, `form`,
+      // `paginate` etc. can contain nested children that themselves declare
+      // file-scope variables (e.g. an `assign` inside a `capture` body
+      // pattern, or `assign` branches inside an `if`).
+      if (Array.isArray(tag.children)) {
+        yield* collectFileScopeDefiningTags(tag.children);
+      }
+    } else if ('children' in node && Array.isArray((node as any).children)) {
+      yield* collectFileScopeDefiningTags((node as any).children);
+    }
+  }
 }
