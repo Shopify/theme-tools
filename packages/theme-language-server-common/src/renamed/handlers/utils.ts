@@ -20,3 +20,13 @@ export function isValidSectionGroup(parsed: unknown): parsed is Template.Section
     Array.isArray((parsed as Template.SectionGroup).order)
   );
 }
+
+export type SettingsData = {
+  current?: {
+    sections?: Record<string, { type?: string }>;
+  };
+};
+
+export function isValidSettingsData(parsed: unknown): parsed is SettingsData {
+  return typeof parsed === 'object' && parsed !== null && 'current' in parsed;
+}
