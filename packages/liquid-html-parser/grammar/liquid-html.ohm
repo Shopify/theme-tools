@@ -505,10 +505,16 @@ LiquidHTML <: Liquid {
   // requirement
   leadingTagNamePart =
     | liquidDrop
+    | liquidTagClose
+    | liquidTagOpen
+    | liquidTag
     | leadingTagNameTextNode
 
   trailingTagNamePart =
     | liquidDrop
+    | liquidTagClose
+    | liquidTagOpen
+    | liquidTag
     | trailingTagNameTextNode
 
   leadingTagNameTextNode = letter (alnum | "-" | ":")*

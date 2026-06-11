@@ -1618,6 +1618,20 @@ describe('Unit: Stage 1 (CST)', () => {
         expectPath(cst, '1.name.0.markup.expression.name').to.equal('node_type');
       });
 
+      it('should parse liquid tag block names', () => {
+        cst = toLiquidHtmlCST('<{% if true %}div{% endif %}></{% if true %}div{% endif %}>');
+        expectPath(cst, '0.type').to.equal('HtmlTagOpen');
+        expectPath(cst, '0.name.0.type').to.equal('LiquidTagOpen');
+        expectPath(cst, '0.name.0.name').to.equal('if');
+        expectPath(cst, '0.name.1.type').to.equal('TextNode');
+        expectPath(cst, '0.name.1.value').to.equal('div');
+        expectPath(cst, '0.name.2.type').to.equal('LiquidTagClose');
+        expectPath(cst, '0.name.2.name').to.equal('if');
+        expectPath(cst, '1.type').to.equal('HtmlTagClose');
+        expectPath(cst, '1.name.0.type').to.equal('LiquidTagOpen');
+        expectPath(cst, '1.name.0.name').to.equal('if');
+      });
+
       it('should parse script and style tags as a dump', () => {
         cst = toLiquidHtmlCST(
           '<script>\nconst a = {{ product | json }}\n</script><style>\n#id {}\n</style>',

@@ -169,13 +169,13 @@ export interface ConcreteHtmlVoidElement extends ConcreteHtmlNodeBase<ConcreteNo
   name: string;
 }
 export interface ConcreteHtmlSelfClosingElement extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlSelfClosingElement> {
-  name: (ConcreteTextNode | ConcreteLiquidVariableOutput)[];
+  name: (ConcreteTextNode | ConcreteLiquidNode)[];
 }
 export interface ConcreteHtmlTagOpen extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlTagOpen> {
-  name: (ConcreteTextNode | ConcreteLiquidVariableOutput)[];
+  name: (ConcreteTextNode | ConcreteLiquidNode)[];
 }
 export interface ConcreteHtmlTagClose extends ConcreteHtmlNodeBase<ConcreteNodeTypes.HtmlTagClose> {
-  name: (ConcreteTextNode | ConcreteLiquidVariableOutput)[];
+  name: (ConcreteTextNode | ConcreteLiquidNode)[];
 }
 
 export interface ConcreteAttributeNodeBase<T> extends ConcreteBasicNode<T> {
