@@ -156,7 +156,85 @@ export function isPrettierIgnoreNode(
 }
 
 export function hasPrettierIgnore(node: LiquidHtmlNode) {
-  return isPrettierIgnoreNode(node) || isPrettierIgnoreNode(node.prev);
+  return (
+    isPrettierIgnoreNode(node) ||
+    isPrettierIgnoreNode(node.prev) ||
+    isPrettierIgnoreRangeStartNode(node) ||
+    isPrettierIgnoreRangeEndNode(node) ||
+    isInsidePrettierIgnoreRange(node)
+  );
+}
+
+export function isPrettierIgnoreRangeStartHtmlNode(
+  node: LiquidHtmlNode | undefined,
+): node is HtmlComment {
+  return (
+    !!node &&
+    node.type === NodeTypes.HtmlComment &&
+    /^\s*prettier-ignore-start(?=\s|$)/m.test(node.body)
+  );
+}
+
+export function isPrettierIgnoreRangeStartLiquidNode(
+  node: LiquidHtmlNode | undefined,
+): node is LiquidTag {
+  return (
+    !!node &&
+    node.type === NodeTypes.LiquidTag &&
+    node.name === '#' &&
+    /^\s*prettier-ignore-start(?=\s|$)/m.test(node.markup)
+  );
+}
+
+export function isPrettierIgnoreRangeStartNode(
+  node: LiquidHtmlNode | undefined,
+): node is HtmlComment | LiquidTag {
+  return isPrettierIgnoreRangeStartHtmlNode(node) || isPrettierIgnoreRangeStartLiquidNode(node);
+}
+
+export function isPrettierIgnoreRangeEndHtmlNode(
+  node: LiquidHtmlNode | undefined,
+): node is HtmlComment {
+  return (
+    !!node &&
+    node.type === NodeTypes.HtmlComment &&
+    /^\s*prettier-ignore-end(?=\s|$)/m.test(node.body)
+  );
+}
+
+export function isPrettierIgnoreRangeEndLiquidNode(
+  node: LiquidHtmlNode | undefined,
+): node is LiquidTag {
+  return (
+    !!node &&
+    node.type === NodeTypes.LiquidTag &&
+    node.name === '#' &&
+    /^\s*prettier-ignore-end(?=\s|$)/m.test(node.markup)
+  );
+}
+
+export function isPrettierIgnoreRangeEndNode(
+  node: LiquidHtmlNode | undefined,
+): node is HtmlComment | LiquidTag {
+  return isPrettierIgnoreRangeEndHtmlNode(node) || isPrettierIgnoreRangeEndLiquidNode(node);
+}
+
+/**
+ * Walk backward through siblings to determine if a node is inside an
+ * unmatched prettier-ignore-start / prettier-ignore-end range.
+ */
+export function isInsidePrettierIgnoreRange(node: LiquidHtmlNode): boolean {
+  let current = node.prev;
+  while (current) {
+    if (isPrettierIgnoreRangeEndNode(current)) {
+      return false;
+    }
+    if (isPrettierIgnoreRangeStartNode(current)) {
+      return true;
+    }
+    current = current.prev;
+  }
+  return false;
 }
 
 function getPrettierIgnoreAttributeCommentData(value: string): boolean {
