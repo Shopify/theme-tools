@@ -509,6 +509,13 @@ describe('Unit: Stage 2 (AST)', () => {
               { name: 'key2', valueType: 'String' },
             ],
           },
+          {
+            expression: `'snippet', for: block.id | append: '-list'`,
+            snippetType: 'String',
+            alias: null,
+            renderVariableExpression: null,
+            namedArguments: [{ name: 'for', valueType: 'VariableLookup' }],
+          },
         ].forEach(
           ({ expression, snippetType, renderVariableExpression, alias, namedArguments }) => {
             for (const { toAST, expectPath, expectPosition } of testCases) {
