@@ -342,6 +342,7 @@ export function startServer(
     getMetafieldDefinitions,
     getDocDefinitionForURI,
     getModeForURI,
+    isUriScopedMode: () => clientCapabilities.supportsSetObjects,
   });
   const hoverProvider = new HoverProvider(
     documentManager,
@@ -351,6 +352,7 @@ export function startServer(
     getThemeSettingsSchemaForURI,
     getDocDefinitionForURI,
     getModeForURI,
+    () => clientCapabilities.supportsSetObjects,
   );
 
   const executeCommandProvider = new ExecuteCommandProvider(
