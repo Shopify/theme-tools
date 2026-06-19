@@ -138,6 +138,13 @@
             "verbose"
           ]
         },
+        "shopifyLiquid.remoteLiquidDocsUrl": {
+          "type": [
+            "string"
+          ],
+          "markdownDescription": "Optional URL for the browser extension to load a remote Liquid docs index. Defaults to same-origin `/liquid-docs/v1/latest.json`. Set this to a full index URL only for hosts that do not serve same-origin docs. The revisioned bundle URL returned by the index must use the same origin as the index.",
+          "default": ""
+        },
         "themeCheck.checkOnOpen": {
           "type": [
             "boolean"
