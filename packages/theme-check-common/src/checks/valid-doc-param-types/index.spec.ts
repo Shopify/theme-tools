@@ -72,4 +72,57 @@ describe('Module: ValidDocParamTypes', () => {
       expect(suggestions).to.include(`{% doc %} @param param1 - Example param {% enddoc %}`);
     }
   });
+
+  it('should not report an error for a union of named types', async () => {
+    const sourceCode = `
+      {% doc %}
+        @param {string|number} param1 - A string or number
+      {% enddoc %}
+    `;
+    const offenses = await runLiquidCheck(ValidDocParamTypes, sourceCode);
+    expect(offenses).to.be.empty;
+  });
+
+  it('should not report an error for a string literal type', async () => {
+    const sourceCode = `
+      {% doc %}
+        @param {'banner'} param1 - Must be banner
+      {% enddoc %}
+    `;
+    const offenses = await runLiquidCheck(ValidDocParamTypes, sourceCode);
+    expect(offenses).to.be.empty;
+  });
+
+  it('should not report an error for a union of string literals', async () => {
+    const sourceCode = `
+      {% doc %}
+        @param {'banner'|'label'} param1 - Either banner or label
+      {% enddoc %}
+    `;
+    const offenses = await runLiquidCheck(ValidDocParamTypes, sourceCode);
+    expect(offenses).to.be.empty;
+  });
+
+  it('should not report an error for a mixed union of named types and string literals', async () => {
+    const sourceCode = `
+      {% doc %}
+        @param {string|'banner'|'label'} param1 - A string or specific value
+      {% enddoc %}
+    `;
+    const offenses = await runLiquidCheck(ValidDocParamTypes, sourceCode);
+    expect(offenses).to.be.empty;
+  });
+
+  it('should report an error when a union contains an invalid named type', async () => {
+    const sourceCode = `
+      {% doc %}
+        @param {string|invalidType} param1 - Example param
+      {% enddoc %}
+    `;
+    const offenses = await runLiquidCheck(ValidDocParamTypes, sourceCode);
+    expect(offenses).to.have.length(1);
+    expect(offenses[0].message).to.equal(
+      "The parameter type 'string|invalidType' is not supported.",
+    );
+  });
 });
