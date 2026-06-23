@@ -9,12 +9,7 @@ import {
   NodeTypes,
 } from '@shopify/liquid-html-parser';
 import { Context, LiquidDocParameter, SourceCodeType, StringCorrector } from '..';
-import {
-  BasicParamTypes,
-  getDefaultValueForType,
-  inferArgumentType,
-  isTypeCompatible,
-} from './utils';
+import { getDefaultValueForType, inferArgumentType, isTypeCompatible } from './utils';
 import { isLiquidString } from '../checks/utils';
 
 /**
@@ -124,11 +119,7 @@ export function findTypeMismatchParams(
 
     const liquidDocParamDef = liquidDocParameters.get(arg.name);
     if (liquidDocParamDef && liquidDocParamDef.type) {
-      const paramType = liquidDocParamDef.type.toLowerCase();
-      const supportedTypes = Object.keys(BasicParamTypes).map((type) => type.toLowerCase());
-      if (!supportedTypes.includes(paramType)) {
-        continue;
-      }
+      const paramType = liquidDocParamDef.type;
 
       if (!isTypeCompatible(paramType, inferArgumentType(arg.value))) {
         typeMismatchParams.push(arg);

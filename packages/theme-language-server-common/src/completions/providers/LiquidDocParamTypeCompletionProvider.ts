@@ -35,7 +35,7 @@ export class LiquidDocParamTypeCompletionProvider implements Provider {
     if (
       fragments.length > 2 ||
       fragments[0] !== `@${SupportedDocTagTypes.Param}` ||
-      !/^\{[a-zA-Z]*$/.test(fragments[1])
+      !/^\{[a-zA-Z'"|]*$/.test(fragments[1])
     ) {
       return [];
     }

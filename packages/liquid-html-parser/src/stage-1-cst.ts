@@ -919,6 +919,16 @@ function toCST<T>(
       source,
     },
     renderArguments: 1,
+    renderTagArguments: 0,
+    renderTagNamedArgument: {
+      type: ConcreteNodeTypes.NamedArgument,
+      name: 0,
+      value: 4,
+      locStart,
+      locEnd,
+      source,
+    },
+    renderTagArgumentValue: 0,
     completionModeRenderArguments: function (
       _0,
       namedArguments,
