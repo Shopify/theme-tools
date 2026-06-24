@@ -37,6 +37,7 @@ import {
 } from './types';
 import { getPosition } from './utils';
 import { visitJSON, visitLiquid } from './visitors';
+import { wrapLiquidSchema } from './wrap-liquid-schema';
 
 export * from './AbstractFileSystem';
 export * from './AugmentedThemeDocset';
@@ -59,6 +60,7 @@ export * from './utils/object';
 export * from './utils/styles';
 export * from './utils/traversal';
 export * from './visitor';
+export * from './wrap-liquid-schema';
 export * from './liquid-doc/liquidDoc';
 export { getBlockName } from './liquid-doc/arguments';
 export * from './liquid-doc/utils';
@@ -194,7 +196,8 @@ function createCheck<S extends SourceCodeType>(
   validateJSON?: ValidateJSON,
 ): Check<S> {
   const context = createContext(check, file, offenses, config, dependencies, validateJSON);
-  return check.create(context as any) as Check<S>;
+  const instance = check.create(context as any) as Check<S>;
+  return wrapLiquidSchema(instance, context);
 }
 
 function filesOfType<S extends SourceCodeType>(type: S, sourceCodes: Theme): SourceCode<S>[] {
