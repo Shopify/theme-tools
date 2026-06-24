@@ -488,4 +488,100 @@ describe('Module: UndefinedObject', () => {
     assert(offenses.length == 0);
     expect(offenses).to.be.empty;
   });
+
+  describe('Liquid inside HTML comments (issue #1099)', () => {
+    it('should not report when assign is inside an HTML comment', async () => {
+      const sourceCode = `
+        <!-- {% assign foo = 10 %} -->
+        {{ foo }}
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode);
+      expect(offenses).to.be.empty;
+    });
+
+    it('should not report when capture is inside an HTML comment', async () => {
+      const sourceCode = `
+        <!-- {% capture greeting %}hi{% endcapture %} -->
+        {{ greeting }}
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode);
+      expect(offenses).to.be.empty;
+    });
+
+    it('should not report when increment/decrement is inside an HTML comment', async () => {
+      const sourceCode = `
+        <!-- {% increment counter %}{% decrement other %} -->
+        {{ counter }} {{ other }}
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode);
+      expect(offenses).to.be.empty;
+    });
+
+    it('should track multiple assigns within a single HTML comment', async () => {
+      const sourceCode = `
+        <!-- {% assign a = 1 %} {% assign b = 2 %} -->
+        {{ a }} {{ b }}
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode);
+      expect(offenses).to.be.empty;
+    });
+
+    it('should still flag references that appear before the HTML comment', async () => {
+      // Variables defined inside an HTML comment are only in scope from the
+      // end of the comment onward, matching the file-position semantics of
+      // the existing assign/capture handling.
+      const sourceCode = `
+        {{ before }}
+        <!-- {% assign before = 1 %} -->
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toEqual("Unknown object 'before' used.");
+    });
+
+    it('should still flag genuinely undefined variables when comment exists', async () => {
+      const sourceCode = `
+        <!-- {% assign foo = 10 %} -->
+        {{ unrelated }}
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toEqual("Unknown object 'unrelated' used.");
+    });
+
+    it('should track nested assigns inside a comment-wrapped if block', async () => {
+      const sourceCode = `
+        <!--
+          {% if some_condition %}
+            {% assign nested = 'a' %}
+          {% else %}
+            {% assign nested = 'b' %}
+          {% endif %}
+        -->
+        {{ nested }}
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode);
+      expect(offenses.map((o) => o.message)).to.not.contain("Unknown object 'nested' used.");
+    });
+
+    it('should treat malformed Liquid in a comment body as opaque text', async () => {
+      // If the body cannot be parsed as Liquid, the check should silently
+      // skip it rather than failing the entire run.
+      const sourceCode = `
+        <!-- {% assign foo = %} -->
+        {{ unrelated }}
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode);
+      // We still report the unrelated reference; we don't crash.
+      expect(offenses.map((o) => o.message)).to.contain("Unknown object 'unrelated' used.");
+    });
+  });
 });
