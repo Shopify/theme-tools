@@ -30,7 +30,6 @@ import { MissingAsset } from './missing-asset';
 import { MissingContentForArguments } from './missing-content-for-arguments';
 import { MissingRenderSnippetArguments } from './missing-render-snippet-arguments';
 import { MissingTemplate } from './missing-template';
-import { NoFiltersInRenderArguments } from './no-filters-in-render-arguments';
 import { OrphanedSnippet } from './orphaned-snippet';
 import { PaginationSize } from './pagination-size';
 import { ParserBlockingScript } from './parser-blocking-script';
@@ -50,6 +49,7 @@ import { UnrecognizedContentForArguments } from './unrecognized-content-for-argu
 import { UnrecognizedRenderSnippetArguments } from './unrecognized-render-snippet-arguments';
 import { UnusedAssign } from './unused-assign';
 import { UnsupportedDocTag } from './unsupported-doc-tag';
+import { UnsupportedFilterArguments } from './unsupported-filter-arguments';
 import { UnusedDocParam } from './unused-doc-param';
 import { ValidContentForArguments } from './valid-content-for-arguments';
 import { ValidContentForArgumentTypes } from './valid-content-for-argument-types';
@@ -101,7 +101,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   MissingContentForArguments,
   MissingRenderSnippetArguments,
   MissingTemplate,
-  NoFiltersInRenderArguments,
+  UnsupportedFilterArguments,
   AppBlockMissingSchema,
   OrphanedSnippet,
   PaginationSize,

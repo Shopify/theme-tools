@@ -39,17 +39,17 @@ function indexOfFilterPipe(markup: string): number {
   return -1;
 }
 
-export const NoFiltersInRenderArguments: LiquidCheckDefinition = {
+export const UnsupportedFilterArguments: LiquidCheckDefinition = {
   meta: {
-    code: 'NoFiltersInRenderArguments',
-    name: 'No Filters in Render Arguments',
+    code: 'UnsupportedFilterArguments',
+    name: 'Unsupported Filter Arguments',
     docs: {
       description:
         "This check warns against using filters on values passed as arguments to a 'render', 'include', or 'content_for' tag. " +
         'Filters are not applied in that position and the value is passed through unchanged, which silently ' +
         'produces incorrect output.',
       recommended: true,
-      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/no-filters-in-render-arguments',
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/unsupported-filter-arguments',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.ERROR,

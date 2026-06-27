@@ -79,9 +79,6 @@ MissingTemplate:
   enabled: true
   severity: 0
   ignoreMissing: []
-NoFiltersInRenderArguments:
-  enabled: true
-  severity: 0
 OrphanedSnippet:
   enabled: true
   severity: 1
@@ -139,6 +136,9 @@ UnrecognizedRenderSnippetArguments:
   enabled: true
   severity: 1
 UnsupportedDocTag:
+  enabled: true
+  severity: 0
+UnsupportedFilterArguments:
   enabled: true
   severity: 0
 UnusedAssign:

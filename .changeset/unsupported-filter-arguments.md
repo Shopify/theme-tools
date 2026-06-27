@@ -2,7 +2,7 @@
 '@shopify/theme-check-common': minor
 ---
 
-Add `NoFiltersInRenderArguments` check to error when a filter is used in `render`, `include`, and `content_for` tags.
+Add `UnsupportedFilterArguments` check to error when a filter is used in `render`, `include`, and `content_for` tags.
 
 Filters are not supported on values passed as arguments to `render`/`include`/`content_for` tags. In production, they are silently dropped, leading to unexpected outcomes when rendered.
 
