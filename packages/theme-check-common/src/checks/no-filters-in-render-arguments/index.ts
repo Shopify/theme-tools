@@ -1,12 +1,15 @@
+import { NamedTags } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
+const CHECKED_TAGS: string[] = [NamedTags.render, NamedTags.include, NamedTags.content_for];
+
 /**
- * Finds the index of the first filter pipe (`|`) in a raw render/include markup
- * string that is *not* inside a quoted string literal. Returns -1 if none is
+ * Finds the index of the first filter pipe (`|`) in a raw render/include/content_for
+ * markup string that is *not* inside a quoted string literal. Returns -1 if none is
  * found.
  *
- * This is a heuristic on the raw markup because, when a `render`/`include` tag
- * contains a filter, the strict grammar refuses it and the parser falls back to
+ * This is a heuristic on the raw markup because, when a `render`/`include`/`content_for`
+ * tag contains a filter, the strict grammar refuses it and the parser falls back to
  * a base-case `LiquidTag` whose `markup` is a raw string (there is no structured
  * `RenderMarkup` node to inspect).
  */
@@ -42,7 +45,7 @@ export const NoFiltersInRenderArguments: LiquidCheckDefinition = {
     name: 'No Filters in Render Arguments',
     docs: {
       description:
-        "This check warns against using filters on values passed as arguments to a 'render' or 'include' tag. " +
+        "This check warns against using filters on values passed as arguments to a 'render', 'include', or 'content_for' tag. " +
         'Filters are not applied in that position and the value is passed through unchanged, which silently ' +
         'produces incorrect output.',
       recommended: true,
@@ -57,7 +60,7 @@ export const NoFiltersInRenderArguments: LiquidCheckDefinition = {
   create(context) {
     return {
       async LiquidTag(node) {
-        if (node.name !== 'render' && node.name !== 'include') return;
+        if (!CHECKED_TAGS.includes(node.name)) return;
 
         // When the tag parses successfully, `markup` is a structured
         // `RenderMarkup` object and filters are impossible. A raw string means
