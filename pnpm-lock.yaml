@@ -195,7 +195,7 @@ importers:
   packages/theme-check-browser:
     dependencies:
       '@shopify/theme-check-common':
-        specifier: workspace:3.26.1
+        specifier: workspace:3.27.0
         version: link:../theme-check-common
 
   packages/theme-check-common:
@@ -253,7 +253,7 @@ importers:
   packages/theme-check-docs-updater:
     dependencies:
       '@shopify/theme-check-common':
-        specifier: workspace:^3.26.1
+        specifier: workspace:^3.27.0
         version: link:../theme-check-common
       env-paths:
         specifier: ^2.2.1
@@ -272,13 +272,13 @@ importers:
         specifier: workspace:2.9.2
         version: link:../liquid-html-parser
       '@shopify/theme-check-common':
-        specifier: workspace:3.26.1
+        specifier: workspace:3.27.0
         version: link:../theme-check-common
       '@shopify/theme-check-docs-updater':
-        specifier: workspace:3.26.1
+        specifier: workspace:3.27.0
         version: link:../theme-check-docs-updater
       '@shopify/theme-graph':
-        specifier: workspace:^0.2.7
+        specifier: workspace:^0.2.8
         version: link:../theme-graph
       glob:
         specifier: ^8.0.3
@@ -303,7 +303,7 @@ importers:
         specifier: workspace:^2.9.2
         version: link:../liquid-html-parser
       '@shopify/theme-check-common':
-        specifier: workspace:^3.26.1
+        specifier: workspace:^3.27.0
         version: link:../theme-check-common
       acorn:
         specifier: ^8.14.1
@@ -316,7 +316,7 @@ importers:
         version: 3.1.0
     devDependencies:
       '@shopify/theme-check-node':
-        specifier: workspace:^3.26.1
+        specifier: workspace:^3.27.0
         version: link:../theme-check-node
       '@types/node':
         specifier: ^22.18.8
@@ -325,7 +325,7 @@ importers:
   packages/theme-language-server-browser:
     dependencies:
       '@shopify/theme-language-server-common':
-        specifier: workspace:2.21.3
+        specifier: workspace:2.21.4
         version: link:../theme-language-server-common
       vscode-languageserver:
         specifier: ^8.0.2
@@ -337,10 +337,10 @@ importers:
         specifier: workspace:^2.9.2
         version: link:../liquid-html-parser
       '@shopify/theme-check-common':
-        specifier: workspace:3.26.1
+        specifier: workspace:3.27.0
         version: link:../theme-check-common
       '@shopify/theme-graph':
-        specifier: workspace:^0.2.7
+        specifier: workspace:^0.2.8
         version: link:../theme-graph
       '@vscode/web-custom-data':
         specifier: ^0.4.6
@@ -374,13 +374,13 @@ importers:
   packages/theme-language-server-node:
     dependencies:
       '@shopify/theme-check-docs-updater':
-        specifier: workspace:^3.26.1
+        specifier: workspace:^3.27.0
         version: link:../theme-check-docs-updater
       '@shopify/theme-check-node':
-        specifier: workspace:^3.26.1
+        specifier: workspace:^3.27.0
         version: link:../theme-check-node
       '@shopify/theme-language-server-common':
-        specifier: workspace:2.21.3
+        specifier: workspace:2.21.4
         version: link:../theme-language-server-common
       glob:
         specifier: ^8.0.3
@@ -411,16 +411,16 @@ importers:
         specifier: workspace:^1.10.3
         version: link:../prettier-plugin-liquid
       '@shopify/theme-check-common':
-        specifier: workspace:^3.26.1
+        specifier: workspace:^3.27.0
         version: link:../theme-check-common
       '@shopify/theme-language-server-browser':
-        specifier: workspace:^2.21.3
+        specifier: workspace:^2.21.4
         version: link:../theme-language-server-browser
       '@shopify/theme-language-server-common':
-        specifier: workspace:^2.21.3
+        specifier: workspace:^2.21.4
         version: link:../theme-language-server-common
       '@shopify/theme-language-server-node':
-        specifier: workspace:^2.21.3
+        specifier: workspace:^2.21.4
         version: link:../theme-language-server-node
       prettier:
         specifier: ^2.6.2
@@ -436,7 +436,7 @@ importers:
         version: 3.1.0
     devDependencies:
       '@shopify/theme-check-docs-updater':
-        specifier: workspace:^3.26.1
+        specifier: workspace:^3.27.0
         version: link:../theme-check-docs-updater
       '@types/glob':
         specifier: ^8.0.0
@@ -1086,28 +1086,24 @@ packages:
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
-    libc: [glibc]
 
   '@node-rs/crc32-linux-arm64-musl@1.10.6':
     resolution: {integrity: sha512-k8ra/bmg0hwRrIEE8JL1p32WfaN9gDlUUpQRWsbxd1WhjqvXea7kKO6K4DwVxyxlPhBS9Gkb5Urq7Y4mXANzaw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
-    libc: [musl]
 
   '@node-rs/crc32-linux-x64-gnu@1.10.6':
     resolution: {integrity: sha512-IfjtqcuFK7JrSZ9mlAFhb83xgium30PguvRjIMI45C3FJwu18bnLk1oR619IYb/zetQT82MObgmqfKOtgemEKw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
-    libc: [glibc]
 
   '@node-rs/crc32-linux-x64-musl@1.10.6':
     resolution: {integrity: sha512-LbFYsA5M9pNunOweSt6uhxenYQF94v3bHDAQRPTQ3rnjn+mK6IC7YTAYoBjvoJP8lVzcvk9hRj8wp4Jyh6Y80g==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
-    libc: [musl]
 
   '@node-rs/crc32-wasm32-wasi@1.10.6':
     resolution: {integrity: sha512-KaejdLgHMPsRaxnM+OG9L9XdWL2TabNx80HLdsCOoX9BVhEkfh39OeahBo8lBmidylKbLGMQoGfIKDjq0YMStw==}
@@ -1232,79 +1228,66 @@ packages:
     resolution: {integrity: sha512-T1dMEQhXA/jkJ/jyMIw9IovK8bSUq7A8kLIlvZTb/6YIVsp2zLavr4F3oyllHWo7eIVJRyE5n3tUjQJEbE1IuQ==}
     cpu: [arm]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-arm-musleabihf@4.62.0':
     resolution: {integrity: sha512-2as0LgT7qQpyceQq6VUJYnumUMUrgGQCWIiDIN9DE0/tglsk6o66uCB4f3djRawAltvfCNLyZZrsqbPA6inCsA==}
     cpu: [arm]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-arm64-gnu@4.62.0':
     resolution: {integrity: sha512-bVURMg+6eNN9C/yc0aVjooZcwTTtYF4YW3xta5pP0//r3o1V8gXEHXWCndj47w/HhwsFroZrFhR+6uQP5T0n0g==}
     cpu: [arm64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-arm64-musl@4.62.0':
     resolution: {integrity: sha512-Ful8pM/2yYI83PViWdFdpZhdI8HJ5qsXANe5atypbHDf+KIBBDsZsbyy8hbXnULVvW9NsTh5DHwbcBftyLTfiw==}
     cpu: [arm64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-loong64-gnu@4.62.0':
     resolution: {integrity: sha512-9Gp/DgrkzfUBmNPVTyPTvay+4xEP7M/clXpj3efXBcm6uTIVIgDg4rqUpqKXvLEuFRVuEpSAOkhgNeecvaZ4Cg==}
     cpu: [loong64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-loong64-musl@4.62.0':
     resolution: {integrity: sha512-m9tsJz54LUXkSYM8+8PG81B9IKK5r+2T0clMq4QrS16xFosufU7firBDAZEsDheDs7wTlP7h3++S7lMsU955HA==}
     cpu: [loong64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-ppc64-gnu@4.62.0':
     resolution: {integrity: sha512-3UvJ5PNVU16aJf6M3tFI24pWzAl2/ynfbyRN3ICyQajK1lSkrnVYNnLz3v04J32qKa0FczJc22zeToc0lr2A3w==}
     cpu: [ppc64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-ppc64-musl@4.62.0':
     resolution: {integrity: sha512-vRWUAbYLGHBZS6Q8Msb2sfnf1fvJf+47t8l/TwOerM2qArzy+IeNMTHrYLHXh95h8MoatPHI5hhSZNs+mGXKPg==}
     cpu: [ppc64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-riscv64-gnu@4.62.0':
     resolution: {integrity: sha512-c00T5SYENHAt86cfW47URaP3Us5vLC/4QO7GYud1G5VNRffCwwCuBspwqYrriuJB+5m0WFzClCn9wed0FBjKvg==}
     cpu: [riscv64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-riscv64-musl@4.62.0':
     resolution: {integrity: sha512-krrCDilhXOwFkSkO3Wm9I/f9H0L92XHHwy2fwxjukxIbh0dem8gZqOW5Y8BsHrpJv5qwlRBV+Wl4ZFyRWhUpwg==}
     cpu: [riscv64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-s390x-gnu@4.62.0':
     resolution: {integrity: sha512-7pfYFSTc4/rUC/FtAI0Qp6QthDBCIi6/AuP1xYqFk5vanI6KnL5dWKP60OM/05LOsbwTmIcvr6eXC4CJuJ75IA==}
     cpu: [s390x]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-x64-gnu@4.62.0':
     resolution: {integrity: sha512-7SDIalKeIpG0Ifogbbdn58HmSotYMlf23K3dCJEmiVd9Fg36Vmni82iPQec27N3wY4Bvbxftkxz6vSx9OcouTg==}
     cpu: [x64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-x64-musl@4.62.0':
     resolution: {integrity: sha512-eRZevouTH2i1HeAVLqJuLnt256krQkGY0TN6WsTmsIhuzbh457HuWDMakKwmi0Cjadux983CoSr8Lim2QhUIFw==}
     cpu: [x64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-openbsd-x64@4.62.0':
     resolution: {integrity: sha512-3oVS7FLGa4U1qcvao9ylGxrjXZyUQqR8UwxEcnUEyPX53O/C/mKDZegNXTdHCP+h3e6ta/f1EN38Yif1mmZHYg==}
