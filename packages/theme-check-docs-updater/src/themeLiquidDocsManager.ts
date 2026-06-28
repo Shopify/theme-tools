@@ -28,6 +28,11 @@ type JSONSchemaManifest = { schemas: { uri: string; fileMatch?: string[] }[] };
 export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
   constructor(private log: Logger = noop) {}
 
+  revision = memo(async (): Promise<string> => {
+    await this.setup();
+    return this.latestRevision();
+  });
+
   filters = memo(async (): Promise<FilterEntry[]> => {
     return findSuitableResource(this.loaders('filters'), JSON.parse, [], this.log);
   });
@@ -110,7 +115,10 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
 
   private async latestRevision(): Promise<string> {
     const latest = await findSuitableResource(
-      [loader(() => this.load('latest'), 'loadLatestRevision')],
+      [
+        loader(() => this.load('latest'), 'loadLatestRevision'),
+        loader(() => fallbackResource('latest', this.log), 'fallbackLatestRevision'),
+      ],
       JSON.parse,
       {},
       this.log,
@@ -205,7 +213,7 @@ function dataRoot() {
 }
 
 /** Returns the at-build-time path to the fallback data file. */
-async function fallbackResource(name: Resource, log: Logger): Promise<string> {
+async function fallbackResource(name: Resource | 'latest', log: Logger): Promise<string> {
   const sourcePath = path.resolve(dataRoot(), `${name}.json`);
   return fs
     .readFile(sourcePath, 'utf8')
