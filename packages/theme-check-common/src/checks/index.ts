@@ -49,6 +49,7 @@ import { UnrecognizedContentForArguments } from './unrecognized-content-for-argu
 import { UnrecognizedRenderSnippetArguments } from './unrecognized-render-snippet-arguments';
 import { UnusedAssign } from './unused-assign';
 import { UnsupportedDocTag } from './unsupported-doc-tag';
+import { UnsupportedFilterArguments } from './unsupported-filter-arguments';
 import { UnusedDocParam } from './unused-doc-param';
 import { ValidContentForArguments } from './valid-content-for-arguments';
 import { ValidContentForArgumentTypes } from './valid-content-for-argument-types';
@@ -100,6 +101,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   MissingContentForArguments,
   MissingRenderSnippetArguments,
   MissingTemplate,
+  UnsupportedFilterArguments,
   AppBlockMissingSchema,
   OrphanedSnippet,
   PaginationSize,
