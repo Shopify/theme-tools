@@ -47,6 +47,7 @@ import { RenameHandler } from '../renamed/RenameHandler';
 import { GetTranslationsForURI } from '../translations';
 import {
   Dependencies,
+  SetObjectsNotification,
   ThemeGraphDeadCodeRequest,
   ThemeGraphDependenciesRequest,
   ThemeGraphReferenceRequest,
@@ -341,6 +342,7 @@ export function startServer(
     getMetafieldDefinitions,
     getDocDefinitionForURI,
     getModeForURI,
+    isUriScopedMode: () => clientCapabilities.supportsSetObjects,
   });
   const hoverProvider = new HoverProvider(
     documentManager,
@@ -350,6 +352,7 @@ export function startServer(
     getThemeSettingsSchemaForURI,
     getDocDefinitionForURI,
     getModeForURI,
+    () => clientCapabilities.supportsSetObjects,
   );
 
   const executeCommandProvider = new ExecuteCommandProvider(
@@ -760,6 +763,10 @@ export function startServer(
     if (!rootUri) return [];
     const deadFiles = await themeGraphManager.deadCode(rootUri);
     return deadFiles;
+  });
+
+  connection.onNotification(SetObjectsNotification.type, ({ uri, objects }) => {
+    themeDocset.setObjectsForURI(uri, objects);
   });
 
   connection.listen();

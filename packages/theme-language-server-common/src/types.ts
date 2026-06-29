@@ -2,6 +2,7 @@ import {
   AbstractFileSystem,
   Config,
   Dependencies as ThemeCheckDependencies,
+  ObjectEntry,
 } from '@shopify/theme-check-common';
 import { URI } from 'vscode-languageserver';
 import * as rpc from 'vscode-jsonrpc';
@@ -146,6 +147,15 @@ export namespace ThemeGraphDidUpdateNotification {
   export interface Params {
     uri: string;
   }
+}
+
+export namespace SetObjectsNotification {
+  export const method = 'shopify/setObjects';
+  export interface Params {
+    uri: string;
+    objects: ObjectEntry[];
+  }
+  export const type = new rpc.NotificationType<Params>(method);
 }
 
 export type AugmentedLocationWithExistence = {

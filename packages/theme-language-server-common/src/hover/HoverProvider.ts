@@ -39,12 +39,14 @@ export class HoverProvider {
     readonly getSettingsSchemaForURI: GetThemeSettingsSchemaForURI = async () => [],
     readonly getDocDefinitionForURI: GetDocDefinitionForURI = async () => undefined,
     readonly getModeForURI: (uri: string) => Promise<Mode> = async () => 'theme',
+    readonly isUriScopedMode: () => boolean = () => false,
   ) {
     const typeSystem = new TypeSystem(
       themeDocset,
       getSettingsSchemaForURI,
       getMetafieldDefinitions,
       getModeForURI,
+      isUriScopedMode,
     );
     this.providers = [
       new ContentForArgumentHoverProvider(getDocDefinitionForURI),

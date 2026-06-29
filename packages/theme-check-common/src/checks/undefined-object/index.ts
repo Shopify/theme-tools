@@ -146,7 +146,7 @@ export const UndefinedObject: LiquidCheckDefinition = {
       },
 
       async onCodePathEnd() {
-        const objects = await globalObjects(themeDocset, relativePath, context.mode);
+        const objects = await globalObjects(themeDocset, relativePath, context.file.uri, context.mode);
 
         objects.forEach((obj) => fileScopedVariables.add(obj.name));
 
@@ -172,8 +172,9 @@ export const UndefinedObject: LiquidCheckDefinition = {
   },
 };
 
-async function globalObjects(themeDocset: ThemeDocset, relativePath: string, mode: Mode = 'theme') {
-  const objects = await themeDocset.objects();
+async function globalObjects(themeDocset: ThemeDocset, relativePath: string, uri?: string, mode: Mode = 'theme') {
+  const perURI = uri ? themeDocset.getObjectsForURI?.(uri) : undefined;
+  const objects = perURI ?? (await themeDocset.objects());
   const contextualObjects = getContextualObjects(relativePath, mode);
 
   const globalObjects = objects.filter(({ access, name }) => {

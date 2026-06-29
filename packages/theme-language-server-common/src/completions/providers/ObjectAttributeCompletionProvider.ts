@@ -45,12 +45,15 @@ export class ObjectAttributeCompletionProvider implements Provider {
       partialAst,
       params.textDocument.uri,
     );
+    const hasCustomObjects = this.typeSystem.hasObjectsForURI(params.textDocument.uri);
     if (isArrayType(parentType)) {
+      if (hasCustomObjects) return [];
       return completionItems(
         ArrayCoreProperties.map((name) => ({ name })),
         partial,
       );
     } else if (parentType === 'string') {
+      if (hasCustomObjects) return [];
       return completionItems(
         StringCoreProperties.map((name) => ({ name })),
         partial,

@@ -48,6 +48,7 @@ export class TypeSystem {
     private readonly getThemeSettingsSchemaForURI: GetThemeSettingsSchemaForURI,
     private readonly getMetafieldDefinitions: (rootUri: string) => Promise<MetafieldDefinitionMap>,
     private readonly getModeForURI: GetModeForURI = async () => 'theme',
+    private readonly isUriScopedMode: () => boolean = () => false,
   ) {}
 
   async inferType(
@@ -123,7 +124,7 @@ export class TypeSystem {
    */
   public objectMap = async (uri: string, ast: LiquidHtmlNode): Promise<ObjectMap> => {
     const [objectMap, themeSettingProperties, metafieldDefinitionsObjectMap] = await Promise.all([
-      this._objectMap(),
+      this._objectMap(uri),
       this.themeSettingProperties(uri),
       this.metafieldDefinitionsObjectMap(uri),
     ]);
@@ -261,9 +262,19 @@ export class TypeSystem {
     return result;
   }
 
-  // This is the big one we reuse (memoized)
-  private _objectMap = memo(async (): Promise<ObjectMap> => {
-    const entries = await this.objectEntries();
+  private async _objectMap(uri?: string): Promise<ObjectMap> {
+    if (!this.isUriScopedMode()) return this._memoObjectMap();
+    const entries = await this.objectEntries(uri);
+    return entries.reduce((map, entry) => {
+      map[entry.name] = entry;
+      return map;
+    }, {} as ObjectMap);
+  }
+
+  private _memoObjectEntries = memo(() => this.themeDocset.objects());
+
+  private _memoObjectMap = memo(async (): Promise<ObjectMap> => {
+    const entries = await this._memoObjectEntries();
     return entries.reduce((map, entry) => {
       map[entry.name] = entry;
       return map;
@@ -283,9 +294,17 @@ export class TypeSystem {
     return this.themeDocset.filters();
   });
 
-  public objectEntries = memo(async () => {
-    return this.themeDocset.objects();
-  });
+  public hasObjectsForURI(uri: string): boolean {
+    return !!this.themeDocset.getObjectsForURI?.(uri);
+  }
+
+  public async objectEntries(uri?: string): Promise<ObjectEntry[]> {
+    if (this.isUriScopedMode() && uri && this.themeDocset.getObjectsForURI) {
+      const perURI = this.themeDocset.getObjectsForURI(uri);
+      if (perURI) return perURI;
+    }
+    return this._memoObjectEntries();
+  }
 
   private async symbolsTable(partialAst: LiquidHtmlNode, uri: string): Promise<SymbolsTable> {
     const seedSymbolsTable = await this.seedSymbolsTable(uri);
@@ -303,7 +322,7 @@ export class TypeSystem {
    */
   private seedSymbolsTable = async (uri: string) => {
     const [globalVariables, contextualVariables] = await Promise.all([
-      this.globalVariables(),
+      this.globalVariables(uri),
       this.contextualVariables(uri),
     ]);
     return globalVariables.concat(contextualVariables).reduce((table, objectEntry) => {
@@ -317,15 +336,23 @@ export class TypeSystem {
     }, {} as SymbolsTable);
   };
 
-  private globalVariables = memo(async () => {
-    const entries = await this.objectEntries();
+  private _memoGlobalVariables = memo(async () => {
+    const entries = await this._memoObjectEntries();
     return entries.filter(
       (entry) => !entry.access || entry.access.global === true || entry.access.template.length > 0,
     );
   });
 
+  private globalVariables = async (uri?: string) => {
+    if (!this.isUriScopedMode()) return this._memoGlobalVariables();
+    const entries = await this.objectEntries(uri);
+    return entries.filter(
+      (entry) => !entry.access || entry.access.global === true || entry.access.template.length > 0,
+    );
+  };
+
   private contextualVariables = async (uri: string) => {
-    const [entries, mode] = await Promise.all([this.objectEntries(), this.getModeForURI(uri)]);
+    const [entries, mode] = await Promise.all([this.objectEntries(uri), this.getModeForURI(uri)]);
     const contextualEntries = getContextualEntries(uri, mode);
     return entries.filter((entry) => contextualEntries.includes(entry.name));
   };

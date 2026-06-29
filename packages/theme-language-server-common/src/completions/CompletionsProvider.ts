@@ -42,6 +42,7 @@ export interface CompletionProviderDependencies {
   getDocDefinitionForURI?: GetDocDefinitionForURI;
   getThemeBlockNames?: (rootUri: string, includePrivate: boolean) => Promise<string[]>;
   getModeForURI?: (uri: string) => Promise<Mode>;
+  isUriScopedMode?: () => boolean;
   log?: (message: string) => void;
 }
 
@@ -61,6 +62,7 @@ export class CompletionsProvider {
     getDocDefinitionForURI = async (uri, _relativePath) => ({ uri }),
     getThemeBlockNames = async (_rootUri: string, _includePrivate: boolean) => [],
     getModeForURI,
+    isUriScopedMode = () => false,
     log = () => {},
   }: CompletionProviderDependencies) {
     this.documentManager = documentManager;
@@ -71,6 +73,7 @@ export class CompletionsProvider {
       getThemeSettingsSchemaForURI,
       getMetafieldDefinitions,
       getModeForURI,
+      isUriScopedMode,
     );
 
     this.providers = [

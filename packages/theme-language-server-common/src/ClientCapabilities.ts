@@ -43,6 +43,10 @@ export class ClientCapabilities {
     return !!this.capabilities?.window?.workDoneProgress;
   }
 
+  get supportsSetObjects(): boolean {
+    return this.initializationOption('shopify.supportsSetObjects', false);
+  }
+
   initializationOption<T>(key: string, defaultValue: T): T {
     // { 'themeCheck.checkOnSave': true }
     const direct = this.initializationOptions?.[key];
