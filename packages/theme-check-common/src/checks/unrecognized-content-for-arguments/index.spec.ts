@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { runLiquidCheck } from '../../test';
+import { describe, expect, it } from 'vitest';
 import { UnrecognizedContentForArguments } from '.';
 import { RESERVED_CONTENT_FOR_ARGUMENTS } from '../../tags/content-for';
+import { runLiquidCheck } from '../../test';
 
 function check(snippet: string, source: string) {
   return runLiquidCheck(

@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
-import { UniqueSettingIds } from './index';
+import { describe, expect, it } from 'vitest';
 import { highlightedOffenses, runJSONCheck } from '../../test';
+import { UniqueSettingIds } from './index';
 import { invalidJson, validJson } from './test-data';
 
 describe('Module: UniqueSettingIds', () => {

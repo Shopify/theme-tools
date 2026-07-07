@@ -1,5 +1,5 @@
-import { expect, describe, it } from 'vitest';
-import { highlightedOffenses, check } from '../../test';
+import { describe, expect, it } from 'vitest';
+import { check, highlightedOffenses } from '../../test';
 import { ValidSchemaTranslations } from './index';
 
 describe('Module: ValidSchemaTranslations', () => {

@@ -1,16 +1,16 @@
 import {
+  AttributeNode,
+  LiquidHtmlNode,
+  LiquidRawTag,
   NodeTypes,
   TextNode,
-  LiquidRawTag,
-  LiquidHtmlNode,
   toLiquidHtmlAST,
-  AttributeNode,
 } from '@shopify/liquid-html-parser';
 import safeParse from 'postcss-safe-parser';
 import selectorParser from 'postcss-selector-parser';
-import { SourceCodeType } from '../types';
 import { AbstractFileSystem } from '../AbstractFileSystem';
 import { isValuedHtmlAttribute, ValuedHtmlAttribute } from '../checks/utils';
+import { SourceCodeType } from '../types';
 import { visit } from '../visitor';
 
 export function extractCSSClassNames(css: string): Set<string> {

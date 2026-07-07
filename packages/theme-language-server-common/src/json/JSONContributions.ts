@@ -14,18 +14,18 @@ import {
 import { AugmentedSourceCode, DocumentManager } from '../documents';
 import { GetTranslationsForURI } from '../translations';
 import { JSONCompletionProvider } from './completions/JSONCompletionProvider';
+import { BlockSettingsPropertyCompletionProvider } from './completions/providers/BlockSettingsPropertyCompletionProvider';
 import { BlockTypeCompletionProvider } from './completions/providers/BlockTypeCompletionProvider';
 import { ReferencedBlockTypeCompletionProvider } from './completions/providers/ReferencedBlockTypeCompletionProvider';
 import { SchemaTranslationsCompletionProvider } from './completions/providers/SchemaTranslationCompletionProvider';
+import { SettingsPropertyCompletionProvider } from './completions/providers/SettingsPropertyCompletionProvider';
 import { JSONHoverProvider } from './hover/JSONHoverProvider';
+import { BlockSettingsHoverProvider } from './hover/providers/BlockSettingsHoverProvider';
 import { SchemaTranslationHoverProvider } from './hover/providers/SchemaTranslationHoverProvider';
+import { SettingsHoverProvider } from './hover/providers/SettingsHoverProvider';
 import { TranslationPathHoverProvider } from './hover/providers/TranslationPathHoverProvider';
 import { RequestContext } from './RequestContext';
 import { findSchemaNode } from './utils';
-import { SettingsPropertyCompletionProvider } from './completions/providers/SettingsPropertyCompletionProvider';
-import { SettingsHoverProvider } from './hover/providers/SettingsHoverProvider';
-import { BlockSettingsPropertyCompletionProvider } from './completions/providers/BlockSettingsPropertyCompletionProvider';
-import { BlockSettingsHoverProvider } from './hover/providers/BlockSettingsHoverProvider';
 
 /** The getInfoContribution API will only fallback if we return undefined synchronously */
 const SKIP_CONTRIBUTION = undefined as any;

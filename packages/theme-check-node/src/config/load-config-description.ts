@@ -6,12 +6,12 @@ import {
   path as pathUtils,
 } from '@shopify/theme-check-common';
 import path from 'node:path';
+import { URI } from 'vscode-uri';
 import { fileExists } from '../file-utils';
 import { AbsolutePath } from '../temp';
 import { thisNodeModuleRoot } from './installation-location';
 import { findThirdPartyChecks, loadThirdPartyChecks } from './load-third-party-checks';
 import { ConfigDescription } from './types';
-import { URI, Utils } from 'vscode-uri';
 
 const flatten = <T>(arrs: T[][]): T[] => arrs.flat();
 

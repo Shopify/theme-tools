@@ -1,4 +1,4 @@
-import { JSONNode, CheckNodeMethod, JSONCheck, SourceCodeType } from '../types';
+import { CheckNodeMethod, JSONCheck, JSONNode, SourceCodeType } from '../types';
 
 function isJSONNode(thing: unknown): thing is JSONNode {
   return !!thing && typeof thing === 'object' && 'type' in thing;

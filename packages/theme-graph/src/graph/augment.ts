@@ -1,7 +1,7 @@
 import {
-  memoize,
-  memo,
   recursiveReadDirectory as findAllFiles,
+  memo,
+  memoize,
   path,
 } from '@shopify/theme-check-common';
 import { toSourceCode } from '../toSourceCode';

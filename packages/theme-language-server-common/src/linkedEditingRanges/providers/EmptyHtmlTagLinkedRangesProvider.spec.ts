@@ -1,8 +1,8 @@
-import { describe, beforeEach, it, expect, assert } from 'vitest';
-import { LinkedEditingRangesProvider } from '..';
-import { DocumentManager } from '../../documents';
+import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { LinkedEditingRangeParams } from 'vscode-languageserver';
 import { Position } from 'vscode-languageserver-protocol';
+import { LinkedEditingRangesProvider } from '..';
+import { DocumentManager } from '../../documents';
 import { htmlElementNameWordPattern } from '../wordPattern';
 
 describe('Module: EmptyHtmlTagLinkedRangesProvider', () => {

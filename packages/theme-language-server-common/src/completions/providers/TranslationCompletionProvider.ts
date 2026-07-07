@@ -1,4 +1,5 @@
 import { LiquidHtmlNode, NodeTypes } from '@shopify/liquid-html-parser';
+import { findCurrentNode } from '@shopify/theme-check-common';
 import {
   CompletionItem,
   CompletionItemKind,
@@ -14,7 +15,6 @@ import {
   renderTranslation,
   translationOptions,
 } from '../../translations';
-import { findCurrentNode } from '@shopify/theme-check-common';
 import { LiquidCompletionParams } from '../params';
 import { Provider } from './common';
 

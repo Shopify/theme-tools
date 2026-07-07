@@ -1,7 +1,7 @@
 import { chai, expect } from 'vitest';
-import { containOffense } from './contain-offense';
 import { OfferFixAssertion } from './chai-offer-fix-assertion';
 import { SuggestAssertion } from './chai-suggest-assertion';
+import { containOffense } from './contain-offense';
 
 /**
  * Setup chai extensions

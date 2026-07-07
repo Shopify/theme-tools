@@ -40,13 +40,16 @@ import { visitJSON, visitLiquid } from './visitors';
 
 export * from './AbstractFileSystem';
 export * from './AugmentedThemeDocset';
+export * from './JSONValidator';
 export * from './checks';
 export * from './context-utils';
 export * from './find-root';
 export * from './fixes';
 export * from './ignore';
 export * from './json';
-export * from './JSONValidator';
+export { getBlockName } from './liquid-doc/arguments';
+export * from './liquid-doc/liquidDoc';
+export * from './liquid-doc/utils';
 export * as path from './path';
 export * from './to-schema';
 export * from './to-source-code';
@@ -54,14 +57,11 @@ export * from './types';
 export * from './utils/error';
 export * from './utils/indexBy';
 export * from './utils/memo';
-export * from './utils/types';
 export * from './utils/object';
 export * from './utils/styles';
 export * from './utils/traversal';
+export * from './utils/types';
 export * from './visitor';
-export * from './liquid-doc/liquidDoc';
-export { getBlockName } from './liquid-doc/arguments';
-export * from './liquid-doc/utils';
 
 const defaultErrorHandler = (_error: Error): void => {
   // Silently ignores errors by default.

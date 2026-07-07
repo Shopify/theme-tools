@@ -1,12 +1,12 @@
-import { parser } from './parser';
 import {
   continuedIndent,
-  indentNodeProp,
-  foldNodeProp,
   foldInside,
-  LRLanguage,
+  foldNodeProp,
+  indentNodeProp,
   LanguageSupport,
+  LRLanguage,
 } from '@codemirror/language';
+import { parser } from './parser';
 
 /// A language provider that provides JSON parsing.
 export const jsoncLanguage = LRLanguage.define({

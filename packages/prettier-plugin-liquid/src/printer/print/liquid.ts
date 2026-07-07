@@ -1,12 +1,12 @@
 import {
-  NodeTypes,
-  NamedTags,
   isBranchedTag,
-  RawMarkup,
-  LiquidDocParamNode,
-  LiquidDocExampleNode,
   LiquidDocDescriptionNode,
+  LiquidDocExampleNode,
+  LiquidDocParamNode,
   LiquidDocPromptNode,
+  NamedTags,
+  NodeTypes,
+  RawMarkup,
 } from '@shopify/liquid-html-parser';
 import { Doc, doc } from 'prettier';
 

@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { runLiquidCheck, applyFix } from '../../../test';
+import { describe, expect, it } from 'vitest';
+import { applyFix, runLiquidCheck } from '../../../test';
 import { LiquidHTMLSyntaxError } from '../index';
 
 describe('Module: InvalidFilterName', () => {

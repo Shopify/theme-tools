@@ -1,11 +1,11 @@
-import { TextDocument } from 'vscode-languageserver-textdocument';
+import { Extension, StateField } from '@codemirror/state';
+import { EditorView, PluginValue, ViewPlugin, ViewUpdate } from '@codemirror/view';
 import {
   DidChangeTextDocumentNotification,
   DidCloseTextDocumentNotification,
   DidOpenTextDocumentNotification,
 } from 'vscode-languageserver-protocol';
-import { Extension, StateField } from '@codemirror/state';
-import { EditorView, PluginValue, ViewPlugin, ViewUpdate } from '@codemirror/view';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 
 import { AbstractLanguageClient } from '../LanguageClient';
 

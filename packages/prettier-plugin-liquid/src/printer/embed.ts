@@ -1,7 +1,7 @@
-import { doc, Doc } from 'prettier';
-import type { Printer as Printer2 } from 'prettier';
-import type { Doc as Doc3, Printer as Printer3 } from 'prettier3';
 import { NodeTypes, RawMarkupKinds } from '@shopify/liquid-html-parser';
+import type { Printer as Printer2 } from 'prettier';
+import { doc } from 'prettier';
+import type { Doc as Doc3, Printer as Printer3 } from 'prettier3';
 import { LiquidHtmlNode, LiquidParserOptions, RawMarkup } from '../types';
 
 const {

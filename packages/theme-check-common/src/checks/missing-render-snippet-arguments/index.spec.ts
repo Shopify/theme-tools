@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { applySuggestions, MockTheme, runLiquidCheck } from '../../test';
+import { describe, expect, it } from 'vitest';
 import { MissingRenderSnippetArguments } from '.';
+import { applySuggestions, MockTheme, runLiquidCheck } from '../../test';
 
 function check(snippet: string, source: string) {
   return runLiquidCheck(

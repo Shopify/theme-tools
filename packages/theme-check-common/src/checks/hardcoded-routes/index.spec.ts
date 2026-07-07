@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { highlightedOffenses, runLiquidCheck } from '../../test';
 import { HardcodedRoutes } from './index';
-import { runLiquidCheck, highlightedOffenses } from '../../test';
 
 describe('Module: HardcodedRoutes', () => {
   it('should report offenses for hardcoded routes', async () => {

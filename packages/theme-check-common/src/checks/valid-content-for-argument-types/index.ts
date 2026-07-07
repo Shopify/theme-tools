@@ -1,4 +1,3 @@
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { ContentForMarkup } from '@shopify/liquid-html-parser';
 import {
   findTypeMismatchParams,
@@ -6,6 +5,7 @@ import {
   getLiquidDocParams,
   reportTypeMismatches,
 } from '../../liquid-doc/arguments';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 export const ValidContentForArgumentTypes: LiquidCheckDefinition = {
   meta: {

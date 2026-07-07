@@ -30,9 +30,10 @@
  *
  */
 
-import { Parser } from 'prettier';
 import { Grammar, Node } from 'ohm-js';
 import { toAST } from 'ohm-js/extras';
+import { Parser } from 'prettier';
+import { LiquidHTMLCSTParsingError } from './errors';
 import {
   LiquidDocGrammar,
   LiquidGrammars,
@@ -41,7 +42,6 @@ import {
   strictGrammars,
   tolerantGrammars,
 } from './grammar';
-import { LiquidHTMLCSTParsingError } from './errors';
 import { Comparators, NamedTags } from './types';
 
 export enum ConcreteNodeTypes {

@@ -1,8 +1,8 @@
+import { Facet } from '@codemirror/state';
+import { EditorView, Tooltip, TooltipView, hoverTooltip } from '@codemirror/view';
 import { Hover, HoverRequest } from 'vscode-languageserver-protocol';
 import { clientFacet, fileUriFacet } from './client';
 import { textDocumentField } from './textDocumentSync';
-import { Facet } from '@codemirror/state';
-import { EditorView, Tooltip, TooltipView, hoverTooltip } from '@codemirror/view';
 
 type SecondArgType<F> = F extends (_: any, arg: infer A) => any ? A : never;
 export type HoverOptions = Partial<SecondArgType<typeof hoverTooltip>>;

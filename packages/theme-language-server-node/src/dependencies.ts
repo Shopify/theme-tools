@@ -2,8 +2,8 @@ import {
   AbstractFileSystem,
   Config,
   findRoot,
-  loadConfig as nodeLoadConfig,
   makeFileExists,
+  loadConfig as nodeLoadConfig,
   path,
   recursiveReadDirectory,
 } from '@shopify/theme-check-node';

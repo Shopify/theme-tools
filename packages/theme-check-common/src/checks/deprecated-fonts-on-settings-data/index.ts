@@ -1,5 +1,5 @@
+import { getLocEnd, getLocStart } from '../../json';
 import { JSONCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { getLocStart, getLocEnd } from '../../json';
 import { DEPRECATED_FONT_HANDLES } from '../deprecated-fonts-on-sections-and-blocks/deprecated-fonts-data';
 
 export const DeprecatedFontsOnSettingsData: JSONCheckDefinition = {

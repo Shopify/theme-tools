@@ -1,5 +1,6 @@
 import { LiquidHtmlNode } from '@shopify/liquid-html-parser';
-import { SourceCodeType } from '@shopify/theme-check-common';
+import { findCurrentNode, SourceCodeType } from '@shopify/theme-check-common';
+import { Connection } from 'vscode-languageserver';
 import {
   PrepareRenameParams,
   PrepareRenameResult,
@@ -7,14 +8,12 @@ import {
   TextDocumentPositionParams,
   WorkspaceEdit,
 } from 'vscode-languageserver-protocol';
+import { ClientCapabilities } from '../ClientCapabilities';
 import { DocumentManager } from '../documents';
-import { findCurrentNode } from '@shopify/theme-check-common';
+import { FindThemeRootURI } from '../internal-types';
 import { BaseRenameProvider } from './BaseRenameProvider';
 import { HtmlTagNameRenameProvider } from './providers/HtmlTagNameRenameProvider';
 import { LiquidVariableRenameProvider } from './providers/LiquidVariableRenameProvider';
-import { Connection } from 'vscode-languageserver';
-import { ClientCapabilities } from '../ClientCapabilities';
-import { FindThemeRootURI } from '../internal-types';
 
 /**
  * RenameProvider is responsible for providing rename support for the theme language server.

@@ -1,11 +1,11 @@
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { RenderMarkup } from '@shopify/liquid-html-parser';
-import { LiquidDocParameter } from '../../liquid-doc/liquidDoc';
 import {
   getLiquidDocParams,
   getSnippetName,
   reportUnknownArguments,
 } from '../../liquid-doc/arguments';
+import { LiquidDocParameter } from '../../liquid-doc/liquidDoc';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 export const UnrecognizedRenderSnippetArguments: LiquidCheckDefinition = {
   meta: {

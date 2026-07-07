@@ -1,7 +1,7 @@
 import { path, recursiveReadDirectory } from '@shopify/theme-check-common';
+import { CallExpression } from 'acorn';
 import { ancestor as visit } from 'acorn-walk';
 import { Dependencies, Void, WebComponentMap } from './types';
-import { CallExpression } from 'acorn';
 
 /**
  * Regular expression for web component names

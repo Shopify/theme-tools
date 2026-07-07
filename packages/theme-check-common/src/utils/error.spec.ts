@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
 import { ParseErrorCode } from 'jsonc-parser';
+import { describe, expect, it } from 'vitest';
 import { asError, isError } from './error';
 
 describe('Function: asError', () => {

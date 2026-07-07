@@ -1,11 +1,11 @@
 import { LiquidFilter } from '@shopify/liquid-html-parser';
 import {
-  Severity,
-  SourceCodeType,
-  LiquidCheckDefinition,
-  LiquidHtmlSuggestion,
   FilterEntry,
   Fixer,
+  LiquidCheckDefinition,
+  LiquidHtmlSuggestion,
+  Severity,
+  SourceCodeType,
 } from '../../types';
 import { fixHexToRgba, suggestImageUrlFix, suggestImgTagFix, suggestImgUrlFix } from './fixes';
 

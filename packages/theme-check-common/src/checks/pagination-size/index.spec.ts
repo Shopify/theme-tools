@@ -1,4 +1,4 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { highlightedOffenses, runLiquidCheck } from '../../test';
 import { PaginationSize } from './index';
 

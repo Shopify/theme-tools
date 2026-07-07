@@ -1,9 +1,9 @@
-import { describe, afterEach, beforeEach, it, expect, vi } from 'vitest';
-import { CompletionsProvider } from '../CompletionsProvider';
-import { DocumentManager } from '../../documents';
 import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
-import { TextEdit, InsertTextFormat } from 'vscode-languageserver-protocol';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { InsertTextFormat, TextEdit } from 'vscode-languageserver-protocol';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { DocumentManager } from '../../documents';
+import { CompletionsProvider } from '../CompletionsProvider';
 import { CURSOR } from '../params';
 
 vi.mock('./data/contentForParameterCompletionOptions', async () => {

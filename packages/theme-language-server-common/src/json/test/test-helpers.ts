@@ -1,3 +1,4 @@
+import { SourceCodeType } from '@shopify/theme-check-common';
 import {
   CompletionItem,
   CompletionList,
@@ -5,10 +6,9 @@ import {
   HoverParams,
 } from 'vscode-languageserver-protocol';
 import { DocumentManager } from '../../documents';
+import { GetTranslationsForURI } from '../../translations';
 import { GetThemeBlockNames } from '../JSONContributions';
 import { JSONLanguageService } from '../JSONLanguageService';
-import { SourceCodeType } from '@shopify/theme-check-common';
-import { GetTranslationsForURI } from '../../translations';
 
 export function getRequestParams(
   documentManager: DocumentManager,

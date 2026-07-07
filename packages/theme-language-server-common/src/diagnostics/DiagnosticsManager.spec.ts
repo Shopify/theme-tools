@@ -1,6 +1,6 @@
 import { Offense, SourceCodeType } from '@shopify/theme-check-common';
-import { vi, expect, describe, it, beforeEach } from 'vitest';
-import { Connection, Diagnostic, Range } from 'vscode-languageserver';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { Connection } from 'vscode-languageserver';
 import { DiagnosticsManager } from './DiagnosticsManager';
 import { offenseToDiagnostic } from './offenseToDiagnostic';
 

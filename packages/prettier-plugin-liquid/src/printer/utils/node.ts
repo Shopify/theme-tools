@@ -1,17 +1,17 @@
-import { NodeTypes, LiquidNodeTypes, HtmlNodeTypes, Position } from '@shopify/liquid-html-parser';
+import { HtmlNodeTypes, LiquidNodeTypes, NodeTypes, Position } from '@shopify/liquid-html-parser';
 import {
-  HtmlSelfClosingElement,
-  LiquidHtmlNode,
-  TextNode,
-  LiquidNode,
-  HtmlNode,
-  HtmlVoidElement,
-  HtmlComment,
-  HtmlElement,
-  LiquidTag,
   AttributeNode,
-  LiquidVariableOutput,
+  HtmlComment,
   HtmlDanglingMarkerClose,
+  HtmlElement,
+  HtmlNode,
+  HtmlSelfClosingElement,
+  HtmlVoidElement,
+  LiquidHtmlNode,
+  LiquidNode,
+  LiquidTag,
+  LiquidVariableOutput,
+  TextNode,
 } from '../../types';
 import { isEmpty } from './array';
 

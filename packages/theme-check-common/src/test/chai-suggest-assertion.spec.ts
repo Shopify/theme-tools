@@ -1,5 +1,5 @@
-import { expect, describe, it } from 'vitest';
-import { LiquidHtmlSuggestion, Offense, Fix, SourceCodeType } from '../types';
+import { describe, expect, it } from 'vitest';
+import { Fix, LiquidHtmlSuggestion, Offense, SourceCodeType } from '../types';
 
 describe('Module: SuggestAssertion', () => {
   const file = 'I love tea!';
