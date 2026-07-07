@@ -1,9 +1,9 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidHtmlNode } from '@shopify/theme-check-common';
 import { Hover, HoverParams, MarkupKind } from 'vscode-languageserver';
-import { BaseHoverProvider } from '../BaseHoverProvider';
-import { formatLiquidDocTagHandle, SUPPORTED_LIQUID_DOC_TAG_HANDLES } from '../../utils/liquidDoc';
 import { DocumentManager } from '../../documents';
+import { formatLiquidDocTagHandle, SUPPORTED_LIQUID_DOC_TAG_HANDLES } from '../../utils/liquidDoc';
+import { BaseHoverProvider } from '../BaseHoverProvider';
 
 export class LiquidDocTagHoverProvider implements BaseHoverProvider {
   constructor(private documentManager: DocumentManager) {}

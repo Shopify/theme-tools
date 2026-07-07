@@ -1,6 +1,6 @@
-import { Context, SourceCodeType, JSONNode } from '../../types';
-import { PropertyNode } from '../../jsonc/types';
 import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
+import { PropertyNode } from '../../jsonc/types';
+import { Context, JSONNode, SourceCodeType } from '../../types';
 import { doesFileExist } from '../../utils/file-utils';
 
 export function isPropertyNode(node: unknown): node is PropertyNode {

@@ -1,5 +1,5 @@
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { getValidParamTypes, parseParamType } from '../../liquid-doc/utils';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 export const ValidDocParamTypes: LiquidCheckDefinition = {
   meta: {

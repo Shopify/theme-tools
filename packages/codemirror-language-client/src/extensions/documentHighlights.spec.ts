@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { EditorState, Extension, Range, RangeSet, RangeValue } from '@codemirror/state';
+import { EditorState, Extension, Range } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView } from '@codemirror/view';
-import { assert, beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { DocumentHighlight } from 'vscode-languageserver-protocol';
 import { MockClient } from '../test/MockClient';
 import { clientFacet, fileUriFacet } from './client';

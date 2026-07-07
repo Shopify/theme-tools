@@ -4,18 +4,18 @@ import * as path from './path';
 import { toJSONAST } from './to-source-code';
 import {
   AppBlockSchema,
-  ThemeBlockSchema,
+  Context,
   IsValidSchema,
   LiquidHtmlNode,
+  Schema,
   SectionSchema,
   SourceCode,
   SourceCodeType,
+  StaticBlockDef,
   ThemeBlock,
+  ThemeBlockSchema,
   ThemeSchemaType,
   UriString,
-  Context,
-  Schema,
-  StaticBlockDef,
 } from './types';
 import { visit } from './visitor';
 

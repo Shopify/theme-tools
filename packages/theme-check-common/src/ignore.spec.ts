@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { isIgnored } from './ignore';
-import { UriString, CheckDefinition, Config, SourceCodeType } from './types';
+import { CheckDefinition, Config, SourceCodeType, UriString } from './types';
 
 const checkDef: CheckDefinition = {
   meta: {

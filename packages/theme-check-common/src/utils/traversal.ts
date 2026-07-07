@@ -1,5 +1,5 @@
-import { Reference } from '../types';
 import { isSnippet } from '../to-schema';
+import { Reference } from '../types';
 
 /** BFS upward through direct references to find all ancestor URIs. */
 export async function getAncestorUris(

@@ -8,15 +8,15 @@ import {
   ServerOptions,
   TransportKind,
 } from 'vscode-languageclient/node';
-import { documentSelectors } from '../common/constants';
-import LiquidFormatter from '../common/formatter';
-import { vscodePrettierFormat } from './formatter';
 import {
   createReferencesTreeView,
   setupContext,
   watchReferencesTreeViewConfig,
 } from '../common/ReferencesProvider';
 import { makeDeadCode, openLocation } from '../common/commands';
+import { documentSelectors } from '../common/constants';
+import LiquidFormatter from '../common/formatter';
+import { vscodePrettierFormat } from './formatter';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 

@@ -1,5 +1,5 @@
+import { describe, expect, it } from 'vitest';
 import { check, highlightedOffenses } from '../../test';
-import { expect, describe, it } from 'vitest';
 import { StaticStylesheetAndJavascriptTags } from './index';
 
 describe('Module: StaticStylesheetAndJavascriptTags', () => {

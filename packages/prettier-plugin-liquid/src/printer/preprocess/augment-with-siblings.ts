@@ -1,6 +1,6 @@
 import {
-  AugmentedNode,
   Augment,
+  AugmentedNode,
   LiquidHtmlNode,
   WithParent,
   WithSiblings,

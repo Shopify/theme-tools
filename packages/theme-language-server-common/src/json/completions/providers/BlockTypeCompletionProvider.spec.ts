@@ -1,6 +1,6 @@
-import { describe, it, expect, assert, beforeEach } from 'vitest';
-import { JSONLanguageService } from '../../JSONLanguageService';
+import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { DocumentManager } from '../../../documents';
+import { JSONLanguageService } from '../../JSONLanguageService';
 import { getRequestParams, isCompletionList } from '../../test/test-helpers';
 
 /**

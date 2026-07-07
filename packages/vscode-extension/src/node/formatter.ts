@@ -1,7 +1,7 @@
-import path from 'node:path';
-import { workspace } from 'vscode';
 import LiquidPrettierPlugin from '@shopify/prettier-plugin-liquid';
+import path from 'node:path';
 import * as prettier from 'prettier';
+import { workspace } from 'vscode';
 import { Format } from '../common/formatter';
 
 export const vscodePrettierFormat: Format = async (textDocument) => {

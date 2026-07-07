@@ -1,10 +1,5 @@
-import {
-  Position,
-  LiquidTagNode,
-  NodeTypes,
-  LiquidVariableLookup,
-} from '@shopify/liquid-html-parser';
-import { Context, LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
+import { LiquidVariableLookup, NodeTypes, Position } from '@shopify/liquid-html-parser';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 export const BlockIdUsage: LiquidCheckDefinition = {
   meta: {

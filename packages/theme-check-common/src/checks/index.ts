@@ -1,5 +1,6 @@
 import { ConfigTarget, JSONCheckDefinition, LiquidCheckDefinition } from '../types';
 
+import { AppBlockMissingSchema } from './app-block-missing-schema';
 import { AppBlockValidTags } from './app-block-valid-tags';
 import { AssetPreload } from './asset-preload';
 import { AssetSizeAppBlockCSS } from './asset-size-app-block-css';
@@ -16,8 +17,8 @@ import { DeprecatedFontsOnSectionsAndBlocks } from './deprecated-fonts-on-sectio
 import { DeprecatedFontsOnSettingsData } from './deprecated-fonts-on-settings-data';
 import { DeprecatedFontsOnSettingsSchema } from './deprecated-fonts-on-settings-schema';
 import { DeprecatedTag } from './deprecated-tag';
-import { DuplicateRenderSnippetArguments } from './duplicate-render-snippet-arguments';
 import { DuplicateContentForArguments } from './duplicate-content-for-arguments';
+import { DuplicateRenderSnippetArguments } from './duplicate-render-snippet-arguments';
 import { EmptyBlockContent } from './empty-block-content';
 import { HardcodedRoutes } from './hardcoded-routes';
 import { ImgWidthAndHeight } from './img-width-and-height';
@@ -33,42 +34,41 @@ import { MissingTemplate } from './missing-template';
 import { OrphanedSnippet } from './orphaned-snippet';
 import { PaginationSize } from './pagination-size';
 import { ParserBlockingScript } from './parser-blocking-script';
-import { SchemaPresetsBlockOrder } from './schema-presets-block-order';
-import { SchemaPresetsStaticBlocks } from './schema-presets-static-blocks';
 import { RemoteAsset } from './remote-asset';
 import { RequiredLayoutThemeObject } from './required-layout-theme-object';
 import { ReservedDocParamNames } from './reserved-doc-param-names';
+import { SchemaPresetsBlockOrder } from './schema-presets-block-order';
+import { SchemaPresetsStaticBlocks } from './schema-presets-static-blocks';
 import { StaticStylesheetAndJavascriptTags } from './static-stylesheet-and-javascript-tags';
 import { TranslationKeyExists } from './translation-key-exists';
 import { UnclosedHTMLElement } from './unclosed-html-element';
 import { UndefinedObject } from './undefined-object';
 import { UniqueDocParamNames } from './unique-doc-param-names';
+import { UniqueSettingIds } from './unique-settings-id';
 import { UniqueStaticBlockId } from './unique-static-block-id';
 import { UnknownFilter } from './unknown-filter';
 import { UnrecognizedContentForArguments } from './unrecognized-content-for-arguments';
 import { UnrecognizedRenderSnippetArguments } from './unrecognized-render-snippet-arguments';
-import { UnusedAssign } from './unused-assign';
 import { UnsupportedDocTag } from './unsupported-doc-tag';
 import { UnsupportedFilterArguments } from './unsupported-filter-arguments';
+import { UnusedAssign } from './unused-assign';
 import { UnusedDocParam } from './unused-doc-param';
-import { ValidContentForArguments } from './valid-content-for-arguments';
-import { ValidContentForArgumentTypes } from './valid-content-for-argument-types';
 import { ValidBlockTarget } from './valid-block-target';
-import { ValidScopedCSSClass } from './valid-scoped-css-class';
+import { ValidContentForArgumentTypes } from './valid-content-for-argument-types';
+import { ValidContentForArguments } from './valid-content-for-arguments';
+import { ValidDocParamTypes } from './valid-doc-param-types';
 import { ValidHTMLTranslation } from './valid-html-translation';
 import { ValidJSON } from './valid-json';
-import { ValidDocParamTypes } from './valid-doc-param-types';
 import { ValidLocalBlocks } from './valid-local-blocks';
 import { ValidRenderSnippetArgumentTypes } from './valid-render-snippet-argument-types';
 import { ValidSchema } from './valid-schema';
 import { ValidSchemaName } from './valid-schema-name';
 import { ValidSchemaTranslations } from './valid-schema-translations';
+import { ValidScopedCSSClass } from './valid-scoped-css-class';
 import { ValidSettingsKey } from './valid-settings-key';
 import { ValidStaticBlockType } from './valid-static-block-type';
 import { ValidVisibleIf, ValidVisibleIfSettingsSchema } from './valid-visible-if';
 import { VariableName } from './variable-name';
-import { AppBlockMissingSchema } from './app-block-missing-schema';
-import { UniqueSettingIds } from './unique-settings-id';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,

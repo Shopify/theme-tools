@@ -1,6 +1,7 @@
 import { deepGet, isError } from '@shopify/theme-check-common';
 import { JSONPath } from 'vscode-json-languageservice';
 import { JSONCompletionItem } from 'vscode-json-languageservice/lib/umd/jsonContributions';
+import { GetThemeBlockNames, GetThemeBlockSchema } from '../../JSONContributions';
 import { isLiquidRequestContext, RequestContext } from '../../RequestContext';
 import { isSectionOrBlockFile } from '../../utils';
 import { JSONCompletionProvider } from '../JSONCompletionProvider';
@@ -8,7 +9,6 @@ import {
   createBlockNameCompletionItems,
   isSectionOrBlockSchema,
 } from './BlockTypeCompletionProvider';
-import { GetThemeBlockNames, GetThemeBlockSchema } from '../../JSONContributions';
 
 /**
  * The ReferencedBlockTypeCompletionProvider offers value completions of the

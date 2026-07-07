@@ -1,5 +1,5 @@
-import { LiquidHtmlNode, HtmlElement, NodeTypes } from '@shopify/liquid-html-parser';
-import { TextDocumentPositionParams, Range } from 'vscode-languageserver';
+import { HtmlElement, LiquidHtmlNode, NodeTypes } from '@shopify/liquid-html-parser';
+import { Range, TextDocumentPositionParams } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { isCovered } from './isCovered';
 

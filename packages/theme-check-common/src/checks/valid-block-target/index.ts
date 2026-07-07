@@ -10,11 +10,11 @@ import {
 } from '../../types';
 import {
   getBlocks,
+  isInvalidDefaultBlock,
+  isInvalidPresetBlock,
   reportWarning,
   validateBlockFileExistence,
   validateNestedBlocks,
-  isInvalidPresetBlock,
-  isInvalidDefaultBlock,
 } from '../../utils';
 
 export const ValidBlockTarget: LiquidCheckDefinition = {

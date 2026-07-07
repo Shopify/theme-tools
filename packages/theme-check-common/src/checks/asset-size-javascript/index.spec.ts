@@ -1,7 +1,6 @@
-import { expect, describe, it, afterEach, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AssetSizeJavaScript } from '.';
 import { check, MockTheme } from '../../test';
-import { SchemaProp } from '../../types';
 import { hasRemoteAssetSizeExceededThreshold } from '../../utils/file-utils';
 
 vi.mock('../../utils/file-utils', async (importOriginal) => {

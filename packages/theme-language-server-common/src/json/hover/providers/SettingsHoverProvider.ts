@@ -1,11 +1,11 @@
 import { isError } from '@shopify/theme-check-common';
 import { JSONPath, MarkedString } from 'vscode-json-languageservice';
+import { AugmentedLiquidSourceCode } from '../../../documents';
 import { GetTranslationsForURI, renderTranslation, translationValue } from '../../../translations';
+import { isSectionOrBlockSchema } from '../../completions/providers/BlockTypeCompletionProvider';
 import { isLiquidRequestContext, LiquidRequestContext, RequestContext } from '../../RequestContext';
 import { isSectionOrBlockFile } from '../../utils';
 import { JSONHoverProvider } from '../JSONHoverProvider';
-import { AugmentedLiquidSourceCode } from '../../../documents';
-import { isSectionOrBlockSchema } from '../../completions/providers/BlockTypeCompletionProvider';
 
 export class SettingsHoverProvider implements JSONHoverProvider {
   constructor(private getDefaultSchemaTranslations: GetTranslationsForURI) {}

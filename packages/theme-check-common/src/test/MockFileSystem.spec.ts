@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { MockFileSystem } from './MockFileSystem';
 import { FileType } from '../AbstractFileSystem';
+import { MockFileSystem } from './MockFileSystem';
 
 describe('MockFileSystem', () => {
   let fs: MockFileSystem;

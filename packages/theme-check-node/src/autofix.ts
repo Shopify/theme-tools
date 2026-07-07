@@ -1,12 +1,12 @@
-import { writeFile } from 'fs/promises';
 import {
+  FixApplicator,
   Offense,
   Theme,
-  autofix as coreAutofix,
-  FixApplicator,
   applyFixToString,
+  autofix as coreAutofix,
   path,
 } from '@shopify/theme-check-common';
+import { writeFile } from 'fs/promises';
 
 export const saveToDiskFixApplicator: FixApplicator = async (sourceCode, fix) => {
   const updatedSource = applyFixToString(sourceCode.source, fix);

@@ -1,9 +1,9 @@
-import { describe, it, expect, afterEach, beforeEach } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { resolveConfig } from './resolve-config';
-import { ModernIdentifiers } from '../types';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createMockConfigFile, makeTmpFolder, removeTmpFolder } from '../../test/test-helpers';
+import { ModernIdentifiers } from '../types';
+import { resolveConfig } from './resolve-config';
 
 describe('Unit: resolveConfig', () => {
   let tempDir: string;

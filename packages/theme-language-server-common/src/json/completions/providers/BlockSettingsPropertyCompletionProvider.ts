@@ -1,12 +1,12 @@
+import { deepGet, isError, SourceCodeType } from '@shopify/theme-check-common';
 import { JSONPath } from 'vscode-json-languageservice';
+import { GetTranslationsForURI } from '../../../translations';
 import { GetThemeBlockSchema } from '../../JSONContributions';
 import { RequestContext } from '../../RequestContext';
-import { JSONCompletionItem, JSONCompletionProvider } from '../JSONCompletionProvider';
-import { isBlockFile, isSectionFile } from '../../utils';
-import { deepGet, isError, SourceCodeType } from '@shopify/theme-check-common';
-import { isSectionOrBlockSchema } from './BlockTypeCompletionProvider';
-import { GetTranslationsForURI } from '../../../translations';
 import { getSectionBlockByName, schemaSettingsPropertyCompletionItems } from '../../schemaSettings';
+import { isBlockFile, isSectionFile } from '../../utils';
+import { JSONCompletionItem, JSONCompletionProvider } from '../JSONCompletionProvider';
+import { isSectionOrBlockSchema } from './BlockTypeCompletionProvider';
 
 /**
  * The BlockSettingsPropertyCompletionProvider offers value completions of the

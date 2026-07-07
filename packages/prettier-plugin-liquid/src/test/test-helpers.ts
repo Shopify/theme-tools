@@ -1,9 +1,9 @@
-import { expect } from 'vitest';
-import * as path from 'path';
 import * as fs from 'fs';
+import * as path from 'path';
 import * as prettier from 'prettier';
-import plugin from '../plugin';
+import { expect } from 'vitest';
 import { parse } from '../parser';
+import plugin from '../plugin';
 import { preprocess } from '../printer/print-preprocess';
 import { DocumentNode, LiquidParserOptions } from '../types';
 

@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
-import { JSONCorrector } from './json-corrector';
+import { describe, expect, it } from 'vitest';
 import { prettyJSON } from '../../test';
+import { JSONCorrector } from './json-corrector';
 
 describe('Module: JSONCorrector', () => {
   it('should collect add patches and apply them', () => {

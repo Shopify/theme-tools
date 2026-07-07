@@ -5,8 +5,8 @@ import {
   LiquidTagCapture,
   NodeTypes,
 } from '@shopify/liquid-html-parser';
-import { LiquidCheckDefinition, SchemaProp, Severity, SourceCodeType } from '../../types';
 import { camelCase, kebabCase, snakeCase } from 'lodash';
+import { LiquidCheckDefinition, SchemaProp, Severity, SourceCodeType } from '../../types';
 
 const pascalCase = (string: string) => {
   const camelCased = camelCase(string);

@@ -1,26 +1,26 @@
 'use strict';
 
-import { doc, Doc } from 'prettier';
 import { NodeTypes } from '@shopify/liquid-html-parser';
-import { shouldPreserveContent, forceBreakContent, hasNoChildren } from '../utils';
-import {
-  printOpeningTagPrefix,
-  printOpeningTag,
-  printClosingTagSuffix,
-  printClosingTag,
-  needsToBorrowPrevClosingTagEndMarker,
-  needsToBorrowLastChildClosingTagEndMarker,
-  getNodeContent,
-} from './tag';
-import { printChildren } from './children';
+import { doc, Doc } from 'prettier';
 import {
   AstPath,
+  HtmlNode,
+  HtmlRawNode,
   LiquidParserOptions,
   LiquidPrinter,
-  HtmlNode,
   LiquidPrinterArgs,
-  HtmlRawNode,
 } from '../../types';
+import { forceBreakContent, hasNoChildren, shouldPreserveContent } from '../utils';
+import { printChildren } from './children';
+import {
+  getNodeContent,
+  needsToBorrowLastChildClosingTagEndMarker,
+  needsToBorrowPrevClosingTagEndMarker,
+  printClosingTag,
+  printClosingTagSuffix,
+  printOpeningTag,
+  printOpeningTagPrefix,
+} from './tag';
 
 const {
   builders: { breakParent, dedentToRoot, group, indent, hardline, line, softline },

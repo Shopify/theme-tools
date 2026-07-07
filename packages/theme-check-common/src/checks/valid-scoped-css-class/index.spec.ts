@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
-import { ValidScopedCSSClass } from './index';
+import { describe, expect, it } from 'vitest';
 import { check, runLiquidCheck } from '../../test';
+import { ValidScopedCSSClass } from './index';
 
 describe('Module: ValidScopedCSSClass', () => {
   const noDeps = {

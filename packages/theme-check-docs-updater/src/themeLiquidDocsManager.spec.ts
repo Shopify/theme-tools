@@ -1,6 +1,6 @@
-import { expect, describe, it, beforeEach, afterEach, vi, assert } from 'vitest';
-import { ThemeLiquidDocsManager } from './themeLiquidDocsManager';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { downloadResource, Resources } from './themeLiquidDocsDownloader';
+import { ThemeLiquidDocsManager } from './themeLiquidDocsManager';
 import { noop } from './utils';
 
 vi.mock('./themeLiquidDocsDownloader', async (importOriginal) => {

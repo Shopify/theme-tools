@@ -6,9 +6,9 @@ import {
   InsertTextFormat,
   TextEdit,
 } from 'vscode-languageserver';
+import { AugmentedLiquidSourceCode } from '../../documents';
 import { PseudoType, TypeSystem, isArrayType } from '../../TypeSystem';
 import { memoize } from '../../utils';
-import { AugmentedLiquidSourceCode } from '../../documents';
 import { CURSOR, LiquidCompletionParams } from '../params';
 import { Provider, createCompletionItem, sortByName } from './common';
 

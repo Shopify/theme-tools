@@ -1,5 +1,5 @@
-import { Hover, HoverParams } from 'vscode-languageserver';
 import { LiquidHtmlNode } from '@shopify/theme-check-common';
+import { Hover, HoverParams } from 'vscode-languageserver';
 
 export interface BaseHoverProvider {
   hover(

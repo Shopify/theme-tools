@@ -1,11 +1,10 @@
-import { SourceCodeType, UriString } from '../types';
-import { visit } from '../visitor';
-import { LiquidHtmlNode } from '../types';
 import {
+  LiquidDocDescriptionNode,
   LiquidDocExampleNode,
   LiquidDocParamNode,
-  LiquidDocDescriptionNode,
 } from '@shopify/liquid-html-parser';
+import { LiquidHtmlNode, SourceCodeType, UriString } from '../types';
+import { visit } from '../visitor';
 
 export type GetDocDefinitionForURI = (
   uri: UriString,

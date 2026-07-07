@@ -1,6 +1,6 @@
 import {
-  FileStat,
   AbstractFileSystem,
+  FileStat,
   FileTuple,
   FileType,
   path,

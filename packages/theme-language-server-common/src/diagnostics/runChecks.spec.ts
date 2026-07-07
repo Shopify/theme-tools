@@ -1,5 +1,4 @@
 import {
-  AbstractFileSystem,
   allChecks,
   LiquidCheckDefinition,
   path,

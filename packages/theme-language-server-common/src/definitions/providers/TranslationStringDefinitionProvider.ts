@@ -1,12 +1,12 @@
 import { LiquidHtmlNode, NodeTypes } from '@shopify/liquid-html-parser';
 import { SourceCodeType, nodeAtPath } from '@shopify/theme-check-common';
 import {
-  DefinitionParams,
   DefinitionLink,
-  Range,
+  DefinitionParams,
   LocationLink,
+  Range,
 } from 'vscode-languageserver-protocol';
-import { DocumentManager, AugmentedJsonSourceCode } from '../../documents';
+import { AugmentedJsonSourceCode, DocumentManager } from '../../documents';
 import { BaseDefinitionProvider } from '../BaseDefinitionProvider';
 
 export class TranslationStringDefinitionProvider implements BaseDefinitionProvider {

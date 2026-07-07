@@ -1,6 +1,6 @@
 import { DocumentOnTypeFormattingParams, Position, TextEdit } from 'vscode-languageserver-protocol';
-import { AugmentedSourceCode } from '../documents';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { AugmentedSourceCode } from '../documents';
 
 export interface BaseOnTypeFormattingProvider {
   onTypeFormatting(

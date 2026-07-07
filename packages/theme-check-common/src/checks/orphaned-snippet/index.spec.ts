@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
-import { OrphanedSnippet } from './index';
+import { describe, expect, it } from 'vitest';
 import { runLiquidCheck } from '../../test';
+import { OrphanedSnippet } from './index';
 
 describe('Module: OrphanedSnippet', () => {
   describe('when the snippet is not referenced by any files', () => {

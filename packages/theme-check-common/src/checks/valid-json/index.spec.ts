@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
-import { ValidJSON } from './index';
+import { describe, expect, it } from 'vitest';
 import { highlightedOffenses, runJSONCheck } from '../../test';
+import { ValidJSON } from './index';
 
 describe('Module: ValidJSON', () => {
   it('should report an error for invalid JSON (0)', async () => {

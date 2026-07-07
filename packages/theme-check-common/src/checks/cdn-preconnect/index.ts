@@ -1,4 +1,4 @@
-import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { isAttr, isValuedHtmlAttribute, valueIncludes } from '../utils';
 
 export const CdnPreconnect: LiquidCheckDefinition = {

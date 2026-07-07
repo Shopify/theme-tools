@@ -1,8 +1,8 @@
 import lodashSet from 'lodash/set';
 import { describe, expect, it } from 'vitest';
-import { runLiquidCheck, highlightedOffenses } from '../../test';
-import { ValidSchema } from './index';
+import { highlightedOffenses, runLiquidCheck } from '../../test';
 import { Dependencies } from '../../types';
+import { ValidSchema } from './index';
 
 const DEFAULT_FILE_NAME = 'sections/file.liquid';
 const VALID_SECTION_SCHEMA = {

@@ -1,11 +1,11 @@
-import { Doc, doc } from 'prettier';
 import { isBranchedTag } from '@shopify/liquid-html-parser';
-import { LiquidAstPath, LiquidHtmlNode, LiquidBranch } from '../../types';
+import { Doc, doc } from 'prettier';
+import { LiquidAstPath, LiquidBranch, LiquidHtmlNode } from '../../types';
 import { isEmpty } from './array';
 
 export * from './array';
-export * from './string';
 export * from './node';
+export * from './string';
 
 const { builders } = doc;
 const { ifBreak } = builders;

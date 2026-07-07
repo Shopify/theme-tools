@@ -15,9 +15,9 @@ import {
   PropertyNode,
   ValueNode,
 } from './jsonc/types';
+import { DocDefinition } from './liquid-doc/liquidDoc';
 import { JsonValidationSet, ThemeDocset } from './types/theme-liquid-docs';
 import { AppBlockSchema, SectionSchema, ThemeBlockSchema } from './types/theme-schemas';
-import { DocDefinition } from './liquid-doc/liquidDoc';
 
 export * from './jsonc/types';
 export * from './types/schema-prop-factory';

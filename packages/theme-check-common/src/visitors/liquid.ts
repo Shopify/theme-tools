@@ -1,5 +1,5 @@
 import { nonTraversableProperties } from '@shopify/liquid-html-parser';
-import { LiquidHtmlNode, CheckNodeMethod, LiquidCheck, SourceCodeType } from '../types';
+import { CheckNodeMethod, LiquidCheck, LiquidHtmlNode, SourceCodeType } from '../types';
 
 function isLiquidHtmlNode(thing: unknown): thing is LiquidHtmlNode {
   return !!thing && typeof thing === 'object' && 'type' in thing;

@@ -1,9 +1,9 @@
-import { describe, beforeEach, it, expect } from 'vitest';
-import { DocumentManager } from '../../documents';
-import { HoverProvider } from '../HoverProvider';
 import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
+import { beforeEach, describe, expect, it } from 'vitest';
 import '../../../../theme-check-common/src/test/test-setup';
+import { DocumentManager } from '../../documents';
 import { formatLiquidDocTagHandle, SUPPORTED_LIQUID_DOC_TAG_HANDLES } from '../../utils/liquidDoc';
+import { HoverProvider } from '../HoverProvider';
 
 describe('Module: RenderSnippetParameterHoverProvider', async () => {
   let provider: HoverProvider;

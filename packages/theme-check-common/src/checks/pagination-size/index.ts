@@ -4,10 +4,10 @@ import {
   LiquidVariableLookup,
   NodeTypes,
 } from '@shopify/liquid-html-parser';
+import { parseJSON } from '../../json';
 import { LiquidCheckDefinition, SchemaProp, Severity, SourceCodeType } from '../../types';
 import { isError, last } from '../../utils';
 import { isNodeOfType } from '../utils';
-import { parseJSON } from '../../json';
 
 const schema = {
   minSize: SchemaProp.number(1),

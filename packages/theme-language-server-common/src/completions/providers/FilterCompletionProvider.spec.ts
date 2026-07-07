@@ -1,7 +1,7 @@
 import { FilterEntry, MetafieldDefinitionMap, ObjectEntry } from '@shopify/theme-check-common';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { InsertTextFormat, type TextEdit } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
 import { CURSOR } from '../params';

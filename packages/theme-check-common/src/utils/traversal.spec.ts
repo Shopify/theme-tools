@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { Reference } from '../types';
-import { getAncestorUris, getAllSnippetDescendantUris, getRenderedSnippetUris } from './traversal';
+import { getAllSnippetDescendantUris, getAncestorUris, getRenderedSnippetUris } from './traversal';
 
 function ref(
   sourceUri: string,
