@@ -1,5 +1,5 @@
 import { getLocEnd, getLocStart } from '../../json';
-import { Preset, ThemeBlock, Section, Context, SourceCodeType, LiteralNode } from '../../types';
+import { Context, LiteralNode, Preset, Section, SourceCodeType, ThemeBlock } from '../../types';
 
 type BlockNodeWithPath = {
   node: Section.Block | ThemeBlock.Block | Preset.Block;

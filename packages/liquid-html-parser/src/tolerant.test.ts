@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { isLiquidHtmlNode, toLiquidAST, toLiquidHtmlAST, walk } from './ast';
+import { describe, expect, it } from 'vitest';
 import type { DocumentNode, LiquidErrorNode, LiquidHtmlNode } from './ast';
+import { isLiquidHtmlNode, toLiquidAST, toLiquidHtmlAST, walk } from './ast';
 import { LiquidHTMLASTParsingError } from './errors';
 import { findErrorNodeAtOffset, toTolerantLiquidAST, toTolerantLiquidHtmlAST } from './tolerant';
 import { NodeTypes } from './types';

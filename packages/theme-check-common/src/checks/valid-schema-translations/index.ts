@@ -1,8 +1,8 @@
 import { getLocEnd, getLocStart } from '../../json';
+import { JSONNode, LiteralNode } from '../../jsonc/types';
 import { getSchema } from '../../to-schema';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { deepGet } from '../../utils';
-import { JSONNode, LiteralNode } from '../../jsonc/types';
 
 export const ValidSchemaTranslations: LiquidCheckDefinition = {
   meta: {

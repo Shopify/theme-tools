@@ -4,18 +4,18 @@
  */
 import {
   ContentForMarkup,
-  RenderMarkup,
   LiquidNamedArgument,
   NodeTypes,
+  RenderMarkup,
 } from '@shopify/liquid-html-parser';
 import { Context, LiquidDocParameter, SourceCodeType, StringCorrector } from '..';
+import { isLiquidString } from '../checks/utils';
 import {
   BasicParamTypes,
   getDefaultValueForType,
   inferArgumentType,
   isTypeCompatible,
 } from './utils';
-import { isLiquidString } from '../checks/utils';
 
 /**
  * Report error when unknown arguments are provided for `content_for` tag or `render` tag

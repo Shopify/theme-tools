@@ -1,13 +1,13 @@
 import { type LiquidVariableOutput } from '@shopify/liquid-html-parser';
+import type { Context } from '.';
 import {
   hasEmptyMarkup,
-  hasRubyAcceptedFilterArgumentTrailingComma,
   hasRubyAcceptedEmptyFirstFilterArgument,
+  hasRubyAcceptedFilterArgumentTrailingComma,
   hasSkippedCharacters,
   hasUnclosedQuotedString,
   variableHasBareArrayAccess,
 } from './utils';
-import type { Context } from '.';
 
 export function checkVariableOutput(node: LiquidVariableOutput, context: Context): void {
   const rawMarkup = node.source.slice(node.markupPosition.start, node.markupPosition.end);

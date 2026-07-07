@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { ExcessiveSettingsCount, TOLERATED_SETTINGS_COUNT } from './index';
-import { Severity } from '../../types';
 import { check, runLiquidCheck } from '../../test';
 import type { Offense } from '../../types';
+import { Severity } from '../../types';
+import { ExcessiveSettingsCount, TOLERATED_SETTINGS_COUNT } from './index';
 
 const DEFAULT_PATH = 'sections/test.liquid';
 

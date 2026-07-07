@@ -1,5 +1,5 @@
-import { check, themeCheckRun } from './index';
 import path from 'node:path';
+import { themeCheckRun } from './index';
 
 async function main(): Promise<void> {
   const root = path.resolve(process.argv[2]);

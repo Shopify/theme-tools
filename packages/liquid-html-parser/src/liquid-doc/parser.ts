@@ -8,24 +8,28 @@
  * No raw string scanning in this file — all extraction is token-based.
  */
 
-import { LiquidDocTokenType, ParamTokenType } from './tokenizer';
-import type { LiquidDocToken, ParamToken } from './tokenizer';
-import { tokenizeLiquidDoc, tokenizeParamContent } from './tokenizer';
-import {
-  makeTextNode,
-  makeLiquidDocParamNode,
-  makeLiquidDocDescriptionNode,
-  makeLiquidDocExampleNode,
-  makeLiquidDocPromptNode,
-} from './factories';
 import type {
-  TextNode,
-  LiquidDocParamNode,
   LiquidDocDescriptionNode,
   LiquidDocExampleNode,
+  LiquidDocParamNode,
   LiquidDocPromptNode,
+  TextNode,
 } from '../ast';
 import { assertNever } from '../utils';
+import {
+  makeLiquidDocDescriptionNode,
+  makeLiquidDocExampleNode,
+  makeLiquidDocParamNode,
+  makeLiquidDocPromptNode,
+  makeTextNode,
+} from './factories';
+import type { LiquidDocToken, ParamToken } from './tokenizer';
+import {
+  LiquidDocTokenType,
+  ParamTokenType,
+  tokenizeLiquidDoc,
+  tokenizeParamContent,
+} from './tokenizer';
 
 /** Union of all nodes that can appear in a LiquidDoc body. */
 export type LiquidDocNode =

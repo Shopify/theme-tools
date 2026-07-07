@@ -1,3 +1,5 @@
+import { type LiquidRawTag } from '@shopify/liquid-html-parser';
+import { toJSONAST } from '../../to-source-code';
 import {
   isArrayNode,
   isObjectNode,
@@ -6,9 +8,7 @@ import {
   SourceCodeType,
   type LiquidCheckDefinition,
 } from '../../types';
-import { toJSONAST } from '../../to-source-code';
 import { visit } from '../../visitor';
-import { type LiquidRawTag } from '@shopify/liquid-html-parser';
 
 /**
  * 40 sits just above Horizon's per-file maximum of 36 top-level settings,

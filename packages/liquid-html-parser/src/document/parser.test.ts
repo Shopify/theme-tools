@@ -1,5 +1,5 @@
 import { describe, it } from 'vitest';
-import { toLiquidHtmlAST, toLiquidAST } from '../ast';
+import { toLiquidAST, toLiquidHtmlAST } from '../ast';
 import { expectPath, expectPosition } from './test-helpers';
 
 describe('Unit: document-parser', () => {

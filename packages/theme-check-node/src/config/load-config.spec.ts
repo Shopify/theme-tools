@@ -1,7 +1,3 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import { describe, it, expect, afterEach, beforeEach, assert, vi } from 'vitest';
-import { loadConfig } from './load-config';
 import {
   allChecks,
   CheckDefinition,
@@ -10,6 +6,10 @@ import {
   Severity,
   SourceCodeType,
 } from '@shopify/theme-check-common';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest';
+import { URI } from 'vscode-uri';
 import {
   createMockConfigFile,
   createMockNodeModule,
@@ -18,7 +18,7 @@ import {
   removeTmpFolder,
 } from '../test/test-helpers';
 import { thisNodeModuleRoot } from './installation-location';
-import { URI } from 'vscode-uri';
+import { loadConfig } from './load-config';
 import * as resolveModule from './resolve';
 
 describe('Unit: loadConfig', () => {

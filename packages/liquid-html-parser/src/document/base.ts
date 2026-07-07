@@ -1,6 +1,6 @@
-import { TokenType, tokenize } from './tokenizer';
-import type { Token } from './tokenizer';
 import { LiquidHTMLASTParsingError } from '../errors';
+import type { Token } from './tokenizer';
+import { TokenType, tokenize } from './tokenizer';
 
 export class ParserBase {
   protected tokens: Token[];

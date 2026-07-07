@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { Offense, Severity, SourceCodeType, path } from '@shopify/theme-check-common';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
-import { Offense, SourceCodeType, Severity, path } from '@shopify/theme-check-common';
 import { DiagnosticsManager } from '../../diagnostics';
 import { DocumentManager } from '../../documents';
 import { FixAllProvider } from './FixAllProvider';
-import { TextDocument } from 'vscode-languageserver-textdocument';
 
 describe('Unit: FixAllProvider', () => {
   const uri = path.normalize(URI.file('/path/to/file.liquid'));

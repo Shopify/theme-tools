@@ -1,8 +1,8 @@
-import type { BlockMarkup, BlockArrayArgument, LiquidNamedArgument } from '../ast';
+import type { BlockArrayArgument, BlockMarkup, LiquidNamedArgument } from '../ast';
 import type { MarkupParser } from '../markup/parser';
 import { MarkupTokenType } from '../markup/tokenizer';
+import { TagKind, type Parser, type TagDefinitionBlock } from '../tag-definitions';
 import { NodeTypes } from '../types';
-import { TagKind, type TagDefinitionBlock, type Parser } from '../tag-definitions';
 
 const BLOCK_TYPE_REGEX = /^_?[a-zA-Z0-9][\w-]*$/;
 

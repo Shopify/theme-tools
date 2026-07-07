@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { AbstractFileSystem } from './AbstractFileSystem';
 import {
   makeGetDefaultLocale,
   makeGetDefaultTranslations,
   makeGetMetafieldDefinitions,
 } from './context-utils';
 import { MockFileSystem } from './test';
-import { AbstractFileSystem } from './AbstractFileSystem';
 
 describe('Unit: getDefaultLocale', () => {
   let fs: AbstractFileSystem;

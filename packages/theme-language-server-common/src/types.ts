@@ -3,12 +3,12 @@ import {
   Config,
   Dependencies as ThemeCheckDependencies,
 } from '@shopify/theme-check-common';
-import { URI } from 'vscode-languageserver';
 import * as rpc from 'vscode-jsonrpc';
+import { URI } from 'vscode-languageserver';
 
-import { WithOptional } from './utils';
-import { Range } from 'vscode-json-languageservice';
 import { Reference } from '@shopify/theme-graph';
+import { Range } from 'vscode-json-languageservice';
+import { WithOptional } from './utils';
 
 export type Dependencies = WithOptional<
   RequiredDependencies,

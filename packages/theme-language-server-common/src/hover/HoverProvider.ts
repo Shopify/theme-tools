@@ -1,4 +1,5 @@
 import {
+  findCurrentNode,
   GetDocDefinitionForURI,
   MetafieldDefinitionMap,
   Mode,
@@ -8,6 +9,7 @@ import {
 import { Hover, HoverParams } from 'vscode-languageserver';
 import { TypeSystem } from '../TypeSystem';
 import { DocumentManager } from '../documents';
+import { GetThemeSettingsSchemaForURI } from '../settings';
 import { GetTranslationsForURI } from '../translations';
 import { BaseHoverProvider } from './BaseHoverProvider';
 import {
@@ -18,16 +20,14 @@ import {
   LiquidObjectAttributeHoverProvider,
   LiquidObjectHoverProvider,
   LiquidTagHoverProvider,
-  TranslationHoverProvider,
   RenderSnippetHoverProvider,
   RenderSnippetParameterHoverProvider,
+  TranslationHoverProvider,
 } from './providers';
-import { HtmlAttributeValueHoverProvider } from './providers/HtmlAttributeValueHoverProvider';
-import { findCurrentNode } from '@shopify/theme-check-common';
-import { GetThemeSettingsSchemaForURI } from '../settings';
-import { LiquidDocTagHoverProvider } from './providers/LiquidDocTagHoverProvider';
 import { ContentForArgumentHoverProvider } from './providers/ContentForArgumentHoverProvider';
 import { ContentForTypeHoverProvider } from './providers/ContentForTypeHoverProvider';
+import { HtmlAttributeValueHoverProvider } from './providers/HtmlAttributeValueHoverProvider';
+import { LiquidDocTagHoverProvider } from './providers/LiquidDocTagHoverProvider';
 export class HoverProvider {
   private providers: BaseHoverProvider[] = [];
 

@@ -1,5 +1,5 @@
 import { LiquidRawTag, NodeTypes } from '@shopify/liquid-html-parser';
-import { Mode, Modes, SourceCodeType, findCurrentNode } from '@shopify/theme-check-common';
+import { SourceCodeType, findCurrentNode } from '@shopify/theme-check-common';
 import { LanguageService, Stylesheet, getCSSLanguageService } from 'vscode-css-languageservice';
 import {
   CompletionItem,

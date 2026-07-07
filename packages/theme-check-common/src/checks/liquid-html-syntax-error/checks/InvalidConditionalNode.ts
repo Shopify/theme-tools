@@ -1,5 +1,5 @@
 import { LiquidBranch, LiquidTag } from '@shopify/liquid-html-parser';
-import { SourceCodeType, Problem } from '../../..';
+import { Problem, SourceCodeType } from '../../..';
 import { getValuesInMarkup, INVALID_SYNTAX_MESSAGE } from './utils';
 
 type TokenType = 'variable' | keyof typeof TOKEN_PATTERNS;

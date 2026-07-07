@@ -1,6 +1,5 @@
-import { isSnippet, isBlock } from '../../to-schema';
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { filePathSupportsLiquidDoc } from '../../liquid-doc/utils';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 export const UnsupportedDocTag: LiquidCheckDefinition = {
   meta: {

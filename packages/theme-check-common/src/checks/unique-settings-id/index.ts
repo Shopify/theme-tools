@@ -7,7 +7,7 @@ import {
   SourceCodeType,
 } from '../../types';
 
-import type { ArrayNode, PropertyNode, JSONCheckDefinition } from '../../types';
+import type { JSONCheckDefinition, PropertyNode } from '../../types';
 
 export const UniqueSettingIds: JSONCheckDefinition = {
   meta: {

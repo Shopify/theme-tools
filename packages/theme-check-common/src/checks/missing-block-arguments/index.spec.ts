@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { MissingBlockArguments } from './index';
+import { describe, expect, it } from 'vitest';
 import { runLiquidCheck } from '../../test';
+import { MissingBlockArguments } from './index';
 
 const CARD_BLOCK = [
   '{% doc %}',

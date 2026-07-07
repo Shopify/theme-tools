@@ -1,8 +1,8 @@
-import type { PaginateMarkup, LiquidNamedArgument } from '../ast';
+import type { LiquidNamedArgument, PaginateMarkup } from '../ast';
 import type { MarkupParser } from '../markup/parser';
 import { MarkupTokenType } from '../markup/tokenizer';
+import { TagKind, type Parser, type TagDefinitionBlock } from '../tag-definitions';
 import { NodeTypes } from '../types';
-import { TagKind, type TagDefinitionBlock, type Parser } from '../tag-definitions';
 
 export const paginateTag: TagDefinitionBlock<PaginateMarkup> = {
   kind: TagKind.Block,

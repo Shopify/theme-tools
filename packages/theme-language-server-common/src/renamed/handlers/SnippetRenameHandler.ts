@@ -10,9 +10,9 @@ import {
 } from 'vscode-languageserver-protocol';
 import { ClientCapabilities } from '../../ClientCapabilities';
 import { DocumentManager, isLiquidSourceCode } from '../../documents';
+import { FindThemeRootURI } from '../../internal-types';
 import { isSnippet, snippetName } from '../../utils/uri';
 import { BaseRenameHandler } from '../BaseRenameHandler';
-import { FindThemeRootURI } from '../../internal-types';
 
 /**
  * The SnippetRenameHandler will handle snippet renames.

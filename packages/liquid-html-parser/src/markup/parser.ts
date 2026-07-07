@@ -1,32 +1,32 @@
-import { LiquidHTMLASTParsingError } from '../errors';
 import type {
-  LiquidExpression,
-  LiquidVariableLookup,
-  BlockArrayLiteral,
   BlockArrayArgument,
-  LiquidVariableLookupMode,
-  LiquidConditionalExpression,
+  BlockArrayLiteral,
   ComplexLiquidExpression,
-  LiquidVariable,
-  LiquidFilter,
   LiquidArgument,
+  LiquidConditionalExpression,
+  LiquidExpression,
+  LiquidFilter,
   LiquidNamedArgument,
+  LiquidVariable,
+  LiquidVariableLookup,
+  LiquidVariableLookupMode,
 } from '../ast';
 import { LiquidLiteralValues } from '../ast';
-import type { ValueExpression, Expression } from './expression-adapter';
-import {
-  LOGICAL_OPERATORS,
-  EQUALITY_OPERATORS,
-  COMPARISON_OPERATORS,
-  type LogicalOperator,
-  type EqualityOperator,
-  type ComparisonOperator,
-  adaptConditional,
-  adaptComplex,
-} from './expression-adapter';
+import { LiquidHTMLASTParsingError } from '../errors';
 import { NodeTypes } from '../types';
-import { MarkupTokenType, tokenizeMarkup } from './tokenizer';
+import type { Expression, ValueExpression } from './expression-adapter';
+import {
+  COMPARISON_OPERATORS,
+  type ComparisonOperator,
+  EQUALITY_OPERATORS,
+  type EqualityOperator,
+  LOGICAL_OPERATORS,
+  type LogicalOperator,
+  adaptComplex,
+  adaptConditional,
+} from './expression-adapter';
 import type { MarkupToken } from './tokenizer';
+import { MarkupTokenType, tokenizeMarkup } from './tokenizer';
 
 export class MarkupParser {
   /**

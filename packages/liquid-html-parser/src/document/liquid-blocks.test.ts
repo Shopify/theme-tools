@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
-import { toLiquidHtmlAST, toLiquidAST } from '../ast';
+import { describe, expect, it } from 'vitest';
+import { toLiquidAST, toLiquidHtmlAST } from '../ast';
 import {
+  expectBlockEndPosition,
+  expectBlockStartPosition,
   expectPath,
   expectPosition,
-  expectBlockStartPosition,
-  expectBlockEndPosition,
   sourceAt,
 } from './test-helpers';
 

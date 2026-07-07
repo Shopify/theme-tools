@@ -1,47 +1,47 @@
-import { TokenType } from './tokenizer';
-import { ParserBase } from './base';
-import {
-  makeTextNode,
-  makeRawMarkup,
-  makeHtmlElement,
-  makeHtmlVoidElement,
-  makeHtmlSelfClosingElement,
-  makeHtmlRawNode,
-  makeHtmlComment,
-  makeHtmlDoctype,
-  makeHtmlDanglingMarkerClose,
-  makeAttrDoubleQuoted,
-  makeAttrSingleQuoted,
-  makeAttrUnquoted,
-  makeAttrEmpty,
-} from './factories';
-import { ChildFilterMode, filterChildren, compoundNamesMatch } from './tree-builder';
-import { NodeTypes } from '../types';
-import type { Position } from '../types';
-import { RawMarkupKinds } from '../ast';
 import type {
-  LiquidHtmlNode,
-  LiquidVariableOutput,
-  LiquidRawTag,
-  LiquidTag,
-  TextNode,
-  HtmlElement,
-  HtmlVoidElement,
-  HtmlSelfClosingElement,
-  HtmlRawNode,
-  HtmlComment,
-  HtmlDoctype,
-  HtmlDanglingMarkerClose,
-  AttributeNode,
   AttrDoubleQuoted,
+  AttributeNode,
   AttrSingleQuoted,
   AttrUnquoted,
-  ValueNode,
-  LiquidNode,
   CompoundNameSegment,
+  HtmlComment,
+  HtmlDanglingMarkerClose,
+  HtmlDoctype,
+  HtmlElement,
+  HtmlRawNode,
+  HtmlSelfClosingElement,
+  HtmlVoidElement,
+  LiquidHtmlNode,
+  LiquidNode,
+  LiquidRawTag,
+  LiquidTag,
+  LiquidVariableOutput,
+  TextNode,
+  ValueNode,
 } from '../ast';
-import { VOID_ELEMENTS, HTML_RAW_TAGS, BLOCKS } from '../grammar';
+import { RawMarkupKinds } from '../ast';
 import { LiquidHTMLASTParsingError } from '../errors';
+import { BLOCKS, HTML_RAW_TAGS, VOID_ELEMENTS } from '../grammar';
+import type { Position } from '../types';
+import { NodeTypes } from '../types';
+import { ParserBase } from './base';
+import {
+  makeAttrDoubleQuoted,
+  makeAttrEmpty,
+  makeAttrSingleQuoted,
+  makeAttrUnquoted,
+  makeHtmlComment,
+  makeHtmlDanglingMarkerClose,
+  makeHtmlDoctype,
+  makeHtmlElement,
+  makeHtmlRawNode,
+  makeHtmlSelfClosingElement,
+  makeHtmlVoidElement,
+  makeRawMarkup,
+  makeTextNode,
+} from './factories';
+import { TokenType } from './tokenizer';
+import { ChildFilterMode, compoundNamesMatch, filterChildren } from './tree-builder';
 
 /**
  * Interface capturing what HTML-parsing free functions need from the

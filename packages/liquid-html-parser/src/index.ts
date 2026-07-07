@@ -1,18 +1,18 @@
 export * from './ast';
-export * from './types';
-export * from './errors';
-export { findErrorNodeAtOffset, toTolerantLiquidAST, toTolerantLiquidHtmlAST } from './tolerant';
-export { TAGS_WITHOUT_MARKUP, RAW_TAGS, VOID_ELEMENTS, BLOCKS } from './grammar';
 export { getConditionalComment } from './conditional-comment';
-export { tokenize, TokenType } from './document/tokenizer';
+export { TokenType, tokenize } from './document/tokenizer';
 export type { Token } from './document/tokenizer';
-export { tokenizeMarkup, MarkupTokenType } from './markup/tokenizer';
-export type { MarkupToken } from './markup/tokenizer';
-export { MarkupParser } from './markup/parser';
-export { builtinTags } from './tags/index';
+export * from './errors';
+export { BLOCKS, RAW_TAGS, TAGS_WITHOUT_MARKUP, VOID_ELEMENTS } from './grammar';
 export {
-  laxRecoverVariable,
-  laxRecoverTagMarkup,
-  laxRecoverWhenValues,
   LaxTagRecoveryError,
+  laxRecoverTagMarkup,
+  laxRecoverVariable,
+  laxRecoverWhenValues,
 } from './lax-recover';
+export { MarkupParser } from './markup/parser';
+export { MarkupTokenType, tokenizeMarkup } from './markup/tokenizer';
+export type { MarkupToken } from './markup/tokenizer';
+export { builtinTags } from './tags/index';
+export { findErrorNodeAtOffset, toTolerantLiquidAST, toTolerantLiquidHtmlAST } from './tolerant';
+export * from './types';

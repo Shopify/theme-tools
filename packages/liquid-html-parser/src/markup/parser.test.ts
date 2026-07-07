@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { tokenizeMarkup, MarkupTokenType } from './tokenizer';
-import { MarkupParser } from './parser';
-import { NodeTypes, Comparators } from '../types';
-import { LiquidHTMLASTParsingError } from '../errors';
 import type {
-  LiquidConditionalExpression,
-  LiquidComparison,
-  LiquidLogicalExpression,
-  LiquidVariableLookup,
   LiquidBooleanExpression,
+  LiquidComparison,
+  LiquidConditionalExpression,
+  LiquidLogicalExpression,
   LiquidNamedArgument,
+  LiquidVariableLookup,
 } from '../ast';
+import { LiquidHTMLASTParsingError } from '../errors';
+import { Comparators, NodeTypes } from '../types';
+import { MarkupParser } from './parser';
+import { MarkupTokenType, tokenizeMarkup } from './tokenizer';
 
 function parser(markup: string): MarkupParser {
   return new MarkupParser(tokenizeMarkup(markup), markup);

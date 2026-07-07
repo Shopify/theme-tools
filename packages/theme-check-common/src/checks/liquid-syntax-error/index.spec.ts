@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { runLiquidCheck } from '../../test';
-import { LiquidSyntaxError } from './index';
 import { checkBlockParserError } from './block';
 import { isDocParserError } from './doc';
+import { LiquidSyntaxError } from './index';
 import { checkJavascriptParserError } from './javascript';
 import { checkPartialParserError } from './partial';
 import { checkRawParserError } from './raw';

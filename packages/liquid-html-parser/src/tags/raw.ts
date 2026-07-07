@@ -1,5 +1,5 @@
 import type { MarkupParser } from '../markup/parser';
-import { TagKind, type TagDefinitionRaw, type Parser } from '../tag-definitions';
+import { TagKind, type Parser, type TagDefinitionRaw } from '../tag-definitions';
 
 function parseNoMarkup(name: string, markup: MarkupParser, _parser: Parser): void {
   if (!markup.isAtEnd()) {

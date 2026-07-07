@@ -1,10 +1,10 @@
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { ContentForMarkup } from '@shopify/liquid-html-parser';
 import {
   getBlockName,
   getLiquidDocParams,
   reportMissingArguments,
 } from '../../liquid-doc/arguments';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 export const MissingContentForArguments: LiquidCheckDefinition = {
   meta: {

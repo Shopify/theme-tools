@@ -1,21 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import type {
-  LiquidVariableLookup,
+  LiquidBooleanExpression,
   LiquidComparison,
   LiquidLogicalExpression,
-  LiquidBooleanExpression,
+  LiquidVariableLookup,
 } from '../ast';
 import { Comparators, NodeTypes } from '../types';
 import {
   type BinaryExpr,
   type ComparisonBinaryExpression,
   type LogicalBinaryExpression,
-  EqualityOperator,
   ComparisonOperator,
+  EqualityOperator,
   LogicalOperator,
-  isBinaryExpression,
-  adaptConditional,
   adaptComplex,
+  adaptConditional,
+  isBinaryExpression,
 } from './expression-adapter';
 
 function makeVar(name: string, start: number, end: number, source: string): LiquidVariableLookup {

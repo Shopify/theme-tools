@@ -1,8 +1,8 @@
 import type { ForMarkup, LiquidNamedArgument } from '../ast';
 import type { MarkupParser } from '../markup/parser';
 import { MarkupTokenType } from '../markup/tokenizer';
+import { TagKind, type Parser, type TagDefinitionBlock } from '../tag-definitions';
 import { NodeTypes } from '../types';
-import { TagKind, type TagDefinitionBlock, type Parser } from '../tag-definitions';
 
 function parseForMarkup(_name: string, markup: MarkupParser, _parser: Parser): ForMarkup {
   const nameToken = markup.consume(MarkupTokenType.Id);

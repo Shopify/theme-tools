@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { UnknownBlockSetting } from './index';
+import { describe, expect, it } from 'vitest';
 import { runLiquidCheck } from '../../test';
+import { UnknownBlockSetting } from './index';
 
 const PRODUCT_BLOCK = [
   '{% schema %}',

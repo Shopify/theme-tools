@@ -1,7 +1,7 @@
 import type { LiquidString } from '../ast';
 import type { MarkupParser } from '../markup/parser';
+import { TagKind, type Parser, type TagDefinitionTag } from '../tag-definitions';
 import { NodeTypes } from '../types';
-import { TagKind, type TagDefinitionTag, type Parser } from '../tag-definitions';
 
 export const sectionsTag: TagDefinitionTag<LiquidString> = {
   kind: TagKind.Tag,

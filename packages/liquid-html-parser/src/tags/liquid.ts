@@ -1,12 +1,12 @@
+import type { LiquidStatement } from '../ast';
 import type { MarkupParser } from '../markup/parser';
 import {
   TagKind,
-  type TagDefinitionTag,
-  type Parser,
   type LiquidLine,
   type LiquidLineContext,
+  type Parser,
+  type TagDefinitionTag,
 } from '../tag-definitions';
-import type { LiquidStatement } from '../ast';
 
 /**
  * Checks if a trimmed line is a continuation of the previous line rather

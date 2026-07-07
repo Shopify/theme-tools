@@ -1,8 +1,8 @@
 import { LiquidHtmlNode } from '@shopify/liquid-html-parser';
 import { DocumentHighlightParams } from 'vscode-languageserver';
 import { DocumentManager } from '../../documents';
-import { BaseDocumentHighlightsProvider } from '../BaseDocumentHighlightsProvider';
 import { getHtmlElementNameRanges } from '../../utils/htmlTagNames';
+import { BaseDocumentHighlightsProvider } from '../BaseDocumentHighlightsProvider';
 
 export class HtmlTagNameDocumentHighlightsProvider implements BaseDocumentHighlightsProvider {
   constructor(public documentManager: DocumentManager) {}

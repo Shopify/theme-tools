@@ -14,18 +14,17 @@
  * `MarkupParser` lax mode (`enableLax()`), and — for tags — re-runs the tag's
  * own `parse` callback, keeping the lax grammar in one place.
  */
-import type { LiquidExpression, LiquidVariable } from './ast';
+import type { LiquidExpression, LiquidStatement, LiquidVariable } from './ast';
 import { MarkupParser } from './markup/parser';
 import { tokenizeMarkup } from './markup/tokenizer';
-import { builtinTags } from './tags/index';
-import { whenBranchParse } from './tags/case';
 import {
   TagKind,
+  type LiquidLineContext,
   type Parser,
   type TagDefinition,
-  type LiquidLineContext,
 } from './tag-definitions';
-import type { LiquidStatement } from './ast';
+import { whenBranchParse } from './tags/case';
+import { builtinTags } from './tags/index';
 
 /**
  * Minimal stand-in for the `Parser` delegate. The lax-recovered tags

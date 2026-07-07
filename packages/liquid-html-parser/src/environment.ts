@@ -2,14 +2,14 @@
 export {
   TagKind,
   type BranchName,
+  type LiquidLine,
+  type LiquidLineContext,
   type Parser,
   type TagDefinition,
   type TagDefinitionBlock,
   type TagDefinitionHybrid,
   type TagDefinitionRaw,
   type TagDefinitionTag,
-  type LiquidLine,
-  type LiquidLineContext,
 } from './tag-definitions';
 
 import type { TagDefinition } from './tag-definitions';

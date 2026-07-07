@@ -1,14 +1,13 @@
+import { nodeAtPath } from '../../json';
+import { getSchema, isBlock, isSection } from '../../to-schema';
 import {
   LiquidCheckDefinition,
+  LiteralNode,
   Preset,
+  Section,
   Severity,
   SourceCodeType,
-  Section,
-  LiteralNode,
 } from '../../types';
-import { nodeAtPath } from '../../json';
-import { getSchema } from '../../to-schema';
-import { isBlock, isSection } from '../../to-schema';
 import { getBlocks, reportWarning } from './valid-block-utils';
 
 type BlockNodeWithPath = {

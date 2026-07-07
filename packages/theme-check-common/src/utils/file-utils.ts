@@ -1,5 +1,5 @@
-import { Context, SourceCodeType, Schema, RelativePath } from '../types';
 import { fetch } from 'cross-fetch';
+import { Context, RelativePath, Schema, SourceCodeType } from '../types';
 
 export async function doesFileExist<T extends SourceCodeType, S extends Schema>(
   context: Context<T, S>,

@@ -1,15 +1,15 @@
-import { Severity, SourceCodeType, LiquidCheckDefinition, Problem } from '../../types';
+import { LiquidCheckDefinition, Problem, Severity, SourceCodeType } from '../../types';
 import { getOffset, isError } from '../../utils';
-import { detectMultipleAssignValues } from './checks/MultipleAssignValues';
-import { detectInvalidBooleanExpressions } from './checks/InvalidBooleanExpressions';
-import { detectInvalidEchoValue } from './checks/InvalidEchoValue';
-import { detectInvalidConditionalNode } from './checks/InvalidConditionalNode';
-import { detectInvalidLoopRange } from './checks/InvalidLoopRange';
-import { detectInvalidLoopArguments } from './checks/InvalidLoopArguments';
-import { detectConditionalNodeUnsupportedParenthesis } from './checks/InvalidConditionalNodeParenthesis';
-import { detectInvalidFilterName } from './checks/InvalidFilterName';
-import { detectInvalidPipeSyntax } from './checks/InvalidPipeSyntax';
 import { isWithinRawTagThatDoesNotParseItsContents } from '../utils';
+import { detectInvalidBooleanExpressions } from './checks/InvalidBooleanExpressions';
+import { detectInvalidConditionalNode } from './checks/InvalidConditionalNode';
+import { detectConditionalNodeUnsupportedParenthesis } from './checks/InvalidConditionalNodeParenthesis';
+import { detectInvalidEchoValue } from './checks/InvalidEchoValue';
+import { detectInvalidFilterName } from './checks/InvalidFilterName';
+import { detectInvalidLoopArguments } from './checks/InvalidLoopArguments';
+import { detectInvalidLoopRange } from './checks/InvalidLoopRange';
+import { detectInvalidPipeSyntax } from './checks/InvalidPipeSyntax';
+import { detectMultipleAssignValues } from './checks/MultipleAssignValues';
 
 type LineColPosition = {
   line: number;

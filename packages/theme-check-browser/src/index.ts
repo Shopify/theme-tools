@@ -1,30 +1,30 @@
 import {
+  AbstractFileSystem,
   Config,
+  Dependencies,
+  FileStat,
+  FileTuple,
+  FileType,
   JSONSourceCode,
   LiquidSourceCode,
   Offense,
   Theme,
   allChecks,
   check as coreCheck,
-  toSourceCode,
   recommended,
-  Dependencies,
-  AbstractFileSystem,
-  FileStat,
-  FileTuple,
-  FileType,
+  toSourceCode,
 } from '@shopify/theme-check-common';
 
 export {
-  toSourceCode,
-  allChecks,
-  recommended,
+  AbstractFileSystem,
   Config,
   Dependencies,
-  AbstractFileSystem,
   FileStat,
   FileTuple,
   FileType,
+  allChecks,
+  recommended,
+  toSourceCode,
 };
 
 /**

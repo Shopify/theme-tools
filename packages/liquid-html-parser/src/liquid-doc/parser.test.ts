@@ -1,14 +1,14 @@
-import { describe, it, expect } from 'vitest';
-import { parseLiquidDoc } from './parser';
-import type { LiquidDocNode } from './parser';
-import { NodeTypes } from '../types';
+import { describe, expect, it } from 'vitest';
 import type {
-  LiquidDocParamNode,
   LiquidDocDescriptionNode,
   LiquidDocExampleNode,
+  LiquidDocParamNode,
   LiquidDocPromptNode,
   TextNode,
 } from '../ast';
+import { NodeTypes } from '../types';
+import type { LiquidDocNode } from './parser';
+import { parseLiquidDoc } from './parser';
 
 /**
  * Helper: simulates the body extraction from `{% doc %}BODY{% enddoc %}`.

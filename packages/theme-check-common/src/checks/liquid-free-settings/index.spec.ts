@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
-import { LiquidFreeSettings } from './index';
+import { describe, expect, it } from 'vitest';
 import { check, MockTheme } from '../../test';
+import { LiquidFreeSettings } from './index';
 
 describe('LiquidFreeSettings validation', () => {
   const paths = ['sections', 'blocks'];

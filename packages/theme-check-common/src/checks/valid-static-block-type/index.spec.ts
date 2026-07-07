@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { check, MockTheme } from '../../test';
-import { ValidStaticBlockType } from '.';
 
 describe('Module: ValidStaticBlockType', () => {
   const genericThemeBlock = {

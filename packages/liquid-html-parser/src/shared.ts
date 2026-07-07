@@ -1,5 +1,5 @@
-import type { LiquidLine } from './environment';
 import type { LiquidTagEnvelope } from './document/factories';
+import type { LiquidLine } from './environment';
 
 /**
  * Construct a LiquidTagEnvelope from a {% liquid %} line.

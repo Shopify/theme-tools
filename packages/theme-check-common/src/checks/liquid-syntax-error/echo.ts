@@ -1,12 +1,12 @@
 import type { LiquidTag, LiquidVariable } from '@shopify/liquid-html-parser';
 import type { Context } from '.';
 import {
-  variableHasBareArrayAccess,
   hasEmptyMarkup,
-  hasSkippedCharacters,
-  rawMarkup,
   hasRubyAcceptedEmptyFirstFilterArgument,
   hasRubyAcceptedFilterArgumentTrailingComma,
+  hasSkippedCharacters,
+  rawMarkup,
+  variableHasBareArrayAccess,
 } from './utils';
 
 export function checkEchoTag(node: LiquidTag, context: Context): void {

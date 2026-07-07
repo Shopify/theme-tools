@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { blockTag } from './block';
 import { TagKind, type Parser } from '../environment';
-import { tokenizeMarkup } from '../markup/tokenizer';
-import { MarkupParser } from '../markup/parser';
-import { NodeTypes } from '../types';
 import { LiquidHTMLASTParsingError } from '../errors';
+import { MarkupParser } from '../markup/parser';
+import { tokenizeMarkup } from '../markup/tokenizer';
+import { NodeTypes } from '../types';
+import { blockTag } from './block';
 
 const OFFSET = 100;
 const PADDING = 'x'.repeat(OFFSET);

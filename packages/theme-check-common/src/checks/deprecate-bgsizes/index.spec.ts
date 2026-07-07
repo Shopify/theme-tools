@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { highlightedOffenses, runLiquidCheck } from '../../test';
 import { DeprecateBgsizes } from './index';
-import { runLiquidCheck, highlightedOffenses } from '../../test';
 
 describe('Module: DeprecateBgsizes', () => {
   it('should report offenses for deprecated attributes', async () => {

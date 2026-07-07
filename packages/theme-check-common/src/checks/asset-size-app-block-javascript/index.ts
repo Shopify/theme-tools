@@ -7,7 +7,7 @@ import {
   SourceCodeType,
 } from '../../types';
 import { isError } from '../../utils';
-import { doesFileExist, doesFileExceedThreshold } from '../../utils/file-utils';
+import { doesFileExceedThreshold, doesFileExist } from '../../utils/file-utils';
 
 const schema = {
   thresholdInBytes: SchemaProp.number(10000),

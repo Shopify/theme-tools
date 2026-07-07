@@ -1,11 +1,11 @@
-import { vi, expect, describe, it, beforeEach, assert } from 'vitest';
-import { EditorState, Extension } from '@codemirror/state';
 import { CompletionContext } from '@codemirror/autocomplete';
-import { clientFacet, fileUriFacet, serverCapabilitiesFacet } from './client';
-import { MockClient } from '../test/MockClient';
+import { EditorState } from '@codemirror/state';
+import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CompletionItem, CompletionItemKind, CompletionList } from 'vscode-languageserver-protocol';
-import { textDocumentSync } from './textDocumentSync';
+import { MockClient } from '../test/MockClient';
+import { clientFacet, fileUriFacet, serverCapabilitiesFacet } from './client';
 import { complete, infoRendererFacet, lspComplete } from './complete';
+import { textDocumentSync } from './textDocumentSync';
 
 describe('Module: complete', () => {
   const fileUri = 'browser://input.liquid';

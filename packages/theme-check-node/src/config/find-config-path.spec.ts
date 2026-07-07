@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, beforeEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createMockConfigFile, makeTmpFolder, removeTmpFolder } from '../test/test-helpers';
 import { findConfigPath } from './find-config-path';
 

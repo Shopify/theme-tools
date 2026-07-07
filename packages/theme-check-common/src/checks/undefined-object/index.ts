@@ -13,9 +13,9 @@ import {
   NodeTypes,
   Position,
 } from '@shopify/liquid-html-parser';
+import { hasLiquidDoc } from '../../liquid-doc/liquidDoc';
 import { LiquidCheckDefinition, Mode, Severity, SourceCodeType, ThemeDocset } from '../../types';
 import { isError, last } from '../../utils';
-import { hasLiquidDoc } from '../../liquid-doc/liquidDoc';
 import { isWithinRawTagThatDoesNotParseItsContents } from '../utils';
 
 type Scope = { start?: number; end?: number };

@@ -1,12 +1,12 @@
 import {
-  SourceCodeType,
-  SourceCode,
-  SectionSchema,
-  ThemeBlockSchema,
   AppBlockSchema,
+  DocDefinition,
+  SectionSchema,
+  SourceCode,
+  SourceCodeType,
+  ThemeBlockSchema,
 } from '@shopify/theme-check-common';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { DocDefinition } from '@shopify/theme-check-common';
 
 /** Util type to add the common `textDocument` property to the SourceCode. */
 type _AugmentedSourceCode<SCT extends SourceCodeType = SourceCodeType> = SourceCode<SCT> & {

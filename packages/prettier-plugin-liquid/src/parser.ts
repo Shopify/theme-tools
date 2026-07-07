@@ -1,4 +1,4 @@
-import { toTolerantLiquidHtmlAST, LiquidHtmlNode } from '@shopify/liquid-html-parser';
+import { LiquidHtmlNode, toTolerantLiquidHtmlAST } from '@shopify/liquid-html-parser';
 
 import { locEnd, locStart } from './utils';
 

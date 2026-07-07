@@ -1,8 +1,8 @@
 import type { CycleMarkup, LiquidExpression } from '../ast';
 import type { MarkupParser } from '../markup/parser';
 import { MarkupTokenType } from '../markup/tokenizer';
+import { TagKind, type Parser, type TagDefinitionTag } from '../tag-definitions';
 import { NodeTypes } from '../types';
-import { TagKind, type TagDefinitionTag, type Parser } from '../tag-definitions';
 
 export const cycleTag: TagDefinitionTag<CycleMarkup> = {
   kind: TagKind.Tag,

@@ -1,10 +1,10 @@
 import type {
-  LiquidExpression,
-  LiquidConditionalExpression,
   ComplexLiquidExpression,
+  LiquidConditionalExpression,
+  LiquidExpression,
 } from '../ast';
-import { Comparators, NodeTypes } from '../types';
 import type { Position } from '../types';
+import { Comparators, NodeTypes } from '../types';
 import { assertNever } from '../utils';
 
 type LogicalRelation = 'and' | 'or';

@@ -9,9 +9,9 @@ import {
 import { MockFileSystem } from '@shopify/theme-check-common/src/test';
 import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { URI, Utils } from 'vscode-uri';
-import { DocumentManager } from './DocumentManager';
-import { mockConnection } from '../test/MockConnection';
 import { ClientCapabilities } from '../ClientCapabilities';
+import { mockConnection } from '../test/MockConnection';
+import { DocumentManager } from './DocumentManager';
 
 describe('Module: DocumentManager', () => {
   const mockRoot = 'mock-fs:';

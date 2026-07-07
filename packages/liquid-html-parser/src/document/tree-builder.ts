@@ -1,7 +1,7 @@
+import type { LiquidHtmlNode, LiquidVariableOutput, TextNode } from '../ast';
 import { NodeTypes } from '../types';
-import type { LiquidHtmlNode, TextNode, LiquidVariableOutput } from '../ast';
-import { makeTextNode } from './factories';
 import { assertNever } from '../utils';
+import { makeTextNode } from './factories';
 
 export enum ChildFilterMode {
   /** Syntactic auto-skip: merge adjacent TextNodes, trim whitespace at boundaries, drop empty. */

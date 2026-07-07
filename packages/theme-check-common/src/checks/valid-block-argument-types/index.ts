@@ -1,6 +1,6 @@
-import { Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
-import { BasicParamTypes, inferArgumentType, isTypeCompatible } from '../../liquid-doc/utils';
 import { NodeTypes, type BlockMarkup } from '@shopify/liquid-html-parser';
+import { BasicParamTypes, inferArgumentType, isTypeCompatible } from '../../liquid-doc/utils';
+import { Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
 import { getBlockDocParams, isSystemArg } from '../common/block-doc';
 
 export const ValidBlockArgumentTypes: LiquidCheckDefinition = {

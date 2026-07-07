@@ -1,9 +1,9 @@
 import path from 'path';
-import { expect, it, describe, afterEach, afterAll, vi, Mock } from 'vitest';
+import { afterAll, afterEach, describe, expect, it, Mock, vi } from 'vitest';
+import { getRepoRoot, readFile, run } from '../utils';
 import { changesetStatus } from './changesetStatus';
 import { changesetTag } from './changesetTag';
 import { changesetVersion } from './changesetVersion';
-import { getRepoRoot, readFile, run } from '../utils';
 
 vi.mock('../utils', async () => ({
   getRepoRoot: vi.fn(),

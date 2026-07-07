@@ -1,6 +1,5 @@
 import { LiquidRawTag, NodeTypes } from '@shopify/liquid-html-parser';
 import {
-  IsValidSchema,
   JsonValidationSet,
   Mode,
   Modes,
@@ -8,7 +7,6 @@ import {
   SourceCodeType,
   findCurrentNode,
   isValid,
-  toJSONAST,
   visit,
 } from '@shopify/theme-check-common';
 import { JSONDocument, LanguageService, getLanguageService } from 'vscode-json-languageservice';
@@ -23,12 +21,12 @@ import {
   ClientCapabilities as LSPClientCapabilities,
 } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { DocumentManager } from '../documents';
-import { GetTranslationsForURI } from '../translations';
-import { JSONContributions, GetThemeBlockNames, GetThemeBlockSchema } from './JSONContributions';
-import { createJSONDocumentLinksVisitor } from './documentLinks/DocumentLinksProvider';
 import { URI } from 'vscode-uri';
+import { DocumentManager } from '../documents';
 import { FindThemeRootURI } from '../internal-types';
+import { GetTranslationsForURI } from '../translations';
+import { GetThemeBlockNames, GetThemeBlockSchema, JSONContributions } from './JSONContributions';
+import { createJSONDocumentLinksVisitor } from './documentLinks/DocumentLinksProvider';
 
 export class JSONLanguageService {
   // We index by Mode here because I don't want to reconfigure the service depending on the URI.

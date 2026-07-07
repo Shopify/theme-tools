@@ -1,6 +1,6 @@
 import type { LiquidConditionalExpression } from '../ast';
 import type { MarkupParser } from '../markup/parser';
-import { TagKind, type TagDefinitionBlock, type Parser } from '../tag-definitions';
+import { TagKind, type Parser, type TagDefinitionBlock } from '../tag-definitions';
 
 function parseConditionalExpression(
   _name: string,

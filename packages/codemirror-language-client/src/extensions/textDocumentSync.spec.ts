@@ -1,15 +1,15 @@
 // @vitest-environment jsdom
-import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import { EditorState, Extension, StateEffect } from '@codemirror/state';
-import { textDocumentField, textDocumentSync } from './textDocumentSync';
-import { clientFacet, fileUriFacet } from './client';
-import { MockClient } from '../test/MockClient';
+import { EditorView } from '@codemirror/view';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   DidChangeTextDocumentNotification,
   DidCloseTextDocumentNotification,
   DidOpenTextDocumentNotification,
 } from 'vscode-languageserver-protocol';
-import { EditorView } from '@codemirror/view';
+import { MockClient } from '../test/MockClient';
+import { clientFacet, fileUriFacet } from './client';
+import { textDocumentField, textDocumentSync } from './textDocumentSync';
 
 describe('Module: textDocumentField', () => {
   let state;

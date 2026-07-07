@@ -2,7 +2,6 @@ import { MockFileSystem } from '@shopify/theme-check-common/src/test';
 import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { TextDocumentEdit } from 'vscode-json-languageservice';
 import { ApplyWorkspaceEditParams } from 'vscode-languageserver-protocol';
-import { TextDocument } from 'vscode-languageserver-textdocument';
 import { ClientCapabilities } from '../../ClientCapabilities';
 import { DocumentManager } from '../../documents';
 import { MockConnection, mockConnection } from '../../test/MockConnection';

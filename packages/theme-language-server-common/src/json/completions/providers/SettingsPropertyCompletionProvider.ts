@@ -1,12 +1,12 @@
 import { isError, SourceCodeType } from '@shopify/theme-check-common';
 import { JSONPath } from 'vscode-json-languageservice';
 import { JSONCompletionItem } from 'vscode-json-languageservice/lib/umd/jsonContributions';
+import { GetTranslationsForURI } from '../../../translations';
 import { RequestContext } from '../../RequestContext';
+import { schemaSettingsPropertyCompletionItems } from '../../schemaSettings';
 import { isBlockFile, isSectionFile } from '../../utils';
 import { JSONCompletionProvider } from '../JSONCompletionProvider';
-import { GetTranslationsForURI } from '../../../translations';
 import { isSectionOrBlockSchema } from './BlockTypeCompletionProvider';
-import { schemaSettingsPropertyCompletionItems } from '../../schemaSettings';
 
 /**
  * The SettingsPropertyCompletionProvider offers property completions for:

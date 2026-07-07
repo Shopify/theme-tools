@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { applySuggestions, runLiquidCheck } from '../../test';
 import { UnusedAssign } from './index';
-import { runLiquidCheck, applySuggestions } from '../../test';
 
 describe('Module: UnusedAssign', () => {
   it('should report an error when a variable is assigned but not used', async () => {

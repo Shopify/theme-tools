@@ -14,8 +14,8 @@ import {
 } from '../../types';
 import { last } from '../../utils';
 import {
-  hasRemoteAssetSizeExceededThreshold,
   hasLocalAssetSizeExceededThreshold,
+  hasRemoteAssetSizeExceededThreshold,
 } from '../../utils/file-utils';
 import { ValuedHtmlAttribute, isAttr, isNodeOfType, isValuedHtmlAttribute } from '../utils';
 

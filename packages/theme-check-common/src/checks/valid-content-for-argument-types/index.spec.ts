@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { runLiquidCheck, applySuggestions } from '../../test';
+import { describe, expect, it } from 'vitest';
 import { ValidContentForArgumentTypes } from '.';
 import { BasicParamTypes } from '../../liquid-doc/utils';
+import { applySuggestions, runLiquidCheck } from '../../test';
 
 describe('Module: ValidContentForParamTypes', () => {
   describe('type validation', () => {

@@ -1,11 +1,11 @@
 import {
   AbstractFileSystem,
+  Mode,
   path,
   recursiveReadDirectory,
   SectionSchema,
   SourceCodeType,
   ThemeBlockSchema,
-  Mode,
 } from '@shopify/theme-check-common';
 import {
   buildThemeGraph,
@@ -19,6 +19,7 @@ import { Range } from 'vscode-json-languageservice';
 import { Connection } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DocumentManager } from '../documents';
+import { FindThemeRootURI } from '../internal-types';
 import {
   AugmentedLocation,
   AugmentedLocationWithExistence,
@@ -26,7 +27,6 @@ import {
   ThemeGraphDidUpdateNotification,
 } from '../types';
 import { debounce } from '../utils';
-import { FindThemeRootURI } from '../internal-types';
 
 export class ThemeGraphManager {
   graphs: Map<string, ReturnType<typeof buildThemeGraph>> = new Map();

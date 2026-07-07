@@ -2,11 +2,11 @@
 import { EditorState, Extension } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { Hover } from 'vscode-languageserver-protocol';
 import { MockClient } from '../test/MockClient';
 import { clientFacet, fileUriFacet } from './client';
 import { hover, hoverRendererFacet, lspHover } from './hover';
 import { textDocumentSync } from './textDocumentSync';
-import { Hover } from 'vscode-languageserver-protocol';
 
 describe('Module: hover', () => {
   const fileUri = 'browser://input.liquid';

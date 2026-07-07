@@ -1,7 +1,7 @@
-import { expect, it, describe, afterEach, afterAll, vi, Mock } from 'vitest';
-import { writeDependentPatchChangesets } from './writeDependentPatchChangesets';
+import { afterAll, afterEach, describe, expect, it, Mock, vi } from 'vitest';
 import { changesetStatus } from './changesetStatus';
 import { generatePatchChangeset } from './generatePatchChangeset';
+import { writeDependentPatchChangesets } from './writeDependentPatchChangesets';
 
 vi.mock('./changesetStatus', async () => ({
   changesetStatus: vi.fn(),

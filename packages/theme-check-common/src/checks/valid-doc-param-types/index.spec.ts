@@ -1,7 +1,7 @@
-import { expect, describe, it } from 'vitest';
-import { ValidDocParamTypes } from './index';
-import { runLiquidCheck, applySuggestions } from '../../test';
+import { describe, expect, it } from 'vitest';
 import { BasicParamTypes } from '../../liquid-doc/utils';
+import { applySuggestions, runLiquidCheck } from '../../test';
+import { ValidDocParamTypes } from './index';
 
 describe('Module: ValidDocParamTypes', () => {
   Object.values(BasicParamTypes).forEach((paramType) => {

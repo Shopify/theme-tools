@@ -1,5 +1,5 @@
 import type { MarkupParser } from '../markup/parser';
-import { TagKind, type TagDefinitionBlock, type Parser } from '../tag-definitions';
+import { TagKind, type Parser, type TagDefinitionBlock } from '../tag-definitions';
 
 export const ifchangedTag: TagDefinitionBlock<null> = {
   kind: TagKind.Block,

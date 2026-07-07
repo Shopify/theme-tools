@@ -1,5 +1,5 @@
 import { LiquidHtmlNode } from '@shopify/liquid-html-parser';
-import { DefinitionParams, DefinitionLink } from 'vscode-languageserver-protocol';
+import { DefinitionLink, DefinitionParams } from 'vscode-languageserver-protocol';
 
 export interface BaseDefinitionProvider {
   definitions(

@@ -1,5 +1,5 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
-import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { isAttr, isNodeOfType, isValuedHtmlAttribute, ValuedHtmlAttribute } from '../utils';
 
 const ROUTES: Record<string, string> = {

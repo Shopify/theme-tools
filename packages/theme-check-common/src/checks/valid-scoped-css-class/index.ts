@@ -1,21 +1,21 @@
 import {
-  LiquidRawTag,
   HtmlElement,
   HtmlRawNode,
-  HtmlVoidElement,
   HtmlSelfClosingElement,
+  HtmlVoidElement,
+  LiquidRawTag,
 } from '@shopify/liquid-html-parser';
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { AbstractFileSystem } from '../../AbstractFileSystem';
 import { recursiveReadDirectory } from '../../context-utils';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import {
-  extractCSSClassNames,
   collectUsedClasses,
   collectUsedClassesFromSvg,
+  extractCSSClassNames,
 } from '../../utils/styles';
 import {
-  getAncestorUris,
   getAllSnippetDescendantUris,
+  getAncestorUris,
   getRenderedSnippetUris,
 } from '../../utils/traversal';
 

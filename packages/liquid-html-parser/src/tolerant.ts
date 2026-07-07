@@ -12,8 +12,8 @@
 
 import type { ASTBuildOptions, DocumentNode, LiquidErrorNode, LiquidHtmlNode } from './ast';
 import { walk } from './ast';
-import { TolerantDocumentParser } from './document/tolerant-parser';
 import { tokenize } from './document/tokenizer';
+import { TolerantDocumentParser } from './document/tolerant-parser';
 import { Environment } from './environment';
 import { NodeTypes } from './types';
 

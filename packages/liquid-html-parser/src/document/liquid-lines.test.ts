@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest';
 import { toLiquidHtmlAST } from '../ast';
-import { expectPath, expectPosition, expectBlockEndPosition } from './test-helpers';
+import { expectBlockEndPosition, expectPath, expectPosition } from './test-helpers';
 
 describe('Unit: liquid-lines', () => {
   it('should parse an empty liquid tag', () => {

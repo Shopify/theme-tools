@@ -1,7 +1,7 @@
-import { describe, beforeEach, it, expect } from 'vitest';
-import { CompletionsProvider } from '../CompletionsProvider';
-import { DocumentManager } from '../../documents';
 import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { DocumentManager } from '../../documents';
+import { CompletionsProvider } from '../CompletionsProvider';
 
 describe('Module: LiquidDocTagCompletionProvider', async () => {
   let provider: CompletionsProvider;

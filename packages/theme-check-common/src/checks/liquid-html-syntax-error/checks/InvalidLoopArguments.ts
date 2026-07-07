@@ -6,12 +6,12 @@ import {
   NodeTypes,
 } from '@shopify/liquid-html-parser';
 import { Problem, SourceCodeType, TagEntry } from '../../..';
+import { isLoopLiquidTag } from '../../utils';
 import {
   doesFragmentContainUnsupportedParentheses,
-  getFragmentsInMarkup,
   fragmentKeyValuePair,
+  getFragmentsInMarkup,
 } from './utils';
-import { isLoopLiquidTag } from '../../utils';
 
 export function detectInvalidLoopArguments(
   node: LiquidTag,

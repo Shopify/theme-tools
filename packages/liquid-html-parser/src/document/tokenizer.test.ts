@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { tokenize, TokenType } from './tokenizer';
 import type { Token } from './tokenizer';
+import { tokenize, TokenType } from './tokenizer';
 
 /** Strip the trailing EndOfInput token for cleaner assertions. */
 function tokens(source: string): Token[] {

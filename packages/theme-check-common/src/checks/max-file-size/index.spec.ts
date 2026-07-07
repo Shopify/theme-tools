@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { runJSONCheck, runLiquidCheck } from '../../test';
 import { MaxFileSize, MaxFileSizeJSON } from './index';
-import { runLiquidCheck, runJSONCheck } from '../../test';
 
 const KILOBYTE = 1024;
 const MEGABYTE = 1024 * KILOBYTE;

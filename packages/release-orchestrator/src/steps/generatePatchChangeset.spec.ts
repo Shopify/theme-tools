@@ -1,8 +1,8 @@
-import { expect, it, describe, afterEach, afterAll, vi, Mock } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
-import { generatePatchChangeset } from './generatePatchChangeset';
+import { afterAll, afterEach, describe, expect, it, Mock, vi } from 'vitest';
 import { getRepoRoot } from '../utils';
+import { generatePatchChangeset } from './generatePatchChangeset';
 
 // Need to do this for stupid windows paths
 const repoPathTokens = ['path', 'to', 'repo'];

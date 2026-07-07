@@ -1,8 +1,8 @@
 import { AbstractFileSystem, FileStat, FileTuple, FileType } from '../AbstractFileSystem';
-import { deepGet } from '../utils';
-import { normalize, relative } from '../path';
-import { MockTheme } from './MockTheme';
 import * as path from '../path';
+import { normalize, relative } from '../path';
+import { deepGet } from '../utils';
+import { MockTheme } from './MockTheme';
 
 interface FileTree {
   [fileName: string]: string | FileTree;

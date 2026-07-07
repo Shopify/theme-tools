@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
-import { runLiquidCheck, applyFix } from '../../../test';
+import { describe, expect, it } from 'vitest';
 import { LiquidHTMLSyntaxError } from '..';
+import { applyFix, runLiquidCheck } from '../../../test';
 
 describe('Module: InvalidConditionalBooleanExpression', () => {
   it('should not report an offense for valid boolean expressions', async () => {

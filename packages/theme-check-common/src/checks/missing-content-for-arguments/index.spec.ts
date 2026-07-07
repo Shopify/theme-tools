@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { applySuggestions, runLiquidCheck } from '../../test';
+import { describe, expect, it } from 'vitest';
 import { MissingContentForArguments } from '.';
+import { applySuggestions, runLiquidCheck } from '../../test';
 
 function check(existingCode: string, source: string) {
   return runLiquidCheck(

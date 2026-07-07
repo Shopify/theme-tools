@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { incrementTag } from './increment';
 import { TagKind, type Parser } from '../environment';
-import { tokenizeMarkup } from '../markup/tokenizer';
 import { MarkupParser } from '../markup/parser';
+import { tokenizeMarkup } from '../markup/tokenizer';
 import { NodeTypes } from '../types';
+import { incrementTag } from './increment';
 
 const OFFSET = 100;
 const PADDING = 'x'.repeat(OFFSET);

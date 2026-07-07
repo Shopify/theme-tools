@@ -1,5 +1,5 @@
-import { SchemaProp, Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
 import { NodeTypes, type LiquidHtmlNode, type LiquidTag } from '@shopify/liquid-html-parser';
+import { SchemaProp, Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
 
 /**
  * 10 allows a small buffer above Dawn and Horizon's current maximum while

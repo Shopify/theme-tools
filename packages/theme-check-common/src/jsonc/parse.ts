@@ -1,3 +1,4 @@
+import { Node as JSONCParserNode, ParseError, parseTree } from 'jsonc-parser';
 import { assertNever } from '../utils';
 import {
   ArrayNode,
@@ -8,7 +9,6 @@ import {
   PropertyNode,
   ValueNode,
 } from './types';
-import { Node as JSONCParserNode, ParseError, parseTree } from 'jsonc-parser';
 
 export class JSONCParseErrors extends Error {
   public errors: ParseError[];

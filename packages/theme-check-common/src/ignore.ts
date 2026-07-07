@@ -1,5 +1,5 @@
-import { UriString, CheckDefinition, Config } from './types';
 import { minimatch } from 'minimatch';
+import { CheckDefinition, Config, UriString } from './types';
 
 export function isIgnored(uri: UriString, config: Config, checkDef?: CheckDefinition): boolean {
   const ignorePatterns = [...checkIgnorePatterns(checkDef, config), ...asArray(config.ignore)].map(

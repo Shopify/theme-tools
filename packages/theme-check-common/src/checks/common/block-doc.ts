@@ -1,7 +1,7 @@
-import type { LiquidCheckDefinition } from '../../types';
-import { extractDocDefinition } from '../../liquid-doc/liquidDoc';
-import type { LiquidDocParameter } from '../../liquid-doc/liquidDoc';
 import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
+import type { LiquidDocParameter } from '../../liquid-doc/liquidDoc';
+import { extractDocDefinition } from '../../liquid-doc/liquidDoc';
+import type { LiquidCheckDefinition } from '../../types';
 
 export type CheckContext = Parameters<
   Extract<LiquidCheckDefinition['create'], (...args: any[]) => any>

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { liquidTag } from './liquid';
-import { TagKind, type Parser, type LiquidLineContext } from '../environment';
-import { tokenizeMarkup } from '../markup/tokenizer';
-import { MarkupParser } from '../markup/parser';
 import type { LiquidStatement } from '../ast';
+import { TagKind, type LiquidLineContext, type Parser } from '../environment';
+import { MarkupParser } from '../markup/parser';
+import { tokenizeMarkup } from '../markup/tokenizer';
+import { liquidTag } from './liquid';
 
 const OFFSET = 100;
 const PADDING = 'x'.repeat(OFFSET);

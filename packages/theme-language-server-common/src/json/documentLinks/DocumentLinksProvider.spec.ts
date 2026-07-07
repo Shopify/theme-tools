@@ -1,9 +1,9 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import { DocumentManager } from '../../documents';
-import { createJSONDocumentLinksVisitor } from './DocumentLinksProvider';
 import { toJSONAST, visit } from '@shopify/theme-check-common';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { URI } from 'vscode-uri';
+import { DocumentManager } from '../../documents';
 import { JSONLanguageService } from '../JSONLanguageService';
+import { createJSONDocumentLinksVisitor } from './DocumentLinksProvider';
 
 describe('JSON Document Links', () => {
   let documentManager: DocumentManager;

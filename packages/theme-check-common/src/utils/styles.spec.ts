@@ -1,13 +1,13 @@
-import { expect, describe, it } from 'vitest';
-import { toLiquidHtmlAST, NodeTypes } from '@shopify/liquid-html-parser';
+import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
+import { describe, expect, it } from 'vitest';
+import { MockFileSystem } from '../test/MockFileSystem';
 import {
-  extractCSSClassNames,
-  extractCSSClassesFromLiquidUri,
-  extractCSSClassesFromAssetUri,
   collectUsedClasses,
   collectUsedClassesFromSvg,
+  extractCSSClassNames,
+  extractCSSClassesFromAssetUri,
+  extractCSSClassesFromLiquidUri,
 } from './styles';
-import { MockFileSystem } from '../test/MockFileSystem';
 
 describe('extractCSSClassNames', () => {
   it('extracts simple class selectors', () => {

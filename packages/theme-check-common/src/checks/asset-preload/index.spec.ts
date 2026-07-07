@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { runLiquidCheck, highlightedOffenses } from '../../test';
+import { describe, expect, it } from 'vitest';
+import { highlightedOffenses, runLiquidCheck } from '../../test';
 import { AssetPreload } from './index';
 
 describe('Module: AssetPreload', () => {

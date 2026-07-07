@@ -1,5 +1,3 @@
-import { MapMode, RangeSet, RangeValue, StateEffect, StateField, Range } from '@codemirror/state';
-
 /**
  * Syntax is $1, ${2}, ${3:foo}, $0
  * https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#snippet_syntax

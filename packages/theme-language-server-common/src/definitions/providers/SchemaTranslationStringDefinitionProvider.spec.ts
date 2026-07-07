@@ -1,4 +1,4 @@
-import { JSONSourceCode, SourceCodeType, toSourceCode } from '@shopify/theme-check-common';
+import { JSONSourceCode, toSourceCode } from '@shopify/theme-check-common';
 import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { DefinitionParams, LocationLink } from 'vscode-languageserver-protocol';
 import { TextDocument } from 'vscode-languageserver-textdocument';

@@ -9,9 +9,9 @@ import {
   CSS_WHITE_SPACE_TAGS,
 } from '../../constants.evaluate';
 import {
-  LiquidParserOptions,
   Augment,
   AugmentedNode,
+  LiquidParserOptions,
   WithCssProperties,
   WithSiblings,
 } from '../../types';

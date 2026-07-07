@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { tokenizeMarkup, MarkupTokenType } from './tokenizer';
 import type { MarkupToken } from './tokenizer';
+import { MarkupTokenType, tokenizeMarkup } from './tokenizer';
 
 /** Strip the trailing EndOfString token for cleaner assertions. */
 function tokens(source: string, startOffset = 0): MarkupToken[] {

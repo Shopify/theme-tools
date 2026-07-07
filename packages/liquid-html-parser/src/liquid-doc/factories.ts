@@ -5,14 +5,14 @@
  * no parsing logic.
  */
 
-import { NodeTypes } from '../types';
 import type {
-  TextNode,
-  LiquidDocParamNode,
   LiquidDocDescriptionNode,
   LiquidDocExampleNode,
+  LiquidDocParamNode,
   LiquidDocPromptNode,
+  TextNode,
 } from '../ast';
+import { NodeTypes } from '../types';
 
 export function makeTextNode(value: string, start: number, end: number, source: string): TextNode {
   return {

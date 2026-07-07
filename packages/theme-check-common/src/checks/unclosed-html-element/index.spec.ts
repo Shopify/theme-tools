@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { UnclosedHTMLElement } from '.';
-import { runLiquidCheck, highlightedOffenses } from '../../test';
+import { highlightedOffenses, runLiquidCheck } from '../../test';
 
 describe('Module: UnclosedHTMLElement', () => {
   it('should not report for files without unbalanced tags', async () => {

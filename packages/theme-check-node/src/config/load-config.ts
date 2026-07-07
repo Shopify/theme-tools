@@ -1,10 +1,10 @@
 import { Config } from '@shopify/theme-check-common';
+import fs from 'fs/promises';
 import { AbsolutePath } from '../temp';
 import { loadConfigDescription } from './load-config-description';
 import { resolveConfig } from './resolve';
 import { ModernIdentifier } from './types';
 import { validateConfig } from './validation';
-import fs from 'fs/promises';
 
 /**
  * Given an absolute path to a config file, this function returns

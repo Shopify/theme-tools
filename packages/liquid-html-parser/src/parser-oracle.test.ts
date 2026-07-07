@@ -1,7 +1,7 @@
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { resolve, join } from 'node:path';
-import { toLiquidHtmlAST, toLiquidAST } from './ast';
+import { toLiquidAST, toLiquidHtmlAST } from './ast';
 import { nonTraversableProperties } from './types';
 
 const FIXTURES_DIR = resolve(__dirname, '..', 'fixtures', 'theme');
