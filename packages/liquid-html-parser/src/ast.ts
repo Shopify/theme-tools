@@ -49,7 +49,8 @@ export type LiquidHtmlNode =
   | LiquidDocParamNode
   | LiquidDocExampleNode
   | LiquidDocPromptNode
-  | LiquidDocDescriptionNode;
+  | LiquidDocDescriptionNode
+  | LiquidErrorNode;
 
 /** The root node of all LiquidHTML ASTs. */
 export interface DocumentNode extends ASTNode<NodeTypes.Document> {
@@ -883,6 +884,18 @@ export interface LiquidDocPromptNode extends ASTNode<NodeTypes.LiquidDocPromptNo
   name: 'prompt';
   /** The contents of the prompt (e.g. "Build me a sale sticker for my shop with a rotating @ symbol"). Can be multiline. */
   content: TextNode;
+}
+
+/**
+ * Represents a parse error recovered by the resilient parser. Its position spans
+ * the skipped region, from the start of the failed unit up to the boundary
+ * where recovery resynchronized.
+ */
+export interface LiquidErrorNode extends ASTNode<NodeTypes.LiquidErrorNode> {
+  /** The message of the caught parse error. */
+  message: string;
+  /** The token-type name at the point the parse failed, when available. */
+  found?: string;
 }
 
 export interface ASTNode<T> {
