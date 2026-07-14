@@ -4,7 +4,8 @@ It takes an element and a collection
 It does not breaks on in collection
 printWidth: 1
 {% tablerow element in collection %}
-  {{ collection }}
+
+    {{ collection }}
 {% endtablerow %}
 
 It breaks on reversed
@@ -12,7 +13,8 @@ printWidth: 1
 {% tablerow element in collection
   reversed
 %}
-  {{ element }}
+
+    {{ element }}
 {% endtablerow %}
 
 It breaks on tag arguments
@@ -21,16 +23,18 @@ printWidth: 1
   limit: 10
   offset: 10
 %}
-  {{ element }}
+
+    {{ element }}
 {% endtablerow %}
 
-It breaks on both reversed and tag argumentsc
+It breaks on both reversed and tag arguments
 printWidth: 1
 {% tablerow element in collection
   reversed
   limit: 10
 %}
-  {{ element }}
+
+    {{ element }}
 {% endtablerow %}
 
 It only breaks if the printWidth is hit

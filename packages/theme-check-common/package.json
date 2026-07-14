@@ -22,7 +22,7 @@
     "build": "pnpm build:ts",
     "build:ci": "pnpm build",
     "build:ts": "tsc -b tsconfig.build.json",
-    "test": "vitest",
+    "test": "vitest --root ../.. --run packages/theme-check-common/src --exclude \"dist/**\"",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

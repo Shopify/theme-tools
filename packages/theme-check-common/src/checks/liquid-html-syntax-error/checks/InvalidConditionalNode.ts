@@ -70,6 +70,16 @@ function isOperatorToken(token: Token): boolean {
 
 function checkInvalidStartingToken(tokens: Token[]): ExpressionIssue | null {
   const firstToken = tokens[0];
+  // `contains` is the only word-operator in the comparison pattern that is
+  // also a valid identifier (the symbolic operators == != >= <= > < never
+  // are). When it stands alone it is a bare variable named `contains`, not
+  // the comparison operator, so it must not be flagged as an invalid
+  // starting token. This mirrors the previous parser, which produced a
+  // structured VariableLookup here; the ported parser falls back to string
+  // markup instead.
+  if (tokens.length === 1 && firstToken.value === 'contains') {
+    return null;
+  }
   if (firstToken.type === 'invalid' || firstToken.type === 'comparison') {
     return {
       message: `Conditional cannot start with '${firstToken.value}'. Use a variable or value instead`,

@@ -7,6 +7,7 @@ import {
   LiquidDocExampleNode,
   LiquidDocDescriptionNode,
   LiquidDocPromptNode,
+  TAGS_WITHOUT_MARKUP,
 } from '@shopify/liquid-html-parser';
 import { Doc, doc } from 'prettier';
 
@@ -192,11 +193,26 @@ function printNamedLiquidBlockStart(
     case NamedTags.increment:
     case NamedTags.decrement:
     case NamedTags.layout:
-    case NamedTags.section: {
+    case NamedTags.section:
+    /*
+     * `block` prints like `section` (both carry a name plus optional
+     * named arguments) and `partial` prints like `sections` (a bare
+     * string markup). Both delegate markup rendering to `printNode`.
+     */
+    case NamedTags.block:
+    case NamedTags.partial: {
       return tag(' ');
     }
     case NamedTags.sections: {
       return tag(' ');
+    }
+
+    /*
+     * `ifchanged` has no markup (`markup: null`), so we print just the
+     * tag name — there is nothing to render between the name and `%}`.
+     */
+    case NamedTags.ifchanged: {
+      return wrapper([...prefix, node.name, ...suffix(' ')]);
     }
 
     case NamedTags.form: {
@@ -342,16 +358,16 @@ export function printLiquidBlockStart(
   }
 
   const markup = node.markup;
-  return group([
-    '{%',
-    whitespaceStart,
-    ' ',
-    node.name,
-    markup ? ` ${markup}` : '',
-    ' ',
-    whitespaceEnd,
-    '%}',
-  ]);
+  /*
+   * A few tags — `break`, `continue`, `else`, and friends listed in
+   * TAGS_WITHOUT_MARKUP — accept no markup at all. When one of them is
+   * written with stray arguments, e.g. `{% break huh?? %}`, we drop the
+   * markup rather than echo the invalid text back out. This restores the
+   * pre-port behaviour, where the parser blanked the markup before the
+   * printer ever saw it.
+   */
+  const printedMarkup = markup && !TAGS_WITHOUT_MARKUP.includes(node.name) ? ` ${markup}` : '';
+  return group(['{%', whitespaceStart, ' ', node.name, printedMarkup, ' ', whitespaceEnd, '%}']);
 }
 
 export function printLiquidBlockEnd(
@@ -480,7 +496,13 @@ export function printLiquidRawTag(
         ' ',
         node.name,
         ' ',
-        node.markup ? `${node.markup} ` : '',
+        /*
+         * Argument-less raw tags such as `style` keep no markup. When one
+         * carries stray arguments, e.g. `{% style what %}`, we strip them
+         * instead of printing the invalid text; other raw tags keep their
+         * markup as before.
+         */
+        node.markup && !TAGS_WITHOUT_MARKUP.includes(node.name) ? `${node.markup} ` : '',
         node.whitespaceEnd,
         '%}',
       ]);
@@ -530,6 +552,20 @@ export function printLiquidDocParam(
   _args: LiquidPrinterArgs,
 ): Doc {
   const node = path.getValue();
+
+  /*
+   * A malformed `@param` line (e.g. an unclosed `[missingTail`) parses to a
+   * degenerate node with an empty `paramName`. Synthesizing the parts below
+   * would emit a spurious `@param  - ...`, so emit the raw source span
+   * verbatim instead to preserve a faithful round-trip. `@param` is kept as
+   * the first part so `printLiquidDoc`'s tag grouping still treats this as a
+   * `@param` node and does not insert a blank line before the next param.
+   */
+  if (node.paramName.value === '') {
+    const raw = node.source.slice(node.position.start, node.position.end);
+    return ['@param', raw.slice('@param'.length)];
+  }
+
   const parts: Doc[] = ['@param'];
 
   if (node.paramType?.value) {

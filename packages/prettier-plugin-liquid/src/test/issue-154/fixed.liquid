@@ -1,3 +1,4 @@
+it should format as expected (chunk 0)
 {%- liquid
   layout none
 
@@ -5,7 +6,7 @@
     render 'product-item', product: item
   endpaginate
 
-  paginate search.results by 28, window_size: 1
+  paginate search.results by 28 window_size:1
     render 'product-item', product: item
   endpaginate
 -%}

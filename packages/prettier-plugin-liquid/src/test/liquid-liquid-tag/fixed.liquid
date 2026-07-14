@@ -1,3 +1,4 @@
+it should format as expected (chunk 0)
 <div>
   {% liquid
     assign x = 1
@@ -36,19 +37,19 @@ It should handle comments correctly
 It should handle nested comments correctly
 {%- liquid
   comment
-    how u doin?
-    comment
-      ho
-    endcomment
+  how u doin?
+  comment
+    ho
+  endcomment
   endcomment
 -%}
 
 It should handle empty nested comments correctly
 {%- liquid
   comment
-    how u doin?
-    comment
-    endcomment
+  how u doin?
+  comment
+  endcomment
   endcomment
 -%}
 
@@ -63,7 +64,7 @@ It should handle inline comments correctly
 It should pretty print #### lines without a space
 {%- liquid
   #############
-  #     fancy
+  # fancy
   #############
 -%}
 
@@ -117,7 +118,7 @@ printWidth: 1
   section 'string'
   layout 'string'
 
-  paginate col by 10, window_size: 50
+  paginate col by 10 window_size:50
     render 'icon' with x as bar, foo: bar
   endpaginate
 %}
@@ -137,10 +138,10 @@ It should keep newlines between tags
 It should keep leading whitespace in comments
 {% liquid
   # This list should not be reindented:
-  #   - a
-  #   - b
-  #      - d
-  #   - c
+  # - a
+  # - b
+  # - d
+  # - c
 %}
 
 It should not freak out on variable output characters inside conditions

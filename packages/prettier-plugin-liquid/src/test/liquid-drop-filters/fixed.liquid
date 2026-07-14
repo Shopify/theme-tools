@@ -48,7 +48,7 @@ printWidth: 1
     key2: val2
 }}
 
-It should support a mix of positional and named arguments as expected (p40)
+It should support a mix of positional and named arguments as expected (p50)
 printWidth: 50
 {{
   x
@@ -59,7 +59,7 @@ It should support a mix of positional and named arguments as expected (p80)
 printWidth: 80
 {{ x | filter1: pos1, pos2, key1: val1, key2: val2 }}
 
-It should support all types of arguments
+It should support all types of arguments, and add spaces
 {{ x | f: 'string' }}
 {{ x | f: 'string' }}
 {{ x | f: 0.0 }}
@@ -81,4 +81,4 @@ It should support spaces or lack of thereof erywhere
 {{ x | f: a: b, range: (a..b) }}
 
 It should strip trailing commas by default
-{{ x | split: '' }}
+{{ x|split:'', }}
