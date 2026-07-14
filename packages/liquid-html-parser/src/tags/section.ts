@@ -22,7 +22,7 @@ export const sectionTag: TagDefinitionHybrid<SectionMarkup> = {
       name,
       args,
       position: { start: name.position.start, end: markup.peek().start },
-      source: '',
+      source: name.source,
     };
   },
 };

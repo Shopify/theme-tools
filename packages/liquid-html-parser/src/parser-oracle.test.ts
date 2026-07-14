@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { dirname, resolve, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve, join } from 'node:path';
 import { toLiquidHtmlAST, toLiquidAST } from './ast';
 import { nonTraversableProperties } from './types';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
 const FIXTURES_DIR = resolve(__dirname, '..', 'fixtures', 'theme');
 const GOLDEN_HTML_AST_DIR = resolve(__dirname, '..', 'fixtures', 'golden-html-ast');
 const GOLDEN_LIQUID_AST_DIR = resolve(__dirname, '..', 'fixtures', 'golden-liquid-ast');

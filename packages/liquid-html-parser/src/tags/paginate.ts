@@ -27,7 +27,7 @@ export const paginateTag: TagDefinitionBlock<PaginateMarkup> = {
       pageSize,
       args,
       position: { start: collection.position.start, end: markup.peek().start },
-      source: '',
+      source: collection.source,
     };
   },
 };

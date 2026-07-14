@@ -37,7 +37,7 @@ export const blockTag: TagDefinitionBlock<BlockMarkup> = {
       name,
       args,
       position: { start: name.position.start, end: markup.peek().start },
-      source: '',
+      source: name.source,
     };
   },
 };
