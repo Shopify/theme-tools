@@ -20,7 +20,6 @@
     "@shopify:registry": "https://registry.npmjs.org"
   },
   "files": [
-    "grammar/*",
     "dist/**/*.js",
     "dist/**/*.ts"
   ],
@@ -28,11 +27,11 @@
     "build": "pnpm build:ts",
     "build:ci": "pnpm build",
     "build:ts": "tsc -p tsconfig.build.json",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest --root ../.. --run src/**/*.test.ts"
   },
   "dependencies": {
-    "line-column": "^1.0.2",
-    "ohm-js": "^17.0.0"
+    "line-column": "^1.0.2"
   },
   "devDependencies": {
     "@types/line-column": "^1.0.0",
