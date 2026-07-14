@@ -2,6 +2,16 @@ import { NodeTypes, Position } from '@shopify/liquid-html-parser';
 import { Doc, doc } from 'prettier';
 
 import {
+  AstPath,
+  HtmlDanglingMarkerClose,
+  HtmlElement,
+  HtmlNode,
+  HtmlSelfClosingElement,
+  LiquidHtmlNode,
+  LiquidParserOptions,
+  LiquidPrinter,
+} from '../../types';
+import {
   first,
   getLastDescendant,
   hasMeaningfulLackOfLeadingWhitespace,
@@ -23,16 +33,6 @@ import {
   last,
   shouldPreserveContent,
 } from '../utils';
-import {
-  AstPath,
-  HtmlDanglingMarkerClose,
-  HtmlElement,
-  HtmlNode,
-  HtmlSelfClosingElement,
-  LiquidHtmlNode,
-  LiquidParserOptions,
-  LiquidPrinter,
-} from '../../types';
 
 const {
   builders: { breakParent, indent, join, line, softline, hardline },

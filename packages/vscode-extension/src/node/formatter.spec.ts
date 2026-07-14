@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type * as vscode from 'vscode';
 import * as prettier from 'prettier';
-import { vscodePrettierFormat, nodePrettierFormat } from './formatter';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type * as vscode from 'vscode';
+import { nodePrettierFormat, vscodePrettierFormat } from './formatter';
 
 vi.mock('prettier', () => ({
   format: vi.fn(),

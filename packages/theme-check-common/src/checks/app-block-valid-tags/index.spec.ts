@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { runLiquidCheck } from '../../test';
-import { ForbiddenTag, AppBlockValidTags } from './index';
+import { AppBlockValidTags, ForbiddenTag } from './index';
 
 const blocksFilePath = 'blocks/app.liquid';
 

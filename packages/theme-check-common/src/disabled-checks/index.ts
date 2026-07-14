@@ -7,8 +7,8 @@ import {
   SourceCodeType,
   UriString,
 } from '../types';
-import { findCurrentNode } from '../visitor';
 import { isError } from '../utils';
+import { findCurrentNode } from '../visitor';
 
 type CheckName = string;
 type DisabledChecksMap = Map<UriString, Map<CheckName, { from: number; to?: number }[]>>;

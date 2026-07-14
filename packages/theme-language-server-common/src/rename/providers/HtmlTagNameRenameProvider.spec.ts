@@ -1,9 +1,9 @@
 import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { Position, TextDocumentEdit } from 'vscode-languageserver-protocol';
-import { DocumentManager } from '../../documents';
-import { RenameProvider } from '../RenameProvider';
 import { ClientCapabilities } from '../../ClientCapabilities';
+import { DocumentManager } from '../../documents';
 import { mockConnection } from '../../test/MockConnection';
+import { RenameProvider } from '../RenameProvider';
 
 const mockRoot = 'file:';
 

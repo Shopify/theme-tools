@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
-import { ReservedDocParamNames } from './index';
+import { describe, expect, it } from 'vitest';
 import { runLiquidCheck } from '../../test';
+import { ReservedDocParamNames } from './index';
 
 describe('Module: ReservedDocParamNames', () => {
   describe('block file', () => {

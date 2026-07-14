@@ -1,4 +1,4 @@
-import { describe, beforeEach, it, expect } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { DocumentManager } from '../../../documents';
 import { JSONLanguageService } from '../../JSONLanguageService';
 import { getRequestParams, mockJSONLanguageService } from '../../test/test-helpers';

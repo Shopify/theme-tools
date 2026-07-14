@@ -1,5 +1,5 @@
-import { LiquidVariableOutput, LiquidTag, NodeTypes, NamedTags } from '@shopify/liquid-html-parser';
-import { Problem, SourceCodeType, Context, FilterEntry } from '../../..';
+import { LiquidTag, LiquidVariableOutput, NamedTags, NodeTypes } from '@shopify/liquid-html-parser';
+import { FilterEntry, Problem, SourceCodeType } from '../../..';
 import { INVALID_SYNTAX_MESSAGE } from './utils';
 
 export async function detectInvalidFilterName(

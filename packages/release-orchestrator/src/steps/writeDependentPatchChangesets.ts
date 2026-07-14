@@ -1,6 +1,6 @@
+import type { ChangesetStatus, PackageJsonRecord } from '../types';
 import { changesetStatus } from './changesetStatus';
 import { generatePatchChangeset } from './generatePatchChangeset';
-import type { ChangesetStatus, PackageJsonRecord } from '../types';
 
 /**
  * Creates patch changesets for all packages that depend on the updated packages

@@ -1,5 +1,5 @@
-import { expect } from 'vitest';
 import { AsyncExpectationResult, MatcherState, RawMatcherFn } from '@vitest/expect';
+import { expect } from 'vitest';
 import { HoverParams, MarkupContent } from 'vscode-languageserver-protocol';
 import { HoverProvider } from '../hover';
 

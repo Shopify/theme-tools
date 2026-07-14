@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
-import { Offense, SourceCodeType } from '../types';
+import { describe, expect, it } from 'vitest';
 import { path } from '..';
+import { Offense, SourceCodeType } from '../types';
 
 const rootUri = 'file:///';
 

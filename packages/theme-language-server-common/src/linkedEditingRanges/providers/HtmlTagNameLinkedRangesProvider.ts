@@ -1,8 +1,8 @@
 import { LiquidHtmlNode } from '@shopify/liquid-html-parser';
 import { LinkedEditingRangeParams } from 'vscode-languageserver';
 import { DocumentManager } from '../../documents';
-import { BaseLinkedEditingRangesProvider } from '../BaseLinkedEditingRangesProvider';
 import { getHtmlElementNameRanges } from '../../utils/htmlTagNames';
+import { BaseLinkedEditingRangesProvider } from '../BaseLinkedEditingRangesProvider';
 import { htmlElementNameWordPattern } from '../wordPattern';
 
 export class HtmlTagNameLinkedRangesProvider implements BaseLinkedEditingRangesProvider {

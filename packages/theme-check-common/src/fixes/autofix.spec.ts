@@ -1,4 +1,4 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { autofix, prettyJSON } from '../test';
 import { Offense, SourceCodeType } from '../types';
 

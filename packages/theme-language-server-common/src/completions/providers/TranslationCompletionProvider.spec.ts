@@ -1,8 +1,8 @@
-import { describe, beforeEach, it, expect } from 'vitest';
+import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { InsertTextFormat } from 'vscode-languageserver';
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
-import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 
 describe('Module: TranslationCompletionProvider', async () => {
   let provider: CompletionsProvider;

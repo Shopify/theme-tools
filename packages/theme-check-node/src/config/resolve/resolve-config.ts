@@ -1,8 +1,8 @@
 import path from 'node:path';
-import { readYamlConfigDescription } from './read-yaml';
-import { mergeFragments } from './merge-fragments';
-import { ConfigDescription, ModernIdentifier, ModernIdentifiers } from '../types';
 import { AbsolutePath } from '../../temp';
+import { ConfigDescription, ModernIdentifier, ModernIdentifiers } from '../types';
+import { mergeFragments } from './merge-fragments';
+import { readYamlConfigDescription } from './read-yaml';
 
 const modernConfigsPath = () => {
   if (process.env.WEBPACK_MODE) {

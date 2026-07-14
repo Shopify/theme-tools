@@ -9,10 +9,10 @@ import {
 import { JSONPath } from 'vscode-json-languageservice';
 import { JSONCompletionItem } from 'vscode-json-languageservice/lib/umd/jsonContributions';
 import { CompletionItemKind } from 'vscode-languageserver-protocol';
+import { GetThemeBlockNames } from '../../JSONContributions';
 import { isLiquidRequestContext, RequestContext } from '../../RequestContext';
 import { isSectionOrBlockFile } from '../../utils';
 import { JSONCompletionProvider } from '../JSONCompletionProvider';
-import { GetThemeBlockNames } from '../../JSONContributions';
 
 /**
  * The BlockTypeCompletionProvider offers value completions of the

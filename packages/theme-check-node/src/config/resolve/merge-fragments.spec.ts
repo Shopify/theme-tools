@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { mergeFragments } from './merge-fragments';
+import { describe, expect, it } from 'vitest';
 import { ConfigDescription, ConfigFragment } from '../types';
+import { mergeFragments } from './merge-fragments';
 
 const emptyConfig: ConfigDescription = {
   extends: [],

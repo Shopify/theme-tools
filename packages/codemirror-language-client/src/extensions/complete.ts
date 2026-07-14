@@ -1,29 +1,29 @@
 import {
   autocompletion,
-  CompletionContext,
-  CompletionResult,
-  CompletionInfo,
-  pickedCompletion,
   Completion,
+  CompletionContext,
+  CompletionInfo,
+  CompletionResult,
+  pickedCompletion,
   snippet,
 } from '@codemirror/autocomplete';
+import { Facet } from '@codemirror/state';
+import { EditorView } from '@codemirror/view';
 import {
   CompletionItem,
   CompletionItemKind,
   CompletionList,
   CompletionRequest,
-  InsertTextFormat,
-  InsertReplaceEdit,
-  TextEdit,
   CompletionTriggerKind,
+  InsertReplaceEdit,
+  InsertTextFormat,
   CompletionContext as LSPCompletionContext,
+  TextEdit,
 } from 'vscode-languageserver-protocol';
-import { clientFacet, fileUriFacet, serverCapabilitiesFacet } from './client';
-import { textDocumentField } from './textDocumentSync';
-import { Facet } from '@codemirror/state';
-import { EditorView } from '@codemirror/view';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { clientFacet, fileUriFacet, serverCapabilitiesFacet } from './client';
 import { translateSnippet } from './snippet';
+import { textDocumentField } from './textDocumentSync';
 
 type FirstArgType<F> = F extends (arg: infer A) => any ? A : never;
 export type AutocompleteOptions = Partial<FirstArgType<typeof autocompletion>>;

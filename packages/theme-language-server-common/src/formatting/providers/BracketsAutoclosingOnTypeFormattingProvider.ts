@@ -1,8 +1,8 @@
 import {
-  Range,
   DocumentOnTypeFormattingParams,
-  TextEdit,
   Position,
+  Range,
+  TextEdit,
 } from 'vscode-languageserver-protocol';
 import { AugmentedSourceCode } from '../../documents';
 import { BaseOnTypeFormattingProvider } from '../types';

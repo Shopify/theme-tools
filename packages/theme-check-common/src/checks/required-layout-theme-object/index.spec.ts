@@ -1,7 +1,7 @@
 // test/checks/required-layout-theme-object.test.ts
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { applyFix, runLiquidCheck } from '../../test';
 import { RequiredLayoutThemeObject } from './index';
-import { runLiquidCheck, applyFix } from '../../test';
 
 describe('Module: RequiredLayoutThemeObject', () => {
   it('should report an error if content_for_header is missing', async () => {

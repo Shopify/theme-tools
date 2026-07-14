@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
-import { JSONMissingBlock } from './index';
+import { describe, expect, it } from 'vitest';
 import { check, MockTheme } from '../../test';
+import { JSONMissingBlock } from './index';
 
 describe('Module: JsonMissingBlock', () => {
   describe('File existence validation', () => {

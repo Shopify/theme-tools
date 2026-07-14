@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
-import { JSONSyntaxError } from './index';
+import { describe, expect, it } from 'vitest';
 import { highlightedOffenses, runJSONCheck } from '../../test';
+import { JSONSyntaxError } from './index';
 
 describe('Module: JSONSyntaxError', () => {
   it('should report an error for invalid JSON (0)', async () => {

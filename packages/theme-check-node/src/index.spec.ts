@@ -1,7 +1,7 @@
+import { pathToFileURL } from 'node:url';
 import { afterEach, assert, beforeEach, describe, expect, it } from 'vitest';
 import { Config, SourceCodeType, getTheme, getThemeFilesPathPattern } from './index';
 import { Workspace, makeTempWorkspace } from './test/test-helpers';
-import { pathToFileURL } from 'node:url';
 
 describe('Unit: getTheme', () => {
   let workspace: Workspace;

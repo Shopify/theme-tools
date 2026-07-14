@@ -1,13 +1,13 @@
-import path from 'node:path';
 import fs from 'node:fs/promises';
-import { describe, it, expect, afterEach, beforeEach } from 'vitest';
-import { findThirdPartyChecks, loadThirdPartyChecks } from './load-third-party-checks';
+import path from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
-  makeTmpFolder,
-  removeTmpFolder,
   createMockNodeModule,
+  makeTmpFolder,
   mockNodeModuleCheck,
+  removeTmpFolder,
 } from '../test/test-helpers';
+import { findThirdPartyChecks, loadThirdPartyChecks } from './load-third-party-checks';
 
 describe('Module: ThirdPartyChecks', () => {
   let tempDir: string;

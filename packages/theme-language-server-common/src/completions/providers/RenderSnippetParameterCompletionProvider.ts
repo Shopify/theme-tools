@@ -1,4 +1,5 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
+import { GetDocDefinitionForURI } from '@shopify/theme-check-common';
 import {
   CompletionItem,
   CompletionItemKind,
@@ -7,10 +8,9 @@ import {
   Range,
   TextEdit,
 } from 'vscode-languageserver';
+import { formatLiquidDocParameter, getParameterCompletionTemplate } from '../../utils/liquidDoc';
 import { CURSOR, LiquidCompletionParams } from '../params';
 import { Provider } from './common';
-import { formatLiquidDocParameter, getParameterCompletionTemplate } from '../../utils/liquidDoc';
-import { GetDocDefinitionForURI } from '@shopify/theme-check-common';
 
 export type GetSnippetNamesForURI = (uri: string) => Promise<string[]>;
 

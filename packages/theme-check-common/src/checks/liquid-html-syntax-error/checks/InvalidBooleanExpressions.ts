@@ -1,7 +1,7 @@
 import { LiquidBooleanExpression, LiquidHtmlNode, NodeTypes } from '@shopify/liquid-html-parser';
 import { Problem, SourceCodeType } from '../../..';
-import { INVALID_SYNTAX_MESSAGE } from './utils';
 import { isWithinRawTagThatDoesNotParseItsContents } from '../../utils';
+import { INVALID_SYNTAX_MESSAGE } from './utils';
 
 export function detectInvalidBooleanExpressions(
   node: LiquidBooleanExpression,

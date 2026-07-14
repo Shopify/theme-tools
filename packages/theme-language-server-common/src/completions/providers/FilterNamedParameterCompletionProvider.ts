@@ -6,9 +6,9 @@ import {
   InsertTextFormat,
   TextEdit,
 } from 'vscode-languageserver';
+import { AugmentedLiquidSourceCode } from '../../documents';
 import { CURSOR, LiquidCompletionParams } from '../params';
 import { Provider, createCompletionItem } from './common';
-import { AugmentedLiquidSourceCode } from '../../documents';
 
 export class FilterNamedParameterCompletionProvider implements Provider {
   constructor(private readonly themeDocset: ThemeDocset) {}

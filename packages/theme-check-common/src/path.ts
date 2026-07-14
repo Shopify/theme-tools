@@ -1,5 +1,5 @@
-import { RelativePath, UriString } from './types';
 import { URI, Utils } from 'vscode-uri';
+import { RelativePath, UriString } from './types';
 
 export { URI, Utils };
 

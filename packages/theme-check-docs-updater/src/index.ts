@@ -1,4 +1,3 @@
-export { ThemeLiquidDocsManager } from './themeLiquidDocsManager';
 export {
   Resource,
   Resources,
@@ -6,3 +5,4 @@ export {
   downloadThemeLiquidDocs,
   root,
 } from './themeLiquidDocsDownloader';
+export { ThemeLiquidDocsManager } from './themeLiquidDocsManager';

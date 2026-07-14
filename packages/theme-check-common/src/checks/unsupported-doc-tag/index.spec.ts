@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { applySuggestions, runLiquidCheck } from '../../test';
 import { UnsupportedDocTag } from './index';
-import { runLiquidCheck, applySuggestions } from '../../test';
 
 describe('Module: UnsupportedDocTag', () => {
   const sourceCode = `{% doc %} @param param1 - Example param {% enddoc %}{{ 'hello' }}`;

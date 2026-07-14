@@ -1,12 +1,12 @@
-import { expect, it, describe } from 'vitest';
-import {
-  LiquidHtmlCST,
-  toLiquidHtmlCST,
-  toLiquidCST,
-  LiquidCST,
-  ConcreteLiquidTagLiquid,
-} from './stage-1-cst';
+import { describe, expect, it } from 'vitest';
 import { VOID_ELEMENTS } from './grammar';
+import {
+  ConcreteLiquidTagLiquid,
+  LiquidCST,
+  LiquidHtmlCST,
+  toLiquidCST,
+  toLiquidHtmlCST,
+} from './stage-1-cst';
 import { deepGet } from './utils';
 
 describe('Unit: Stage 1 (CST)', () => {

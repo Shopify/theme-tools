@@ -1,7 +1,7 @@
-import { expect, describe, it, beforeEach } from 'vitest';
+import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { CompletionsProvider } from '../completions';
 import { DocumentManager } from '../documents';
-import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 
 describe('Module: CompletionItemsAssertion', () => {
   let provider: CompletionsProvider;

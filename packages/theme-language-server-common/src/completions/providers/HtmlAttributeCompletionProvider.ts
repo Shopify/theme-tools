@@ -1,3 +1,4 @@
+import { LiquidHtmlNode } from '@shopify/liquid-html-parser';
 import {
   CompletionItem,
   CompletionItemKind,
@@ -16,7 +17,6 @@ import {
 } from '../../utils';
 import { CURSOR, LiquidCompletionParams } from '../params';
 import { Provider, sortByName } from './common';
-import { LiquidHtmlNode } from '@shopify/liquid-html-parser';
 
 export class HtmlAttributeCompletionProvider implements Provider {
   constructor(private readonly documentManager: DocumentManager) {}

@@ -1,21 +1,21 @@
 import {
   HtmlRawNode,
   HtmlVoidElement,
-  TextNode,
   LiquidVariable,
   LiquidVariableOutput,
+  TextNode,
 } from '@shopify/liquid-html-parser';
 import {
-  LiquidHtmlNodeTypes as NodeTypes,
-  LiquidHtmlNodeOfType as NodeOfType,
-  Severity,
-  SourceCodeType,
   LiquidCheckDefinition,
   LiquidHtmlNode,
+  LiquidHtmlNodeOfType as NodeOfType,
+  LiquidHtmlNodeTypes as NodeTypes,
   SchemaProp,
+  Severity,
+  SourceCodeType,
 } from '../../types';
-import { isAttr, isValuedHtmlAttribute, isNodeOfType, ValuedHtmlAttribute } from '../utils';
 import { last } from '../../utils';
+import { isAttr, isNodeOfType, isValuedHtmlAttribute, ValuedHtmlAttribute } from '../utils';
 
 const RESOURCE_TAGS = ['img', 'link', 'source', 'script'];
 const SHOPIFY_CDN_DOMAINS = ['fonts.shopifycdn.com', 'cdn.shopify.com'];

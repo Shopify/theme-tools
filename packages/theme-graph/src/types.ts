@@ -1,12 +1,12 @@
 import {
   JSONSourceCode,
   LiquidSourceCode,
+  Location,
+  Mode,
+  Range,
+  Reference,
   Dependencies as ThemeCheckDependencies,
   UriString,
-  Reference,
-  Location,
-  Range,
-  Mode,
 } from '@shopify/theme-check-common';
 import { Program } from 'acorn';
 
@@ -204,7 +204,7 @@ export interface JsSourceCode {
   ast: Program | Error;
 }
 
-export { Reference, Range, Location };
+export { Location, Range, Reference };
 
 export type Void = void | Void[]; /** e.g. product-element, */
 

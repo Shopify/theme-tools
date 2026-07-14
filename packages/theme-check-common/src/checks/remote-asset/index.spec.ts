@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { runLiquidCheck, highlightedOffenses, check, MockTheme } from '../../test';
+import { describe, expect, it } from 'vitest';
+import { check, highlightedOffenses, MockTheme, runLiquidCheck } from '../../test';
 import { RemoteAsset } from './index';
 
 describe('Module: RemoteAsset', () => {

@@ -1,18 +1,18 @@
 import {
-  Position,
-  NodeTypes,
-  HtmlElement,
-  TextNode,
+  AttrDoubleQuoted,
   AttrEmpty,
   AttrSingleQuoted,
-  AttrDoubleQuoted,
   AttrUnquoted,
-  LiquidHtmlNode,
+  HtmlElement,
   LiquidBranch,
+  LiquidHtmlNode,
+  LiquidTag,
   LiquidTagFor,
   LiquidTagTablerow,
-  LiquidTag,
   LoopNamedTags,
+  NodeTypes,
+  Position,
+  TextNode,
 } from '@shopify/liquid-html-parser';
 import { LiquidHtmlNodeOfType as NodeOfType } from '../types';
 

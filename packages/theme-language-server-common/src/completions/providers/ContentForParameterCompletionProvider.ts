@@ -1,16 +1,16 @@
 import { LiquidVariableLookup, NodeTypes } from '@shopify/liquid-html-parser';
+import { DocDefinition, GetDocDefinitionForURI } from '@shopify/theme-check-common';
 import {
   CompletionItem,
   CompletionItemKind,
   InsertTextFormat,
   TextEdit,
 } from 'vscode-languageserver';
+import { AugmentedLiquidSourceCode } from '../../documents';
+import { getParameterCompletionTemplate } from '../../utils/liquidDoc';
 import { CURSOR, LiquidCompletionParams } from '../params';
 import { Provider } from './common';
-import { AugmentedLiquidSourceCode } from '../../documents';
 import { DEFAULT_COMPLETION_OPTIONS } from './data/contentForParameterCompletionOptions';
-import { DocDefinition, GetDocDefinitionForURI } from '@shopify/theme-check-common';
-import { getParameterCompletionTemplate } from '../../utils/liquidDoc';
 
 /**
  * Offers completions for parameters for the `content_for` tag after a user has

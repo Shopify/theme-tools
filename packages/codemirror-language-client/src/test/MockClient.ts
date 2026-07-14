@@ -1,12 +1,11 @@
 import { vi } from 'vitest';
 import {
-  ProtocolRequestType,
-  ProtocolNotificationType,
-  CancellationTokenSource,
   CancellationToken,
-  ServerCapabilities,
+  CancellationTokenSource,
+  ProtocolNotificationType,
+  ProtocolRequestType,
 } from 'vscode-languageserver-protocol';
-import { PromiseCompletion, AbstractLanguageClient, disposable } from '../LanguageClient';
+import { AbstractLanguageClient, disposable, PromiseCompletion } from '../LanguageClient';
 
 export class MockClient extends EventTarget implements AbstractLanguageClient {
   clientCapabilities: AbstractLanguageClient['clientCapabilities'];

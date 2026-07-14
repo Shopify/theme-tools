@@ -1,11 +1,4 @@
-import {
-  JSONCheckDefinition,
-  JSONNode,
-  JSONSourceCode,
-  Severity,
-  SourceCodeType,
-  PropertyNode,
-} from '../../types';
+import { JSONCheckDefinition, JSONNode, PropertyNode, Severity, SourceCodeType } from '../../types';
 
 const PLURALIZATION_KEYS = new Set(['zero', 'one', 'two', 'few', 'many', 'other']);
 

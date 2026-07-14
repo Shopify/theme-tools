@@ -1,5 +1,5 @@
-import { expect, it, describe, afterEach, afterAll, vi, Mock } from 'vitest';
 import fs from 'fs/promises';
+import { afterAll, afterEach, describe, expect, it, Mock, vi } from 'vitest';
 import { getPackageJsonRecord } from './getPackageJsonRecord';
 // import { promisify } from 'node:util';
 

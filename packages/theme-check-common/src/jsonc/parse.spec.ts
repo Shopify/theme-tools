@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toJSONNode, location } from './parse';
+import { location, toJSONNode } from './parse';
 
 describe('module: toJSONNode', () => {
   it('should parse basic key-value pairs', () => {

@@ -1,15 +1,15 @@
-import {
-  LiquidCheckDefinition,
-  Severity,
-  SourceCodeType,
-  Preset,
-  Section,
-  ThemeBlock,
-  JSONNode,
-  Setting,
-} from '../../types';
 import { nodeAtPath } from '../../json';
 import { getSchema, isSectionSchema } from '../../to-schema';
+import {
+  JSONNode,
+  LiquidCheckDefinition,
+  Preset,
+  Section,
+  Setting,
+  Severity,
+  SourceCodeType,
+  ThemeBlock,
+} from '../../types';
 import { BlockDefNodeWithPath, getBlocks, reportWarning } from '../../utils';
 
 export const ValidSettingsKey: LiquidCheckDefinition = {
