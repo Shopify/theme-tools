@@ -3,6 +3,7 @@ import type {
   RenderVariableExpression,
   RenderAliasExpression,
   LiquidNamedArgument,
+  LiquidVariableLookup,
 } from '../ast';
 import type { MarkupParser } from '../markup/parser';
 import { MarkupTokenType } from '../markup/tokenizer';
@@ -19,11 +20,24 @@ function looksLikeNamedArgument(markup: MarkupParser): boolean {
   return markup.look(MarkupTokenType.Id) && markup.look(MarkupTokenType.Colon, 1);
 }
 
+function parseAlias(markup: MarkupParser, source: string): RenderAliasExpression | null {
+  const asStart = markup.peek().start;
+  if (!markup.id('as')) return null;
+  const aliasToken = markup.consume(MarkupTokenType.Id);
+  return {
+    type: NodeTypes.RenderAliasExpression,
+    value: aliasToken.value,
+    position: { start: asStart, end: aliasToken.end },
+    source,
+  };
+}
+
 function parseRenderMarkup(
   _name: string,
   markup: MarkupParser,
   _parser: Parser,
   allowAnyTemplateName = false,
+  allowWithNamedArgumentPrefix = false,
 ): RenderMarkup {
   const snippet = markup.valueExpression();
   // Ruby `render` requires a quoted string template name at parse time
@@ -45,8 +59,34 @@ function parseRenderMarkup(
 
   let kind: 'for' | 'with' | null = null;
   const kwStart = markup.peek().start;
+  const hasWithNamedArgumentPrefix =
+    allowWithNamedArgumentPrefix &&
+    markup.peek().type === MarkupTokenType.Id &&
+    markup.peek().value === 'with' &&
+    markup.look(MarkupTokenType.Id, 1) &&
+    markup.look(MarkupTokenType.Colon, 2);
+
   if (markup.id('for')) {
     kind = 'for';
+  } else if (hasWithNamedArgumentPrefix) {
+    // Shopify Liquid treats `with key: value` as both `with key` and a named
+    // argument. Leave `key:` on the cursor so the normal arg loop consumes it.
+    const withToken = markup.consume(MarkupTokenType.Id);
+    const nameToken = markup.peek();
+    const name: LiquidVariableLookup = {
+      type: NodeTypes.VariableLookup,
+      name: nameToken.value,
+      lookups: [],
+      position: { start: nameToken.start, end: nameToken.end },
+      source: snippet.source,
+    };
+    variable = {
+      type: NodeTypes.RenderVariableExpression,
+      kind: 'with',
+      name,
+      position: { start: withToken.start, end: nameToken.end },
+      source: snippet.source,
+    };
   } else if (markup.id('with')) {
     kind = 'with';
   }
@@ -63,16 +103,7 @@ function parseRenderMarkup(
   }
 
   // Handle 'as alias' — may appear after 'with expr' / 'for expr' or standalone
-  const asStart = markup.peek().start;
-  if (markup.id('as')) {
-    const aliasToken = markup.consume(MarkupTokenType.Id);
-    alias = {
-      type: NodeTypes.RenderAliasExpression,
-      value: aliasToken.value,
-      position: { start: asStart, end: aliasToken.end },
-      source: snippet.source,
-    };
-  }
+  alias = parseAlias(markup, snippet.source);
 
   const args: LiquidNamedArgument[] = [];
   // Commas between named args are optional in Ruby `render`/`include`
@@ -86,6 +117,8 @@ function parseRenderMarkup(
     args.push(markup.namedArgument());
     markup.consumeOptional(MarkupTokenType.Comma);
   }
+
+  if (alias === null) alias = parseAlias(markup, snippet.source);
 
   const end = markup.peek().start;
 
@@ -102,10 +135,10 @@ function parseRenderMarkup(
 
 export const renderTag: TagDefinitionTag<RenderMarkup> = {
   kind: TagKind.Tag,
-  parse: parseRenderMarkup,
+  parse: (name, markup, parser) => parseRenderMarkup(name, markup, parser, false, true),
 };
 
 export const includeTag: TagDefinitionTag<RenderMarkup> = {
   kind: TagKind.Tag,
-  parse: (name, markup, parser) => parseRenderMarkup(name, markup, parser, true),
+  parse: (name, markup, parser) => parseRenderMarkup(name, markup, parser, true, true),
 };
