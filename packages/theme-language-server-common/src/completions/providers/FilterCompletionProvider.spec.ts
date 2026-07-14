@@ -4,7 +4,8 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { describe, beforeEach, it, expect } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
-import { CURSOR } from '../params';
+
+const CURSOR = '█';
 
 const filters: FilterEntry[] = [
   {

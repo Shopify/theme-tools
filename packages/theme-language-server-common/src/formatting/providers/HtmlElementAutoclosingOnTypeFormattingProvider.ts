@@ -1,5 +1,4 @@
 import {
-  getName,
   HtmlElement,
   LiquidHTMLASTParsingError,
   LiquidHtmlNode,
@@ -76,6 +75,12 @@ export class HtmlElementAutoclosingOnTypeFormattingProvider implements BaseOnTyp
         ) {
           defer(() => this.setCursorPosition(textDocument, params.position));
           return [TextEdit.insert(Position.create(line, character), `</${ast.unclosed.name}>`)];
+        } else if (ast instanceof LiquidHTMLASTParsingError) {
+          const node = nodeAtCursor(textDocument, params.position);
+          if (node && isDanglingHtmlElement(node)) {
+            defer(() => this.setCursorPosition(textDocument, params.position));
+            return [TextEdit.insert(Position.create(line, character), `</${getName(node)}>`)];
+          }
         } else if (!(ast instanceof Error)) {
           // Even though we accept dangling <div>s inside {% if condition %}, we prefer to auto-insert the </div>
           const [node] = findCurrentNode(ast, textDocument.offsetAt(params.position));
@@ -122,4 +127,26 @@ function isDanglingHtmlElement(node: LiquidHtmlNode): node is HtmlElement {
     node.type === NodeTypes.HtmlElement &&
     node.blockEndPosition.start === node.blockEndPosition.end
   );
+}
+
+function getName(node: LiquidHtmlNode): string | null {
+  switch (node.type) {
+    case NodeTypes.HtmlElement:
+    case NodeTypes.HtmlDanglingMarkerClose:
+    case NodeTypes.HtmlSelfClosingElement:
+      return node.name
+        .map((part) => {
+          if (part.type === NodeTypes.TextNode) return part.value;
+          if (part.type === NodeTypes.LiquidVariableOutput) {
+            return typeof part.markup === 'string'
+              ? `{{${part.markup.trim()}}}`
+              : `{{${part.markup.rawSource}}}`;
+          }
+          // LiquidTag | LiquidRawTag segment (new compound-name arm)
+          return part.source.slice(part.position.start, part.position.end);
+        })
+        .join('');
+    default:
+      return 'name' in node && typeof node.name === 'string' ? node.name : null;
+  }
 }
