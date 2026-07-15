@@ -20,6 +20,19 @@ function looksLikeNamedArgument(markup: MarkupParser): boolean {
   return markup.look(MarkupTokenType.Id) && markup.look(MarkupTokenType.Colon, 1);
 }
 
+function looksLikeLegacyWithNamedArgumentPrefix(
+  markup: MarkupParser,
+  allowWithNamedArgumentPrefix: boolean,
+): boolean {
+  return (
+    allowWithNamedArgumentPrefix &&
+    markup.peek().type === MarkupTokenType.Id &&
+    markup.peek().value === 'with' &&
+    markup.look(MarkupTokenType.Id, 1) &&
+    markup.look(MarkupTokenType.Colon, 2)
+  );
+}
+
 function parseAlias(markup: MarkupParser, source: string): RenderAliasExpression | null {
   const asStart = markup.peek().start;
   if (!markup.id('as')) return null;
@@ -59,12 +72,10 @@ function parseRenderMarkup(
 
   let kind: 'for' | 'with' | null = null;
   const kwStart = markup.peek().start;
-  const hasWithNamedArgumentPrefix =
-    allowWithNamedArgumentPrefix &&
-    markup.peek().type === MarkupTokenType.Id &&
-    markup.peek().value === 'with' &&
-    markup.look(MarkupTokenType.Id, 1) &&
-    markup.look(MarkupTokenType.Colon, 2);
+  const hasWithNamedArgumentPrefix = looksLikeLegacyWithNamedArgumentPrefix(
+    markup,
+    allowWithNamedArgumentPrefix,
+  );
 
   if (markup.id('for')) {
     kind = 'for';
