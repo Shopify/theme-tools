@@ -133,7 +133,7 @@ function parseRenderMarkup(
   const args: LiquidNamedArgument[] = [];
   parseRenderNamedArguments(markup, args);
 
-  if (alias === null) {
+  if (alias === null && hasWithNamedArgumentPrefix) {
     const lateAlias = parseAlias(markup, snippet.source);
     if (lateAlias !== null) {
       alias = lateAlias;

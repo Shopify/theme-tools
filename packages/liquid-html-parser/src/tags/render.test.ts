@@ -220,6 +220,31 @@ describe('renderTag', () => {
     expect(mp.isAtEnd()).toBe(true);
   });
 
+  it('does not parse an alias after regular named arguments', () => {
+    const mp = parser(`"snippet", a: 1 as item`);
+    const result = renderTag.parse('render', mp, stubParser);
+
+    expect(result.alias).toBeNull();
+    expect(result.args).toMatchObject([{ type: NodeTypes.NamedArgument, name: 'a' }]);
+    expect(mp.isAtEnd()).toBe(false);
+  });
+
+  it('does not parse an alias after named arguments following a regular with variable', () => {
+    const mp = parser(`"snippet" with product, title: "T" as item`);
+    const result = renderTag.parse('render', mp, stubParser);
+
+    expect(result).toMatchObject({
+      variable: {
+        type: NodeTypes.RenderVariableExpression,
+        kind: 'with',
+        name: { type: NodeTypes.VariableLookup, name: 'product' },
+      },
+      alias: null,
+      args: [{ type: NodeTypes.NamedArgument, name: 'title' }],
+    });
+    expect(mp.isAtEnd()).toBe(false);
+  });
+
   // Ruby render/include strict2_parse keys are a bare `id` immediately followed
   // by a colon (`key = p.consume; p.consume(:colon)`), NOT a dotted path. A
   // dotted key is not consumed as a named arg, leaving trailing tokens that fail
@@ -322,6 +347,22 @@ describe('includeTag', () => {
       args: [{ type: NodeTypes.NamedArgument, name: 'title' }],
     });
     expect(mp.isAtEnd()).toBe(true);
+  });
+
+  it('does not parse an alias after named arguments following a regular with variable', () => {
+    const mp = parser(`"snippet" with product, title: "T" as item`);
+    const result = includeTag.parse('include', mp, stubParser);
+
+    expect(result).toMatchObject({
+      variable: {
+        type: NodeTypes.RenderVariableExpression,
+        kind: 'with',
+        name: { type: NodeTypes.VariableLookup, name: 'product' },
+      },
+      alias: null,
+      args: [{ type: NodeTypes.NamedArgument, name: 'title' }],
+    });
+    expect(mp.isAtEnd()).toBe(false);
   });
 
   it('rejects a non-string template name for render (stricter parse)', () => {
