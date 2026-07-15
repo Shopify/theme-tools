@@ -149,6 +149,26 @@ describe('renderTag', () => {
     expect(mp.isAtEnd()).toBe(true);
   });
 
+  it('parses named arguments after an alias after legacy with-prefixed named arguments', () => {
+    const mp = parser(`"card" with product: product as item, show_vendor: true`);
+    const result = renderTag.parse('render', mp, stubParser);
+
+    expect(result).toMatchObject({
+      snippet: { type: NodeTypes.String, value: 'card' },
+      variable: {
+        type: NodeTypes.RenderVariableExpression,
+        kind: 'with',
+        name: { type: NodeTypes.VariableLookup, name: 'product' },
+      },
+      alias: { type: NodeTypes.RenderAliasExpression, value: 'item' },
+      args: [
+        { type: NodeTypes.NamedArgument, name: 'product' },
+        { type: NodeTypes.NamedArgument, name: 'show_vendor' },
+      ],
+    });
+    expect(mp.isAtEnd()).toBe(true);
+  });
+
   it('parses named arguments with trailing comma', () => {
     const markup =
       "'slideshow-slide', index: forloop.index0, children: children, media_fit: block_settings.media_fit,";
@@ -263,6 +283,26 @@ describe('includeTag', () => {
         { type: NodeTypes.NamedArgument, name: 'image' },
         { type: NodeTypes.NamedArgument, name: 'width' },
         { type: NodeTypes.NamedArgument, name: 'small_style' },
+      ],
+    });
+    expect(mp.isAtEnd()).toBe(true);
+  });
+
+  it('parses named arguments after an alias after legacy with-prefixed named arguments', () => {
+    const mp = parser(`"card" with product: product as item, show_vendor: true`);
+    const result = includeTag.parse('include', mp, stubParser);
+
+    expect(result).toMatchObject({
+      snippet: { type: NodeTypes.String, value: 'card' },
+      variable: {
+        type: NodeTypes.RenderVariableExpression,
+        kind: 'with',
+        name: { type: NodeTypes.VariableLookup, name: 'product' },
+      },
+      alias: { type: NodeTypes.RenderAliasExpression, value: 'item' },
+      args: [
+        { type: NodeTypes.NamedArgument, name: 'product' },
+        { type: NodeTypes.NamedArgument, name: 'show_vendor' },
       ],
     });
     expect(mp.isAtEnd()).toBe(true);

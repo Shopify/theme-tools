@@ -45,6 +45,20 @@ function parseAlias(markup: MarkupParser, source: string): RenderAliasExpression
   };
 }
 
+function parseRenderNamedArguments(markup: MarkupParser, args: LiquidNamedArgument[]): void {
+  // Commas between named args are optional in Ruby `render`/`include`
+  // (render.rb / include.rb strict2_parse: `p.consume?(:comma)` after each
+  // attribute). Both `{% render 'x', a: 1, b: 2 %}` and the space-separated
+  // `{% render 'x' a: 1 b: 2 %}` are valid. This is a render/include-local loop
+  // (NOT a change to the shared `namedArguments()`), so the strict AST for every
+  // other tag — and theme-check-common's parse-error detection — is unaffected.
+  markup.consumeOptional(MarkupTokenType.Comma);
+  while (looksLikeNamedArgument(markup)) {
+    args.push(markup.namedArgument());
+    markup.consumeOptional(MarkupTokenType.Comma);
+  }
+}
+
 function parseRenderMarkup(
   _name: string,
   markup: MarkupParser,
@@ -117,19 +131,15 @@ function parseRenderMarkup(
   alias = parseAlias(markup, snippet.source);
 
   const args: LiquidNamedArgument[] = [];
-  // Commas between named args are optional in Ruby `render`/`include`
-  // (render.rb / include.rb strict2_parse: `p.consume?(:comma)` after each
-  // attribute). Both `{% render 'x', a: 1, b: 2 %}` and the space-separated
-  // `{% render 'x' a: 1 b: 2 %}` are valid. This is a render/include-local loop
-  // (NOT a change to the shared `namedArguments()`), so the strict AST for every
-  // other tag — and theme-check-common's parse-error detection — is unaffected.
-  markup.consumeOptional(MarkupTokenType.Comma);
-  while (looksLikeNamedArgument(markup)) {
-    args.push(markup.namedArgument());
-    markup.consumeOptional(MarkupTokenType.Comma);
-  }
+  parseRenderNamedArguments(markup, args);
 
-  if (alias === null) alias = parseAlias(markup, snippet.source);
+  if (alias === null) {
+    const lateAlias = parseAlias(markup, snippet.source);
+    if (lateAlias !== null) {
+      alias = lateAlias;
+      parseRenderNamedArguments(markup, args);
+    }
+  }
 
   const end = markup.peek().start;
 
