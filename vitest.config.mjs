@@ -9,7 +9,7 @@ const ciExclude = ['./packages/prettier-plugin-liquid'];
 
 export default defineConfig({
   test: {
-    exclude: [...configDefaults.exclude, ...alwaysExclude, ...(CI ? ciExclude : [])],
+    exclude: [...configDefaults.exclude, ...alwaysExclude, '**/dist/**', ...(CI ? ciExclude : [])],
     pool: 'forks',
     maxWorkers: 1,
     isolate: true,

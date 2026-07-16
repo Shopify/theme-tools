@@ -28,7 +28,6 @@
     "build": "pnpm build:ts",
     "build:ci": "pnpm build",
     "build:ts": "tsc -p tsconfig.build.json",
-    "prebuild:ts": "node build/shims.js",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
