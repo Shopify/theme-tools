@@ -1,14 +1,14 @@
-import { type CycleMarkup, type LiquidTag } from "@editor/liquid-html-parser";
-import type { Context } from ".";
+import { type CycleMarkup, type LiquidTag } from '@shopify/liquid-html-parser';
+import type { Context } from '.';
 import {
   hasBareArrayAccess,
   hasRubyAcceptedCycleTrailingComma,
   hasSkippedCharacters,
   rawMarkup,
-} from "./utils";
+} from './utils';
 
 export function checkCycleTag(node: LiquidTag, context: Context): void {
-  if (typeof node.markup === "string") {
+  if (typeof node.markup === 'string') {
     if (hasRubyAcceptedCycleTrailingComma(node.markup)) {
       return;
     }
@@ -28,7 +28,7 @@ export function checkCycleTag(node: LiquidTag, context: Context): void {
     markup.args.some(hasBareArrayAccess)
   ) {
     context.report({
-      message: "Bare bracket access is not allowed",
+      message: 'Bare bracket access is not allowed',
       startIndex: node.position.start,
       endIndex: node.position.end,
     });

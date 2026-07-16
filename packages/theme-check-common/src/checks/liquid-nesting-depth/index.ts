@@ -1,10 +1,5 @@
-import {
-  SchemaProp,
-  Severity,
-  SourceCodeType,
-  type LiquidCheckDefinition,
-} from "@shopify/theme-check-common";
-import { NodeTypes, type LiquidHtmlNode, type LiquidTag } from "@editor/liquid-html-parser";
+import { SchemaProp, Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
+import { NodeTypes, type LiquidHtmlNode, type LiquidTag } from '@shopify/liquid-html-parser';
 
 /**
  * 10 allows a small buffer above Dawn and Horizon's current maximum while
@@ -29,14 +24,14 @@ const schema = {
   maxDepth: SchemaProp.number(TOLERATED_LIQUID_NESTING_DEPTH),
 };
 
-const NESTING_TAGS = new Set(["if", "unless", "for", "case", "tablerow"]);
+const NESTING_TAGS = new Set(['if', 'unless', 'for', 'case', 'tablerow']);
 
 export const LiquidNestingDepth: LiquidCheckDefinition<typeof schema> = {
   meta: {
-    code: "LiquidNestingDepth",
-    name: "LiquidNestingDepth",
+    code: 'LiquidNestingDepth',
+    name: 'LiquidNestingDepth',
     docs: {
-      description: "Reports Liquid files with deeply nested control-flow structures.",
+      description: 'Reports Liquid files with deeply nested control-flow structures.',
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,

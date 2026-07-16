@@ -1,15 +1,15 @@
-import type { LiquidTag, LiquidConditionalExpression } from "@editor/liquid-html-parser";
-import type { Context } from ".";
+import type { LiquidTag, LiquidConditionalExpression } from '@shopify/liquid-html-parser';
+import type { Context } from '.';
 import {
   conditionalHasBareArrayAccess,
   hasSkippedCharacters,
   hasSkippedPrefixCharacters,
   hasUnclosedQuotedString,
   rawMarkup,
-} from "./utils";
+} from './utils';
 
 export function checkUnlessTag(node: LiquidTag, context: Context): void {
-  if (typeof node.markup === "string") {
+  if (typeof node.markup === 'string') {
     context.report({
       message: "Syntax error in 'unless' tag",
       startIndex: node.position.start,
@@ -33,7 +33,7 @@ export function checkUnlessTag(node: LiquidTag, context: Context): void {
 
   if (conditionalHasBareArrayAccess(markup)) {
     context.report({
-      message: "Bare bracket access is not allowed in strict2 mode",
+      message: 'Bare bracket access is not allowed in strict2 mode',
       startIndex: node.position.start,
       endIndex: node.position.end,
     });

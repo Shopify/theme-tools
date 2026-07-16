@@ -1,10 +1,15 @@
-import { Severity, SourceCodeType, type LiquidCheckDefinition } from "@shopify/theme-check-common";
+import {
+  Severity,
+  SourceCodeType,
+  type JSONCheckDefinition,
+  type LiquidCheckDefinition,
+} from '../../types';
 
 const KILOBYTE = 1024;
 const MEGABYTE = 1024 * KILOBYTE;
-const DRAFTS_DIRECTORY = "_drafts";
-const FULL_FILE_BYTES = "full-file-bytes";
-const SCHEMALESS_BYTES = "schemaless-bytes";
+const DRAFTS_DIRECTORY = '_drafts';
+const FULL_FILE_BYTES = 'full-file-bytes';
+const SCHEMALESS_BYTES = 'schemaless-bytes';
 
 type MaxFileSizeMeasurement = typeof FULL_FILE_BYTES | typeof SCHEMALESS_BYTES;
 
@@ -40,8 +45,8 @@ const SCHEMA_BLOCK_REGEX = /{%-?\s*schema\s*-?%}[\s\S]*?{%-?\s*endschema\s*-?%}/
 
 export const MaxFileSize: LiquidCheckDefinition = {
   meta: {
-    code: "MaxFileSize",
-    name: "MaxFileSize",
+    code: 'MaxFileSize',
+    name: 'MaxFileSize',
     docs: {
       description: "Reports theme files that exceed Shopify's maximum file size.",
       recommended: true,
@@ -84,8 +89,8 @@ function maxFileSizeLimit(relativePath: string): MaxFileSizeLimit | undefined {
 
 function maxFileSizeLimitKey(relativePath: string): MaxFileSizeLimitKey | undefined {
   return MAX_FILE_SIZE_LIMIT_KEYS.find((key) => {
-    if (key.endsWith("*.json")) {
-      const [prefix, extension] = key.split("*");
+    if (key.endsWith('*.json')) {
+      const [prefix, extension] = key.split('*');
       return (
         matchesThemePathPrefix(relativePath, prefix) &&
         relativePath.toLowerCase().endsWith(extension)
@@ -109,7 +114,7 @@ function matchesThemePathPrefix(relativePath: string, themePathPrefix: string): 
   return relativePath.startsWith(themePathPrefix) || relativePath.includes(`/${themePathPrefix}`);
 }
 
-function measuredFileBytes(source: string, measurement: MaxFileSizeLimit["measurement"]): number {
+function measuredFileBytes(source: string, measurement: MaxFileSizeLimit['measurement']): number {
   if (measurement === FULL_FILE_BYTES) {
     return Buffer.byteLength(source);
   }
@@ -132,3 +137,8 @@ function formatBytes(bytes: number): string {
 
   return `${bytes} bytes`;
 }
+
+export const MaxFileSizeJSON: JSONCheckDefinition = {
+  ...MaxFileSize,
+  meta: { ...MaxFileSize.meta, type: SourceCodeType.JSON },
+} as unknown as JSONCheckDefinition;

@@ -1,21 +1,17 @@
-import { Severity, SourceCodeType, type LiquidCheckDefinition } from "@shopify/theme-check-common";
-import {
-  BasicParamTypes,
-  inferArgumentType,
-  isTypeCompatible,
-} from "@shopify/theme-check-common/dist/liquid-doc/utils";
-import { NodeTypes, type BlockMarkup } from "@editor/liquid-html-parser";
-import { getBlockDocParams, isSystemArg } from "../common/block-doc";
+import { Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
+import { BasicParamTypes, inferArgumentType, isTypeCompatible } from '../../liquid-doc/utils';
+import { NodeTypes, type BlockMarkup } from '@shopify/liquid-html-parser';
+import { getBlockDocParams, isSystemArg } from '../common/block-doc';
 
 export const ValidBlockArgumentTypes: LiquidCheckDefinition = {
   meta: {
-    code: "ValidBlockArgumentTypes",
-    name: "Valid Block Argument Types",
+    code: 'ValidBlockArgumentTypes',
+    name: 'Valid Block Argument Types',
     docs: {
       description:
-        "Reports type mismatches between block tag arguments and their {% doc %} declarations.",
+        'Reports type mismatches between block tag arguments and their {% doc %} declarations.',
       recommended: true,
-      url: "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-block-argument-types",
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/valid-block-argument-types',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,
@@ -28,8 +24,8 @@ export const ValidBlockArgumentTypes: LiquidCheckDefinition = {
 
     return {
       async LiquidTag(node) {
-        if (node.name !== "block") return;
-        if (typeof node.markup === "string") return;
+        if (node.name !== 'block') return;
+        if (typeof node.markup === 'string') return;
 
         const markup = node.markup as BlockMarkup;
         const blockName = markup.name.value;

@@ -4,11 +4,11 @@ import {
   SchemaProp,
   Severity,
   SourceCodeType,
-  toJSONAST,
-  visit,
   type LiquidCheckDefinition,
-} from "@shopify/theme-check-common";
-import { type LiquidRawTag } from "@editor/liquid-html-parser";
+} from '../../types';
+import { toJSONAST } from '../../to-source-code';
+import { visit } from '../../visitor';
+import { type LiquidRawTag } from '@shopify/liquid-html-parser';
 
 /**
  * 40 sits just above Horizon's per-file maximum of 36 top-level settings,
@@ -36,11 +36,11 @@ const schema = {
 
 export const ExcessiveSettingsCount: LiquidCheckDefinition<typeof schema> = {
   meta: {
-    code: "ExcessiveSettingsCount",
-    name: "ExcessiveSettingsCount",
+    code: 'ExcessiveSettingsCount',
+    name: 'ExcessiveSettingsCount',
     docs: {
       description:
-        "Reports section or block schemas that declare more top-level settings than the configured maximum.",
+        'Reports section or block schemas that declare more top-level settings than the configured maximum.',
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,
@@ -58,7 +58,7 @@ export const ExcessiveSettingsCount: LiquidCheckDefinition<typeof schema> = {
 
         const schemaNode = visit<SourceCodeType.LiquidHtml, LiquidRawTag>(context.file.ast, {
           LiquidRawTag(node) {
-            if (node.name === "schema") return node;
+            if (node.name === 'schema') return node;
           },
         })[0];
         if (!schemaNode) return;
@@ -67,7 +67,7 @@ export const ExcessiveSettingsCount: LiquidCheckDefinition<typeof schema> = {
         if (schemaAst instanceof Error || !isObjectNode(schemaAst)) return;
 
         const settingsProperty = schemaAst.children.find(
-          (property) => property.key.value === "settings",
+          (property) => property.key.value === 'settings',
         );
         if (!settingsProperty || !isArrayNode(settingsProperty.value)) return;
 
@@ -80,7 +80,7 @@ export const ExcessiveSettingsCount: LiquidCheckDefinition<typeof schema> = {
         const settingsCount = settingsProperty.value.children.filter(
           (setting) =>
             isObjectNode(setting) &&
-            setting.children.some((property) => property.key.value === "id"),
+            setting.children.some((property) => property.key.value === 'id'),
         ).length;
 
         if (settingsCount <= maxSettings) return;

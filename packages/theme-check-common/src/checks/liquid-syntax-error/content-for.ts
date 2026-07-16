@@ -1,22 +1,22 @@
-import { NodeTypes, type ContentForMarkup, type LiquidTag } from "@editor/liquid-html-parser";
-import type { Context } from ".";
-import { argHasBareArrayAccess } from "./utils";
+import { NodeTypes, type ContentForMarkup, type LiquidTag } from '@shopify/liquid-html-parser';
+import type { Context } from '.';
+import { argHasBareArrayAccess } from './utils';
 
-const ACCEPTED_CONTENT_FOR_TYPES = new Set(["block", "blocks"]);
-const RESERVED_BLOCK_ATTRIBUTES = new Set(["block", "schema"]);
-const CONTENT_FOR_CLOSEST_PREFIX = "closest.";
-const CONTENT_FOR_METAOBJECT_CLOSEST_PREFIX = "metaobject.";
+const ACCEPTED_CONTENT_FOR_TYPES = new Set(['block', 'blocks']);
+const RESERVED_BLOCK_ATTRIBUTES = new Set(['block', 'schema']);
+const CONTENT_FOR_CLOSEST_PREFIX = 'closest.';
+const CONTENT_FOR_METAOBJECT_CLOSEST_PREFIX = 'metaobject.';
 
 const CONTENT_FOR_CLOSEST_RESOURCE_TYPES = new Set([
-  "article",
-  "blog",
-  "collection",
-  "page",
-  "product",
+  'article',
+  'blog',
+  'collection',
+  'page',
+  'product',
 ]);
 
 export function checkContentForTag(node: LiquidTag, context: Context): void {
-  if (typeof node.markup === "string") {
+  if (typeof node.markup === 'string') {
     context.report({
       message: "Syntax error in 'content_for' tag",
       startIndex: node.position.start,
@@ -39,12 +39,12 @@ export function checkContentForTag(node: LiquidTag, context: Context): void {
     return;
   }
 
-  if (contentForType === "block" && hasInvalidBlockArguments(markup)) {
+  if (contentForType === 'block' && hasInvalidBlockArguments(markup)) {
     report(node, context);
     return;
   }
 
-  if (contentForType === "blocks" && hasInvalidBlocksArguments(markup)) {
+  if (contentForType === 'blocks' && hasInvalidBlocksArguments(markup)) {
     report(node, context);
   }
 }
@@ -75,12 +75,12 @@ function hasReservedBlockArgument(markup: ContentForMarkup): boolean {
 }
 
 function hasInvalidBlockStaticArguments(markup: ContentForMarkup): boolean {
-  const typeArg = markup.args.find((arg) => arg.name === "type");
-  const idArg = markup.args.find((arg) => arg.name === "id");
+  const typeArg = markup.args.find((arg) => arg.name === 'type');
+  const idArg = markup.args.find((arg) => arg.name === 'id');
 
   if (!typeArg || !idArg) return true;
   if (typeArg.value.type !== NodeTypes.String || idArg.value.type !== NodeTypes.String) return true;
-  if (typeArg.value.value === "" || idArg.value.value === "") return true;
+  if (typeArg.value.value === '' || idArg.value.value === '') return true;
 
   return false;
 }

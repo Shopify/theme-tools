@@ -1,18 +1,18 @@
-import { NodeTypes, type LiquidTag, type RenderMarkup } from "@editor/liquid-html-parser";
-import type { Context } from ".";
+import { NodeTypes, type LiquidTag, type RenderMarkup } from '@shopify/liquid-html-parser';
+import type { Context } from '.';
 import {
   hasSkippedCharacters,
   hasSkippedPrefixCharacters,
   hasBareArrayAccess,
   hasUnclosedQuotedString,
   rawMarkup,
-} from "./utils";
+} from './utils';
 
 const SYNTAX_ERROR = `Syntax error in 'render' tag`;
-const BARE_ARRAY_ACCESS = "Bare bracket access is not allowed in strict2 mode";
+const BARE_ARRAY_ACCESS = 'Bare bracket access is not allowed in strict2 mode';
 
 export function checkRenderTag(node: LiquidTag, context: Context): void {
-  if (typeof node.markup === "string") {
+  if (typeof node.markup === 'string') {
     report(node, context, SYNTAX_ERROR);
     return;
   }

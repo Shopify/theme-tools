@@ -1,16 +1,16 @@
-import { Severity, SourceCodeType, type LiquidCheckDefinition } from "@shopify/theme-check-common";
-import type { BlockMarkup } from "@editor/liquid-html-parser";
-import { getBlockDocParams, isSystemArg } from "../common/block-doc";
+import { Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
+import type { BlockMarkup } from '@shopify/liquid-html-parser';
+import { getBlockDocParams, isSystemArg } from '../common/block-doc';
 
 export const UnrecognizedBlockArguments: LiquidCheckDefinition = {
   meta: {
-    code: "UnrecognizedBlockArguments",
-    name: "Unrecognized Block Arguments",
+    code: 'UnrecognizedBlockArguments',
+    name: 'Unrecognized Block Arguments',
     docs: {
       description:
         "Reports arguments in a block tag that are not declared in the block's {% doc %} tag.",
       recommended: true,
-      url: "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/unrecognized-block-arguments",
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/unrecognized-block-arguments',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,
@@ -21,8 +21,8 @@ export const UnrecognizedBlockArguments: LiquidCheckDefinition = {
   create(context) {
     return {
       async LiquidTag(node) {
-        if (node.name !== "block") return;
-        if (typeof node.markup === "string") return;
+        if (node.name !== 'block') return;
+        if (typeof node.markup === 'string') return;
 
         const markup = node.markup as BlockMarkup;
         const blockName = markup.name.value;

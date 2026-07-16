@@ -1,12 +1,14 @@
-import { TokenType, tokenize, type LiquidRawTag, type Token } from "@editor/liquid-html-parser";
-import type { Context } from ".";
-import { liquidTagBodies, liquidTagMarkup, resolveErrorLocation } from "./utils.ts";
+import { TokenType, tokenize, type LiquidRawTag, type Token } from '@shopify/liquid-html-parser';
+import type { Context } from '.';
+import { liquidTagBodies, liquidTagMarkup, resolveErrorLocation } from './utils';
 
 const COMMENT_RAW_BODY_ERROR = "Liquid syntax error: 'comment' tag was never closed";
 export const UNMATCHED_COMMENT_CLOSE_PARSER_ERROR =
   "Attempting to close LiquidTag 'comment' before it was opened without a matching 'comment'";
 export const UNMATCHED_RAW_CLOSE_PARSER_ERROR =
   "Attempting to close LiquidTag 'raw' before it was opened without a matching 'raw'";
+const UNCLOSED_COMMENT_PARSER_ERROR =
+  "Attempting to end parsing before LiquidRawTag 'comment' was closed";
 
 export function checkCommentTag(error: Error, context: Context, source: string): void {
   if (!isCommentParserError(error, source)) return;
@@ -14,8 +16,16 @@ export function checkCommentTag(error: Error, context: Context, source: string):
   const [startIndex, endIndex] = resolveErrorLocation(error, source);
 
   if (
+    error.message === UNCLOSED_COMMENT_PARSER_ERROR &&
+    hasNestedCommentTag(commentTagBody(source, startIndex))
+  ) {
+    context.report({ message: COMMENT_RAW_BODY_ERROR, startIndex, endIndex });
+    return;
+  }
+
+  if (
     error.message === UNMATCHED_COMMENT_CLOSE_PARSER_ERROR &&
-    hasRubyAcceptedInertCommentBodyCloser(source, "comment", startIndex)
+    hasRubyAcceptedInertCommentBodyCloser(source, 'comment', startIndex)
   ) {
     return;
   }
@@ -25,6 +35,25 @@ export function checkCommentTag(error: Error, context: Context, source: string):
     startIndex,
     endIndex,
   });
+}
+
+// The body of a raw tag is everything after its opening `{% ... %}`. For an
+// unclosed comment that runs to end-of-source, that is the remainder.
+function commentTagBody(source: string, startIndex: number): string {
+  const openTagEnd = source.indexOf('%}', startIndex);
+  return openTagEnd === -1 ? '' : source.slice(openTagEnd + 2);
+}
+
+// True when the (unclosed) comment body itself opens another comment tag —
+// i.e. the failure is nesting, not a plain later-unclosed comment.
+function hasNestedCommentTag(body: string): boolean {
+  for (const tag of liquidTagBodies(body)) {
+    const markup = liquidTagMarkup(tag.body);
+    if (markup?.tagName === 'comment' && !markup.hasSkippedCharacters) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export function checkCommentRawTag(node: LiquidRawTag, context: Context): void {
@@ -44,7 +73,7 @@ export function checkCommentRawTag(node: LiquidRawTag, context: Context): void {
 }
 
 function isCommentParserError(error: Error, source: string): boolean {
-  if (!hasCompleteLiquidTag(source, "comment") && !hasCompleteLiquidTag(source, "endcomment")) {
+  if (!hasCompleteLiquidTag(source, 'comment') && !hasCompleteLiquidTag(source, 'endcomment')) {
     return false;
   }
 
@@ -80,7 +109,7 @@ function hasUnbalancedCommentTags(
   source: string,
   sourceAfterClosingTagStart: number,
 ): boolean {
-  return hasUnbalancedNestedTags(body, source, sourceAfterClosingTagStart, "comment");
+  return hasUnbalancedNestedTags(body, source, sourceAfterClosingTagStart, 'comment');
 }
 
 function hasUnbalancedRawTags(
@@ -88,14 +117,14 @@ function hasUnbalancedRawTags(
   source: string,
   sourceAfterClosingTagStart: number,
 ): boolean {
-  return hasUnbalancedNestedTags(body, source, sourceAfterClosingTagStart, "raw");
+  return hasUnbalancedNestedTags(body, source, sourceAfterClosingTagStart, 'raw');
 }
 
 function hasUnbalancedNestedTags(
   body: string,
   source: string,
   sourceAfterClosingTagStart: number,
-  tagName: "comment" | "raw",
+  tagName: 'comment' | 'raw',
 ): boolean {
   let depth = tagNestingDepth(body, tagName);
   if (depth === 0) return false;
@@ -118,7 +147,7 @@ function hasUnbalancedNestedTags(
   return true;
 }
 
-function tagNestingDepth(body: string, tagName: "comment" | "raw"): number {
+function tagNestingDepth(body: string, tagName: 'comment' | 'raw'): number {
   let depth = 0;
 
   for (const tag of liquidTagBodies(body)) {
@@ -154,7 +183,7 @@ function countLiquidTag(
 
 export function hasRubyAcceptedInertCommentBodyCloser(
   source: string,
-  tagName: "comment" | "raw",
+  tagName: 'comment' | 'raw',
   startIndex: number,
 ): boolean {
   const endTagName = `end${tagName}`;
@@ -164,18 +193,18 @@ export function hasRubyAcceptedInertCommentBodyCloser(
     return false;
   }
 
-  if (tagName === "comment") {
+  if (tagName === 'comment') {
     return (
-      countLiquidTag(source, "comment", 0, startIndex) >
-      countLiquidTag(source, "endcomment", 0, startIndex)
+      countLiquidTag(source, 'comment', 0, startIndex) >
+      countLiquidTag(source, 'endcomment', 0, startIndex)
     );
   }
 
   return (
-    countLiquidTag(source, "raw", 0, startIndex) >
-      countLiquidTag(source, "endraw", 0, startIndex) &&
-    countLiquidTag(source, "comment", 0, startIndex) > 0 &&
-    countLiquidTag(source, "endcomment", startIndex) > 0
+    countLiquidTag(source, 'raw', 0, startIndex) >
+      countLiquidTag(source, 'endraw', 0, startIndex) &&
+    countLiquidTag(source, 'comment', 0, startIndex) > 0 &&
+    countLiquidTag(source, 'endcomment', startIndex) > 0
   );
 }
 
@@ -201,5 +230,5 @@ function liquidTagAt(source: string, startIndex: number): ReturnType<typeof liqu
 }
 
 function liquidTagBody(source: string, text: Token | undefined): string {
-  return text ? source.substring(text.start, text.end) : "";
+  return text ? source.substring(text.start, text.end) : '';
 }

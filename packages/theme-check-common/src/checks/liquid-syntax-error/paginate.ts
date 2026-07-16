@@ -1,15 +1,15 @@
-import type { LiquidTag, PaginateMarkup } from "@editor/liquid-html-parser";
-import type { Context } from ".";
+import type { LiquidTag, PaginateMarkup } from '@shopify/liquid-html-parser';
+import type { Context } from '.';
 import {
   hasSkippedCharacters,
   hasBareArrayAccess,
   argHasBareArrayAccess,
   hasSkippedPrefixCharacters,
   hasRubyAcceptedPaginateTrailingComma,
-} from "./utils";
+} from './utils';
 
 export function checkPaginateTag(node: LiquidTag, context: Context): void {
-  if (typeof node.markup === "string") {
+  if (typeof node.markup === 'string') {
     if (hasRubyAcceptedPaginateTrailingComma(node.markup)) {
       return;
     }
@@ -30,7 +30,7 @@ export function checkPaginateTag(node: LiquidTag, context: Context): void {
     markup.args.some(argHasBareArrayAccess)
   ) {
     context.report({
-      message: "Bare bracket access is not allowed",
+      message: 'Bare bracket access is not allowed',
       startIndex: node.blockStartPosition.start,
       endIndex: node.blockStartPosition.end,
     });

@@ -1,12 +1,12 @@
-import { NodeTypes, type LiquidArgument, type LiquidTag } from "@editor/liquid-html-parser";
-import type { Context } from ".";
-import { argHasBareArrayAccess, hasSkippedCharacters, rawMarkup } from "./utils";
+import { NodeTypes, type LiquidArgument, type LiquidTag } from '@shopify/liquid-html-parser';
+import type { Context } from '.';
+import { argHasBareArrayAccess, hasSkippedCharacters, rawMarkup } from './utils';
 
 const SYNTAX_ERROR = `Syntax error in 'form' tag`;
-const BARE_ARRAY_ACCESS = "Bare bracket access is not allowed in strict2 mode";
+const BARE_ARRAY_ACCESS = 'Bare bracket access is not allowed in strict2 mode';
 
 export function checkFormTag(node: LiquidTag, context: Context): void {
-  if (typeof node.markup === "string") {
+  if (typeof node.markup === 'string') {
     report(node, context, SYNTAX_ERROR);
     return;
   }

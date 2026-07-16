@@ -1,12 +1,12 @@
-import { Severity, SourceCodeType, type LiquidCheckDefinition } from "@shopify/theme-check-common";
-import type { BlockMarkup } from "@editor/liquid-html-parser";
-import { isSystemArg } from "../common/block-doc";
-import { getBlockSchemaSettings } from "../common/block-schema";
+import { Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
+import type { BlockMarkup } from '@shopify/liquid-html-parser';
+import { isSystemArg } from '../common/block-doc';
+import { getBlockSchemaSettings } from '../common/block-schema';
 
 export const BlockArgumentSettingCollision: LiquidCheckDefinition = {
   meta: {
-    code: "BlockArgumentSettingCollision",
-    name: "Block Argument Setting Collision",
+    code: 'BlockArgumentSettingCollision',
+    name: 'Block Argument Setting Collision',
     docs: {
       description:
         "Reports a plain block tag argument whose name matches a setting id in the target block's schema. The author likely intended block.settings.<name>. May overlap with UnrecognizedBlockArguments, which reports the same argument as undeclared.",
@@ -21,8 +21,8 @@ export const BlockArgumentSettingCollision: LiquidCheckDefinition = {
   create(context) {
     return {
       async LiquidTag(node) {
-        if (node.name !== "block") return;
-        if (typeof node.markup === "string") return;
+        if (node.name !== 'block') return;
+        if (typeof node.markup === 'string') return;
 
         const markup = node.markup as BlockMarkup;
         const blockName = markup.name.value;

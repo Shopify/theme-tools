@@ -13,7 +13,8 @@ import {
   type LiquidConditionalExpression,
   type MarkupToken,
   type Token,
-} from "@editor/liquid-html-parser";
+} from '@shopify/liquid-html-parser';
+import { findLastIndex } from '../../utils';
 
 /**
  * Resolves an error's location to a +[startIndex, endIndex]+ tuple.
@@ -25,7 +26,7 @@ import {
  * the entire source is highlighted.
  */
 export function resolveErrorLocation(error: Error, source: string): [number, number] {
-  if ("loc" in error && error.loc) {
+  if ('loc' in error && error.loc) {
     const loc = error.loc as {
       start: { line: number; column: number };
       end: { line: number; column: number };
@@ -52,7 +53,7 @@ export function getOffset(source: string, line: number, column: number): number 
     if (currentLine === line) {
       return i + (column - 1);
     }
-    if (source[i] === "\n") {
+    if (source[i] === '\n') {
       currentLine++;
     }
   }
@@ -244,7 +245,7 @@ export function hasRubyValidInlineCommentMarkup(markup: string): boolean {
     if (!event) continue;
 
     continuationLines++;
-    if (event.type === "uncovered" && event.value === "#") {
+    if (event.type === 'uncovered' && event.value === '#') {
       prefixedContinuationLines++;
     }
   }
@@ -292,9 +293,9 @@ export function hasRubyAcceptedLoopTrailingComma(markup: string): boolean {
 
   try {
     parser.consume(MarkupTokenType.Id);
-    if (!parser.id("in")) return false;
+    if (!parser.id('in')) return false;
     parser.valueExpression();
-    parser.id("reversed");
+    parser.id('reversed');
 
     while (!parser.isAtEnd()) {
       parser.consumeOptional(MarkupTokenType.Comma);
@@ -326,7 +327,7 @@ export function hasRubyAcceptedPaginateTrailingComma(markup: string): boolean {
 
   try {
     parser.valueExpression();
-    if (!parser.id("by")) return false;
+    if (!parser.id('by')) return false;
     parser.valueExpression();
 
     if (parser.consumeOptional(MarkupTokenType.Comma)) {
@@ -414,7 +415,7 @@ function removeFilterArgumentTrailingCommas(tokens: MarkupToken[]): MarkupToken[
     ) {
       if (
         !result
-          .slice(result.findLastIndex((token) => token.type === MarkupTokenType.Pipe) + 1)
+          .slice(findLastIndex(result, (token) => token.type === MarkupTokenType.Pipe) + 1)
           .some((token) => token.type === MarkupTokenType.Colon)
       ) {
         return null;
@@ -483,7 +484,7 @@ function parsesCompleteAssignWithLiquidVariable(tokens: MarkupToken[], source: s
     tokens.length < 3 ||
     tokens[0].type !== MarkupTokenType.Id ||
     tokens[1].type !== MarkupTokenType.Equality ||
-    tokens[1].value !== "="
+    tokens[1].value !== '='
   ) {
     return false;
   }
@@ -516,7 +517,7 @@ export function hasRubyAcceptedEmptyAssignRhs(markup: string): boolean {
     tokens.length === 2 &&
     tokens[0].type === MarkupTokenType.Id &&
     tokens[1].type === MarkupTokenType.Equality &&
-    tokens[1].value === "="
+    tokens[1].value === '='
   );
 }
 
@@ -540,7 +541,7 @@ export function hasRubyAcceptedAssignLhsExtraIdentifier(markup: string): boolean
     tokens[0].type !== MarkupTokenType.Id ||
     tokens[1].type !== MarkupTokenType.Id ||
     tokens[2].type !== MarkupTokenType.Equality ||
-    tokens[2].value !== "="
+    tokens[2].value !== '='
   ) {
     return false;
   }
@@ -570,12 +571,12 @@ export function hasRubyAcceptedIncludeMarkup(markup: string): boolean {
     const snippet = parser.valueExpression();
     if (hasBareArrayAccess(snippet)) return false;
 
-    if (parser.id("for") || parser.id("with")) {
+    if (parser.id('for') || parser.id('with')) {
       const binding = parser.valueExpression();
       if (hasBareArrayAccess(binding)) return false;
     }
 
-    if (parser.id("as")) {
+    if (parser.id('as')) {
       parser.consume(MarkupTokenType.Id);
     }
 
@@ -598,7 +599,7 @@ export function hasRubyAcceptedIncludeMarkup(markup: string): boolean {
 
 export function hasRubyAcceptedRawTagCloserWithMarkup(
   source: string,
-  tagName: "doc" | "raw",
+  tagName: 'doc' | 'raw',
   startIndex = 0,
 ): boolean {
   for (const tag of liquidTagBodies(source, startIndex)) {
@@ -617,7 +618,7 @@ export function hasRubyAcceptedRawTagCloserWithMarkup(
 
 function hasBalancedRawTagRemainder(
   source: string,
-  tagName: "doc" | "raw",
+  tagName: 'doc' | 'raw',
   startIndex: number,
 ): boolean {
   let depth = 0;
@@ -725,17 +726,17 @@ export function hasLiquidTagNamed(source: string, tagName: string): boolean {
 
 export function liquidLineTagLocation(source: string, tagName: string): [number, number] | null {
   for (const tag of liquidTagBodies(source)) {
-    const firstLineEnd = tag.body.indexOf("\n");
+    const firstLineEnd = tag.body.indexOf('\n');
     if (firstLineEnd === -1) continue;
 
     const firstLineTokens = tokenizeMarkup(tag.body.slice(0, firstLineEnd), tag.bodyStart).filter(
       (token) => token.type !== MarkupTokenType.EndOfString,
     );
     const firstToken = firstLineTokens[0];
-    if (firstToken?.type !== MarkupTokenType.Id || firstToken.value !== "liquid") continue;
+    if (firstToken?.type !== MarkupTokenType.Id || firstToken.value !== 'liquid') continue;
 
     let lineStart = tag.bodyStart;
-    for (const line of tag.body.split("\n")) {
+    for (const line of tag.body.split('\n')) {
       const tokens = tokenizeMarkup(line, lineStart).filter(
         (token) => token.type !== MarkupTokenType.EndOfString,
       );
@@ -837,7 +838,7 @@ function inlineCommentLines(markup: string): InlineCommentLine[] {
   for (let i = 0; i < markup.length; i++) {
     const ch = markup[i];
 
-    if (ch === "\n") {
+    if (ch === '\n') {
       line = { firstEvent: undefined };
       lines.push(line);
       continue;
@@ -847,8 +848,8 @@ function inlineCommentLines(markup: string): InlineCommentLine[] {
 
     const token = tokenByOffset.get(i);
     line.firstEvent = token
-      ? { type: "token", start: i, end: i + 1 }
-      : { type: "uncovered", value: ch, start: i, end: i + 1 };
+      ? { type: 'token', start: i, end: i + 1 }
+      : { type: 'uncovered', value: ch, start: i, end: i + 1 };
   }
 
   return lines;
@@ -903,14 +904,14 @@ function markupParserForTokens(tokens: MarkupToken[], source: string): MarkupPar
 function endOfStringToken(source: string): MarkupToken {
   return {
     type: MarkupTokenType.EndOfString,
-    value: "",
+    value: '',
     start: source.length,
     end: source.length,
   };
 }
 
 function isWhitespace(ch: string): boolean {
-  return ch === " " || ch === "\n" || ch === "\r" || ch === "\t";
+  return ch === ' ' || ch === '\n' || ch === '\r' || ch === '\t';
 }
 
 function isQuote(ch: string): boolean {
@@ -925,7 +926,7 @@ function liquidTagBody(
 ): LiquidTagBody {
   return {
     start: open.start,
-    body: text ? source.slice(text.start, text.end) : "",
+    body: text ? source.slice(text.start, text.end) : '',
     bodyStart: text?.start ?? open.end,
     end: close.end,
   };
@@ -955,5 +956,5 @@ interface InlineCommentLine {
 }
 
 type InlineCommentLineEvent =
-  | { type: "token"; start: number; end: number }
-  | { type: "uncovered"; value: string; start: number; end: number };
+  | { type: 'token'; start: number; end: number }
+  | { type: 'uncovered'; value: string; start: number; end: number };

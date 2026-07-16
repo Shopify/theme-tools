@@ -1,14 +1,14 @@
-import type { LiquidCheckDefinition } from "@shopify/theme-check-common";
-import { extractDocDefinition } from "@shopify/theme-check-common/dist/liquid-doc/liquidDoc";
-import type { LiquidDocParameter } from "@shopify/theme-check-common/dist/liquid-doc/liquidDoc";
-import { toLiquidHtmlAST } from "@editor/liquid-html-parser";
+import type { LiquidCheckDefinition } from '../../types';
+import { extractDocDefinition } from '../../liquid-doc/liquidDoc';
+import type { LiquidDocParameter } from '../../liquid-doc/liquidDoc';
+import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
 
 export type CheckContext = Parameters<
-  Extract<LiquidCheckDefinition["create"], (...args: any[]) => any>
+  Extract<LiquidCheckDefinition['create'], (...args: any[]) => any>
 >[0];
 
 export function isSystemArg(name: string): boolean {
-  return name.startsWith("block.");
+  return name.startsWith('block.');
 }
 
 /*

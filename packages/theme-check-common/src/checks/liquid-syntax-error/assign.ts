@@ -1,5 +1,5 @@
-import type { LiquidTag, AssignMarkup } from "@editor/liquid-html-parser";
-import type { Context } from ".";
+import type { LiquidTag, AssignMarkup } from '@shopify/liquid-html-parser';
+import type { Context } from '.';
 import {
   variableHasBareArrayAccess,
   hasSkippedCharacters,
@@ -9,10 +9,10 @@ import {
   hasRubyAcceptedEmptyAssignRhs,
   hasRubyAcceptedAssignLhsExtraIdentifier,
   rawMarkup,
-} from "./utils";
+} from './utils';
 
 export function checkAssignTag(node: LiquidTag, context: Context): void {
-  if (typeof node.markup === "string") {
+  if (typeof node.markup === 'string') {
     if (hasRubyAcceptedEmptyAssignRhs(node.markup)) return;
     if (hasRubyAcceptedEmptyFirstFilterArgument(node.markup)) return;
     if (hasRubyAcceptedFilterArgumentTrailingComma(node.markup)) return;
@@ -30,7 +30,7 @@ export function checkAssignTag(node: LiquidTag, context: Context): void {
 
   if (variableHasBareArrayAccess(markup.value)) {
     context.report({
-      message: "Bare bracket access is not allowed",
+      message: 'Bare bracket access is not allowed',
       startIndex: node.position.start,
       endIndex: node.position.end,
     });

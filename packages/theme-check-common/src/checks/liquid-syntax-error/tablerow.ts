@@ -1,15 +1,15 @@
-import type { LiquidTag, ForMarkup } from "@editor/liquid-html-parser";
-import type { Context } from ".";
+import type { LiquidTag, ForMarkup } from '@shopify/liquid-html-parser';
+import type { Context } from '.';
 import {
   argHasBareArrayAccess,
   hasBareArrayAccess,
   hasRubyAcceptedLoopTrailingComma,
   hasSkippedCharacters,
   hasSkippedPrefixCharacters,
-} from "./utils";
+} from './utils';
 
 export function checkTablerowTag(node: LiquidTag, context: Context): void {
-  if (typeof node.markup === "string") {
+  if (typeof node.markup === 'string') {
     if (hasRubyAcceptedLoopTrailingComma(node.markup)) {
       return;
     }
@@ -26,7 +26,7 @@ export function checkTablerowTag(node: LiquidTag, context: Context): void {
 
   if (hasBareArrayAccess(markup.collection) || markup.args.some(argHasBareArrayAccess)) {
     context.report({
-      message: "Bare bracket access is not allowed",
+      message: 'Bare bracket access is not allowed',
       startIndex: node.position.start,
       endIndex: node.position.end,
     });

@@ -3,25 +3,25 @@ import type {
   LiquidConditionalExpression,
   LiquidExpression,
   LiquidTag,
-} from "@editor/liquid-html-parser";
-import type { Context } from ".";
+} from '@shopify/liquid-html-parser';
+import type { Context } from '.';
 import {
   conditionalHasBareArrayAccess,
   hasBareArrayAccess,
   hasSkippedCharacters,
   hasSkippedPrefixCharacters,
   hasUnclosedQuotedString,
-} from "./utils";
+} from './utils';
 
-const ELSIF_BARE_ARRAY_ACCESS = "Bare bracket access is not allowed in strict2 mode";
+const ELSIF_BARE_ARRAY_ACCESS = 'Bare bracket access is not allowed in strict2 mode';
 
 export function checkBranchTag(node: LiquidBranch, context: Context): void {
-  if (node.name === "elsif") {
+  if (node.name === 'elsif') {
     checkElsifBranch(node, context);
     return;
   }
 
-  if (node.name === "when") {
+  if (node.name === 'when') {
     checkWhenBranch(node, context);
   }
 }
@@ -35,7 +35,7 @@ export function checkMisplacedBranchTag(node: LiquidTag, context: Context): void
 }
 
 function checkWhenBranch(node: LiquidBranch, context: Context): void {
-  if (typeof node.markup === "string") {
+  if (typeof node.markup === 'string') {
     reportWhenSyntaxError(node, context);
     return;
   }
@@ -50,7 +50,7 @@ function checkWhenBranch(node: LiquidBranch, context: Context): void {
 
   if (markup.some(hasBareArrayAccess)) {
     context.report({
-      message: "Bare bracket access is not allowed",
+      message: 'Bare bracket access is not allowed',
       startIndex: node.blockStartPosition.start,
       endIndex: node.blockStartPosition.end,
     });
@@ -76,7 +76,7 @@ function reportWhenSyntaxError(node: LiquidBranch, context: Context): void {
 }
 
 function checkElsifBranch(node: LiquidBranch, context: Context): void {
-  if (typeof node.markup === "string") {
+  if (typeof node.markup === 'string') {
     reportSyntaxError(node, context);
     return;
   }

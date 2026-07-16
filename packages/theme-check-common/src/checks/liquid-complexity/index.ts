@@ -1,16 +1,12 @@
-import {
-  SchemaProp,
-  Severity,
-  SourceCodeType,
-  type LiquidCheckDefinition,
-} from "@shopify/theme-check-common";
+import { SchemaProp, Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
 import {
   NodeTypes,
   type LiquidBranch,
   type LiquidHtmlNode,
   type LiquidLogicalExpression,
   type LiquidTag,
-} from "@editor/liquid-html-parser";
+} from '@shopify/liquid-html-parser';
+import { findLastIndex } from '../../utils';
 
 /**
  * 120 tolerates Horizon's current maximum while still flagging Dawn's top
@@ -45,10 +41,10 @@ const schema = {
 // each elsif/when branch, and count each logical and/or expression in Liquid
 // control-flow conditions. Non-branching tags such as render, assign, echo, and
 // else are intentionally excluded.
-const COUNTED_TAGS = new Set(["if", "unless", "case", "for", "tablerow", "paginate"]);
-const COUNTED_BRANCHES = new Set(["elsif", "when"]);
-const TAGS_WITH_CONDITIONS = new Set(["if", "unless"]);
-const BRANCHES_WITH_CONDITIONS = new Set(["elsif"]);
+const COUNTED_TAGS = new Set(['if', 'unless', 'case', 'for', 'tablerow', 'paginate']);
+const COUNTED_BRANCHES = new Set(['elsif', 'when']);
+const TAGS_WITH_CONDITIONS = new Set(['if', 'unless']);
+const BRANCHES_WITH_CONDITIONS = new Set(['elsif']);
 
 interface SourceRange {
   startIndex: number;
@@ -57,10 +53,10 @@ interface SourceRange {
 
 export const LiquidComplexity: LiquidCheckDefinition<typeof schema> = {
   meta: {
-    code: "LiquidComplexity",
-    name: "LiquidComplexity",
+    code: 'LiquidComplexity',
+    name: 'LiquidComplexity',
     docs: {
-      description: "Reports Liquid files with high cyclomatic complexity.",
+      description: 'Reports Liquid files with high cyclomatic complexity.',
       recommended: true,
     },
     type: SourceCodeType.LiquidHtml,
@@ -75,7 +71,7 @@ export const LiquidComplexity: LiquidCheckDefinition<typeof schema> = {
     let firstOverThresholdRange: SourceRange | undefined;
 
     function rangeFor(node: LiquidTag | LiquidBranch | LiquidLogicalExpression): SourceRange {
-      if ("blockStartPosition" in node) {
+      if ('blockStartPosition' in node) {
         return {
           startIndex: node.blockStartPosition.start,
           endIndex: node.blockStartPosition.end,
@@ -97,27 +93,29 @@ export const LiquidComplexity: LiquidCheckDefinition<typeof schema> = {
     }
 
     function isLogicalExpressionInControlFlowCondition(ancestors: LiquidHtmlNode[]): boolean {
-      const nearestLiquidAncestor = ancestors.findLast((ancestor) =>
+      const nearestLiquidAncestorIndex = findLastIndex(ancestors, (ancestor) =>
         [NodeTypes.LiquidTag, NodeTypes.LiquidBranch, NodeTypes.LiquidVariableOutput].includes(
           ancestor.type,
         ),
       );
 
-      if (!nearestLiquidAncestor) return false;
+      if (nearestLiquidAncestorIndex === -1) return false;
+
+      const nearestLiquidAncestor = ancestors[nearestLiquidAncestorIndex];
 
       if (nearestLiquidAncestor.type === NodeTypes.LiquidTag) {
         return TAGS_WITH_CONDITIONS.has(nearestLiquidAncestor.name);
       }
 
       if (nearestLiquidAncestor.type === NodeTypes.LiquidBranch) {
-        return BRANCHES_WITH_CONDITIONS.has(nearestLiquidAncestor.name ?? "");
+        return BRANCHES_WITH_CONDITIONS.has(nearestLiquidAncestor.name ?? '');
       }
 
       return false;
     }
 
     function lineForIndex(index: number): number {
-      return context.file.source.slice(0, index).split("\n").length;
+      return context.file.source.slice(0, index).split('\n').length;
     }
 
     return {
@@ -128,7 +126,7 @@ export const LiquidComplexity: LiquidCheckDefinition<typeof schema> = {
       },
 
       async LiquidBranch(node: LiquidBranch) {
-        if (COUNTED_BRANCHES.has(node.name ?? "")) {
+        if (COUNTED_BRANCHES.has(node.name ?? '')) {
           incrementComplexity(node);
         }
       },

@@ -1,14 +1,14 @@
-import { Severity, SourceCodeType, type LiquidCheckDefinition } from "@shopify/theme-check-common";
-import type { BlockMarkup } from "@editor/liquid-html-parser";
+import { Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
+import type { BlockMarkup } from '@shopify/liquid-html-parser';
 
 export const DuplicateBlockArguments: LiquidCheckDefinition = {
   meta: {
-    code: "DuplicateBlockArguments",
-    name: "Duplicate Block Arguments",
+    code: 'DuplicateBlockArguments',
+    name: 'Duplicate Block Arguments',
     docs: {
-      description: "Reports duplicate argument names in a block tag.",
+      description: 'Reports duplicate argument names in a block tag.',
       recommended: true,
-      url: "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/duplicate-block-arguments",
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/duplicate-block-arguments',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,
@@ -19,8 +19,8 @@ export const DuplicateBlockArguments: LiquidCheckDefinition = {
   create(context) {
     return {
       async LiquidTag(node) {
-        if (node.name !== "block") return;
-        if (typeof node.markup === "string") return;
+        if (node.name !== 'block') return;
+        if (typeof node.markup === 'string') return;
 
         const markup = node.markup as BlockMarkup;
         const blockName = markup.name.value;

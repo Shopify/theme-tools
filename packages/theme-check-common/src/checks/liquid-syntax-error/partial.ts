@@ -1,11 +1,11 @@
-import type { LiquidString, LiquidTag } from "@editor/liquid-html-parser";
-import type { Context } from ".";
+import type { LiquidString, LiquidTag } from '@shopify/liquid-html-parser';
+import type { Context } from '.';
 import {
   hasSkippedCharacters,
   liquidLineTagLocation,
   rawMarkup,
   resolveErrorLocation,
-} from "./utils.ts";
+} from './utils';
 
 const SYNTAX_ERROR = "Syntax error in 'partial' tag";
 const UNCLOSED_PARTIAL_PARSER_ERROR =
@@ -19,7 +19,7 @@ const PARTIAL_PARSER_ERROR_MESSAGES = new Set([
 ]);
 
 export function checkPartialTag(node: LiquidTag, context: Context): void {
-  if (typeof node.markup === "string") {
+  if (typeof node.markup === 'string') {
     report(node, context, SYNTAX_ERROR);
     return;
   }
@@ -46,7 +46,7 @@ export function checkPartialParserError(error: Error, context: Context, source: 
   const [startIndex, endIndex] = error.message.includes(
     "Unclosed block tag 'partial' in {% liquid %} block",
   )
-    ? (liquidLineTagLocation(source, "partial") ?? resolveErrorLocation(error, source))
+    ? (liquidLineTagLocation(source, 'partial') ?? resolveErrorLocation(error, source))
     : resolveErrorLocation(error, source);
 
   context.report({
@@ -60,7 +60,7 @@ export function checkPartialParserError(error: Error, context: Context, source: 
 }
 
 function hasInvalidPartialName(value: string): boolean {
-  return value === "" || value.includes("/");
+  return value === '' || value.includes('/');
 }
 
 function report(node: LiquidTag, context: Context, message: string): void {

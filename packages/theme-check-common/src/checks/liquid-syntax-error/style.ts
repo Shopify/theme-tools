@@ -1,6 +1,6 @@
-import type { LiquidRawTag } from "@editor/liquid-html-parser";
-import type { Context } from ".";
-import { hasEmptyMarkup, rawMarkup } from "./utils";
+import type { LiquidRawTag } from '@shopify/liquid-html-parser';
+import type { Context } from '.';
+import { hasEmptyMarkup, rawMarkup } from './utils';
 
 export function checkStyleTag(node: LiquidRawTag, context: Context): void {
   const markup = rawMarkup(node);

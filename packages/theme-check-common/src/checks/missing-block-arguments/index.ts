@@ -1,16 +1,16 @@
-import { Severity, SourceCodeType, type LiquidCheckDefinition } from "@shopify/theme-check-common";
-import type { BlockMarkup } from "@editor/liquid-html-parser";
-import { getBlockDocParams } from "../common/block-doc";
+import { Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
+import type { BlockMarkup } from '@shopify/liquid-html-parser';
+import { getBlockDocParams } from '../common/block-doc';
 
 export const MissingBlockArguments: LiquidCheckDefinition = {
   meta: {
-    code: "MissingBlockArguments",
-    name: "Missing Block Arguments",
+    code: 'MissingBlockArguments',
+    name: 'Missing Block Arguments',
     docs: {
       description:
         "Reports when required arguments declared in a block's {% doc %} tag are not provided.",
       recommended: true,
-      url: "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/missing-block-arguments",
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/missing-block-arguments',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,
@@ -21,8 +21,8 @@ export const MissingBlockArguments: LiquidCheckDefinition = {
   create(context) {
     return {
       async LiquidTag(node) {
-        if (node.name !== "block") return;
-        if (typeof node.markup === "string") return;
+        if (node.name !== 'block') return;
+        if (typeof node.markup === 'string') return;
 
         const markup = node.markup as BlockMarkup;
         const blockName = markup.name.value;

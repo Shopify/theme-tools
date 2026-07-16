@@ -1,16 +1,13 @@
-import type { LiquidRawTag } from "@editor/liquid-html-parser";
-import type { Context } from ".";
-import {
-  hasRubyAcceptedInertCommentBodyCloser,
-  UNMATCHED_RAW_CLOSE_PARSER_ERROR,
-} from "./comment.ts";
+import type { LiquidRawTag } from '@shopify/liquid-html-parser';
+import type { Context } from '.';
+import { hasRubyAcceptedInertCommentBodyCloser, UNMATCHED_RAW_CLOSE_PARSER_ERROR } from './comment';
 import {
   hasRubyAcceptedRawTagCloserWithMarkup,
   hasSkippedCharacters,
   hasSkippedPrefixCharacters,
   rawMarkup,
   resolveErrorLocation,
-} from "./utils.ts";
+} from './utils';
 
 const UNCLOSED_RAW_PARSER_ERROR = "Attempting to end parsing before LiquidRawTag 'raw' was closed";
 
@@ -22,7 +19,7 @@ const RAW_PARSER_ERROR_MESSAGES = new Set([
 
 export function checkRawTag(node: LiquidRawTag, context: Context): void {
   if (
-    node.markup !== "" ||
+    node.markup !== '' ||
     hasSkippedPrefixCharacters(node.source, node.markupPosition.start, node.markupPosition.end) ||
     hasSkippedCharacters(rawMarkup(node))
   ) {
@@ -41,14 +38,14 @@ export function checkRawParserError(error: Error, context: Context, source: stri
 
   if (
     error.message === UNCLOSED_RAW_PARSER_ERROR &&
-    hasRubyAcceptedRawTagCloserWithMarkup(source, "raw", startIndex)
+    hasRubyAcceptedRawTagCloserWithMarkup(source, 'raw', startIndex)
   ) {
     return;
   }
 
   if (
     error.message === UNMATCHED_RAW_CLOSE_PARSER_ERROR &&
-    hasRubyAcceptedInertCommentBodyCloser(source, "raw", startIndex)
+    hasRubyAcceptedInertCommentBodyCloser(source, 'raw', startIndex)
   ) {
     return;
   }

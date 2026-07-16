@@ -1,11 +1,15 @@
-import { NodeTypes, type LiquidStatement, type LiquidTag } from "@editor/liquid-html-parser";
-import type { Context } from ".";
-import { tags as staticTags } from "../../theme-docs/index.ts";
+import {
+  builtinTags,
+  NodeTypes,
+  type LiquidStatement,
+  type LiquidTag,
+} from '@shopify/liquid-html-parser';
+import type { Context } from '.';
 
 const reportedUnknownLiquidBlockTags = new WeakSet<LiquidTag>();
 
 export async function checkBaseTag(node: LiquidTag, context: Context): Promise<void> {
-  if ("reason" in node && typeof node.reason === "string") {
+  if ('reason' in node && typeof node.reason === 'string') {
     context.report({
       message: node.reason,
       startIndex: node.position.start,
@@ -14,7 +18,7 @@ export async function checkBaseTag(node: LiquidTag, context: Context): Promise<v
     return;
   }
 
-  if (node.name === "liquid" && Array.isArray(node.markup)) {
+  if (node.name === 'liquid' && Array.isArray(node.markup)) {
     await checkUnknownTagsInsideLiquidBlock(node.markup, context);
     return;
   }
@@ -55,13 +59,15 @@ async function checkUnknownTagsInsideLiquidBlock(
 }
 
 async function knownLiquidTagsFor(context: Context): Promise<Set<string>> {
-  const tags = context.themeDocset ? await context.themeDocset.tags() : staticTags();
-  return new Set(["#", "else", "elsif", "when", ...tags.map((tag) => tag.name)]);
+  const tags = context.themeDocset
+    ? await context.themeDocset.tags()
+    : Object.keys(builtinTags).map((name) => ({ name }));
+  return new Set(['#', 'else', 'elsif', 'when', ...tags.map((tag) => tag.name)]);
 }
 
 function isUnknownTagInsideLiquidBlock(node: LiquidTag, knownLiquidTags: Set<string>): boolean {
   // Statements inside `{% liquid %}` do not have their own `{%` delimiter.
-  if (node.source.startsWith("{%", node.position.start)) return false;
+  if (node.source.startsWith('{%', node.position.start)) return false;
 
   return !knownLiquidTags.has(node.name);
 }

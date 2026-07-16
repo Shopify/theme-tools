@@ -1,4 +1,4 @@
-import { type LiquidVariableOutput } from "@editor/liquid-html-parser";
+import { type LiquidVariableOutput } from '@shopify/liquid-html-parser';
 import {
   hasEmptyMarkup,
   hasRubyAcceptedFilterArgumentTrailingComma,
@@ -6,19 +6,19 @@ import {
   hasSkippedCharacters,
   hasUnclosedQuotedString,
   variableHasBareArrayAccess,
-} from "./utils";
-import type { Context } from ".";
+} from './utils';
+import type { Context } from '.';
 
 export function checkVariableOutput(node: LiquidVariableOutput, context: Context): void {
   const rawMarkup = node.source.slice(node.markupPosition.start, node.markupPosition.end);
 
-  if (typeof node.markup === "string") {
+  if (typeof node.markup === 'string') {
     if (hasEmptyMarkup(rawMarkup)) return;
     if (hasRubyAcceptedEmptyFirstFilterArgument(node.markup)) return;
     if (hasRubyAcceptedFilterArgumentTrailingComma(node.markup)) return;
 
     context.report({
-      message: "Syntax error in variable output",
+      message: 'Syntax error in variable output',
       startIndex: node.position.start,
       endIndex: node.position.end,
     });
@@ -32,7 +32,7 @@ export function checkVariableOutput(node: LiquidVariableOutput, context: Context
 
   if (hasUnclosedQuotedString(rawMarkup)) {
     context.report({
-      message: "Syntax error in variable output",
+      message: 'Syntax error in variable output',
       startIndex: node.position.start,
       endIndex: node.position.end,
     });
@@ -41,7 +41,7 @@ export function checkVariableOutput(node: LiquidVariableOutput, context: Context
 
   if (variableHasBareArrayAccess(markup)) {
     context.report({
-      message: "Bare bracket access is not allowed in strict2 mode",
+      message: 'Bare bracket access is not allowed in strict2 mode',
       startIndex: node.position.start,
       endIndex: node.position.end,
     });
@@ -50,7 +50,7 @@ export function checkVariableOutput(node: LiquidVariableOutput, context: Context
 
   if (hasSkippedCharacters(rawMarkup)) {
     context.report({
-      message: "Syntax error in variable output",
+      message: 'Syntax error in variable output',
       startIndex: node.position.start,
       endIndex: node.position.end,
     });

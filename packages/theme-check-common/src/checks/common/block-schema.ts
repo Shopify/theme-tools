@@ -1,13 +1,8 @@
-import {
-  isArrayNode,
-  isLiteralNode,
-  isObjectNode,
-  SourceCodeType,
-  toJSONAST,
-  visit,
-} from "@shopify/theme-check-common";
-import { toLiquidHtmlAST, type LiquidRawTag } from "@editor/liquid-html-parser";
-import type { CheckContext } from "./block-doc";
+import { isArrayNode, isLiteralNode, isObjectNode, SourceCodeType } from '../../types';
+import { toJSONAST } from '../../to-source-code';
+import { visit } from '../../visitor';
+import { toLiquidHtmlAST, type LiquidRawTag } from '@shopify/liquid-html-parser';
+import type { CheckContext } from './block-doc';
 
 /*
  * Resolves the {% schema %} setting ids for a block template by reading
@@ -44,7 +39,7 @@ export async function getBlockSchemaSettings(
 
   const schemaNode = visit<SourceCodeType.LiquidHtml, LiquidRawTag>(ast, {
     LiquidRawTag(node) {
-      if (node.name === "schema") return node;
+      if (node.name === 'schema') return node;
     },
   })[0];
   if (!schemaNode) return undefined;
@@ -52,14 +47,14 @@ export async function getBlockSchemaSettings(
   const schemaAst = toJSONAST(schemaNode.body.value);
   if (schemaAst instanceof Error || !isObjectNode(schemaAst)) return undefined;
 
-  const settingsProperty = schemaAst.children.find((property) => property.key.value === "settings");
+  const settingsProperty = schemaAst.children.find((property) => property.key.value === 'settings');
   if (!settingsProperty || !isArrayNode(settingsProperty.value)) return new Set<string>();
 
   const ids = new Set<string>();
   for (const setting of settingsProperty.value.children) {
     if (!isObjectNode(setting)) continue;
-    const idProp = setting.children.find((property) => property.key.value === "id");
-    if (idProp && isLiteralNode(idProp.value) && typeof idProp.value.value === "string") {
+    const idProp = setting.children.find((property) => property.key.value === 'id');
+    if (idProp && isLiteralNode(idProp.value) && typeof idProp.value.value === 'string') {
       ids.add(idProp.value.value);
     }
   }

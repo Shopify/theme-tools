@@ -1,68 +1,32 @@
-import { toLiquidHtmlAST } from "@editor/liquid-html-parser";
-import {
-  check as themeCheck,
-  Severity,
-  SourceCodeType,
-  type Config,
-  type Dependencies,
-  type LiquidSourceCode,
-  type Offense,
-} from "@shopify/theme-check-common";
-import { describe, expect, it } from "vitest";
-import { check } from "../check.ts";
-import { InMemoryFileSystem } from "../../tests/parity/in-memory-fs.ts";
-import { LiquidComplexity } from "./liquid-complexity/index.ts";
+import { describe, expect, it } from 'vitest';
+import { LiquidComplexity } from './index';
+import { Severity } from '../../types';
+import { check, runLiquidCheck } from '../../test';
+import type { Offense } from '../../types';
 
-const ROOT_URI = "file:///";
-const DEFAULT_PATH = "snippets/test.liquid";
-const DEFAULT_URI = ROOT_URI + DEFAULT_PATH;
-
-function toSourceCode(uri: string, source: string): LiquidSourceCode {
-  let ast: ReturnType<typeof toLiquidHtmlAST> | Error;
-
-  try {
-    ast = toLiquidHtmlAST(source);
-  } catch (error) {
-    ast = error instanceof Error ? error : new Error(String(error));
-  }
-
-  return {
-    uri,
-    source,
-    type: SourceCodeType.LiquidHtml,
-    ast: ast as LiquidSourceCode["ast"],
-  };
-}
+const DEFAULT_PATH = 'snippets/test.liquid';
 
 async function checkWithMaxComplexity(template: string, maxComplexity: number): Promise<Offense[]> {
-  return checkSources([{ uri: DEFAULT_URI, source: template }], maxComplexity);
+  return checkSources([{ path: DEFAULT_PATH, source: template }], maxComplexity);
 }
 
 async function checkSources(
-  sources: { uri: string; source: string }[],
+  sources: { path: string; source: string }[],
   maxComplexity: number,
 ): Promise<Offense[]> {
-  const fs = new InMemoryFileSystem(new Map(sources.map(({ uri, source }) => [uri, source])));
-  const config: Config = {
-    context: "theme",
-    settings: {
-      LiquidComplexity: { maxComplexity } as unknown as Config["settings"][string],
-    },
-    checks: [LiquidComplexity],
-    rootUri: ROOT_URI,
-  };
-  const dependencies: Dependencies = { fs };
+  const themeDesc = Object.fromEntries(sources.map(({ path, source }) => [path, source]));
 
-  return themeCheck(
-    sources.map(({ uri, source }) => toSourceCode(uri, source)),
-    config,
-    dependencies,
+  return check(
+    themeDesc,
+    [LiquidComplexity],
+    {},
+    { LiquidComplexity: { enabled: true, maxComplexity } },
   );
 }
 
 function repeatedIfs(count: number): string {
   return Array.from({ length: count }, (_, index) => `{% if enabled_${index} %}{% endif %}`).join(
-    "\n",
+    '\n',
   );
 }
 
@@ -72,40 +36,36 @@ function expectComplexityMessage(
   maxComplexity: number,
 ): void {
   expect(offense).toMatchObject({
-    check: "LiquidComplexity",
+    check: 'LiquidComplexity',
     severity: Severity.WARNING,
   });
   expect(offense.message).toContain(
     `Liquid complexity is ${complexity}, which exceeds the maximum of ${maxComplexity}.`,
   );
-  expect(offense.message).toContain("pushed it over the limit");
-  expect(offense.message).toContain("simplifying conditional logic");
+  expect(offense.message).toContain('pushed it over the limit');
+  expect(offense.message).toContain('simplifying conditional logic');
   expect(offense.message).toContain(
-    "moving self-contained decision logic into snippets with the render tag",
+    'moving self-contained decision logic into snippets with the render tag',
   );
 }
 
-describe("LiquidComplexity", () => {
-  describe("wrapper tolerated maximum", () => {
-    it("does not report when complexity equals 120", async () => {
-      const fs = new InMemoryFileSystem(new Map([[DEFAULT_URI, repeatedIfs(119)]]));
+describe('LiquidComplexity', () => {
+  describe('wrapper tolerated maximum', () => {
+    it('does not report when complexity equals 120', async () => {
+      const offenses = await runLiquidCheck(LiquidComplexity, repeatedIfs(119), DEFAULT_PATH);
 
-      const offenses = await check([DEFAULT_PATH], fs);
-
-      expect(offenses.filter((offense) => offense.check === "LiquidComplexity")).toEqual([]);
+      expect(offenses).toEqual([]);
     });
 
-    it("reports when complexity exceeds 120", async () => {
-      const fs = new InMemoryFileSystem(new Map([[DEFAULT_URI, repeatedIfs(120)]]));
-
-      const offenses = await check([DEFAULT_PATH], fs);
+    it('reports when complexity exceeds 120', async () => {
+      const offenses = await runLiquidCheck(LiquidComplexity, repeatedIfs(120), DEFAULT_PATH);
 
       expect(offenses).toHaveLength(1);
       expectComplexityMessage(offenses[0], 121, 120);
     });
   });
 
-  it("counts nested logical expressions", async () => {
+  it('counts nested logical expressions', async () => {
     const template = `
       {% if available and visible %}
         Featured product
@@ -123,7 +83,7 @@ describe("LiquidComplexity", () => {
     expectComplexityMessage(offenses[0], 5, 4);
   });
 
-  it("counts logical expressions in unless conditions", async () => {
+  it('counts logical expressions in unless conditions', async () => {
     const template = `
       {% unless hidden or archived %}
         Visible product
@@ -139,7 +99,7 @@ describe("LiquidComplexity", () => {
     expectComplexityMessage(offenses[0], 3, 2);
   });
 
-  it("does not count logical expressions in variable output or assign tags", async () => {
+  it('does not count logical expressions in variable output or assign tags', async () => {
     const template = `
       {% assign visible = product.available and customer %}
       {{ product.available or customer }}
@@ -149,7 +109,7 @@ describe("LiquidComplexity", () => {
     await expect(checkWithMaxComplexity(template, 1)).resolves.toEqual([]);
   });
 
-  it("counts decision points inside liquid tags", async () => {
+  it('counts decision points inside liquid tags', async () => {
     const template = `
       {% liquid
         if enabled
@@ -169,7 +129,7 @@ describe("LiquidComplexity", () => {
     expectComplexityMessage(offenses[0], 3, 2);
   });
 
-  it("counts each nested condition as another decision point", async () => {
+  it('counts each nested condition as another decision point', async () => {
     const template = `
       {% if product.available and product.published %}
         {% unless customer.banned or customer.guest %}
@@ -191,15 +151,13 @@ describe("LiquidComplexity", () => {
     expectComplexityMessage(offenses[0], 9, 8);
   });
 
-  it("resets complexity for each file", async () => {
-    const firstUri = ROOT_URI + "snippets/first.liquid";
-    const secondUri = ROOT_URI + "snippets/second.liquid";
-    const source = "{% if enabled %}{% endif %}";
+  it('resets complexity for each file', async () => {
+    const source = '{% if enabled %}{% endif %}';
 
     const offenses = await checkSources(
       [
-        { uri: firstUri, source },
-        { uri: secondUri, source },
+        { path: 'snippets/first.liquid', source },
+        { path: 'snippets/second.liquid', source },
       ],
       2,
     );
@@ -207,14 +165,14 @@ describe("LiquidComplexity", () => {
     expect(offenses).toEqual([]);
   });
 
-  it("tolerates parse errors", async () => {
-    const template = "{% if enabled %}";
+  it('tolerates parse errors', async () => {
+    const template = '{% if enabled %}';
 
     await expect(checkWithMaxComplexity(template, 1)).resolves.toEqual([]);
   });
 
-  it("reports plain files when maxComplexity is 0", async () => {
-    const template = "Hello";
+  it('reports plain files when maxComplexity is 0', async () => {
+    const template = 'Hello';
 
     const offenses = await checkWithMaxComplexity(template, 0);
 
@@ -224,7 +182,7 @@ describe("LiquidComplexity", () => {
     expect(offenses[0].end.index).toBe(template.length);
   });
 
-  it("counts case consistently with if and elsif", async () => {
+  it('counts case consistently with if and elsif', async () => {
     const template = `
       {% case status %}
       {% when 'active' %}
@@ -243,9 +201,9 @@ describe("LiquidComplexity", () => {
     expectComplexityMessage(offenses[0], 4, 3);
   });
 
-  it("reports the range of the decision point that first exceeds the maximum", async () => {
-    const firstDecision = "{% if first %}";
-    const secondDecision = "{% if second %}";
+  it('reports the range of the decision point that first exceeds the maximum', async () => {
+    const firstDecision = '{% if first %}';
+    const secondDecision = '{% if second %}';
     const template = `${firstDecision}{% endif %}\n${secondDecision}{% endif %}`;
     const expectedStartIndex = template.indexOf(secondDecision);
     const expectedEndIndex = expectedStartIndex + secondDecision.length;

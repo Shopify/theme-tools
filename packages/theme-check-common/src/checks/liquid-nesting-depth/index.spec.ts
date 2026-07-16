@@ -1,65 +1,31 @@
-import { toLiquidHtmlAST } from "@editor/liquid-html-parser";
-import {
-  check as themeCheck,
-  Severity,
-  SourceCodeType,
-  type Config,
-  type Dependencies,
-  type LiquidSourceCode,
-  type Offense,
-} from "@shopify/theme-check-common";
-import { describe, expect, it } from "vitest";
-import { check } from "../../check.ts";
-import { InMemoryFileSystem } from "../../../tests/parity/in-memory-fs.ts";
-import { LiquidNestingDepth, TOLERATED_LIQUID_NESTING_DEPTH } from "./index.ts";
+import { describe, expect, it } from 'vitest';
+import { LiquidNestingDepth, TOLERATED_LIQUID_NESTING_DEPTH } from './index';
+import { Severity } from '../../types';
+import { check, runLiquidCheck } from '../../test';
+import type { Offense } from '../../types';
 
-const ROOT_URI = "file:///";
-const DEFAULT_PATH = "snippets/test.liquid";
-const DEFAULT_URI = ROOT_URI + DEFAULT_PATH;
-
-function toSourceCode(uri: string, source: string): LiquidSourceCode {
-  let ast: ReturnType<typeof toLiquidHtmlAST> | Error;
-
-  try {
-    ast = toLiquidHtmlAST(source);
-  } catch (error) {
-    ast = error instanceof Error ? error : new Error(String(error));
-  }
-
-  return {
-    uri,
-    source,
-    type: SourceCodeType.LiquidHtml,
-    ast: ast as LiquidSourceCode["ast"],
-  };
-}
+const DEFAULT_PATH = 'snippets/test.liquid';
 
 async function checkWithMaxDepth(template: string, maxDepth: number): Promise<Offense[]> {
-  const fs = new InMemoryFileSystem(new Map([[DEFAULT_URI, template]]));
-  const config: Config = {
-    context: "theme",
-    settings: {
-      LiquidNestingDepth: { maxDepth } as unknown as Config["settings"][string],
-    },
-    checks: [LiquidNestingDepth],
-    rootUri: ROOT_URI,
-  };
-  const dependencies: Dependencies = { fs };
-
-  return themeCheck([toSourceCode(DEFAULT_URI, template)], config, dependencies);
+  return check(
+    { [DEFAULT_PATH]: template },
+    [LiquidNestingDepth],
+    {},
+    { LiquidNestingDepth: { enabled: true, maxDepth } },
+  );
 }
 
 function nestedIfs(depth: number): string {
   return [
     ...Array.from({ length: depth }, (_, index) => `{% if condition_${index} %}`),
-    "Nested content",
-    ...Array.from({ length: depth }, () => "{% endif %}"),
-  ].join("\n");
+    'Nested content',
+    ...Array.from({ length: depth }, () => '{% endif %}'),
+  ].join('\n');
 }
 
 function expectNestingMessage(offense: Offense, depth: number, maxDepth: number): void {
   expect(offense).toMatchObject({
-    check: "LiquidNestingDepth",
+    check: 'LiquidNestingDepth',
     severity: Severity.WARNING,
   });
   expect(offense.message).toBe(
@@ -67,24 +33,24 @@ function expectNestingMessage(offense: Offense, depth: number, maxDepth: number)
   );
 }
 
-describe("LiquidNestingDepth", () => {
-  describe("wrapper tolerated maximum", () => {
-    it("does not report when nesting equals the tolerated depth", async () => {
-      const fs = new InMemoryFileSystem(
-        new Map([[DEFAULT_URI, nestedIfs(TOLERATED_LIQUID_NESTING_DEPTH)]]),
+describe('LiquidNestingDepth', () => {
+  describe('wrapper tolerated maximum', () => {
+    it('does not report when nesting equals the tolerated depth', async () => {
+      const offenses = await runLiquidCheck(
+        LiquidNestingDepth,
+        nestedIfs(TOLERATED_LIQUID_NESTING_DEPTH),
+        DEFAULT_PATH,
       );
 
-      const offenses = await check([DEFAULT_PATH], fs);
-
-      expect(offenses.filter((offense) => offense.check === "LiquidNestingDepth")).toEqual([]);
+      expect(offenses).toEqual([]);
     });
 
-    it("reports when nesting exceeds the tolerated depth", async () => {
-      const fs = new InMemoryFileSystem(
-        new Map([[DEFAULT_URI, nestedIfs(TOLERATED_LIQUID_NESTING_DEPTH + 1)]]),
+    it('reports when nesting exceeds the tolerated depth', async () => {
+      const offenses = await runLiquidCheck(
+        LiquidNestingDepth,
+        nestedIfs(TOLERATED_LIQUID_NESTING_DEPTH + 1),
+        DEFAULT_PATH,
       );
-
-      const offenses = await check([DEFAULT_PATH], fs);
 
       expect(offenses).toHaveLength(1);
       expectNestingMessage(
@@ -95,15 +61,15 @@ describe("LiquidNestingDepth", () => {
     });
   });
 
-  it("does not report a plain Liquid template", async () => {
-    const template = "<div>{{ product.title }}</div>";
+  it('does not report a plain Liquid template', async () => {
+    const template = '<div>{{ product.title }}</div>';
 
     await expect(checkWithMaxDepth(template, 1)).resolves.toEqual([]);
   });
 
-  it("reports the first tag that exceeds a custom threshold", async () => {
+  it('reports the first tag that exceeds a custom threshold', async () => {
     const threshold = 2;
-    const nestedUnless = "{% unless hidden %}";
+    const nestedUnless = '{% unless hidden %}';
     const template = `
       {% if product.available %}
         {% for variant in product.variants %}
@@ -124,7 +90,7 @@ describe("LiquidNestingDepth", () => {
     expect(offenses[0].end.index).toBe(expectedEndIndex);
   });
 
-  it("reports each nested control-flow tag deeper than the threshold", async () => {
+  it('reports each nested control-flow tag deeper than the threshold', async () => {
     const offenses = await checkWithMaxDepth(nestedIfs(5), 3);
 
     expect(offenses).toHaveLength(2);
@@ -132,7 +98,7 @@ describe("LiquidNestingDepth", () => {
     expectNestingMessage(offenses[1], 5, 3);
   });
 
-  it("does not count elsif and else branches as additional nesting", async () => {
+  it('does not count elsif and else branches as additional nesting', async () => {
     const template = `
       {% if product.available %}
         Available
@@ -146,7 +112,7 @@ describe("LiquidNestingDepth", () => {
     await expect(checkWithMaxDepth(template, 1)).resolves.toEqual([]);
   });
 
-  it("counts tablerow as a nesting tag", async () => {
+  it('counts tablerow as a nesting tag', async () => {
     const template = `
       {% if section.blocks.size > 0 %}
         {% tablerow block in section.blocks %}
@@ -163,7 +129,7 @@ describe("LiquidNestingDepth", () => {
     expectNestingMessage(offenses[0], 3, 2);
   });
 
-  it("counts nested case blocks consistently with if, unless, and for blocks", async () => {
+  it('counts nested case blocks consistently with if, unless, and for blocks', async () => {
     const template = `
       {% case section.settings.layout %}
         {% when 'grid' %}
@@ -183,7 +149,7 @@ describe("LiquidNestingDepth", () => {
     expectNestingMessage(offenses[0], 4, 3);
   });
 
-  it("does not count HTML nesting as Liquid nesting depth", async () => {
+  it('does not count HTML nesting as Liquid nesting depth', async () => {
     const template = `
       <div>
         <div>

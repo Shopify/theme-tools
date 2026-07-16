@@ -1,13 +1,8 @@
-import {
-  isBlock,
-  isSection,
-  Severity,
-  SourceCodeType,
-  type LiquidCheckDefinition,
-} from "@shopify/theme-check-common";
-import type { LiquidRawTag } from "@editor/liquid-html-parser";
+import { isBlock, isSection } from '../../to-schema';
+import { Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
+import type { LiquidRawTag } from '@shopify/liquid-html-parser';
 
-type RawTagName = "schema" | "javascript" | "stylesheet";
+type RawTagName = 'schema' | 'javascript' | 'stylesheet';
 
 interface RawTagCheckOptions {
   tagName: RawTagName;
@@ -104,9 +99,9 @@ function sectionOrBlockOnlyUnlessAllowed(tagName: RawTagName): LiquidCheckDefini
   };
 }
 
-export const SchemaSectionOrBlockOnly = sectionOrBlockOnlyUnlessAllowed("schema");
-export const SchemaOncePerFile = oncePerFileCheck("schema");
-export const JavascriptSectionOrBlockOnly = sectionOrBlockOnlyUnlessAllowed("javascript");
-export const JavascriptOncePerFile = oncePerFileCheck("javascript");
-export const StylesheetSectionOrBlockOnly = sectionOrBlockOnlyUnlessAllowed("stylesheet");
-export const StylesheetOncePerFile = oncePerFileCheck("stylesheet");
+export const SchemaSectionOrBlockOnly = sectionOrBlockOnlyUnlessAllowed('schema');
+export const SchemaOncePerFile = oncePerFileCheck('schema');
+export const JavascriptSectionOrBlockOnly = sectionOrBlockOnlyUnlessAllowed('javascript');
+export const JavascriptOncePerFile = oncePerFileCheck('javascript');
+export const StylesheetSectionOrBlockOnly = sectionOrBlockOnlyUnlessAllowed('stylesheet');
+export const StylesheetOncePerFile = oncePerFileCheck('stylesheet');

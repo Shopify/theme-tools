@@ -1,5 +1,5 @@
-import type { LiquidRawTag } from "@editor/liquid-html-parser";
-import type { Context } from ".";
+import type { LiquidRawTag } from '@shopify/liquid-html-parser';
+import type { Context } from '.';
 import {
   hasEmptyMarkup,
   hasLiquidTagNamed,
@@ -7,7 +7,7 @@ import {
   liquidTagMarkup,
   rawMarkup,
   resolveErrorLocation,
-} from "./utils";
+} from './utils';
 
 const SYNTAX_ERROR = "Syntax Error in 'javascript' - Valid syntax: javascript";
 const UNCLOSED_ERROR = "'javascript' tag was never closed";
@@ -65,7 +65,7 @@ function findInvalidJavascriptOpening(source: string): { start: number; end: num
   for (const tag of liquidTagBodies(source)) {
     const markup = liquidTagMarkup(tag.body);
     if (
-      markup?.tagName === "javascript" &&
+      markup?.tagName === 'javascript' &&
       (markup.remainingTokens.length > 0 || markup.hasSkippedCharacters)
     ) {
       return { start: tag.start, end: tag.end };
@@ -78,20 +78,20 @@ function findInvalidJavascriptOpening(source: string): { start: number; end: num
 export function hasJavascriptClosingTagAfter(source: string, startIndex: number): boolean {
   for (const tag of liquidTagBodies(source, startIndex)) {
     const markup = liquidTagMarkup(tag.body);
-    if (markup?.tagName === "endjavascript") return true;
+    if (markup?.tagName === 'endjavascript') return true;
   }
 
   return false;
 }
 
 function hasJavascriptParserTag(source: string): boolean {
-  if (hasLiquidTagNamed(source, "javascript") || hasLiquidTagNamed(source, "endjavascript")) {
+  if (hasLiquidTagNamed(source, 'javascript') || hasLiquidTagNamed(source, 'endjavascript')) {
     return true;
   }
 
   for (const tag of liquidTagBodies(source)) {
     const markup = liquidTagMarkup(tag.body);
-    if (markup?.tagName === "javascript" || markup?.tagName === "endjavascript") {
+    if (markup?.tagName === 'javascript' || markup?.tagName === 'endjavascript') {
       return true;
     }
   }
