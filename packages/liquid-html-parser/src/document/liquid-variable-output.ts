@@ -17,6 +17,7 @@ export function parseLiquidVariableOutput(parser: ParserBase): LiquidVariableOut
   try {
     const tokens = tokenizeMarkup(rawMarkup, openToken.end);
     const markupParser = new MarkupParser(tokens, source);
+    if (parser.isTolerant()) markupParser.enableTolerant();
     const liquidVariable = markupParser.liquidVariable();
 
     if (!markupParser.isAtEnd()) {

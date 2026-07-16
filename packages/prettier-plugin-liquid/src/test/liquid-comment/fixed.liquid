@@ -1,4 +1,3 @@
-it should format as expected (chunk 0)
 {% comment %}
   This gets reindented, but we don't parse the content.
   So stuff can be unclosed and it'll be fine.
@@ -12,23 +11,22 @@ It should support nested comments
   ho
   {% comment %}
     hi
+  {% endcomment %}
+  ha
 {% endcomment %}
-ha
-{%endcomment%}
 
 It should support empty comments
 {% comment %}{% endcomment %}
 
 It should support nested empty comments
-{% comment %}{% comment %}{% endcomment %}
-{% endcomment %}
+{% comment %}{% comment %}{% endcomment %}{% endcomment %}
 
 It should support nested empty comments (pt 2)
 {% comment %}
   hi
   {% comment %}
-{% endcomment %}
-ho
+  {% endcomment %}
+  ho
 {% endcomment %}
 
 It should support inline comments

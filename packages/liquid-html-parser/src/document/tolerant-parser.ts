@@ -62,6 +62,14 @@ export function makeLiquidErrorNode(
  * different entry point and is left byte-identical.
  */
 export class TolerantDocumentParser extends DocumentParser {
+  /**
+   * Marks this parse as tolerant so the markup-construction sites enable the
+   * markup parser's tolerant recovery axis. Disjoint from lax.
+   */
+  isTolerant(): boolean {
+    return true;
+  }
+
   /*
    * Wraps the polymorphic node parse. On a LiquidHTMLASTParsingError it emits a
    * LiquidErrorNode covering the skipped region and resynchronizes onto the next

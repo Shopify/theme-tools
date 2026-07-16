@@ -78,7 +78,11 @@ function parseLines(body: string, bodyStart: number): LiquidLine[] {
 
       if (firstLineTrimmed.startsWith('#')) {
         tagName = '#';
-        markup = trimmed.slice(1).trimStart();
+        // Strip at most one separator whitespace after `#`, mirroring the
+        // pre-swap ohm grammar `"#" space?`. Trimming all leading whitespace
+        // would collapse intentional indentation in `#`-comment art such as
+        // `#     fancy`, which the printer re-pads with a single space.
+        markup = trimmed.slice(1).replace(/^[ \t]/, '');
         nameOffset = startIndex + leadingWs;
         markupOffset = startIndex + leadingWs + 1 + (trimmed.length - 1 - markup.length);
       } else {

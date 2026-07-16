@@ -442,7 +442,15 @@ export function printLiquidTag(
 
   let body: Doc = [];
 
-  if (isBranchedTag(node)) {
+  /*
+   * `tablerow` is not a branched tag, but like `for` it wraps its body in a
+   * single default `LiquidBranch`. Routing it through `printChildren` (the
+   * non-branched path below) would indent that branch twice and prepend a
+   * blank line; the branched-path `path.map` prints the default branch with
+   * `for`'s single-indent, no-leading-blank shape. This is a printer-only
+   * special-case — `tablerow` is deliberately kept out of `isBranchedTag`.
+   */
+  if (isBranchedTag(node) || node.name === 'tablerow') {
     body = cleanDoc(
       path.map(
         (p) =>
@@ -569,13 +577,13 @@ export function printLiquidDocParam(
   const parts: Doc[] = ['@param'];
 
   if (node.paramType?.value) {
-    parts.push(' ', `{${node.paramType.value}}`);
+    parts.push(' ', `{${node.paramType.value.trim()}}`);
   }
 
   if (node.required) {
-    parts.push(' ', node.paramName.value);
+    parts.push(' ', node.paramName.value.trim());
   } else {
-    parts.push(' ', `[${node.paramName.value}]`);
+    parts.push(' ', `[${node.paramName.value.trim()}]`);
   }
 
   if (node.paramDescription?.value) {

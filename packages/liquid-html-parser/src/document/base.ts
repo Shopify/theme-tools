@@ -54,6 +54,17 @@ export class ParserBase {
     return this.source;
   }
 
+  /**
+   * Whether this document parse is tolerant. The strict/default parser returns
+   * false; `TolerantDocumentParser` overrides it to true. Markup-construction
+   * sites consult this to enable the markup parser's tolerant recovery axis
+   * (`enableTolerant()`), leaving strict (and theme-check) parses untouched.
+   * Disjoint from the render-tree lax axis.
+   */
+  isTolerant(): boolean {
+    return false;
+  }
+
   tokenAt(index: number): Token {
     return this.tokens[index];
   }
