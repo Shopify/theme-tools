@@ -1,17 +1,46 @@
-// src/checks/required-layout-theme-object/index.ts
-import { HtmlElement, LiquidVariableLookup } from '@shopify/liquid-html-parser';
-import { ConfigTarget, LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { isHtmlTag } from '../utils';
+import {
+  ConfigTarget,
+  Severity,
+  SourceCodeType,
+  type LiquidCheckDefinition,
+} from "@shopify/theme-check-common";
+import {
+  NodeTypes,
+  type HtmlElement,
+  type LiquidVariableLookup,
+  type Position,
+} from "@editor/liquid-html-parser";
 
+const LAYOUT_PATH_PATTERN = /^layout\/[^/]+\.liquid$/i;
+
+function isHtmlTag<T>(
+  node: HtmlElement,
+  name: T,
+): node is HtmlElement & { name: [{ name: T }]; blockEndPosition: Position } {
+  return (
+    node.name.length === 1 &&
+    node.name[0].type === NodeTypes.TextNode &&
+    node.name[0].value === name &&
+    !!node.blockEndPosition
+  );
+}
+
+/**
+ * Copied from @shopify/theme-check-common's RequiredLayoutThemeObject.
+ *
+ * When @editor/theme-check-common and @shopify/theme-check-common are merged,
+ * merge this fork back into the upstream check instead of keeping two
+ * layout-object implementations.
+ */
 export const RequiredLayoutThemeObject: LiquidCheckDefinition = {
   meta: {
-    code: 'RequiredLayoutThemeObject',
-    name: 'Prevent missing required objects in theme.liquid',
+    code: "RequiredLayoutThemeObject",
+    name: "Prevent missing required objects in theme.liquid",
     docs: {
       description:
-        'This check prevents missing {{ content_for_header }} and {{ content_for_layout }} objects in layout/theme.liquid.',
+        "This check prevents missing {{ content_for_header }} and {{ content_for_layout }} objects in layout/theme.liquid.",
       recommended: true,
-      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/required-layout-theme-object',
+      url: "https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/required-layout-theme-object",
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.ERROR,
@@ -20,11 +49,16 @@ export const RequiredLayoutThemeObject: LiquidCheckDefinition = {
   },
 
   create(context) {
-    if (context.toRelativePath(context.file.uri) !== 'layout/theme.liquid') {
+    /**
+     * @editor/theme-check-common runs this upstream check for every layout
+     * asset, not only layout/theme.liquid. Merge this scope difference back
+     * into @shopify/theme-check-common when the packages are unified.
+     */
+    if (!LAYOUT_PATH_PATTERN.test(context.toRelativePath(context.file.uri))) {
       return {};
     }
 
-    const requiredObjects = ['content_for_header', 'content_for_layout'];
+    const requiredObjects = ["content_for_header", "content_for_layout"];
     const foundObjects: Set<string> = new Set();
     let headTag: HtmlElement | undefined;
     let bodyTag: HtmlElement | undefined;
@@ -41,9 +75,9 @@ export const RequiredLayoutThemeObject: LiquidCheckDefinition = {
       },
 
       async HtmlElement(node) {
-        if (isHtmlTag(node, 'head')) {
+        if (isHtmlTag(node, "head")) {
           headTag = node;
-        } else if (isHtmlTag(node, 'body')) {
+        } else if (isHtmlTag(node, "body")) {
           bodyTag = node;
         }
       },
@@ -52,7 +86,7 @@ export const RequiredLayoutThemeObject: LiquidCheckDefinition = {
         for (const requiredObject of requiredObjects) {
           if (!foundObjects.has(requiredObject)) {
             const message = `The required object '{{ ${requiredObject} }}' is missing in layout/theme.liquid`;
-            const insertionNode = requiredObject === 'content_for_header' ? headTag : bodyTag;
+            const insertionNode = requiredObject === "content_for_header" ? headTag : bodyTag;
             const fixInsertPosition = insertionNode?.blockEndPosition.start;
 
             context.report({
