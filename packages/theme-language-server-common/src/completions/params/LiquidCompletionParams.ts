@@ -258,11 +258,42 @@ function findCompletionNode(
             // Keep the covering LiquidTag for trailing tag-modifier positions
             // (`{% for x in y reversed ^ %}`) so the tag provider sees the
             // same params shape Ohm exposed.
+          } else if (
+            hasNonNullProperty(current, 'markup') &&
+            typeof current.markup !== 'string' &&
+            hasTrailingEmptyFilterSlot(current.markup, cursor, source)
+          ) {
+            /*
+             * The tolerant parser keeps a bare trailing `|` inside the markup
+             * span (`{% echo x | ^ %}`, `{% assign v = x | ^ %}`), so the markup
+             * COVERS the caret and the branch below would descend into the
+             * pre-pipe variable and complete an object. Route the empty filter
+             * slot to the filter subtree so the filter providers fire.
+             * `synthTagFilterSlot` takes the tag (`current`) and re-derives the
+             * expression from source (handling the `assign` `=`), so the
+             * AssignMarkup wrapper needs no special handling here.
+             */
+            const slot = synthTagFilterSlot(current, cursor, source);
+            if (slot) finder.current = slot;
           } else if (hasNonNullProperty(current, 'markup') && typeof current.markup !== 'string') {
             if (Array.isArray(current.markup)) {
               finder.current = covering(current.markup, cursor);
             } else if (isCovered(cursor, current.markup.position)) {
               finder.current = current.markup;
+            } else if (
+              current.markup.position.start > cursor &&
+              isInExpressionSlot(current, cursor, source)
+            ) {
+              /*
+               * The parser mis-absorbed an abutting end tag as this tag's
+               * condition markup (`{% if ^{% endif %}`,
+               * `{% unless ^{% endunless %}`): the markup node lives entirely
+               * downstream of the caret, so it covers nothing here. Recover the
+               * empty expression slot at the caret so the object provider fires,
+               * matching the old parser's sentinel behaviour instead of
+               * completing the bare tag name.
+               */
+              finder.current = synthMarkupSlot(current, cursor, source);
             }
           } else if (
             typeof current.markup === 'string' &&
@@ -275,30 +306,42 @@ function findCompletionNode(
             // expects so the providers can offer completions there. The
             // `isInExpressionSlot` guard keeps caret-on-the-tag-name cases
             // (`{% ren^ %}`) completing the tag rather than a lookup.
-            const slot = synthMarkupSlot(current, cursor, source);
-            const contentForType =
-              current.name === 'content_for'
-                ? synthContentForType(current, cursor, source)
-                : undefined;
-            if (
-              current.name === 'content_for' &&
-              slot.type === NodeTypes.VariableLookup &&
-              contentForType !== undefined
-            ) {
-              // The resilient parser leaves `{% content_for "b", partial %}` (a
-              // bare arg name, no colon) as raw string markup — there is no
-              // ContentForMarkup node for the parameter provider to hang off.
-              // Synthesize one as the recovered lookup's parent so the provider
-              // fires, mirroring the shape the parser builds for a well-formed
-              // `type: "x"` argument.
-              finder.current = {
-                type: NodeTypes.ContentForMarkup,
-                contentForType,
-                args: [],
-                position: current.position,
-              } as any as LiquidHtmlNode;
+            if (source.slice(current.position.start, cursor).includes('|')) {
+              /*
+               * A pipe in the tag's post-name region means the caret sits in a
+               * filter or filter-argument slot (`{% echo s | ^ %}`,
+               * `{% assign x = "s" | ^ %}`), not an object slot. Route to the
+               * filter subtree so the filter providers fire instead of the
+               * object provider, skipping the `synthMarkupSlot` / content_for
+               * path.
+               */
+              finder.current = synthTagFilterSlot(current, cursor, source);
+            } else {
+              const slot = synthMarkupSlot(current, cursor, source);
+              const contentForType =
+                current.name === 'content_for'
+                  ? synthContentForType(current, cursor, source)
+                  : undefined;
+              if (
+                current.name === 'content_for' &&
+                slot.type === NodeTypes.VariableLookup &&
+                contentForType !== undefined
+              ) {
+                // The resilient parser leaves `{% content_for "b", partial %}` (a
+                // bare arg name, no colon) as raw string markup — there is no
+                // ContentForMarkup node for the parameter provider to hang off.
+                // Synthesize one as the recovered lookup's parent so the provider
+                // fires, mirroring the shape the parser builds for a well-formed
+                // `type: "x"` argument.
+                finder.current = {
+                  type: NodeTypes.ContentForMarkup,
+                  contentForType,
+                  args: [],
+                  position: current.position,
+                } as any as LiquidHtmlNode;
+              }
+              finder.current = slot;
             }
-            finder.current = slot;
           } else {
             // No markup, or the caret is still on the tag name: the tag itself
             // is the thing to complete.
@@ -320,11 +363,58 @@ function findCompletionNode(
           isCovered(cursor, current.blockStartPosition) &&
           typeof current.markup !== 'string'
         ) {
-          finder.current = Array.isArray(current.markup)
-            ? covering(current.markup, cursor)
-            : isCovered(cursor, current.markup.position)
-              ? current.markup
-              : undefined;
+          if (Array.isArray(current.markup)) {
+            const covered = covering(current.markup, cursor);
+            if (covered) {
+              finder.current = covered;
+            } else if (
+              isNotEmpty(current.markup) &&
+              current.markup[0].position.start > cursor &&
+              isInExpressionSlot(current, cursor, source)
+            ) {
+              /*
+               * A `when` branch abutting its `{% endcase %}`
+               * (`{% case x %}{% when ^{% endcase %}`): the resilient parser
+               * mis-absorbs the end tag as this branch's condition, so every
+               * markup element lives downstream of the caret and covers nothing
+               * here. Recover the empty expression slot so the object provider
+               * fires, mirroring the LiquidTag abutting-endtag arm and matching
+               * the old parser instead of returning zero completions.
+               */
+              finder.current = synthMarkupSlot(current, cursor, source);
+            } else {
+              finder.current = undefined;
+            }
+          } else if (isCovered(cursor, current.markup.position)) {
+            finder.current = current.markup;
+          } else if (
+            current.markup.position.start > cursor &&
+            isInExpressionSlot(current, cursor, source)
+          ) {
+            /*
+             * An `elsif` branch abutting its `{% endif %}`
+             * (`{% if a %}{% elsif ^{% endif %}`): the mis-absorbed end tag
+             * became this branch's single condition node, sitting entirely
+             * downstream of the caret. Recover the empty slot as above so the
+             * object provider offers completions rather than nothing.
+             */
+            finder.current = synthMarkupSlot(current, cursor, source);
+          } else {
+            finder.current = undefined;
+          }
+        } else if (
+          typeof current.markup === 'string' &&
+          isInExpressionSlot(current, cursor, source)
+        ) {
+          /*
+           * The parser left the branch markup a raw string, so the expression
+           * slot at the caret is empty (`{% elsif ^ %}`, `{% when ^ %}`). Mirror
+           * the `LiquidTag` arm and synthesize the lookup that slot expects.
+           * `synthMarkupSlot` sees an `elsif`/`when` name (not render/content_for)
+           * and recovers a `VariableLookup`; the `isInExpressionSlot` guard keeps
+           * caret-on-the-branch-name cases from synthesizing a lookup.
+           */
+          finder.current = synthMarkupSlot(current, cursor, source);
         } else {
           finder.current = undefined; // there's nothing to complete
         }
@@ -366,7 +456,23 @@ function findCompletionNode(
       }
 
       case NodeTypes.LiquidVariableOutput: {
-        if (typeof current.markup !== 'string' && isCovered(cursor, current.markup.position)) {
+        const emptyFilterSlot =
+          typeof current.markup !== 'string' &&
+          hasTrailingEmptyFilterSlot(current.markup, cursor, source)
+            ? synthOutputFilterSlot(current, cursor, source)
+            : undefined;
+        if (emptyFilterSlot) {
+          /*
+           * The tolerant parser keeps a bare trailing `|` inside the markup span
+           * (`{{ x | ^ }}`, `{{ x | upcase | ^ }}`), so the markup covers the
+           * caret and the descent below would complete the pre-pipe expression.
+           * Route to the filter subtree so the filter providers fire.
+           */
+          finder.current = emptyFilterSlot;
+        } else if (
+          typeof current.markup !== 'string' &&
+          isCovered(cursor, current.markup.position)
+        ) {
           finder.current = current.markup;
         } else if (typeof current.markup === 'string') {
           // The parser left the output markup as a raw string, so the filter
@@ -391,9 +497,44 @@ function findCompletionNode(
             const exprStart =
               current.position.start +
               (source.slice(current.position.start, cursor).match(/^\{\{-?\s*/)?.[0].length ?? 0);
-            const recovered = recoverVariableLookup(source, exprStart, cursor);
-            if (recovered.type === NodeTypes.VariableLookup && recovered.lookups.length > 0) {
-              finder.current = recovered;
+            const region = source.slice(exprStart, cursor);
+            const openString = unterminatedString(region, exprStart);
+            if (region.trim() === '') {
+              /*
+               * An empty closed output (`{{ ^ }}`): the parser left the markup a
+               * raw string with nothing before the caret. Synthesize the blank
+               * lookup the object provider completes against, mirroring the
+               * unclosed `{{ ^` path. This branch is additive — any non-empty
+               * region (including a bracket key like `x[0].`) still flows through
+               * the recover+guard below, so that behaviour is unchanged.
+               */
+              finder.current = synthVariableLookup(cursor);
+            } else if (openString && /^\s*['"]/.test(region)) {
+              /*
+               * A closed output whose expression is a string the caret still
+               * sits inside, trailed by an empty filter (`{{ "general.^" | }}`).
+               * The malformed `| }}` leaves the markup a raw string and the pipe
+               * sits after the caret, so the filter-slot synth sees no pipe and
+               * the finder never reaches a parsed LiquidVariable. Synthesize the
+               * LiquidVariable -> String subtree the translation provider needs
+               * (its guard requires a LiquidVariable parent); the no-filter
+               * LiquidVariable arm below then walks down to the String. Mirrors
+               * the error-node `{{ "genera` path. `unterminatedString` returns
+               * undefined once the quote is closed, so `x[0].`, `"done".`, and
+               * empty regions never take this branch.
+               */
+              finder.current = {
+                type: NodeTypes.LiquidVariable,
+                expression: synthString(openString, cursor),
+                filters: [],
+                position: { start: exprStart, end: cursor },
+                source,
+              } as any as LiquidHtmlNode;
+            } else {
+              const recovered = recoverVariableLookup(source, exprStart, cursor);
+              if (recovered.type === NodeTypes.VariableLookup && recovered.lookups.length > 0) {
+                finder.current = recovered;
+              }
             }
           }
         }
@@ -405,11 +546,19 @@ function findCompletionNode(
           // Descend into the filter the caret actually sits in, not blindly the
           // last one: a caret in an earlier filter of a chain
           // (`{{ x | image_url: █ | image_tag }}`) must complete against that
-          // filter, not the trailing one. Falls back to the last filter when
-          // no filter covers the caret, preserving the previous behaviour.
-          finder.current =
-            current.filters.find((filter) => isCovered(cursor, filter.position)) ??
-            last(current.filters);
+          // filter, not the trailing one. When no filter covers the caret but it
+          // still sits within the expression (`{{ 'general.█' | t }}` — the caret
+          // is on the string, the pipe is a real `t` filter), complete the
+          // expression so translation keys are offered rather than filter names.
+          // Otherwise fall back to the last filter, preserving prior behaviour.
+          const covered = current.filters.find((filter) => isCovered(cursor, filter.position));
+          if (covered) {
+            finder.current = covered;
+          } else if (current.expression && cursor <= current.expression.position.end) {
+            finder.current = current.expression;
+          } else {
+            finder.current = last(current.filters);
+          }
         } else {
           finder.current = current.expression;
         }
@@ -469,6 +618,19 @@ function findCompletionNode(
           finder.current = current.collection;
         } else if (isNotEmpty(current.args) && isCovered(cursor, last(current.args).position)) {
           finder.current = last(current.args);
+        } else if (
+          current.collection.position.start > cursor &&
+          /\bin\s/.test(source.slice(current.position.start, cursor))
+        ) {
+          /*
+           * The parser mis-absorbed an abutting `{% endfor %}` as the loop
+           * collection (`{% for x in ^{% endfor %}`): the collection node lives
+           * entirely downstream of the caret. The `in ` guard confirms the caret
+           * is past the `in` keyword (a real collection slot, not the
+           * loop-variable slot), so recover the empty lookup there for the
+           * object provider.
+           */
+          finder.current = recoverVariableLookup(source, current.position.start, cursor);
         }
         break;
       }
@@ -774,6 +936,29 @@ function resolveErrorNodeCompletion(
   const innerTag = recoverLiquidInnerTag(source, cursor, ancestors);
   if (innerTag) {
     return innerTag;
+  }
+
+  // An unclosed tag whose caret sits PAST the tag name in an expression slot
+  // (`{% if ^`, `{% for x in ^`, `{% assign x = ^`, `{% echo ^`, with no `%}`)
+  // parses as a bare error node, so no `LiquidTag` finder arm ever runs.
+  // Recover the lookup that slot expects. This runs only after the caret-on-name
+  // (`synthTagNameNode`) and `{% liquid %}` body (`recoverLiquidInnerTag`)
+  // recoveries above have declined, so those keep completing tag / inner-tag
+  // names. The `\s` after the tag name keeps caret-on-name cases out;
+  // `recoverVariableLookup`'s back-scan isolates the trailing token past `=` /
+  // `in` / operators.
+  const tagOpen = source.lastIndexOf('{%', cursor);
+  if (tagOpen !== -1) {
+    const close = source.indexOf('%}', tagOpen);
+    const region = source.slice(tagOpen, cursor);
+    const nameMatch = region.match(/^\{%-?\s*[a-zA-Z_]\w*/);
+    if ((close === -1 || close >= cursor) && nameMatch && /\s/.test(region[nameMatch[0].length])) {
+      const lowerBound = tagOpen + nameMatch[0].length;
+      return [
+        recoverVariableLookup(source, lowerBound, cursor),
+        [...ancestors, synthNode(NodeTypes.LiquidTag, cursor)],
+      ];
+    }
   }
 
   // A caret inside an unclosed HTML tag's attribute value (`<img loading="^`,
@@ -1248,6 +1433,46 @@ function recoverVariableLookup(source: string, lowerBound: number, cursor: numbe
 }
 
 /*
+ * Recovers the pre-pipe expression of a filter slot as a typed node so the
+ * filter provider can narrow completions by input type. A string / number /
+ * range literal becomes the matching literal node — `inferType` keys off `type`
+ * alone, so a `String` narrows to `'string'`, a `Number` to `'number'`, and a
+ * `Range` to an array. That makes `{{ "1" | ^ }}` offer string filters and
+ * `{{ (1..3) | ^ }}` offer array filters. Anything else (an identifier or dotted
+ * lookup) falls back to `recoverVariableLookup`, so non-literal expressions keep
+ * their previous behaviour.
+ */
+function recoverExpression(source: string, start: number, end: number): LiquidHtmlNode {
+  const token = source.slice(start, end).trim();
+
+  if (/^(['"])[\s\S]*\1$/.test(token)) {
+    return {
+      type: NodeTypes.String,
+      value: token.slice(1, -1),
+      single: token[0] === "'",
+      position: { start, end },
+    } as any as LiquidHtmlNode;
+  }
+
+  if (/^-?\d+(\.\d+)?$/.test(token)) {
+    return {
+      type: NodeTypes.Number,
+      value: token,
+      position: { start, end },
+    } as any as LiquidHtmlNode;
+  }
+
+  if (/^\(.*\.\..*\)$/.test(token)) {
+    return {
+      type: NodeTypes.Range,
+      position: { start, end },
+    } as any as LiquidHtmlNode;
+  }
+
+  return recoverVariableLookup(source, start, end);
+}
+
+/*
  * A `String` lookup segment (`.prop` / `['key']`) carrying the property name
  * typed so far, mirroring the `String` nodes the parser puts in a
  * `VariableLookup`'s `lookups`. The attribute provider keys off `value` and
@@ -1416,6 +1641,46 @@ function recoverLiquidInnerTag(
   const nameStart = lineStart + leading;
   const typed = source.slice(nameStart, cursor);
 
+  // A name followed by whitespace is an expression slot on the body line
+  // (`echo ^`, `assign x = ^`, `if a > ^`), not a tag-name position. Recover the
+  // lookup that slot expects instead of a tag-name node. `recoverVariableLookup`
+  // back-scans the trailing token past `=` / operators; an empty slot yields the
+  // blank lookup so the object provider fires.
+  if (/^[a-zA-Z_][\w-]*\s+/.test(typed)) {
+    const innerName = typed.match(/^[a-zA-Z_][\w-]*/)![0];
+    const nameEnd = nameStart + innerName.length;
+    const ancestry = ancestors.some(isLiquidLiquidTag)
+      ? ancestors
+      : [...ancestors, block.liquidTag];
+
+    /*
+     * A pipe in the inner statement means the caret sits in a filter or
+     * filter-argument slot (`echo x | ^`, `assign v = x | ^`), not an object
+     * slot. Delegate to the shared tag filter-slot synth (which narrows by the
+     * pre-pipe expression's type) and descend to the completion leaf ourselves,
+     * since this recovery returns the final pair rather than re-entering the
+     * finder loop. Mirrors the top-level tag filter path.
+     */
+    if (source.slice(nameStart, cursor).includes('|')) {
+      const innerNode = {
+        name: innerName,
+        position: { start: nameStart, end: cursor },
+      } as any as LiquidHtmlNode;
+      const variable = synthTagFilterSlot(innerNode, cursor, source);
+      if (variable) {
+        // `synthFilterSlot` always appends the trailing filter, so `filters` is
+        // non-empty by construction; cast so `last` accepts it.
+        const filters = (variable as any).filters as NonEmptyArray<LiquidHtmlNode>;
+        const filter = last(filters);
+        return isNotEmpty((filter as any).args)
+          ? [last((filter as any).args), [...ancestry, variable, filter]]
+          : [filter, [...ancestry, variable]];
+      }
+    }
+
+    return [recoverVariableLookup(source, nameEnd, cursor), ancestry];
+  }
+
   // Recover only while the caret is on the inner tag name (or an empty line);
   // an expression slot (`echo `, `if a > `) is not a tag-name position.
   if (typed !== '' && !/^[a-zA-Z_][\w-]*$/.test(typed)) return undefined;
@@ -1517,6 +1782,32 @@ function synthContentForType(
 }
 
 /*
+ * The tolerant parser KEEPS a bare trailing `|` inside the markup node's span
+ * (it is not dropped), so the markup covers the caret in both the empty-slot and
+ * the partial-name cases — `position.end` vs caret cannot tell them apart. The
+ * real empty-filter-slot signal is source-level: the text from the end of the
+ * last parsed filter (or, with no filters, the end of the pre-pipe expression)
+ * up to the caret is a single trailing bare `|` with a whitespace-only tail.
+ *
+ * `{% assign %}` markup is an `AssignMarkup` whose filters live on the child
+ * `value` (a `LiquidVariable`), so unwrap it first. A partial filter name
+ * (`{{ x | de^ }}`) is already parsed into a filter ending at the caret, so the
+ * scanned tail is empty and this returns false — leaving those to the normal
+ * parsed-filter descent.
+ */
+function hasTrailingEmptyFilterSlot(markup: any, cursor: number, source: string): boolean {
+  const variable = markup?.type === NodeTypes.AssignMarkup ? markup.value : markup;
+  if (!variable || typeof variable !== 'object') return false;
+  const filters = variable.filters;
+  const scanStart =
+    Array.isArray(filters) && isNotEmpty(filters)
+      ? last(filters)?.position?.end
+      : variable.expression?.position?.end;
+  if (typeof scanStart !== 'number' || scanStart > cursor) return false;
+  return /^\s*\|\s*$/.test(source.slice(scanStart, cursor));
+}
+
+/*
  * For a `{{ ... }}` output whose markup the parser left as a raw string, the
  * filter or filter-argument slot after a pipe is empty (`{{ x | ^ }}`,
  * `{{ x | upcase | ^ }}`, `{{ x | image_url: ^ }}`). We synthesize the
@@ -1536,6 +1827,27 @@ function synthOutputFilterSlot(
 ): LiquidHtmlNode | undefined {
   const open = output.position.start;
   const exprStart = open + (source.slice(open, cursor).match(/^\{\{-?\s*/)?.[0].length ?? 0);
+  return synthFilterSlot(source, exprStart, cursor);
+}
+
+/*
+ * Builds the `LiquidVariable` -> filter-chain subtree an empty filter or
+ * filter-argument slot after a pipe expects, given the offset where the pre-pipe
+ * expression begins (`exprStart`). Shared by the output path
+ * (`synthOutputFilterSlot`) and the tag path (`synthTagFilterSlot`), so both
+ * narrow completions by the pre-pipe expression's type via `recoverExpression`.
+ * The descent below bottoms out on the empty filter (a bare pipe: the
+ * filter-name provider completes there) or on the filter's empty argument lookup
+ * (after `name:`: the named-parameter provider completes there).
+ *
+ * Returns undefined when there is no pipe before the caret (a non-filter slot),
+ * leaving the caller's pipe-less behaviour intact.
+ */
+function synthFilterSlot(
+  source: string,
+  exprStart: number,
+  cursor: number,
+): LiquidHtmlNode | undefined {
   const region = source.slice(exprStart, cursor);
   const lastPipe = region.lastIndexOf('|');
   if (lastPipe === -1) return undefined;
@@ -1545,20 +1857,55 @@ function synthOutputFilterSlot(
   const lastPipeStart = exprStart + lastPipe;
 
   // The expression is everything before the first pipe; recover it (trailing
-  // whitespace trimmed) so the synthesized variable carries the real lookup.
+  // whitespace trimmed) so the synthesized variable carries the real lookup —
+  // or a typed literal node, so a literal pre-pipe narrows the filter set.
   let exprEnd = firstPipeStart;
   while (exprEnd > exprStart && /\s/.test(source[exprEnd - 1])) exprEnd -= 1;
-  const expression = recoverVariableLookup(source, exprStart, exprEnd);
+  const expression = recoverExpression(source, exprStart, exprEnd);
   const completedFilters = synthCompletedFilters(source, firstPipeStart + 1, lastPipeStart);
 
   // The text after the last pipe decides the slot: `name:` is an empty named
   // argument (so we descend to the argument lookup), anything else is an empty
   // filter slot (so we stop on the filter itself).
   const tail = region.slice(lastPipe + 1);
-  const named = tail.match(/^\s*([a-zA-Z_][\w-]*)\s*:\s*$/);
-  const filter = named
-    ? synthFilter(named[1], [synthVariableLookup(cursor)], cursor, source)
-    : synthFilter('', [], cursor, source);
+
+  /*
+   * `tail` includes the filter name. A trailing `filterName: ...argName:` with
+   * an empty value is a named-argument VALUE slot — offer value expressions,
+   * not filter names. The first-argument slot (`filter: ^`) has an empty args
+   * portion and keeps its existing bare-lookup shape (do not regress it).
+   */
+  const colonIdx = tail.indexOf(':');
+  const filterName =
+    colonIdx === -1
+      ? undefined
+      : tail
+          .slice(0, colonIdx)
+          .trim()
+          .match(/^[a-zA-Z_][\w-]*$/)?.[0];
+  const argsPortion = colonIdx === -1 ? '' : tail.slice(colonIdx + 1);
+  const valueSlot = argsPortion.match(/([a-zA-Z_][\w-]*)\s*:\s*$/);
+
+  let filter: LiquidHtmlNode;
+  if (filterName && valueSlot) {
+    /*
+     * Absolute offset of the argument name so the finder's name-guard resolves
+     * to the VALUE (cursor is past `argName:`), not the name.
+     */
+    const argStart = exprStart + lastPipe + 1 + colonIdx + 1 + valueSlot.index!;
+    const namedArg = {
+      type: NodeTypes.NamedArgument,
+      name: valueSlot[1],
+      value: synthVariableLookup(cursor),
+      position: { start: argStart, end: cursor },
+    } as any as LiquidHtmlNode;
+    filter = synthFilter(filterName, [namedArg], cursor, source);
+  } else {
+    const named = tail.match(/^\s*([a-zA-Z_][\w-]*)\s*:\s*$/);
+    filter = named
+      ? synthFilter(named[1], [synthVariableLookup(cursor)], cursor, source)
+      : synthFilter('', [], cursor, source);
+  }
 
   return {
     type: NodeTypes.LiquidVariable,
@@ -1567,6 +1914,40 @@ function synthOutputFilterSlot(
     position: { start: exprStart, end: cursor },
     source,
   } as any as LiquidHtmlNode;
+}
+
+/*
+ * For a TAG whose markup the parser left a raw string, the filter or
+ * filter-argument slot after a pipe is empty (`{% echo s | ^ %}`,
+ * `{% assign x = "s" | ^ %}`). Locate where the pre-pipe expression begins —
+ * just past the tag name, or, for `assign`, past the `= ` that separates the
+ * target from the value — and delegate to the shared `synthFilterSlot` so tag
+ * filters narrow by input type exactly like the output path.
+ */
+function synthTagFilterSlot(node: any, cursor: number, source: string): LiquidHtmlNode | undefined {
+  const region = source.slice(node.position.start, cursor);
+  /*
+   * The `{%` prefix is optional so `exprStart` also skips the bare tag name of
+   * a `{% liquid %}` inner statement (which has no `{%`). Needed so
+   * `recoverExpression` sees a bare literal (`echo "s" | ^` -> String -> string
+   * filters, not an untyped lookup). Harmless for non-literal inner statements
+   * (`recoverVariableLookup` back-scans regardless) and byte-identical for
+   * top-level `{%`-prefixed tags.
+   */
+  let exprStart =
+    node.position.start + (region.match(/^(?:\{%-?\s*)?[a-zA-Z_]\w*\s+/)?.[0].length ?? 0);
+
+  if (node.name === 'assign') {
+    // `assign` binds a variable, so the pre-pipe expression is the assigned
+    // value: skip past the first `=` and its trailing whitespace.
+    const eq = source.indexOf('=', exprStart);
+    if (eq !== -1 && eq < cursor) {
+      exprStart = eq + 1;
+      while (exprStart < cursor && /\s/.test(source[exprStart])) exprStart += 1;
+    }
+  }
+
+  return synthFilterSlot(source, exprStart, cursor);
 }
 
 /*
@@ -1757,10 +2138,17 @@ function synthUnclosedOutputFilter(
  * the tag name instead of a synthesized lookup.
  */
 function isInExpressionSlot(node: any, cursor: number, source: string): boolean {
-  // `[a-zA-Z_]\w*` (rather than `[\w-]+`) so the whitespace-control dash of
-  // `{%- if^` is not mistaken for a one-character tag name, which would put the
-  // caret past a "name" and wrongly synthesize a lookup on `{%- if^ %}`.
-  return /^\{%-?\s*[a-zA-Z_]\w*\s/.test(source.slice(node.position.start, cursor));
+  /*
+   * `[a-zA-Z_]\w*` (rather than `[\w-]+`) so the whitespace-control dash of
+   * `{%- if^` is not mistaken for a one-character tag name, which would put the
+   * caret past a "name" and wrongly synthesize a lookup on `{%- if^ %}`.
+   *
+   * The `{%` prefix is optional so this also covers `{% liquid %}` inner
+   * statements, whose region begins at the bare tag name (`echo`/`assign`),
+   * not at `{%`. Top-level regions start with `{`, so the optional-prefix
+   * branch matches inner-liquid statements only.
+   */
+  return /^(?:\{%-?\s*)?[a-zA-Z_]\w*\s/.test(source.slice(node.position.start, cursor));
 }
 
 function isTrailingLiquidTagMarkupSlot(node: any, cursor: number, source: string): boolean {

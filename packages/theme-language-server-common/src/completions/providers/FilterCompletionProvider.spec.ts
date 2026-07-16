@@ -174,6 +174,44 @@ describe('Module: FilterCompletionProvider', async () => {
     await expect(provider).to.complete('{{ string | █ }}', stringFilters.concat(anyFilters));
   });
 
+  it('completes filters (not objects) in an empty tag filter slot', async () => {
+    // E: a pipe inside a tag routes the caret to the filter slot, narrowing by
+    // the pre-pipe expression's type.
+    await expect(provider).to.complete('{% echo string | █ %}', stringFilters.concat(anyFilters));
+    await expect(provider).to.complete(
+      '{% assign x = "s" | █ %}',
+      stringFilters.concat(anyFilters),
+    );
+  });
+
+  it('completes filters (not objects) in a `{% liquid %}` inner tag filter slot', async () => {
+    // R1b: a pipe on a `{% liquid %}` body line routes the caret to the filter
+    // slot, narrowing by the pre-pipe expression's type — an object lookup, a
+    // string literal, and a multi-pipe chain each narrow like the output path.
+    await expect(provider).to.complete(
+      '{% liquid\n  echo string | █ %}',
+      stringFilters.concat(anyFilters),
+    );
+    await expect(provider).to.complete(
+      '{% liquid\n  echo "s" | █ %}',
+      stringFilters.concat(anyFilters),
+    );
+    await expect(provider).to.complete(
+      '{% liquid\n  assign x = string | split: "" | █ %}',
+      arrayFilters.concat(anyFilters),
+    );
+  });
+
+  it('narrows the filter set by a literal pre-pipe expression', async () => {
+    // G: string / number / range literals narrow filters by input type.
+    await expect(provider).to.complete('{{ "1" | █ }}', stringFilters.concat(anyFilters));
+    await expect(provider).to.complete('{{ (1..3) | █ }}', arrayFilters.concat(anyFilters));
+    // A number literal narrows the same as the `number` object; the fixture has
+    // no number-input filter, so it falls back to all filters.
+    await expect(provider).to.complete('{{ 1 | █ }}', allFilters);
+    await expect(provider).to.complete('{{ number | █ }}', allFilters);
+  });
+
   it('handles assignment the same way as output', async () => {
     //                                     char 31 ⌄ ⌄ char 33
     const liquid = '{% assign imageUrl = product | de█ %}';
