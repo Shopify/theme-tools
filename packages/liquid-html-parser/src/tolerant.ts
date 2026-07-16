@@ -1,8 +1,8 @@
 /**
- * Opt-in resilient entry points for the Liquid+HTML parser.
+ * Opt-in tolerant entry points for the Liquid+HTML parser.
  *
  * These mirror `toLiquidAST` / `toLiquidHtmlAST` from `./ast` exactly, except
- * they construct a `ResilientDocumentParser` instead of the base
+ * they construct a `TolerantDocumentParser` instead of the base
  * `DocumentParser`. A structural parse failure that would abort the default
  * parse is instead caught and surfaced as a `LiquidErrorNode`, so the returned
  * `DocumentNode` can carry several errors interleaved with the constructs the
@@ -12,17 +12,17 @@
 
 import type { ASTBuildOptions, DocumentNode, LiquidErrorNode, LiquidHtmlNode } from './ast';
 import { walk } from './ast';
-import { ResilientDocumentParser } from './document/resilient-parser';
+import { TolerantDocumentParser } from './document/tolerant-parser';
 import { tokenize } from './document/tokenizer';
 import { Environment } from './environment';
 import { NodeTypes } from './types';
 
 /*
- * Resilient variant of `toLiquidAST` (Liquid-only, `parseHtml: false`).
+ * Tolerant variant of `toLiquidAST` (Liquid-only, `parseHtml: false`).
  * Defaults `allowUnclosedDocumentNode: true` so an unterminated document is
- * recovered rather than thrown on — the resilient contract.
+ * recovered rather than thrown on — the tolerant contract.
  */
-export function toResilientLiquidAST(
+export function toTolerantLiquidAST(
   source: string,
   options: ASTBuildOptions = {
     allowUnclosedDocumentNode: true,
@@ -31,7 +31,7 @@ export function toResilientLiquidAST(
 ): DocumentNode {
   const env = options.environment ?? Environment.default();
   const tokens = tokenize(source);
-  const parser = new ResilientDocumentParser(
+  const parser = new TolerantDocumentParser(
     tokens,
     source,
     env,
@@ -42,11 +42,11 @@ export function toResilientLiquidAST(
 }
 
 /*
- * Resilient variant of `toLiquidHtmlAST` (Liquid+HTML, `parseHtml: true`).
+ * Tolerant variant of `toLiquidHtmlAST` (Liquid+HTML, `parseHtml: true`).
  * Defaults `allowUnclosedDocumentNode: true` so an unterminated document is
- * recovered rather than thrown on — the resilient contract.
+ * recovered rather than thrown on — the tolerant contract.
  */
-export function toResilientLiquidHtmlAST(
+export function toTolerantLiquidHtmlAST(
   source: string,
   options: ASTBuildOptions = {
     allowUnclosedDocumentNode: true,
@@ -55,7 +55,7 @@ export function toResilientLiquidHtmlAST(
 ): DocumentNode {
   const env = options.environment ?? Environment.default();
   const tokens = tokenize(source);
-  const parser = new ResilientDocumentParser(
+  const parser = new TolerantDocumentParser(
     tokens,
     source,
     env,
@@ -68,7 +68,7 @@ export function toResilientLiquidHtmlAST(
 /*
  * Locate the error node the caret is sitting in.
  *
- * A resilient parse can leave several `LiquidErrorNode`s scattered through
+ * A tolerant parse can leave several `LiquidErrorNode`s scattered through
  * the tree, one per region the parser gave up on. Completion needs the one
  * the caret is actually inside, so we return the *deepest* error node whose
  * span contains `offset` — the most specific recovery point — paired with

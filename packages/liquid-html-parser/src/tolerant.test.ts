@@ -4,7 +4,7 @@ import { join, resolve } from 'node:path';
 import { isLiquidHtmlNode, toLiquidAST, toLiquidHtmlAST, walk } from './ast';
 import type { DocumentNode, LiquidErrorNode, LiquidHtmlNode } from './ast';
 import { LiquidHTMLASTParsingError } from './errors';
-import { findErrorNodeAtOffset, toResilientLiquidAST, toResilientLiquidHtmlAST } from './resilient';
+import { findErrorNodeAtOffset, toTolerantLiquidAST, toTolerantLiquidHtmlAST } from './tolerant';
 import { NodeTypes } from './types';
 
 /*
@@ -34,12 +34,12 @@ function errorNodesOf(ast: DocumentNode): LiquidErrorNode[] {
 /*
  * Default-path neutrality proof (Gate-S1 / golden-neutrality gate).
  *
- * Resilient mode is a different class reached by a different function; on
+ * Tolerant mode is a different class reached by a different function; on
  * well-formed input its overridden `parseNode` never catches, so it must be
  * byte-identical to the strict default path. These are the two proofs of that:
  * a curated set of clean sources, and the whole on-disk clean fixture corpus.
  */
-describe('resilient mode is inert on clean input', () => {
+describe('tolerant mode is inert on clean input', () => {
   const cleanSources = [
     '',
     'plain text only',
@@ -55,14 +55,14 @@ describe('resilient mode is inert on clean input', () => {
   ];
 
   for (const source of cleanSources) {
-    it(`toResilientLiquidHtmlAST deep-equals toLiquidHtmlAST for ${JSON.stringify(source)}`, () => {
-      expect(structural(toResilientLiquidHtmlAST(source))).toEqual(
+    it(`toTolerantLiquidHtmlAST deep-equals toLiquidHtmlAST for ${JSON.stringify(source)}`, () => {
+      expect(structural(toTolerantLiquidHtmlAST(source))).toEqual(
         structural(toLiquidHtmlAST(source)),
       );
     });
 
-    it(`toResilientLiquidAST deep-equals toLiquidAST for ${JSON.stringify(source)}`, () => {
-      expect(structural(toResilientLiquidAST(source))).toEqual(structural(toLiquidAST(source)));
+    it(`toTolerantLiquidAST deep-equals toLiquidAST for ${JSON.stringify(source)}`, () => {
+      expect(structural(toTolerantLiquidAST(source))).toEqual(structural(toLiquidAST(source)));
     });
   }
 });
@@ -96,36 +96,36 @@ const hasFixtures = existsSync(FIXTURES_DIR) && readdirSync(FIXTURES_DIR).length
 /*
  * The clean corpus is exactly the files the oracle has a golden for: a golden
  * exists only for a file the strict parser accepts, so those files are the
- * proven-clean set. Resilient must reproduce the strict AST for each.
+ * proven-clean set. Tolerant must reproduce the strict AST for each.
  */
-describe.skipIf(!hasFixtures)('resilient mode is inert over the clean fixture corpus', () => {
+describe.skipIf(!hasFixtures)('tolerant mode is inert over the clean fixture corpus', () => {
   for (const theme of THEMES) {
     const themeDir = join(FIXTURES_DIR, theme);
     const files = findLiquidFiles(themeDir);
     const themeMissing = files.length === 0;
 
-    describe.skipIf(themeMissing)(`toResilientLiquidHtmlAST === toLiquidHtmlAST - ${theme}`, () => {
+    describe.skipIf(themeMissing)(`toTolerantLiquidHtmlAST === toLiquidHtmlAST - ${theme}`, () => {
       for (const { path, fullPath } of files) {
         const goldenPath = join(GOLDEN_HTML_AST_DIR, theme, goldenFileName(path));
         if (!existsSync(goldenPath)) continue;
 
         it(`matches strict for ${theme}/${path}`, () => {
           const source = readFileSync(fullPath, 'utf-8');
-          expect(structural(toResilientLiquidHtmlAST(source))).toEqual(
+          expect(structural(toTolerantLiquidHtmlAST(source))).toEqual(
             structural(toLiquidHtmlAST(source)),
           );
         });
       }
     });
 
-    describe.skipIf(themeMissing)(`toResilientLiquidAST === toLiquidAST - ${theme}`, () => {
+    describe.skipIf(themeMissing)(`toTolerantLiquidAST === toLiquidAST - ${theme}`, () => {
       for (const { path, fullPath } of files) {
         const goldenPath = join(GOLDEN_LIQUID_AST_DIR, theme, goldenFileName(path));
         if (!existsSync(goldenPath)) continue;
 
         it(`matches strict for ${theme}/${path}`, () => {
           const source = readFileSync(fullPath, 'utf-8');
-          expect(structural(toResilientLiquidAST(source))).toEqual(structural(toLiquidAST(source)));
+          expect(structural(toTolerantLiquidAST(source))).toEqual(structural(toLiquidAST(source)));
         });
       }
     });
@@ -133,18 +133,18 @@ describe.skipIf(!hasFixtures)('resilient mode is inert over the clean fixture co
 });
 
 /*
- * Positive-path resilient behavior. These consolidate the throwaway probes
+ * Positive-path tolerant behavior. These consolidate the throwaway probes
  * from B2 (error nodes emitted), B3 (panic-mode resync) and B5 (locator) into
  * committed tests.
  */
-describe('resilient mode surfaces parse errors as nodes', () => {
+describe('tolerant mode surfaces parse errors as nodes', () => {
   it('strict parse throws on a close tag with no matching open', () => {
     expect(() => toLiquidHtmlAST('{% endfor %}')).toThrow(LiquidHTMLASTParsingError);
   });
 
-  it('toResilientLiquidHtmlAST emits a LiquidErrorNode instead of throwing', () => {
+  it('toTolerantLiquidHtmlAST emits a LiquidErrorNode instead of throwing', () => {
     const source = '{% endfor %}';
-    const ast = toResilientLiquidHtmlAST(source);
+    const ast = toTolerantLiquidHtmlAST(source);
 
     expect(ast.type).toBe(NodeTypes.Document);
     expect(ast.children).toHaveLength(1);
@@ -157,17 +157,17 @@ describe('resilient mode surfaces parse errors as nodes', () => {
     expect(source.slice(node.position.start, node.position.end)).toBe('{% endfor %}');
   });
 
-  it('toResilientLiquidAST also recovers instead of throwing', () => {
-    const ast = toResilientLiquidAST('{% endfor %}');
+  it('toTolerantLiquidAST also recovers instead of throwing', () => {
+    const ast = toTolerantLiquidAST('{% endfor %}');
 
     expect(ast.type).toBe(NodeTypes.Document);
     expect(errorNodesOf(ast)).toHaveLength(1);
   });
 });
 
-describe('resilient mode resynchronizes after an error (panic mode)', () => {
+describe('tolerant mode resynchronizes after an error (panic mode)', () => {
   it('recovers valid nodes between multiple errors and terminates', () => {
-    const ast = toResilientLiquidHtmlAST('{% endfor %}{{ good }}{% endif %}');
+    const ast = toTolerantLiquidHtmlAST('{% endfor %}{{ good }}{% endif %}');
 
     expect(ast.children.map((child) => child.type)).toEqual([
       NodeTypes.LiquidErrorNode,
@@ -191,7 +191,7 @@ describe('resilient mode resynchronizes after an error (panic mode)', () => {
 
 describe('findErrorNodeAtOffset', () => {
   const source = '{% endfor %} {{ good }} {% endif %}';
-  const ast = toResilientLiquidHtmlAST(source);
+  const ast = toTolerantLiquidHtmlAST(source);
 
   it('produces two error nodes spanning up to the next construct boundary', () => {
     const errors = errorNodesOf(ast);

@@ -35,7 +35,7 @@ export function tokenTypeName(type: TokenType): string {
 
 /*
  * Builds a LiquidErrorNode leaf covering a skipped region. Kept local to the
- * resilient path — deliberately not in the frozen factories.ts — so the
+ * tolerant path — deliberately not in the frozen factories.ts — so the
  * default parse has no way to construct it.
  */
 export function makeLiquidErrorNode(
@@ -55,13 +55,13 @@ export function makeLiquidErrorNode(
 }
 
 /*
- * Opt-in resilient parser. It behaves exactly like DocumentParser except that
+ * Opt-in tolerant parser. It behaves exactly like DocumentParser except that
  * a structural parse failure — which the default parser throws on, aborting the
  * whole parse — is caught here and turned into a LiquidErrorNode so parsing can
  * continue. The strict/default DocumentParser is a different class reached by a
  * different entry point and is left byte-identical.
  */
-export class ResilientDocumentParser extends DocumentParser {
+export class TolerantDocumentParser extends DocumentParser {
   /*
    * Wraps the polymorphic node parse. On a LiquidHTMLASTParsingError it emits a
    * LiquidErrorNode covering the skipped region and resynchronizes onto the next

@@ -887,7 +887,7 @@ export interface LiquidDocPromptNode extends ASTNode<NodeTypes.LiquidDocPromptNo
 }
 
 /**
- * Represents a parse error recovered by the resilient parser. Its position spans
+ * Represents a parse error recovered by the tolerant parser. Its position spans
  * the skipped region, from the start of the failed unit up to the boundary
  * where recovery resynchronized.
  */

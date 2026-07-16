@@ -27,14 +27,26 @@ export class LiquidHTMLASTParsingError extends SyntaxError {
     const lc = lineColumn(source);
 
     /*
-     * A parse can fail at a position that is out of the source's range - for
-     * example the end-of-input token that sits past the last character when a
-     * closing delimiter like "%}" is never found, or a -1 sentinel position.
-     * line-column returns null for an out-of-range index, and dereferencing
-     * that null while building `loc` below would throw a TypeError ("Cannot
-     * read properties of null") that masks the real syntax error. Clamp the
-     * indices into the valid range before the lookup so we always produce a
-     * real location.
+     * A parse can fail at a position that is out of the source's range: the
+     * end-of-input token sits one past the last character when a closing
+     * delimiter like "%}" is never found, and some failures report a -1
+     * sentinel position. line-column returns null for any out-of-range
+     * index, so dereferencing it while building `loc` below would throw a
+     * TypeError ("Cannot read properties of null") that masks the real
+     * syntax error.
+     *
+     * We have to guard this now because the tolerant parser is the first
+     * caller to drive malformed input through this throw site. The `loc`
+     * is built here at error-construction time, before the tolerant
+     * parser's recovery catch runs, so a null dereference would crash
+     * before the throw can become a recovered LiquidErrorNode, defeating
+     * the tolerant parser entirely.
+     *
+     * Clamping the indices into the valid range covers the out-of-range
+     * and -1 cases. The `?? 1` fallback on each line/column below stays
+     * load-bearing for empty or degenerate source, where fromIndex(0) on
+     * "" is still null even after clamping. Same root cause, both needed,
+     * so we always produce a real location.
      */
     const lastIndex = Math.max(0, source.length - 1);
     const start = lc.fromIndex(Math.min(Math.max(startIndex, 0), lastIndex));
