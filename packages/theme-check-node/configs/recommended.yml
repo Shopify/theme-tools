@@ -70,7 +70,7 @@ JSONSyntaxError:
 JavascriptOncePerFile:
   enabled: true
   severity: 0
-JavascriptSectionOrBlockOnly:
+JavascriptTagInWrongFile:
   enabled: true
   severity: 0
 LiquidComplexity:
@@ -150,7 +150,7 @@ StaticStylesheetAndJavascriptTags:
 StylesheetOncePerFile:
   enabled: true
   severity: 0
-StylesheetSectionOrBlockOnly:
+StylesheetTagInWrongFile:
   enabled: true
   severity: 0
 TranslationKeyExists:

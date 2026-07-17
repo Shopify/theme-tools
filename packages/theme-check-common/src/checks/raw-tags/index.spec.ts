@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   JavascriptOncePerFile,
-  JavascriptSectionOrBlockOnly,
+  JavascriptTagInWrongFile,
   SchemaOncePerFile,
   SchemaSectionOrBlockOnly,
   StylesheetOncePerFile,
-  StylesheetSectionOrBlockOnly,
+  StylesheetTagInWrongFile,
 } from './index';
 import { runLiquidCheck } from '../../test';
 
@@ -57,27 +57,24 @@ describe('raw tag checks', () => {
   });
 
   describe('javascript', () => {
-    it.each(['sections/test.liquid', 'blocks/test.liquid'])(
+    it.each(['sections/test.liquid', 'blocks/test.liquid', 'snippets/test.liquid'])(
       'allows javascript tags in %s',
       async (path) => {
-        const offenses = await runLiquidCheck(JavascriptSectionOrBlockOnly, JAVASCRIPT_TAG, path);
+        const offenses = await runLiquidCheck(JavascriptTagInWrongFile, JAVASCRIPT_TAG, path);
 
         expect(offenses).toEqual([]);
       },
     );
 
-    it.each(['templates/index.liquid', 'snippets/test.liquid'])(
-      'reports javascript tags in %s',
-      async (path) => {
-        const offenses = await runLiquidCheck(JavascriptSectionOrBlockOnly, JAVASCRIPT_TAG, path);
+    it.each(['templates/index.liquid'])('reports javascript tags in %s', async (path) => {
+      const offenses = await runLiquidCheck(JavascriptTagInWrongFile, JAVASCRIPT_TAG, path);
 
-        expect(offenses).toHaveLength(1);
-        expect(offenses[0]).toMatchObject({
-          check: 'JavascriptSectionOrBlockOnly',
-          message: '{% javascript %} is only valid in section or block files.',
-        });
-      },
-    );
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0]).toMatchObject({
+        check: 'JavascriptTagInWrongFile',
+        message: '{% javascript %} is only valid in section, block, or snippet files.',
+      });
+    });
 
     it('reports second and subsequent javascript tags in a file', async () => {
       const source = [JAVASCRIPT_TAG, JAVASCRIPT_TAG, JAVASCRIPT_TAG].join('\n');
@@ -99,27 +96,24 @@ describe('raw tag checks', () => {
   });
 
   describe('stylesheet', () => {
-    it.each(['sections/test.liquid', 'blocks/test.liquid'])(
+    it.each(['sections/test.liquid', 'blocks/test.liquid', 'snippets/test.liquid'])(
       'allows stylesheet tags in %s',
       async (path) => {
-        const offenses = await runLiquidCheck(StylesheetSectionOrBlockOnly, STYLESHEET_TAG, path);
+        const offenses = await runLiquidCheck(StylesheetTagInWrongFile, STYLESHEET_TAG, path);
 
         expect(offenses).toEqual([]);
       },
     );
 
-    it.each(['templates/index.liquid', 'snippets/test.liquid'])(
-      'reports stylesheet tags in %s',
-      async (path) => {
-        const offenses = await runLiquidCheck(StylesheetSectionOrBlockOnly, STYLESHEET_TAG, path);
+    it.each(['templates/index.liquid'])('reports stylesheet tags in %s', async (path) => {
+      const offenses = await runLiquidCheck(StylesheetTagInWrongFile, STYLESHEET_TAG, path);
 
-        expect(offenses).toHaveLength(1);
-        expect(offenses[0]).toMatchObject({
-          check: 'StylesheetSectionOrBlockOnly',
-          message: '{% stylesheet %} is only valid in section or block files.',
-        });
-      },
-    );
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0]).toMatchObject({
+        check: 'StylesheetTagInWrongFile',
+        message: '{% stylesheet %} is only valid in section, block, or snippet files.',
+      });
+    });
 
     it('reports second and subsequent stylesheet tags in a file', async () => {
       const source = [STYLESHEET_TAG, STYLESHEET_TAG, STYLESHEET_TAG].join('\n');

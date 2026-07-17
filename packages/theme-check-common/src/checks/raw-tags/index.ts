@@ -1,4 +1,4 @@
-import { isBlock, isSection } from '../../to-schema';
+import { isBlock, isSection, isSnippet } from '../../to-schema';
 import { Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
 import type { LiquidRawTag } from '@shopify/liquid-html-parser';
 
@@ -44,11 +44,22 @@ function rawTagCheck({ tagName, code, message }: RawTagCheckOptions): LiquidChec
   };
 }
 
-function sectionOrBlockOnlyCheck(tagName: RawTagName): LiquidCheckDefinition {
+function sectionOrBlockOnlyCheck(
+  tagName: RawTagName,
+  { allowSnippets }: { allowSnippets: boolean },
+): LiquidCheckDefinition {
+  const locations = allowSnippets ? 'section, block, or snippet' : 'section or block';
+
+  /*
+   * Tags that allow snippets use the newer TagInWrongFile naming; schema keeps
+   * its original SectionOrBlockOnly code for backwards compatibility.
+   */
+  const code = `${capitalize(tagName)}${allowSnippets ? 'TagInWrongFile' : 'SectionOrBlockOnly'}`;
+
   return rawTagCheck({
     tagName,
-    code: `${capitalize(tagName)}SectionOrBlockOnly`,
-    message: `{% ${tagName} %} is only valid in section or block files.`,
+    code,
+    message: `{% ${tagName} %} is only valid in ${locations} files.`,
   });
 }
 
@@ -90,22 +101,33 @@ function oncePerFileCheck(tagName: RawTagName): LiquidCheckDefinition {
   };
 }
 
-function sectionOrBlockOnlyUnlessAllowed(tagName: RawTagName): LiquidCheckDefinition {
-  const check = sectionOrBlockOnlyCheck(tagName);
+function sectionOrBlockOnlyUnlessAllowed(
+  tagName: RawTagName,
+  { allowSnippets }: { allowSnippets: boolean },
+): LiquidCheckDefinition {
+  const check = sectionOrBlockOnlyCheck(tagName, { allowSnippets });
 
   return {
     ...check,
     create(context) {
-      if (isSection(context.file.uri) || isBlock(context.file.uri)) return {};
+      const uri = context.file.uri;
+      if (isSection(uri) || isBlock(uri)) return {};
+      if (allowSnippets && isSnippet(uri)) return {};
 
       return check.create(context);
     },
   };
 }
 
-export const SchemaSectionOrBlockOnly = sectionOrBlockOnlyUnlessAllowed('schema');
+export const SchemaSectionOrBlockOnly = sectionOrBlockOnlyUnlessAllowed('schema', {
+  allowSnippets: false,
+});
 export const SchemaOncePerFile = oncePerFileCheck('schema');
-export const JavascriptSectionOrBlockOnly = sectionOrBlockOnlyUnlessAllowed('javascript');
+export const JavascriptTagInWrongFile = sectionOrBlockOnlyUnlessAllowed('javascript', {
+  allowSnippets: true,
+});
 export const JavascriptOncePerFile = oncePerFileCheck('javascript');
-export const StylesheetSectionOrBlockOnly = sectionOrBlockOnlyUnlessAllowed('stylesheet');
+export const StylesheetTagInWrongFile = sectionOrBlockOnlyUnlessAllowed('stylesheet', {
+  allowSnippets: true,
+});
 export const StylesheetOncePerFile = oncePerFileCheck('stylesheet');

@@ -71,11 +71,11 @@ import { AppBlockMissingSchema } from './app-block-missing-schema';
 import { UniqueSettingIds } from './unique-settings-id';
 import {
   JavascriptOncePerFile,
-  JavascriptSectionOrBlockOnly,
+  JavascriptTagInWrongFile,
   SchemaOncePerFile,
   SchemaSectionOrBlockOnly,
   StylesheetOncePerFile,
-  StylesheetSectionOrBlockOnly,
+  StylesheetTagInWrongFile,
 } from './raw-tags';
 import { BlockArgumentSettingCollision } from './block-argument-setting-collision';
 import { DuplicateBlockArguments } from './duplicate-block-arguments';
@@ -161,11 +161,11 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidSchemaName,
   ValidSchemaTranslations,
   JavascriptOncePerFile,
-  JavascriptSectionOrBlockOnly,
+  JavascriptTagInWrongFile,
   SchemaOncePerFile,
   SchemaSectionOrBlockOnly,
   StylesheetOncePerFile,
-  StylesheetSectionOrBlockOnly,
+  StylesheetTagInWrongFile,
   BlockArgumentSettingCollision,
   DuplicateBlockArguments,
   ExcessiveSettingsCount,

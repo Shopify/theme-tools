@@ -19,8 +19,8 @@ Add the following checks:
   - `SchemaOncePerFile` -- Reports when `{% schema %}` appears more than once in a file.
   - `SchemaSectionOrBlockOnly` -- Reports `{% schema %}` used outside section or block files.
   - `StylesheetOncePerFile` -- Reports when `{% stylesheet %}` appears more than once in a file.
-  - `StylesheetSectionOrBlockOnly` -- Reports `{% stylesheet %}` used outside section or block files.
+  - `StylesheetTagInWrongFile` -- Reports `{% stylesheet %}` used outside section, block, or snippet files.
   - `JavascriptOncePerFile` -- Reports when `{% javascript %}` appears more than once in a file.
-  - `JavascriptSectionOrBlockOnly` -- Reports `{% javascript %}` used outside section or block files.
+  - `JavascriptTagInWrongFile` -- Reports `{% javascript %}` used outside section, block, or snippet files.
 
 `RequiredLayoutThemeObject` now flags any `layout/*.liquid` file missing the required theme objects, not just `layout/theme.liquid`.
