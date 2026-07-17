@@ -10,6 +10,10 @@ interface RawTagCheckOptions {
   message: string;
 }
 
+function capitalize(tagName: RawTagName): string {
+  return tagName[0].toUpperCase() + tagName.slice(1);
+}
+
 function rawTagCheck({ tagName, code, message }: RawTagCheckOptions): LiquidCheckDefinition {
   return {
     meta: {
@@ -43,13 +47,13 @@ function rawTagCheck({ tagName, code, message }: RawTagCheckOptions): LiquidChec
 function sectionOrBlockOnlyCheck(tagName: RawTagName): LiquidCheckDefinition {
   return rawTagCheck({
     tagName,
-    code: `${tagName}-section-or-block-only`,
+    code: `${capitalize(tagName)}SectionOrBlockOnly`,
     message: `{% ${tagName} %} is only valid in section or block files.`,
   });
 }
 
 function oncePerFileCheck(tagName: RawTagName): LiquidCheckDefinition {
-  const code = `${tagName}-once-per-file`;
+  const code = `${capitalize(tagName)}OncePerFile`;
   const message = `{% ${tagName} %} can only appear once per file.`;
 
   return {

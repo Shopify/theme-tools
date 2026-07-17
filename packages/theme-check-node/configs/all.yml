@@ -89,6 +89,12 @@ JSONMissingBlock:
 JSONSyntaxError:
   enabled: true
   severity: 0
+JavascriptOncePerFile:
+  enabled: true
+  severity: 0
+JavascriptSectionOrBlockOnly:
+  enabled: true
+  severity: 0
 LiquidComplexity:
   enabled: true
   severity: 1
@@ -148,13 +154,25 @@ RequiredLayoutThemeObject:
 ReservedDocParamNames:
   enabled: true
   severity: 0
+SchemaOncePerFile:
+  enabled: true
+  severity: 0
 SchemaPresetsBlockOrder:
   enabled: true
   severity: 1
 SchemaPresetsStaticBlocks:
   enabled: true
   severity: 0
+SchemaSectionOrBlockOnly:
+  enabled: true
+  severity: 0
 StaticStylesheetAndJavascriptTags:
+  enabled: true
+  severity: 0
+StylesheetOncePerFile:
+  enabled: true
+  severity: 0
+StylesheetSectionOrBlockOnly:
   enabled: true
   severity: 0
 TranslationKeyExists:
@@ -254,21 +272,3 @@ VariableName:
   enabled: true
   severity: 1
   format: snake_case
-javascript-once-per-file:
-  enabled: true
-  severity: 0
-javascript-section-or-block-only:
-  enabled: true
-  severity: 0
-schema-once-per-file:
-  enabled: true
-  severity: 0
-schema-section-or-block-only:
-  enabled: true
-  severity: 0
-stylesheet-once-per-file:
-  enabled: true
-  severity: 0
-stylesheet-section-or-block-only:
-  enabled: true
-  severity: 0

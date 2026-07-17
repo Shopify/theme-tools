@@ -31,7 +31,7 @@ describe('raw tag checks', () => {
 
         expect(offenses).toHaveLength(1);
         expect(offenses[0]).toMatchObject({
-          check: 'schema-section-or-block-only',
+          check: 'SchemaSectionOrBlockOnly',
           message: '{% schema %} is only valid in section or block files.',
         });
       },
@@ -45,11 +45,11 @@ describe('raw tag checks', () => {
       expect(offenses).toHaveLength(2);
       expect(offenses).toEqual([
         expect.objectContaining({
-          check: 'schema-once-per-file',
+          check: 'SchemaOncePerFile',
           message: '{% schema %} can only appear once per file.',
         }),
         expect.objectContaining({
-          check: 'schema-once-per-file',
+          check: 'SchemaOncePerFile',
           message: '{% schema %} can only appear once per file.',
         }),
       ]);
@@ -73,7 +73,7 @@ describe('raw tag checks', () => {
 
         expect(offenses).toHaveLength(1);
         expect(offenses[0]).toMatchObject({
-          check: 'javascript-section-or-block-only',
+          check: 'JavascriptSectionOrBlockOnly',
           message: '{% javascript %} is only valid in section or block files.',
         });
       },
@@ -87,11 +87,11 @@ describe('raw tag checks', () => {
       expect(offenses).toHaveLength(2);
       expect(offenses).toEqual([
         expect.objectContaining({
-          check: 'javascript-once-per-file',
+          check: 'JavascriptOncePerFile',
           message: '{% javascript %} can only appear once per file.',
         }),
         expect.objectContaining({
-          check: 'javascript-once-per-file',
+          check: 'JavascriptOncePerFile',
           message: '{% javascript %} can only appear once per file.',
         }),
       ]);
@@ -115,7 +115,7 @@ describe('raw tag checks', () => {
 
         expect(offenses).toHaveLength(1);
         expect(offenses[0]).toMatchObject({
-          check: 'stylesheet-section-or-block-only',
+          check: 'StylesheetSectionOrBlockOnly',
           message: '{% stylesheet %} is only valid in section or block files.',
         });
       },
@@ -129,11 +129,11 @@ describe('raw tag checks', () => {
       expect(offenses).toHaveLength(2);
       expect(offenses).toEqual([
         expect.objectContaining({
-          check: 'stylesheet-once-per-file',
+          check: 'StylesheetOncePerFile',
           message: '{% stylesheet %} can only appear once per file.',
         }),
         expect.objectContaining({
-          check: 'stylesheet-once-per-file',
+          check: 'StylesheetOncePerFile',
           message: '{% stylesheet %} can only appear once per file.',
         }),
       ]);
