@@ -98,6 +98,7 @@ function parseStandaloneTag(
       markupStringStart,
       markupStringEnd,
     );
+    if (parser.isTolerant()) markupParser.enableTolerant();
     const markup = def.parse(envelope.tagName, markupParser, parser);
     if (!markupParser.isAtEnd()) {
       return makeLiquidTagBaseCase(

@@ -250,7 +250,18 @@ export function tokenize(source: string, options: TokenizeOptions = {}): Token[]
           continue;
         }
 
-        if (ch(0) === '"' || ch(0) === "'") {
+        // Accept straight quotes and curly (smart) quotes as attribute-value
+        // openers. Curly quotes get normalized to straight quotes downstream;
+        // recognizing them here (HTML scope only — Liquid tokenization is
+        // untouched) stops the value from splitting at interior spaces.
+        if (
+          ch(0) === '"' ||
+          ch(0) === "'" ||
+          ch(0) === '“' ||
+          ch(0) === '”' ||
+          ch(0) === '‘' ||
+          ch(0) === '’'
+        ) {
           quoteChar = ch(0);
           emit(TokenType.HtmlQuoteOpen, 1);
           pushMode(Mode.QuotedValue);
@@ -265,7 +276,10 @@ export function tokenize(source: string, options: TokenizeOptions = {}): Token[]
       case Mode.QuotedValue: {
         if (scanLiquidOpen()) continue;
 
-        if (ch(0) === quoteChar) {
+        // Curly quotes are directional, so a value opened with a left curly
+        // quote closes on its right partner (and vice-versa); straight quotes
+        // close on themselves.
+        if (ch(0) === closingQuoteFor(quoteChar) || ch(0) === quoteChar) {
           emit(TokenType.HtmlQuoteClose, 1);
           popMode();
           continue;
@@ -292,4 +306,22 @@ enum Mode {
   QuotedValue = 'QuotedValue',
   LiquidTag = 'LiquidTag',
   LiquidVariableOutput = 'LiquidVariableOutput',
+}
+
+// Curly (smart) quotes come in directional pairs: a value opened with a left
+// curly quote closes on its right partner and vice-versa. Straight quotes are
+// their own partner, so they close on an identical character.
+function closingQuoteFor(open: string): string {
+  switch (open) {
+    case '“':
+      return '”';
+    case '”':
+      return '“';
+    case '‘':
+      return '’';
+    case '’':
+      return '‘';
+    default:
+      return open;
+  }
 }

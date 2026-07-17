@@ -31,6 +31,7 @@ export function parseHybridTag(
     const markupStringStart = closeToken.start - envelope.markupString.length;
     const tokens = tokenizeMarkup(envelope.markupString, markupStringStart);
     const markupParser = new MarkupParser(tokens, parser.getSource());
+    if (parser.isTolerant()) markupParser.enableTolerant();
     markup = def.parse(envelope.tagName, markupParser, parser);
     if (!markupParser.isAtEnd()) {
       markup = undefined;

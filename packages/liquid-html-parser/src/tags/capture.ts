@@ -48,7 +48,7 @@ export const captureTag: TagDefinitionBlock<LiquidVariableLookup> = {
           name: match[1],
           lookups: [],
           position: { start: bodyStart, end: bodyEnd },
-          source: '',
+          source,
         };
       }
       // No VariableSignature run (`''`, empty, spaces only) → unrecoverable in

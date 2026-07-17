@@ -42,7 +42,7 @@ export const assignTag: TagDefinitionTag<AssignMarkup> = {
       name,
       value,
       position: { start, end: markup.peek().start },
-      source: '',
+      source: value.source,
     };
   },
 };

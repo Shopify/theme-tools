@@ -5,7 +5,7 @@ import {
   InsertTextFormat,
   TextEdit,
 } from 'vscode-languageserver';
-import { CURSOR, LiquidCompletionParams } from '../params';
+import { LiquidCompletionParams } from '../params';
 import { Provider } from './common';
 import { AugmentedLiquidSourceCode } from '../../documents';
 import { DEFAULT_COMPLETION_OPTIONS } from './data/contentForParameterCompletionOptions';
@@ -35,7 +35,7 @@ export class ContentForParameterCompletionProvider implements Provider {
       return [];
     }
 
-    if (!node.name || node.lookups.length > 0) {
+    if (node.lookups.length > 0) {
       return [];
     }
 
@@ -61,9 +61,15 @@ export class ContentForParameterCompletionProvider implements Provider {
       }
     }
 
-    // We need to find out existing params in the content_for tag so we don't offer it again for completion
+    // We need to find out existing params in the content_for tag so we don't offer it again for completion.
+    // Exclude the parameter the caret is currently editing, so typing over an
+    // existing `type:` still offers `type` as a completion. When the caret sits
+    // in an argument name, the finder synthesizes a `VariableLookup` starting at
+    // that argument's position, so matching on `position.start` identifies the
+    // argument being typed over.
     const existingParams = parentNode.args
       .filter((arg) => arg.type === NodeTypes.NamedArgument)
+      .filter((arg) => arg.position.start !== node.position.start)
       .map((arg) => arg.name);
 
     return completionItems.filter((item) => !existingParams.includes(item.label));
@@ -105,7 +111,7 @@ export class ContentForParameterCompletionProvider implements Provider {
     // options and should not replace any text.
     // e.g. `{% content_for "block", █type: "button" %}`
     // e.g. `{% content_for "block", █ %}`
-    if (node.name === CURSOR) {
+    if (node.name === '') {
       end = start;
 
       // If we're inserting text in front of an existing parameter then we need
@@ -134,7 +140,7 @@ export class ContentForParameterCompletionProvider implements Provider {
   ) {
     let options = DEFAULT_COMPLETION_OPTIONS;
 
-    const partial = node.name!.replace(CURSOR, '');
+    const partial = node.name!;
 
     if (isTypeBlocks) {
       options = {

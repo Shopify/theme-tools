@@ -34,7 +34,7 @@ export const cycleTag: TagDefinitionTag<CycleMarkup> = {
       groupName,
       args,
       position: { start: first.position.start, end: markup.peek().start },
-      source: '',
+      source: first.source,
     };
   },
 };

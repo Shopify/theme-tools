@@ -9,6 +9,5 @@ export default defineConfig({
     maxWorkers: 1,
     isolate: true,
     globalSetup: ['./src/test/test-setup.js'],
-    setupFiles: ['../liquid-html-parser/build/shims.js'],
   },
 });

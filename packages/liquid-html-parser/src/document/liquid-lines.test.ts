@@ -112,6 +112,14 @@ describe('Unit: liquid-lines', () => {
     expectPath(ast, 'children.0.markup.1.name').to.eql('echo');
   });
 
+  it('should preserve inner indentation after `#`, stripping only one separator space (Category J)', () => {
+    // `#     fancy` must keep four spaces of the ASCII-art indent — only a
+    // single separator space after `#` is stripped (ohm `"#" space?`).
+    const ast = toLiquidHtmlAST('{% liquid\n#     fancy\necho "hi"\n%}');
+    expectPath(ast, 'children.0.markup.0.name').to.eql('#');
+    expectPath(ast, 'children.0.markup.0.markup').to.eql('    fancy');
+  });
+
   it('should skip empty lines', () => {
     const ast = toLiquidHtmlAST('{% liquid\n\necho "hi"\n\n%}');
     expectPath(ast, 'children.0.markup').to.have.lengthOf(1);
@@ -224,6 +232,35 @@ describe('Unit: liquid-lines', () => {
       // Branch blockEndPosition should be zero-width (start === end)
       expectPath(ast, `${branch}.blockEndPosition.start`).to.eql(source.indexOf('endif'));
       expectPath(ast, `${branch}.blockEndPosition.end`).to.eql(source.indexOf('endif'));
+    });
+  });
+
+  describe('nested comment/doc balancing (Category B)', () => {
+    it('should balance nested comments so the outer endcomment closes the block', () => {
+      // The inner `comment`/`endcomment` pair must not close the outer
+      // block early; the outer comment ends at the final `endcomment`.
+      const source = '{% liquid\ncomment\nouter\ncomment\ninner\nendcomment\nendcomment\n%}';
+      const ast = toLiquidHtmlAST(source);
+      expectPath(ast, 'children.0.markup').to.have.lengthOf(1);
+      expectPath(ast, 'children.0.markup.0.type').to.eql('LiquidRawTag');
+      expectPath(ast, 'children.0.markup.0.name').to.eql('comment');
+      expectPath(ast, 'children.0.markup.0.body.value').to.eql(
+        'outer\ncomment\ninner\nendcomment\n',
+      );
+    });
+
+    it('should carve out a nested raw so a literal endcomment inside it does not close early', () => {
+      // The `endcomment` line sits inside a nested `raw`…`endraw` block, so it
+      // must be ignored by the depth scan; the outer comment closes at the
+      // real trailing `endcomment`.
+      const source = '{% liquid\ncomment\nbefore\nraw\nendcomment\nendraw\nafter\nendcomment\n%}';
+      const ast = toLiquidHtmlAST(source);
+      expectPath(ast, 'children.0.markup').to.have.lengthOf(1);
+      expectPath(ast, 'children.0.markup.0.type').to.eql('LiquidRawTag');
+      expectPath(ast, 'children.0.markup.0.name').to.eql('comment');
+      expectPath(ast, 'children.0.markup.0.body.value').to.eql(
+        'before\nraw\nendcomment\nendraw\nafter\n',
+      );
     });
   });
 });

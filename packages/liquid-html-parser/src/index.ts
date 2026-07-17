@@ -1,6 +1,7 @@
 export * from './ast';
 export * from './types';
 export * from './errors';
+export { findErrorNodeAtOffset, toTolerantLiquidAST, toTolerantLiquidHtmlAST } from './tolerant';
 export { TAGS_WITHOUT_MARKUP, RAW_TAGS, VOID_ELEMENTS, BLOCKS } from './grammar';
 export { getConditionalComment } from './conditional-comment';
 export { tokenize, TokenType } from './document/tokenizer';
