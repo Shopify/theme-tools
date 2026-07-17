@@ -89,6 +89,34 @@ describe('Module: RequiredLayoutThemeObject', () => {
     expect(offenses).to.have.length(0);
   });
 
+  it('should report for any layout/*.liquid file, not only layout/theme.liquid', async () => {
+    /*
+     * The check scope was broadened: LAYOUT_PATH_PATTERN now matches every
+     * +layout/*.liquid+ asset, not just +layout/theme.liquid+. A non-theme
+     * layout file missing the required objects must therefore be reported.
+     */
+    const input = `
+      <html>
+        <head>
+          <!-- missing content_for_header -->
+        </head>
+        <body>
+          {{ content_for_layout }}
+        </body>
+      </html>
+    `;
+
+    const offenses = await runLiquidCheck(
+      RequiredLayoutThemeObject,
+      input,
+      'layout/checkout.liquid',
+    );
+    expect(offenses).to.have.length(1);
+    expect(offenses[0].message).to.equal(
+      "The required object '{{ content_for_header }}' is missing in layout/theme.liquid",
+    );
+  });
+
   it('should not report an error if the file is unparseable', async () => {
     const input = `
       <html>

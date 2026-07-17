@@ -28,6 +28,9 @@ AssetSizeJavaScript:
   enabled: true
   severity: 0
   thresholdInBytes: 10000
+BlockArgumentSettingCollision:
+  enabled: true
+  severity: 1
 BlockIdUsage:
   enabled: true
   severity: 1
@@ -58,6 +61,9 @@ DeprecatedFontsOnSettingsSchema:
 DeprecatedTag:
   enabled: true
   severity: 1
+DuplicateBlockArguments:
+  enabled: true
+  severity: 1
 DuplicateContentForArguments:
   enabled: true
   severity: 1
@@ -67,6 +73,10 @@ DuplicateRenderSnippetArguments:
 EmptyBlockContent:
   enabled: true
   severity: 1
+ExcessiveSettingsCount:
+  enabled: true
+  severity: 1
+  maxSettings: 40
 HardcodedRoutes:
   enabled: true
   severity: 1
@@ -79,18 +89,35 @@ JSONMissingBlock:
 JSONSyntaxError:
   enabled: true
   severity: 0
+LiquidComplexity:
+  enabled: true
+  severity: 1
+  maxComplexity: 120
 LiquidFreeSettings:
   enabled: true
   severity: 1
 LiquidHTMLSyntaxError:
   enabled: true
   severity: 0
+LiquidNestingDepth:
+  enabled: true
+  severity: 1
+  maxDepth: 10
+LiquidSyntaxError:
+  enabled: true
+  severity: 0
 MatchingTranslations:
+  enabled: true
+  severity: 0
+MaxFileSize:
   enabled: true
   severity: 0
 MissingAsset:
   enabled: true
   severity: 0
+MissingBlockArguments:
+  enabled: true
+  severity: 1
 MissingContentForArguments:
   enabled: true
   severity: 1
@@ -148,9 +175,15 @@ UniqueSettingId:
 UniqueStaticBlockId:
   enabled: true
   severity: 0
+UnknownBlockSetting:
+  enabled: true
+  severity: 1
 UnknownFilter:
   enabled: true
   severity: 0
+UnrecognizedBlockArguments:
+  enabled: true
+  severity: 1
 UnrecognizedContentForArguments:
   enabled: true
   severity: 1
@@ -167,6 +200,9 @@ UnusedAssign:
   enabled: true
   severity: 1
 UnusedDocParam:
+  enabled: true
+  severity: 1
+ValidBlockArgumentTypes:
   enabled: true
   severity: 1
 ValidBlockTarget:
@@ -218,3 +254,21 @@ VariableName:
   enabled: true
   severity: 1
   format: snake_case
+javascript-once-per-file:
+  enabled: true
+  severity: 0
+javascript-section-or-block-only:
+  enabled: true
+  severity: 0
+schema-once-per-file:
+  enabled: true
+  severity: 0
+schema-section-or-block-only:
+  enabled: true
+  severity: 0
+stylesheet-once-per-file:
+  enabled: true
+  severity: 0
+stylesheet-section-or-block-only:
+  enabled: true
+  severity: 0
