@@ -1,6 +1,8 @@
+import { HtmlSelfClosingElement, HtmlVoidElement } from '@shopify/liquid-html-parser';
 import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
 import {
   ValuedHtmlAttribute,
+  getHtmlNodeName,
   isAttr,
   isValuedHtmlAttribute,
   isHtmlAttribute,
@@ -28,30 +30,41 @@ export const DeprecateLazysizes: LiquidCheckDefinition = {
   },
 
   create(context) {
+    function checkNode(node: HtmlVoidElement | HtmlSelfClosingElement) {
+      if (getHtmlNodeName(node) !== 'img') return;
+
+      const attributes = node.attributes.filter(isHtmlAttribute);
+      const hasSrc = attributes.some((attr) => isAttr(attr, 'src'));
+      const hasNativeLoading = attributes.some((attr) => isAttr(attr, 'loading'));
+      if (hasSrc && hasNativeLoading) return;
+
+      const hasLazyloadClass = node.attributes
+        .filter(isValuedHtmlAttribute)
+        .some((attr) => isAttr(attr, 'class') && valueIncludes(attr, 'lazyload'));
+      if (!hasLazyloadClass) return;
+
+      const hasLazysizesAttribute = node.attributes
+        .filter(isValuedHtmlAttribute)
+        .some(showsLazysizesUsage);
+      if (!hasLazysizesAttribute) return;
+
+      context.report({
+        message: 'Use the native loading="lazy" attribute instead of lazysizes',
+        startIndex: node.position.start,
+        endIndex: node.position.end,
+      });
+    }
+
     return {
       async HtmlVoidElement(node) {
-        if (node.name !== 'img') return;
-
-        const attributes = node.attributes.filter(isHtmlAttribute);
-        const hasSrc = attributes.some((attr) => isAttr(attr, 'src'));
-        const hasNativeLoading = attributes.some((attr) => isAttr(attr, 'loading'));
-        if (hasSrc && hasNativeLoading) return;
-
-        const hasLazyloadClass = node.attributes
-          .filter(isValuedHtmlAttribute)
-          .some((attr) => isAttr(attr, 'class') && valueIncludes(attr, 'lazyload'));
-        if (!hasLazyloadClass) return;
-
-        const hasLazysizesAttribute = node.attributes
-          .filter(isValuedHtmlAttribute)
-          .some(showsLazysizesUsage);
-        if (!hasLazysizesAttribute) return;
-
-        context.report({
-          message: 'Use the native loading="lazy" attribute instead of lazysizes',
-          startIndex: node.position.start,
-          endIndex: node.position.end,
-        });
+        checkNode(node);
+      },
+      // The ported parser emits `HtmlSelfClosingElement` for self-closed
+      // void tags such as `<img … />`, whereas the previous parser emitted
+      // `HtmlVoidElement` regardless of the trailing slash. Visit both so the
+      // check still fires on self-closing markup.
+      async HtmlSelfClosingElement(node) {
+        checkNode(node);
       },
     };
   },
