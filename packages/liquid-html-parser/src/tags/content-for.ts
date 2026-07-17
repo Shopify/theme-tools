@@ -13,8 +13,14 @@ export const contentForTag: TagDefinitionTag<ContentForMarkup> = {
     }
 
     const args: LiquidNamedArgument[] = [];
-    if (markup.consumeOptional(MarkupTokenType.Comma)) {
-      args.push(...markup.namedArguments());
+    markup.consumeOptional(MarkupTokenType.Comma);
+    while (markup.look(MarkupTokenType.Id)) {
+      try {
+        args.push(markup.namedArgument());
+      } catch {
+        break;
+      }
+      markup.consumeOptional(MarkupTokenType.Comma);
     }
 
     return {
@@ -22,7 +28,7 @@ export const contentForTag: TagDefinitionTag<ContentForMarkup> = {
       contentForType,
       args,
       position: { start: contentForType.position.start, end: markup.peek().start },
-      source: '',
+      source: contentForType.source,
     };
   },
 };

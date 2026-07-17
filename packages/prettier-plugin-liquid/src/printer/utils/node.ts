@@ -1,4 +1,10 @@
-import { NodeTypes, LiquidNodeTypes, HtmlNodeTypes, Position } from '@shopify/liquid-html-parser';
+import {
+  NodeTypes,
+  LiquidNodeTypes,
+  HtmlNodeTypes,
+  Position,
+  CompoundNameSegment,
+} from '@shopify/liquid-html-parser';
 import {
   HtmlSelfClosingElement,
   LiquidHtmlNode,
@@ -330,10 +336,7 @@ export function getLastDescendant(node: LiquidHtmlNode): LiquidHtmlNode {
   return node.lastChild ? getLastDescendant(node.lastChild) : node;
 }
 
-function isTagNameIncluded(
-  collection: string[],
-  name: (TextNode | LiquidVariableOutput)[],
-): boolean {
+function isTagNameIncluded(collection: string[], name: CompoundNameSegment[]): boolean {
   if (name.length !== 1 || name[0].type !== NodeTypes.TextNode) return false;
   return collection.includes(name[0].value);
 }

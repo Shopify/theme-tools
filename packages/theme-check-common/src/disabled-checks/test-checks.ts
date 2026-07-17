@@ -45,7 +45,10 @@ export const RenderMarkup: LiquidCheckDefinition = {
   create(context) {
     return {
       async RenderMarkup(node) {
-        if (node.snippet.type === NodeTypes.VariableLookup) {
+        if (
+          node.snippet.type === NodeTypes.VariableLookup ||
+          node.snippet.type === NodeTypes.Range
+        ) {
           return;
         }
 

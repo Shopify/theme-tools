@@ -58,7 +58,7 @@ function parseRenderMarkup(
       kind,
       name,
       position: { start: kwStart, end: name.position.end },
-      source: '',
+      source: name.source,
     };
   }
 
@@ -70,7 +70,7 @@ function parseRenderMarkup(
       type: NodeTypes.RenderAliasExpression,
       value: aliasToken.value,
       position: { start: asStart, end: aliasToken.end },
-      source: '',
+      source: snippet.source,
     };
   }
 
@@ -96,7 +96,7 @@ function parseRenderMarkup(
     alias,
     args,
     position: { start: snippet.position.start, end },
-    source: '',
+    source: snippet.source,
   };
 }
 

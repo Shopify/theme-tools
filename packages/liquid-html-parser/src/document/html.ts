@@ -217,11 +217,15 @@ export function parseHtmlComment(parser: HtmlParserDelegate): HtmlComment {
   const openToken = parser.consume(TokenType.HtmlCommentOpen);
   const bodyStart = openToken.end;
 
-  while (!parser.isAtEnd() && !parser.check(TokenType.HtmlCommentClose)) {
-    parser.advance();
-  }
-
-  if (parser.isAtEnd()) {
+  // Find the closing `-->` by scanning the source rather than walking tokens.
+  // A conditional comment body (`<!--[if IE]>…<![endif]-->`) contains
+  // `<![endif]`, which the tokenizer treats as a doctype open — it enters
+  // HtmlTag mode and consumes the trailing `-->` as an HtmlTagClose, so no
+  // HtmlCommentClose token is ever emitted and the token walk would run to EOF.
+  // A source scan pins us to the real comment close, so the (unchanged)
+  // HtmlComment node feeds getConditionalComment correctly in the printer.
+  const closeIdx = source.indexOf('-->', bodyStart);
+  if (closeIdx === -1) {
     throw new LiquidHTMLASTParsingError(
       `Attempting to end parsing before HtmlComment '<!--' was closed`,
       source,
@@ -230,11 +234,13 @@ export function parseHtmlComment(parser: HtmlParserDelegate): HtmlComment {
     );
   }
 
-  const bodyEnd = parser.peek().start;
-  const closeToken = parser.consume(TokenType.HtmlCommentClose);
+  const bodyEnd = closeIdx;
+  const commentEnd = closeIdx + 3; // past `-->`
   const body = source.slice(bodyStart, bodyEnd).trim();
 
-  return makeHtmlComment(body, openToken.start, closeToken.end, source);
+  parser.seekToSourceOffset(commentEnd);
+
+  return makeHtmlComment(body, openToken.start, commentEnd, source);
 }
 
 // htmlDoctype := "<!" text ">"
@@ -499,7 +505,11 @@ function parseAttributeList(parser: HtmlParserDelegate): AttributeNode[] {
         const attrEnd = closeQuote.end;
         const attributePosition: Position = { start: valueStart, end: valueEnd };
 
-        if (quoteChar === '"') {
+        // Double straight quote and double curly quotes (“ ”) map to a
+        // double-quoted attr; single straight quote and single curly quotes
+        // (‘ ’) map to a single-quoted attr. The printer normalizes the curly
+        // variants to straight quotes.
+        if (quoteChar === '"' || quoteChar === '“' || quoteChar === '”') {
           attrs.push(
             makeAttrDoubleQuoted(name, value, attributePosition, attrStart, attrEnd, source),
           );
@@ -738,13 +748,39 @@ export function scanForHtmlCloseTag(parser: ParserBase, tagName: string): number
   const tokenCount = parser.tokenCount();
   const pos = parser.getPosition();
 
+  // Depth-balance nested same-name elements so the OUTER close tag is
+  // returned, not the first inner one (e.g. `<svg>…<svg>…</svg>…</svg>`). A
+  // nested open tag is an `HtmlTagOpen` followed by a `Text` token whose first
+  // word matches the tag name — the tokenizer folds the tag name and any
+  // trailing attributes into a single text token, so we take the first word.
+  // The scan begins after the outer open tag has been consumed, so the outer
+  // open is never counted. Mirrors `scanForEndTagNested`.
+  let depth = 0;
   for (let i = pos; i < tokenCount; i++) {
-    if (parser.tokenAt(i).type !== TokenType.HtmlCloseTagOpen) continue;
+    const token = parser.tokenAt(i);
+
+    if (token.type === TokenType.HtmlTagOpen) {
+      const textIdx = i + 1;
+      if (textIdx >= tokenCount) continue;
+      if (parser.tokenAt(textIdx).type !== TokenType.Text) continue;
+      const trimmed = source
+        .slice(parser.tokenAt(textIdx).start, parser.tokenAt(textIdx).end)
+        .trimStart();
+      const firstWs = trimmed.search(/\s/);
+      const name = firstWs === -1 ? trimmed.trim() : trimmed.slice(0, firstWs);
+      if (name.toLowerCase() === lowerName) depth++;
+      continue;
+    }
+
+    if (token.type !== TokenType.HtmlCloseTagOpen) continue;
     const textIdx = i + 1;
     if (textIdx >= tokenCount) continue;
     if (parser.tokenAt(textIdx).type !== TokenType.Text) continue;
     const text = source.slice(parser.tokenAt(textIdx).start, parser.tokenAt(textIdx).end);
-    if (text.trim().toLowerCase() === lowerName) return i;
+    if (text.trim().toLowerCase() === lowerName) {
+      if (depth === 0) return i;
+      depth--;
+    }
   }
   return -1;
 }
@@ -768,6 +804,7 @@ function scriptKindFromAttributes(attributes: AttributeNode[]): RawMarkupKinds {
   const typeValue = extractPlainAttributeValue(attributes, 'type');
   if (typeValue === null) return RawMarkupKinds.javascript;
   if (typeValue === 'text/html') return RawMarkupKinds.html;
+  if (typeValue === 'text/markdown') return RawMarkupKinds.markdown;
   if (
     typeValue.endsWith('json') ||
     typeValue.endsWith('importmap') ||

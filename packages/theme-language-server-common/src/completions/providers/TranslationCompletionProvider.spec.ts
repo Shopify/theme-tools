@@ -63,6 +63,21 @@ describe('Module: TranslationCompletionProvider', async () => {
     ]);
   });
 
+  it('completes translation keys (not filter names) when the caret is on the string before a pipe', async () => {
+    // F: the caret sits on the translation-key string, with a `t` filter (or a
+    // bare pipe) after it. Complete translation keys, not the filter.
+    await expect(provider).to.complete('{{ "general.█" | t }}', [
+      '"general.username_html" | t',
+      '"general.password" | t',
+      '"general.comments" | t',
+    ]);
+    await expect(provider).to.complete('{{ "general.█" | }}', [
+      '"general.username_html" | t',
+      '"general.password" | t',
+      '"general.comments" | t',
+    ]);
+  });
+
   it('should add snippet tab stops for translation variables', async () => {
     await expect(provider).to.complete('{{ "general.comments█" }}', [
       '"general.username_html" | t',

@@ -68,6 +68,7 @@ export function parseBlockTag(
     const markupStringStart = closeToken.start - envelope.markupString.length;
     const tokens = tokenizeMarkup(envelope.markupString, markupStringStart);
     const markupParser = new MarkupParser(tokens, parser.getSource());
+    if (parser.isTolerant()) markupParser.enableTolerant();
     markup = def.parse(envelope.tagName, markupParser, parser);
     if (!markupParser.isAtEnd()) {
       markup = undefined;
@@ -341,6 +342,7 @@ export function parseBranchMarkup(
       try {
         const tokens = tokenizeMarkup(envelope.markupString, markupStringStart);
         const markupParser = new MarkupParser(tokens, parser.getSource());
+        if (parser.isTolerant()) markupParser.enableTolerant();
         const result = elsifBranchParse(branchName, markupParser);
         if (!markupParser.isAtEnd()) return envelope.markupString.trim();
         return result;
@@ -352,6 +354,7 @@ export function parseBranchMarkup(
       try {
         const tokens = tokenizeMarkup(envelope.markupString, markupStringStart);
         const markupParser = new MarkupParser(tokens, parser.getSource());
+        if (parser.isTolerant()) markupParser.enableTolerant();
         const result = whenBranchParse(branchName, markupParser);
         if (!markupParser.isAtEnd()) return envelope.markupString.trim();
         return result;

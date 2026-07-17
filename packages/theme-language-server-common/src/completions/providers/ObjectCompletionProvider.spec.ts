@@ -192,6 +192,107 @@ describe('Module: ObjectCompletionProvider', async () => {
     );
   });
 
+  it('should complete objects in empty/unclosed expression slots', async () => {
+    const contexts = [
+      // A: empty closed output.
+      `{{ █ }}`,
+      // B: unclosed tags (no `%}`).
+      `{% if █`,
+      `{% for x in █`,
+      `{% assign x = █`,
+      `{% echo █`,
+      // C: empty closed branch.
+      `{% elsif █ %}`,
+      `{% when █ %}`,
+      // D: `{% liquid %}` inline empties.
+      `{% liquid\n  echo █`,
+      `{% liquid\n  assign x = █`,
+      `{% liquid\n  if █`,
+    ];
+
+    await Promise.all(
+      contexts.map((context) =>
+        expect(provider, context).to.complete(context, ['all_products', 'global', 'product']),
+      ),
+    );
+  });
+
+  it('completes objects when a tag abuts its own end tag (R3)', async () => {
+    // The resilient parser absorbs the abutting end tag as the tag's condition /
+    // collection; recover the empty slot at the caret so all objects are offered,
+    // matching the old parser (OLD 47 / NEW 47).
+    const contexts = [
+      `{% if █{% endif %}`,
+      `{% unless █{% endunless %}`,
+      `{% for x in █{% endfor %}`,
+    ];
+    await Promise.all(
+      contexts.map((context) =>
+        expect(provider, context).to.complete(context, ['all_products', 'global', 'product']),
+      ),
+    );
+  });
+
+  it('completes objects when a branch abuts its enclosing end tag (R4)', async () => {
+    // Same class as R3, one node-type short: inside a real if/case block the
+    // resilient parser mis-absorbs the abutting end tag as the branch's
+    // condition (elsif -> single node, when -> array), so it lands downstream of
+    // the caret and covers nothing. Recover the empty slot so all objects are
+    // offered, matching the old parser (OLD 47 / NEW 47).
+    const contexts = [
+      `{% if a %}{% elsif █{% endif %}`,
+      `{% if a %}{% elsif b %}{% elsif █{% endif %}`,
+      `{% case x %}{% when █{% endcase %}`,
+      `{% case x %}{% when 1 %}{% when █{% endcase %}`,
+    ];
+    await Promise.all(
+      contexts.map((context) =>
+        expect(provider, context).to.complete(context, ['all_products', 'global', 'product']),
+      ),
+    );
+  });
+
+  it('still completes closed branch slots inside a real block (R4 boundary)', async () => {
+    // The fix must not disturb the closed-branch path: here markup is the empty
+    // string, so the string-markup arm (not the new non-string recovery) fires.
+    const contexts = [`{% if a %}{% elsif █ %}`, `{% case x %}{% when █ %}`];
+    await Promise.all(
+      contexts.map((context) =>
+        expect(provider, context).to.complete(context, ['all_products', 'global', 'product']),
+      ),
+    );
+  });
+
+  it('completes objects in closed `{% liquid %}` inner empty slots', async () => {
+    // R1 guard: the empty echo/if slots on a `{% liquid %}` body line (closed
+    // form) still offer all objects — the pipe-aware branch is skipped when
+    // there is no pipe.
+    const contexts = ['{% liquid\n  echo █ %}', '{% liquid\n  if █ %}'];
+    await Promise.all(
+      contexts.map((context) =>
+        expect(provider, context).to.complete(context, ['all_products', 'global', 'product']),
+      ),
+    );
+  });
+
+  it('completes value expressions in a named-filter-argument VALUE slot', async () => {
+    // R2: `filterName: argName:` with a trailing empty value is a value slot,
+    // so it offers value expressions (objects), not filter names — including
+    // after a preceding positional/named argument.
+    const contexts = ['{{ x | image_url: width: █ }}', '{{ x | image_url: width: 100, crop: █ }}'];
+    await Promise.all(
+      contexts.map((context) =>
+        expect(provider, context).to.complete(context, ['all_products', 'global', 'product']),
+      ),
+    );
+  });
+
+  it('keeps bracket-key and caret-on-name positions non-completing', async () => {
+    // A must not disturb bracket recovery: these stay empty.
+    await expect(provider, '{{ x[0].█ }}').to.complete('{{ x[0].█ }}', []);
+    await expect(provider, '{{ product[01█ }}').to.complete('{{ product[01█ }}', []);
+  });
+
   it('should complete contextual variables', async () => {
     const contexts: [string, string][] = [
       ['{% paginate all_products by 5 %}{{ pagi█ }}{% endpaginate %}', 'paginate'],

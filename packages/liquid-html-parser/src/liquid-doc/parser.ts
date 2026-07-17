@@ -119,6 +119,18 @@ export class LiquidDocParser {
     const annotationToken = this.consume(LiquidDocTokenType.Annotation);
     const name = annotationToken.value;
 
+    // `@descriptionText` — no space between `@description` and its content. The
+    // level-1 tokenizer greedily folds the leading text into the annotation
+    // name (`descriptionText`), so recognize the `description` prefix here and
+    // treat the glued remainder as the start of the inline description content.
+    // This matches the pre-swap parser, which printed `@description Text`.
+    if (
+      name !== LiquidDocAnnotation.Description &&
+      name.startsWith(LiquidDocAnnotation.Description)
+    ) {
+      return this.parseGluedDescription(annotationToken);
+    }
+
     if (!isKnownAnnotation(name)) {
       return this.parseUnsupportedAnnotation(annotationToken);
     }
@@ -280,6 +292,36 @@ export class LiquidDocParser {
       value ? endPos : contentStart,
       this.source,
     );
+  }
+
+  // gluedDescription := "@description" gluedContent  (no separating space)
+  //
+  // The glued suffix and any same-line text that follows are one inline
+  // description. Content is read straight from source (not by concatenating
+  // token values) so the original spacing between the suffix and the trailing
+  // text is preserved — the suffix's own token boundary is mid-word.
+  private parseGluedDescription(annotationToken: LiquidDocToken): LiquidDocDescriptionNode {
+    const start = annotationToken.start;
+    // Source offset immediately past the literal `@description`; the glued
+    // remainder (e.g. `This` in `@descriptionThis`) begins here.
+    const contentStart = start + 1 + LiquidDocAnnotation.Description.length;
+
+    const inlineToken = this.accept(LiquidDocTokenType.TextLine);
+    const { value: rest, endPos } = this.collectContentLines();
+    const hasRest = rest.trim().length > 0;
+
+    let end: number;
+    if (hasRest) end = endPos;
+    else if (inlineToken) end = inlineToken.end;
+    else end = annotationToken.end;
+
+    const content = makeTextNode(
+      this.source.slice(contentStart, end),
+      contentStart,
+      end,
+      this.source,
+    );
+    return makeLiquidDocDescriptionNode(content, false, true, start, end, this.source);
   }
 
   // example := "@example" content

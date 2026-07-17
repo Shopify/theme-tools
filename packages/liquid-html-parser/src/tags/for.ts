@@ -42,7 +42,7 @@ function parseForMarkup(_name: string, markup: MarkupParser, _parser: Parser): F
     reversed,
     args,
     position: { start: nameToken.start, end: markup.peek().start },
-    source: '',
+    source: collection.source,
   };
 }
 

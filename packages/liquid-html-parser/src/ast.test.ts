@@ -1345,6 +1345,26 @@ describe('Unit: Stage 2 (AST)', () => {
       expect(useChild.type).to.eql('TextNode');
     });
 
+    it('should depth-balance nested same-name raw tags and close at the outer tag (issue 156)', () => {
+      const expectPath = makeExpectPath('toLiquidHtmlAST - nested raw close balancing');
+
+      // Nested <svg> elements: the outer <svg> must close at the LAST
+      // </svg>, keeping the inner <svg>…</svg> as raw body text rather than
+      // closing early at the first </svg> (which previously threw / mis-parsed).
+      ast = toLiquidHtmlAST('<svg>a<svg>b</svg>c</svg>');
+      expectPath(ast, 'children').to.have.lengthOf(1);
+      expectPath(ast, 'children.0.type').to.eql('HtmlRawNode');
+      expectPath(ast, 'children.0.name').to.eql('svg');
+      expectPath(ast, 'children.0.body.value').to.eql('a<svg>b</svg>c');
+
+      // Same balancing for a non-svg raw tag (<script>).
+      ast = toLiquidHtmlAST('<script>a<script>b</script>c</script>');
+      expectPath(ast, 'children').to.have.lengthOf(1);
+      expectPath(ast, 'children.0.type').to.eql('HtmlRawNode');
+      expectPath(ast, 'children.0.name').to.eql('script');
+      expectPath(ast, 'children.0.body.value').to.eql('a<script>b</script>c');
+    });
+
     it(`should parse a basic text node into a TextNode`, () => {
       for (const { toAST, expectPath, expectPosition } of testCases) {
         ast = toAST('Hello world!');
