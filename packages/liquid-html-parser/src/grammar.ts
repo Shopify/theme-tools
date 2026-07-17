@@ -1,48 +1,6 @@
-import { grammars, Grammar } from 'ohm-js';
-
-export const liquidHtmlGrammars = grammars(require('../grammar/liquid-html.ohm.js'));
-
-export const TextNodeGrammar = liquidHtmlGrammars['Helpers'];
-export const LiquidDocGrammar = liquidHtmlGrammars['LiquidDoc'];
-
-export interface LiquidGrammars {
-  Liquid: Grammar;
-  LiquidHTML: Grammar;
-  LiquidStatement: Grammar;
-}
-
-export const strictGrammars: LiquidGrammars = {
-  Liquid: liquidHtmlGrammars['StrictLiquid'],
-  LiquidHTML: liquidHtmlGrammars['StrictLiquidHTML'],
-  LiquidStatement: liquidHtmlGrammars['StrictLiquidStatement'],
-};
-
-export const tolerantGrammars: LiquidGrammars = {
-  Liquid: liquidHtmlGrammars['Liquid'],
-  LiquidHTML: liquidHtmlGrammars['LiquidHTML'],
-  LiquidStatement: liquidHtmlGrammars['LiquidStatement'],
-};
-
-export const placeholderGrammars: LiquidGrammars = {
-  Liquid: liquidHtmlGrammars['WithPlaceholderLiquid'],
-  LiquidHTML: liquidHtmlGrammars['WithPlaceholderLiquidHTML'],
-  LiquidStatement: liquidHtmlGrammars['WithPlaceholderLiquidStatement'],
-};
-
-// see ../../grammar/liquid-html.ohm for full list
-export const BLOCKS = (strictGrammars.LiquidHTML.rules as any).blockName.body.factors[0].terms.map(
-  (x: any) => x.obj,
-) as string[];
-
-// see ../../grammar/liquid-html.ohm for full list
-export const RAW_TAGS = (strictGrammars.LiquidHTML.rules as any).liquidRawTag.body.terms
-  .map((term: any) => term.args[0].obj)
-  .concat('comment') as string[];
-
-// see ../../grammar/liquid-html.ohm for full list
-export const VOID_ELEMENTS = (
-  strictGrammars.LiquidHTML.rules as any
-).voidElementName.body.factors[0].terms.map((x: any) => x.args[0].obj) as string[];
+/**
+ * Tag classification constants used by the parser and external consumers.
+ */
 
 export const TAGS_WITHOUT_MARKUP = [
   'style',
@@ -55,3 +13,40 @@ export const TAGS_WITHOUT_MARKUP = [
   'raw',
   'doc',
 ];
+
+export const BLOCKS = [
+  'if',
+  'unless',
+  'for',
+  'case',
+  'tablerow',
+  'capture',
+  'form',
+  'paginate',
+  'block',
+  'ifchanged',
+  'partial',
+];
+
+export const RAW_TAGS = ['raw', 'javascript', 'schema', 'stylesheet', 'style', 'comment', 'doc'];
+
+export const VOID_ELEMENTS = [
+  'area',
+  'base',
+  'br',
+  'col',
+  'command',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'keygen',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+];
+
+export const HTML_RAW_TAGS = ['script', 'style', 'svg'];

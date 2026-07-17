@@ -34,7 +34,7 @@ export const UnrecognizedRenderSnippetArguments: LiquidCheckDefinition = {
       const variable = node.variable;
 
       if (alias && !liquidDocParameters.has(alias.value) && variable) {
-        const startIndex = variable.position.start + 1;
+        const startIndex = variable.position.start;
 
         context.report({
           message: `Unknown argument '${alias.value}' in render tag for snippet '${snippetName}'.`,
@@ -45,7 +45,7 @@ export const UnrecognizedRenderSnippetArguments: LiquidCheckDefinition = {
               message: `Remove '${alias.value}'`,
               fix: (fixer: any) => {
                 if (variable) {
-                  return fixer.remove(variable.position.start, alias.position.end);
+                  return fixer.remove(variable.position.start - 1, alias.position.end);
                 }
               },
             },

@@ -2,7 +2,7 @@ import { NodeTypes } from '@shopify/liquid-html-parser';
 import { ObjectEntry } from '@shopify/theme-check-common';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { TypeSystem, isArrayType } from '../../TypeSystem';
-import { CURSOR, LiquidCompletionParams } from '../params';
+import { LiquidCompletionParams } from '../params';
 import { Provider, createCompletionItem, sortByName } from './common';
 import { GetThemeSettingsSchemaForURI } from '../../settings';
 
@@ -34,7 +34,7 @@ export class ObjectAttributeCompletionProvider implements Provider {
       return [];
     }
 
-    const partial = lastLookup.value.replace(CURSOR, '');
+    const partial = lastLookup.value;
 
     // Fake a VariableLookup up to the last one.
     const parentLookup = { ...node };

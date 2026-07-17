@@ -192,7 +192,7 @@ export class SectionRenameHandler implements BaseRenameHandler {
           // Note the type assertion to the LHS of the expression.
           // The type assertions above are enough for this to be true.
           // But I'm making the explicit annotation here to make it clear.
-          const typeNode: LiquidString = node.markup;
+          const typeNode: LiquidString = node.markup.name;
           if (typeNode.value !== oldSectionName) return;
 
           return {

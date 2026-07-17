@@ -49,7 +49,7 @@ export function getVariableLookupsInExpression(
     const expressionNode = ifTag.markup;
     if (typeof expressionNode === 'string') {
       return {
-        warning: `Invalid visible_if expression.`,
+        warning: 'Syntax error: cannot parse visible_if expression.',
       };
     }
 

@@ -58,7 +58,12 @@ export const MissingTemplate: LiquidCheckDefinition<typeof schema> = {
 
     return {
       async RenderMarkup(node) {
-        if (node.snippet.type === NodeTypes.VariableLookup) return;
+        if (
+          node.snippet.type === NodeTypes.VariableLookup ||
+          node.snippet.type === NodeTypes.Range
+        ) {
+          return;
+        }
 
         const snippet = node.snippet;
         const relativePath = `snippets/${snippet.value}.liquid`;
@@ -70,10 +75,10 @@ export const MissingTemplate: LiquidCheckDefinition<typeof schema> = {
         if (!isNamedLiquidTag(node)) return;
         if (node.name !== NamedTags.section) return;
 
-        const markup = node.markup;
-        const relativePath = `sections/${markup.value}.liquid`;
+        const markupName = node.markup.name;
+        const relativePath = `sections/${markupName.value}.liquid`;
 
-        await maybeReportMissing(relativePath, markup);
+        await maybeReportMissing(relativePath, markupName);
       },
     };
   },

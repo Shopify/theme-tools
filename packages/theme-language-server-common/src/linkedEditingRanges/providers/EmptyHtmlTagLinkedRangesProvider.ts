@@ -17,9 +17,7 @@ export class EmptyHtmlTagLinkedRangesProvider implements BaseLinkedEditingRanges
     ancestors: LiquidHtmlNode[] | null,
     { textDocument: { uri }, position }: LinkedEditingRangeParams,
   ): Promise<LinkedEditingRanges | null> {
-    // We're strictly checking for <></> and cursor in either branch, that's a parse error
-    // ... but it's fine because <></> is rather easy to find.
-    if (node !== null || ancestors !== null) return null;
+    // Parse <></> as real nodes.
     const document = this.documentManager.get(uri);
     const textDocument = document?.textDocument;
 

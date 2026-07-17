@@ -55,12 +55,8 @@ function documentLinksVisitor(
       }
 
       // {% section 'section' %}
-      if (
-        node.name === 'section' &&
-        typeof node.markup !== 'string' &&
-        isLiquidString(node.markup)
-      ) {
-        const sectionName = node.markup;
+      if (node.name === 'section' && typeof node.markup !== 'string') {
+        const sectionName = node.markup.name;
         return DocumentLink.create(
           range(textDocument, sectionName),
           Utils.resolvePath(root, 'sections', sectionName.value + '.liquid').toString(),

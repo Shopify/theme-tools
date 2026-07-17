@@ -194,6 +194,18 @@ function printNode(
   args: LiquidPrinterArgs = {},
 ): Doc {
   const node = path.getValue();
+
+  if ((node as any).type === 'BlockArrayLiteral') {
+    return [
+      '[',
+      join(
+        [',', line],
+        (path as any).map((p: any) => print(p), 'elements'),
+      ),
+      ']',
+    ];
+  }
+
   switch (node.type) {
     case NodeTypes.Document: {
       return [printChildren(path as AstPath<DocumentNode>, options, print, args), hardline];
@@ -343,7 +355,7 @@ function printNode(
         whitespace,
         join(
           [',', whitespace],
-          path.map((p) => print(p), 'args'),
+          path.map((p: any) => print(p), 'args'),
         ),
       );
 
@@ -362,7 +374,7 @@ function printNode(
           line,
           join(
             line,
-            path.map((p) => print(p), 'args'),
+            path.map((p: any) => print(p), 'args'),
           ),
         ]);
       }
@@ -384,7 +396,7 @@ function printNode(
           line,
           join(
             [',', line],
-            path.map((p) => print(p), 'args'),
+            path.map((p: any) => print(p), 'args'),
           ),
         ]);
       }
@@ -401,7 +413,29 @@ function printNode(
           line,
           join(
             [',', line],
-            path.map((p) => print(p), 'args'),
+            path.map((p: any) => print(p), 'args'),
+          ),
+        );
+      }
+
+      return doc;
+    }
+
+    /*
+     * `block` and `section` markup share the same shape: a name (a
+     * LiquidString) followed by optional named arguments. We print them
+     * the same way `content_for` prints its markup.
+     */
+    case NodeTypes.BlockMarkup:
+    case NodeTypes.SectionMarkup: {
+      const doc: Doc = [path.call((p: any) => print(p), 'name')];
+      if (node.args.length > 0) {
+        doc.push(
+          ',',
+          line,
+          join(
+            [',', line],
+            path.map((p: any) => print(p), 'args'),
           ),
         );
       }
@@ -428,7 +462,7 @@ function printNode(
           line,
           join(
             [',', line],
-            path.map((p) => print(p), 'args'),
+            path.map((p: any) => print(p), 'args'),
           ),
         );
       }
@@ -479,7 +513,7 @@ function printNode(
       let args: Doc[] = [];
 
       if (node.args.length > 0) {
-        const printed = path.map((p) => print(p), 'args');
+        const printed = path.map((p: any) => print(p), 'args');
         const shouldPrintFirstArgumentSameLine = node.args[0].type !== NodeTypes.NamedArgument;
 
         if (shouldPrintFirstArgumentSameLine) {
@@ -588,6 +622,10 @@ function printNode(
 
     case NodeTypes.LiquidDocPromptNode: {
       return printLiquidDocPrompt(path as AstPath<LiquidDocPromptNode>, options, print, args);
+    }
+
+    case NodeTypes.LiquidErrorNode: {
+      return node.source.slice(node.position.start, node.position.end);
     }
 
     default: {

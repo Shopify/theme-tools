@@ -69,6 +69,25 @@ import { ValidVisibleIf, ValidVisibleIfSettingsSchema } from './valid-visible-if
 import { VariableName } from './variable-name';
 import { AppBlockMissingSchema } from './app-block-missing-schema';
 import { UniqueSettingIds } from './unique-settings-id';
+import {
+  JavascriptOncePerFile,
+  JavascriptTagInWrongFile,
+  SchemaOncePerFile,
+  SchemaSectionOrBlockOnly,
+  StylesheetOncePerFile,
+  StylesheetTagInWrongFile,
+} from './raw-tags';
+import { BlockArgumentSettingCollision } from './block-argument-setting-collision';
+import { DuplicateBlockArguments } from './duplicate-block-arguments';
+import { ExcessiveSettingsCount } from './excessive-settings-count';
+import { LiquidComplexity } from './liquid-complexity';
+import { LiquidNestingDepth } from './liquid-nesting-depth';
+import { LiquidSyntaxError } from './liquid-syntax-error';
+import { MaxFileSize, MaxFileSizeJSON } from './max-file-size';
+import { MissingBlockArguments } from './missing-block-arguments';
+import { UnknownBlockSetting } from './unknown-block-setting';
+import { UnrecognizedBlockArguments } from './unrecognized-block-arguments';
+import { ValidBlockArgumentTypes } from './valid-block-argument-types';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -141,6 +160,24 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   VariableName,
   ValidSchemaName,
   ValidSchemaTranslations,
+  JavascriptOncePerFile,
+  JavascriptTagInWrongFile,
+  SchemaOncePerFile,
+  SchemaSectionOrBlockOnly,
+  StylesheetOncePerFile,
+  StylesheetTagInWrongFile,
+  BlockArgumentSettingCollision,
+  DuplicateBlockArguments,
+  ExcessiveSettingsCount,
+  LiquidComplexity,
+  LiquidNestingDepth,
+  LiquidSyntaxError,
+  MaxFileSize,
+  MaxFileSizeJSON,
+  MissingBlockArguments,
+  UnknownBlockSetting,
+  UnrecognizedBlockArguments,
+  ValidBlockArgumentTypes,
 ];
 
 /**
