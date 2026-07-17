@@ -10,7 +10,7 @@
   "bugs": {
     "url": "https://github.com/Shopify/theme-tools/issues"
   },
-  "version": "3.11.6",
+  "version": "3.11.7",
   "publisher": "Shopify",
   "private": true,
   "license": "SEE LICENSE IN LICENSE.md",
@@ -64,19 +64,19 @@
     "vscode": "^1.104.0"
   },
   "dependencies": {
-    "@shopify/liquid-html-parser": "workspace:^2.9.2",
-    "@shopify/prettier-plugin-liquid": "workspace:^1.10.3",
-    "@shopify/theme-check-common": "workspace:^3.27.0",
-    "@shopify/theme-language-server-browser": "workspace:^2.21.4",
-    "@shopify/theme-language-server-common": "workspace:^2.21.4",
-    "@shopify/theme-language-server-node": "workspace:^2.21.4",
+    "@shopify/liquid-html-parser": "workspace:^2.10.0",
+    "@shopify/prettier-plugin-liquid": "workspace:^1.11.0",
+    "@shopify/theme-check-common": "workspace:^3.28.0",
+    "@shopify/theme-language-server-browser": "workspace:^2.22.0",
+    "@shopify/theme-language-server-common": "workspace:^2.22.0",
+    "@shopify/theme-language-server-node": "workspace:^2.22.0",
     "prettier": "^2.6.2",
     "vscode-languageclient": "^8.1.0",
     "vscode-languageserver": "^8.1.0",
     "vscode-uri": "^3.0.8"
   },
   "devDependencies": {
-    "@shopify/theme-check-docs-updater": "workspace:^3.27.0",
+    "@shopify/theme-check-docs-updater": "workspace:^3.28.0",
     "@types/glob": "^8.0.0",
     "@types/mocha": "^10.0.0",
     "@types/node": "^22",
