@@ -64,7 +64,9 @@ export function parseLiquidStatement(
   const envelope = envelopeFromLine(line, parser.getSource());
 
   if (tagName === '#') {
-    return makeLiquidTagBaseCase(envelope);
+    // Preserve the inline comment's inner indentation (`preserveMarkup`); only
+    // the single separator space after `#` was stripped upstream.
+    return makeLiquidTagBaseCase(envelope, undefined, undefined, undefined, undefined, true);
   }
 
   if (tagName.startsWith('end')) {
@@ -93,6 +95,7 @@ export function parseLiquidStatement(
           markupOffset,
           envelope.markupEnd,
         );
+        if (parser.isTolerant()) markupParser.enableTolerant();
 
         const markup = def.parse(tagName, markupParser, parser);
         if (!markupParser.isAtEnd()) {
@@ -140,6 +143,7 @@ export function parseLineBlockTag(
   try {
     const tokens = tokenizeMarkup(markupString, markupOffset);
     const markupParser = new MarkupParser(tokens, parser.getSource());
+    if (parser.isTolerant()) markupParser.enableTolerant();
 
     markup = def.parse(envelope.tagName, markupParser, parser);
     if (!markupParser.isAtEnd()) {
@@ -196,11 +200,41 @@ export function parseLineRawTag(
       ? ctx.lines[ctx.index - 1].lineEnd + 1
       : envelope.blockStartPosition.end;
 
+  // `comment`/`doc` bodies balance nested opens of the same tag before
+  // matching their end line, mirroring the document-path scan in
+  // liquid-raw.ts (Ruby comment.rb v5.13.0 `comment_tag_depth`). A nested
+  // `raw` block is carved out: `raw` is first-match and does not nest, so an
+  // `endcomment`/`comment` word sitting on a line inside a raw body must not
+  // affect the depth. Every other raw tag (`raw`, `javascript`, `schema`,
+  // `style`) keeps the original first-match scan and stays byte-identical.
+  const balanced = tagName === 'comment' || tagName === 'doc';
   let endLineIndex = -1;
-  for (let i = ctx.index; i < ctx.lines.length; i++) {
-    if (ctx.lines[i].tagName === endTagName) {
-      endLineIndex = i;
-      break;
+  if (balanced) {
+    let depth = 0;
+    for (let i = ctx.index; i < ctx.lines.length; i++) {
+      const name = ctx.lines[i].tagName;
+      if (name === 'raw') {
+        // Skip past the nested raw block; its body lines never affect depth.
+        i++;
+        while (i < ctx.lines.length && ctx.lines[i].tagName !== 'endraw') i++;
+        continue;
+      }
+      if (name === tagName) {
+        depth++;
+      } else if (name === endTagName) {
+        if (depth === 0) {
+          endLineIndex = i;
+          break;
+        }
+        depth--;
+      }
+    }
+  } else {
+    for (let i = ctx.index; i < ctx.lines.length; i++) {
+      if (ctx.lines[i].tagName === endTagName) {
+        endLineIndex = i;
+        break;
+      }
     }
   }
 
@@ -262,6 +296,7 @@ export function parseLineHybridTag(
   try {
     const tokens = tokenizeMarkup(markupString, markupOffset);
     const markupParser = new MarkupParser(tokens, parser.getSource());
+    if (parser.isTolerant()) markupParser.enableTolerant();
 
     markup = def.parse(envelope.tagName, markupParser, parser);
     if (!markupParser.isAtEnd()) {
@@ -385,6 +420,7 @@ export function parseLineBranchedBody(
         line.tagName as BranchName,
         branchEnvelope,
         parser.getSource(),
+        parser.isTolerant(),
       );
       currentBranch = makeLiquidBranchNamed(branchEnvelope, branchMarkup);
       currentChildren = [];
@@ -423,12 +459,14 @@ export function parseLineBranchMarkup(
   branchName: BranchName,
   envelope: LiquidTagEnvelope,
   source: string,
+  tolerant: boolean = false,
 ): unknown {
   switch (branchName) {
     case 'elsif': {
       try {
         const tokens = tokenizeMarkup(envelope.markupString, envelope.markupOffset);
         const markupParser = new MarkupParser(tokens, source);
+        if (tolerant) markupParser.enableTolerant();
 
         const result = elsifBranchParse(branchName, markupParser);
         if (!markupParser.isAtEnd()) return envelope.markupString.trim();
@@ -441,6 +479,7 @@ export function parseLineBranchMarkup(
       try {
         const tokens = tokenizeMarkup(envelope.markupString, envelope.markupOffset);
         const markupParser = new MarkupParser(tokens, source);
+        if (tolerant) markupParser.enableTolerant();
 
         const result = whenBranchParse(branchName, markupParser);
         if (!markupParser.isAtEnd()) return envelope.markupString.trim();

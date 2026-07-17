@@ -1,5 +1,6 @@
+import { HtmlSelfClosingElement, HtmlVoidElement } from '@shopify/liquid-html-parser';
 import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
-import { isAttr, isValuedHtmlAttribute, valueIncludes } from '../utils';
+import { getHtmlNodeName, isAttr, isValuedHtmlAttribute, valueIncludes } from '../utils';
 
 export const CdnPreconnect: LiquidCheckDefinition = {
   meta: {
@@ -17,26 +18,37 @@ export const CdnPreconnect: LiquidCheckDefinition = {
   },
 
   create(context) {
+    function checkNode(node: HtmlVoidElement | HtmlSelfClosingElement) {
+      if (getHtmlNodeName(node) !== 'link') return;
+
+      const isPreconnect = node.attributes
+        .filter(isValuedHtmlAttribute)
+        .some((attr) => isAttr(attr, 'rel') && valueIncludes(attr, 'preconnect'));
+      if (!isPreconnect) return;
+
+      const isShopifyCdn = node.attributes
+        .filter(isValuedHtmlAttribute)
+        .some((attr) => isAttr(attr, 'href') && valueIncludes(attr, '.+cdn.shopify.com.+'));
+      if (!isShopifyCdn) return;
+
+      context.report({
+        message:
+          'Preconnecting to cdn.shopify.com is unnecessary and can lead to worse performance',
+        startIndex: node.position.start,
+        endIndex: node.position.end,
+      });
+    }
+
     return {
       async HtmlVoidElement(node) {
-        if (node.name !== 'link') return;
-
-        const isPreconnect = node.attributes
-          .filter(isValuedHtmlAttribute)
-          .some((attr) => isAttr(attr, 'rel') && valueIncludes(attr, 'preconnect'));
-        if (!isPreconnect) return;
-
-        const isShopifyCdn = node.attributes
-          .filter(isValuedHtmlAttribute)
-          .some((attr) => isAttr(attr, 'href') && valueIncludes(attr, '.+cdn.shopify.com.+'));
-        if (!isShopifyCdn) return;
-
-        context.report({
-          message:
-            'Preconnecting to cdn.shopify.com is unnecessary and can lead to worse performance',
-          startIndex: node.position.start,
-          endIndex: node.position.end,
-        });
+        checkNode(node);
+      },
+      // The ported parser emits `HtmlSelfClosingElement` for self-closed
+      // void tags such as `<link … />`, whereas the previous parser emitted
+      // `HtmlVoidElement` regardless of the trailing slash. Visit both so the
+      // check still fires on self-closing markup.
+      async HtmlSelfClosingElement(node) {
+        checkNode(node);
       },
     };
   },

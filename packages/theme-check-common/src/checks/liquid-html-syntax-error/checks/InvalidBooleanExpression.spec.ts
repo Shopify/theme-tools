@@ -28,7 +28,7 @@ describe('detectTrailingAssignValue', async () => {
       [`{% assign foo = something == else %}`, '{% assign foo = something %}'],
       [`{% echo foo != bar %}`, '{% echo foo %}'],
       [`{{ this > that }}`, '{{ this }}'],
-      [`{{ bool and cond }}`, '{{ bool}}'],
+      [`{{ bool and cond }}`, '{{ bool }}'],
     ];
 
     for (const [sourceCode, expected] of testCases) {

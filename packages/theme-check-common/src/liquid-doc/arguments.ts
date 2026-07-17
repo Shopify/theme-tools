@@ -247,23 +247,30 @@ export function makeRemoveArgumentCorrector(
   arg: LiquidNamedArgument,
 ) {
   return (fixer: StringCorrector) => {
-    const sourceBeforeArg = node.source.slice(node.position.start, arg.position.start);
-    const matches = sourceBeforeArg.match(/,\s*/g);
-    const lastCommaMatch = matches?.[matches.length - 1];
-    let startPos = lastCommaMatch
-      ? arg.position.start - (lastCommaMatch.length - 1)
-      : arg.position.start;
+    const source = sourceForNode(node);
+    const sourceBeforeArg = source.slice(node.position.start, arg.position.start);
+    const sourceAfterArg = source.slice(arg.position.end, node.position.end);
+    const trailingCommaMatch = sourceAfterArg.match(/^\s*,\s*/);
 
-    if (isLastArg(node, arg)) {
-      // Remove the leading comma if it's the last parameter
-      startPos -= 1;
-    }
-
-    const sourceAfterArg = node.source.substring(arg.position.end, node.position.end);
-    const trailingCommaMatch = sourceAfterArg.match(/\s*,/);
     if (trailingCommaMatch) {
-      return fixer.remove(startPos, arg.position.end + trailingCommaMatch[0].length);
+      if (isLastArg(node, arg)) {
+        const leadingCommaMatch = sourceBeforeArg.match(/,\s*$/);
+        const startPos = leadingCommaMatch
+          ? arg.position.start - leadingCommaMatch[0].length
+          : arg.position.start;
+        return fixer.remove(
+          startPos,
+          arg.position.end + trailingCommaMatch[0].replace(/\s+$/, '').length,
+        );
+      }
+
+      return fixer.remove(arg.position.start, arg.position.end + trailingCommaMatch[0].length);
     }
+
+    const leadingCommaMatch = sourceBeforeArg.match(/,\s*$/);
+    const startPos = leadingCommaMatch
+      ? arg.position.start - leadingCommaMatch[0].length
+      : arg.position.start;
     return fixer.remove(startPos, arg.position.end);
   };
 }
@@ -273,6 +280,7 @@ export function makeAddArgumentCorrector(
   arg: LiquidDocParameter,
 ) {
   return (fixer: StringCorrector) => {
+    const source = sourceForNode(node);
     const paramToAdd = `, ${arg.name}: ${getDefaultValueForType(arg.type)}`;
 
     if (node.args.length == 0) {
@@ -280,7 +288,7 @@ export function makeAddArgumentCorrector(
     }
 
     const lastArg = node.args[node.args.length - 1];
-    const sourceAfterLastArg = node.source.substring(lastArg.position.end, node.position.end);
+    const sourceAfterLastArg = source.substring(lastArg.position.end, node.position.end);
 
     const trailingCommaAndWhitespaceMatch = sourceAfterLastArg.match(/\s*,\s*/);
     if (trailingCommaAndWhitespaceMatch) {
@@ -294,4 +302,12 @@ export function makeAddArgumentCorrector(
 
     return fixer.insert(lastArg.position.end, paramToAdd);
   };
+}
+
+function sourceForNode(node: ContentForMarkup | RenderMarkup): string {
+  if (node.source) return node.source;
+  if (node.args.length > 0) return node.args[0].source;
+  return node.type === NodeTypes.ContentForMarkup
+    ? node.contentForType.source
+    : node.snippet.source;
 }

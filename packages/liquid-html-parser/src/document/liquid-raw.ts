@@ -188,6 +188,14 @@ export function scanForEndTag(parser: ParserBase, endTagName: string): EndTagSca
   const source = parser.getSource();
   const searchStart = parser.tokenAt(parser.getPosition()).start;
 
+  // `comment` and `doc` bodies balance nested opens of the same tag before
+  // matching their end tag, mirroring Ruby comment.rb v5.13.0's
+  // `comment_tag_depth`. `raw` (and every other raw tag) keeps first-match
+  // semantics — Ruby's raw does not balance.
+  if (endTagName === 'endcomment' || endTagName === 'enddoc') {
+    return scanForBalancedEndTag(source, searchStart, endTagName);
+  }
+
   const pattern = new RegExp(`\\{%(-?)\\s*${endTagName}\\s*(-?)%\\}`);
   const match = pattern.exec(source.slice(searchStart));
   if (!match) return null;
@@ -198,6 +206,56 @@ export function scanForEndTag(parser: ParserBase, endTagName: string): EndTagSca
   const wsEnd: LiquidCloseWhitespace = match[2] === '-' ? '-' : '';
 
   return { tagStart, tagEnd, wsStart, wsEnd };
+}
+
+/**
+ * Depth-balancing end-tag scan for `comment`/`doc`. Counts nested opens of the
+ * same tag so a `{% comment %}` inside the body is paired with its own
+ * `{% endcomment %}` rather than closing the outer block early.
+ *
+ * `searchStart` is already positioned past the outer open tag, so depth starts
+ * at 0 and every `{% comment %}` encountered is a nested open. A nested
+ * `{% raw %}`…`{% endraw %}` is carved out — its literal contents (which may
+ * contain `{% comment %}`/`{% endcomment %}` text) do not affect the depth —
+ * mirroring Ruby's `parse_raw_tag_body`.
+ */
+function scanForBalancedEndTag(
+  source: string,
+  searchStart: number,
+  endTagName: string,
+): EndTagScanResult | null {
+  const openTagName = endTagName.slice(3); // "endcomment" -> "comment"
+  const scanner = new RegExp(
+    `\\{%(-?)\\s*(${openTagName}|${endTagName}|raw|endraw)\\b\\s*(-?)%\\}`,
+    'g',
+  );
+  scanner.lastIndex = searchStart;
+
+  let depth = 0;
+  let inRaw = false;
+  let match: RegExpExecArray | null;
+  while ((match = scanner.exec(source)) !== null) {
+    const name = match[2];
+    if (inRaw) {
+      if (name === 'endraw') inRaw = false;
+      continue;
+    }
+    if (name === 'raw') {
+      inRaw = true;
+    } else if (name === openTagName) {
+      depth++;
+    } else if (name === endTagName) {
+      if (depth === 0) {
+        const tagStart = match.index;
+        const tagEnd = tagStart + match[0].length;
+        const wsStart: LiquidOpenWhitespace = match[1] === '-' ? '-' : '';
+        const wsEnd: LiquidCloseWhitespace = match[3] === '-' ? '-' : '';
+        return { tagStart, tagEnd, wsStart, wsEnd };
+      }
+      depth--;
+    }
+  }
+  return null;
 }
 
 export function rawMarkupKindForTag(tagName: string, bodySource: string = ''): RawMarkupKinds {

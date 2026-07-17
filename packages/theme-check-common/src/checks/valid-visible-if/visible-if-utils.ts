@@ -48,8 +48,12 @@ export function getVariableLookupsInExpression(
 
     const expressionNode = ifTag.markup;
     if (typeof expressionNode === 'string') {
+      // String markup means the expression could not be parsed structurally.
+      // The ported parser falls back to string markup here instead of throwing
+      // a SyntaxError (as the previous parser did), so report the same
+      // syntax-error warning used in the catch branch below.
       return {
-        warning: `Invalid visible_if expression.`,
+        warning: 'Syntax error: cannot parse visible_if expression.',
       };
     }
 

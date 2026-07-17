@@ -53,6 +53,14 @@ export class MarkupParser {
    */
   private lax: boolean;
   /**
+   * Tolerant recovery axis, DISJOINT from `lax`. Enabled exclusively by the
+   * tolerant document parser (`TolerantDocumentParser`) so the formatter can
+   * build a best-effort tag/markup node instead of discarding markup. It never
+   * affects strict parsing (`toLiquidHtmlAST` / `theme-check`) and it does NOT
+   * change lax (Ruby-render-parity) behavior.
+   */
+  private tolerant: boolean;
+  /**
    * True while parsing a condition (`if`/`unless`/`elsif`). In lax mode this
    * permits stripping meaningless grouping parens (`(false || true)`), which is
    * Ruby condition behavior. It must stay false in value contexts (`{{ }}`,
@@ -69,6 +77,7 @@ export class MarkupParser {
     this.markupStart = markupStart ?? tokens[0]?.start ?? 0;
     this.markupEnd = markupEnd ?? this.computeLastTokenEnd();
     this.lax = false;
+    this.tolerant = false;
     this.inCondition = false;
   }
 
@@ -84,6 +93,21 @@ export class MarkupParser {
    *  parsing. */
   isLax(): boolean {
     return this.lax;
+  }
+
+  /** Enables tolerant recovery for subsequent parse calls. Returns `this` for
+   *  chaining. Only the tolerant document parser calls this. Disjoint from
+   *  lax — enabling one does not enable the other. */
+  enableTolerant(): this {
+    this.tolerant = true;
+    return this;
+  }
+
+  /** True when tolerant recovery is enabled. Tag/markup parse callbacks consult
+   *  this to build a best-effort node instead of discarding markup, without
+   *  affecting strict or lax parsing. */
+  isTolerant(): boolean {
+    return this.tolerant;
   }
 
   /** Returns the raw source text from the current token up to (but excluding)
@@ -1173,7 +1197,7 @@ export class MarkupParser {
     const result: LiquidFilter[] = [];
     while (this.consumeOptional(MarkupTokenType.Pipe)) {
       // Lax: a `|` not followed by a filter name (e.g. trailing `|`) is dropped.
-      if (this.lax && !this.look(MarkupTokenType.Id)) {
+      if ((this.lax || this.tolerant) && !this.look(MarkupTokenType.Id)) {
         this.skipToNextPipe();
         continue;
       }
@@ -1199,7 +1223,7 @@ export class MarkupParser {
     if (this.consumeOptional(MarkupTokenType.Colon)) {
       // Lax: a colon with no following argument (`upcase:`) is tolerated; only
       // parse arguments when something argument-like actually follows.
-      if (!this.lax || this.atArgumentStart()) {
+      if (!(this.lax || this.tolerant) || this.atArgumentStart()) {
         args = this.arguments();
       }
       if (args.length > 0) {
@@ -1259,7 +1283,7 @@ export class MarkupParser {
     while (this.consumeOptional(MarkupTokenType.Comma)) {
       // Lax: a trailing or empty comma (`append: "x",`) ends the argument list
       // rather than forcing another argument parse.
-      if (this.lax && !this.atArgumentStart()) {
+      if ((this.lax || this.tolerant) && !this.atArgumentStart()) {
         break;
       }
       args.push(this.argument());
