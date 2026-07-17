@@ -59,10 +59,6 @@ export const DeprecateLazysizes: LiquidCheckDefinition = {
       async HtmlVoidElement(node) {
         checkNode(node);
       },
-      // The ported parser emits `HtmlSelfClosingElement` for self-closed
-      // void tags such as `<img … />`, whereas the previous parser emitted
-      // `HtmlVoidElement` regardless of the trailing slash. Visit both so the
-      // check still fires on self-closing markup.
       async HtmlSelfClosingElement(node) {
         checkNode(node);
       },

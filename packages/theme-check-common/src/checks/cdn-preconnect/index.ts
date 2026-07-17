@@ -24,11 +24,13 @@ export const CdnPreconnect: LiquidCheckDefinition = {
       const isPreconnect = node.attributes
         .filter(isValuedHtmlAttribute)
         .some((attr) => isAttr(attr, 'rel') && valueIncludes(attr, 'preconnect'));
+
       if (!isPreconnect) return;
 
       const isShopifyCdn = node.attributes
         .filter(isValuedHtmlAttribute)
         .some((attr) => isAttr(attr, 'href') && valueIncludes(attr, '.+cdn.shopify.com.+'));
+
       if (!isShopifyCdn) return;
 
       context.report({
@@ -43,10 +45,6 @@ export const CdnPreconnect: LiquidCheckDefinition = {
       async HtmlVoidElement(node) {
         checkNode(node);
       },
-      // The ported parser emits `HtmlSelfClosingElement` for self-closed
-      // void tags such as `<link … />`, whereas the previous parser emitted
-      // `HtmlVoidElement` regardless of the trailing slash. Visit both so the
-      // check still fires on self-closing markup.
       async HtmlSelfClosingElement(node) {
         checkNode(node);
       },

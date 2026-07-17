@@ -75,15 +75,10 @@ export const MissingTemplate: LiquidCheckDefinition<typeof schema> = {
         if (!isNamedLiquidTag(node)) return;
         if (node.name !== NamedTags.section) return;
 
-        const markup = node.markup;
-        // The ported parser wraps the section name in a `SectionMarkup` node
-        // whose name lives at `markup.name` (a String node); the previous
-        // parser exposed the name directly as `markup.value`. Read the name and
-        // report against the String node so the offense covers the quoted
-        // string rather than the whole markup.
-        const relativePath = `sections/${markup.name.value}.liquid`;
+        const markupName = node.markup.name;
+        const relativePath = `sections/${markupName.value}.liquid`;
 
-        await maybeReportMissing(relativePath, markup.name);
+        await maybeReportMissing(relativePath, markupName);
       },
     };
   },

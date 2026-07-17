@@ -277,10 +277,6 @@ export const RemoteAsset: LiquidCheckDefinition<typeof schema> = {
       async HtmlVoidElement(node) {
         checkHtmlNode(node);
       },
-      // The ported parser emits `HtmlSelfClosingElement` for self-closed
-      // void tags such as `<img … />` and `<link … />`, whereas the previous
-      // parser emitted `HtmlVoidElement` regardless of the trailing slash.
-      // Visit both so the check still fires on self-closing markup.
       async HtmlSelfClosingElement(node) {
         checkHtmlNode(node);
       },

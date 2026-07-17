@@ -74,9 +74,7 @@ function checkInvalidStartingToken(tokens: Token[]): ExpressionIssue | null {
   // also a valid identifier (the symbolic operators == != >= <= > < never
   // are). When it stands alone it is a bare variable named `contains`, not
   // the comparison operator, so it must not be flagged as an invalid
-  // starting token. This mirrors the previous parser, which produced a
-  // structured VariableLookup here; the ported parser falls back to string
-  // markup instead.
+  // starting token.
   if (tokens.length === 1 && firstToken.value === 'contains') {
     return null;
   }
