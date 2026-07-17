@@ -58,7 +58,12 @@ export const MissingTemplate: LiquidCheckDefinition<typeof schema> = {
 
     return {
       async RenderMarkup(node) {
-        if (node.snippet.type === NodeTypes.VariableLookup) return;
+        if (
+          node.snippet.type === NodeTypes.VariableLookup ||
+          node.snippet.type === NodeTypes.Range
+        ) {
+          return;
+        }
 
         const snippet = node.snippet;
         const relativePath = `snippets/${snippet.value}.liquid`;
@@ -71,9 +76,14 @@ export const MissingTemplate: LiquidCheckDefinition<typeof schema> = {
         if (node.name !== NamedTags.section) return;
 
         const markup = node.markup;
-        const relativePath = `sections/${markup.value}.liquid`;
+        // The ported parser wraps the section name in a `SectionMarkup` node
+        // whose name lives at `markup.name` (a String node); the previous
+        // parser exposed the name directly as `markup.value`. Read the name and
+        // report against the String node so the offense covers the quoted
+        // string rather than the whole markup.
+        const relativePath = `sections/${markup.name.value}.liquid`;
 
-        await maybeReportMissing(relativePath, markup);
+        await maybeReportMissing(relativePath, markup.name);
       },
     };
   },

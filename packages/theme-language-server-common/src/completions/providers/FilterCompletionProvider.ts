@@ -9,7 +9,7 @@ import {
 import { PseudoType, TypeSystem, isArrayType } from '../../TypeSystem';
 import { memoize } from '../../utils';
 import { AugmentedLiquidSourceCode } from '../../documents';
-import { CURSOR, LiquidCompletionParams } from '../params';
+import { LiquidCompletionParams } from '../params';
 import { Provider, createCompletionItem, sortByName } from './common';
 
 export class FilterCompletionProvider implements Provider {
@@ -18,15 +18,15 @@ export class FilterCompletionProvider implements Provider {
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
 
-    const { partialAst, node, ancestors } = params.completionContext;
+    const { partialAst, node, ancestors, partial, cursor } = params.completionContext;
     if (!node || node.type !== NodeTypes.LiquidFilter) {
       return [];
     }
 
-    if (node.args.length > 0) {
-      // We only do name completion
-      return [];
-    }
+    // A LiquidFilter only reaches this provider when the caret sits on its
+    // name (the finder descends into a covered argument otherwise), so we still
+    // offer name completions even when the filter already carries arguments —
+    // the text edit below preserves any trailing parameters.
 
     // We'll fake a LiquidVariable
     let parentVariable = ancestors.at(-1);
@@ -46,13 +46,12 @@ export class FilterCompletionProvider implements Provider {
       partialAst,
       params.textDocument.uri,
     );
-    const partial = node.name.replace(CURSOR, '');
     const options = await this.options(isArrayType(inputType) ? 'array' : inputType);
 
     return options
       .filter(({ name }) => name.startsWith(partial))
       .map((entry) => {
-        const { textEdit, format } = this.textEdit(node, params.document, entry);
+        const { textEdit, format } = this.textEdit(node, params.document, entry, cursor, partial);
 
         return createCompletionItem(
           entry,
@@ -70,47 +69,44 @@ export class FilterCompletionProvider implements Provider {
     node: LiquidFilter,
     document: AugmentedLiquidSourceCode,
     entry: MaybeDeprioritisedFilterEntry,
+    cursor: number,
+    partial: string,
   ): {
     textEdit: TextEdit;
     format: InsertTextFormat;
   } {
-    const remainingText = document.source.slice(node.position.end);
+    // `partial` is the text typed from the filter name's start up to the
+    // cursor, so the name begins `partial.length` characters before the caret.
+    // This keeps the start relative to the cursor rather than deriving it from
+    // the pipe-anchored `node.position.start`.
+    const nameStart = cursor - partial.length;
 
-    // Match all the way up to the termination of the filter which could be
-    // another filter (`|`), or the end of a liquid statement.
-    const matchEndOfFilter = remainingText.match(/^(.*?)\s*(?=\||-?\}\}|-?\%\})|^(.*)$/);
-    const endOffset = matchEndOfFilter ? matchEndOfFilter[1].length : remainingText.length;
-
-    // The start position for a LiquidFilter node includes the `|`. We need to
-    // ignore the pipe and any spaces for our starting position.
-    const pipeRegex = new RegExp(`(\\s*\\|\\s*)(?:${node.name}(?:\\}|\\%)\\})`);
-    const matchFilterPipe = node.source.match(pipeRegex);
-    const startOffet = matchFilterPipe ? matchFilterPipe[1].length : 0;
-
-    let start = document.textDocument.positionAt(node.position.start + startOffet);
-    let end = document.textDocument.positionAt(node.position.end + endOffset);
+    let start = document.textDocument.positionAt(nameStart);
+    // By default we replace the whole filter — name and any trailing
+    // parameters — so swapping to a different filter doesn't leave the old
+    // parameters behind. e.g. `{{ string | d█efault: true }}` -> `downcase`.
+    let end = document.textDocument.positionAt(node.position.end);
 
     const { insertText, insertStyle } = appendRequiredParemeters(entry);
 
     let newText = insertText;
     let format = insertStyle;
 
-    // If the cursor is inside the filter or at the end and it's the same
-    // value as the one we're offering a completion for then we want to restrict
-    // the insert to just the name of the filter.
-    // e.g. `{{ product | imag█e_url: crop: 'center' }}` and we're offering `imag█e_url`
-    const existingFilterOffset = remainingText.match(/[^a-zA-Z_]/)?.index ?? remainingText.length;
-    if (node.name + remainingText.slice(0, existingFilterOffset) === entry.name) {
+    // If we're offering a completion for the same filter that's already there,
+    // we restrict the replacement to just the name so any trailing parameters
+    // are left untouched.
+    // e.g. `{{ product | imag█e_url: crop: 'center' }}` and we're offering `image_url`
+    if (node.name === entry.name) {
       newText = entry.name;
       format = InsertTextFormat.PlainText;
-      end = document.textDocument.positionAt(node.position.end + existingFilterOffset);
+      end = document.textDocument.positionAt(nameStart + node.name.length);
     }
 
     // If the cursor is at the beginning of the string we can consider all
     // options and should not replace any text.
     // e.g. `{{ product | █image_url: crop: 'center' }}`
     // e.g. `{{ product | █ }}`
-    if (node.name === CURSOR) {
+    if (node.name === '') {
       end = start;
     }
 

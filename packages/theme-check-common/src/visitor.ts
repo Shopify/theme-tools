@@ -66,7 +66,9 @@ export function forEachChildNodes<S extends SourceCodeType>(
   for (const value of Object.values(node)) {
     if (Array.isArray(value)) {
       for (let i = value.length - 1; i >= 0; i--) {
-        execute(value[i], lineage);
+        if (isNode<S>(value[i])) {
+          execute(value[i], lineage);
+        }
       }
     } else if (isNode<S>(value)) {
       execute(value, lineage);

@@ -54,7 +54,7 @@ describe('Module: LiquidHTMLSyntaxError', () => {
     const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
     expect(offenses).to.have.length(1);
     expect(offenses[0].message).to.equal(
-      `Attempting to close LiquidTag 'if' before HtmlElement 'a' was closed`,
+      `Attempting to close LiquidTag 'endif' before HtmlElement 'a' was closed`,
     );
   });
 
@@ -65,7 +65,7 @@ describe('Module: LiquidHTMLSyntaxError', () => {
 
     const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
     expect(offenses).to.have.length(1);
-    expect(offenses[0].message).to.equal(`SyntaxError: expected "%}"`);
+    expect(offenses[0].message).to.equal(`Expected LiquidTagClose but got EndOfInput`);
   });
 
   it('should report unexpected tokens (2)', async () => {
@@ -75,7 +75,7 @@ describe('Module: LiquidHTMLSyntaxError', () => {
 
     const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
     expect(offenses).to.have.length(1);
-    expect(offenses[0].message).to.equal(`SyntaxError: expected ">", not """`);
+    expect(offenses[0].message).to.equal(`Expected HtmlTagClose but got EndOfInput`);
   });
 
   it('should report unexpected tokens (3)', async () => {
@@ -85,9 +85,7 @@ describe('Module: LiquidHTMLSyntaxError', () => {
 
     const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
     expect(offenses).to.have.length(1);
-    expect(offenses[0].message).to.equal(
-      `SyntaxError: expected "#", a letter, "when", "sections", "section", "render", "liquid", "layout", "increment", "include", "elsif", "else", "echo", "decrement", "content_for", "cycle", "continue", "break", "assign", "tablerow", "unless", "if", "ifchanged", "for", "case", "capture", "paginate", "form", "end", "style", "stylesheet", "schema", "javascript", "raw", "comment", or "doc"`,
-    );
+    expect(offenses[0].message).to.equal(`Expected LiquidTagClose but got EndOfInput`);
   });
 
   it('should not report syntax error in valid Liquid code', async () => {
@@ -114,16 +112,16 @@ describe('Module: LiquidHTMLSyntaxError', () => {
     source = `<div><a></b></div>`;
     offenses = await runLiquidCheck(LiquidHTMLSyntaxError, source);
     highlights = highlightedOffenses({ 'file.liquid': source }, offenses);
-    expect(highlights).to.include('<a></b>');
+    expect(highlights).to.include('</b>');
 
     source = `<div><a>{% endif %}</div>`;
     offenses = await runLiquidCheck(LiquidHTMLSyntaxError, source);
     highlights = highlightedOffenses({ 'file.liquid': source }, offenses);
-    expect(highlights).to.include('<a>{% endif %}');
+    expect(highlights).to.include('<a>');
 
     source = `<a href=abc ">`;
     offenses = await runLiquidCheck(LiquidHTMLSyntaxError, source);
     highlights = highlightedOffenses({ 'file.liquid': source }, offenses);
-    expect(highlights).to.include('"');
+    expect(highlights).to.include('>');
   });
 });

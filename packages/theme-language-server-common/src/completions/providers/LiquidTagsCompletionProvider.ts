@@ -19,7 +19,7 @@ import {
 } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { findLast } from '../../utils';
-import { CURSOR, LiquidCompletionParams } from '../params';
+import { LiquidCompletionParams } from '../params';
 import { Provider, createCompletionItem, sortByName } from './common';
 
 export class LiquidTagsCompletionProvider implements Provider {
@@ -28,16 +28,16 @@ export class LiquidTagsCompletionProvider implements Provider {
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
 
-    const { node, ancestors } = params.completionContext;
+    const { node, ancestors, partial } = params.completionContext;
     if (!node || node.type !== NodeTypes.LiquidTag) {
       return [];
     }
 
-    if (typeof node.markup !== 'string' || node.markup !== '') {
-      return [];
-    }
+    // The finder only returns a `LiquidTag` here when the caret is on the tag
+    // name, so the markup content is irrelevant to whether a name is offered
+    // (`{% if| a > b %}` still completes `if`). Snippet-vs-plaintext is decided
+    // later by `shouldSnippetComplete`/`existingMarkup`.
 
-    const partial = node.name.replace(CURSOR, '');
     const blockParent = findParentNode(partial, ancestors);
     const tags = await this.themeDocset.tags();
     return tags

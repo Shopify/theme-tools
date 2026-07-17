@@ -183,8 +183,8 @@ async function traverseLiquidModule(
 
         // {% section 'section' %}
         case NamedTags.section: {
-          if (!isString(node.markup)) {
-            const sectionType = node.markup.value;
+          if (!isString(node.markup) && node.markup.type === NodeTypes.SectionMarkup) {
+            const sectionType = node.markup.name.value;
             return {
               target: getSectionModule(themeGraph, sectionType),
               sourceRange: [node.position.start, node.position.end],

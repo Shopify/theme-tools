@@ -437,11 +437,18 @@ function getCompoundName(
     .map((part) => {
       if (part.type === NodeTypes.TextNode) {
         return part.value;
-      } else if (typeof part.markup === 'string') {
-        return `{{ ${part.markup.trim()} }}`;
-      } else {
-        return `{{ ${part.markup.rawSource} }}`;
       }
+      if (part.type === NodeTypes.LiquidVariableOutput) {
+        return typeof part.markup === 'string'
+          ? `{{ ${part.markup.trim()} }}`
+          : `{{ ${part.markup.rawSource} }}`;
+      }
+      /*
+       * Remaining compound-name arms are LiquidTag | LiquidRawTag
+       * (e.g. `<{% if c %}a{% endif %}>`). Neither carries a `.rawSource`,
+       * so reproduce the original source span verbatim.
+       */
+      return part.source.slice(part.position.start, part.position.end);
     })
     .join('');
 }

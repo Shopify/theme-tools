@@ -105,12 +105,15 @@ export function makeLiquidTagBaseCase(
   blockEndPosition?: Position,
   delimiterWhitespace?: { start: LiquidOpenWhitespace; end: LiquidCloseWhitespace },
   reason?: string,
+  // `#`-comment lines in `{% liquid %}` keep their inner indentation verbatim;
+  // every other base-case tag trims (the default).
+  preserveMarkup: boolean = false,
 ): LiquidTagBaseCase {
   const posEnd = blockEndPosition ? blockEndPosition.end : envelope.blockStartPosition.end;
   return {
     type: NodeTypes.LiquidTag,
     name: envelope.tagName,
-    markup: envelope.markupString.trim(),
+    markup: preserveMarkup ? envelope.markupString : envelope.markupString.trim(),
     children,
     whitespaceStart: envelope.whitespaceStart,
     whitespaceEnd: envelope.whitespaceEnd,
