@@ -1,5 +1,25 @@
 # shopify/theme-graph
 
+## 0.3.0
+
+### Minor Changes
+
+- 6803e99c: Adopt the hand-written `liquid-html-parser` for performance
+
+  Replace the parser-combinator-based Liquid/HTML parser with a hand-written
+  recursive-descent parser. The new parser is significantly faster, adds
+  resilient parsing (it recovers from malformed input instead of bailing), and is
+  adapted to the theme-tools source model. `theme-language-server-common`,
+  `theme-check-common`, `prettier-plugin-liquid`, and `theme-graph` are updated to
+  consume the new parser.
+
+### Patch Changes
+
+- Updated dependencies [6803e99c]
+- Updated dependencies [6803e99c]
+  - @shopify/liquid-html-parser@2.10.0
+  - @shopify/theme-check-common@3.28.0
+
 ## 0.2.8
 
 ### Patch Changes
