@@ -23,7 +23,7 @@
     "build:ci": "pnpm build",
     "build:ts": "tsc -b src/tsconfig.build.json",
     "dev": "tsc -b src --watch",
-    "test": "vitest --root ../.. --run packages/theme-language-server-common/src --exclude \"dist/**\"",
+    "test": "vitest",
     "type-check": "tsc --noEmit -p src/tsconfig.json"
   },
   "dependencies": {
