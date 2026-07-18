@@ -7,6 +7,8 @@ describe('detectInvalidLoopArguments', async () => {
     const testCases = [
       `{% for i in array reversed %}{% endfor %}`,
       `{% for i in array reversed offset: 1 %}{% endfor %}`,
+      `{% for value in product.options_by_name['hello world'].values %}{% endfor %}`,
+      `{% for value in product.options_by_name["hello world"].values %}{% endfor %}`,
       `{% tablerow x in array limit: 10 %}{% endtablerow %}`,
       `{% tablerow x in array cols: 2 limit: 10 %}{% endtablerow %}`,
     ];
