@@ -10,6 +10,7 @@ import { BlockIdUsage } from './block-id-usage';
 import { CdnPreconnect } from './cdn-preconnect';
 import { ContentForHeaderModification } from './content-for-header-modification';
 import { DeprecateBgsizes } from './deprecate-bgsizes';
+import { DiscourageSectionBlocks } from './discourage-section-blocks';
 import { DeprecateLazysizes } from './deprecate-lazysizes';
 import { DeprecatedFilter } from './deprecated-filter';
 import { DeprecatedFontsOnSectionsAndBlocks } from './deprecated-fonts-on-sections-and-blocks';
@@ -101,6 +102,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ContentForHeaderModification,
   DeprecateBgsizes,
   DeprecateLazysizes,
+  DiscourageSectionBlocks,
   DeprecatedFilter,
   DeprecatedFontsOnSectionsAndBlocks,
   DeprecatedFontsOnSettingsData,
