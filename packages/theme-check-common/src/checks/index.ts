@@ -7,6 +7,7 @@ import { AssetSizeAppBlockJavaScript } from './asset-size-app-block-javascript';
 import { AssetSizeCSS } from './asset-size-css';
 import { AssetSizeJavaScript } from './asset-size-javascript';
 import { BlockIdUsage } from './block-id-usage';
+import { BlockMissingShopifyAttributes } from './block-missing-shopify-attributes';
 import { CdnPreconnect } from './cdn-preconnect';
 import { ContentForHeaderModification } from './content-for-header-modification';
 import { DeprecateBgsizes } from './deprecate-bgsizes';
@@ -97,6 +98,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AssetSizeCSS,
   AssetSizeJavaScript,
   BlockIdUsage,
+  BlockMissingShopifyAttributes,
   CdnPreconnect,
   ContentForHeaderModification,
   DeprecateBgsizes,
