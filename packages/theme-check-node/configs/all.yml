@@ -259,6 +259,9 @@ ValidSchemaTranslations:
 ValidScopedCSSClass:
   enabled: true
   severity: 1
+ValidSelectDefault:
+  enabled: true
+  severity: 1
 ValidSettingsKey:
   enabled: true
   severity: 0
