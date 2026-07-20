@@ -6,18 +6,12 @@
       "command": "pnpm --dir packages/vscode-extension run build:extension:dev",
       "group": "build",
       "label": "vscode dev",
-      "dependsOrder": "parallel",
+      "dependsOrder": "sequence",
       "problemMatcher": "$ts-checker-webpack",
       "dependsOn": [
-        "language-config",
-        "parser pre build",
-        "theme check build"
+        "theme check build",
+        "language-config"
       ],
-    },
-    {
-      "label": "parser pre build",
-      "type": "shell",
-      "command": "pnpm --dir packages/liquid-html-parser run prebuild:ts"
     },
     {
       "label": "language-config",
