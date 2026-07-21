@@ -26,6 +26,7 @@
     "build:ci": "pnpm build",
     "build:ts": "tsc -b tsconfig.build.json",
     "postbuild": "node scripts/cli.js download data",
+    "theme-docs": "node scripts/cli.js",
     "test": "vitest",
     "type-check": "tsc --noEmit"
   },
