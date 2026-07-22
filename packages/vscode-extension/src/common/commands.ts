@@ -25,31 +25,53 @@ export function openLocation(ref: AugmentedLocation) {
   });
 }
 
+/**
+ * Fetches the theme root and the list of dead (orphaned) files for a given uri.
+ * The uri only needs to belong to the theme — the server resolves the root and
+ * computes dead code across the whole theme graph.
+ */
+export async function fetchDeadCode(
+  client: BaseLanguageClient,
+  uri: string,
+): Promise<{ rootUri: string; deadCode: string[] }> {
+  const [rootUri, deadCode] = await Promise.all([
+    client.sendRequest(ThemeGraphRootRequest.type, { uri }),
+    client.sendRequest(ThemeGraphDeadCodeRequest.type, { uri }),
+  ]);
+  return { rootUri, deadCode };
+}
+
+/**
+ * Presents the dead files as a multi-select quick pick and opens whatever the
+ * user selects. Does not depend on the active editor, so it can be driven from
+ * a startup check as well as the command.
+ */
+export async function showDeadCodePicker(rootUri: string, deadCode: string[]): Promise<void> {
+  const relativePaths = deadCode.map((file) => path.relative(file, rootUri));
+  const selectedFiles = await window.showQuickPick(relativePaths, {
+    canPickMany: true,
+    placeHolder: 'Select files to open',
+  });
+  if (selectedFiles) {
+    selectedFiles.forEach((file) => {
+      const uri = path.join(rootUri, file);
+      workspace.openTextDocument(Uri.parse(uri)).then((doc) => {
+        window.showTextDocument(doc, { preview: false, preserveFocus: true, viewColumn: 2 });
+      });
+    });
+  }
+}
+
 export function makeDeadCode(client: BaseLanguageClient) {
   return async function deadCode() {
     const uri = window.activeTextEditor?.document.uri.toString();
     if (!uri) return;
-    const [rootUri, deadCode] = await Promise.all([
-      client.sendRequest(ThemeGraphRootRequest.type, { uri }),
-      client.sendRequest(ThemeGraphDeadCodeRequest.type, { uri }),
-    ]);
+    const { rootUri, deadCode } = await fetchDeadCode(client, uri);
 
     if (deadCode.length === 0) {
       window.showInformationMessage('No dead code found.');
     } else {
-      const relativePaths = deadCode.map((file) => path.relative(file, rootUri));
-      const selectedFiles = await window.showQuickPick(relativePaths, {
-        canPickMany: true,
-        placeHolder: 'Select files to open',
-      });
-      if (selectedFiles) {
-        selectedFiles.forEach((file) => {
-          const uri = path.join(rootUri, file);
-          workspace.openTextDocument(Uri.parse(uri)).then((doc) => {
-            window.showTextDocument(doc, { preview: false, preserveFocus: true, viewColumn: 2 });
-          });
-        });
-      }
+      await showDeadCodePicker(rootUri, deadCode);
     }
   };
 }
