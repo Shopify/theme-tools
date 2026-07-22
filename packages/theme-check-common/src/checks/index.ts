@@ -60,6 +60,8 @@ import { ValidJSON } from './valid-json';
 import { ValidDocParamTypes } from './valid-doc-param-types';
 import { ValidLocalBlocks } from './valid-local-blocks';
 import { ValidRenderSnippetArgumentTypes } from './valid-render-snippet-argument-types';
+import { ValidRangeDefault, ValidRangeDefaultSettingsSchema } from './valid-range-default';
+import { ValidRangeStepCount, ValidRangeStepCountSettingsSchema } from './valid-range-step-count';
 import { ValidSchema } from './valid-schema';
 import { ValidSchemaName } from './valid-schema-name';
 import { ValidSchemaTranslations } from './valid-schema-translations';
@@ -151,6 +153,10 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidJSON,
   ValidDocParamTypes,
   ValidLocalBlocks,
+  ValidRangeDefault,
+  ValidRangeDefaultSettingsSchema,
+  ValidRangeStepCount,
+  ValidRangeStepCountSettingsSchema,
   ValidRenderSnippetArgumentTypes,
   ValidSchema,
   ValidSettingsKey,
