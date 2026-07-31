@@ -220,7 +220,10 @@ function getContextualObjects(relativePath: string, mode: Mode = 'theme'): strin
     // In a theme app extension, snippets can only be rendered from blocks,
     // so they have access to the same contextual objects as blocks.
     if (mode === 'app') return BLOCK_CONTEXTUAL_OBJECTS;
-    return ['app'];
+    // In a theme, a snippet is commonly rendered from a section or block, which
+    // pass `section` and `block` down into scope, so they should not be reported
+    // as undefined here.
+    return ['app', 'section', 'block'];
   }
 
   return [];

@@ -343,8 +343,21 @@ describe('Module: UndefinedObject', () => {
     }
   });
 
-  it('should still flag block-level objects in snippets when in theme mode', async () => {
-    const blockOnlyObjects = ['section', 'block', 'recommendations'];
+  it('should allow app, section, and block in snippets when in theme mode', async () => {
+    const allowedObjects = ['app', 'section', 'block'];
+    for (const object of allowedObjects) {
+      const sourceCode = `{% doc %} @param {string} x - x {% enddoc %}{{ ${object} }}`;
+      const offenses = await runLiquidCheck(
+        UndefinedObject,
+        sourceCode,
+        'snippets/my-snippet.liquid',
+      );
+      expect(offenses, `Expected no offense for '${object}' in theme mode snippet`).toHaveLength(0);
+    }
+  });
+
+  it('should still flag block-only objects in snippets when in theme mode', async () => {
+    const blockOnlyObjects = ['recommendations'];
     for (const object of blockOnlyObjects) {
       const sourceCode = `{% doc %} @param {string} x - x {% enddoc %}{{ ${object} }}`;
       const offenses = await runLiquidCheck(
