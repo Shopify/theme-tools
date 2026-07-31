@@ -1,0 +1,60 @@
+# Auto-generated Ruby Liquid parity corpus — do not edit by hand.
+---
+- id: block-mut-attr_colon-eos
+  error: 'Liquid syntax error: Expected colon but found end_of_string'
+  type: SyntaxError
+- id: block-mut-attr_value-pipe-000
+  error: 'Liquid syntax error: [:pipe, "|"] is not a valid expression'
+  type: SyntaxError
+- id: block-mut-block_content_property-invalid
+  error: 'Liquid syntax error: in ''block'' - ''block.content'' does not accept further
+    properties'
+  type: SyntaxError
+- id: block-mut-block_content_value-pipe-000
+  error: 'Liquid syntax error: [:pipe, "|"] is not a valid expression'
+  type: SyntaxError
+- id: block-mut-block_name-string
+  error: 'Liquid syntax error: Expected string but found id'
+  type: SyntaxError
+- id: block-mut-block_property-invalid
+  error: 'Liquid syntax error: in ''block'' - ''block'' is not a valid property; use
+    ''block.content'' or ''block.settings.<id>'''
+  type: SyntaxError
+- id: block-mut-block_setting_property-invalid
+  error: 'Liquid syntax error: in ''block'' - ''block.settings.heading'' does not
+    accept further properties'
+  type: SyntaxError
+- id: block-mut-block_setting_value-pipe-000
+  error: 'Liquid syntax error: [:pipe, "|"] is not a valid expression'
+  type: SyntaxError
+- id: block-mut-block_settings_property-invalid
+  error: 'Liquid syntax error: in ''block'' - ''block.settings'' requires a property
+    name, e.g. block.settings.<id>'
+  type: SyntaxError
+- id: block-mut-block_unknown_property-invalid
+  error: 'Liquid syntax error: in ''block'' - unknown property ''block.unknown'''
+  type: SyntaxError
+- id: block-mut-end-trail-id
+  error: 'Liquid syntax error: Expected end_of_string but found id'
+  type: SyntaxError
+- id: block-mut-file_name-eos
+  error: 'Liquid syntax error: Expected string but found end_of_string'
+  type: SyntaxError
+- id: block-mut-file_name-id
+  error: 'Liquid syntax error: Expected string but found id'
+  type: SyntaxError
+- id: block-mut-file_name-invalid
+  error: 'Liquid syntax error: in ''block'' - Valid syntax: block ''[file_name]'''
+  type: SyntaxError
+- id: block-mut-unclosed
+  error: 'Liquid syntax error: ''block'' tag was never closed'
+  type: SyntaxError
+- id: block-themecheck-dotted-file-name
+  error: 'Liquid syntax error: in ''block'' - Valid syntax: block ''[file_name]'''
+  type: SyntaxError
+- id: block-valid-all-properties
+  error:
+  type:
+- id: block-valid-basic
+  error:
+  type:
