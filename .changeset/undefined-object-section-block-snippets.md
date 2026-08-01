@@ -2,10 +2,6 @@
 '@shopify/theme-check-common': patch
 ---
 
-`UndefinedObject` no longer reports `section` and `block` as undefined in theme-mode snippets.
+`UndefinedObject` no longer reports `section` and `block` objects as undefined in theme snippet files.
 
-Snippets are commonly rendered from a section or block, which pass `section` and `block` down into scope. Treating them as contextual objects in theme-mode snippets (alongside `app`) avoids false positives such as:
-
-```
-[UndefinedObject] Unknown object 'section' used.
-```
+When snippets are rendered in a section or block, the `section` and `block` context is already available without needing to be passed as a parameter. Treating these objects as defined contextual objects in theme snippets avoids false positives from the check.
