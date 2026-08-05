@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { DuplicateBlockArguments } from './index';
+import { describe, expect, it } from 'vitest';
 import { runLiquidCheck } from '../../test';
+import { DuplicateBlockArguments } from './index';
 
 const BUTTON_BLOCK = [
   '{% doc %}',

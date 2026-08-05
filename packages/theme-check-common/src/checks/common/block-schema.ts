@@ -1,7 +1,7 @@
-import { isArrayNode, isLiteralNode, isObjectNode, SourceCodeType } from '../../types';
-import { toJSONAST } from '../../to-source-code';
-import { visit } from '../../visitor';
 import { toLiquidHtmlAST, type LiquidRawTag } from '@shopify/liquid-html-parser';
+import { toJSONAST } from '../../to-source-code';
+import { isArrayNode, isLiteralNode, isObjectNode, SourceCodeType } from '../../types';
+import { visit } from '../../visitor';
 import type { CheckContext } from './block-doc';
 
 /*

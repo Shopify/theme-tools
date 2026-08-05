@@ -1,4 +1,4 @@
-import { expect, describe, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { applyFix, runLiquidCheck } from '../../../test';
 import { LiquidHTMLSyntaxError } from '../index';
 import { INVALID_LOOP_RANGE_MESSAGE } from './InvalidLoopRange';

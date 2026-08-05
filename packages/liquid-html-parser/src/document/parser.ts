@@ -1,54 +1,54 @@
-import { TokenType } from './tokenizer';
-import type { Token } from './tokenizer';
-import { ParserBase } from './base';
-import { makeDocumentNode } from './factories';
-import { ChildFilterMode, filterChildren } from './tree-builder';
 import type {
-  DocumentNode,
-  LiquidHtmlNode,
-  LiquidStatement,
-  LiquidVariableOutput,
-  LiquidRawTag,
-  LiquidTag,
-  LiquidNode,
-  TextNode,
-  HtmlElement,
-  HtmlVoidElement,
-  HtmlSelfClosingElement,
-  HtmlRawNode,
-  HtmlComment,
-  HtmlDoctype,
-  HtmlDanglingMarkerClose,
   AttributeNode,
+  DocumentNode,
+  HtmlComment,
+  HtmlDanglingMarkerClose,
+  HtmlDoctype,
+  HtmlElement,
+  HtmlRawNode,
+  HtmlSelfClosingElement,
+  HtmlVoidElement,
+  LiquidHtmlNode,
+  LiquidNode,
+  LiquidRawTag,
+  LiquidStatement,
+  LiquidTag,
+  LiquidVariableOutput,
+  TextNode,
 } from '../ast';
 import '../environment'; // side-effect: ensures builtinTags init before downstream imports
 import type { Environment, LiquidLineContext } from '../environment';
 import type { Position } from '../types';
-import type { LiquidOpenWhitespace, LiquidCloseWhitespace } from './factories';
-import { parseLiquidVariableOutput as parseLiquidVariableOutputFn } from './liquid-variable-output';
-import {
-  peekTagName as peekTagNameFn,
-  isBlockTerminator as isBlockTerminatorFn,
-  consumeEndTag as consumeEndTagFn,
-} from './liquid-blocks';
-import type { BlockParserDelegate } from './liquid-blocks';
-import { parseLiquidInRange as parseLiquidInRangeFn } from './liquid-raw';
-import type { RawParserDelegate } from './liquid-raw';
-import { parseLiquidTag as parseLiquidTagFn } from './liquid-tags';
-import type { TagParserDelegate } from './liquid-tags';
-import {
-  parseHtmlElement as parseHtmlElementFn,
-  parseHtmlComment as parseHtmlCommentFn,
-  parseHtmlDoctype as parseHtmlDoctypeFn,
-  parseOrphanedHtmlCloseTag as parseOrphanedHtmlCloseTagFn,
-  parseHtmlDanglingMarkerClose as parseHtmlDanglingMarkerCloseFn,
-  parseBranchAttributesImpl as parseBranchAttributesFn,
-} from './html';
+import { ParserBase } from './base';
+import type { LiquidCloseWhitespace, LiquidOpenWhitespace } from './factories';
+import { makeDocumentNode } from './factories';
 import type { HtmlParserDelegate } from './html';
-import { parseLiquidStatement as parseLiquidStatementFn } from './liquid-lines';
+import {
+  parseBranchAttributesImpl as parseBranchAttributesFn,
+  parseHtmlComment as parseHtmlCommentFn,
+  parseHtmlDanglingMarkerClose as parseHtmlDanglingMarkerCloseFn,
+  parseHtmlDoctype as parseHtmlDoctypeFn,
+  parseHtmlElement as parseHtmlElementFn,
+  parseOrphanedHtmlCloseTag as parseOrphanedHtmlCloseTagFn,
+} from './html';
+import type { BlockParserDelegate } from './liquid-blocks';
+import {
+  consumeEndTag as consumeEndTagFn,
+  isBlockTerminator as isBlockTerminatorFn,
+  peekTagName as peekTagNameFn,
+} from './liquid-blocks';
 import type { LineParserDelegate } from './liquid-lines';
-import { parseNode as parseNodeFn } from './node-dispatch';
+import { parseLiquidStatement as parseLiquidStatementFn } from './liquid-lines';
+import type { RawParserDelegate } from './liquid-raw';
+import { parseLiquidInRange as parseLiquidInRangeFn } from './liquid-raw';
+import type { TagParserDelegate } from './liquid-tags';
+import { parseLiquidTag as parseLiquidTagFn } from './liquid-tags';
+import { parseLiquidVariableOutput as parseLiquidVariableOutputFn } from './liquid-variable-output';
 import type { NodeDispatchDelegate } from './node-dispatch';
+import { parseNode as parseNodeFn } from './node-dispatch';
+import type { Token } from './tokenizer';
+import { TokenType } from './tokenizer';
+import { ChildFilterMode, filterChildren } from './tree-builder';
 
 export class DocumentParser
   extends ParserBase

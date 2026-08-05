@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { envelopeFromLine } from './shared';
+import { describe, expect, it } from 'vitest';
 import type { LiquidLine } from './environment';
+import { envelopeFromLine } from './shared';
 
 const OFFSET = 5;
 const PAD = 'x'.repeat(OFFSET);

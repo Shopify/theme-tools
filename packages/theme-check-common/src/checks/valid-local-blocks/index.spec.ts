@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
-import { ValidLocalBlocks } from './index';
+import { describe, expect, it } from 'vitest';
 import { check, MockTheme } from '../../test';
+import { ValidLocalBlocks } from './index';
 
 describe('ValidLocalBlocks with array-style blocks', () => {
   it('should report errors when root level local blocks are defined in a block bucket', async () => {

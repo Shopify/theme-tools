@@ -1,35 +1,35 @@
 import type { TagDefinition } from '../tag-definitions';
-import { ifTag, unlessTag } from './if';
-import { caseTag } from './case';
-import { forTag, tablerowTag } from './for';
 import { assignTag } from './assign';
-import { echoTag } from './echo';
-import { renderTag, includeTag } from './render';
-import { cycleTag } from './cycle';
-import { sectionTag } from './section';
-import { contentForTag } from './content-for';
 import { blockTag } from './block';
-import { paginateTag } from './paginate';
-import { formTag } from './form';
-import { incrementTag } from './increment';
-import { decrementTag } from './decrement';
-import { captureTag } from './capture';
-import { layoutTag } from './layout';
-import { sectionsTag } from './sections';
-import { partialTag } from './partial';
-import { ifchangedTag } from './ifchanged';
 import { breakTag } from './break';
+import { captureTag } from './capture';
+import { caseTag } from './case';
+import { contentForTag } from './content-for';
 import { continueTag } from './continue';
+import { cycleTag } from './cycle';
+import { decrementTag } from './decrement';
+import { echoTag } from './echo';
+import { forTag, tablerowTag } from './for';
+import { formTag } from './form';
+import { ifTag, unlessTag } from './if';
+import { ifchangedTag } from './ifchanged';
+import { incrementTag } from './increment';
+import { layoutTag } from './layout';
+import { liquidTag } from './liquid';
+import { paginateTag } from './paginate';
+import { partialTag } from './partial';
 import {
   commentRaw,
   docRaw,
-  rawRaw,
   javascriptRaw,
+  rawRaw,
   schemaRaw,
   styleRaw,
   stylesheetRaw,
 } from './raw';
-import { liquidTag } from './liquid';
+import { includeTag, renderTag } from './render';
+import { sectionTag } from './section';
+import { sectionsTag } from './sections';
 
 export const builtinTags = {
   assign: assignTag,

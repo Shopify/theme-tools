@@ -1,4 +1,4 @@
-import type { LiquidTag, ForMarkup } from '@shopify/liquid-html-parser';
+import type { ForMarkup, LiquidTag } from '@shopify/liquid-html-parser';
 import type { Context } from '.';
 import { hasBareArrayAccess, hasSkippedCharacters, hasSkippedPrefixCharacters } from './utils';
 

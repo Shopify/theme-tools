@@ -1,6 +1,6 @@
 import type { LiquidExpression, LiquidTag } from '@shopify/liquid-html-parser';
 import type { Context } from '.';
-import { hasSkippedCharacters, hasBareArrayAccess, rawMarkup } from './utils';
+import { hasBareArrayAccess, hasSkippedCharacters, rawMarkup } from './utils';
 
 export function checkLayoutTag(node: LiquidTag, context: Context): void {
   if (typeof node.markup === 'string') {

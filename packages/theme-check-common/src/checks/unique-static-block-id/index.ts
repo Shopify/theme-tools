@@ -1,9 +1,9 @@
 import { NamedTags, NodeTypes } from '@shopify/liquid-html-parser';
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import {
   REQUIRED_CONTENT_FOR_ARGUMENTS,
   RESERVED_CONTENT_FOR_ARGUMENTS,
 } from '../../tags/content-for';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { isContentForBlock } from '../../utils/markup';
 
 const FRAMEWORK_ARGS = new Set([

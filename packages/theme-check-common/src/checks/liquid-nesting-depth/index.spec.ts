@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { LiquidNestingDepth, TOLERATED_LIQUID_NESTING_DEPTH } from './index';
-import { Severity } from '../../types';
 import { check, runLiquidCheck } from '../../test';
 import type { Offense } from '../../types';
+import { Severity } from '../../types';
+import { LiquidNestingDepth, TOLERATED_LIQUID_NESTING_DEPTH } from './index';
 
 const DEFAULT_PATH = 'snippets/test.liquid';
 

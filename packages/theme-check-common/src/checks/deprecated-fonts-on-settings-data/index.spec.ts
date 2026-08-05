@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { DeprecatedFontsOnSettingsData } from './index';
+import { describe, expect, it } from 'vitest';
 import { runJSONCheck } from '../../test';
+import { DeprecatedFontsOnSettingsData } from './index';
 
 describe('Module: DeprecatedFontsOnSettingsData', () => {
   it('reports a warning when settings_data.json has a deprecated font in current settings', async () => {

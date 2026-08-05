@@ -1,4 +1,4 @@
-import { expect, describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { runLiquidCheck } from '../../test';
 import { CdnPreconnect } from './index';
 

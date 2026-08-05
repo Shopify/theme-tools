@@ -1,5 +1,5 @@
-export { ThemeBlock } from './theme-block';
+export { Preset } from './preset';
 export { Section } from './section';
 export { Setting } from './setting';
-export { Preset } from './preset';
 export { Template } from './template';
+export { ThemeBlock } from './theme-block';

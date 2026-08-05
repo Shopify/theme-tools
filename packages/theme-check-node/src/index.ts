@@ -1,16 +1,9 @@
+import { isLiquidHtmlNode } from '@shopify/liquid-html-parser';
 import {
-  Config,
-  DocDefinition,
-  JSONSourceCode,
-  JSONValidator,
-  LiquidSourceCode,
-  Offense,
-  Reference,
-  SectionSchema,
-  Theme,
-  ThemeBlockSchema,
   toSourceCode as commonToSourceCode,
+  Config,
   check as coreCheck,
+  DocDefinition,
   extractCSSClassesFromAssetUri,
   extractCSSClassesFromLiquidUri,
   extractDocDefinition,
@@ -18,23 +11,30 @@ import {
   isBlock,
   isIgnored,
   isSection,
+  JSONSourceCode,
+  JSONValidator,
+  LiquidSourceCode,
   memo,
+  Offense,
   path as pathUtils,
+  Reference,
+  SectionSchema,
+  Theme,
+  ThemeBlockSchema,
   toSchema,
 } from '@shopify/theme-check-common';
-import { buildThemeGraph, ThemeGraph } from '@shopify/theme-graph';
 import { ThemeLiquidDocsManager } from '@shopify/theme-check-docs-updater';
-import { isLiquidHtmlNode } from '@shopify/liquid-html-parser';
+import { buildThemeGraph, ThemeGraph } from '@shopify/theme-graph';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { URI } from 'vscode-uri';
 import glob = require('glob');
 
+import { fileURLToPath } from 'node:url';
 import { autofix } from './autofix';
 import { findConfigPath, loadConfig as resolveConfig } from './config';
 import { NodeFileSystem } from './NodeFileSystem';
-import { fileURLToPath } from 'node:url';
 
 const asyncGlob = promisify(glob);
 

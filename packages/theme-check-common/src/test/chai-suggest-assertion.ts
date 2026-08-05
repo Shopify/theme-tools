@@ -1,6 +1,6 @@
 import { chai } from 'vitest';
 import { createCorrector, flattenFixes } from '../fixes';
-import { Offense, Fix } from '../types';
+import { Fix, Offense } from '../types';
 
 const { util } = chai;
 

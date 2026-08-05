@@ -1,6 +1,6 @@
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { ContentForMarkup, LiquidNamedArgument } from '@shopify/liquid-html-parser';
 import { getBlockName, reportDuplicateArguments } from '../../liquid-doc/arguments';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 export const DuplicateContentForArguments: LiquidCheckDefinition = {
   meta: {

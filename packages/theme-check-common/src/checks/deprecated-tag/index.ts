@@ -1,4 +1,4 @@
-import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 export const DeprecatedTag: LiquidCheckDefinition = {
   meta: {

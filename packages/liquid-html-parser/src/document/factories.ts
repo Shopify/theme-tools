@@ -1,36 +1,36 @@
-import type { Token } from './tokenizer';
-import type { Position } from '../types';
-import { NodeTypes, RawTags } from '../types';
 import type {
-  DocumentNode,
-  YAMLFrontmatter,
-  LiquidTagBaseCase,
-  LiquidTagNamed,
-  LiquidBranchUnnamed,
-  LiquidBranchNamed,
-  LiquidRawTag,
-  TextNode,
-  RawMarkup,
-  LiquidVariable,
-  LiquidVariableOutput,
-  LiquidHtmlNode,
-  LiquidNode,
-  HtmlElement,
-  HtmlVoidElement,
-  HtmlSelfClosingElement,
-  HtmlRawNode,
-  HtmlComment,
-  HtmlDoctype,
-  HtmlDanglingMarkerClose,
   AttrDoubleQuoted,
-  AttrSingleQuoted,
-  AttrUnquoted,
   AttrEmpty,
   AttributeNode,
-  ValueNode,
+  AttrSingleQuoted,
+  AttrUnquoted,
   CompoundNameSegment,
+  DocumentNode,
+  HtmlComment,
+  HtmlDanglingMarkerClose,
+  HtmlDoctype,
+  HtmlElement,
+  HtmlRawNode,
+  HtmlSelfClosingElement,
+  HtmlVoidElement,
+  LiquidBranchNamed,
+  LiquidBranchUnnamed,
+  LiquidHtmlNode,
+  LiquidNode,
+  LiquidRawTag,
+  LiquidTagBaseCase,
+  LiquidTagNamed,
+  LiquidVariable,
+  LiquidVariableOutput,
+  RawMarkup,
+  TextNode,
+  ValueNode,
+  YAMLFrontmatter,
 } from '../ast';
 import { RawMarkupKinds } from '../ast';
+import type { Position } from '../types';
+import { NodeTypes, RawTags } from '../types';
+import type { Token } from './tokenizer';
 
 export type LiquidOpenWhitespace = '-' | '';
 export type LiquidCloseWhitespace = '-' | '';

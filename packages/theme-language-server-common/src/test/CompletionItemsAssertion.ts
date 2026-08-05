@@ -1,7 +1,7 @@
+import { AsyncExpectationResult, MatcherState, RawMatcherFn } from '@vitest/expect';
+import { expect } from 'vitest';
 import { CompletionItem, Position } from 'vscode-languageserver-protocol';
 import { CompletionsProvider } from '../completions';
-import { expect } from 'vitest';
-import { AsyncExpectationResult, MatcherState, RawMatcherFn } from '@vitest/expect';
 
 export type CompleteContext = { relativePath: string; source: string };
 

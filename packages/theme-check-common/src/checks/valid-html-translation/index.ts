@@ -1,5 +1,5 @@
-import { SourceCodeType, JSONCheckDefinition, Severity, Problem, LiteralNode } from '../../types';
 import { toLiquidHtmlAST } from '@shopify/liquid-html-parser';
+import { JSONCheckDefinition, LiteralNode, Problem, Severity, SourceCodeType } from '../../types';
 
 export const ValidHTMLTranslation: JSONCheckDefinition = {
   meta: {

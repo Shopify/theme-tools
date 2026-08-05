@@ -1,5 +1,5 @@
-import path from 'node:path';
 import os from 'node:os';
+import path from 'node:path';
 
 // This is used to load global checks (in the context where someone installed the CLI globally)
 // This shouldn't be used by VS Code since it's baked into the extension with webpack.

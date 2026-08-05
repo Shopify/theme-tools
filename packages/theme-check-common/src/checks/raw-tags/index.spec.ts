@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { runLiquidCheck } from '../../test';
 import {
   JavascriptOncePerFile,
   JavascriptTagInWrongFile,
@@ -7,7 +8,6 @@ import {
   StylesheetOncePerFile,
   StylesheetTagInWrongFile,
 } from './index';
-import { runLiquidCheck } from '../../test';
 
 const SCHEMA_TAG = '{% schema %}{% endschema %}';
 const JAVASCRIPT_TAG = '{% javascript %}{% endjavascript %}';

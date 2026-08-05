@@ -1,8 +1,8 @@
 import type { ContentForMarkup, LiquidNamedArgument } from '../ast';
 import type { MarkupParser } from '../markup/parser';
 import { MarkupTokenType } from '../markup/tokenizer';
+import { TagKind, type Parser, type TagDefinitionTag } from '../tag-definitions';
 import { NodeTypes } from '../types';
-import { TagKind, type TagDefinitionTag, type Parser } from '../tag-definitions';
 
 export const contentForTag: TagDefinitionTag<ContentForMarkup> = {
   kind: TagKind.Tag,

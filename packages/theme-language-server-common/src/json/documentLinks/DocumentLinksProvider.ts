@@ -1,8 +1,7 @@
-import { JSONNode, SourceCodeType } from '@shopify/theme-check-common';
+import { JSONNode, SourceCodeType, Visitor } from '@shopify/theme-check-common';
 import { DocumentLink, Range } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI, Utils } from 'vscode-uri';
-import { Visitor } from '@shopify/theme-check-common';
 
 export function createJSONDocumentLinksVisitor(
   textDocument: TextDocument,

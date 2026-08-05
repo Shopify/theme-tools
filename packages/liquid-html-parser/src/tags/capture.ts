@@ -1,7 +1,7 @@
 import type { LiquidVariableLookup } from '../ast';
 import type { MarkupParser } from '../markup/parser';
+import { TagKind, type Parser, type TagDefinitionBlock } from '../tag-definitions';
 import { NodeTypes } from '../types';
-import { TagKind, type TagDefinitionBlock, type Parser } from '../tag-definitions';
 
 /**
  * Mirrors core Liquid's lax capture name parsing

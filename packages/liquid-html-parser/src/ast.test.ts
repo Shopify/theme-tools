@@ -1,6 +1,6 @@
-import { expect, it, describe } from 'vitest';
-import { toLiquidHtmlAST, toLiquidAST, RawMarkupKinds } from './ast';
-import type { LiquidHtmlNode, DocumentNode } from './ast';
+import { describe, expect, it } from 'vitest';
+import type { DocumentNode, LiquidHtmlNode } from './ast';
+import { RawMarkupKinds, toLiquidAST, toLiquidHtmlAST } from './ast';
 import { deepGet } from './utils';
 
 describe('Unit: Stage 2 (AST)', () => {

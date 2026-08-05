@@ -1,8 +1,8 @@
 import { CodeAction, CodeActionParams, Command } from 'vscode-languageserver';
 import { DiagnosticsManager } from '../diagnostics';
 import { DocumentManager } from '../documents';
-import { FixAllProvider, FixProvider, SuggestionProvider } from './providers';
 import { BaseCodeActionsProvider } from './BaseCodeActionsProvider';
+import { FixAllProvider, FixProvider, SuggestionProvider } from './providers';
 
 export const CodeActionKinds = Array.from(
   new Set([FixAllProvider.kind, FixProvider.kind, SuggestionProvider.kind]),

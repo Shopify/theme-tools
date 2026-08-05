@@ -1,6 +1,6 @@
+import type { LiquidRawTag } from '@shopify/liquid-html-parser';
 import { isBlock, isSection, isSnippet } from '../../to-schema';
 import { Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
-import type { LiquidRawTag } from '@shopify/liquid-html-parser';
 
 type RawTagName = 'schema' | 'javascript' | 'stylesheet';
 

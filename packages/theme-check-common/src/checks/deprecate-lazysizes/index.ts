@@ -1,11 +1,11 @@
 import { HtmlSelfClosingElement, HtmlVoidElement } from '@shopify/liquid-html-parser';
-import { Severity, SourceCodeType, LiquidCheckDefinition } from '../../types';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import {
   ValuedHtmlAttribute,
   getHtmlNodeName,
   isAttr,
-  isValuedHtmlAttribute,
   isHtmlAttribute,
+  isValuedHtmlAttribute,
   valueIncludes,
 } from '../utils';
 

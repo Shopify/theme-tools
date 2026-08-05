@@ -1,36 +1,36 @@
 import {
+  AbstractFileSystem,
+  FileStat,
+  FileTuple,
+  FileType,
+  SourceCodeType,
   Config as ThemeCheckConfig,
   allChecks,
   recommended as recommendedChecks,
-  AbstractFileSystem,
-  FileStat,
-  FileTuple,
-  FileType,
-  SourceCodeType,
 } from '@shopify/theme-check-common';
 
-export * from './types';
 export { visit } from '@shopify/theme-check-common';
 export {
+  CssModule,
+  JavaScriptModule,
+  JsonModule,
+  LiquidModule,
   Reference,
-  ThemeGraph,
   SerializableEdge,
   SerializableNode,
+  ThemeGraph,
   ThemeModule,
-  CssModule,
-  JsonModule,
-  JavaScriptModule,
-  LiquidModule,
 } from '@shopify/theme-graph';
-export { debounce, memo, parseJSON, ArgumentTypes } from './utils';
 export { startServer } from './server';
+export * from './types';
+export { ArgumentTypes, debounce, memo, parseJSON } from './utils';
 export {
-  ThemeCheckConfig,
-  recommendedChecks,
-  allChecks,
   AbstractFileSystem,
   FileStat,
   FileTuple,
   FileType,
   SourceCodeType,
+  ThemeCheckConfig,
+  allChecks,
+  recommendedChecks,
 };

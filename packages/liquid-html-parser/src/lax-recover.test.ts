@@ -1,8 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { laxRecoverVariable, laxRecoverTagMarkup, LaxTagRecoveryError } from './lax-recover';
-import { MarkupParser } from './markup/parser';
-import { tokenizeMarkup } from './markup/tokenizer';
-import { NodeTypes } from './types';
 import type {
   AssignMarkup,
   LiquidComparison,
@@ -10,6 +6,10 @@ import type {
   LiquidVariable,
   LiquidVariableLookup,
 } from './ast';
+import { laxRecoverTagMarkup, laxRecoverVariable, LaxTagRecoveryError } from './lax-recover';
+import { MarkupParser } from './markup/parser';
+import { tokenizeMarkup } from './markup/tokenizer';
+import { NodeTypes } from './types';
 
 describe('laxRecoverVariable', () => {
   it('recovers an incomplete expression to its leading literal', () => {

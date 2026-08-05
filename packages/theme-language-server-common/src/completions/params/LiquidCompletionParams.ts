@@ -5,8 +5,8 @@ import {
   NodeTypes,
   Position,
   RAW_TAGS,
-  VOID_ELEMENTS,
   toTolerantLiquidHtmlAST,
+  VOID_ELEMENTS,
 } from '@shopify/liquid-html-parser';
 import { CompletionParams } from 'vscode-languageserver';
 import { AugmentedLiquidSourceCode, AugmentedSourceCode } from '../../documents';

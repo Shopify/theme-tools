@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { ValidBlockArgumentTypes } from './index';
+import { describe, expect, it } from 'vitest';
 import { runLiquidCheck } from '../../test';
+import { ValidBlockArgumentTypes } from './index';
 
 const BUTTON_BLOCK = [
   '{% doc %}',

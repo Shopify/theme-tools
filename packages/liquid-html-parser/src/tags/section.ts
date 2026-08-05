@@ -1,8 +1,8 @@
 import type { SectionMarkup } from '../ast';
 import type { MarkupParser } from '../markup/parser';
 import { MarkupTokenType } from '../markup/tokenizer';
+import { TagKind, type Parser, type TagDefinitionHybrid } from '../tag-definitions';
 import { NodeTypes } from '../types';
-import { TagKind, type TagDefinitionHybrid, type Parser } from '../tag-definitions';
 
 export const sectionTag: TagDefinitionHybrid<SectionMarkup> = {
   kind: TagKind.Hybrid,

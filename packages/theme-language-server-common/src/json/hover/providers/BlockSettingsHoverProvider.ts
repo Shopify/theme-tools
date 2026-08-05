@@ -8,12 +8,12 @@ import {
 } from '@shopify/theme-check-common';
 import { JSONPath, MarkedString } from 'vscode-json-languageservice';
 import { GetTranslationsForURI, renderTranslation, translationValue } from '../../../translations';
-import { isLiquidRequestContext, LiquidRequestContext, RequestContext } from '../../RequestContext';
-import { isSectionOrBlockFile } from '../../utils';
-import { JSONHoverProvider } from '../JSONHoverProvider';
 import { isSectionOrBlockSchema } from '../../completions/providers/BlockTypeCompletionProvider';
 import { GetThemeBlockSchema } from '../../JSONContributions';
+import { isLiquidRequestContext, LiquidRequestContext, RequestContext } from '../../RequestContext';
 import { getSectionBlockByName } from '../../schemaSettings';
+import { isSectionOrBlockFile } from '../../utils';
+import { JSONHoverProvider } from '../JSONHoverProvider';
 
 export class BlockSettingsHoverProvider implements JSONHoverProvider {
   constructor(

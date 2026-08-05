@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
+import { TagKind, type Parser } from '../environment';
+import { MarkupParser } from '../markup/parser';
+import { tokenizeMarkup } from '../markup/tokenizer';
 import {
   commentRaw,
   docRaw,
-  rawRaw,
   javascriptRaw,
+  rawRaw,
   schemaRaw,
   styleRaw,
   stylesheetRaw,
 } from './raw';
-import { TagKind, type Parser } from '../environment';
-import { tokenizeMarkup } from '../markup/tokenizer';
-import { MarkupParser } from '../markup/parser';
 
 const OFFSET = 100;
 const PADDING = 'x'.repeat(OFFSET);

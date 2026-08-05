@@ -1,6 +1,6 @@
-import { vi } from 'vitest';
+import { path } from '@shopify/theme-check-common';
 import { EventEmitter } from 'node:events';
-import { createConnection } from 'vscode-languageserver/lib/common/server';
+import { vi } from 'vitest';
 import {
   ClientCapabilities,
   DidChangeTextDocumentNotification,
@@ -14,7 +14,7 @@ import {
   ProtocolConnection,
   WatchDog,
 } from 'vscode-languageserver';
-import { path } from '@shopify/theme-check-common';
+import { createConnection } from 'vscode-languageserver/lib/common/server';
 
 type MockFn = ReturnType<typeof vi.fn>;
 

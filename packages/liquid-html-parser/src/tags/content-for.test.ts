@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { contentForTag } from './content-for';
 import { TagKind, type Parser } from '../environment';
-import { tokenizeMarkup } from '../markup/tokenizer';
 import { MarkupParser } from '../markup/parser';
+import { tokenizeMarkup } from '../markup/tokenizer';
 import { NodeTypes } from '../types';
+import { contentForTag } from './content-for';
 
 const OFFSET = 100;
 const PADDING = 'x'.repeat(OFFSET);

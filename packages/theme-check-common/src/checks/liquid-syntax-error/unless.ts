@@ -1,4 +1,4 @@
-import type { LiquidTag, LiquidConditionalExpression } from '@shopify/liquid-html-parser';
+import type { LiquidConditionalExpression, LiquidTag } from '@shopify/liquid-html-parser';
 import type { Context } from '.';
 import {
   conditionalHasBareArrayAccess,

@@ -1,6 +1,6 @@
+import { describe, expect, it } from 'vitest';
 import { TranslationKeyExists } from '.';
 import { check } from '../../test';
-import { expect, describe, it } from 'vitest';
 
 describe('Module: TranslationKeyExists', () => {
   it('should report all keys if default locale file does not exist', async () => {

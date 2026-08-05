@@ -1,18 +1,18 @@
 import { type LiquidVariableLookup } from '@shopify/liquid-html-parser';
+import { getLocStart, nodeAtPath } from '../../json';
+import { getSchema, isBlockSchema, isSectionSchema } from '../../to-schema';
 import {
   Severity,
   SourceCodeType,
-  type LiquidCheckDefinition,
   type JSONCheckDefinition,
+  type LiquidCheckDefinition,
 } from '../../types';
-import { getLocStart, nodeAtPath } from '../../json';
-import { getSchema, isBlockSchema, isSectionSchema } from '../../to-schema';
 import { reportWarning } from '../../utils';
 import {
   getGlobalSettings,
   getVariableLookupsInExpression,
-  validateLookup,
   offsetAdjust,
+  validateLookup,
   type Vars,
 } from './visible-if-utils';
 

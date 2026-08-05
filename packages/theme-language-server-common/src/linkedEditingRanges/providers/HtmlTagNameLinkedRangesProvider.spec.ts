@@ -1,10 +1,10 @@
-import { describe, beforeEach, it, expect, assert } from 'vitest';
-import { LinkedEditingRangesProvider } from '../LinkedEditingRangesProvider';
-import { DocumentManager } from '../../documents';
+import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { LinkedEditingRangeParams } from 'vscode-languageserver';
 import { Position } from 'vscode-languageserver-protocol';
-import { htmlElementNameWordPattern } from '../wordPattern';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { DocumentManager } from '../../documents';
+import { LinkedEditingRangesProvider } from '../LinkedEditingRangesProvider';
+import { htmlElementNameWordPattern } from '../wordPattern';
 
 describe('Module: HtmlTagNameLinkedRangesProvider', () => {
   const uri = 'file:///path/to/document.liquid';

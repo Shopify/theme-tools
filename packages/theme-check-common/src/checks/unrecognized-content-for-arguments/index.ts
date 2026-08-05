@@ -1,4 +1,3 @@
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { ContentForMarkup } from '@shopify/liquid-html-parser';
 import {
   getBlockName,
@@ -10,6 +9,7 @@ import {
   REQUIRED_CONTENT_FOR_ARGUMENTS,
   RESERVED_CONTENT_FOR_ARGUMENTS,
 } from '../../tags/content-for';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 export const UnrecognizedContentForArguments: LiquidCheckDefinition = {
   meta: {

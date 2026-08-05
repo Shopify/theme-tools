@@ -1,4 +1,3 @@
-import { SchemaProp, Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
 import {
   NodeTypes,
   type LiquidBranch,
@@ -6,6 +5,7 @@ import {
   type LiquidLogicalExpression,
   type LiquidTag,
 } from '@shopify/liquid-html-parser';
+import { SchemaProp, Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
 import { findLastIndex } from '../../utils';
 
 /**

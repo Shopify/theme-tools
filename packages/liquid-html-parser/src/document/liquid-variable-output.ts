@@ -1,9 +1,9 @@
-import { TokenType } from './tokenizer';
-import { ParserBase } from './base';
-import { makeLiquidVariableOutput } from './factories';
+import type { LiquidVariableOutput } from '../ast';
 import { MarkupParser } from '../markup/parser';
 import { tokenizeMarkup } from '../markup/tokenizer';
-import type { LiquidVariableOutput } from '../ast';
+import { ParserBase } from './base';
+import { makeLiquidVariableOutput } from './factories';
+import { TokenType } from './tokenizer';
 
 // liquidVariableOutput := "{{" liquidVariable "}}"
 export function parseLiquidVariableOutput(parser: ParserBase): LiquidVariableOutput {

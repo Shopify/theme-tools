@@ -1,8 +1,7 @@
 import { LiquidExpression, NodeTypes } from '@shopify/liquid-html-parser';
-import { assertNever } from '../utils';
-import { isSnippet } from '../to-schema';
-import { isBlock } from '../to-schema';
+import { isBlock, isSnippet } from '../to-schema';
 import { ObjectEntry, UriString } from '../types';
+import { assertNever } from '../utils';
 
 /**
  * The base set of supported param types for LiquidDoc.

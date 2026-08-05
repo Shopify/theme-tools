@@ -1,6 +1,6 @@
+import { Section, Setting, Translations } from '@shopify/theme-check-common';
 import { CompletionItemKind, MarkupKind } from 'vscode-json-languageservice';
 import { renderTranslation, translationValue } from '../translations';
-import { Section, Setting, Translations } from '@shopify/theme-check-common';
 import { JSONCompletionItem } from './completions/JSONCompletionProvider';
 
 export function schemaSettingsPropertyCompletionItems(

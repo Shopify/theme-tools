@@ -1,5 +1,5 @@
-import { expect, describe, it } from 'vitest';
-import { highlightedOffenses, runLiquidCheck, check, MockTheme } from '../../test';
+import { describe, expect, it } from 'vitest';
+import { check, highlightedOffenses, MockTheme, runLiquidCheck } from '../../test';
 import { DeprecatedFontsOnSectionsAndBlocks } from './index';
 
 const DEFAULT_FILE_NAME = 'sections/file.liquid';

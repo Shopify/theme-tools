@@ -1,7 +1,7 @@
-import { expect, describe, it } from 'vitest';
-import { highlightedOffenses, runLiquidCheck, check } from '../../test';
-import { ValidSchemaName } from './index';
+import { describe, expect, it } from 'vitest';
 import { ThemeSchemaType } from '../..';
+import { check, highlightedOffenses, runLiquidCheck } from '../../test';
+import { ValidSchemaName } from './index';
 
 const DEFAULT_FILE_NAME = 'sections/file.liquid';
 

@@ -1,6 +1,5 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
 import { doc } from 'prettier';
-import { locStart, locEnd } from '../../utils';
 import {
   AstPath,
   LiquidAstPath,
@@ -9,18 +8,19 @@ import {
   LiquidPrinter,
   LiquidPrinterArgs,
 } from '../../types';
+import { locEnd, locStart } from '../../utils';
 import {
   FORCE_BREAK_GROUP_ID,
   FORCE_FLAT_GROUP_ID,
   forceBreakChildren,
   forceNextEmptyLine,
+  hasNoChildren,
+  hasNoCloseMarker,
   hasPrettierIgnore,
   isEmpty,
   isLiquidNode,
-  hasNoCloseMarker,
   isTextLikeNode,
   preferHardlineAsLeadingSpaces,
-  hasNoChildren,
 } from '../utils';
 import {
   needsToBorrowNextOpeningTagStartMarker,

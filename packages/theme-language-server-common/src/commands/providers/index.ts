@@ -1,3 +1,3 @@
-export { applyFixCommand, ApplyFixesProvider } from './ApplyFixesProvider';
-export { applySuggestionCommand, ApplySuggestionProvider } from './ApplySuggestionProvider';
+export { ApplyFixesProvider, applyFixCommand } from './ApplyFixesProvider';
+export { ApplySuggestionProvider, applySuggestionCommand } from './ApplySuggestionProvider';
 export { RunChecksProvider } from './RunChecksProvider';

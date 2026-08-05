@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { applyFix, runLiquidCheck } from '../../../test';
 import { LiquidHTMLSyntaxError } from '..';
+import { applyFix, runLiquidCheck } from '../../../test';
 
 describe('detectTrailingAssignValue', async () => {
   it('should not report when there are no trailing values', async () => {

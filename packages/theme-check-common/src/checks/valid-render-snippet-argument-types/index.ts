@@ -1,7 +1,4 @@
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { NodeTypes, RenderMarkup } from '@shopify/liquid-html-parser';
-import { LiquidDocParameter } from '../../liquid-doc/liquidDoc';
-import { inferArgumentType, isTypeCompatible } from '../../liquid-doc/utils';
 import {
   findTypeMismatchParams,
   generateTypeMismatchSuggestions,
@@ -9,6 +6,9 @@ import {
   getSnippetName,
   reportTypeMismatches,
 } from '../../liquid-doc/arguments';
+import { LiquidDocParameter } from '../../liquid-doc/liquidDoc';
+import { inferArgumentType, isTypeCompatible } from '../../liquid-doc/utils';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 export const ValidRenderSnippetArgumentTypes: LiquidCheckDefinition = {
   meta: {

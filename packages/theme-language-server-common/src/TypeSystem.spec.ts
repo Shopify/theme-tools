@@ -7,10 +7,10 @@ import {
   toLiquidHtmlAST,
 } from '@shopify/liquid-html-parser';
 import {
-  MetafieldDefinitionMap,
-  path as pathUtils,
   BasicParamTypes,
+  MetafieldDefinitionMap,
   ObjectEntry,
+  path as pathUtils,
 } from '@shopify/theme-check-common';
 import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { URI } from 'vscode-uri';

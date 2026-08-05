@@ -1,7 +1,7 @@
-import { expect, describe, it, assert } from 'vitest';
-import { UndefinedObject } from './index';
-import { runLiquidCheck, highlightedOffenses } from '../../test';
+import { assert, describe, expect, it } from 'vitest';
+import { highlightedOffenses, runLiquidCheck } from '../../test';
 import { Offense } from '../../types';
+import { UndefinedObject } from './index';
 
 describe('Module: UndefinedObject', () => {
   it('should report an offense when object is undefined', async () => {

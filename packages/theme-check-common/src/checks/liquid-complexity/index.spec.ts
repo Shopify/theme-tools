@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { LiquidComplexity } from './index';
-import { Severity } from '../../types';
 import { check, runLiquidCheck } from '../../test';
 import type { Offense } from '../../types';
+import { Severity } from '../../types';
+import { LiquidComplexity } from './index';
 
 const DEFAULT_PATH = 'snippets/test.liquid';
 

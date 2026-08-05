@@ -1,8 +1,8 @@
 import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { DocumentHighlightParams } from 'vscode-languageserver';
 import { Position } from 'vscode-languageserver-protocol';
-import { DocumentHighlightsProvider, PREVENT_DEFAULT } from '../DocumentHighlightsProvider';
 import { DocumentManager } from '../../documents';
+import { DocumentHighlightsProvider, PREVENT_DEFAULT } from '../DocumentHighlightsProvider';
 
 describe('Module: HtmlTagNameDocumentHighlightsProvider', () => {
   let documentManager: DocumentManager;

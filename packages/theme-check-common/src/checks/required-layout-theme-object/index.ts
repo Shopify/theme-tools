@@ -1,5 +1,5 @@
-import { ConfigTarget, Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
 import { type HtmlElement, type LiquidVariableLookup } from '@shopify/liquid-html-parser';
+import { ConfigTarget, Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
 import { isHtmlTag } from '../utils';
 
 const LAYOUT_PATH_PATTERN = /^layout\/[^/]+\.liquid$/i;

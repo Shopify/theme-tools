@@ -1,17 +1,17 @@
+import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
 import { getSchema } from '../../to-schema';
 import {
+  ArrayNode,
+  Context,
   JSONNode,
   LiquidCheckDefinition,
-  Section,
-  Severity,
-  Setting,
   Preset,
+  Section,
+  Setting,
+  Severity,
   SourceCodeType,
   ThemeBlock,
-  Context,
-  ArrayNode,
 } from '../../types';
-import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
 import { DEPRECATED_FONT_HANDLES } from './deprecated-fonts-data';
 
 export const DeprecatedFontsOnSectionsAndBlocks: LiquidCheckDefinition = {

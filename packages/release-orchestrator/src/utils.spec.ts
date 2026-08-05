@@ -1,4 +1,4 @@
-import { expect, it, describe, afterEach, afterAll, vi } from 'vitest';
+import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 import { flow, memoize } from './utils';
 
 vi.stubGlobal('console', {

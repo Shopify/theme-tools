@@ -14,22 +14,23 @@ import {
 } from '@shopify/liquid-html-parser';
 import {
   ArrayReturnType,
+  BasicParamTypes,
   DocsetEntry,
+  FETCHED_METAFIELD_CATEGORIES,
   FilterEntry,
-  MetafieldDefinitionMap,
   MetafieldDefinition,
+  MetafieldDefinitionMap,
   Mode,
   ObjectEntry,
   ReturnType,
   SourceCodeType,
   ThemeDocset,
+  getValidParamTypes,
   isError,
   parseJSON,
-  path,
-  FETCHED_METAFIELD_CATEGORIES,
-  BasicParamTypes,
-  getValidParamTypes,
   parseParamType,
+  path,
+  visit,
 } from '@shopify/theme-check-common';
 import {
   GetThemeSettingsSchemaForURI,
@@ -38,7 +39,6 @@ import {
   isSettingsCategory,
 } from './settings';
 import { findLast, memo } from './utils';
-import { visit } from '@shopify/theme-check-common';
 
 export type GetModeForURI = (uri: string) => Promise<Mode>;
 

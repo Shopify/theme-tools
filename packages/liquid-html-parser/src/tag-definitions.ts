@@ -1,5 +1,5 @@
-import type { MarkupParser } from './markup/parser';
 import type { LiquidStatement } from './ast';
+import type { MarkupParser } from './markup/parser';
 
 export interface Parser {
   parseLiquidStatement(

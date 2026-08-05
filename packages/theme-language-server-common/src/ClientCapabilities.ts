@@ -1,6 +1,6 @@
 import {
-  ClientCapabilities as LanguageClientCapabilities,
   InitializeParams,
+  ClientCapabilities as LanguageClientCapabilities,
 } from 'vscode-languageserver';
 
 export class ClientCapabilities {

@@ -1,10 +1,10 @@
 import { ContentForMarkup, NodeTypes } from '@shopify/liquid-html-parser';
-import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import {
   CLOSEST_ARGUMENT,
   REQUIRED_CONTENT_FOR_ARGUMENTS,
   RESERVED_CONTENT_FOR_ARGUMENTS,
 } from '../../tags/content-for';
+import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 export const ValidContentForArguments: LiquidCheckDefinition = {
   meta: {

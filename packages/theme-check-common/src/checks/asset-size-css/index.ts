@@ -9,8 +9,8 @@ import {
 import { LiquidCheckDefinition, SchemaProp, Severity, SourceCodeType } from '../../types';
 import { last } from '../../utils';
 import {
-  hasRemoteAssetSizeExceededThreshold,
   hasLocalAssetSizeExceededThreshold,
+  hasRemoteAssetSizeExceededThreshold,
 } from '../../utils/file-utils';
 import {
   ValuedHtmlAttribute,

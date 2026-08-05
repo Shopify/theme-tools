@@ -1,11 +1,11 @@
 import type { LiquidTag, PaginateMarkup } from '@shopify/liquid-html-parser';
 import type { Context } from '.';
 import {
-  hasSkippedCharacters,
-  hasBareArrayAccess,
   argHasBareArrayAccess,
-  hasSkippedPrefixCharacters,
+  hasBareArrayAccess,
   hasRubyAcceptedPaginateTrailingComma,
+  hasSkippedCharacters,
+  hasSkippedPrefixCharacters,
 } from './utils';
 
 export function checkPaginateTag(node: LiquidTag, context: Context): void {

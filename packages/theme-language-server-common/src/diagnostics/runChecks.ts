@@ -1,7 +1,7 @@
 import {
   check,
-  extractCSSClassesFromLiquidUri,
   extractCSSClassesFromAssetUri,
+  extractCSSClassesFromLiquidUri,
   findRoot,
   makeFileExists,
   Offense,
@@ -15,10 +15,10 @@ import {
 
 import { CSSLanguageService } from '../css/CSSLanguageService';
 import { AugmentedSourceCode, DocumentManager } from '../documents';
+import { ThemeGraphManager } from '../server/ThemeGraphManager';
 import { Dependencies } from '../types';
 import { DiagnosticsManager } from './DiagnosticsManager';
 import { offenseSeverity } from './offenseToDiagnostic';
-import { ThemeGraphManager } from '../server/ThemeGraphManager';
 
 export function makeRunChecks(
   documentManager: DocumentManager,

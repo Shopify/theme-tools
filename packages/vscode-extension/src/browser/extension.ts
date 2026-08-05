@@ -2,19 +2,19 @@
 import { FileStat, FileTuple, path } from '@shopify/theme-check-common';
 import { commands, ExtensionContext, languages, Uri, workspace } from 'vscode';
 import {
+  DocumentSelector,
   LanguageClient,
   LanguageClientOptions,
-  DocumentSelector,
 } from 'vscode-languageclient/browser';
-import LiquidFormatter from '../common/formatter';
-import { vscodePrettierFormat } from './formatter';
-import { documentSelectors } from '../common/constants';
 import { makeDeadCode, openLocation } from '../common/commands';
+import { documentSelectors } from '../common/constants';
+import LiquidFormatter from '../common/formatter';
 import {
   createReferencesTreeView,
   setupContext,
   watchReferencesTreeViewConfig,
 } from '../common/ReferencesProvider';
+import { vscodePrettierFormat } from './formatter';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 

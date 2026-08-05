@@ -1,8 +1,8 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
-import { LiquidHtmlNode, GetDocDefinitionForURI, getBlockName } from '@shopify/theme-check-common';
+import { GetDocDefinitionForURI, LiquidHtmlNode, getBlockName } from '@shopify/theme-check-common';
 import { Hover, HoverParams } from 'vscode-languageserver';
-import { BaseHoverProvider } from '../BaseHoverProvider';
 import { formatLiquidDocParameter } from '../../utils/liquidDoc';
+import { BaseHoverProvider } from '../BaseHoverProvider';
 
 export class ContentForArgumentHoverProvider implements BaseHoverProvider {
   constructor(private getDocDefinitionForURI: GetDocDefinitionForURI) {}

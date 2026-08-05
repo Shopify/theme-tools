@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
-import { autofix, check, highlightedOffenses } from '../../test';
+import { describe, expect, it } from 'vitest';
 import { MatchingTranslations } from '../../checks/matching-translations/index';
+import { autofix, check, highlightedOffenses } from '../../test';
 
 const prettyJSON = (json: any) => JSON.stringify(json, null, 2);
 

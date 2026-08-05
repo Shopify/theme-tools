@@ -1,23 +1,23 @@
-import { TokenType } from './tokenizer';
-import { ParserBase } from './base';
-import { makeTextNode, makeYamlFrontmatter } from './factories';
 import type {
+  HtmlComment,
+  HtmlDanglingMarkerClose,
+  HtmlDoctype,
+  HtmlElement,
+  HtmlRawNode,
+  HtmlSelfClosingElement,
+  HtmlVoidElement,
   LiquidHtmlNode,
-  LiquidVariableOutput,
   LiquidRawTag,
   LiquidTag,
+  LiquidVariableOutput,
   TextNode,
-  HtmlElement,
-  HtmlVoidElement,
-  HtmlSelfClosingElement,
-  HtmlRawNode,
-  HtmlComment,
-  HtmlDoctype,
-  HtmlDanglingMarkerClose,
   YAMLFrontmatter,
 } from '../ast';
 import { LiquidHTMLASTParsingError } from '../errors';
 import { assertNever } from '../utils';
+import { ParserBase } from './base';
+import { makeTextNode, makeYamlFrontmatter } from './factories';
+import { TokenType } from './tokenizer';
 
 export interface NodeDispatchDelegate extends ParserBase {
   readonly dispatchParseHtml: boolean;

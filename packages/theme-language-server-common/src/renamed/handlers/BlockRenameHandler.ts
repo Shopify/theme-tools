@@ -33,10 +33,10 @@ import {
   isJsonSourceCode,
   isLiquidSourceCode,
 } from '../../documents';
+import { FindThemeRootURI } from '../../internal-types';
 import { blockName, isBlock, isSection, isSectionGroup, isTemplate } from '../../utils/uri';
 import { BaseRenameHandler } from '../BaseRenameHandler';
 import { isValidSectionGroup, isValidTemplate } from './utils';
-import { FindThemeRootURI } from '../../internal-types';
 
 type DocumentChange = TextDocumentEdit;
 

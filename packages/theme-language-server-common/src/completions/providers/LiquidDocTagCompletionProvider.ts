@@ -1,14 +1,14 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
+import { filePathSupportsLiquidDoc } from '@shopify/theme-check-common';
 import {
   CompletionItem,
   CompletionItemKind,
   InsertTextFormat,
   MarkupKind,
 } from 'vscode-languageserver';
+import { formatLiquidDocTagHandle, SUPPORTED_LIQUID_DOC_TAG_HANDLES } from '../../utils/liquidDoc';
 import { LiquidCompletionParams } from '../params';
 import { Provider } from './common';
-import { formatLiquidDocTagHandle, SUPPORTED_LIQUID_DOC_TAG_HANDLES } from '../../utils/liquidDoc';
-import { filePathSupportsLiquidDoc } from '@shopify/theme-check-common';
 
 export class LiquidDocTagCompletionProvider implements Provider {
   constructor() {}

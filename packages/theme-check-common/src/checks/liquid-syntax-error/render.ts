@@ -1,9 +1,9 @@
 import { NodeTypes, type LiquidTag, type RenderMarkup } from '@shopify/liquid-html-parser';
 import type { Context } from '.';
 import {
+  hasBareArrayAccess,
   hasSkippedCharacters,
   hasSkippedPrefixCharacters,
-  hasBareArrayAccess,
   hasUnclosedQuotedString,
   rawMarkup,
 } from './utils';

@@ -12,8 +12,8 @@ import { GetThemeSettingsSchemaForURI } from '../settings';
 import { GetTranslationsForURI } from '../translations';
 import { createLiquidCompletionParams } from './params';
 import {
-  ContentForCompletionProvider,
   ContentForBlockTypeCompletionProvider,
+  ContentForCompletionProvider,
   ContentForParameterCompletionProvider,
   FilterCompletionProvider,
   FilterNamedParameterCompletionProvider,

@@ -8,8 +8,8 @@ import {
   Position,
   RawMarkupKinds,
 } from '@shopify/liquid-html-parser';
-import { doc, Doc } from 'prettier';
 import type { Printer as Printer2 } from 'prettier';
+import { doc, Doc } from 'prettier';
 import type { Printer as Printer3 } from 'prettier3';
 import {
   AstPath,
@@ -46,13 +46,13 @@ import { printElement } from './print/element';
 import {
   printLiquidBranch,
   printLiquidDoc,
+  printLiquidDocDescription,
+  printLiquidDocExample,
+  printLiquidDocParam,
+  printLiquidDocPrompt,
   printLiquidRawTag,
   printLiquidTag,
   printLiquidVariableOutput,
-  printLiquidDocParam,
-  printLiquidDocExample,
-  printLiquidDocDescription,
-  printLiquidDocPrompt,
 } from './print/liquid';
 import { printClosingTagSuffix, printOpeningTagPrefix } from './print/tag';
 import { bodyLines, hasLineBreakInRange, isEmpty, isTextLikeNode, reindent } from './utils';

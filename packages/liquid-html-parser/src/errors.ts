@@ -1,6 +1,6 @@
 import lineColumn from 'line-column';
-import { NodeTypes } from './types';
 import type { Position } from './types';
+import { NodeTypes } from './types';
 
 interface LineColPosition {
   line: number;

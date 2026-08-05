@@ -1,15 +1,15 @@
+import { Severity } from '@shopify/theme-check-common';
+import { realpathSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { realpathSync } from 'node:fs';
-import { describe, it, expect, afterAll, beforeAll } from 'vitest';
-import { readYamlConfigDescription } from './read-yaml';
-import { Severity } from '@shopify/theme-check-common';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   createMockConfigFile,
+  createMockNodeModule,
   makeTmpFolder,
   removeTmpFolder,
-  createMockNodeModule,
 } from '../../test/test-helpers';
+import { readYamlConfigDescription } from './read-yaml';
 
 const mockYamlContent = `
 root: ./dist

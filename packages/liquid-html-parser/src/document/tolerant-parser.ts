@@ -1,8 +1,8 @@
+import type { LiquidErrorNode, LiquidHtmlNode } from '../ast';
+import { LiquidHTMLASTParsingError } from '../errors';
+import { NodeTypes } from '../types';
 import { DocumentParser } from './parser';
 import { TokenType } from './tokenizer';
-import { NodeTypes } from '../types';
-import { LiquidHTMLASTParsingError } from '../errors';
-import type { LiquidErrorNode, LiquidHtmlNode } from '../ast';
 
 /*
  * Token types that open a new top-level construct. Panic-mode recovery

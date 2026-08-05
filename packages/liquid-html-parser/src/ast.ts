@@ -14,11 +14,11 @@
  *           - TextNode/"there!"
  */
 
-import { Comparators, NamedTags, NodeTypes, RawTags, nonTraversableProperties } from './types';
-import type { Position } from './types';
 import { DocumentParser } from './document/parser';
 import { tokenize } from './document/tokenizer';
 import { Environment } from './environment';
+import type { Position } from './types';
+import { Comparators, NamedTags, NodeTypes, RawTags, nonTraversableProperties } from './types';
 
 /** The union type of all possible node types inside a LiquidHTML AST. */
 export type LiquidHtmlNode =

@@ -1,7 +1,7 @@
-import { describe, beforeEach, it, expect } from 'vitest';
-import { CompletionsProvider } from '../CompletionsProvider';
+import { DocDefinition, MetafieldDefinitionMap } from '@shopify/theme-check-common';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { DocumentManager } from '../../documents';
-import { MetafieldDefinitionMap, DocDefinition } from '@shopify/theme-check-common';
+import { CompletionsProvider } from '../CompletionsProvider';
 
 const uri = 'file:///snippets/product-card.liquid';
 

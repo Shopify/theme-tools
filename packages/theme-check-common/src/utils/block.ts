@@ -1,14 +1,14 @@
+import { getLocEnd, getLocStart, nodeAtPath } from '../json';
 import {
+  Context,
   JSONNode,
   LiteralNode,
   Preset,
   Section,
   SourceCodeType,
-  ThemeBlock,
-  Context,
   StaticBlockDef,
+  ThemeBlock,
 } from '../types';
-import { getLocEnd, getLocStart, nodeAtPath } from '../json';
 import { doesFileExist } from './file-utils';
 
 export type BlockDefNodeWithPath = {

@@ -1,13 +1,13 @@
-import { describe, it, expect } from 'vitest';
-import { validateConfig } from './validation';
 import {
   allChecks,
-  Severity,
   Config,
   LiquidCheckDefinition,
   SchemaProp,
+  Severity,
   SourceCodeType,
 } from '@shopify/theme-check-common';
+import { describe, expect, it } from 'vitest';
+import { validateConfig } from './validation';
 
 describe('Unit: validateConfig', () => {
   const ParserBlockingScript = allChecks.find((cd) => cd.meta.code === 'ParserBlockingScript')!;

@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
-import { expect, describe, it, beforeEach, afterEach } from 'vitest';
+import { Diagnostic as CodeMirrorDiagnostic } from '@codemirror/lint';
 import { EditorState, Extension } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
-import { Diagnostic as CodeMirrorDiagnostic } from '@codemirror/lint';
-import { diagnosticsFacet, lspLinter } from './lspLinter';
-import { clientFacet, fileUriFacet } from './client';
-import { MockClient } from '../test/MockClient';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { DiagnosticSeverity, PublishDiagnosticsNotification } from 'vscode-languageserver-protocol';
+import { MockClient } from '../test/MockClient';
+import { clientFacet, fileUriFacet } from './client';
+import { diagnosticsFacet, lspLinter } from './lspLinter';
 
 describe('Module: lspLinter', () => {
   const fileUri = 'browser://input.liquid';

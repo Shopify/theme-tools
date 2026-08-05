@@ -1,12 +1,12 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
   Environment,
   TagKind,
   type TagDefinition,
   type TagDefinitionBlock,
-  type TagDefinitionTag,
-  type TagDefinitionRaw,
   type TagDefinitionHybrid,
+  type TagDefinitionRaw,
+  type TagDefinitionTag,
 } from './environment';
 import { assertNever } from './utils';
 

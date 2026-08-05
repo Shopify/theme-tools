@@ -2,10 +2,10 @@ import {
   Access,
   FilterEntry,
   ObjectEntry,
+  ReturnType,
   TagEntry,
   ThemeDocset,
   Translations,
-  ReturnType,
 } from './types';
 import { memo } from './utils';
 

@@ -1,7 +1,7 @@
-import { describe, beforeEach, it, expect } from 'vitest';
+import { MetafieldDefinitionMap, ObjectEntry } from '@shopify/theme-check-common';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { DocumentManager } from '../../documents';
 import { HoverProvider } from '../HoverProvider';
-import { MetafieldDefinitionMap, ObjectEntry } from '@shopify/theme-check-common';
 
 describe('Module: LiquidObjectAttributeHoverProvider', async () => {
   let provider: HoverProvider;

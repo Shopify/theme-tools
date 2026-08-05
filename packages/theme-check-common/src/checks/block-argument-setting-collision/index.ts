@@ -1,5 +1,5 @@
-import { Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
 import type { BlockMarkup } from '@shopify/liquid-html-parser';
+import { Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
 import { isSystemArg } from '../common/block-doc';
 import { getBlockSchemaSettings } from '../common/block-schema';
 

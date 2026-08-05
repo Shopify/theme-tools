@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
-import { NodeTypes } from '../types';
-import type { TextNode, LiquidVariableOutput, LiquidHtmlNode, HtmlElement } from '../ast';
+import { describe, expect, it } from 'vitest';
+import type { HtmlElement, LiquidHtmlNode, LiquidVariableOutput, TextNode } from '../ast';
 import { toLiquidHtmlAST } from '../ast';
-import { makeTextNode, makeLiquidVariableOutput } from './factories';
+import { NodeTypes } from '../types';
+import { makeLiquidVariableOutput, makeTextNode } from './factories';
 import { tokenize, TokenType } from './tokenizer';
-import { mergeAdjacentTextNodes, compoundNamesMatch } from './tree-builder';
+import { compoundNamesMatch, mergeAdjacentTextNodes } from './tree-builder';
 
 const OFFSET = 5;
 const PAD = 'x'.repeat(OFFSET);

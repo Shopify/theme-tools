@@ -1,7 +1,7 @@
-import { expect, describe, it } from 'vitest';
-import { highlightedOffenses, applySuggestions, runLiquidCheck, applyFix } from '../../test';
-import { DeprecatedFilter } from './index';
+import { describe, expect, it } from 'vitest';
+import { applyFix, applySuggestions, highlightedOffenses, runLiquidCheck } from '../../test';
 import { Offense } from '../../types';
+import { DeprecatedFilter } from './index';
 
 describe('Module: DeprecatedFilter', () => {
   it('should report an offense when a deprecated filter is used', async () => {

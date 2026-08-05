@@ -6,7 +6,6 @@ import {
   NodeTypes,
   isBranchedTag,
 } from '@shopify/liquid-html-parser';
-import { HtmlElement, WithFamily } from '../../types';
 import {
   CSS_WHITE_SPACE_DEFAULT,
   CSS_WHITE_SPACE_LIQUID_TAGS,
@@ -15,7 +14,9 @@ import {
 import {
   Augment,
   AugmentedNode,
+  HtmlElement,
   WithCssProperties,
+  WithFamily,
   WithParent,
   WithSiblings,
   WithWhitespaceHelpers,

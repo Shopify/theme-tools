@@ -1,4 +1,4 @@
-import { Config, CheckSettings, Schema, SchemaProp } from '@shopify/theme-check-common';
+import { CheckSettings, Config, Schema, SchemaProp } from '@shopify/theme-check-common';
 import { strict as assert } from 'node:assert';
 
 export function validateConfig(config: Config) {

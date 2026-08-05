@@ -1,3 +1,4 @@
+import { getLocEnd, getLocStart } from '../../json';
 import {
   JSONCheckDefinition,
   Severity,
@@ -5,7 +6,6 @@ import {
   isArrayNode,
   isObjectNode,
 } from '../../types';
-import { getLocStart, getLocEnd } from '../../json';
 import { DEPRECATED_FONT_HANDLES } from '../deprecated-fonts-on-sections-and-blocks/deprecated-fonts-data';
 
 export const DeprecatedFontsOnSettingsSchema: JSONCheckDefinition = {

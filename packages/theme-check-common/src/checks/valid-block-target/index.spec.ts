@@ -1,7 +1,7 @@
-import { expect, describe, it } from 'vitest';
-import { ValidBlockTarget } from './index';
+import { describe, expect, it } from 'vitest';
 import { check, MockTheme } from '../../test';
 import { Preset, Setting } from '../../types/schemas';
+import { ValidBlockTarget } from './index';
 
 describe('Module: ValidBlockTarget', () => {
   const paths = ['sections', 'blocks'];

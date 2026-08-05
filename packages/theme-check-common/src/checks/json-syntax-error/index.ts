@@ -1,4 +1,4 @@
-import { ParseErrorCode, printParseErrorCode } from 'jsonc-parser';
+import { ParseErrorCode } from 'jsonc-parser';
 import { JSONCParseErrors } from '../../jsonc/parse';
 import { JSONCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { isError } from '../../utils';

@@ -1,7 +1,7 @@
 import type { LiquidExpression } from '../ast';
 import type { MarkupParser } from '../markup/parser';
 import { MarkupTokenType } from '../markup/tokenizer';
-import { TagKind, type TagDefinitionBlock, type Parser } from '../tag-definitions';
+import { TagKind, type Parser, type TagDefinitionBlock } from '../tag-definitions';
 import { NodeTypes } from '../types';
 
 export const caseTag: TagDefinitionBlock<LiquidExpression> = {

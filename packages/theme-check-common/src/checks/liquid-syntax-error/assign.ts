@@ -1,14 +1,14 @@
-import type { LiquidTag, AssignMarkup } from '@shopify/liquid-html-parser';
+import type { AssignMarkup, LiquidTag } from '@shopify/liquid-html-parser';
 import type { Context } from '.';
 import {
-  variableHasBareArrayAccess,
-  hasSkippedCharacters,
-  hasSkippedPrefixCharacters,
+  hasRubyAcceptedAssignLhsExtraIdentifier,
+  hasRubyAcceptedEmptyAssignRhs,
   hasRubyAcceptedEmptyFirstFilterArgument,
   hasRubyAcceptedFilterArgumentTrailingComma,
-  hasRubyAcceptedEmptyAssignRhs,
-  hasRubyAcceptedAssignLhsExtraIdentifier,
+  hasSkippedCharacters,
+  hasSkippedPrefixCharacters,
   rawMarkup,
+  variableHasBareArrayAccess,
 } from './utils';
 
 export function checkAssignTag(node: LiquidTag, context: Context): void {

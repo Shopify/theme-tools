@@ -1,18 +1,18 @@
-import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
-import { URI } from 'vscode-uri';
 import {
   Offense,
-  SourceCodeType,
-  Severity,
-  Position,
-  Suggestion,
   path,
+  Position,
+  Severity,
+  SourceCodeType,
+  Suggestion,
 } from '@shopify/theme-check-common';
+import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
+import { TextDocument } from 'vscode-languageserver-textdocument';
+import { URI } from 'vscode-uri';
 import { DiagnosticsManager } from '../../diagnostics';
+import { offenseToDiagnostic } from '../../diagnostics/offenseToDiagnostic';
 import { DocumentManager } from '../../documents';
 import { ApplySuggestionProvider } from './ApplySuggestionProvider';
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import { offenseToDiagnostic } from '../../diagnostics/offenseToDiagnostic';
 
 describe('Unit: ApplySuggestionProvider', () => {
   const uri = path.normalize(URI.file('/path/to/file.liquid'));

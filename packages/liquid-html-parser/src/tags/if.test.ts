@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { ifTag, unlessTag, elsifBranchParse } from './if';
 import { TagKind, type Parser } from '../environment';
-import { tokenizeMarkup } from '../markup/tokenizer';
 import { MarkupParser } from '../markup/parser';
-import { NodeTypes, Comparators } from '../types';
+import { tokenizeMarkup } from '../markup/tokenizer';
+import { Comparators, NodeTypes } from '../types';
+import { elsifBranchParse, ifTag, unlessTag } from './if';
 
 const OFFSET = 100;
 const PADDING = 'x'.repeat(OFFSET);

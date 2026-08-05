@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { toLiquidHtmlAST, toLiquidAST } from '../ast';
+import { describe, expect, it } from 'vitest';
+import { toLiquidAST, toLiquidHtmlAST } from '../ast';
 import { deepGet } from '../utils';
 import { expectPath, expectPosition } from './test-helpers';
 

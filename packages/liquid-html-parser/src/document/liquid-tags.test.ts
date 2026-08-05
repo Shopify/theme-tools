@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toLiquidHtmlAST, toLiquidAST } from '../ast';
+import { toLiquidAST, toLiquidHtmlAST } from '../ast';
 import { expectPath, expectPosition, sourceAt } from './test-helpers';
 
 describe('Unit: liquid-tags', () => {

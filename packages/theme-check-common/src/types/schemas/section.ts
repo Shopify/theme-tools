@@ -1,5 +1,5 @@
-import { Setting } from './setting';
 import { Preset } from './preset';
+import { Setting } from './setting';
 
 export declare namespace Section {
   /** {% schema %} */

@@ -1,9 +1,9 @@
-import { check } from '../test';
+import { describe, expect, it } from 'vitest';
 import { Offense } from '..';
-import { describe, it, expect } from 'vitest';
-import { LiquidFilter, RenderMarkup } from './test-checks';
 import { UndefinedObject } from '../checks/undefined-object';
 import { UniqueDocParamNames } from '../checks/unique-doc-param-names';
+import { check } from '../test';
+import { LiquidFilter, RenderMarkup } from './test-checks';
 
 const commentTypes = [
   (text: string) => `{% # ${text} %}`,

@@ -1,5 +1,5 @@
 import type { MarkupParser } from '../markup/parser';
-import { TagKind, type TagDefinitionTag, type Parser } from '../tag-definitions';
+import { TagKind, type Parser, type TagDefinitionTag } from '../tag-definitions';
 
 export const breakTag: TagDefinitionTag<string> = {
   kind: TagKind.Tag,

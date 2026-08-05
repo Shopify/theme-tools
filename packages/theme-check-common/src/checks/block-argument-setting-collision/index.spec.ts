@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { BlockArgumentSettingCollision } from './index';
+import { describe, expect, it } from 'vitest';
 import { runLiquidCheck } from '../../test';
+import { BlockArgumentSettingCollision } from './index';
 
 const PRODUCT_BLOCK = [
   '{% schema %}',

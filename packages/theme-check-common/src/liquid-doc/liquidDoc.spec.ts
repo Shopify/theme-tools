@@ -1,4 +1,4 @@
-import { expect, it, describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { toSourceCode } from '../to-source-code';
 import { LiquidHtmlNode } from '../types';
 import { extractDocDefinition } from './liquidDoc';

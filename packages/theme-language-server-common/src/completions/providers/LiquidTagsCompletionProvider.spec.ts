@@ -1,8 +1,8 @@
-import { describe, beforeEach, it, expect } from 'vitest';
+import { MetafieldDefinitionMap, TagEntry } from '@shopify/theme-check-common';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { InsertTextFormat, InsertTextMode } from 'vscode-languageserver-protocol';
 import { DocumentManager } from '../../documents';
 import { CompletionsProvider } from '../CompletionsProvider';
-import { MetafieldDefinitionMap, TagEntry } from '@shopify/theme-check-common';
-import { InsertTextFormat, InsertTextMode, TextEdit } from 'vscode-languageserver-protocol';
 
 const caseSyntax = `{% case variable %}
   {% when first_value %}

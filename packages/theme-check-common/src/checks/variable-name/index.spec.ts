@@ -1,6 +1,6 @@
-import { expect, describe, it } from 'vitest';
-import { VariableName } from './index';
+import { describe, expect, it } from 'vitest';
 import { applySuggestions, runLiquidCheck } from '../../test';
+import { VariableName } from './index';
 
 describe('Module: VariableName', () => {
   it('should report an error when a variable is using wrong naming format', async () => {

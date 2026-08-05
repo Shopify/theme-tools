@@ -1,6 +1,6 @@
 import path from 'path';
 import type { ChangesetStatus } from '../types';
-import { run, getRepoRoot, readFile } from '../utils';
+import { getRepoRoot, readFile, run } from '../utils';
 
 export const changesetStatus = async (): Promise<ChangesetStatus> => {
   const basefile = `changeset-status.json`;

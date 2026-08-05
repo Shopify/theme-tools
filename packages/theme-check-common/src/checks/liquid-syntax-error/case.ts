@@ -1,4 +1,4 @@
-import type { LiquidTag, LiquidExpression } from '@shopify/liquid-html-parser';
+import type { LiquidExpression, LiquidTag } from '@shopify/liquid-html-parser';
 import type { Context } from '.';
 import {
   hasBareArrayAccess,
