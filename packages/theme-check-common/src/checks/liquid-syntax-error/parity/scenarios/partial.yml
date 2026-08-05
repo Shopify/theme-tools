@@ -1,0 +1,23 @@
+# Auto-generated Ruby Liquid parity corpus — do not edit by hand.
+---
+- id: partial-valid-basic
+  template: "{% partial 'product-card' %}{% endpartial %}"
+  error_path: valid
+- id: partial-mut-partial_name-eos
+  template: "{% partial  %}{% endpartial %}"
+  error_path: partial_name
+- id: partial-mut-partial_name-id
+  template: "{% partial x %}{% endpartial %}"
+  error_path: partial_name
+- id: partial-mut-partial_name-invalid
+  template: "{% partial 'bad/name' %}{% endpartial %}"
+  error_path: partial_name_validation
+- id: partial-themecheck-empty-name
+  template: "{% partial '' %}{% endpartial %}"
+  error_path: partial_name_validation
+- id: partial-mut-end-trail-id
+  template: "{% partial 'product-card' extra %}{% endpartial %}"
+  error_path: end
+- id: partial-mut-unclosed
+  template: "{% partial 'product-card' %}"
+  error_path: unclosed
