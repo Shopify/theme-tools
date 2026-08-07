@@ -8,13 +8,14 @@ interface RawTagCheckOptions {
   tagName: RawTagName;
   code: string;
   message: string;
+  url: string;
 }
 
 function capitalize(tagName: RawTagName): string {
   return tagName[0].toUpperCase() + tagName.slice(1);
 }
 
-function rawTagCheck({ tagName, code, message }: RawTagCheckOptions): LiquidCheckDefinition {
+function rawTagCheck({ tagName, code, message, url }: RawTagCheckOptions): LiquidCheckDefinition {
   return {
     meta: {
       code,
@@ -22,6 +23,7 @@ function rawTagCheck({ tagName, code, message }: RawTagCheckOptions): LiquidChec
       docs: {
         description: message,
         recommended: true,
+        url,
       },
       type: SourceCodeType.LiquidHtml,
       severity: Severity.ERROR,
@@ -46,7 +48,7 @@ function rawTagCheck({ tagName, code, message }: RawTagCheckOptions): LiquidChec
 
 function sectionOrBlockOnlyCheck(
   tagName: RawTagName,
-  { allowSnippets }: { allowSnippets: boolean },
+  { allowSnippets, url }: { allowSnippets: boolean; url: string },
 ): LiquidCheckDefinition {
   const locations = allowSnippets ? 'section, block, or snippet' : 'section or block';
 
@@ -60,10 +62,11 @@ function sectionOrBlockOnlyCheck(
     tagName,
     code,
     message: `{% ${tagName} %} is only valid in ${locations} files.`,
+    url,
   });
 }
 
-function oncePerFileCheck(tagName: RawTagName): LiquidCheckDefinition {
+function oncePerFileCheck(tagName: RawTagName, { url }: { url: string }): LiquidCheckDefinition {
   const code = `${capitalize(tagName)}OncePerFile`;
   const message = `{% ${tagName} %} can only appear once per file.`;
 
@@ -74,6 +77,7 @@ function oncePerFileCheck(tagName: RawTagName): LiquidCheckDefinition {
       docs: {
         description: message,
         recommended: true,
+        url,
       },
       type: SourceCodeType.LiquidHtml,
       severity: Severity.ERROR,
@@ -103,9 +107,9 @@ function oncePerFileCheck(tagName: RawTagName): LiquidCheckDefinition {
 
 function sectionOrBlockOnlyUnlessAllowed(
   tagName: RawTagName,
-  { allowSnippets }: { allowSnippets: boolean },
+  { allowSnippets, url }: { allowSnippets: boolean; url: string },
 ): LiquidCheckDefinition {
-  const check = sectionOrBlockOnlyCheck(tagName, { allowSnippets });
+  const check = sectionOrBlockOnlyCheck(tagName, { allowSnippets, url });
 
   return {
     ...check,
@@ -121,13 +125,22 @@ function sectionOrBlockOnlyUnlessAllowed(
 
 export const SchemaSectionOrBlockOnly = sectionOrBlockOnlyUnlessAllowed('schema', {
   allowSnippets: false,
+  url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/schema-section-or-block-only',
 });
-export const SchemaOncePerFile = oncePerFileCheck('schema');
+export const SchemaOncePerFile = oncePerFileCheck('schema', {
+  url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/schema-once-per-file',
+});
 export const JavascriptTagInWrongFile = sectionOrBlockOnlyUnlessAllowed('javascript', {
   allowSnippets: true,
+  url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/javascript-tag-in-wrong-file',
 });
-export const JavascriptOncePerFile = oncePerFileCheck('javascript');
+export const JavascriptOncePerFile = oncePerFileCheck('javascript', {
+  url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/javascript-once-per-file',
+});
 export const StylesheetTagInWrongFile = sectionOrBlockOnlyUnlessAllowed('stylesheet', {
   allowSnippets: true,
+  url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/stylesheet-tag-in-wrong-file',
 });
-export const StylesheetOncePerFile = oncePerFileCheck('stylesheet');
+export const StylesheetOncePerFile = oncePerFileCheck('stylesheet', {
+  url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/stylesheet-once-per-file',
+});
