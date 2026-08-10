@@ -1,12 +1,14 @@
-import { path } from '@shopify/theme-check-common';
+import * as path from '@shopify/theme-check-common/dist/path';
 import {
-  AugmentedLocation,
-  AugmentedReference,
   ThemeGraphDependenciesRequest,
   ThemeGraphDidUpdateNotification,
   ThemeGraphReferenceRequest,
   ThemeGraphRootRequest,
-} from '@shopify/theme-language-server-common';
+} from '@shopify/theme-language-server-common/dist/types';
+import type {
+  AugmentedLocation,
+  AugmentedReference,
+} from '@shopify/theme-language-server-common/dist/types';
 import {
   commands,
   Event,

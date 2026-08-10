@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
-import { FileStat, FileTuple, path } from '@shopify/theme-check-common';
+import * as path from '@shopify/theme-check-common/dist/path';
+import type { FileStat, FileTuple } from '@shopify/theme-check-common/dist/AbstractFileSystem';
 import { commands, ExtensionContext, languages, Uri, workspace } from 'vscode';
 import {
   LanguageClient,

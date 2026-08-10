@@ -1,4 +1,8 @@
-import { AbstractFileSystem, FileTuple, FileStat } from '@shopify/theme-check-common';
+import type {
+  AbstractFileSystem,
+  FileStat,
+  FileTuple,
+} from '@shopify/theme-check-common/dist/AbstractFileSystem';
 import { Connection } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 
