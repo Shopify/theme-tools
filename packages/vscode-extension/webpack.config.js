@@ -52,6 +52,26 @@ const baseConfig = {
   },
 }
 
+/**
+ * @param {WebpackConfig | (() => Promise<WebpackConfig>)} config
+ * @param {number} maxBytes
+ * @returns {(env: any, argv: any) => Promise<WebpackConfig>}
+ */
+function withBudget(config, maxBytes) {
+  return async (_env, argv) => {
+    const resolved = typeof config === 'function' ? await config() : config;
+    if (argv?.mode !== 'production') return resolved;
+    return {
+      ...resolved,
+      performance: {
+        hints: 'error',
+        maxAssetSize: maxBytes,
+        maxEntrypointSize: maxBytes,
+      },
+    };
+  };
+}
+
 /** @type WebpackConfig */
 const desktopConfig = {
   ...baseConfig,
@@ -175,4 +195,8 @@ const browserServerConfig = async () => {
   };
 };
 
-module.exports = [desktopConfig, browserClientConfig, browserServerConfig];
+module.exports = [
+  withBudget(desktopConfig, 8_000_000),
+  withBudget(browserClientConfig, 2_600_000),
+  withBudget(browserServerConfig, 8_000_000),
+];
