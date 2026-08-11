@@ -85,6 +85,32 @@ describe('forTag', () => {
     expect(result.args).toHaveLength(2);
   });
 
+  it('parses for loop with reversed after named args', () => {
+    /*
+     * `reversed` is position-independent: a trailing `reversed` (after the
+     * named args) must parse just like a leading one rather than throwing and
+     * degrading the tag to string markup. `tablerow` shares `parseForMarkup`,
+     * so this one case covers both tags.
+     */
+    expect(() =>
+      forTag.parse('for', parser('item in collection limit:5 reversed'), stubParser),
+    ).not.toThrow();
+
+    const result = forTag.parse('for', parser('item in collection limit:5 reversed'), stubParser);
+    expect(result).toMatchObject({
+      type: NodeTypes.ForMarkup,
+      variableName: 'item',
+      collection: { type: NodeTypes.VariableLookup, name: 'collection' },
+      reversed: true,
+    });
+    expect(result.args).toHaveLength(1);
+    expect(result.args[0]).toMatchObject({
+      type: NodeTypes.NamedArgument,
+      name: 'limit',
+      value: { type: NodeTypes.Number, value: '5' },
+    });
+  });
+
   it('parses for loop with comma-separated named args', () => {
     const result = forTag.parse('for', parser('item in collection limit:5, offset:2'), stubParser);
     expect(result).toMatchObject({
