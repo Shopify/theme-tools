@@ -1,5 +1,5 @@
-import * as pathUtils from '@shopify/theme-check-common/dist/path';
-import type { FileStat, FileTuple } from '@shopify/theme-check-common/dist/AbstractFileSystem';
+import * as pathUtils from '@shopify/theme-check-common/path';
+import type { FileStat, FileTuple } from '@shopify/theme-check-common';
 import * as path from 'node:path';
 import { commands, ExtensionContext, languages, Uri, workspace } from 'vscode';
 import {
