@@ -63,7 +63,7 @@ import { ValidRenderSnippetArgumentTypes } from './valid-render-snippet-argument
 import { ValidSchema } from './valid-schema';
 import { ValidSchemaName } from './valid-schema-name';
 import { ValidSchemaTranslations } from './valid-schema-translations';
-import { ValidSettingsKey } from './valid-settings-key';
+import { ValidSettingsKey, ValidSettingsKeyJSON } from './valid-settings-key';
 import { ValidStaticBlockType } from './valid-static-block-type';
 import { ValidVisibleIf, ValidVisibleIfSettingsSchema } from './valid-visible-if';
 import { VariableName } from './variable-name';
@@ -154,6 +154,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidRenderSnippetArgumentTypes,
   ValidSchema,
   ValidSettingsKey,
+  ValidSettingsKeyJSON,
   ValidStaticBlockType,
   ValidVisibleIf,
   ValidVisibleIfSettingsSchema,

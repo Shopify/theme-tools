@@ -1,6 +1,6 @@
 import { expect, describe, it } from 'vitest';
 import { check } from '../../test';
-import { ValidSettingsKey } from './index';
+import { ValidSettingsKey, ValidSettingsKeyJSON } from './index';
 
 describe('Module: ValidSettingsKey', () => {
   const schemaTemplate = {
@@ -112,6 +112,256 @@ describe('Module: ValidSettingsKey', () => {
       );
       expect(offenses[1].message).to.equal(
         `Setting 'non-existent-setting-2' does not exist in schema.`,
+      );
+    });
+  });
+
+  describe('template JSON section settings', () => {
+    it('does not report an error when a template JSON section setting exists in the section schema', async () => {
+      const theme = {
+        'templates/page.json': JSON.stringify({
+          sections: {
+            'main-page': {
+              type: 'main-page',
+              settings: {
+                heading_tag: 'h1',
+              },
+            },
+          },
+          order: ['main-page'],
+        }),
+        'sections/main-page.liquid': toLiquidFile({
+          name: 'Main page',
+          settings: [
+            {
+              id: 'heading_tag',
+              type: 'select',
+              label: 'Heading tag',
+              options: [
+                { value: 'h1', label: 'H1' },
+                { value: 'h2', label: 'H2' },
+              ],
+            },
+          ],
+        }),
+      };
+
+      const offenses = await check(theme, [ValidSettingsKey, ValidSettingsKeyJSON]);
+      expect(offenses).to.have.length(0);
+    });
+
+    it('reports an error when a template JSON section setting does not exist in the section schema', async () => {
+      const theme = {
+        'templates/page.json': JSON.stringify({
+          sections: {
+            'main-page': {
+              type: 'main-page',
+              settings: {
+                heading_tagg: 'h1',
+              },
+            },
+          },
+          order: ['main-page'],
+        }),
+        'sections/main-page.liquid': toLiquidFile({
+          name: 'Main page',
+          settings: [
+            {
+              id: 'heading_tag',
+              type: 'select',
+              label: 'Heading tag',
+              options: [
+                { value: 'h1', label: 'H1' },
+                { value: 'h2', label: 'H2' },
+              ],
+            },
+          ],
+        }),
+      };
+
+      const offenses = await check(theme, [ValidSettingsKey, ValidSettingsKeyJSON]);
+      expect(offenses).to.have.length(1);
+      expect(offenses[0].message).to.equal(
+        `Setting 'heading_tagg' does not exist in 'sections/main-page.liquid'.`,
+      );
+    });
+  });
+
+  describe('template JSON block settings', () => {
+    it('does not report an error when a template JSON block setting exists in the block schema', async () => {
+      const theme = {
+        'templates/page.json': JSON.stringify({
+          sections: {
+            'main-page': {
+              type: 'main-page',
+              blocks: {
+                text: {
+                  type: 'text',
+                  settings: {
+                    heading: 'Hello',
+                  },
+                },
+              },
+              block_order: ['text'],
+            },
+          },
+          order: ['main-page'],
+        }),
+        'sections/main-page.liquid': toLiquidFile({
+          name: 'Main page',
+          blocks: [{ type: 'text' }],
+        }),
+        'blocks/text.liquid': toLiquidFile({
+          name: 'Text',
+          settings: [
+            {
+              id: 'heading',
+              type: 'text',
+              label: 'Heading',
+            },
+          ],
+        }),
+      };
+
+      const offenses = await check(theme, [ValidSettingsKey, ValidSettingsKeyJSON]);
+      expect(offenses).to.have.length(0);
+    });
+
+    it('reports an error when a template JSON block setting does not exist in the block schema', async () => {
+      const theme = {
+        'templates/page.json': JSON.stringify({
+          sections: {
+            'main-page': {
+              type: 'main-page',
+              blocks: {
+                text: {
+                  type: 'text',
+                  settings: {
+                    headingg: 'Hello',
+                  },
+                },
+              },
+              block_order: ['text'],
+            },
+          },
+          order: ['main-page'],
+        }),
+        'sections/main-page.liquid': toLiquidFile({
+          name: 'Main page',
+          blocks: [{ type: 'text' }],
+        }),
+        'blocks/text.liquid': toLiquidFile({
+          name: 'Text',
+          settings: [
+            {
+              id: 'heading',
+              type: 'text',
+              label: 'Heading',
+            },
+          ],
+        }),
+      };
+
+      const offenses = await check(theme, [ValidSettingsKey, ValidSettingsKeyJSON]);
+      expect(offenses).to.have.length(1);
+      expect(offenses[0].message).to.equal(
+        `Setting 'headingg' does not exist in 'blocks/text.liquid'.`,
+      );
+    });
+
+    it('reports an error when a template JSON local block setting does not exist in the section schema', async () => {
+      const theme = {
+        'templates/page.json': JSON.stringify({
+          sections: {
+            'main-page': {
+              type: 'main-page',
+              blocks: {
+                foo: {
+                  type: 'foo',
+                  settings: {
+                    headingg: 'Hello',
+                  },
+                },
+              },
+              block_order: ['foo'],
+            },
+          },
+          order: ['main-page'],
+        }),
+        'sections/main-page.liquid': toLiquidFile({
+          name: 'Main page',
+          blocks: [
+            {
+              type: 'foo',
+              name: 'Foo',
+              settings: [
+                {
+                  id: 'heading',
+                  type: 'text',
+                  label: 'Heading',
+                },
+              ],
+            },
+          ],
+        }),
+      };
+
+      const offenses = await check(theme, [ValidSettingsKey, ValidSettingsKeyJSON]);
+      expect(offenses).to.have.length(1);
+      expect(offenses[0].message).to.equal(
+        `Setting 'headingg' does not exist in 'sections/main-page.liquid'.`,
+      );
+    });
+
+    it('reports an error when a nested template JSON block setting does not exist in the nested block schema', async () => {
+      const theme = {
+        'templates/page.json': JSON.stringify({
+          sections: {
+            'main-page': {
+              type: 'main-page',
+              blocks: {
+                parent: {
+                  type: 'parent',
+                  blocks: {
+                    text: {
+                      type: 'text',
+                      settings: {
+                        headingg: 'Hello',
+                      },
+                    },
+                  },
+                  block_order: ['text'],
+                },
+              },
+              block_order: ['parent'],
+            },
+          },
+          order: ['main-page'],
+        }),
+        'sections/main-page.liquid': toLiquidFile({
+          name: 'Main page',
+          blocks: [{ type: 'parent' }],
+        }),
+        'blocks/parent.liquid': toLiquidFile({
+          name: 'Parent',
+          blocks: [{ type: 'text' }],
+        }),
+        'blocks/text.liquid': toLiquidFile({
+          name: 'Text',
+          settings: [
+            {
+              id: 'heading',
+              type: 'text',
+              label: 'Heading',
+            },
+          ],
+        }),
+      };
+
+      const offenses = await check(theme, [ValidSettingsKey, ValidSettingsKeyJSON]);
+      expect(offenses).to.have.length(1);
+      expect(offenses[0].message).to.equal(
+        `Setting 'headingg' does not exist in 'blocks/text.liquid'.`,
       );
     });
   });
