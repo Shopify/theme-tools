@@ -64,6 +64,7 @@ import { ValidSchema } from './valid-schema';
 import { ValidSchemaName } from './valid-schema-name';
 import { ValidSchemaTranslations } from './valid-schema-translations';
 import { ValidSettingsKey } from './valid-settings-key';
+import { ValidStandardEventData } from './valid-standard-event-data';
 import { ValidStaticBlockType } from './valid-static-block-type';
 import { ValidVisibleIf, ValidVisibleIfSettingsSchema } from './valid-visible-if';
 import { VariableName } from './variable-name';
@@ -154,6 +155,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidRenderSnippetArgumentTypes,
   ValidSchema,
   ValidSettingsKey,
+  ValidStandardEventData,
   ValidStaticBlockType,
   ValidVisibleIf,
   ValidVisibleIfSettingsSchema,
