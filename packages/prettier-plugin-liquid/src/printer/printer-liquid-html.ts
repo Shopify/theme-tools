@@ -55,10 +55,23 @@ import {
   printLiquidDocPrompt,
 } from './print/liquid';
 import { printClosingTagSuffix, printOpeningTagPrefix } from './print/tag';
-import { bodyLines, hasLineBreakInRange, isEmpty, isTextLikeNode, reindent } from './utils';
+import {
+  bodyLines,
+  hasLineBreakInRange,
+  isEmpty,
+  isPreLikeNode,
+  isTextLikeNode,
+  reindent,
+} from './utils';
 
 const { builders, utils } = doc;
 const { fill, group, hardline, dedentToRoot, indent, join, line, softline } = builders;
+
+// `replaceEndOfLine` exists at runtime on both prettier 2 and prettier 3's
+// `doc.utils`, but is missing from prettier 2's type definitions.
+const { replaceEndOfLine } = utils as typeof utils & {
+  replaceEndOfLine: (doc: Doc, replacement?: Doc) => Doc;
+};
 
 const oppositeQuotes = {
   '"': "'",
@@ -160,6 +173,14 @@ function printTextNode(
 
   if (node.value.match(/^\s*$/)) return '';
   const text = node.value;
+
+  if (isPreLikeNode(node)) {
+    return [
+      printOpeningTagPrefix(node, options),
+      replaceEndOfLine(text),
+      printClosingTagSuffix(node, options),
+    ];
+  }
 
   const paragraphs = text
     .split(/(\r?\n){2,}/)
