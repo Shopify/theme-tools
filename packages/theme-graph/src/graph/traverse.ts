@@ -137,6 +137,8 @@ async function traverseLiquidModule(
 
     // {% block 'block-name' %}
     BlockMarkup: (node, ancestors) => {
+      // App blocks are external to the theme, not local file dependencies.
+      if (node.name.value.startsWith('shopify://apps/')) return;
       const tag = ancestors.at(-1)!;
       return {
         target: getThemeBlockModule(themeGraph, node.name.value),
