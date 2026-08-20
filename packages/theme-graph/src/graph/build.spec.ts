@@ -1,6 +1,7 @@
 import { path as pathUtils, SourceCodeType } from '@shopify/theme-check-common';
 import { assert, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { buildThemeGraph } from '../index';
+import { toSourceCode } from '../toSourceCode';
 import { Dependencies, JsonModuleKind, LiquidModuleKind, ModuleType, ThemeGraph } from '../types';
 import { getDependencies, skeleton, themeAppExtension } from './test-helpers';
 
@@ -18,6 +19,24 @@ describe('Module: index', () => {
     it('build a graph of the theme', { timeout: 10000 }, async () => {
       const graph = await buildThemeGraph(rootUri, dependencies);
       expect(graph).toBeDefined();
+    });
+
+    it.each([
+      "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000' %}{% endblock %}",
+      "{% liquid\n block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000'\n endblock\n %}",
+    ])('skips app block dependencies while preserving theme blocks: %s', async (appBlock) => {
+      const graph = await buildThemeGraph(rootUri, {
+        ...dependencies,
+        getSourceCode: (uri) =>
+          uri === p('layout/theme.liquid')
+            ? toSourceCode(uri, `${appBlock}{% block 'text' %}{% endblock %}`)
+            : dependencies.getSourceCode(uri),
+      });
+
+      expect(
+        graph.modules[p('layout/theme.liquid')].dependencies.map((ref) => ref.target.uri),
+      ).toEqual([p('blocks/text.liquid')]);
+      expect(Object.keys(graph.modules).some((uri) => uri.includes('shopify:'))).toBe(false);
     });
 
     describe('with a valid theme graph', () => {
