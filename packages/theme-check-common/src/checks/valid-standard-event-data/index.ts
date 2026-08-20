@@ -1,15 +1,25 @@
-import { LiquidExpression, LiquidNamedArgument, NodeTypes } from '@shopify/liquid-html-parser';
+import {
+  LiquidExpression,
+  LiquidFilter,
+  LiquidHtmlNode,
+  LiquidNamedArgument,
+  NodeTypes,
+} from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 const FILTER_NAME = 'standard_event_data';
 const CONTEXT_ARGUMENT = 'context';
 const SUPPORTED_EVENT_TYPE = 'view';
+
+const SUPPORTED_CONTEXTS_BY_DROP: { [drop: string]: string[] } = {
+  product: ['page', 'search', 'collection', 'dialog', 'recommendation'],
+  cart: ['page', 'dialog'],
+};
+
+const DROPS_THAT_IGNORE_CONTEXT = ['collection'];
+
 const CONTEXTS_SUPPORTED_BY_ANY_INPUT_TYPE = [
-  'page',
-  'search',
-  'collection',
-  'dialog',
-  'recommendation',
+  ...new Set(Object.values(SUPPORTED_CONTEXTS_BY_DROP).flat()),
 ];
 
 function isInvalidStaticValue(value: LiquidExpression, supportedValues: string[]): boolean {
@@ -19,6 +29,20 @@ function isInvalidStaticValue(value: LiquidExpression, supportedValues: string[]
 
 function describeValue(value: LiquidExpression): string {
   return value.type === NodeTypes.String ? ` '${value.value}'` : '';
+}
+
+function detectInputDrop(
+  node: LiquidFilter,
+  parent: LiquidHtmlNode | undefined,
+): string | undefined {
+  if (parent?.type !== NodeTypes.LiquidVariable) return undefined;
+  if (parent.filters[0] !== node) return undefined;
+
+  const expression = parent.expression;
+  if (expression.type !== NodeTypes.VariableLookup) return undefined;
+  if (expression.lookups.length > 0) return undefined;
+
+  return expression.name ?? undefined;
 }
 
 export const ValidStandardEventData: LiquidCheckDefinition = {
@@ -39,7 +63,7 @@ export const ValidStandardEventData: LiquidCheckDefinition = {
 
   create(context) {
     return {
-      async LiquidFilter(node) {
+      async LiquidFilter(node, ancestors) {
         if (node.name !== FILTER_NAME) return;
 
         const eventType = node.args.find(
@@ -56,20 +80,27 @@ export const ValidStandardEventData: LiquidCheckDefinition = {
           });
         }
 
+        const drop = detectInputDrop(node, ancestors[ancestors.length - 1]);
+
+        if (drop && DROPS_THAT_IGNORE_CONTEXT.includes(drop)) return;
+
         const contextArgument = node.args.find(
           (arg): arg is LiquidNamedArgument =>
             arg.type === NodeTypes.NamedArgument && arg.name === CONTEXT_ARGUMENT,
         );
         const contextValue = contextArgument?.value;
+        if (!contextValue) return;
 
-        if (
-          contextValue &&
-          isInvalidStaticValue(contextValue, CONTEXTS_SUPPORTED_BY_ANY_INPUT_TYPE)
-        ) {
+        const supportedContexts =
+          (drop && SUPPORTED_CONTEXTS_BY_DROP[drop]) || CONTEXTS_SUPPORTED_BY_ANY_INPUT_TYPE;
+
+        if (isInvalidStaticValue(contextValue, supportedContexts)) {
+          const dropDescription = drop && SUPPORTED_CONTEXTS_BY_DROP[drop] ? ` for ${drop}` : '';
+
           context.report({
             message: `Unsupported context${describeValue(
               contextValue,
-            )}. Valid values: ${CONTEXTS_SUPPORTED_BY_ANY_INPUT_TYPE.join(
+            )}${dropDescription}. Valid values: ${supportedContexts.join(
               ', ',
             )}. The '${CONTEXT_ARGUMENT}' argument can also be omitted.`,
             startIndex: contextValue.position.start,
