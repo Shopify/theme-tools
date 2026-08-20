@@ -1,4 +1,4 @@
-import { LiquidNamedArgument, NodeTypes } from '@shopify/liquid-html-parser';
+import { LiquidExpression, LiquidNamedArgument, NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 
 const FILTER_NAME = 'standard_event_data';
@@ -11,6 +11,15 @@ const CONTEXTS_SUPPORTED_BY_ANY_INPUT_TYPE = [
   'dialog',
   'recommendation',
 ];
+
+function isInvalidStaticValue(value: LiquidExpression, supportedValues: string[]): boolean {
+  if (value.type === NodeTypes.VariableLookup) return false;
+  return value.type !== NodeTypes.String || !supportedValues.includes(value.value);
+}
+
+function describeValue(value: LiquidExpression): string {
+  return value.type === NodeTypes.String ? ` '${value.value}'` : '';
+}
 
 export const ValidStandardEventData: LiquidCheckDefinition = {
   meta: {
@@ -33,11 +42,15 @@ export const ValidStandardEventData: LiquidCheckDefinition = {
       async LiquidFilter(node) {
         if (node.name !== FILTER_NAME) return;
 
-        const eventType = node.args.find((arg) => arg.type !== NodeTypes.NamedArgument);
+        const eventType = node.args.find(
+          (arg): arg is LiquidExpression => arg.type !== NodeTypes.NamedArgument,
+        );
 
-        if (eventType?.type === NodeTypes.String && eventType.value !== SUPPORTED_EVENT_TYPE) {
+        if (eventType && isInvalidStaticValue(eventType, [SUPPORTED_EVENT_TYPE])) {
           context.report({
-            message: `Unsupported event type '${eventType.value}'. The only supported event type is '${SUPPORTED_EVENT_TYPE}'.`,
+            message: `Unsupported event type${describeValue(
+              eventType,
+            )}. The only supported event type is '${SUPPORTED_EVENT_TYPE}'.`,
             startIndex: eventType.position.start,
             endIndex: eventType.position.end,
           });
@@ -50,13 +63,15 @@ export const ValidStandardEventData: LiquidCheckDefinition = {
         const contextValue = contextArgument?.value;
 
         if (
-          contextValue?.type === NodeTypes.String &&
-          !CONTEXTS_SUPPORTED_BY_ANY_INPUT_TYPE.includes(contextValue.value)
+          contextValue &&
+          isInvalidStaticValue(contextValue, CONTEXTS_SUPPORTED_BY_ANY_INPUT_TYPE)
         ) {
           context.report({
-            message: `Unsupported context '${
-              contextValue.value
-            }'. Valid values: ${CONTEXTS_SUPPORTED_BY_ANY_INPUT_TYPE.join(', ')}`,
+            message: `Unsupported context${describeValue(
+              contextValue,
+            )}. Valid values: ${CONTEXTS_SUPPORTED_BY_ANY_INPUT_TYPE.join(
+              ', ',
+            )}. The '${CONTEXT_ARGUMENT}' argument can also be omitted.`,
             startIndex: contextValue.position.start,
             endIndex: contextValue.position.end,
           });

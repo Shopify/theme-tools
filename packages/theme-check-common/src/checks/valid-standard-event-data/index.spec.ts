@@ -9,7 +9,7 @@ describe('Module: ValidStandardEventData', () => {
 
     expect(offenses).toHaveLength(1);
     expect(offenses[0].message).toBe(
-      "Unsupported context 'homepage'. Valid values: page, search, collection, dialog, recommendation",
+      "Unsupported context 'homepage'. Valid values: page, search, collection, dialog, recommendation. The 'context' argument can also be omitted.",
     );
 
     const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
@@ -22,7 +22,7 @@ describe('Module: ValidStandardEventData', () => {
 
     expect(offenses).toHaveLength(1);
     expect(offenses[0].message).toBe(
-      "Unsupported context 'banner'. Valid values: page, search, collection, dialog, recommendation",
+      "Unsupported context 'banner'. Valid values: page, search, collection, dialog, recommendation. The 'context' argument can also be omitted.",
     );
   });
 
@@ -37,11 +37,24 @@ describe('Module: ValidStandardEventData', () => {
     }
   });
 
-  it('does not report an offense when the context is not a string literal', async () => {
+  it('does not report an offense when the context is a variable', async () => {
     const sourceCode = `{{ product | standard_event_data: 'view', context: section.settings.context }}`;
     const offenses = await runLiquidCheck(ValidStandardEventData, sourceCode);
 
     expect(offenses).toHaveLength(0);
+  });
+
+  it('reports an offense when the context is a non-string literal', async () => {
+    const sourceCode = `{{ product | standard_event_data: 'view', context: 123 }}`;
+    const offenses = await runLiquidCheck(ValidStandardEventData, sourceCode);
+
+    expect(offenses).toHaveLength(1);
+    expect(offenses[0].message).toBe(
+      "Unsupported context. Valid values: page, search, collection, dialog, recommendation. The 'context' argument can also be omitted.",
+    );
+
+    const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
+    expect(highlights[0]).to.eql('123');
   });
 
   it('does not report an offense when the context argument is omitted', async () => {
@@ -64,11 +77,34 @@ describe('Module: ValidStandardEventData', () => {
     expect(highlights[0]).to.eql("'click'");
   });
 
-  it('does not report an offense when the event type is not a string literal', async () => {
+  it('does not report an offense when the event type is a variable', async () => {
     const sourceCode = `{{ product | standard_event_data: event_type }}`;
     const offenses = await runLiquidCheck(ValidStandardEventData, sourceCode);
 
     expect(offenses).toHaveLength(0);
+  });
+
+  it('reports an offense when the event type is a non-string literal', async () => {
+    const sourceCode = `{{ product | standard_event_data: 123 }}`;
+    const offenses = await runLiquidCheck(ValidStandardEventData, sourceCode);
+
+    expect(offenses).toHaveLength(1);
+    expect(offenses[0].message).toBe(
+      "Unsupported event type. The only supported event type is 'view'.",
+    );
+
+    const highlights = highlightedOffenses({ 'file.liquid': sourceCode }, offenses);
+    expect(highlights[0]).to.eql('123');
+  });
+
+  it('reports an offense when the event type is a boolean literal', async () => {
+    const sourceCode = `{{ product | standard_event_data: true }}`;
+    const offenses = await runLiquidCheck(ValidStandardEventData, sourceCode);
+
+    expect(offenses).toHaveLength(1);
+    expect(offenses[0].message).toBe(
+      "Unsupported event type. The only supported event type is 'view'.",
+    );
   });
 
   it('reports both offenses when the event type and the context are invalid', async () => {
