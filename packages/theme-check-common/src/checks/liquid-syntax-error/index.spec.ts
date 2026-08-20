@@ -802,6 +802,34 @@ describe('LiquidSyntaxError', () => {
     });
   });
 
+  describe('block tags', () => {
+    it('produces no diagnostics for canonical app block paths', async () => {
+      const offenses = await runLiquidCheck(
+        LiquidSyntaxError,
+        "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000' %}{% endblock %}",
+        'snippets/test.liquid',
+        NO_DOCSET,
+      );
+
+      expect(offenses).toEqual([]);
+    });
+
+    it('reports LiquidSyntaxError for malformed app block paths', async () => {
+      const offenses = await runLiquidCheck(
+        LiquidSyntaxError,
+        "{% block 'shopify://apps/example_app/snippets/example-block/00000000-0000-4000-8000-000000000000' %}{% endblock %}",
+        'snippets/test.liquid',
+        NO_DOCSET,
+      );
+
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0]).toMatchObject({
+        check: 'LiquidSyntaxError',
+        message: "Syntax error in 'block' tag",
+      });
+    });
+  });
+
   describe('block and partial parser errors', () => {
     it('locates line-mode block tags inside liquid blocks', () => {
       expect(liquidLineTagLocation("{% liquid\n  block 'hero'\n%}", 'block')).toEqual([12, 24]);
