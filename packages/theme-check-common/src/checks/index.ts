@@ -22,6 +22,7 @@ import { EmptyBlockContent } from './empty-block-content';
 import { HardcodedRoutes } from './hardcoded-routes';
 import { ImgWidthAndHeight } from './img-width-and-height';
 import { JSONMissingBlock } from './json-missing-block';
+import { JSONMissingSection } from './json-missing-section';
 import { JSONSyntaxError } from './json-syntax-error';
 import { LiquidFreeSettings } from './liquid-free-settings';
 import { LiquidHTMLSyntaxError } from './liquid-html-syntax-error';
@@ -113,6 +114,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   HardcodedRoutes,
   ImgWidthAndHeight,
   JSONMissingBlock,
+  JSONMissingSection,
   JSONSyntaxError,
   LiquidFreeSettings,
   LiquidHTMLSyntaxError,

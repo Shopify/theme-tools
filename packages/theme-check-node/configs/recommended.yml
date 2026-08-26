@@ -64,6 +64,9 @@ ImgWidthAndHeight:
 JSONMissingBlock:
   enabled: true
   severity: 0
+JSONMissingSection:
+  enabled: true
+  severity: 0
 JSONSyntaxError:
   enabled: true
   severity: 0
