@@ -1,5 +1,23 @@
 # @shopify/theme-check-node
 
+## 3.29.0
+
+### Minor Changes
+
+- 54c5cc81: Add `JSONMissingSection` check
+
+  Reports section types in JSON templates (`templates/*.json`) and section groups (`sections/*.json`) that do not refer to an existing section file, matching the platform validation that rejects theme publishes with the error `Section type 'x' does not refer to an existing section file`.
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [54c5cc81]
+- Updated dependencies [f2071b6d]
+- Updated dependencies [9c46aac0]
+  - @shopify/theme-graph@0.3.2
+  - @shopify/theme-check-common@3.29.0
+  - @shopify/theme-check-docs-updater@3.29.0
+
 ## 3.28.1
 
 ### Patch Changes

@@ -192,7 +192,7 @@ importers:
   packages/theme-check-browser:
     dependencies:
       '@shopify/theme-check-common':
-        specifier: workspace:3.28.1
+        specifier: workspace:3.29.0
         version: link:../theme-check-common
 
   packages/theme-check-common:
@@ -253,7 +253,7 @@ importers:
   packages/theme-check-docs-updater:
     dependencies:
       '@shopify/theme-check-common':
-        specifier: workspace:^3.28.1
+        specifier: workspace:^3.29.0
         version: link:../theme-check-common
       env-paths:
         specifier: ^2.2.1
@@ -272,13 +272,13 @@ importers:
         specifier: workspace:2.10.0
         version: link:../liquid-html-parser
       '@shopify/theme-check-common':
-        specifier: workspace:3.28.1
+        specifier: workspace:3.29.0
         version: link:../theme-check-common
       '@shopify/theme-check-docs-updater':
-        specifier: workspace:3.28.1
+        specifier: workspace:3.29.0
         version: link:../theme-check-docs-updater
       '@shopify/theme-graph':
-        specifier: workspace:^0.3.1
+        specifier: workspace:^0.3.2
         version: link:../theme-graph
       glob:
         specifier: ^8.0.3
@@ -303,7 +303,7 @@ importers:
         specifier: workspace:^2.10.0
         version: link:../liquid-html-parser
       '@shopify/theme-check-common':
-        specifier: workspace:^3.28.1
+        specifier: workspace:^3.29.0
         version: link:../theme-check-common
       acorn:
         specifier: ^8.14.1
@@ -316,7 +316,7 @@ importers:
         version: 3.1.0
     devDependencies:
       '@shopify/theme-check-node':
-        specifier: workspace:^3.28.1
+        specifier: workspace:^3.29.0
         version: link:../theme-check-node
       '@types/node':
         specifier: ^22.18.8
@@ -325,7 +325,7 @@ importers:
   packages/theme-language-server-browser:
     dependencies:
       '@shopify/theme-language-server-common':
-        specifier: workspace:2.22.1
+        specifier: workspace:2.22.2
         version: link:../theme-language-server-common
       vscode-languageserver:
         specifier: ^8.0.2
@@ -337,10 +337,10 @@ importers:
         specifier: workspace:^2.10.0
         version: link:../liquid-html-parser
       '@shopify/theme-check-common':
-        specifier: workspace:3.28.1
+        specifier: workspace:3.29.0
         version: link:../theme-check-common
       '@shopify/theme-graph':
-        specifier: workspace:^0.3.1
+        specifier: workspace:^0.3.2
         version: link:../theme-graph
       '@vscode/web-custom-data':
         specifier: ^0.4.6
@@ -374,13 +374,13 @@ importers:
   packages/theme-language-server-node:
     dependencies:
       '@shopify/theme-check-docs-updater':
-        specifier: workspace:^3.28.1
+        specifier: workspace:^3.29.0
         version: link:../theme-check-docs-updater
       '@shopify/theme-check-node':
-        specifier: workspace:^3.28.1
+        specifier: workspace:^3.29.0
         version: link:../theme-check-node
       '@shopify/theme-language-server-common':
-        specifier: workspace:2.22.1
+        specifier: workspace:2.22.2
         version: link:../theme-language-server-common
       glob:
         specifier: ^8.0.3
@@ -411,16 +411,16 @@ importers:
         specifier: workspace:^1.11.0
         version: link:../prettier-plugin-liquid
       '@shopify/theme-check-common':
-        specifier: workspace:^3.28.1
+        specifier: workspace:^3.29.0
         version: link:../theme-check-common
       '@shopify/theme-language-server-browser':
-        specifier: workspace:^2.22.1
+        specifier: workspace:^2.22.2
         version: link:../theme-language-server-browser
       '@shopify/theme-language-server-common':
-        specifier: workspace:^2.22.1
+        specifier: workspace:^2.22.2
         version: link:../theme-language-server-common
       '@shopify/theme-language-server-node':
-        specifier: workspace:^2.22.1
+        specifier: workspace:^2.22.2
         version: link:../theme-language-server-node
       prettier:
         specifier: ^2.6.2
@@ -436,7 +436,7 @@ importers:
         version: 3.1.0
     devDependencies:
       '@shopify/theme-check-docs-updater':
-        specifier: workspace:^3.28.1
+        specifier: workspace:^3.29.0
         version: link:../theme-check-docs-updater
       '@types/glob':
         specifier: ^8.0.0
