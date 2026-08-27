@@ -1,5 +1,23 @@
 # @shopify/theme-check-common
 
+## 3.29.0
+
+### Minor Changes
+
+- 54c5cc81: Add `JSONMissingSection` check
+
+  Reports section types in JSON templates (`templates/*.json`) and section groups (`sections/*.json`) that do not refer to an existing section file, matching the platform validation that rejects theme publishes with the error `Section type 'x' does not refer to an existing section file`.
+
+- 9c46aac0: Add `ValidStandardEventData` check to error on invalid arguments to the `standard_event_data` filter.
+
+  The filter's argument values are currently only validated at render time. This check catches invalid literal values statically: `view` is the only supported event type, and `context:` must be one of `page`, `search`, `collection`, `dialog`, or `recommendation`.
+
+  Values that aren't string literals are left alone, since the type of the piped input isn't statically knowable.
+
+### Patch Changes
+
+- f2071b6d: Add a `docs.url` to `LiquidHTMLSyntaxError` so editors surface a "learn more" link on the diagnostic.
+
 ## 3.28.1
 
 ### Patch Changes
