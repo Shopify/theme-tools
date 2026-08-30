@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, it, expect, afterEach, beforeEach, assert, vi } from 'vitest';
 import { loadConfig } from './load-config';
+import { ThemeCheckConfigError } from './errors';
 import {
   allChecks,
   CheckDefinition,
@@ -250,6 +251,34 @@ SyntaxError:
     expect(uri.scheme).to.equal('file');
     expect(uri.fsPath).to.equal(URI.file(path.resolve(tempDir, 'src')).fsPath);
     assert(config.rootUri.startsWith('file://'));
+  });
+
+  describe('when the configuration cannot be resolved', () => {
+    it('wraps a missing config file in a ThemeCheckConfigError, preserving the original error', async () => {
+      const missingPath = path.join(tempDir, 'does-not-exist.yml');
+      const error = await loadConfig(missingPath, tempDir).catch((e) => e);
+      expect(error).to.be.an.instanceof(ThemeCheckConfigError);
+      expect(error.code).to.equal('THEME_CHECK_CONFIG_ERROR');
+      expect(error.configPath).to.equal(missingPath);
+      // The original error is preserved for callers that want the detail.
+      expect((error.cause as NodeJS.ErrnoException)?.code).to.equal('ENOENT');
+    });
+
+    it('wraps a config path that is a directory in a ThemeCheckConfigError', async () => {
+      const error = await loadConfig(tempDir, tempDir).catch((e) => e);
+      expect(error).to.be.an.instanceof(ThemeCheckConfigError);
+      expect((error.cause as NodeJS.ErrnoException)?.code).to.equal('EISDIR');
+    });
+
+    it('wraps an invalid check setting shape (config description parse error) in a ThemeCheckConfigError', async () => {
+      const configPath = await createMockConfigFile(
+        tempDir,
+        `extends: nothing\nUnusedAssign: true`,
+      );
+      const error = await loadConfig(configPath, tempDir).catch((e) => e);
+      expect(error).to.be.an.instanceof(ThemeCheckConfigError);
+      expect(error.cause).to.be.an.instanceof(Error);
+    });
   });
 
   function check(code: string) {
