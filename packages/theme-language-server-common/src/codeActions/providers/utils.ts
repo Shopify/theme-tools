@@ -1,5 +1,11 @@
 import { Offense, SourceCodeType, WithRequired } from '@shopify/theme-check-common';
-import { CodeAction, CodeActionKind, Command, Diagnostic } from 'vscode-languageserver';
+import {
+  CodeAction,
+  CodeActionKind,
+  Command,
+  Diagnostic,
+  WorkspaceEdit,
+} from 'vscode-languageserver';
 import { Anomaly } from '../../diagnostics';
 
 // They have an awkard API for creating them, so we have this helper here
@@ -12,6 +18,22 @@ export function toCodeAction(
   isPreferred: boolean = false,
 ): CodeAction {
   const codeAction = CodeAction.create(title, command, kind);
+  codeAction.diagnostics = diagnostics;
+  codeAction.isPreferred = isPreferred;
+  return codeAction;
+}
+
+// Edit-based sibling of toCodeAction: the action carries a WorkspaceEdit
+// directly instead of a server command.
+export function toEditCodeAction(
+  title: string,
+  edit: WorkspaceEdit,
+  diagnostics: Diagnostic[],
+  kind: CodeActionKind,
+  isPreferred: boolean = false,
+): CodeAction {
+  const codeAction = CodeAction.create(title, kind);
+  codeAction.edit = edit;
   codeAction.diagnostics = diagnostics;
   codeAction.isPreferred = isPreferred;
   return codeAction;
