@@ -1,4 +1,9 @@
-import { LiquidHtmlNode, NodeTypes as LiquidHtmlNodeTypes } from '@shopify/liquid-html-parser';
+import {
+  LiquidHtmlNode,
+  LiquidRawTag,
+  NodeTypes as LiquidHtmlNodeTypes,
+} from '@shopify/liquid-html-parser';
+import { Section, ThemeBlock } from './types/schemas';
 
 import { Schema, Settings } from './types/schema-prop-factory';
 
@@ -245,8 +250,77 @@ export type CheckDefinition<
  * }
  */
 export type Check<T> = T extends SourceCodeType
-  ? Partial<CheckNodeMethods<T> & CheckExitMethods<T> & CheckLifecycleMethods<T>>
+  ? Partial<
+      CheckNodeMethods<T> &
+        CheckExitMethods<T> &
+        CheckLifecycleMethods<T> &
+        CheckExtraMethods<T>
+    >
   : never;
+
+/**
+ * Payload for the synthetic `LiquidSchema` check method.
+ *
+ * Fires once per `{% schema %}` tag in a section or theme-block file, after
+ * the tag has been schema-validated. Abstracts the repeated preamble of
+ * filtering for `name === 'schema'`, calling `getSchema(context)`, and
+ * guarding against `undefined` / `Error` results.
+ */
+export interface LiquidSchemaNode {
+  /** The original `{% schema %}` LiquidRawTag node. */
+  node: LiquidRawTag;
+  /**
+   * The full schema object (`SectionSchema` or `ThemeBlockSchema`).
+   * Useful with `isSectionSchema(schema)` / `isBlockSchema(schema)` for
+   * type narrowing between section and block schemas.
+   */
+  schema: SectionSchema | ThemeBlockSchema;
+  /** The validated, strongly-typed schema contents. Never an Error. */
+  validSchema: Section.Schema | ThemeBlock.Schema;
+  /** The JSON AST for the schema body. Never an Error. */
+  ast: JSONNode;
+  /**
+   * Character offset within the Liquid source where the JSON begins.
+   * Add this to JSON node positions to get document-level offsets when
+   * calling `context.report({ startIndex, endIndex })`.
+   */
+  offset: number;
+}
+
+/** Extra non-node-type-based visitor methods a check can declare. */
+type CheckExtraMethods<T extends SourceCodeType> = T extends SourceCodeType.LiquidHtml
+  ? {
+      /**
+       * Called once per `{% schema %}` tag in a section or theme-block file,
+       * after the tag body has been parsed and schema-validated.
+       *
+       * Replaces the common preamble:
+       *
+       * ```ts
+       * async LiquidRawTag(node) {
+       *   if (node.name !== 'schema' || node.body.kind !== 'json') return;
+       *   const schema = await getSchema(context);
+       *   const { validSchema, ast } = schema ?? {};
+       *   if (!validSchema || validSchema instanceof Error) return;
+       *   if (!ast || ast instanceof Error) return;
+       *   // ...
+       * }
+       * ```
+       *
+       * with:
+       *
+       * ```ts
+       * async LiquidSchema({ validSchema, ast, offset }) {
+       *   // ...
+       * }
+       * ```
+       */
+      LiquidSchema: (
+        node: LiquidSchemaNode,
+        ancestors: LiquidHtmlNode[],
+      ) => Promise<void>;
+    }
+  : {};
 
 export type CheckNodeMethod<T extends SourceCodeType, NT> = (
   node: NodeOfType<T, NT>,
