@@ -1,5 +1,22 @@
 import { Template } from '@shopify/theme-check-common';
 
+export interface SettingsDataPreset {
+  sections?: Record<string, { type: string }>;
+}
+
+export interface SettingsData {
+  presets?: Record<string, SettingsDataPreset>;
+}
+
+export function isValidSettingsData(parsed: unknown): parsed is SettingsData {
+  return (
+    typeof parsed === 'object' &&
+    parsed !== null &&
+    'presets' in parsed &&
+    typeof (parsed as SettingsData).presets === 'object'
+  );
+}
+
 // this is very very optimistic...
 export function isValidTemplate(parsed: unknown): parsed is Template.Template {
   return (
