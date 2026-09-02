@@ -63,6 +63,15 @@ function documentLinksVisitor(
         );
       }
 
+      // {% block 'name' %}
+      if (node.name === NamedTags.block && typeof node.markup !== 'string') {
+        const blockName = node.markup.name;
+        return DocumentLink.create(
+          range(textDocument, blockName),
+          Utils.resolvePath(root, 'blocks', blockName.value + '.liquid').toString(),
+        );
+      }
+
       // {% content_for 'block', type: 'block_name' %}
       if (node.name === NamedTags.content_for && typeof node.markup !== 'string') {
         const typeArg = node.markup.args.find((arg) => arg.name === 'type');
