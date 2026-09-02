@@ -104,6 +104,14 @@ describe('Module: LiquidHTMLSyntaxError', () => {
     expect(offenses).to.be.empty;
   });
 
+  it('should not report canonical inline app block paths', async () => {
+    const sourceCode =
+      "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000' %}{% endblock %}";
+
+    const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
+    expect(offenses).to.be.empty;
+  });
+
   it('should highligh the error', async () => {
     let offenses: Offense[];
     let highlights: string[];
