@@ -34,7 +34,7 @@
     "minimatch": "^10.2.1",
     "postcss": "^8.5.18",
     "postcss-safe-parser": "^7.0.1",
-    "postcss-selector-parser": "^7.1.1",
+    "postcss-selector-parser": "^7.1.3",
     "vscode-json-languageservice": "^5.3.10",
     "vscode-uri": "^3.0.7"
   },
