@@ -464,11 +464,12 @@ async function traverseJsonModule(
       const template = parseJSON(sourceCode.source) as Template.Template;
       const promises: Promise<Void>[] = [];
       for (const [key, section] of Object.entries(template.sections)) {
-        const sectionType = section.type;
         const path = ['sections', key];
         const node = nodeAtPath(ast, path)! as ObjectNode;
-        const sectionModule = getSectionModule(themeGraph, sectionType);
-        const typeProperty = node.children.find((child) => child.key.value === 'type')!;
+        const typeProperty = node.children.find((child) => child.key.value === 'type');
+        if (!typeProperty) continue;
+
+        const sectionModule = getSectionModule(themeGraph, section.type);
         const start = typeProperty.loc.start.offset;
         const end = typeProperty.loc.end.offset;
         const sourceRange: Range = [start, end];
@@ -505,12 +506,12 @@ async function traverseJsonModule(
       const sectionGroup = parseJSON(sourceCode.source) as Template.SectionGroup;
       const promises: Promise<Void>[] = [];
       for (const [key, section] of Object.entries(sectionGroup.sections)) {
-        const sectionType = section.type;
         const path = ['sections', key];
         const node = nodeAtPath(ast, path)! as ObjectNode;
-        const sectionModule = getSectionModule(themeGraph, sectionType);
+        const typeProperty = node.children.find((child) => child.key.value === 'type');
+        if (!typeProperty) continue;
 
-        const typeProperty = node.children.find((child) => child.key.value === 'type')!;
+        const sectionModule = getSectionModule(themeGraph, section.type);
         const start = typeProperty.loc.start.offset;
         const end = typeProperty.loc.end.offset;
         const sourceRange: Range = [start, end];
@@ -554,11 +555,12 @@ async function traverseSectionReferences(
   const promises: Promise<Void>[] = [];
 
   for (const [key, block] of Object.entries(section.blocks)) {
-    const blockType = block.type;
-    const blockModule = getThemeBlockModule(themeGraph, blockType);
     const path = [...nodePath, 'blocks', key];
     const node = nodeAtPath(sourceAst, path)! as ObjectNode;
-    const typeProperty = node.children.find((child) => child.key.value === 'type')!;
+    const typeProperty = node.children.find((child) => child.key.value === 'type');
+    if (!typeProperty) continue;
+
+    const blockModule = getThemeBlockModule(themeGraph, block.type);
     const start = typeProperty.loc.start.offset;
     const end = typeProperty.loc.end.offset;
     const sourceRange: Range = [start, end];
@@ -587,11 +589,12 @@ async function traverseBlockReferences(
 
   const promises: Promise<Void>[] = [];
   for (const [key, childBlock] of Object.entries(block.blocks)) {
-    const childBlockType = childBlock.type;
-    const childBlockModule = getThemeBlockModule(themeGraph, childBlockType);
     const path = [...nodePath, 'blocks', key];
     const node = nodeAtPath(sourceAst, path)! as ObjectNode;
-    const typeProperty = node.children.find((child) => child.key.value === 'type')!;
+    const typeProperty = node.children.find((child) => child.key.value === 'type');
+    if (!typeProperty) continue;
+
+    const childBlockModule = getThemeBlockModule(themeGraph, childBlock.type);
     const start = typeProperty.loc.start.offset;
     const end = typeProperty.loc.end.offset;
     const sourceRange: Range = [start, end];
