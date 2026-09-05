@@ -17,6 +17,8 @@ import {
   watchReferencesTreeViewConfig,
 } from '../common/ReferencesProvider';
 import { makeDeadCode, openLocation } from '../common/commands';
+import { CustomCheckPermissionRequest } from '@shopify/theme-language-server-common';
+import { makeCustomCheckPermissionHandler } from './customCheckConsent';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -88,6 +90,8 @@ async function startServer(context: ExtensionContext) {
   client.onRequest('fs/stat', async (uriString: string): Promise<FileStat> => {
     return workspace.fs.stat(Uri.parse(uriString));
   });
+
+  client.onRequest(CustomCheckPermissionRequest.type, makeCustomCheckPermissionHandler(context));
 
   client.start();
 }

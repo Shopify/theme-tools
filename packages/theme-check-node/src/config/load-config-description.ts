@@ -10,7 +10,7 @@ import { fileExists } from '../file-utils';
 import { AbsolutePath } from '../temp';
 import { thisNodeModuleRoot } from './installation-location';
 import { findThirdPartyChecks, loadThirdPartyChecks } from './load-third-party-checks';
-import { ConfigDescription } from './types';
+import { ConfigDescription, CustomCheckCandidate, LoadConfigOptions } from './types';
 import { URI, Utils } from 'vscode-uri';
 
 const flatten = <T>(arrs: T[][]): T[] => arrs.flat();
@@ -24,16 +24,27 @@ const flatten = <T>(arrs: T[][]): T[] => arrs.flat();
 export async function loadConfigDescription(
   configDescription: ConfigDescription,
   root: AbsolutePath,
+  options: LoadConfigOptions = {},
 ): Promise<Config> {
   const nodeModuleRoot = await findNodeModuleRoot(root);
-  const thirdPartyChecksPaths = await Promise.all([
+  const [globalThirdPartyChecksPaths, workspaceThirdPartyChecksPaths] = await Promise.all([
     findThirdPartyChecks(thisNodeModuleRoot()), // global checks
     findThirdPartyChecks(nodeModuleRoot),
-  ]).then(flatten);
-  const thirdPartyChecks = loadThirdPartyChecks([
-    ...configDescription.require,
-    ...thirdPartyChecksPaths,
   ]);
+  const customCheckCandidates = uniqueCandidates([
+    ...configDescription.require.map((path) => ({ source: 'require' as const, path })),
+    ...flatten([globalThirdPartyChecksPaths, workspaceThirdPartyChecksPaths]).map((path) => ({
+      source: 'discovery' as const,
+      path,
+    })),
+  ]);
+  const customChecksAuthorized =
+    customCheckCandidates.length === 0 ||
+    !options.authorizeCustomChecks ||
+    (await options.authorizeCustomChecks({ root, candidates: customCheckCandidates }));
+  const thirdPartyChecks = customChecksAuthorized
+    ? loadThirdPartyChecks(customCheckCandidates.map(({ path }) => path))
+    : [];
   const checks: CheckDefinition<SourceCodeType>[] = allChecks
     .concat(thirdPartyChecks)
     .filter(isEnabledBy(configDescription));
@@ -46,6 +57,15 @@ export async function loadConfigDescription(
     ignore: configDescription.ignore,
     rootUri: resolveRoot(rootUri, configDescription.root),
   };
+}
+
+function uniqueCandidates(candidates: CustomCheckCandidate[]): CustomCheckCandidate[] {
+  const seen = new Set<string>();
+  return candidates.filter(({ path }) => {
+    if (seen.has(path)) return false;
+    seen.add(path);
+    return true;
+  });
 }
 
 /**
