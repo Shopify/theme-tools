@@ -43,6 +43,9 @@ describe('DocumentLinksProvider', () => {
       {% assign x = 'assign.css' | asset_url %}
       {{ 'asset.js' | asset_url }}
       {% content_for 'block', type: 'block_name' %}
+      {% block 'container' %}{% endblock %}
+      {% block '_private' %}{% endblock %}
+      {% block 'with_args', block.settings.alignment: 'center' %}{% endblock %}
     `;
 
     documentManager.open(uriString, liquidHtmlContent, 1);
@@ -56,11 +59,24 @@ describe('DocumentLinksProvider', () => {
       'file:///path/to/project/assets/assign.css',
       'file:///path/to/project/assets/asset.js',
       'file:///path/to/project/blocks/block_name.liquid',
+      'file:///path/to/project/blocks/container.liquid',
+      'file:///path/to/project/blocks/_private.liquid',
+      'file:///path/to/project/blocks/with_args.liquid',
     ];
 
     expect(result.length).toBe(expectedUrls.length);
     for (let i = 0; i < expectedUrls.length; i++) {
       expect(result[i].target).toBe(expectedUrls[i]);
     }
+  });
+
+  it('should not create a link for the {% partial %} tag', async () => {
+    uriString = 'file:///path/to/liquid-html-document.liquid';
+    rootUri = 'file:///path/to/project';
+
+    documentManager.open(uriString, `{% partial 'x' %}{% endpartial %}`, 1);
+
+    const result = await documentLinksProvider.documentLinks(uriString);
+    expect(result).toEqual([]);
   });
 });
