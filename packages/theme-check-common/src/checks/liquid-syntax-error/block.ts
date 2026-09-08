@@ -26,11 +26,6 @@ export function checkBlockTag(node: LiquidTag, context: Context): void {
 
   const markup = node.markup as BlockMarkup;
 
-  if (hasInvalidBlockName(markup.name.value)) {
-    report(node, context, "Liquid syntax error: in 'block' - Valid syntax: block '[file_name]'");
-    return;
-  }
-
   if (hasInvalidBlockArguments(markup)) {
     report(node, context, SYNTAX_ERROR);
     return;
@@ -73,10 +68,6 @@ export function checkBlockParserError(error: Error, context: Context, source: st
     startIndex,
     endIndex,
   });
-}
-
-function hasInvalidBlockName(value: string): boolean {
-  return value.includes('/') || value.includes('.');
 }
 
 function hasInvalidBlockArguments(markup: BlockMarkup): boolean {
