@@ -80,6 +80,119 @@ describe('Module: JsonMissingBlock', () => {
       expect(offenses).to.be.empty;
     });
 
+    it('should not report an offense for an app block when the section allows @app and @theme', async () => {
+      const theme: MockTheme = {
+        'templates/product.app-block.json': `{
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "some_app_block": {
+                  "type": "shopify://apps/some-app/blocks/example/1234"
+                }
+              },
+              "block_order": ["some_app_block"]
+            }
+          },
+          "order": ["main"]
+        }`,
+        'sections/main-product.liquid': `
+          {% schema %}
+          {
+            "name": "Main product",
+            "blocks": [
+              {
+                "type": "@app"
+              },
+              {
+                "type": "@theme"
+              }
+            ]
+          }
+          {% endschema %}
+        `,
+      };
+
+      const offenses = await check(theme, [JSONMissingBlock]);
+      expect(offenses).to.be.empty;
+    });
+
+    it('should not report an offense for an app block when the section allows @app', async () => {
+      const theme: MockTheme = {
+        'templates/product.app-block.json': `{
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "some_app_block": {
+                  "type": "shopify://apps/some-app/blocks/example/1234"
+                }
+              },
+              "block_order": ["some_app_block"]
+            }
+          },
+          "order": ["main"]
+        }`,
+        'sections/main-product.liquid': `
+          {% schema %}
+          {
+            "name": "Main product",
+            "blocks": [
+              {
+                "type": "@app"
+              }
+            ]
+          }
+          {% endschema %}
+        `,
+      };
+
+      const offenses = await check(theme, [JSONMissingBlock]);
+      expect(offenses).to.be.empty;
+    });
+
+    it('should report an offense for a local block when the section allows only @app', async () => {
+      const theme: MockTheme = {
+        'templates/product.local-block.json': `{
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "some_local_block": {
+                  "type": "text"
+                }
+              },
+              "block_order": ["some_local_block"]
+            }
+          },
+          "order": ["main"]
+        }`,
+        'sections/main-product.liquid': `
+          {% schema %}
+          {
+            "name": "Main product",
+            "blocks": [
+              {
+                "type": "@app"
+              }
+            ]
+          }
+          {% endschema %}
+        `,
+        'blocks/text.liquid': '',
+      };
+
+      const offenses = await check(theme, [JSONMissingBlock]);
+      expect(offenses).to.have.length(1);
+      expect(offenses[0].message).to.equal(
+        "Block type 'text' is not allowed in 'sections/main-product.liquid'.",
+      );
+
+      const content = theme['templates/product.local-block.json'];
+      const erroredContent = content.slice(offenses[0].start.index, offenses[0].end.index);
+      expect(erroredContent).to.equal('"text"');
+    });
+
     it('should report an offense when a nested block does not exist', async () => {
       const theme: MockTheme = {
         'templates/product.nested.json': `{
@@ -140,6 +253,47 @@ describe('Module: JsonMissingBlock', () => {
   });
 
   describe('Allowed block type validation', () => {
+    it('should report an offense for an app block when the section does not allow @app', async () => {
+      const theme: MockTheme = {
+        'templates/product.app-block.json': `{
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "some_app_block": {
+                  "type": "shopify://apps/some-app/blocks/example/1234"
+                }
+              },
+              "block_order": ["some_app_block"]
+            }
+          },
+          "order": ["main"]
+        }`,
+        'sections/main-product.liquid': `
+          {% schema %}
+          {
+            "name": "Main product",
+            "blocks": [
+              {
+                "type": "@theme"
+              }
+            ]
+          }
+          {% endschema %}
+        `,
+      };
+
+      const offenses = await check(theme, [JSONMissingBlock]);
+      expect(offenses).to.have.length(1);
+      expect(offenses[0].message).to.equal(
+        "Block type 'shopify://apps/some-app/blocks/example/1234' is not allowed in 'sections/main-product.liquid'.",
+      );
+
+      const content = theme['templates/product.app-block.json'];
+      const erroredContent = content.slice(offenses[0].start.index, offenses[0].end.index);
+      expect(erroredContent).to.equal('"shopify://apps/some-app/blocks/example/1234"');
+    });
+
     it('should report an offense when block exists but is not in the section liquid schema', async () => {
       const theme: MockTheme = {
         'templates/product.valid.json': `{
