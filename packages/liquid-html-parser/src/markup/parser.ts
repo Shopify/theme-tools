@@ -1215,15 +1215,22 @@ export class MarkupParser {
     return result;
   }
 
-  // filter := id (":" arguments)?
+  // filter := id (":" arguments?)?
   filter(previousEnd: number): LiquidFilter {
     const nameToken = this.consume(MarkupTokenType.Id);
     let args: LiquidArgument[] = [];
     let end = nameToken.end;
-    if (this.consumeOptional(MarkupTokenType.Colon)) {
-      // Lax: a colon with no following argument (`upcase:`) is tolerated; only
-      // parse arguments when something argument-like actually follows.
-      if (!(this.lax || this.tolerant) || this.atArgumentStart()) {
+    const colon = this.consumeOptional(MarkupTokenType.Colon);
+    if (colon) {
+      end = colon.end;
+      const atFilterBoundary = this.isAtEnd() || this.look(MarkupTokenType.Pipe);
+      const hasOnlyWhitespaceBeforeBoundary = !/\S/.test(
+        this.source.slice(colon.end, this.peek().start),
+      );
+      const emptyArguments = atFilterBoundary && hasOnlyWhitespaceBeforeBoundary;
+      // Strict mode accepts an empty list at a clean filter boundary. Recovery
+      // modes also skip malformed fragments that cannot start an argument.
+      if (!emptyArguments && (!(this.lax || this.tolerant) || this.atArgumentStart())) {
         args = this.arguments();
       }
       if (args.length > 0) {
