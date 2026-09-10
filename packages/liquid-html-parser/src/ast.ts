@@ -358,11 +358,8 @@ export interface LiquidTagBlock extends LiquidTagNode<NamedTags.block, BlockMark
 export interface BlockMarkup extends ASTNode<NodeTypes.BlockMarkup> {
   /** The name of the block template */
   name: LiquidString;
-  // TODO: BlockArrayArgument exists as a separate type because
-  // LiquidNamedArgument.value is typed as LiquidExpression, which doesn't
-  // include BlockArrayLiteral. Once LiquidExpression supports array literals,
-  // unify BlockArrayArgument into LiquidNamedArgument.
-  args: (LiquidNamedArgument | BlockArrayArgument)[];
+  /** Optional named arguments, including block-local arrays. */
+  args: BlockArgument[];
 }
 
 /** https://shopify.dev/docs/api/liquid/tags#section */
@@ -373,7 +370,7 @@ export interface SectionMarkup extends ASTNode<NodeTypes.SectionMarkup> {
   /** The name of the section template */
   name: LiquidString;
   /** Optional named arguments */
-  args: (LiquidNamedArgument | BlockArrayArgument)[];
+  args: BlockArgument[];
 }
 
 /** https://shopify.dev/docs/api/liquid/tags#sections */
@@ -591,20 +588,29 @@ export interface LiquidRange extends ASTNode<NodeTypes.Range> {
  * A single-level array literal, e.g. `['a', 'b']` or `[1, 2, x]`.
  * Supported as a block or section tag argument value. Nested arrays are rejected.
  *
- * Reachable only via `BlockArrayArgument.value` and the block/section parser path.
+ * Reachable only via `BlockArgument.value` and the block/section parser path.
  */
 export interface BlockArrayLiteral extends ASTNode<'BlockArrayLiteral'> {
   /** The parsed element expressions, in source order */
   elements: LiquidExpression[];
 }
 
-/**
- * Tag arg whose value is a literal array. Lives on block and section markup.
- */
-export interface BlockArrayArgument extends ASTNode<NodeTypes.NamedArgument> {
+/** Value accepted by named arguments on block and section tags. */
+export type BlockArgumentValue = LiquidExpression | BlockArrayLiteral;
+
+/** Named argument accepted by block and section tags. */
+export interface BlockArgument extends ASTNode<NodeTypes.NamedArgument> {
   /** name: value */
   name: string;
 
+  /** Scalar or single-level array value. */
+  value: BlockArgumentValue;
+}
+
+/**
+ * Tag arg whose value is a literal array. Lives on block and section markup.
+ */
+export interface BlockArrayArgument extends BlockArgument {
   /** name: value (always an array literal) */
   value: BlockArrayLiteral;
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { sectionTag } from './section';
 import { TagKind, type Parser } from '../environment';
-import { tokenizeMarkup } from '../markup/tokenizer';
+import { MarkupTokenType, tokenizeMarkup } from '../markup/tokenizer';
 import { MarkupParser } from '../markup/parser';
 import { NodeTypes } from '../types';
 
@@ -54,6 +54,15 @@ describe('sectionTag', () => {
       name: 'key',
       value: { type: NodeTypes.VariableLookup, name: 'value' },
     });
+  });
+
+  it('leaves filtered named arguments unconsumed', () => {
+    const markup = parser("'featured', product: collections.frontpage.products | first");
+
+    sectionTag.parse('section', markup, stubParser);
+
+    expect(markup.peek().type).toBe(MarkupTokenType.Pipe);
+    expect(markup.isAtEnd()).toBe(false);
   });
 
   it('parses section setting args with array values', () => {

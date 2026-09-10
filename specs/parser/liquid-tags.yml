@@ -2159,3 +2159,41 @@ cases:
               blockStartPosition: { start: [1, 2], text: __proto__ a }
               markupPosition: { start: [1, 12], text: a }
               position: { start: [1, 2], text: __proto__ a }
+  - name: should keep filtered block arguments as string markup
+    source: "{% block 'card', product: products | first %}{% endblock %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% block 'card', product: products | first %}{% endblock %}" }
+      children:
+        - type: LiquidTag
+          name: block
+          markup: "'card', product: products | first"
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% block 'card', product: products | first %}" }
+          blockEndPosition: { start: [0, 45], text: "{% endblock %}" }
+          markupPosition: { start: [0, 9], text: "'card', product: products | first " }
+          position: { start: [0, 0], text: "{% block 'card', product: products | first %}{% endblock %}" }
+          reason: "Unexpected token in 'block' tag: |"
+          children: []
+  - name: should keep filtered section arguments as string markup
+    source: "{% section 'featured', product: products | first %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% section 'featured', product: products | first %}" }
+      children:
+        - type: LiquidTag
+          name: section
+          markup: "'featured', product: products | first"
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% section 'featured', product: products | first %}" }
+          markupPosition: { start: [0, 11], text: "'featured', product: products | first " }
+          position: { start: [0, 0], text: "{% section 'featured', product: products | first %}" }
+          reason: unexpected tokens after markup

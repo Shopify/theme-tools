@@ -58,6 +58,16 @@ describe('blockTag', () => {
     ]);
   });
 
+  it('rejects filtered named arguments', () => {
+    expect(() =>
+      blockTag.parse(
+        'block',
+        parser("'card', product: collections.frontpage.products | first"),
+        stubParser,
+      ),
+    ).toThrow("Unexpected token in 'block' tag: |");
+  });
+
   describe('array-literal named args (block-only)', () => {
     it('parses an array of strings', () => {
       const result = blockTag.parse('block', parser("'name', items: ['a', 'b']"), stubParser);
