@@ -44,6 +44,8 @@ describe('tolerant mode is inert on clean input', () => {
     '',
     'plain text only',
     '{{ product.title }}',
+    "{{ 'key' | t: }}",
+    "{{ 'key' | t: | escape }}",
     '{% assign x = 1 %}',
     '{% if x %}a{% else %}b{% endif %}',
     '{% for item in collection %}{{ item.title }}{% endfor %}',

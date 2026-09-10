@@ -44,6 +44,23 @@ describe('echoTag', () => {
     });
   });
 
+  it("parses 'key' | t: with no arguments", () => {
+    const markup = "'key' | t:  ";
+    const result = echoTag.parse('echo', parser(markup), stubParser);
+    expect(result).toMatchObject({
+      type: NodeTypes.LiquidVariable,
+      rawSource: "'key' | t:",
+      filters: [
+        {
+          type: NodeTypes.LiquidFilter,
+          name: 't',
+          args: [],
+          position: { start: OFFSET + 5, end: OFFSET + 10 },
+        },
+      ],
+    });
+  });
+
   it("parses 'hello' | append: ' world'", () => {
     const result = echoTag.parse('echo', parser("'hello' | append: ' world'"), stubParser);
     expect(result).toMatchObject({
