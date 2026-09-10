@@ -40,6 +40,50 @@ describe('Unit: liquid-variable-output', () => {
     expectPath(ast, 'children.0.markup.filters.0.name').to.eql('upcase');
   });
 
+  it.each(["{{ 'key' | t:}}", "{{ 'key' | t:  }}", "{{- 'key' | t:\n-}}"])(
+    'should parse an empty filter argument list in strict mode: %s',
+    (source) => {
+      for (const parse of [toLiquidHtmlAST, toLiquidAST]) {
+        const ast = parse(source, { mode: 'strict', allowUnclosedDocumentNode: false });
+        expectPath(ast, 'children.0.markup.type').to.eql('LiquidVariable');
+        expectPath(ast, 'children.0.markup.filters').to.have.lengthOf(1);
+        expectPath(ast, 'children.0.markup.filters.0.name').to.eql('t');
+        expectPath(ast, 'children.0.markup.filters.0.args').to.eql([]);
+        expectPath(ast, 'children.0.markup.rawSource').to.eql("'key' | t:");
+        expectPosition(ast, 'children.0.markup.filters.0').to.eql(' | t:');
+      }
+    },
+  );
+
+  it('should parse another filter after an empty argument list', () => {
+    const ast = toLiquidHtmlAST("{{ 'key' | t: | escape }}", {
+      mode: 'strict',
+      allowUnclosedDocumentNode: false,
+    });
+    expectPath(ast, 'children.0.markup.filters').to.have.lengthOf(2);
+    expectPath(ast, 'children.0.markup.filters.0.name').to.eql('t');
+    expectPath(ast, 'children.0.markup.filters.0.args').to.eql([]);
+    expectPosition(ast, 'children.0.markup.filters.0').to.eql(' | t:');
+    expectPath(ast, 'children.0.markup.filters.1.name').to.eql('escape');
+    expectPosition(ast, 'children.0.markup.filters.1').to.eql(' | escape');
+  });
+
+  it.each([
+    "'key' | t: title:",
+    "'key' | t: title: | escape",
+    "'key' | t: ,",
+    "'key' | t: title: product.title,",
+    "'key' | t: @",
+  ])('should keep malformed filter arguments as string markup: %s', (markup) => {
+    for (const parse of [toLiquidHtmlAST, toLiquidAST]) {
+      const ast = parse(`{{ ${markup} }}`, {
+        mode: 'strict',
+        allowUnclosedDocumentNode: false,
+      });
+      expectPath(ast, 'children.0.markup').to.eql(markup);
+    }
+  });
+
   it('should parse multiple filters', () => {
     const ast = toLiquidHtmlAST('{{ product | upcase | strip }}');
     expectPath(ast, 'children.0.markup.filters').to.have.lengthOf(2);

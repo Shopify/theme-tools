@@ -115,6 +115,43 @@ describe('renderTag', () => {
     });
   });
 
+  it('parses legacy with-prefixed named arguments as an implicit variable and argument', () => {
+    const mp = parser("'font' with multiplier: 1.5");
+    const result = renderTag.parse('render', mp, stubParser);
+
+    expect(result).toMatchObject({
+      snippet: { type: NodeTypes.String, value: 'font' },
+      variable: {
+        type: NodeTypes.RenderVariableExpression,
+        kind: 'with',
+        name: { type: NodeTypes.VariableLookup, name: 'multiplier' },
+      },
+      alias: null,
+      args: [{ type: NodeTypes.NamedArgument, name: 'multiplier' }],
+    });
+    expect(mp.isAtEnd()).toBe(true);
+  });
+
+  it('parses an alias and named arguments after legacy with-prefixed arguments', () => {
+    const mp = parser(`"card" with product: product as item, show_vendor: true`);
+    const result = renderTag.parse('render', mp, stubParser);
+
+    expect(result).toMatchObject({
+      snippet: { type: NodeTypes.String, value: 'card' },
+      variable: {
+        type: NodeTypes.RenderVariableExpression,
+        kind: 'with',
+        name: { type: NodeTypes.VariableLookup, name: 'product' },
+      },
+      alias: { type: NodeTypes.RenderAliasExpression, value: 'item' },
+      args: [
+        { type: NodeTypes.NamedArgument, name: 'product' },
+        { type: NodeTypes.NamedArgument, name: 'show_vendor' },
+      ],
+    });
+    expect(mp.isAtEnd()).toBe(true);
+  });
+
   it('parses named arguments with trailing comma', () => {
     const markup =
       "'slideshow-slide', index: forloop.index0, children: children, media_fit: block_settings.media_fit,";
@@ -166,6 +203,31 @@ describe('renderTag', () => {
     expect(mp.isAtEnd()).toBe(true);
   });
 
+  it('does not parse an alias after regular named arguments', () => {
+    const mp = parser(`"snippet", a: 1 as item`);
+    const result = renderTag.parse('render', mp, stubParser);
+
+    expect(result.alias).toBeNull();
+    expect(result.args).toMatchObject([{ type: NodeTypes.NamedArgument, name: 'a' }]);
+    expect(mp.isAtEnd()).toBe(false);
+  });
+
+  it('does not parse a late alias after a regular with variable', () => {
+    const mp = parser(`"snippet" with product, title: "T" as item`);
+    const result = renderTag.parse('render', mp, stubParser);
+
+    expect(result).toMatchObject({
+      variable: {
+        type: NodeTypes.RenderVariableExpression,
+        kind: 'with',
+        name: { type: NodeTypes.VariableLookup, name: 'product' },
+      },
+      alias: null,
+      args: [{ type: NodeTypes.NamedArgument, name: 'title' }],
+    });
+    expect(mp.isAtEnd()).toBe(false);
+  });
+
   // Ruby render/include strict2_parse keys are a bare `id` immediately followed
   // by a colon (`key = p.consume; p.consume(:colon)`), NOT a dotted path. A
   // dotted key is not consumed as a named arg, leaving trailing tokens that fail
@@ -209,6 +271,79 @@ describe('includeTag', () => {
     expect(result.snippet).toMatchObject({ type: NodeTypes.String, value: 'snippet' });
     expect(result.args).toHaveLength(2);
     expect(mp.isAtEnd()).toBe(true);
+  });
+
+  it('parses legacy with-prefixed named arguments', () => {
+    const mp = parser(
+      "'image-style' with image: product.featured_image, width: max_height, small_style: true",
+    );
+    const result = includeTag.parse('include', mp, stubParser);
+
+    expect(result).toMatchObject({
+      snippet: { type: NodeTypes.String, value: 'image-style' },
+      variable: {
+        type: NodeTypes.RenderVariableExpression,
+        kind: 'with',
+        name: { type: NodeTypes.VariableLookup, name: 'image' },
+      },
+      alias: null,
+      args: [
+        { type: NodeTypes.NamedArgument, name: 'image' },
+        { type: NodeTypes.NamedArgument, name: 'width' },
+        { type: NodeTypes.NamedArgument, name: 'small_style' },
+      ],
+    });
+    expect(mp.isAtEnd()).toBe(true);
+  });
+
+  it('parses an alias and named arguments after legacy with-prefixed arguments', () => {
+    const mp = parser(`"card" with product: product as item, show_vendor: true`);
+    const result = includeTag.parse('include', mp, stubParser);
+
+    expect(result).toMatchObject({
+      variable: {
+        type: NodeTypes.RenderVariableExpression,
+        kind: 'with',
+        name: { type: NodeTypes.VariableLookup, name: 'product' },
+      },
+      alias: { type: NodeTypes.RenderAliasExpression, value: 'item' },
+      args: [
+        { type: NodeTypes.NamedArgument, name: 'product' },
+        { type: NodeTypes.NamedArgument, name: 'show_vendor' },
+      ],
+    });
+    expect(mp.isAtEnd()).toBe(true);
+  });
+
+  it('still parses include with a context variable', () => {
+    const mp = parser("'snippet' with product, title: 'Card'");
+    const result = includeTag.parse('include', mp, stubParser);
+
+    expect(result).toMatchObject({
+      variable: {
+        type: NodeTypes.RenderVariableExpression,
+        kind: 'with',
+        name: { type: NodeTypes.VariableLookup, name: 'product' },
+      },
+      args: [{ type: NodeTypes.NamedArgument, name: 'title' }],
+    });
+    expect(mp.isAtEnd()).toBe(true);
+  });
+
+  it('does not parse a late alias after a regular with variable', () => {
+    const mp = parser(`"snippet" with product, title: "T" as item`);
+    const result = includeTag.parse('include', mp, stubParser);
+
+    expect(result).toMatchObject({
+      variable: {
+        type: NodeTypes.RenderVariableExpression,
+        kind: 'with',
+        name: { type: NodeTypes.VariableLookup, name: 'product' },
+      },
+      alias: null,
+      args: [{ type: NodeTypes.NamedArgument, name: 'title' }],
+    });
+    expect(mp.isAtEnd()).toBe(false);
   });
 
   it('rejects a non-string template name for render (stricter parse)', () => {

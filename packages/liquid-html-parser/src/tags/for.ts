@@ -10,13 +10,17 @@ function parseForMarkup(_name: string, markup: MarkupParser, _parser: Parser): F
     throw new Error("Expected 'in'");
   }
   const collection = markup.valueExpression();
-  const reversed = markup.id('reversed');
+  let reversed = false;
 
   // Named args in for/tablerow accept optional commas between args
   // (matching Ruby's `p.consume?(:comma)` behavior).
   const args: LiquidNamedArgument[] = [];
   while (!markup.isAtEnd()) {
     markup.consumeOptional(MarkupTokenType.Comma);
+    if (markup.id('reversed')) {
+      reversed = true;
+      continue;
+    }
     if (markup.isLax()) {
       // Lax recovery (render-tree only; `toLiquidHtmlAST` parses strict, so this
       // branch never runs there): Ruby's lax `tablerow`/`for` parse stops at the

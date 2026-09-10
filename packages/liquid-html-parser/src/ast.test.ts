@@ -688,6 +688,23 @@ describe('Unit: Stage 2 (AST)', () => {
             namedArguments: [],
           },
           {
+            expression: `"card" with product: product as item, show_vendor: true`,
+            snippetType: 'String',
+            alias: {
+              value: 'item',
+            },
+            renderVariableExpression: {
+              kind: 'with',
+              name: {
+                type: 'VariableLookup',
+              },
+            },
+            namedArguments: [
+              { name: 'product', valueType: 'VariableLookup' },
+              { name: 'show_vendor', valueType: 'LiquidLiteral' },
+            ],
+          },
+          {
             expression: `"snippet" for products as product`,
             snippetType: 'String',
             alias: {
@@ -757,6 +774,19 @@ describe('Unit: Stage 2 (AST)', () => {
             }
           },
         );
+      });
+
+      it('should keep late aliases in regular render and include markup unparsed', () => {
+        const markups = [`"snippet", a: 1 as item`, `"snippet" with product, title: "T" as item`];
+
+        for (const { toAST, expectPath } of testCases) {
+          for (const tag of ['render', 'include']) {
+            for (const markup of markups) {
+              ast = toAST(`{% ${tag} ${markup} %}`);
+              expectPath(ast, 'children.0.markup').to.equal(markup);
+            }
+          }
+        }
       });
 
       it('should parse render tags with named args and no comma (Bug 23 regression)', () => {

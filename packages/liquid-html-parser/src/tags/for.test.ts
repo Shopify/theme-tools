@@ -85,6 +85,40 @@ describe('forTag', () => {
     expect(result.args).toHaveLength(2);
   });
 
+  it('parses for loop with reversed after named args', () => {
+    const result = forTag.parse('for', parser('item in collection limit:5 reversed'), stubParser);
+
+    expect(result).toMatchObject({
+      type: NodeTypes.ForMarkup,
+      variableName: 'item',
+      collection: { type: NodeTypes.VariableLookup, name: 'collection' },
+      reversed: true,
+    });
+    expect(result.args).toHaveLength(1);
+    expect(result.args[0]).toMatchObject({
+      type: NodeTypes.NamedArgument,
+      name: 'limit',
+      value: { type: NodeTypes.Number, value: '5' },
+    });
+  });
+
+  it.each([
+    ['for', forTag],
+    ['tablerow', tablerowTag],
+  ] as const)('parses reversed between named args for %s', (name, tag) => {
+    const markup = parser('item in collection limit:5 reversed offset:2');
+    const result = tag.parse(name, markup, stubParser);
+
+    expect(result).toMatchObject({
+      reversed: true,
+      args: [
+        { type: NodeTypes.NamedArgument, name: 'limit' },
+        { type: NodeTypes.NamedArgument, name: 'offset' },
+      ],
+    });
+    expect(markup.isAtEnd()).toBe(true);
+  });
+
   it('parses for loop with comma-separated named args', () => {
     const result = forTag.parse('for', parser('item in collection limit:5, offset:2'), stubParser);
     expect(result).toMatchObject({
