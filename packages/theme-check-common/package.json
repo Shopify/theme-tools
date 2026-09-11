@@ -4,6 +4,31 @@
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./path": {
+      "types": "./dist/path.d.ts",
+      "default": "./dist/path.js"
+    },
+    "./test": {
+      "types": "./dist/test/index.d.ts",
+      "default": "./dist/test/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "path": [
+        "dist/path.d.ts"
+      ],
+      "test": [
+        "dist/test/index.d.ts"
+      ]
+    }
+  },
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/theme-check-common#readme",
   "repository": {

@@ -6,7 +6,7 @@ import {
   Severity,
   SourceCodeType,
 } from '@shopify/theme-check-common';
-import { MockFileSystem } from '@shopify/theme-check-common/src/test';
+import { MockFileSystem } from '@shopify/theme-check-common/test';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Connection } from 'vscode-languageserver';
 import { DocumentManager } from '../documents';
