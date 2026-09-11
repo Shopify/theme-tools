@@ -42,6 +42,7 @@ export const ExcessiveSettingsCount: LiquidCheckDefinition<typeof schema> = {
       description:
         'Reports section or block schemas that declare more top-level settings than the configured maximum.',
       recommended: true,
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/excessive-settings-count',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,

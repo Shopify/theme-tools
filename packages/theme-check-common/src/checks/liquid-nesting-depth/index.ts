@@ -33,6 +33,7 @@ export const LiquidNestingDepth: LiquidCheckDefinition<typeof schema> = {
     docs: {
       description: 'Reports Liquid files with deeply nested control-flow structures.',
       recommended: true,
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/liquid-nesting-depth',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,

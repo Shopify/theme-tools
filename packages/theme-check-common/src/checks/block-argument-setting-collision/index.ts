@@ -11,6 +11,7 @@ export const BlockArgumentSettingCollision: LiquidCheckDefinition = {
       description:
         "Reports a plain block tag argument whose name matches a setting id in the target block's schema. The author likely intended block.settings.<name>. May overlap with UnrecognizedBlockArguments, which reports the same argument as undeclared.",
       recommended: true,
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/block-argument-setting-collision',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,

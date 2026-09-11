@@ -50,6 +50,7 @@ export const MaxFileSize: LiquidCheckDefinition = {
     docs: {
       description: "Reports theme files that exceed Shopify's maximum file size.",
       recommended: true,
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/max-file-size',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.ERROR,
