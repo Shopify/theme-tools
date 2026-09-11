@@ -3,9 +3,6 @@ name: VS Code Release Workflow in a pinch
 on: workflow_dispatch
 
 env:
-  VSCE_PAT: ${{ secrets.VSCE_PAT }}
-  OVSX_PAT: ${{ secrets.OPENVSX_TOKEN }}
-  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   npm_config_registry: "https://registry.npmjs.org"
 
@@ -40,6 +37,10 @@ jobs:
 
       - name: VS Code Marketplace publish
         run: pnpm publish:vsce
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
       - name: Open VSX Registry publish
         run: pnpm publish:ovsx
+        env:
+          OVSX_PAT: ${{ secrets.OPENVSX_TOKEN }}
