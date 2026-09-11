@@ -281,6 +281,20 @@ ${buildComment('theme-check-enable')}
         expect(offenses).to.have.length(0);
       });
 
+      it('should disable the next line when nested inside a raw HTML tag like <style> or <script>', async () => {
+        for (const rawTag of ['style', 'script']) {
+          const file = `<${rawTag}>
+  {% # theme-check-disable-next-line %}
+  {% render 'something' %}
+  {% render 'other-thing' %}
+</${rawTag}>`;
+
+          const offenses = await check({ 'code.liquid': file }, checks);
+          expect(offenses).to.have.length(1);
+          expectRenderMarkupOffense(offenses, 'other-thing.liquid');
+        }
+      });
+
       it('should still report offenses in doc tags when disable-next-line is not present', async () => {
         const file = `{% doc %}
   @param baz - first param

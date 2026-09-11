@@ -185,6 +185,8 @@ function getNextNode(
     siblingNodes = parentNode.markup;
   } else if ('children' in parentNode) {
     siblingNodes = parentNode.children || [];
+  } else if ('nodes' in parentNode) {
+    siblingNodes = parentNode.nodes || [];
   }
 
   const currentNodeIdx = siblingNodes.findIndex((c) => c === node);
