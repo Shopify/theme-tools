@@ -1,5 +1,17 @@
 # @shopify/theme-language-server-common
 
+## 2.22.3
+
+### Patch Changes
+
+- 4091c063: Add a document link for the `{% block 'name' %}` tag so cmd+click on the block
+  name navigates to `blocks/<name>.liquid`.
+- Updated dependencies
+- Updated dependencies [74185263]
+  - @shopify/theme-graph@0.3.3
+  - @shopify/liquid-html-parser@2.10.1
+  - @shopify/theme-check-common@3.29.1
+
 ## 2.22.2
 
 ### Patch Changes

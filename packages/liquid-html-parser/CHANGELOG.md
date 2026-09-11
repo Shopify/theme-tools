@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.10.1
+
+### Patch Changes
+
+- 74185263: Parse empty filter argument lists such as `{{ 'key' | t: }}`.
+
 ## 2.10.0
 
 ### Minor Changes

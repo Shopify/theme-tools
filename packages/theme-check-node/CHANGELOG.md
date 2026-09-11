@@ -1,5 +1,16 @@
 # @shopify/theme-check-node
 
+## 3.29.1
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [74185263]
+  - @shopify/theme-graph@0.3.3
+  - @shopify/liquid-html-parser@2.10.1
+  - @shopify/theme-check-common@3.29.1
+  - @shopify/theme-check-docs-updater@3.29.1
+
 ## 3.29.0
 
 ### Minor Changes
