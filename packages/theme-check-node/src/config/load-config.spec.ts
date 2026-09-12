@@ -9,7 +9,10 @@ import {
   recommended,
   Severity,
   SourceCodeType,
+  check as runChecks,
+  toSourceCode,
 } from '@shopify/theme-check-common';
+import { NodeFileSystem } from '../NodeFileSystem';
 import {
   createMockConfigFile,
   createMockNodeModule,
@@ -36,7 +39,31 @@ describe('Unit: loadConfig', () => {
     const config = await loadConfig(undefined, __dirname);
     expect(config.checks).to.eql(recommended);
     expect(config.context).to.eql('theme');
+    expect(config.settings.MatchingTranslations!.requireOther).to.equal(true);
   });
+
+  it.each([true, false])(
+    'passes requireOther: %s from YAML to MatchingTranslations',
+    async (requireOther) => {
+      const configPath = await createMockConfigFile(
+        tempDir,
+        `extends: nothing\nMatchingTranslations:\n  enabled: true\n  requireOther: ${requireOther}\n`,
+      );
+      const config = await loadConfig(configPath, tempDir);
+      const uri = URI.file(path.join(tempDir, 'locales/en.default.json')).toString();
+      const source = toSourceCode(uri, JSON.stringify({ items: { one: 'One item' } }))!;
+      const offenses = await runChecks([source], config, { fs: NodeFileSystem });
+
+      expect(offenses).to.have.length(requireOther ? 1 : 0);
+      if (requireOther) {
+        expect(offenses[0]).to.include({
+          check: 'MatchingTranslations',
+          uri: source.uri,
+          message: "The pluralized translation 'items' is missing the 'other' key",
+        });
+      }
+    },
+  );
 
   describe.each(['shopify.extension.toml', 'shopify.app.toml'])(
     'when the root contains a %s file',
