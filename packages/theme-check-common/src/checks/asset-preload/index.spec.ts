@@ -43,6 +43,18 @@ describe('Module: AssetPreload', () => {
     expect(highlights).to.eql([`<link href="a.png" rel="preload" as="image">`]);
   });
 
+  it('allows high-priority image preloading', async () => {
+    // The preload_tag filter cannot generate responsive imagesrcset or
+    // imagesizes attributes, so LCP images may require an explicit
+    // high-priority preload link.
+    const sourceCode = `
+      <link href="a.png" rel="preload" as="image" fetchpriority="high">
+    `;
+
+    const offenses = await runLiquidCheck(AssetPreload, sourceCode);
+    expect(offenses).to.have.lengthOf(0);
+  });
+
   it('reports general preloading', async () => {
     const sourceCode = `
       <link href="a.js" rel="preload" as="script">

@@ -9,6 +9,21 @@ function isPreload(attr: ValuedHtmlAttribute): boolean {
   );
 }
 
+function isHighPriorityImagePreload(attributes: ValuedHtmlAttribute[]): boolean {
+  return (
+    attributes.some(
+      (attr) =>
+        isAttr(attr, 'as') &&
+        attr.value.some((node) => node.type === NodeTypes.TextNode && node.value === 'image'),
+    ) &&
+    attributes.some(
+      (attr) =>
+        isAttr(attr, 'fetchpriority') &&
+        attr.value.some((node) => node.type === NodeTypes.TextNode && node.value === 'high'),
+    )
+  );
+}
+
 export const AssetPreload: LiquidCheckDefinition = {
   meta: {
     code: 'AssetPreload',
@@ -33,9 +48,13 @@ export const AssetPreload: LiquidCheckDefinition = {
         ) as ValuedHtmlAttribute | undefined;
 
         if (node.name === 'link' && preloadLinkAttr) {
-          const asAttr: ValuedHtmlAttribute | undefined = node.attributes
-            .filter(isValuedHtmlAttribute)
-            .find((attr) => isAttr(attr, 'as'));
+          const valuedAttributes = node.attributes.filter(isValuedHtmlAttribute);
+
+          if (isHighPriorityImagePreload(valuedAttributes)) return;
+
+          const asAttr: ValuedHtmlAttribute | undefined = valuedAttributes.find((attr) =>
+            isAttr(attr, 'as'),
+          );
 
           const assetType = asAttr?.value.find((node): node is TextNode =>
             isNodeOfType(NodeTypes.TextNode, node),
