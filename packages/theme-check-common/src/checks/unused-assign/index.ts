@@ -6,7 +6,9 @@ import {
   NodeTypes,
 } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
+import { getSchema } from '../../to-schema';
 import { isWithinRawTagThatDoesNotParseItsContents } from '../utils';
+import { getVariableLookupsInExpression } from '../valid-visible-if/visible-if-utils';
 
 export const UnusedAssign: LiquidCheckDefinition = {
   meta: {
@@ -51,6 +53,25 @@ export const UnusedAssign: LiquidCheckDefinition = {
           return;
         }
         checkVariableUsage(node);
+      },
+
+      async LiquidRawTag(node) {
+        if (node.name !== 'schema' || node.body.kind !== 'json') return;
+
+        const schema = await getSchema(context);
+        const validSchema = schema?.validSchema;
+        if (!validSchema || validSchema instanceof Error) return;
+
+        for (const setting of validSchema.settings ?? []) {
+          if (!('visible_if' in setting) || typeof setting.visible_if !== 'string') continue;
+
+          const lookups = getVariableLookupsInExpression(setting.visible_if);
+          if (!lookups || 'warning' in lookups) continue;
+
+          for (const lookup of lookups) {
+            if (lookup.name) usedVariables.add(lookup.name);
+          }
+        }
       },
 
       async onCodePathEnd() {

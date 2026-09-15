@@ -97,6 +97,26 @@ describe('Module: ValidVisibleIf', () => {
     expect(offenses).toEqual([]);
   });
 
+  it('reports no error for a variable assigned in the Liquid file', async () => {
+    const themeData = structuredClone(baseThemeData);
+
+    themeData['blocks/example.liquid'].settings!.push({
+      id: 'some-other-setting',
+      visible_if: '{{ effective_fill == "image" }}',
+    });
+
+    const theme = makeTheme(themeData);
+    theme['blocks/example.liquid'] = `
+      {% liquid
+        assign effective_fill = 'image'
+      %}
+      ${theme['blocks/example.liquid']}
+    `;
+
+    const offenses = await check(theme, [ValidVisibleIf, ValidVisibleIfSettingsSchema]);
+    expect(offenses).toEqual([]);
+  });
+
   it('reports no error for a valid reference to a section schema (simple lookup)', async () => {
     const themeData = structuredClone(baseThemeData);
 

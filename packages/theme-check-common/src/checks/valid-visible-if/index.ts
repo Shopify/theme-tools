@@ -1,4 +1,9 @@
-import { type LiquidVariableLookup } from '@shopify/liquid-html-parser';
+import {
+  NodeTypes,
+  type LiquidTag,
+  type LiquidTagAssign,
+  type LiquidVariableLookup,
+} from '@shopify/liquid-html-parser';
 import {
   Severity,
   SourceCodeType,
@@ -39,7 +44,15 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
   meta: { ...meta, type: SourceCodeType.LiquidHtml },
 
   create(context) {
+    const assignedVariables: Vars = {};
+
     return {
+      async LiquidTag(node) {
+        if (isLiquidTagAssign(node)) {
+          assignedVariables[node.markup.name] = true;
+        }
+      },
+
       async LiquidRawTag(node) {
         if (node.name !== 'schema' || node.body.kind !== 'json') return;
 
@@ -64,7 +77,7 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
           validSchema.settings.map((setting) => [setting.id, true] as const),
         );
 
-        const vars: Vars = { settings };
+        const vars: Vars = { ...assignedVariables, settings };
         if (isSectionSchema(schema)) {
           vars.section = { settings: currentFileSettings };
         } else if (isBlockSchema(schema)) {
@@ -122,6 +135,12 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
     };
   },
 };
+
+function isLiquidTagAssign(node: LiquidTag): node is LiquidTagAssign {
+  return (
+    node.type === NodeTypes.LiquidTag && node.name === 'assign' && typeof node.markup !== 'string'
+  );
+}
 
 export const ValidVisibleIfSettingsSchema: JSONCheckDefinition = {
   meta: { ...meta, type: SourceCodeType.JSON },
