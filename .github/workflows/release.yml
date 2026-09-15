@@ -8,7 +8,6 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   npm_config_registry: "https://registry.npmjs.org"
 
 jobs:
@@ -24,6 +23,7 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
@@ -78,6 +78,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
+
+      - name: Clear GitHub credentials before marketplace publish
+        run: rm -f "$HOME/.netrc"
 
       - name: VS Code Marketplace publish
         if: steps.changesets.outputs.hasChangesets == 'false' && steps.marketplace-version.outputs.version != steps.package-version.outputs.version
