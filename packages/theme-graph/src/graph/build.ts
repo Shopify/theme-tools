@@ -21,6 +21,10 @@ export async function buildThemeGraph(
       // Templates are entry points in the theme graph.
       const isTemplateFile = uri.startsWith(path.join(rootUri, 'templates'));
 
+      // Liquid templates use layout/theme.liquid implicitly, and can select
+      // other layouts at runtime, so layouts are independently reachable.
+      const isLayoutFile = uri.startsWith(path.join(rootUri, 'layout')) && uri.endsWith('.liquid');
+
       // Since any section file can be rendered directly by the Section Rendering API,
       // we consider all section files as entry points.
       const isSectionFile =
@@ -33,7 +37,7 @@ export async function buildThemeGraph(
         uri.startsWith(path.join(rootUri, 'blocks')) &&
         uri.endsWith('.liquid');
 
-      return isTemplateFile || isSectionFile || isThemeAppExtensionBlockFile;
+      return isTemplateFile || isLayoutFile || isSectionFile || isThemeAppExtensionBlockFile;
     }));
 
   const graph: ThemeGraph = {
