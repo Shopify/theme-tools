@@ -20,6 +20,39 @@ describe('Module: VariableName', () => {
     expect(offenses).to.be.empty;
   });
 
+  it('should allow a single leading underscore', async () => {
+    const sourceCode = `
+      {% assign _variable_name = "value" %}
+      {% capture _captured_value %}value{% endcapture %}
+    `;
+
+    const offenses = await runLiquidCheck(VariableName, sourceCode);
+
+    expect(offenses).to.be.empty;
+  });
+
+  it('should still enforce the naming format after a leading underscore', async () => {
+    const sourceCode = `{% assign _variableName = "value" %}`;
+
+    const offenses = await runLiquidCheck(VariableName, sourceCode);
+
+    expect(offenses).to.have.length(1);
+    expect(offenses[0]!.suggest![0].message).to.equal(
+      "Change variable '_variableName' to '_variable_name'",
+    );
+  });
+
+  it('should reject more than one leading underscore', async () => {
+    const sourceCode = `{% assign __variable_name = "value" %}`;
+
+    const offenses = await runLiquidCheck(VariableName, sourceCode);
+
+    expect(offenses).to.have.length(1);
+    expect(offenses[0]!.suggest![0].message).to.equal(
+      "Change variable '__variable_name' to '_variable_name'",
+    );
+  });
+
   it('should provide a suggestion to change the variable naming', async () => {
     const sourceCode = `{% assign variableName = "value" %}`;
 

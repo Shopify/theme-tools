@@ -66,10 +66,14 @@ export const VariableName: LiquidCheckDefinition<typeof schema> = {
       }
 
       const formatter = formatTypes[context.settings.format as FormatTypes];
-      const suggestion = formatter(node.markup.name);
+      const leadingUnderscore = node.markup.name.startsWith('_') ? '_' : '';
+      const name = node.markup.name.slice(leadingUnderscore.length);
+      const suggestion = leadingUnderscore + formatter(name);
 
       return {
-        valid: collapseNumberSpacing(node.markup.name) === collapseNumberSpacing(suggestion),
+        valid:
+          name.length > 0 &&
+          collapseNumberSpacing(node.markup.name) === collapseNumberSpacing(suggestion),
         suggestion,
       };
     };
