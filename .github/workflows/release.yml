@@ -8,9 +8,6 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 env:
-  VSCE_PAT: ${{ secrets.VSCE_PAT }}
-  OVSX_PAT: ${{ secrets.OPENVSX_TOKEN }}
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   npm_config_registry: "https://registry.npmjs.org"
 
 jobs:
@@ -26,6 +23,7 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -81,10 +79,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
 
+      - name: Clear GitHub credentials before marketplace publish
+        run: rm -f "$HOME/.netrc"
+
       - name: VS Code Marketplace publish
         if: steps.changesets.outputs.hasChangesets == 'false' && steps.marketplace-version.outputs.version != steps.package-version.outputs.version
         run: pnpm publish:vsce
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
       - name: Open VSX Registry publish
         if: steps.changesets.outputs.hasChangesets == 'false' && steps.marketplace-version.outputs.version != steps.package-version.outputs.version
         run: pnpm publish:ovsx
+        env:
+          OVSX_PAT: ${{ secrets.OPENVSX_TOKEN }}
