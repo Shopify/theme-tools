@@ -114,6 +114,48 @@ describe('Module: UnusedAssign', () => {
     }
   });
 
+  it('should not report variables used by a schema visible_if expression', async () => {
+    const sourceCode = `
+      {% assign has_logo_image = true %}
+      {% schema %}
+        {
+          "name": "Logo",
+          "settings": [
+            {
+              "type": "range",
+              "id": "height",
+              "min": 16,
+              "max": 80,
+              "step": 4,
+              "default": 32,
+              "visible_if": "{{ has_logo_image == true }}"
+            }
+          ]
+        }
+      {% endschema %}
+    `;
+
+    const offenses = await runLiquidCheck(UnusedAssign, sourceCode, 'blocks/logo.liquid');
+
+    expect(offenses).to.be.empty;
+  });
+
+  it('should still report variables mentioned only in other schema strings', async () => {
+    const sourceCode = `
+      {% assign unused_var = true %}
+      {% schema %}
+        {
+          "name": "unused_var",
+          "settings": []
+        }
+      {% endschema %}
+    `;
+
+    const offenses = await runLiquidCheck(UnusedAssign, sourceCode, 'blocks/example.liquid');
+
+    expect(offenses).to.have.lengthOf(1);
+  });
+
   it('should not report unused assigns for things used in a HTML raw-like tag', async () => {
     const tags = ['style', 'script'];
     for (const tag of tags) {

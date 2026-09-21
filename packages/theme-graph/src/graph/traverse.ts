@@ -135,6 +135,15 @@ async function traverseLiquidModule(
       };
     },
 
+    // {% block 'block-name' %}
+    BlockMarkup: (node, ancestors) => {
+      const tag = ancestors.at(-1)!;
+      return {
+        target: getThemeBlockModule(themeGraph, node.name.value),
+        sourceRange: [tag.position.start, tag.position.end],
+      };
+    },
+
     // <custom-element></custom-element>
     HtmlElement: (node) => {
       if (node.name.length !== 1) return;

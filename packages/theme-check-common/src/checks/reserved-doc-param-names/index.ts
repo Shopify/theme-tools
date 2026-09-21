@@ -1,10 +1,7 @@
-import { TextNode } from '@shopify/liquid-html-parser';
+import { LiquidLiteralValues } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { isBlock } from '../../to-schema';
-import {
-  REQUIRED_CONTENT_FOR_ARGUMENTS,
-  RESERVED_CONTENT_FOR_ARGUMENTS,
-} from '../../tags/content-for';
+
+const RESERVED_DOC_PARAM_NAMES = new Set(Object.keys(LiquidLiteralValues));
 
 export const ReservedDocParamNames: LiquidCheckDefinition = {
   meta: {
@@ -23,35 +20,18 @@ export const ReservedDocParamNames: LiquidCheckDefinition = {
   },
 
   create(context) {
-    if (!isBlock(context.file.uri)) {
-      return {};
-    }
-
-    const defaultParameterNames = [
-      ...REQUIRED_CONTENT_FOR_ARGUMENTS,
-      ...RESERVED_CONTENT_FOR_ARGUMENTS,
-    ];
-
     return {
       async LiquidDocParamNode(node) {
         const paramName = node.paramName.value;
 
-        if (defaultParameterNames.includes(paramName)) {
-          reportWarning(
-            context,
-            `The parameter name is not supported because it's a reserved argument for 'content_for' tags.`,
-            node.paramName,
-          );
-        }
+        if (!RESERVED_DOC_PARAM_NAMES.has(paramName)) return;
+
+        context.report({
+          message: `The parameter name '${paramName}' is reserved because Liquid parses it as a literal.`,
+          startIndex: node.paramName.position.start,
+          endIndex: node.paramName.position.end,
+        });
       },
     };
   },
 };
-
-function reportWarning(context: any, message: string, node: TextNode) {
-  context.report({
-    message,
-    startIndex: node.position.start,
-    endIndex: node.position.end,
-  });
-}

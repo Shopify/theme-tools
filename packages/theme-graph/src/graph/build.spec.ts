@@ -48,11 +48,12 @@ describe('Module: index', () => {
 
       // We're using sections as entry points because the section rendering API can render
       // any section without it needing a preset or default value in its schema.
-      it('infers entry points from the templates folder and section files', () => {
-        expect(graph.entryPoints).toHaveLength(3);
+      it('infers entry points from templates, layouts, and section files', () => {
+        expect(graph.entryPoints).toHaveLength(4);
         expect(graph.entryPoints.map((x) => x.uri)).toEqual(
           expect.arrayContaining([
             p('templates/index.json'),
+            p('layout/theme.liquid'),
             p('sections/custom-section.liquid'),
             p('sections/header.liquid'),
           ]),
@@ -69,6 +70,8 @@ describe('Module: index', () => {
         expect(deps.map((x) => x.target.uri)).toEqual(
           expect.arrayContaining([
             p('sections/header-group.json'),
+            p('snippets/layout-parent.liquid'),
+            p('blocks/layout-block.liquid'),
             p('assets/theme.js'),
             p('assets/theme.css'),
           ]),
@@ -81,6 +84,21 @@ describe('Module: index', () => {
         expect(refs.map((x) => x.source.uri)).toEqual(
           expect.arrayContaining([p('templates/index.json')]),
         );
+      });
+
+      it('follows direct and transitive dependencies from layouts', () => {
+        expect(
+          graph.modules[p('snippets/layout-parent.liquid')].references.map((x) => x.source.uri),
+        ).toContain(p('layout/theme.liquid'));
+        expect(
+          graph.modules[p('snippets/layout-child.liquid')].references.map((x) => x.source.uri),
+        ).toContain(p('snippets/layout-parent.liquid'));
+        expect(
+          graph.modules[p('blocks/layout-block.liquid')].references.map((x) => x.source.uri),
+        ).toContain(p('layout/theme.liquid'));
+        expect(
+          graph.modules[p('snippets/block-child.liquid')].references.map((x) => x.source.uri),
+        ).toContain(p('blocks/layout-block.liquid'));
       });
 
       it("finds templates/index.json's dependencies and references", () => {

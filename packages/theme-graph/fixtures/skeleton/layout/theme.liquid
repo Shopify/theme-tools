@@ -8,6 +8,8 @@
     {{ content_for_header }}
   </head>
   <body>
+    {% render 'layout-parent' %}
+    {% block 'layout-block' %}{% endblock %}
     {% sections 'header-group' %}
     {{ content_for_layout }}
   </body>
