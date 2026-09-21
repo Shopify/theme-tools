@@ -55,6 +55,16 @@ describe('Module: AssetPreload', () => {
     expect(offenses).to.have.lengthOf(0);
   });
 
+  it('reports image preloading when attribute values contain Liquid', async () => {
+    const sourceCode = `
+      <link href="a.png" rel="preload" as="image{{ '-invalid' }}" fetchpriority="high">
+      <link href="b.png" rel="preload" as="image" fetchpriority="high{{ '-invalid' }}">
+    `;
+
+    const offenses = await runLiquidCheck(AssetPreload, sourceCode);
+    expect(offenses).to.have.lengthOf(2);
+  });
+
   it('reports general preloading', async () => {
     const sourceCode = `
       <link href="a.js" rel="preload" as="script">

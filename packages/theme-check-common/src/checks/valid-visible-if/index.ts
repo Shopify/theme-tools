@@ -1,5 +1,6 @@
 import {
   NodeTypes,
+  type LiquidRawTag,
   type LiquidTag,
   type LiquidTagAssign,
   type LiquidVariableLookup,
@@ -45,6 +46,7 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
 
   create(context) {
     const assignedVariables: Vars = {};
+    let schemaNode: LiquidRawTag | undefined;
 
     return {
       async LiquidTag(node) {
@@ -55,6 +57,11 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
 
       async LiquidRawTag(node) {
         if (node.name !== 'schema' || node.body.kind !== 'json') return;
+        schemaNode = node;
+      },
+
+      async onCodePathEnd() {
+        if (!schemaNode) return;
 
         const schema = await getSchema(context);
 
@@ -69,7 +76,7 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
           return;
         }
 
-        const offset = node.blockStartPosition.end;
+        const offset = schemaNode.blockStartPosition.end;
         const settings = Object.fromEntries(
           (await getGlobalSettings(context)).map((s) => [s, true] as const),
         );

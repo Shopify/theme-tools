@@ -117,6 +117,23 @@ describe('Module: ValidVisibleIf', () => {
     expect(offenses).toEqual([]);
   });
 
+  it('reports no error for a variable assigned after the schema tag', async () => {
+    const themeData = structuredClone(baseThemeData);
+
+    themeData['blocks/example.liquid'].settings!.push({
+      id: 'some-other-setting',
+      visible_if: '{{ effective_fill == "image" }}',
+    });
+
+    const theme = makeTheme(themeData);
+    theme['blocks/example.liquid'] += `
+      {% assign effective_fill = 'image' %}
+    `;
+
+    const offenses = await check(theme, [ValidVisibleIf, ValidVisibleIfSettingsSchema]);
+    expect(offenses).toEqual([]);
+  });
+
   it('reports no error for a valid reference to a section schema (simple lookup)', async () => {
     const themeData = structuredClone(baseThemeData);
 

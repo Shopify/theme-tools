@@ -1,6 +1,12 @@
 import { NodeTypes, TextNode } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { ValuedHtmlAttribute, isAttr, isNodeOfType, isValuedHtmlAttribute } from '../utils';
+import {
+  ValuedHtmlAttribute,
+  hasAttributeValueOf,
+  isAttr,
+  isNodeOfType,
+  isValuedHtmlAttribute,
+} from '../utils';
 
 function isPreload(attr: ValuedHtmlAttribute): boolean {
   return (
@@ -11,16 +17,8 @@ function isPreload(attr: ValuedHtmlAttribute): boolean {
 
 function isHighPriorityImagePreload(attributes: ValuedHtmlAttribute[]): boolean {
   return (
-    attributes.some(
-      (attr) =>
-        isAttr(attr, 'as') &&
-        attr.value.some((node) => node.type === NodeTypes.TextNode && node.value === 'image'),
-    ) &&
-    attributes.some(
-      (attr) =>
-        isAttr(attr, 'fetchpriority') &&
-        attr.value.some((node) => node.type === NodeTypes.TextNode && node.value === 'high'),
-    )
+    attributes.some((attr) => isAttr(attr, 'as') && hasAttributeValueOf(attr, 'image')) &&
+    attributes.some((attr) => isAttr(attr, 'fetchpriority') && hasAttributeValueOf(attr, 'high'))
   );
 }
 
