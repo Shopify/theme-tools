@@ -1,5 +1,16 @@
 # @shopify/theme-check-common
 
+## 3.29.1
+
+### Patch Changes
+
+- 8bc5e038: Fix schema expressions to resolve assigned Liquid variables and recognize their usage.
+- 8bc5e038: Fix LiquidDoc parameter validation by reserving Liquid literal keywords.
+- 8bc5e038: Fix Liquid variable-name validation to allow a leading underscore.
+- 8bc5e038: Fix responsive LCP preload validation by allowing explicit image links with `fetchpriority="high"`.
+- Updated dependencies [74185263]
+  - @shopify/liquid-html-parser@2.10.1
+
 ## 3.29.0
 
 ### Minor Changes

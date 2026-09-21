@@ -1,5 +1,13 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.11.1
+
+### Patch Changes
+
+- 53f22f5a: Fix `{% # white-space: pre %}` comment hint being ignored for plain text nodes, which caused files with meaningful line breaks but no HTML tags (e.g. a `robots.txt.liquid` template) to have their lines incorrectly joined together
+- Updated dependencies [74185263]
+  - @shopify/liquid-html-parser@2.10.1
+
 ## 1.11.0
 
 ### Minor Changes
