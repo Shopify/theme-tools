@@ -17,6 +17,7 @@ import {
   watchReferencesTreeViewConfig,
 } from '../common/ReferencesProvider';
 import { makeDeadCode, openLocation } from '../common/commands';
+import { checkOrphanedFilesOnBoot } from '../common/orphanedFilesOnBoot';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -47,6 +48,9 @@ export async function activate(context: ExtensionContext) {
       createReferencesTreeView('shopify.themeGraph.dependencies', context, client, 'dependencies'),
       watchReferencesTreeViewConfig(),
     );
+
+    // Fire-and-forget: surfacing orphaned files must never block or fail activation.
+    checkOrphanedFilesOnBoot(client).catch((error) => console.error(error));
   }
 }
 

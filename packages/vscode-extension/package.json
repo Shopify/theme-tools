@@ -165,6 +165,13 @@
           ],
           "description": "When true, theme check preloads all the files from your theme for fast rename handling and theme graph generation.",
           "default": true
+        },
+        "themeCheck.checkOrphanedFilesOnBoot": {
+          "type": [
+            "boolean"
+          ],
+          "description": "When true, show a notification on startup when your theme has orphaned (dead) files.",
+          "default": true
         }
       }
     },
