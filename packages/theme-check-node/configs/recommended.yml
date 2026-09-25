@@ -138,6 +138,9 @@ ReservedDocParamNames:
 SchemaOncePerFile:
   enabled: true
   severity: 0
+SchemaPresetsAndDefault:
+  enabled: true
+  severity: 0
 SchemaPresetsBlockOrder:
   enabled: true
   severity: 1
