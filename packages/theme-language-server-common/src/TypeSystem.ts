@@ -660,6 +660,21 @@ function inferType(
             return inferType(lastFilter.args[0], symbolsTable, objectMap, filtersMap);
           }
         }
+        if (lastFilter.name === 'sort' || lastFilter.name === 'sort_natural') {
+          // sort/sort_natural preserve the element type: an array input keeps its
+          // value type and a single value becomes a single-element array of that
+          // type (a common trick to coerce a drop into an array). The docset
+          // declares these filters as returning untyped[], which loses the type.
+          // See https://github.com/Shopify/theme-tools/issues/1086
+          const inputVariable = { ...thing, filters: thing.filters.slice(0, -1) };
+          const inputType = inferType(inputVariable, symbolsTable, objectMap, filtersMap);
+          if (isArrayType(inputType)) {
+            return inputType;
+          }
+          if (inputType !== Untyped && inputType !== Unknown) {
+            return arrayType(inputType);
+          }
+        }
         const filterEntry = filtersMap[lastFilter.name];
         return filterEntry ? filterEntryReturnType(filterEntry) : Untyped;
       } else {

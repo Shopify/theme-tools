@@ -143,6 +143,16 @@ describe('Module: TypeSystem', () => {
             name: 'size',
             return_type: [{ type: 'number', name: '' }],
           },
+          {
+            // The docset declares sort as returning untyped[].
+            // See https://github.com/Shopify/theme-tools/issues/1086
+            name: 'sort',
+            return_type: [{ type: 'array', array_value: 'untyped' }],
+          },
+          {
+            name: 'sort_natural',
+            return_type: [{ type: 'array', array_value: 'untyped' }],
+          },
         ],
         systemTranslations: async () => ({}),
       },
@@ -257,6 +267,51 @@ describe('Module: TypeSystem', () => {
     const xVariable = (ast as any).children[0].markup as AssignMarkup;
     const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
     expect(inferredType).to.equal('number');
+  });
+
+  describe('when using the sort filter', () => {
+    // https://github.com/Shopify/theme-tools/issues/1086
+    it('should preserve the array value type', async () => {
+      const ast = toLiquidHtmlAST(`{% assign x = all_products | sort %}`);
+      const xVariable = (ast as any).children[0].markup as AssignMarkup;
+      const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+      expect(inferredType).to.eql({ kind: 'array', valueType: 'product' });
+    });
+
+    it('should wrap a single value type into an array', async () => {
+      const ast = toLiquidHtmlAST(`{% assign x = product | sort %}`);
+      const xVariable = (ast as any).children[0].markup as AssignMarkup;
+      const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+      expect(inferredType).to.eql({ kind: 'array', valueType: 'product' });
+    });
+
+    it('should preserve the array value type for sort_natural', async () => {
+      const ast = toLiquidHtmlAST(`{% assign x = all_products | sort_natural %}`);
+      const xVariable = (ast as any).children[0].markup as AssignMarkup;
+      const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+      expect(inferredType).to.eql({ kind: 'array', valueType: 'product' });
+    });
+
+    it('should preserve the type through a filter chain ending in sort', async () => {
+      const ast = toLiquidHtmlAST(`{% assign x = all_products | sort | sort %}`);
+      const xVariable = (ast as any).children[0].markup as AssignMarkup;
+      const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+      expect(inferredType).to.eql({ kind: 'array', valueType: 'product' });
+    });
+
+    it('should preserve the lookup type for untyped properties', async () => {
+      const ast = toLiquidHtmlAST(`{% assign x = product.metafields | sort %}`);
+      const xVariable = (ast as any).children[0].markup as AssignMarkup;
+      const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+      expect(inferredType).to.eql({ kind: 'array', valueType: 'product_metafields' });
+    });
+
+    it('should fall back to the docset type for unknown input', async () => {
+      const ast = toLiquidHtmlAST(`{% assign x = unknown_variable | sort %}`);
+      const xVariable = (ast as any).children[0].markup as AssignMarkup;
+      const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
+      expect(inferredType).to.eql({ kind: 'array', valueType: 'untyped' });
+    });
   });
 
   describe('when using string builtin methods', () => {
