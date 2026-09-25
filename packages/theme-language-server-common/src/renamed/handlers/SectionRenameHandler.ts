@@ -28,9 +28,9 @@ import {
   isLiquidSourceCode,
 } from '../../documents';
 import { FindThemeRootURI } from '../../internal-types';
-import { isSection, isSectionGroup, isTemplate, sectionName } from '../../utils/uri';
+import { isSection, isSectionGroup, isSettingsData, isTemplate, sectionName } from '../../utils/uri';
 import { BaseRenameHandler } from '../BaseRenameHandler';
-import { isValidSectionGroup, isValidTemplate } from './utils';
+import { isValidSectionGroup, isValidSettingsData, isValidTemplate } from './utils';
 
 type DocumentChange = TextDocumentEdit;
 
@@ -69,6 +69,7 @@ export class SectionRenameHandler implements BaseRenameHandler {
     const liquidFiles = theme.filter(isLiquidSourceCode);
     const templates = theme.filter(isJsonSourceCode).filter((file) => isTemplate(file.uri));
     const sectionGroups = theme.filter(isJsonSourceCode).filter((file) => isSectionGroup(file.uri));
+    const settingsDataFiles = theme.filter(isJsonSourceCode).filter((file) => isSettingsData(file.uri));
     const oldSectionName = sectionName(rename.oldUri);
     const newSectionName = sectionName(rename.newUri);
     const editLabel = `Rename section '${oldSectionName}' to '${newSectionName}'`;
@@ -84,13 +85,14 @@ export class SectionRenameHandler implements BaseRenameHandler {
 
     // All the templates/*.json files need to be updated with the new block name
     // when the old block name wasn't a local block.
-    const [templateChanges, sectionGroupChanges, sectionTagChanges] = await Promise.all([
+    const [templateChanges, sectionGroupChanges, sectionTagChanges, settingsDataChanges] = await Promise.all([
       Promise.all(templates.map(this.getTemplateChanges(oldSectionName, newSectionName))),
       Promise.all(sectionGroups.map(this.getSectionGroupChanges(oldSectionName, newSectionName))),
       Promise.all(liquidFiles.map(this.getSectionTagChanges(oldSectionName, newSectionName))),
+      Promise.all(settingsDataFiles.map(this.getSettingsDataChanges(oldSectionName, newSectionName))),
     ]);
 
-    for (const docChange of [...templateChanges, ...sectionGroupChanges]) {
+    for (const docChange of [...templateChanges, ...sectionGroupChanges, ...settingsDataChanges]) {
       if (docChange !== null) {
         workspaceEdit.documentChanges!.push(docChange);
       }
@@ -172,6 +174,42 @@ export class SectionRenameHandler implements BaseRenameHandler {
                 ),
               } as AnnotatedTextEdit;
             });
+
+      if (edits.length === 0) return null;
+
+      return documentChanges(sourceCode, edits);
+    };
+  }
+
+  private getSettingsDataChanges(oldSectionName: string, newSectionName: string) {
+    return async (sourceCode: AugmentedJsonSourceCode) => {
+      const { textDocument, ast, source } = sourceCode;
+      const parsed = parseJSON(source);
+      if (!parsed || isError(parsed) || isError(ast)) return null;
+      if (!isValidSettingsData(parsed)) return null;
+
+      const edits: AnnotatedTextEdit[] = Object.entries(parsed.presets ?? {}).flatMap(
+        ([presetName, preset]) =>
+          Object.entries(preset.sections ?? {})
+            .filter(([_key, section]) => section.type === oldSectionName)
+            .map(([sectionKey]) => {
+              const node = nodeAtPath(ast, [
+                'presets',
+                presetName,
+                'sections',
+                sectionKey,
+                'type',
+              ]) as LiteralNode;
+              return {
+                annotationId,
+                newText: newSectionName,
+                range: Range.create(
+                  textDocument.positionAt(node.loc.start.offset + 1),
+                  textDocument.positionAt(node.loc.end.offset - 1),
+                ),
+              } as AnnotatedTextEdit;
+            }),
+      );
 
       if (edits.length === 0) return null;
 

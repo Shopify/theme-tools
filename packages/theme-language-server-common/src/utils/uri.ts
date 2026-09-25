@@ -20,3 +20,5 @@ export const isSectionGroup = (uri: string) =>
 
 export const templateName = (uri: string) => path.basename(uri, '.json');
 export const isTemplate = (uri: string) => /\btemplates(\\|\/)[^\\\/]/.test(uri);
+
+export const isSettingsData = (uri: string) => /\bconfig(\\|\/)settings_data\.json$/.test(uri);
