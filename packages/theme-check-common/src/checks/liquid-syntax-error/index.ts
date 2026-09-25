@@ -92,6 +92,7 @@ export const LiquidSyntaxError: LiquidCheckDefinition = {
     docs: {
       description: 'Reports Liquid syntax errors.',
       recommended: true,
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/liquid-syntax-error',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.ERROR,

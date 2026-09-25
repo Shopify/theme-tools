@@ -12,6 +12,7 @@ export const UnknownBlockSetting: LiquidCheckDefinition = {
       description:
         "Reports a block.settings.<name> argument in a block tag where <name> is not a setting id in the target block's schema.",
       recommended: true,
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/unknown-block-setting',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,
