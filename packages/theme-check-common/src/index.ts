@@ -41,7 +41,15 @@ import { visitJSON, visitLiquid } from './visitors';
 export * from './AbstractFileSystem';
 export * from './AugmentedThemeDocset';
 export * from './checks';
+export {
+  UNMATCHED_COMMENT_CLOSE_PARSER_ERROR,
+  UNMATCHED_RAW_CLOSE_PARSER_ERROR,
+  hasRubyAcceptedInertCommentBodyCloser,
+} from './checks/liquid-syntax-error/comment';
+export { hasJavascriptClosingTagAfter } from './checks/liquid-syntax-error/javascript';
+export { hasRubyAcceptedRawTagCloserWithMarkup } from './checks/liquid-syntax-error/utils';
 export * from './context-utils';
+export { createDisabledChecksModule } from './disabled-checks';
 export * from './find-root';
 export * from './fixes';
 export * from './ignore';
@@ -54,6 +62,7 @@ export * from './types';
 export * from './utils/error';
 export * from './utils/indexBy';
 export * from './utils/memo';
+export { getPosition } from './utils/position';
 export * from './utils/types';
 export * from './utils/object';
 export * from './utils/styles';

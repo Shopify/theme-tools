@@ -1,4 +1,4 @@
-import { MockFileSystem } from '@shopify/theme-check-common/src/test';
+import { MockFileSystem } from '@shopify/theme-check-common/test';
 import { assert, beforeEach, describe, expect, it } from 'vitest';
 import { TextDocumentEdit } from 'vscode-json-languageservice';
 import { ApplyWorkspaceEditParams } from 'vscode-languageserver-protocol';

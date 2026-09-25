@@ -32,8 +32,17 @@
       "@shopify/theme-check-common": [
         "./packages/theme-check-common/src/index"
       ],
+      "@shopify/theme-check-common/path": [
+        "./packages/theme-check-common/src/path"
+      ],
+      "@shopify/theme-check-common/test": [
+        "./packages/theme-check-common/src/test/index"
+      ],
       "@shopify/theme-language-server-common": [
         "./packages/theme-language-server-common/src/index"
+      ],
+      "@shopify/theme-language-server-common/types": [
+        "./packages/theme-language-server-common/src/types"
       ]
     },
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
