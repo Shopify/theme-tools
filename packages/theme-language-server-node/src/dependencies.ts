@@ -1,6 +1,7 @@
 import {
   AbstractFileSystem,
   Config,
+  LoadConfigOptions,
   findRoot,
   loadConfig as nodeLoadConfig,
   makeFileExists,
@@ -28,7 +29,11 @@ const hasThemeAppExtensionConfig = async (rootUri: string, fs: AbstractFileSyste
   return files.length > 0;
 };
 
-export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(uriString, fs) {
+export async function loadConfig(
+  uriString: string,
+  fs: AbstractFileSystem,
+  options: LoadConfigOptions = {},
+): Promise<Config> {
   const fileUri = path.normalize(uriString);
   const fileExists = makeFileExists(fs);
   const rootUriString = await findRoot(fileUri, fileExists);
@@ -47,11 +52,13 @@ export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(
     const configPath = asFsPath(configUri);
     const rootPath = asFsPath(rootUri);
     if (configExists) {
-      return nodeLoadConfig(configPath, rootPath).then(normalizeRoot);
+      return nodeLoadConfig(configPath, rootPath, options).then(normalizeRoot);
     } else if (isDefinitelyThemeAppExtension) {
-      return nodeLoadConfig('theme-check:theme-app-extension', rootPath).then(normalizeRoot);
+      return nodeLoadConfig('theme-check:theme-app-extension', rootPath, options).then(
+        normalizeRoot,
+      );
     } else {
-      return nodeLoadConfig(undefined, rootPath).then(normalizeRoot);
+      return nodeLoadConfig(undefined, rootPath, options).then(normalizeRoot);
     }
   } else {
     // We can't load configs properly in remote environments.
@@ -64,7 +71,7 @@ export const loadConfig: Dependencies['loadConfig'] = async function loadConfig(
       rootUri: path.normalize(rootUri),
     };
   }
-};
+}
 
 function normalizeRoot(config: Config) {
   config.rootUri = path.normalize(config.rootUri);

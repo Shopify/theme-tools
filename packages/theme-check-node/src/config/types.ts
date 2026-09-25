@@ -30,6 +30,25 @@ export type ConfigDescription = Omit<ConfigFragment, 'extends' | 'context'> & {
   context: Mode;
 };
 
+export interface CustomCheckCandidate {
+  source: 'require' | 'discovery';
+  path: string;
+}
+
+export interface CustomCheckAuthorizationRequest {
+  root: string;
+  candidates: CustomCheckCandidate[];
+}
+
+export interface LoadConfigOptions {
+  /**
+   * Called after custom checks have been discovered, but before any of their
+   * JavaScript is loaded. When omitted, custom checks retain their existing
+   * behaviour and are loaded without an additional authorization step.
+   */
+  authorizeCustomChecks?: (request: CustomCheckAuthorizationRequest) => Promise<boolean>;
+}
+
 export const ModernIdentifiers = [
   'theme-check:nothing',
   'theme-check:recommended',

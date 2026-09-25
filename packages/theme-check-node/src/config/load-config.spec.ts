@@ -67,6 +67,15 @@ describe('Unit: loadConfig', () => {
     expect(config.ignore).to.include('src/**');
   });
 
+  it('does not request authorization when there are no custom checks', async () => {
+    const configPath = await createMockConfigFile(tempDir, `extends: theme-check:recommended`);
+    const authorizeCustomChecks = vi.fn().mockResolvedValue(false);
+
+    await loadConfig(configPath, tempDir, { authorizeCustomChecks });
+
+    expect(authorizeCustomChecks).not.toHaveBeenCalled();
+  });
+
   it('has no checks if it extends nothing', async () => {
     const configPath = await createMockConfigFile(tempDir, `extends: nothing`);
     const config = await loadConfig(configPath, tempDir);
@@ -215,6 +224,90 @@ NodeModuleCheck:
     const config = await loadConfig(configPath, tempDir);
     const nodeModuleCheck = config.checks.find((check) => check.meta.code === 'NodeModuleCheck');
     expect(nodeModuleCheck).to.exist;
+  });
+
+  it('does not execute a required extension before it is authorized', async () => {
+    const configPath = await createMockConfigFile(
+      tempDir,
+      `
+extends: nothing
+require: './checks.js'
+NodeModuleCheck:
+  enabled: true
+      `,
+    );
+    const markerPath = path.join(tempDir, 'executed');
+    await fs.writeFile(
+      path.join(tempDir, 'checks.js'),
+      `require('node:fs').writeFileSync(${JSON.stringify(markerPath)}, 'yes');\n${mockNodeModuleCheck}`,
+    );
+    const authorizeCustomChecks = vi.fn().mockResolvedValue(false);
+
+    const config = await loadConfig(configPath, tempDir, { authorizeCustomChecks });
+
+    expect(authorizeCustomChecks).toHaveBeenCalledWith({
+      root: tempDir,
+      candidates: [{ source: 'require', path: path.join(tempDir, 'checks.js') }],
+    });
+    expect(config.checks.find((check) => check.meta.code === 'NodeModuleCheck')).not.to.exist;
+    await expect(fs.stat(markerPath)).rejects.toThrow();
+  });
+
+  it('asks for authorization for extensions inherited through extends', async () => {
+    await fs.writeFile(
+      path.join(tempDir, 'base.yml'),
+      `
+extends: nothing
+require: './checks.js'
+      `,
+    );
+    await fs.writeFile(path.join(tempDir, 'checks.js'), mockNodeModuleCheck);
+    const configPath = await createMockConfigFile(tempDir, `extends: './base.yml'`);
+    const authorizeCustomChecks = vi.fn().mockResolvedValue(false);
+
+    await loadConfig(configPath, tempDir, { authorizeCustomChecks });
+
+    expect(authorizeCustomChecks).toHaveBeenCalledWith({
+      root: tempDir,
+      candidates: [{ source: 'require', path: path.join(tempDir, 'checks.js') }],
+    });
+  });
+
+  it('asks for authorization before loading automatically discovered extensions', async () => {
+    const configPath = path.resolve(__dirname, 'fixtures/node-module-rec.yml');
+    const modulePath = await createMockNodeModule(
+      tempDir,
+      'theme-check-node-example',
+      mockNodeModuleCheck,
+    );
+    const authorizeCustomChecks = vi.fn().mockResolvedValue(false);
+
+    const config = await loadConfig(configPath, tempDir, { authorizeCustomChecks });
+
+    expect(authorizeCustomChecks).toHaveBeenCalledWith({
+      root: tempDir,
+      candidates: [{ source: 'discovery', path: modulePath }],
+    });
+    expect(config.checks.find((check) => check.meta.code === 'NodeModuleCheck')).not.to.exist;
+  });
+
+  it('loads custom checks after they are authorized', async () => {
+    const configPath = await createMockConfigFile(
+      tempDir,
+      `
+extends: nothing
+require: './checks.js'
+NodeModuleCheck:
+  enabled: true
+      `,
+    );
+    await fs.writeFile(path.join(tempDir, 'checks.js'), mockNodeModuleCheck);
+
+    const config = await loadConfig(configPath, tempDir, {
+      authorizeCustomChecks: vi.fn().mockResolvedValue(true),
+    });
+
+    expect(config.checks.find((check) => check.meta.code === 'NodeModuleCheck')).to.exist;
   });
 
   it('loads an aliased check properly', async () => {
