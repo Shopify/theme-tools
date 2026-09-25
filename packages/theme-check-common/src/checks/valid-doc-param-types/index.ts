@@ -1,5 +1,5 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { getValidParamTypes, parseParamType, parseStringEnumType } from '../../liquid-doc/utils';
+import { getValidParamTypes, parseDocParamType } from '../../liquid-doc/utils';
 
 export const ValidDocParamTypes: LiquidCheckDefinition = {
   meta: {
@@ -22,9 +22,9 @@ export const ValidDocParamTypes: LiquidCheckDefinition = {
       return {};
     }
 
-    // Enum declarations do not need the object catalog. Load it once, on demand,
-    // when checking a named type.
-    let validParamTypesPromise: Promise<Set<string>> | undefined;
+    const validParamTypesPromise = context.themeDocset
+      .liquidDrops()
+      .then((entries) => new Set(getValidParamTypes(entries).keys()));
 
     return {
       async LiquidDocParamNode(node) {
@@ -32,12 +32,10 @@ export const ValidDocParamTypes: LiquidCheckDefinition = {
           return;
         }
 
-        if (parseStringEnumType(node.paramType.value)) return;
-
-        validParamTypesPromise ??= context
-          .themeDocset!.liquidDrops()
-          .then((entries) => new Set(getValidParamTypes(entries).keys()));
-        const parsedParamType = parseParamType(await validParamTypesPromise, node.paramType.value);
+        const parsedParamType = parseDocParamType(
+          await validParamTypesPromise,
+          node.paramType.value,
+        );
 
         if (parsedParamType) {
           return;

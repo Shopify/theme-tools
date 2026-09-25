@@ -6,6 +6,9 @@ import { ObjectEntry, UriString } from '../types';
 import { parseStringEnumType } from './string-enum-type';
 
 export { parseStringEnumType } from './string-enum-type';
+export type { StringEnumMember, StringEnumType } from './string-enum-type';
+export { parseDocParamType, parseParamType } from './doc-param-type';
+export type { DocParamType } from './doc-param-type';
 
 /**
  * The base set of supported param types for LiquidDoc.
@@ -152,20 +155,4 @@ export function getValidParamTypes(objectEntries: ObjectEntry[]): Map<string, st
   objectEntries.forEach((obj) => paramTypes.set(obj.name, obj.summary || obj.description));
 
   return paramTypes;
-}
-
-export function parseParamType(
-  validParamTypes: Set<string>,
-  value: string,
-): [pseudoType: string, isArray: boolean] | undefined {
-  const paramTypeMatch = value.match(/^([a-z_]+)(\[\])?$/);
-
-  if (!paramTypeMatch) return undefined;
-
-  const extractedParamType = paramTypeMatch[1];
-  const isArrayType = !!paramTypeMatch[2];
-
-  if (!validParamTypes.has(extractedParamType)) return undefined;
-
-  return [extractedParamType, isArrayType];
 }

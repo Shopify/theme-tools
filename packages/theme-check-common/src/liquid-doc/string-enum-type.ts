@@ -3,6 +3,11 @@ export interface StringEnumMember {
   raw: string;
 }
 
+export interface StringEnumType {
+  kind: 'string-enum';
+  members: StringEnumMember[];
+}
+
 /**
  * Parses a union of quoted Liquid strings, preserving their spelling for fixes.
  * Liquid strings do not decode backslash escapes. Only an unquoted pipe separates

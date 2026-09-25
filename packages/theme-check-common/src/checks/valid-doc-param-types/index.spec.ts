@@ -111,4 +111,36 @@ describe('Module: ValidDocParamTypes', () => {
       expect(suggestions).to.include(`{% doc %} @param param1 - Example param {% enddoc %}`);
     }
   });
+
+  it('validates named types, arrays, and enums together', async () => {
+    const source = `{% doc %}
+      @param {product} product
+      @param {string[]} labels
+      @param {'heading' | 'small'} [variant]
+      @param {unknown[]} unknown
+      @param {'heading' |} invalid_variant
+    {% enddoc %}`;
+    const offenses = await runLiquidCheck(ValidDocParamTypes, source);
+    expect(offenses.map(({ message }) => message)).toEqual([
+      "The parameter type 'unknown[]' is not supported.",
+      "The parameter type ''heading' |' is not supported.",
+    ]);
+  });
+
+  it('removes the invalid type without changing braces in its description', async () => {
+    const source = `{% doc %}\n  @param {'heading' |} [variant] - example {foo}\n{% enddoc %}`;
+    const offenses = await runLiquidCheck(ValidDocParamTypes, source);
+    expect(offenses).toHaveLength(1);
+    expect(applySuggestions(source, offenses[0])).toEqual([
+      '{% doc %}\n  @param [variant] - example {foo}\n{% enddoc %}',
+    ]);
+  });
+
+  it('preserves the existing behavior when no docset is supplied', async () => {
+    const source = `{% doc %}\n  @param {'heading' |} variant\n{% enddoc %}`;
+    const offenses = await runLiquidCheck(ValidDocParamTypes, source, undefined, {
+      themeDocset: undefined,
+    });
+    expect(offenses).toHaveLength(0);
+  });
 });
