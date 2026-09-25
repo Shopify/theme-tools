@@ -500,6 +500,10 @@ describe('Module: TypeSystem', () => {
       [BasicParamTypes.Number]: 'number',
       [BasicParamTypes.Boolean]: 'boolean',
       [BasicParamTypes.Object]: 'untyped',
+      "'heading' | 'small'": 'string',
+      [`'Heading' | "Small"`]: 'string',
+      "'heading' |": 'untyped',
+      "'heading' | number": 'untyped',
       invalid: 'untyped',
     };
 

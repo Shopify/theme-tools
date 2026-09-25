@@ -30,6 +30,7 @@ import {
   BasicParamTypes,
   getValidParamTypes,
   parseParamType,
+  parseStringEnumType,
 } from '@shopify/theme-check-common';
 import {
   GetThemeSettingsSchemaForURI,
@@ -677,6 +678,8 @@ function inferLiquidDocParamType(node: LiquidDocParamNode, liquidDrops: ObjectEn
   const paramTypeValue = node.paramType?.value;
 
   if (!paramTypeValue) return Untyped;
+
+  if (parseStringEnumType(paramTypeValue)) return BasicParamTypes.String;
 
   const validParamTypes = getValidParamTypes(liquidDrops);
 
