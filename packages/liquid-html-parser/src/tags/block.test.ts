@@ -16,6 +16,17 @@ function parser(markup: string): MarkupParser {
 const stubParser = {} as Parser;
 
 describe('blockTag', () => {
+  it.each([
+    "'card' ",
+    "'card',  title: 'Hello',\n color: 'red' ",
+    "'card', products: ['classic-crewneck', 'cozy-beanie'] ",
+  ])('retains the full source for absolute markup positions: %s', (markup) => {
+    const result = blockTag.parse('block', parser(markup), stubParser);
+    expect(result.source).toBe(PADDING + markup);
+    expect(result.position).toEqual({ start: OFFSET, end: OFFSET + markup.length });
+    expect(result.source.slice(result.position.start, result.position.end)).toBe(markup);
+  });
+
   it('has block kind', () => {
     expect(blockTag.kind).toBe(TagKind.Block);
   });
