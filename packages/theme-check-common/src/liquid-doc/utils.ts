@@ -4,6 +4,8 @@ import { isSnippet } from '../to-schema';
 import { isBlock } from '../to-schema';
 import { ObjectEntry, UriString } from '../types';
 
+export { parseStringEnumType } from './string-enum-type';
+
 /**
  * The base set of supported param types for LiquidDoc.
  *

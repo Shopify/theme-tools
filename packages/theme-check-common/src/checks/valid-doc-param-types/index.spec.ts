@@ -42,6 +42,45 @@ describe('Module: ValidDocParamTypes', () => {
     expect(offenses).to.be.empty;
   });
 
+  it.each([
+    "'heading' | 'small'",
+    '"Heading"|"small"',
+    "'heading'",
+    "'' | ' small '",
+    "'a|b' | 'a}b'",
+    `"it's" | 'say "hi"'`,
+  ])('accepts the string enum {%s}', async (type) => {
+    const source = `{% doc %}\n  @param {${type}} [variant] - Text style\n{% enddoc %}`;
+    expect(await runLiquidCheck(ValidDocParamTypes, source)).toHaveLength(0);
+  });
+
+  it.each([
+    "'heading' |",
+    "| 'heading'",
+    "'heading' || 'small'",
+    "'heading' 'small'",
+    "'heading' | small",
+    "'heading' | 'small",
+    "'heading' | number",
+    'heading | small',
+    '1 | 2',
+    'true | false',
+    "('heading' | 'small')",
+    "'heading'[]",
+  ])(
+    'reports the complete invalid enum {%s} and preserves the optional parameter in its fix',
+    async (type) => {
+      const source = `{% doc %}\n  @param   { ${type} }   [variant] - Text style\n{% enddoc %}`;
+      const offenses = await runLiquidCheck(ValidDocParamTypes, source);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toBe(`The parameter type ' ${type} ' is not supported.`);
+      expect(source.slice(offenses[0].start.index, offenses[0].end.index)).toBe(`{ ${type} }`);
+      expect(applySuggestions(source, offenses[0])).toEqual([
+        '{% doc %}\n  @param [variant] - Text style\n{% enddoc %}',
+      ]);
+    },
+  );
+
   it('should report an error with suggestions when an invalid parameter type is used', async () => {
     const sourceCode = `
       {% doc %}
