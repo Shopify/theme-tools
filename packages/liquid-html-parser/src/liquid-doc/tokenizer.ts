@@ -170,9 +170,9 @@ export function tokenizeParamContent(text: string, startOffset: number): ParamTo
     }
 
     // Type: {type}
-    TYPE_RE.lastIndex = pos;
-    if (TYPE_RE.test(text)) {
-      const end = TYPE_RE.lastIndex;
+    const typeEnd = findTypeEnd(text, pos);
+    if (typeEnd !== -1) {
+      const end = typeEnd;
       tokens.push({
         type: ParamTokenType.Type,
         value: text.slice(pos + 1, end - 1),
@@ -247,12 +247,57 @@ export function tokenizeParamContent(text: string, startOffset: number): ParamTo
   return tokens;
 }
 
+/** Find the closing brace without treating braces inside string literals as delimiters. */
+function findTypeEnd(text: string, start: number): number {
+  if (text[start] !== '{') return -1;
+
+  let quote: string | undefined;
+  let recoveryBrace = -1;
+
+  for (let pos = start + 1; pos < text.length; pos++) {
+    const ch = text[pos];
+    if (ch === '\n' || ch === '\r') break;
+
+    if (quote) {
+      if (ch === quote) {
+        if (
+          recoveryBrace !== -1 &&
+          /^[ \t]*(?:\[[^\]]*\]|[\w][\w-]*)[ \t]+/.test(text.slice(recoveryBrace + 1, pos))
+        ) {
+          let next = pos + 1;
+          while (text[next] === ' ' || text[next] === '\t') next++;
+          // An unmatched quote can close at an apostrophe in the parameter's
+          // description, which need not have a dash. A real type delimiter wins;
+          // otherwise prefer a recognizable parameter boundary, even at EOL.
+          // This also recovers ambiguous input with a missing outer brace and a
+          // parameter-looking name inside its last string literal.
+          if (text[next] !== '|' && text[next] !== '}') {
+            return recoveryBrace + 1;
+          }
+        }
+        quote = undefined;
+        recoveryBrace = -1;
+      } else if (ch === '}' && recoveryBrace === -1) {
+        recoveryBrace = pos;
+      }
+      continue;
+    }
+
+    if (ch === '}') return pos + 1;
+    // Liquid strings do not interpret backslash escapes.
+    if (ch === "'" || ch === '"') quote = ch;
+  }
+
+  // Keep a malformed, closed annotation recognizable to semantic checks, and
+  // preserve its parameter name even when a string quote is missing.
+  return recoveryBrace === -1 ? -1 : recoveryBrace + 1;
+}
+
 const ANNOTATION_RE = /@(\w+)/y;
 const WHITESPACE_RE = /[ \t]+/y;
 const NEWLINE_RE = /\r?\n/y;
 /** Matches `@word` appearing after at least one character within a line (mid-line). */
 const MIDLINE_ANNOTATION_RE = /.@\w+/g;
-const TYPE_RE = /\{([^}]*)\}/y;
 const OPTIONAL_NAME_RE = /\[([^\]]*)\]/y;
 const WORD_RE = /[\w][\w-]*/y;
 const PARAM_WHITESPACE_RE = /[ \t]+/y;

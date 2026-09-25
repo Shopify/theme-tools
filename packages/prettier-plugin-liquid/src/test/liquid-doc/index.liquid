@@ -18,6 +18,17 @@ It should format the param description with a dash separator
   @param paramName  -   param with description
 {% enddoc %}
 
+It should preserve string enum types and literal contents
+{% doc %}
+@param { 'Heading' | "small" | '' | 'two  spaces' | 'a|b' | '}' } [variant]   - Shared text style
+{% enddoc %}
+
+It should preserve malformed enum types for linting
+{% doc %}
+@param {'heading} [variant] - It's {the shared style}.
+@param {'heading' |} variant - Shared text style
+{% enddoc %}
+
 It should respect the liquidDocParamDash option liquidDocParamDash: false
 {% doc %}
   @param paramName  param with description
