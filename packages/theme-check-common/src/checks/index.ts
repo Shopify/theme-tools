@@ -64,6 +64,7 @@ import { ValidRenderSnippetArgumentTypes } from './valid-render-snippet-argument
 import { ValidSchema } from './valid-schema';
 import { ValidSchemaName } from './valid-schema-name';
 import { ValidSchemaTranslations } from './valid-schema-translations';
+import { ValidSelectDefault, ValidSelectDefaultSettingsSchema } from './valid-select-default';
 import { ValidSettingsKey } from './valid-settings-key';
 import { ValidStandardEventData } from './valid-standard-event-data';
 import { ValidStaticBlockType } from './valid-static-block-type';
@@ -156,6 +157,8 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   ValidLocalBlocks,
   ValidRenderSnippetArgumentTypes,
   ValidSchema,
+  ValidSelectDefault,
+  ValidSelectDefaultSettingsSchema,
   ValidSettingsKey,
   ValidStandardEventData,
   ValidStaticBlockType,
