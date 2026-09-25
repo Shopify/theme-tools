@@ -118,6 +118,7 @@ LiquidSyntaxError:
 MatchingTranslations:
   enabled: true
   severity: 0
+  requireOther: true
 MaxFileSize:
   enabled: true
   severity: 0
