@@ -1,6 +1,12 @@
 import { Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
-import { BasicParamTypes, inferArgumentType, isTypeCompatible } from '../../liquid-doc/utils';
-import { NodeTypes, type BlockMarkup } from '@shopify/liquid-html-parser';
+import {
+  getArgumentTypeMismatchMessage,
+  inferArgumentType,
+  isArgumentTypeCompatible,
+  parseStringEnumType,
+} from '../../liquid-doc/utils';
+import { generateTypeMismatchSuggestions } from '../../liquid-doc/arguments';
+import { type BlockMarkup } from '@shopify/liquid-html-parser';
 import { getBlockDocParams, isSystemArg } from '../common/block-doc';
 
 export const ValidBlockArgumentTypes: LiquidCheckDefinition = {
@@ -20,8 +26,6 @@ export const ValidBlockArgumentTypes: LiquidCheckDefinition = {
   },
 
   create(context) {
-    const knownTypes = new Set(Object.values(BasicParamTypes) as string[]);
-
     return {
       async LiquidTag(node) {
         if (node.name !== 'block') return;
@@ -34,23 +38,29 @@ export const ValidBlockArgumentTypes: LiquidCheckDefinition = {
 
         for (const arg of markup.args) {
           if (isSystemArg(arg.name)) continue;
-          if (arg.value.type === NodeTypes.VariableLookup) continue;
-
           const param = docParams.get(arg.name);
           if (!param || !param.type) continue;
 
-          const expectedType = param.type.toLowerCase();
-          if (!knownTypes.has(expectedType)) continue;
+          if (isArgumentTypeCompatible(param.type, arg.value) !== false) continue;
 
-          const actualType = inferArgumentType(arg.value as any);
-          if (isTypeCompatible(expectedType, actualType)) continue;
+          const isEnum = !!parseStringEnumType(param.type);
 
           context.report({
             message:
-              `Type mismatch for argument '${arg.name}': ` +
-              `expected ${param.type}, got ${actualType}`,
+              isEnum || arg.value.type === 'BlockArrayLiteral'
+                ? getArgumentTypeMismatchMessage(arg.name, param.type, arg.value)
+                : `Type mismatch for argument '${arg.name}': expected ${
+                    param.type
+                  }, got ${inferArgumentType(arg.value)}`,
             startIndex: arg.value.position.start,
             endIndex: arg.value.position.end,
+            ...(isEnum && {
+              suggest: generateTypeMismatchSuggestions(
+                param.type,
+                arg.value.position.start,
+                arg.value.position.end,
+              ),
+            }),
           });
         }
       },

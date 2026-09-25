@@ -1,8 +1,9 @@
-import { LiquidExpression, NodeTypes } from '@shopify/liquid-html-parser';
+import { BlockArrayLiteral, LiquidExpression, NodeTypes } from '@shopify/liquid-html-parser';
 import { assertNever } from '../utils';
 import { isSnippet } from '../to-schema';
 import { isBlock } from '../to-schema';
 import { ObjectEntry, UriString } from '../types';
+import { parseStringEnumType } from './string-enum-type';
 
 export { parseStringEnumType } from './string-enum-type';
 
@@ -31,6 +32,9 @@ export enum SupportedDocTagTypes {
  * Provides a default completion value for an argument / parameter of a given type.
  */
 export function getDefaultValueForType(type: string | null) {
+  const enumMembers = type ? parseStringEnumType(type) : undefined;
+  if (enumMembers) return enumMembers[0].raw;
+
   switch (type?.toLowerCase()) {
     case BasicParamTypes.String:
       return "''";
@@ -77,6 +81,46 @@ export function isTypeCompatible(expectedType: string, actualType: BasicParamTyp
   }
 
   return normalizedExpectedType === actualType;
+}
+
+/**
+ * Checks literal values against a documented type. Undefined means that the
+ * value is dynamic or the declaration is outside the types we can check.
+ */
+export function isArgumentTypeCompatible(
+  expectedType: string,
+  argument: LiquidExpression | BlockArrayLiteral,
+): boolean | undefined {
+  if (argument.type === NodeTypes.VariableLookup) return undefined;
+
+  const enumMembers = parseStringEnumType(expectedType);
+  if (enumMembers) {
+    return (
+      argument.type === NodeTypes.String &&
+      enumMembers.some((member) => member.value === argument.value)
+    );
+  }
+
+  if (argument.type === 'BlockArrayLiteral') return undefined;
+
+  const normalizedType = expectedType.toLowerCase();
+  if (!Object.values(BasicParamTypes).some((type) => type === normalizedType)) return undefined;
+
+  return isTypeCompatible(normalizedType, inferArgumentType(argument));
+}
+
+export function getArgumentTypeMismatchMessage(
+  name: string,
+  expectedType: string,
+  argument: LiquidExpression | BlockArrayLiteral,
+): string {
+  if (parseStringEnumType(expectedType)) {
+    const actualValue = argument.source.slice(argument.position.start, argument.position.end);
+    return `Invalid value for argument '${name}': expected ${expectedType.trim()}, got ${actualValue}.`;
+  }
+
+  const actualType = argument.type === 'BlockArrayLiteral' ? 'array' : inferArgumentType(argument);
+  return `Type mismatch for argument '${name}': expected ${expectedType.toLowerCase()}, got ${actualType}`;
 }
 
 /**

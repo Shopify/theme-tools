@@ -10,10 +10,10 @@ import {
 } from '@shopify/liquid-html-parser';
 import { Context, LiquidDocParameter, SourceCodeType, StringCorrector } from '..';
 import {
-  BasicParamTypes,
+  getArgumentTypeMismatchMessage,
   getDefaultValueForType,
-  inferArgumentType,
-  isTypeCompatible,
+  isArgumentTypeCompatible,
+  parseStringEnumType,
 } from './utils';
 import { isLiquidString } from '../checks/utils';
 
@@ -118,21 +118,12 @@ export function findTypeMismatchParams(
   const typeMismatchParams: LiquidNamedArgument[] = [];
 
   for (const arg of providedParams) {
-    if (arg.value.type === NodeTypes.VariableLookup) {
-      continue;
-    }
-
     const liquidDocParamDef = liquidDocParameters.get(arg.name);
-    if (liquidDocParamDef && liquidDocParamDef.type) {
-      const paramType = liquidDocParamDef.type.toLowerCase();
-      const supportedTypes = Object.keys(BasicParamTypes).map((type) => type.toLowerCase());
-      if (!supportedTypes.includes(paramType)) {
-        continue;
-      }
-
-      if (!isTypeCompatible(paramType, inferArgumentType(arg.value))) {
-        typeMismatchParams.push(arg);
-      }
+    if (
+      liquidDocParamDef?.type &&
+      isArgumentTypeCompatible(liquidDocParamDef.type, arg.value) === false
+    ) {
+      typeMismatchParams.push(arg);
     }
   }
 
@@ -151,17 +142,14 @@ export function reportTypeMismatches(
     const paramDef = liquidDocParameters.get(arg.name);
     if (!paramDef || !paramDef.type) continue;
 
-    const expectedType = paramDef.type.toLowerCase();
-    const actualType = inferArgumentType(arg.value);
-
     const suggestions = generateTypeMismatchSuggestions(
-      expectedType,
+      paramDef.type,
       arg.value.position.start,
       arg.value.position.end,
     );
 
     context.report({
-      message: `Type mismatch for argument '${arg.name}': expected ${expectedType}, got ${actualType}`,
+      message: getArgumentTypeMismatchMessage(arg.name, paramDef.type, arg.value),
       startIndex: arg.value.position.start,
       endIndex: arg.value.position.end,
       suggest: suggestions,
@@ -177,6 +165,17 @@ export function generateTypeMismatchSuggestions(
   startPosition: number,
   endPosition: number,
 ) {
+  const enumMembers = parseStringEnumType(expectedType);
+  if (enumMembers) {
+    return enumMembers.map((member) => ({
+      message: `Replace with ${member.raw}`,
+      fix: (fixer: StringCorrector) => {
+        return fixer.replace(startPosition, endPosition, member.raw);
+      },
+    }));
+  }
+
+  expectedType = expectedType.toLowerCase();
   const defaultValue = getDefaultValueForType(expectedType);
   const suggestions = [];
 
