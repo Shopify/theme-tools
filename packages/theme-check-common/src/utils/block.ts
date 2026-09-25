@@ -82,14 +82,10 @@ export function getBlocks(validSchema: ThemeBlock.Schema | Section.Schema) {
   }
 
   function categorizeDefaultLevelBlocks(block: Preset.Block, index: number) {
-    const hasName = 'name' in block;
-
-    if (hasName) {
-      defaultLevelBlocks.push({
-        node: block,
-        path: ['default', 'blocks', String(index), 'type'],
-      });
-    }
+    defaultLevelBlocks.push({
+      node: block,
+      path: ['default', 'blocks', String(index), 'type'],
+    });
   }
 
   if (Array.isArray(rootLevelBlocks)) {

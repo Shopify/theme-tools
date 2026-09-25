@@ -258,6 +258,109 @@ describe('Module: ValidBlockTarget', () => {
       const offenses = await check(theme, [ValidBlockTarget]);
       expect(offenses).to.be.empty;
     });
+
+    it('should report an unknown locally scoped block in a preset', async () => {
+      const theme: MockTheme = {
+        'sections/local-blocks.liquid': `
+          {% schema %}
+          {
+            "name": "Section name",
+            "blocks": [
+              {
+                "type": "local_block",
+                "name": "Local block"
+              }
+            ],
+            "presets": [
+              {
+                "name": "Default preset",
+                "blocks": [
+                  {
+                    "type": "missing_block"
+                  }
+                ]
+              }
+            ]
+          }
+          {% endschema %}
+        `,
+      };
+
+      const offenses = await check(theme, [ValidBlockTarget]);
+      expect(offenses).to.have.length(1);
+      expect(offenses).to.containOffense(
+        'Section block type "missing_block" must be defined in "blocks" at the root of this schema.',
+      );
+    });
+
+    it('should report an unknown locally scoped block in a default', async () => {
+      const theme: MockTheme = {
+        'sections/local-blocks.liquid': `
+          {% schema %}
+          {
+            "name": "Section name",
+            "blocks": [
+              {
+                "type": "local_block",
+                "name": "Local block"
+              }
+            ],
+            "default": {
+              "blocks": [
+                {
+                  "type": "missing_block"
+                }
+              ]
+            }
+          }
+          {% endschema %}
+        `,
+      };
+
+      const offenses = await check(theme, [ValidBlockTarget]);
+      expect(offenses).to.have.length(1);
+      expect(offenses).to.containOffense(
+        'Section block type "missing_block" must be defined in "blocks" at the root of this schema.',
+      );
+    });
+
+    it('should allow locally scoped blocks declared for presets and defaults', async () => {
+      const theme: MockTheme = {
+        'sections/local-blocks.liquid': `
+          {% schema %}
+          {
+            "name": "Section name",
+            "blocks": [
+              {
+                "type": "local_block",
+                "name": "Local block"
+              }
+            ],
+            "presets": [
+              {
+                "name": "Default preset",
+                "blocks": [
+                  {
+                    "type": "local_block"
+                  }
+                ]
+              }
+            ],
+            "default": {
+              "blocks": [
+                {
+                  "type": "local_block"
+                }
+              ]
+            }
+          }
+          {% endschema %}
+        `,
+      };
+
+      const offenses = await check(theme, [ValidBlockTarget]);
+      expect(offenses).to.be.empty;
+    });
   });
 
   describe('Allowed Targeting Tests', () => {

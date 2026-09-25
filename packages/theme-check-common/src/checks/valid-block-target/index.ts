@@ -54,7 +54,23 @@ export const ValidBlockTarget: LiquidCheckDefinition = {
           hasRootBlocksDeclaration,
         } = getBlocks(validSchema);
 
-        if (rootLevelLocalBlocks.length > 0) return;
+        if (rootLevelLocalBlocks.length > 0) {
+          const localBlockTypes = new Set(rootLevelLocalBlocks.map(({ node }) => node.type));
+          const configuredBlocks = [...(presetLevelBlocks[0] ?? []), ...defaultLevelBlocks];
+
+          for (const { node, path } of configuredBlocks) {
+            if (!localBlockTypes.has(node.type)) {
+              const typeNode = nodeAtPath(ast, path)! as LiteralNode;
+              reportWarning(
+                `Section block type "${node.type}" must be defined in "blocks" at the root of this schema.`,
+                offset,
+                typeNode,
+                context,
+              );
+            }
+          }
+          return;
+        }
 
         let errorsInRootLevelBlocks = false;
         await Promise.all(
