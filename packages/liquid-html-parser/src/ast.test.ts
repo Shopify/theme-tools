@@ -1825,6 +1825,23 @@ describe('Unit: Stage 2 (AST)', () => {
       expectPath(ast, 'children.0.markup.1.children.0.children.1.markup.name').to.eql('var3');
     });
 
+    it('should preserve string enum doc types in Liquid and HTML documents', () => {
+      const paramType = "'Heading' | 'a|b' | '}' | ''";
+      const source = `{% doc %}\n  @param {${paramType}} [variant] - Shared text style\n{% enddoc %}`;
+      for (const toAST of [toLiquidAST, toLiquidHtmlAST]) {
+        const expectPosition = makeExpectPosition(toAST.name);
+        ast = toAST(source);
+        expectPath(ast, 'children.0.body.nodes.0.paramType.type').toEqual('TextNode');
+        expectPath(ast, 'children.0.body.nodes.0.paramType.value').toEqual(paramType);
+        expectPosition(ast, 'children.0.body.nodes.0.paramType').toEqual(paramType);
+        expectPosition(ast, 'children.0.body.nodes.0.paramName').toEqual('variant');
+        expectPath(ast, 'children.0.body.nodes.0.required').toEqual(false);
+        expectPath(ast, 'children.0.body.nodes.0.paramDescription.value').toEqual(
+          'Shared text style',
+        );
+      }
+    });
+
     it(`should parse doc tags`, () => {
       ast = toLiquidAST(`{% doc %}{% enddoc %}`);
       expectPath(ast, 'children.0.type').to.eql('LiquidRawTag');
