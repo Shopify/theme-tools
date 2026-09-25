@@ -15,7 +15,7 @@ import {
 import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { URI } from 'vscode-uri';
 import { SettingsSchemaJSONFile } from './settings';
-import { ArrayType, TypeSystem } from './TypeSystem';
+import { ArrayType, InferredType, TypeSystem } from './TypeSystem';
 import { isLiquidVariableOutput, isNamedLiquidTag } from './utils';
 
 describe('Module: TypeSystem', () => {
@@ -142,6 +142,14 @@ describe('Module: TypeSystem', () => {
           {
             name: 'size',
             return_type: [{ type: 'number', name: '' }],
+          },
+          {
+            name: 'upcase',
+            return_type: [{ type: 'string', name: '' }],
+          },
+          {
+            name: 'split',
+            return_type: [{ type: 'array', array_value: 'string' }],
           },
         ],
         systemTranslations: async () => ({}),
@@ -314,6 +322,55 @@ describe('Module: TypeSystem', () => {
       const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
       expect(inferredType).to.equal('image');
     });
+
+    it.each(["'heading'", 'variant'])(
+      'resolves repeated default references with linear work starting from %s',
+      async (initialValue) => {
+        const assignmentCount = 12;
+        const ast = toLiquidHtmlAST(`
+          {% doc %}
+            @param {'heading' | 'small'} variant
+          {% enddoc %}
+          {% assign x = ${initialValue} %}
+          ${'{% assign x = x | default: x %}'.repeat(assignmentCount)}
+          {{ x }}
+        `);
+        let filterReads = 0;
+        for (const child of ast.children) {
+          if (!isNamedLiquidTag(child, NamedTags.assign)) continue;
+          const value = child.markup.value;
+          const filters = value.filters;
+          Object.defineProperty(value, 'filters', {
+            enumerable: true,
+            get() {
+              filterReads++;
+              return filters;
+            },
+          });
+        }
+        const output = ast.children.at(-1)!;
+        assert(isLiquidVariableOutput(output));
+
+        const inferred = await typeSystem.inferType(
+          output.markup,
+          ast,
+          'file:///snippets/example.liquid',
+        );
+
+        expect(inferred).to.eql(
+          initialValue === 'variant'
+            ? {
+                kind: 'string-enum',
+                members: [
+                  { value: 'heading', raw: "'heading'" },
+                  { value: 'small', raw: "'small'" },
+                ],
+              }
+            : 'string',
+        );
+        expect(filterReads).toBeLessThan(assignmentCount * 10);
+      },
+    );
   });
 
   it('should return the type of variables in for loop', async () => {
@@ -461,7 +518,7 @@ describe('Module: TypeSystem', () => {
   });
 
   it('should support path-contextual variable types', async () => {
-    let inferredType: string | ArrayType;
+    let inferredType: InferredType;
     const contexts: [string, string][] = [
       ['section', 'sections/my-section.liquid'],
       ['comment', 'sections/main-article.liquid'],
@@ -495,13 +552,25 @@ describe('Module: TypeSystem', () => {
   });
 
   describe('LiquidDoc inferred type', () => {
-    const liquidDocParamTypeToTypeMap = {
+    const liquidDocParamTypeToTypeMap: Record<string, InferredType> = {
       [BasicParamTypes.String]: 'string',
       [BasicParamTypes.Number]: 'number',
       [BasicParamTypes.Boolean]: 'boolean',
       [BasicParamTypes.Object]: 'untyped',
-      "'heading' | 'small'": 'string',
-      [`'Heading' | "Small"`]: 'string',
+      "'heading' | 'small'": {
+        kind: 'string-enum',
+        members: [
+          { value: 'heading', raw: "'heading'" },
+          { value: 'small', raw: "'small'" },
+        ],
+      },
+      [`'Heading' | "Small"`]: {
+        kind: 'string-enum',
+        members: [
+          { value: 'Heading', raw: "'Heading'" },
+          { value: 'Small', raw: '"Small"' },
+        ],
+      },
       "'heading' |": 'untyped',
       "'heading' | number": 'untyped',
       invalid: 'untyped',
@@ -563,6 +632,165 @@ describe('Module: TypeSystem', () => {
       expect(inferredType).to.eql({
         kind: 'array',
         valueType: 'product',
+      });
+    });
+
+    describe('string enums', () => {
+      const enumType: InferredType = {
+        kind: 'string-enum',
+        members: [
+          { value: 'heading', raw: "'heading'" },
+          { value: 'small', raw: '"small"' },
+        ],
+      };
+
+      async function inferOutput(source: string): Promise<InferredType> {
+        const ast = toLiquidHtmlAST(`
+          {% doc %}
+            @param {'heading' | "small"} [variant]
+          {% enddoc %}
+          ${source}
+        `);
+        const output = ast.children.at(-1)!;
+        assert(isLiquidVariableOutput(output));
+        return typeSystem.inferType(output.markup, ast, 'file:///snippets/example.liquid');
+      }
+
+      it('preserves members through chained assignments', async () => {
+        expect(
+          await inferOutput(`
+            {% assign style = variant %}
+            {% assign copy = style %}
+            {{ copy }}
+          `),
+        ).to.eql(enumType);
+      });
+
+      it('replaces the enum when the variable is reassigned', async () => {
+        expect(
+          await inferOutput(`
+            {% assign variant = 1 %}
+            {{ variant }}
+          `),
+        ).to.equal('number');
+      });
+
+      it('keeps the earlier enum type of a copy after reassigning the original', async () => {
+        expect(
+          await inferOutput(`
+            {% assign copy = variant %}
+            {% assign variant = 'other' %}
+            {{ copy }}
+          `),
+        ).to.eql(enumType);
+      });
+
+      it.each([
+        ['size', 'number'],
+        ['first', 'string'],
+        ['last', 'string'],
+        ['missing', 'unknown'],
+      ])('uses string semantics for the %s property', async (property, expected) => {
+        expect(await inferOutput(`{{ variant.${property} }}`)).to.equal(expected);
+      });
+
+      it.each([
+        ['size', 'number'],
+        ['upcase', 'string'],
+        ['split: ","', { kind: 'array', valueType: 'string' }],
+        ['unknown_filter', 'untyped'],
+      ])('uses the return type of the %s filter', async (filter, expected) => {
+        expect(await inferOutput(`{{ variant | ${filter} }}`)).to.eql(expected);
+      });
+
+      it('preserves the enum with an existing member as the default', async () => {
+        expect(await inferOutput(`{{ variant | default: 'small' }}`)).to.eql(enumType);
+      });
+
+      it('includes a new literal default with its original spelling', async () => {
+        expect(await inferOutput(`{{ variant | default: "Heading" }}`)).to.eql({
+          kind: 'string-enum',
+          members: [...enumType.members, { value: 'Heading', raw: '"Heading"' }],
+        });
+      });
+
+      it('merges enum defaults without duplicate values', async () => {
+        expect(
+          await inferOutput(`
+            {% doc %}
+              @param {'small' | 'other'} fallback
+            {% enddoc %}
+            {{ variant | default: fallback }}
+          `),
+        ).to.eql({
+          kind: 'string-enum',
+          members: [...enumType.members, { value: 'other', raw: "'other'" }],
+        });
+      });
+
+      it.each([
+        ['variant | default: product.title', 'string'],
+        ['product.title | default: variant', 'string'],
+        ['variant | default: 1', 'untyped'],
+        ['1 | default: variant', 'untyped'],
+        ['variant | default: unknown', 'untyped'],
+        ['unknown | default: variant', 'untyped'],
+        ['variant | upcase | default: variant', 'string'],
+        ['variant | size | default: variant', 'untyped'],
+        ['variant | default: "small" | upcase', 'string'],
+      ])('widens the enum as needed for %s', async (expression, expected) => {
+        expect(await inferOutput(`{{ ${expression} }}`)).to.equal(expected);
+      });
+
+      it('includes a literal input when the default is an enum', async () => {
+        expect(await inferOutput(`{{ 'other' | default: variant }}`)).to.eql({
+          kind: 'string-enum',
+          members: [{ value: 'other', raw: "'other'" }, ...enumType.members],
+        });
+      });
+
+      it('does not add default values to the original enum', async () => {
+        const ast = toLiquidHtmlAST(`
+          {% doc %}
+            @param {'heading' | "small"} variant
+          {% enddoc %}
+          {% assign copy = variant | default: 'other' %}
+          {{ copy }}
+        `);
+        const output = ast.children.at(-1)!;
+        assert(isLiquidVariableOutput(output));
+        assert(typeof output.markup !== 'string');
+        const lookup = output.markup.expression;
+        assert(lookup.type === NodeTypes.VariableLookup);
+        const variables = await typeSystem.availableVariables(
+          ast,
+          '',
+          lookup,
+          'file:///snippets/example.liquid',
+        );
+        expect(variables.find(({ entry }) => entry.name === 'variant')?.type).to.eql(enumType);
+        expect(variables.find(({ entry }) => entry.name === 'copy')?.type).to.eql({
+          kind: 'string-enum',
+          members: [...enumType.members, { value: 'other', raw: "'other'" }],
+        });
+      });
+
+      it('does not treat an enum as an array when resolving a loop variable', async () => {
+        const ast = toLiquidHtmlAST(`
+          {% doc %}
+            @param {'heading' | 'small'} variant
+          {% enddoc %}
+          {% for item in variant %}{{ item }}{% endfor %}
+        `);
+        const loop = ast.children[1];
+        assert(isNamedLiquidTag(loop, NamedTags.for));
+        const branch = loop.children![0];
+        assert(branch.type === NodeTypes.LiquidBranch);
+        const output = branch.children[0];
+        assert(isLiquidVariableOutput(output));
+        expect(
+          await typeSystem.inferType(output.markup, ast, 'file:///snippets/example.liquid'),
+        ).to.equal('untyped');
       });
     });
   });

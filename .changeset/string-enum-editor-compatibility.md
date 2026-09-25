@@ -2,4 +2,4 @@
 '@shopify/theme-language-server-common': minor
 ---
 
-Recognize LiquidDoc string enum parameters as strings in the language server, preserve literal enum values in documentation hovers, and safely insert enum values into parameter completion snippets. Add enum syntax to the built-in LiquidDoc parameter documentation.
+Preserve LiquidDoc string enum types through variable inference, assignments, and compatible default values. Display their allowed values in hovers and completion documentation while retaining string property and filter suggestions. Safely insert enum values into parameter completion snippets and document enum syntax in the built-in LiquidDoc parameter documentation.

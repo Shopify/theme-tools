@@ -4,6 +4,7 @@ import {
   getDefaultValueForType,
   LiquidDocParameter,
   parseStringEnumType,
+  StringEnumType,
   SupportedDocTagTypes,
 } from '@shopify/theme-check-common';
 
@@ -12,7 +13,7 @@ export function formatLiquidDocParameter(
   heading: boolean = false,
 ) {
   const nameStr = required ? `\`${name}\`` : `\`${name}\` (Optional)`;
-  const typeStr = type ? `: ${formatParamType(type)}` : '';
+  const typeStr = type ? `: ${formatLiquidDocParamType(type)}` : '';
 
   if (heading) {
     const descStr = description ? `\n\n${description}` : '';
@@ -23,13 +24,17 @@ export function formatLiquidDocParameter(
   return `- ${nameStr}${typeStr}${descStr}`;
 }
 
-function formatParamType(type: string): string {
-  if (!parseStringEnumType(type)) return type;
+export function formatLiquidDocParamType(type: string | StringEnumType): string {
+  if (typeof type === 'string' && !parseStringEnumType(type)) return type;
 
-  const backticks = type.match(/`+/g) ?? [];
+  const annotation =
+    typeof type === 'string' ? type.trim() : type.members.map((member) => member.raw).join(' | ');
+  // Inferred literal values can span lines; display those line breaks explicitly.
+  const display = annotation.replace(/\r/g, '\\r').replace(/\n/g, '\\n');
+  const backticks = display.match(/`+/g) ?? [];
   const fenceLength = backticks.reduce((length, run) => Math.max(length, run.length + 1), 1);
   const fence = '`'.repeat(fenceLength);
-  return `${fence}${type.trim()}${fence}`;
+  return `${fence}${display}${fence}`;
 }
 
 export function formatLiquidDocTagHandle(label: string, description: string, example: string) {

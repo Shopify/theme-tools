@@ -1,5 +1,12 @@
 import { DocsetEntry, FilterEntry, ObjectEntry, TagEntry } from '@shopify/theme-check-common';
-import { ArrayType, PseudoType, Unknown, docsetEntryReturnType, isArrayType } from '../TypeSystem';
+import {
+  InferredType,
+  Unknown,
+  docsetEntryReturnType,
+  isArrayType,
+  isStringEnumType,
+} from '../TypeSystem';
+import { formatLiquidDocParamType } from '../utils/liquidDoc';
 import { Attribute, Tag, Value } from './HtmlDocset';
 
 const HORIZONTAL_SEPARATOR = '\n\n---\n\n';
@@ -9,7 +16,7 @@ export type DocsetEntryType = 'filter' | 'tag' | 'object';
 
 export function render(
   entry: DocsetEntry | FilterEntry | TagEntry,
-  returnType?: PseudoType | ArrayType,
+  returnType?: InferredType,
   docsetEntryType?: DocsetEntryType,
 ) {
   return [title(entry, returnType), docsetEntryBody(entry, returnType, docsetEntryType)]
@@ -23,11 +30,13 @@ export function renderHtmlEntry(entry: HtmlEntry, parentEntry?: HtmlEntry) {
 
 function title(
   entry: DocsetEntry | ObjectEntry | FilterEntry | HtmlEntry,
-  returnType?: PseudoType | ArrayType,
+  returnType?: InferredType,
 ) {
   returnType = returnType ?? docsetEntryReturnType(entry as ObjectEntry, Unknown);
 
-  if (isArrayType(returnType)) {
+  if (isStringEnumType(returnType)) {
+    return `### ${entry.name}: ${formatLiquidDocParamType(returnType)}`;
+  } else if (isArrayType(returnType)) {
     return `### ${entry.name}: \`${returnType.valueType}[]\``;
   } else if (returnType !== Unknown) {
     return `### ${entry.name}: \`${returnType}\``;
@@ -46,7 +55,7 @@ function sanitize(s: string | undefined) {
 
 function docsetEntryBody(
   entry: DocsetEntry,
-  returnType?: PseudoType | ArrayType,
+  returnType?: InferredType,
   docsetEntryType?: DocsetEntryType,
 ) {
   return [
@@ -95,7 +104,7 @@ const shopifyDevRoot = `https://shopify.dev/docs/api/liquid`;
 
 function shopifyDevReference(
   entry: DocsetEntry,
-  returnType?: PseudoType | ArrayType,
+  returnType?: InferredType,
   docsetEntryType?: DocsetEntryType,
 ) {
   switch (docsetEntryType) {
@@ -110,7 +119,9 @@ function shopifyDevReference(
     }
 
     case 'object': {
-      if (!returnType) {
+      if (isStringEnumType(returnType)) {
+        return undefined;
+      } else if (!returnType) {
         return `[Shopify Reference](${shopifyDevRoot}/objects/${entry.name})`;
       } else if (isArrayType(returnType)) {
         return `[Shopify Reference](${shopifyDevRoot}/objects/${returnType.valueType})`;

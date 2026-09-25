@@ -147,6 +147,19 @@ describe('Module: LiquidObjectHoverProvider', async () => {
     }
   });
 
+  it.each([
+    ['variant', '{{ variant█ }}'],
+    ['style', '{% assign style = variant %}{{ style█ }}'],
+  ])('retains enum values when hovering %s', async (name, source) => {
+    await expect(provider).to.hover(
+      {
+        relativePath: 'snippets/text.liquid',
+        source: `{% doc %}\n@param {'Heading' | "Small"} variant\n{% enddoc %}\n${source}`,
+      },
+      `### ${name}: \`'Heading' | "Small"\``,
+    );
+  });
+
   it('should support paginate inside paginate tags', async () => {
     const context = `
       {% paginate all_products by 5 %}

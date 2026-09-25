@@ -17,6 +17,52 @@ const HTML_ENTRY: HtmlEntry = {
 
 describe('MarkdownRenderer', () => {
   describe('render()', () => {
+    it('renders enum members without interpreting Markdown or constructing an object reference', () => {
+      const type = {
+        kind: 'string-enum' as const,
+        members: [
+          { value: '**bold**', raw: "'**bold**'" },
+          { value: '<small>', raw: '"<small>"' },
+        ],
+      };
+      const entry = {
+        ...DOC_ENTRY,
+        access: { global: false, parents: [], template: [] },
+      };
+
+      expect(render(entry, type, 'object')).toEqual(
+        '### entry: `\'**bold**\' | "<small>"`\nsummary\n\n---\n\ndescription',
+      );
+    });
+
+    it('uses a longer code delimiter when enum values contain backticks', () => {
+      const type = {
+        kind: 'string-enum' as const,
+        members: [
+          { value: '``Heading``', raw: "'``Heading``'" },
+          { value: '`Small`', raw: '"`Small`"' },
+        ],
+      };
+
+      expect(render({ name: 'variant' }, type, 'object')).toEqual(
+        '### variant: ```\'``Heading``\' | "`Small`"```',
+      );
+    });
+
+    it('displays line breaks in inferred enum values without breaking Markdown', () => {
+      const type = {
+        kind: 'string-enum' as const,
+        members: [
+          { value: 'Heading', raw: "'Heading'" },
+          { value: '\r\n`small`\nnext', raw: "'\r\n`small`\nnext'" },
+        ],
+      };
+
+      expect(render({ name: 'variant' }, type, 'object')).toEqual(
+        "### variant: ``'Heading' | '\\r\\n`small`\\nnext'``",
+      );
+    });
+
     it('converts a docset entry to markdown', async () => {
       expect(render(DOC_ENTRY)).toEqual(`### entry\nsummary\n\n---\n\ndescription`);
     });
