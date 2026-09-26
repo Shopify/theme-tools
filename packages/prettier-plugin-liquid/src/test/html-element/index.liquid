@@ -21,3 +21,7 @@ it should borrow the closing span in this situation
 printWidth: 30
 <a class="link animate-arrow" ><span class="icon-wrap">&nbsp;{% render 'icon-arrow' %}</span></a>
 <a class="link animate-arrow" ><span class="icon-wrap">&nbsp; aaaaaaaaaaaaaaaaaaaaaaaa </span></a>
+
+it should not print the borrowed closing tag end marker twice before a textarea
+<div><label for="x">Name</label><textarea id="x" rows="4"></textarea></div>
+<div><img src="a"><textarea>hi</textarea></div>
