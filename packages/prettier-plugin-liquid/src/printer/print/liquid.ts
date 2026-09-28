@@ -429,17 +429,9 @@ export function printLiquidTag(
   }
 
   const tagGroupId = Symbol('tag-group');
-  /*
-   * An empty block has no body whitespace to preserve. Keep both sides flat so
-   * wrapped arguments do not introduce whitespace-control hyphens around it.
-   */
-  const innerWhitespaceGroupId =
-    node.name === NamedTags.block &&
-    typeof node.markup !== 'string' &&
-    node.markup.args.length > 0 &&
-    isEmpty(node.children)
-      ? FORCE_FLAT_GROUP_ID
-      : tagGroupId;
+  // Childless tags print nothing between delimiters, so a broken tag group has
+  // no inner whitespace that needs stripping.
+  const innerWhitespaceGroupId = isEmpty(node.children) ? FORCE_FLAT_GROUP_ID : tagGroupId;
   const blockStart = printLiquidBlockStart(path, options, print, {
     ...args,
     leadingSpaceGroupId,

@@ -2,4 +2,4 @@
 '@shopify/prettier-plugin-liquid': patch
 ---
 
-Add trailing commas to wrapped `block` arguments and print the closing delimiter on its own line.
+Format wrapped `block` arguments with trailing commas and a closing delimiter on its own line, and avoid unnecessary whitespace stripping between childless Liquid tag delimiters.
