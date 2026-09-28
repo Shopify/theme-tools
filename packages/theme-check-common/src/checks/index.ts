@@ -90,6 +90,7 @@ import { MissingBlockArguments } from './missing-block-arguments';
 import { UnknownBlockSetting } from './unknown-block-setting';
 import { UnrecognizedBlockArguments } from './unrecognized-block-arguments';
 import { ValidBlockArgumentTypes } from './valid-block-argument-types';
+import { ValidBlockTagPlacement } from './valid-block-tag-placement';
 
 export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   AppBlockValidTags,
@@ -182,6 +183,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   UnknownBlockSetting,
   UnrecognizedBlockArguments,
   ValidBlockArgumentTypes,
+  ValidBlockTagPlacement,
 ];
 
 /**
