@@ -58,6 +58,7 @@ export const LiquidComplexity: LiquidCheckDefinition<typeof schema> = {
     docs: {
       description: 'Reports Liquid files with high cyclomatic complexity.',
       recommended: true,
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/liquid-complexity',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.WARNING,
