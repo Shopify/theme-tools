@@ -65,7 +65,7 @@ import {
 } from './utils';
 
 const { builders, utils } = doc;
-const { fill, group, hardline, dedentToRoot, indent, join, line, softline } = builders;
+const { fill, group, hardline, dedentToRoot, ifBreak, indent, join, line, softline } = builders;
 
 // `replaceEndOfLine` exists at runtime on both prettier 2 and prettier 3's
 // `doc.utils`, but is missing from prettier 2's type definitions.
@@ -442,12 +442,26 @@ function printNode(
       return doc;
     }
 
-    /*
-     * `block` and `section` markup share the same shape: a name (a
-     * LiquidString) followed by optional named arguments. We print them
-     * the same way `content_for` prints its markup.
-     */
-    case NodeTypes.BlockMarkup:
+    case NodeTypes.BlockMarkup: {
+      const name = path.call((p: any) => print(p), 'name');
+      if (node.args.length === 0) return name;
+
+      /*
+       * Keep the arguments in the surrounding start-tag group so they wrap
+       * whenever its closing delimiter wraps. Wrapped arguments end in a comma.
+       */
+      return [
+        name,
+        ',',
+        line,
+        join(
+          [',', line],
+          path.map((p: any) => print(p), 'args'),
+        ),
+        ifBreak(','),
+      ];
+    }
+
     case NodeTypes.SectionMarkup: {
       const doc: Doc = [path.call((p: any) => print(p), 'name')];
       if (node.args.length > 0) {

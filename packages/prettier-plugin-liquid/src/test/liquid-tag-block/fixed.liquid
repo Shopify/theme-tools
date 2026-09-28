@@ -1,15 +1,30 @@
-It should format short block arguments
+It should format short arguments with an empty body
 {% block 'hero', heading: heading, content: captured_content %}{% endblock %}
 
-It should wrap block arguments
-printWidth: 1
-{% block 'featured-heading',
-  heading: section.settings.heading,
-  alignment: section.settings.alignment %}
-  Heading
-{% endblock %}
-
-It should indent inline body content
+It should format short arguments with a non-empty body
 {% block 'hero', heading: heading %}
   <h2>{{ heading }}</h2>
 {% endblock %}
+
+It should format long arguments with an empty body
+printWidth: 1
+{% block 'featured-heading',
+  heading: section.settings.heading,
+  alignment: section.settings.alignment,
+%}{% endblock %}
+
+It should format long arguments with a non-empty body
+printWidth: 1
+{% block 'featured-heading',
+  heading: section.settings.heading,
+  alignment: section.settings.alignment,
+%}
+  Heading
+{% endblock %}
+
+It should wrap arguments when the closing delimiter does not fit
+printWidth: 40
+{% block 'x',
+  a: b,
+  c: d,
+%}{% endblock %}
