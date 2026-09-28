@@ -194,15 +194,15 @@ function printNamedLiquidBlockStart(
     case NamedTags.decrement:
     case NamedTags.layout:
     case NamedTags.section:
-    /*
-     * `block` prints like `section` (both carry a name plus optional
-     * named arguments) and `partial` prints like `sections` (a bare
-     * string markup). Both delegate markup rendering to `printNode`.
-     */
-    case NamedTags.block:
     case NamedTags.partial: {
       return tag(' ');
     }
+
+    case NamedTags.block: {
+      const trailingWhitespace = node.markup.args.length > 0 ? line : ' ';
+      return tag(trailingWhitespace);
+    }
+
     case NamedTags.sections: {
       return tag(' ');
     }
@@ -429,14 +429,25 @@ export function printLiquidTag(
   }
 
   const tagGroupId = Symbol('tag-group');
+  /*
+   * An empty block has no body whitespace to preserve. Keep both sides flat so
+   * wrapped arguments do not introduce whitespace-control hyphens around it.
+   */
+  const innerWhitespaceGroupId =
+    node.name === NamedTags.block &&
+    typeof node.markup !== 'string' &&
+    node.markup.args.length > 0 &&
+    isEmpty(node.children)
+      ? FORCE_FLAT_GROUP_ID
+      : tagGroupId;
   const blockStart = printLiquidBlockStart(path, options, print, {
     ...args,
     leadingSpaceGroupId,
-    trailingSpaceGroupId: tagGroupId,
+    trailingSpaceGroupId: innerWhitespaceGroupId,
   }); // {% if ... %}
   const blockEnd = printLiquidBlockEnd(path, options, print, {
     ...args,
-    leadingSpaceGroupId: tagGroupId,
+    leadingSpaceGroupId: innerWhitespaceGroupId,
     trailingSpaceGroupId,
   }); // {% endif %}
 
