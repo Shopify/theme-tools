@@ -122,7 +122,7 @@ describe('blockTag', () => {
       });
     });
 
-    it('parses a dotted block.settings.* name with an array value', () => {
+    it('preserves an unsupported dotted block.settings.* name for downstream diagnostics', () => {
       const result = blockTag.parse(
         'block',
         parser("'name', block.settings.collections: ['a', 'b']"),
