@@ -19,22 +19,20 @@ const BLOCK_PARSER_ERROR_MESSAGES = new Set([
 ]);
 
 export function checkBlockTag(node: LiquidTag, context: Context): void {
-  if (typeof node.markup === 'string') {
-    report(node, context, SYNTAX_ERROR);
-    return;
-  }
+  const message = blockTagSyntaxError(node);
+  if (message) report(node, context, message);
+}
+
+export function blockTagSyntaxError(node: LiquidTag): string | undefined {
+  if (typeof node.markup === 'string') return SYNTAX_ERROR;
 
   const markup = node.markup as BlockMarkup;
 
   if (hasInvalidBlockName(markup.name.value)) {
-    report(node, context, "Liquid syntax error: in 'block' - Valid syntax: block '[file_name]'");
-    return;
+    return "Liquid syntax error: in 'block' - Valid syntax: block '[file_name]'";
   }
 
-  if (hasInvalidBlockArguments(markup)) {
-    report(node, context, SYNTAX_ERROR);
-    return;
-  }
+  if (hasInvalidBlockArguments(markup)) return SYNTAX_ERROR;
 
   /*
    * A +BlockArrayLiteral+ value (e.g. +size: [1, 2]+) is a first-class array
@@ -47,13 +45,10 @@ export function checkBlockTag(node: LiquidTag, context: Context): void {
       (arg) => arg.value.type !== 'BlockArrayLiteral' && hasBareArrayAccess(arg.value),
     )
   ) {
-    report(node, context, BARE_ARRAY_ACCESS);
-    return;
+    return BARE_ARRAY_ACCESS;
   }
 
-  if (hasSkippedCharacters(rawMarkup(node))) {
-    report(node, context, SYNTAX_ERROR);
-  }
+  if (hasSkippedCharacters(rawMarkup(node))) return SYNTAX_ERROR;
 }
 
 export function checkBlockParserError(error: Error, context: Context, source: string): void {

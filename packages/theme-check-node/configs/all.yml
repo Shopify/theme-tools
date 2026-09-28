@@ -226,6 +226,9 @@ UnusedDocParam:
 ValidBlockArgumentTypes:
   enabled: true
   severity: 1
+ValidBlockTagPlacement:
+  enabled: true
+  severity: 0
 ValidBlockTarget:
   enabled: true
   severity: 0
