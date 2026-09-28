@@ -17,3 +17,7 @@ Heading
 It should wrap arguments when the closing delimiter does not fit
 printWidth: 40
 {% block "x", a: b, c: d %}{% endblock %}
+
+It should preserve explicit trim markers when arguments wrap
+printWidth: 1
+{%- block "featured-heading", heading: section.settings.heading -%}{%- endblock -%}

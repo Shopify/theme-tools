@@ -1,6 +1,10 @@
 It takes a collection and a pageSize
 {% paginate collection by pageSize %}{% endpaginate %}
 
+It keeps an empty body compact when markup wraps
+printWidth: 1
+{% paginate collection by pageSize %}{% endpaginate %}
+
 It breaks on by pageSize when printWidth is hit
 printWidth: 1
 {% paginate collection by pageSize %}
