@@ -47,6 +47,17 @@ describe('blockTag', () => {
     });
   });
 
+  it('parses content as an ordinary named argument', () => {
+    const result = blockTag.parse('block', parser("'name', content: captured_content"), stubParser);
+    expect(result.args).toMatchObject([
+      {
+        type: NodeTypes.NamedArgument,
+        name: 'content',
+        value: { type: NodeTypes.VariableLookup, name: 'captured_content' },
+      },
+    ]);
+  });
+
   describe('array-literal named args (block-only)', () => {
     it('parses an array of strings', () => {
       const result = blockTag.parse('block', parser("'name', items: ['a', 'b']"), stubParser);
