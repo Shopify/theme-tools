@@ -1,4 +1,5 @@
 import { AugmentedThemeDocset } from './AugmentedThemeDocset';
+import { makeGetBlockParameters } from './block-parameters';
 import { JSONValidator } from './JSONValidator';
 import {
   makeFileExists,
@@ -40,6 +41,14 @@ import { visitJSON, visitLiquid } from './visitors';
 
 export * from './AbstractFileSystem';
 export * from './AugmentedThemeDocset';
+export {
+  BLOCK_CONTENT_PARAMETER,
+  type BlockParameter,
+  type BlockParameters,
+  type GetBlockParameters,
+  makeGetBlockParameters,
+  resolveBlockParameters,
+} from './block-parameters';
 export * from './checks';
 export * from './context-utils';
 export * from './find-root';
@@ -62,6 +71,7 @@ export * from './visitor';
 export * from './liquid-doc/liquidDoc';
 export { getBlockName } from './liquid-doc/arguments';
 export * from './liquid-doc/utils';
+export { schemaSettingLiquidType } from './schema-settings';
 
 const defaultErrorHandler = (_error: Error): void => {
   // Silently ignores errors by default.
@@ -78,6 +88,7 @@ export async function check(
   const { rootUri } = config;
   const dependencies: AugmentedDependencies = {
     ...injectedDependencies,
+    getBlockParameters: makeGetBlockParameters(injectedDependencies),
     mode: config.context,
     fileExists: makeFileExists(fs),
     fileSize: makeFileSize(fs),

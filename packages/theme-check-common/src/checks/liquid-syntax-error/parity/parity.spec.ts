@@ -27,6 +27,18 @@ const tags = readdirSync(scenariosDir)
  */
 const KNOWN_GAPS = new Set(['section-themecheck-bare-bracket-arg']);
 
+/*
+ * Scenarios that Ruby Liquid accepts but LiquidSyntaxError rejects on
+ * purpose. Each entry is asserted to STILL be reported, and to still be
+ * valid in the snapshot, so the divergence cannot drift silently.
+ *
+ *   block-valid-all-properties — Ruby still accepts the unsupported
+ *     experimental `block.settings.<id>:` and `block.content:` caller
+ *     arguments. Theme Check rejects every dotted block argument except
+ *     `block.name` so authors pass plain named arguments instead.
+ */
+const INTENTIONAL_FALSE_POSITIVES = new Set(['block-valid-all-properties']);
+
 async function runParityScenario(
   tag: string,
   scenario: Scenario,
@@ -44,6 +56,18 @@ async function runParityScenario(
       themeCheckNorm.detected,
       `[${scenario.id}] is listed in KNOWN_GAPS but theme-check now reports it — remove the entry`,
     ).toBe(false);
+    return;
+  }
+
+  if (INTENTIONAL_FALSE_POSITIVES.has(scenario.id)) {
+    expect(
+      snapshotNorm.detected,
+      `[${scenario.id}] is listed in INTENTIONAL_FALSE_POSITIVES but Ruby now rejects it — remove the entry`,
+    ).toBe(false);
+    expect(
+      themeCheckNorm.detected,
+      `[${scenario.id}] is listed in INTENTIONAL_FALSE_POSITIVES but theme-check no longer reports it`,
+    ).toBe(true);
     return;
   }
 

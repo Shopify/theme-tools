@@ -1,75 +1,90 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { UnrecognizedBlockArguments } from './index';
-import { runLiquidCheck } from '../../test';
+import {
+  blockSource,
+  INVALID_SCHEMA_BLOCK,
+  liquidDocBlock,
+  runBlockCallCheck,
+} from '../../test/block-fixtures';
 
-const BUTTON_BLOCK = [
-  '{% doc %}',
-  '  @param {String} [variant] - Button variant',
-  '  @param {String} [class] - Additional CSS classes',
-  '  @param {String} [url] - Button URL',
-  '{% enddoc %}',
-  '<button>{{ block.content }}</button>',
-].join('\n');
-
-const NO_DOC_BLOCK = '<button>{{ block.content }}</button>';
+const MERGED_BLOCK = blockSource(
+  [{ id: 'heading', type: 'text' }],
+  ['@param {string} tracking_id - Developer-only tracking id'],
+);
+const SCHEMA_ONLY_BLOCK = blockSource([{ id: 'heading', type: 'text' }]);
+const LIQUID_DOC_ONLY_BLOCK = liquidDocBlock([
+  '@param {string} tracking_id - Developer-only tracking id',
+]);
 
 describe('UnrecognizedBlockArguments', () => {
-  it('reports unknown argument', async () => {
-    const offenses = await runLiquidCheck(
-      UnrecognizedBlockArguments,
-      "{% block 'button', variant: 'primary', size: 'large' %}x{% endblock %}",
-      'templates/test.liquid',
-      {},
-      { 'blocks/button.liquid': BUTTON_BLOCK },
+  it('accepts schema, LiquidDoc-only, and built-in content parameters', async () => {
+    const offenses = await run(
+      "{% block 'card', heading: 'Hello', tracking_id: 'hero', content: body %}{% endblock %}",
+      MERGED_BLOCK,
     );
 
-    expect(offenses).toHaveLength(1);
-    expect(offenses[0].message).toContain('size');
+    expect(offenses).toEqual([]);
   });
 
-  it('does not report known arguments', async () => {
-    const offenses = await runLiquidCheck(
-      UnrecognizedBlockArguments,
-      "{% block 'button', variant: 'primary', class: 'mb-2' %}x{% endblock %}",
-      'templates/test.liquid',
-      {},
-      { 'blocks/button.liquid': BUTTON_BLOCK },
+  it('accepts a schema parameter without LiquidDoc', async () => {
+    const offenses = await run(
+      "{% block 'card', heading: 'Hello' %}{% endblock %}",
+      SCHEMA_ONLY_BLOCK,
     );
 
-    expect(offenses).toHaveLength(0);
+    expect(offenses).toEqual([]);
   });
 
-  it('does not report system arguments', async () => {
-    const offenses = await runLiquidCheck(
-      UnrecognizedBlockArguments,
-      "{% block 'button', block.settings.variant: 'xl', block.content: content %}x{% endblock %}",
-      'templates/test.liquid',
-      {},
-      { 'blocks/button.liquid': BUTTON_BLOCK },
+  it('reports an argument outside the merged interface', async () => {
+    const offenses = await run(
+      "{% block 'card', heading: 'Hello', unknown: true %}{% endblock %}",
+      MERGED_BLOCK,
     );
 
-    expect(offenses).toHaveLength(0);
+    expect(offenses).toMatchObject([
+      { message: "Unknown argument 'unknown' in block tag for 'card'." },
+    ]);
   });
 
-  it('does not report when block file has no doc tag', async () => {
-    const offenses = await runLiquidCheck(
-      UnrecognizedBlockArguments,
-      "{% block 'button', unknown: 'val' %}x{% endblock %}",
-      'templates/test.liquid',
-      {},
-      { 'blocks/button.liquid': NO_DOC_BLOCK },
+  it('validates the LiquidDoc-only interface of a schema-less block', async () => {
+    const offenses = await run(
+      "{% block 'card', tracking_id: 'hero', unknown: true %}{% endblock %}",
+      LIQUID_DOC_ONLY_BLOCK,
     );
 
-    expect(offenses).toHaveLength(0);
+    expect(offenses).toMatchObject([
+      { message: "Unknown argument 'unknown' in block tag for 'card'." },
+    ]);
   });
 
-  it('does not report when block file does not exist', async () => {
-    const offenses = await runLiquidCheck(
-      UnrecognizedBlockArguments,
-      "{% block 'missing', foo: 'bar' %}x{% endblock %}",
-      'templates/test.liquid',
+  it('preserves block.name as the supported caller-side system argument', async () => {
+    const offenses = await run(
+      "{% block 'card', block.name: 'Card' %}{% endblock %}",
+      MERGED_BLOCK,
     );
 
-    expect(offenses).toHaveLength(0);
+    expect(offenses).toEqual([]);
+  });
+
+  it.each([
+    "{% block 'card', block.settings.heading: 'Hello', unknown: true %}{% endblock %}",
+    "{% block 'card', block.unknown: 'value', unknown: true %}{% endblock %}",
+  ])('leaves dotted arguments to LiquidSyntaxError in %s', async (template) => {
+    const offenses = await run(template, MERGED_BLOCK);
+
+    expect(offenses).toEqual([]);
+  });
+
+  it.each([
+    ['missing target', undefined],
+    ['invalid target schema', INVALID_SCHEMA_BLOCK],
+  ])('does not report unknown arguments for an unreadable %s', async (_name, block) => {
+    const offenses = await run("{% block 'card', unknown: 'value' %}{% endblock %}", block);
+
+    expect(offenses).toEqual([]);
   });
 });
+
+function run(template: string, block: string | undefined) {
+  return runBlockCallCheck(UnrecognizedBlockArguments, template, block);
+}

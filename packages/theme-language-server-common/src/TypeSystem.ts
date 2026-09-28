@@ -30,6 +30,7 @@ import {
   BasicParamTypes,
   getValidParamTypes,
   parseParamType,
+  schemaSettingLiquidType,
 } from '@shopify/theme-check-common';
 import {
   GetThemeSettingsSchemaForURI,
@@ -957,95 +958,11 @@ function isLiquidTagDecrement(node: LiquidTag): node is LiquidTagDecrement {
 }
 
 function settingReturnType(setting: InputSetting): ObjectEntry['return_type'] {
-  switch (setting.type) {
-    // basic settings
-    case 'checkbox':
-      return [{ type: 'boolean', name: '' }];
+  const liquidType = schemaSettingLiquidType(setting.type);
+  if (!liquidType) return [];
+  if (liquidType.endsWith('[]')) return [{ type: 'array', array_value: liquidType.slice(0, -2) }];
 
-    case 'range':
-    case 'number':
-      return [{ type: 'number', name: '' }];
-
-    case 'radio':
-    case 'select':
-    case 'text':
-    case 'textarea':
-      return [{ type: 'string', name: '' }];
-
-    // specialized settings
-    case 'article':
-      return [{ type: 'article', name: '' }];
-
-    case 'blog':
-      return [{ type: 'blog', name: '' }];
-
-    case 'collection':
-      return [{ type: 'collection', name: '' }];
-
-    case 'collection_list':
-      return [{ type: 'array', array_value: 'collection' }];
-
-    case 'color':
-      return [{ type: 'color', name: '' }];
-
-    case 'color_background':
-      return [{ type: 'string', name: '' }];
-
-    case 'color_scheme':
-      return [{ type: 'color_scheme', name: '' }];
-
-    // TODO ??
-    case 'color_scheme_group':
-      return [];
-
-    case 'color_palette':
-      return [{ type: 'string', name: '' }];
-
-    case 'font_picker':
-      return [{ type: 'font', name: '' }];
-
-    case 'html':
-      return [{ type: 'string', name: '' }];
-
-    case 'image_picker':
-      return [{ type: 'image', name: '' }];
-
-    case 'inline_richtext':
-      return [{ type: 'string', name: '' }];
-
-    case 'link_list':
-      return [{ type: 'linklist', name: '' }];
-
-    case 'liquid':
-      return [{ type: 'string', name: '' }];
-
-    case 'page':
-      return [{ type: 'page', name: '' }];
-
-    case 'product':
-      return [{ type: 'product', name: '' }];
-
-    case 'product_list':
-      return [{ type: 'array', array_value: 'product' }];
-
-    case 'richtext':
-      return [{ type: 'string', name: '' }];
-
-    case 'text_alignment':
-      return [{ type: 'string', name: '' }];
-
-    case 'url':
-      return [{ type: 'string', name: '' }];
-
-    case 'video':
-      return [{ type: 'video', name: '' }];
-
-    case 'video_url':
-      return [{ type: 'string', name: '' }];
-
-    default:
-      return [];
-  }
+  return [{ type: liquidType, name: '' }];
 }
 
 const METAFIELD_TYPE_TO_TYPE = Object.freeze({

@@ -3,6 +3,7 @@ import { LiquidHtmlNode, NodeTypes as LiquidHtmlNodeTypes } from '@shopify/liqui
 import { Schema, Settings } from './types/schema-prop-factory';
 
 import { AbstractFileSystem, UriString } from './AbstractFileSystem';
+import type { GetBlockParameters } from './block-parameters';
 import { JSONCorrector, StringCorrector } from './fixes';
 
 import {
@@ -416,6 +417,7 @@ export type ValidateJSON = (
 export type IsValidSchema = (uri: string, jsonString: string) => Promise<boolean>;
 
 export interface AugmentedDependencies extends Dependencies {
+  getBlockParameters: GetBlockParameters;
   fileExists: (uri: UriString) => Promise<boolean>;
   fileSize: (uri: UriString) => Promise<number>;
   getDefaultLocale: () => Promise<string>;

@@ -112,14 +112,23 @@ export function parseParamType(
   validParamTypes: Set<string>,
   value: string,
 ): [pseudoType: string, isArray: boolean] | undefined {
+  const parsedParamType = parseParamTypeSyntax(value);
+
+  if (!parsedParamType || !validParamTypes.has(parsedParamType[0])) return undefined;
+
+  return parsedParamType;
+}
+
+/**
+ * Splits a lowercase LiquidDoc type such as `product[]` into its base type
+ * and array flag. Returns undefined when the value is not valid type syntax.
+ */
+export function parseParamTypeSyntax(
+  value: string,
+): [pseudoType: string, isArray: boolean] | undefined {
   const paramTypeMatch = value.match(/^([a-z_]+)(\[\])?$/);
 
   if (!paramTypeMatch) return undefined;
 
-  const extractedParamType = paramTypeMatch[1];
-  const isArrayType = !!paramTypeMatch[2];
-
-  if (!validParamTypes.has(extractedParamType)) return undefined;
-
-  return [extractedParamType, isArrayType];
+  return [paramTypeMatch[1], !!paramTypeMatch[2]];
 }

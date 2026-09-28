@@ -10,6 +10,8 @@ import {
 
 const SYNTAX_ERROR = "Syntax error in 'block' tag";
 const BARE_ARRAY_ACCESS = 'Bare bracket access is not allowed in strict2 mode';
+const DOTTED_ARGUMENT =
+  "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value";
 const UNCLOSED_BLOCK_PARSER_ERROR = "Attempting to end parsing before LiquidTag 'block' was closed";
 const UNCLOSED_BLOCK_IN_LIQUID_PARSER_ERROR = "Unclosed block tag 'block' in {% liquid %} block";
 const BLOCK_PARSER_ERROR_MESSAGES = new Set([
@@ -32,7 +34,14 @@ export function blockTagSyntaxError(node: LiquidTag): string | undefined {
     return "Liquid syntax error: in 'block' - Valid syntax: block '[file_name]'";
   }
 
-  if (hasInvalidBlockArguments(markup)) return SYNTAX_ERROR;
+  /*
+   * Ruby Liquid still accepts the unsupported experimental block.settings.<id>
+   * and block.content caller forms. Theme Check intentionally rejects every
+   * dotted argument except block.name so authors move to plain arguments.
+   */
+  if (markup.args.some(isDottedArgument)) return DOTTED_ARGUMENT;
+
+  if (markup.args.some(isInvalidBlockNameArgument)) return SYNTAX_ERROR;
 
   /*
    * A +BlockArrayLiteral+ value (e.g. +size: [1, 2]+) is a first-class array
@@ -74,17 +83,12 @@ function hasInvalidBlockName(value: string): boolean {
   return value.includes('/') || value.includes('.');
 }
 
-function hasInvalidBlockArguments(markup: BlockMarkup): boolean {
-  return markup.args.some((arg) => {
-    if (arg.name === 'block.content') return false;
-    if (arg.name === 'block.name') return arg.value.type !== NodeTypes.String;
-    if (arg.name.startsWith('block.settings.')) {
-      return arg.name.slice('block.settings.'.length).includes('.');
-    }
-    if (arg.name.startsWith('block.')) return true;
+function isInvalidBlockNameArgument(argument: BlockMarkup['args'][number]): boolean {
+  return argument.name === 'block.name' && argument.value.type !== NodeTypes.String;
+}
 
-    return false;
-  });
+function isDottedArgument(argument: BlockMarkup['args'][number]): boolean {
+  return argument.name !== 'block.name' && argument.name.includes('.');
 }
 
 function report(node: LiquidTag, context: Context, message: string): void {
