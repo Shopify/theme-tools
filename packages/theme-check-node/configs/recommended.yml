@@ -6,9 +6,6 @@ ignore:
 AssetPreload:
   enabled: true
   severity: 1
-BlockArgumentSettingCollision:
-  enabled: true
-  severity: 1
 BlockIdUsage:
   enabled: true
   severity: 1
@@ -174,9 +171,6 @@ UniqueSettingId:
 UniqueStaticBlockId:
   enabled: true
   severity: 0
-UnknownBlockSetting:
-  enabled: true
-  severity: 1
 UnknownFilter:
   enabled: true
   severity: 0

@@ -11,6 +11,7 @@ import {
   SourceCode,
   SourceCodeType,
   ThemeBlock,
+  ThemeSchema,
   ThemeSchemaType,
   UriString,
   Context,
@@ -150,6 +151,13 @@ export async function toAppBlockSchema(
   };
 }
 
+const NO_SCHEMA_TAG = 'No schema tag found';
+
+/** Reports whether a schema was loaded from a file without a `{% schema %}` tag. */
+export function hasNoSchemaTag(schema: ThemeSchema<ThemeSchemaType>): boolean {
+  return schema.parsed instanceof Error && schema.parsed.message === NO_SCHEMA_TAG;
+}
+
 function toSchemaNode(ast: LiquidHtmlNode | Error): LiquidRawTag | Error {
   if (ast instanceof Error) return ast;
   return (
@@ -159,7 +167,7 @@ function toSchemaNode(ast: LiquidHtmlNode | Error): LiquidRawTag | Error {
           return node;
         }
       },
-    })[0] ?? new Error('No schema tag found')
+    })[0] ?? new Error(NO_SCHEMA_TAG)
   );
 }
 

@@ -1,93 +1,304 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { ValidBlockArgumentTypes } from './index';
-import { runLiquidCheck } from '../../test';
+import { check, highlightedOffenses } from '../../test';
+import {
+  blockSource,
+  INVALID_SCHEMA_BLOCK,
+  liquidDocBlock,
+  runBlockCallCheck,
+} from '../../test/block-fixtures';
 
-const BUTTON_BLOCK = [
-  '{% doc %}',
-  '  @param {String} [variant] - Button variant',
-  '  @param {String} [class] - Additional CSS classes',
-  '  @param {String} [url] - Button URL',
-  '  @param {Number} [count] - Item count',
-  '{% enddoc %}',
-  '<button>{{ block.content }}</button>',
-].join('\n');
+const TYPED_BLOCK = blockSource(
+  [
+    { id: 'heading', type: 'text' },
+    { id: 'count', type: 'number' },
+    { id: 'product', type: 'product' },
+    { id: 'products', type: 'product_list' },
+  ],
+  ['@param {number} developer_count - Developer-only count'],
+);
 
-const NO_DOC_BLOCK = '<button>{{ block.content }}</button>';
+const LIQUID_DOC_ONLY_BLOCK = liquidDocBlock([
+  '@param {number} developer_count - Developer-only count',
+]);
 
 describe('ValidBlockArgumentTypes', () => {
-  it('reports type mismatch', async () => {
-    const offenses = await runLiquidCheck(
-      ValidBlockArgumentTypes,
-      "{% block 'button', variant: 42 %}x{% endblock %}",
-      'templates/test.liquid',
-      {},
-      { 'blocks/button.liquid': BUTTON_BLOCK },
-    );
+  describe('call-site values', () => {
+    it('checks literals against schema-derived primitive types', async () => {
+      const template = "{% block 'card', heading: 42, count: 'many' %}{% endblock %}";
+      const offenses = await run(template, TYPED_BLOCK);
 
-    expect(offenses).toHaveLength(1);
-    expect(offenses[0].message).toContain('variant');
-    expect(offenses[0].message).toContain('String');
-    expect(offenses[0].message).toContain('number');
+      expect(offenses).toMatchObject([
+        { message: "Type mismatch for argument 'heading': expected string, got number" },
+        { message: "Type mismatch for argument 'count': expected number, got string" },
+      ]);
+      expect(highlightedOffenses({ 'templates/test.liquid': template }, offenses)).toEqual([
+        '42',
+        "'many'",
+      ]);
+    });
+
+    it('accepts literals that match schema-derived types', async () => {
+      const offenses = await run(
+        "{% block 'card', heading: 'Title', count: 2, product: product, products: products %}{% endblock %}",
+        TYPED_BLOCK,
+      );
+
+      expect(offenses).toEqual([]);
+    });
+
+    it('checks literals against LiquidDoc-only developer parameter types', async () => {
+      const offenses = await run(
+        "{% block 'card', developer_count: 'many' %}{% endblock %}",
+        TYPED_BLOCK,
+      );
+
+      expect(offenses).toMatchObject([
+        {
+          message: "Type mismatch for argument 'developer_count': expected number, got string",
+        },
+      ]);
+    });
+
+    it('checks LiquidDoc-only parameter types from a schema-less block', async () => {
+      const offenses = await run(
+        "{% block 'card', developer_count: 'many' %}{% endblock %}",
+        LIQUID_DOC_ONLY_BLOCK,
+      );
+
+      expect(offenses).toMatchObject([
+        {
+          message: "Type mismatch for argument 'developer_count': expected number, got string",
+        },
+      ]);
+    });
+
+    it('checks resource and list settings exactly', async () => {
+      const offenses = await run(
+        "{% block 'card', product: 'handle', products: ['one', 'two'] %}{% endblock %}",
+        TYPED_BLOCK,
+      );
+
+      expect(offenses).toMatchObject([
+        { message: "Type mismatch for argument 'product': expected product, got string" },
+        { message: "Type mismatch for argument 'products': expected product[], got string[]" },
+      ]);
+    });
+
+    it('requires arrays to match the element type exactly', async () => {
+      const offenses = await run(
+        "{% block 'card', products: ['one', 2] %}{% endblock %}",
+        TYPED_BLOCK,
+      );
+
+      expect(offenses).toMatchObject([
+        { message: "Type mismatch for argument 'products': expected product[], got mixed[]" },
+      ]);
+    });
+
+    it('does not speculate about variable lookups or empty and partly unknown arrays', async () => {
+      const offenses = await run(
+        "{% block 'card', product: selected_product, products: [], heading: [selected, 'x'] %}{% endblock %}",
+        TYPED_BLOCK,
+      );
+
+      expect(offenses).toEqual([]);
+    });
+
+    it('accepts any literal for an object parameter', async () => {
+      const offenses = await run(
+        "{% block 'card', a: 'x', b: 1, c: (1..2), d: ['x'] %}{% endblock %}",
+        liquidDocBlock([
+          '@param {object} a',
+          '@param {object} b',
+          '@param {object} c',
+          '@param {object} d',
+        ]),
+      );
+
+      expect(offenses).toEqual([]);
+    });
+
+    it('accepts any scalar for a boolean parameter but not a range or array', async () => {
+      const offenses = await run(
+        "{% block 'card', a: 'yes', b: 1, c: nil, d: (1..2), e: [true] %}{% endblock %}",
+        liquidDocBlock([
+          '@param {boolean} a',
+          '@param {boolean} b',
+          '@param {boolean} c',
+          '@param {boolean} d',
+          '@param {boolean} e',
+        ]),
+      );
+
+      expect(offenses).toMatchObject([
+        { message: "Type mismatch for argument 'd': expected boolean, got object" },
+        { message: "Type mismatch for argument 'e': expected boolean, got boolean[]" },
+      ]);
+    });
+
+    it('checks explicit content as a string without LiquidDoc', async () => {
+      const offenses = await run("{% block 'card', content: 42 %}{% endblock %}", blockSource([]));
+
+      expect(offenses).toMatchObject([
+        { message: "Type mismatch for argument 'content': expected string, got number" },
+      ]);
+    });
+
+    it('checks explicit content as a string when the schema content setting is not', async () => {
+      const offenses = await run(
+        "{% block 'card', content: 42 %}{% endblock %}",
+        blockSource([{ id: 'content', type: 'number' }]),
+      );
+
+      expect(offenses).toMatchObject([
+        { message: "Type mismatch for argument 'content': expected string, got number" },
+      ]);
+    });
+
+    it.each([
+      ['missing target', undefined],
+      ['invalid target schema', INVALID_SCHEMA_BLOCK],
+    ])('does not report type mismatches for an unreadable %s', async (_name, block) => {
+      const offenses = await run("{% block 'card', heading: 42 %}{% endblock %}", block);
+
+      expect(offenses).toEqual([]);
+    });
   });
 
-  it('does not report correct types', async () => {
-    const offenses = await runLiquidCheck(
-      ValidBlockArgumentTypes,
-      "{% block 'button', variant: 'primary' %}x{% endblock %}",
-      'templates/test.liquid',
-      {},
-      { 'blocks/button.liquid': BUTTON_BLOCK },
+  it('does not load block parameters when the file has no LiquidDoc parameters', async () => {
+    const getBlockSchema = vi.fn(async () => {
+      throw new Error('schema provider failed');
+    });
+    const getDocDefinition = vi.fn(async () => ({ uri: 'file:/blocks/card.liquid' }));
+
+    const offenses = await check(
+      { 'blocks/card.liquid': '{{ product.title }}' },
+      [ValidBlockArgumentTypes],
+      { getBlockSchema, getDocDefinition },
     );
 
-    expect(offenses).toHaveLength(0);
+    expect(offenses).toEqual([]);
+    expect(getBlockSchema).not.toHaveBeenCalled();
+    expect(getDocDefinition).not.toHaveBeenCalled();
   });
 
-  it('does not report variable lookups', async () => {
-    const offenses = await runLiquidCheck(
-      ValidBlockArgumentTypes,
-      "{% block 'button', variant: my_var %}x{% endblock %}",
-      'templates/test.liquid',
-      {},
-      { 'blocks/button.liquid': BUTTON_BLOCK },
-    );
+  describe('merged declarations', () => {
+    it('accepts exact and less-specific compatible LiquidDoc types', async () => {
+      const offenses = await definitions(
+        blockSource(
+          [
+            { id: 'product', type: 'product' },
+            { id: 'products', type: 'product_list' },
+          ],
+          ['@param {object} [product] - Product', '@param {product[]} [products] - Products'],
+        ),
+      );
 
-    expect(offenses).toHaveLength(0);
-  });
+      expect(offenses).toEqual([]);
+    });
 
-  it('does not report when block file has no doc tag', async () => {
-    const offenses = await runLiquidCheck(
-      ValidBlockArgumentTypes,
-      "{% block 'button', variant: 42 %}x{% endblock %}",
-      'templates/test.liquid',
-      {},
-      { 'blocks/button.liquid': NO_DOC_BLOCK },
-    );
+    it('compares resource and list LiquidDoc types exactly', async () => {
+      const offenses = await definitions(
+        blockSource(
+          [
+            { id: 'product', type: 'product' },
+            { id: 'products', type: 'product_list' },
+            { id: 'collections', type: 'collection_list' },
+          ],
+          [
+            '@param {collection} [product] - Product',
+            '@param {product} [products] - Products',
+            '@param {product[]} [collections] - Collections',
+          ],
+        ),
+      );
 
-    expect(offenses).toHaveLength(0);
-  });
+      expect(offenses.map((offense) => offense.message)).toEqual([
+        "The schema setting 'product' has Liquid type 'product', but LiquidDoc declares 'collection'. The schema setting type is authoritative.",
+        "The schema setting 'products' has Liquid type 'product[]', but LiquidDoc declares 'product'. The schema setting type is authoritative.",
+        "The schema setting 'collections' has Liquid type 'collection[]', but LiquidDoc declares 'product[]'. The schema setting type is authoritative.",
+      ]);
+    });
 
-  it('reports type mismatch for a Number param', async () => {
-    const offenses = await runLiquidCheck(
-      ValidBlockArgumentTypes,
-      "{% block 'button', count: 'abc' %}x{% endblock %}",
-      'templates/test.liquid',
-      {},
-      { 'blocks/button.liquid': BUTTON_BLOCK },
-    );
+    it('points incompatible type declarations at the LiquidDoc type', async () => {
+      const source = blockSource(
+        [{ id: 'heading', type: 'text' }],
+        ['@param {number} [heading] - Heading'],
+      );
+      const offenses = await definitions(source);
 
-    expect(offenses).toHaveLength(1);
-    expect(offenses[0].message).toContain('count');
-    expect(offenses[0].message).toContain('Number');
-    expect(offenses[0].message).toContain('string');
-  });
+      expect(offenses).toMatchObject([
+        {
+          message:
+            "The schema setting 'heading' has Liquid type 'string', but LiquidDoc declares 'number'. The schema setting type is authoritative.",
+        },
+      ]);
+      expect(highlightedOffenses({ 'blocks/card.liquid': source }, offenses)).toEqual(['{number}']);
+    });
 
-  it('does not report when block file does not exist', async () => {
-    const offenses = await runLiquidCheck(
-      ValidBlockArgumentTypes,
-      "{% block 'missing', count: 42 %}x{% endblock %}",
-      'templates/test.liquid',
-    );
+    it('accepts an optional LiquidDoc declaration of a schema setting', async () => {
+      const offenses = await definitions(
+        blockSource([{ id: 'heading', type: 'text' }], ['@param {string} [heading] - Heading']),
+      );
 
-    expect(offenses).toHaveLength(0);
+      expect(offenses).toEqual([]);
+    });
+
+    it('does not speculate about omitted LiquidDoc or unmapped schema types', async () => {
+      const offenses = await definitions(
+        blockSource([{ id: 'item', type: 'metaobject' }], ['@param [item] - Item']),
+      );
+
+      expect(offenses).toEqual([]);
+    });
+
+    it('requires LiquidDoc content types to remain string-compatible', async () => {
+      const offenses = await definitions(blockSource([], ['@param {number} [content] - Body']));
+
+      expect(offenses).toMatchObject([
+        {
+          message:
+            "The built-in parameter 'content' has Liquid type 'string', but LiquidDoc declares 'number'. The built-in parameter type is authoritative.",
+        },
+      ]);
+    });
+
+    it('reports a schema content setting that is not string-compatible', async () => {
+      const source = blockSource([{ id: 'content', type: 'number' }]);
+      const offenses = await definitions(source);
+
+      expect(offenses).toMatchObject([
+        {
+          message:
+            "Schema setting 'content' has Liquid type 'number', but the built-in 'content' parameter has type 'string'.",
+        },
+      ]);
+      expect(highlightedOffenses({ 'blocks/card.liquid': source }, offenses)).toEqual(['"number"']);
+    });
+
+    it('uses the built-in string type for a LiquidDoc echo of schema content', async () => {
+      const offenses = await definitions(
+        blockSource([{ id: 'content', type: 'number' }], ['@param {string} [content] - Body']),
+      );
+
+      expect(offenses.map((offense) => offense.message)).toEqual([
+        "Schema setting 'content' has Liquid type 'number', but the built-in 'content' parameter has type 'string'.",
+      ]);
+    });
+
+    it('accepts a string-compatible schema content setting', async () => {
+      const offenses = await definitions(blockSource([{ id: 'content', type: 'text' }]));
+
+      expect(offenses).toEqual([]);
+    });
   });
 });
+
+function run(template: string, block: string | undefined) {
+  return runBlockCallCheck(ValidBlockArgumentTypes, template, block);
+}
+
+function definitions(source: string) {
+  return check({ 'blocks/card.liquid': source }, [ValidBlockArgumentTypes]);
+}

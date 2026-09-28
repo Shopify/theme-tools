@@ -79,7 +79,6 @@ import {
   StylesheetOncePerFile,
   StylesheetTagInWrongFile,
 } from './raw-tags';
-import { BlockArgumentSettingCollision } from './block-argument-setting-collision';
 import { DuplicateBlockArguments } from './duplicate-block-arguments';
 import { ExcessiveSettingsCount } from './excessive-settings-count';
 import { LiquidComplexity } from './liquid-complexity';
@@ -87,7 +86,6 @@ import { LiquidNestingDepth } from './liquid-nesting-depth';
 import { LiquidSyntaxError } from './liquid-syntax-error';
 import { MaxFileSize, MaxFileSizeJSON } from './max-file-size';
 import { MissingBlockArguments } from './missing-block-arguments';
-import { UnknownBlockSetting } from './unknown-block-setting';
 import { UnrecognizedBlockArguments } from './unrecognized-block-arguments';
 import { ValidBlockArgumentTypes } from './valid-block-argument-types';
 import { ValidBlockTagPlacement } from './valid-block-tag-placement';
@@ -171,7 +169,6 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   SchemaSectionOrBlockOnly,
   StylesheetOncePerFile,
   StylesheetTagInWrongFile,
-  BlockArgumentSettingCollision,
   DuplicateBlockArguments,
   ExcessiveSettingsCount,
   LiquidComplexity,
@@ -180,7 +177,6 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   MaxFileSize,
   MaxFileSizeJSON,
   MissingBlockArguments,
-  UnknownBlockSetting,
   UnrecognizedBlockArguments,
   ValidBlockArgumentTypes,
   ValidBlockTagPlacement,

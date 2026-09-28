@@ -394,18 +394,47 @@ describe('Module: TypeSystem', () => {
     expect(inferredType).to.eql({ kind: 'array', valueType: 'product' } as ArrayType);
   });
 
-  it('should support block settings in blocks files', async () => {
+  it.each([
+    ['checkbox', 'boolean'],
+    ['number', 'number'],
+    ['range', 'number'],
+    ['color_background', 'string'],
+    ['color_palette', 'string'],
+    ['html', 'string'],
+    ['inline_richtext', 'string'],
+    ['liquid', 'string'],
+    ['radio', 'string'],
+    ['richtext', 'string'],
+    ['select', 'string'],
+    ['text', 'string'],
+    ['text_alignment', 'string'],
+    ['textarea', 'string'],
+    ['url', 'string'],
+    ['video_url', 'string'],
+    ['article', 'article'],
+    ['blog', 'blog'],
+    ['collection', 'collection'],
+    ['color', 'color'],
+    ['color_scheme', 'color_scheme'],
+    ['font_picker', 'font'],
+    ['image_picker', 'image'],
+    ['link_list', 'linklist'],
+    ['page', 'page'],
+    ['product', 'product'],
+    ['video', 'video'],
+    ['collection_list', { kind: 'array', valueType: 'collection' }],
+    ['product_list', { kind: 'array', valueType: 'product' }],
+  ] as const)('infers block.settings values for %s settings', async (settingType, expectedType) => {
     const sourceCode = `
-      {{ block.settings.my_list }}
+      {{ block.settings.value }}
       {% schema %}
       {
-        "name": "section-settings-example",
-        "tag": "section",
+        "name": "block-settings-example",
         "settings": [
           {
-            "id": "my_list",
-            "label": "t:my-setting.label",
-            "type": "product_list"
+            "id": "value",
+            "label": "Value",
+            "type": "${settingType}"
           }
         ]
       }
@@ -414,12 +443,14 @@ describe('Module: TypeSystem', () => {
     const ast = toLiquidHtmlAST(sourceCode);
     const variableOutput = ast.children[0];
     assert(isLiquidVariableOutput(variableOutput));
+
     const inferredType = await typeSystem.inferType(
       variableOutput.markup,
       ast,
-      'file:///blocks/my-section.liquid',
+      'file:///blocks/my-block.liquid',
     );
-    expect(inferredType).to.eql({ kind: 'array', valueType: 'product' } as ArrayType);
+
+    expect(inferredType).toEqual(expectedType);
   });
 
   // TODO

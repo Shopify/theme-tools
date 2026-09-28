@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { runLiquidCheck } from '../../test';
+import { check, runLiquidCheck } from '../../test';
+import { blockSource } from '../../test/block-fixtures';
+import { DuplicateBlockArguments } from '../duplicate-block-arguments';
+import { MissingBlockArguments } from '../missing-block-arguments';
+import { UnrecognizedBlockArguments } from '../unrecognized-block-arguments';
+import { ValidBlockArgumentTypes } from '../valid-block-argument-types';
 import { LiquidSyntaxError } from './index';
 import { checkBlockParserError } from './block';
 import { isDocParserError } from './doc';
@@ -10,6 +15,8 @@ import { hasRubyAcceptedWhitespaceSeparatedQuotePrefix, liquidLineTagLocation } 
 
 const RENDER_SYNTAX_ERROR = "Syntax error in 'render' tag";
 const BARE_BRACKET_ACCESS = 'Bare bracket access is not allowed in strict2 mode';
+const DOTTED_ARGUMENT =
+  "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value";
 
 const UNCLOSED_DOC_PARSER_ERROR = "Attempting to end parsing before LiquidRawTag 'doc' was closed";
 const UNOPENED_DOC_PARSER_ERROR =
@@ -799,6 +806,118 @@ describe('LiquidSyntaxError', () => {
 
       expect(offenses.length).toBeGreaterThan(0);
       expect(offenses[0].check).toBe('LiquidSyntaxError');
+    });
+  });
+
+  describe('block caller arguments', () => {
+    it.each([
+      "{% block 'card', block.settings.heading: 'Heading' %}{% endblock %}",
+      "{% block 'card', block.content: body %}{% endblock %}",
+      "{% block 'card', block.settings.heading.label: 'Heading' %}{% endblock %}",
+      "{% block 'card', block.unknown: 'value' %}{% endblock %}",
+      "{% block 'card', heading.label: 'Heading' %}{% endblock %}",
+    ])('rejects unsupported experimental dotted arguments in %s', async (template) => {
+      const offenses = await runLiquidCheck(
+        LiquidSyntaxError,
+        template,
+        'templates/test.liquid',
+        NO_DOCSET,
+      );
+
+      expect(offenses).toMatchObject([
+        {
+          message:
+            "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value",
+          start: { index: 0 },
+          end: { index: template.length },
+        },
+      ]);
+    });
+
+    it('accepts block.name with a string value alongside plain arguments', async () => {
+      const offenses = await runLiquidCheck(
+        LiquidSyntaxError,
+        "{% block 'card', block.name: 'Card', heading: 'Heading' %}{% endblock %}",
+        'templates/test.liquid',
+        NO_DOCSET,
+      );
+
+      expect(offenses).toEqual([]);
+    });
+
+    it.each([
+      "{% block 'card', block.settings %}{% endblock %}",
+      "{% block 'card', block.name: value %}{% endblock %}",
+    ])('reports other malformed block tags in %s', async (template) => {
+      const offenses = await runLiquidCheck(
+        LiquidSyntaxError,
+        template,
+        'templates/test.liquid',
+        NO_DOCSET,
+      );
+
+      expect(offenses).toMatchObject([{ message: "Syntax error in 'block' tag" }]);
+    });
+
+    describe('with the block parameter checks', () => {
+      const CARD_BLOCK = blockSource(
+        [
+          { id: 'heading', type: 'text' },
+          { id: 'count', type: 'number' },
+        ],
+        ['@param {string} heading - Heading', '@param {string} tracking_id - Tracking id'],
+      );
+      const BLOCK_CALL_CHECKS = [
+        LiquidSyntaxError,
+        MissingBlockArguments,
+        UnrecognizedBlockArguments,
+        ValidBlockArgumentTypes,
+        DuplicateBlockArguments,
+      ];
+
+      it('reports parameter offenses for plain arguments', async () => {
+        const offenses = await checkBlockCall("unknown: true, count: 'many', count: 'more'");
+
+        expect(offenses.map((offense) => offense.check).sort()).toEqual([
+          'DuplicateBlockArguments',
+          'MissingBlockArguments',
+          'MissingBlockArguments',
+          'UnrecognizedBlockArguments',
+          'ValidBlockArgumentTypes',
+          'ValidBlockArgumentTypes',
+        ]);
+      });
+
+      it('accepts block.name with a string value', async () => {
+        const offenses = await checkBlockCall(
+          "block.name: 'Card', heading: 'Hello', count: 1, tracking_id: 'id'",
+        );
+
+        expect(offenses).toEqual([]);
+      });
+
+      it.each([
+        ["block.settings.heading: 'Hello'", DOTTED_ARGUMENT],
+        ['block.content: body', DOTTED_ARGUMENT],
+        ["heading.label: 'Hello'", DOTTED_ARGUMENT],
+        ['block.name: value', "Syntax error in 'block' tag"],
+        ["block.name: value, heading.label: 'Hello'", DOTTED_ARGUMENT],
+      ])('reports only one syntax error for %s', async (argument, message) => {
+        const offenses = await checkBlockCall(`${argument}, count: 'many', count: 'more'`);
+
+        expect(offenses).toHaveLength(1);
+        expect(offenses).toMatchObject([{ check: 'LiquidSyntaxError', message }]);
+      });
+
+      function checkBlockCall(args: string) {
+        return check(
+          {
+            'templates/test.liquid': `{% block 'card', ${args} %}{% endblock %}`,
+            'blocks/card.liquid': CARD_BLOCK,
+          },
+          BLOCK_CALL_CHECKS,
+        );
+      }
     });
   });
 
