@@ -1,0 +1,15 @@
+It should format short block arguments
+{% block 'hero', heading: heading, content: captured_content %}{% endblock %}
+
+It should wrap block arguments
+printWidth: 1
+{% block 'featured-heading',
+  heading: section.settings.heading,
+  alignment: section.settings.alignment %}
+  Heading
+{% endblock %}
+
+It should indent inline body content
+{% block 'hero', heading: heading %}
+  <h2>{{ heading }}</h2>
+{% endblock %}
