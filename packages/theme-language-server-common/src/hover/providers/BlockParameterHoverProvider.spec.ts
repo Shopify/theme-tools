@@ -44,7 +44,7 @@ describe('Module: BlockParameterHoverProvider', () => {
 
     await expect(provider).to.hover(
       template(`{% block 'card', hea█ding: 'Sale' %}{% endblock %}`),
-      ['### `heading` (Optional): string', HEADING_THEME_SETTING].join('\n\n'),
+      ['### heading (Optional): `string`', HEADING_THEME_SETTING].join('\n\n'),
     );
   });
 
@@ -64,7 +64,7 @@ describe('Module: BlockParameterHoverProvider', () => {
     await expect(provider).to.hover(
       template(`{% block 'card', hea█ding: 'Sale' %}{% endblock %}`),
       [
-        '### `heading` (Optional): string',
+        '### heading (Optional): `string`',
         '**Theme setting**\n\nTranslated heading\n\nTranslated info',
       ].join('\n\n'),
     );
@@ -91,7 +91,7 @@ describe('Module: BlockParameterHoverProvider', () => {
 
       await expect(provider).to.hover(
         template(`{% block 'card', hea█ding: 'Sale' %}{% endblock %}`),
-        ['### `heading` (Optional): string', '**Theme setting**\n\nLiteral info'].join('\n\n'),
+        ['### heading (Optional): `string`', '**Theme setting**\n\nLiteral info'].join('\n\n'),
       );
     },
   );
@@ -104,7 +104,7 @@ describe('Module: BlockParameterHoverProvider', () => {
 
     await expect(provider).to.hover(
       template(`{% block 'card', hea█ding: 'Sale' %}{% endblock %}`),
-      ['### `heading`: string', 'Card heading', HEADING_THEME_SETTING].join('\n\n'),
+      ['### heading: `string`', 'Card heading', HEADING_THEME_SETTING].join('\n\n'),
     );
   });
 
@@ -116,7 +116,7 @@ describe('Module: BlockParameterHoverProvider', () => {
 
     await expect(provider).to.hover(
       template(`{% block 'card', hea█ding: 'Sale' %}{% endblock %}`),
-      ['### `heading` (Optional): string', 'Card heading', HEADING_THEME_SETTING].join('\n\n'),
+      ['### heading (Optional): `string`', 'Card heading', HEADING_THEME_SETTING].join('\n\n'),
     );
   });
 
@@ -132,7 +132,7 @@ describe('Module: BlockParameterHoverProvider', () => {
     await expect(provider).to.hover(
       template(`{% block 'card', feat█ured: product %}{% endblock %}`),
       [
-        '### `featured`: product',
+        '### featured: `product`',
         'The product to feature',
         '**Theme setting**\n\nFeatured product',
       ].join('\n\n'),
@@ -147,7 +147,7 @@ describe('Module: BlockParameterHoverProvider', () => {
 
     await expect(provider).to.hover(
       template(`{% block 'card', track█ing_id: 'x' %}{% endblock %}`),
-      ['### `tracking_id`: string', 'Analytics identifier'].join('\n\n'),
+      ['### tracking_id: `string`', 'Analytics identifier'].join('\n\n'),
     );
   });
 
@@ -156,7 +156,7 @@ describe('Module: BlockParameterHoverProvider', () => {
 
     await expect(provider).to.hover(
       template(`{% block 'card', cont█ent: body %}{% endblock %}`),
-      ['### `content` (Optional): string', CONTENT_PRECEDENCE_NOTE].join('\n\n'),
+      ['### content (Optional): `string`', CONTENT_PRECEDENCE_NOTE].join('\n\n'),
     );
   });
 
@@ -165,7 +165,7 @@ describe('Module: BlockParameterHoverProvider', () => {
 
     await expect(provider).to.hover(
       template(`{% block 'card', cont█ent: body %}{% endblock %}`),
-      ['### `content`: string', 'Card body', CONTENT_PRECEDENCE_NOTE].join('\n\n'),
+      ['### content: `string`', 'Card body', CONTENT_PRECEDENCE_NOTE].join('\n\n'),
     );
   });
 
@@ -175,7 +175,7 @@ describe('Module: BlockParameterHoverProvider', () => {
     await expect(provider).to.hover(
       template(`{% block 'card', cont█ent: body %}{% endblock %}`),
       [
-        '### `content` (Optional): string',
+        '### content (Optional): `string`',
         '**Theme setting**\n\nBody',
         CONTENT_PRECEDENCE_NOTE,
       ].join('\n\n'),

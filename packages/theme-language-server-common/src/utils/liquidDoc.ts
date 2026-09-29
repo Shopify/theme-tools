@@ -7,13 +7,7 @@ import {
 } from '@shopify/theme-check-common';
 
 export function formatLiquidDocParameter(
-  {
-    name,
-    type,
-    description,
-    required,
-  }: Pick<LiquidDocParameter, 'name' | 'type' | 'description' | 'required'> &
-    Partial<Pick<LiquidDocParameter, 'nodeType'>>,
+  { name, type, description, required }: LiquidDocParameter,
   heading: boolean = false,
 ) {
   const nameStr = required ? `\`${name}\`` : `\`${name}\` (Optional)`;

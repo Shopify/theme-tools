@@ -10,7 +10,6 @@ import {
 } from '@shopify/theme-check-common';
 import { GetThemeBlockSchema } from '../json/JSONContributions';
 import { GetTranslationsForURI, renderTranslation, translationValue } from '../translations';
-import { formatLiquidDocParameter } from './liquidDoc';
 import { blockName } from './uri';
 
 /** Resolves the parameters that a `block` tag in `uri` can pass to `blockName`. */
@@ -62,27 +61,18 @@ export async function getBlockParameterTranslations(
 }
 
 /**
- * Markdown shared by block parameter completion and hover. The heading follows
- * the existing LiquidDoc parameter format, followed by resolved theme-setting
- * copy and the precedence rule for `content`.
+ * Markdown shared by block parameter completion and hover. The heading uses
+ * the language server's `name: type` presentation, followed by LiquidDoc text,
+ * resolved theme-setting copy, and the precedence rule for `content`.
  */
 export function formatBlockParameter(
   parameter: BlockParameter,
   translations: Translations,
 ): string {
   const { name, type, required, liquidDoc, schemaSetting } = parameter;
-  const heading = formatLiquidDocParameter(
-    {
-      name,
-      type: type ?? null,
-      description: liquidDoc?.description ?? null,
-      required,
-    },
-    true,
-  );
-
   return [
-    heading,
+    formatBlockParameterHeading(name, type, required),
+    liquidDoc?.description ?? undefined,
     schemaSetting ? formatThemeSetting(schemaSetting, translations) : undefined,
     name === BLOCK_CONTENT_PARAMETER ? CONTENT_PRECEDENCE_NOTE : undefined,
   ]
@@ -92,6 +82,16 @@ export function formatBlockParameter(
 
 const CONTENT_PRECEDENCE_NOTE =
   'A non-empty block body supplies `content` and takes precedence over a `content:` argument.';
+
+function formatBlockParameterHeading(
+  name: string,
+  type: string | undefined,
+  required: boolean,
+): string {
+  const optional = required ? '' : ' (Optional)';
+  const typeSuffix = type ? `: \`${type}\`` : '';
+  return `### ${name}${optional}${typeSuffix}`;
+}
 
 function formatThemeSetting(setting: Setting.InputSetting, translations: Translations): string {
   return [
