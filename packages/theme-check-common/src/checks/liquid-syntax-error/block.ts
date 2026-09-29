@@ -1,4 +1,9 @@
-import { NodeTypes, type BlockMarkup, type LiquidTag } from '@shopify/liquid-html-parser';
+import {
+  NodeTypes,
+  type BlockMarkup,
+  type LiquidTag,
+  type Position,
+} from '@shopify/liquid-html-parser';
 import type { Context } from '.';
 import {
   hasBareArrayAccess,
@@ -20,44 +25,24 @@ const BLOCK_PARSER_ERROR_MESSAGES = new Set([
   "Attempting to close LiquidTag 'block' before it was opened without a matching 'block'",
 ]);
 
+interface BlockTagSyntaxOffense {
+  message: string;
+  position: Position;
+}
+
 export function checkBlockTag(node: LiquidTag, context: Context): void {
-  const message = blockTagSyntaxError(node);
-  if (message) report(node, context, message);
+  const offense = blockTagSyntaxOffense(node);
+  if (!offense) return;
+
+  context.report({
+    message: offense.message,
+    startIndex: offense.position.start,
+    endIndex: offense.position.end,
+  });
 }
 
 export function blockTagSyntaxError(node: LiquidTag): string | undefined {
-  if (typeof node.markup === 'string') return SYNTAX_ERROR;
-
-  const markup = node.markup as BlockMarkup;
-
-  if (hasInvalidBlockName(markup.name.value)) {
-    return "Liquid syntax error: in 'block' - Valid syntax: block '[file_name]'";
-  }
-
-  /*
-   * Ruby Liquid still accepts the unsupported experimental block.settings.<id>
-   * and block.content caller forms. Theme Check intentionally rejects every
-   * dotted argument except block.name so authors move to plain arguments.
-   */
-  if (markup.args.some(isDottedArgument)) return DOTTED_ARGUMENT;
-
-  if (markup.args.some(isInvalidBlockNameArgument)) return SYNTAX_ERROR;
-
-  /*
-   * A +BlockArrayLiteral+ value (e.g. +size: [1, 2]+) is a first-class array
-   * literal in this parser, not a bare bracket lookup, so it never counts as
-   * bare array access. Skip it to narrow +arg.value+ down to the plain
-   * +LiquidExpression+ that +hasBareArrayAccess+ expects.
-   */
-  if (
-    markup.args.some(
-      (arg) => arg.value.type !== 'BlockArrayLiteral' && hasBareArrayAccess(arg.value),
-    )
-  ) {
-    return BARE_ARRAY_ACCESS;
-  }
-
-  if (hasSkippedCharacters(rawMarkup(node))) return SYNTAX_ERROR;
+  return blockTagSyntaxOffense(node)?.message;
 }
 
 export function checkBlockParserError(error: Error, context: Context, source: string): void {
@@ -79,6 +64,47 @@ export function checkBlockParserError(error: Error, context: Context, source: st
   });
 }
 
+function blockTagSyntaxOffense(node: LiquidTag): BlockTagSyntaxOffense | undefined {
+  if (typeof node.markup === 'string') return tagOffense(node, SYNTAX_ERROR);
+
+  const markup = node.markup as BlockMarkup;
+
+  if (hasInvalidBlockName(markup.name.value)) {
+    return tagOffense(node, "Liquid syntax error: in 'block' - Valid syntax: block '[file_name]'");
+  }
+
+  /*
+   * Ruby Liquid still accepts the unsupported experimental block.settings.<id>
+   * and block.content caller forms. Theme Check intentionally rejects every
+   * dotted argument except block.name so authors move to plain arguments.
+   * Report the first one so body-form children stay outside the offense.
+   */
+  const dottedArgument = markup.args.find(isDottedArgument);
+  if (dottedArgument) return { message: DOTTED_ARGUMENT, position: dottedArgument.position };
+
+  if (markup.args.some(isInvalidBlockNameArgument)) return tagOffense(node, SYNTAX_ERROR);
+
+  /*
+   * A +BlockArrayLiteral+ value (e.g. +size: [1, 2]+) is a first-class array
+   * literal in this parser, not a bare bracket lookup, so it never counts as
+   * bare array access. Skip it to narrow +arg.value+ down to the plain
+   * +LiquidExpression+ that +hasBareArrayAccess+ expects.
+   */
+  if (
+    markup.args.some(
+      (arg) => arg.value.type !== 'BlockArrayLiteral' && hasBareArrayAccess(arg.value),
+    )
+  ) {
+    return tagOffense(node, BARE_ARRAY_ACCESS);
+  }
+
+  if (hasSkippedCharacters(rawMarkup(node))) return tagOffense(node, SYNTAX_ERROR);
+}
+
+function tagOffense(node: LiquidTag, message: string): BlockTagSyntaxOffense {
+  return { message, position: node.position };
+}
+
 function hasInvalidBlockName(value: string): boolean {
   return value.includes('/') || value.includes('.');
 }
@@ -89,12 +115,4 @@ function isInvalidBlockNameArgument(argument: BlockMarkup['args'][number]): bool
 
 function isDottedArgument(argument: BlockMarkup['args'][number]): boolean {
   return argument.name !== 'block.name' && argument.name.includes('.');
-}
-
-function report(node: LiquidTag, context: Context, message: string): void {
-  context.report({
-    message,
-    startIndex: node.position.start,
-    endIndex: node.position.end,
-  });
 }
