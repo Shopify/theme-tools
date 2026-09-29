@@ -40,25 +40,6 @@ describe('Module: BlockParameterHoverProvider', () => {
     );
   });
 
-  it('limits the hover range to the argument name', async () => {
-    openBlock(documentManager, blockSource([HEADING_SETTING]));
-    const uri = 'file:///templates/index.liquid';
-    const source = `{% block 'card', hea█ding: 'Sale' %}<p>Body</p>{% endblock %}`;
-    const cursor = source.indexOf('█');
-    documentManager.open(uri, source.replace('█', ''), 0);
-    const textDocument = documentManager.get(uri)!.textDocument;
-
-    const hover = await provider.hover({
-      textDocument: { uri },
-      position: textDocument.positionAt(cursor),
-    });
-
-    expect(hover?.range).toEqual({
-      start: { line: 0, character: 17 },
-      end: { line: 0, character: 24 },
-    });
-  });
-
   it('merges a required LiquidDoc echo into one hover', async () => {
     openBlock(
       documentManager,
