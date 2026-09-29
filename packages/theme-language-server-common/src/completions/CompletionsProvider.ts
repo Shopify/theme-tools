@@ -40,6 +40,7 @@ export interface CompletionProviderDependencies {
   documentManager: DocumentManager;
   themeDocset: ThemeDocset;
   getTranslationsForURI?: GetTranslationsForURI;
+  getSchemaTranslationsForURI?: GetTranslationsForURI;
   getSnippetNamesForURI?: GetSnippetNamesForURI;
   getThemeSettingsSchemaForURI?: GetThemeSettingsSchemaForURI;
   getMetafieldDefinitions: (rootUri: string) => Promise<MetafieldDefinitionMap>;
@@ -62,6 +63,7 @@ export class CompletionsProvider {
     themeDocset,
     getMetafieldDefinitions,
     getTranslationsForURI = async () => ({}),
+    getSchemaTranslationsForURI = async () => ({}),
     getSnippetNamesForURI = async () => [],
     getThemeSettingsSchemaForURI = async () => [],
     getDocDefinitionForURI = async (uri, _relativePath) => ({ uri }),
@@ -87,6 +89,7 @@ export class CompletionsProvider {
       new ContentForParameterCompletionProvider(getDocDefinitionForURI),
       new BlockParameterCompletionProvider(
         makeGetBlockParametersForURI(getThemeBlockSchema, getDocDefinitionForURI),
+        getSchemaTranslationsForURI,
       ),
       new HtmlTagCompletionProvider(),
       new HtmlAttributeCompletionProvider(documentManager),

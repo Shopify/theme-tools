@@ -6,9 +6,10 @@ import {
   isBlockSchema,
   makeGetBlockParameters,
   Setting,
+  Translations,
 } from '@shopify/theme-check-common';
 import { GetThemeBlockSchema } from '../json/JSONContributions';
-import { formatLiquidDocParameter } from './liquidDoc';
+import { GetTranslationsForURI, renderTranslation, translationValue } from '../translations';
 import { blockName } from './uri';
 
 /** Resolves the parameters that a `block` tag in `uri` can pass to `blockName`. */
@@ -41,43 +42,91 @@ export function makeGetBlockParametersForURI(
 }
 
 /**
- * Markdown documentation for a block parameter. Schema owns the type and the
- * merchant-facing details; LiquidDoc owns the description and requiredness.
+ * Loads the default schema translations when a parameter's schema setting
+ * uses a `t:` label or info. Returns no translations when none is needed or
+ * the lookup fails, so one missing locale file cannot fail the request.
  */
-export function formatBlockParameter(parameter: BlockParameter): string {
-  const heading = formatLiquidDocParameter(
-    {
-      nodeType: 'param',
-      name: parameter.name,
-      type: parameter.type ?? null,
-      description: parameter.liquidDoc?.description ?? null,
-      required: parameter.required,
-    },
-    true,
-  );
+export async function getBlockParameterTranslations(
+  getSchemaTranslationsForURI: GetTranslationsForURI,
+  uri: string,
+  parameters: BlockParameter[],
+): Promise<Translations> {
+  if (!parameters.some(hasTranslatedSchemaText)) return {};
 
-  return [heading, ...sourceNotes(parameter)].join('\n\n');
+  try {
+    return await getSchemaTranslationsForURI(uri);
+  } catch {
+    return {};
+  }
 }
 
-const BUILT_IN_CONTENT_NOTE =
-  'Built-in parameter. A non-empty block body supplies `content` and takes precedence over a `content:` argument.';
-
-const DEVELOPER_ONLY_NOTE = 'Developer-only LiquidDoc parameter. Not merchant-facing.';
-
-function sourceNotes(parameter: BlockParameter): string[] {
-  const { name, schemaSetting } = parameter;
-  const notes: string[] = [];
-  if (schemaSetting) notes.push(merchantSettingNote(schemaSetting));
-  if (name === BLOCK_CONTENT_PARAMETER) notes.push(BUILT_IN_CONTENT_NOTE);
-  if (!schemaSetting && name !== BLOCK_CONTENT_PARAMETER) notes.push(DEVELOPER_ONLY_NOTE);
-  return notes;
+/**
+ * Markdown heading for a block parameter hover, such as
+ * `### \`heading\` (optional): string`.
+ */
+export function formatBlockParameterHeading({ name, required, type }: BlockParameter): string {
+  const optional = required ? '' : ' (optional)';
+  const typeSuffix = type ? `: ${type}` : '';
+  return `### \`${name}\`${optional}${typeSuffix}`;
 }
 
-function merchantSettingNote(setting: Setting.InputSetting): string {
-  const details = [
-    setting.label ? `- Label: ${setting.label}` : undefined,
-    setting.info ? `- Info: ${setting.info}` : undefined,
-  ].filter((detail): detail is string => detail !== undefined);
+/**
+ * Markdown description shared by block parameter completion and hover: the
+ * verbatim LiquidDoc description, the theme setting's label and info, and the
+ * precedence rule for `content`. Empty when no source describes the parameter.
+ */
+export function formatBlockParameterDescription(
+  parameter: BlockParameter,
+  translations: Translations,
+): string {
+  const { name, liquidDoc, schemaSetting } = parameter;
 
-  return [`**Merchant-facing setting** (\`${setting.type}\`)`, ...details].join('\n');
+  return [
+    liquidDoc?.description ?? undefined,
+    schemaSetting ? formatThemeSetting(schemaSetting, translations) : undefined,
+    name === BLOCK_CONTENT_PARAMETER ? CONTENT_PRECEDENCE_NOTE : undefined,
+  ]
+    .filter(isPresent)
+    .join('\n\n');
+}
+
+const CONTENT_PRECEDENCE_NOTE =
+  'A non-empty block body supplies `content` and takes precedence over a `content:` argument.';
+
+function formatThemeSetting(setting: Setting.InputSetting, translations: Translations): string {
+  return [
+    '**Theme setting**',
+    resolveSchemaText(setting.label, translations),
+    resolveSchemaText(setting.info, translations),
+  ]
+    .filter(isPresent)
+    .join('\n\n');
+}
+
+/**
+ * Returns literal schema text unchanged and resolves a `t:` key against the
+ * default schema translations. Returns undefined for a missing translation
+ * rather than showing the raw key.
+ */
+function resolveSchemaText(
+  text: string | undefined,
+  translations: Translations,
+): string | undefined {
+  if (!text) return undefined;
+  if (!isTranslationKey(text)) return text;
+
+  const translation = translationValue(text.substring(2), translations);
+  return translation ? renderTranslation(translation) : undefined;
+}
+
+function hasTranslatedSchemaText({ schemaSetting }: BlockParameter): boolean {
+  return [schemaSetting?.label, schemaSetting?.info].some(isTranslationKey);
+}
+
+function isTranslationKey(text: string | undefined): text is string {
+  return text?.startsWith('t:') ?? false;
+}
+
+function isPresent(text: string | undefined): text is string {
+  return !!text;
 }

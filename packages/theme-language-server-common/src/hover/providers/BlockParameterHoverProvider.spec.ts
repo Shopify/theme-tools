@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { MetafieldDefinitionMap, ObjectEntry, SourceCodeType } from '@shopify/theme-check-common';
+import {
+  MetafieldDefinitionMap,
+  ObjectEntry,
+  SourceCodeType,
+  Translations,
+} from '@shopify/theme-check-common';
 import { DocumentManager } from '../../documents';
+import { GetTranslationsForURI } from '../../translations';
 import { HoverProvider } from '../HoverProvider';
 
 const template = (source: string) => ({ source, relativePath: 'templates/index.liquid' });
@@ -11,10 +17,12 @@ const HEADING_SETTING = {
   label: 'Heading',
   info: 'Shown above the card',
 };
-const HEADING_MERCHANT_NOTE =
-  '**Merchant-facing setting** (`text`)\n- Label: Heading\n- Info: Shown above the card';
-const BUILT_IN_CONTENT_NOTE =
-  'Built-in parameter. A non-empty block body supplies `content` and takes precedence over a `content:` argument.';
+const HEADING_THEME_SETTING = '**Theme setting**\n\nHeading\n\nShown above the card';
+const CONTENT_PRECEDENCE_NOTE =
+  'A non-empty block body supplies `content` and takes precedence over a `content:` argument.';
+const SCHEMA_TRANSLATIONS: Translations = {
+  settings: { heading: { label: 'Translated heading', info: 'Translated info' } },
+};
 
 describe('Module: BlockParameterHoverProvider', () => {
   let documentManager: DocumentManager;
@@ -31,14 +39,62 @@ describe('Module: BlockParameterHoverProvider', () => {
     provider = createProvider(documentManager);
   });
 
-  it('describes a schema-only argument as an optional merchant-facing setting', async () => {
+  it('describes a schema-only argument as an optional theme setting', async () => {
     openBlock(documentManager, blockSource([HEADING_SETTING]));
 
     await expect(provider).to.hover(
       template(`{% block 'card', hea█ding: 'Sale' %}{% endblock %}`),
-      ['### `heading` (Optional): string', HEADING_MERCHANT_NOTE].join('\n\n'),
+      ['### `heading` (optional): string', HEADING_THEME_SETTING].join('\n\n'),
     );
   });
+
+  it('resolves translated setting label and info', async () => {
+    openBlock(
+      documentManager,
+      blockSource([
+        {
+          id: 'heading',
+          type: 'text',
+          label: 't:settings.heading.label',
+          info: 't:settings.heading.info',
+        },
+      ]),
+    );
+
+    await expect(provider).to.hover(
+      template(`{% block 'card', hea█ding: 'Sale' %}{% endblock %}`),
+      [
+        '### `heading` (optional): string',
+        '**Theme setting**\n\nTranslated heading\n\nTranslated info',
+      ].join('\n\n'),
+    );
+  });
+
+  it.each([
+    ['a missing translation', async () => SCHEMA_TRANSLATIONS],
+    [
+      'a failed translation lookup',
+      async (): Promise<Translations> => {
+        throw new Error('locale file unavailable');
+      },
+    ],
+  ])(
+    'omits a translation key with %s',
+    async (_case, getSchemaTranslationsForURI: GetTranslationsForURI) => {
+      provider = createProvider(documentManager, [], getSchemaTranslationsForURI);
+      openBlock(
+        documentManager,
+        blockSource([
+          { id: 'heading', type: 'text', label: 't:settings.missing.label', info: 'Literal info' },
+        ]),
+      );
+
+      await expect(provider).to.hover(
+        template(`{% block 'card', hea█ding: 'Sale' %}{% endblock %}`),
+        ['### `heading` (optional): string', '**Theme setting**\n\nLiteral info'].join('\n\n'),
+      );
+    },
+  );
 
   it('merges a required LiquidDoc echo into one hover', async () => {
     openBlock(
@@ -48,7 +104,7 @@ describe('Module: BlockParameterHoverProvider', () => {
 
     await expect(provider).to.hover(
       template(`{% block 'card', hea█ding: 'Sale' %}{% endblock %}`),
-      ['### `heading`: string', 'Card heading', HEADING_MERCHANT_NOTE].join('\n\n'),
+      ['### `heading`: string', 'Card heading', HEADING_THEME_SETTING].join('\n\n'),
     );
   });
 
@@ -60,7 +116,7 @@ describe('Module: BlockParameterHoverProvider', () => {
 
     await expect(provider).to.hover(
       template(`{% block 'card', hea█ding: 'Sale' %}{% endblock %}`),
-      ['### `heading` (Optional): string', 'Card heading', HEADING_MERCHANT_NOTE].join('\n\n'),
+      ['### `heading` (optional): string', 'Card heading', HEADING_THEME_SETTING].join('\n\n'),
     );
   });
 
@@ -78,12 +134,12 @@ describe('Module: BlockParameterHoverProvider', () => {
       [
         '### `featured`: product',
         'The product to feature',
-        '**Merchant-facing setting** (`product`)\n- Label: Featured product',
+        '**Theme setting**\n\nFeatured product',
       ].join('\n\n'),
     );
   });
 
-  it('identifies a LiquidDoc-only parameter as developer-only', async () => {
+  it('shows only the LiquidDoc description for a LiquidDoc-only parameter', async () => {
     openBlock(
       documentManager,
       blockSource([], ['@param {string} tracking_id - Analytics identifier']),
@@ -91,11 +147,7 @@ describe('Module: BlockParameterHoverProvider', () => {
 
     await expect(provider).to.hover(
       template(`{% block 'card', track█ing_id: 'x' %}{% endblock %}`),
-      [
-        '### `tracking_id`: string',
-        'Analytics identifier',
-        'Developer-only LiquidDoc parameter. Not merchant-facing.',
-      ].join('\n\n'),
+      ['### `tracking_id`: string', 'Analytics identifier'].join('\n\n'),
     );
   });
 
@@ -104,7 +156,7 @@ describe('Module: BlockParameterHoverProvider', () => {
 
     await expect(provider).to.hover(
       template(`{% block 'card', cont█ent: body %}{% endblock %}`),
-      ['### `content` (Optional): string', BUILT_IN_CONTENT_NOTE].join('\n\n'),
+      ['### `content` (optional): string', CONTENT_PRECEDENCE_NOTE].join('\n\n'),
     );
   });
 
@@ -113,7 +165,7 @@ describe('Module: BlockParameterHoverProvider', () => {
 
     await expect(provider).to.hover(
       template(`{% block 'card', cont█ent: body %}{% endblock %}`),
-      ['### `content`: string', 'Card body', BUILT_IN_CONTENT_NOTE].join('\n\n'),
+      ['### `content`: string', 'Card body', CONTENT_PRECEDENCE_NOTE].join('\n\n'),
     );
   });
 
@@ -123,9 +175,9 @@ describe('Module: BlockParameterHoverProvider', () => {
     await expect(provider).to.hover(
       template(`{% block 'card', cont█ent: body %}{% endblock %}`),
       [
-        '### `content` (Optional): string',
-        '**Merchant-facing setting** (`number`)\n- Label: Body',
-        BUILT_IN_CONTENT_NOTE,
+        '### `content` (optional): string',
+        '**Theme setting**\n\nBody',
+        CONTENT_PRECEDENCE_NOTE,
       ].join('\n\n'),
     );
   });
@@ -164,7 +216,11 @@ const blockObject: ObjectEntry = {
   properties: [{ name: 'settings', return_type: [{ type: 'untyped', name: '' }] }],
 };
 
-function createProvider(documentManager: DocumentManager, objects: ObjectEntry[] = []) {
+function createProvider(
+  documentManager: DocumentManager,
+  objects: ObjectEntry[] = [],
+  getSchemaTranslationsForURI: GetTranslationsForURI = async () => SCHEMA_TRANSLATIONS,
+) {
   return new HoverProvider(
     documentManager,
     {
@@ -188,6 +244,7 @@ function createProvider(documentManager: DocumentManager, objects: ObjectEntry[]
       if (block?.type !== SourceCodeType.LiquidHtml) return undefined;
       return block.getSchema();
     },
+    getSchemaTranslationsForURI,
   );
 }
 

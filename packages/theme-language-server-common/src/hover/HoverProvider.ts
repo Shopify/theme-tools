@@ -43,6 +43,7 @@ export class HoverProvider {
     readonly getDocDefinitionForURI: GetDocDefinitionForURI = async () => undefined,
     readonly getModeForURI: (uri: string) => Promise<Mode> = async () => 'theme',
     readonly getThemeBlockSchema: GetThemeBlockSchema = async () => undefined,
+    readonly getSchemaTranslationsForURI: GetTranslationsForURI = async () => ({}),
   ) {
     const typeSystem = new TypeSystem(
       themeDocset,
@@ -55,6 +56,7 @@ export class HoverProvider {
       new ContentForTypeHoverProvider(getDocDefinitionForURI),
       new BlockParameterHoverProvider(
         makeGetBlockParametersForURI(getThemeBlockSchema, getDocDefinitionForURI),
+        getSchemaTranslationsForURI,
       ),
       new LiquidTagHoverProvider(themeDocset),
       new LiquidFilterArgumentHoverProvider(themeDocset),

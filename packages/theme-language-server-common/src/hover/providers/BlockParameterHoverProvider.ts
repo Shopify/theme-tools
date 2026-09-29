@@ -1,7 +1,13 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidHtmlNode } from '@shopify/theme-check-common';
 import { Hover, HoverParams, MarkupKind } from 'vscode-languageserver';
-import { formatBlockParameter, GetBlockParametersForURI } from '../../utils/blockParameters';
+import { GetTranslationsForURI } from '../../translations';
+import {
+  formatBlockParameterDescription,
+  formatBlockParameterHeading,
+  getBlockParameterTranslations,
+  GetBlockParametersForURI,
+} from '../../utils/blockParameters';
 import { BaseHoverProvider } from '../BaseHoverProvider';
 
 /**
@@ -11,7 +17,10 @@ import { BaseHoverProvider } from '../BaseHoverProvider';
  * @example {% block 'card', hea█ding: 'Sale' %}
  */
 export class BlockParameterHoverProvider implements BaseHoverProvider {
-  constructor(private readonly getBlockParametersForURI: GetBlockParametersForURI) {}
+  constructor(
+    private readonly getBlockParametersForURI: GetBlockParametersForURI,
+    private readonly getSchemaTranslationsForURI: GetTranslationsForURI,
+  ) {}
 
   async hover(
     currentNode: LiquidHtmlNode,
@@ -29,11 +38,18 @@ export class BlockParameterHoverProvider implements BaseHoverProvider {
     const parameter = parameters?.get(currentNode.name);
     if (!parameter) return null;
 
-    return {
-      contents: {
-        kind: MarkupKind.Markdown,
-        value: formatBlockParameter(parameter),
-      },
-    };
+    const translations = await getBlockParameterTranslations(
+      this.getSchemaTranslationsForURI,
+      params.textDocument.uri,
+      [parameter],
+    );
+    const value = [
+      formatBlockParameterHeading(parameter),
+      formatBlockParameterDescription(parameter, translations),
+    ]
+      .filter(Boolean)
+      .join('\n\n');
+
+    return { contents: { kind: MarkupKind.Markdown, value } };
   }
 }

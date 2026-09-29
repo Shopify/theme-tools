@@ -334,6 +334,7 @@ export function startServer(
     documentManager,
     themeDocset,
     getTranslationsForURI,
+    getSchemaTranslationsForURI,
     getSnippetNamesForURI,
     getThemeSettingsSchemaForURI,
     log,
@@ -353,6 +354,7 @@ export function startServer(
     getDocDefinitionForURI,
     getModeForURI,
     getThemeBlockSchema,
+    getSchemaTranslationsForURI,
   );
 
   const executeCommandProvider = new ExecuteCommandProvider(

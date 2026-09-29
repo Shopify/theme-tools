@@ -4,7 +4,7 @@ import {
   LiquidVariableLookup,
   NodeTypes,
 } from '@shopify/liquid-html-parser';
-import { BLOCK_CONTENT_PARAMETER, BlockParameter } from '@shopify/theme-check-common';
+import { BLOCK_CONTENT_PARAMETER, BlockParameter, Translations } from '@shopify/theme-check-common';
 import {
   CompletionItem,
   CompletionItemKind,
@@ -14,7 +14,12 @@ import {
   TextEdit,
 } from 'vscode-languageserver';
 import { AugmentedLiquidSourceCode } from '../../documents';
-import { formatBlockParameter, GetBlockParametersForURI } from '../../utils/blockParameters';
+import { GetTranslationsForURI } from '../../translations';
+import {
+  formatBlockParameterDescription,
+  getBlockParameterTranslations,
+  GetBlockParametersForURI,
+} from '../../utils/blockParameters';
 import { getParameterCompletionTemplate } from '../../utils/liquidDoc';
 import { LiquidCompletionParams } from '../params';
 import { Provider } from './common';
@@ -26,7 +31,10 @@ import { Provider } from './common';
  * @example {% block 'card', █ %}
  */
 export class BlockParameterCompletionProvider implements Provider {
-  constructor(private readonly getBlockParametersForURI: GetBlockParametersForURI) {}
+  constructor(
+    private readonly getBlockParametersForURI: GetBlockParametersForURI,
+    private readonly getSchemaTranslationsForURI: GetTranslationsForURI,
+  ) {}
 
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
@@ -45,9 +53,18 @@ export class BlockParameterCompletionProvider implements Provider {
     const partial = node.name ?? '';
     const unavailableNames = providedArgumentNames(node, blockMarkup, ancestors.at(-2));
 
-    return [...parameters.values()]
-      .filter(({ name }) => name.startsWith(partial) && !unavailableNames.has(name))
-      .map((parameter) => toCompletionItem(parameter, node, params.document));
+    const available = [...parameters.values()].filter(
+      ({ name }) => name.startsWith(partial) && !unavailableNames.has(name),
+    );
+    const translations = await getBlockParameterTranslations(
+      this.getSchemaTranslationsForURI,
+      params.textDocument.uri,
+      available,
+    );
+
+    return available.map((parameter) =>
+      toCompletionItem(parameter, translations, node, params.document),
+    );
   }
 }
 
@@ -73,20 +90,27 @@ function isTypedOver(arg: BlockMarkup['args'][number], node: LiquidVariableLooku
   return node.name !== '' && arg.position.start === node.position.start;
 }
 
+/**
+ * The label stays the bare parameter name for filtering and insertion.
+ * Requiredness and type appear as label details.
+ */
 function toCompletionItem(
   parameter: BlockParameter,
+  translations: Translations,
   node: LiquidVariableLookup,
   document: AugmentedLiquidSourceCode,
 ): CompletionItem {
   const { textEdit, insertTextFormat } = argumentNameEdit(parameter, node, document);
+  const description = formatBlockParameterDescription(parameter, translations);
 
   return {
     label: parameter.name,
-    kind: CompletionItemKind.Property,
-    documentation: {
-      kind: MarkupKind.Markdown,
-      value: formatBlockParameter(parameter),
+    labelDetails: {
+      detail: parameter.required ? undefined : ' (optional)',
+      description: parameter.type,
     },
+    kind: CompletionItemKind.Property,
+    documentation: description ? { kind: MarkupKind.Markdown, value: description } : undefined,
     insertTextFormat,
     textEdit,
   };
