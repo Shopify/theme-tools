@@ -8,9 +8,11 @@ import {
 import { Hover, HoverParams } from 'vscode-languageserver';
 import { TypeSystem } from '../TypeSystem';
 import { DocumentManager } from '../documents';
+import { GetThemeBlockSchema } from '../json/JSONContributions';
 import { GetTranslationsForURI } from '../translations';
 import { BaseHoverProvider } from './BaseHoverProvider';
 import {
+  BlockParameterHoverProvider,
   HtmlAttributeHoverProvider,
   HtmlTagHoverProvider,
   LiquidFilterArgumentHoverProvider,
@@ -28,6 +30,7 @@ import { GetThemeSettingsSchemaForURI } from '../settings';
 import { LiquidDocTagHoverProvider } from './providers/LiquidDocTagHoverProvider';
 import { ContentForArgumentHoverProvider } from './providers/ContentForArgumentHoverProvider';
 import { ContentForTypeHoverProvider } from './providers/ContentForTypeHoverProvider';
+import { makeGetBlockParametersForURI } from '../utils/blockParameters';
 export class HoverProvider {
   private providers: BaseHoverProvider[] = [];
 
@@ -39,6 +42,7 @@ export class HoverProvider {
     readonly getSettingsSchemaForURI: GetThemeSettingsSchemaForURI = async () => [],
     readonly getDocDefinitionForURI: GetDocDefinitionForURI = async () => undefined,
     readonly getModeForURI: (uri: string) => Promise<Mode> = async () => 'theme',
+    readonly getThemeBlockSchema: GetThemeBlockSchema = async () => undefined,
   ) {
     const typeSystem = new TypeSystem(
       themeDocset,
@@ -49,6 +53,9 @@ export class HoverProvider {
     this.providers = [
       new ContentForArgumentHoverProvider(getDocDefinitionForURI),
       new ContentForTypeHoverProvider(getDocDefinitionForURI),
+      new BlockParameterHoverProvider(
+        makeGetBlockParametersForURI(getThemeBlockSchema, getDocDefinitionForURI),
+      ),
       new LiquidTagHoverProvider(themeDocset),
       new LiquidFilterArgumentHoverProvider(themeDocset),
       new LiquidFilterHoverProvider(themeDocset),

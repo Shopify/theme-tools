@@ -1,11 +1,15 @@
 import {
+  BlockMarkup,
   findErrorNodeAtOffset,
   LiquidHtmlNode,
   LiquidTag,
+  MarkupToken,
+  MarkupTokenType,
   NodeTypes,
   Position,
   RAW_TAGS,
   VOID_ELEMENTS,
+  tokenizeMarkup,
   toTolerantLiquidHtmlAST,
 } from '@shopify/liquid-html-parser';
 import { CompletionParams } from 'vscode-languageserver';
@@ -339,6 +343,21 @@ function findCompletionNode(
                   args: [],
                   position: current.position,
                 } as any as LiquidHtmlNode;
+              }
+              const blockMarkup =
+                current.name === 'block'
+                  ? synthBlockMarkup(
+                      source,
+                      current.markupPosition.start,
+                      current.markupPosition.end,
+                      slot,
+                    )
+                  : undefined;
+              if (blockMarkup) {
+                // The parser leaves `{% block 'card', ti %}` (a bare argument
+                // name) as raw string markup. Rebuild the `BlockMarkup` as the
+                // recovered lookup's parent so the block parameter provider fires.
+                finder.current = blockMarkup;
               }
               finder.current = slot;
             }
@@ -718,9 +737,12 @@ function findCompletionNode(
         break;
       }
 
-      // `block` and `section` markup carry a name plus optional named
-      // arguments, so we walk them the same way as `content_for`.
-      case NodeTypes.BlockMarkup:
+      case NodeTypes.BlockMarkup: {
+        const child = blockMarkupChild(current, cursor, source);
+        if (child) finder.current = child;
+        break;
+      }
+
       case NodeTypes.SectionMarkup: {
         if (isNotEmpty(current.args)) {
           const arg = last(current.args);
@@ -954,9 +976,20 @@ function resolveErrorNodeCompletion(
     const nameMatch = region.match(/^\{%-?\s*[a-zA-Z_]\w*/);
     if ((close === -1 || close >= cursor) && nameMatch && /\s/.test(region[nameMatch[0].length])) {
       const lowerBound = tagOpen + nameMatch[0].length;
+      const lookup = recoverVariableLookup(source, lowerBound, cursor);
+      // An unclosed `{% block 'card', ti^` has no markup node, so rebuild the
+      // `BlockMarkup` the block parameter provider completes against. Only the
+      // text before the caret belongs to the tag: nothing closes it after.
+      const blockMarkup = /^\{%-?\s*block$/.test(nameMatch[0])
+        ? synthBlockMarkup(source, lowerBound, cursor, lookup)
+        : undefined;
       return [
-        recoverVariableLookup(source, lowerBound, cursor),
-        [...ancestors, synthNode(NodeTypes.LiquidTag, cursor)],
+        lookup,
+        [
+          ...ancestors,
+          synthNode(NodeTypes.LiquidTag, cursor),
+          ...(blockMarkup ? [blockMarkup] : []),
+        ],
       ];
     }
   }
@@ -1779,6 +1812,107 @@ function synthContentForType(
     single: quote === "'",
     position: { start, end: start + value.length + 2 },
   } as any as LiquidHtmlNode;
+}
+
+/*
+ * Picks the `BlockMarkup` child at the caret. The block parameter provider
+ * completes a top-level `VariableLookup` whose parent is the `BlockMarkup`, so
+ * an argument name (`{% block 'card', ti^tle: 'x' %}`) or an empty argument
+ * slot after a comma (`{% block 'card', ^ %}`) becomes that lookup instead of
+ * the `NamedArgument` or the markup itself.
+ */
+function blockMarkupChild(
+  markup: BlockMarkup,
+  cursor: number,
+  source: string,
+): LiquidHtmlNode | undefined {
+  const coveredArg = markup.args.find((arg) => isCovered(cursor, arg.position));
+  if (coveredArg && cursor <= coveredArg.position.start + coveredArg.name.length) {
+    return synthVariableLookup(
+      cursor,
+      coveredArg.name.slice(0, cursor - coveredArg.position.start),
+    );
+  }
+
+  if (coveredArg) {
+    return isBlockArrayArgument(coveredArg) ? coveredArg.value.elements.at(-1) : coveredArg;
+  }
+
+  if (isCovered(cursor, markup.name.position)) return markup.name;
+
+  const previousEnd =
+    [markup.name, ...markup.args]
+      .map((node) => node.position.end)
+      .filter((end) => end <= cursor)
+      .at(-1) ?? markup.name.position.end;
+  if (!isArgumentSeparator(source.slice(previousEnd, cursor))) return undefined;
+
+  return synthVariableLookup(cursor);
+}
+
+/*
+ * Rebuilds the `BlockMarkup` of a `block` tag whose markup the parser could not
+ * finish (`{% block 'card', ti^ %}`, `{% block 'card', title: 'x', ^`). The
+ * rebuilt node carries the block name and the names of the arguments already
+ * typed, which is what the block parameter provider reads. Returns undefined
+ * unless the lookup sits in an argument-name slot after the quoted block name.
+ */
+function synthBlockMarkup(
+  source: string,
+  markupStart: number,
+  markupEnd: number,
+  lookup: LiquidHtmlNode,
+): LiquidHtmlNode | undefined {
+  if (lookup.type !== NodeTypes.VariableLookup || lookup.lookups.length > 0) return undefined;
+
+  const tokens = tokenizeMarkup(source.slice(markupStart, markupEnd), markupStart).filter(
+    (token) => token.type !== MarkupTokenType.EndOfString,
+  );
+  const [name, comma] = tokens;
+  const tokenBeforeLookup = tokens.filter((token) => token.end <= lookup.position.start).at(-1);
+  if (
+    name?.type !== MarkupTokenType.String ||
+    comma?.type !== MarkupTokenType.Comma ||
+    tokenBeforeLookup?.type !== MarkupTokenType.Comma
+  ) {
+    return undefined;
+  }
+
+  return {
+    type: NodeTypes.BlockMarkup,
+    name: synthString(
+      { start: name.start, value: name.value.slice(1, -1), single: name.value[0] === "'" },
+      name.end,
+    ),
+    args: synthArgumentNames(tokens),
+    position: { start: markupStart, end: markupEnd },
+  } as any as LiquidHtmlNode;
+}
+
+/*
+ * Recovers the `name:` part of each named argument in unfinished tag markup.
+ * The values are left out; only the names and their positions are known.
+ */
+function synthArgumentNames(tokens: MarkupToken[]): LiquidHtmlNode[] {
+  return tokens
+    .filter(
+      (token, i) =>
+        token.type === MarkupTokenType.Id &&
+        tokens[i - 1]?.type === MarkupTokenType.Comma &&
+        tokens[i + 1]?.type === MarkupTokenType.Colon,
+    )
+    .map(
+      (token) =>
+        ({
+          type: NodeTypes.NamedArgument,
+          name: token.value,
+          position: { start: token.start, end: token.end },
+        }) as any as LiquidHtmlNode,
+    );
+}
+
+function isArgumentSeparator(text: string): boolean {
+  return /^\s*,\s*$/.test(text);
 }
 
 /*
