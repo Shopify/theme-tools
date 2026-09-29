@@ -224,6 +224,54 @@ describe('Module: LiquidCompletionParams', async () => {
         }
       });
 
+      it('returns an argument-name lookup whose parent is the block markup', async () => {
+        const contexts: [context: string, name: string][] = [
+          [`{% block 'card', █ %}{% endblock %}`, ''],
+          [`{% block 'card', he█ %}{% endblock %}`, 'he'],
+          [`{% block 'card', he█ading: 'x' %}{% endblock %}`, 'he'],
+          [`{% block 'card', █heading: 'x' %}{% endblock %}`, ''],
+          [`{% block 'card', heading: 'x', █ %}{% endblock %}`, ''],
+          [`{% block 'card', heading: 'x', fe█ %}{% endblock %}`, 'fe'],
+          [`{% block 'card', heading: 'x', █, id: 'y' %}{% endblock %}`, ''],
+          [`{% block 'card',\n  heading: 'x',\n  █\n%}{% endblock %}`, ''],
+          [`{% block 'card', █`, ''],
+          [`{% block 'card', heading: 'x', he█`, 'he'],
+          [`{% liquid\n  block 'card', he█\n  endblock\n%}`, 'he'],
+        ];
+        for (const [context, name] of contexts) {
+          const { completionContext } = createLiquidParamsFromContext(context);
+          const { node, ancestors } = completionContext!;
+          expectPath(node, 'type', context).to.eql('VariableLookup');
+          expectPath(node, 'name', context).to.eql(name);
+          expectPath(ancestors.at(-1), 'type', context).to.eql('BlockMarkup');
+          expectPath(ancestors.at(-1), 'name.value', context).to.eql('card');
+        }
+      });
+
+      it('recovers the argument names of unfinished block markup', async () => {
+        const context = `{% block 'card', heading: 'x', █, block.settings.id: 'y', id: 'z' %}{% endblock %}`;
+        const { completionContext } = createLiquidParamsFromContext(context);
+        const { ancestors } = completionContext!;
+        expectPath(ancestors.at(-1), 'args.0.name').to.eql('heading');
+        expectPath(ancestors.at(-1), 'args.1.name').to.eql('id');
+        expectPath(ancestors.at(-1), 'args.2').to.eql(undefined);
+      });
+
+      it('does not return an argument-name lookup outside a block argument-name slot', async () => {
+        const contexts = [
+          `{% block 'card' █ %}{% endblock %}`,
+          `{% block 'card', heading: 'x' █ %}{% endblock %}`,
+          `{% block 'card', heading: █ %}{% endblock %}`,
+          `{% block 'card', heading: pr█ %}{% endblock %}`,
+          `{% block 'card', heading: 'x', block.█ %}{% endblock %}`,
+        ];
+        for (const context of contexts) {
+          const { completionContext } = createLiquidParamsFromContext(context);
+          const { ancestors } = completionContext!;
+          expectPath(ancestors.at(-1), 'type', context).not.to.eql('BlockMarkup');
+        }
+      });
+
       it('returns a variable lookup (placeholder mode)', async () => {
         const contexts = [
           `{{ █`,

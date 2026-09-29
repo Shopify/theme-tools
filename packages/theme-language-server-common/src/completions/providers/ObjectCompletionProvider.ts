@@ -24,10 +24,11 @@ export class ObjectCompletionProvider implements Provider {
       return [];
     }
 
-    // ContentFor and Render uses VariableLookup to support completion of NamedParams.
+    // ContentFor, Render, and Block use VariableLookup to support completion of NamedParams.
     if (
       parentNode?.type === NodeTypes.ContentForMarkup ||
-      parentNode?.type === NodeTypes.RenderMarkup
+      parentNode?.type === NodeTypes.RenderMarkup ||
+      parentNode?.type === NodeTypes.BlockMarkup
     ) {
       return [];
     }

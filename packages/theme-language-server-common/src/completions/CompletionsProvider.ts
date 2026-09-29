@@ -8,10 +8,14 @@ import {
 import { CompletionItem, CompletionParams } from 'vscode-languageserver';
 import { TypeSystem } from '../TypeSystem';
 import { DocumentManager } from '../documents';
+import { FindThemeRootURI } from '../internal-types';
+import { GetThemeBlockSchema } from '../json/JSONContributions';
 import { GetThemeSettingsSchemaForURI } from '../settings';
 import { GetTranslationsForURI } from '../translations';
+import { makeGetBlockParametersForURI } from '../utils/blockParameters';
 import { createLiquidCompletionParams } from './params';
 import {
+  BlockParameterCompletionProvider,
   ContentForCompletionProvider,
   ContentForBlockTypeCompletionProvider,
   ContentForParameterCompletionProvider,
@@ -41,7 +45,9 @@ export interface CompletionProviderDependencies {
   getMetafieldDefinitions: (rootUri: string) => Promise<MetafieldDefinitionMap>;
   getDocDefinitionForURI?: GetDocDefinitionForURI;
   getThemeBlockNames?: (rootUri: string, includePrivate: boolean) => Promise<string[]>;
+  getThemeBlockSchema?: GetThemeBlockSchema;
   getModeForURI?: (uri: string) => Promise<Mode>;
+  findThemeRootURI?: FindThemeRootURI;
   log?: (message: string) => void;
 }
 
@@ -60,7 +66,9 @@ export class CompletionsProvider {
     getThemeSettingsSchemaForURI = async () => [],
     getDocDefinitionForURI = async (uri, _relativePath) => ({ uri }),
     getThemeBlockNames = async (_rootUri: string, _includePrivate: boolean) => [],
+    getThemeBlockSchema = async (_uri: string, _name: string) => undefined,
     getModeForURI,
+    findThemeRootURI = async (_uri: string) => null,
     log = () => {},
   }: CompletionProviderDependencies) {
     this.documentManager = documentManager;
@@ -77,10 +85,13 @@ export class CompletionsProvider {
       new ContentForCompletionProvider(),
       new ContentForBlockTypeCompletionProvider(getThemeBlockNames),
       new ContentForParameterCompletionProvider(getDocDefinitionForURI),
+      new BlockParameterCompletionProvider(
+        makeGetBlockParametersForURI(getThemeBlockSchema, getDocDefinitionForURI),
+      ),
       new HtmlTagCompletionProvider(),
       new HtmlAttributeCompletionProvider(documentManager),
       new HtmlAttributeValueCompletionProvider(),
-      new LiquidTagsCompletionProvider(themeDocset),
+      new LiquidTagsCompletionProvider(themeDocset, findThemeRootURI),
       new ObjectCompletionProvider(typeSystem),
       new ObjectAttributeCompletionProvider(typeSystem, getThemeSettingsSchemaForURI),
       new FilterCompletionProvider(typeSystem),
