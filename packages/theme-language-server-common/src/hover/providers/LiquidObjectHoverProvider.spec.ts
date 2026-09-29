@@ -244,6 +244,57 @@ describe('Module: LiquidObjectHoverProvider', async () => {
     );
   });
 
+  describe('when a theme block schema defines settings', () => {
+    beforeEach(() => {
+      provider = new HoverProvider(
+        new DocumentManager(),
+        {
+          filters: async () => [],
+          objects: async () => blockSettingsObjects,
+          liquidDrops: async () => blockSettingsObjects,
+          tags: async () => [],
+          systemTranslations: async () => ({}),
+        },
+        async () => ({}) as MetafieldDefinitionMap,
+      );
+    });
+
+    it('hovers a setting ID as a plain variable with its schema type', async () => {
+      await expect(provider).to.hover(
+        articleCard('{{ backgr█ound_color }}'),
+        '### background_color: `string`',
+      );
+    });
+
+    it('gives the plain variable and block.settings alias the same type', async () => {
+      const imageTitle = expect.stringMatching(/^### image: `image`(\n|$)/);
+
+      await expect(provider).to.hover(articleCard('{{ ima█ge }}'), imageTitle);
+      await expect(provider).to.hover(articleCard('{{ block.settings.ima█ge }}'), imageTitle);
+    });
+
+    it('uses the schema type for a same-named LiquidDoc parameter', async () => {
+      await expect(provider).to.hover(
+        articleCard('{{ ima█ge }}', '@param {object} image'),
+        IMAGE_HOVER,
+      );
+    });
+
+    it('does not hover the setting type value as a variable', async () => {
+      await expect(provider).to.hover(articleCard('{{ color_back█ground }}'), null);
+    });
+
+    it.each(['sections/article-card.liquid', 'snippets/article-card.liquid'])(
+      'does not hover setting IDs as variables in %s',
+      async (relativePath) => {
+        await expect(provider).to.hover(
+          { ...articleCard('{{ backgr█ound_color }}'), relativePath },
+          null,
+        );
+      },
+    );
+  });
+
   it('should return null when hovering over an undefined variable', async () => {
     await expect(provider).to.hover(`{{ unknown█ }}`, null);
   });
@@ -272,3 +323,46 @@ describe('Module: LiquidObjectHoverProvider', async () => {
     );
   });
 });
+
+const IMAGE_HOVER = [
+  '### image: `image`',
+  'image description',
+  '',
+  '---',
+  '',
+  '[Shopify Reference](https://shopify.dev/docs/api/liquid/objects/image)',
+].join('\n');
+
+const blockSettingsObjects: ObjectEntry[] = [
+  {
+    name: 'block',
+    access: { global: false, parents: [], template: [] },
+    return_type: [],
+    properties: [{ name: 'settings', return_type: [{ type: 'untyped', name: '' }] }],
+  },
+  {
+    name: 'image',
+    description: 'image description',
+    access: { global: false, parents: [], template: [] },
+    return_type: [],
+  },
+];
+
+function articleCard(body: string, docParam?: string) {
+  return {
+    relativePath: 'blocks/article-card.liquid',
+    source: [
+      docParam ? `{% doc %}\n  ${docParam} - Card image\n{% enddoc %}` : '',
+      `<div class="article-card">${body}</div>`,
+      '{% schema %}',
+      JSON.stringify({
+        name: 'Article card',
+        settings: [
+          { type: 'color_background', id: 'background_color', label: 'Background' },
+          { type: 'image_picker', id: 'image', label: 'Image' },
+        ],
+      }),
+      '{% endschema %}',
+    ].join('\n'),
+  };
+}

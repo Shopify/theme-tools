@@ -1,6 +1,8 @@
 import {
   AssignMarkup,
+  LiquidHtmlNode,
   LiquidVariable,
+  LiquidVariableLookup,
   LiquidVariableOutput,
   NamedTags,
   NodeTypes,
@@ -11,6 +13,8 @@ import {
   path as pathUtils,
   BasicParamTypes,
   ObjectEntry,
+  SourceCodeType,
+  visit,
 } from '@shopify/theme-check-common';
 import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { URI } from 'vscode-uri';
@@ -453,6 +457,136 @@ describe('Module: TypeSystem', () => {
     expect(inferredType).toEqual(expectedType);
   });
 
+  describe('when a theme block schema defines settings', () => {
+    const articleCardSource = `
+      {% doc %}
+        @param {object} image - Card image
+        @param {string} heading - Card heading
+      {% enddoc %}
+      <div style="background: {{ background_color }}">
+        {{ image }}
+        {{ block.settings.image }}
+        {{ heading }}
+        {{ block.settings.heading }}
+        {{ block.settings.background_color }}
+      </div>
+      {% schema %}
+      {
+        "name": "Article card",
+        "settings": [
+          { "type": "color_background", "id": "background_color", "label": "Background" },
+          { "type": "image_picker", "id": "image", "label": "Image" },
+          { "type": "text", "id": "heading", "label": "Heading" }
+        ]
+      }
+      {% endschema %}
+    `;
+    const blockUri = 'file:///blocks/article-card.liquid';
+
+    it.each([
+      ['background_color', 'string'],
+      ['image', 'image'],
+      ['heading', 'string'],
+    ])(
+      'infers the same schema type for %s and its block.settings alias',
+      async (settingId, expectedType) => {
+        const ast = toLiquidHtmlAST(articleCardSource);
+
+        const bareType = await typeSystem.inferType(liquidVariable(ast, settingId), ast, blockUri);
+        const aliasType = await typeSystem.inferType(
+          liquidVariable(ast, `block.settings.${settingId}`),
+          ast,
+          blockUri,
+        );
+
+        expect(bareType).toEqual(expectedType);
+        expect(aliasType).toEqual(expectedType);
+      },
+    );
+
+    it('uses the schema type over a same-named LiquidDoc parameter', async () => {
+      const ast = toLiquidHtmlAST(articleCardSource);
+
+      const inferredType = await typeSystem.inferType(liquidVariable(ast, 'image'), ast, blockUri);
+
+      expect(inferredType).toEqual('image');
+    });
+
+    describe('when a schema setting ID is reassigned', () => {
+      const reassignedSource = `
+        {% doc %}
+          @param {number} image - Card image
+        {% enddoc %}
+        {{ background_color }}
+        {{ image }}
+        {% assign background_color = 1 %}
+        {% assign image = 'hero.png' %}
+        {{ background_color }}
+        {{ image }}
+        {% schema %}
+        {
+          "name": "Article card",
+          "settings": [
+            { "type": "color_background", "id": "background_color", "label": "Background" },
+            { "type": "image_picker", "id": "image", "label": "Image" }
+          ]
+        }
+        {% endschema %}
+      `;
+
+      it('infers the schema type before the assignment and the assigned type after it', async () => {
+        const ast = toLiquidHtmlAST(reassignedSource);
+        const [beforeAssign, afterAssign] = liquidVariables(ast, 'background_color');
+
+        const typeBeforeAssign = await typeSystem.inferType(beforeAssign, ast, blockUri);
+        const typeAfterAssign = await typeSystem.inferType(afterAssign, ast, blockUri);
+
+        expect(typeBeforeAssign).toEqual('string');
+        expect(typeAfterAssign).toEqual('number');
+      });
+
+      it('infers the schema type over a same-named LiquidDoc parameter until the assignment', async () => {
+        const ast = toLiquidHtmlAST(reassignedSource);
+        const [beforeAssign, afterAssign] = liquidVariables(ast, 'image');
+
+        const typeBeforeAssign = await typeSystem.inferType(beforeAssign, ast, blockUri);
+        const typeAfterAssign = await typeSystem.inferType(afterAssign, ast, blockUri);
+
+        expect(typeBeforeAssign).toEqual('image');
+        expect(typeAfterAssign).toEqual('string');
+      });
+    });
+
+    it('makes each setting ID available once, and never the setting type value', async () => {
+      const ast = toLiquidHtmlAST(articleCardSource);
+      const lookup = variableLookup(ast, 'heading');
+
+      const variables = await typeSystem.availableVariables(ast, '', lookup, blockUri);
+      const namesAndTypes = variables.map(({ entry, type }) => [entry.name, type]);
+
+      expect(namesAndTypes.filter(([name]) => name === 'image')).toEqual([['image', 'image']]);
+      expect(namesAndTypes.filter(([name]) => name === 'heading')).toEqual([['heading', 'string']]);
+      expect(namesAndTypes).toContainEqual(['background_color', 'string']);
+      expect(namesAndTypes.map(([name]) => name)).not.toContain('color_background');
+      expect(namesAndTypes.map(([name]) => name)).not.toContain('image_picker');
+    });
+
+    it.each(['sections/article-card.liquid', 'snippets/article-card.liquid'])(
+      'does not expose schema setting IDs as variables in %s',
+      async (relativePath) => {
+        const ast = toLiquidHtmlAST(articleCardSource);
+
+        const inferredType = await typeSystem.inferType(
+          liquidVariable(ast, 'background_color'),
+          ast,
+          `file:///${relativePath}`,
+        );
+
+        expect(inferredType).toEqual('unknown');
+      },
+    );
+  });
+
   // TODO
   it.skip('should support narrowing the type of blocks', async () => {
     const sourceCode = `
@@ -673,3 +807,23 @@ describe('Module: TypeSystem', () => {
     });
   });
 });
+
+function liquidVariable(ast: LiquidHtmlNode, expression: string): LiquidVariable {
+  const [variable] = liquidVariables(ast, expression);
+  assert(variable, `expected a {{ ${expression} }} output`);
+  return variable;
+}
+
+function liquidVariables(ast: LiquidHtmlNode, expression: string): LiquidVariable[] {
+  return visit<SourceCodeType.LiquidHtml, LiquidVariable>(ast, {
+    LiquidVariable: (node) => node,
+  }).filter(
+    (node) => node.source.slice(node.position.start, node.position.end).trim() === expression,
+  );
+}
+
+function variableLookup(ast: LiquidHtmlNode, expression: string): LiquidVariableLookup {
+  const { expression: lookup } = liquidVariable(ast, expression);
+  assert(lookup.type === NodeTypes.VariableLookup);
+  return lookup;
+}

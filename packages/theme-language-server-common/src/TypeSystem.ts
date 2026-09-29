@@ -289,8 +289,17 @@ export class TypeSystem {
   });
 
   private async symbolsTable(partialAst: LiquidHtmlNode, uri: string): Promise<SymbolsTable> {
-    const seedSymbolsTable = await this.seedSymbolsTable(uri);
-    return buildSymbolsTable(partialAst, seedSymbolsTable, await this.themeDocset.liquidDrops());
+    const schemaSettingTypes = blockSchemaSettingTypes(partialAst, uri);
+    const seedSymbolsTable = seedSchemaSettingVariables(
+      await this.seedSymbolsTable(uri),
+      schemaSettingTypes,
+    );
+    return buildSymbolsTable(
+      partialAst,
+      seedSymbolsTable,
+      await this.themeDocset.liquidDrops(),
+      schemaSettingTypes,
+    );
   }
 
   /**
@@ -489,6 +498,7 @@ function buildSymbolsTable(
   partialAst: LiquidHtmlNode,
   seedSymbolsTable: SymbolsTable,
   liquidDrops: ObjectEntry[],
+  schemaSettingTypes: SchemaSettingTypes,
 ): SymbolsTable {
   const typeRanges = visit<SourceCodeType.LiquidHtml, TypeRange>(partialAst, {
     // {% assign x = foo.x | filter %}
@@ -503,10 +513,13 @@ function buildSymbolsTable(
     // {% doc %}
     //   @param {string} name - your name
     // {% enddoc %}
+    //
+    // In a theme block, a schema setting with the same ID decides the type.
     LiquidDocParamNode(node) {
+      const identifier = node.paramName.value;
       return {
-        identifier: node.paramName.value,
-        type: inferLiquidDocParamType(node, liquidDrops),
+        identifier,
+        type: schemaSettingTypes.get(identifier) ?? inferLiquidDocParamType(node, liquidDrops),
         range: [node.position.end],
       };
     },
@@ -567,6 +580,39 @@ function buildSymbolsTable(
       table[typeRange.identifier].push(typeRange);
       return table;
     }, seedSymbolsTable);
+}
+
+/** The type of each schema setting ID, by setting ID. */
+type SchemaSettingTypes = Map<Identifier, PseudoType | ArrayType>;
+
+/**
+ * A theme block's schema settings are also plain variables in the block file.
+ * Other files get no schema setting variables.
+ */
+function blockSchemaSettingTypes(partialAst: LiquidHtmlNode, uri: string): SchemaSettingTypes {
+  if (!BLOCK_FILE_REGEX.test(path.normalize(uri))) return new Map();
+
+  return new Map(
+    schemaSettingsAsProperties(partialAst).map((setting) => [
+      setting.name,
+      objectEntryType(setting),
+    ]),
+  );
+}
+
+/**
+ * Schema setting variables start at the top of the file, like other seeded
+ * variables, so later assigns and captures change their type by position.
+ */
+function seedSchemaSettingVariables(
+  seedSymbolsTable: SymbolsTable,
+  schemaSettingTypes: SchemaSettingTypes,
+): SymbolsTable {
+  for (const [identifier, type] of schemaSettingTypes) {
+    seedSymbolsTable[identifier] ??= [];
+    seedSymbolsTable[identifier].push({ identifier, type, range: [0] });
+  }
+  return seedSymbolsTable;
 }
 
 /**
