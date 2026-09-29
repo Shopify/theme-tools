@@ -119,6 +119,24 @@ describe('Module: ObjectCompletionProvider', async () => {
     });
   });
 
+  it.each([
+    ['variant', '{{ vari█ }}'],
+    ['style', '{% assign style = variant %}{{ sty█ }}'],
+  ])('retains enum values in the completion documentation for %s', async (name, source) => {
+    await expect(provider).to.complete(
+      {
+        relativePath: 'snippets/text.liquid',
+        source: `{% doc %}\n@param {'Heading' | "Small"} variant\n{% enddoc %}\n${source}`,
+      },
+      [
+        expect.objectContaining({
+          label: name,
+          documentation: { kind: 'markdown', value: `### ${name}: \`'Heading' | "Small"\`` },
+        }),
+      ],
+    );
+  });
+
   it('should complete variable lookups', async () => {
     const contexts = [
       `{{ a█`,

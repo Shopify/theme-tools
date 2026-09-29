@@ -30,8 +30,9 @@ import {
   FETCHED_METAFIELD_CATEGORIES,
   BasicParamTypes,
   getValidParamTypes,
-  parseParamType,
+  parseDocParamType,
   schemaSettingLiquidType,
+  StringLiteralType,
 } from '@shopify/theme-check-common';
 import {
   GetThemeSettingsSchemaForURI,
@@ -56,7 +57,7 @@ export class TypeSystem {
     thing: Identifier | ComplexLiquidExpression | LiquidVariable | AssignMarkup,
     partialAst: LiquidHtmlNode,
     uri: string,
-  ): Promise<PseudoType | ArrayType> {
+  ): Promise<InferredType> {
     const [objectMap, filtersMap, symbolsTable] = await Promise.all([
       this.objectMap(uri, partialAst),
       this.filtersMap(),
@@ -71,7 +72,7 @@ export class TypeSystem {
     partial: string,
     node: LiquidVariableLookup,
     uri: string,
-  ): Promise<{ entry: DocsetEntry; type: PseudoType | ArrayType }[]> {
+  ): Promise<{ entry: DocsetEntry; type: InferredType }[]> {
     const [objectMap, filtersMap, symbolsTable] = await Promise.all([
       this.objectMap(uri, partialAst),
       this.filtersMap(),
@@ -87,7 +88,7 @@ export class TypeSystem {
       .map(([identifier, typeRanges]) => {
         const typeRange = findLast(typeRanges, (typeRange) => isCorrectTypeRange(typeRange, node))!;
         const type = resolveTypeRangeType(typeRange.type, symbolsTable, objectMap, filtersMap);
-        const entry = objectMap[isArrayType(type) ? type.valueType : type] ?? {};
+        const entry = objectMap[isArrayType(type) ? type.valueType : getBaseType(type)] ?? {};
         return {
           entry: { ...entry, name: identifier },
           type,
@@ -420,6 +421,8 @@ type String = typeof String;
 /** A pseudo-type is the possible values of an ObjectEntry's return_type.type */
 export type PseudoType = ObjectEntryName | String | Untyped | Unknown | 'number' | 'boolean';
 
+export type InferredType = PseudoType | ArrayType | StringLiteralType | UnionType;
+
 /**
  * A variable can have many types in the same file
  *
@@ -438,7 +441,7 @@ interface TypeRange {
   identifier: Identifier;
 
   /** The type of the variable */
-  type: PseudoType | ArrayType | LazyVariableType | LazyDeconstructedExpression;
+  type: InferredType | LazyVariableType | LazyDeconstructedExpression;
 
   /**
    * The range may be one of two things:
@@ -458,6 +461,12 @@ const arrayType = (valueType: PseudoType): ArrayType => ({
   valueType,
 });
 
+/** A union type (e.g. 'heading' | 'small'). Only string literals can be members for now. */
+export type UnionType = {
+  kind: 'union';
+  types: StringLiteralType[];
+};
+
 /**
  * Because a type may depend on another, this represents the type of
  * something as the type of a LiquidVariable chain.
@@ -467,6 +476,7 @@ type LazyVariableType = {
   kind: NodeTypes.LiquidVariable;
   node: LiquidVariable;
   offset: number;
+  resolvedType?: InferredType;
 };
 const lazyVariable = (node: LiquidVariable, offset: number): LazyVariableType => ({
   kind: NodeTypes.LiquidVariable,
@@ -487,6 +497,7 @@ type LazyDeconstructedExpression = {
   kind: 'deconstructed';
   node: LiquidExpression;
   offset: number;
+  resolvedType?: InferredType;
 };
 const LazyDeconstructedExpression = (
   node: LiquidExpression,
@@ -634,35 +645,40 @@ function seedBlockVariables(
 /**
  * Given a TypeRange['type'] (which may be lazy), resolve its type recursively.
  *
- * The output is a fully resolved PseudoType | ArrayType. Which means we
- * could use it to power completions.
+ * The output is a fully resolved type that can power completions.
  */
 function resolveTypeRangeType(
   typeRangeType: TypeRange['type'],
   symbolsTable: SymbolsTable,
   objectMap: ObjectMap,
   filtersMap: FiltersMap,
-): PseudoType | ArrayType {
+): InferredType {
   if (typeof typeRangeType === 'string') {
     return typeRangeType;
   }
 
   switch (typeRangeType.kind) {
-    case 'array': {
+    case 'array':
+    case 'literal':
+    case 'union': {
       return typeRangeType;
     }
 
     case 'deconstructed': {
+      if (typeRangeType.resolvedType !== undefined) return typeRangeType.resolvedType;
       const arrayType = inferType(typeRangeType.node, symbolsTable, objectMap, filtersMap);
-      if (typeof arrayType === 'string') {
-        return Untyped;
-      } else {
-        return arrayType.valueType;
-      }
+      return (typeRangeType.resolvedType = isArrayType(arrayType) ? arrayType.valueType : Untyped);
     }
 
     default: {
-      return inferType(typeRangeType.node, symbolsTable, objectMap, filtersMap);
+      // The symbols table belongs to this inference request. Reuse resolved assignments
+      // when expressions such as `x | default: x` look up the same binding twice.
+      return (typeRangeType.resolvedType ??= inferType(
+        typeRangeType.node,
+        symbolsTable,
+        objectMap,
+        filtersMap,
+      ));
     }
   }
 }
@@ -672,7 +688,7 @@ function inferType(
   symbolsTable: SymbolsTable,
   objectMap: ObjectMap,
   filtersMap: FiltersMap,
-): PseudoType | ArrayType {
+): InferredType {
   if (typeof thing === 'string') {
     return objectMap[thing as PseudoType]?.name ?? Untyped;
   }
@@ -717,10 +733,18 @@ function inferType(
       if (thing.filters.length > 0) {
         const lastFilter = thing.filters.at(-1)!;
         if (lastFilter.name === 'default') {
-          // default filter is a special case, we need to return the type of the expression
-          // instead of the filter.
           if (lastFilter.args.length > 0 && lastFilter.args[0].type !== NodeTypes.NamedArgument) {
-            return inferType(lastFilter.args[0], symbolsTable, objectMap, filtersMap);
+            const fallback = lastFilter.args[0];
+            const fallbackType = inferType(fallback, symbolsTable, objectMap, filtersMap);
+            const input = { ...thing, filters: thing.filters.slice(0, -1) };
+            const inputType = inferType(input, symbolsTable, objectMap, filtersMap);
+
+            if (getStringLiterals(inputType) || getStringLiterals(fallbackType)) {
+              return inferStringLiteralDefaultType(input, inputType, fallback, fallbackType);
+            }
+
+            // Preserve the existing fallback-based inference for other types.
+            return fallbackType;
           }
         }
         const filterEntry = filtersMap[lastFilter.name];
@@ -736,33 +760,74 @@ function inferType(
   }
 }
 
-function inferLiquidDocParamType(node: LiquidDocParamNode, liquidDrops: ObjectEntry[]) {
+/** Keep finite string choices through default without narrowing a general string. */
+function inferStringLiteralDefaultType(
+  input: LiquidVariable,
+  inputType: InferredType,
+  fallback: LiquidExpression,
+  fallbackType: InferredType,
+): InferredType {
+  const inputLiterals =
+    getStringLiterals(inputType) ??
+    (input.filters.length === 0 && input.expression.type === NodeTypes.String
+      ? [stringLiteral(input.expression)]
+      : undefined);
+  const fallbackLiterals =
+    getStringLiterals(fallbackType) ??
+    (fallback.type === NodeTypes.String ? [stringLiteral(fallback)] : undefined);
+
+  if (inputLiterals && fallbackLiterals) {
+    const literals = [...inputLiterals, ...fallbackLiterals];
+    const types = literals.filter(
+      (literal, index) => literals.findIndex((other) => other.value === literal.value) === index,
+    );
+    return types.length === 1 ? types[0] : { kind: 'union', types };
+  }
+
+  return getBaseType(inputType) === 'string' && getBaseType(fallbackType) === 'string'
+    ? 'string'
+    : Untyped;
+}
+
+function stringLiteral(
+  node: Extract<LiquidExpression, { type: NodeTypes.String }>,
+): StringLiteralType {
+  return {
+    kind: 'literal',
+    value: node.value,
+    raw: node.source.slice(node.position.start, node.position.end),
+  };
+}
+
+function inferLiquidDocParamType(
+  node: LiquidDocParamNode,
+  liquidDrops: ObjectEntry[],
+): InferredType {
   const paramTypeValue = node.paramType?.value;
 
   if (!paramTypeValue) return Untyped;
 
   const validParamTypes = getValidParamTypes(liquidDrops);
 
-  const parsedParamType = parseParamType(new Set(validParamTypes.keys()), paramTypeValue);
+  const parsedParamType = parseDocParamType(new Set(validParamTypes.keys()), paramTypeValue);
 
   if (!parsedParamType) return Untyped;
 
-  const [type, isArray] = parsedParamType;
+  if (parsedParamType.kind === 'literal') return parsedParamType;
 
-  let transformedParamType;
+  if (parsedParamType.kind === 'union') {
+    const { types } = parsedParamType;
+    // The type system only has unions of string literals for now.
+    return types.every((type): type is StringLiteralType => type.kind === 'literal')
+      ? { kind: 'union', types }
+      : Untyped;
+  }
 
+  const type = parsedParamType.kind === 'array' ? parsedParamType.valueType : parsedParamType.name;
   // BasicParamTypes.Object does not map to any specific type in the type system.
-  if (type === BasicParamTypes.Object) {
-    transformedParamType = Untyped;
-  } else {
-    transformedParamType = type;
-  }
+  const transformedParamType = type === BasicParamTypes.Object ? Untyped : type;
 
-  if (isArray) {
-    return arrayType(transformedParamType);
-  }
-
-  return transformedParamType;
+  return parsedParamType.kind === 'array' ? arrayType(transformedParamType) : transformedParamType;
 }
 
 function inferLookupType(
@@ -770,7 +835,7 @@ function inferLookupType(
   symbolsTable: SymbolsTable,
   objectMap: ObjectMap,
   filtersMap: FiltersMap,
-): PseudoType | ArrayType {
+): InferredType {
   // we return the type of the drop, so a.b.c
   const node = thing;
 
@@ -807,7 +872,7 @@ function inferLookupType(
     // e.g. product.images -> ArrayType<images>
     // e.g. product.name -> string
     else {
-      curr = inferPseudoTypePropertyType(curr, lookup, objectMap);
+      curr = inferPseudoTypePropertyType(getBaseType(curr), lookup, objectMap);
     }
 
     // Early return
@@ -995,8 +1060,21 @@ function isArrayReturnType(rt: ReturnType): rt is ArrayReturnType {
   return rt.type === 'array';
 }
 
-export function isArrayType(thing: PseudoType | ArrayType): thing is ArrayType {
-  return typeof thing !== 'string';
+export function isArrayType(thing: InferredType): thing is ArrayType {
+  return typeof thing !== 'string' && thing.kind === 'array';
+}
+
+/** The string values a type allows, when it allows nothing else. */
+export function getStringLiterals(type: InferredType | undefined): StringLiteralType[] | undefined {
+  if (typeof type !== 'object' || type.kind === 'array') return undefined;
+  return type.kind === 'literal' ? [type] : type.types;
+}
+
+/** The primitive or object type used for property and filter lookup. */
+export function getBaseType(type: InferredType): PseudoType {
+  if (typeof type === 'string') return type;
+  // String literals and their unions are looked up as strings.
+  return isArrayType(type) ? 'array' : 'string';
 }
 
 /** Assumes findLast */
