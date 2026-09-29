@@ -20,6 +20,7 @@ import type {
   LiquidBranchNamed,
   AttributeNode,
 } from '../ast';
+import { hasEndTag } from '../environment';
 import type { TagDefinitionBlock, BranchName, Parser } from '../environment';
 import { LiquidHTMLASTParsingError } from '../errors';
 import { assertNever } from '../utils';
@@ -126,7 +127,7 @@ export function parseBlockBody(
 
       if (tagName && tagName.startsWith('end')) {
         const innerName = tagName.slice(3);
-        if (parser.blockEnv.tagForName(innerName)) {
+        if (hasEndTag(parser.blockEnv.tagForName(innerName))) {
           throw new LiquidHTMLASTParsingError(
             `Attempting to close LiquidTag '${innerName}' before LiquidTag '${parentName}' was closed`,
             parser.getSource(),
@@ -252,7 +253,7 @@ export function parseBranchedBody(
 
       if (tagName && tagName.startsWith('end')) {
         const innerName = tagName.slice(3);
-        if (parser.blockEnv.tagForName(innerName)) {
+        if (hasEndTag(parser.blockEnv.tagForName(innerName))) {
           throw new LiquidHTMLASTParsingError(
             `Attempting to close LiquidTag '${innerName}' before LiquidTag '${parentName}' was closed`,
             parser.getSource(),

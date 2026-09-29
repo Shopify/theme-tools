@@ -41,6 +41,11 @@ export type TagDefinition<M = unknown> =
   | TagDefinitionTag<M>
   | TagDefinitionRaw<M>;
 
+/** Whether a tag has a body closed by `{% end<name> %}`. */
+export function hasEndTag(def: { kind: string } | undefined): boolean {
+  return def?.kind === TagKind.Block || def?.kind === TagKind.Raw;
+}
+
 /** A parsed line from a {% liquid %} body. */
 export interface LiquidLine {
   tagName: string;

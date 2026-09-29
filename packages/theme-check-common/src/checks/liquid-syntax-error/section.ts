@@ -1,24 +1,16 @@
 import type { LiquidTag, SectionMarkup } from '@shopify/liquid-html-parser';
 import type { Context } from '.';
-import { hasBareArrayAccess, hasSkippedCharacters, rawMarkup, resolveErrorLocation } from './utils';
+import { hasBareArrayAccess, hasSkippedCharacters, rawMarkup } from './utils';
 
 /*
- * +section+ is a standalone tag, so the parser rejects a stray +endsection+.
- * Ruby Liquid reports that case as an unknown tag, so map the parser error to
- * the same message.
+ * +section+ is a standalone tag, so +{% endsection %}+ parses as an unknown
+ * tag. Ruby Liquid reports it the same way.
  */
-const ENDSECTION_PARSER_ERROR =
-  "Attempting to close LiquidTag 'section' before it was opened without a matching 'section'";
-
-export function checkSectionParserError(error: Error, context: Context, source: string): void {
-  if (error.message !== ENDSECTION_PARSER_ERROR) return;
-
-  const [startIndex] = resolveErrorLocation(error, source);
-  const closeIndex = source.indexOf('%}', startIndex);
+export function checkEndsectionTag(node: LiquidTag, context: Context): void {
   context.report({
     message: "Unknown tag 'endsection'",
-    startIndex,
-    endIndex: closeIndex === -1 ? source.length : closeIndex + 2,
+    startIndex: node.position.start,
+    endIndex: node.position.end,
   });
 }
 

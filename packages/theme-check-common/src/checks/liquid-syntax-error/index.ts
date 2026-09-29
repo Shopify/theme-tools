@@ -26,7 +26,7 @@ import { checkRawParserError, checkRawTag } from './raw';
 import { checkRenderTag } from './render';
 import { checkSchemaTag } from './schema';
 import { checkSectionsTag } from './sections';
-import { checkSectionParserError, checkSectionTag } from './section';
+import { checkEndsectionTag, checkSectionTag } from './section';
 import { checkStyleTag } from './style';
 import { checkStylesheetTag } from './stylesheet';
 import { checkTablerowTag } from './tablerow';
@@ -64,6 +64,7 @@ const tagCheckers: Record<string, TagChecker> = {
   partial: checkPartialTag,
   render: checkRenderTag,
   section: checkSectionTag,
+  endsection: checkEndsectionTag,
   sections: checkSectionsTag,
   unless: checkUnlessTag,
 };
@@ -109,7 +110,6 @@ export const LiquidSyntaxError: LiquidCheckDefinition = {
           checkPartialParserError(error, context, file.source);
           checkRawParserError(error, context, file.source);
           checkJavascriptParserError(error, context, file.source);
-          checkSectionParserError(error, context, file.source);
         },
       };
     }
