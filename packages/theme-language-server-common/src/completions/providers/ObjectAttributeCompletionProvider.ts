@@ -1,7 +1,7 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
 import { ObjectEntry } from '@shopify/theme-check-common';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
-import { TypeSystem, isArrayType } from '../../TypeSystem';
+import { TypeSystem, getBaseType, isArrayType } from '../../TypeSystem';
 import { LiquidCompletionParams } from '../params';
 import { Provider, createCompletionItem, sortByName } from './common';
 import { GetThemeSettingsSchemaForURI } from '../../settings';
@@ -50,7 +50,7 @@ export class ObjectAttributeCompletionProvider implements Provider {
         ArrayCoreProperties.map((name) => ({ name })),
         partial,
       );
-    } else if (parentType === 'string') {
+    } else if (getBaseType(parentType) === 'string') {
       return completionItems(
         StringCoreProperties.map((name) => ({ name })),
         partial,
@@ -58,7 +58,7 @@ export class ObjectAttributeCompletionProvider implements Provider {
     }
 
     const objectMap = await this.typeSystem.objectMap(params.textDocument.uri, partialAst);
-    const parentTypeProperties = objectMap[parentType]?.properties || [];
+    const parentTypeProperties = objectMap[getBaseType(parentType)]?.properties || [];
     return completionItems(parentTypeProperties, partial);
   }
 }

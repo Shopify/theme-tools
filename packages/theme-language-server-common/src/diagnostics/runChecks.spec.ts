@@ -276,4 +276,71 @@ describe('Module: runChecks', () => {
       diagnostics: [],
     });
   });
+
+  it.each([
+    {
+      docPath: 'snippets/text.liquid',
+      callerSource: "{% render 'text', variant: 'large' %}",
+      checkCode: 'ValidRenderSnippetArgumentTypes',
+    },
+    {
+      docPath: 'blocks/text.liquid',
+      callerSource: "{% content_for 'block', type: 'text', id: 'text', variant: 'large' %}",
+      checkCode: 'ValidContentForArgumentTypes',
+    },
+  ])(
+    'refreshes $checkCode diagnostics when an enum changes',
+    async ({ docPath, callerSource, checkCode }) => {
+      const docURI = path.join(rootUri, docPath);
+      const callerURI = path.join(rootUri, 'sections', 'main.liquid');
+      const docSource = "{% doc %}\n@param {'heading' | 'small'} [variant]\n{% enddoc %}";
+      const checks = allChecks.filter((check) => check.meta.code === checkCode);
+      expect(checks).toHaveLength(1);
+
+      runChecks = makeRunChecks(documentManager, diagnosticsManager, {
+        fs,
+        loadConfig: async () => ({
+          context: 'theme',
+          settings: {},
+          checks,
+          rootUri,
+        }),
+        themeDocset: {
+          filters: async () => [],
+          objects: async () => [],
+          liquidDrops: async () => [],
+          tags: async () => [],
+          systemTranslations: async () => ({}),
+        },
+        jsonValidationSet: { schemas: async () => [] },
+      });
+      documentManager.open(docURI, docSource, 0);
+      documentManager.open(callerURI, callerSource, 0);
+
+      await runChecks([docURI]);
+      const valueStart = callerSource.indexOf("'large'");
+      expect(connection.sendDiagnostics).toHaveBeenCalledWith({
+        uri: callerURI,
+        version: 0,
+        diagnostics: [
+          expect.objectContaining({
+            code: checkCode,
+            range: {
+              start: { line: 0, character: valueStart },
+              end: { line: 0, character: valueStart + "'large'".length },
+            },
+          }),
+        ],
+      });
+
+      documentManager.change(docURI, docSource.replace("'small'", "'large'"), 1);
+      connection.sendDiagnostics.mockClear();
+      await runChecks([docURI]);
+      expect(connection.sendDiagnostics).toHaveBeenCalledWith({
+        uri: callerURI,
+        version: 0,
+        diagnostics: [],
+      });
+    },
+  );
 });

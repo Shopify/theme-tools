@@ -487,6 +487,26 @@ describe('Module: BlockParameterCompletionProvider', () => {
     });
   });
 
+  describe('LiquidDoc string enums', () => {
+    it('shows the allowed values and inserts the first one', async () => {
+      openBlock(
+        documentManager,
+        'card',
+        blockSource([], ["@param {'heading' | 'small'} [variant] - Text style"]),
+      );
+
+      await expect(provider).to.complete(template(`{% block 'card', var█ %}{% endblock %}`), [
+        expect.objectContaining({
+          label: 'variant',
+          documentation: expect.objectContaining({
+            value: "### variant (Optional): `'heading' | 'small'`\n\nText style",
+          }),
+          textEdit: expect.objectContaining({ newText: "variant: ${1:'heading'}$0" }),
+        }),
+      ]);
+    });
+  });
+
   describe('when the tag cannot be resolved', () => {
     it('offers nothing for a missing target block', async () => {
       await expect(provider).to.complete(template(`{% block 'missing', █ %}{% endblock %}`), []);

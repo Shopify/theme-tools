@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 import { render, renderHtmlEntry, type HtmlEntry } from './MarkdownRenderer';
 import type { DocsetEntry } from '@shopify/theme-check-common';
+import type { UnionType } from '../TypeSystem';
 
 const DOC_ENTRY: DocsetEntry = {
   name: 'entry',
@@ -17,6 +18,52 @@ const HTML_ENTRY: HtmlEntry = {
 
 describe('MarkdownRenderer', () => {
   describe('render()', () => {
+    it('renders enum members without interpreting Markdown or constructing an object reference', () => {
+      const type: UnionType = {
+        kind: 'union',
+        types: [
+          { kind: 'literal', value: '**bold**', raw: "'**bold**'" },
+          { kind: 'literal', value: '<small>', raw: '"<small>"' },
+        ],
+      };
+      const entry = {
+        ...DOC_ENTRY,
+        access: { global: false, parents: [], template: [] },
+      };
+
+      expect(render(entry, type, 'object')).toEqual(
+        '### entry: `\'**bold**\' | "<small>"`\nsummary\n\n---\n\ndescription',
+      );
+    });
+
+    it('uses a longer code delimiter when enum values contain backticks', () => {
+      const type: UnionType = {
+        kind: 'union',
+        types: [
+          { kind: 'literal', value: '``Heading``', raw: "'``Heading``'" },
+          { kind: 'literal', value: '`Small`', raw: '"`Small`"' },
+        ],
+      };
+
+      expect(render({ name: 'variant' }, type, 'object')).toEqual(
+        '### variant: ```\'``Heading``\' | "`Small`"```',
+      );
+    });
+
+    it('displays line breaks in inferred enum values without breaking Markdown', () => {
+      const type: UnionType = {
+        kind: 'union',
+        types: [
+          { kind: 'literal', value: 'Heading', raw: "'Heading'" },
+          { kind: 'literal', value: '\r\n`small`\nnext', raw: "'\r\n`small`\nnext'" },
+        ],
+      };
+
+      expect(render({ name: 'variant' }, type, 'object')).toEqual(
+        "### variant: ``'Heading' | '\\r\\n`small`\\nnext'``",
+      );
+    });
+
     it('converts a docset entry to markdown', async () => {
       expect(render(DOC_ENTRY)).toEqual(`### entry\nsummary\n\n---\n\ndescription`);
     });
