@@ -811,12 +811,13 @@ describe('LiquidSyntaxError', () => {
 
   describe('block caller arguments', () => {
     it.each([
-      "{% block 'card', block.settings.heading: 'Heading' %}{% endblock %}",
-      "{% block 'card', block.content: body %}{% endblock %}",
-      "{% block 'card', block.settings.heading.label: 'Heading' %}{% endblock %}",
-      "{% block 'card', block.unknown: 'value' %}{% endblock %}",
-      "{% block 'card', heading.label: 'Heading' %}{% endblock %}",
-    ])('rejects unsupported experimental dotted arguments in %s', async (template) => {
+      "block.settings.heading: 'Heading'",
+      'block.content: body',
+      "block.settings.heading.label: 'Heading'",
+      "block.unknown: 'value'",
+      "heading.label: 'Heading'",
+    ])('rejects the unsupported dotted argument %s', async (argument) => {
+      const template = `{% block 'card', ${argument} %}{% endblock %}`;
       const offenses = await runLiquidCheck(
         LiquidSyntaxError,
         template,
@@ -826,10 +827,47 @@ describe('LiquidSyntaxError', () => {
 
       expect(offenses).toMatchObject([
         {
-          message:
-            "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value",
-          start: { index: 0 },
-          end: { index: template.length },
+          message: DOTTED_ARGUMENT,
+          start: { index: template.indexOf(argument) },
+          end: { index: template.indexOf(argument) + argument.length },
+        },
+      ]);
+    });
+
+    it('reports only the dotted argument in a body-form block', async () => {
+      const argument = "block.settings.heading: 'Heading'";
+      const template = `{% block 'card', ${argument} %}\n  Child content\n{% endblock %}`;
+      const offenses = await runLiquidCheck(
+        LiquidSyntaxError,
+        template,
+        'templates/test.liquid',
+        NO_DOCSET,
+      );
+
+      expect(offenses).toMatchObject([
+        {
+          message: DOTTED_ARGUMENT,
+          start: { index: template.indexOf(argument) },
+          end: { index: template.indexOf(argument) + argument.length },
+        },
+      ]);
+    });
+
+    it('reports only the first of several dotted arguments', async () => {
+      const first = "block.settings.heading: 'Heading'";
+      const template = `{% block 'card', title: 'Title', ${first}, block.content: body, heading.label: 'Label' %}Child{% endblock %}`;
+      const offenses = await runLiquidCheck(
+        LiquidSyntaxError,
+        template,
+        'templates/test.liquid',
+        NO_DOCSET,
+      );
+
+      expect(offenses).toMatchObject([
+        {
+          message: DOTTED_ARGUMENT,
+          start: { index: template.indexOf(first) },
+          end: { index: template.indexOf(first) + first.length },
         },
       ]);
     });
@@ -847,8 +885,8 @@ describe('LiquidSyntaxError', () => {
 
     it.each([
       "{% block 'card', block.settings %}{% endblock %}",
-      "{% block 'card', block.name: value %}{% endblock %}",
-    ])('reports other malformed block tags in %s', async (template) => {
+      "{% block 'card', block.name: value %}Child content{% endblock %}",
+    ])('reports other malformed block tags on the whole tag in %s', async (template) => {
       const offenses = await runLiquidCheck(
         LiquidSyntaxError,
         template,
@@ -856,7 +894,13 @@ describe('LiquidSyntaxError', () => {
         NO_DOCSET,
       );
 
-      expect(offenses).toMatchObject([{ message: "Syntax error in 'block' tag" }]);
+      expect(offenses).toMatchObject([
+        {
+          message: "Syntax error in 'block' tag",
+          start: { index: 0 },
+          end: { index: template.length },
+        },
+      ]);
     });
 
     describe('with the block parameter checks', () => {
@@ -902,6 +946,7 @@ describe('LiquidSyntaxError', () => {
         ["heading.label: 'Hello'", DOTTED_ARGUMENT],
         ['block.name: value', "Syntax error in 'block' tag"],
         ["block.name: value, heading.label: 'Hello'", DOTTED_ARGUMENT],
+        ["block.settings.heading: 'Hello', block.content: body", DOTTED_ARGUMENT],
       ])('reports only one syntax error for %s', async (argument, message) => {
         const offenses = await checkBlockCall(`${argument}, count: 'many', count: 'more'`);
 
