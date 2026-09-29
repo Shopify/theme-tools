@@ -13,7 +13,6 @@ import { parseBlockTag } from './liquid-blocks';
 import type { BlockParserDelegate } from './liquid-blocks';
 import { parseRawTag } from './liquid-raw';
 import type { RawParserDelegate } from './liquid-raw';
-import { parseHybridTag } from './liquid-hybrid';
 
 /**
  * Interface capturing what the liquid-tag dispatch function needs from
@@ -24,7 +23,7 @@ export interface TagParserDelegate extends BlockParserDelegate, RawParserDelegat
   tagForName(name: string): TagDefinition | undefined;
 }
 
-// liquidTag := "{%" tagName markup "%}" (block | raw | hybrid)?
+// liquidTag := "{%" tagName markup "%}" (block | raw)?
 export function parseLiquidTag(parser: TagParserDelegate): LiquidTag | LiquidRawTag {
   const openToken = parser.consume(TokenType.LiquidTagOpen);
   parser.accept(TokenType.Text);
@@ -71,9 +70,6 @@ export function parseLiquidTag(parser: TagParserDelegate): LiquidTag | LiquidRaw
 
     case TagKind.Raw:
       return parseRawTag(parser, def, envelope, closeToken);
-
-    case TagKind.Hybrid:
-      return parseHybridTag(parser, def, envelope, closeToken);
 
     default:
       return assertNever(def);

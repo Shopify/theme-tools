@@ -26,7 +26,7 @@ import { checkRawParserError, checkRawTag } from './raw';
 import { checkRenderTag } from './render';
 import { checkSchemaTag } from './schema';
 import { checkSectionsTag } from './sections';
-import { checkSectionTag } from './section';
+import { checkSectionParserError, checkSectionTag } from './section';
 import { checkStyleTag } from './style';
 import { checkStylesheetTag } from './stylesheet';
 import { checkTablerowTag } from './tablerow';
@@ -109,6 +109,7 @@ export const LiquidSyntaxError: LiquidCheckDefinition = {
           checkPartialParserError(error, context, file.source);
           checkRawParserError(error, context, file.source);
           checkJavascriptParserError(error, context, file.source);
+          checkSectionParserError(error, context, file.source);
         },
       };
     }

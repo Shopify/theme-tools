@@ -1,6 +1,26 @@
 import type { LiquidTag, SectionMarkup } from '@shopify/liquid-html-parser';
 import type { Context } from '.';
-import { hasBareArrayAccess, hasSkippedCharacters, rawMarkup } from './utils';
+import { hasBareArrayAccess, hasSkippedCharacters, rawMarkup, resolveErrorLocation } from './utils';
+
+/*
+ * +section+ is a standalone tag, so the parser rejects a stray +endsection+.
+ * Ruby Liquid reports that case as an unknown tag, so map the parser error to
+ * the same message.
+ */
+const ENDSECTION_PARSER_ERROR =
+  "Attempting to close LiquidTag 'section' before it was opened without a matching 'section'";
+
+export function checkSectionParserError(error: Error, context: Context, source: string): void {
+  if (error.message !== ENDSECTION_PARSER_ERROR) return;
+
+  const [startIndex] = resolveErrorLocation(error, source);
+  const closeIndex = source.indexOf('%}', startIndex);
+  context.report({
+    message: "Unknown tag 'endsection'",
+    startIndex,
+    endIndex: closeIndex === -1 ? source.length : closeIndex + 2,
+  });
+}
 
 export function checkSectionTag(node: LiquidTag, context: Context): void {
   if (typeof node.markup === 'string') {
@@ -8,15 +28,6 @@ export function checkSectionTag(node: LiquidTag, context: Context): void {
       message: `Syntax error in 'section' tag`,
       startIndex: node.blockStartPosition.start,
       endIndex: node.blockStartPosition.end,
-    });
-    return;
-  }
-
-  if (node.blockEndPosition) {
-    context.report({
-      message: "Unknown tag 'endsection'",
-      startIndex: node.blockEndPosition.start,
-      endIndex: node.blockEndPosition.end,
     });
     return;
   }

@@ -5,7 +5,6 @@ export {
   type Parser,
   type TagDefinition,
   type TagDefinitionBlock,
-  type TagDefinitionHybrid,
   type TagDefinitionRaw,
   type TagDefinitionTag,
   type LiquidLine,

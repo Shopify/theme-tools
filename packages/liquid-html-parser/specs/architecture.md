@@ -37,7 +37,6 @@ src/
     tokenizer.ts          # Source -> Token[] (modal: HTML tag context with =, ", ')
     html.ts               # HTML element, void, self-closing, raw node, comment, doctype, dangling marker parsing
     liquid-blocks.ts      # Block tag body parsing, branched block parsing, finalizeBranch
-    liquid-hybrid.ts      # Hybrid tag parsing (section standalone/block detection)
     liquid-lines.ts       # {% liquid %} line-based parsing, parseLiquidStatement
     liquid-raw.ts         # Raw tag body parsing, Liquid-in-range parsing
     liquid-tags.ts        # Tag dispatch: environment lookup, MarkupParser creation, tolerant fallback
@@ -110,7 +109,6 @@ document/parser.ts (DocumentParser)
     |   - node-dispatch.ts: token-type switch -> parse function routing
     |   - liquid-tags.ts: tag dispatch (environment lookup, MarkupParser creation)
     |   - liquid-blocks.ts: block body + branched block parsing
-    |   - liquid-hybrid.ts: hybrid tag (section) standalone/block detection
     |   - liquid-raw.ts: raw tag body extraction + Liquid-in-range parsing
     |   - liquid-variable-output.ts: {{ }} variable output
     |   - liquid-lines.ts: {% liquid %} line-based parsing
@@ -156,7 +154,6 @@ The parser calls these utilities while building the AST.
 | `document/tree-builder.ts`           | Utility functions for the parser: `filterChildren`, `ChildFilterMode`, `mergeAdjacentTextNodes`, `mergeAdjacentTextNodesTrimmed`, `mergeAdjacentTextNodesStripEdges`, `compoundNamesMatch`. Pure functions, zero parser state.                                                                                                                                                                                                                                                                                                                                                                                                                      | Tokenizing. Parsing. Dispatch.                                                                                                                                |
 | `document/html.ts`                   | HTML element parsing (open/close matching, unclosed element handling), void elements, self-closing elements, raw HTML nodes (`<script>`, `<style>`, `<svg>`), comments, doctype, dangling marker close. Attribute parsing. Defines `HtmlParserDelegate` interface.                                                                                                                                                                                                                                                                                                                                                                                  | Liquid tag parsing. Expression parsing.                                                                                                                       |
 | `document/liquid-blocks.ts`          | Block tag body parsing (`parseBlockBody`), branched block parsing (`parseBranchedBlockBody`), `finalizeBranch`, `peekTagName`, `isBlockTerminator`, `consumeEndTag`. Defines `BlockParserDelegate` interface.                                                                                                                                                                                                                                                                                                                                                                                                                                       | Tag dispatch. Expression parsing. HTML parsing.                                                                                                               |
-| `document/liquid-hybrid.ts`          | Hybrid tag detection: scans forward in token array for matching end tag. Defines `HybridParserDelegate` interface.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Tag dispatch. Expression parsing.                                                                                                                             |
 | `document/liquid-lines.ts`           | `{% liquid %}` line-based parsing: `parseLiquidStatement`, line splitting, block nesting within liquid tags. Defines `LineParserDelegate` interface.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Document tokenization. HTML parsing.                                                                                                                          |
 | `document/liquid-raw.ts`             | Raw tag body extraction (scan forward for end tag). `parseLiquidInRange` for tags that parse Liquid inside their body. Defines `RawParserDelegate` interface.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Expression parsing. Tag dispatch.                                                                                                                             |
 | `document/liquid-tags.ts`            | Tag dispatch: environment lookup, `MarkupParser` creation from envelope, tolerant-mode try/catch fallback to base case. Defines `TagParserDelegate` interface.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Block body parsing. HTML parsing.                                                                                                                             |
@@ -495,7 +492,6 @@ enum TagKind {
   Block = "block",
   Tag = "tag",
   Raw = "raw",
-  Hybrid = "hybrid",
 }
 
 type BranchName = "elsif" | "else" | "when";
@@ -517,16 +513,10 @@ interface TagDefinitionRaw<M = unknown> {
   parse(name: string, markup: MarkupParser, parser: Parser): M;
 }
 
-interface TagDefinitionHybrid<M = unknown> {
-  kind: TagKind.Hybrid;
-  parse(name: string, markup: MarkupParser, parser: Parser): M;
-}
-
 type TagDefinition<M = unknown> =
   | TagDefinitionBlock<M>
   | TagDefinitionTag<M>
-  | TagDefinitionRaw<M>
-  | TagDefinitionHybrid<M>;
+  | TagDefinitionRaw<M>;
 ```
 
 Dispatch uses switch + `assertNever`:
@@ -536,7 +526,6 @@ switch (def.kind) {
   case TagKind.Block:       return parseBlockTag(...);
   case TagKind.Tag:         return parseTag(...);
   case TagKind.Raw:         return parseRawTag(...);
-  case TagKind.Hybrid:      return parseHybridTag(...);
   default:                  return assertNever(def);
 }
 ```
@@ -611,7 +600,7 @@ Defined in frozen `ast.ts`. Produced when a `</tagName>` close tag does not matc
 
 ### D1: TagDefinition as discriminated union on `kind`
 
-Tags define behavior via `kind: TagKind.Block | TagKind.Tag | TagKind.Raw | TagKind.Hybrid` with generic `Markup` parameter. Block tags declare `branches: BranchName[]`. The `kind` discriminant drives exhaustive dispatch (see Section 4, TagDefinition).
+Tags define behavior via `kind: TagKind.Block | TagKind.Tag | TagKind.Raw` with generic `Markup` parameter. Block tags declare `branches: BranchName[]`. The `kind` discriminant drives exhaustive dispatch (see Section 4, TagDefinition).
 
 ### D2: Internal BinaryExpression with adapter to frozen types
 
@@ -655,9 +644,9 @@ See Section 2 for domain table and import rules.
 
 Tokenizer produces flat `[LiquidTagOpen, Text, LiquidTagClose, ...]`. Parser matches pairs by consuming forward. Pairing is the parser's job.
 
-### D12: Section hybrid detection via lookahead
+### D12: `section` is a standalone tag
 
-When parser encounters `{% section %}`, it scans forward in the token array for `{% endsection %}`. The array is materialized, so scanning is a cheap index walk.
+`section` is a plain `TagKind.Tag`. Ruby Liquid has no block form, so `{% endsection %}` is a structural error (Theme Check reports it as `Unknown tag 'endsection'`). An earlier hybrid design scanned forward for `{% endsection %}` on every `section`, which made files with many sections parse in quadratic time.
 
 ### D13: HTML parsing in the document domain
 
@@ -768,13 +757,9 @@ liquid tag parse(name, markupParser, parser):
 
 **Inline comments:** Lines starting with `#` are intercepted before environment lookup — `#` is not a valid identifier start, so normal tag name extraction (`content.split(/\s/)[0]`) cannot handle it. The parser checks `content.startsWith('#')` and short-circuits to produce `LiquidTag { name: '#', markup: 'rest of line' }` directly.
 
-### 6.4 Section Hybrid Tag
+### 6.4 Section Tag
 
-`section` is the only hybrid tag: standalone (`{% section 'name' %}`) or block (`{% section 'name' %}...{% endsection %}`).
-
-**Detection:** When parser encounters `{% section %}`, it scans forward in the token array for `{% endsection %}`, respecting nesting. If found, parse as block. Otherwise, standalone.
-
-**Markup for both forms:** `SectionMarkup { name: LiquidString, args: LiquidNamedArgument[] }`. Same regardless of form. The difference is whether `children` is populated and `blockEndPosition` exists.
+`section` is standalone only (`{% section 'name' %}`), producing `SectionMarkup { name: LiquidString, args: LiquidNamedArgument[] }`. See D12.
 
 ### 6.5 Tolerant Mode vs Completion Mode
 
@@ -869,11 +854,6 @@ Parser sees LiquidTagOpen token
         |     If def.parseLiquidInBody: parse Liquid inside body
         |     If tagName == 'doc': pass body to liquid-doc/parser
         |     makeLiquidRawTag(envelope, body, endPos, endWs)
-        |
-        +-- TagKind.Hybrid ->
-        |     Scan forward for matching {% endtagname %}
-        |     If found: parse as block
-        |     If not found: parse as standalone
         |
         +-- default -> assertNever(def)
 ```

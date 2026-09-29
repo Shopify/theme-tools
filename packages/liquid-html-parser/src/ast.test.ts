@@ -1105,42 +1105,11 @@ describe('Unit: Stage 2 (AST)', () => {
       }
     });
 
-    it('should parse section hybrid (block form) with endsection', () => {
-      for (const { toAST, expectPath } of testCases) {
-        const source = `{% section 'foo' %}content{% endsection %}`;
-        ast = toAST(source);
-        expectPath(ast, 'children.0.type').to.eql('LiquidTag');
-        expectPath(ast, 'children.0.name').to.eql('section');
-        expectPath(ast, 'children.0.markup.name.value').to.eql('foo');
-        expectPath(ast, 'children.0.children.0.type').to.eql('TextNode');
-        expectPath(ast, 'children.0.children.0.value').to.eql('content');
-
-        // blockEndPosition should span the {% endsection %} tag exactly
-        expectPath(ast, 'children.0.blockEndPosition.start').to.eql(
-          source.indexOf('{% endsection %}'),
-        );
-        expectPath(ast, 'children.0.blockEndPosition.end').to.eql(source.length);
-
-        // section node position.end should match endsection's end
-        expectPath(ast, 'children.0.position.end').to.eql(source.length);
-
-        expectPath(ast, 'children.0.delimiterWhitespaceStart').to.eql('');
-        expectPath(ast, 'children.0.delimiterWhitespaceEnd').to.eql('');
-      }
-    });
-
-    it('should capture whitespace trimming on endsection', () => {
-      for (const { toAST, expectPath } of testCases) {
-        const source = `{% section 'foo' %}content{%- endsection -%}`;
-        ast = toAST(source);
-        expectPath(ast, 'children.0.name').to.eql('section');
-        expectPath(ast, 'children.0.delimiterWhitespaceStart').to.eql('-');
-        expectPath(ast, 'children.0.delimiterWhitespaceEnd').to.eql('-');
-        expectPath(ast, 'children.0.blockEndPosition.start').to.eql(
-          source.indexOf('{%- endsection -%}'),
-        );
-        expectPath(ast, 'children.0.blockEndPosition.end').to.eql(source.length);
-        expectPath(ast, 'children.0.position.end').to.eql(source.length);
+    it('should treat section as a standalone tag and reject endsection', () => {
+      for (const { toAST } of testCases) {
+        expect(() => {
+          toAST(`{% section 'foo' %}content{% endsection %}`);
+        }).to.throw(/without a matching/);
       }
     });
 
