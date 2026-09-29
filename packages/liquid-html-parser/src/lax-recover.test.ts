@@ -130,6 +130,13 @@ describe('laxRecoverTagMarkup', () => {
     expect(() => laxRecoverTagMarkup('assign', src, src, 0, src.length)).toThrow();
   });
 
+  it('does not lax-recover section markup (Ruby raises in every error mode)', () => {
+    const markup = "'header' junk";
+    expect(() => laxRecoverTagMarkup('section', markup, markup, 0, markup.length)).toThrow(
+      LaxTagRecoveryError,
+    );
+  });
+
   it('throws a LaxTagRecoveryError for an unknown tag', () => {
     // Core Liquid raises "Unknown tag" via block.rb; recovery surfaces it
     // instead of swallowing to empty output.

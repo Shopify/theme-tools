@@ -90,7 +90,9 @@ export function laxRecoverTagMarkup(
   markupEnd: number,
 ): unknown {
   const def: TagDefinition | undefined = (builtinTags as Record<string, TagDefinition>)[tagName];
-  if (!def || (def.kind !== TagKind.Tag && def.kind !== TagKind.Block)) {
+  // Ruby's `section` tag has no lax parse: it raises on anything but
+  // `section '[type]'` in every error mode, so don't recover it here.
+  if (!def || tagName === 'section' || (def.kind !== TagKind.Tag && def.kind !== TagKind.Block)) {
     throw new LaxTagRecoveryError(`Unknown tag '${tagName}'`);
   }
   // increment/decrement lax_parse is `@variable_name = markup.strip`, which
