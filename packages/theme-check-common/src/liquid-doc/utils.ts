@@ -4,6 +4,14 @@ import { isSnippet } from '../to-schema';
 import { isBlock } from '../to-schema';
 import { ObjectEntry, UriString } from '../types';
 
+export {
+  parseDocParamType,
+  parseParamType,
+  parseParamTypeSyntax,
+  parseStringLiterals,
+} from './doc-param-type';
+export type { DocParamType, StringLiteralType } from './doc-param-type';
+
 /**
  * The base set of supported param types for LiquidDoc.
  *
@@ -106,29 +114,4 @@ export function getValidParamTypes(objectEntries: ObjectEntry[]): Map<string, st
   objectEntries.forEach((obj) => paramTypes.set(obj.name, obj.summary || obj.description));
 
   return paramTypes;
-}
-
-export function parseParamType(
-  validParamTypes: Set<string>,
-  value: string,
-): [pseudoType: string, isArray: boolean] | undefined {
-  const parsedParamType = parseParamTypeSyntax(value);
-
-  if (!parsedParamType || !validParamTypes.has(parsedParamType[0])) return undefined;
-
-  return parsedParamType;
-}
-
-/**
- * Splits a lowercase LiquidDoc type such as `product[]` into its base type
- * and array flag. Returns undefined when the value is not valid type syntax.
- */
-export function parseParamTypeSyntax(
-  value: string,
-): [pseudoType: string, isArray: boolean] | undefined {
-  const paramTypeMatch = value.match(/^([a-z_]+)(\[\])?$/);
-
-  if (!paramTypeMatch) return undefined;
-
-  return [paramTypeMatch[1], !!paramTypeMatch[2]];
 }

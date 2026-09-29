@@ -10,6 +10,22 @@ describe('Unit: extractDocDefinition', () => {
     return toSourceCode(uri, code).ast as LiquidHtmlNode;
   }
 
+  it('preserves string enum spelling and optionality when extracting parameters', () => {
+    const source = `{% doc %}
+  Renders the block's content as text.
+  @param {'Heading' | "small"} [variant] - Shared text style, added as a text--<variant> class; plain text when omitted
+{% enddoc %}`;
+    expect(extractDocDefinition(uri, toAST(source)).liquidDoc?.parameters).toEqual([
+      {
+        name: 'variant',
+        description: 'Shared text style, added as a text--<variant> class; plain text when omitted',
+        type: `'Heading' | "small"`,
+        required: false,
+        nodeType: 'param',
+      },
+    ]);
+  });
+
   it('should return default doc definition if no renderable content is present', async () => {
     const ast = toAST(`
         {% doc %}
