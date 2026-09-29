@@ -3,8 +3,7 @@ import { LiquidHtmlNode } from '@shopify/theme-check-common';
 import { Hover, HoverParams, MarkupKind } from 'vscode-languageserver';
 import { GetTranslationsForURI } from '../../translations';
 import {
-  formatBlockParameterDescription,
-  formatBlockParameterHeading,
+  formatBlockParameter,
   getBlockParameterTranslations,
   GetBlockParametersForURI,
 } from '../../utils/blockParameters';
@@ -43,13 +42,11 @@ export class BlockParameterHoverProvider implements BaseHoverProvider {
       params.textDocument.uri,
       [parameter],
     );
-    const value = [
-      formatBlockParameterHeading(parameter),
-      formatBlockParameterDescription(parameter, translations),
-    ]
-      .filter(Boolean)
-      .join('\n\n');
-
-    return { contents: { kind: MarkupKind.Markdown, value } };
+    return {
+      contents: {
+        kind: MarkupKind.Markdown,
+        value: formatBlockParameter(parameter, translations),
+      },
+    };
   }
 }

@@ -64,24 +64,28 @@ describe('Module: BlockParameterCompletionProvider', () => {
       ]);
     });
 
-    it('describes each parameter with label details and markdown documentation', async () => {
+    it('describes each parameter with markdown documentation', async () => {
       await expect(provider).to.complete(
         template(`{% block 'card', █ %}{% endblock %}`),
         expect.arrayContaining([
           expect.objectContaining({
             label: 'heading',
-            labelDetails: { detail: ' (optional)', description: 'string' },
             kind: CompletionItemKind.Property,
             documentation: {
               kind: MarkupKind.Markdown,
-              value: '**Theme setting**\n\nHeading\n\nShown above the card',
+              value: [
+                '### `heading` (Optional): string',
+                '**Theme setting**\n\nHeading\n\nShown above the card',
+              ].join('\n\n'),
             },
           }),
           expect.objectContaining({
             label: 'tracking_id',
-            labelDetails: { description: 'string' },
             kind: CompletionItemKind.Property,
-            documentation: { kind: MarkupKind.Markdown, value: 'Analytics identifier' },
+            documentation: {
+              kind: MarkupKind.Markdown,
+              value: '### `tracking_id`: string\n\nAnalytics identifier',
+            },
           }),
         ]),
       );
@@ -99,12 +103,7 @@ describe('Module: BlockParameterCompletionProvider', () => {
       );
 
       expect(completionItem.label).toBe('heading');
-      expect(hover).toBe(
-        [
-          '### `heading` (optional): string',
-          (completionItem.documentation as MarkupContent).value,
-        ].join('\n\n'),
-      );
+      expect(hover).toBe((completionItem.documentation as MarkupContent).value);
     });
 
     it('inserts a value template derived from the schema type', async () => {
@@ -320,7 +319,9 @@ describe('Module: BlockParameterCompletionProvider', () => {
       await expect(provider).to.complete(template(`{% block 'card', val█ %}{% endblock %}`), [
         expect.objectContaining({
           label: 'value',
-          labelDetails: expect.objectContaining({ detail: ' (optional)' }),
+          documentation: expect.objectContaining({
+            value: expect.stringMatching(/^### `value` \(Optional\)/),
+          }),
           textEdit: expect.objectContaining({ newText: `value: ${value}` }),
         }),
       ]);
@@ -343,14 +344,17 @@ describe('Module: BlockParameterCompletionProvider', () => {
         expect.objectContaining({ label: 'content' }),
         expect.objectContaining({
           label: 'heading',
-          labelDetails: { description: 'string' },
           documentation: expect.objectContaining({
-            value: ['Card heading', '**Theme setting**\n\nHeading'].join('\n\n'),
+            value: ['### `heading`: string', 'Card heading', '**Theme setting**\n\nHeading'].join(
+              '\n\n',
+            ),
           }),
         }),
         expect.objectContaining({
           label: 'subheading',
-          labelDetails: { detail: ' (optional)', description: 'string' },
+          documentation: expect.objectContaining({
+            value: expect.stringMatching(/^### `subheading` \(Optional\): string/),
+          }),
         }),
       ]);
     });
@@ -368,9 +372,12 @@ describe('Module: BlockParameterCompletionProvider', () => {
       await expect(provider).to.complete(template(`{% block 'card', fe█ %}{% endblock %}`), [
         expect.objectContaining({
           label: 'featured',
-          labelDetails: { description: 'product' },
           documentation: expect.objectContaining({
-            value: ['The product to feature', '**Theme setting**\n\nFeatured product'].join('\n\n'),
+            value: [
+              '### `featured`: product',
+              'The product to feature',
+              '**Theme setting**\n\nFeatured product',
+            ].join('\n\n'),
           }),
           textEdit: expect.objectContaining({ newText: 'featured: ${1:}$0' }),
         }),
@@ -383,8 +390,9 @@ describe('Module: BlockParameterCompletionProvider', () => {
       await expect(provider).to.complete(template(`{% block 'card', █ %}{% endblock %}`), [
         expect.objectContaining({
           label: 'content',
-          labelDetails: { detail: ' (optional)', description: 'string' },
-          documentation: expect.objectContaining({ value: CONTENT_PRECEDENCE_NOTE }),
+          documentation: expect.objectContaining({
+            value: ['### `content` (Optional): string', CONTENT_PRECEDENCE_NOTE].join('\n\n'),
+          }),
           textEdit: expect.objectContaining({ newText: "content: '$1'$0" }),
         }),
       ]);
@@ -396,9 +404,8 @@ describe('Module: BlockParameterCompletionProvider', () => {
       await expect(provider).to.complete(template(`{% block 'card', █ %}{% endblock %}`), [
         expect.objectContaining({
           label: 'content',
-          labelDetails: { description: 'string' },
           documentation: expect.objectContaining({
-            value: ['Card body', CONTENT_PRECEDENCE_NOTE].join('\n\n'),
+            value: ['### `content`: string', 'Card body', CONTENT_PRECEDENCE_NOTE].join('\n\n'),
           }),
         }),
       ]);
@@ -419,7 +426,10 @@ describe('Module: BlockParameterCompletionProvider', () => {
         expect.objectContaining({
           label: 'heading',
           documentation: expect.objectContaining({
-            value: '**Theme setting**\n\nHeading\n\nUses t:settings syntax',
+            value: [
+              '### `heading` (Optional): string',
+              '**Theme setting**\n\nHeading\n\nUses t:settings syntax',
+            ].join('\n\n'),
           }),
         }),
       ]);
@@ -443,7 +453,10 @@ describe('Module: BlockParameterCompletionProvider', () => {
         expect.objectContaining({
           label: 'heading',
           documentation: expect.objectContaining({
-            value: '**Theme setting**\n\nTranslated heading\n\nTranslated info',
+            value: [
+              '### `heading` (Optional): string',
+              '**Theme setting**\n\nTranslated heading\n\nTranslated info',
+            ].join('\n\n'),
           }),
         }),
       ]);
@@ -466,7 +479,9 @@ describe('Module: BlockParameterCompletionProvider', () => {
       await expect(provider).to.complete(template(`{% block 'card', hea█ %}{% endblock %}`), [
         expect.objectContaining({
           label: 'heading',
-          documentation: expect.objectContaining({ value: '**Theme setting**' }),
+          documentation: expect.objectContaining({
+            value: '### `heading` (Optional): string\n\n**Theme setting**',
+          }),
         }),
       ]);
     });

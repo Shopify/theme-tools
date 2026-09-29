@@ -44,7 +44,7 @@ describe('Module: BlockParameterHoverProvider', () => {
 
     await expect(provider).to.hover(
       template(`{% block 'card', hea█ding: 'Sale' %}{% endblock %}`),
-      ['### `heading` (optional): string', HEADING_THEME_SETTING].join('\n\n'),
+      ['### `heading` (Optional): string', HEADING_THEME_SETTING].join('\n\n'),
     );
   });
 
@@ -64,7 +64,7 @@ describe('Module: BlockParameterHoverProvider', () => {
     await expect(provider).to.hover(
       template(`{% block 'card', hea█ding: 'Sale' %}{% endblock %}`),
       [
-        '### `heading` (optional): string',
+        '### `heading` (Optional): string',
         '**Theme setting**\n\nTranslated heading\n\nTranslated info',
       ].join('\n\n'),
     );
@@ -91,7 +91,7 @@ describe('Module: BlockParameterHoverProvider', () => {
 
       await expect(provider).to.hover(
         template(`{% block 'card', hea█ding: 'Sale' %}{% endblock %}`),
-        ['### `heading` (optional): string', '**Theme setting**\n\nLiteral info'].join('\n\n'),
+        ['### `heading` (Optional): string', '**Theme setting**\n\nLiteral info'].join('\n\n'),
       );
     },
   );
@@ -116,7 +116,7 @@ describe('Module: BlockParameterHoverProvider', () => {
 
     await expect(provider).to.hover(
       template(`{% block 'card', hea█ding: 'Sale' %}{% endblock %}`),
-      ['### `heading` (optional): string', 'Card heading', HEADING_THEME_SETTING].join('\n\n'),
+      ['### `heading` (Optional): string', 'Card heading', HEADING_THEME_SETTING].join('\n\n'),
     );
   });
 
@@ -156,7 +156,7 @@ describe('Module: BlockParameterHoverProvider', () => {
 
     await expect(provider).to.hover(
       template(`{% block 'card', cont█ent: body %}{% endblock %}`),
-      ['### `content` (optional): string', CONTENT_PRECEDENCE_NOTE].join('\n\n'),
+      ['### `content` (Optional): string', CONTENT_PRECEDENCE_NOTE].join('\n\n'),
     );
   });
 
@@ -175,7 +175,7 @@ describe('Module: BlockParameterHoverProvider', () => {
     await expect(provider).to.hover(
       template(`{% block 'card', cont█ent: body %}{% endblock %}`),
       [
-        '### `content` (optional): string',
+        '### `content` (Optional): string',
         '**Theme setting**\n\nBody',
         CONTENT_PRECEDENCE_NOTE,
       ].join('\n\n'),
