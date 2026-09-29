@@ -1,5 +1,5 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { getValidParamTypes, parseParamType } from '../../liquid-doc/utils';
+import { getValidParamTypes, parseDocParamType } from '../../liquid-doc/utils';
 
 export const ValidDocParamTypes: LiquidCheckDefinition = {
   meta: {
@@ -22,10 +22,8 @@ export const ValidDocParamTypes: LiquidCheckDefinition = {
       return {};
     }
 
-    // To avoid recalculating valid param types during theme-check, constructing
-    // the promise beforehand.
-    const validParamTypesPromise = context
-      .themeDocset!.liquidDrops()
+    const validParamTypesPromise = context.themeDocset
+      .liquidDrops()
       .then((entries) => new Set(getValidParamTypes(entries).keys()));
 
     return {
@@ -34,7 +32,10 @@ export const ValidDocParamTypes: LiquidCheckDefinition = {
           return;
         }
 
-        const parsedParamType = parseParamType(await validParamTypesPromise, node.paramType.value);
+        const parsedParamType = parseDocParamType(
+          await validParamTypesPromise,
+          node.paramType.value,
+        );
 
         if (parsedParamType) {
           return;
@@ -51,16 +52,11 @@ export const ValidDocParamTypes: LiquidCheckDefinition = {
               fix: (corrector) => {
                 if (!node.paramType) return;
 
-                corrector.replace(
-                  node.position.start,
-                  node.position.end,
-                  node.source.slice(node.position.start, node.position.end).replace(
-                    // We could have padded spaces around + inside the param type
-                    // e.g. `{ string }`, `{string}`, or ` { string } `
-                    /\s*\{\s*[^\s]+\s*\}\s*/,
-                    ' ',
-                  ),
-                );
+                let start = node.paramType.position.start - 1;
+                let end = node.paramType.position.end + 1;
+                while (/[ \t]/.test(node.source.charAt(start - 1))) start--;
+                while (/[ \t]/.test(node.source.charAt(end))) end++;
+                corrector.replace(start, end, ' ');
               },
             },
           ],
