@@ -54,6 +54,7 @@ export class HoverProvider {
       new ContentForArgumentHoverProvider(getDocDefinitionForURI),
       new ContentForTypeHoverProvider(getDocDefinitionForURI),
       new BlockParameterHoverProvider(
+        documentManager,
         makeGetBlockParametersForURI(getThemeBlockSchema, getDocDefinitionForURI),
       ),
       new LiquidTagHoverProvider(themeDocset),
