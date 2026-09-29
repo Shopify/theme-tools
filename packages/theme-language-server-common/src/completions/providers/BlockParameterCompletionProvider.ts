@@ -16,7 +16,7 @@ import {
 import { AugmentedLiquidSourceCode } from '../../documents';
 import { GetTranslationsForURI } from '../../translations';
 import {
-  formatBlockParameterDescription,
+  formatBlockParameter,
   getBlockParameterTranslations,
   GetBlockParametersForURI,
 } from '../../utils/blockParameters';
@@ -90,10 +90,6 @@ function isTypedOver(arg: BlockMarkup['args'][number], node: LiquidVariableLooku
   return node.name !== '' && arg.position.start === node.position.start;
 }
 
-/**
- * The label stays the bare parameter name for filtering and insertion.
- * Requiredness and type appear as label details.
- */
 function toCompletionItem(
   parameter: BlockParameter,
   translations: Translations,
@@ -101,16 +97,14 @@ function toCompletionItem(
   document: AugmentedLiquidSourceCode,
 ): CompletionItem {
   const { textEdit, insertTextFormat } = argumentNameEdit(parameter, node, document);
-  const description = formatBlockParameterDescription(parameter, translations);
 
   return {
     label: parameter.name,
-    labelDetails: {
-      detail: parameter.required ? undefined : ' (optional)',
-      description: parameter.type,
-    },
     kind: CompletionItemKind.Property,
-    documentation: description ? { kind: MarkupKind.Markdown, value: description } : undefined,
+    documentation: {
+      kind: MarkupKind.Markdown,
+      value: formatBlockParameter(parameter, translations),
+    },
     insertTextFormat,
     textEdit,
   };

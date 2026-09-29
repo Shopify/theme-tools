@@ -10,6 +10,7 @@ import {
 } from '@shopify/theme-check-common';
 import { GetThemeBlockSchema } from '../json/JSONContributions';
 import { GetTranslationsForURI, renderTranslation, translationValue } from '../translations';
+import { formatLiquidDocParameter } from './liquidDoc';
 import { blockName } from './uri';
 
 /** Resolves the parameters that a `block` tag in `uri` can pass to `blockName`. */
@@ -61,28 +62,27 @@ export async function getBlockParameterTranslations(
 }
 
 /**
- * Markdown heading for a block parameter hover, such as
- * `### \`heading\` (optional): string`.
+ * Markdown shared by block parameter completion and hover. The heading follows
+ * the existing LiquidDoc parameter format, followed by resolved theme-setting
+ * copy and the precedence rule for `content`.
  */
-export function formatBlockParameterHeading({ name, required, type }: BlockParameter): string {
-  const optional = required ? '' : ' (optional)';
-  const typeSuffix = type ? `: ${type}` : '';
-  return `### \`${name}\`${optional}${typeSuffix}`;
-}
-
-/**
- * Markdown description shared by block parameter completion and hover: the
- * verbatim LiquidDoc description, the theme setting's label and info, and the
- * precedence rule for `content`. Empty when no source describes the parameter.
- */
-export function formatBlockParameterDescription(
+export function formatBlockParameter(
   parameter: BlockParameter,
   translations: Translations,
 ): string {
-  const { name, liquidDoc, schemaSetting } = parameter;
+  const { name, type, required, liquidDoc, schemaSetting } = parameter;
+  const heading = formatLiquidDocParameter(
+    {
+      name,
+      type: type ?? null,
+      description: liquidDoc?.description ?? null,
+      required,
+    },
+    true,
+  );
 
   return [
-    liquidDoc?.description ?? undefined,
+    heading,
     schemaSetting ? formatThemeSetting(schemaSetting, translations) : undefined,
     name === BLOCK_CONTENT_PARAMETER ? CONTENT_PRECEDENCE_NOTE : undefined,
   ]
@@ -123,7 +123,7 @@ function hasTranslatedSchemaText({ schemaSetting }: BlockParameter): boolean {
   return [schemaSetting?.label, schemaSetting?.info].some(isTranslationKey);
 }
 
-function isTranslationKey(text: string | undefined): text is string {
+function isTranslationKey(text: string | undefined): boolean {
   return text?.startsWith('t:') ?? false;
 }
 
