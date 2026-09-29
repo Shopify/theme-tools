@@ -1,16 +1,29 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { MetafieldDefinitionMap, ObjectEntry, SourceCodeType } from '@shopify/theme-check-common';
+import {
+  MetafieldDefinitionMap,
+  ObjectEntry,
+  SourceCodeType,
+  Translations,
+} from '@shopify/theme-check-common';
 import {
   CompletionItemKind,
   InsertTextFormat,
+  MarkupContent,
   MarkupKind,
   TextEdit,
 } from 'vscode-languageserver-protocol';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DocumentManager } from '../../documents';
+import { HoverProvider } from '../../hover';
 import { CompletionsProvider } from '../CompletionsProvider';
 
 const template = (source: string) => ({ source, relativePath: 'templates/index.liquid' });
+
+const CONTENT_PRECEDENCE_NOTE =
+  'A non-empty block body supplies `content` and takes precedence over a `content:` argument.';
+const SCHEMA_TRANSLATIONS: Translations = {
+  settings: { heading: { label: 'Translated heading', info: 'Translated info' } },
+};
 
 describe('Module: BlockParameterCompletionProvider', () => {
   let documentManager: DocumentManager;
@@ -51,34 +64,46 @@ describe('Module: BlockParameterCompletionProvider', () => {
       ]);
     });
 
-    it('describes each parameter with a property item and markdown documentation', async () => {
+    it('describes each parameter with label details and markdown documentation', async () => {
       await expect(provider).to.complete(
         template(`{% block 'card', █ %}{% endblock %}`),
         expect.arrayContaining([
           expect.objectContaining({
             label: 'heading',
+            labelDetails: { detail: ' (optional)', description: 'string' },
             kind: CompletionItemKind.Property,
             documentation: {
               kind: MarkupKind.Markdown,
-              value: [
-                '### `heading` (Optional): string',
-                '**Merchant-facing setting** (`text`)\n- Label: Heading\n- Info: Shown above the card',
-              ].join('\n\n'),
+              value: '**Theme setting**\n\nHeading\n\nShown above the card',
             },
           }),
           expect.objectContaining({
             label: 'tracking_id',
+            labelDetails: { description: 'string' },
             kind: CompletionItemKind.Property,
-            documentation: {
-              kind: MarkupKind.Markdown,
-              value: [
-                '### `tracking_id`: string',
-                'Analytics identifier',
-                'Developer-only LiquidDoc parameter. Not merchant-facing.',
-              ].join('\n\n'),
-            },
+            documentation: { kind: MarkupKind.Markdown, value: 'Analytics identifier' },
           }),
         ]),
+      );
+    });
+
+    it('uses the completion documentation as the hover description', async () => {
+      const hoverProvider = createHoverProvider(documentManager);
+      const [completionItem] = await completionItems(
+        provider,
+        `{% block 'card', hea█ %}{% endblock %}`,
+      );
+      const hover = await hoverAt(
+        hoverProvider,
+        `{% block 'card', hea█ding: 'Sale' %}{% endblock %}`,
+      );
+
+      expect(completionItem.label).toBe('heading');
+      expect(hover).toBe(
+        [
+          '### `heading` (optional): string',
+          (completionItem.documentation as MarkupContent).value,
+        ].join('\n\n'),
       );
     });
 
@@ -295,9 +320,7 @@ describe('Module: BlockParameterCompletionProvider', () => {
       await expect(provider).to.complete(template(`{% block 'card', val█ %}{% endblock %}`), [
         expect.objectContaining({
           label: 'value',
-          documentation: expect.objectContaining({
-            value: expect.stringMatching(/^### `value` \(Optional\)/),
-          }),
+          labelDetails: expect.objectContaining({ detail: ' (optional)' }),
           textEdit: expect.objectContaining({ newText: `value: ${value}` }),
         }),
       ]);
@@ -320,19 +343,14 @@ describe('Module: BlockParameterCompletionProvider', () => {
         expect.objectContaining({ label: 'content' }),
         expect.objectContaining({
           label: 'heading',
+          labelDetails: { description: 'string' },
           documentation: expect.objectContaining({
-            value: [
-              '### `heading`: string',
-              'Card heading',
-              '**Merchant-facing setting** (`text`)\n- Label: Heading',
-            ].join('\n\n'),
+            value: ['Card heading', '**Theme setting**\n\nHeading'].join('\n\n'),
           }),
         }),
         expect.objectContaining({
           label: 'subheading',
-          documentation: expect.objectContaining({
-            value: expect.stringMatching(/^### `subheading` \(Optional\): string/),
-          }),
+          labelDetails: { detail: ' (optional)', description: 'string' },
         }),
       ]);
     });
@@ -350,12 +368,9 @@ describe('Module: BlockParameterCompletionProvider', () => {
       await expect(provider).to.complete(template(`{% block 'card', fe█ %}{% endblock %}`), [
         expect.objectContaining({
           label: 'featured',
+          labelDetails: { description: 'product' },
           documentation: expect.objectContaining({
-            value: [
-              '### `featured`: product',
-              'The product to feature',
-              '**Merchant-facing setting** (`product`)\n- Label: Featured product',
-            ].join('\n\n'),
+            value: ['The product to feature', '**Theme setting**\n\nFeatured product'].join('\n\n'),
           }),
           textEdit: expect.objectContaining({ newText: 'featured: ${1:}$0' }),
         }),
@@ -368,12 +383,8 @@ describe('Module: BlockParameterCompletionProvider', () => {
       await expect(provider).to.complete(template(`{% block 'card', █ %}{% endblock %}`), [
         expect.objectContaining({
           label: 'content',
-          documentation: expect.objectContaining({
-            value: [
-              '### `content` (Optional): string',
-              'Built-in parameter. A non-empty block body supplies `content` and takes precedence over a `content:` argument.',
-            ].join('\n\n'),
-          }),
+          labelDetails: { detail: ' (optional)', description: 'string' },
+          documentation: expect.objectContaining({ value: CONTENT_PRECEDENCE_NOTE }),
           textEdit: expect.objectContaining({ newText: "content: '$1'$0" }),
         }),
       ]);
@@ -385,9 +396,77 @@ describe('Module: BlockParameterCompletionProvider', () => {
       await expect(provider).to.complete(template(`{% block 'card', █ %}{% endblock %}`), [
         expect.objectContaining({
           label: 'content',
+          labelDetails: { description: 'string' },
           documentation: expect.objectContaining({
-            value: expect.stringMatching(/^### `content`: string\n\nCard body\n\n/),
+            value: ['Card body', CONTENT_PRECEDENCE_NOTE].join('\n\n'),
           }),
+        }),
+      ]);
+    });
+  });
+
+  describe('schema setting translations', () => {
+    it('keeps literal label and info unchanged', async () => {
+      openBlock(
+        documentManager,
+        'card',
+        blockSource([
+          { id: 'heading', type: 'text', label: 'Heading', info: 'Uses t:settings syntax' },
+        ]),
+      );
+
+      await expect(provider).to.complete(template(`{% block 'card', hea█ %}{% endblock %}`), [
+        expect.objectContaining({
+          label: 'heading',
+          documentation: expect.objectContaining({
+            value: '**Theme setting**\n\nHeading\n\nUses t:settings syntax',
+          }),
+        }),
+      ]);
+    });
+
+    it('resolves translated label and info', async () => {
+      openBlock(
+        documentManager,
+        'card',
+        blockSource([
+          {
+            id: 'heading',
+            type: 'text',
+            label: 't:settings.heading.label',
+            info: 't:settings.heading.info',
+          },
+        ]),
+      );
+
+      await expect(provider).to.complete(template(`{% block 'card', hea█ %}{% endblock %}`), [
+        expect.objectContaining({
+          label: 'heading',
+          documentation: expect.objectContaining({
+            value: '**Theme setting**\n\nTranslated heading\n\nTranslated info',
+          }),
+        }),
+      ]);
+    });
+
+    it('omits a translation key that has no translation', async () => {
+      openBlock(
+        documentManager,
+        'card',
+        blockSource([
+          {
+            id: 'heading',
+            type: 'text',
+            label: 't:settings.missing.label',
+            info: 't:settings.missing.info',
+          },
+        ]),
+      );
+
+      await expect(provider).to.complete(template(`{% block 'card', hea█ %}{% endblock %}`), [
+        expect.objectContaining({
+          label: 'heading',
+          documentation: expect.objectContaining({ value: '**Theme setting**' }),
         }),
       ]);
     });
@@ -473,6 +552,7 @@ function createProvider(
       systemTranslations: async () => ({}),
     },
     getMetafieldDefinitions: async (_rootUri: string) => ({}) as MetafieldDefinitionMap,
+    getSchemaTranslationsForURI: async () => SCHEMA_TRANSLATIONS,
     findThemeRootURI: async (_uri: string) => 'file:///path/to',
     getThemeBlockSchema: async (_uri, name) => {
       const block = documentManager.get(blockUri(name));
@@ -485,6 +565,52 @@ function createProvider(
       return block.getLiquidDoc();
     },
   });
+}
+
+function createHoverProvider(documentManager: DocumentManager) {
+  return new HoverProvider(
+    documentManager,
+    {
+      filters: async () => [],
+      objects: async () => [],
+      liquidDrops: async () => [],
+      tags: async () => [],
+      systemTranslations: async () => ({}),
+    },
+    async (_rootUri: string) => ({}) as MetafieldDefinitionMap,
+    async () => ({}),
+    async () => [],
+    async (_uri, _category, name) => {
+      const block = documentManager.get(blockUri(name));
+      if (block?.type !== SourceCodeType.LiquidHtml) return undefined;
+      return block.getLiquidDoc();
+    },
+    async () => 'theme',
+    async (_uri, name) => {
+      const block = documentManager.get(blockUri(name));
+      if (block?.type !== SourceCodeType.LiquidHtml) return undefined;
+      return block.getSchema();
+    },
+    async () => SCHEMA_TRANSLATIONS,
+  );
+}
+
+async function completionItems(provider: CompletionsProvider, source: string) {
+  const position = openTemplate(provider.documentManager, source);
+  return provider.completions({ textDocument: { uri: TEMPLATE_URI }, position });
+}
+
+async function hoverAt(provider: HoverProvider, source: string) {
+  const position = openTemplate(provider.documentManager, source);
+  const hover = await provider.hover({ textDocument: { uri: TEMPLATE_URI }, position });
+  return (hover?.contents as MarkupContent | undefined)?.value;
+}
+
+const TEMPLATE_URI = 'file:///templates/index.liquid';
+
+function openTemplate(documentManager: DocumentManager, source: string) {
+  documentManager.open(TEMPLATE_URI, source.replace('█', ''), 0);
+  return documentManager.get(TEMPLATE_URI)!.textDocument.positionAt(source.indexOf('█'));
 }
 
 function openBlock(documentManager: DocumentManager, name: string, source: string) {
