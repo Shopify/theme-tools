@@ -1,6 +1,7 @@
 import { NodeTypes } from '@shopify/liquid-html-parser';
 import { LiquidHtmlNode } from '@shopify/theme-check-common';
-import { Hover, HoverParams, MarkupKind } from 'vscode-languageserver';
+import { Hover, HoverParams, MarkupKind, Range } from 'vscode-languageserver';
+import { DocumentManager } from '../../documents';
 import { formatBlockParameter, GetBlockParametersForURI } from '../../utils/blockParameters';
 import { BaseHoverProvider } from '../BaseHoverProvider';
 
@@ -11,7 +12,10 @@ import { BaseHoverProvider } from '../BaseHoverProvider';
  * @example {% block 'card', hea█ding: 'Sale' %}
  */
 export class BlockParameterHoverProvider implements BaseHoverProvider {
-  constructor(private readonly getBlockParametersForURI: GetBlockParametersForURI) {}
+  constructor(
+    private readonly documentManager: DocumentManager,
+    private readonly getBlockParametersForURI: GetBlockParametersForURI,
+  ) {}
 
   async hover(
     currentNode: LiquidHtmlNode,
@@ -27,13 +31,18 @@ export class BlockParameterHoverProvider implements BaseHoverProvider {
       blockMarkup.name.value,
     );
     const parameter = parameters?.get(currentNode.name);
-    if (!parameter) return null;
+    const textDocument = this.documentManager.get(params.textDocument.uri)?.textDocument;
+    if (!parameter || !textDocument) return null;
 
     return {
       contents: {
         kind: MarkupKind.Markdown,
         value: formatBlockParameter(parameter),
       },
+      range: Range.create(
+        textDocument.positionAt(currentNode.position.start),
+        textDocument.positionAt(currentNode.position.start + currentNode.name.length),
+      ),
     };
   }
 }
