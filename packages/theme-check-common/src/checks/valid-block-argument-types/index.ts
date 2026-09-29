@@ -4,7 +4,15 @@ import {
   type BlockParameters,
   liquidDocType,
 } from '../../block-parameters';
-import { BasicParamTypes, inferArgumentType, isTypeCompatible } from '../../liquid-doc/utils';
+import { generateTypeMismatchSuggestions } from '../../liquid-doc/arguments';
+import {
+  BasicParamTypes,
+  getArgumentTypeMismatchMessage,
+  inferArgumentType,
+  isArgumentTypeCompatible,
+  isTypeCompatible,
+  parseStringLiterals,
+} from '../../liquid-doc/utils';
 import * as path from '../../path';
 import { isBlock } from '../../to-schema';
 import { Severity, SourceCodeType, type Context, type LiquidCheckDefinition } from '../../types';
@@ -50,6 +58,11 @@ export const ValidBlockArgumentTypes: LiquidCheckDefinition = {
 
         for (const argument of markup.args) {
           const expectedType = parameters.get(argument.name)?.type;
+          if (expectedType && parseStringLiterals(expectedType)) {
+            reportStringLiteralMismatch(context, argument, expectedType);
+            continue;
+          }
+
           const actualType = literalType(argument.value);
           if (!expectedType || !actualType || isCallTypeCompatible(expectedType, actualType)) {
             continue;
@@ -101,6 +114,23 @@ function isCallTypeCompatible(expectedType: string, actualType: string): boolean
   }
 
   return isTypeCompatible(expectedType, actualType as BasicParamTypes);
+}
+
+/** String literal types accept only their own values, so literals are compared by value. */
+function reportStringLiteralMismatch(
+  context: Context<SourceCodeType.LiquidHtml>,
+  argument: BlockMarkup['args'][number],
+  expectedType: string,
+): void {
+  if (isArgumentTypeCompatible(expectedType, argument.value) !== false) return;
+
+  const { start, end } = argument.value.position;
+  context.report({
+    message: getArgumentTypeMismatchMessage(argument.name, expectedType, argument.value),
+    startIndex: start,
+    endIndex: end,
+    suggest: generateTypeMismatchSuggestions(expectedType, start, end),
+  });
 }
 
 function reportLiquidDocTypeMismatch(

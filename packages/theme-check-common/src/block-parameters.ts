@@ -1,5 +1,5 @@
 import type { DocDefinition, LiquidDocParameter } from './liquid-doc/liquidDoc';
-import { parseParamTypeSyntax } from './liquid-doc/utils';
+import { parseParamTypeSyntax, parseStringLiterals } from './liquid-doc/utils';
 import { schemaSettingLiquidType } from './schema-settings';
 import { hasNoSchemaTag } from './to-schema';
 import type { Dependencies, Setting, ThemeBlock } from './types';
@@ -13,8 +13,8 @@ export const BLOCK_CONTENT_PARAMETER = 'content';
 export interface BlockParameter {
   name: string;
   /**
-   * The LiquidDoc-syntax type the caller passes, such as `string` or
-   * `product[]`. Undefined when the declaration is untyped or unmapped.
+   * The LiquidDoc-syntax type the caller passes, such as `string`, `product[]`
+   * or `'heading' | 'small'`. Undefined when the declaration is untyped or unmapped.
    */
   type?: string;
   /**
@@ -109,7 +109,11 @@ function withLiquidDoc(
 
   return {
     name: liquidDoc.name,
-    type: liquidDocType(liquidDoc.type),
+    // String literal types keep their spelling, since arguments must match them exactly.
+    type:
+      liquidDoc.type && parseStringLiterals(liquidDoc.type)
+        ? liquidDoc.type.trim()
+        : liquidDocType(liquidDoc.type),
     required: liquidDoc.required,
     liquidDoc,
   };
