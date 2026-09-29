@@ -4,7 +4,7 @@ import { envelopeFromTokens, makeLiquidTagBaseCase, makeLiquidTagNamed } from '.
 import type { LiquidTagEnvelope } from './factories';
 import type { LiquidRawTag, LiquidTag } from '../ast';
 import type { TagDefinition, TagDefinitionTag } from '../environment';
-import { TagKind, hasEndTag } from '../environment';
+import { TagKind, isStructuralEndTag } from '../environment';
 import { LiquidHTMLASTParsingError } from '../errors';
 import { assertNever } from '../utils';
 import { MarkupParser } from '../markup/parser';
@@ -45,9 +45,7 @@ export function parseLiquidTag(parser: TagParserDelegate): LiquidTag | LiquidRaw
   if (envelope.tagName.startsWith('end')) {
     const innerName = envelope.tagName.slice(3);
     const innerDef = parser.tagForName(innerName);
-    // `{% endsection %}` is an unknown tag, not a structural error, because
-    // `section` has no end tag.
-    if (hasEndTag(innerDef)) {
+    if (isStructuralEndTag(innerName, innerDef)) {
       throw new LiquidHTMLASTParsingError(
         `Attempting to close LiquidTag '${innerName}' before it was opened without a matching '${innerName}'`,
         parser.getSource(),

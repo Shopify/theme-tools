@@ -1122,6 +1122,16 @@ describe('Unit: Stage 2 (AST)', () => {
       }
     });
 
+    it('should still throw on stray end tags for other registered tags', () => {
+      for (const { toAST } of testCases) {
+        expect(() => toAST(`{% endrender %}`)).to.throw(/without a matching 'render'/);
+        expect(() => toAST(`{% endsections %}`)).to.throw(/without a matching 'sections'/);
+        expect(() => toAST(`{% if a %}{% endrender %}{% endif %}`)).to.throw(
+          /before LiquidTag 'if' was closed/,
+        );
+      }
+    });
+
     it('should correctly report the position of branches', () => {
       for (const { toAST, expectPath } of testCases) {
         const branchA = ' <div>A</div> ';
