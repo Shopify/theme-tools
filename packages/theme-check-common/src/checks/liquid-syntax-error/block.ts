@@ -52,7 +52,9 @@ export function blockTagSyntaxError(
    * Report the first one so body-form children stay outside the offense.
    */
   const dottedArgument = markup.args.find(isDottedArgument);
-  if (dottedArgument) return syntaxProblem(dottedArgument.position, DOTTED_ARGUMENT);
+  if (dottedArgument) {
+    return syntaxProblem(dottedArgument.position, dottedArgumentMessage(dottedArgument.name));
+  }
 
   if (markup.args.some(isInvalidBlockNameArgument)) {
     return syntaxProblem(node.position, SYNTAX_ERROR);
@@ -108,4 +110,22 @@ function isInvalidBlockNameArgument(argument: BlockMarkup['args'][number]): bool
 
 function isDottedArgument(argument: BlockMarkup['args'][number]): boolean {
   return argument.name !== 'block.name' && argument.name.includes('.');
+}
+
+/*
+ * Temporary migration guidance for the experimental block.settings.<id>
+ * caller form. Remove it once authors have migrated to plain arguments.
+ */
+function dottedArgumentMessage(name: string): string {
+  const settingId = blockSettingId(name);
+  if (!settingId) return DOTTED_ARGUMENT;
+
+  return `Liquid syntax error: in 'block' - Use '${settingId}:' instead of '${name}:' when calling a block.`;
+}
+
+function blockSettingId(name: string): string | undefined {
+  const [object, property, settingId, ...rest] = name.split('.');
+  if (object !== 'block' || property !== 'settings' || rest.length > 0) return undefined;
+
+  return settingId;
 }
