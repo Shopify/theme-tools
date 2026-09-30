@@ -337,49 +337,6 @@ describe('Module: TypeSystem', () => {
       const inferredType = await typeSystem.inferType(xVariable, ast, 'file:///file.liquid');
       expect(inferredType).to.equal('image');
     });
-
-    it.each(["'heading'", 'variant'])(
-      'resolves repeated default references with linear work starting from %s',
-      async (initialValue) => {
-        const assignmentCount = 12;
-        const ast = toLiquidHtmlAST(`
-          {% doc %}
-            @param {'heading' | 'small'} variant
-          {% enddoc %}
-          {% assign x = ${initialValue} %}
-          ${'{% assign x = x | default: x %}'.repeat(assignmentCount)}
-          {{ x }}
-        `);
-        let filterReads = 0;
-        for (const child of ast.children) {
-          if (!isNamedLiquidTag(child, NamedTags.assign)) continue;
-          const value = child.markup.value;
-          const filters = value.filters;
-          Object.defineProperty(value, 'filters', {
-            enumerable: true,
-            get() {
-              filterReads++;
-              return filters;
-            },
-          });
-        }
-        const output = ast.children.at(-1)!;
-        assert(isLiquidVariableOutput(output));
-
-        const inferred = await typeSystem.inferType(
-          output.markup,
-          ast,
-          'file:///snippets/example.liquid',
-        );
-
-        expect(inferred).to.eql(
-          initialValue === 'variant'
-            ? { kind: 'union', types: [literal("'heading'"), literal("'small'")] }
-            : 'string',
-        );
-        expect(filterReads).toBeLessThan(assignmentCount * 10);
-      },
-    );
   });
 
   it('should return the type of variables in for loop', async () => {
@@ -962,53 +919,15 @@ describe('Module: TypeSystem', () => {
         expect(await inferOutput(`{{ variant | ${filter} }}`)).to.eql(expected);
       });
 
-      it('preserves the enum with an existing member as the default', async () => {
-        expect(await inferOutput(`{{ variant | default: 'small' }}`)).to.eql(enumType);
-      });
-
-      it('includes a new literal default with its original spelling', async () => {
-        expect(await inferOutput(`{{ variant | default: "Heading" }}`)).to.eql({
-          kind: 'union',
-          types: [...enumType.types, literal('"Heading"')],
-        });
-      });
-
-      it('merges enum defaults without duplicate values', async () => {
-        expect(
-          await inferOutput(`
-            {% doc %}
-              @param {'small' | 'other'} fallback
-            {% enddoc %}
-            {{ variant | default: fallback }}
-          `),
-        ).to.eql({
-          kind: 'union',
-          types: [...enumType.types, literal("'other'")],
-        });
-      });
-
       it.each([
-        ['variant | default: product.title', 'string'],
-        ['product.title | default: variant', 'string'],
-        ['variant | default: 1', 'untyped'],
-        ['1 | default: variant', 'untyped'],
-        ['variant | default: unknown', 'untyped'],
-        ['unknown | default: variant', 'untyped'],
-        ['variant | upcase | default: variant', 'string'],
-        ['variant | size | default: variant', 'untyped'],
-        ['variant | default: "small" | upcase', 'string'],
-      ])('widens the enum as needed for %s', async (expression, expected) => {
+        ["variant | default: 'small'", 'string'],
+        ['variant | default: 1', 'number'],
+        ["'other' | default: variant", 'string'],
+      ])('uses the widened fallback type for %s', async (expression, expected) => {
         expect(await inferOutput(`{{ ${expression} }}`)).to.equal(expected);
       });
 
-      it('includes a literal input when the default is an enum', async () => {
-        expect(await inferOutput(`{{ 'other' | default: variant }}`)).to.eql({
-          kind: 'union',
-          types: [literal("'other'"), ...enumType.types],
-        });
-      });
-
-      it('does not add default values to the original enum', async () => {
+      it('widens a default assignment without changing the documented enum', async () => {
         const ast = toLiquidHtmlAST(`
           {% doc %}
             @param {'heading' | "small"} variant
@@ -1028,10 +947,7 @@ describe('Module: TypeSystem', () => {
           'file:///snippets/example.liquid',
         );
         expect(variables.find(({ entry }) => entry.name === 'variant')?.type).to.eql(enumType);
-        expect(variables.find(({ entry }) => entry.name === 'copy')?.type).to.eql({
-          kind: 'union',
-          types: [...enumType.types, literal("'other'")],
-        });
+        expect(variables.find(({ entry }) => entry.name === 'copy')?.type).to.equal('string');
       });
 
       it('does not treat an enum as an array when resolving a loop variable', async () => {

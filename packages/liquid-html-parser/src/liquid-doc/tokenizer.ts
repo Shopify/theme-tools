@@ -170,16 +170,15 @@ export function tokenizeParamContent(text: string, startOffset: number): ParamTo
     }
 
     // Type: {type}
-    const typeEnd = findTypeEnd(text, pos);
-    if (typeEnd !== -1) {
-      const end = typeEnd;
+    const typeEnd = readTypeEnd(text, pos);
+    if (typeEnd !== undefined) {
       tokens.push({
         type: ParamTokenType.Type,
-        value: text.slice(pos + 1, end - 1),
+        value: text.slice(pos + 1, typeEnd - 1),
         start: pos + startOffset,
-        end: end + startOffset,
+        end: typeEnd + startOffset,
       });
-      pos = end;
+      pos = typeEnd;
       continue;
     }
 
@@ -247,50 +246,27 @@ export function tokenizeParamContent(text: string, startOffset: number): ParamTo
   return tokens;
 }
 
-/** Find the closing brace without treating braces inside string literals as delimiters. */
-function findTypeEnd(text: string, start: number): number {
-  if (text[start] !== '{') return -1;
-
-  let quote: string | undefined;
-  let recoveryBrace = -1;
+/** Returns the exclusive end of the `{type}` annotation at `start`. */
+function readTypeEnd(text: string, start: number): number | undefined {
+  if (text[start] !== '{') return undefined;
 
   for (let pos = start + 1; pos < text.length; pos++) {
     const ch = text[pos];
-    if (ch === '\n' || ch === '\r') break;
 
-    if (quote) {
-      if (ch === quote) {
-        if (
-          recoveryBrace !== -1 &&
-          /^[ \t]*(?:\[[^\]]*\]|[\w][\w-]*)[ \t]+/.test(text.slice(recoveryBrace + 1, pos))
-        ) {
-          let next = pos + 1;
-          while (text[next] === ' ' || text[next] === '\t') next++;
-          // An unmatched quote can close at an apostrophe in the parameter's
-          // description, which need not have a dash. A real type delimiter wins;
-          // otherwise prefer a recognizable parameter boundary, even at EOL.
-          // This also recovers ambiguous input with a missing outer brace and a
-          // parameter-looking name inside its last string literal.
-          if (text[next] !== '|' && text[next] !== '}') {
-            return recoveryBrace + 1;
-          }
-        }
-        quote = undefined;
-        recoveryBrace = -1;
-      } else if (ch === '}' && recoveryBrace === -1) {
-        recoveryBrace = pos;
+    if (ch === "'" || ch === '"') {
+      const closeQuote = text.indexOf(ch, pos + 1);
+      if (closeQuote === -1) {
+        const typeEnd = text.indexOf('}', pos + 1);
+        return typeEnd === -1 ? undefined : typeEnd + 1;
       }
+      pos = closeQuote;
       continue;
     }
 
     if (ch === '}') return pos + 1;
-    // Liquid strings do not interpret backslash escapes.
-    if (ch === "'" || ch === '"') quote = ch;
   }
 
-  // Keep a malformed, closed annotation recognizable to semantic checks, and
-  // preserve its parameter name even when a string quote is missing.
-  return recoveryBrace === -1 ? -1 : recoveryBrace + 1;
+  return undefined;
 }
 
 const ANNOTATION_RE = /@(\w+)/y;

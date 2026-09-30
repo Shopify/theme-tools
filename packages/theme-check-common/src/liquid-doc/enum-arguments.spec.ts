@@ -6,6 +6,7 @@ import { ValidBlockArgumentTypes } from '../checks/valid-block-argument-types';
 import { MissingRenderSnippetArguments } from '../checks/missing-render-snippet-arguments';
 import { MissingContentForArguments } from '../checks/missing-content-for-arguments';
 import { MissingBlockArguments } from '../checks/missing-block-arguments';
+import { ValidDocParamTypes } from '../checks/valid-doc-param-types';
 import { applySuggestions, runLiquidCheck } from '../test';
 
 const enumType = `'heading' | "small"`;
@@ -200,6 +201,81 @@ describe('LiquidDoc enum arguments', () => {
         { [caller.file]: definition('product') },
       );
       expect(offenses).toHaveLength(0);
+    });
+
+    it.each(['Product', 'Product[]'])(
+      `${caller.name} leaves uppercase declaration %s to ValidDocParamTypes`,
+      async (type) => {
+        const offenses = await runLiquidCheck(
+          caller.check,
+          caller.source('123'),
+          'templates/index.liquid',
+          {},
+          { [caller.file]: definition(type) },
+        );
+        expect(offenses).toHaveLength(0);
+
+        const declarationOffenses = await runLiquidCheck(
+          ValidDocParamTypes,
+          definition(type),
+          caller.file,
+        );
+        expect(declarationOffenses.map(({ message }) => message)).toEqual([
+          `The parameter type '${type}' is not supported.`,
+        ]);
+      },
+    );
+
+    it.each(['unknown', 'unknown[]'])(
+      `${caller.name} leaves named declaration %s to ValidDocParamTypes when the docset lacks it`,
+      async (type) => {
+        const offenses = await runLiquidCheck(
+          caller.check,
+          caller.source('123'),
+          'templates/index.liquid',
+          {},
+          { [caller.file]: definition(type) },
+        );
+        expect(offenses).toHaveLength(0);
+      },
+    );
+
+    describe(`${caller.name} without a docset`, () => {
+      const runWithoutDocset = (value: string, type: string) =>
+        runLiquidCheck(
+          caller.check,
+          caller.source(value),
+          'templates/index.liquid',
+          { themeDocset: undefined },
+          { [caller.file]: definition(type) },
+        );
+
+      it.each(['product', 'Product', 'product[]', 'string[]', 'unknown'])(
+        'checks literal values against named declaration %s',
+        async (type) => {
+          const offenses = await runWithoutDocset('123', type);
+          expect(offenses.map(({ message }) => message)).toEqual([
+            `Type mismatch for argument 'variant': expected ${type.toLowerCase()}, got number`,
+          ]);
+        },
+      );
+
+      it('checks literal values against enum declarations', async () => {
+        const offenses = await runWithoutDocset("'body'", enumType);
+        expect(offenses).toHaveLength(1);
+        expect(offenses[0].message).toContain(enumType);
+      });
+
+      it.each(["'heading' |", "'heading' | number", 'product['])(
+        'does not cascade errors from unsupported declaration %s',
+        async (type) => {
+          expect(await runWithoutDocset("'body'", type)).toHaveLength(0);
+        },
+      );
+
+      it('leaves dynamic values unverified', async () => {
+        expect(await runWithoutDocset('product', 'product')).toHaveLength(0);
+      });
     });
   }
 

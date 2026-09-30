@@ -1,10 +1,11 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
-import { NodeTypes, RenderMarkup } from '@shopify/liquid-html-parser';
+import { RenderMarkup } from '@shopify/liquid-html-parser';
 import { LiquidDocParameter } from '../../liquid-doc/liquidDoc';
 import {
+  ArgumentTypeCheck,
+  checkArgumentType,
   getArgumentTypeMismatchMessage,
   getValidParamTypes,
-  isArgumentTypeCompatible,
   parseParamType,
 } from '../../liquid-doc/utils';
 import {
@@ -46,21 +47,10 @@ export const ValidRenderSnippetArgumentTypes: LiquidCheckDefinition = {
       if (!node.alias || !node.variable?.name) return;
 
       const expectedType = liquidDocParameters.get(node.alias.value)?.type;
+      if (!expectedType) return;
+
       const argument = node.variable.name;
-      if (!expectedType || argument.type === NodeTypes.VariableLookup) return;
-
-      const compatibility = isArgumentTypeCompatible(expectedType, argument);
-      if (compatibility === true) return;
-
-      if (compatibility === undefined) {
-        // Aliases also check named Liquid types and arrays. Validate the
-        // declaration first so malformed types do not cause a second error.
-        if (!context.themeDocset) return;
-        validParamTypesPromise ??= context.themeDocset
-          .liquidDrops()
-          .then((entries) => new Set(getValidParamTypes(entries).keys()));
-        if (!parseParamType(await validParamTypesPromise, expectedType)) return;
-      }
+      if (!(await isAliasMismatch(expectedType, checkArgumentType(expectedType, argument)))) return;
 
       context.report({
         message: getArgumentTypeMismatchMessage(node.alias.value, expectedType, argument),
@@ -72,6 +62,32 @@ export const ValidRenderSnippetArgumentTypes: LiquidCheckDefinition = {
           argument.position.end,
         ),
       });
+    }
+
+    /**
+     * Aliases check literals against every declared type, including named types
+     * and arrays, which no literal matches. With a docset, types that it does not
+     * define are left to ValidDocParamTypes so each declaration is reported once.
+     * The docset lookup uses the declared spelling, as ValidDocParamTypes does,
+     * so `Product` is reported only as an unsupported type.
+     */
+    async function isAliasMismatch(
+      expectedType: string,
+      check: ArgumentTypeCheck,
+    ): Promise<boolean> {
+      switch (check.kind) {
+        case 'incompatible':
+          return true;
+        case 'named-type':
+          if (!context.themeDocset) return true;
+          validParamTypesPromise ??= context.themeDocset
+            .liquidDrops()
+            .then((entries) => new Set(getValidParamTypes(entries).keys()));
+          return parseParamType(await validParamTypesPromise, expectedType) !== undefined;
+        case 'compatible':
+        case 'unchecked':
+          return false;
+      }
     }
 
     return {

@@ -10,9 +10,9 @@ import {
 } from '@shopify/liquid-html-parser';
 import { Context, LiquidDocParameter, SourceCodeType, StringCorrector } from '..';
 import {
+  checkArgumentType,
   getArgumentTypeMismatchMessage,
   getDefaultValueForType,
-  isArgumentTypeCompatible,
   parseStringLiterals,
 } from './utils';
 import { isLiquidString } from '../checks/utils';
@@ -109,7 +109,8 @@ export function reportDuplicateArguments(
 
 /**
  * Find type mismatch between the arguments provided for `content_for` tag and `render` tag
- * and their associated file's LiquidDoc
+ * and their associated file's LiquidDoc. Arguments declared with named Liquid types, such as
+ * `product`, are skipped.
  */
 export function findTypeMismatchParams(
   liquidDocParameters: Map<string, LiquidDocParameter>,
@@ -121,7 +122,7 @@ export function findTypeMismatchParams(
     const liquidDocParamDef = liquidDocParameters.get(arg.name);
     if (
       liquidDocParamDef?.type &&
-      isArgumentTypeCompatible(liquidDocParamDef.type, arg.value) === false
+      checkArgumentType(liquidDocParamDef.type, arg.value).kind === 'incompatible'
     ) {
       typeMismatchParams.push(arg);
     }

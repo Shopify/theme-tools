@@ -151,9 +151,6 @@ describe('Unit: liquid-doc parser', () => {
       "| 'heading'",
       "'heading' || 'small'",
       "'heading' 'small'",
-      "'heading",
-      '"heading',
-      "'a}b' | 'small",
       "'a}b' trailing",
     ])('preserves malformed enum type %s for semantic validation', (paramType) => {
       const description = "It's {the shared style}.";
@@ -167,36 +164,6 @@ describe('Unit: liquid-doc parser', () => {
       expect(param.required).toBe(false);
       expect(param.paramDescription!.value).toBe(description);
       expect(asParam(nodes[1]).paramName.value).toBe('next');
-    });
-
-    it.each(['', '- '])(
-      'recovers a missing type quote before a parameter description with separator %j',
-      (separator) => {
-        for (const name of ['variant', '[variant]']) {
-          for (const description of ["It's {the shared style}.", "Users'"]) {
-            const nodes = parseDoc(
-              `\n@param {'heading} ${name} ${separator}${description}\n@param {number} next\n`,
-            );
-            expect(nodes).toHaveLength(2);
-            const param = asParam(nodes[0]);
-            expect(param.paramType!.value).toBe("'heading");
-            expect(param.paramName.value).toBe('variant');
-            expect(param.required).toBe(name === 'variant');
-            expect(param.paramDescription!.value).toBe(description);
-            expect(asParam(nodes[1]).paramName.value).toBe('next');
-          }
-        }
-      },
-    );
-
-    it('prefers a parameter boundary when the missing delimiter is ambiguous', () => {
-      // This could be a closed string missing its outer brace, or an unclosed
-      // string followed by a parameter and an apostrophe in its description.
-      const param = asParam(parseDoc("\n@param {'a} [variant] - b'\n")[0]);
-      expect(param.paramType!.value).toBe("'a");
-      expect(param.paramName.value).toBe('variant');
-      expect(param.required).toBe(false);
-      expect(param.paramDescription!.value).toBe("b'");
     });
 
     it.each(["'heading", "'a}b'", "'a}b' | 'small'"])(
