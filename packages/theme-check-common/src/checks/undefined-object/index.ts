@@ -13,6 +13,7 @@ import {
   NodeTypes,
   Position,
 } from '@shopify/liquid-html-parser';
+import { BLOCK_CONTENT_PARAMETER } from '../../block-parameters';
 import { LiquidCheckDefinition, Mode, Severity, SourceCodeType, ThemeDocset } from '../../types';
 import { isError, last } from '../../utils';
 import { hasLiquidDoc } from '../../liquid-doc/liquidDoc';
@@ -55,7 +56,7 @@ export const UndefinedObject: LiquidCheckDefinition = {
 
     const themeDocset = context.themeDocset;
     const scopedVariables: Map<string, Scope[]> = new Map();
-    const fileScopedVariables: Set<string> = new Set();
+    const fileScopedVariables: Set<string> = new Set(builtInVariables(relativePath));
     const variables: LiquidVariableLookup[] = [];
 
     function indexVariableScope(variableName: string | null, scope: Scope) {
@@ -186,6 +187,11 @@ async function globalObjects(themeDocset: ThemeDocset, relativePath: string, mod
   });
 
   return globalObjects;
+}
+
+/** Theme blocks always receive the built-in `content` parameter as a variable. */
+function builtInVariables(relativePath: string): string[] {
+  return relativePath.startsWith('blocks/') ? [BLOCK_CONTENT_PARAMETER] : [];
 }
 
 const BLOCK_CONTEXTUAL_OBJECTS = ['app', 'section', 'recommendations', 'block'];

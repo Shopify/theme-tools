@@ -371,17 +371,7 @@ describe('Module: ObjectCompletionProvider', async () => {
 
   describe('when a theme block schema defines settings', () => {
     beforeEach(() => {
-      provider = new CompletionsProvider({
-        documentManager: new DocumentManager(),
-        themeDocset: {
-          filters: async () => [],
-          objects: async () => blockSettingsObjects,
-          liquidDrops: async () => blockSettingsObjects,
-          tags: async () => [],
-          systemTranslations: async () => ({}),
-        },
-        getMetafieldDefinitions: async () => ({}) as MetafieldDefinitionMap,
-      });
+      provider = blockFileProvider();
     });
 
     it('completes a setting ID as a plain variable with its schema type', async () => {
@@ -428,6 +418,54 @@ describe('Module: ObjectCompletionProvider', async () => {
     );
   });
 
+  describe('when a theme block uses the built-in content parameter', () => {
+    const contentItem = expect.objectContaining({
+      label: 'content',
+      documentation: expect.objectContaining({ value: '### content: `string`' }),
+    });
+
+    beforeEach(() => {
+      provider = blockFileProvider();
+    });
+
+    it('completes content as a string variable without a schema or LiquidDoc', async () => {
+      await expect(provider).to.complete(
+        { relativePath: 'blocks/card.liquid', source: '{{ cont█ }}' },
+        [contentItem],
+      );
+    });
+
+    it('completes block.content as a string property', async () => {
+      await expect(provider).to.complete(
+        { relativePath: 'blocks/card.liquid', source: '{{ block.cont█ }}' },
+        [contentItem],
+      );
+    });
+
+    it.each([
+      'sections/card.liquid',
+      'snippets/card.liquid',
+      'shop/blocks/theme/sections/card.liquid',
+      'shop/myblocks/card.liquid',
+    ])('does not offer content as a variable in %s', async (relativePath) => {
+      await expect(provider).to.complete({ relativePath, source: '{{ cont█ }}' }, []);
+    });
+
+    it.each([
+      'sections/main.liquid',
+      'shop/blocks/theme/sections/main.liquid',
+      'shop/myblocks/main.liquid',
+    ])('does not add content to the section block object in %s', async (relativePath) => {
+      await expect(provider).to.complete(
+        {
+          relativePath,
+          source: '{% for block in section.blocks %}{{ block.█ }}{% endfor %}',
+        },
+        ['settings'],
+      );
+    });
+  });
+
   it('should complete metafields defined by getMetafieldDefinitions', async () => {
     await expect(provider).to.complete('{% echo product.metafields.█ %}', ['custom']);
     await expect(provider).to.complete('{% echo product.metafields.custom.█ %}', ['color']);
@@ -446,11 +484,34 @@ const blockSettingsObjects: ObjectEntry[] = [
     properties: [{ name: 'settings', return_type: [{ type: 'untyped', name: '' }] }],
   },
   {
+    name: 'section',
+    access: { global: false, parents: [], template: [] },
+    return_type: [],
+    properties: [
+      { name: 'settings', return_type: [{ type: 'untyped', name: '' }] },
+      { name: 'blocks', return_type: [{ type: 'array', array_value: 'block' }] },
+    ],
+  },
+  {
     name: 'image',
     access: { global: false, parents: [], template: [] },
     return_type: [],
   },
 ];
+
+function blockFileProvider() {
+  return new CompletionsProvider({
+    documentManager: new DocumentManager(),
+    themeDocset: {
+      filters: async () => [],
+      objects: async () => blockSettingsObjects,
+      liquidDrops: async () => blockSettingsObjects,
+      tags: async () => [],
+      systemTranslations: async () => ({}),
+    },
+    getMetafieldDefinitions: async () => ({}) as MetafieldDefinitionMap,
+  });
+}
 
 function articleCard(body: string, docParam?: string) {
   return {

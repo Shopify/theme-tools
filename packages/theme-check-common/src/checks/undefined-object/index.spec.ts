@@ -449,6 +449,23 @@ describe('Module: UndefinedObject', () => {
     expect(offenses[0].message).toBe("Unknown object 'undefined_variable' used.");
   });
 
+  it('does not report the built-in content variable in a block file', async () => {
+    const sourceCode = `
+      {{ content }}
+      {% if content != blank %}{{ content | upcase }}{% endif %}
+    `;
+
+    const offenses = await runLiquidCheck(UndefinedObject, sourceCode, 'blocks/card.liquid');
+
+    expect(offenses).toEqual([]);
+  });
+
+  it('reports content outside block files', async () => {
+    const offenses = await runLiquidCheck(UndefinedObject, '{{ content }}', 'sections/main.liquid');
+
+    expect(offenses).toMatchObject([{ message: "Unknown object 'content' used." }]);
+  });
+
   it('should not report an offense when a self defined variable is defined with a @param tag', async () => {
     const sourceCode = `
       {% doc %}

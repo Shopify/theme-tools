@@ -14,6 +14,7 @@ import {
 } from '@shopify/liquid-html-parser';
 import {
   ArrayReturnType,
+  BLOCK_CONTENT_PARAMETER,
   DocsetEntry,
   FilterEntry,
   MetafieldDefinitionMap,
@@ -176,9 +177,13 @@ export class TypeSystem {
       };
     }
 
-    // Deal with blocks/files.liquid block.settings in a similar fashion
-    if (/[\/\\]blocks[\/\\]/.test(uri) && result.block) {
+    // Deal with blocks/files.liquid block.settings in a similar fashion.
+    // `block.content` is the built-in string `content` parameter.
+    if (isThemeBlockFile(uri) && result.block) {
       result.block = JSON.parse(JSON.stringify(result.block)); // easy deep clone
+      result.block.properties = (result.block.properties ?? [])
+        .filter((property) => property.name !== BLOCK_CONTENT_PARAMETER)
+        .concat({ name: BLOCK_CONTENT_PARAMETER, return_type: [{ type: String, name: '' }] });
       const settings = result.block.properties?.find((x) => x.name === 'settings');
       if (!settings || !settings.return_type) return result;
       settings.return_type = [{ type: 'block_settings', name: '' }];
@@ -289,16 +294,16 @@ export class TypeSystem {
   });
 
   private async symbolsTable(partialAst: LiquidHtmlNode, uri: string): Promise<SymbolsTable> {
-    const schemaSettingTypes = blockSchemaSettingTypes(partialAst, uri);
-    const seedSymbolsTable = seedSchemaSettingVariables(
+    const blockVariableTypes = themeBlockVariableTypes(partialAst, uri);
+    const seedSymbolsTable = seedBlockVariables(
       await this.seedSymbolsTable(uri),
-      schemaSettingTypes,
+      blockVariableTypes,
     );
     return buildSymbolsTable(
       partialAst,
       seedSymbolsTable,
       await this.themeDocset.liquidDrops(),
-      schemaSettingTypes,
+      blockVariableTypes,
     );
   }
 
@@ -346,7 +351,14 @@ const BLOCK_FILE_REGEX = /blocks[\/\\][^.\\\/]*\.liquid$/;
 const SNIPPET_FILE_REGEX = /snippets[\/\\][^.\\\/]*\.liquid$/;
 const LAYOUT_FILE_REGEX = /layout[\/\\]checkout\.liquid$/;
 
+const THEME_BLOCK_FILE_REGEX = /(?:^|[\/\\])blocks[\/\\][^.\\\/]*\.liquid$/;
+
 const BLOCK_CONTEXTUAL_ENTRIES = ['app', 'section', 'recommendations', 'block'];
+
+/** Only files directly inside a directory named exactly `blocks` are theme block files. */
+function isThemeBlockFile(uri: string): boolean {
+  return THEME_BLOCK_FILE_REGEX.test(path.normalize(uri));
+}
 
 function getContextualEntries(uri: string, mode: Mode = 'theme'): string[] {
   const normalizedUri = path.normalize(uri);
@@ -498,7 +510,7 @@ function buildSymbolsTable(
   partialAst: LiquidHtmlNode,
   seedSymbolsTable: SymbolsTable,
   liquidDrops: ObjectEntry[],
-  schemaSettingTypes: SchemaSettingTypes,
+  blockVariableTypes: BlockVariableTypes,
 ): SymbolsTable {
   const typeRanges = visit<SourceCodeType.LiquidHtml, TypeRange>(partialAst, {
     // {% assign x = foo.x | filter %}
@@ -514,12 +526,13 @@ function buildSymbolsTable(
     //   @param {string} name - your name
     // {% enddoc %}
     //
-    // In a theme block, a schema setting with the same ID decides the type.
+    // In a theme block, a schema setting with the same ID or the built-in
+    // `content` parameter decides the type.
     LiquidDocParamNode(node) {
       const identifier = node.paramName.value;
       return {
         identifier,
-        type: schemaSettingTypes.get(identifier) ?? inferLiquidDocParamType(node, liquidDrops),
+        type: blockVariableTypes.get(identifier) ?? inferLiquidDocParamType(node, liquidDrops),
         range: [node.position.end],
       };
     },
@@ -582,33 +595,36 @@ function buildSymbolsTable(
     }, seedSymbolsTable);
 }
 
-/** The type of each schema setting ID, by setting ID. */
-type SchemaSettingTypes = Map<Identifier, PseudoType | ArrayType>;
+/** The type of each variable that a theme block file gets implicitly, by name. */
+type BlockVariableTypes = Map<Identifier, PseudoType | ArrayType>;
 
 /**
- * A theme block's schema settings are also plain variables in the block file.
- * Other files get no schema setting variables.
+ * A theme block's schema settings are also plain variables in the block file,
+ * and the built-in `content` parameter is always a string variable there,
+ * even when a schema setting named `content` declares another type.
+ * Other files get no block variables.
  */
-function blockSchemaSettingTypes(partialAst: LiquidHtmlNode, uri: string): SchemaSettingTypes {
-  if (!BLOCK_FILE_REGEX.test(path.normalize(uri))) return new Map();
+function themeBlockVariableTypes(partialAst: LiquidHtmlNode, uri: string): BlockVariableTypes {
+  if (!isThemeBlockFile(uri)) return new Map();
 
-  return new Map(
+  const schemaSettingTypes: BlockVariableTypes = new Map(
     schemaSettingsAsProperties(partialAst).map((setting) => [
       setting.name,
       objectEntryType(setting),
     ]),
   );
+  return schemaSettingTypes.set(BLOCK_CONTENT_PARAMETER, String);
 }
 
 /**
- * Schema setting variables start at the top of the file, like other seeded
- * variables, so later assigns and captures change their type by position.
+ * Block variables start at the top of the file, like other seeded variables,
+ * so later assigns and captures change their type by position.
  */
-function seedSchemaSettingVariables(
+function seedBlockVariables(
   seedSymbolsTable: SymbolsTable,
-  schemaSettingTypes: SchemaSettingTypes,
+  blockVariableTypes: BlockVariableTypes,
 ): SymbolsTable {
-  for (const [identifier, type] of schemaSettingTypes) {
+  for (const [identifier, type] of blockVariableTypes) {
     seedSymbolsTable[identifier] ??= [];
     seedSymbolsTable[identifier].push({ identifier, type, range: [0] });
   }

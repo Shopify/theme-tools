@@ -117,6 +117,10 @@ describe('Module: TypeSystem', () => {
             name: 'settings',
             return_type: [{ type: 'untyped', name: '' }],
           },
+          {
+            name: 'blocks',
+            return_type: [{ type: 'array', array_value: 'block' }],
+          },
         ],
       },
       {
@@ -585,6 +589,109 @@ describe('Module: TypeSystem', () => {
         expect(inferredType).toEqual('unknown');
       },
     );
+  });
+
+  describe('when a theme block uses the built-in content parameter', () => {
+    const blockUri = 'file:///blocks/card.liquid';
+
+    it.each(['content', 'block.content'])(
+      'infers %s as a string without a schema or LiquidDoc',
+      async (expression) => {
+        const ast = toLiquidHtmlAST('{{ content }}{{ block.content }}');
+
+        const inferredType = await typeSystem.inferType(
+          liquidVariable(ast, expression),
+          ast,
+          blockUri,
+        );
+
+        expect(inferredType).toEqual('string');
+      },
+    );
+
+    it('makes content available as a string variable', async () => {
+      const ast = toLiquidHtmlAST('{{ content }}');
+
+      const variables = await typeSystem.availableVariables(
+        ast,
+        'cont',
+        variableLookup(ast, 'content'),
+        blockUri,
+      );
+
+      expect(variables.map(({ entry, type }) => [entry.name, type])).toEqual([
+        ['content', 'string'],
+      ]);
+    });
+
+    it('infers the assigned type after content is reassigned', async () => {
+      const ast = toLiquidHtmlAST('{{ content }}{% assign content = 1 %}{{ content }}');
+      const [beforeAssign, afterAssign] = liquidVariables(ast, 'content');
+
+      const typeBeforeAssign = await typeSystem.inferType(beforeAssign, ast, blockUri);
+      const typeAfterAssign = await typeSystem.inferType(afterAssign, ast, blockUri);
+
+      expect(typeBeforeAssign).toEqual('string');
+      expect(typeAfterAssign).toEqual('number');
+    });
+
+    it.each([
+      [
+        'a non-string schema setting',
+        '{{ content }}{{ block.content }}{% schema %}{ "settings": [{ "type": "number", "id": "content", "label": "Content" }] }{% endschema %}',
+      ],
+      [
+        'a non-string LiquidDoc parameter',
+        '{% doc %}@param {number} content - Body{% enddoc %}{{ content }}{{ block.content }}',
+      ],
+    ])('keeps the string type over %s named content', async (_name, source) => {
+      const ast = toLiquidHtmlAST(source);
+
+      const contentType = await typeSystem.inferType(liquidVariable(ast, 'content'), ast, blockUri);
+      const blockContentType = await typeSystem.inferType(
+        liquidVariable(ast, 'block.content'),
+        ast,
+        blockUri,
+      );
+
+      expect(contentType).toEqual('string');
+      expect(blockContentType).toEqual('string');
+    });
+
+    it.each([
+      'sections/card.liquid',
+      'snippets/card.liquid',
+      'shop/blocks/theme/sections/card.liquid',
+      'shop/myblocks/card.liquid',
+    ])('does not expose content as a variable in %s', async (relativePath) => {
+      const ast = toLiquidHtmlAST('{{ content }}');
+
+      const inferredType = await typeSystem.inferType(
+        liquidVariable(ast, 'content'),
+        ast,
+        `file:///${relativePath}`,
+      );
+
+      expect(inferredType).toEqual('unknown');
+    });
+
+    it.each([
+      'sections/main.liquid',
+      'shop/blocks/theme/sections/main.liquid',
+      'shop/myblocks/main.liquid',
+    ])('does not add content to the section block object in %s', async (relativePath) => {
+      const ast = toLiquidHtmlAST(
+        '{% for block in section.blocks %}{{ block.content }}{% endfor %}',
+      );
+
+      const inferredType = await typeSystem.inferType(
+        liquidVariable(ast, 'block.content'),
+        ast,
+        `file:///${relativePath}`,
+      );
+
+      expect(inferredType).toEqual('untyped');
+    });
   });
 
   // TODO
