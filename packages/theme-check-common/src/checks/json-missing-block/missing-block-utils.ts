@@ -11,6 +11,10 @@ function isNestedBlock(currentPath: string[]): boolean {
   return currentPath.filter((segment) => segment === 'blocks').length > 1;
 }
 
+function isShopifyAppBlockType(blockType: string): boolean {
+  return blockType.startsWith('shopify://apps/');
+}
+
 function reportWarning(
   message: string,
   offset: number,
@@ -28,7 +32,7 @@ async function validateBlockFileExistence(
   blockType: string,
   context: Context<SourceCodeType.JSON>,
 ): Promise<boolean> {
-  if (blockType === '@theme' || blockType === '@app') {
+  if (blockType === '@theme' || blockType === '@app' || isShopifyAppBlockType(blockType)) {
     return true;
   }
   const blockPath = `blocks/${blockType}.liquid`;
@@ -53,7 +57,7 @@ async function getThemeBlocks(
 
   if (Array.isArray(validSchema.blocks)) {
     validSchema.blocks.forEach((block) => {
-      if (!('name' in block) && block.type !== '@app') {
+      if (!('name' in block)) {
         themeBlocks.push(block.type);
       }
     });
@@ -85,13 +89,18 @@ async function validateBlock(
     // Static blocks are not required to be in the schema blocks array
     return;
   } else {
+    const isAppBlock = isShopifyAppBlockType(blockType);
     const isPrivateBlock = blockType.startsWith('_');
+    const schemaIncludesAtApp = themeBlocks.includes('@app');
     const schemaIncludesAtTheme = themeBlocks.includes('@theme');
     const schemaIncludesBlockType = themeBlocks.includes(blockType);
+    const schemaAllowsBlockType = isAppBlock
+      ? schemaIncludesAtApp
+      : !isPrivateBlock
+        ? schemaIncludesBlockType || schemaIncludesAtTheme
+        : schemaIncludesBlockType;
 
-    if (
-      !isPrivateBlock ? schemaIncludesBlockType || schemaIncludesAtTheme : schemaIncludesBlockType
-    ) {
+    if (schemaAllowsBlockType) {
       return;
     } else {
       const location = isNestedBlock(currentPath) ? 'blocks' : 'sections';
