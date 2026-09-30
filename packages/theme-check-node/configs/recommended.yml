@@ -8,7 +8,7 @@ AssetPreload:
   severity: 1
 BlockContentUsage:
   enabled: true
-  severity: 1
+  severity: 0
 BlockIdUsage:
   enabled: true
   severity: 1

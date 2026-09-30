@@ -7,9 +7,9 @@ import { BlockContentUsage } from './index';
 const MESSAGE = "Use the implicit 'content' parameter directly instead of 'block.content'.";
 
 describe('BlockContentUsage', () => {
-  it('is a recommended warning', () => {
+  it('is a recommended error', () => {
     expect(recommended).toContain(BlockContentUsage);
-    expect(BlockContentUsage.meta.severity).toBe(Severity.WARNING);
+    expect(BlockContentUsage.meta.severity).toBe(Severity.ERROR);
   });
 
   it.each([
@@ -22,7 +22,7 @@ describe('BlockContentUsage', () => {
   ])('reports the block.content lookup in %j', async (source, highlight) => {
     const offenses = await runLiquidCheck(BlockContentUsage, source, 'blocks/card.liquid');
 
-    expect(offenses).toMatchObject([{ message: MESSAGE, severity: Severity.WARNING }]);
+    expect(offenses).toMatchObject([{ message: MESSAGE, severity: Severity.ERROR }]);
     expect(highlightedOffenses({ 'blocks/card.liquid': source }, offenses)).toEqual([highlight]);
   });
 
