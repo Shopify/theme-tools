@@ -1,5 +1,37 @@
 # @shopify/theme-language-server-common
 
+## 2.23.0
+
+### Minor Changes
+
+- 96af869d: Support LiquidDoc string enums in hovers and completions
+
+  Allowed values are kept through assignments, and `render`, `content_for` and `block` parameter completions insert the first one. The `default` filter widens enum values to `string`.
+
+### Patch Changes
+
+- 0bbd0f8b: Complete and hover the implicit `content` parameter inside `blocks/*.liquid`.
+
+  Bare `content` is a `string` variable in every theme block file, and `block.content` is a `string` property there. A later assign or capture changes the variable's type from that point. A schema setting or LiquidDoc parameter named `content` keeps the `string` type.
+
+- 1dd77e8e: Complete and hover `block` tag arguments from the target block's schema settings, LiquidDoc parameters, and built-in `content`.
+
+  Completion offers plain parameter names with schema-derived value templates and skips arguments the call already passes. Completion and hover show requiredness, the Liquid type, the LiquidDoc description, and the theme setting's label and info, resolving `t:` keys from the default schema locale. The `block` tag is offered only in `templates/**/*.liquid` and `layout/*.liquid` files.
+
+  Inside `blocks/*.liquid`, each schema setting ID also completes and hovers as a plain variable with the same schema-derived type as `block.settings.<id>`. A same-named LiquidDoc parameter describes that variable, and the schema sets its type.
+
+- Updated dependencies
+- Updated dependencies [699780b7]
+- Updated dependencies [0bbd0f8b]
+- Updated dependencies [86058651]
+- Updated dependencies [169ff04d]
+- Updated dependencies [2a150cd2]
+- Updated dependencies [9c04ccbc]
+- Updated dependencies [9f1fa97b]
+  - @shopify/theme-graph@0.3.4
+  - @shopify/theme-check-common@3.30.0
+  - @shopify/liquid-html-parser@2.10.2
+
 ## 2.22.3
 
 ### Patch Changes

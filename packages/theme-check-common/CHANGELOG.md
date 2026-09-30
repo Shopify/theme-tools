@@ -1,5 +1,40 @@
 # @shopify/theme-check-common
 
+## 3.30.0
+
+### Minor Changes
+
+- 0bbd0f8b: Guide theme blocks to the implicit `content` parameter.
+
+  Add the recommended `BlockContentUsage` error for `block.content` in `blocks/*.liquid`. Its message is "Use the implicit 'content' parameter directly instead of 'block.content'."
+
+  Add the recommended `ValidBlockContentSettingType` error for a theme block schema setting named `content` whose Liquid type is not `string`. This error replaces the `ValidBlockArgumentTypes` warning for the same schema declaration.
+
+  `UndefinedObject` accepts bare `content` in `blocks/*.liquid`.
+
+- 86058651: Validate block calls against the merged schema, LiquidDoc, and built-in content interface.
+
+  Schema settings define plain arguments, types, and merchant visibility without making arguments required. LiquidDoc controls requiredness for every parameter it declares, including schema-backed parameters and `content`. Schema-only parameters and built-in `content` without LiquidDoc are optional.
+
+  Theme Check reports incompatible types between schema, LiquidDoc, and built-in content declarations.
+
+  `LiquidSyntaxError` now rejects the unsupported experimental `block.settings.<id>` and `block.content` caller arguments, and every other dotted block argument except `block.name`. The obsolete `BlockArgumentSettingCollision` and `UnknownBlockSetting` checks are removed from check registration and generated configs.
+
+- 2a150cd2: Support string enums in LiquidDoc parameter types
+
+  `@param` accepts unions of string literals, such as `{'heading' | 'small'}`, and literal arguments to `render`, `content_for` and `block` are checked against them.
+
+- 9f1fa97b: Add the `ValidBlockTagPlacement` check
+
+  Reports uses of the `block` tag outside direct Liquid templates and layouts.
+
+### Patch Changes
+
+- 699780b7: Report unsupported dotted `block` arguments on the first offending argument instead of the entire `block` tag and its body.
+- 169ff04d: Tell authors to replace `block.settings.<id>:` with `<id>:` when calling a `block`.
+- Updated dependencies [9c04ccbc]
+  - @shopify/liquid-html-parser@2.10.2
+
 ## 3.29.1
 
 ### Patch Changes
