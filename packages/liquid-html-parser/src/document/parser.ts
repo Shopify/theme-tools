@@ -43,6 +43,7 @@ import {
   parseOrphanedHtmlCloseTag as parseOrphanedHtmlCloseTagFn,
   parseHtmlDanglingMarkerClose as parseHtmlDanglingMarkerCloseFn,
   parseBranchAttributesImpl as parseBranchAttributesFn,
+  closesBranchOpenedElement,
 } from './html';
 import type { HtmlParserDelegate } from './html';
 import { parseLiquidStatement as parseLiquidStatementFn } from './liquid-lines';
@@ -64,6 +65,7 @@ export class DocumentParser
   private _parseHtml: boolean;
   private _allowUnclosedHtml: boolean;
   private readonly _allowUnclosedDocumentNode: boolean;
+  private _pairDanglingCloseTags: boolean = false;
   private _inAttributeContext: boolean = false;
   private _inAttributeValueContext: boolean = false;
 
@@ -120,6 +122,13 @@ export class DocumentParser
   set htmlAllowUnclosedHtml(v: boolean) {
     this._allowUnclosedHtml = v;
   }
+  get htmlPairDanglingCloseTags(): boolean {
+    return this._pairDanglingCloseTags;
+  }
+  /** See `ASTBuildOptions.pairDanglingCloseTags`. Set before `parseDocument`. */
+  set pairDanglingCloseTags(v: boolean) {
+    this._pairDanglingCloseTags = v;
+  }
   get htmlInAttributeContext(): boolean {
     return this._inAttributeContext;
   }
@@ -156,7 +165,7 @@ export class DocumentParser
   parseDocument(): DocumentNode {
     const children: LiquidHtmlNode[] = [];
     if (this.check(TokenType.YamlFrontmatter)) children.push(parseNodeFn(this));
-    while (!this.isAtEnd()) children.push(this.parseNode());
+    while (!this.isAtEnd()) children.push(this.parseNodeInScope(children));
     return makeDocumentNode(
       filterChildren(ChildFilterMode.Syntactic, children, this.source),
       this.source,
@@ -165,6 +174,17 @@ export class DocumentParser
 
   parseNode(): LiquidHtmlNode {
     return parseNodeFn(this);
+  }
+  /**
+   * `parseNode` for a node whose earlier siblings are `scope`. Under
+   * `pairDanglingCloseTags`, a close tag ending an element those siblings left
+   * open in a conditional's branches is a dangling marker, not an orphan.
+   */
+  parseNodeInScope(scope: LiquidHtmlNode[]): LiquidHtmlNode {
+    if (this.check(TokenType.HtmlCloseTagOpen) && closesBranchOpenedElement(this, scope)) {
+      return this.parseHtmlDanglingMarkerClose();
+    }
+    return this.parseNode();
   }
   parseLiquidTag(): LiquidTag | LiquidRawTag {
     return parseLiquidTagFn(this);
