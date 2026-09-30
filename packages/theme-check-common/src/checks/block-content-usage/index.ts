@@ -17,7 +17,7 @@ export const BlockContentUsage: LiquidCheckDefinition = {
       url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/block-content-usage',
     },
     type: SourceCodeType.LiquidHtml,
-    severity: Severity.WARNING,
+    severity: Severity.ERROR,
     schema: {},
     targets: [],
   },
