@@ -594,7 +594,7 @@ All except `AttrEmpty` extend `AttributeNodeBase<T>` with `name: (TextNode | Liq
 
 Defined in frozen `ast.ts`. Produced when a `</tagName>` close tag does not match any open element AND the current context has `allowUnclosedHtml: true` (i.e., inside `if`/`unless`/`case` branches). Has `name: (TextNode | LiquidVariableOutput)[]` and `blockStartPosition: Position`.
 
-With the `pairDanglingCloseTags` option, it is also produced for a close tag that ends an element an earlier `if`/`unless`/`case` in the same scope left open on every path (`document/branch-opened-elements.ts`). That case is checked before the close tag is matched against the enclosing element.
+With the `pairDanglingCloseTags` option, it is also produced for a close tag that names the innermost element earlier `if`/`unless`/`case` tags in the same scope left open on every path (`document/branch-opened-elements.ts`, which keeps that open stack per scope and extends it as nodes are appended). That case is checked before the close tag is matched against the enclosing element.
 
 ---
 

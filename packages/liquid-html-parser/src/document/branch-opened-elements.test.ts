@@ -159,6 +159,49 @@ describe('pairDanglingCloseTags', () => {
     ]);
   });
 
+  it('does not let an unmatched earlier close cancel an element opened later', () => {
+    const source =
+      '{% if a %}</div>{% else %}</div>{% endif %}{% if b %}<div>{% else %}<div>{% endif %}x</div>';
+    expect(parseOutline(source)).toEqual([
+      '{% if %}',
+      '  branch (first)',
+      '    </div> (dangling)',
+      '  branch else',
+      '    </div> (dangling)',
+      '{% if %}',
+      '  branch (first)',
+      '    <div> (open)',
+      '  branch else',
+      '    <div> (open)',
+      '</div> (dangling)',
+    ]);
+  });
+
+  it('does not convert a close that crosses the innermost branch-opened element', () => {
+    const source = '{% if a %}<section><div>{% else %}<section><div>{% endif %}</section></div>';
+    expect(() => toLiquidHtmlAST(source, PAIRING)).toThrow(
+      "Attempting to close HtmlElement 'section' before it was opened",
+    );
+  });
+
+  it('does not convert a close for an element a branch-opened element sits inside of', () => {
+    // The innermost open is `<p>`, so `</div>` is not taken from the branches and
+    // closes `<main>`'s `<div>` sibling structure as before, which throws here.
+    const source = '<main>{% if a %}<div><p>{% else %}<div><p>{% endif %}x</div></main>';
+    expect(() => toLiquidHtmlAST(source, PAIRING)).toThrow();
+  });
+
+  it('reads each node of a scope once, however many closes the scope meets', () => {
+    const count = 2000;
+    const source = `<main>${'{% if a %}<div>{% else %}<div>{% endif %}'.repeat(count)}x${'</div>'.repeat(count)}</main>`;
+    const started = performance.now();
+    const ast = toLiquidHtmlAST(source, PAIRING);
+    expect(performance.now() - started).toBeLessThan(2000);
+    const main = ast.children[0] as { children: LiquidHtmlNode[] };
+    const closes = main.children.filter((n) => n.type === NodeTypes.HtmlDanglingMarkerClose);
+    expect(closes).toHaveLength(count);
+  });
+
   it('leaves a conditional open and close pair to the existing branch markers', () => {
     const source = '<main>{% if c %}<a>{% endif %}x{% if c %}</a>{% endif %}</main>';
     expect(toLiquidHtmlAST(source, PAIRING)).toEqual(toLiquidHtmlAST(source, STRICT));
