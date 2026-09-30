@@ -28,6 +28,9 @@ AssetSizeJavaScript:
   enabled: true
   severity: 0
   thresholdInBytes: 10000
+BlockContentUsage:
+  enabled: true
+  severity: 1
 BlockIdUsage:
   enabled: true
   severity: 1
@@ -220,6 +223,9 @@ UnusedDocParam:
 ValidBlockArgumentTypes:
   enabled: true
   severity: 1
+ValidBlockContentSettingType:
+  enabled: true
+  severity: 0
 ValidBlockTagPlacement:
   enabled: true
   severity: 0

@@ -246,17 +246,7 @@ describe('Module: LiquidObjectHoverProvider', async () => {
 
   describe('when a theme block schema defines settings', () => {
     beforeEach(() => {
-      provider = new HoverProvider(
-        new DocumentManager(),
-        {
-          filters: async () => [],
-          objects: async () => blockSettingsObjects,
-          liquidDrops: async () => blockSettingsObjects,
-          tags: async () => [],
-          systemTranslations: async () => ({}),
-        },
-        async () => ({}) as MetafieldDefinitionMap,
-      );
+      provider = blockFileProvider();
     });
 
     it('hovers a setting ID as a plain variable with its schema type', async () => {
@@ -293,6 +283,49 @@ describe('Module: LiquidObjectHoverProvider', async () => {
         );
       },
     );
+  });
+
+  describe('when a theme block uses the built-in content parameter', () => {
+    beforeEach(() => {
+      provider = blockFileProvider();
+    });
+
+    it('hovers content as a string variable without a schema or LiquidDoc', async () => {
+      await expect(provider).to.hover(
+        { relativePath: 'blocks/card.liquid', source: '{{ cont█ent }}' },
+        '### content: `string`',
+      );
+    });
+
+    it('hovers block.content as a string property', async () => {
+      await expect(provider).to.hover(
+        { relativePath: 'blocks/card.liquid', source: '{{ block.cont█ent }}' },
+        '### content: `string`',
+      );
+    });
+
+    it.each([
+      'sections/card.liquid',
+      'snippets/card.liquid',
+      'shop/blocks/theme/sections/card.liquid',
+      'shop/myblocks/card.liquid',
+    ])('does not hover content as a variable in %s', async (relativePath) => {
+      await expect(provider).to.hover({ relativePath, source: '{{ cont█ent }}' }, null);
+    });
+
+    it.each([
+      'sections/main.liquid',
+      'shop/blocks/theme/sections/main.liquid',
+      'shop/myblocks/main.liquid',
+    ])('does not hover content on the section block object in %s', async (relativePath) => {
+      await expect(provider).to.hover(
+        {
+          relativePath,
+          source: '{% for block in section.blocks %}{{ block.cont█ent }}{% endfor %}',
+        },
+        null,
+      );
+    });
   });
 
   it('should return null when hovering over an undefined variable', async () => {
@@ -341,12 +374,35 @@ const blockSettingsObjects: ObjectEntry[] = [
     properties: [{ name: 'settings', return_type: [{ type: 'untyped', name: '' }] }],
   },
   {
+    name: 'section',
+    access: { global: false, parents: [], template: [] },
+    return_type: [],
+    properties: [
+      { name: 'settings', return_type: [{ type: 'untyped', name: '' }] },
+      { name: 'blocks', return_type: [{ type: 'array', array_value: 'block' }] },
+    ],
+  },
+  {
     name: 'image',
     description: 'image description',
     access: { global: false, parents: [], template: [] },
     return_type: [],
   },
 ];
+
+function blockFileProvider() {
+  return new HoverProvider(
+    new DocumentManager(),
+    {
+      filters: async () => [],
+      objects: async () => blockSettingsObjects,
+      liquidDrops: async () => blockSettingsObjects,
+      tags: async () => [],
+      systemTranslations: async () => ({}),
+    },
+    async () => ({}) as MetafieldDefinitionMap,
+  );
+}
 
 function articleCard(body: string, docParam?: string) {
   return {

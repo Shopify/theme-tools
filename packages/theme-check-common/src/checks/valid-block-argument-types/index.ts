@@ -4,19 +4,10 @@ import {
   type BlockParameters,
   liquidDocType,
 } from '../../block-parameters';
-import { nodeAtPath } from '../../json';
 import { BasicParamTypes, inferArgumentType, isTypeCompatible } from '../../liquid-doc/utils';
 import * as path from '../../path';
-import { schemaSettingLiquidType } from '../../schema-settings';
 import { isBlock } from '../../to-schema';
-import {
-  Severity,
-  SourceCodeType,
-  type Context,
-  type LiquidCheckDefinition,
-  type ThemeBlockSchema,
-} from '../../types';
-import { reportWarning } from '../../utils';
+import { Severity, SourceCodeType, type Context, type LiquidCheckDefinition } from '../../types';
 import { blockTagSyntaxError } from '../liquid-syntax-error/block';
 import {
   NodeTypes,
@@ -81,13 +72,6 @@ export const ValidBlockArgumentTypes: LiquidCheckDefinition = {
 
         reportLiquidDocTypeMismatch(context, node, parameter);
       },
-
-      async LiquidRawTag(node) {
-        if (node.name !== 'schema' || node.body.kind !== 'json') return;
-        if (!currentBlockName || !context.getBlockSchema) return;
-
-        reportContentSettingTypeMismatch(context, await context.getBlockSchema(currentBlockName));
-      },
     };
   },
 };
@@ -129,7 +113,7 @@ function reportLiquidDocTypeMismatch(
   if (!node.paramType || !declaredType || !authoritativeType) return;
   if (declaredType === BasicParamTypes.Object || declaredType === authoritativeType) return;
 
-  const source = parameter.schemaSetting ? 'schema setting' : 'built-in parameter';
+  const source = declarationSource(parameter);
   context.report({
     message:
       `The ${source} '${parameter.name}' has Liquid type '${authoritativeType}', ` +
@@ -139,30 +123,17 @@ function reportLiquidDocTypeMismatch(
   });
 }
 
+/**
+ * The built-in `content` parameter decides the type of `content`, even when a
+ * schema setting also declares it.
+ */
+function declarationSource(parameter: BlockParameter): string {
+  if (parameter.name === BLOCK_CONTENT_PARAMETER) return 'built-in parameter';
+  return 'schema setting';
+}
+
 /** Returns the merged type that a schema or built-in declaration must fit. */
 function declarationType(parameter: BlockParameter): string | undefined {
   if (!parameter.schemaSetting && parameter.name !== BLOCK_CONTENT_PARAMETER) return undefined;
   return parameter.type;
-}
-
-function reportContentSettingTypeMismatch(
-  context: Context<SourceCodeType.LiquidHtml>,
-  schema: ThemeBlockSchema | undefined,
-): void {
-  if (!schema || schema.validSchema instanceof Error || schema.ast instanceof Error) return;
-
-  const settings = schema.validSchema.settings ?? [];
-  const index = settings.findIndex((setting) => setting.id === BLOCK_CONTENT_PARAMETER);
-  if (index < 0) return;
-
-  const settingType = schemaSettingLiquidType(settings[index].type);
-  const typeNode = nodeAtPath(schema.ast, ['settings', index, 'type']);
-  if (!settingType || settingType === 'string' || !typeNode) return;
-
-  reportWarning(
-    `Schema setting 'content' has Liquid type '${settingType}', but the built-in 'content' parameter has type 'string'.`,
-    schema.offset,
-    typeNode,
-    context,
-  );
 }

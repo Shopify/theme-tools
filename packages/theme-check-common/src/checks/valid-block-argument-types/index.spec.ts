@@ -264,28 +264,19 @@ describe('ValidBlockArgumentTypes', () => {
       ]);
     });
 
-    it('reports a schema content setting that is not string-compatible', async () => {
-      const source = blockSource([{ id: 'content', type: 'number' }]);
-      const offenses = await definitions(source);
+    it.each([
+      ['without LiquidDoc', []],
+      ['with a LiquidDoc string echo', ['@param {string} [content] - Body']],
+    ])(
+      'leaves a non-string schema content setting %s to ValidBlockContentSettingType',
+      async (_name, params) => {
+        const offenses = await definitions(
+          blockSource([{ id: 'content', type: 'number' }], params),
+        );
 
-      expect(offenses).toMatchObject([
-        {
-          message:
-            "Schema setting 'content' has Liquid type 'number', but the built-in 'content' parameter has type 'string'.",
-        },
-      ]);
-      expect(highlightedOffenses({ 'blocks/card.liquid': source }, offenses)).toEqual(['"number"']);
-    });
-
-    it('uses the built-in string type for a LiquidDoc echo of schema content', async () => {
-      const offenses = await definitions(
-        blockSource([{ id: 'content', type: 'number' }], ['@param {string} [content] - Body']),
-      );
-
-      expect(offenses.map((offense) => offense.message)).toEqual([
-        "Schema setting 'content' has Liquid type 'number', but the built-in 'content' parameter has type 'string'.",
-      ]);
-    });
+        expect(offenses).toEqual([]);
+      },
+    );
 
     it('accepts a string-compatible schema content setting', async () => {
       const offenses = await definitions(blockSource([{ id: 'content', type: 'text' }]));
