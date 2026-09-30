@@ -253,6 +253,9 @@ describe('ValidBlockArgumentTypes', () => {
 
       expect(await definitions(block)).toEqual([]);
       expect(await run("{% block 'card', variant: 'body' %}{% endblock %}", block)).toEqual([]);
+      expect(await run("{% block 'card', variant: 42 %}{% endblock %}", block)).toMatchObject([
+        { message: "Type mismatch for argument 'variant': expected string, got number" },
+      ]);
     });
 
     it('does not speculate about omitted LiquidDoc or unmapped schema types', async () => {

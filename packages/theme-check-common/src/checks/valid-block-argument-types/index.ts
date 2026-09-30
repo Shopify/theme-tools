@@ -7,9 +7,9 @@ import {
 import { generateTypeMismatchSuggestions } from '../../liquid-doc/arguments';
 import {
   BasicParamTypes,
+  checkArgumentType,
   getArgumentTypeMismatchMessage,
   inferArgumentType,
-  isArgumentTypeCompatible,
   isTypeCompatible,
   parseStringLiterals,
 } from '../../liquid-doc/utils';
@@ -122,7 +122,7 @@ function reportStringLiteralMismatch(
   argument: BlockMarkup['args'][number],
   expectedType: string,
 ): void {
-  if (isArgumentTypeCompatible(expectedType, argument.value) !== false) return;
+  if (checkArgumentType(expectedType, argument.value).kind !== 'incompatible') return;
 
   const { start, end } = argument.value.position;
   context.report({

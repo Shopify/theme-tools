@@ -136,11 +136,31 @@ describe('Module: ValidDocParamTypes', () => {
     ]);
   });
 
-  it('preserves the existing behavior when no docset is supplied', async () => {
-    const source = `{% doc %}\n  @param {'heading' |} variant\n{% enddoc %}`;
-    const offenses = await runLiquidCheck(ValidDocParamTypes, source, undefined, {
-      themeDocset: undefined,
+  describe('without a docset', () => {
+    const runWithoutDocset = (source: string) =>
+      runLiquidCheck(ValidDocParamTypes, source, undefined, { themeDocset: undefined });
+
+    it('reports invalid string literal types', async () => {
+      const source = `{% doc %}\n  @param  {'heading' |}  variant\n{% enddoc %}`;
+      const offenses = await runWithoutDocset(source);
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toBe("The parameter type ''heading' |' is not supported.");
+      expect(applySuggestions(source, offenses[0])).toEqual([
+        '{% doc %}\n  @param variant\n{% enddoc %}',
+      ]);
     });
-    expect(offenses).toHaveLength(0);
+
+    it.each(["'heading' | 'small'", '"heading"'])('accepts the string enum {%s}', async (type) => {
+      const source = `{% doc %}\n  @param {${type}} variant\n{% enddoc %}`;
+      expect(await runWithoutDocset(source)).toHaveLength(0);
+    });
+
+    it.each(['product', 'product[]', 'invalidType', 'unknown[]'])(
+      'does not check the named type {%s}, which requires the docset',
+      async (type) => {
+        const source = `{% doc %}\n  @param {${type}} variant\n{% enddoc %}`;
+        expect(await runWithoutDocset(source)).toHaveLength(0);
+      },
+    );
   });
 });

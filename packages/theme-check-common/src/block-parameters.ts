@@ -1,5 +1,5 @@
 import type { DocDefinition, LiquidDocParameter } from './liquid-doc/liquidDoc';
-import { parseParamTypeSyntax, parseStringLiterals } from './liquid-doc/utils';
+import { normalizeNamedParamType, parseStringLiterals } from './liquid-doc/utils';
 import { schemaSettingLiquidType } from './schema-settings';
 import { hasNoSchemaTag } from './to-schema';
 import type { Dependencies, Setting, ThemeBlock } from './types';
@@ -97,8 +97,7 @@ export function resolveBlockParameters(
  * omitted or malformed type so callers do not report speculative mismatches.
  */
 export function liquidDocType(type: string | null | undefined): string | undefined {
-  const normalizedType = type?.toLowerCase();
-  return normalizedType && parseParamTypeSyntax(normalizedType) ? normalizedType : undefined;
+  return type ? normalizeNamedParamType(type) : undefined;
 }
 
 function withLiquidDoc(

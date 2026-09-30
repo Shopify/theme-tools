@@ -476,7 +476,6 @@ type LazyVariableType = {
   kind: NodeTypes.LiquidVariable;
   node: LiquidVariable;
   offset: number;
-  resolvedType?: InferredType;
 };
 const lazyVariable = (node: LiquidVariable, offset: number): LazyVariableType => ({
   kind: NodeTypes.LiquidVariable,
@@ -497,7 +496,6 @@ type LazyDeconstructedExpression = {
   kind: 'deconstructed';
   node: LiquidExpression;
   offset: number;
-  resolvedType?: InferredType;
 };
 const LazyDeconstructedExpression = (
   node: LiquidExpression,
@@ -665,20 +663,12 @@ function resolveTypeRangeType(
     }
 
     case 'deconstructed': {
-      if (typeRangeType.resolvedType !== undefined) return typeRangeType.resolvedType;
       const arrayType = inferType(typeRangeType.node, symbolsTable, objectMap, filtersMap);
-      return (typeRangeType.resolvedType = isArrayType(arrayType) ? arrayType.valueType : Untyped);
+      return isArrayType(arrayType) ? arrayType.valueType : Untyped;
     }
 
     default: {
-      // The symbols table belongs to this inference request. Reuse resolved assignments
-      // when expressions such as `x | default: x` look up the same binding twice.
-      return (typeRangeType.resolvedType ??= inferType(
-        typeRangeType.node,
-        symbolsTable,
-        objectMap,
-        filtersMap,
-      ));
+      return inferType(typeRangeType.node, symbolsTable, objectMap, filtersMap);
     }
   }
 }
@@ -734,17 +724,8 @@ function inferType(
         const lastFilter = thing.filters.at(-1)!;
         if (lastFilter.name === 'default') {
           if (lastFilter.args.length > 0 && lastFilter.args[0].type !== NodeTypes.NamedArgument) {
-            const fallback = lastFilter.args[0];
-            const fallbackType = inferType(fallback, symbolsTable, objectMap, filtersMap);
-            const input = { ...thing, filters: thing.filters.slice(0, -1) };
-            const inputType = inferType(input, symbolsTable, objectMap, filtersMap);
-
-            if (getStringLiterals(inputType) || getStringLiterals(fallbackType)) {
-              return inferStringLiteralDefaultType(input, inputType, fallback, fallbackType);
-            }
-
-            // Preserve the existing fallback-based inference for other types.
-            return fallbackType;
+            const fallbackType = inferType(lastFilter.args[0], symbolsTable, objectMap, filtersMap);
+            return getStringLiterals(fallbackType) ? 'string' : fallbackType;
           }
         }
         const filterEntry = filtersMap[lastFilter.name];
@@ -758,45 +739,6 @@ function inferType(
       return Untyped;
     }
   }
-}
-
-/** Keep finite string choices through default without narrowing a general string. */
-function inferStringLiteralDefaultType(
-  input: LiquidVariable,
-  inputType: InferredType,
-  fallback: LiquidExpression,
-  fallbackType: InferredType,
-): InferredType {
-  const inputLiterals =
-    getStringLiterals(inputType) ??
-    (input.filters.length === 0 && input.expression.type === NodeTypes.String
-      ? [stringLiteral(input.expression)]
-      : undefined);
-  const fallbackLiterals =
-    getStringLiterals(fallbackType) ??
-    (fallback.type === NodeTypes.String ? [stringLiteral(fallback)] : undefined);
-
-  if (inputLiterals && fallbackLiterals) {
-    const literals = [...inputLiterals, ...fallbackLiterals];
-    const types = literals.filter(
-      (literal, index) => literals.findIndex((other) => other.value === literal.value) === index,
-    );
-    return types.length === 1 ? types[0] : { kind: 'union', types };
-  }
-
-  return getBaseType(inputType) === 'string' && getBaseType(fallbackType) === 'string'
-    ? 'string'
-    : Untyped;
-}
-
-function stringLiteral(
-  node: Extract<LiquidExpression, { type: NodeTypes.String }>,
-): StringLiteralType {
-  return {
-    kind: 'literal',
-    value: node.value,
-    raw: node.source.slice(node.position.start, node.position.end),
-  };
 }
 
 function inferLiquidDocParamType(

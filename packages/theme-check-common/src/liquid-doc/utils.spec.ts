@@ -2,10 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { LiquidTagRender, toLiquidHtmlAST } from '@shopify/liquid-html-parser';
 import {
   BasicParamTypes,
+  ArgumentTypeCheck,
+  checkArgumentType,
   getDefaultValueForType,
-  isArgumentTypeCompatible,
   parseParamType,
 } from './utils';
+
+const compatible: ArgumentTypeCheck = { kind: 'compatible' };
+const incompatible: ArgumentTypeCheck = { kind: 'incompatible' };
+const unchecked: ArgumentTypeCheck = { kind: 'unchecked' };
+const namedType = (type: string): ArgumentTypeCheck => ({ kind: 'named-type', type });
 
 describe('liquid-doc/utils', () => {
   describe('getDefaultValueForType', () => {
@@ -24,28 +30,31 @@ describe('liquid-doc/utils', () => {
     });
   });
 
-  describe('isArgumentTypeCompatible', () => {
+  describe('checkArgumentType', () => {
     it.each([
-      ["'heading' | 'small'", "'heading'", true],
-      ["'heading' | 'small'", '"small"', true],
-      ["'heading' | 'small'", "'Heading'", false],
-      ["'heading' | 'small'", "'large'", false],
-      ["'heading' | 'small'", '42', false],
-      ["'heading' | 'small'", 'nil', false],
-      ["'heading' | 'small'", 'true', false],
-      ["'heading' | 'small'", '(1..3)', false],
-      ["'heading' | 'small'", 'block.settings.variant', undefined],
-      ["'heading' |", "'small'", undefined],
-      ['product', '42', undefined],
-      ['string[]', "'heading'", undefined],
-      ['String', "'heading'", true],
-      ['NUMBER', '42', true],
-      ['boolean', "'heading'", true],
-      ['string', '42', false],
-    ] as const)('checks %s against %s', (type, value, expected) => {
+      ["'heading' | 'small'", "'heading'", compatible],
+      ["'heading' | 'small'", '"small"', compatible],
+      ["'heading' | 'small'", "'Heading'", incompatible],
+      ["'heading' | 'small'", "'large'", incompatible],
+      ["'heading' | 'small'", '42', incompatible],
+      ["'heading' | 'small'", 'nil', incompatible],
+      ["'heading' | 'small'", 'true', incompatible],
+      ["'heading' | 'small'", '(1..3)', incompatible],
+      ["'heading' | 'small'", 'block.settings.variant', unchecked],
+      ["'heading' |", "'small'", unchecked],
+      ['product', '42', namedType('product')],
+      ['Product[]', '42', namedType('product[]')],
+      ['string[]', "'heading'", namedType('string[]')],
+      ['product', 'product', unchecked],
+      ['product[', '42', unchecked],
+      ['String', "'heading'", compatible],
+      ['NUMBER', '42', compatible],
+      ['boolean', "'heading'", compatible],
+      ['string', '42', incompatible],
+    ])('checks %s against %s', (type, value, expected) => {
       const ast = toLiquidHtmlAST(`{% render 'text', variant: ${value} %}`);
       const render = ast.children[0] as LiquidTagRender;
-      expect(isArgumentTypeCompatible(type, render.markup.args[0].value)).toBe(expected);
+      expect(checkArgumentType(type, render.markup.args[0].value)).toEqual(expected);
     });
   });
 

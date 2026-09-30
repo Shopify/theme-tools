@@ -3,9 +3,10 @@ import { assertNever } from '../utils';
 import { isSnippet } from '../to-schema';
 import { isBlock } from '../to-schema';
 import { ObjectEntry, UriString } from '../types';
-import { parseStringLiterals } from './doc-param-type';
+import { normalizeNamedParamType, parseStringLiterals } from './doc-param-type';
 
 export {
+  normalizeNamedParamType,
   parseDocParamType,
   parseParamType,
   parseParamTypeSyntax,
@@ -90,29 +91,51 @@ export function isTypeCompatible(expectedType: string, actualType: BasicParamTyp
 }
 
 /**
- * Checks literal values against a documented type. Undefined means that the
- * value is dynamic or the declaration is outside the types we can check.
+ * The result of checking an argument value against its LiquidDoc type.
+ *
+ * - `compatible` and `incompatible`: the literal value was checked.
+ * - `unchecked`: the value is dynamic, the type is malformed, or a block array
+ *   literal is compared with a type other than a string enum.
+ * - `named-type`: the type is a named Liquid type or array, such as `product`
+ *   or `string[]`, and `type` is its lowercase spelling. No literal matches
+ *   it, but only the docset can confirm that the type exists.
  */
-export function isArgumentTypeCompatible(
+export type ArgumentTypeCheck =
+  | { kind: 'compatible' }
+  | { kind: 'incompatible' }
+  | { kind: 'unchecked' }
+  | { kind: 'named-type'; type: string };
+
+/** Checks a literal argument value against a LiquidDoc type. */
+export function checkArgumentType(
   expectedType: string,
   argument: LiquidExpression | BlockArrayLiteral,
-): boolean | undefined {
-  if (argument.type === NodeTypes.VariableLookup) return undefined;
+): ArgumentTypeCheck {
+  if (argument.type === NodeTypes.VariableLookup) return { kind: 'unchecked' };
 
   const literals = parseStringLiterals(expectedType);
   if (literals) {
-    return (
+    return literalCheck(
       argument.type === NodeTypes.String &&
-      literals.some((literal) => literal.value === argument.value)
+        literals.some((literal) => literal.value === argument.value),
     );
   }
 
-  if (argument.type === 'BlockArrayLiteral') return undefined;
+  if (argument.type === 'BlockArrayLiteral') return { kind: 'unchecked' };
 
-  const normalizedType = expectedType.toLowerCase();
-  if (!Object.values(BasicParamTypes).some((type) => type === normalizedType)) return undefined;
+  const type = normalizeNamedParamType(expectedType);
+  if (!type) return { kind: 'unchecked' };
+  if (!isBasicParamType(type)) return { kind: 'named-type', type };
 
-  return isTypeCompatible(normalizedType, inferArgumentType(argument));
+  return literalCheck(isTypeCompatible(type, inferArgumentType(argument)));
+}
+
+function literalCheck(matches: boolean): ArgumentTypeCheck {
+  return matches ? { kind: 'compatible' } : { kind: 'incompatible' };
+}
+
+function isBasicParamType(type: string): type is BasicParamTypes {
+  return Object.values(BasicParamTypes).some((basicType) => basicType === type);
 }
 
 export function getArgumentTypeMismatchMessage(

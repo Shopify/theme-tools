@@ -1,3 +1,10 @@
+/**
+ * `liquid-html-parser` intentionally keeps the contents of a LiquidDoc `{type}`
+ * annotation as text. Theme Check parses the supported subset here because
+ * named types are validated against the active Liquid docset. If LiquidDoc gets
+ * a complete type grammar, syntax parsing should move to the parser while
+ * docset validation stays here.
+ */
 /** A string literal type, such as `'heading'`. `raw` keeps the quotes it was written with. */
 export interface StringLiteralType {
   kind: 'literal';
@@ -76,6 +83,16 @@ export function parseParamType(
   if (!parsedParamType || !validParamTypes.has(parsedParamType[0])) return undefined;
 
   return parsedParamType;
+}
+
+/**
+ * Lowercases a named LiquidDoc type such as `Product[]`, which is how argument
+ * checks compare named types. Returns undefined when the value is not valid
+ * named type syntax.
+ */
+export function normalizeNamedParamType(value: string): string | undefined {
+  const normalizedType = value.toLowerCase();
+  return parseParamTypeSyntax(normalizedType) ? normalizedType : undefined;
 }
 
 /**
