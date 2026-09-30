@@ -940,9 +940,10 @@ export interface ASTBuildOptions {
   environment?: Environment;
 
   /**
-   * Parse a close tag as an `HtmlDanglingMarkerClose` when it ends an element
-   * that an earlier `if` / `unless` / `case` in the same scope left open on
-   * every branch, instead of matching it against the enclosing element:
+   * Parse a close tag as an `HtmlDanglingMarkerClose` when it names the
+   * innermost element that earlier `if` / `unless` / `case` tags in the same
+   * scope left open on every path, instead of matching it against the enclosing
+   * element:
    *
    *   {% if a %}<div class="x">{% else %}<div class="y">{% endif %}...</div>
    *

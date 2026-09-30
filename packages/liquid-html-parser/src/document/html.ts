@@ -42,7 +42,7 @@ import type {
 } from '../ast';
 import { VOID_ELEMENTS, HTML_RAW_TAGS, BLOCKS } from '../grammar';
 import { LiquidHTMLASTParsingError } from '../errors';
-import { branchOpenedElementBalance } from './branch-opened-elements';
+import { closesInnermostBranchOpenedElement } from './branch-opened-elements';
 
 /**
  * Interface capturing what HTML-parsing free functions need from the
@@ -297,7 +297,7 @@ export function parseOrphanedHtmlCloseTag(parser: HtmlParserDelegate): never {
 /**
  * Whether the close tag at the cursor ends an element that an earlier
  * conditional in the same scope left open, rather than the enclosing element.
- * Only asked under `pairDanglingCloseTags`; see `branchOpenedElementBalance`.
+ * Only asked under `pairDanglingCloseTags`; see `closesInnermostBranchOpenedElement`.
  * Reads the name from the source so the cursor never moves, and answers false
  * for a compound (Liquid) name.
  */
@@ -311,7 +311,7 @@ export function closesBranchOpenedElement(
     parser.getSource().slice(nameStart, nameStart + 256),
   );
   if (!match) return false;
-  return branchOpenedElementBalance(scopeChildren, match[1].toLowerCase()) > 0;
+  return closesInnermostBranchOpenedElement(scopeChildren, match[1]);
 }
 
 export function parseHtmlDanglingMarkerClose(parser: HtmlParserDelegate): HtmlDanglingMarkerClose {
