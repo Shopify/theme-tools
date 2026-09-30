@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.10.2
+
+### Patch Changes
+
+- 9c04ccbc: Preserve quoted braces in LiquidDoc parameter types and leave incomplete string annotations unparsed so they cannot consume subsequent parameters.
+
 ## 2.10.1
 
 ### Patch Changes

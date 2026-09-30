@@ -1,5 +1,13 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.11.2
+
+### Patch Changes
+
+- 4d7201b4: Format wrapped `block` arguments with trailing commas and a closing delimiter on its own line, and avoid unnecessary whitespace stripping between childless Liquid tag delimiters.
+- Updated dependencies [9c04ccbc]
+  - @shopify/liquid-html-parser@2.10.2
+
 ## 1.11.1
 
 ### Patch Changes

@@ -1,5 +1,44 @@
 # @shopify/theme-check-node
 
+## 3.30.0
+
+### Minor Changes
+
+- 0bbd0f8b: Guide theme blocks to the implicit `content` parameter.
+
+  Add the recommended `BlockContentUsage` error for `block.content` in `blocks/*.liquid`. Its message is "Use the implicit 'content' parameter directly instead of 'block.content'."
+
+  Add the recommended `ValidBlockContentSettingType` error for a theme block schema setting named `content` whose Liquid type is not `string`. This error replaces the `ValidBlockArgumentTypes` warning for the same schema declaration.
+
+  `UndefinedObject` accepts bare `content` in `blocks/*.liquid`.
+
+- 86058651: Validate block calls against the merged schema, LiquidDoc, and built-in content interface.
+
+  Schema settings define plain arguments, types, and merchant visibility without making arguments required. LiquidDoc controls requiredness for every parameter it declares, including schema-backed parameters and `content`. Schema-only parameters and built-in `content` without LiquidDoc are optional.
+
+  Theme Check reports incompatible types between schema, LiquidDoc, and built-in content declarations.
+
+  `LiquidSyntaxError` now rejects the unsupported experimental `block.settings.<id>` and `block.content` caller arguments, and every other dotted block argument except `block.name`. The obsolete `BlockArgumentSettingCollision` and `UnknownBlockSetting` checks are removed from check registration and generated configs.
+
+- 9f1fa97b: Add the `ValidBlockTagPlacement` check
+
+  Reports uses of the `block` tag outside direct Liquid templates and layouts.
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [699780b7]
+- Updated dependencies [0bbd0f8b]
+- Updated dependencies [86058651]
+- Updated dependencies [169ff04d]
+- Updated dependencies [2a150cd2]
+- Updated dependencies [9c04ccbc]
+- Updated dependencies [9f1fa97b]
+  - @shopify/theme-graph@0.3.4
+  - @shopify/theme-check-common@3.30.0
+  - @shopify/liquid-html-parser@2.10.2
+  - @shopify/theme-check-docs-updater@3.30.0
+
 ## 3.29.1
 
 ### Patch Changes
