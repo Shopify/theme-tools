@@ -1,7 +1,12 @@
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { NodeTypes, RenderMarkup } from '@shopify/liquid-html-parser';
 import { LiquidDocParameter } from '../../liquid-doc/liquidDoc';
-import { inferArgumentType, isTypeCompatible } from '../../liquid-doc/utils';
+import {
+  getArgumentTypeMismatchMessage,
+  getValidParamTypes,
+  isArgumentTypeCompatible,
+  parseParamType,
+} from '../../liquid-doc/utils';
 import {
   findTypeMismatchParams,
   generateTypeMismatchSuggestions,
@@ -28,42 +33,45 @@ export const ValidRenderSnippetArgumentTypes: LiquidCheckDefinition = {
   },
 
   create(context) {
+    let validParamTypesPromise: Promise<Set<string>> | undefined;
+
     /**
      * Checks for type mismatches when alias is used with `for` or `with` syntax.
-     * This can be refactored at a later date to share more code with regular named arguments as they are both backed by LiquidExpression nodes.
-     *
      * E.g. {% render 'card' with 123 as title %}
      */
-    function findAndReportAliasType(
+    async function findAndReportAliasType(
       node: RenderMarkup,
       liquidDocParameters: Map<string, LiquidDocParameter>,
     ) {
-      if (
-        node.alias &&
-        node.variable?.name &&
-        node.variable.name.type !== NodeTypes.VariableLookup
-      ) {
-        const paramIsDefinedWithType = liquidDocParameters
-          .get(node.alias.value)
-          ?.type?.toLowerCase();
-        if (paramIsDefinedWithType) {
-          const providedParamType = inferArgumentType(node.variable.name);
-          if (!isTypeCompatible(paramIsDefinedWithType, providedParamType)) {
-            const suggestions = generateTypeMismatchSuggestions(
-              paramIsDefinedWithType,
-              node.variable.name.position.start,
-              node.variable.name.position.end,
-            );
+      if (!node.alias || !node.variable?.name) return;
 
-            context.report({
-              message: `Type mismatch for argument '${node.alias.value}': expected ${paramIsDefinedWithType}, got ${providedParamType}`,
-              startIndex: node.variable.name.position.start,
-              endIndex: node.variable.name.position.end,
-              suggest: suggestions,
-            });
-          }
-        }
+      const expectedType = liquidDocParameters.get(node.alias.value)?.type;
+      const argument = node.variable.name;
+      if (!expectedType || argument.type === NodeTypes.VariableLookup) return;
+
+      const compatibility = isArgumentTypeCompatible(expectedType, argument);
+      if (compatibility === true) return;
+
+      if (compatibility === undefined) {
+        // Aliases also check named Liquid types and arrays. Validate the
+        // declaration first so malformed types do not cause a second error.
+        if (!context.themeDocset) return;
+        validParamTypesPromise ??= context.themeDocset
+          .liquidDrops()
+          .then((entries) => new Set(getValidParamTypes(entries).keys()));
+        if (!parseParamType(await validParamTypesPromise, expectedType)) return;
       }
+
+      context.report({
+        message: getArgumentTypeMismatchMessage(node.alias.value, expectedType, argument),
+        startIndex: argument.position.start,
+        endIndex: argument.position.end,
+        suggest: generateTypeMismatchSuggestions(
+          expectedType,
+          argument.position.start,
+          argument.position.end,
+        ),
+      });
     }
 
     return {
@@ -79,7 +87,7 @@ export const ValidRenderSnippetArgumentTypes: LiquidCheckDefinition = {
 
         if (!liquidDocParameters) return;
 
-        findAndReportAliasType(node, liquidDocParameters);
+        await findAndReportAliasType(node, liquidDocParameters);
 
         const typeMismatchParams = findTypeMismatchParams(liquidDocParameters, node.args);
         reportTypeMismatches(context, typeMismatchParams, liquidDocParameters);

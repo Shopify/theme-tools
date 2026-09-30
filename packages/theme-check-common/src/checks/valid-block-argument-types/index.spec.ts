@@ -245,6 +245,16 @@ describe('ValidBlockArgumentTypes', () => {
       expect(offenses).toEqual([]);
     });
 
+    it('keeps the schema type of a setting that LiquidDoc declares as a string enum', async () => {
+      const block = blockSource(
+        [{ id: 'variant', type: 'text' }],
+        ["@param {'heading' | 'small'} [variant] - Variant"],
+      );
+
+      expect(await definitions(block)).toEqual([]);
+      expect(await run("{% block 'card', variant: 'body' %}{% endblock %}", block)).toEqual([]);
+    });
+
     it('does not speculate about omitted LiquidDoc or unmapped schema types', async () => {
       const offenses = await definitions(
         blockSource([{ id: 'item', type: 'metaobject' }], ['@param [item] - Item']),

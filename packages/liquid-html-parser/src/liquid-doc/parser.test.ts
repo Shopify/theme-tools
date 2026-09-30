@@ -104,6 +104,113 @@ describe('Unit: liquid-doc parser', () => {
       expect(param.required).toBe(false);
     });
 
+    it.each([
+      "'heading' | 'small'",
+      '"heading"|"small"',
+      '\'Heading\' | "small"',
+      "'' | ' ' | 'two  spaces'",
+      "'a|b' | 'small'",
+      "'}' | '{' | '{}'",
+      "'a}b' | 'small'",
+      "'a} [variant] - b'",
+      "'a} [variant] Users'",
+      "'a} variant - Users'",
+      '"it\'s" | \'"quoted"\'',
+      String.raw`'backslash\' | 'small'`,
+      " 'heading' \t|\t 'small' ",
+    ])('preserves string enum type %s and its source positions', (paramType) => {
+      const nodes = parseDoc(`\n  @param {${paramType}} [variant] - Shared text style\n`);
+      expect(nodes).toHaveLength(1);
+      const param = asParam(nodes[0]);
+      expect(param.paramType!.value).toBe(paramType);
+      expect(param.paramName.value).toBe('variant');
+      expect(param.required).toBe(false);
+      expect(param.paramDescription!.value).toBe('Shared text style');
+      for (const text of [param.paramType!, param.paramName, param.paramDescription!]) {
+        expect(param.source.slice(text.position.start, text.position.end)).toBe(text.value);
+      }
+      expect(param.source[param.paramType!.position.start - 1]).toBe('{');
+      expect(param.source[param.paramType!.position.end]).toBe('}');
+    });
+
+    it('parses required enum parameters with multiline descriptions and CRLF', () => {
+      const nodes = parseDoc(
+        "\r\n@param {'heading' | 'small'} variant - Shared style\r\n  for text.\r\n@param {string} next\r\n",
+      );
+      expect(nodes).toHaveLength(2);
+      const param = asParam(nodes[0]);
+      expect(param.paramType!.value).toBe("'heading' | 'small'");
+      expect(param.paramName.value).toBe('variant');
+      expect(param.required).toBe(true);
+      expect(param.paramDescription!.value).toContain('for text.');
+      expect(asParam(nodes[1]).paramName.value).toBe('next');
+    });
+
+    it.each([
+      "'heading' |",
+      "| 'heading'",
+      "'heading' || 'small'",
+      "'heading' 'small'",
+      "'heading",
+      '"heading',
+      "'a}b' | 'small",
+      "'a}b' trailing",
+    ])('preserves malformed enum type %s for semantic validation', (paramType) => {
+      const description = "It's {the shared style}.";
+      const nodes = parseDoc(
+        `\n@param {${paramType}} [variant] - ${description}\n@param {number} next\n`,
+      );
+      expect(nodes).toHaveLength(2);
+      const param = asParam(nodes[0]);
+      expect(param.paramType!.value).toBe(paramType);
+      expect(param.paramName.value).toBe('variant');
+      expect(param.required).toBe(false);
+      expect(param.paramDescription!.value).toBe(description);
+      expect(asParam(nodes[1]).paramName.value).toBe('next');
+    });
+
+    it.each(['', '- '])(
+      'recovers a missing type quote before a parameter description with separator %j',
+      (separator) => {
+        for (const name of ['variant', '[variant]']) {
+          for (const description of ["It's {the shared style}.", "Users'"]) {
+            const nodes = parseDoc(
+              `\n@param {'heading} ${name} ${separator}${description}\n@param {number} next\n`,
+            );
+            expect(nodes).toHaveLength(2);
+            const param = asParam(nodes[0]);
+            expect(param.paramType!.value).toBe("'heading");
+            expect(param.paramName.value).toBe('variant');
+            expect(param.required).toBe(name === 'variant');
+            expect(param.paramDescription!.value).toBe(description);
+            expect(asParam(nodes[1]).paramName.value).toBe('next');
+          }
+        }
+      },
+    );
+
+    it('prefers a parameter boundary when the missing delimiter is ambiguous', () => {
+      // This could be a closed string missing its outer brace, or an unclosed
+      // string followed by a parameter and an apostrophe in its description.
+      const param = asParam(parseDoc("\n@param {'a} [variant] - b'\n")[0]);
+      expect(param.paramType!.value).toBe("'a");
+      expect(param.paramName.value).toBe('variant');
+      expect(param.required).toBe(false);
+      expect(param.paramDescription!.value).toBe("b'");
+    });
+
+    it.each(["'heading", "'a}b'", "'a}b' | 'small'"])(
+      'keeps an unclosed type %s from consuming the next parameter',
+      (paramType) => {
+        const nodes = parseDoc(`\n@param {${paramType}\n@param {number} next\n`);
+        expect(nodes).toHaveLength(2);
+        const param = asParam(nodes[0]);
+        expect(param.paramType).toBeNull();
+        expect(param.paramName.value).toBe('');
+        expect(asParam(nodes[1]).paramName.value).toBe('next');
+      },
+    );
+
     it('parses param with description after dash', () => {
       const nodes = parseDoc('\n@param product - The product to display\n');
       expect(nodes.length).toBe(1);

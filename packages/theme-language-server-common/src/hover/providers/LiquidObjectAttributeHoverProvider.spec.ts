@@ -79,6 +79,19 @@ describe('Module: LiquidObjectAttributeHoverProvider', async () => {
     }
   });
 
+  it.each(['{{ variant.size█ }}', '{% assign style = variant %}{{ style.size█ }}'])(
+    'uses string properties for enum variables: %s',
+    async (source) => {
+      await expect(provider).to.hover(
+        {
+          relativePath: 'snippets/text.liquid',
+          source: `{% doc %}\n@param {'heading' | 'small'} variant\n{% enddoc %}\n${source}`,
+        },
+        '### size: `number`',
+      );
+    },
+  );
+
   describe('when hovering over an array built-in method', () => {
     it('should return the hover description of the object property', async () => {
       const contexts = [
