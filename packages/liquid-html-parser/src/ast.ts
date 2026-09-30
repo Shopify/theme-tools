@@ -938,6 +938,19 @@ export interface ASTBuildOptions {
 
   /** Optional environment for tag registration. Uses Environment.default() if omitted. */
   environment?: Environment;
+
+  /**
+   * Parse a close tag as an `HtmlDanglingMarkerClose` when it ends an element
+   * that an earlier `if` / `unless` / `case` in the same scope left open on
+   * every branch, instead of matching it against the enclosing element:
+   *
+   *   {% if a %}<div class="x">{% else %}<div class="y">{% endif %}...</div>
+   *
+   * Without it such a template throws. Liquid treats the markup as text, so
+   * Shopify renders it, and a renderer can pair the marker with the open
+   * element. Off by default: it accepts templates the strict grammar rejects.
+   */
+  pairDanglingCloseTags?: boolean;
 }
 
 export function isBranchedTag(node: LiquidHtmlNode) {
@@ -967,6 +980,7 @@ export function toLiquidHtmlAST(
   const env = options.environment ?? Environment.default();
   const tokens = tokenize(source);
   const parser = new DocumentParser(tokens, source, env, true, options.allowUnclosedDocumentNode);
+  parser.pairDanglingCloseTags = options.pairDanglingCloseTags ?? false;
   return parser.parseDocument();
 }
 

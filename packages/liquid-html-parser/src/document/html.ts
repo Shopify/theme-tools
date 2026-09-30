@@ -42,6 +42,7 @@ import type {
 } from '../ast';
 import { VOID_ELEMENTS, HTML_RAW_TAGS, BLOCKS } from '../grammar';
 import { LiquidHTMLASTParsingError } from '../errors';
+import { branchOpenedElementBalance } from './branch-opened-elements';
 
 /**
  * Interface capturing what HTML-parsing free functions need from the
@@ -51,6 +52,8 @@ import { LiquidHTMLASTParsingError } from '../errors';
 export interface HtmlParserDelegate extends ParserBase {
   readonly htmlParseHtml: boolean;
   htmlAllowUnclosedHtml: boolean;
+  /** See `ASTBuildOptions.pairDanglingCloseTags`. */
+  readonly htmlPairDanglingCloseTags: boolean;
   htmlInAttributeContext: boolean;
   htmlInAttributeValueContext: boolean;
 
@@ -96,6 +99,10 @@ export function parseHtmlElement(
   const children: LiquidHtmlNode[] = [];
   while (!parser.isAtEnd()) {
     if (parser.check(TokenType.HtmlCloseTagOpen)) {
+      if (closesBranchOpenedElement(parser, children)) {
+        children.push(parseHtmlDanglingMarkerClose(parser));
+        continue;
+      }
       break;
     }
     if (parser.isBlockTerminator()) {
@@ -285,6 +292,26 @@ export function parseOrphanedHtmlCloseTag(parser: HtmlParserDelegate): never {
     closeStart,
     closeEnd,
   );
+}
+
+/**
+ * Whether the close tag at the cursor ends an element that an earlier
+ * conditional in the same scope left open, rather than the enclosing element.
+ * Only asked under `pairDanglingCloseTags`; see `branchOpenedElementBalance`.
+ * Reads the name from the source so the cursor never moves, and answers false
+ * for a compound (Liquid) name.
+ */
+export function closesBranchOpenedElement(
+  parser: HtmlParserDelegate,
+  scopeChildren: LiquidHtmlNode[],
+): boolean {
+  if (!parser.htmlPairDanglingCloseTags) return false;
+  const nameStart = parser.peek().end;
+  const match = /^([A-Za-z][^\s/>{}]*)\s*>/.exec(
+    parser.getSource().slice(nameStart, nameStart + 256),
+  );
+  if (!match) return false;
+  return branchOpenedElementBalance(scopeChildren, match[1].toLowerCase()) > 0;
 }
 
 export function parseHtmlDanglingMarkerClose(parser: HtmlParserDelegate): HtmlDanglingMarkerClose {
