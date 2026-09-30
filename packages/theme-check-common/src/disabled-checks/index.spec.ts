@@ -6,8 +6,8 @@ import { UndefinedObject } from '../checks/undefined-object';
 import { UniqueDocParamNames } from '../checks/unique-doc-param-names';
 
 const commentTypes = [
-  (text: string) => `{% # ${text} %}`,
-  (text: string) => `{% comment %}${text}{% endcomment %}`,
+  (text: string) => `{% # ${text.replace(/\s+/g, ' ').trim()} %}`,
+  (text: string) => `{% comment %}${text.replace(/\s+/g, ' ').trim()} {% endcomment %}`,
 ];
 
 function expectLiquidFilterOffense(offenses: Offense[], file: string, assetName: string) {
