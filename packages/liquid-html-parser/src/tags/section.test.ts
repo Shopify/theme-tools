@@ -15,8 +15,8 @@ function parser(markup: string): MarkupParser {
 const stubParser = {} as Parser;
 
 describe('sectionTag', () => {
-  it('has hybrid kind', () => {
-    expect(sectionTag.kind).toBe(TagKind.Hybrid);
+  it('has tag kind', () => {
+    expect(sectionTag.kind).toBe(TagKind.Tag);
   });
 
   it('parses section with name only', () => {

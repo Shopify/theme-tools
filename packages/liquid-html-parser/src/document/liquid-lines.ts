@@ -24,7 +24,6 @@ import type {
   LiquidLineContext,
   TagDefinitionBlock,
   TagDefinitionRaw,
-  TagDefinitionHybrid,
   BranchName,
   Environment,
   Parser,
@@ -119,9 +118,6 @@ export function parseLiquidStatement(
 
     case TagKind.Raw:
       return parseLineRawTag(parser, def, envelope, ctx);
-
-    case TagKind.Hybrid:
-      return parseLineHybridTag(parser, def, envelope, markupString, markupOffset, ctx);
 
     default:
       return assertNever(def);
@@ -279,66 +275,6 @@ export function parseLineRawTag(
   ctx.index = endLineIndex + 1;
 
   return makeLiquidRawTag(envelope, body, endPosition, { start: '', end: '' });
-}
-
-// lineHybridTag := tagName markup (LF lineBlockBody "end" tagName)?
-export function parseLineHybridTag(
-  parser: LineParserDelegate,
-  def: TagDefinitionHybrid,
-  envelope: LiquidTagEnvelope,
-  markupString: string,
-  markupOffset: number,
-  ctx: LiquidLineContext,
-): LiquidTag {
-  let markup: unknown;
-  let markupParsed = false;
-  let reason: string | undefined;
-  try {
-    const tokens = tokenizeMarkup(markupString, markupOffset);
-    const markupParser = new MarkupParser(tokens, parser.getSource());
-    if (parser.isTolerant()) markupParser.enableTolerant();
-
-    markup = def.parse(envelope.tagName, markupParser, parser);
-    if (!markupParser.isAtEnd()) {
-      markup = undefined;
-      reason = 'unexpected tokens after markup';
-    } else {
-      markupParsed = true;
-    }
-  } catch (e) {
-    markup = undefined;
-    reason = e instanceof Error ? e.message : 'unknown error';
-  }
-
-  const endTagName = `end${envelope.tagName}`;
-  let hasEndTag = false;
-  let depth = 0;
-  for (let i = ctx.index; i < ctx.lines.length; i++) {
-    if (ctx.lines[i].tagName === envelope.tagName) {
-      depth++;
-    } else if (ctx.lines[i].tagName === endTagName) {
-      if (depth === 0) {
-        hasEndTag = true;
-        break;
-      }
-      depth--;
-    }
-  }
-
-  if (!hasEndTag) {
-    if (markupParsed) {
-      return makeLiquidTagNamed(envelope, markup);
-    }
-    return makeLiquidTagBaseCase(envelope, undefined, undefined, undefined, reason);
-  }
-
-  const { children, endNameOffset } = parseLineBlockBody(parser, envelope.tagName, ctx);
-  const endTagLength = 3 + envelope.tagName.length; // 'end' + tagName
-  const endPosition: Position = { start: endNameOffset, end: endNameOffset + endTagLength };
-  if (markupParsed) {
-    return makeLiquidTagNamed(envelope, markup, children, endPosition, { start: '', end: '' });
-  }
-  return makeLiquidTagBaseCase(envelope, children, endPosition, { start: '', end: '' }, reason);
 }
 
 // lineBlockBody := liquidStatement* "end" tagName

@@ -1,11 +1,11 @@
 // Re-export all tag definition types so existing imports from './environment' keep working.
 export {
   TagKind,
+  isStructuralEndTag,
   type BranchName,
   type Parser,
   type TagDefinition,
   type TagDefinitionBlock,
-  type TagDefinitionHybrid,
   type TagDefinitionRaw,
   type TagDefinitionTag,
   type LiquidLine,

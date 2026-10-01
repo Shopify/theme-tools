@@ -1105,50 +1105,30 @@ describe('Unit: Stage 2 (AST)', () => {
       }
     });
 
-    it('should parse section hybrid (block form) with endsection', () => {
+    it('should treat section as a standalone tag and endsection as an unknown tag', () => {
       for (const { toAST, expectPath } of testCases) {
-        const source = `{% section 'foo' %}content{% endsection %}`;
-        ast = toAST(source);
-        expectPath(ast, 'children.0.type').to.eql('LiquidTag');
+        ast = toAST(`{% section 'foo' %}content{% endsection %}`);
         expectPath(ast, 'children.0.name').to.eql('section');
-        expectPath(ast, 'children.0.markup.name.value').to.eql('foo');
-        expectPath(ast, 'children.0.children.0.type').to.eql('TextNode');
-        expectPath(ast, 'children.0.children.0.value').to.eql('content');
+        expectPath(ast, 'children.0.children').to.eql(undefined);
+        expectPath(ast, 'children.1.value').to.eql('content');
+        expectPath(ast, 'children.2.name').to.eql('endsection');
 
-        // blockEndPosition should span the {% endsection %} tag exactly
-        expectPath(ast, 'children.0.blockEndPosition.start').to.eql(
-          source.indexOf('{% endsection %}'),
-        );
-        expectPath(ast, 'children.0.blockEndPosition.end').to.eql(source.length);
+        ast = toAST(`{% endsection %}`);
+        expectPath(ast, 'children.0.name').to.eql('endsection');
 
-        // section node position.end should match endsection's end
-        expectPath(ast, 'children.0.position.end').to.eql(source.length);
-
-        expectPath(ast, 'children.0.delimiterWhitespaceStart').to.eql('');
-        expectPath(ast, 'children.0.delimiterWhitespaceEnd').to.eql('');
+        ast = toAST(`{% if a %}{% endsection %}{% endif %}`);
+        expectPath(ast, 'children.0.name').to.eql('if');
+        expectPath(ast, 'children.0.children.0.children.0.name').to.eql('endsection');
       }
     });
 
-    it('should capture whitespace trimming on endsection', () => {
-      for (const { toAST, expectPath } of testCases) {
-        const source = `{% section 'foo' %}content{%- endsection -%}`;
-        ast = toAST(source);
-        expectPath(ast, 'children.0.name').to.eql('section');
-        expectPath(ast, 'children.0.delimiterWhitespaceStart').to.eql('-');
-        expectPath(ast, 'children.0.delimiterWhitespaceEnd').to.eql('-');
-        expectPath(ast, 'children.0.blockEndPosition.start').to.eql(
-          source.indexOf('{%- endsection -%}'),
-        );
-        expectPath(ast, 'children.0.blockEndPosition.end').to.eql(source.length);
-        expectPath(ast, 'children.0.position.end').to.eql(source.length);
-      }
-    });
-
-    it('should throw on orphaned endsection', () => {
+    it('should still throw on stray end tags for other registered tags', () => {
       for (const { toAST } of testCases) {
-        expect(() => {
-          toAST(`{% endsection %}`);
-        }).to.throw(/without a matching/);
+        expect(() => toAST(`{% endrender %}`)).to.throw(/without a matching 'render'/);
+        expect(() => toAST(`{% endsections %}`)).to.throw(/without a matching 'sections'/);
+        expect(() => toAST(`{% if a %}{% endrender %}{% endif %}`)).to.throw(
+          /before LiquidTag 'if' was closed/,
+        );
       }
     });
 
