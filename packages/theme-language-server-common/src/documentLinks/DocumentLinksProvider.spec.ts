@@ -70,6 +70,18 @@ describe('DocumentLinksProvider', () => {
     }
   });
 
+  it.each([
+    "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000' %}{% endblock %}",
+    "{% liquid\n block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000'\n endblock\n %}",
+  ])('should skip app block links while preserving theme block links: %s', async (appBlock) => {
+    rootUri = 'file:///path/to/project';
+    uriString = `${rootUri}/templates/index.liquid`;
+    documentManager.open(uriString, `${appBlock}{% block 'container' %}{% endblock %}`, 1);
+
+    const result = await documentLinksProvider.documentLinks(uriString);
+    expect(result.map((link) => link.target)).toEqual([`${rootUri}/blocks/container.liquid`]);
+  });
+
   it('should not create a link for the {% partial %} tag', async () => {
     uriString = 'file:///path/to/liquid-html-document.liquid';
     rootUri = 'file:///path/to/project';
