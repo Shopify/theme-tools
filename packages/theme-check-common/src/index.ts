@@ -221,56 +221,47 @@ async function checkJSONFile(check: JSONCheck, file: JSONSourceCode): Promise<vo
 }
 
 /**
- * Runs every check on a Liquid file in one walk of its AST, instead of one walk per check. At each
- * node, the checks' methods for it run together. Each check still sees its nodes in walk order, and
- * each of its methods settles before its next one starts, as when it walked the AST on its own.
+ * Runs every check on a Liquid file in one walk of its AST, instead of one walk per check. The walk
+ * collects each check's calls; then each check makes its own, in walk order and each settled
+ * before the next, as when it walked the AST alone. Checks don't wait for each other.
  *
- * Returns one promise per check. A check that throws stops on this file only, and its promise
+ * Returns one promise per check. A check that throws skips the rest of this file, and its promise
  * rejects with the error.
  */
 function checkLiquidFile(checks: LiquidCheck[], file: LiquidSourceCode): Promise<void>[] {
-  const errors = new Map<LiquidCheck, unknown>();
-  const checksWithMethod = new Map<keyof LiquidCheck, LiquidCheck[]>();
+  if (checks.length === 0) return [];
 
-  const run = (method: keyof LiquidCheck, ...args: unknown[]): Promise<unknown> | undefined => {
+  const calls: [method: keyof LiquidCheck, args: unknown[]][][] = checks.map(() => []);
+  const errors = new Map<number, unknown>();
+  const checksWithMethod = new Map<keyof LiquidCheck, number[]>();
+
+  const collect = (method: keyof LiquidCheck, ...args: unknown[]) => {
     let found = checksWithMethod.get(method);
     if (!found) {
-      found = checks.filter((check) => {
+      found = [];
+      for (const [i, check] of checks.entries()) {
         try {
-          return !!check[method];
+          if (check[method]) found.push(i);
         } catch (error) {
           // e.g. a check whose create() returned nothing
-          errors.set(check, error);
-          return false;
+          if (!errors.has(i)) errors.set(i, error);
         }
-      });
+      }
       checksWithMethod.set(method, found);
     }
-
-    const running = found.filter((check) => !errors.has(check));
-    if (running.length === 0) return;
-
-    return Promise.all(
-      running.map(async (check) => {
-        try {
-          await (check as Record<string, (...args: unknown[]) => Promise<void>>)[method](...args);
-        } catch (error) {
-          errors.set(check, error);
-        }
-      }),
-    );
+    for (const i of found) calls[i].push([method, args]);
   };
 
-  const walked = (async () => {
-    await run('onCodePathStart', file);
-    if (file.ast instanceof Error) return;
-    await visitLiquid(file.ast, run);
-    await run('onCodePathEnd', file);
-  })();
+  collect('onCodePathStart', file);
+  if (!(file.ast instanceof Error)) {
+    visitLiquid(file.ast, collect);
+    collect('onCodePathEnd', file);
+  }
 
-  return checks.map((check) =>
-    walked.then(() => {
-      if (errors.has(check)) throw errors.get(check);
-    }),
-  );
+  return checks.map(async (check, i) => {
+    if (errors.has(i)) throw errors.get(i);
+    for (const [method, args] of calls[i]) {
+      await (check as Record<string, (...args: unknown[]) => Promise<void>>)[method](...args);
+    }
+  });
 }

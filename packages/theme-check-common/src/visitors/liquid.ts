@@ -7,26 +7,19 @@ function isLiquidHtmlNode(thing: unknown): thing is LiquidHtmlNode {
 
 /**
  * Walks the AST, calling `visit` with the name of the check method for each node: its type on the
- * way down, then `${type}:exit` once its children are queued. Waits for `visit` when it returns a
- * promise.
+ * way down, then `${type}:exit` once its children are queued.
  */
-export async function visitLiquid(
+export function visitLiquid(
   node: LiquidHtmlNode,
-  visit: (
-    method: keyof LiquidCheck,
-    node: LiquidHtmlNode,
-    ancestors: LiquidHtmlNode[],
-  ) => Promise<unknown> | undefined,
-): Promise<void> {
+  visit: (method: keyof LiquidCheck, node: LiquidHtmlNode, ancestors: LiquidHtmlNode[]) => void,
+): void {
   const stack: { node: LiquidHtmlNode; ancestors: LiquidHtmlNode[] }[] = [{ node, ancestors: [] }];
-  let visiting: Promise<unknown> | undefined;
 
   while (stack.length > 0) {
     const { node, ancestors } = stack.pop()!;
     const lineage = ancestors.concat(node);
 
-    visiting = visit(node.type, node, ancestors);
-    if (visiting) await visiting;
+    visit(node.type, node, ancestors);
 
     for (const key in node) {
       if (!node.hasOwnProperty(key) || nonTraversableProperties.has(key)) {
@@ -46,7 +39,6 @@ export async function visitLiquid(
       }
     }
 
-    visiting = visit(`${node.type}:exit`, node, ancestors);
-    if (visiting) await visiting;
+    visit(`${node.type}:exit`, node, ancestors);
   }
 }

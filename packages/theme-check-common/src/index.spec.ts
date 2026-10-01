@@ -107,7 +107,32 @@ describe('check on Liquid files', () => {
       expect(eventsOf(together, uri, 'Fast')).toEqual(eventsOf(fast, uri, 'Fast'));
       expect(eventsOf(together, uri, 'Slow')).toEqual(eventsOf(slow, uri, 'Slow'));
     }
-    expect(eventsOf(slow, 'file:///snippets/b.liquid', 'Slow')).toHaveLength(12);
+    expect(eventsOf(slow, 'file:///snippets/b.liquid', 'Slow')).toEqual(
+      [
+        'onCodePathStart start',
+        'onCodePathStart end',
+        'render start',
+        'render end',
+        'render:exit start',
+        'render:exit end',
+        'render start',
+        'render end',
+        'render:exit start',
+        'render:exit end',
+        'onCodePathEnd start',
+        'onCodePathEnd end',
+      ].map((event) => `file:///snippets/b.liquid Slow ${event}`),
+    );
+  });
+
+  it("doesn't make a check wait for a slower one", async () => {
+    const log: string[] = [];
+    await run([logger('Fast', log), logger('Slow', log, true)]);
+
+    const fastDone = log.indexOf('file:///snippets/a.liquid Fast onCodePathEnd end');
+    const slowFirstDone = log.indexOf('file:///snippets/a.liquid Slow onCodePathStart end');
+    expect(fastDone).toBeGreaterThan(-1);
+    expect(fastDone).toBeLessThan(slowFirstDone);
   });
 
   it('stops a check that throws on that file only, and reports its error once', async () => {
@@ -125,16 +150,20 @@ describe('check on Liquid files', () => {
     const empty = liquidCheck('Empty', () => undefined as any);
     const reports = liquidCheck('Reports', (context) => ({
       async LiquidTag(node) {
-        context.report({ message: node.name, startIndex: node.position.start, endIndex: 0 });
+        context.report({
+          message: node.name,
+          startIndex: node.position.start,
+          endIndex: node.position.end,
+        });
       },
     }));
 
     const offenses = await run([throws, empty, reports], (error) => errors.push(error));
 
-    expect(calls).toEqual(['file:///snippets/a.liquid', 'file:///snippets/b.liquid']);
+    expect(calls.sort()).toEqual(['file:///snippets/a.liquid', 'file:///snippets/b.liquid']);
     expect(errors.map((error) => error.message).sort()).toEqual([
-      expect.stringContaining('Cannot read'),
-      expect.stringContaining('Cannot read'),
+      expect.stringContaining("(reading 'onCodePathStart')"),
+      expect.stringContaining("(reading 'onCodePathStart')"),
       'Throws failed on file:///snippets/a.liquid',
       'Throws failed on file:///snippets/b.liquid',
     ]);
