@@ -1,5 +1,16 @@
 # @shopify/theme-check-common
 
+## 3.30.1
+
+### Patch Changes
+
+- 83512552: Wait for nested block validation in `ValidBlockTarget` and referenced block validation in `ValidSettingsKey`. Neither was awaited, so their offenses could arrive after `check()` returned and be lost.
+- e0f63a00: Run all checks on a Liquid file in one walk of its AST, instead of one walk per check.
+
+  Each check still runs its methods in the order it did before, each one settled before the next, without waiting for other checks, and a check that throws still stops on that file only. On Dawn and Horizon, `check()` returns the same offenses 2–3× faster. Offenses from different checks may come back in a different order.
+
+- 4574b6ad: Stop `UndefinedObject` from reporting schema settings used as bare variables in theme blocks. A block file can now use `{{ heading }}` for a `heading` setting without repeating it as a LiquidDoc `@param`.
+
 ## 3.30.0
 
 ### Minor Changes
