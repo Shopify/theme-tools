@@ -14,7 +14,16 @@ import {
   Position,
 } from '@shopify/liquid-html-parser';
 import { BLOCK_CONTENT_PARAMETER } from '../../block-parameters';
-import { LiquidCheckDefinition, Mode, Severity, SourceCodeType, ThemeDocset } from '../../types';
+import * as path from '../../path';
+import { isBlock } from '../../to-schema';
+import {
+  Context,
+  LiquidCheckDefinition,
+  Mode,
+  Severity,
+  SourceCodeType,
+  ThemeDocset,
+} from '../../types';
 import { isError, last } from '../../utils';
 import { hasLiquidDoc } from '../../liquid-doc/liquidDoc';
 import { isWithinRawTagThatDoesNotParseItsContents } from '../utils';
@@ -150,6 +159,7 @@ export const UndefinedObject: LiquidCheckDefinition = {
         const objects = await globalObjects(themeDocset, relativePath, context.mode);
 
         objects.forEach((obj) => fileScopedVariables.add(obj.name));
+        (await themeBlockParameterNames(context)).forEach((name) => fileScopedVariables.add(name));
 
         variables.forEach((variable) => {
           if (!variable.name) return;
@@ -192,6 +202,20 @@ async function globalObjects(themeDocset: ThemeDocset, relativePath: string, mod
 /** Theme blocks always receive the built-in `content` parameter as a variable. */
 function builtInVariables(relativePath: string): string[] {
   return relativePath.startsWith('blocks/') ? [BLOCK_CONTENT_PARAMETER] : [];
+}
+
+/**
+ * A theme block's schema settings and LiquidDoc parameters are also plain
+ * variables in the block file. Returns no names when the block's parameters
+ * cannot be resolved, such as when its schema is invalid.
+ */
+async function themeBlockParameterNames(
+  context: Context<SourceCodeType.LiquidHtml>,
+): Promise<string[]> {
+  if (!isBlock(context.file.uri)) return [];
+
+  const parameters = await context.getBlockParameters(path.basename(context.file.uri, '.liquid'));
+  return [...(parameters?.keys() ?? [])];
 }
 
 const BLOCK_CONTEXTUAL_OBJECTS = ['app', 'section', 'recommendations', 'block'];
