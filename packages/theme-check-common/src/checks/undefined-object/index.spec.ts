@@ -466,6 +466,148 @@ describe('Module: UndefinedObject', () => {
     expect(offenses).toMatchObject([{ message: "Unknown object 'content' used." }]);
   });
 
+  describe('block parameters in a theme block file', () => {
+    it('does not report a schema setting used as a bare variable', async () => {
+      const sourceCode = `
+        <h2>{{ heading }}</h2>
+        ${schema([{ type: 'text', id: 'heading', label: 'Heading' }])}
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode, 'blocks/card.liquid');
+
+      expect(offenses).toEqual([]);
+    });
+
+    it('does not report a schema setting and a LiquidDoc-only parameter in the same block', async () => {
+      const sourceCode = `
+        {% doc %}
+          @param {string} [eyebrow]
+        {% enddoc %}
+        <p>{{ eyebrow }}</p>
+        <h2>{{ heading }}</h2>
+        ${schema([{ type: 'text', id: 'heading', label: 'Heading' }])}
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode, 'blocks/card.liquid');
+
+      expect(offenses).toEqual([]);
+    });
+
+    it('does not report a name declared by both schema and LiquidDoc', async () => {
+      const sourceCode = `
+        {% doc %}
+          @param {string} heading
+        {% enddoc %}
+        <h2>{{ heading }}</h2>
+        ${schema([{ type: 'text', id: 'heading', label: 'Heading' }])}
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode, 'blocks/card.liquid');
+
+      expect(offenses).toEqual([]);
+    });
+
+    it('does not report content alongside schema and LiquidDoc variables', async () => {
+      const sourceCode = `
+        {% doc %}
+          @param {string} [eyebrow]
+        {% enddoc %}
+        <p>{{ eyebrow }}</p>
+        <h2>{{ heading }}</h2>
+        <div>{{ content }}</div>
+        ${schema([{ type: 'text', id: 'heading', label: 'Heading' }])}
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode, 'blocks/card.liquid');
+
+      expect(offenses).toEqual([]);
+    });
+
+    it('reports an unknown root alongside schema and LiquidDoc variables', async () => {
+      const sourceCode = `
+        {% doc %}
+          @param {string} [eyebrow]
+        {% enddoc %}
+        <p>{{ eyebrow }}</p>
+        <h2>{{ heading }}</h2>
+        <h3>{{ subtitle }}</h3>
+        ${schema([{ type: 'text', id: 'heading', label: 'Heading' }])}
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode, 'blocks/card.liquid');
+
+      expect(offenses).toMatchObject([{ message: "Unknown object 'subtitle' used." }]);
+    });
+
+    it('reports names from non-input schema entries and setting types', async () => {
+      const sourceCode = `
+        <div style="background: {{ background }}">
+          {{ layout_heading }}
+          {{ header }}
+          {{ color_background }}
+        </div>
+        ${schema([
+          { type: 'header', id: 'layout_heading', content: 'Layout' },
+          { type: 'color_background', id: 'background', label: 'Background' },
+        ])}
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode, 'blocks/card.liquid');
+
+      expect(offenses).toMatchObject([
+        { message: "Unknown object 'layout_heading' used." },
+        { message: "Unknown object 'header' used." },
+        { message: "Unknown object 'color_background' used." },
+      ]);
+    });
+
+    it('keeps LiquidDoc parameters and content defined when the schema is invalid', async () => {
+      const sourceCode = `
+        {% doc %}
+          @param {string} [eyebrow]
+        {% enddoc %}
+        <p>{{ eyebrow }}</p>
+        <div>{{ content }}</div>
+        {% schema %}
+          { "name": "Card", "settings": [
+        {% endschema %}
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode, 'blocks/card.liquid');
+
+      expect(offenses).toEqual([]);
+    });
+
+    it('reports schema settings used as bare variables in a section file', async () => {
+      const sourceCode = `
+        <h2>{{ heading }}</h2>
+        ${schema([{ type: 'text', id: 'heading', label: 'Heading' }])}
+      `;
+
+      const offenses = await runLiquidCheck(UndefinedObject, sourceCode, 'sections/hero.liquid');
+
+      expect(offenses).toMatchObject([{ message: "Unknown object 'heading' used." }]);
+    });
+
+    it('reports schema settings used as bare variables in an app block', async () => {
+      const sourceCode = `
+        <h2>{{ heading }}</h2>
+        ${schema([{ type: 'text', id: 'heading', label: 'Heading' }])}
+      `;
+
+      const offenses = await runLiquidCheck(
+        UndefinedObject,
+        sourceCode,
+        'blocks/card.liquid',
+        {},
+        undefined,
+        'app',
+      );
+
+      expect(offenses).toMatchObject([{ message: "Unknown object 'heading' used." }]);
+    });
+  });
+
   it('should not report an offense when a self defined variable is defined with a @param tag', async () => {
     const sourceCode = `
       {% doc %}
@@ -519,3 +661,7 @@ describe('Module: UndefinedObject', () => {
     expect(offenses).to.be.empty;
   });
 });
+
+function schema(settings: object[]): string {
+  return `{% schema %}${JSON.stringify({ name: 'Card', settings })}{% endschema %}`;
+}
