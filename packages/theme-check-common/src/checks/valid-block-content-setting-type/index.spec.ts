@@ -98,22 +98,24 @@ describe('ValidBlockContentSettingType', () => {
       ValidBlockArgumentTypes,
       ValidBlockContentSettingType,
     ]);
+    // Checks report in no particular order.
+    offenses.sort((a, b) => a.check.localeCompare(b.check));
 
     expect(offenses).toMatchObject([
-      {
-        check: 'ValidBlockContentSettingType',
-        message:
-          "Schema setting 'content' has Liquid type 'number', but the built-in 'content' parameter has type 'string'.",
-      },
       {
         check: 'ValidBlockArgumentTypes',
         message:
           "The built-in parameter 'content' has Liquid type 'string', but LiquidDoc declares 'number'. The built-in parameter type is authoritative.",
       },
+      {
+        check: 'ValidBlockContentSettingType',
+        message:
+          "Schema setting 'content' has Liquid type 'number', but the built-in 'content' parameter has type 'string'.",
+      },
     ]);
     expect(highlightedOffenses({ 'blocks/card.liquid': source }, offenses)).toEqual([
-      '"number"',
       '{number}',
+      '"number"',
     ]);
   });
 });

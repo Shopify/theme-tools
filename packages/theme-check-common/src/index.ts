@@ -127,11 +127,12 @@ export async function check(
         const files = filesOfType(type, theme);
         const checkDefs = [DisabledChecksVisitor, ...checksOfType(type, config.checks)];
         for (const file of files) {
+          const checks: LiquidCheck[] = [];
           for (const checkDef of checkDefs) {
             if (isIgnored(file.uri, config, checkDef)) continue;
-            const check = createCheck(checkDef, file, config, offenses, dependencies, validateJSON);
-            pipelines.push(checkLiquidFile(check, file));
+            checks.push(createCheck(checkDef, file, config, offenses, dependencies, validateJSON));
           }
+          pipelines.push(...checkLiquidFile(checks, file));
         }
         break;
       }
@@ -219,9 +220,48 @@ async function checkJSONFile(check: JSONCheck, file: JSONSourceCode): Promise<vo
   if (check.onCodePathEnd) await check.onCodePathEnd(file as typeof file & { ast: JSONNode });
 }
 
-async function checkLiquidFile(check: LiquidCheck, file: LiquidSourceCode): Promise<void> {
-  if (check.onCodePathStart) await check.onCodePathStart(file);
-  if (file.ast instanceof Error) return;
-  if (Object.keys(check).length > 0) await visitLiquid(file.ast, check);
-  if (check.onCodePathEnd) await check.onCodePathEnd(file as typeof file & { ast: LiquidHtmlNode });
+/**
+ * Runs every check on a Liquid file in one walk of its AST, instead of one walk per check. The walk
+ * collects each check's calls; then each check makes its own, in walk order and each settled
+ * before the next, as when it walked the AST alone. Checks don't wait for each other.
+ *
+ * Returns one promise per check. A check that throws skips the rest of this file, and its promise
+ * rejects with the error.
+ */
+function checkLiquidFile(checks: LiquidCheck[], file: LiquidSourceCode): Promise<void>[] {
+  if (checks.length === 0) return [];
+
+  const calls: [method: keyof LiquidCheck, args: unknown[]][][] = checks.map(() => []);
+  const errors = new Map<number, unknown>();
+  const checksWithMethod = new Map<keyof LiquidCheck, number[]>();
+
+  const collect = (method: keyof LiquidCheck, ...args: unknown[]) => {
+    let found = checksWithMethod.get(method);
+    if (!found) {
+      found = [];
+      for (const [i, check] of checks.entries()) {
+        try {
+          if (check[method]) found.push(i);
+        } catch (error) {
+          // e.g. a check whose create() returned nothing
+          if (!errors.has(i)) errors.set(i, error);
+        }
+      }
+      checksWithMethod.set(method, found);
+    }
+    for (const i of found) calls[i].push([method, args]);
+  };
+
+  collect('onCodePathStart', file);
+  if (!(file.ast instanceof Error)) {
+    visitLiquid(file.ast, collect);
+    collect('onCodePathEnd', file);
+  }
+
+  return checks.map(async (check, i) => {
+    if (errors.has(i)) throw errors.get(i);
+    for (const [method, args] of calls[i]) {
+      await (check as Record<string, (...args: unknown[]) => Promise<void>>)[method](...args);
+    }
+  });
 }

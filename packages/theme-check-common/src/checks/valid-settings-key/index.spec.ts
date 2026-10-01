@@ -1,5 +1,7 @@
 import { expect, describe, it } from 'vitest';
+import { toSchema, toSourceCode } from '../../index';
 import { check } from '../../test';
+import { ThemeBlockSchema } from '../../types';
 import { ValidSettingsKey } from './index';
 
 describe('Module: ValidSettingsKey', () => {
@@ -224,6 +226,28 @@ describe('Module: ValidSettingsKey', () => {
           expect(offenses[0].message).to.equal(
             `Setting 'non-existent-setting' does not exist in 'blocks/referenced.liquid'.`,
           );
+        });
+
+        it(`reports an error when ${label} block setting does not exist in a referenced file that loads slowly`, async () => {
+          const theme = {
+            ...referencedBlock,
+            'sections/example.liquid': toLiquidFile({
+              ...schemaTemplate,
+              ...blockTemplate([{ type: 'referenced', settings: { 'non-existent-setting': 'v' } }]),
+            }),
+          };
+          const uri = 'file:///blocks/referenced.liquid';
+          const source = toSourceCode(uri, theme['blocks/referenced.liquid']);
+
+          const offenses = await check(theme, [ValidSettingsKey], {
+            async getBlockSchema() {
+              await new Promise((resolve) => setTimeout(resolve, 10));
+              return toSchema('theme', uri, source, async () => true) as Promise<
+                ThemeBlockSchema | undefined
+              >;
+            },
+          });
+          expect(offenses).to.have.length(1);
         });
       });
 
