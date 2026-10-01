@@ -58,20 +58,36 @@ export const ValidSettingsKey: LiquidCheckDefinition = {
           validateSettingsKey(context, offset, settingsNode, validSchema.settings);
 
           // Check if default block settings match the settings defined in the block file's schema
-          validSchema.default.blocks?.forEach((block, i) => {
-            const settingsNode = nodeAtPath(ast, ['default', 'blocks', i, 'settings']);
+          await Promise.all(
+            (validSchema.default.blocks ?? []).map((block, i) => {
+              const settingsNode = nodeAtPath(ast, ['default', 'blocks', i, 'settings']);
 
-            validateReferencedBlock(context, offset, settingsNode, rootLevelLocalBlocks, block);
-          });
+              return validateReferencedBlock(
+                context,
+                offset,
+                settingsNode,
+                rootLevelLocalBlocks,
+                block,
+              );
+            }),
+          );
         }
 
         // Check if preset block settings match the settings defined in the block file's schema
         for (const [_depthStr, blocks] of Object.entries(presetLevelBlocks)) {
-          blocks.forEach(({ node: blockNode, path }) => {
-            const settingsNode = nodeAtPath(ast, path.slice(0, -1).concat('settings'));
+          await Promise.all(
+            blocks.map(({ node: blockNode, path }) => {
+              const settingsNode = nodeAtPath(ast, path.slice(0, -1).concat('settings'));
 
-            validateReferencedBlock(context, offset, settingsNode, rootLevelLocalBlocks, blockNode);
-          });
+              return validateReferencedBlock(
+                context,
+                offset,
+                settingsNode,
+                rootLevelLocalBlocks,
+                blockNode,
+              );
+            }),
+          );
         }
       },
     };

@@ -1,6 +1,6 @@
 import { expect, describe, it } from 'vitest';
 import { ValidBlockTarget } from './index';
-import { check, MockTheme } from '../../test';
+import { check, MockFileSystem, MockTheme } from '../../test';
 import { Preset, Setting } from '../../types/schemas';
 
 describe('Module: ValidBlockTarget', () => {
@@ -851,6 +851,10 @@ describe('Module: ValidBlockTarget', () => {
         expect(offenses[0].message).to.equal(
           'Block type "image" is not allowed in "group" blocks. Allowed types are: text.',
         );
+
+        // Also when the file system answers slowly
+        const fs = new SlowFileSystem(theme);
+        expect(await check(theme, [ValidBlockTarget], { fs })).to.have.length(1);
       });
 
       describe(`Static Blocks used in a ${path} file`, () => {
@@ -1463,3 +1467,11 @@ describe('Module: ValidBlockTarget', () => {
     });
   });
 });
+
+// Answers like MockFileSystem, a moment later.
+class SlowFileSystem extends MockFileSystem {
+  async stat(uri: string) {
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    return super.stat(uri);
+  }
+}
