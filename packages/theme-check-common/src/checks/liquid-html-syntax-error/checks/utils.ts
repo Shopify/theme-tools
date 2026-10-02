@@ -20,6 +20,12 @@ const REGULAR_TOKEN = `[^\\s,]+`; // tokens separated by commas or spaces
 // Quoted strings pattern (combination of double and single quoted)
 const QUOTED_STRING = `(${DOUBLE_QUOTED_STRING}|${SINGLE_QUOTED_STRING})`;
 
+// Keep a lookup such as `product.options_by_name['hello world'].values`
+// together when splitting markup into space-separated fragments.
+const BRACKET_LOOKUP = `\\[(?:${QUOTED_STRING}|[^\\]]+)\\]`;
+const LOOKUP_ID = `[a-zA-Z_][\\w-]*\\??`;
+const VARIABLE_LOOKUP = `(?:${LOOKUP_ID}(?:\\.${LOOKUP_ID})*|${BRACKET_LOOKUP})(?:\\.${LOOKUP_ID}|${BRACKET_LOOKUP})*`;
+
 // Value pattern for key-value pairs (can be quoted, parenthesized, or regular token)
 const VALUE_PATTERN = `(${QUOTED_STRING}|${RANGE_MARKUP_REGEX}|${REGULAR_TOKEN})`;
 
@@ -27,7 +33,7 @@ const VALUE_PATTERN = `(${QUOTED_STRING}|${RANGE_MARKUP_REGEX}|${REGULAR_TOKEN})
 const KEY_VALUE_PAIR = `(\\S+):\\s*${VALUE_PATTERN}`;
 
 const MARKUP_FRAGMENTS_PATTERN = new RegExp(
-  `${QUOTED_STRING}|${RANGE_MARKUP_REGEX}|${KEY_VALUE_PAIR}|${REGULAR_TOKEN}`,
+  `${QUOTED_STRING}|${RANGE_MARKUP_REGEX}|${KEY_VALUE_PAIR}|${VARIABLE_LOOKUP}|${REGULAR_TOKEN}`,
   'g',
 );
 
