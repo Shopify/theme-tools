@@ -57,6 +57,17 @@ describe('getFragmentsInMarkup', () => {
     expect(values).toContainEqual(expect.objectContaining({ value: '( 1 .. 10 )' }));
     expect(values).toContainEqual(expect.objectContaining({ value: '( 1 ... 10 )' }));
   });
+
+  it('should keep spaces inside quoted bracket lookups within one fragment', () => {
+    const markup = "value in product.options_by_name['hello world'].values";
+    const values = getFragmentsInMarkup(markup);
+
+    expect(values.map(({ value }) => value)).toEqual([
+      'value',
+      'in',
+      "product.options_by_name['hello world'].values",
+    ]);
+  });
 });
 
 describe('fragmentKeyValuePair', () => {
