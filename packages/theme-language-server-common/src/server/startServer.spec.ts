@@ -1,5 +1,5 @@
 import { allChecks, path } from '@shopify/theme-check-common';
-import { MockFileSystem, MockTheme } from '@shopify/theme-check-common/dist/test';
+import { MockFileSystem, MockTheme } from '@shopify/theme-check-common/test';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   DidChangeConfigurationNotification,

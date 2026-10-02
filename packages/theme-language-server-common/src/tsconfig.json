@@ -10,6 +10,7 @@
     "lib": ["es2022", "dom"],
     "paths": {
       "@shopify/theme-check-common": ["../../theme-check-common/src"],
+      "@shopify/theme-check-common/test": ["../../theme-check-common/src/test"],
       "@shopify/liquid-html-parser": ["../../liquid-html-parser/src"],
       "@shopify/theme-graph": ["../../theme-graph/src"]
     }
