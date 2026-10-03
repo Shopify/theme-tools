@@ -43,6 +43,7 @@ export async function buildThemeGraph(
   const graph: ThemeGraph = {
     entryPoints: [],
     modules: {},
+    parseErrors: [],
     rootUri,
   };
 
