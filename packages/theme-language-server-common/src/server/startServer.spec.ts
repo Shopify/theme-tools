@@ -10,7 +10,12 @@ import {
 } from 'vscode-languageserver';
 import { MockConnection, mockConnection } from '../test/MockConnection';
 import { Dependencies } from '../types';
-import { CHECK_ON_CHANGE, CHECK_ON_OPEN, CHECK_ON_SAVE } from './Configuration';
+import {
+  CHECK_ON_CHANGE,
+  CHECK_ON_OPEN,
+  CHECK_ON_SAVE,
+  FETCH_METAFIELD_DEFINITIONS,
+} from './Configuration';
 import { startServer } from './startServer';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -23,13 +28,15 @@ describe('Module: server', () => {
   let checkOnChange: boolean | null = null;
   let checkOnSave: boolean | null = null;
   let checkOnOpen: boolean | null = null;
+  let fetchMetafieldDefinitionsSetting: boolean | null = null;
   let connection: MockConnection;
   let dependencies: ReturnType<typeof getDependencies>;
   let fileTree: MockTheme;
   let logger: any;
+  let fetchMetafieldDefinitionsForURI: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    checkOnChange = checkOnSave = checkOnOpen = null;
+    checkOnChange = checkOnSave = checkOnOpen = fetchMetafieldDefinitionsSetting = null;
 
     // Initialize all ze mocks...
     connection = mockConnection(mockRoot);
@@ -45,12 +52,16 @@ describe('Module: server', () => {
               return checkOnOpen;
             case CHECK_ON_SAVE:
               return checkOnSave;
+            case FETCH_METAFIELD_DEFINITIONS:
+              return fetchMetafieldDefinitionsSetting;
             default:
               return null;
           }
         });
       } else if (method === 'client/registerCapability') {
         return null;
+      } else if (method === 'workspace/workspaceFolders') {
+        return [{ uri: mockRoot, name: 'theme' }];
       } else {
         throw new Error(
           `Does not know how to mock response to '${method}' requests. Check your test.`,
@@ -60,7 +71,9 @@ describe('Module: server', () => {
 
     fileTree = { '.theme-check.yml': '', 'snippets/code.liquid': fileContents };
     logger = vi.fn();
+    fetchMetafieldDefinitionsForURI = vi.fn();
     dependencies = getDependencies(logger, fileTree);
+    dependencies.fetchMetafieldDefinitionsForURI = fetchMetafieldDefinitionsForURI;
 
     // Start the server
     startServer(connection, dependencies);
@@ -77,6 +90,31 @@ describe('Module: server', () => {
     connection.setup();
     await flushAsync();
     expect(logger).toHaveBeenCalledWith("[SERVER] Let's roll!");
+  });
+
+  it('does not fetch metafield definitions by default', async () => {
+    connection.setup({
+      workspace: {
+        configuration: true,
+        workspaceFolders: { supported: true },
+      },
+    });
+    await flushAsync();
+
+    expect(fetchMetafieldDefinitionsForURI).not.toHaveBeenCalled();
+  });
+
+  it('fetches metafield definitions when enabled', async () => {
+    fetchMetafieldDefinitionsSetting = true;
+    connection.setup({
+      workspace: {
+        configuration: true,
+        workspaceFolders: { supported: true },
+      },
+    });
+    await flushAsync();
+
+    expect(fetchMetafieldDefinitionsForURI).toHaveBeenCalledWith(mockRoot);
   });
 
   it('should debounce calls to runChecks', async () => {
@@ -392,6 +430,7 @@ describe('Module: server', () => {
       jsonValidationSet: {
         schemas: async () => [],
       },
+      fetchMetafieldDefinitionsForURI,
     };
   }
 
