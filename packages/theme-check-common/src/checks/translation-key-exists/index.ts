@@ -1,4 +1,6 @@
 import { parseJSON } from '../../json';
+import * as path from '../../path';
+import { isSection } from '../../to-schema';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { isError } from '../../utils';
 
@@ -73,10 +75,17 @@ export const TranslationKeyExists: LiquidCheckDefinition = {
 
         if (!defaultTranslations && systemTranslationsKeys.length === 0) return;
 
+        const sectionKeyPrefix = isSection(context.file.uri)
+          ? `sections.${path.basename(context.file.uri, '.liquid')}.`
+          : undefined;
+
         nodes.forEach(({ translationKey, startIndex, endIndex }) => {
           if (
             keyExists(translationKey, defaultTranslations) ||
             keyExists(translationKey, schemaLocales) ||
+            (sectionKeyPrefix !== undefined &&
+              translationKey.startsWith(sectionKeyPrefix) &&
+              keyExists(translationKey.slice(sectionKeyPrefix.length), schemaLocales)) ||
             systemTranslationsKeys.includes(translationKey)
           ) {
             return;

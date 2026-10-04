@@ -100,6 +100,57 @@ describe('Module: TranslationKeyExists', () => {
     });
   });
 
+  it('should ignore section-scoped keys included in the section schema', async () => {
+    const offenses = await check(
+      {
+        'locales/en.default.json': '{}',
+        'sections/test-section.liquid': `{{ 'sections.test-section.title' | t }}
+{{ 'sections.test-section.description.desktop' | t }}
+{{ 'sections.test-section.does_not_exist' | t }}
+{% schema %}
+  {
+    "locales": {
+      "en": {
+        "title": "Title",
+        "description": {
+          "desktop": "Lorem ipsum"
+        }
+      }
+    }
+  }
+{% endschema %}`,
+      },
+      [TranslationKeyExists],
+    );
+    expect(offenses).to.have.length(1);
+    expect(offenses).to.containOffense({
+      check: TranslationKeyExists.meta.code,
+      message:
+        "'sections.test-section.does_not_exist' does not have a matching entry in 'locales/en.default.json' or 'sections/test-section.liquid'",
+      uri: 'file:///sections/test-section.liquid',
+    });
+  });
+
+  it('should only resolve section-scoped keys in section files', async () => {
+    const offenses = await check(
+      {
+        'locales/en.default.json': '{}',
+        'snippets/test-section.liquid': `{{ 'sections.test-section.title' | t }}
+{% schema %}
+  {
+    "locales": {
+      "en": {
+        "title": "Title"
+      }
+    }
+  }
+{% endschema %}`,
+      },
+      [TranslationKeyExists],
+    );
+    expect(offenses).to.have.length(1);
+  });
+
   it('should not crash if the schema locales does not exist', async () => {
     const offenses = await check(
       {
