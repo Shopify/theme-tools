@@ -1911,3 +1911,251 @@ cases:
               value: x
               position: { start: [0, 8], text: '"x"' }
             filters: []
+  - name: parses the Object.prototype name constructor as an unknown tag
+    source: "{% constructor a %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% constructor a %}" }
+      children:
+        - type: LiquidTag
+          name: constructor
+          markup: a
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% constructor a %}" }
+          markupPosition: { start: [0, 15], text: "a " }
+          position: { start: [0, 0], text: "{% constructor a %}" }
+  - name: parses the Object.prototype name constructor as an unknown tag in {% liquid %}
+    source: |-
+      {% liquid
+        constructor a
+      %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+            constructor a
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                constructor a
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |2
+              
+                constructor a
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                constructor a
+              %}
+          markup:
+            - type: LiquidTag
+              name: constructor
+              markup: a
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [1, 2], text: constructor a }
+              markupPosition: { start: [1, 14], text: a }
+              position: { start: [1, 2], text: constructor a }
+  - name: parses the Object.prototype name toString as an unknown tag
+    source: "{% toString a %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% toString a %}" }
+      children:
+        - type: LiquidTag
+          name: toString
+          markup: a
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% toString a %}" }
+          markupPosition: { start: [0, 12], text: "a " }
+          position: { start: [0, 0], text: "{% toString a %}" }
+  - name: parses the Object.prototype name toString as an unknown tag in {% liquid %}
+    source: |-
+      {% liquid
+        toString a
+      %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+            toString a
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                toString a
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |2
+              
+                toString a
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                toString a
+              %}
+          markup:
+            - type: LiquidTag
+              name: toString
+              markup: a
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [1, 2], text: toString a }
+              markupPosition: { start: [1, 11], text: a }
+              position: { start: [1, 2], text: toString a }
+  - name: parses the Object.prototype name hasOwnProperty as an unknown tag
+    source: "{% hasOwnProperty a %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% hasOwnProperty a %}" }
+      children:
+        - type: LiquidTag
+          name: hasOwnProperty
+          markup: a
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% hasOwnProperty a %}" }
+          markupPosition: { start: [0, 18], text: "a " }
+          position: { start: [0, 0], text: "{% hasOwnProperty a %}" }
+  - name: parses the Object.prototype name hasOwnProperty as an unknown tag in {% liquid %}
+    source: |-
+      {% liquid
+        hasOwnProperty a
+      %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+            hasOwnProperty a
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                hasOwnProperty a
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |2
+              
+                hasOwnProperty a
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                hasOwnProperty a
+              %}
+          markup:
+            - type: LiquidTag
+              name: hasOwnProperty
+              markup: a
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [1, 2], text: hasOwnProperty a }
+              markupPosition: { start: [1, 17], text: a }
+              position: { start: [1, 2], text: hasOwnProperty a }
+  - name: parses the Object.prototype name __proto__ as an unknown tag
+    source: "{% __proto__ a %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% __proto__ a %}" }
+      children:
+        - type: LiquidTag
+          name: __proto__
+          markup: a
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% __proto__ a %}" }
+          markupPosition: { start: [0, 13], text: "a " }
+          position: { start: [0, 0], text: "{% __proto__ a %}" }
+  - name: parses the Object.prototype name __proto__ as an unknown tag in {% liquid %}
+    source: |-
+      {% liquid
+        __proto__ a
+      %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+            __proto__ a
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                __proto__ a
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |2
+              
+                __proto__ a
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                __proto__ a
+              %}
+          markup:
+            - type: LiquidTag
+              name: __proto__
+              markup: a
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [1, 2], text: __proto__ a }
+              markupPosition: { start: [1, 12], text: a }
+              position: { start: [1, 2], text: __proto__ a }
