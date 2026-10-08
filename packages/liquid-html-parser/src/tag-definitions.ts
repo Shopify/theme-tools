@@ -34,6 +34,35 @@ export interface TagDefinitionRaw<M = unknown> {
   /** true for javascript/style/stylesheet, false for raw/comment/schema. doc uses liquid-doc-parser. */
   parseLiquidInBody?: boolean;
   parse(name: string, markup: MarkupParser, parser: Parser): M;
+  /** Where this tag's body ends, following the Liquid tag class that parses it. */
+  body: RawBodyRule;
+}
+
+/**
+ * How a raw tag's body ends. Each Liquid tag class finds the end of its own body,
+ * so the rule belongs to the tag, not to the parser.
+ */
+export interface RawBodyRule {
+  /**
+   * How a tag is named inside the body: `leading` reads the name at the start of a
+   * `{% %}` token (`BlockBody::FullToken`); `trailing` reads the last tag in the
+   * token and leaves any text before it in the body (`FullTokenPossiblyInvalid`).
+   */
+  delimiter: 'leading' | 'trailing';
+  /** What an inner tag with the same name does: opens another level, is ignored, or is a syntax error. */
+  sameName: 'nests' | 'ignored' | 'rejected';
+  /** Inner tags whose bodies are skipped whole, each ending by its own rule. */
+  opaque: readonly string[];
+  /** Whether the body can close inside `{% liquid %}`, whose lines cannot hold a `{% %}` delimiter. */
+  closesInLiquidTag: boolean;
+}
+
+/** The closing tag of a raw tag's body, as source offsets. */
+export interface RawBodyEnd {
+  tagStart: number;
+  tagEnd: number;
+  wsStart: '-' | '';
+  wsEnd: '-' | '';
 }
 
 export type TagDefinition<M = unknown> =
