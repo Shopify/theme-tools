@@ -124,6 +124,34 @@ describe('Unit: tree-builder', () => {
     });
   });
 
+  describe('whitespace trimming around Liquid tags', () => {
+    function ifBranchChildren(body: string): LiquidHtmlNode[] {
+      const [tag] = toLiquidHtmlAST(`{% if a %}${body}{% endif %}`).children;
+      if (tag.type !== NodeTypes.LiquidTag || !tag.children) throw new Error('expected {% if %}');
+      const [branch] = tag.children;
+      if (branch.type !== NodeTypes.LiquidBranch) throw new Error('expected a branch');
+      return branch.children;
+    }
+
+    it('trims every character that \\s matches, and keeps others', () => {
+      const whitespace =
+        '\t\n\v\f\r \u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008' +
+        '\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff';
+      const text = 'x\u200by'; // zero-width space is not whitespace
+      const start = '{% if a %}'.length + whitespace.length;
+      expect(ifBranchChildren(whitespace + text + whitespace)).toMatchObject([
+        { type: NodeTypes.TextNode, value: text, position: { start, end: start + text.length } },
+      ]);
+    });
+
+    it('trims text containing a long whitespace run in linear time', () => {
+      const text = 'x' + ' '.repeat(100_000) + 'y';
+      expect(ifBranchChildren(` ${text} `)).toMatchObject([
+        { type: NodeTypes.TextNode, value: text },
+      ]);
+    }, 1000);
+  });
+
   describe('compoundNamesMatch', () => {
     it('returns true for two empty arrays', () => {
       expect(compoundNamesMatch([], [])).toBe(true);
