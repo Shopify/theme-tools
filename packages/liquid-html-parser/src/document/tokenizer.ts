@@ -62,8 +62,21 @@ export interface TokenizeOptions {
 }
 
 export function tokenize(source: string, options: TokenizeOptions = {}): Token[] {
+  return tokenizeToEnd(source, options, true);
+}
+
+/**
+ * `tokenize` without the text fast path: plain text advances one character at
+ * a time. Test-only reference for checking that the fast path never skips over
+ * a token start. Not exported from the package.
+ */
+export function tokenizeWithoutFastPath(source: string, options: TokenizeOptions = {}): Token[] {
+  return tokenizeToEnd(source, options, false);
+}
+
+function tokenizeToEnd(source: string, options: TokenizeOptions, fastPath: boolean): Token[] {
   const tokens: Token[] = [];
-  const tokenizer = createTokenizer(source, tokens);
+  const tokenizer = createTokenizer(source, tokens, fastPath);
   tokenizer.restart(0, options);
   tokenizer.fill(Infinity);
   return tokens;
@@ -87,7 +100,7 @@ export interface Tokenizer {
   fill(index: number): boolean;
 }
 
-export function createTokenizer(source: string, tokens: Token[]): Tokenizer {
+export function createTokenizer(source: string, tokens: Token[], fastPath = true): Tokenizer {
   const modeStack: Mode[] = [];
   let mode = Mode.Default as Mode;
   let pos = 0;
@@ -135,6 +148,17 @@ export function createTokenizer(source: string, tokens: Token[]): Tokenizer {
 
   function startText() {
     if (textStart === -1) textStart = pos;
+  }
+
+  /** Moves past plain text, to where the current mode's next token could start. */
+  function skipText() {
+    if (!fastPath) {
+      pos++;
+    } else if (mode === Mode.LiquidVariableOutput) {
+      pos = nextOutputClose();
+    } else {
+      pos = nextTextCandidate(source, pos + 1, mode, quoteChar, textIsSpace);
+    }
   }
 
   /**
@@ -224,7 +248,7 @@ export function createTokenizer(source: string, tokens: Token[]): Tokenizer {
             popMode();
           } else {
             startText();
-            pos = nextLiquidCloseCandidate(source, pos + 1, '%}');
+            skipText();
           }
           break;
         }
@@ -237,9 +261,8 @@ export function createTokenizer(source: string, tokens: Token[]): Tokenizer {
             emit(TokenType.LiquidVariableOutputClose, 2);
             popMode();
           } else {
-            // Jump to the close, rather than step to it a character at a time.
             startText();
-            pos = nextOutputClose();
+            skipText();
           }
           break;
         }
@@ -280,7 +303,7 @@ export function createTokenizer(source: string, tokens: Token[]): Tokenizer {
           }
 
           startText();
-          pos = nextDefaultCandidate(source, pos + 1);
+          skipText();
           break;
         }
 
@@ -330,7 +353,7 @@ export function createTokenizer(source: string, tokens: Token[]): Tokenizer {
           if (textStart !== -1 && isSpace !== textIsSpace) flushText();
           if (textStart === -1) textIsSpace = isSpace;
           startText();
-          pos = nextHtmlTagCandidate(source, pos + 1, textIsSpace);
+          skipText();
           break;
         }
 
@@ -347,7 +370,7 @@ export function createTokenizer(source: string, tokens: Token[]): Tokenizer {
           }
 
           startText();
-          pos = nextQuotedValueCandidate(source, pos + 1, quoteChar);
+          skipText();
           break;
         }
 
@@ -374,8 +397,32 @@ export function createTokenizer(source: string, tokens: Token[]): Tokenizer {
  * consumed in one step. Inside an HTML tag a run also ends where text switches
  * between whitespace and non-whitespace, because each is its own Text token.
  * Returning a superset of real token starts is safe: the main loop re-checks
- * that position and treats a non-match as text.
+ * that position and treats a non-match as text. Missing a token start is not,
+ * so a new token type needs its first character added to its mode's helper
+ * (tokenizer.test.ts compares against `tokenizeWithoutFastPath` to catch this).
+ * Liquid output jumps with `nextOutputClose` instead, which caches its search.
  */
+
+function nextTextCandidate(
+  source: string,
+  from: number,
+  mode: Exclude<Mode, Mode.LiquidVariableOutput>,
+  quoteChar: string,
+  textIsSpace: boolean,
+): number {
+  switch (mode) {
+    case Mode.Default:
+      return nextDefaultCandidate(source, from);
+    case Mode.HtmlTag:
+      return nextHtmlTagCandidate(source, from, textIsSpace);
+    case Mode.QuotedValue:
+      return nextQuotedValueCandidate(source, from, quoteChar);
+    case Mode.LiquidTag:
+      return nextLiquidTagCloseCandidate(source, from);
+    default:
+      return assertNever(mode);
+  }
+}
 
 const CHAR_DOUBLE_QUOTE = 0x22; // "
 const CHAR_SINGLE_QUOTE = 0x27; // '
@@ -436,8 +483,8 @@ function nextQuotedValueCandidate(source: string, from: number, quote: string): 
  * match contains a `%}` one character later, so the earliest close is at the
  * first `%}` or the `-` immediately before it.
  */
-function nextLiquidCloseCandidate(source: string, from: number, close: '%}'): number {
-  const i = source.indexOf(close, from);
+function nextLiquidTagCloseCandidate(source: string, from: number): number {
+  const i = source.indexOf('%}', from);
   if (i === -1) return source.length;
   return i > from && source.charCodeAt(i - 1) === CHAR_DASH ? i - 1 : i;
 }
