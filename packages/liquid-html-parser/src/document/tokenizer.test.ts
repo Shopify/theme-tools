@@ -164,7 +164,8 @@ describe('Unit: document-tokenizer', () => {
       const result = tokens('<br />');
       expect(result).toMatchObject([
         { type: TokenType.HtmlTagOpen, start: 0, end: 1 },
-        { type: TokenType.Text, start: 1, end: 4 },
+        { type: TokenType.Text, start: 1, end: 3 },
+        { type: TokenType.Text, start: 3, end: 4 },
         { type: TokenType.HtmlSelfClose, start: 4, end: 6 },
       ]);
       assertTokenInvariants('<br />');
@@ -185,7 +186,9 @@ describe('Unit: document-tokenizer', () => {
       const result = tokens('<!DOCTYPE html>');
       expect(result).toMatchObject([
         { type: TokenType.HtmlDoctypeOpen, start: 0, end: 2 },
-        { type: TokenType.Text, start: 2, end: 14 },
+        { type: TokenType.Text, start: 2, end: 9 },
+        { type: TokenType.Text, start: 9, end: 10 },
+        { type: TokenType.Text, start: 10, end: 14 },
         { type: TokenType.HtmlTagClose, start: 14, end: 15 },
       ]);
       assertTokenInvariants('<!DOCTYPE html>');
@@ -199,7 +202,9 @@ describe('Unit: document-tokenizer', () => {
       const result = tokens(source);
       expect(result).toMatchObject([
         { type: TokenType.HtmlTagOpen, start: 0, end: 1 },
-        { type: TokenType.Text, start: 1, end: 10 },
+        { type: TokenType.Text, start: 1, end: 4 },
+        { type: TokenType.Text, start: 4, end: 5 },
+        { type: TokenType.Text, start: 5, end: 10 },
         { type: TokenType.HtmlEquals, start: 10, end: 11 },
         { type: TokenType.HtmlQuoteOpen, start: 11, end: 12 },
         { type: TokenType.Text, start: 12, end: 15 },
@@ -215,7 +220,9 @@ describe('Unit: document-tokenizer', () => {
       const result = tokens(source);
       expect(result).toMatchObject([
         { type: TokenType.HtmlTagOpen, start: 0, end: 1 },
-        { type: TokenType.Text, start: 1, end: 10 },
+        { type: TokenType.Text, start: 1, end: 4 },
+        { type: TokenType.Text, start: 4, end: 5 },
+        { type: TokenType.Text, start: 5, end: 10 },
         { type: TokenType.HtmlEquals, start: 10, end: 11 },
         { type: TokenType.HtmlQuoteOpen, start: 11, end: 12 },
         { type: TokenType.Text, start: 12, end: 15 },
@@ -231,7 +238,9 @@ describe('Unit: document-tokenizer', () => {
       const result = tokens(source);
       expect(result).toMatchObject([
         { type: TokenType.HtmlTagOpen, start: 0, end: 1 },
-        { type: TokenType.Text, start: 1, end: 10 },
+        { type: TokenType.Text, start: 1, end: 4 },
+        { type: TokenType.Text, start: 4, end: 5 },
+        { type: TokenType.Text, start: 5, end: 10 },
         { type: TokenType.HtmlEquals, start: 10, end: 11 },
         { type: TokenType.Text, start: 11, end: 14 },
         { type: TokenType.HtmlTagClose, start: 14, end: 15 },
@@ -244,7 +253,9 @@ describe('Unit: document-tokenizer', () => {
       const result = tokens(source);
       expect(result).toMatchObject([
         { type: TokenType.HtmlTagOpen, start: 0, end: 1 },
-        { type: TokenType.Text, start: 1, end: 13 },
+        { type: TokenType.Text, start: 1, end: 4 },
+        { type: TokenType.Text, start: 4, end: 5 },
+        { type: TokenType.Text, start: 5, end: 13 },
         { type: TokenType.HtmlTagClose, start: 13, end: 14 },
       ]);
       assertTokenInvariants(source);
@@ -257,12 +268,15 @@ describe('Unit: document-tokenizer', () => {
       const result = tokens(source);
       expect(result).toMatchObject([
         { type: TokenType.HtmlTagOpen, start: 0, end: 1 },
-        { type: TokenType.Text, start: 1, end: 7 },
+        { type: TokenType.Text, start: 1, end: 4 },
+        { type: TokenType.Text, start: 4, end: 5 },
+        { type: TokenType.Text, start: 5, end: 7 },
         { type: TokenType.HtmlEquals, start: 7, end: 8 },
         { type: TokenType.HtmlQuoteOpen, start: 8, end: 9 },
         { type: TokenType.Text, start: 9, end: 10 },
         { type: TokenType.HtmlQuoteClose, start: 10, end: 11 },
-        { type: TokenType.Text, start: 11, end: 17 },
+        { type: TokenType.Text, start: 11, end: 12 },
+        { type: TokenType.Text, start: 12, end: 17 },
         { type: TokenType.HtmlEquals, start: 17, end: 18 },
         { type: TokenType.HtmlQuoteOpen, start: 18, end: 19 },
         { type: TokenType.Text, start: 19, end: 20 },
@@ -270,6 +284,31 @@ describe('Unit: document-tokenizer', () => {
         { type: TokenType.HtmlTagClose, start: 21, end: 22 },
       ]);
       assertTokenInvariants(source);
+    });
+    // '<a x = "v">' len=11: 0:< 1:a 2:  3:x 4:  5:= 6:  7:" 8:v 9:" 10:>
+    it('tokenizes whitespace inside a tag as Text tokens of its own', () => {
+      const source = '<a x = "v">';
+      const result = tokens(source);
+      expect(result).toMatchObject([
+        { type: TokenType.HtmlTagOpen, start: 0, end: 1 },
+        { type: TokenType.Text, start: 1, end: 2 },
+        { type: TokenType.Text, start: 2, end: 3 },
+        { type: TokenType.Text, start: 3, end: 4 },
+        { type: TokenType.Text, start: 4, end: 5 },
+        { type: TokenType.HtmlEquals, start: 5, end: 6 },
+        { type: TokenType.Text, start: 6, end: 7 },
+        { type: TokenType.HtmlQuoteOpen, start: 7, end: 8 },
+        { type: TokenType.Text, start: 8, end: 9 },
+        { type: TokenType.HtmlQuoteClose, start: 9, end: 10 },
+        { type: TokenType.HtmlTagClose, start: 10, end: 11 },
+      ]);
+      assertTokenInvariants(source);
+    });
+
+    // '<a title="x  y">': whitespace inside a quoted value stays part of the value.
+    it("keeps whitespace inside a quoted value in the value's Text token", () => {
+      const result = tokens('<a title="x  y">');
+      expect(result[6]).toMatchObject({ type: TokenType.Text, start: 10, end: 14 });
     });
   });
 
@@ -281,7 +320,9 @@ describe('Unit: document-tokenizer', () => {
       const result = tokens(source);
       expect(result).toMatchObject([
         { type: TokenType.HtmlTagOpen, start: 0, end: 1 },
-        { type: TokenType.Text, start: 1, end: 10 },
+        { type: TokenType.Text, start: 1, end: 4 },
+        { type: TokenType.Text, start: 4, end: 5 },
+        { type: TokenType.Text, start: 5, end: 10 },
         { type: TokenType.HtmlEquals, start: 10, end: 11 },
         { type: TokenType.HtmlQuoteOpen, start: 11, end: 12 },
         { type: TokenType.LiquidVariableOutputOpen, start: 12, end: 14 },
@@ -300,7 +341,9 @@ describe('Unit: document-tokenizer', () => {
       const result = tokens(source);
       expect(result).toMatchObject([
         { type: TokenType.HtmlTagOpen, start: 0, end: 1 },
-        { type: TokenType.Text, start: 1, end: 10 },
+        { type: TokenType.Text, start: 1, end: 4 },
+        { type: TokenType.Text, start: 4, end: 5 },
+        { type: TokenType.Text, start: 5, end: 10 },
         { type: TokenType.HtmlEquals, start: 10, end: 11 },
         { type: TokenType.HtmlQuoteOpen, start: 11, end: 12 },
         { type: TokenType.Text, start: 12, end: 14 },
@@ -322,7 +365,8 @@ describe('Unit: document-tokenizer', () => {
       const result = tokens(source);
       expect(result).toMatchObject([
         { type: TokenType.HtmlTagOpen, start: 0, end: 1 },
-        { type: TokenType.Text, start: 1, end: 5 },
+        { type: TokenType.Text, start: 1, end: 4 },
+        { type: TokenType.Text, start: 4, end: 5 },
         { type: TokenType.LiquidTagOpen, start: 5, end: 7 },
         { type: TokenType.Text, start: 7, end: 13 },
         { type: TokenType.LiquidTagClose, start: 13, end: 15 },
@@ -350,7 +394,9 @@ describe('Unit: document-tokenizer', () => {
       const result = tokens(source);
       expect(result).toMatchObject([
         { type: TokenType.HtmlTagOpen, start: 0, end: 1 },
-        { type: TokenType.Text, start: 1, end: 10 },
+        { type: TokenType.Text, start: 1, end: 4 },
+        { type: TokenType.Text, start: 4, end: 5 },
+        { type: TokenType.Text, start: 5, end: 10 },
         { type: TokenType.HtmlEquals, start: 10, end: 11 },
         { type: TokenType.HtmlQuoteOpen, start: 11, end: 12 },
         { type: TokenType.LiquidTagOpen, start: 12, end: 14 },
