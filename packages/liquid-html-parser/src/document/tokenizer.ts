@@ -224,7 +224,7 @@ export function createTokenizer(source: string, tokens: Token[]): Tokenizer {
             popMode();
           } else {
             startText();
-            pos++;
+            pos = nextLiquidCloseCandidate(source, pos + 1, '%}');
           }
           break;
         }
@@ -264,8 +264,7 @@ export function createTokenizer(source: string, tokens: Token[]): Tokenizer {
           }
 
           if (match('</')) {
-            const after = ch(2);
-            if (/[a-zA-Z]/.test(after) || after === '{') {
+            if (isTagNameStart(source.charCodeAt(pos + 2))) {
               emit(TokenType.HtmlCloseTagOpen, 2);
               pushMode(Mode.HtmlTag);
               continue;
@@ -273,8 +272,7 @@ export function createTokenizer(source: string, tokens: Token[]): Tokenizer {
           }
 
           if (ch(0) === '<') {
-            const after = ch(1);
-            if (/[a-zA-Z]/.test(after) || after === '{') {
+            if (isTagNameStart(source.charCodeAt(pos + 1))) {
               emit(TokenType.HtmlTagOpen, 1);
               pushMode(Mode.HtmlTag);
               continue;
@@ -282,7 +280,7 @@ export function createTokenizer(source: string, tokens: Token[]): Tokenizer {
           }
 
           startText();
-          pos++;
+          pos = nextDefaultCandidate(source, pos + 1);
           break;
         }
 
@@ -332,7 +330,7 @@ export function createTokenizer(source: string, tokens: Token[]): Tokenizer {
           if (textStart !== -1 && isSpace !== textIsSpace) flushText();
           if (textStart === -1) textIsSpace = isSpace;
           startText();
-          pos++;
+          pos = nextHtmlTagCandidate(source, pos + 1, textIsSpace);
           break;
         }
 
@@ -349,7 +347,7 @@ export function createTokenizer(source: string, tokens: Token[]): Tokenizer {
           }
 
           startText();
-          pos++;
+          pos = nextQuotedValueCandidate(source, pos + 1, quoteChar);
           break;
         }
 
@@ -367,6 +365,103 @@ export function createTokenizer(source: string, tokens: Token[]): Tokenizer {
   }
 
   return { restart, fill };
+}
+
+/*
+ * Text fast path: most characters cannot start (or close) a token in the
+ * current mode. Each helper returns the first index >= `from` where the
+ * mode's `match()` checks could succeed, so the run of plain text before it is
+ * consumed in one step. Inside an HTML tag a run also ends where text switches
+ * between whitespace and non-whitespace, because each is its own Text token.
+ * Returning a superset of real token starts is safe: the main loop re-checks
+ * that position and treats a non-match as text.
+ */
+
+const CHAR_DOUBLE_QUOTE = 0x22; // "
+const CHAR_SINGLE_QUOTE = 0x27; // '
+const CHAR_DASH = 0x2d; // -
+const CHAR_SLASH = 0x2f; // /
+const CHAR_LESS_THAN = 0x3c; // <
+const CHAR_EQUALS = 0x3d; // =
+const CHAR_GREATER_THAN = 0x3e; // >
+const CHAR_OPEN_BRACE = 0x7b; // {
+const CHAR_LEFT_SINGLE_CURLY_QUOTE = 0x2018; // ‘
+const CHAR_RIGHT_DOUBLE_CURLY_QUOTE = 0x201d; // ”
+
+/** Default mode tokens start with `{` (Liquid), `<` (HTML), or `-` (`-->`). */
+function nextDefaultCandidate(source: string, from: number): number {
+  for (let i = from; i < source.length; i++) {
+    const c = source.charCodeAt(i);
+    if (c === CHAR_OPEN_BRACE || c === CHAR_LESS_THAN || c === CHAR_DASH) return i;
+  }
+  return source.length;
+}
+
+/**
+ * HtmlTag mode tokens start with `{`, `/`, `>`, `=`, or a straight/curly quote;
+ * a Text run also ends where whitespace starts or stops.
+ */
+function nextHtmlTagCandidate(source: string, from: number, textIsSpace: boolean): number {
+  for (let i = from; i < source.length; i++) {
+    const c = source.charCodeAt(i);
+    if (
+      c === CHAR_OPEN_BRACE ||
+      c === CHAR_SLASH ||
+      c === CHAR_GREATER_THAN ||
+      c === CHAR_EQUALS ||
+      c === CHAR_DOUBLE_QUOTE ||
+      c === CHAR_SINGLE_QUOTE ||
+      (c >= CHAR_LEFT_SINGLE_CURLY_QUOTE && c <= CHAR_RIGHT_DOUBLE_CURLY_QUOTE) ||
+      isWhitespace(c) !== textIsSpace
+    ) {
+      return i;
+    }
+  }
+  return source.length;
+}
+
+/** QuotedValue mode tokens start with `{` or either quote of the open pair. */
+function nextQuotedValueCandidate(source: string, from: number, quote: string): number {
+  const open = quote.charCodeAt(0);
+  const close = closingQuoteFor(quote).charCodeAt(0);
+  for (let i = from; i < source.length; i++) {
+    const c = source.charCodeAt(i);
+    if (c === CHAR_OPEN_BRACE || c === open || c === close) return i;
+  }
+  return source.length;
+}
+
+/**
+ * Liquid tag bodies only end at `%}`, optionally preceded by `-`. Any `-%}`
+ * match contains a `%}` one character later, so the earliest close is at the
+ * first `%}` or the `-` immediately before it.
+ */
+function nextLiquidCloseCandidate(source: string, from: number, close: '%}'): number {
+  const i = source.indexOf(close, from);
+  if (i === -1) return source.length;
+  return i > from && source.charCodeAt(i - 1) === CHAR_DASH ? i - 1 : i;
+}
+
+/** `[a-zA-Z{]`: what may follow `<` or `</` to open an HTML tag. */
+function isTagNameStart(c: number): boolean {
+  return (c >= 0x61 && c <= 0x7a) || (c >= 0x41 && c <= 0x5a) || c === CHAR_OPEN_BRACE;
+}
+
+/** Exactly the UTF-16 code units JavaScript's `\s` matches. */
+function isWhitespace(c: number): boolean {
+  return (
+    (c >= 0x09 && c <= 0x0d) ||
+    c === 0x20 ||
+    c === 0xa0 ||
+    c === 0x1680 ||
+    (c >= 0x2000 && c <= 0x200a) ||
+    c === 0x2028 ||
+    c === 0x2029 ||
+    c === 0x202f ||
+    c === 0x205f ||
+    c === 0x3000 ||
+    c === 0xfeff
+  );
 }
 
 enum Mode {
