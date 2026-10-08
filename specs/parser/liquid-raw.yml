@@ -1725,46 +1725,46 @@ cases:
               value: ok
               position: { start: [0, 56], text: ok }
   - name: does not duplicate a straddling {{ into both a Liquid-in-body raw body and a sibling
-    source: "{% style %}{{ invalid {% endstyle %}{{ 1 }}"
+    source: "{% stylesheet %}{{ invalid {% endstylesheet %}{{ 1 }}"
     parse: [html]
     ast:
       type: Document
       name: "#document"
-      position: { start: [0, 0], text: "{% style %}{{ invalid {% endstyle %}{{ 1 }}" }
+      position: { start: [0, 0], text: "{% stylesheet %}{{ invalid {% endstylesheet %}{{ 1 }}" }
       children:
         - type: LiquidRawTag
-          name: style
+          name: stylesheet
           markup: ""
-          markupPosition: { start: [0, 9], text: "" }
+          markupPosition: { start: [0, 14], text: "" }
           whitespaceStart: ""
           whitespaceEnd: ""
           delimiterWhitespaceStart: ""
           delimiterWhitespaceEnd: ""
-          blockStartPosition: { start: [0, 0], text: "{% style %}" }
-          blockEndPosition: { start: [0, 22], text: "{% endstyle %}" }
-          position: { start: [0, 0], text: "{% style %}{{ invalid {% endstyle %}" }
+          blockStartPosition: { start: [0, 0], text: "{% stylesheet %}" }
+          blockEndPosition: { start: [0, 27], text: "{% endstylesheet %}" }
+          position: { start: [0, 0], text: "{% stylesheet %}{{ invalid {% endstylesheet %}" }
           body:
             type: RawMarkup
             kind: text
             value: "{{ invalid "
-            position: { start: [0, 11], text: "{{ invalid " }
+            position: { start: [0, 16], text: "{{ invalid " }
             nodes:
               - type: TextNode
                 value: "{{ invalid"
-                position: { start: [0, 11], text: "{{ invalid" }
+                position: { start: [0, 16], text: "{{ invalid" }
         - type: LiquidVariableOutput
           whitespaceStart: ""
           whitespaceEnd: ""
-          markupPosition: { start: [0, 38], text: " 1 " }
-          position: { start: [0, 36], text: "{{ 1 }}" }
+          markupPosition: { start: [0, 48], text: " 1 " }
+          position: { start: [0, 46], text: "{{ 1 }}" }
           markup:
             type: LiquidVariable
             rawSource: "1"
-            position: { start: [0, 39], text: "1 " }
+            position: { start: [0, 49], text: "1 " }
             expression:
               type: Number
               value: "1"
-              position: { start: [0, 39], text: "1" }
+              position: { start: [0, 49], text: "1" }
             filters: []
   - name: does not let a decoy endcommentXXXXX close the comment; only the real endcomment does
     source: |-
@@ -1952,3 +1952,925 @@ cases:
         - type: TextNode
           value: <
           position: { start: [0, 34], text: < }
+  - name: closes a raw tag on an end tag with extra strings, as Liquid::Raw does
+    source: "{% raw %}x{% endraw xyz %}Y"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% raw %}x{% endraw xyz %}Y" }
+      children:
+        - type: LiquidRawTag
+          name: raw
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% raw %}" }
+          blockEndPosition: { start: [0, 10], text: "{% endraw xyz %}" }
+          position: { start: [0, 0], text: "{% raw %}x{% endraw xyz %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: x
+            position: { start: [0, 9], text: x }
+            nodes:
+              - type: TextNode
+                value: x
+                position: { start: [0, 9], text: x }
+        - type: TextNode
+          value: Y
+          position: { start: [0, 26], text: Y }
+  - name: keeps text before the end tag in the same token in a raw body
+    source: "{% raw %}x{{ a {% endraw %}Y"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% raw %}x{{ a {% endraw %}Y" }
+      children:
+        - type: LiquidRawTag
+          name: raw
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% raw %}" }
+          blockEndPosition: { start: [0, 15], text: "{% endraw %}" }
+          position: { start: [0, 0], text: "{% raw %}x{{ a {% endraw %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: "x{{ a "
+            position: { start: [0, 9], text: "x{{ a " }
+            nodes:
+              - type: TextNode
+                value: x{{ a
+                position: { start: [0, 9], text: "x{{ a" }
+        - type: TextNode
+          value: Y
+          position: { start: [0, 27], text: Y }
+  - name: does not nest a raw tag inside a raw tag
+    source: "{% raw %}{% raw %}x{% endraw %}Y{% endraw %}"
+    parse: [html]
+    error:
+      message: Attempting to close LiquidTag 'raw' before it was opened without a matching 'raw'
+      start: [0, 32]
+      text: "{% endraw %"
+  - name: rejects a doc tag nested in a doc tag, as Liquid::Doc does
+    source: "{% doc %}{% doc %}{% enddoc %}{% enddoc %}"
+    parse: [html]
+    error:
+      message: Attempting to end parsing before LiquidRawTag 'doc' was closed
+      start: [0, 0]
+      text: "{% doc %}"
+  - name: nests a style tag and skips raw bodies inside it, as Liquid::Block does
+    source: "{% style %}a{% style %}b{% endstyle %}{% comment %}{% endstyle %}{% endcomment %}c{% endstyle %}Y"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% style %}a{% style %}b{% endstyle %}{% comment %}{% endstyle %}{% endcomment %}c{% endstyle %}Y" }
+      children:
+        - type: LiquidRawTag
+          name: style
+          markup: ""
+          markupPosition: { start: [0, 9], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% style %}" }
+          blockEndPosition: { start: [0, 82], text: "{% endstyle %}" }
+          position: { start: [0, 0], text: "{% style %}a{% style %}b{% endstyle %}{% comment %}{% endstyle %}{% endcomment %}c{% endstyle %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: a{% style %}b{% endstyle %}{% comment %}{% endstyle %}{% endcomment %}c
+            position: { start: [0, 11], text: "a{% style %}b{% endstyle %}{% comment %}{% endstyle %}{% endcomment %}c" }
+            nodes:
+              - type: TextNode
+                value: a
+                position: { start: [0, 11], text: a }
+              - type: LiquidRawTag
+                name: style
+                markup: ""
+                markupPosition: { start: [0, 21], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 12], text: "{% style %}" }
+                blockEndPosition: { start: [0, 24], text: "{% endstyle %}" }
+                position: { start: [0, 12], text: "{% style %}b{% endstyle %}" }
+                body:
+                  type: RawMarkup
+                  kind: css
+                  value: b
+                  position: { start: [0, 23], text: b }
+                  nodes:
+                    - type: TextNode
+                      value: b
+                      position: { start: [0, 23], text: b }
+              - type: LiquidRawTag
+                name: comment
+                markup: ""
+                markupPosition: { start: [0, 49], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 38], text: "{% comment %}" }
+                blockEndPosition: { start: [0, 65], text: "{% endcomment %}" }
+                position: { start: [0, 38], text: "{% comment %}{% endstyle %}{% endcomment %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "{% endstyle %}"
+                  position: { start: [0, 51], text: "{% endstyle %}" }
+                  nodes:
+                    - type: TextNode
+                      value: "{% endstyle %}"
+                      position: { start: [0, 51], text: "{% endstyle %}" }
+              - type: TextNode
+                value: c
+                position: { start: [0, 81], text: c }
+        - type: TextNode
+          value: Y
+          position: { start: [0, 96], text: Y }
+  - name: does not parse nodes inside a comment
+    source: |-
+      {% comment %}
+        {% if true %}
+        {% if ... %}
+        {%- for ? -%}
+        {% while true %}
+        {%
+          unless if
+        %}
+        {% endcase %}
+      {% endcomment %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% comment %}
+            {% if true %}
+            {% if ... %}
+            {%- for ? -%}
+            {% while true %}
+            {%
+              unless if
+            %}
+            {% endcase %}
+          {% endcomment %}
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [9, 0], text: "{% endcomment %}" }
+          position:
+            start: [0, 0]
+            text: |-
+              {% comment %}
+                {% if true %}
+                {% if ... %}
+                {%- for ? -%}
+                {% while true %}
+                {%
+                  unless if
+                %}
+                {% endcase %}
+              {% endcomment %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |2
+              
+                {% if true %}
+                {% if ... %}
+                {%- for ? -%}
+                {% while true %}
+                {%
+                  unless if
+                %}
+                {% endcase %}
+            position:
+              start: [0, 13]
+              text: |2
+                
+                  {% if true %}
+                  {% if ... %}
+                  {%- for ? -%}
+                  {% while true %}
+                  {%
+                    unless if
+                  %}
+                  {% endcase %}
+            nodes:
+              - type: TextNode
+                value: |-
+                  {% if true %}
+                    {% if ... %}
+                    {%- for ? -%}
+                    {% while true %}
+                    {%
+                      unless if
+                    %}
+                    {% endcase %}
+                position:
+                  start: [1, 2]
+                  text: |-
+                    {% if true %}
+                      {% if ... %}
+                      {%- for ? -%}
+                      {% while true %}
+                      {%
+                        unless if
+                      %}
+                      {% endcase %}
+  - name: allows unclosed tags in a comment
+    source: |-
+      {% comment %}
+        {% if true %}
+      {% endcomment %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% comment %}
+            {% if true %}
+          {% endcomment %}
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [2, 0], text: "{% endcomment %}" }
+          position:
+            start: [0, 0]
+            text: |-
+              {% comment %}
+                {% if true %}
+              {% endcomment %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |2
+              
+                {% if true %}
+            position:
+              start: [0, 13]
+              text: |2
+                
+                  {% if true %}
+            nodes:
+              - type: TextNode
+                value: "{% if true %}"
+                position: { start: [1, 2], text: "{% if true %}" }
+  - name: allows an open tag that runs into a nested comment
+    source: |-
+      {% comment %}
+        {% assign a = 123 {% comment %}
+      {% endcomment %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% comment %}
+            {% assign a = 123 {% comment %}
+          {% endcomment %}
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [2, 0], text: "{% endcomment %}" }
+          position:
+            start: [0, 0]
+            text: |-
+              {% comment %}
+                {% assign a = 123 {% comment %}
+              {% endcomment %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |2
+              
+                {% assign a = 123 {% comment %}
+            position:
+              start: [0, 13]
+              text: |2
+                
+                  {% assign a = 123 {% comment %}
+            nodes:
+              - type: TextNode
+                value: "{% assign a = 123 {% comment %}"
+                position: { start: [1, 2], text: "{% assign a = 123 {% comment %}" }
+  - name: rejects an open tag that runs into the endcomment
+    source: |-
+      {% comment %}
+        {% assign foo = "1"
+      {% endcomment %}
+    parse: [html]
+    error:
+      message: Attempting to end parsing before LiquidRawTag 'comment' was closed
+      start: [0, 0]
+      text: "{% comment %}"
+  - name: rejects an open tag that runs into a nested endcomment
+    source: |-
+      {% comment %}
+        {% comment %}
+          {% invalid
+        {% endcomment %}
+      {% endcomment %}
+    parse: [html]
+    error:
+      message: Attempting to end parsing before LiquidRawTag 'comment' was closed
+      start: [0, 0]
+      text: "{% comment %}"
+  - name: rejects an open variable that runs into the endcomment
+    source: |-
+      {% comment %}
+      {% {{ {%- endcomment %}
+    parse: [html]
+    error:
+      message: Attempting to end parsing before LiquidRawTag 'comment' was closed
+      start: [0, 0]
+      text: "{% comment %}"
+  - name: closes child comment tags
+    source: |-
+      {% comment %}
+        {% comment %}
+          {% comment %}{%    endcomment     %}
+        {% endcomment %}
+      {% endcomment %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% comment %}
+            {% comment %}
+              {% comment %}{%    endcomment     %}
+            {% endcomment %}
+          {% endcomment %}
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [4, 0], text: "{% endcomment %}" }
+          position:
+            start: [0, 0]
+            text: |-
+              {% comment %}
+                {% comment %}
+                  {% comment %}{%    endcomment     %}
+                {% endcomment %}
+              {% endcomment %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |2
+              
+                {% comment %}
+                  {% comment %}{%    endcomment     %}
+                {% endcomment %}
+            position:
+              start: [0, 13]
+              text: |2
+                
+                  {% comment %}
+                    {% comment %}{%    endcomment     %}
+                  {% endcomment %}
+            nodes:
+              - type: TextNode
+                value: |-
+                  {% comment %}
+                      {% comment %}{%    endcomment     %}
+                    {% endcomment %}
+                position:
+                  start: [1, 2]
+                  text: |-
+                    {% comment %}
+                        {% comment %}{%    endcomment     %}
+                      {% endcomment %}
+  - name: rejects an unclosed child comment tag
+    source: |-
+      {% comment %}
+        {% comment %}
+          {% comment %}
+        {% endcomment %}
+      {% endcomment %}
+    parse: [html]
+    error:
+      message: Attempting to end parsing before LiquidRawTag 'comment' was closed
+      start: [0, 0]
+      text: "{% comment %}"
+  - name: skips a closed child raw tag in a comment
+    source: |-
+      {% comment %}
+        {% raw %}
+          {% endcomment %}
+        {% endraw %}
+      {% endcomment %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% comment %}
+            {% raw %}
+              {% endcomment %}
+            {% endraw %}
+          {% endcomment %}
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [4, 0], text: "{% endcomment %}" }
+          position:
+            start: [0, 0]
+            text: |-
+              {% comment %}
+                {% raw %}
+                  {% endcomment %}
+                {% endraw %}
+              {% endcomment %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |2
+              
+                {% raw %}
+                  {% endcomment %}
+                {% endraw %}
+            position:
+              start: [0, 13]
+              text: |2
+                
+                  {% raw %}
+                    {% endcomment %}
+                  {% endraw %}
+            nodes:
+              - type: TextNode
+                value: |-
+                  {% raw %}
+                      {% endcomment %}
+                    {% endraw %}
+                position:
+                  start: [1, 2]
+                  text: |-
+                    {% raw %}
+                        {% endcomment %}
+                      {% endraw %}
+  - name: rejects an unclosed child raw tag in a comment
+    source: |-
+      {% comment %}
+        {% raw %}
+        {% endcomment %}
+      {% endcomment %}
+    parse: [html]
+    error:
+      message: Attempting to end parsing before LiquidRawTag 'comment' was closed
+      start: [0, 0]
+      text: "{% comment %}"
+  - name: closes a nested comment on an endcomment with extra strings
+    source: |-
+      {% comment %}
+        {% comment %}
+        {% endcomment
+        {% if true %}
+        {% endif %}
+      {% endcomment %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% comment %}
+            {% comment %}
+            {% endcomment
+            {% if true %}
+            {% endif %}
+          {% endcomment %}
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [5, 0], text: "{% endcomment %}" }
+          position:
+            start: [0, 0]
+            text: |-
+              {% comment %}
+                {% comment %}
+                {% endcomment
+                {% if true %}
+                {% endif %}
+              {% endcomment %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |2
+              
+                {% comment %}
+                {% endcomment
+                {% if true %}
+                {% endif %}
+            position:
+              start: [0, 13]
+              text: |2
+                
+                  {% comment %}
+                  {% endcomment
+                  {% if true %}
+                  {% endif %}
+            nodes:
+              - type: TextNode
+                value: |-
+                  {% comment %}
+                    {% endcomment
+                    {% if true %}
+                    {% endif %}
+                position:
+                  start: [1, 2]
+                  text: |-
+                    {% comment %}
+                      {% endcomment
+                      {% if true %}
+                      {% endif %}
+  - name: opens and closes a nested comment with extra strings
+    source: |-
+      {% comment %}
+        {% comment
+          {% assign foo = 1 %}
+        {% endcomment
+        {% assign foo = 1 %}
+      {% endcomment %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% comment %}
+            {% comment
+              {% assign foo = 1 %}
+            {% endcomment
+            {% assign foo = 1 %}
+          {% endcomment %}
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [5, 0], text: "{% endcomment %}" }
+          position:
+            start: [0, 0]
+            text: |-
+              {% comment %}
+                {% comment
+                  {% assign foo = 1 %}
+                {% endcomment
+                {% assign foo = 1 %}
+              {% endcomment %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |2
+              
+                {% comment
+                  {% assign foo = 1 %}
+                {% endcomment
+                {% assign foo = 1 %}
+            position:
+              start: [0, 13]
+              text: |2
+                
+                  {% comment
+                    {% assign foo = 1 %}
+                  {% endcomment
+                  {% assign foo = 1 %}
+            nodes:
+              - type: TextNode
+                value: |-
+                  {% comment
+                      {% assign foo = 1 %}
+                    {% endcomment
+                    {% assign foo = 1 %}
+                position:
+                  start: [1, 2]
+                  text: |-
+                    {% comment
+                        {% assign foo = 1 %}
+                      {% endcomment
+                      {% assign foo = 1 %}
+  - name: closes a comment on an endcomment followed by a space and extra strings
+    source: "{% comment %}123{% endcomment xyz %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% comment %}123{% endcomment xyz %}" }
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [0, 16], text: "{% endcomment xyz %}" }
+          position: { start: [0, 0], text: "{% comment %}123{% endcomment xyz %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: "123"
+            position: { start: [0, 13], text: "123" }
+            nodes:
+              - type: TextNode
+                value: "123"
+                position: { start: [0, 13], text: "123" }
+  - name: closes a comment on an endcomment followed by a tab and extra strings
+    source: "{% comment %}123{% endcomment\txyz %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% comment %}123{% endcomment\txyz %}" }
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [0, 16], text: "{% endcomment\txyz %}" }
+          position: { start: [0, 0], text: "{% comment %}123{% endcomment\txyz %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: "123"
+            position: { start: [0, 13], text: "123" }
+            nodes:
+              - type: TextNode
+                value: "123"
+                position: { start: [0, 13], text: "123" }
+  - name: closes a comment on an endcomment followed by a newline and extra strings
+    source: |-
+      {% comment %}123{% endcomment
+      xyz %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% comment %}123{% endcomment
+          xyz %}
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition:
+            start: [0, 16]
+            text: |-
+              {% endcomment
+              xyz %}
+          position:
+            start: [0, 0]
+            text: |-
+              {% comment %}123{% endcomment
+              xyz %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: "123"
+            position: { start: [0, 13], text: "123" }
+            nodes:
+              - type: TextNode
+                value: "123"
+                position: { start: [0, 13], text: "123" }
+  - name: closes a comment on an endcomment whose extra strings repeat endcomment
+    source: |-
+      {% comment %}123{% endcomment
+         xyz  endcomment %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% comment %}123{% endcomment
+             xyz  endcomment %}
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition:
+            start: [0, 16]
+            text: |-
+              {% endcomment
+                 xyz  endcomment %}
+          position:
+            start: [0, 0]
+            text: |-
+              {% comment %}123{% endcomment
+                 xyz  endcomment %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: "123"
+            position: { start: [0, 13], text: "123" }
+            nodes:
+              - type: TextNode
+                value: "123"
+                position: { start: [0, 13], text: "123" }
+  - name: keeps whitespace control on a comment
+    source: "{%- comment -%}123{%- endcomment -%}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{%- comment -%}123{%- endcomment -%}" }
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 12], text: "" }
+          whitespaceStart: "-"
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: "-"
+          delimiterWhitespaceEnd: "-"
+          blockStartPosition: { start: [0, 0], text: "{%- comment -%}" }
+          blockEndPosition: { start: [0, 18], text: "{%- endcomment -%}" }
+          position: { start: [0, 0], text: "{%- comment -%}123{%- endcomment -%}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: "123"
+            position: { start: [0, 15], text: "123" }
+            nodes:
+              - type: TextNode
+                value: "123"
+                position: { start: [0, 15], text: "123" }
+  - name: keeps the outer whitespace control on a nested comment
+    source: "{% comment %}{%- comment -%}inner{%- endcomment -%}{% endcomment -%}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% comment %}{%- comment -%}inner{%- endcomment -%}{% endcomment -%}" }
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: "-"
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [0, 51], text: "{% endcomment -%}" }
+          position: { start: [0, 0], text: "{% comment %}{%- comment -%}inner{%- endcomment -%}{% endcomment -%}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: "{%- comment -%}inner{%- endcomment -%}"
+            position: { start: [0, 13], text: "{%- comment -%}inner{%- endcomment -%}" }
+            nodes:
+              - type: TextNode
+                value: "{%- comment -%}inner{%- endcomment -%}"
+                position: { start: [0, 13], text: "{%- comment -%}inner{%- endcomment -%}" }
+  - name: parses the markup that follows a nested comment
+    source: "{% comment %}a{% comment %}b{% endcomment %}c{% endcomment %}<title>{{ x }}</title>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% comment %}a{% comment %}b{% endcomment %}c{% endcomment %}<title>{{ x }}</title>" }
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [0, 45], text: "{% endcomment %}" }
+          position: { start: [0, 0], text: "{% comment %}a{% comment %}b{% endcomment %}c{% endcomment %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: a{% comment %}b{% endcomment %}c
+            position: { start: [0, 13], text: "a{% comment %}b{% endcomment %}c" }
+            nodes:
+              - type: TextNode
+                value: a{% comment %}b{% endcomment %}c
+                position: { start: [0, 13], text: "a{% comment %}b{% endcomment %}c" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 61], text: <title> }
+          blockEndPosition: { start: [0, 75], text: </title> }
+          position: { start: [0, 61], text: "<title>{{ x }}</title>" }
+          name:
+            - type: TextNode
+              value: title
+              position: { start: [0, 62], text: title }
+          attributes: []
+          children:
+            - type: LiquidVariableOutput
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 70], text: " x " }
+              position: { start: [0, 68], text: "{{ x }}" }
+              markup:
+                type: LiquidVariable
+                rawSource: x
+                position: { start: [0, 71], text: "x " }
+                expression:
+                  type: VariableLookup
+                  name: x
+                  position: { start: [0, 71], text: x }
+                  lookups: []
+                  lookupModes: []
+                filters: []

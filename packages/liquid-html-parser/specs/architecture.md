@@ -745,7 +745,7 @@ liquid tag parse(name, markupParser, parser):
 
 **Block nesting:** Block tags inside `{% liquid %}` consume subsequent lines until their matching `end*` line, reusing `finalizeBranch()`.
 
-**Raw tags inside `{% liquid %}`:** When the line is a raw tag (e.g., `comment`), subsequent lines are consumed until `endcomment`.
+**Raw tags inside `{% liquid %}`:** When the line is a raw tag (e.g., `comment`), subsequent lines are consumed until the line that ends its body under the tag's `body` rule (`findRawLineBodyEnd` in `raw-body.ts`); a `comment` nests, and a `raw` or `doc` body never closes there.
 
 **Nested `{% liquid %}`:** Supported. Inner `liquid` tag processes its own body independently.
 

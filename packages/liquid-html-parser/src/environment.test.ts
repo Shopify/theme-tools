@@ -20,7 +20,12 @@ function makeStandaloneDef(): TagDefinitionTag {
 }
 
 function makeRawDef(parseLiquidInBody?: boolean): TagDefinitionRaw {
-  return { kind: TagKind.Raw, parse: stubParse, parseLiquidInBody };
+  return {
+    kind: TagKind.Raw,
+    parse: stubParse,
+    parseLiquidInBody,
+    body: { delimiter: 'trailing', sameName: 'ignored', opaque: [], closesInLiquidTag: false },
+  };
 }
 
 describe('Unit: Environment', () => {

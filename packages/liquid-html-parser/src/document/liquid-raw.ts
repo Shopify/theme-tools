@@ -2,12 +2,14 @@ import { TokenType } from './tokenizer';
 import type { Token } from './tokenizer';
 import { ParserBase } from './base';
 import { makeTextNode, makeRawMarkup, makeLiquidRawTag } from './factories';
-import type { LiquidTagEnvelope, LiquidOpenWhitespace, LiquidCloseWhitespace } from './factories';
+import type { LiquidTagEnvelope } from './factories';
 import { ChildFilterMode, filterChildren } from './tree-builder';
 import type { Position } from '../types';
 import { RawMarkupKinds } from '../ast';
 import type { LiquidRawTag, LiquidNode, TextNode, LiquidVariableOutput } from '../ast';
-import type { TagDefinitionRaw } from '../environment';
+import { TagKind } from '../environment';
+import type { TagDefinition, TagDefinitionRaw } from '../environment';
+import { findRawBodyEnd } from './raw-body';
 import { LiquidHTMLASTParsingError } from '../errors';
 import { parseLiquidDoc } from '../liquid-doc/parser';
 
@@ -18,6 +20,7 @@ import { parseLiquidDoc } from '../liquid-doc/parser';
  */
 export interface RawParserDelegate extends ParserBase {
   rawParseHtml: boolean;
+  tagForName(name: string): TagDefinition | undefined;
   parseLiquidVariableOutput(): LiquidVariableOutput;
   parseLiquidTag(): LiquidRawTag | import('../ast').LiquidTag;
 }
@@ -30,9 +33,17 @@ export function parseRawTag(
   closeToken: Token,
 ): LiquidRawTag {
   const tagName = envelope.tagName;
-  const endTagName = `end${tagName}`;
 
-  const endTag = scanForEndTag(parser, endTagName);
+  const endTag = findRawBodyEnd(
+    parser.getSource(),
+    parser.tokenAt(parser.getPosition()).start,
+    tagName,
+    def.body,
+    (name) => {
+      const inner = parser.tagForName(name);
+      return inner?.kind === TagKind.Raw ? inner.body : undefined;
+    },
+  );
   if (!endTag) {
     throw new LiquidHTMLASTParsingError(
       `Attempting to end parsing before LiquidRawTag '${tagName}' was closed`,
@@ -163,99 +174,6 @@ export function parseRawTagBody(
   const bodyText = source.slice(bodyStart, bodyEnd);
   const textNode = makeTextNode(bodyText, bodyStart, bodyEnd, source);
   return filterChildren(ChildFilterMode.Syntactic, [textNode], source) as (LiquidNode | TextNode)[];
-}
-
-/**
- * Result of scanning for a raw tag's end tag in the source string.
- *
- * We scan the source directly (rather than the token stream) because the
- * tokenizer doesn't know about raw-tag semantics. Content inside a raw
- * tag body may contain `{%` sequences that the tokenizer greedily enters
- * as LiquidTag mode, mangling the tokens around the real end tag.
- */
-export interface EndTagScanResult {
-  /** Source offset where the end tag starts (the `{`). */
-  tagStart: number;
-  /** Source offset where the end tag ends (after `%}`). */
-  tagEnd: number;
-  /** Opening whitespace-strip marker: `'-'` or `''`. */
-  wsStart: LiquidOpenWhitespace;
-  /** Closing whitespace-strip marker: `'-'` or `''`. */
-  wsEnd: LiquidCloseWhitespace;
-}
-
-export function scanForEndTag(parser: ParserBase, endTagName: string): EndTagScanResult | null {
-  const source = parser.getSource();
-  const searchStart = parser.tokenAt(parser.getPosition()).start;
-
-  // `comment` and `doc` bodies balance nested opens of the same tag before
-  // matching their end tag, mirroring Ruby comment.rb v5.13.0's
-  // `comment_tag_depth`. `raw` (and every other raw tag) keeps first-match
-  // semantics — Ruby's raw does not balance.
-  if (endTagName === 'endcomment' || endTagName === 'enddoc') {
-    return scanForBalancedEndTag(source, searchStart, endTagName);
-  }
-
-  const pattern = new RegExp(`\\{%(-?)\\s*${endTagName}\\s*(-?)%\\}`);
-  const match = pattern.exec(source.slice(searchStart));
-  if (!match) return null;
-
-  const tagStart = searchStart + match.index;
-  const tagEnd = tagStart + match[0].length;
-  const wsStart: LiquidOpenWhitespace = match[1] === '-' ? '-' : '';
-  const wsEnd: LiquidCloseWhitespace = match[2] === '-' ? '-' : '';
-
-  return { tagStart, tagEnd, wsStart, wsEnd };
-}
-
-/**
- * Depth-balancing end-tag scan for `comment`/`doc`. Counts nested opens of the
- * same tag so a `{% comment %}` inside the body is paired with its own
- * `{% endcomment %}` rather than closing the outer block early.
- *
- * `searchStart` is already positioned past the outer open tag, so depth starts
- * at 0 and every `{% comment %}` encountered is a nested open. A nested
- * `{% raw %}`…`{% endraw %}` is carved out — its literal contents (which may
- * contain `{% comment %}`/`{% endcomment %}` text) do not affect the depth —
- * mirroring Ruby's `parse_raw_tag_body`.
- */
-function scanForBalancedEndTag(
-  source: string,
-  searchStart: number,
-  endTagName: string,
-): EndTagScanResult | null {
-  const openTagName = endTagName.slice(3); // "endcomment" -> "comment"
-  const scanner = new RegExp(
-    `\\{%(-?)\\s*(${openTagName}|${endTagName}|raw|endraw)\\b\\s*(-?)%\\}`,
-    'g',
-  );
-  scanner.lastIndex = searchStart;
-
-  let depth = 0;
-  let inRaw = false;
-  let match: RegExpExecArray | null;
-  while ((match = scanner.exec(source)) !== null) {
-    const name = match[2];
-    if (inRaw) {
-      if (name === 'endraw') inRaw = false;
-      continue;
-    }
-    if (name === 'raw') {
-      inRaw = true;
-    } else if (name === openTagName) {
-      depth++;
-    } else if (name === endTagName) {
-      if (depth === 0) {
-        const tagStart = match.index;
-        const tagEnd = tagStart + match[0].length;
-        const wsStart: LiquidOpenWhitespace = match[1] === '-' ? '-' : '';
-        const wsEnd: LiquidCloseWhitespace = match[3] === '-' ? '-' : '';
-        return { tagStart, tagEnd, wsStart, wsEnd };
-      }
-      depth--;
-    }
-  }
-  return null;
 }
 
 export function rawMarkupKindForTag(tagName: string, bodySource: string = ''): RawMarkupKinds {
