@@ -16,17 +16,18 @@ import type { TagDefinition } from './tag-definitions';
 import { builtinTags } from './tags/index';
 
 export class Environment {
-  private builtins: Record<string, TagDefinition>;
+  private builtins: Map<string, TagDefinition>;
   private custom: Map<string, TagDefinition>;
   private static _default: Environment | undefined;
 
   constructor(builtins: Record<string, TagDefinition> = {}) {
-    this.builtins = builtins;
+    // A Map so tag names like `constructor` don't resolve to Object.prototype members.
+    this.builtins = new Map(Object.entries(builtins));
     this.custom = new Map();
   }
 
   tagForName(name: string): TagDefinition | undefined {
-    return this.custom.get(name) ?? this.builtins[name];
+    return this.custom.get(name) ?? this.builtins.get(name);
   }
 
   registerTag(name: string, definition: TagDefinition): void {

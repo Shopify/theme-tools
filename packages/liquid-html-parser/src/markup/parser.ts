@@ -1438,6 +1438,18 @@ function isLogicalOp(s: string): s is LogicalOperator {
   return LOGICAL_OPERATORS.has(s);
 }
 
+// A switch rather than `s in LiquidLiteralValues`: `in` also matches inherited
+// names like `constructor`, and the switch is faster on this hot path.
 function isLiteralKeyword(s: string): s is keyof typeof LiquidLiteralValues {
-  return s in LiquidLiteralValues;
+  switch (s) {
+    case 'nil':
+    case 'null':
+    case 'true':
+    case 'false':
+    case 'blank':
+    case 'empty':
+      return true;
+    default:
+      return false;
+  }
 }
