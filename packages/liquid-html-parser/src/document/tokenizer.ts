@@ -62,6 +62,25 @@ export interface TokenizeOptions {
 }
 
 export function tokenize(source: string, options: TokenizeOptions = {}): Token[] {
+  return tokenizeWith(source, options, nextTextCandidate);
+}
+
+/**
+ * `tokenize` without the text fast path: plain text advances one character at
+ * a time. Test-only reference for checking that the fast path never skips over
+ * a token start. Not exported from the package.
+ */
+export function tokenizeWithoutFastPath(source: string, options: TokenizeOptions = {}): Token[] {
+  return tokenizeWith(source, options, (_source, from) => from);
+}
+
+type NextTextCandidate = (source: string, from: number, mode: Mode, quoteChar: string) => number;
+
+function tokenizeWith(
+  source: string,
+  options: TokenizeOptions,
+  nextCandidate: NextTextCandidate,
+): Token[] {
   const tokens: Token[] = [];
   const modeStack: Mode[] = [];
   let mode = Mode.Default as Mode;
@@ -169,7 +188,7 @@ export function tokenize(source: string, options: TokenizeOptions = {}): Token[]
           popMode();
         } else {
           startText();
-          pos = nextLiquidCloseCandidate(source, pos + 1, '%}');
+          pos = nextCandidate(source, pos + 1, mode, quoteChar);
         }
         break;
       }
@@ -183,7 +202,7 @@ export function tokenize(source: string, options: TokenizeOptions = {}): Token[]
           popMode();
         } else {
           startText();
-          pos = nextLiquidCloseCandidate(source, pos + 1, '}}');
+          pos = nextCandidate(source, pos + 1, mode, quoteChar);
         }
         break;
       }
@@ -224,7 +243,7 @@ export function tokenize(source: string, options: TokenizeOptions = {}): Token[]
         }
 
         startText();
-        pos = nextDefaultCandidate(source, pos + 1);
+        pos = nextCandidate(source, pos + 1, mode, quoteChar);
         break;
       }
 
@@ -267,7 +286,7 @@ export function tokenize(source: string, options: TokenizeOptions = {}): Token[]
         }
 
         startText();
-        pos = nextHtmlTagCandidate(source, pos + 1);
+        pos = nextCandidate(source, pos + 1, mode, quoteChar);
         break;
       }
 
@@ -284,7 +303,7 @@ export function tokenize(source: string, options: TokenizeOptions = {}): Token[]
         }
 
         startText();
-        pos = nextQuotedValueCandidate(source, pos + 1, quoteChar);
+        pos = nextCandidate(source, pos + 1, mode, quoteChar);
         break;
       }
 
@@ -303,8 +322,28 @@ export function tokenize(source: string, options: TokenizeOptions = {}): Token[]
  * current mode. Each helper returns the first index >= `from` where the
  * mode's `match()` checks could succeed, so the run of plain text before it is
  * consumed in one step. Returning a superset of real token starts is safe: the
- * main loop re-checks that position and treats a non-match as text.
+ * main loop re-checks that position and treats a non-match as text. Missing a
+ * token start is not, so a new token type needs its first character added to
+ * its mode's helper (tokenizer.test.ts compares against
+ * `tokenizeWithoutFastPath` to catch this).
  */
+
+function nextTextCandidate(source: string, from: number, mode: Mode, quoteChar: string): number {
+  switch (mode) {
+    case Mode.Default:
+      return nextDefaultCandidate(source, from);
+    case Mode.HtmlTag:
+      return nextHtmlTagCandidate(source, from);
+    case Mode.QuotedValue:
+      return nextQuotedValueCandidate(source, from, quoteChar);
+    case Mode.LiquidTag:
+      return nextLiquidCloseCandidate(source, from, '%}');
+    case Mode.LiquidVariableOutput:
+      return nextLiquidCloseCandidate(source, from, '}}');
+    default:
+      return assertNever(mode);
+  }
+}
 
 const CHAR_DOUBLE_QUOTE = 0x22; // "
 const CHAR_SINGLE_QUOTE = 0x27; // '
