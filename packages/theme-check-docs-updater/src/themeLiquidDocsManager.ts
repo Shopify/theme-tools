@@ -68,11 +68,14 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
             async (schemaDefinition): Promise<SchemaDefinition> => ({
               uri: `${ThemeLiquidDocsSchemaRoot}/${schemaDefinition.uri}`,
               fileMatch: schemaDefinition.fileMatch,
-              schema: await findSuitableResource(
-                this.schemaLoaders(schemaDefinition.uri),
-                identity,
-                '',
-                this.log,
+              schema: normalizeSchema(
+                schemaDefinition.uri,
+                await findSuitableResource(
+                  this.schemaLoaders(schemaDefinition.uri),
+                  identity,
+                  '',
+                  this.log,
+                ),
               ),
             }),
           ),
@@ -147,6 +150,28 @@ export class ThemeLiquidDocsManager implements ThemeDocset, JsonValidationSet {
       loader(() => this.loadSchema(relativeUri), `loadSchema(${relativeUri})`),
       loader(() => fallbackSchema(relativeUri, this.log), `fallbackSchema(${relativeUri})`),
     ];
+  }
+}
+
+function normalizeSchema(uri: string, schema: string): string {
+  if (uri !== 'theme/setting.json') return schema;
+
+  try {
+    const parsed = JSON.parse(schema);
+    const metaobjectProperties = parsed.definitions?.metaobject?.properties;
+    if (
+      typeof metaobjectProperties !== 'object' ||
+      metaobjectProperties === null ||
+      !('default' in metaobjectProperties)
+    ) {
+      return schema;
+    }
+
+    // theme-liquid-docs currently lists `default` for metaobject settings, but it is unsupported.
+    delete metaobjectProperties.default;
+    return JSON.stringify(parsed);
+  } catch {
+    return schema;
   }
 }
 
