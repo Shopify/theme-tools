@@ -497,6 +497,55 @@ describe('Unit: document-tokenizer', () => {
     });
   });
 
+  describe('text runs end at the next token', () => {
+    it('ends a Liquid tag body at a -%} preceded by another -', () => {
+      const source = '{% if a--%}';
+      expect(tokens(source)).toMatchObject([
+        { type: TokenType.LiquidTagOpen, start: 0, end: 2 },
+        { type: TokenType.Text, start: 2, end: 8 },
+        { type: TokenType.LiquidTagClose, start: 8, end: 11 },
+      ]);
+      assertTokenInvariants(source);
+    });
+
+    it('keeps %} as text inside a Liquid drop and ends it at -}}', () => {
+      const source = '{{ "%}" -}}';
+      expect(tokens(source)).toMatchObject([
+        { type: TokenType.LiquidVariableOutputOpen, start: 0, end: 2 },
+        { type: TokenType.Text, start: 2, end: 8 },
+        { type: TokenType.LiquidVariableOutputClose, start: 8, end: 11 },
+      ]);
+      assertTokenInvariants(source);
+    });
+
+    it('ends a curly-quoted value on its partner, not on a straight quote', () => {
+      const source = '<a b=\u201cx"y\u201d c>';
+      expect(tokens(source)).toMatchObject([
+        { type: TokenType.HtmlTagOpen, start: 0, end: 1 },
+        { type: TokenType.Text, start: 1, end: 4 },
+        { type: TokenType.HtmlEquals, start: 4, end: 5 },
+        { type: TokenType.HtmlQuoteOpen, start: 5, end: 6 },
+        { type: TokenType.Text, start: 6, end: 9 },
+        { type: TokenType.HtmlQuoteClose, start: 9, end: 10 },
+        { type: TokenType.Text, start: 10, end: 12 },
+        { type: TokenType.HtmlTagClose, start: 12, end: 13 },
+      ]);
+      assertTokenInvariants(source);
+    });
+
+    it('finds --> and <!-- in the middle of text', () => {
+      const source = 'a-b-->c<!--d';
+      expect(tokens(source)).toMatchObject([
+        { type: TokenType.Text, start: 0, end: 3 },
+        { type: TokenType.HtmlCommentClose, start: 3, end: 6 },
+        { type: TokenType.Text, start: 6, end: 7 },
+        { type: TokenType.HtmlCommentOpen, start: 7, end: 11 },
+        { type: TokenType.Text, start: 11, end: 12 },
+      ]);
+      assertTokenInvariants(source);
+    });
+  });
+
   describe('structural invariants', () => {
     const cases = [
       '{{ x }}',
