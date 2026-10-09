@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.10.3
+
+### Patch Changes
+
+- 84a458be: Parse HTML attributes with whitespace around `=` (`data-ratio = '{{ r }}'`, `srcset= "…"`) as one attribute, as browsers do, instead of splitting the value into junk attributes.
+
 ## 2.10.2
 
 ### Patch Changes
