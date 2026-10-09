@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { tokenize, TokenType } from './tokenizer';
-import type { Token } from './tokenizer';
+import { tokenize, tokenizeWithoutFastPath, TokenType } from './tokenizer';
+import type { Token, TokenizeOptions } from './tokenizer';
 
 /** Strip the trailing EndOfInput token for cleaner assertions. */
 function tokens(source: string): Token[] {
@@ -540,6 +540,159 @@ describe('Unit: document-tokenizer', () => {
       const result = tokens(source);
       expect(result[0]).toMatchObject({ type: TokenType.HtmlTagOpen, start: 0, end: 1 });
       assertTokenInvariants(source);
+    });
+  });
+
+  describe('text runs end at the next token', () => {
+    it('ends a Liquid tag body at a -%} preceded by another -', () => {
+      const source = '{% if a--%}';
+      expect(tokens(source)).toMatchObject([
+        { type: TokenType.LiquidTagOpen, start: 0, end: 2 },
+        { type: TokenType.Text, start: 2, end: 8 },
+        { type: TokenType.LiquidTagClose, start: 8, end: 11 },
+      ]);
+      assertTokenInvariants(source);
+    });
+
+    it('keeps %} as text inside a Liquid drop and ends it at -}}', () => {
+      const source = '{{ "%}" -}}';
+      expect(tokens(source)).toMatchObject([
+        { type: TokenType.LiquidVariableOutputOpen, start: 0, end: 2 },
+        { type: TokenType.Text, start: 2, end: 8 },
+        { type: TokenType.LiquidVariableOutputClose, start: 8, end: 11 },
+      ]);
+      assertTokenInvariants(source);
+    });
+
+    it('ends a curly-quoted value on its partner, not on a straight quote', () => {
+      const source = '<a b=\u201cx"y\u201d c>';
+      expect(tokens(source)).toMatchObject([
+        { type: TokenType.HtmlTagOpen, start: 0, end: 1 },
+        { type: TokenType.Text, start: 1, end: 4 },
+        { type: TokenType.HtmlEquals, start: 4, end: 5 },
+        { type: TokenType.HtmlQuoteOpen, start: 5, end: 6 },
+        { type: TokenType.Text, start: 6, end: 9 },
+        { type: TokenType.HtmlQuoteClose, start: 9, end: 10 },
+        { type: TokenType.Text, start: 10, end: 12 },
+        { type: TokenType.HtmlTagClose, start: 12, end: 13 },
+      ]);
+      assertTokenInvariants(source);
+    });
+
+    it('finds --> and <!-- in the middle of text', () => {
+      const source = 'a-b-->c<!--d';
+      expect(tokens(source)).toMatchObject([
+        { type: TokenType.Text, start: 0, end: 3 },
+        { type: TokenType.HtmlCommentClose, start: 3, end: 6 },
+        { type: TokenType.Text, start: 6, end: 7 },
+        { type: TokenType.HtmlCommentOpen, start: 7, end: 11 },
+        { type: TokenType.Text, start: 11, end: 12 },
+      ]);
+      assertTokenInvariants(source);
+    });
+  });
+
+  describe('text fast path stops at every token start mid-text', () => {
+    // No character in `pad` can start a token in any mode, so the fast path
+    // skips the whole pad and must stop exactly where the token begins.
+    const pad = 'abc 1 ';
+    const quotePairs = [
+      ['"', '"'],
+      ["'", "'"],
+      ['\u201c', '\u201d'],
+      ['\u201d', '\u201c'],
+      ['\u2018', '\u2019'],
+      ['\u2019', '\u2018'],
+    ];
+    const cases: Array<[string, string, TokenizeOptions, string[]]> = [
+      [
+        'Default',
+        '',
+        {},
+        ['{{', '{{-', '{%', '{%-', '<!--', '-->', '<!', '</a', '</Z', '</{', '<a', '<Z', '<{'],
+      ],
+      [
+        'HtmlTag',
+        '',
+        { insideHtmlTag: true },
+        [
+          '{{',
+          '{{-',
+          '{%',
+          '{%-',
+          '/>',
+          '>',
+          '=',
+          '"',
+          "'",
+          '\u201c',
+          '\u201d',
+          '\u2018',
+          '\u2019',
+        ],
+      ],
+      ...quotePairs.map(([open, close]): [string, string, TokenizeOptions, string[]] => [
+        `QuotedValue ${open}`,
+        '',
+        { insideQuotedAttribute: open },
+        [...new Set(['{{', '{%', open, close])],
+      ]),
+      ['LiquidTag', '{% ', {}, ['%}', '-%}']],
+      ['LiquidVariableOutput', '{{ ', {}, ['}}', '-}}']],
+    ];
+
+    for (const [mode, prefix, options, starts] of cases) {
+      it.each(starts)(`${mode}: %j`, (start) => {
+        const offset = prefix.length + pad.length;
+        const result = tokenize(prefix + pad + start + pad, options);
+        expect(result.some((t) => t.type !== TokenType.Text && t.start === offset)).toBe(true);
+      });
+    }
+  });
+
+  describe('matches tokenizeWithoutFastPath', () => {
+    // Every string of up to 4 of these characters, in every entry state. The
+    // set covers each character a mode's token can start with, plus near
+    // misses (`!`, `\u201a`) and plain text.
+    const alphabet = [...'{}%-<>/=!"\'\u201c\u201d\u2018\u2019\u201a a\n'];
+    let sources = [''];
+    for (let length = 1, previous = ['']; length <= 4; length++) {
+      previous = previous.flatMap((s) => alphabet.map((c) => s + c));
+      sources = sources.concat(previous);
+    }
+
+    const entryStates: Array<[string, string, TokenizeOptions]> = [
+      ['document start', '', {}],
+      ['skipFrontmatter', '', { skipFrontmatter: true }],
+      ['insideHtmlTag', '', { insideHtmlTag: true }],
+      ...['"', "'", '\u201c', '\u201d', '\u2018', '\u2019'].map(
+        (quote): [string, string, TokenizeOptions] => [
+          `insideQuotedAttribute ${quote}`,
+          '',
+          { insideQuotedAttribute: quote },
+        ],
+      ),
+      ['inside a Liquid tag', '{% ', {}],
+      ['inside a Liquid output', '{{ ', {}],
+    ];
+
+    function sameTokens(a: Token[], b: Token[]): boolean {
+      return (
+        a.length === b.length &&
+        a.every((t, i) => t.type === b[i].type && t.start === b[i].start && t.end === b[i].end)
+      );
+    }
+
+    it.each(entryStates)('%s', (_name, prefix, options) => {
+      const mismatches: string[] = [];
+      for (const source of sources) {
+        const input = prefix + source;
+        if (!sameTokens(tokenize(input, options), tokenizeWithoutFastPath(input, options))) {
+          mismatches.push(input);
+          if (mismatches.length === 10) break;
+        }
+      }
+      expect(mismatches).toEqual([]);
     });
   });
 
