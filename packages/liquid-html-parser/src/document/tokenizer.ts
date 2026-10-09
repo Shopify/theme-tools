@@ -156,6 +156,7 @@ function tokenizeWith(
 
   // Liquid open check — reused in Default, HtmlTag, and QuotedValue modes
   function scanLiquidOpen(): boolean {
+    if (source.charCodeAt(pos) !== CHAR_OPEN_BRACE) return false;
     if (match('{{-')) {
       emit(TokenType.LiquidVariableOutputOpen, 3);
       pushMode(Mode.LiquidVariableOutput);
