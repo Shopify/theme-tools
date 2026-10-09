@@ -314,25 +314,12 @@ export function parseHtmlDanglingMarkerClose(parser: HtmlParserDelegate): HtmlDa
  */
 export function parseBranchAttributesImpl(parser: HtmlParserDelegate): AttributeNode[] {
   const attrs: AttributeNode[] = [];
-  const source = parser.getSource();
 
   while (!parser.isAtEnd()) {
+    skipSpace(parser);
+    if (parser.isAtEnd()) break;
     if (parser.check(TokenType.HtmlTagClose) || parser.check(TokenType.HtmlSelfClose)) break;
     if (parser.isBlockTerminator()) break;
-
-    // Skip leading whitespace in text tokens
-    if (parser.check(TokenType.Text)) {
-      const token = parser.tokenAt(parser.getPosition());
-      const text = source.slice(token.start, token.end);
-      if (/^\s+$/.test(text)) {
-        parser.advance();
-        continue;
-      }
-      const leadingWs = text.search(/\S/);
-      if (leadingWs > 0) {
-        token.start = token.start + leadingWs;
-      }
-    }
 
     if (parser.check(TokenType.LiquidTagOpen)) {
       const saved = parser.htmlInAttributeContext;
@@ -353,40 +340,7 @@ export function parseBranchAttributesImpl(parser: HtmlParserDelegate): Attribute
       parser.advance();
       continue;
     }
-
-    if (parser.accept(TokenType.HtmlEquals)) {
-      const quoteToken = parser.accept(TokenType.HtmlQuoteOpen);
-      if (quoteToken) {
-        const quoteChar = source[quoteToken.start];
-        const valueStart = quoteToken.end;
-        const value = parseQuotedAttributeValue(parser);
-        const closeQuote = parser.consume(TokenType.HtmlQuoteClose);
-        const valueEnd = closeQuote.start;
-        const attrEnd = closeQuote.end;
-        const attributePosition: Position = { start: valueStart, end: valueEnd };
-
-        if (quoteChar === '"') {
-          attrs.push(
-            makeAttrDoubleQuoted(name, value, attributePosition, attrStart, attrEnd, source),
-          );
-        } else {
-          attrs.push(
-            makeAttrSingleQuoted(name, value, attributePosition, attrStart, attrEnd, source),
-          );
-        }
-      } else {
-        const { value, end: valueEnd } = parseUnquotedAttributeValue(parser);
-        const attributePosition: Position = {
-          start: value.length > 0 ? value[0].position.start : parser.peek().start,
-          end: valueEnd,
-        };
-        attrs.push(makeAttrUnquoted(name, value, attributePosition, attrStart, valueEnd, source));
-      }
-    } else {
-      const lastSegment = name[name.length - 1];
-      const attrEnd = lastSegment.position.end;
-      attrs.push(makeAttrEmpty(name, attrStart, attrEnd, source));
-    }
+    attrs.push(parseAttributeAfterName(parser, name, attrStart));
   }
 
   return attrs;
@@ -419,9 +373,9 @@ export function parseCompoundName(parser: HtmlParserDelegate): CompoundNameSegme
       continue;
     }
 
-    const prefix = consumeTextPrefix(parser);
-    if (prefix !== null) {
-      segments.push(prefix);
+    const segment = consumeTextSegment(parser);
+    if (segment !== null) {
+      segments.push(segment);
       continue;
     }
 
@@ -452,25 +406,11 @@ export function parseAttributes(parser: HtmlParserDelegate): AttributeNode[] {
 
 function parseAttributeList(parser: HtmlParserDelegate): AttributeNode[] {
   const attrs: AttributeNode[] = [];
-  const source = parser.getSource();
 
   while (!parser.isAtEnd()) {
+    skipSpace(parser);
+    if (parser.isAtEnd()) break;
     if (parser.check(TokenType.HtmlTagClose) || parser.check(TokenType.HtmlSelfClose)) break;
-
-    // Skip leading whitespace in text tokens
-    if (parser.check(TokenType.Text)) {
-      const token = parser.tokenAt(parser.getPosition());
-      const text = source.slice(token.start, token.end);
-      if (/^\s+$/.test(text)) {
-        parser.advance();
-        continue;
-      }
-      // If text starts with whitespace, skip past it by mutating token.start
-      const leadingWs = text.search(/\S/);
-      if (leadingWs > 0) {
-        token.start = token.start + leadingWs;
-      }
-    }
 
     // Liquid tag between attributes
     if (parser.check(TokenType.LiquidTagOpen)) {
@@ -493,47 +433,65 @@ function parseAttributeList(parser: HtmlParserDelegate): AttributeNode[] {
       parser.advance();
       continue;
     }
-
-    if (parser.accept(TokenType.HtmlEquals)) {
-      const quoteToken = parser.accept(TokenType.HtmlQuoteOpen);
-      if (quoteToken) {
-        const quoteChar = source[quoteToken.start];
-        const valueStart = quoteToken.end;
-        const value = parseQuotedAttributeValue(parser);
-        const closeQuote = parser.consume(TokenType.HtmlQuoteClose);
-        const valueEnd = closeQuote.start;
-        const attrEnd = closeQuote.end;
-        const attributePosition: Position = { start: valueStart, end: valueEnd };
-
-        // Double straight quote and double curly quotes (“ ”) map to a
-        // double-quoted attr; single straight quote and single curly quotes
-        // (‘ ’) map to a single-quoted attr. The printer normalizes the curly
-        // variants to straight quotes.
-        if (quoteChar === '"' || quoteChar === '“' || quoteChar === '”') {
-          attrs.push(
-            makeAttrDoubleQuoted(name, value, attributePosition, attrStart, attrEnd, source),
-          );
-        } else {
-          attrs.push(
-            makeAttrSingleQuoted(name, value, attributePosition, attrStart, attrEnd, source),
-          );
-        }
-      } else {
-        const { value, end: valueEnd } = parseUnquotedAttributeValue(parser);
-        const attributePosition: Position = {
-          start: value.length > 0 ? value[0].position.start : parser.peek().start,
-          end: valueEnd,
-        };
-        attrs.push(makeAttrUnquoted(name, value, attributePosition, attrStart, valueEnd, source));
-      }
-    } else {
-      const lastSegment = name[name.length - 1];
-      const attrEnd = lastSegment.position.end;
-      attrs.push(makeAttrEmpty(name, attrStart, attrEnd, source));
-    }
+    attrs.push(parseAttributeAfterName(parser, name, attrStart));
   }
 
   return attrs;
+}
+
+// attribute := compoundName (space* "=" space* (quotedAttrValue | unquotedAttrValue))?
+//
+// Mirrors the ohm grammar's syntactic rules (`AttrDoubleQuoted = attrName "=" doubleQuote
+// ...`), which skipped `space` before the `=` and before the value. Without an `=` the
+// attribute is valueless; the whitespace this skipped only separates it from the next one,
+// which the attribute list would skip anyway.
+function parseAttributeAfterName(
+  parser: HtmlParserDelegate,
+  name: CompoundNameSegment[],
+  attrStart: number,
+): AttributeNode {
+  const source = parser.getSource();
+  skipSpace(parser);
+  if (!parser.accept(TokenType.HtmlEquals)) {
+    const lastSegment = name[name.length - 1];
+    return makeAttrEmpty(name, attrStart, lastSegment.position.end, source);
+  }
+  skipSpace(parser);
+
+  const quoteToken = parser.accept(TokenType.HtmlQuoteOpen);
+  if (!quoteToken) {
+    const { value, end: valueEnd } = parseUnquotedAttributeValue(parser);
+    const attributePosition: Position = {
+      start: value.length > 0 ? value[0].position.start : parser.peek().start,
+      end: valueEnd,
+    };
+    return makeAttrUnquoted(name, value, attributePosition, attrStart, valueEnd, source);
+  }
+
+  const quoteChar = source[quoteToken.start];
+  const valueStart = quoteToken.end;
+  const value = parseQuotedAttributeValue(parser);
+  const closeQuote = parser.consume(TokenType.HtmlQuoteClose);
+  const attributePosition: Position = { start: valueStart, end: closeQuote.start };
+  // Double straight quote and double curly quotes (“ ”) map to a
+  // double-quoted attr; single straight quote and single curly quotes
+  // (‘ ’) map to a single-quoted attr. The printer normalizes the curly
+  // variants to straight quotes.
+  return quoteChar === '"' || quoteChar === '“' || quoteChar === '”'
+    ? makeAttrDoubleQuoted(name, value, attributePosition, attrStart, closeQuote.end, source)
+    : makeAttrSingleQuoted(name, value, attributePosition, attrStart, closeQuote.end, source);
+}
+
+/**
+ * Skip whitespace inside a tag: the tokenizer emits each run as its own Text
+ * token, so this is ohm's implicit `space*` between the tokens of a syntactic rule.
+ */
+function skipSpace(parser: HtmlParserDelegate): void {
+  while (parser.check(TokenType.Text) && isSpaceToken(parser, parser.peek())) parser.advance();
+}
+
+function isSpaceToken(parser: HtmlParserDelegate, token: { start: number; end: number }): boolean {
+  return /^\s/.test(parser.getSource().slice(token.start, token.start + 1));
 }
 
 // quotedAttrValue := (text | liquidVariableOutput | liquidTag)*
@@ -584,19 +542,11 @@ export function parseUnquotedAttributeValue(parser: HtmlParserDelegate): {
   while (!parser.isAtEnd()) {
     if (parser.check(TokenType.HtmlTagClose) || parser.check(TokenType.HtmlSelfClose)) break;
 
-    if (parser.check(TokenType.Text)) {
-      const token = parser.tokenAt(parser.getPosition());
-      const source = parser.getSource();
-      const text = source.slice(token.start, token.end);
-      if (/^\s/.test(text)) break;
-
-      const prefix = consumeTextPrefix(parser);
-      if (prefix) {
-        values.push(prefix);
-        end = prefix.position.end;
-        continue;
-      }
-      break;
+    const segment = consumeTextSegment(parser);
+    if (segment) {
+      values.push(segment);
+      end = segment.position.end;
+      continue;
     }
 
     if (parser.check(TokenType.LiquidVariableOutputOpen)) {
@@ -613,29 +563,17 @@ export function parseUnquotedAttributeValue(parser: HtmlParserDelegate): {
 }
 
 /**
- * Consume the non-whitespace prefix of the current Text token.
- * If the token starts with whitespace, returns null (no name content).
- * If the entire token has no whitespace, consumes it entirely.
- * If whitespace is in the middle, mutates token.start to the whitespace
- * offset so the remainder stays for attribute parsing.
+ * Consume the current Text token as a name or unquoted-value segment. Inside a
+ * tag the tokenizer emits whitespace as Text tokens of its own, so a Text token
+ * is either a separator (left for the caller, which returns null) or a segment.
  */
-export function consumeTextPrefix(parser: HtmlParserDelegate): TextNode | null {
+function consumeTextSegment(parser: HtmlParserDelegate): TextNode | null {
   if (!parser.check(TokenType.Text)) return null;
-  const token = parser.tokenAt(parser.getPosition());
+  const token = parser.peek();
+  if (isSpaceToken(parser, token)) return null;
+  parser.advance();
   const source = parser.getSource();
-  const text = source.slice(token.start, token.end);
-  const wsIndex = text.search(/\s/);
-
-  if (wsIndex === 0) return null;
-
-  if (wsIndex === -1) {
-    parser.advance();
-    return makeTextNode(text, token.start, token.end, source);
-  }
-
-  const result = makeTextNode(text.slice(0, wsIndex), token.start, token.start + wsIndex, source);
-  token.start = token.start + wsIndex;
-  return result;
+  return makeTextNode(source.slice(token.start, token.end), token.start, token.end, source);
 }
 
 /**
@@ -751,8 +689,7 @@ export function scanForHtmlCloseTag(parser: ParserBase, tagName: string): number
   // Depth-balance nested same-name elements so the OUTER close tag is
   // returned, not the first inner one (e.g. `<svg>…<svg>…</svg>…</svg>`). A
   // nested open tag is an `HtmlTagOpen` followed by a `Text` token whose first
-  // word matches the tag name — the tokenizer folds the tag name and any
-  // trailing attributes into a single text token, so we take the first word.
+  // word matches the tag name.
   // The scan begins after the outer open tag has been consumed, so the outer
   // open is never counted. Mirrors `scanForEndTagNested`.
   let depth = 0;
@@ -773,10 +710,12 @@ export function scanForHtmlCloseTag(parser: ParserBase, tagName: string): number
     }
 
     if (token.type !== TokenType.HtmlCloseTagOpen) continue;
-    const textIdx = i + 1;
-    if (textIdx >= tokenCount) continue;
-    if (parser.tokenAt(textIdx).type !== TokenType.Text) continue;
-    const text = source.slice(parser.tokenAt(textIdx).start, parser.tokenAt(textIdx).end);
+    // The tokenizer splits whitespace inside a tag into Text tokens of its own,
+    // so compare the whole run: `</script marker>` (NBSP) is body text, not a close.
+    let end = i + 1;
+    while (end < tokenCount && parser.tokenAt(end).type === TokenType.Text) end++;
+    if (end === i + 1) continue;
+    const text = source.slice(token.end, parser.tokenAt(end - 1).end);
     if (text.trim().toLowerCase() === lowerName) {
       if (depth === 0) return i;
       depth--;

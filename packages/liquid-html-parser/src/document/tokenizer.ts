@@ -67,6 +67,8 @@ export function tokenize(source: string, options: TokenizeOptions = {}): Token[]
   let mode = Mode.Default as Mode;
   let pos = 0;
   let textStart = -1;
+  // Whether the pending Text run is whitespace. Only HtmlTag mode reads it.
+  let textIsSpace = false;
   let quoteChar = '';
 
   // Resume inside a quoted attribute value when reslicing a suffix that begins
@@ -268,6 +270,13 @@ export function tokenize(source: string, options: TokenizeOptions = {}): Token[]
           continue;
         }
 
+        // A run of whitespace inside a tag is a Text token of its own, never
+        // part of a name or an unquoted value. It plays the part of ohm's
+        // `space`, which the grammar's syntactic attribute rules skipped
+        // implicitly (`attr = "v"` is one attribute).
+        const isSpace = /\s/.test(ch(0));
+        if (textStart !== -1 && isSpace !== textIsSpace) flushText();
+        if (textStart === -1) textIsSpace = isSpace;
         startText();
         pos++;
         break;
