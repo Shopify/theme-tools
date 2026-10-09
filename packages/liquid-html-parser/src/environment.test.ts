@@ -54,6 +54,13 @@ describe('Unit: Environment', () => {
       expect(env.tagForName('nonexistent')).toBeUndefined();
     });
 
+    it('returns undefined for Object.prototype names', () => {
+      const env = new Environment({ if: makeBlockDef(['elsif', 'else']) });
+      for (const name of ['constructor', 'toString', 'hasOwnProperty', '__proto__']) {
+        expect(env.tagForName(name)).toBeUndefined();
+      }
+    });
+
     it('returns the builtin definition when constructed with builtins', () => {
       const ifDef = makeBlockDef(['elsif', 'else']);
       const env = new Environment({ if: ifDef });
