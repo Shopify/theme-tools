@@ -1,5 +1,11 @@
 # @shopify/theme-check-browser
 
+## 3.30.2
+
+### Patch Changes
+
+- @shopify/theme-check-common@3.30.2
+
 ## 3.30.1
 
 ### Patch Changes

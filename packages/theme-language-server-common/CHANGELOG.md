@@ -1,5 +1,15 @@
 # @shopify/theme-language-server-common
 
+## 2.23.2
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [84a458be]
+  - @shopify/theme-graph@0.3.6
+  - @shopify/liquid-html-parser@2.10.3
+  - @shopify/theme-check-common@3.30.2
+
 ## 2.23.1
 
 ### Patch Changes
