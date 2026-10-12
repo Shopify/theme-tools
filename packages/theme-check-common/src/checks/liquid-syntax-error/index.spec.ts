@@ -813,6 +813,118 @@ describe('LiquidSyntaxError', () => {
     });
   });
 
+  describe('app block paths', () => {
+    const APP_BLOCK_PATH =
+      'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000';
+
+    it.each([
+      `{% block '${APP_BLOCK_PATH}' %}{% endblock %}`,
+      `{% block '${APP_BLOCK_PATH}' %}\n  {% endblock %}`,
+      `{% block '${APP_BLOCK_PATH}', block.name: 'Example' %}{% endblock %}`,
+    ])('produces no diagnostics for %s', async (template) => {
+      const offenses = await runLiquidCheck(
+        LiquidSyntaxError,
+        template,
+        'templates/test.liquid',
+        NO_DOCSET,
+      );
+
+      expect(offenses).toEqual([]);
+    });
+
+    it.each([
+      [
+        `{% block '${APP_BLOCK_PATH}', heading: 'Hello' %}{% endblock %}`,
+        "Liquid syntax error: in 'block' - app blocks do not accept arguments",
+      ],
+      [
+        `{% block '${APP_BLOCK_PATH}', block.settings.heading: 'Hello' %}{% endblock %}`,
+        "Liquid syntax error: in 'block' - app blocks do not accept arguments",
+      ],
+      [
+        `{% block '${APP_BLOCK_PATH}' %}Hello{% endblock %}`,
+        "Liquid syntax error: in 'block' - app blocks do not accept content",
+      ],
+      [
+        `{% block '${APP_BLOCK_PATH}' %}{{ product.title }}{% endblock %}`,
+        "Liquid syntax error: in 'block' - app blocks do not accept content",
+      ],
+    ])('reports %s', async (template, message) => {
+      const offenses = await runLiquidCheck(
+        LiquidSyntaxError,
+        template,
+        'templates/test.liquid',
+        NO_DOCSET,
+      );
+
+      expect(offenses).toMatchObject([{ check: 'LiquidSyntaxError', message }]);
+    });
+
+    it.each(['1', 'variable'])(
+      'rejects a non-string block.name on an app path: %s',
+      async (value) => {
+        const offenses = await runLiquidCheck(
+          LiquidSyntaxError,
+          `{% block '${APP_BLOCK_PATH}', block.name: ${value} %}{% endblock %}`,
+          'templates/test.liquid',
+          NO_DOCSET,
+        );
+
+        expect(offenses).toMatchObject([
+          { check: 'LiquidSyntaxError', message: "Syntax error in 'block' tag" },
+        ]);
+      },
+    );
+
+    it('reports malformed app block paths', async () => {
+      const offenses = await runLiquidCheck(
+        LiquidSyntaxError,
+        "{% block 'shopify://apps/example_app/snippets/example-block/00000000-0000-4000-8000-000000000000' %}{% endblock %}",
+        'templates/test.liquid',
+        NO_DOCSET,
+      );
+
+      expect(offenses).toMatchObject([
+        { check: 'LiquidSyntaxError', message: "Syntax error in 'block' tag" },
+      ]);
+    });
+
+    it.each([
+      `{% block '${APP_BLOCK_PATH}', heading: 'First', heading: 'Second' %}{% endblock %}`,
+      `{% block '${APP_BLOCK_PATH}', content: 'Explicit' %}Inline{% endblock %}`,
+    ])('reports only the app syntax error across block checks: %s', async (template) => {
+      const offenses = await check({ 'templates/test.liquid': template }, [
+        LiquidSyntaxError,
+        MissingBlockArguments,
+        UnrecognizedBlockArguments,
+        ValidBlockArgumentTypes,
+        DuplicateBlockArguments,
+      ]);
+
+      expect(offenses).toMatchObject([
+        {
+          check: 'LiquidSyntaxError',
+          message: "Liquid syntax error: in 'block' - app blocks do not accept arguments",
+        },
+      ]);
+    });
+
+    it('produces no block parameter diagnostics for app block paths', async () => {
+      const offenses = await check(
+        { 'templates/test.liquid': `{% block '${APP_BLOCK_PATH}' %}{% endblock %}` },
+        [
+          LiquidSyntaxError,
+          MissingBlockArguments,
+          UnrecognizedBlockArguments,
+          ValidBlockArgumentTypes,
+          DuplicateBlockArguments,
+        ],
+      );
+
+      expect(offenses).toEqual([]);
+    });
+  });
+
   describe('block caller arguments', () => {
     it.each([
       ['heading', "block.settings.heading: 'Heading'"],
