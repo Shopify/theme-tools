@@ -6,7 +6,7 @@ import {
   ThemeBlock,
   ThemeSchemaType,
 } from '@shopify/theme-check-common';
-import { MockFileSystem } from '@shopify/theme-check-common/src/test';
+import { MockFileSystem } from '@shopify/theme-check-common/test';
 import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { URI, Utils } from 'vscode-uri';
 import { DocumentManager } from './DocumentManager';
