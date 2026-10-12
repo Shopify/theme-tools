@@ -9,7 +9,7 @@ import {
   Setting,
 } from '../../types';
 import { nodeAtPath } from '../../json';
-import { getSchema, isSectionSchema } from '../../to-schema';
+import { isSectionSchema } from '../../to-schema';
 import { BlockDefNodeWithPath, getBlocks, reportWarning } from '../../utils';
 
 export const ValidSettingsKey: LiquidCheckDefinition = {
@@ -30,16 +30,7 @@ export const ValidSettingsKey: LiquidCheckDefinition = {
 
   create(context) {
     return {
-      async LiquidRawTag(node) {
-        if (node.name !== 'schema' || node.body.kind !== 'json') return;
-
-        const offset = node.blockStartPosition.end;
-        const schema = await getSchema(context);
-
-        const { validSchema, ast } = schema ?? {};
-        if (!validSchema || validSchema instanceof Error) return;
-        if (!ast || ast instanceof Error) return;
-
+      async LiquidSchema({ schema, validSchema, ast, offset }) {
         const { rootLevelLocalBlocks, presetLevelBlocks } = getBlocks(validSchema);
 
         // Check if presets settings match schema-level settings
