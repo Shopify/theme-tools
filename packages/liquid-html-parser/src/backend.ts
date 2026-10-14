@@ -14,9 +14,10 @@
  * objects the TS parser would produce:
  * - every `source` and `_source` key is set to the input string, so the
  *   values are the input by identity and the key keeps its slot;
- * - `UNDEFINED_SENTINEL` in any slot becomes `undefined`, keeping key order;
+ * - `{ [UNDEFINED_KEY]: 0 }` in any slot becomes `undefined`, keeping key order;
  * - `{ [ALIAS_KEY]: n }` becomes the n-th object or array met in a pre-order
- *   walk of the result in own key order, so shared objects stay shared;
+ *   walk of the result in own key order, so shared objects stay shared. The
+ *   walk counts neither marker kind;
  * - errors are rebuilt with this module instance's own error class, so
  *   `instanceof` and `loc` match the TS parser.
  */
@@ -27,7 +28,7 @@ import { LiquidHTMLASTParsingError, type UnclosedNode } from './errors';
 
 export const BACKEND_KEY = Symbol.for('@shopify/liquid-html-parser/backend');
 
-export const UNDEFINED_SENTINEL = '\u0000undefined';
+export const UNDEFINED_KEY = '\u0000undefined';
 
 export const ALIAS_KEY = '\u0000alias';
 
@@ -122,8 +123,8 @@ export function hydrate(value: unknown, source: string): unknown {
 }
 
 function hydrateValue(value: unknown, ctx: Hydration): unknown {
-  if (value === UNDEFINED_SENTINEL) return undefined;
   if (value === null || typeof value !== 'object') return value;
+  if (Object.hasOwn(value, UNDEFINED_KEY)) return undefined;
   if (isAlias(value)) return resolveAlias(value, ctx);
 
   ctx.objects.push(value);
@@ -144,8 +145,7 @@ function hydrateObject(value: Record<string, unknown>, ctx: Hydration): Record<s
 }
 
 function isAlias(value: object): value is Record<typeof ALIAS_KEY, number> {
-  const keys = Object.keys(value);
-  return keys.length === 1 && keys[0] === ALIAS_KEY;
+  return Object.hasOwn(value, ALIAS_KEY);
 }
 
 function resolveAlias(value: Record<typeof ALIAS_KEY, number>, ctx: Hydration): object {

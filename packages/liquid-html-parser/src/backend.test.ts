@@ -3,7 +3,7 @@ import { toLiquidAST, toLiquidHtmlAST } from './ast';
 import {
   ALIAS_KEY,
   BACKEND_KEY,
-  UNDEFINED_SENTINEL,
+  UNDEFINED_KEY,
   type BackendResult,
   type ParserBackend,
 } from './backend';
@@ -34,7 +34,7 @@ function fakeAst(source: string) {
         type: 'TextNode',
         value: source,
         position: { start: 0, end: source.length },
-        blockEndPosition: UNDEFINED_SENTINEL,
+        blockEndPosition: { [UNDEFINED_KEY]: 0 },
         source: 'placeholder',
       },
       { type: 'TextNode', value: source, position: { [ALIAS_KEY]: 3 }, source: 'placeholder' },
@@ -69,6 +69,46 @@ describe('Unit: tryBackend', () => {
     expect('blockEndPosition' in ast.children[0]).toBe(true);
     expect(ast.children[0].blockEndPosition).toBeUndefined();
     expect(ast.children[1].position).toBe(ast.children[0].position);
+  });
+
+  it('keeps a text value equal to UNDEFINED_KEY as a string', () => {
+    const source = UNDEFINED_KEY;
+    registerFake(() => ({ ok: true, ast: fakeAst(source) }));
+    const ast = toLiquidHtmlAST(source) as any;
+
+    expect(ast.children[0].value).toBe(UNDEFINED_KEY);
+    expect(ast.children[1].value).toBe(UNDEFINED_KEY);
+  });
+
+  it('resolves an alias placed after an undefined marker to the right object', () => {
+    const source = 'hello';
+    registerFake(() => ({
+      ok: true,
+      ast: {
+        type: 'Document',
+        source: 'placeholder',
+        children: [
+          {
+            type: 'TextNode',
+            blockEndPosition: { [UNDEFINED_KEY]: 0 },
+            position: { start: 0, end: 5 },
+            source: 'placeholder',
+          },
+          {
+            type: 'TextNode',
+            blockEndPosition: { [UNDEFINED_KEY]: 0 },
+            position: { [ALIAS_KEY]: 3 },
+            source: 'placeholder',
+          },
+        ],
+        name: '#document',
+      },
+    }));
+    const ast = toLiquidHtmlAST(source) as any;
+
+    expect(ast.children[0].position).toEqual({ start: 0, end: 5 });
+    expect(ast.children[1].position).toBe(ast.children[0].position);
+    expect(ast.children[1].blockEndPosition).toBeUndefined();
   });
 
   it('throws a LiquidHTMLASTParsingError with the same loc and unclosed as TS', () => {
