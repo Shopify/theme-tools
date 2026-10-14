@@ -667,7 +667,7 @@ cases:
                       - type: TextNode
                         value: <use href="#icon" />
                         position: { start: [0, 18], text: <use href="#icon" /> }
-  - name: should depth-balance nested same-name raw tags and close at the outer tag (issue 156) (1)
+  - name: should depth-balance nested same-name raw tags and close at the outer tag (issue 156)
     source: <svg>a<svg>b</svg>c</svg>
     parse: [html]
     ast:
@@ -690,29 +690,13 @@ cases:
               - type: TextNode
                 value: a<svg>b</svg>c
                 position: { start: [0, 5], text: a<svg>b</svg>c }
-  - name: should depth-balance nested same-name raw tags and close at the outer tag (issue 156) (2)
+  - name: closes a script at its first close tag, as a browser does, so a nested script's close is the script's
     source: <script>a<script>b</script>c</script>
     parse: [html]
-    ast:
-      type: Document
-      name: "#document"
-      position: { start: [0, 0], text: <script>a<script>b</script>c</script> }
-      children:
-        - type: HtmlRawNode
-          name: script
-          blockStartPosition: { start: [0, 0], text: <script> }
-          blockEndPosition: { start: [0, 28], text: </script> }
-          position: { start: [0, 0], text: <script>a<script>b</script>c</script> }
-          attributes: []
-          body:
-            type: RawMarkup
-            kind: javascript
-            value: a<script>b</script>c
-            position: { start: [0, 8], text: a<script>b</script>c }
-            nodes:
-              - type: TextNode
-                value: a<script>b</script>c
-                position: { start: [0, 8], text: a<script>b</script>c }
+    error:
+      message: Attempting to close HtmlElement 'script' before it was opened
+      start: [0, 28]
+      text: </script
   - name: should parse basic raw tag
     source: "{% raw %}hello world{% endraw %}"
     parse: [html]

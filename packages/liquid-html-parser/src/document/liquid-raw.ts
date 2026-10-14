@@ -7,9 +7,8 @@ import { ChildFilterMode, filterChildren } from './tree-builder';
 import type { Position } from '../types';
 import { RawMarkupKinds } from '../ast';
 import type { LiquidRawTag, LiquidNode, TextNode, LiquidVariableOutput } from '../ast';
-import { TagKind } from '../environment';
 import type { TagDefinition, TagDefinitionRaw } from '../environment';
-import { findRawBodyEnd } from './raw-body';
+import { findRawBodyEnd, rawBodyRuleLookup } from './raw-body';
 import { LiquidHTMLASTParsingError } from '../errors';
 import { parseLiquidDoc } from '../liquid-doc/parser';
 
@@ -39,10 +38,7 @@ export function parseRawTag(
     parser.tokenAt(parser.getPosition()).start,
     tagName,
     def.body,
-    (name) => {
-      const inner = parser.tagForName(name);
-      return inner?.kind === TagKind.Raw ? inner.body : undefined;
-    },
+    rawBodyRuleLookup((name) => parser.tagForName(name)),
   );
   if (!endTag) {
     throw new LiquidHTMLASTParsingError(

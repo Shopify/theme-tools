@@ -43,6 +43,9 @@ import type {
 import { VOID_ELEMENTS, HTML_RAW_TAGS, BLOCKS } from '../grammar';
 import { LiquidHTMLASTParsingError } from '../errors';
 import { closesInnermostBranchOpenedElement } from './branch-opened-elements';
+import { findRawBodyEnd, liquidTagTokenName, rawBodyRuleLookup } from './raw-body';
+import type { RawBodyRuleFor } from './raw-body';
+import type { TagDefinition } from '../environment';
 
 /**
  * Interface capturing what HTML-parsing free functions need from the
@@ -64,6 +67,7 @@ export interface HtmlParserDelegate extends ParserBase {
   isBlockTerminator(): boolean;
   parseBranchAttributes(): AttributeNode[];
   parseLiquidInRange(bodyStart: number, bodyEnd: number): (LiquidNode | TextNode)[];
+  tagForName(name: string): TagDefinition | undefined;
 }
 
 // htmlElement := "<" compoundName attributes ("/" | ">") children? "</" compoundName ">"
@@ -179,8 +183,18 @@ export function parseHtmlRawBody(
   const source = parser.getSource();
   const bodyStart = blockStartPosition.end;
 
+  const rawText = RAW_TEXT_ELEMENTS.has(plainName.toLowerCase())
+    ? findRawTextClose(
+        source,
+        bodyStart,
+        plainName,
+        rawBodyRuleLookup((name) => parser.tagForName(name)),
+      )
+    : null;
   const closeIdx = scanForHtmlCloseTag(parser, plainName);
-  if (closeIdx === -1) {
+  if (rawText && (closeIdx === -1 || parser.tokenAt(closeIdx).start !== rawText.start)) {
+    parser.retokenizeRawText(bodyStart, rawText.start, rawText.end);
+  } else if (!rawText && closeIdx === -1) {
     throw new LiquidHTMLASTParsingError(
       `Attempting to end parsing before HtmlRawNode '${plainName}' was closed`,
       source,
@@ -189,10 +203,17 @@ export function parseHtmlRawBody(
     );
   }
 
-  const bodyEnd = parser.tokenAt(closeIdx).start;
+  const bodyEnd = rawText ? rawText.start : parser.tokenAt(closeIdx).start;
   const bodyString = source.slice(bodyStart, bodyEnd);
 
-  const bodyNodes = parser.parseLiquidInRange(bodyStart, bodyEnd);
+  const savedRawTextBound = parser.rawTextBound;
+  if (rawText) parser.rawTextBound = bodyEnd;
+  let bodyNodes: (LiquidNode | TextNode)[];
+  try {
+    bodyNodes = parser.parseLiquidInRange(bodyStart, bodyEnd);
+  } finally {
+    parser.rawTextBound = savedRawTextBound;
+  }
 
   const kind = rawMarkupKindForHtmlTag(plainName, attributes, bodyString);
   const body = makeRawMarkup(kind, bodyString, bodyNodes, bodyStart, bodyEnd, source);
@@ -747,6 +768,61 @@ export function scanForHtmlCloseTag(parser: ParserBase, tagName: string): number
     }
   }
   return -1;
+}
+
+// The HTML elements whose bodies are raw text: nothing in them but their own
+// close tag (and, in a theme, Liquid) is markup.
+const RAW_TEXT_ELEMENTS = new Set(['script', 'style']);
+
+const CLOSE_TAG_END = /\s*>/y;
+
+/**
+ * Where the first `</tagName>` after `from` starts and ends, read from the source
+ * rather than the token stream. Liquid delimiters are skipped the way the
+ * tokenizer skips them, and so is the body of a Liquid raw tag such as
+ * `{% comment %}`, so a close tag inside either does not count. An unterminated
+ * delimiter or raw tag leaves the element unclosed: returns null.
+ */
+function findRawTextClose(
+  source: string,
+  from: number,
+  tagName: string,
+  rawBodyRuleFor: RawBodyRuleFor,
+): { start: number; end: number } | null {
+  const lowerName = tagName.toLowerCase();
+  let i = from;
+  while (i < source.length) {
+    const liquidCloser = source.startsWith('{{', i)
+      ? '}}'
+      : source.startsWith('{%', i)
+        ? '%}'
+        : null;
+    if (liquidCloser) {
+      const close = source.indexOf(liquidCloser, i + 2);
+      if (close === -1) return null;
+      const tokenEnd = close + 2;
+      const name =
+        liquidCloser === '%}' ? liquidTagTokenName(source.slice(i, tokenEnd)) : undefined;
+      const rule = name ? rawBodyRuleFor(name) : undefined;
+      if (name && rule) {
+        const bodyEnd = findRawBodyEnd(source, tokenEnd, name, rule, rawBodyRuleFor);
+        if (!bodyEnd) return null;
+        i = bodyEnd.tagEnd;
+      } else {
+        i = tokenEnd;
+      }
+      continue;
+    }
+    if (
+      source.startsWith('</', i) &&
+      source.slice(i + 2, i + 2 + lowerName.length).toLowerCase() === lowerName
+    ) {
+      CLOSE_TAG_END.lastIndex = i + 2 + lowerName.length;
+      if (CLOSE_TAG_END.test(source)) return { start: i, end: CLOSE_TAG_END.lastIndex };
+    }
+    i++;
+  }
+  return null;
 }
 
 export function rawMarkupKindForHtmlTag(

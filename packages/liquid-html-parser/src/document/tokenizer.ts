@@ -59,6 +59,15 @@ export interface TokenizeOptions {
    * `QuotedValue`).
    */
   insideHtmlTag?: boolean;
+
+  /**
+   * Tokenize the whole input as the body of a `<script>` or `<style>` element:
+   * only Liquid delimiters are recognized, and everything else is Text, so
+   * JavaScript like `i<n` cannot open an HTML tag. The caller passes exactly the
+   * body, so no mode can run past its close tag. See
+   * `ParserBase.retokenizeRawText`.
+   */
+  rawText?: boolean;
 }
 
 export function tokenize(source: string, options: TokenizeOptions = {}): Token[] {
@@ -194,6 +203,8 @@ export function createTokenizer(source: string, tokens: Token[], fastPath = true
       // means the closing `>` pops back to `Default`, so the rest of the suffix
       // (`>ok</div>`) tokenizes as normal document content.
       mode = Mode.HtmlTag;
+    } else if (options.rawText) {
+      mode = Mode.RawText;
     }
 
     // YAML frontmatter: only at position 0
@@ -375,6 +386,14 @@ export function createTokenizer(source: string, tokens: Token[], fastPath = true
           break;
         }
 
+        case Mode.RawText: {
+          if (scanLiquidOpen()) continue;
+
+          startText();
+          skipText();
+          break;
+        }
+
         default:
           assertNever(mode);
       }
@@ -420,6 +439,8 @@ function nextTextCandidate(
       return nextQuotedValueCandidate(source, from, quoteChar);
     case Mode.LiquidTag:
       return nextLiquidTagCloseCandidate(source, from);
+    case Mode.RawText:
+      return nextRawTextCandidate(source, from);
     default:
       return assertNever(mode);
   }
@@ -443,6 +464,12 @@ function nextDefaultCandidate(source: string, from: number): number {
     if (c === CHAR_OPEN_BRACE || c === CHAR_LESS_THAN || c === CHAR_DASH) return i;
   }
   return source.length;
+}
+
+/** RawText mode tokens start with `{` (Liquid). */
+function nextRawTextCandidate(source: string, from: number): number {
+  const i = source.indexOf('{', from);
+  return i === -1 ? source.length : i;
 }
 
 /**
@@ -518,6 +545,7 @@ enum Mode {
   QuotedValue = 'QuotedValue',
   LiquidTag = 'LiquidTag',
   LiquidVariableOutput = 'LiquidVariableOutput',
+  RawText = 'RawText',
 }
 
 // Curly (smart) quotes come in directional pairs: a value opened with a left

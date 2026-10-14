@@ -1,5 +1,5 @@
-import { TokenType, createTokenizer } from './tokenizer';
-import type { Token, Tokenizer } from './tokenizer';
+import { TokenType, createTokenizer, tokenize } from './tokenizer';
+import type { Token, TokenizeOptions, Tokenizer } from './tokenizer';
 import { LiquidHTMLASTParsingError } from '../errors';
 
 export class ParserBase {
@@ -208,6 +208,14 @@ export class ParserBase {
     const before = this.countTokensWhile((token) => token.end <= sourceOffset);
     const straddles = this.hasToken(before) && this.tokens[before].start < sourceOffset;
 
+    if (straddles && this.rawTextBound !== null && sourceOffset < this.rawTextBound) {
+      const bound = this.rawTextBound;
+      const rest = this.countTokensWhile((token) => token.start < bound);
+      this.replaceTokens(before, rest, this.tokenizeSlice(sourceOffset, bound, { rawText: true }));
+      this.p = before;
+      return;
+    }
+
     if (straddles) {
       this.scanHtmlContext(before);
       // If the boundary lies inside a quoted HTML attribute value (the raw tag
@@ -242,5 +250,71 @@ export class ParserBase {
     // (The trailing EndOfInput token has `start === source.length`, so it is
     // never skipped past, keeping `this.p` in bounds.)
     this.seekToSourceOffset(sourceOffset);
+  }
+
+  /**
+   * Re-tokenize the `<script>`/`<style>` body from `bodyStart` to `bodyEnd` as
+   * raw text, with the close tag `bodyEnd`..`closeEnd` and the rest of the
+   * source as a normal document.
+   *
+   * The body is tokenized on its own, so no Liquid mode in it can run past the
+   * close tag. After the close tag the existing tokens are kept when the old
+   * stream already resumed a normal document there, which is the case when its
+   * `HtmlTagClose` ends exactly at `closeEnd`: a tag mode only pops back to the
+   * document. Otherwise the rest of the source is tokenized again, as it's read.
+   *
+   * Like `resliceTokensFrom`, this renumbers every token slot after `bodyStart`.
+   * Callers must recompute any token index they cached, or re-seek by source
+   * offset. Leaves the cursor at the first body token.
+   */
+  retokenizeRawText(bodyStart: number, bodyEnd: number, closeEnd: number): void {
+    const before = this.countTokensWhile((token) => token.end <= bodyStart);
+    const body = this.tokenizeSlice(bodyStart, bodyEnd, { rawText: true });
+    // Tokens don't overlap, so a token ending at `closeEnd` is the first one
+    // that doesn't end before it.
+    const close = this.countTokensWhile((token) => token.end < closeEnd);
+    const resumes =
+      this.hasToken(close + 1) &&
+      this.tokens[close].type === TokenType.HtmlTagClose &&
+      this.tokens[close].end === closeEnd &&
+      this.tokens[close + 1].start === closeEnd;
+    if (resumes) {
+      this.replaceTokens(before, close + 1, [...body, ...this.tokenizeSlice(bodyEnd, closeEnd)]);
+    } else {
+      this.replaceTokens(before, this.tokens.length, body);
+      this.tokenizer ??= createTokenizer(this.source, this.tokens);
+      this.tokenizer.restart(bodyEnd, { skipFrontmatter: true });
+    }
+    this.p = before;
+  }
+
+  /**
+   * While a `<script>`/`<style>` body is parsed, the offset its close tag starts
+   * at, or null. `resliceTokensFrom` re-tokenizes inside the body as raw text up
+   * to this offset and keeps the tokens after it.
+   */
+  rawTextBound: number | null = null;
+
+  // In place, since the tokenizer appends to this same array. Not `splice`,
+  // whose spread arguments overflow the stack for a large body.
+  private replaceTokens(start: number, end: number, replacement: Token[]): void {
+    const rest = this.tokens.slice(end);
+    this.tokens.length = start;
+    for (const token of replacement) this.tokens.push(token);
+    for (const token of rest) this.tokens.push(token);
+    if (this.scanned > start) {
+      this.scanned = 0;
+      this.openQuote = undefined;
+      this.openTag = false;
+    }
+  }
+
+  // Tokens for `source[start, end)`, with offsets in the whole source, without
+  // the slice's EndOfInput.
+  private tokenizeSlice(start: number, end: number, options: TokenizeOptions = {}): Token[] {
+    const tokens = tokenize(this.source.slice(start, end), { ...options, skipFrontmatter: true });
+    return tokens
+      .filter((token) => token.type !== TokenType.EndOfInput)
+      .map((token) => ({ type: token.type, start: token.start + start, end: token.end + start }));
   }
 }

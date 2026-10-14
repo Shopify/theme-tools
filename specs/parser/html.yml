@@ -4972,3 +4972,1045 @@ cases:
               - type: TextNode
                 value: d
                 position: { start: [0, 41], text: d }
+  - name: parses a script body with a loop condition with no spaces around <
+    source: <script>for (var i=0;i<arr.length;i++){}</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>for (var i=0;i<arr.length;i++){}</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 40], text: </script> }
+          position: { start: [0, 0], text: "<script>for (var i=0;i<arr.length;i++){}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: for (var i=0;i<arr.length;i++){}
+            position: { start: [0, 8], text: "for (var i=0;i<arr.length;i++){}" }
+            nodes:
+              - type: TextNode
+                value: for (var i=0;i<arr.length;i++){}
+                position: { start: [0, 8], text: "for (var i=0;i<arr.length;i++){}" }
+  - name: parses a script body with a comparison followed by a double-quoted string
+    source: <script>if(a<b){alert("x")}</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<script>if(a<b){alert("x")}</script>' }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 27], text: </script> }
+          position: { start: [0, 0], text: '<script>if(a<b){alert("x")}</script>' }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: if(a<b){alert("x")}
+            position: { start: [0, 8], text: 'if(a<b){alert("x")}' }
+            nodes:
+              - type: TextNode
+                value: if(a<b){alert("x")}
+                position: { start: [0, 8], text: 'if(a<b){alert("x")}' }
+  - name: parses a script body with a comparison followed by an apostrophe in a comment
+    source: |-
+      <script>if (i<n) { x() } // don't
+      </script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          <script>if (i<n) { x() } // don't
+          </script>
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [1, 0], text: </script> }
+          position:
+            start: [0, 0]
+            text: |-
+              <script>if (i<n) { x() } // don't
+              </script>
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: |
+              if (i<n) { x() } // don't
+            position:
+              start: [0, 8]
+              text: |
+                if (i<n) { x() } // don't
+            nodes:
+              - type: TextNode
+                value: if (i<n) { x() } // don't
+                position: { start: [0, 8], text: "if (i<n) { x() } // don't" }
+  - name: parses a script body with a comparison against !
+    source: <script>if (a<!b) {}</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>if (a<!b) {}</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 20], text: </script> }
+          position: { start: [0, 0], text: "<script>if (a<!b) {}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: if (a<!b) {}
+            position: { start: [0, 8], text: "if (a<!b) {}" }
+            nodes:
+              - type: TextNode
+                value: if (a<!b) {}
+                position: { start: [0, 8], text: "if (a<!b) {}" }
+  - name: parses a script body with a regex literal followed by an apostrophe
+    source: <script>var r = /<b/; var q = "it's";</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <script>var r = /<b/; var q = "it's";</script> }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 37], text: </script> }
+          position: { start: [0, 0], text: <script>var r = /<b/; var q = "it's";</script> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: var r = /<b/; var q = "it's";
+            position: { start: [0, 8], text: var r = /<b/; var q = "it's"; }
+            nodes:
+              - type: TextNode
+                value: var r = /<b/; var q = "it's";
+                position: { start: [0, 8], text: var r = /<b/; var q = "it's"; }
+  - name: parses a script body with a line comment containing <
+    source: |-
+      <script>// show if count <limit
+      x()</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          <script>// show if count <limit
+          x()</script>
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [1, 3], text: </script> }
+          position:
+            start: [0, 0]
+            text: |-
+              <script>// show if count <limit
+              x()</script>
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: |-
+              // show if count <limit
+              x()
+            position:
+              start: [0, 8]
+              text: |-
+                // show if count <limit
+                x()
+            nodes:
+              - type: TextNode
+                value: |-
+                  // show if count <limit
+                  x()
+                position:
+                  start: [0, 8]
+                  text: |-
+                    // show if count <limit
+                    x()
+  - name: parses a minified script body
+    source: <script>for(var e=0;e<t.length;e++){t[e].classList.add("on")}</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<script>for(var e=0;e<t.length;e++){t[e].classList.add("on")}</script>' }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 61], text: </script> }
+          position: { start: [0, 0], text: '<script>for(var e=0;e<t.length;e++){t[e].classList.add("on")}</script>' }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: for(var e=0;e<t.length;e++){t[e].classList.add("on")}
+            position: { start: [0, 8], text: 'for(var e=0;e<t.length;e++){t[e].classList.add("on")}' }
+            nodes:
+              - type: TextNode
+                value: for(var e=0;e<t.length;e++){t[e].classList.add("on")}
+                position: { start: [0, 8], text: 'for(var e=0;e<t.length;e++){t[e].classList.add("on")}' }
+  - name: parses a style body whose comment contains < and an apostrophe
+    source: "<style>/* <b isn't bold here */ .a { color: red; }</style>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<style>/* <b isn't bold here */ .a { color: red; }</style>" }
+      children:
+        - type: HtmlRawNode
+          name: style
+          blockStartPosition: { start: [0, 0], text: <style> }
+          blockEndPosition: { start: [0, 50], text: </style> }
+          position: { start: [0, 0], text: "<style>/* <b isn't bold here */ .a { color: red; }</style>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: css
+            value: "/* <b isn't bold here */ .a { color: red; }"
+            position: { start: [0, 7], text: "/* <b isn't bold here */ .a { color: red; }" }
+            nodes:
+              - type: TextNode
+                value: "/* <b isn't bold here */ .a { color: red; }"
+                position: { start: [0, 7], text: "/* <b isn't bold here */ .a { color: red; }" }
+  - name: closes a script body on an upper-case close tag
+    source: <SCRIPT>for(i=0;i<n;i++){}</SCRIPT>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<SCRIPT>for(i=0;i<n;i++){}</SCRIPT>" }
+      children:
+        - type: HtmlRawNode
+          name: SCRIPT
+          blockStartPosition: { start: [0, 0], text: <SCRIPT> }
+          blockEndPosition: { start: [0, 26], text: </SCRIPT> }
+          position: { start: [0, 0], text: "<SCRIPT>for(i=0;i<n;i++){}</SCRIPT>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: for(i=0;i<n;i++){}
+            position: { start: [0, 8], text: "for(i=0;i<n;i++){}" }
+            nodes:
+              - type: TextNode
+                value: for(i=0;i<n;i++){}
+                position: { start: [0, 8], text: "for(i=0;i<n;i++){}" }
+  - name: closes a script body on a close tag with whitespace before >
+    source: |-
+      <script>for(i=0;i<n;i++){}</script 
+      >
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          <script>for(i=0;i<n;i++){}</script 
+          >
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition:
+            start: [0, 26]
+            text: |-
+              </script 
+              >
+          position:
+            start: [0, 0]
+            text: |-
+              <script>for(i=0;i<n;i++){}</script 
+              >
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: for(i=0;i<n;i++){}
+            position: { start: [0, 8], text: "for(i=0;i<n;i++){}" }
+            nodes:
+              - type: TextNode
+                value: for(i=0;i<n;i++){}
+                position: { start: [0, 8], text: "for(i=0;i<n;i++){}" }
+  - name: parses a drop glued to < in a script body
+    source: <script>if (i<{{ max }}) {}</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>if (i<{{ max }}) {}</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 27], text: </script> }
+          position: { start: [0, 0], text: "<script>if (i<{{ max }}) {}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: if (i<{{ max }}) {}
+            position: { start: [0, 8], text: "if (i<{{ max }}) {}" }
+            nodes:
+              - type: TextNode
+                value: if (i<
+                position: { start: [0, 8], text: if (i< }
+              - type: LiquidVariableOutput
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                markupPosition: { start: [0, 16], text: " max " }
+                position: { start: [0, 14], text: "{{ max }}" }
+                markup:
+                  type: LiquidVariable
+                  rawSource: max
+                  position: { start: [0, 17], text: "max " }
+                  expression:
+                    type: VariableLookup
+                    name: max
+                    position: { start: [0, 17], text: max }
+                    lookups: []
+                    lookupModes: []
+                  filters: []
+              - type: TextNode
+                value: ) {}
+                position: { start: [0, 23], text: ") {}" }
+  - name: parses a Liquid block after a < comparison in a script body
+    source: <script>for(i=0;i<n;i++){ {% if x %}a(){% endif %} }</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>for(i=0;i<n;i++){ {% if x %}a(){% endif %} }</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 52], text: </script> }
+          position: { start: [0, 0], text: "<script>for(i=0;i<n;i++){ {% if x %}a(){% endif %} }</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: for(i=0;i<n;i++){ {% if x %}a(){% endif %} }
+            position: { start: [0, 8], text: "for(i=0;i<n;i++){ {% if x %}a(){% endif %} }" }
+            nodes:
+              - type: TextNode
+                value: for(i=0;i<n;i++){
+                position: { start: [0, 8], text: "for(i=0;i<n;i++){" }
+              - type: LiquidTag
+                name: if
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 26], text: "{% if x %}" }
+                blockEndPosition: { start: [0, 39], text: "{% endif %}" }
+                markupPosition: { start: [0, 32], text: "x " }
+                position: { start: [0, 26], text: "{% if x %}a(){% endif %}" }
+                markup:
+                  type: VariableLookup
+                  name: x
+                  position: { start: [0, 32], text: x }
+                  lookups: []
+                  lookupModes: []
+                children:
+                  - type: LiquidBranch
+                    name: null
+                    markup: ""
+                    whitespaceStart: ""
+                    whitespaceEnd: ""
+                    markupPosition: { start: [0, 36], text: "" }
+                    blockStartPosition: { start: [0, 36], text: "" }
+                    blockEndPosition: { start: [0, 39], text: "" }
+                    position: { start: [0, 36], text: a() }
+                    children:
+                      - type: TextNode
+                        value: a()
+                        position: { start: [0, 36], text: a() }
+              - type: TextNode
+                value: "}"
+                position: { start: [0, 51], text: "}" }
+  - name: parses the HTML after a script body with a < comparison
+    source: <script>if(a<b){}</script><div>after</div>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>if(a<b){}</script><div>after</div>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 17], text: </script> }
+          position: { start: [0, 0], text: "<script>if(a<b){}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: if(a<b){}
+            position: { start: [0, 8], text: "if(a<b){}" }
+            nodes:
+              - type: TextNode
+                value: if(a<b){}
+                position: { start: [0, 8], text: "if(a<b){}" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 26], text: <div> }
+          blockEndPosition: { start: [0, 36], text: </div> }
+          position: { start: [0, 26], text: <div>after</div> }
+          name:
+            - type: TextNode
+              value: div
+              position: { start: [0, 27], text: div }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 31], text: after }
+  - name: closes a script body at its own close tag rather than a later script's
+    source: |-
+      <script>if (a<b) {}</script>
+      <div>hi</div>
+      <script>x()</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          <script>if (a<b) {}</script>
+          <div>hi</div>
+          <script>x()</script>
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 19], text: </script> }
+          position: { start: [0, 0], text: "<script>if (a<b) {}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: if (a<b) {}
+            position: { start: [0, 8], text: "if (a<b) {}" }
+            nodes:
+              - type: TextNode
+                value: if (a<b) {}
+                position: { start: [0, 8], text: "if (a<b) {}" }
+        - type: HtmlElement
+          blockStartPosition: { start: [1, 0], text: <div> }
+          blockEndPosition: { start: [1, 7], text: </div> }
+          position: { start: [1, 0], text: <div>hi</div> }
+          name:
+            - type: TextNode
+              value: div
+              position: { start: [1, 1], text: div }
+          attributes: []
+          children:
+            - type: TextNode
+              value: hi
+              position: { start: [1, 5], text: hi }
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [2, 0], text: <script> }
+          blockEndPosition: { start: [2, 11], text: </script> }
+          position: { start: [2, 0], text: <script>x()</script> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: x()
+            position: { start: [2, 8], text: x() }
+            nodes:
+              - type: TextNode
+                value: x()
+                position: { start: [2, 8], text: x() }
+  - name: does not close a script body on a close tag inside a drop
+    source: <script>for(i=0;i<n;i++){} var s = {{ '</script>' | json }};</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>for(i=0;i<n;i++){} var s = {{ '</script>' | json }};</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 60], text: </script> }
+          position: { start: [0, 0], text: "<script>for(i=0;i<n;i++){} var s = {{ '</script>' | json }};</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: for(i=0;i<n;i++){} var s = {{ '</script>' | json }};
+            position: { start: [0, 8], text: "for(i=0;i<n;i++){} var s = {{ '</script>' | json }};" }
+            nodes:
+              - type: TextNode
+                value: for(i=0;i<n;i++){} var s =
+                position: { start: [0, 8], text: "for(i=0;i<n;i++){} var s =" }
+              - type: LiquidVariableOutput
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                markupPosition: { start: [0, 37], text: " '</script>' | json " }
+                position: { start: [0, 35], text: "{{ '</script>' | json }}" }
+                markup:
+                  type: LiquidVariable
+                  rawSource: "'</script>' | json"
+                  position: { start: [0, 38], text: "'</script>' | json " }
+                  expression:
+                    type: String
+                    single: true
+                    value: </script>
+                    position: { start: [0, 38], text: "'</script>'" }
+                  filters:
+                    - type: LiquidFilter
+                      name: json
+                      position: { start: [0, 49], text: " | json" }
+                      args: []
+              - type: TextNode
+                value: ;
+                position: { start: [0, 59], text: ; }
+  - name: does not close a script body on a close tag inside a comment
+    source: "<script>if (i<n) {}{% comment %}old: </script>{% endcomment %}</script>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>if (i<n) {}{% comment %}old: </script>{% endcomment %}</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 62], text: </script> }
+          position: { start: [0, 0], text: "<script>if (i<n) {}{% comment %}old: </script>{% endcomment %}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: "if (i<n) {}{% comment %}old: </script>{% endcomment %}"
+            position: { start: [0, 8], text: "if (i<n) {}{% comment %}old: </script>{% endcomment %}" }
+            nodes:
+              - type: TextNode
+                value: if (i<n) {}
+                position: { start: [0, 8], text: "if (i<n) {}" }
+              - type: LiquidRawTag
+                name: comment
+                markup: ""
+                markupPosition: { start: [0, 30], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 19], text: "{% comment %}" }
+                blockEndPosition: { start: [0, 46], text: "{% endcomment %}" }
+                position: { start: [0, 19], text: "{% comment %}old: </script>{% endcomment %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "old: </script>"
+                  position: { start: [0, 32], text: "old: </script>" }
+                  nodes:
+                    - type: TextNode
+                      value: "old: </script>"
+                      position: { start: [0, 32], text: "old: </script>" }
+  - name: does not close a script body without a < comparison on a close tag inside a comment
+    source: "<script>x(){% comment %}old: </script>{% endcomment %}</script>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>x(){% comment %}old: </script>{% endcomment %}</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 54], text: </script> }
+          position: { start: [0, 0], text: "<script>x(){% comment %}old: </script>{% endcomment %}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: "x(){% comment %}old: </script>{% endcomment %}"
+            position: { start: [0, 8], text: "x(){% comment %}old: </script>{% endcomment %}" }
+            nodes:
+              - type: TextNode
+                value: x()
+                position: { start: [0, 8], text: x() }
+              - type: LiquidRawTag
+                name: comment
+                markup: ""
+                markupPosition: { start: [0, 22], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 11], text: "{% comment %}" }
+                blockEndPosition: { start: [0, 38], text: "{% endcomment %}" }
+                position: { start: [0, 11], text: "{% comment %}old: </script>{% endcomment %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "old: </script>"
+                  position: { start: [0, 24], text: "old: </script>" }
+                  nodes:
+                    - type: TextNode
+                      value: "old: </script>"
+                      position: { start: [0, 24], text: "old: </script>" }
+  - name: does not close a script body on a close tag inside a doc
+    source: <script>if(i<n){}{% doc %}</script>{% enddoc %}</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>if(i<n){}{% doc %}</script>{% enddoc %}</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 47], text: </script> }
+          position: { start: [0, 0], text: "<script>if(i<n){}{% doc %}</script>{% enddoc %}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: if(i<n){}{% doc %}</script>{% enddoc %}
+            position: { start: [0, 8], text: "if(i<n){}{% doc %}</script>{% enddoc %}" }
+            nodes:
+              - type: TextNode
+                value: if(i<n){}
+                position: { start: [0, 8], text: "if(i<n){}" }
+              - type: LiquidRawTag
+                name: doc
+                markup: ""
+                markupPosition: { start: [0, 24], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 17], text: "{% doc %}" }
+                blockEndPosition: { start: [0, 35], text: "{% enddoc %}" }
+                position: { start: [0, 17], text: "{% doc %}</script>{% enddoc %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: </script>
+                  position: { start: [0, 26], text: </script> }
+                  nodes:
+                    - type: LiquidDocDescriptionNode
+                      name: description
+                      isImplicit: true
+                      isInline: true
+                      position: { start: [0, 26], text: </script> }
+                      content:
+                        type: TextNode
+                        value: </script>
+                        position: { start: [0, 26], text: </script> }
+  - name: does not close a script body on a close tag inside a raw
+    source: <script>if(i<n){}{% raw %}</script>{% endraw %}</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>if(i<n){}{% raw %}</script>{% endraw %}</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 47], text: </script> }
+          position: { start: [0, 0], text: "<script>if(i<n){}{% raw %}</script>{% endraw %}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: if(i<n){}{% raw %}</script>{% endraw %}
+            position: { start: [0, 8], text: "if(i<n){}{% raw %}</script>{% endraw %}" }
+            nodes:
+              - type: TextNode
+                value: if(i<n){}
+                position: { start: [0, 8], text: "if(i<n){}" }
+              - type: LiquidRawTag
+                name: raw
+                markup: ""
+                markupPosition: { start: [0, 24], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 17], text: "{% raw %}" }
+                blockEndPosition: { start: [0, 35], text: "{% endraw %}" }
+                position: { start: [0, 17], text: "{% raw %}</script>{% endraw %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: </script>
+                  position: { start: [0, 26], text: </script> }
+                  nodes:
+                    - type: TextNode
+                      value: </script>
+                      position: { start: [0, 26], text: </script> }
+  - name: does not close a style body on a close tag inside a comment
+    source: <style>/* <b isn't */{% comment %}</style>{% endcomment %}</style>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<style>/* <b isn't */{% comment %}</style>{% endcomment %}</style>" }
+      children:
+        - type: HtmlRawNode
+          name: style
+          blockStartPosition: { start: [0, 0], text: <style> }
+          blockEndPosition: { start: [0, 58], text: </style> }
+          position: { start: [0, 0], text: "<style>/* <b isn't */{% comment %}</style>{% endcomment %}</style>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: /* <b isn't */{% comment %}</style>{% endcomment %}
+            position: { start: [0, 7], text: "/* <b isn't */{% comment %}</style>{% endcomment %}" }
+            nodes:
+              - type: TextNode
+                value: /* <b isn't */
+                position: { start: [0, 7], text: /* <b isn't */ }
+              - type: LiquidRawTag
+                name: comment
+                markup: ""
+                markupPosition: { start: [0, 32], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 21], text: "{% comment %}" }
+                blockEndPosition: { start: [0, 42], text: "{% endcomment %}" }
+                position: { start: [0, 21], text: "{% comment %}</style>{% endcomment %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: </style>
+                  position: { start: [0, 34], text: </style> }
+                  nodes:
+                    - type: TextNode
+                      value: </style>
+                      position: { start: [0, 34], text: </style> }
+  - name: closes a script body after a raw {{ in a string, and parses the markup after it
+    source: <script>var o="{% raw %}{{{% endraw %}";</script><p>{{ x }}</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<script>var o="{% raw %}{{{% endraw %}";</script><p>{{ x }}</p>' }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 40], text: </script> }
+          position: { start: [0, 0], text: '<script>var o="{% raw %}{{{% endraw %}";</script>' }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: var o="{% raw %}{{{% endraw %}";
+            position: { start: [0, 8], text: 'var o="{% raw %}{{{% endraw %}";' }
+            nodes:
+              - type: TextNode
+                value: var o="
+                position: { start: [0, 8], text: var o=" }
+              - type: LiquidRawTag
+                name: raw
+                markup: ""
+                markupPosition: { start: [0, 22], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 15], text: "{% raw %}" }
+                blockEndPosition: { start: [0, 26], text: "{% endraw %}" }
+                position: { start: [0, 15], text: "{% raw %}{{{% endraw %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "{{"
+                  position: { start: [0, 24], text: "{{" }
+                  nodes:
+                    - type: TextNode
+                      value: "{{"
+                      position: { start: [0, 24], text: "{{" }
+              - type: TextNode
+                value: '";'
+                position: { start: [0, 38], text: '";' }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 49], text: <p> }
+          blockEndPosition: { start: [0, 59], text: </p> }
+          position: { start: [0, 49], text: "<p>{{ x }}</p>" }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 50], text: p }
+          attributes: []
+          children:
+            - type: LiquidVariableOutput
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 54], text: " x " }
+              position: { start: [0, 52], text: "{{ x }}" }
+              markup:
+                type: LiquidVariable
+                rawSource: x
+                position: { start: [0, 55], text: "x " }
+                expression:
+                  type: VariableLookup
+                  name: x
+                  position: { start: [0, 55], text: x }
+                  lookups: []
+                  lookupModes: []
+                filters: []
+  - name: closes a script body after a raw {{ before a < comparison
+    source: <script>{% raw %}{{{% endraw %}if(a<b){}</script><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>{% raw %}{{{% endraw %}if(a<b){}</script><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 40], text: </script> }
+          position: { start: [0, 0], text: "<script>{% raw %}{{{% endraw %}if(a<b){}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: "{% raw %}{{{% endraw %}if(a<b){}"
+            position: { start: [0, 8], text: "{% raw %}{{{% endraw %}if(a<b){}" }
+            nodes:
+              - type: LiquidRawTag
+                name: raw
+                markup: ""
+                markupPosition: { start: [0, 15], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 8], text: "{% raw %}" }
+                blockEndPosition: { start: [0, 19], text: "{% endraw %}" }
+                position: { start: [0, 8], text: "{% raw %}{{{% endraw %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "{{"
+                  position: { start: [0, 17], text: "{{" }
+                  nodes:
+                    - type: TextNode
+                      value: "{{"
+                      position: { start: [0, 17], text: "{{" }
+              - type: TextNode
+                value: if(a<b){}
+                position: { start: [0, 31], text: "if(a<b){}" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 49], text: <p> }
+          blockEndPosition: { start: [0, 57], text: </p> }
+          position: { start: [0, 49], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 50], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 52], text: after }
+  - name: closes a script body after a raw {{ and a later }} around a loop
+    source: <script>var o="{% raw %}{{{% endraw %}"; for(i=0;i<n;i++){} var c="}}";</script><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<script>var o="{% raw %}{{{% endraw %}"; for(i=0;i<n;i++){} var c="}}";</script><p>after</p>' }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 71], text: </script> }
+          position: { start: [0, 0], text: '<script>var o="{% raw %}{{{% endraw %}"; for(i=0;i<n;i++){} var c="}}";</script>' }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: var o="{% raw %}{{{% endraw %}"; for(i=0;i<n;i++){} var c="}}";
+            position: { start: [0, 8], text: 'var o="{% raw %}{{{% endraw %}"; for(i=0;i<n;i++){} var c="}}";' }
+            nodes:
+              - type: TextNode
+                value: var o="
+                position: { start: [0, 8], text: var o=" }
+              - type: LiquidRawTag
+                name: raw
+                markup: ""
+                markupPosition: { start: [0, 22], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 15], text: "{% raw %}" }
+                blockEndPosition: { start: [0, 26], text: "{% endraw %}" }
+                position: { start: [0, 15], text: "{% raw %}{{{% endraw %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "{{"
+                  position: { start: [0, 24], text: "{{" }
+                  nodes:
+                    - type: TextNode
+                      value: "{{"
+                      position: { start: [0, 24], text: "{{" }
+              - type: TextNode
+                value: '"; for(i=0;i<n;i++){} var c="}}";'
+                position: { start: [0, 38], text: '"; for(i=0;i<n;i++){} var c="}}";' }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 80], text: <p> }
+          blockEndPosition: { start: [0, 88], text: </p> }
+          position: { start: [0, 80], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 81], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 83], text: after }
+  - name: closes a script body after raw {{ and }} split across two raw tags
+    source: <script>{% raw %}{{{% endraw %} x {% raw %}}}{% endraw %}; if(a<b){}</script><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>{% raw %}{{{% endraw %} x {% raw %}}}{% endraw %}; if(a<b){}</script><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 68], text: </script> }
+          position: { start: [0, 0], text: "<script>{% raw %}{{{% endraw %} x {% raw %}}}{% endraw %}; if(a<b){}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: "{% raw %}{{{% endraw %} x {% raw %}}}{% endraw %}; if(a<b){}"
+            position: { start: [0, 8], text: "{% raw %}{{{% endraw %} x {% raw %}}}{% endraw %}; if(a<b){}" }
+            nodes:
+              - type: LiquidRawTag
+                name: raw
+                markup: ""
+                markupPosition: { start: [0, 15], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 8], text: "{% raw %}" }
+                blockEndPosition: { start: [0, 19], text: "{% endraw %}" }
+                position: { start: [0, 8], text: "{% raw %}{{{% endraw %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "{{"
+                  position: { start: [0, 17], text: "{{" }
+                  nodes:
+                    - type: TextNode
+                      value: "{{"
+                      position: { start: [0, 17], text: "{{" }
+              - type: TextNode
+                value: x
+                position: { start: [0, 32], text: x }
+              - type: LiquidRawTag
+                name: raw
+                markup: ""
+                markupPosition: { start: [0, 41], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 34], text: "{% raw %}" }
+                blockEndPosition: { start: [0, 45], text: "{% endraw %}" }
+                position: { start: [0, 34], text: "{% raw %}}}{% endraw %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "}}"
+                  position: { start: [0, 43], text: "}}" }
+                  nodes:
+                    - type: TextNode
+                      value: "}}"
+                      position: { start: [0, 43], text: "}}" }
+              - type: TextNode
+                value: ; if(a<b){}
+                position: { start: [0, 57], text: "; if(a<b){}" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 77], text: <p> }
+          blockEndPosition: { start: [0, 85], text: </p> }
+          position: { start: [0, 77], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 78], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 80], text: after }
+  - name: rejects a script body whose comment has a {{ that swallows the endcomment, as Liquid::Tokenizer does
+    source: <script>{% comment %}{{ old {% endcomment %}for(i=0;i<n;i++){}</script><p>after</p>
+    parse: [html]
+    error:
+      message: Attempting to end parsing before HtmlRawNode 'script' was closed
+      start: [0, 0]
+      text: <script>
+  - name: rejects a script body whose comment has a bare {{ that swallows the endcomment
+    source: <script>{% comment %} {{ {% endcomment %}</script><p>after</p>
+    parse: [html]
+    error:
+      message: Attempting to end parsing before HtmlRawNode 'script' was closed
+      start: [0, 0]
+      text: <script>
+  - name: rejects a script body with an unclosed comment
+    source: <script>if(i<n){}{% comment %}</script>
+    parse: [html]
+    error:
+      message: Attempting to end parsing before HtmlRawNode 'script' was closed
+      start: [0, 0]
+      text: <script>
+  - name: rejects a script with a < comparison that is never closed
+    source: |
+      <script>
+        for (var i=0;i<n;i++){}
+    parse: [html]
+    error:
+      message: Attempting to end parsing before HtmlRawNode 'script' was closed
+      start: [0, 0]
+      text: <script>
+  - name: rejects a script body with an unterminated drop
+    source: <script>if(a<b){} var t = "{{";</script>
+    parse: [html]
+    error:
+      message: Attempting to end parsing before HtmlRawNode 'script' was closed
+      start: [0, 0]
+      text: <script>

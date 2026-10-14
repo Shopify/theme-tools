@@ -668,6 +668,7 @@ describe('Unit: document-tokenizer', () => {
       ['document start', '', {}],
       ['skipFrontmatter', '', { skipFrontmatter: true }],
       ['insideHtmlTag', '', { insideHtmlTag: true }],
+      ['rawText', '', { rawText: true }],
       ...['"', "'", '\u201c', '\u201d', '\u2018', '\u2019'].map(
         (quote): [string, string, TokenizeOptions] => [
           `insideQuotedAttribute ${quote}`,
