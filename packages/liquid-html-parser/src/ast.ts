@@ -19,6 +19,7 @@ import type { Position } from './types';
 import { DocumentParser } from './document/parser';
 import { tokenize } from './document/tokenizer';
 import { Environment } from './environment';
+import { tryBackend } from './backend';
 
 /** The union type of all possible node types inside a LiquidHTML AST. */
 export type LiquidHtmlNode =
@@ -945,6 +946,8 @@ export function toLiquidAST(
     mode: 'tolerant',
   },
 ) {
+  const b = tryBackend('liquid', source, options);
+  if (b) return b;
   const env = options.environment ?? Environment.default();
   const tokens = tokenize(source);
   const parser = new DocumentParser(tokens, source, env, false, options.allowUnclosedDocumentNode);
@@ -958,6 +961,8 @@ export function toLiquidHtmlAST(
     mode: 'tolerant',
   },
 ): DocumentNode {
+  const b = tryBackend('liquidHtml', source, options);
+  if (b) return b;
   const env = options.environment ?? Environment.default();
   const tokens = tokenize(source);
   const parser = new DocumentParser(tokens, source, env, true, options.allowUnclosedDocumentNode);

@@ -5,6 +5,8 @@
     "node_modules",
     "src/**/*.spec.ts",
     "src/**/*.test.ts",
-    "src/**/*.bench.ts"
+    "src/**/*.bench.ts",
+    "src/rust-parity/**",
+    "src/test/**"
   ]
 }

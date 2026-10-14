@@ -9,5 +9,6 @@ export default defineConfig({
     maxWorkers: 1,
     isolate: false,
     globalSetup: ['./src/test/test-setup.js'],
+    setupFiles: ['../liquid-html-parser/src/test/select-backend.ts'],
   },
 });

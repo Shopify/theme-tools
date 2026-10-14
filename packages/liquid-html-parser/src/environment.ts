@@ -33,6 +33,11 @@ export class Environment {
     this.custom.set(name, definition);
   }
 
+  /** True when only the built-in tags are known, so no JS `parse()` callback is in play */
+  isBuiltinOnly(): boolean {
+    return this.custom.size === 0 && this.builtins === builtinTags;
+  }
+
   static default(): Environment {
     if (!Environment._default) {
       Environment._default = new Environment(builtinTags);

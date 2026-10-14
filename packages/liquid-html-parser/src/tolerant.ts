@@ -12,6 +12,7 @@
 
 import type { ASTBuildOptions, DocumentNode, LiquidErrorNode, LiquidHtmlNode } from './ast';
 import { walk } from './ast';
+import { tryBackend } from './backend';
 import { TolerantDocumentParser } from './document/tolerant-parser';
 import { tokenize } from './document/tokenizer';
 import { Environment } from './environment';
@@ -29,6 +30,8 @@ export function toTolerantLiquidAST(
     mode: 'tolerant',
   },
 ): DocumentNode {
+  const b = tryBackend('tolerantLiquid', source, options);
+  if (b) return b;
   const env = options.environment ?? Environment.default();
   const tokens = tokenize(source);
   const parser = new TolerantDocumentParser(
@@ -53,6 +56,8 @@ export function toTolerantLiquidHtmlAST(
     mode: 'tolerant',
   },
 ): DocumentNode {
+  const b = tryBackend('tolerantLiquidHtml', source, options);
+  if (b) return b;
   const env = options.environment ?? Environment.default();
   const tokens = tokenize(source);
   const parser = new TolerantDocumentParser(

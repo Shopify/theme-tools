@@ -28,6 +28,7 @@ export default defineConfig({
     setupFiles: [
       './packages/theme-check-common/src/test/test-setup.ts',
       './packages/theme-language-server-common/src/test/test-setup.ts',
+      './packages/liquid-html-parser/src/test/select-backend.ts',
     ],
     projects: [
       { extends: true, test: { name: 'shared', exclude: isolatedTests } },
