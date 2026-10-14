@@ -1,4 +1,5 @@
-import type { LiquidLine, RawBodyEnd, RawBodyRule } from '../tag-definitions';
+import { TagKind } from '../tag-definitions';
+import type { LiquidLine, RawBodyEnd, RawBodyRule, TagDefinition } from '../tag-definitions';
 
 // Liquid's `BlockBody::FullToken`, `FullTokenPossiblyInvalid` and `LiquidTagToken`,
 // with Ruby's ASCII `\s`.
@@ -15,6 +16,21 @@ const TAG_OR_VARIABLE_START = /\{[{%]/g;
 
 /** Looks up the body rule of another raw tag, for the tags a rule skips as opaque. */
 export type RawBodyRuleFor = (tagName: string) => RawBodyRule | undefined;
+
+/** The `RawBodyRuleFor` of a tag registry: a raw tag's body rule, or undefined for any other tag. */
+export function rawBodyRuleLookup(
+  tagForName: (name: string) => TagDefinition | undefined,
+): RawBodyRuleFor {
+  return (name) => {
+    const def = tagForName(name);
+    return def?.kind === TagKind.Raw ? def.body : undefined;
+  };
+}
+
+/** The name of the tag a whole `{% … %}` token opens, read the way `findRawBodyEnd` reads it. */
+export function liquidTagTokenName(token: string): string | undefined {
+  return FULL_TOKEN.exec(token)?.[1];
+}
 
 /**
  * Where the body of `tagName` that starts at `bodyStart` ends under `rule`,
