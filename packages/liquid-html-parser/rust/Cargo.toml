@@ -1,0 +1,15 @@
+[package]
+name = "liquid-html-parser"
+version = "0.0.0"
+edition = "2024"
+publish = false
+description = "Rust/WASM backend for @shopify/liquid-html-parser"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "=0.2.129"
+serde = "1"
+serde_json = { version = "1.0.154", features = ["preserve_order"] }
+serde-wasm-bindgen = "0.6.5"

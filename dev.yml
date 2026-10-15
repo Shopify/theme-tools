@@ -6,3 +6,12 @@ up:
   - node:
       version: v24.16.0
       package_manager: pnpm@10.16.1
+  - rust
+  - custom:
+      name: wasm32 target
+      met?: rustup target list --installed | grep -qx wasm32-unknown-unknown
+      meet: rustup target add wasm32-unknown-unknown
+  - custom:
+      name: wasm-bindgen-cli
+      met?: wasm-bindgen --version | grep -qx 'wasm-bindgen 0.2.129'
+      meet: cargo install wasm-bindgen-cli --version 0.2.129 --locked

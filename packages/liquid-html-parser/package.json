@@ -27,6 +27,7 @@
     "build": "pnpm build:ts",
     "build:ci": "pnpm build",
     "build:ts": "tsc -p tsconfig.build.json",
+    "build:rust": "node scripts/build-rust.mjs",
     "type-check": "tsc --noEmit",
     "test": "vitest --root ../.. --run src/**/*.test.ts"
   },

@@ -57,6 +57,50 @@ This is because the following use cases are supported by the parser:
 <img data-{{ attr_name }}="...">
 ```
 
+## Rust backend (experimental)
+
+The `rust/` directory holds a Rust port of this parser, built to WebAssembly. It is not published and nothing uses it by default. The TypeScript parser stays the default, and a TS-only build needs no Rust toolchain.
+
+### Setup
+
+At Shopify, run this from the repo root:
+
+```bash
+/opt/dev/bin/dev up
+```
+
+Without `dev`, install [rustup](https://rustup.rs) 1.28 or later, then run these from the repo root. `rustup toolchain install` reads `rust-toolchain.toml` there, which pins the Rust version and adds the `wasm32-unknown-unknown` target.
+
+```bash
+pnpm install
+rustup toolchain install
+cargo install wasm-bindgen-cli --version 0.2.129 --locked
+```
+
+The `wasm-bindgen-cli` version must equal the `wasm-bindgen` version in `rust/Cargo.lock`. `build:rust` checks this and prints the install command when they differ.
+
+### Build
+
+```bash
+pnpm --dir packages/liquid-html-parser build:rust
+```
+
+This writes `rust/pkg/`, which is gitignored.
+
+### Run the tests against the Rust backend
+
+`LIQUID_PARSER=rust` registers the Rust backend before any test runs. `LIQUID_PARSER=ts`, or leaving it unset, uses the TS parser. Any other value fails the run.
+
+```bash
+CI=1 LIQUID_PARSER=rust pnpm exec vitest run
+LIQUID_PARSER=rust pnpm --dir packages/prettier-plugin-liquid test
+LIQUID_PARSER=rust pnpm --dir packages/prettier-plugin-liquid test:3
+LIQUID_PARSER=rust pnpm --dir packages/prettier-plugin-liquid test:idempotence
+LIQUID_PARSER=rust pnpm --dir packages/prettier-plugin-liquid test:idempotence:3
+```
+
+Outside tests, `node --import <path to this package>/rust/register.mjs` registers it the same way.
+
 ## License
 
 MIT.
