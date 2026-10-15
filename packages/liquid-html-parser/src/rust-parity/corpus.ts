@@ -3,13 +3,16 @@
  *
  * 1. Every `.liquid` file of the pinned fixture themes (fixtures/theme/).
  * 2. Every `index.liquid` and `fixed.liquid` of the prettier plugin tests.
- * 3. Every source in fixtures/error-corpus.ts.
+ * 3. Every source in fixtures/error-corpus.ts, plus, as part 3b, the stray
+ *    `endsection` sources in ./error-corpus-extra.ts.
  * 4. Prefix cuts of parts 1 and 2: each file truncated at PREFIX_CUTS evenly
  *    spaced code-point boundaries, standing in for half-typed documents.
  *
  * Fixture modules live outside `src/`, so they are imported through computed
  * specifiers. That keeps `tsc` from pulling them into the build.
  */
+
+import { ERROR_FILES_EXTRA } from './error-corpus-extra';
 
 export const PREFIX_CUTS = 20;
 
@@ -97,7 +100,11 @@ export async function loadNodeCorpus(packageRoot: string): Promise<CorpusInput[]
   const prettierDir = path.join(packageRoot, '..', 'prettier-plugin-liquid', 'src', 'test');
   const prettier = readLiquidFiles(fs, path, prettierDir, '', isPrettierFixture);
   const errors = await importErrorCorpus(path.join(packageRoot, 'fixtures', 'error-corpus.ts'));
-  return buildCorpus({ themes: sortByPath(themes), prettier: sortByPath(prettier), errors });
+  return buildCorpus({
+    themes: sortByPath(themes),
+    prettier: sortByPath(prettier),
+    errors: [...errors, ...ERROR_FILES_EXTRA],
+  });
 }
 
 /** Browser variant: no fs, so themes come from fixtures/theme-bundle.ts. */
@@ -111,7 +118,7 @@ export async function loadBrowserCorpus(
   return buildCorpus({
     themes: bundle.THEME_FILES,
     prettier: sortByPath(prettier),
-    errors: errors.ERROR_FILES,
+    errors: [...errors.ERROR_FILES, ...ERROR_FILES_EXTRA],
   });
 }
 
