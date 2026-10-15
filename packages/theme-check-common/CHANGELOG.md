@@ -1,5 +1,14 @@
 # @shopify/theme-check-common
 
+## 3.30.2
+
+### Patch Changes
+
+- af297bab: Parse `section` as a standalone tag. Removes the hybrid block form, whose forward scan for `{% endsection %}` made files with many `section` tags parse in quadratic time.
+- Updated dependencies [84a458be]
+- Updated dependencies [af297bab]
+  - @shopify/liquid-html-parser@2.10.3
+
 ## 3.30.1
 
 ### Patch Changes
