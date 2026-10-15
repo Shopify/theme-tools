@@ -3,8 +3,9 @@
  *
  * Usage: pnpx tsx scripts/compare-test-results.ts A.json B.json [--allow-new <glob>]...
  *
- * A test is keyed by its file, relative to the common directory of all test
- * files in its report, plus its full name.
+ * A test is keyed by its file, relative to its report's repo root, plus its
+ * full name. Each report's repo root is found separately, by walking up from
+ * its first test file to the directory holding pnpm-workspace.yaml.
  *
  * Without --allow-new, exits 1 if any test is missing from one side or has a
  * different status, and prints each difference.
@@ -15,13 +16,13 @@
  * 2. a test in both has a different status, `skipped` to `passed` included;
  * 3. a new test sits in a file that matches no --allow-new glob;
  * 4. a new test does not have status `passed`.
+ *
+ * Rule 5 applies with or without --allow-new. Exits 1 if any test file in B
+ * failed at the file level: status `failed`, or a collection or import error
+ * with zero assertions.
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = path.resolve(__dirname, "../../..");
 
 const USAGE = "Usage: pnpx tsx scripts/compare-test-results.ts A.json B.json [--allow-new <glob>]...";
 
@@ -30,8 +31,20 @@ interface AssertionResult {
   status: string;
 }
 
+interface FileResult {
+  name: string;
+  status?: string;
+  message?: string;
+  assertionResults: AssertionResult[];
+}
+
 interface Report {
-  testResults: { name: string; assertionResults: AssertionResult[] }[];
+  testResults: FileResult[];
+}
+
+interface LoadedReport {
+  tests: Map<string, TestEntry>;
+  fileFailures: string[];
 }
 
 interface TestEntry {
@@ -66,34 +79,47 @@ function parseArgs(argv: string[]): Args | undefined {
   return { fileA: positional[0], fileB: positional[1], allowNew };
 }
 
-function commonDir(files: string[]): string {
-  if (files.length === 0) return "";
-  const split = files.map((file) => path.dirname(file).split(path.sep));
-  const first = split[0];
-  let length = first.length;
-  for (const parts of split) {
-    let i = 0;
-    while (i < length && parts[i] === first[i]) i++;
-    length = i;
+function findRepoRoot(file: string): string | undefined {
+  let dir = path.dirname(file);
+  while (!fs.existsSync(path.join(dir, "pnpm-workspace.yaml"))) {
+    const parent = path.dirname(dir);
+    if (parent === dir) return undefined;
+    dir = parent;
   }
-  return first.slice(0, length).join(path.sep);
+  return dir;
 }
 
-function loadTests(file: string): Map<string, TestEntry> {
+function failedAtFileLevel(result: FileResult): boolean {
+  if (result.status === "failed") return true;
+  return result.assertionResults.length === 0 && Boolean(result.message);
+}
+
+function describeFileFailure(result: FileResult, root: string): string {
+  const message = (result.message ?? "").split("\n")[0];
+  return `${path.relative(root, result.name)}: ${result.status}, ${result.assertionResults.length} assertions, ${message}`;
+}
+
+function loadReport(file: string): LoadedReport {
   const report: Report = JSON.parse(fs.readFileSync(file, "utf-8"));
-  const root = commonDir(report.testResults.map((result) => result.name));
   const tests = new Map<string, TestEntry>();
+  if (report.testResults.length === 0) return { tests, fileFailures: [] };
+
+  const root = findRepoRoot(report.testResults[0].name);
+  if (!root) throw new Error(`${file}: no pnpm-workspace.yaml above ${report.testResults[0].name}`);
+
   for (const result of report.testResults) {
-    const testFile = path.relative(root, result.name);
-    const repoFile = path.relative(REPO_ROOT, result.name);
+    const repoFile = path.relative(root, result.name);
     for (const assertion of result.assertionResults) {
-      const baseKey = `${testFile} > ${assertion.fullName}`;
+      const baseKey = `${repoFile} > ${assertion.fullName}`;
       let key = baseKey;
       for (let n = 2; tests.has(key); n++) key = `${baseKey} #${n}`;
       tests.set(key, { status: assertion.status, repoFile });
     }
   }
-  return tests;
+  const fileFailures = report.testResults
+    .filter(failedAtFileLevel)
+    .map((result) => describeFileFailure(result, root));
+  return { tests, fileFailures };
 }
 
 function compareStrict(a: Map<string, TestEntry>, b: Map<string, TestEntry>): string[] {
@@ -129,25 +155,42 @@ function compareWithAllowlist(
   ];
 }
 
-function runStrict(a: Map<string, TestEntry>, b: Map<string, TestEntry>): number {
-  const differences = compareStrict(a, b);
-  console.log(`A: ${a.size} tests, B: ${b.size} tests, ${differences.length} differences`);
-  for (const line of differences) console.log(`  ${line}`);
-  return differences.length === 0 ? 0 : 1;
+function printFileFailures(fileFailures: string[]): void {
+  console.log(`rule 5, test files failed at file level: ${fileFailures.length}`);
+  for (const line of fileFailures) console.log(`  ${line}`);
 }
 
-function runWithAllowlist(a: Map<string, TestEntry>, b: Map<string, TestEntry>, allowNew: string[]): number {
-  const rules = compareWithAllowlist(a, b, allowNew);
-  const newTests = [...b.keys()].filter((key) => !a.has(key));
-  console.log(`A: ${a.size} tests, B: ${b.size} tests, ${newTests.length} new tests`);
+function runStrict(a: Map<string, TestEntry>, b: LoadedReport): number {
+  const differences = compareStrict(a, b.tests);
+  console.log(`A: ${a.size} tests, B: ${b.tests.size} tests, ${differences.length} differences`);
+  for (const line of differences) console.log(`  ${line}`);
+  printFileFailures(b.fileFailures);
+  return differences.length === 0 && b.fileFailures.length === 0 ? 0 : 1;
+}
+
+function runWithAllowlist(a: Map<string, TestEntry>, b: LoadedReport, allowNew: string[]): number {
+  const rules = compareWithAllowlist(a, b.tests, allowNew);
+  const newTests = [...b.tests.keys()].filter((key) => !a.has(key));
+  console.log(`A: ${a.size} tests, B: ${b.tests.size} tests, ${newTests.length} new tests`);
   console.log(`allow-new: ${allowNew.join(", ")}`);
   rules.forEach((rule, i) => {
     console.log(`rule ${i + 1}, ${rule.title}: ${rule.lines.length}`);
     for (const line of rule.lines) console.log(`  ${line}`);
   });
+  printFileFailures(b.fileFailures);
   console.log("new tests:");
-  for (const key of newTests.sort()) console.log(`  ${key}: ${b.get(key)!.status} (${b.get(key)!.repoFile})`);
-  return rules.every((rule) => rule.lines.length === 0) ? 0 : 1;
+  for (const key of newTests.sort()) console.log(`  ${key}: ${b.tests.get(key)!.status} (${b.tests.get(key)!.repoFile})`);
+  const rulesClean = rules.every((rule) => rule.lines.length === 0);
+  return rulesClean && b.fileFailures.length === 0 ? 0 : 1;
+}
+
+function loadBoth(args: Args): [LoadedReport, LoadedReport] | undefined {
+  try {
+    return [loadReport(args.fileA), loadReport(args.fileB)];
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    return undefined;
+  }
 }
 
 function main(): void {
@@ -156,9 +199,10 @@ function main(): void {
     console.error(USAGE);
     process.exit(2);
   }
-  const a = loadTests(args.fileA);
-  const b = loadTests(args.fileB);
-  const code = args.allowNew.length === 0 ? runStrict(a, b) : runWithAllowlist(a, b, args.allowNew);
+  const reports = loadBoth(args);
+  if (!reports) process.exit(2);
+  const [a, b] = reports;
+  const code = args.allowNew.length === 0 ? runStrict(a.tests, b) : runWithAllowlist(a.tests, b, args.allowNew);
   process.exit(code);
 }
 
