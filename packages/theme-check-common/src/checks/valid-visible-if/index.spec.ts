@@ -620,6 +620,24 @@ describe('Module: ValidVisibleIf', () => {
     expect(offenses).to.containOffense('Syntax error: cannot parse visible_if expression.');
   });
 
+  it('does not validate visible_if on setting types that ignore it', async () => {
+    const themeData = structuredClone(baseThemeData);
+
+    themeData['sections/example.liquid'].settings!.push({
+      type: 'product',
+      id: 'some-product',
+      visible_if: '{{ section.settings.does-not-exist }}',
+    });
+    themeData['config/settings_schema.json'][1].settings!.push({
+      type: 'collection',
+      id: 'some-collection',
+      visible_if: 'not wrapped in brackets',
+    });
+
+    const offenses = await checkRule(themeData);
+    expect(offenses).toEqual([]);
+  });
+
   it('reports when no variable lookup is found', async () => {
     const themeData = structuredClone(baseThemeData);
 

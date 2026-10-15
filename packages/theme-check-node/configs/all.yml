@@ -214,6 +214,9 @@ UnsupportedDocTag:
 UnsupportedFilterArguments:
   enabled: true
   severity: 0
+UnsupportedVisibleIf:
+  enabled: true
+  severity: 1
 UnusedAssign:
   enabled: true
   severity: 1
