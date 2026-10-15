@@ -18,9 +18,9 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { toLiquidAST, toLiquidHtmlAST, toTolerantLiquidAST, toTolerantLiquidHtmlAST } from "../src/index";
 import type { ASTBuildOptions } from "../src/index";
-import { BACKEND_KEY } from "../src/backend";
-import { canonical } from "../src/rust-parity/canonical";
 import { loadNodeCorpus } from "../src/rust-parity/corpus";
+import { canonicalOutcome, firstDivergentPath, withoutBackend } from "../src/rust-parity/outcome";
+import type { Outcome } from "../src/rust-parity/outcome";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PKG = path.resolve(__dirname, "..");
@@ -44,11 +44,6 @@ const CONFIGS: Record<string, ASTBuildOptions | undefined> = {
   completion: { allowUnclosedDocumentNode: true, mode: "completion" },
 };
 
-interface Outcome {
-  threw: boolean;
-  value: unknown;
-}
-
 function run(parse: Parse, source: string, options: ASTBuildOptions | undefined): Outcome {
   try {
     const value = options === undefined ? parse(source) : parse(source, { ...options });
@@ -56,21 +51,6 @@ function run(parse: Parse, source: string, options: ASTBuildOptions | undefined)
   } catch (error) {
     return { threw: true, value: error };
   }
-}
-
-function withoutBackend<T>(fn: () => T): T {
-  const registry = globalThis as Record<symbol, unknown>;
-  const saved = registry[BACKEND_KEY];
-  delete registry[BACKEND_KEY];
-  try {
-    return fn();
-  } finally {
-    registry[BACKEND_KEY] = saved;
-  }
-}
-
-function canonicalOutcome(outcome: Outcome, source: string): string {
-  return (outcome.threw ? "threw:" : "returned:") + canonical(outcome.value, source);
 }
 
 function sha256(text: string): string {
@@ -85,59 +65,6 @@ function frozenHash(id: string, entry: string, config: string): string | undefin
     .split("\n")
     .find((candidate) => candidate.startsWith(prefix));
   return line?.slice(prefix.length);
-}
-
-function describeThrow(error: unknown): string {
-  const ctor = (error as { constructor?: { name?: string } })?.constructor?.name ?? typeof error;
-  return `${ctor}: ${String((error as { message?: unknown })?.message ?? error)}`;
-}
-
-function firstDivergentPath(a: Outcome, b: Outcome): string {
-  if (a.threw !== b.threw) {
-    const thrown = a.threw ? a.value : b.value;
-    return `$ (${a.threw ? "threw" : "returned"} vs ${b.threw ? "threw" : "returned"}: ${describeThrow(thrown)})`;
-  }
-  return divergentPath(a.value, b.value, "$") ?? "$ (aliasing or property descriptors)";
-}
-
-function divergentPath(a: unknown, b: unknown, at: string): string | undefined {
-  if (Object.is(a, b)) return undefined;
-  if (!isObject(a) || !isObject(b)) return `${at} (${preview(a)} vs ${preview(b)})`;
-  if (protoName(a) !== protoName(b)) return `${at} (prototype ${protoName(a)} vs ${protoName(b)})`;
-
-  const keysA = observableKeys(a);
-  const keysB = observableKeys(b);
-  for (let i = 0; i < Math.max(keysA.length, keysB.length); i++) {
-    const key = keysA[i];
-    if (key !== keysB[i]) return `${at} (own key ${i}: ${String(key)} vs ${String(keysB[i])})`;
-    const child = divergentPath(Reflect.get(a, key), Reflect.get(b, key), childPath(at, a, key));
-    if (child !== undefined) return child;
-  }
-  return undefined;
-}
-
-function isObject(value: unknown): value is object {
-  return typeof value === "object" && value !== null;
-}
-
-function observableKeys(value: object): (string | symbol)[] {
-  return Reflect.ownKeys(value).filter((key) => key !== "stack");
-}
-
-function childPath(at: string, parent: object, key: string | symbol): string {
-  if (Array.isArray(parent) && typeof key === "string" && key !== "length") return `${at}[${key}]`;
-  return `${at}.${String(key)}`;
-}
-
-function protoName(value: object): string {
-  const proto = Object.getPrototypeOf(value);
-  if (proto === null) return "null";
-  return String(proto.constructor?.name ?? "<anonymous>");
-}
-
-function preview(value: unknown): string {
-  const text = typeof value === "string" ? JSON.stringify(value) : String(value);
-  return text.length > 80 ? `${text.slice(0, 77)}...` : text;
 }
 
 async function main(): Promise<number> {
