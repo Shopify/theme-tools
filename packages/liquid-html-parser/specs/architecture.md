@@ -644,11 +644,7 @@ See Section 2 for domain table and import rules.
 
 Tokenizer produces flat `[LiquidTagOpen, Text, LiquidTagClose, ...]`. Parser matches pairs by consuming forward. Pairing is the parser's job.
 
-### D12: `section` is a standalone tag
-
-`section` is a plain `TagKind.Tag`. Ruby Liquid has no block form, so `{% endsection %}` is a structural error.
-
-### D13: HTML parsing in the document domain
+### D12: HTML parsing in the document domain
 
 See Section 2 domain table. HTML is parsed in `document/parser.ts`, not a separate domain.
 
@@ -757,11 +753,7 @@ liquid tag parse(name, markupParser, parser):
 
 **Inline comments:** Lines starting with `#` are intercepted before environment lookup — `#` is not a valid identifier start, so normal tag name extraction (`content.split(/\s/)[0]`) cannot handle it. The parser checks `content.startsWith('#')` and short-circuits to produce `LiquidTag { name: '#', markup: 'rest of line' }` directly.
 
-### 6.4 Section Tag
-
-`section` is standalone only (`{% section 'name' %}`), producing `SectionMarkup { name: LiquidString, args: LiquidNamedArgument[] }`. See D12.
-
-### 6.5 Tolerant Mode vs Completion Mode
+### 6.4 Tolerant Mode vs Completion Mode
 
 **Tolerant mode** falls back to base case on markup parse failure but throws on structural errors:
 
@@ -777,7 +769,7 @@ Fallback is per-tag. If `{% assign x = bad!markup %}` fails, only the `assign` t
 
 Detailed behavior is specified in `recursive-descent.md`.
 
-### 6.6 `when` Markup: Expression List with Separators
+### 6.5 `when` Markup: Expression List with Separators
 
 The `when` tag's markup is `LiquidExpression[]`, NOT a logical expression. `or` and `,` in `{% when val1, val2 or val3 %}` are value separators, producing three `LiquidExpression` entries.
 
@@ -800,7 +792,7 @@ Note: `or` is lexed as `MarkupTokenType.Logical`, not `Id`, so `id('or')` cannot
 
 This matches Ruby's implementation. If `or` were treated as logical, `{% when a or b %}` would wrongly produce `LiquidLogicalExpression`. The frozen type `LiquidBranchWhen` has `markup: LiquidExpression[]`.
 
-### 6.7 Entry Points
+### 6.6 Entry Points
 
 ```
 toLiquidHtmlAST(source, options?)
@@ -815,7 +807,7 @@ toLiquidAST(source, options?)
   Parser treats HTML tokens as text -- no HtmlElement nodes produced.
 ```
 
-### 6.8 Tag Dispatch
+### 6.7 Tag Dispatch
 
 ```
 Parser sees LiquidTagOpen token
@@ -858,7 +850,7 @@ Parser sees LiquidTagOpen token
         +-- default -> assertNever(def)
 ```
 
-### 6.9 Branch Body Parsing
+### 6.8 Branch Body Parsing
 
 ```
 parseBranchedBlockBody(parentName, def, envelope):
