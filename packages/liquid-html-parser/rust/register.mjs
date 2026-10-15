@@ -9,6 +9,9 @@
  * functions are synchronous, so the module must be ready before the first
  * parse. The `.wasm` is under Chromium's 8 MiB main-thread limit for
  * synchronous compile, recorded in rust/pkg/size.json.
+ *
+ * The Rust `parse` returns the whole backend result as one JSON string, so
+ * `parse` here only runs `JSON.parse`. `src/backend.ts` does the hydration.
  */
 import wasmBase64 from './pkg/bytes.mjs';
 import { initSync, parse as wasmParse } from './pkg/liquid_html_parser.js';
@@ -19,7 +22,7 @@ initSync({ module: decodeBase64(wasmBase64) });
 
 globalThis[BACKEND_KEY] = {
   parse(kind, source, allowUnclosedDocumentNode) {
-    return wasmParse(kind, source, allowUnclosedDocumentNode);
+    return JSON.parse(wasmParse(kind, source, allowUnclosedDocumentNode));
   },
   stats: { parses: 0, fallbacks: { environment: 0, illFormed: 0 } },
 };
