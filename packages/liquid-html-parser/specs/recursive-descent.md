@@ -177,7 +177,6 @@ Standalone tags (no close tag) have `delimiterWhitespaceStart`/`delimiterWhitesp
 | **Branching** (delimiters inside blocks) | `elsif`, `else`, `when`                                                                                                                                 | Creates `LiquidBranch` nodes inside parent block.           |
 | **Raw** (body not parsed)                | `raw`, `comment`, `doc`, `javascript`, `schema`, `style`, `stylesheet`                                                                                  | Body is raw string until `{% endtagname %}`.                |
 | **Standalone** (no close tag)            | `echo`, `assign`, `render`, `include`, `increment`, `decrement`, `cycle`, `layout`, `section`, `sections`, `content_for`, `break`, `continue`, `liquid` | Self-contained, no children.                                |
-| **Hybrid**                               | `section` can be both standalone AND block form (`{% section 'name' %}...{% endsection %}`)                                                             | Check for presence of `{% endsection %}`.                   |
 
 **Position fields on block tags and branches:**
 

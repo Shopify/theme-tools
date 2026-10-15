@@ -6,7 +6,6 @@ import {
   type TagDefinitionBlock,
   type TagDefinitionTag,
   type TagDefinitionRaw,
-  type TagDefinitionHybrid,
 } from './environment';
 import { assertNever } from './utils';
 
@@ -22,10 +21,6 @@ function makeStandaloneDef(): TagDefinitionTag {
 
 function makeRawDef(parseLiquidInBody?: boolean): TagDefinitionRaw {
   return { kind: TagKind.Raw, parse: stubParse, parseLiquidInBody };
-}
-
-function makeHybridDef(): TagDefinitionHybrid {
-  return { kind: TagKind.Hybrid, parse: stubParse };
 }
 
 describe('Unit: Environment', () => {
@@ -84,7 +79,6 @@ describe('Unit: Environment', () => {
       expect(TagKind.Block).toBe('block');
       expect(TagKind.Tag).toBe('tag');
       expect(TagKind.Raw).toBe('raw');
-      expect(TagKind.Hybrid).toBe('hybrid');
     });
   });
 
@@ -98,8 +92,6 @@ describe('Unit: Environment', () => {
             return 'tag';
           case TagKind.Raw:
             return `raw(parseLiquid=${def.parseLiquidInBody ?? false})`;
-          case TagKind.Hybrid:
-            return 'hybrid';
           default:
             return assertNever(def);
         }
@@ -109,7 +101,6 @@ describe('Unit: Environment', () => {
       expect(describeKind(makeStandaloneDef())).toBe('tag');
       expect(describeKind(makeRawDef(true))).toBe('raw(parseLiquid=true)');
       expect(describeKind(makeRawDef())).toBe('raw(parseLiquid=false)');
-      expect(describeKind(makeHybridDef())).toBe('hybrid');
     });
   });
 });

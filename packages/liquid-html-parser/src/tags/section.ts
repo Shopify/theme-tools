@@ -2,10 +2,10 @@ import type { SectionMarkup } from '../ast';
 import type { MarkupParser } from '../markup/parser';
 import { MarkupTokenType } from '../markup/tokenizer';
 import { NodeTypes } from '../types';
-import { TagKind, type TagDefinitionHybrid, type Parser } from '../tag-definitions';
+import { TagKind, type TagDefinitionTag, type Parser } from '../tag-definitions';
 
-export const sectionTag: TagDefinitionHybrid<SectionMarkup> = {
-  kind: TagKind.Hybrid,
+export const sectionTag: TagDefinitionTag<SectionMarkup> = {
+  kind: TagKind.Tag,
   parse(_name: string, markup: MarkupParser, _parser: Parser): SectionMarkup {
     const name = markup.valueExpression();
     if (name.type !== NodeTypes.String) {
