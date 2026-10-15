@@ -479,32 +479,6 @@ describe('LiquidSyntaxError', () => {
       expect(offenses).toEqual([]);
     });
 
-    it('reports LiquidSyntaxError for block-form section tags with body content', async () => {
-      const offenses = await runLiquidCheck(
-        LiquidSyntaxError,
-        "{% section 'wrap' %}body{% endsection %}",
-        'snippets/test.liquid',
-        NO_DOCSET,
-      );
-
-      expect(offenses.length).toBe(1);
-      expect(offenses[0].check).toBe('LiquidSyntaxError');
-      expect(offenses[0].message).toBe("Unknown tag 'endsection'");
-    });
-
-    it('reports LiquidSyntaxError for empty block-form section tags', async () => {
-      const offenses = await runLiquidCheck(
-        LiquidSyntaxError,
-        "{% section 'foo' %}{% endsection %}",
-        'snippets/test.liquid',
-        NO_DOCSET,
-      );
-
-      expect(offenses.length).toBe(1);
-      expect(offenses[0].check).toBe('LiquidSyntaxError');
-      expect(offenses[0].message).toBe("Unknown tag 'endsection'");
-    });
-
     /*
      * Bare bracket access in section keyword argument values is caught by the
      * parser / LiquidHTMLSyntaxError layer, not by the `LiquidSyntaxError`

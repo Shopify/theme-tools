@@ -646,7 +646,7 @@ Tokenizer produces flat `[LiquidTagOpen, Text, LiquidTagClose, ...]`. Parser mat
 
 ### D12: `section` is a standalone tag
 
-`section` is a plain `TagKind.Tag`. Ruby Liquid has no block form, so `{% endsection %}` is a structural error (Theme Check reports it as `Unknown tag 'endsection'`). An earlier hybrid design scanned forward for `{% endsection %}` on every `section`, which made files with many sections parse in quadratic time.
+`section` is a plain `TagKind.Tag`. Ruby Liquid has no block form, so `{% endsection %}` is a structural error.
 
 ### D13: HTML parsing in the document domain
 

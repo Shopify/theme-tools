@@ -2,18 +2,6 @@ import type { LiquidTag, SectionMarkup } from '@shopify/liquid-html-parser';
 import type { Context } from '.';
 import { hasBareArrayAccess, hasSkippedCharacters, rawMarkup } from './utils';
 
-/*
- * +section+ is a standalone tag, so +{% endsection %}+ parses as an unknown
- * tag. Ruby Liquid reports it the same way.
- */
-export function checkEndsectionTag(node: LiquidTag, context: Context): void {
-  context.report({
-    message: "Unknown tag 'endsection'",
-    startIndex: node.position.start,
-    endIndex: node.position.end,
-  });
-}
-
 export function checkSectionTag(node: LiquidTag, context: Context): void {
   if (typeof node.markup === 'string') {
     context.report({

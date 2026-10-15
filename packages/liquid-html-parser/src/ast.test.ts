@@ -1105,20 +1105,15 @@ describe('Unit: Stage 2 (AST)', () => {
       }
     });
 
-    it('should treat section as a standalone tag and endsection as an unknown tag', () => {
-      for (const { toAST, expectPath } of testCases) {
-        ast = toAST(`{% section 'foo' %}content{% endsection %}`);
-        expectPath(ast, 'children.0.name').to.eql('section');
-        expectPath(ast, 'children.0.children').to.eql(undefined);
-        expectPath(ast, 'children.1.value').to.eql('content');
-        expectPath(ast, 'children.2.name').to.eql('endsection');
-
-        ast = toAST(`{% endsection %}`);
-        expectPath(ast, 'children.0.name').to.eql('endsection');
-
-        ast = toAST(`{% if a %}{% endsection %}{% endif %}`);
-        expectPath(ast, 'children.0.name').to.eql('if');
-        expectPath(ast, 'children.0.children.0.children.0.name').to.eql('endsection');
+    it('should treat section as standalone and reject stray endsection tags', () => {
+      for (const { toAST } of testCases) {
+        expect(() => toAST(`{% section 'foo' %}content{% endsection %}`)).to.throw(
+          /without a matching 'section'/,
+        );
+        expect(() => toAST(`{% endsection %}`)).to.throw(/without a matching 'section'/);
+        expect(() => toAST(`{% if a %}{% endsection %}{% endif %}`)).to.throw(
+          /before LiquidTag 'if' was closed/,
+        );
       }
     });
 

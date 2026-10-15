@@ -41,14 +41,9 @@ export type TagDefinition<M = unknown> =
   | TagDefinitionTag<M>
   | TagDefinitionRaw<M>;
 
-/**
- * Whether a stray `{% end<name> %}` for a registered tag is a structural parse
- * error. `endsection` is the exception: `section` is standalone, and Ruby
- * Liquid reports `{% endsection %}` as an unknown tag (the legacy block form
- * was removed), so it parses as an unknown tag and Theme Check reports it.
- */
-export function isStructuralEndTag(innerName: string, def: { kind: string } | undefined): boolean {
-  return def !== undefined && innerName !== 'section';
+/** Whether a stray `{% end<name> %}` for a registered tag is a structural parse error. */
+export function isStructuralEndTag(_innerName: string, def: { kind: string } | undefined): boolean {
+  return def !== undefined;
 }
 
 /** A parsed line from a {% liquid %} body. */
