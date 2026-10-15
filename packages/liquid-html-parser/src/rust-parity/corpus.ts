@@ -86,22 +86,25 @@ export function prefixCuts(input: CorpusInput): CorpusInput[] {
   return cuts;
 }
 
+/**
+ * `'optional'` lets a run with no downloaded themes load an empty theme part,
+ * as in the CI `tests` job. `'required'` throws when the manifest is missing.
+ */
+type ThemeRequirement = 'required' | 'optional';
+
 /** Node variant: reads themes listed in fixtures/theme/manifest.json and prettier fixtures from disk. */
-export async function loadNodeCorpus(packageRoot: string): Promise<CorpusInput[]> {
+export async function loadNodeCorpus(
+  packageRoot: string,
+  themes: ThemeRequirement = 'required',
+): Promise<CorpusInput[]> {
   const fs = await import('node:fs');
   const path = await import('node:path');
-  const themeDir = path.join(packageRoot, 'fixtures', 'theme');
-  const manifest: { theme: string }[] = JSON.parse(
-    fs.readFileSync(path.join(themeDir, 'manifest.json'), 'utf8'),
-  );
-  const themes = manifest.flatMap(({ theme }) =>
-    readLiquidFiles(fs, path, path.join(themeDir, theme), theme, () => true),
-  );
+  const themeFiles = readThemeFiles(fs, path, path.join(packageRoot, 'fixtures', 'theme'), themes);
   const prettierDir = path.join(packageRoot, '..', 'prettier-plugin-liquid', 'src', 'test');
   const prettier = readLiquidFiles(fs, path, prettierDir, '', isPrettierFixture);
   const errors = await importErrorCorpus(path.join(packageRoot, 'fixtures', 'error-corpus.ts'));
   return buildCorpus({
-    themes: sortByPath(themes),
+    themes: sortByPath(themeFiles),
     prettier: sortByPath(prettier),
     errors: [...errors, ...ERROR_FILES_EXTRA],
   });
@@ -120,6 +123,21 @@ export async function loadBrowserCorpus(
     prettier: sortByPath(prettier),
     errors: [...errors.ERROR_FILES, ...ERROR_FILES_EXTRA],
   });
+}
+
+function readThemeFiles(
+  fs: typeof import('node:fs'),
+  path: typeof import('node:path'),
+  themeDir: string,
+  themes: ThemeRequirement,
+): { path: string; source: string }[] {
+  const manifestPath = path.join(themeDir, 'manifest.json');
+  if (themes === 'optional' && !fs.existsSync(manifestPath)) return [];
+
+  const manifest: { theme: string }[] = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  return manifest.flatMap(({ theme }) =>
+    readLiquidFiles(fs, path, path.join(themeDir, theme), theme, () => true),
+  );
 }
 
 function wholeInput(id: string, part: CorpusPart, source: string): CorpusInput {

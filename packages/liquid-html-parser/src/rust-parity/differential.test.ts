@@ -74,8 +74,8 @@ let frozen: Map<string, string> | undefined;
 const rustMode = () => (globalThis as Record<symbol, unknown>)[BACKEND_KEY] !== undefined;
 
 beforeAll(async () => {
-  corpus = await loadNodeCorpus(PACKAGE_ROOT);
   frozen = fs.existsSync(HASHES_FILE) ? loadHashes(HASHES_FILE) : undefined;
+  corpus = await loadNodeCorpus(PACKAGE_ROOT, frozen ? 'required' : 'optional');
   console.log(
     `Differential corpus: ${corpus.length} inputs, mode ${rustMode() ? 'rust' : 'ts'}, goldens ${
       frozen ? 'yes' : 'no'
