@@ -148,6 +148,23 @@ export namespace ThemeGraphDidUpdateNotification {
   }
 }
 
+export namespace CustomCheckPermissionRequest {
+  export const method = 'themeCheck/requestCustomCheckPermission';
+  export const type = new rpc.RequestType<Params, Response, void>(method);
+
+  export interface Candidate {
+    source: 'require' | 'discovery';
+    path: string;
+  }
+
+  export interface Params {
+    root: string;
+    candidates: Candidate[];
+  }
+
+  export type Response = boolean;
+}
+
 export type AugmentedLocationWithExistence = {
   uri: string;
   range: undefined;
