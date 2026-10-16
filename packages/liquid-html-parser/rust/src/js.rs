@@ -77,6 +77,7 @@ pub fn js_ascii_ci_starts_with(s: &str, lit: &str) -> bool {
 /// JS `s.toLowerCase()`: the Unicode default full case mapping, with the
 /// Final_Sigma rule. `str::to_lowercase` implements the same; `char`'s does
 /// not handle Final_Sigma.
+/// Every caller compares the result with an ASCII string; round 6 D13 depends on that.
 pub fn js_to_lower(s: &str) -> String {
     s.to_lowercase()
 }

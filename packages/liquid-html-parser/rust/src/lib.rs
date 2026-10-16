@@ -6,7 +6,8 @@
 //! never called by `parse` either: `debug_tokenize` and
 //! `debug_tokenize_markup` for `scripts/rust-parity-tokens.ts`, and
 //! `debug_parse_tag` and `debug_parse_liquid_doc` for
-//! `scripts/rust-parity-markup.ts`.
+//! `scripts/rust-parity-markup.ts`, and `debug_js` for
+//! `scripts/rust-parity-js.ts`.
 
 use serde_json::{Value, json};
 use wasm_bindgen::prelude::*;
@@ -259,4 +260,43 @@ pub fn debug_parse_liquid_doc(
     let result =
         liquid_doc::parser::parse_liquid_doc(&source[start..end], start, source).map(JsVal::array);
     Ok(wire::emit_result(&result, &offsets))
+}
+
+/// Test-only: applies the `js.rs` helper `op` to each string of the JSON
+/// array `input_json` and returns the results as a JSON array, for
+/// `scripts/rust-parity-js.ts`. The class ops `is_whitespace`, `is_word`,
+/// `is_digit`, `is_ascii_alpha` and `is_line_terminator` take one-char strings
+/// and return bools. `to_lower` returns strings. `unicode_version` ignores its
+/// input and returns `[char::UNICODE_VERSION]`.
+#[wasm_bindgen]
+pub fn debug_js(op: &str, input_json: &str) -> Result<String, JsError> {
+    if op == "unicode_version" {
+        let (major, minor, update) = char::UNICODE_VERSION;
+        return Ok(json!([format!("{major}.{minor}.{update}")]).to_string());
+    }
+    let inputs: Vec<String> = serde_json::from_str(input_json)
+        .map_err(|error| JsError::new(&format!("input_json is not a string array: {error}")))?;
+    if op == "to_lower" {
+        let lowered: Vec<String> = inputs.iter().map(|s| js::js_to_lower(s)).collect();
+        return Ok(json!(lowered).to_string());
+    }
+    let class: fn(char) -> bool = match op {
+        "is_whitespace" => js::js_is_whitespace,
+        "is_word" => js::js_is_word,
+        "is_digit" => js::js_is_digit,
+        "is_ascii_alpha" => js::js_is_ascii_alpha,
+        "is_line_terminator" => js::js_is_line_terminator,
+        _ => return Err(JsError::new(&format!("unknown debug_js op '{op}'"))),
+    };
+    let results = inputs
+        .iter()
+        .map(|s| {
+            let mut chars = s.chars();
+            match (chars.next(), chars.next()) {
+                (Some(c), None) => Ok(class(c)),
+                _ => Err(JsError::new(&format!("'{op}' needs one char, got {s:?}"))),
+            }
+        })
+        .collect::<Result<Vec<bool>, JsError>>()?;
+    Ok(json!(results).to_string())
 }
