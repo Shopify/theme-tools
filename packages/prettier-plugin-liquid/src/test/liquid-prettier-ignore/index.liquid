@@ -42,3 +42,8 @@ printWidth: 1
 {% # prettier-ignore %}
 {%capture foo%}{% for x in (0 .. 1) %}{% cycle a,b,c %}{% endfor %}{%endcapture%}{{ 'hi' }}
 </a>
+
+It should respect the jinja prettier-ignore comment
+printWidth: 1
+{# prettier-ignore #}
+{% cycle a,b,c %}
