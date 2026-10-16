@@ -99,6 +99,37 @@ describe('Module: UnusedAssign', () => {
     }
   });
 
+  it('should not report assigns used in a style block inside a liquid tag', async () => {
+    const sourceCode = `{% liquid
+      assign shopName = shop.name
+      capture example
+        echo 'Shopify'
+      endcapture
+      style
+        echo example
+        echo shopName
+      endstyle
+    %}`;
+
+    const offenses = await runLiquidCheck(UnusedAssign, sourceCode);
+
+    expect(offenses).to.be.empty;
+  });
+
+  it('should still report assigns only mentioned in CSS inside a liquid style block', async () => {
+    const sourceCode = `{% liquid
+      assign shopName = shop.name
+      style
+        .shop { color: shopName; }
+      endstyle
+    %}`;
+
+    const offenses = await runLiquidCheck(UnusedAssign, sourceCode);
+
+    expect(offenses).to.have.length(1);
+    expect(offenses[0].message).to.equal("The variable 'shopName' is assigned but not used");
+  });
+
   it('should report unused assigns for things used in raw code that gets stripped away (schema, etc)', async () => {
     const tags = ['schema', 'javascript', 'stylesheet'];
     for (const tag of tags) {
