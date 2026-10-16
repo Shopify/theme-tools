@@ -38,7 +38,9 @@ export function firstDivergentPath(a: Outcome, b: Outcome): string {
       a.threw ? describeThrow(a.value) : describeThrow(b.value)
     })`;
   }
-  return divergentPath(a.value, b.value, '$') ?? '$ (aliasing or property descriptors)';
+  const found = divergentPath(a.value, b.value, '$') ?? '$ (aliasing or property descriptors)';
+  if (!found.startsWith('$ (aliasing')) return found;
+  return `${found}; alias path ${firstAliasPath(a.value, b.value) ?? 'none found'}`;
 }
 
 /* Walks both values in own key order and returns the first path where they differ. */
@@ -58,6 +60,39 @@ function divergentPath(a: unknown, b: unknown, at: string): string | undefined {
     if (child !== undefined) return child;
   }
   return undefined;
+}
+
+/*
+ * `divergentPath` finds no path when only aliasing differs. This walks both
+ * values in own key order and returns the first path where one side meets an
+ * object it has already met and the other does not, or met it first at another
+ * path.
+ */
+function firstAliasPath(a: unknown, b: unknown): string | undefined {
+  const seenA = new Map<object, string>();
+  const seenB = new Map<object, string>();
+  const walk = (x: unknown, y: unknown, at: string): string | undefined => {
+    if (typeof x !== 'object' || x === null || typeof y !== 'object' || y === null)
+      return undefined;
+    const firstX = firstPath(seenA, x, at);
+    const firstY = firstPath(seenB, y, at);
+    if (firstX !== firstY) return `${at} (first met at ${firstX} vs ${firstY})`;
+    if (firstX !== at) return undefined;
+    for (const key of Object.keys(x)) {
+      const child = Array.isArray(x) ? `${at}[${key}]` : `${at}.${key}`;
+      const found = walk(Reflect.get(x, key), Reflect.get(y, key), child);
+      if (found !== undefined) return found;
+    }
+    return undefined;
+  };
+  return walk(a, b, '$');
+}
+
+function firstPath(seen: Map<object, string>, value: object, at: string): string {
+  const first = seen.get(value);
+  if (first !== undefined) return first;
+  seen.set(value, at);
+  return at;
 }
 
 function isObject(value: unknown): value is object {

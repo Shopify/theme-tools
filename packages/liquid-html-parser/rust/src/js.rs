@@ -51,3 +51,26 @@ pub fn js_unit_eq(c: char, s: &str) -> bool {
     let mut chars = s.chars();
     c.len_utf16() == 1 && chars.next() == Some(c) && chars.next().is_none()
 }
+
+/// The string keys of `Reflect.ownKeys(Object.prototype)`, in that order, on
+/// Node v24.15.0. The TS `in` operator and a plain-object index both find them.
+pub const JS_OBJECT_PROTOTYPE_KEYS: [&str; 12] = [
+    "constructor",
+    "__defineGetter__",
+    "__defineSetter__",
+    "hasOwnProperty",
+    "__lookupGetter__",
+    "__lookupSetter__",
+    "isPrototypeOf",
+    "propertyIsEnumerable",
+    "toString",
+    "valueOf",
+    "__proto__",
+    "toLocaleString",
+];
+
+/// JS `name in {}`: whether a plain object inherits `name` from
+/// `Object.prototype`.
+pub fn js_object_prototype_has(name: &str) -> bool {
+    JS_OBJECT_PROTOTYPE_KEYS.contains(&name)
+}

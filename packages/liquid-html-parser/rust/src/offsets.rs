@@ -27,4 +27,12 @@ impl Utf16Offsets {
     pub fn utf16(&self, byte: usize) -> usize {
         self.table[byte] as usize
     }
+
+    /// The byte offset of UTF-16 offset `utf16`, or `None` when it is past the
+    /// end or inside a surrogate pair.
+    pub fn byte(&self, utf16: usize) -> Option<usize> {
+        let units = u32::try_from(utf16).ok()?;
+        let byte = self.table.partition_point(|&entry| entry < units);
+        (self.table.get(byte) == Some(&units)).then_some(byte)
+    }
 }

@@ -15,9 +15,11 @@
  * - every `source` and `_source` key is set to the input string, so the
  *   values are the input by identity and the key keeps its slot;
  * - `{ [UNDEFINED_KEY]: 0 }` in any slot becomes `undefined`, keeping key order;
+ * - `{ [PROTO_KEY]: name }` becomes `({})[name]`, the value a plain object
+ *   inherits from `Object.prototype`, such as the `Object` function;
  * - `{ [ALIAS_KEY]: n }` becomes the n-th object or array met in a pre-order
  *   walk of the result in own key order, so shared objects stay shared. The
- *   walk counts neither marker kind;
+ *   walk counts no marker kind;
  * - errors are rebuilt with this module instance's own error class, so
  *   `instanceof` and `loc` match the TS parser.
  */
@@ -31,6 +33,8 @@ export const BACKEND_KEY = Symbol.for('@shopify/liquid-html-parser/backend');
 export const UNDEFINED_KEY = '\u0000undefined';
 
 export const ALIAS_KEY = '\u0000alias';
+
+export const PROTO_KEY = '\u0000proto';
 
 const SOURCE_KEYS = new Set(['source', '_source']);
 
@@ -125,6 +129,7 @@ export function hydrate(value: unknown, source: string): unknown {
 function hydrateValue(value: unknown, ctx: Hydration): unknown {
   if (value === null || typeof value !== 'object') return value;
   if (Object.hasOwn(value, UNDEFINED_KEY)) return undefined;
+  if (isProtoKey(value)) return resolveProtoKey(value);
   if (isAlias(value)) return resolveAlias(value, ctx);
 
   ctx.objects.push(value);
@@ -142,6 +147,18 @@ function hydrateObject(value: Record<string, unknown>, ctx: Hydration): Record<s
     value[key] = SOURCE_KEYS.has(key) ? ctx.source : hydrateValue(value[key], ctx);
   }
   return value;
+}
+
+function isProtoKey(value: object): value is Record<typeof PROTO_KEY, unknown> {
+  return Object.hasOwn(value, PROTO_KEY);
+}
+
+function resolveProtoKey(value: Record<typeof PROTO_KEY, unknown>): unknown {
+  const name = value[PROTO_KEY];
+  if (typeof name !== 'string' || !(name in {})) {
+    throw new Error(`Parser backend unknown prototype key: ${name}`);
+  }
+  return ({} as Record<string, unknown>)[name];
 }
 
 function isAlias(value: object): value is Record<typeof ALIAS_KEY, number> {
