@@ -43,6 +43,20 @@ export function firstDivergentPath(a: Outcome, b: Outcome): string {
   return `${found}; alias path ${firstAliasPath(a.value, b.value) ?? 'none found'}`;
 }
 
+/* Every node object in `value`, each once, in own key order. */
+export function nodesOf(value: unknown): Record<string, unknown>[] {
+  const seen = new Set<object>();
+  const nodes: Record<string, unknown>[] = [];
+  const walk = (x: unknown): void => {
+    if (typeof x !== 'object' || x === null || seen.has(x)) return;
+    seen.add(x);
+    nodes.push(x as Record<string, unknown>);
+    for (const key of Object.keys(x)) walk(Reflect.get(x, key));
+  };
+  walk(value);
+  return nodes;
+}
+
 /* Walks both values in own key order and returns the first path where they differ. */
 function divergentPath(a: unknown, b: unknown, at: string): string | undefined {
   if (Object.is(a, b)) return undefined;

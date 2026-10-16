@@ -35,7 +35,12 @@ import { parseLiquidDoc } from '../src/liquid-doc/parser';
 import { MarkupParser } from '../src/markup/parser';
 import { MarkupTokenType, tokenizeMarkup } from '../src/markup/tokenizer';
 import { loadNodeCorpus } from '../src/rust-parity/corpus';
-import { canonicalOutcome, firstDivergentPath, type Outcome } from '../src/rust-parity/outcome';
+import {
+  canonicalOutcome,
+  firstDivergentPath,
+  nodesOf,
+  type Outcome,
+} from '../src/rust-parity/outcome';
 import type { Parser, TagDefinition } from '../src/tag-definitions';
 import { builtinTags } from '../src/tags';
 import wasmBase64 from '../rust/pkg/bytes.mjs';
@@ -295,20 +300,6 @@ function checkSyntheticExpectations(inputs: Map<string, { input: TagInput; expec
     }
   }
   return failures;
-}
-
-/* Every node object in `value`, each once, in own key order. */
-function nodesOf(value: unknown): Record<string, unknown>[] {
-  const seen = new Set<object>();
-  const nodes: Record<string, unknown>[] = [];
-  const walk = (x: unknown): void => {
-    if (typeof x !== 'object' || x === null || seen.has(x)) return;
-    seen.add(x);
-    nodes.push(x as Record<string, unknown>);
-    for (const key of Object.keys(x)) walk(Reflect.get(x, key));
-  };
-  walk(value);
-  return nodes;
 }
 
 function probeHolds(check: ProbeCheck, outcome: Outcome, source: string): boolean {
