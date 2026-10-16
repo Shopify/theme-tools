@@ -165,6 +165,13 @@
           ],
           "description": "When true, theme check preloads all the files from your theme for fast rename handling and theme graph generation.",
           "default": true
+        },
+        "themeCheck.fetchMetafieldDefinitions": {
+          "type": [
+            "boolean"
+          ],
+          "description": "When true, fetches metafield definitions from Shopify when a theme workspace is opened. This may prompt you to log in to Shopify.",
+          "default": false
         }
       }
     },
