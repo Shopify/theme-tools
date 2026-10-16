@@ -14,6 +14,8 @@ import { toTolerantLiquidHtmlAST } from './tolerant';
 import { NodeTypes } from './types';
 
 const globals = globalThis as Record<symbol, ParserBackend | undefined>;
+// Restored after each test, so later files in this worker keep the backend the setup file registered
+const priorBackend = globals[BACKEND_KEY];
 
 function registerFake(result: () => BackendResult): ParserBackend {
   const backend: ParserBackend = {
@@ -45,7 +47,11 @@ function fakeAst(source: string) {
 }
 
 afterEach(() => {
-  delete globals[BACKEND_KEY];
+  if (priorBackend === undefined) {
+    delete globals[BACKEND_KEY];
+  } else {
+    globals[BACKEND_KEY] = priorBackend;
+  }
   Environment.resetDefault();
 });
 
