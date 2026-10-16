@@ -155,10 +155,22 @@ export function isPrettierIgnoreLiquidNode(node: LiquidHtmlNode | undefined): no
   );
 }
 
+export function isPrettierIgnoreJinjaNode(node: LiquidHtmlNode | undefined): node is TextNode {
+  return (
+    !!node &&
+    node.type === NodeTypes.TextNode &&
+    /^\s*\{#\s*prettier-ignore(?=\s|#)[\s\S]*?#\}\s*$/.test(node.value)
+  );
+}
+
 export function isPrettierIgnoreNode(
   node: LiquidHtmlNode | undefined,
-): node is HtmlComment | LiquidTag {
-  return isPrettierIgnoreLiquidNode(node) || isPrettierIgnoreHtmlNode(node);
+): node is HtmlComment | LiquidTag | TextNode {
+  return (
+    isPrettierIgnoreLiquidNode(node) ||
+    isPrettierIgnoreHtmlNode(node) ||
+    isPrettierIgnoreJinjaNode(node)
+  );
 }
 
 export function hasPrettierIgnore(node: LiquidHtmlNode) {
