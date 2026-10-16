@@ -43,6 +43,46 @@ pub fn js_is_word(c: char) -> bool {
     c.is_ascii_alphanumeric() || c == '_'
 }
 
+/// JS `/[\n\r\u2028\u2029]/`: the ECMAScript LineTerminator code points, the
+/// units that `.` without the `s` flag does not match.
+pub fn js_is_line_terminator(c: char) -> bool {
+    matches!(c, '\n' | '\r' | '\u{2028}' | '\u{2029}')
+}
+
+/// JS `s.trim()`.
+pub fn js_trim(s: &str) -> &str {
+    s.trim_matches(js_is_whitespace)
+}
+
+/// JS `s.trimStart()`.
+pub fn js_trim_start(s: &str) -> &str {
+    s.trim_start_matches(js_is_whitespace)
+}
+
+/// JS `s.trimEnd()`.
+pub fn js_trim_end(s: &str) -> &str {
+    s.trim_end_matches(js_is_whitespace)
+}
+
+/// JS `/^LIT/i.test(s)` for an ASCII literal `lit`, without the `u` flag.
+///
+/// JS `Canonicalize` upper-cases, and never maps a non-ASCII char to ASCII.
+/// So only an ASCII case variant matches an ASCII char: U+212A KELVIN SIGN does
+/// not match `k`.
+#[allow(dead_code)] // 5c: src/document/html.ts:258
+pub fn js_ascii_ci_starts_with(s: &str, lit: &str) -> bool {
+    let n = lit.len();
+    s.len() >= n && s.as_bytes()[..n].eq_ignore_ascii_case(lit.as_bytes())
+}
+
+/// JS `s.toLowerCase()`: the Unicode default full case mapping, with the
+/// Final_Sigma rule. `str::to_lowercase` implements the same; `char`'s does
+/// not handle Final_Sigma.
+#[allow(dead_code)] // 5c: src/document/html.ts:88
+pub fn js_to_lower(s: &str) -> String {
+    s.to_lowercase()
+}
+
 /// Whether `c` is one UTF-16 code unit equal to the JS string `s`.
 ///
 /// The TS tokenizers compare `source[i]`, a single code unit, with a string. A
@@ -100,7 +140,44 @@ pub fn js_json_stringify_str(s: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::js_json_stringify_str;
+    use super::{
+        js_ascii_ci_starts_with, js_is_line_terminator, js_json_stringify_str, js_to_lower,
+        js_trim, js_trim_end, js_trim_start,
+    };
+
+    #[test]
+    fn line_terminator_is_the_four_ecmascript_units() {
+        for c in ['\n', '\r', '\u{2028}', '\u{2029}'] {
+            assert!(js_is_line_terminator(c));
+        }
+        for c in ['\u{0085}', '\u{000B}', '\u{000C}', ' '] {
+            assert!(!js_is_line_terminator(c));
+        }
+    }
+
+    #[test]
+    fn trims_use_the_js_whitespace_set() {
+        assert_eq!(js_trim("\u{FEFF} a \u{3000}"), "a");
+        assert_eq!(js_trim("\u{0085}a\u{0085}"), "\u{0085}a\u{0085}");
+        assert_eq!(js_trim_start("\u{2028} a "), "a ");
+        assert_eq!(js_trim_end(" a \u{2029}"), " a");
+    }
+
+    #[test]
+    fn ascii_ci_starts_with_folds_ascii_only() {
+        assert!(js_ascii_ci_starts_with("DocType html", "doctype"));
+        assert!(js_ascii_ci_starts_with("HTML", "html"));
+        assert!(!js_ascii_ci_starts_with("lin\u{212A}", "link"));
+        assert!(!js_ascii_ci_starts_with("doc", "doctype"));
+    }
+
+    #[test]
+    fn to_lower_applies_final_sigma_and_full_mapping() {
+        assert_eq!(js_to_lower("\u{0391}\u{03A3}"), "\u{03B1}\u{03C2}");
+        assert_eq!(js_to_lower("\u{03A3}"), "\u{03C3}");
+        assert_eq!(js_to_lower("\u{0130}"), "i\u{0307}");
+        assert_eq!(js_to_lower("lin\u{212A}"), "link");
+    }
 
     #[test]
     fn json_stringify_escapes_quote_and_backslash() {

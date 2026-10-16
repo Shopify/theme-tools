@@ -8,7 +8,7 @@
 //! with an ASCII character, so a byte position here is a UTF-16 position in
 //! TS.
 
-use crate::js::js_is_word;
+use crate::js::{js_is_line_terminator, js_is_word};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum LiquidDocTokenType {
@@ -55,11 +55,6 @@ pub struct ParamToken<'a> {
     pub end: usize,
 }
 
-/// JS `/./` without the `s` or `u` flag matches any unit except these.
-fn is_line_terminator(c: char) -> bool {
-    matches!(c, '\n' | '\r' | '\u{2028}' | '\u{2029}')
-}
-
 /// TS `NEWLINE_RE`, `/\r?\n/y`, at `pos`. Returns the match end.
 fn newline_end(body: &str, pos: usize) -> Option<usize> {
     let rest = &body.as_bytes()[pos..];
@@ -98,7 +93,7 @@ fn midline_annotation_at(line: &str) -> Option<usize> {
     line.match_indices('@').map(|(at, _)| at).find(|&at| {
         let before = line[..at].chars().next_back();
         let starts_word = line[at + 1..].chars().next().is_some_and(js_is_word);
-        before.is_some_and(|c| !is_line_terminator(c)) && starts_word
+        before.is_some_and(|c| !js_is_line_terminator(c)) && starts_word
     })
 }
 

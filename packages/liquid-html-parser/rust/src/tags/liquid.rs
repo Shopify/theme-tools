@@ -4,25 +4,15 @@
 //! an offset is a byte length here.
 
 use crate::errors::ParseError;
-use crate::js::{js_is_whitespace, js_is_word};
+use crate::js::{js_is_whitespace, js_is_word, js_trim_end, js_trim_start};
 use crate::markup::parser::MarkupParser;
 use crate::tag_definitions::{LiquidLine, LiquidLineContext, Parser};
 use crate::value::JsVal;
 
-/// JS `s.trimStart()`.
-fn trim_start(s: &str) -> &str {
-    s.trim_start_matches(js_is_whitespace)
-}
-
-/// JS `s.trimEnd()`.
-fn trim_end(s: &str) -> &str {
-    s.trim_end_matches(js_is_whitespace)
-}
-
 /// JS `/^\w+\s*:/.test(s)`.
 fn starts_with_named_argument(s: &str) -> bool {
     let after_word = s.trim_start_matches(js_is_word);
-    after_word.len() < s.len() && trim_start(after_word).starts_with(':')
+    after_word.len() < s.len() && js_trim_start(after_word).starts_with(':')
 }
 
 /// Checks if a trimmed line is a continuation of the previous line rather
@@ -46,11 +36,11 @@ fn join_lines(body: &str, body_start: usize) -> Vec<JoinedLine> {
     let mut offset = 0;
     for raw_line in body.split('\n') {
         let line_start = body_start + offset;
-        let trimmed = trim_start(raw_line);
+        let trimmed = js_trim_start(raw_line);
         offset += raw_line.len() + 1;
 
         let previous = joined.last_mut().filter(|prev| {
-            !trimmed.is_empty() && is_continuation_line(trim_end(&prev.raw), trimmed)
+            !trimmed.is_empty() && is_continuation_line(js_trim_end(&prev.raw), trimmed)
         });
         if let Some(prev) = previous {
             // Append to previous logical line (preserve raw text for offset calc)
@@ -69,14 +59,14 @@ fn join_lines(body: &str, body_start: usize) -> Vec<JoinedLine> {
 
 /// Second pass: parse one logical line, or `None` for a blank line.
 fn parse_line(raw: &str, start_index: usize) -> Option<LiquidLine> {
-    let trimmed = trim_start(raw);
+    let trimmed = js_trim_start(raw);
     let leading_ws = raw.len() - trimmed.len();
 
     let line_end = match raw.rfind('\n') {
-        None => start_index + trim_end(raw).len(),
+        None => start_index + js_trim_end(raw).len(),
         Some(last_newline) => {
             let last_raw_line = &raw[last_newline + 1..];
-            start_index + last_newline + 1 + trim_end(last_raw_line).len()
+            start_index + last_newline + 1 + js_trim_end(last_raw_line).len()
         }
     };
 
@@ -114,7 +104,7 @@ fn parse_line(raw: &str, start_index: usize) -> Option<LiquidLine> {
     };
 
     let rest = &trimmed[first_ws..];
-    let markup = trim_start(rest);
+    let markup = js_trim_start(rest);
     Some(LiquidLine {
         tag_name: first_line_trimmed[..first_ws].to_string(),
         markup: markup.to_string(),

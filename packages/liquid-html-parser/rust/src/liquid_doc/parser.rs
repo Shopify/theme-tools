@@ -4,7 +4,7 @@
 //! an offset is a byte length here.
 
 use crate::errors::ParseError;
-use crate::js::{js_is_whitespace, js_json_stringify_str};
+use crate::js::{js_json_stringify_str, js_trim, js_trim_start};
 use crate::liquid_doc::factories::{
     make_liquid_doc_description_node, make_liquid_doc_example_node, make_liquid_doc_param_node,
     make_liquid_doc_prompt_node, make_text_node,
@@ -14,16 +14,6 @@ use crate::liquid_doc::tokenizer::{
     tokenize_param_content,
 };
 use crate::value::JsVal;
-
-/// JS `String.prototype.trim`.
-fn trim(s: &str) -> &str {
-    s.trim_matches(js_is_whitespace)
-}
-
-/// JS `s.trimStart()`.
-fn trim_start(s: &str) -> &str {
-    s.trim_start_matches(js_is_whitespace)
-}
 
 /// Parse a LiquidDoc body into AST nodes. `start_offset` is the source offset
 /// of `body[0]`.
@@ -110,7 +100,7 @@ impl<'a> LiquidDocParser<'a> {
                 continue;
             }
 
-            if self.check(LiquidDocTokenType::TextLine) && trim(self.peek().value).is_empty() {
+            if self.check(LiquidDocTokenType::TextLine) && js_trim(self.peek().value).is_empty() {
                 self.advance();
                 continue;
             }
@@ -120,7 +110,7 @@ impl<'a> LiquidDocParser<'a> {
                     trim_trailing_newlines: true,
                     ..CollectOptions::default()
                 });
-                if !trim(&collected.value).is_empty() {
+                if !js_trim(&collected.value).is_empty() {
                     nodes.push(make_text_node(
                         &collected.value,
                         collected.start_pos,
@@ -223,7 +213,7 @@ impl<'a> LiquidDocParser<'a> {
             stop_at_paragraph_break: true,
             trim_trailing_newlines: true,
         });
-        let has_continuation = !trim(&continuation.value).is_empty();
+        let has_continuation = !js_trim(&continuation.value).is_empty();
 
         let mut param_description = JsVal::Null;
         let mut description_end = None;
@@ -266,7 +256,7 @@ impl<'a> LiquidDocParser<'a> {
 
         if let Some(inline_token) = self.accept(LiquidDocTokenType::TextLine) {
             let rest = self.collect_content_lines(CollectOptions::default());
-            let has_cont = !trim(&rest.value).is_empty();
+            let has_cont = !js_trim(&rest.value).is_empty();
             let full_content = if has_cont {
                 format!("{}{}", inline_token.value, rest.value)
             } else {
@@ -295,7 +285,7 @@ impl<'a> LiquidDocParser<'a> {
 
         let inline_token = self.accept(LiquidDocTokenType::TextLine);
         let rest = self.collect_content_lines(CollectOptions::default());
-        let has_rest = !trim(&rest.value).is_empty();
+        let has_rest = !js_trim(&rest.value).is_empty();
 
         let end = match inline_token {
             _ if has_rest => rest.end_pos,
@@ -313,7 +303,7 @@ impl<'a> LiquidDocParser<'a> {
 
         if let Some(inline_token) = self.accept(LiquidDocTokenType::TextLine) {
             let rest = self.collect_content_lines(CollectOptions::default());
-            let has_cont = !trim(&rest.value).is_empty();
+            let has_cont = !js_trim(&rest.value).is_empty();
             let full_content = if has_cont {
                 format!("{}{}", inline_token.value, rest.value)
             } else {
@@ -406,7 +396,7 @@ impl<'a> LiquidDocParser<'a> {
 
     /// TS `this.check(TextLine)` with a `value` that trims to `''`.
     fn at_blank_text_line(&self) -> bool {
-        self.check(LiquidDocTokenType::TextLine) && trim(self.peek().value).is_empty()
+        self.check(LiquidDocTokenType::TextLine) && js_trim(self.peek().value).is_empty()
     }
 
     /// Skip newlines and whitespace-only text lines.
@@ -425,7 +415,8 @@ impl<'a> LiquidDocParser<'a> {
     fn skip_blank_from(&self, from: usize) -> usize {
         let mut look_ahead = from;
         while let Some(la) = self.tokens.get(look_ahead) {
-            let blank_line = la.kind == LiquidDocTokenType::TextLine && trim(la.value).is_empty();
+            let blank_line =
+                la.kind == LiquidDocTokenType::TextLine && js_trim(la.value).is_empty();
             if la.kind != LiquidDocTokenType::Newline && !blank_line {
                 break;
             }
@@ -478,7 +469,7 @@ impl<'a> LiquidDocParser<'a> {
 
                 let newline_count = look_ahead - self.p;
                 let paragraph_break = next.is_some_and(|la| {
-                    la.kind == LiquidDocTokenType::TextLine && !trim(la.value).is_empty()
+                    la.kind == LiquidDocTokenType::TextLine && !js_trim(la.value).is_empty()
                 });
                 if opts.stop_at_paragraph_break && newline_count >= 2 && paragraph_break {
                     break;
@@ -504,15 +495,15 @@ impl<'a> LiquidDocParser<'a> {
                 continue;
             }
 
-            if self.check(LiquidDocTokenType::TextLine) && trim(current.value).is_empty() {
+            if self.check(LiquidDocTokenType::TextLine) && js_trim(current.value).is_empty() {
                 self.advance();
                 continue;
             }
 
             if collected.value.is_empty() {
-                let leading_ws = current.value.len() - trim_start(current.value).len();
+                let leading_ws = current.value.len() - js_trim_start(current.value).len();
                 collected.start_pos = current.start + leading_ws;
-                collected.value.push_str(trim_start(current.value));
+                collected.value.push_str(js_trim_start(current.value));
             } else {
                 collected.value.push_str(current.value);
             }
