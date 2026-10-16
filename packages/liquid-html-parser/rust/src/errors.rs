@@ -29,8 +29,18 @@ impl ParseError {
         }
     }
 
+    /// TS `new LiquidHTMLASTParsingError(message, source, start, end)`, with
+    /// no `unclosed` node.
+    pub fn parsing(message: impl Into<String>, start: usize, end: usize) -> ParseError {
+        ParseError::LiquidHtmlAstParsing {
+            message: message.into(),
+            start,
+            end,
+            unclosed: None,
+        }
+    }
+
     /// TS `e.message`.
-    #[allow(dead_code)] // 5c: src/document/liquid-tags.ts:110
     pub fn message(&self) -> &str {
         match self {
             ParseError::LiquidHtmlAstParsing { message, .. } => message,

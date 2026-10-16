@@ -7,8 +7,8 @@ use crate::errors::ParseError;
 use crate::markup::parser::MarkupParser;
 use crate::value::JsVal;
 
-/// TS `Parser`, the callback from a tag into the document parser. 5c's
-/// document parser implements it.
+/// TS `Parser`, the callback from a tag into the document parser.
+/// `document::parser::DocumentParser` implements it.
 pub trait Parser {
     /// `start_offset` is a byte offset into the source.
     fn parse_liquid_statement(
@@ -34,14 +34,12 @@ pub type TagParse = fn(&str, &mut MarkupParser<'_>, &mut dyn Parser) -> Result<J
 pub enum TagDefinition {
     Block {
         parse: TagParse,
-        #[allow(dead_code)] // 5c: src/document/liquid-blocks.ts:89
         branches: &'static [BranchName],
     },
     Tag {
         parse: TagParse,
     },
     Raw {
-        #[allow(dead_code)] // 5c: src/document/liquid-raw.ts:156
         parse_liquid_in_body: Option<bool>,
         parse: TagParse,
     },
@@ -63,9 +61,7 @@ pub struct LiquidLine {
     pub tag_name: String,
     pub markup: String,
     pub markup_offset: usize,
-    #[allow(dead_code)] // 5c: src/document/liquid-lines.ts:75
     pub name_offset: usize,
-    #[allow(dead_code)] // 5c: src/document/liquid-lines.ts:76
     pub line_end: usize,
 }
 

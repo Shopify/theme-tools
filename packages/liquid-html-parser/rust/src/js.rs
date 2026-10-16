@@ -69,7 +69,6 @@ pub fn js_trim_end(s: &str) -> &str {
 /// JS `Canonicalize` upper-cases, and never maps a non-ASCII char to ASCII.
 /// So only an ASCII case variant matches an ASCII char: U+212A KELVIN SIGN does
 /// not match `k`.
-#[allow(dead_code)] // 5c: src/document/html.ts:258
 pub fn js_ascii_ci_starts_with(s: &str, lit: &str) -> bool {
     let n = lit.len();
     s.len() >= n && s.as_bytes()[..n].eq_ignore_ascii_case(lit.as_bytes())
@@ -78,7 +77,6 @@ pub fn js_ascii_ci_starts_with(s: &str, lit: &str) -> bool {
 /// JS `s.toLowerCase()`: the Unicode default full case mapping, with the
 /// Final_Sigma rule. `str::to_lowercase` implements the same; `char`'s does
 /// not handle Final_Sigma.
-#[allow(dead_code)] // 5c: src/document/html.ts:88
 pub fn js_to_lower(s: &str) -> String {
     s.to_lowercase()
 }

@@ -12,8 +12,10 @@ use serde_json::{Value, json};
 use wasm_bindgen::prelude::*;
 
 mod ast;
+mod environment;
 mod errors;
 mod gate;
+mod grammar;
 mod js;
 mod offsets;
 mod tag_definitions;
@@ -22,7 +24,18 @@ mod value;
 mod wire;
 
 mod document {
+    pub mod base;
+    pub mod factories;
+    pub mod html;
+    pub mod liquid_blocks;
+    pub mod liquid_lines;
+    pub mod liquid_raw;
+    pub mod liquid_tags;
+    pub mod liquid_variable_output;
+    pub mod node_dispatch;
+    pub mod parser;
     pub mod tokenizer;
+    pub mod tree_builder;
 }
 
 mod liquid_doc {
@@ -78,16 +91,34 @@ use value::{JsVal, obj};
 ///
 /// Returns one JSON string holding the whole backend result, `{ok, ast}` or
 /// `{ok: false, error}`, in the backend wire format that `src/backend.ts`
-/// hydrates. Throws for a kind that is not ported yet.
+/// hydrates. `liquidHtml` parses HTML and `liquid` does not, as TS
+/// `toLiquidHtmlAST` and `toLiquidAST` do. Throws for a kind that is not
+/// ported yet.
 #[wasm_bindgen]
 pub fn parse(
     kind: &str,
-    _source: &str,
-    _allow_unclosed_document_node: bool,
+    source: &str,
+    allow_unclosed_document_node: bool,
 ) -> Result<String, JsError> {
-    Err(JsError::new(&format!(
-        "Rust parser is not ported yet: cannot parse kind '{kind}'"
-    )))
+    let parse_html = match kind {
+        "liquidHtml" => true,
+        "liquid" => false,
+        _ => {
+            return Err(JsError::new(&format!(
+                "Rust parser is not ported yet: cannot parse kind '{kind}'"
+            )));
+        }
+    };
+    let tokens =
+        document::tokenizer::tokenize(source, &document::tokenizer::TokenizeOptions::default());
+    let mut parser = document::parser::DocumentParser::new(
+        tokens,
+        source,
+        parse_html,
+        allow_unclosed_document_node,
+    );
+    let result = parser.parse_document();
+    Ok(wire::emit_result(&result, &Utf16Offsets::new(source)))
 }
 
 /// Test-only: the document tokens of `source` as a JSON array of
@@ -139,8 +170,8 @@ pub fn debug_tokenize_markup(markup: &str, start_offset: u32) -> String {
     Value::Array(tokens).to_string()
 }
 
-/// The tag `Parser` for `debug_parse_tag`. There is no document parser before
-/// 5c, so a `{% liquid %}` callback fails, as the TS script's stub does.
+/// The tag `Parser` for `debug_parse_tag`. A `{% liquid %}` callback fails,
+/// as the TS script's stub does.
 struct StubParser;
 
 impl Parser for StubParser {

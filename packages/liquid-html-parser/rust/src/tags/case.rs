@@ -17,7 +17,6 @@ pub fn parse(
 }
 
 /// Branch parse function for `{% when val1, val2 or val3 %}`.
-#[allow(dead_code)] // 5c: src/document/liquid-blocks.ts:359
 pub fn when_branch_parse(_name: &str, markup: &mut MarkupParser<'_>) -> Result<JsVal, ParseError> {
     let mut values = vec![markup.value_expression()?];
 

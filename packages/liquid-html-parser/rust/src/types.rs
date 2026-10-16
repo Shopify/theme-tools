@@ -1,10 +1,26 @@
 //! Port of `NodeTypes` and `Comparators` from `src/types.ts`.
 //!
-//! Only the variants the markup parser, tags and LiquidDoc parser emit. 5c
-//! adds the rest.
+//! Only the variants the parser emits. `LiquidErrorNode` comes with the
+//! tolerant parser in 5d.
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum NodeTypes {
+    Document,
+    LiquidRawTag,
+    LiquidTag,
+    LiquidBranch,
+    LiquidVariableOutput,
+    HtmlSelfClosingElement,
+    HtmlVoidElement,
+    HtmlDoctype,
+    HtmlComment,
+    HtmlElement,
+    HtmlDanglingMarkerClose,
+    HtmlRawNode,
+    AttrSingleQuoted,
+    AttrDoubleQuoted,
+    AttrUnquoted,
+    AttrEmpty,
     LiquidVariable,
     LiquidFilter,
     NamedArgument,
@@ -22,11 +38,13 @@ pub enum NodeTypes {
     CycleMarkup,
     ForMarkup,
     PaginateMarkup,
+    RawMarkup,
     RenderMarkup,
     SectionMarkup,
     RenderVariableExpression,
     RenderAliasExpression,
     TextNode,
+    YAMLFrontmatter,
     LiquidDocDescriptionNode,
     LiquidDocParamNode,
     LiquidDocExampleNode,
@@ -36,6 +54,22 @@ pub enum NodeTypes {
 impl NodeTypes {
     pub fn as_str(self) -> &'static str {
         match self {
+            NodeTypes::Document => "Document",
+            NodeTypes::LiquidRawTag => "LiquidRawTag",
+            NodeTypes::LiquidTag => "LiquidTag",
+            NodeTypes::LiquidBranch => "LiquidBranch",
+            NodeTypes::LiquidVariableOutput => "LiquidVariableOutput",
+            NodeTypes::HtmlSelfClosingElement => "HtmlSelfClosingElement",
+            NodeTypes::HtmlVoidElement => "HtmlVoidElement",
+            NodeTypes::HtmlDoctype => "HtmlDoctype",
+            NodeTypes::HtmlComment => "HtmlComment",
+            NodeTypes::HtmlElement => "HtmlElement",
+            NodeTypes::HtmlDanglingMarkerClose => "HtmlDanglingMarkerClose",
+            NodeTypes::HtmlRawNode => "HtmlRawNode",
+            NodeTypes::AttrSingleQuoted => "AttrSingleQuoted",
+            NodeTypes::AttrDoubleQuoted => "AttrDoubleQuoted",
+            NodeTypes::AttrUnquoted => "AttrUnquoted",
+            NodeTypes::AttrEmpty => "AttrEmpty",
             NodeTypes::LiquidVariable => "LiquidVariable",
             NodeTypes::LiquidFilter => "LiquidFilter",
             NodeTypes::NamedArgument => "NamedArgument",
@@ -53,11 +87,13 @@ impl NodeTypes {
             NodeTypes::CycleMarkup => "CycleMarkup",
             NodeTypes::ForMarkup => "ForMarkup",
             NodeTypes::PaginateMarkup => "PaginateMarkup",
+            NodeTypes::RawMarkup => "RawMarkup",
             NodeTypes::RenderMarkup => "RenderMarkup",
             NodeTypes::SectionMarkup => "SectionMarkup",
             NodeTypes::RenderVariableExpression => "RenderVariableExpression",
             NodeTypes::RenderAliasExpression => "RenderAliasExpression",
             NodeTypes::TextNode => "TextNode",
+            NodeTypes::YAMLFrontmatter => "YAMLFrontmatter",
             NodeTypes::LiquidDocDescriptionNode => "LiquidDocDescriptionNode",
             NodeTypes::LiquidDocParamNode => "LiquidDocParamNode",
             NodeTypes::LiquidDocExampleNode => "LiquidDocExampleNode",
