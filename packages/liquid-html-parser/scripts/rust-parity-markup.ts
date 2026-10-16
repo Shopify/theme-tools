@@ -1,7 +1,7 @@
 /**
  * Markup parity between the TS markup parser and tags and their Rust ports.
  *
- * Usage: pnpx tsx scripts/rust-parity-markup.ts [--mode tags]
+ * Usage: pnpx tsx scripts/rust-parity-markup.ts [--mode tags|doc]
  *
  * A diagnostic for the Rust port, not a test file. Requires `build:rust`.
  * With no `--mode`, runs every mode. Tag mode runs each builtin tag except
@@ -15,19 +15,23 @@
  *   expected error in TS, plus one valid entry for a tag with no real input;
  * - probe entries: one per sharing site and per `Object.prototype` key, each
  *   first checked to reach its site in TS.
+ * Doc mode runs the TS `parseLiquidDoc` and the Rust test-only export
+ * `debug_parse_liquid_doc` on every body between a `doc` tag and the next
+ * `enddoc` tag, found as in tag mode, and on every whole input as one body.
  * Corpus inputs that are not well-formed UTF-16 are skipped, because the
  * backend never sends them to Rust.
  *
  * The canonical outcomes must be equal. Prints input id, tag, tolerant, markup
  * and the first divergent path of every mismatch, then counts per tag, per
- * mode, per input class and per synthetic or probe site. Exits 1 on any
- * mismatch or failed expectation.
+ * mode, per input class and per synthetic or probe site. Doc mode prints the
+ * same per input class. Exits 1 on any mismatch or failed expectation.
  */
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { hydrate, type BackendError, type BackendResult } from '../src/backend';
 import { tokenize, TokenType } from '../src/document/tokenizer';
 import { LiquidHTMLASTParsingError, type UnclosedNode } from '../src/errors';
+import { parseLiquidDoc } from '../src/liquid-doc/parser';
 import { MarkupParser } from '../src/markup/parser';
 import { MarkupTokenType, tokenizeMarkup } from '../src/markup/tokenizer';
 import { loadNodeCorpus } from '../src/rust-parity/corpus';
@@ -35,7 +39,7 @@ import { canonicalOutcome, firstDivergentPath, type Outcome } from '../src/rust-
 import type { Parser, TagDefinition } from '../src/tag-definitions';
 import { builtinTags } from '../src/tags';
 import wasmBase64 from '../rust/pkg/bytes.mjs';
-import { debug_parse_tag, initSync } from '../rust/pkg/liquid_html_parser.js';
+import { debug_parse_liquid_doc, debug_parse_tag, initSync } from '../rust/pkg/liquid_html_parser.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PKG = path.resolve(__dirname, '..');
@@ -448,11 +452,105 @@ async function tagMode(): Promise<number> {
   return mismatches === 0 && expectFailures === 0 && missing.length === 0 && keysCovered ? 0 : 1;
 }
 
+interface DocInput {
+  id: string;
+  inputClass: 'doc' | 'whole';
+  source: string;
+  bodyStart: number;
+  bodyEnd: number;
+}
+
+/* The doc throw sites, each with the reason TS cannot reach it. */
+const DOC_SYNTHETIC: Extract<SyntheticEntry, { unreachable: string }>[] = [
+  {
+    site: 'liquid-doc/parser.ts:394',
+    unreachable: "consume's only caller, parser.ts:119, runs only after check(Annotation) at :80",
+  },
+];
+
+/* Every `{% name %}` envelope, found as rule 1 finds a tag, with its name. */
+function tagEnvelopes(source: string): { name: string; start: number; closeEnd: number }[] {
+  const tokens = tokenize(source);
+  const found: { name: string; start: number; closeEnd: number }[] = [];
+  for (let i = 0; i + 1 < tokens.length; i++) {
+    const open = tokens[i];
+    const textBetween = tokens[i + 1].type === TokenType.Text ? 1 : 0;
+    const close = tokens[i + 1 + textBetween];
+    if (open.type !== TokenType.LiquidTagOpen || close?.type !== TokenType.LiquidTagClose) continue;
+    const match = /^\s*(\S+)/.exec(source.slice(open.end, close.start));
+    if (!match) continue;
+    found.push({ name: match[1], start: open.start, closeEnd: close.end });
+  }
+  return found;
+}
+
+/* Every body between a `doc` tag's close and the next `enddoc` tag's open. */
+function docBodies(id: string, source: string): DocInput[] {
+  const envelopes = tagEnvelopes(source);
+  return envelopes.flatMap((doc) => {
+    if (doc.name !== 'doc') return [];
+    const end = envelopes.find((e) => e.name === 'enddoc' && e.start >= doc.closeEnd);
+    if (!end) return [];
+    return [{ id: `${id}@${doc.closeEnd}`, inputClass: 'doc' as const, source, bodyStart: doc.closeEnd, bodyEnd: end.start }];
+  });
+}
+
+function docTsOutcome(input: DocInput): Outcome {
+  try {
+    const body = input.source.slice(input.bodyStart, input.bodyEnd);
+    return { threw: false, value: parseLiquidDoc(body, input.bodyStart, input.source) };
+  } catch (error) {
+    return { threw: true, value: error };
+  }
+}
+
+function docRustOutcome(input: DocInput): Outcome {
+  const wire = debug_parse_liquid_doc(input.source, input.bodyStart, input.bodyEnd);
+  const result = JSON.parse(wire) as BackendResult;
+  if (result.ok) return { threw: false, value: hydrate(result.ast, input.source) };
+  try {
+    throwBackendError(result.error, input.source);
+  } catch (error) {
+    return { threw: true, value: error };
+  }
+}
+
+async function docMode(): Promise<number> {
+  const corpus = (await loadNodeCorpus(PKG)).filter((input) => input.whole);
+  const wellFormed = corpus.filter((input) =>
+    (input.source as string & { isWellFormed(): boolean }).isWellFormed(),
+  );
+  const bodies = wellFormed.flatMap((input) => docBodies(input.id, input.source));
+  const wholes = wellFormed.map(
+    (input): DocInput => ({ id: input.id, inputClass: 'whole', source: input.source, bodyStart: 0, bodyEnd: input.source.length }),
+  );
+  console.log(
+    `Doc mode corpus: ${corpus.length} whole inputs, ${corpus.length - wellFormed.length} skipped as not well-formed`,
+  );
+  console.log(`Doc inputs: ${bodies.length} doc bodies, ${wholes.length} whole inputs`);
+
+  const perClass = new Counter();
+  for (const input of [...bodies, ...wholes]) {
+    const ts = docTsOutcome(input);
+    const rust = docRustOutcome(input);
+    const mismatch = canonicalOutcome(ts, input.source) !== canonicalOutcome(rust, input.source);
+    perClass.add(input.inputClass, mismatch);
+    if (!mismatch) continue;
+    console.log(`MISMATCH doc ${input.id} body=${input.bodyStart}..${input.bodyEnd}: ${firstDivergentPath(ts, rust)}`);
+  }
+
+  perClass.print('class', ['doc', 'whole']);
+  for (const { site, unreachable } of DOC_SYNTHETIC) console.log(`site ${site}: unreachable: ${unreachable}`);
+  const mismatches = perClass.total();
+  console.log(`Doc total mismatches: ${mismatches}`);
+  return mismatches === 0 ? 0 : 1;
+}
+
 function parseMode(argv: string[]): string[] {
   const at = argv.indexOf('--mode');
-  if (at === -1) return ['tags'];
+  if (at === -1) return ['tags', 'doc'];
   const mode = argv[at + 1];
-  if (mode !== 'tags') throw new Error(`Unknown --mode ${mode}; this step has tag mode only`);
+  if (mode !== 'tags' && mode !== 'doc') throw new Error(`Unknown --mode ${mode}; use tags or doc`);
   return [mode];
 }
 
@@ -461,6 +559,7 @@ async function main(): Promise<number> {
   let code = 0;
   for (const mode of parseMode(process.argv.slice(2))) {
     if (mode === 'tags') code = Math.max(code, await tagMode());
+    if (mode === 'doc') code = Math.max(code, await docMode());
   }
   return code;
 }

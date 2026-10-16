@@ -1,6 +1,7 @@
 //! Port of `NodeTypes` and `Comparators` from `src/types.ts`.
 //!
-//! Only the variants the markup parser and tags emit. 5c adds the rest.
+//! Only the variants the markup parser, tags and LiquidDoc parser emit. 5c
+//! adds the rest.
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum NodeTypes {
@@ -25,6 +26,11 @@ pub enum NodeTypes {
     SectionMarkup,
     RenderVariableExpression,
     RenderAliasExpression,
+    TextNode,
+    LiquidDocDescriptionNode,
+    LiquidDocParamNode,
+    LiquidDocExampleNode,
+    LiquidDocPromptNode,
 }
 
 impl NodeTypes {
@@ -51,6 +57,11 @@ impl NodeTypes {
             NodeTypes::SectionMarkup => "SectionMarkup",
             NodeTypes::RenderVariableExpression => "RenderVariableExpression",
             NodeTypes::RenderAliasExpression => "RenderAliasExpression",
+            NodeTypes::TextNode => "TextNode",
+            NodeTypes::LiquidDocDescriptionNode => "LiquidDocDescriptionNode",
+            NodeTypes::LiquidDocParamNode => "LiquidDocParamNode",
+            NodeTypes::LiquidDocExampleNode => "LiquidDocExampleNode",
+            NodeTypes::LiquidDocPromptNode => "LiquidDocPromptNode",
         }
     }
 }

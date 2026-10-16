@@ -5,7 +5,8 @@
 //! are never called by `parse`. The `debug_*` exports are test-only, and are
 //! never called by `parse` either: `debug_tokenize` and
 //! `debug_tokenize_markup` for `scripts/rust-parity-tokens.ts`, and
-//! `debug_parse_tag` for `scripts/rust-parity-markup.ts`.
+//! `debug_parse_tag` and `debug_parse_liquid_doc` for
+//! `scripts/rust-parity-markup.ts`.
 
 use serde_json::{Value, json};
 use wasm_bindgen::prelude::*;
@@ -21,6 +22,12 @@ mod value;
 mod wire;
 
 mod document {
+    pub mod tokenizer;
+}
+
+mod liquid_doc {
+    pub mod factories;
+    pub mod parser;
     pub mod tokenizer;
 }
 
@@ -196,5 +203,29 @@ pub fn debug_parse_tag(
             "atEnd" => JsVal::Bool(markup.is_at_end()),
         }
     });
+    Ok(wire::emit_result(&result, &offsets))
+}
+
+/// Test-only: parses the LiquidDoc body `source[body_start..body_end]`, as
+/// `document/liquid-raw.ts` does for a `doc` tag. The offsets are UTF-16.
+/// Returns the wire result of the node array.
+#[wasm_bindgen]
+pub fn debug_parse_liquid_doc(
+    source: &str,
+    body_start: u32,
+    body_end: u32,
+) -> Result<String, JsError> {
+    let offsets = Utf16Offsets::new(source);
+    let start = offsets.byte(body_start as usize);
+    let end = offsets.byte(body_end as usize);
+    let (Some(start), Some(end)) = (start, end) else {
+        return Err(JsError::new("body offsets are not character boundaries"));
+    };
+    if start > end {
+        return Err(JsError::new("body_start is after body_end"));
+    }
+
+    let result =
+        liquid_doc::parser::parse_liquid_doc(&source[start..end], start, source).map(JsVal::array);
     Ok(wire::emit_result(&result, &offsets))
 }

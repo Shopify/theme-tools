@@ -74,3 +74,58 @@ pub const JS_OBJECT_PROTOTYPE_KEYS: [&str; 12] = [
 pub fn js_object_prototype_has(name: &str) -> bool {
     JS_OBJECT_PROTOTYPE_KEYS.contains(&name)
 }
+
+/// JS `JSON.stringify(s)` for a well-formed string: `"` and `\` take a
+/// backslash, `\b \f \n \r \t` are written by name, every other U+0000 to
+/// U+001F is `\u00xx` in lowercase hex, and nothing else is escaped.
+pub fn js_json_stringify_str(s: &str) -> String {
+    let mut out = String::with_capacity(s.len() + 2);
+    out.push('"');
+    for c in s.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\u{0008}' => out.push_str("\\b"),
+            '\u{000C}' => out.push_str("\\f"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            '\u{0000}'..='\u{001F}' => out.push_str(&format!("\\u{:04x}", c as u32)),
+            _ => out.push(c),
+        }
+    }
+    out.push('"');
+    out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::js_json_stringify_str;
+
+    #[test]
+    fn json_stringify_escapes_quote_and_backslash() {
+        assert_eq!(js_json_stringify_str("a\"b"), r#""a\"b""#);
+        assert_eq!(js_json_stringify_str("a\\b"), r#""a\\b""#);
+    }
+
+    #[test]
+    fn json_stringify_names_short_escapes() {
+        assert_eq!(js_json_stringify_str("\n"), r#""\n""#);
+        assert_eq!(
+            js_json_stringify_str("\u{0008}\u{000C}\r\t"),
+            r#""\b\f\r\t""#
+        );
+    }
+
+    #[test]
+    fn json_stringify_writes_other_controls_as_lowercase_hex() {
+        assert_eq!(js_json_stringify_str("\u{0001}"), r#""\u0001""#);
+        assert_eq!(js_json_stringify_str("\u{001F}"), r#""\u001f""#);
+    }
+
+    #[test]
+    fn json_stringify_leaves_del_and_line_separator() {
+        assert_eq!(js_json_stringify_str("\u{007F}"), "\"\u{007F}\"");
+        assert_eq!(js_json_stringify_str("\u{2028}"), "\"\u{2028}\"");
+    }
+}
