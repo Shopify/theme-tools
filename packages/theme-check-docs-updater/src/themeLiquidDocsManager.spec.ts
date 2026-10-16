@@ -15,7 +15,8 @@ vi.mock('node:path', async () => {
   return {
     default: {
       join: (...paths: string[]) => paths.join('/'),
-      resolve: () => '.',
+      resolve: (...paths: string[]) => (paths.at(-1) === 'setting.json' ? 'setting.json' : '.'),
+      basename: (path: string) => path.split('/').at(-1),
     },
   };
 });
@@ -32,6 +33,15 @@ vi.mock('node:fs/promises', async () => {
     'MOCKED_CACHE/theme-liquid-docs/objects.json': '[{"name": "product"}]',
     'MOCKED_CACHE/theme-liquid-docs/tags.json': '[{"name": "if"}]',
     'MOCKED_CACHE/theme-liquid-docs/latest.json': '{"revision": "1"}',
+    'MOCKED_CACHE/theme-liquid-docs/manifest_theme.json':
+      '{"schemas":[{"uri":"theme/setting.json"}]}',
+    'setting.json': JSON.stringify({
+      definitions: {
+        metaobject: { properties: { default: true, metaobject_type: { type: 'string' } } },
+        metaobject_list: { properties: { default: true, metaobject_type: { type: 'string' } } },
+        text: { properties: { default: true } },
+      },
+    }),
     'MOCKED_CACHE/theme-liquid-docs/section_schema.json':
       '{"type":"object","properties":{"name":{"type":"string"},"age":{"type":"number"}},"required":["name","age"]}',
     'MOCKED_CACHE/theme-liquid-docs/shopify_system_translations.json':
@@ -40,7 +50,7 @@ vi.mock('node:fs/promises', async () => {
 
   return {
     default: {
-      readFile: vi.fn().mockImplementation((path) => fileSystem[path]),
+      readFile: vi.fn().mockImplementation(async (path) => fileSystem[path]),
       mkdir: vi.fn(),
     },
   };
@@ -98,6 +108,17 @@ describe('Module: ThemeLiquidDocsManager', async () => {
       expect(systemTranslations).to.eql({
         'shopify.checkout.general.cart': 'Cart',
       });
+    });
+  });
+
+  describe('Unit: schemas', () => {
+    it('does not suggest a default for metaobject settings', async () => {
+      const [settingSchema] = await manager.schemas('theme');
+      const schema = JSON.parse(settingSchema.schema);
+
+      expect(schema.definitions.metaobject.properties).not.toHaveProperty('default');
+      expect(schema.definitions.metaobject_list.properties).toHaveProperty('default');
+      expect(schema.definitions.text.properties).toHaveProperty('default');
     });
   });
 });
