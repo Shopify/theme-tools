@@ -100,6 +100,18 @@ pub fn tokenize_markup(markup: &str) -> Vec<MarkupToken<'_>> {
     tokens
 }
 
+/// TS tokenizeMarkup(markup, startOffset).
+pub fn tokenize_markup_at(markup: &str, start_offset: usize) -> Vec<MarkupToken<'_>> {
+    tokenize_markup(markup)
+        .into_iter()
+        .map(|token| MarkupToken {
+            start: token.start + start_offset,
+            end: token.end + start_offset,
+            ..token
+        })
+        .collect()
+}
+
 /// The token starting at `pos`, as its type and end, in the TS check order.
 fn scan_token(
     bytes: &[u8],

@@ -6,20 +6,6 @@
 use crate::document::parser::DocumentParser;
 use crate::document::tokenizer::{Token, TokenType, TokenizeOptions, tokenize};
 use crate::errors::ParseError;
-use crate::markup::tokenizer::{MarkupToken, tokenize_markup};
-
-/// TS `tokenizeMarkup(markup, startOffset)`: the markup tokens of `markup`,
-/// with offsets shifted by `start_offset`.
-pub fn tokenize_markup_at(markup: &str, start_offset: usize) -> Vec<MarkupToken<'_>> {
-    tokenize_markup(markup)
-        .into_iter()
-        .map(|token| MarkupToken {
-            start: token.start + start_offset,
-            end: token.end + start_offset,
-            ..token
-        })
-        .collect()
-}
 
 impl<'a> DocumentParser<'a> {
     pub fn consume(&mut self, kind: TokenType) -> Result<Token, ParseError> {

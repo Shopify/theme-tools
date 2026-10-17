@@ -83,7 +83,7 @@ pub use gate::{replay_emit_json, replay_emit_object, replay_load};
 use ast::LiquidStatement;
 use errors::ParseError;
 use markup::parser::MarkupParser;
-use markup::tokenizer::MarkupToken;
+use markup::tokenizer::tokenize_markup_at;
 use offsets::Utf16Offsets;
 use tag_definitions::{LiquidLineContext, Parser};
 use value::{JsVal, obj};
@@ -187,19 +187,6 @@ impl Parser for StubParser {
     }
 }
 
-/// The markup tokens of `source[start..end]`, with offsets shifted to the
-/// source, as TS `tokenizeMarkup(markup, start)` returns them.
-fn source_markup_tokens(source: &str, start: usize, end: usize) -> Vec<MarkupToken<'_>> {
-    markup::tokenizer::tokenize_markup(&source[start..end])
-        .into_iter()
-        .map(|token| MarkupToken {
-            start: token.start + start,
-            end: token.end + start,
-            ..token
-        })
-        .collect()
-}
-
 /// Test-only: runs the builtin tag `tag_name` on `source[markup_start..
 /// markup_end]`, as `document/liquid-tags.ts` does. The offsets are UTF-16.
 /// Returns the wire result of `{markup, atEnd}`.
@@ -224,7 +211,7 @@ pub fn debug_parse_tag(
         return Err(JsError::new(&format!("'{tag_name}' is not a builtin tag")));
     };
 
-    let tokens = source_markup_tokens(source, start, end);
+    let tokens = tokenize_markup_at(&source[start..end], start);
     let mut markup = MarkupParser::new(tokens, source, Some(start), Some(end));
     if tolerant {
         markup.enable_tolerant();

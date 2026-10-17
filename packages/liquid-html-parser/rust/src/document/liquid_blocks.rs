@@ -1,6 +1,5 @@
 //! Port of `src/document/liquid-blocks.ts`.
 
-use crate::document::base::tokenize_markup_at;
 use crate::document::factories::{
     DelimiterWhitespace, LiquidTagEnvelope, delimiter_whitespace, envelope_from_tokens,
     make_liquid_branch_named, make_liquid_branch_unnamed, make_liquid_tag_base_case,
@@ -15,6 +14,7 @@ use crate::environment::{TagLookup, tag_for_name};
 use crate::errors::ParseError;
 use crate::js::{js_is_whitespace, js_trim, js_trim_start};
 use crate::markup::parser::MarkupParser;
+use crate::markup::tokenizer::tokenize_markup_at;
 use crate::tag_definitions::{BranchName, TagParse};
 use crate::tags::case::when_branch_parse;
 use crate::tags::r#if::elsif_branch_parse;

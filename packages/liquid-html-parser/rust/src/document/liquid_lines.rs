@@ -2,7 +2,6 @@
 //! `src/shared.ts`, its only caller in the parser.
 
 use crate::ast::LiquidStatement;
-use crate::document::base::tokenize_markup_at;
 use crate::document::factories::{
     DelimiterWhitespace, LiquidTagEnvelope, make_liquid_branch_named, make_liquid_branch_unnamed,
     make_liquid_raw_tag, make_liquid_tag_base_case, make_liquid_tag_base_case_bare,
@@ -18,6 +17,7 @@ use crate::document::tree_builder::{ChildFilterMode, filter_children};
 use crate::environment::{TagLookup, tag_for_name};
 use crate::errors::ParseError;
 use crate::markup::parser::MarkupParser;
+use crate::markup::tokenizer::tokenize_markup_at;
 use crate::tag_definitions::{BranchName, LiquidLine, LiquidLineContext, TagDefinition, TagParse};
 use crate::value::JsVal;
 

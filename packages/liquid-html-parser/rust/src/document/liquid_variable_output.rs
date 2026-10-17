@@ -1,12 +1,12 @@
 //! Port of `src/document/liquid-variable-output.ts`.
 
-use crate::document::base::tokenize_markup_at;
 use crate::document::factories::make_liquid_variable_output;
 use crate::document::parser::DocumentParser;
 use crate::document::tokenizer::TokenType;
 use crate::errors::ParseError;
 use crate::js::js_trim;
 use crate::markup::parser::MarkupParser;
+use crate::markup::tokenizer::tokenize_markup_at;
 use crate::value::JsVal;
 
 // liquidVariableOutput := "{{" liquidVariable "}}"
