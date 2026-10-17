@@ -8,7 +8,7 @@
 //! does not know, and this one skips one character. Every pattern it matches
 //! starts with an ASCII character, so the two agree.
 
-use crate::js::{js_is_ascii_alpha, js_is_digit, js_is_whitespace, js_is_word};
+use crate::js::{js_is_ascii_alpha, js_is_digit, js_is_word, js_trim_start};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MarkupTokenType {
@@ -141,12 +141,7 @@ fn scan_token(
 
 /// JS `/\s+/y`: the end of the whitespace run at `pos`, or `pos` if none.
 fn match_whitespace(markup: &str, pos: usize) -> usize {
-    let run: usize = markup[pos..]
-        .chars()
-        .take_while(|&c| js_is_whitespace(c))
-        .map(char::len_utf8)
-        .sum();
-    pos + run
+    markup.len() - js_trim_start(&markup[pos..]).len()
 }
 
 /// JS `/'[^']*'/y` or `/"[^"]*"/y`, picked by the quote at `pos`.

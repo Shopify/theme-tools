@@ -260,11 +260,11 @@ fn match_doctype_html(body: &str) -> Option<&str> {
         return None;
     }
     let after_doctype = &body["doctype".len()..];
-    let after_ws = after_doctype.trim_start_matches(js_is_whitespace);
+    let after_ws = js_trim_start(after_doctype);
     if after_ws.len() == after_doctype.len() || !js_ascii_ci_starts_with(after_ws, "html") {
         return None;
     }
-    let rest = after_ws["html".len()..].trim_start_matches(js_is_whitespace);
+    let rest = js_trim_start(&after_ws["html".len()..]);
     let group_end = rest.find(js_is_line_terminator).unwrap_or(rest.len());
     Some(&rest[..group_end])
 }
@@ -691,8 +691,11 @@ fn liquid_tag_body_starts_with_whitespace(parser: &DocumentParser<'_>) -> bool {
                 }
                 // A whitespace-only run right before a left-trimming `{{-`/`{%-`
                 // is stripped from the rendered body.
-                // JS `/^\s+$/` at `html.ts:646`. `text` is non-empty here, so `is_blank` matches it.
-                if is_blank(text) && is_left_trimming_open(parser.token_at_checked(i + 1)) {
+                // JS `/^\s+$/` at `html.ts:646`.
+                if !text.is_empty()
+                    && text.chars().all(js_is_whitespace)
+                    && is_left_trimming_open(parser.token_at_checked(i + 1))
+                {
                     continue;
                 }
                 return text.chars().next().is_some_and(js_is_whitespace);

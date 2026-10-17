@@ -10,7 +10,7 @@ use crate::document::parser::DocumentParser;
 use crate::document::tokenizer::{Token, TokenType};
 use crate::document::tree_builder::{ChildFilterMode, filter_children};
 use crate::errors::ParseError;
-use crate::js::{js_is_whitespace, js_is_word};
+use crate::js::{js_is_word, js_trim_start};
 use crate::liquid_doc::parser::parse_liquid_doc;
 use crate::value::JsVal;
 
@@ -202,13 +202,13 @@ fn match_liquid_tag_at(
         Some(rest) => ("-", rest),
         None => ("", rest),
     };
-    let rest = rest.trim_start_matches(js_is_whitespace);
+    let rest = js_trim_start(rest);
     names.iter().enumerate().find_map(|(index, name)| {
         let after_name = rest.strip_prefix(name)?;
         if word_boundary && after_name.chars().next().is_some_and(js_is_word) {
             return None;
         }
-        let after_ws = after_name.trim_start_matches(js_is_whitespace);
+        let after_ws = js_trim_start(after_name);
         let (ws_end, after_dash) = match after_ws.strip_prefix('-') {
             Some(after_dash) => ("-", after_dash),
             None => ("", after_ws),
