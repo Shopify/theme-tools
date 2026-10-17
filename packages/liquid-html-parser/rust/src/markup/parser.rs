@@ -87,26 +87,18 @@ impl<'a> MarkupParser<'a> {
         }
     }
 
-    fn parsing_error(&self, message: String, token: MarkupToken<'_>) -> ParseError {
-        ParseError::LiquidHtmlAstParsing {
-            message,
-            start: token.start,
-            end: token.end,
-            unclosed: None,
-        }
-    }
-
     pub fn consume(&mut self, kind: MarkupTokenType) -> Result<MarkupToken<'a>, ParseError> {
         let token = self.tokens[self.p];
         if token.kind != kind {
-            return Err(self.parsing_error(
+            return Err(ParseError::parsing(
                 format!(
                     "Expected {} but found {} ({})",
                     kind.as_str(),
                     token.kind.as_str(),
                     token.value
                 ),
-                token,
+                token.start,
+                token.end,
             ));
         }
         self.p += 1;
@@ -189,13 +181,14 @@ impl<'a> MarkupParser<'a> {
             MarkupTokenType::Id => self.id_value_expression(token),
             MarkupTokenType::OpenSquare => self.variable_lookup(),
             MarkupTokenType::OpenRound => self.range(),
-            _ => Err(self.parsing_error(
+            _ => Err(ParseError::parsing(
                 format!(
                     "Expected expression but found {} ({})",
                     token.kind.as_str(),
                     token.value
                 ),
-                token,
+                token.start,
+                token.end,
             )),
         }
     }
@@ -245,13 +238,14 @@ impl<'a> MarkupParser<'a> {
             }
             MarkupTokenType::OpenSquare => (JsVal::Null, current.start, current.start),
             _ => {
-                return Err(self.parsing_error(
+                return Err(ParseError::parsing(
                     format!(
                         "Expected identifier or [ but found {} ({})",
                         current.kind.as_str(),
                         current.value
                     ),
-                    current,
+                    current.start,
+                    current.end,
                 ));
             }
         };
@@ -301,7 +295,11 @@ impl<'a> MarkupParser<'a> {
         }
 
         let Some(op) = ComparisonOp::parse(token.value) else {
-            return Err(self.parsing_error(format!("Unknown operator {}", token.value), token));
+            return Err(ParseError::parsing(
+                format!("Unknown operator {}", token.value),
+                token.start,
+                token.end,
+            ));
         };
 
         self.p += 1;
@@ -327,9 +325,11 @@ impl<'a> MarkupParser<'a> {
         }
 
         let Some(op) = LogicalOperator::parse(token.value) else {
-            return Err(
-                self.parsing_error(format!("Unknown logical operator: {}", token.value), token)
-            );
+            return Err(ParseError::parsing(
+                format!("Unknown logical operator: {}", token.value),
+                token.start,
+                token.end,
+            ));
         };
 
         let op_start = token.start;
@@ -537,9 +537,11 @@ impl<'a> MarkupParser<'a> {
         if !self.look(MarkupTokenType::OpenSquare, 0) {
             return Ok(());
         }
-        Err(self.parsing_error(
+        let token = self.peek();
+        Err(ParseError::parsing(
             "nested arrays are not supported in block array literal".to_string(),
-            self.peek(),
+            token.start,
+            token.end,
         ))
     }
 
