@@ -110,16 +110,16 @@ fn trimmed_text_node(node: &JsVal, prev_is_text: bool, next_is_text: bool) -> Op
     let mut end = node.end();
 
     // Trim leading whitespace if preceded by a non-text node or at start
-    // TS `value.replace(/^\s+/, '')`
     if !prev_is_text {
+        // TS `value.replace(/^\s+/, '')` at `tree-builder.ts:110`.
         let trimmed = js_trim_start(value);
         start += value.len() - trimmed.len();
         value = trimmed;
     }
 
     // Trim trailing whitespace if followed by a non-text node or at end
-    // TS `value.replace(/\s+$/, '')`
     if !next_is_text {
+        // TS `value.replace(/\s+$/, '')` at `tree-builder.ts:119`.
         let trimmed = js_trim_end(value);
         end -= value.len() - trimmed.len();
         value = trimmed;
@@ -148,12 +148,13 @@ pub fn merge_adjacent_text_nodes_strip_edges(nodes: Vec<JsVal>, source: &str) ->
     merged[start..end].to_vec()
 }
 
-/// TS `isTextNode(node) && /^\s+$/.test(node.value)`.
+/// TS `isWhitespaceOnlyTextNode`.
 fn is_whitespace_only_text_node(node: &JsVal) -> bool {
     if !is_text_node(node) {
         return false;
     }
     let value = node.string("value");
+    // TS `/^\s+$/.test(node.value)` at `tree-builder.ts:153`.
     !value.is_empty() && value.chars().all(js_is_whitespace)
 }
 

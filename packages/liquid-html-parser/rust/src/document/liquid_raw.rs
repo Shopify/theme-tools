@@ -186,9 +186,12 @@ pub struct EndTagScanResult {
     pub ws_end: &'static str,
 }
 
-/// One match of `\{%(-?)\s*(NAME)<boundary>\s*(-?)%\}` at `start`, trying
-/// each of `names` in order, as a JS alternation does. With
-/// `word_boundary`, the name must be followed by a char that fails
+/// One match at `start` of either TS regex, trying each of `names` in order,
+/// as a JS alternation does:
+/// - `liquid-raw.ts:199`: `` new RegExp(`\\{%(-?)\\s*${endTagName}\\s*(-?)%\\}`) ``
+/// - `liquid-raw.ts:228`: `` new RegExp(`\\{%(-?)\\s*(${openTagName}|${endTagName}|raw|endraw)\\b\\s*(-?)%\\}`, 'g') ``
+///
+/// With `word_boundary`, the name must be followed by a char that fails
 /// `js_is_word`, which is JS `\b` after a word char. Returns the index of the
 /// matched name and the match.
 fn match_liquid_tag_at(
@@ -230,6 +233,8 @@ fn next_tag_open(source: &str, from: usize) -> Option<usize> {
     source[from..].find("{%").map(|found| from + found)
 }
 
+/// The `liquid-raw.ts:199` regex, searched for its first match from
+/// `searchStart`.
 pub fn scan_for_end_tag(
     parser: &DocumentParser<'_>,
     end_tag_name: &str,
@@ -244,7 +249,6 @@ pub fn scan_for_end_tag(
         return scan_for_balanced_end_tag(source, search_start, end_tag_name);
     }
 
-    // JS `new RegExp(`\\{%(-?)\\s*${endTagName}\\s*(-?)%\\}`).exec(source.slice(searchStart))`
     let mut cursor = search_start;
     while let Some(open) = next_tag_open(source, cursor) {
         if let Some((_, result)) = match_liquid_tag_at(source, open, &[end_tag_name], false) {
@@ -257,13 +261,14 @@ pub fn scan_for_end_tag(
 
 /// Depth-balancing end-tag scan for `comment`/`doc`. A nested open of the same
 /// tag pairs with its own end tag, and a nested `raw`...`endraw` is carved out.
+/// The `liquid-raw.ts:228` regex, with flag `g`: each match resumes at the
+/// previous match end, as `lastIndex` does.
 fn scan_for_balanced_end_tag(
     source: &str,
     search_start: usize,
     end_tag_name: &str,
 ) -> Option<EndTagScanResult> {
     let open_tag_name = &end_tag_name[3..]; // "endcomment" -> "comment"
-    // JS `\{%(-?)\s*(${openTagName}|${endTagName}|raw|endraw)\b\s*(-?)%\}`, flag `g`
     let names = [open_tag_name, end_tag_name, "raw", "endraw"];
 
     let mut depth = 0;
@@ -296,7 +301,7 @@ fn scan_for_balanced_end_tag(
     None
 }
 
-/// JS `/\{[{%]/.test(s)`.
+/// JS `/\{[{%]/.test(s)`, at `html.ts:736`, `liquid-raw.ts:266` and `:268`.
 pub fn has_liquid_open(s: &str) -> bool {
     s.contains("{{") || s.contains("{%")
 }

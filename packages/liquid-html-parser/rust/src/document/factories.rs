@@ -57,7 +57,7 @@ pub fn envelope_from_tokens(
     let trimmed = js_trim_start(inner);
     let leading_spaces = inner.len() - trimmed.len();
 
-    // TS `trimmed.search(/\s/)`
+    // TS `trimmed.search(/\s/)` at `factories.ts:70`.
     let tag_name = match trimmed.find(js_is_whitespace) {
         None => js_trim(trimmed),
         Some(first_whitespace) => &trimmed[..first_whitespace],

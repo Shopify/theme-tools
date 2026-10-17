@@ -421,7 +421,7 @@ pub fn peek_tag_name(parser: &DocumentParser<'_>) -> Option<String> {
         ""
     };
     let trimmed = js_trim_start(inner);
-    // TS `trimmed.search(/\s/)`
+    // TS `trimmed.search(/\s/)` at `liquid-blocks.ts:384`.
     let name = match trimmed.find(js_is_whitespace) {
         None => js_trim(trimmed),
         Some(first_ws) => &trimmed[..first_ws],

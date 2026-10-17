@@ -253,8 +253,8 @@ pub fn parse_html_comment(parser: &mut DocumentParser<'_>) -> Result<JsVal, Pars
     Ok(make_html_comment(body, open_token.start, comment_end))
 }
 
-/// JS `body.match(/^doctype\s+html\s*(.*)/i)`: `None` for no match, else
-/// group 1.
+/// JS `body.match(/^doctype\s+html\s*(.*)/i)` at `html.ts:258`: `None` for no
+/// match, else group 1.
 fn match_doctype_html(body: &str) -> Option<&str> {
     if !js_ascii_ci_starts_with(body, "doctype") {
         return None;
@@ -528,9 +528,10 @@ fn skip_space(parser: &mut DocumentParser<'_>) {
     }
 }
 
-/// JS `/^\s/.test(source.slice(token.start, token.start + 1))`. Every
-/// whitespace char is one UTF-16 unit, so the first char decides.
+/// TS `isSpaceToken`. Every whitespace char is one UTF-16 unit, so the first
+/// char decides.
 fn is_space_token(parser: &DocumentParser<'_>, token: Token) -> bool {
+    // JS `/^\s/.test(source.slice(token.start, token.start + 1))` at `html.ts:494`.
     parser.source[token.start..]
         .chars()
         .next()
@@ -683,6 +684,7 @@ fn liquid_tag_body_starts_with_whitespace(parser: &DocumentParser<'_>) -> bool {
             TokenType::Text if !in_tag => {
                 let mut text = &source[token.start..token.end];
                 if trim_next {
+                    // JS `text.replace(/^\s+/, '')` at `html.ts:641`.
                     text = js_trim_start(text); // `-%}` strips leading whitespace
                 }
                 trim_next = false;
@@ -698,6 +700,7 @@ fn liquid_tag_body_starts_with_whitespace(parser: &DocumentParser<'_>) -> bool {
                 {
                     continue;
                 }
+                // JS `/^\s/.test(text)` at `html.ts:647`.
                 return text.chars().next().is_some_and(js_is_whitespace);
             }
             // Body begins with a `{{ }}` drop: name continuation, not attributes.
@@ -729,7 +732,7 @@ fn open_tag_name_at<'a>(parser: &DocumentParser<'a>, i: usize) -> Option<&'a str
         return None;
     }
     let trimmed = js_trim_start(&parser.source[text.start..text.end]);
-    // TS `trimmed.search(/\s/)`
+    // TS `trimmed.search(/\s/)` at `html.ts:706`.
     Some(match trimmed.find(js_is_whitespace) {
         None => js_trim(trimmed),
         Some(first_ws) => &trimmed[..first_ws],
