@@ -73,7 +73,7 @@ impl<'a> DocumentParser<'a> {
     /// returns false. Markup-construction sites consult this to enable the
     /// markup parser's tolerant recovery (`enable_tolerant()`).
     pub fn is_tolerant(&self) -> bool {
-        false
+        self.tolerant
     }
 
     pub fn token_at(&self, index: usize) -> Token {

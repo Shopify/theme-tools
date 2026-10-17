@@ -9,7 +9,7 @@
 use crate::ast::LiquidStatement;
 use crate::document::factories::make_document_node;
 use crate::document::liquid_lines::parse_liquid_statement;
-use crate::document::node_dispatch::parse_node;
+use crate::document::node_dispatch::parse_node as parse_node_fn;
 use crate::document::tokenizer::{Token, TokenType};
 use crate::document::tree_builder::{ChildFilterMode, filter_children};
 use crate::errors::ParseError;
@@ -29,6 +29,7 @@ pub struct DocumentParser<'a> {
     pub(crate) allow_unclosed_document_node: bool,
     pub(crate) in_attribute_context: bool,
     pub(crate) in_attribute_value_context: bool,
+    pub(crate) tolerant: bool,
 }
 
 impl<'a> DocumentParser<'a> {
@@ -47,17 +48,24 @@ impl<'a> DocumentParser<'a> {
             allow_unclosed_document_node,
             in_attribute_context: false,
             in_attribute_value_context: false,
+            tolerant: false,
         }
+    }
+
+    /// TS DocumentParser.parseNode(), the dispatch point TolerantDocumentParser overrides.
+    pub fn parse_node(&mut self) -> Result<JsVal, ParseError> {
+        parse_node_fn(self)
     }
 
     // document := yamlFrontmatter? node*
     pub fn parse_document(&mut self) -> Result<JsVal, ParseError> {
         let mut children = Vec::new();
         if self.check(TokenType::YamlFrontmatter) {
-            children.push(parse_node(self)?);
+            // TS parser.ts:158 calls parseNodeFn directly, not the overridable method.
+            children.push(parse_node_fn(self)?);
         }
         while !self.is_at_end() {
-            children.push(parse_node(self)?);
+            children.push(self.parse_node()?);
         }
         Ok(make_document_node(
             filter_children(ChildFilterMode::Syntactic, children, self.source),

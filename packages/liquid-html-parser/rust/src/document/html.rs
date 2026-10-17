@@ -13,7 +13,6 @@ use crate::document::liquid_blocks::{is_block_terminator, peek_tag_name};
 use crate::document::liquid_raw::{has_liquid_open, parse_liquid_in_range};
 use crate::document::liquid_tags::parse_liquid_tag;
 use crate::document::liquid_variable_output::parse_liquid_variable_output;
-use crate::document::node_dispatch::parse_node;
 use crate::document::parser::DocumentParser;
 use crate::document::tokenizer::{Token, TokenType};
 use crate::document::tree_builder::{ChildFilterMode, compound_names_match, filter_children};
@@ -120,7 +119,7 @@ pub fn parse_html_element(parser: &mut DocumentParser<'_>) -> Result<JsVal, Pars
             }
             break;
         }
-        children.push(parse_node(parser)?);
+        children.push(parser.parse_node()?);
     }
 
     if parser.is_at_end() || (parser.allow_unclosed_html && is_block_terminator(parser)) {

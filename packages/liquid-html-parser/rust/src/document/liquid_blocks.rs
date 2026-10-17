@@ -8,7 +8,6 @@ use crate::document::factories::{
 };
 use crate::document::html::parse_branch_attributes_impl;
 use crate::document::liquid_tags::parse_liquid_tag;
-use crate::document::node_dispatch::parse_node;
 use crate::document::parser::DocumentParser;
 use crate::document::tokenizer::{Token, TokenType};
 use crate::document::tree_builder::{ChildFilterMode, filter_children, merge_adjacent_text_nodes};
@@ -204,7 +203,7 @@ pub fn parse_block_body(
         if parser.in_attribute_context && !parser.in_attribute_value_context {
             children.extend(parse_branch_attributes_impl(parser)?);
         } else {
-            children.push(parse_node(parser)?);
+            children.push(parser.parse_node()?);
         }
         if parser.get_position() == progress_start {
             if !parser.allow_unclosed_document_node {
@@ -307,7 +306,7 @@ pub fn parse_branched_body(
         if parser.in_attribute_context && !parser.in_attribute_value_context {
             current_children.extend(parse_branch_attributes_impl(parser)?);
         } else {
-            current_children.push(parse_node(parser)?);
+            current_children.push(parser.parse_node()?);
         }
         if parser.get_position() == progress_start {
             if !parser.allow_unclosed_document_node {
