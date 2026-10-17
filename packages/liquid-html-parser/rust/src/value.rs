@@ -15,6 +15,8 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use crate::types::NodeTypes;
+
 #[derive(Clone, Debug)]
 pub enum JsVal {
     Undefined,
@@ -57,6 +59,11 @@ impl JsVal {
 
     pub fn str(value: &str) -> JsVal {
         JsVal::Str(value.to_string())
+    }
+
+    /// JS `NodeTypes.X`, the string a node's `type` key holds.
+    pub fn node_type(kind: NodeTypes) -> JsVal {
+        JsVal::str(kind.as_str())
     }
 
     /// JS `{ start, end }`, a new position object.

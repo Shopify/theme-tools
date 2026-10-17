@@ -29,7 +29,7 @@ pub fn parse_for_markup(
     }
 
     Ok(obj! {
-        "type" => JsVal::str(NodeTypes::ForMarkup.as_str()),
+        "type" => JsVal::node_type(NodeTypes::ForMarkup),
         "variableName" => JsVal::str(name_token.value),
         "collection" => collection,
         "reversed" => JsVal::Bool(reversed),

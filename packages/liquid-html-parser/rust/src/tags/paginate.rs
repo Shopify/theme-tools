@@ -31,7 +31,7 @@ pub fn parse(
 
     let start = collection.start();
     Ok(obj! {
-        "type" => JsVal::str(NodeTypes::PaginateMarkup.as_str()),
+        "type" => JsVal::node_type(NodeTypes::PaginateMarkup),
         "collection" => collection,
         "pageSize" => page_size,
         "args" => JsVal::array(args),

@@ -32,10 +32,6 @@ pub struct DelimiterWhitespace {
     pub end: &'static str,
 }
 
-fn node_type(kind: NodeTypes) -> JsVal {
-    JsVal::str(kind.as_str())
-}
-
 /// TS `token.end - token.start > 2 ? '-' : ''` for a Liquid delimiter.
 pub fn delimiter_whitespace(token: Token) -> &'static str {
     if token.end - token.start > 2 { "-" } else { "" }
@@ -43,7 +39,7 @@ pub fn delimiter_whitespace(token: Token) -> &'static str {
 
 pub fn make_document_node(children: Vec<JsVal>, source: &str) -> JsVal {
     obj! {
-        "type" => node_type(NodeTypes::Document),
+        "type" => JsVal::node_type(NodeTypes::Document),
         "children" => JsVal::array(children),
         "name" => JsVal::str("#document"),
         "_source" => JsVal::Null,
@@ -134,7 +130,7 @@ pub fn make_liquid_tag_base_case(
         js_trim(&envelope.markup_string)
     };
     obj! {
-        "type" => node_type(NodeTypes::LiquidTag),
+        "type" => JsVal::node_type(NodeTypes::LiquidTag),
         "name" => JsVal::str(&envelope.tag_name),
         "markup" => JsVal::str(markup),
         "children" => children,
@@ -175,7 +171,7 @@ pub fn make_liquid_tag_named(
 ) -> JsVal {
     let pos_end = position_end(envelope, &block_end_position);
     obj! {
-        "type" => node_type(NodeTypes::LiquidTag),
+        "type" => JsVal::node_type(NodeTypes::LiquidTag),
         "name" => JsVal::str(&envelope.tag_name),
         "markup" => markup,
         "children" => children,
@@ -200,7 +196,7 @@ fn unfinalized_block_end_position() -> JsVal {
 
 pub fn make_liquid_branch_unnamed(body_start: usize) -> JsVal {
     obj! {
-        "type" => node_type(NodeTypes::LiquidBranch),
+        "type" => JsVal::node_type(NodeTypes::LiquidBranch),
         "name" => JsVal::Null,
         "markup" => JsVal::str(""),
         "children" => JsVal::array(Vec::new()),
@@ -216,7 +212,7 @@ pub fn make_liquid_branch_unnamed(body_start: usize) -> JsVal {
 
 pub fn make_liquid_branch_named(envelope: &LiquidTagEnvelope, markup: JsVal) -> JsVal {
     obj! {
-        "type" => node_type(NodeTypes::LiquidBranch),
+        "type" => JsVal::node_type(NodeTypes::LiquidBranch),
         "name" => JsVal::str(&envelope.tag_name),
         "markup" => markup,
         "children" => JsVal::array(Vec::new()),
@@ -252,7 +248,7 @@ pub fn make_liquid_raw_tag(
 
     let end = block_end_position.get("end").offset();
     obj! {
-        "type" => node_type(NodeTypes::LiquidRawTag),
+        "type" => JsVal::node_type(NodeTypes::LiquidRawTag),
         "name" => JsVal::str(&envelope.tag_name),
         "markup" => JsVal::str(js_trim(&envelope.markup_string)),
         "markupPosition" => JsVal::position(envelope.markup_offset, markup_end),
@@ -271,7 +267,7 @@ pub fn make_liquid_raw_tag(
 /// `markup` is a string or a `LiquidVariable`.
 pub fn make_liquid_variable_output(open_token: Token, close_token: Token, markup: JsVal) -> JsVal {
     obj! {
-        "type" => node_type(NodeTypes::LiquidVariableOutput),
+        "type" => JsVal::node_type(NodeTypes::LiquidVariableOutput),
         "markup" => markup,
         "whitespaceStart" => JsVal::str(delimiter_whitespace(open_token)),
         "whitespaceEnd" => JsVal::str(delimiter_whitespace(close_token)),
@@ -283,7 +279,7 @@ pub fn make_liquid_variable_output(open_token: Token, close_token: Token, markup
 
 pub fn make_text_node(value: &str, start: usize, end: usize) -> JsVal {
     obj! {
-        "type" => node_type(NodeTypes::TextNode),
+        "type" => JsVal::node_type(NodeTypes::TextNode),
         "value" => JsVal::str(value),
         "position" => JsVal::position(start, end),
         "source" => JsVal::Null,
@@ -298,7 +294,7 @@ pub fn make_raw_markup(
     end: usize,
 ) -> JsVal {
     obj! {
-        "type" => node_type(NodeTypes::RawMarkup),
+        "type" => JsVal::node_type(NodeTypes::RawMarkup),
         "kind" => JsVal::str(kind.as_str()),
         "value" => JsVal::str(value),
         "nodes" => JsVal::array(nodes),
@@ -309,7 +305,7 @@ pub fn make_raw_markup(
 
 pub fn make_yaml_frontmatter(body: &str, start: usize, end: usize) -> JsVal {
     obj! {
-        "type" => node_type(NodeTypes::YAMLFrontmatter),
+        "type" => JsVal::node_type(NodeTypes::YAMLFrontmatter),
         "body" => JsVal::str(body),
         "position" => JsVal::position(start, end),
         "source" => JsVal::Null,
@@ -328,7 +324,7 @@ pub fn make_html_element(
         block_end_position.get("end").offset(),
     );
     obj! {
-        "type" => node_type(NodeTypes::HtmlElement),
+        "type" => JsVal::node_type(NodeTypes::HtmlElement),
         "name" => JsVal::array(name),
         "attributes" => JsVal::array(attributes),
         "children" => JsVal::array(children),
@@ -346,7 +342,7 @@ pub fn make_html_void_element(
     block_start_position: JsVal,
 ) -> JsVal {
     obj! {
-        "type" => node_type(NodeTypes::HtmlVoidElement),
+        "type" => JsVal::node_type(NodeTypes::HtmlVoidElement),
         "name" => JsVal::str(name),
         "attributes" => JsVal::array(attributes),
         "blockStartPosition" => block_start_position.clone(),
@@ -362,7 +358,7 @@ pub fn make_html_self_closing_element(
     block_start_position: JsVal,
 ) -> JsVal {
     obj! {
-        "type" => node_type(NodeTypes::HtmlSelfClosingElement),
+        "type" => JsVal::node_type(NodeTypes::HtmlSelfClosingElement),
         "name" => JsVal::array(name),
         "attributes" => JsVal::array(attributes),
         "blockStartPosition" => block_start_position.clone(),
@@ -383,7 +379,7 @@ pub fn make_html_raw_node(
         block_end_position.get("end").offset(),
     );
     obj! {
-        "type" => node_type(NodeTypes::HtmlRawNode),
+        "type" => JsVal::node_type(NodeTypes::HtmlRawNode),
         "name" => JsVal::str(name),
         "attributes" => JsVal::array(attributes),
         "body" => body,
@@ -396,7 +392,7 @@ pub fn make_html_raw_node(
 
 pub fn make_html_comment(body: &str, start: usize, end: usize) -> JsVal {
     obj! {
-        "type" => node_type(NodeTypes::HtmlComment),
+        "type" => JsVal::node_type(NodeTypes::HtmlComment),
         "body" => JsVal::str(body),
         "position" => JsVal::position(start, end),
         "source" => JsVal::Null,
@@ -406,7 +402,7 @@ pub fn make_html_comment(body: &str, start: usize, end: usize) -> JsVal {
 /// `legacy_doctype_string` is `None` for TS `null`.
 pub fn make_html_doctype(legacy_doctype_string: Option<&str>, start: usize, end: usize) -> JsVal {
     obj! {
-        "type" => node_type(NodeTypes::HtmlDoctype),
+        "type" => JsVal::node_type(NodeTypes::HtmlDoctype),
         "legacyDoctypeString" => legacy_doctype_string.map_or(JsVal::Null, JsVal::str),
         "position" => JsVal::position(start, end),
         "source" => JsVal::Null,
@@ -422,7 +418,7 @@ fn make_attr_with_value(
     end: usize,
 ) -> JsVal {
     obj! {
-        "type" => node_type(kind),
+        "type" => JsVal::node_type(kind),
         "name" => JsVal::array(name),
         "value" => JsVal::array(value),
         "attributePosition" => attribute_position,
@@ -484,7 +480,7 @@ pub fn make_attr_unquoted(
 
 pub fn make_attr_empty(name: Vec<JsVal>, start: usize, end: usize) -> JsVal {
     obj! {
-        "type" => node_type(NodeTypes::AttrEmpty),
+        "type" => JsVal::node_type(NodeTypes::AttrEmpty),
         "name" => JsVal::array(name),
         "position" => JsVal::position(start, end),
         "source" => JsVal::Null,
@@ -493,7 +489,7 @@ pub fn make_attr_empty(name: Vec<JsVal>, start: usize, end: usize) -> JsVal {
 
 pub fn make_html_dangling_marker_close(name: Vec<JsVal>, start: usize, end: usize) -> JsVal {
     obj! {
-        "type" => node_type(NodeTypes::HtmlDanglingMarkerClose),
+        "type" => JsVal::node_type(NodeTypes::HtmlDanglingMarkerClose),
         "name" => JsVal::array(name),
         "blockStartPosition" => JsVal::position(start, end),
         "position" => JsVal::position(start, end),

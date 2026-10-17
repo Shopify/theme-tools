@@ -123,7 +123,7 @@ pub fn adapt_conditional(node: Expression) -> JsVal {
         Expression::Value(value) => value,
         Expression::Logical(node) => adapt_logical(*node),
         Expression::Comparison(node) => obj! {
-            "type" => JsVal::str(NodeTypes::Comparison.as_str()),
+            "type" => JsVal::node_type(NodeTypes::Comparison),
             "comparator" => JsVal::str(to_comparators(node.op).as_str()),
             "left" => node.left,
             "right" => node.right,
@@ -143,7 +143,7 @@ fn adapt_logical(node: LogicalBinaryExpression) -> JsVal {
         right.set("position", position);
     }
     obj! {
-        "type" => JsVal::str(NodeTypes::LogicalExpression.as_str()),
+        "type" => JsVal::node_type(NodeTypes::LogicalExpression),
         "relation" => JsVal::str(to_relation(node.op)),
         "left" => adapt_conditional(node.left),
         "right" => right,
@@ -158,7 +158,7 @@ pub fn adapt_complex(node: Expression) -> JsVal {
     }
     let position = node.position();
     obj! {
-        "type" => JsVal::str(NodeTypes::BooleanExpression.as_str()),
+        "type" => JsVal::node_type(NodeTypes::BooleanExpression),
         "condition" => adapt_conditional(node),
         "position" => position,
         "source" => JsVal::Null,

@@ -20,7 +20,7 @@ pub fn parse(
     }
     let value = markup.liquid_variable()?;
     Ok(obj! {
-        "type" => JsVal::str(NodeTypes::AssignMarkup.as_str()),
+        "type" => JsVal::node_type(NodeTypes::AssignMarkup),
         "name" => JsVal::str(name),
         "value" => value,
         "position" => JsVal::position(start, markup.peek().start),

@@ -8,7 +8,7 @@ use crate::value::{JsVal, obj};
 
 pub fn make_text_node(value: &str, start: usize, end: usize) -> JsVal {
     obj! {
-        "type" => JsVal::str(NodeTypes::TextNode.as_str()),
+        "type" => JsVal::node_type(NodeTypes::TextNode),
         "value" => JsVal::str(value),
         "position" => JsVal::position(start, end),
         "source" => JsVal::Null,
@@ -24,7 +24,7 @@ pub fn make_liquid_doc_param_node(
     end: usize,
 ) -> JsVal {
     obj! {
-        "type" => JsVal::str(NodeTypes::LiquidDocParamNode.as_str()),
+        "type" => JsVal::node_type(NodeTypes::LiquidDocParamNode),
         "name" => JsVal::str("param"),
         "paramName" => param_name,
         "paramType" => param_type,
@@ -43,7 +43,7 @@ pub fn make_liquid_doc_description_node(
     end: usize,
 ) -> JsVal {
     obj! {
-        "type" => JsVal::str(NodeTypes::LiquidDocDescriptionNode.as_str()),
+        "type" => JsVal::node_type(NodeTypes::LiquidDocDescriptionNode),
         "name" => JsVal::str("description"),
         "content" => content,
         "isImplicit" => JsVal::Bool(is_implicit),
@@ -60,7 +60,7 @@ pub fn make_liquid_doc_example_node(
     end: usize,
 ) -> JsVal {
     obj! {
-        "type" => JsVal::str(NodeTypes::LiquidDocExampleNode.as_str()),
+        "type" => JsVal::node_type(NodeTypes::LiquidDocExampleNode),
         "name" => JsVal::str("example"),
         "content" => content,
         "isInline" => JsVal::Bool(is_inline),
@@ -71,7 +71,7 @@ pub fn make_liquid_doc_example_node(
 
 pub fn make_liquid_doc_prompt_node(content: JsVal, start: usize, end: usize) -> JsVal {
     obj! {
-        "type" => JsVal::str(NodeTypes::LiquidDocPromptNode.as_str()),
+        "type" => JsVal::node_type(NodeTypes::LiquidDocPromptNode),
         "name" => JsVal::str("prompt"),
         "content" => content,
         "position" => JsVal::position(start, end),

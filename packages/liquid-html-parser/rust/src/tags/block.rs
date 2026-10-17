@@ -55,7 +55,7 @@ pub fn parse(
 
     let start = name.start();
     Ok(obj! {
-        "type" => JsVal::str(NodeTypes::BlockMarkup.as_str()),
+        "type" => JsVal::node_type(NodeTypes::BlockMarkup),
         "name" => name,
         "args" => JsVal::array(args),
         "position" => JsVal::position(start, markup.peek().start),

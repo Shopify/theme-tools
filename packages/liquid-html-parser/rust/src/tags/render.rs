@@ -43,7 +43,7 @@ fn parse_render_markup(
         let name = markup.value_expression()?;
         let end = name.end();
         variable = obj! {
-            "type" => JsVal::str(NodeTypes::RenderVariableExpression.as_str()),
+            "type" => JsVal::node_type(NodeTypes::RenderVariableExpression),
             "kind" => JsVal::str(kind),
             "name" => name,
             "position" => JsVal::position(kw_start, end),
@@ -56,7 +56,7 @@ fn parse_render_markup(
     if markup.id("as") {
         let alias_token = markup.consume(MarkupTokenType::Id)?;
         alias = obj! {
-            "type" => JsVal::str(NodeTypes::RenderAliasExpression.as_str()),
+            "type" => JsVal::node_type(NodeTypes::RenderAliasExpression),
             "value" => JsVal::str(alias_token.value),
             "position" => JsVal::position(as_start, alias_token.end),
             "source" => JsVal::Null,
@@ -74,7 +74,7 @@ fn parse_render_markup(
     let end = markup.peek().start;
     let start = snippet.start();
     Ok(obj! {
-        "type" => JsVal::str(NodeTypes::RenderMarkup.as_str()),
+        "type" => JsVal::node_type(NodeTypes::RenderMarkup),
         "snippet" => snippet,
         "variable" => variable,
         "alias" => alias,

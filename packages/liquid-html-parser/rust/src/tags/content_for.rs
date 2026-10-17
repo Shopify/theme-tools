@@ -32,7 +32,7 @@ pub fn parse(
 
     let start = content_for_type.start();
     Ok(obj! {
-        "type" => JsVal::str(NodeTypes::ContentForMarkup.as_str()),
+        "type" => JsVal::node_type(NodeTypes::ContentForMarkup),
         "contentForType" => content_for_type,
         "args" => JsVal::array(args),
         "position" => JsVal::position(start, markup.peek().start),

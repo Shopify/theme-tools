@@ -29,7 +29,7 @@ pub fn parse(
 
     let start = first.start();
     Ok(obj! {
-        "type" => JsVal::str(NodeTypes::CycleMarkup.as_str()),
+        "type" => JsVal::node_type(NodeTypes::CycleMarkup),
         "groupName" => group_name,
         "args" => JsVal::array(args),
         "position" => JsVal::position(start, markup.peek().start),

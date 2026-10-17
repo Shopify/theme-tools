@@ -35,10 +35,6 @@ pub struct BodyContext<'a> {
     pub body_end: usize,
 }
 
-fn node_type(kind: NodeTypes) -> JsVal {
-    JsVal::str(kind.as_str())
-}
-
 impl<'a> MarkupParser<'a> {
     /// `tokens` must end with the EndOfString token, as `tokenize_markup`
     /// returns them, with offsets shifted to the source.
@@ -174,7 +170,7 @@ impl<'a> MarkupParser<'a> {
             MarkupTokenType::String => {
                 self.p += 1;
                 Ok(obj! {
-                    "type" => node_type(NodeTypes::String),
+                    "type" => JsVal::node_type(NodeTypes::String),
                     "single" => JsVal::Bool(token.value.starts_with('\'')),
                     "value" => JsVal::str(&token.value[1..token.value.len() - 1]),
                     "position" => JsVal::position(token.start, token.end),
@@ -184,7 +180,7 @@ impl<'a> MarkupParser<'a> {
             MarkupTokenType::Number => {
                 self.p += 1;
                 Ok(obj! {
-                    "type" => node_type(NodeTypes::Number),
+                    "type" => JsVal::node_type(NodeTypes::Number),
                     "value" => JsVal::str(token.value),
                     "position" => JsVal::position(token.start, token.end),
                     "source" => JsVal::Null,
@@ -215,7 +211,7 @@ impl<'a> MarkupParser<'a> {
         };
         self.p += 1;
         Ok(obj! {
-            "type" => node_type(NodeTypes::LiquidLiteral),
+            "type" => JsVal::node_type(NodeTypes::LiquidLiteral),
             "keyword" => JsVal::str(token.value),
             "value" => value,
             "position" => JsVal::position(token.start, token.end),
@@ -231,7 +227,7 @@ impl<'a> MarkupParser<'a> {
         let end = self.value_expression()?;
         let close_token = self.consume(MarkupTokenType::CloseRound)?;
         Ok(obj! {
-            "type" => node_type(NodeTypes::Range),
+            "type" => JsVal::node_type(NodeTypes::Range),
             "start" => start,
             "end" => end,
             "position" => JsVal::position(open_token.start, close_token.end),
@@ -266,7 +262,7 @@ impl<'a> MarkupParser<'a> {
             if self.consume_optional(MarkupTokenType::Dot).is_some() {
                 let prop = self.consume(MarkupTokenType::Id)?;
                 lookups.push(obj! {
-                    "type" => node_type(NodeTypes::String),
+                    "type" => JsVal::node_type(NodeTypes::String),
                     "value" => JsVal::str(prop.value),
                     "position" => JsVal::position(prop.start, prop.end),
                     "source" => JsVal::Null,
@@ -286,7 +282,7 @@ impl<'a> MarkupParser<'a> {
         }
 
         Ok(obj! {
-            "type" => node_type(NodeTypes::VariableLookup),
+            "type" => JsVal::node_type(NodeTypes::VariableLookup),
             "name" => name,
             "lookups" => JsVal::array(lookups),
             "lookupModes" => JsVal::array(lookup_modes),
@@ -373,7 +369,7 @@ impl<'a> MarkupParser<'a> {
         let end = self.eos_start();
         let raw_source = &self.source[start..token_end];
         Ok(obj! {
-            "type" => node_type(NodeTypes::LiquidVariable),
+            "type" => JsVal::node_type(NodeTypes::LiquidVariable),
             "expression" => expr,
             "filters" => JsVal::array(filter_list),
             "rawSource" => JsVal::str(raw_source),
@@ -420,7 +416,7 @@ impl<'a> MarkupParser<'a> {
             }
         }
         Ok(obj! {
-            "type" => node_type(NodeTypes::LiquidFilter),
+            "type" => JsVal::node_type(NodeTypes::LiquidFilter),
             "name" => JsVal::str(name_token.value),
             "args" => JsVal::array(args),
             "position" => JsVal::position(previous_end, end),
@@ -465,7 +461,7 @@ impl<'a> MarkupParser<'a> {
         let value = self.value_expression()?;
         let end = value.end();
         Ok(obj! {
-            "type" => node_type(NodeTypes::NamedArgument),
+            "type" => JsVal::node_type(NodeTypes::NamedArgument),
             "name" => JsVal::Str(name),
             "value" => value,
             "position" => JsVal::position(name_token.start, end),
@@ -518,7 +514,7 @@ impl<'a> MarkupParser<'a> {
         let value = self.block_value_expression()?;
         let position = JsVal::position(name_token.start, value.end());
         args.push(obj! {
-            "type" => node_type(NodeTypes::NamedArgument),
+            "type" => JsVal::node_type(NodeTypes::NamedArgument),
             "name" => JsVal::Str(name),
             "value" => value,
             "position" => position,
