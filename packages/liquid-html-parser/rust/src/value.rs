@@ -8,6 +8,8 @@
 //! - setting a key that exists replaces its value in place, and a new key
 //!   appends, which is JS key order for non-integer keys;
 //! - `Offset` is a UTF-8 byte offset, converted to UTF-16 only when emitted;
+//! - `OffsetPlusUnits` is a byte offset plus a UTF-16 length that is not
+//!   source text there, emitted as the offset's UTF-16 value plus the length;
 //! - `ProtoKey` names a value inherited from `Object.prototype`.
 
 use std::cell::RefCell;
@@ -19,6 +21,7 @@ pub enum JsVal {
     Null,
     Bool(bool),
     Offset(usize),
+    OffsetPlusUnits(usize, usize),
     Str(String),
     Arr(Rc<RefCell<Vec<JsVal>>>),
     Obj(Rc<RefCell<Vec<(String, JsVal)>>>),
@@ -61,6 +64,12 @@ impl JsVal {
         obj! { "start" => JsVal::Offset(start), "end" => JsVal::Offset(end) }
     }
 
+    /// JS `{ start, end: start + units }`, where `units` is a UTF-16 length
+    /// that is not source text at `start`, so it cannot be a byte count.
+    pub fn position_plus_units(start: usize, units: usize) -> JsVal {
+        obj! { "start" => JsVal::Offset(start), "end" => JsVal::OffsetPlusUnits(start, units) }
+    }
+
     /// JS `obj[key]`: `undefined` for a missing key or a value that is not an
     /// object.
     pub fn get(&self, key: &str) -> JsVal {
@@ -100,6 +109,19 @@ impl JsVal {
             panic!("JsVal::offset on a value that is not an offset");
         };
         *offset
+    }
+
+    /// JS `self > byte` for an end offset in `source`. TS compares UTF-16
+    /// numbers, so an `OffsetPlusUnits` before `byte` counts the units between.
+    pub fn offset_after(&self, byte: usize, source: &str) -> bool {
+        match *self {
+            JsVal::Offset(offset) => offset > byte,
+            JsVal::OffsetPlusUnits(offset, units) if offset < byte => {
+                units > source[offset..byte].encode_utf16().count()
+            }
+            JsVal::OffsetPlusUnits(offset, units) => offset > byte || units > 0,
+            _ => panic!("JsVal::offset_after on a value that is not an offset"),
+        }
     }
 
     /// JS `node.position.start`.

@@ -152,7 +152,10 @@ pub fn parse_line_block_tag(
         markup_offset,
     );
 
-    let end_tag_length = 3 + envelope.tag_name.len(); // 'end' + tagName
+    // 'end' + tagName, counted in UTF-16 units as TS `.length` is. When the
+    // block is unclosed, TS adds it to the last line's trimmed end, where
+    // `end<tagName>` is not source text, so it cannot be added as bytes.
+    let end_tag_units = 3 + envelope.tag_name.encode_utf16().count();
 
     let (children, end_name_offset) = if branches.is_empty() {
         parse_line_block_body(parser, &envelope.tag_name, ctx)?
@@ -160,7 +163,7 @@ pub fn parse_line_block_tag(
         parse_line_branched_body(parser, &envelope.tag_name, branches, ctx)?
     };
     let end = EndTag {
-        position: JsVal::position(end_name_offset, end_name_offset + end_tag_length),
+        position: JsVal::position_plus_units(end_name_offset, end_tag_units),
         whitespace: LINE_WHITESPACE,
     };
     Ok(make_block_tag(envelope, block_markup, children, end))

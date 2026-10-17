@@ -235,6 +235,42 @@ const J_INPUTS: Input[] = [
     }),
   },
   {
+    id: 'j4-line-end-if-ideo',
+    source: '{% liquid\n if a \u3000 %}',
+    check: hasNode({
+      type: 'LiquidTag',
+      name: 'liquid',
+      reason: "Unclosed block tag 'if' in {% liquid %} block",
+    }),
+  },
+  {
+    id: 'j4-line-end-capture-ideo',
+    source: '{% liquid\n capture a \u3000 %}',
+    check: hasNode({
+      type: 'LiquidTag',
+      name: 'liquid',
+      reason: "Unclosed block tag 'capture' in {% liquid %} block",
+    }),
+  },
+  {
+    id: 'j4-line-end-if-bom',
+    source: '{% liquid\n if a \uFEFF %}',
+    check: hasNode({
+      type: 'LiquidTag',
+      name: 'liquid',
+      reason: "Unclosed block tag 'if' in {% liquid %} block",
+    }),
+  },
+  {
+    id: 'j4-line-end-if-two-ideo',
+    source: '{% liquid\n if a \u3000\u3000 %}',
+    check: hasNode({
+      type: 'LiquidTag',
+      name: 'liquid',
+      reason: "Unclosed block tag 'if' in {% liquid %} block",
+    }),
+  },
+  {
     id: 'j6-word-after-name',
     source: '{% comment %}a{% endcomment\u00E9 %}b{% endcomment %}',
     check: hasNode({ type: 'LiquidRawTag', name: 'comment' }),

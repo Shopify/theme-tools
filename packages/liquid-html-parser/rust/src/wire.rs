@@ -90,6 +90,9 @@ impl<'a> Emitter<'a> {
             JsVal::Offset(byte) => {
                 let _ = write!(self.out, "{}", self.offsets.utf16(*byte));
             }
+            JsVal::OffsetPlusUnits(byte, units) => {
+                let _ = write!(self.out, "{}", self.offsets.utf16(*byte) + units);
+            }
             JsVal::Str(text) => push_json_string(self.out, text),
             JsVal::Arr(items) => {
                 if self.alias(Rc::as_ptr(items) as usize) {

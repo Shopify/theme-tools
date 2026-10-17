@@ -358,9 +358,11 @@ pub fn finalize_branch(
     branch.set("blockEndPosition", JsVal::position(end_pos, end_pos));
     let position = branch.get("position");
     position.set("end", JsVal::Offset(end_pos));
-    let last_child_end = all_merged.last().map(JsVal::end);
-    if let Some(last_child_end) = last_child_end.filter(|end| *end > end_pos) {
-        position.set("end", JsVal::Offset(last_child_end));
+    let last_child_end = all_merged
+        .last()
+        .map(|child| child.get("position").get("end"));
+    if let Some(last_child_end) = last_child_end.filter(|end| end.offset_after(end_pos, source)) {
+        position.set("end", last_child_end);
     }
 }
 

@@ -101,11 +101,19 @@ fn delimiter_end(delimiter_whitespace: Option<DelimiterWhitespace>) -> JsVal {
 }
 
 /// TS `blockEndPosition ? blockEndPosition.end : envelope.blockStartPosition.end`.
-fn position_end(envelope: &LiquidTagEnvelope, block_end_position: &JsVal) -> usize {
+/// The value is kept whole, because a line block's end can be an
+/// `OffsetPlusUnits`.
+fn position_end(envelope: &LiquidTagEnvelope, block_end_position: &JsVal) -> JsVal {
     match block_end_position {
-        JsVal::Undefined => envelope.block_start_position.get("end").offset(),
-        position => position.get("end").offset(),
+        JsVal::Undefined => envelope.block_start_position.get("end"),
+        position => position.get("end"),
     }
+}
+
+/// TS `{ start: envelope.blockStartPosition.start, end: posEnd }`.
+fn tag_position(envelope: &LiquidTagEnvelope, pos_end: JsVal) -> JsVal {
+    let start = envelope.block_start_position.get("start").offset();
+    obj! { "start" => JsVal::Offset(start), "end" => pos_end }
 }
 
 /// `children` and `block_end_position` are `Undefined` when TS leaves them
@@ -137,7 +145,7 @@ pub fn make_liquid_tag_base_case(
         "blockStartPosition" => envelope.block_start_position.clone(),
         "blockEndPosition" => block_end_position,
         "markupPosition" => JsVal::position(envelope.markup_offset, envelope.markup_end),
-        "position" => JsVal::position(envelope.block_start_position.get("start").offset(), pos_end),
+        "position" => tag_position(envelope, pos_end),
         "source" => JsVal::Null,
         "reason" => reason.map_or(JsVal::Undefined, JsVal::Str),
     }
@@ -178,7 +186,7 @@ pub fn make_liquid_tag_named(
         "blockStartPosition" => envelope.block_start_position.clone(),
         "blockEndPosition" => block_end_position,
         "markupPosition" => JsVal::position(envelope.markup_offset, envelope.markup_end),
-        "position" => JsVal::position(envelope.block_start_position.get("start").offset(), pos_end),
+        "position" => tag_position(envelope, pos_end),
         "source" => JsVal::Null,
     }
 }
