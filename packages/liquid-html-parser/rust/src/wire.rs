@@ -12,6 +12,7 @@ use std::fmt::Write;
 use std::rc::Rc;
 
 use crate::errors::ParseError;
+use crate::js::js_json_stringify_str;
 use crate::offsets::Utf16Offsets;
 use crate::value::JsVal;
 
@@ -139,5 +140,5 @@ impl<'a> Emitter<'a> {
 }
 
 fn push_json_string(out: &mut String, text: &str) {
-    out.push_str(&serde_json::Value::from(text).to_string());
+    out.push_str(&js_json_stringify_str(text));
 }
