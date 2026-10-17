@@ -271,6 +271,15 @@ const J_INPUTS: Input[] = [
     }),
   },
   {
+    id: 'j4-line-end-nested-if-ideo',
+    source: '{% liquid\n if a\n if b \u3000 %}',
+    check: hasNode({
+      type: 'LiquidTag',
+      name: 'liquid',
+      reason: "Unclosed block tag 'if' in {% liquid %} block",
+    }),
+  },
+  {
     id: 'j6-word-after-name',
     source: '{% comment %}a{% endcomment\u00E9 %}b{% endcomment %}',
     check: hasNode({ type: 'LiquidRawTag', name: 'comment' }),
