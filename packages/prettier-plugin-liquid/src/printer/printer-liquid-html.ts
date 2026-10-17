@@ -4,9 +4,11 @@ import {
   LiquidDocExampleNode,
   LiquidDocParamNode,
   LiquidDocPromptNode,
+  LiquidString,
   NodeTypes,
   Position,
   RawMarkupKinds,
+  walk,
 } from '@shopify/liquid-html-parser';
 import { doc, Doc } from 'prettier';
 import type { Printer as Printer2 } from 'prettier';
@@ -107,33 +109,8 @@ function printAttribute<T extends Extract<LiquidHtmlNode, { attributePosition: P
 ): Doc {
   const node = path.getValue();
   const attrGroupId = Symbol('attr-group-id');
-  // What should be the rule here? Should it really be "paragraph"?
-  // ideally... if the thing is and the line is too long
-  // use cases:
-  //  - attr-{{ section.id }}--something.
-  //  * We should try to put that "block" on one line
-  //
-  //  - attr {{ classname }} foo
-  //  * we should try to put on one line?
-  //
-  //  - attr hello world ok fellow friends what do
-  //  * if the line becomes too long do we want to break one per line?
-  //    - for alt, would be paragraph
-  //    - for classes, yeah maybe
-  //    - for srcset?, it should be "split on comma"
-  //    - for sizes?, it should be "split on comma"
-  //    - for href?, it should be no space url
-  //    - for others?, it should be keywords
-  //    - for style, should be break on ;
-  //    - for other?, should be...
-  //    - how the fuck am I going to do that?
-  //    - same way we do this? with a big ass switch case?
-  //    - or we... don't and leave it as is?
-  //
-  // Anyway, for that reason ^, for now I'll just paste in what we have in
-  // the source. It's too hard to get right.
-
-  const value = node.source.slice(node.attributePosition.start, node.attributePosition.end);
+  // Preserve the source layout of attribute values, but apply Liquid string quote options.
+  const value = formatAttributeValueQuotes(node, options);
   const preferredQuote = options.singleQuote ? `'` : `"`;
   const attributeValueContainsQuote = !!node.value.find(
     (valueNode) => isTextLikeNode(valueNode) && valueNode.value.includes(preferredQuote),
@@ -151,6 +128,51 @@ function printAttribute<T extends Extract<LiquidHtmlNode, { attributePosition: P
       : value,
     quote,
   ];
+}
+
+function formatAttributeValueQuotes(
+  node: Extract<LiquidHtmlNode, { attributePosition: Position }>,
+  options: LiquidParserOptions,
+) {
+  let value = node.source.slice(node.attributePosition.start, node.attributePosition.end);
+  const replacements = new Map<number, { end: number; quote: string }>();
+
+  for (const valueNode of node.value) {
+    if (isTextLikeNode(valueNode)) continue;
+
+    walk(valueNode, (child) => {
+      if (child.type !== NodeTypes.String || typeof (child as LiquidString).single !== 'boolean') {
+        return;
+      }
+
+      const stringNode = child as LiquidString;
+      const start = stringNode.position.start - node.attributePosition.start;
+      const end = stringNode.position.end - node.attributePosition.start;
+
+      if (start < 0 || end > value.length || end - start < 2) return;
+
+      const rawString = value.slice(start, end);
+      const originalQuote = stringNode.single ? "'" : '"';
+
+      if (rawString[0] !== originalQuote || rawString[rawString.length - 1] !== originalQuote) {
+        return;
+      }
+
+      replacements.set(start, { end, quote: getLiquidStringQuote(stringNode.value, options) });
+    });
+  }
+
+  for (const [start, replacement] of [...replacements.entries()].sort(([a], [b]) => b - a)) {
+    const { end, quote } = replacement;
+    value = `${value.slice(0, start)}${quote}${value.slice(start + 1, end - 1)}${quote}${value.slice(end)}`;
+  }
+
+  return value;
+}
+
+function getLiquidStringQuote(value: string, options: LiquidParserOptions) {
+  const preferredQuote = options.liquidSingleQuote ? "'" : '"';
+  return value.includes(preferredQuote) ? oppositeQuotes[preferredQuote] : preferredQuote;
 }
 
 function isYamlFrontMatter(node: TextNode) {
@@ -580,9 +602,7 @@ function printNode(
     }
 
     case NodeTypes.String: {
-      const preferredQuote = options.liquidSingleQuote ? `'` : `"`;
-      const valueHasQuotes = node.value.includes(preferredQuote);
-      const quote = valueHasQuotes ? oppositeQuotes[preferredQuote] : preferredQuote;
+      const quote = getLiquidStringQuote(node.value, options);
       return [quote, node.value, quote];
     }
 

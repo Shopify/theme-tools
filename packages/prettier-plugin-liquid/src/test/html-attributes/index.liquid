@@ -86,11 +86,11 @@ If singleQuote is false, and the attribute value contained double quotes, use si
 singleQuote: false
 <link onload='this.media="all"'>
 
-If singleQuote is true, and the attribute value has liquid tags that contain single quotes, don't care.
+It should keep Liquid single quotes inside single-quoted HTML attributes
 singleQuote: true
 <script src="{{ 'styles.css' | asset_url }}"></script>
 
-If singleQuote is false, and the attribute value has liquid tags that contain double quotes, don't care.
+It should respect liquidSingleQuote inside double-quoted HTML attributes
 singleQuote: false
 <script src="{{ "styles.css" | asset_url }}"></script>
 
@@ -107,3 +107,20 @@ It should pretty unquoted liquid drop attributes
 
 It should pretty print smart quotes into dumb quotes to prevent copy pasting errors
 <h1 class=“section-header__title h2” id=‘abc’></h1>
+
+It should respect liquidSingleQuote inside HTML attribute values
+liquidSingleQuote: true
+<div class="{{ "test" }}"></div>
+
+It should format Liquid string quotes inside an attribute without reformatting other Liquid markup
+liquidSingleQuote: true
+<div data-value="{{product|upcase}} {{ "test" }}"></div>
+
+It should preserve Liquid strings that contain the preferred quote
+liquidSingleQuote: true
+<div class="{{ "it's fine" }}"></div>
+
+It should respect liquidSingleQuote false inside HTML attribute values
+liquidSingleQuote: false
+singleQuote: true
+<div class='{{ 'test' }}'></div>
