@@ -83,6 +83,24 @@ impl JsVal {
             .map_or(JsVal::Undefined, |(_, value)| value.clone())
     }
 
+    /// JS `key in obj` for an own key: `false` for a value that is not an
+    /// object.
+    pub fn has(&self, key: &str) -> bool {
+        let JsVal::Obj(entries) = self else {
+            return false;
+        };
+        entries.borrow().iter().any(|(name, _)| name == key)
+    }
+
+    /// The items of an array, as a new `Vec`: empty for a value that is not an
+    /// array.
+    pub fn items(&self) -> Vec<JsVal> {
+        match self {
+            JsVal::Arr(items) => items.borrow().clone(),
+            _ => Vec::new(),
+        }
+    }
+
     /// JS `obj[key] = value`. An existing key keeps its slot.
     pub fn set(&self, key: &str, value: JsVal) {
         let JsVal::Obj(entries) = self else {

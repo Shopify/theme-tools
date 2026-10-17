@@ -169,14 +169,6 @@ fn same_string(a: &JsVal, b: &JsVal) -> bool {
     matches!((a, b), (JsVal::Str(a), JsVal::Str(b)) if a == b)
 }
 
-/// TS `'source' in node`. Every parser-built node has an own `source` key.
-fn has_source_key(node: &JsVal) -> bool {
-    let JsVal::Obj(entries) = node else {
-        return false;
-    };
-    entries.borrow().iter().any(|(key, _)| key == "source")
-}
-
 pub fn compound_names_match(a: &[JsVal], b: &[JsVal], source: &str) -> bool {
     // When the entire tag name is a Liquid control-flow block (e.g.
     // `<{% if cond %}sticky-header{% else %}div{% endif %}>`), the resolved
@@ -215,7 +207,7 @@ fn segments_match(node_a: &JsVal, node_b: &JsVal, source: &str) -> bool {
     }
 
     // LiquidTag or LiquidRawTag: compare by source text
-    if has_source_key(node_a) && has_source_key(node_b) {
+    if node_a.has("source") && node_b.has("source") {
         let src_a = &source[node_a.start()..node_a.end()];
         let src_b = &source[node_b.start()..node_b.end()];
         return src_a == src_b;

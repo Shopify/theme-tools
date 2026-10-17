@@ -813,29 +813,14 @@ fn script_kind_from_attributes(attributes: &[JsVal]) -> RawMarkupKinds {
     RawMarkupKinds::Javascript
 }
 
-/// JS `key in node` for an own key.
-fn has_key(node: &JsVal, key: &str) -> bool {
-    let JsVal::Obj(entries) = node else {
-        return false;
-    };
-    entries.borrow().iter().any(|(name, _)| name == key)
-}
-
-fn array_items(value: &JsVal) -> Vec<JsVal> {
-    match value {
-        JsVal::Arr(items) => items.borrow().clone(),
-        _ => Vec::new(),
-    }
-}
-
 fn extract_plain_attribute_value(attributes: &[JsVal], target_name: &str) -> Option<String> {
     let attr = attributes.iter().find(|attr| {
-        has_key(attr, "name")
-            && has_key(attr, "value")
-            && extract_plain_name(&array_items(&attr.get("name")))
+        attr.has("name")
+            && attr.has("value")
+            && extract_plain_name(&attr.get("name").items())
                 .is_some_and(|name| js_to_lower(&name) == target_name)
     })?;
-    let values = array_items(&attr.get("value"));
+    let values = attr.get("value").items();
     if values.len() == 1 && values[0].type_is(NodeTypes::TextNode.as_str()) {
         return Some(values[0].string("value"));
     }
