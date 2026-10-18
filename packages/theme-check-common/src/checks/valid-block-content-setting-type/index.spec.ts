@@ -17,6 +17,7 @@ describe('ValidBlockContentSettingType', () => {
     ['checkbox', 'boolean'],
     ['product', 'product'],
     ['product_list', 'product[]'],
+    ['article_list', 'article[]'],
   ])('reports a %s schema setting named content on its type', async (settingType, liquidType) => {
     const source = blockSource([{ id: 'content', type: settingType }]);
 
