@@ -21,10 +21,11 @@
  * failed at the file level: status `failed`, or a collection or import error
  * with zero assertions.
  */
-import * as fs from "node:fs";
-import * as path from "node:path";
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
-const USAGE = "Usage: pnpx tsx scripts/compare-test-results.ts A.json B.json [--allow-new <glob>]...";
+const USAGE =
+  'Usage: pnpx tsx scripts/compare-test-results.ts A.json B.json [--allow-new <glob>]...';
 
 interface AssertionResult {
   fullName: string;
@@ -67,7 +68,7 @@ function parseArgs(argv: string[]): Args | undefined {
   const positional: string[] = [];
   const allowNew: string[] = [];
   for (let i = 0; i < argv.length; i++) {
-    if (argv[i] !== "--allow-new") {
+    if (argv[i] !== '--allow-new') {
       positional.push(argv[i]);
       continue;
     }
@@ -81,7 +82,7 @@ function parseArgs(argv: string[]): Args | undefined {
 
 function findRepoRoot(file: string): string | undefined {
   let dir = path.dirname(file);
-  while (!fs.existsSync(path.join(dir, "pnpm-workspace.yaml"))) {
+  while (!fs.existsSync(path.join(dir, 'pnpm-workspace.yaml'))) {
     const parent = path.dirname(dir);
     if (parent === dir) return undefined;
     dir = parent;
@@ -90,17 +91,17 @@ function findRepoRoot(file: string): string | undefined {
 }
 
 function failedAtFileLevel(result: FileResult): boolean {
-  if (result.status === "failed") return true;
+  if (result.status === 'failed') return true;
   return result.assertionResults.length === 0 && Boolean(result.message);
 }
 
 function describeFileFailure(result: FileResult, root: string): string {
-  const message = (result.message ?? "").split("\n")[0];
+  const message = (result.message ?? '').split('\n')[0];
   return `${path.relative(root, result.name)}: ${result.status}, ${result.assertionResults.length} assertions, ${message}`;
 }
 
 function loadReport(file: string): LoadedReport {
-  const report: Report = JSON.parse(fs.readFileSync(file, "utf-8"));
+  const report: Report = JSON.parse(fs.readFileSync(file, 'utf-8'));
   const tests = new Map<string, TestEntry>();
   if (report.testResults.length === 0) return { tests, fileFailures: [] };
 
@@ -126,7 +127,10 @@ function compareStrict(a: Map<string, TestEntry>, b: Map<string, TestEntry>): st
   const keys = [...new Set([...a.keys(), ...b.keys()])].sort();
   return keys
     .filter((key) => a.get(key)?.status !== b.get(key)?.status)
-    .map((key) => `${key}: ${a.get(key)?.status ?? "<missing>"} -> ${b.get(key)?.status ?? "<missing>"}`);
+    .map(
+      (key) =>
+        `${key}: ${a.get(key)?.status ?? '<missing>'} -> ${b.get(key)?.status ?? '<missing>'}`,
+    );
 }
 
 function matchesAny(file: string, globs: string[]): boolean {
@@ -140,18 +144,25 @@ function compareWithAllowlist(
 ): RuleResult[] {
   const baseKeys = [...a.keys()].sort();
   const newKeys = [...b.keys()].filter((key) => !a.has(key)).sort();
-  const describeNew = (key: string) => `${key}: <missing> -> ${b.get(key)!.status} (${b.get(key)!.repoFile})`;
+  const describeNew = (key: string) =>
+    `${key}: <missing> -> ${b.get(key)!.status} (${b.get(key)!.repoFile})`;
 
   const missing = baseKeys.filter((key) => !b.has(key));
   const changed = baseKeys.filter((key) => b.has(key) && a.get(key)!.status !== b.get(key)!.status);
   const outside = newKeys.filter((key) => !matchesAny(b.get(key)!.repoFile, allowNew));
-  const notPassed = newKeys.filter((key) => b.get(key)!.status !== "passed");
+  const notPassed = newKeys.filter((key) => b.get(key)!.status !== 'passed');
 
   return [
-    { title: "baseline tests missing from B", lines: missing.map((key) => `${key}: ${a.get(key)!.status} -> <missing>`) },
-    { title: "shared tests with a different status", lines: changed.map((key) => `${key}: ${a.get(key)!.status} -> ${b.get(key)!.status}`) },
-    { title: "new tests outside --allow-new", lines: outside.map(describeNew) },
-    { title: "new tests not passed", lines: notPassed.map(describeNew) },
+    {
+      title: 'baseline tests missing from B',
+      lines: missing.map((key) => `${key}: ${a.get(key)!.status} -> <missing>`),
+    },
+    {
+      title: 'shared tests with a different status',
+      lines: changed.map((key) => `${key}: ${a.get(key)!.status} -> ${b.get(key)!.status}`),
+    },
+    { title: 'new tests outside --allow-new', lines: outside.map(describeNew) },
+    { title: 'new tests not passed', lines: notPassed.map(describeNew) },
   ];
 }
 
@@ -172,14 +183,15 @@ function runWithAllowlist(a: Map<string, TestEntry>, b: LoadedReport, allowNew: 
   const rules = compareWithAllowlist(a, b.tests, allowNew);
   const newTests = [...b.tests.keys()].filter((key) => !a.has(key));
   console.log(`A: ${a.size} tests, B: ${b.tests.size} tests, ${newTests.length} new tests`);
-  console.log(`allow-new: ${allowNew.join(", ")}`);
+  console.log(`allow-new: ${allowNew.join(', ')}`);
   rules.forEach((rule, i) => {
     console.log(`rule ${i + 1}, ${rule.title}: ${rule.lines.length}`);
     for (const line of rule.lines) console.log(`  ${line}`);
   });
   printFileFailures(b.fileFailures);
-  console.log("new tests:");
-  for (const key of newTests.sort()) console.log(`  ${key}: ${b.tests.get(key)!.status} (${b.tests.get(key)!.repoFile})`);
+  console.log('new tests:');
+  for (const key of newTests.sort())
+    console.log(`  ${key}: ${b.tests.get(key)!.status} (${b.tests.get(key)!.repoFile})`);
   const rulesClean = rules.every((rule) => rule.lines.length === 0);
   return rulesClean && b.fileFailures.length === 0 ? 0 : 1;
 }
@@ -202,7 +214,10 @@ function main(): void {
   const reports = loadBoth(args);
   if (!reports) process.exit(2);
   const [a, b] = reports;
-  const code = args.allowNew.length === 0 ? runStrict(a.tests, b) : runWithAllowlist(a.tests, b, args.allowNew);
+  const code =
+    args.allowNew.length === 0
+      ? runStrict(a.tests, b)
+      : runWithAllowlist(a.tests, b, args.allowNew);
   process.exit(code);
 }
 

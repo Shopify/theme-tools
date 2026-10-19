@@ -12,41 +12,41 @@
  * With --stats, also writes corpus stats that decide the Rust boundary details.
  * Output is deterministic: two runs give byte-identical files.
  */
-import { createHash } from "node:crypto";
-import * as fs from "node:fs";
-import * as path from "node:path";
-import { fileURLToPath } from "node:url";
+import { createHash } from 'node:crypto';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   LiquidHTMLASTParsingError,
   toLiquidAST,
   toLiquidHtmlAST,
   toTolerantLiquidAST,
   toTolerantLiquidHtmlAST,
-} from "../src/index";
-import type { ASTBuildOptions } from "../src/index";
-import { canonical } from "../src/rust-parity/canonical";
-import { countCorpus, loadNodeCorpus } from "../src/rust-parity/corpus";
-import type { CorpusInput } from "../src/rust-parity/corpus";
+} from '../src/index';
+import type { ASTBuildOptions } from '../src/index';
+import { canonical } from '../src/rust-parity/canonical';
+import { countCorpus, loadNodeCorpus } from '../src/rust-parity/corpus';
+import type { CorpusInput } from '../src/rust-parity/corpus';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PKG = path.resolve(__dirname, "..");
-const DEFAULT_OUT = path.join(PKG, "fixtures", "golden-canonical");
+const PKG = path.resolve(__dirname, '..');
+const DEFAULT_OUT = path.join(PKG, 'fixtures', 'golden-canonical');
 
 type Parse = (source: string, options?: ASTBuildOptions) => unknown;
 
 const ENTRIES: [string, Parse][] = [
-  ["liquidHtml", toLiquidHtmlAST],
-  ["liquid", toLiquidAST],
-  ["tolerantLiquidHtml", toTolerantLiquidHtmlAST],
-  ["tolerantLiquid", toTolerantLiquidAST],
+  ['liquidHtml', toLiquidHtmlAST],
+  ['liquid', toLiquidAST],
+  ['tolerantLiquidHtml', toTolerantLiquidHtmlAST],
+  ['tolerantLiquid', toTolerantLiquidAST],
 ];
 
 const CONFIGS: [string, ASTBuildOptions | undefined][] = [
-  ["default", undefined],
-  ["closed", { allowUnclosedDocumentNode: false, mode: "tolerant" }],
-  ["unclosed", { allowUnclosedDocumentNode: true, mode: "tolerant" }],
-  ["strict", { allowUnclosedDocumentNode: false, mode: "strict" }],
-  ["completion", { allowUnclosedDocumentNode: true, mode: "completion" }],
+  ['default', undefined],
+  ['closed', { allowUnclosedDocumentNode: false, mode: 'tolerant' }],
+  ['unclosed', { allowUnclosedDocumentNode: true, mode: 'tolerant' }],
+  ['strict', { allowUnclosedDocumentNode: false, mode: 'strict' }],
+  ['completion', { allowUnclosedDocumentNode: true, mode: 'completion' }],
 ];
 
 interface Outcome {
@@ -80,8 +80,8 @@ function parseArgs(argv: string[]): { out: string; stats?: string } {
     const flag = argv[i];
     const value = argv[i + 1];
     if (!value) throw new Error(`Missing value for ${flag}`);
-    if (flag === "--out") args.out = path.resolve(value);
-    else if (flag === "--stats") args.stats = path.resolve(value);
+    if (flag === '--out') args.out = path.resolve(value);
+    else if (flag === '--stats') args.stats = path.resolve(value);
     else throw new Error(`Unknown argument: ${flag}`);
   }
   return args;
@@ -97,11 +97,11 @@ function run(parse: Parse, source: string, options: ASTBuildOptions | undefined)
 }
 
 function canonicalOutcome(outcome: Outcome, source: string): string {
-  return (outcome.threw ? "threw:" : "returned:") + canonical(outcome.value, source);
+  return (outcome.threw ? 'threw:' : 'returned:') + canonical(outcome.value, source);
 }
 
 function sha256(text: string): string {
-  return createHash("sha256").update(text).digest("hex");
+  return createHash('sha256').update(text).digest('hex');
 }
 
 function emptyStats(): Stats {
@@ -137,7 +137,7 @@ function isPlain(value: object): boolean {
 
 function protoLabel(value: object): string {
   const proto = Object.getPrototypeOf(value);
-  return proto === null ? "null" : String(proto.constructor?.name ?? "<anonymous>");
+  return proto === null ? 'null' : String(proto.constructor?.name ?? '<anonymous>');
 }
 
 /* Walks every own key of the returned AST and records the stats the boundary depends on. */
@@ -146,7 +146,7 @@ function collectAstStats(root: unknown, source: string, stats: Stats): void {
   const aliased = new Set<object>();
 
   const visit = (value: unknown, key: string): void => {
-    if (typeof value !== "object" || value === null) return;
+    if (typeof value !== 'object' || value === null) return;
     if (seen.has(value)) {
       stats.aliasedReferences++;
       bump(stats.aliasedKeys, key);
@@ -156,12 +156,12 @@ function collectAstStats(root: unknown, source: string, stats: Stats): void {
     seen.add(value);
     recordObject(value, source, stats);
     for (const childKey of Reflect.ownKeys(value)) {
-      if (typeof childKey !== "string") continue;
+      if (typeof childKey !== 'string') continue;
       visit((value as any)[childKey], childKey);
     }
   };
 
-  visit(root, "$");
+  visit(root, '$');
   stats.aliasedObjects += aliased.size;
 }
 
@@ -170,7 +170,7 @@ function recordObject(value: object, source: string, stats: Stats): void {
     stats.nonPlainPrototypes++;
     bump(stats.nonPlainPrototypeNames, protoLabel(value));
   }
-  const sourceKeyMismatch = ["source", "_source"].some(
+  const sourceKeyMismatch = ['source', '_source'].some(
     (key) => Object.prototype.hasOwnProperty.call(value, key) && (value as any)[key] !== source,
   );
   if (sourceKeyMismatch) stats.nodesWithSourceNotInput++;
@@ -182,7 +182,13 @@ function recordObject(value: object, source: string, stats: Stats): void {
   }
 }
 
-function recordThrow(error: unknown, input: CorpusInput, entry: string, config: string, stats: Stats): void {
+function recordThrow(
+  error: unknown,
+  input: CorpusInput,
+  entry: string,
+  config: string,
+  stats: Stats,
+): void {
   stats.parsesThrew++;
   if (error instanceof LiquidHTMLASTParsingError) {
     stats.parserThrows++;
@@ -203,7 +209,7 @@ function recordInput(input: CorpusInput, stats: Stats): void {
 }
 
 function writeFull(out: string, entry: string, id: string, text: string): void {
-  const file = path.join(out, "full", entry, `${id}.txt`);
+  const file = path.join(out, 'full', entry, `${id}.txt`);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, text);
 }
@@ -221,7 +227,7 @@ function freezeInput(input: CorpusInput, out: string, lines: string[], stats: St
         stats.parsesOk++;
         collectAstStats(outcome.value, input.source, stats);
       }
-      if (config === "default" && input.whole) writeFull(out, entry, input.id, text);
+      if (config === 'default' && input.whole) writeFull(out, entry, input.id, text);
     }
   }
 }
@@ -230,10 +236,15 @@ async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   const corpus = await loadNodeCorpus(PKG);
   const counts = countCorpus(corpus);
-  console.log("Corpus counts:", JSON.stringify(counts));
-  const expected = (counts.themeFiles + counts.prettierFiles) * (1 + counts.prefixCutsPerFile) + counts.errorCorpusFiles;
-  console.log(`Expected (themes + prettier) x (1 + ${counts.prefixCutsPerFile}) + error-corpus = ${expected}`);
-  if (expected !== counts.total) throw new Error(`Corpus count ${counts.total} != expected ${expected}`);
+  console.log('Corpus counts:', JSON.stringify(counts));
+  const expected =
+    (counts.themeFiles + counts.prettierFiles) * (1 + counts.prefixCutsPerFile) +
+    counts.errorCorpusFiles;
+  console.log(
+    `Expected (themes + prettier) x (1 + ${counts.prefixCutsPerFile}) + error-corpus = ${expected}`,
+  );
+  if (expected !== counts.total)
+    throw new Error(`Corpus count ${counts.total} != expected ${expected}`);
 
   fs.rmSync(args.out, { recursive: true, force: true });
   fs.mkdirSync(args.out, { recursive: true });
@@ -241,13 +252,13 @@ async function main(): Promise<void> {
   const stats = emptyStats();
   const lines: string[] = [];
   for (const input of corpus) freezeInput(input, args.out, lines, stats);
-  fs.writeFileSync(path.join(args.out, "hashes.tsv"), lines.join("\n") + "\n");
-  console.log(`Wrote ${lines.length} hashes to ${path.join(args.out, "hashes.tsv")}`);
+  fs.writeFileSync(path.join(args.out, 'hashes.tsv'), lines.join('\n') + '\n');
+  console.log(`Wrote ${lines.length} hashes to ${path.join(args.out, 'hashes.tsv')}`);
 
   if (!args.stats) return;
   const report = { nodeVersion: process.version, corpus: counts, ...stats };
   fs.mkdirSync(path.dirname(args.stats), { recursive: true });
-  fs.writeFileSync(args.stats, JSON.stringify(report, null, 2) + "\n");
+  fs.writeFileSync(args.stats, JSON.stringify(report, null, 2) + '\n');
   console.log(`Wrote stats to ${args.stats}`);
 }
 

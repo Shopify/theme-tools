@@ -42,7 +42,11 @@ import type { Outcome } from '../src/rust-parity/outcome';
 import type { Parser, TagDefinition } from '../src/tag-definitions';
 import { builtinTags } from '../src/tags';
 import wasmBase64 from '../rust/pkg/bytes.mjs';
-import { debug_parse_liquid_doc, debug_parse_tag, initSync } from '../rust/pkg/liquid_html_parser.js';
+import {
+  debug_parse_liquid_doc,
+  debug_parse_tag,
+  initSync,
+} from '../rust/pkg/liquid_html_parser.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PKG = path.resolve(__dirname, '..');
@@ -83,38 +87,154 @@ type ProbeEntry = Extract<SyntheticEntry, { check: ProbeCheck }>;
 const PARSING_ERROR = 'LiquidHTMLASTParsingError';
 
 const SYNTHETIC: SyntheticEntry[] = [
-  { site: 'markup/parser.ts:208', tag: 'for', markup: '1 in x', expect: { ctor: PARSING_ERROR, message: 'Expected Id but found Number (1)' } },
-  { site: 'markup/parser.ts:420', tag: 'layout', markup: '.x', expect: { ctor: PARSING_ERROR, message: 'Expected expression but found Dot (.)' } },
-  { site: 'markup/parser.ts:482', tag: 'layout', markup: '-', expect: { ctor: PARSING_ERROR, message: 'Expected expression but found Dash (-)' } },
-  { site: 'markup/parser.ts:490', tag: 'layout', markup: ',', expect: { ctor: PARSING_ERROR, message: 'Expected expression but found Comma (,)' } },
-  { site: 'markup/parser.ts:546', tag: 'increment', markup: '1', expect: { ctor: PARSING_ERROR, message: 'Expected identifier or [ but found Number (1)' } },
-  { site: 'markup/parser.ts:876', tag: 'if', markup: 'a = b', expect: { ctor: PARSING_ERROR, message: 'Unknown operator =' } },
+  {
+    site: 'markup/parser.ts:208',
+    tag: 'for',
+    markup: '1 in x',
+    expect: { ctor: PARSING_ERROR, message: 'Expected Id but found Number (1)' },
+  },
+  {
+    site: 'markup/parser.ts:420',
+    tag: 'layout',
+    markup: '.x',
+    expect: { ctor: PARSING_ERROR, message: 'Expected expression but found Dot (.)' },
+  },
+  {
+    site: 'markup/parser.ts:482',
+    tag: 'layout',
+    markup: '-',
+    expect: { ctor: PARSING_ERROR, message: 'Expected expression but found Dash (-)' },
+  },
+  {
+    site: 'markup/parser.ts:490',
+    tag: 'layout',
+    markup: ',',
+    expect: { ctor: PARSING_ERROR, message: 'Expected expression but found Comma (,)' },
+  },
+  {
+    site: 'markup/parser.ts:546',
+    tag: 'increment',
+    markup: '1',
+    expect: { ctor: PARSING_ERROR, message: 'Expected identifier or [ but found Number (1)' },
+  },
+  {
+    site: 'markup/parser.ts:876',
+    tag: 'if',
+    markup: 'a = b',
+    expect: { ctor: PARSING_ERROR, message: 'Unknown operator =' },
+  },
   {
     site: 'markup/parser.ts:1113',
     unreachable:
       'the markup tokenizer emits a Logical token only for the values `and` and `or` (src/markup/tokenizer.ts:110), and both are logical operators, so `isLogicalOp` is never false',
   },
-  { site: 'markup/parser.ts:1381', tag: 'section', markup: "'x', a: [[1]]", expect: { ctor: PARSING_ERROR, message: 'nested arrays are not supported in block array literal' } },
-  { site: 'tags/block.ts:14', tag: 'block', markup: '', expect: { ctor: 'Error', message: "in 'block' - missing block type" } },
-  { site: 'tags/block.ts:19', tag: 'block', markup: 'x', expect: { ctor: 'Error', message: "in 'block' - file name must be a string literal" } },
-  { site: 'tags/block.ts:22', tag: 'block', markup: "'a b'", expect: { ctor: 'Error', message: "in 'block' - 'a b' is not a valid block type" } },
-  { site: 'tags/block.ts:32', tag: 'block', markup: "'a' 'b'", expect: { ctor: 'Error', message: "Unexpected token in 'block' tag: 'b'" } },
+  {
+    site: 'markup/parser.ts:1381',
+    tag: 'section',
+    markup: "'x', a: [[1]]",
+    expect: {
+      ctor: PARSING_ERROR,
+      message: 'nested arrays are not supported in block array literal',
+    },
+  },
+  {
+    site: 'tags/block.ts:14',
+    tag: 'block',
+    markup: '',
+    expect: { ctor: 'Error', message: "in 'block' - missing block type" },
+  },
+  {
+    site: 'tags/block.ts:19',
+    tag: 'block',
+    markup: 'x',
+    expect: { ctor: 'Error', message: "in 'block' - file name must be a string literal" },
+  },
+  {
+    site: 'tags/block.ts:22',
+    tag: 'block',
+    markup: "'a b'",
+    expect: { ctor: 'Error', message: "in 'block' - 'a b' is not a valid block type" },
+  },
+  {
+    site: 'tags/block.ts:32',
+    tag: 'block',
+    markup: "'a' 'b'",
+    expect: { ctor: 'Error', message: "Unexpected token in 'block' tag: 'b'" },
+  },
   {
     site: 'tags/assign.ts:30',
     unreachable:
       'inside `if (markup.isLax())`; only liquid-render-tree lax recovery enables lax, which stays TS-only, so neither the document parser nor this script reaches it',
   },
-  { site: 'tags/assign.ts:37', tag: 'assign', markup: 'x == 1', expect: { ctor: 'Error', message: "Expected '=' in assign tag" } },
-  { site: 'tags/break.ts:8', tag: 'break', markup: 'x', expect: { ctor: 'Error', message: "'break' tag does not accept markup" } },
-  { site: 'tags/continue.ts:8', tag: 'continue', markup: 'x', expect: { ctor: 'Error', message: "'continue' tag does not accept markup" } },
-  { site: 'tags/raw.ts:6', tag: 'raw', markup: 'x', expect: { ctor: 'Error', message: "'raw' tag does not accept markup" } },
-  { site: 'tags/for.ts:10', tag: 'for', markup: 'x', expect: { ctor: 'Error', message: "Expected 'in'" } },
-  { site: 'tags/paginate.ts:14', tag: 'paginate', markup: 'x', expect: { ctor: 'Error', message: "Expected 'by' in paginate tag" } },
-  { site: 'tags/render.ts:40', tag: 'render', markup: '1', expect: { ctor: 'Error', message: 'Expected string or variable lookup for snippet, got Number' } },
-  { site: 'tags/content-for.ts:12', tag: 'content_for', markup: 'x', expect: { ctor: 'Error', message: 'Expected string for content_for type, got VariableLookup' } },
-  { site: 'tags/partial.ts:12', tag: 'partial', markup: 'x', expect: { ctor: 'Error', message: 'Expected string for partial name, got VariableLookup' } },
-  { site: 'tags/section.ts:12', tag: 'section', markup: 'x', expect: { ctor: 'Error', message: 'Expected string for section name, got VariableLookup' } },
-  { site: 'tags/sections.ts:11', tag: 'sections', markup: 'x', expect: { ctor: 'Error', message: 'Expected string for sections name, got VariableLookup' } },
+  {
+    site: 'tags/assign.ts:37',
+    tag: 'assign',
+    markup: 'x == 1',
+    expect: { ctor: 'Error', message: "Expected '=' in assign tag" },
+  },
+  {
+    site: 'tags/break.ts:8',
+    tag: 'break',
+    markup: 'x',
+    expect: { ctor: 'Error', message: "'break' tag does not accept markup" },
+  },
+  {
+    site: 'tags/continue.ts:8',
+    tag: 'continue',
+    markup: 'x',
+    expect: { ctor: 'Error', message: "'continue' tag does not accept markup" },
+  },
+  {
+    site: 'tags/raw.ts:6',
+    tag: 'raw',
+    markup: 'x',
+    expect: { ctor: 'Error', message: "'raw' tag does not accept markup" },
+  },
+  {
+    site: 'tags/for.ts:10',
+    tag: 'for',
+    markup: 'x',
+    expect: { ctor: 'Error', message: "Expected 'in'" },
+  },
+  {
+    site: 'tags/paginate.ts:14',
+    tag: 'paginate',
+    markup: 'x',
+    expect: { ctor: 'Error', message: "Expected 'by' in paginate tag" },
+  },
+  {
+    site: 'tags/render.ts:40',
+    tag: 'render',
+    markup: '1',
+    expect: {
+      ctor: 'Error',
+      message: 'Expected string or variable lookup for snippet, got Number',
+    },
+  },
+  {
+    site: 'tags/content-for.ts:12',
+    tag: 'content_for',
+    markup: 'x',
+    expect: { ctor: 'Error', message: 'Expected string for content_for type, got VariableLookup' },
+  },
+  {
+    site: 'tags/partial.ts:12',
+    tag: 'partial',
+    markup: 'x',
+    expect: { ctor: 'Error', message: 'Expected string for partial name, got VariableLookup' },
+  },
+  {
+    site: 'tags/section.ts:12',
+    tag: 'section',
+    markup: 'x',
+    expect: { ctor: 'Error', message: 'Expected string for section name, got VariableLookup' },
+  },
+  {
+    site: 'tags/sections.ts:11',
+    tag: 'sections',
+    markup: 'x',
+    expect: { ctor: 'Error', message: 'Expected string for sections name, got VariableLookup' },
+  },
   ...probeEntries(),
 ];
 
@@ -128,20 +248,64 @@ function probeEntries(): ProbeEntry[] {
   const shared = 'adaptComplex stores one position on the BooleanExpression and the adapted node';
   const literal = 'isLiteralKeyword uses `in`, which finds Object.prototype keys';
   return [
-    { site: 'markup/expression-adapter.ts:126 with :152', tag: 'echo', markup: 'a and b', check: { kind: 'hasAlias' }, why: shared },
-    { site: 'markup/expression-adapter.ts:136 with :152', tag: 'echo', markup: 'a == b', check: { kind: 'hasAlias' }, why: shared },
-    ...runtimePrototypeKeys().map((key): ProbeEntry => ({
+    {
+      site: 'markup/expression-adapter.ts:126 with :152',
+      tag: 'echo',
+      markup: 'a and b',
+      check: { kind: 'hasAlias' },
+      why: shared,
+    },
+    {
+      site: 'markup/expression-adapter.ts:136 with :152',
+      tag: 'echo',
+      markup: 'a == b',
+      check: { kind: 'hasAlias' },
+      why: shared,
+    },
+    ...runtimePrototypeKeys().map(
+      (key): ProbeEntry => ({
+        site: 'markup/parser.ts:337',
+        tag: 'echo',
+        markup: key,
+        check: { kind: 'hasLiteral', key },
+        why: literal,
+      }),
+    ),
+    {
       site: 'markup/parser.ts:337',
       tag: 'echo',
-      markup: key,
-      check: { kind: 'hasLiteral', key },
+      markup: '__proto__ | default: __proto__',
+      check: { kind: 'hasAlias' },
+      why: 'both literals hold the one Object.prototype',
+    },
+    {
+      site: 'markup/parser.ts:337',
+      tag: 'for',
+      markup: 'x in constructor',
+      check: { kind: 'hasLiteral', key: 'constructor' },
       why: literal,
-    })),
-    { site: 'markup/parser.ts:337', tag: 'echo', markup: '__proto__ | default: __proto__', check: { kind: 'hasAlias' }, why: 'both literals hold the one Object.prototype' },
-    { site: 'markup/parser.ts:337', tag: 'for', markup: 'x in constructor', check: { kind: 'hasLiteral', key: 'constructor' }, why: literal },
-    { site: 'markup/parser.ts:337', tag: 'if', markup: 'toString == valueOf', check: { kind: 'hasLiteral', key: 'toString' }, why: literal },
-    { site: 'control, markup/parser.ts:338', tag: 'echo', markup: 'constructor.name', check: { kind: 'hasLookup', name: 'constructor' }, why: 'a literal keyword followed by a dot is a lookup' },
-    { site: 'control, ID regex ? suffix', tag: 'echo', markup: 'constructor?', check: { kind: 'hasLookup', name: 'constructor?' }, why: 'the Id token includes the ?, so it is no prototype key' },
+    },
+    {
+      site: 'markup/parser.ts:337',
+      tag: 'if',
+      markup: 'toString == valueOf',
+      check: { kind: 'hasLiteral', key: 'toString' },
+      why: literal,
+    },
+    {
+      site: 'control, markup/parser.ts:338',
+      tag: 'echo',
+      markup: 'constructor.name',
+      check: { kind: 'hasLookup', name: 'constructor' },
+      why: 'a literal keyword followed by a dot is a lookup',
+    },
+    {
+      site: 'control, ID regex ? suffix',
+      tag: 'echo',
+      markup: 'constructor?',
+      check: { kind: 'hasLookup', name: 'constructor?' },
+      why: 'the Id token includes the ?, so it is no prototype key',
+    },
   ];
 }
 
@@ -232,7 +396,8 @@ function truncations(input: TagInput): TagInput[] {
 function syntheticInput(site: string, tag: string, markup: string): TagInput {
   const source = `{% ${tag} ${markup} %}`;
   const [input] = realTags(`synthetic ${site}`, source);
-  if (!input || input.tag !== tag) throw new Error(`synthetic ${site}: rule 1 did not find {% ${tag} %}`);
+  if (!input || input.tag !== tag)
+    throw new Error(`synthetic ${site}: rule 1 did not find {% ${tag} %}`);
   return { ...input, inputClass: 'synthetic', site };
 }
 
@@ -266,7 +431,13 @@ function throwBackendError(error: BackendError, source: string): never {
 }
 
 function rustOutcome(input: TagInput, tolerant: boolean): Outcome {
-  const wire = debug_parse_tag(input.source, input.tag, input.markupStart, input.markupEnd, tolerant);
+  const wire = debug_parse_tag(
+    input.source,
+    input.tag,
+    input.markupStart,
+    input.markupEnd,
+    tolerant,
+  );
   const result = JSON.parse(wire) as BackendResult;
   if (result.ok) return { threw: false, value: hydrate(result.ast, input.source) };
   try {
@@ -282,7 +453,9 @@ function describeError(value: unknown): Expect | undefined {
 }
 
 /* Every reachable entry must throw exactly its `expect` in TS, in both modes. */
-function checkSyntheticExpectations(inputs: Map<string, { input: TagInput; expect: Expect }>): number {
+function checkSyntheticExpectations(
+  inputs: Map<string, { input: TagInput; expect: Expect }>,
+): number {
   let failures = 0;
   for (const [site, { input, expect }] of inputs) {
     for (const tolerant of [false, true]) {
@@ -317,7 +490,9 @@ function checkProbes(probes: { input: TagInput; check: ProbeCheck }[]): number {
     for (const tolerant of [false, true]) {
       if (probeHolds(check, tsOutcome(input, tolerant), input.source)) continue;
       failures++;
-      console.log(`CHECK FAIL ${input.id} tolerant=${tolerant}: ${JSON.stringify(check)} does not hold in TS`);
+      console.log(
+        `CHECK FAIL ${input.id} tolerant=${tolerant}: ${JSON.stringify(check)} does not hold in TS`,
+      );
     }
   }
   return failures;
@@ -377,7 +552,10 @@ async function tagMode(): Promise<number> {
     }
     const input = syntheticInput(entry.site, entry.tag, entry.markup);
     if ('check' in entry) {
-      probes.push({ input: { ...input, id: `probe ${entry.site} {% ${entry.tag} ${entry.markup} %}` }, check: entry.check });
+      probes.push({
+        input: { ...input, id: `probe ${entry.site} {% ${entry.tag} ${entry.markup} %}` },
+        check: entry.check,
+      });
       continue;
     }
     expected.set(entry.site, { input, expect: entry.expect });
@@ -427,7 +605,8 @@ async function tagMode(): Promise<number> {
   perSite.print('site');
   for (const { site, reason } of unreachable) console.log(`site ${site}: unreachable: ${reason}`);
   const runtimeKeyProbes = probes.filter(
-    ({ input, check }) => check.kind === 'hasLiteral' && input.tag === 'echo' && markupOf(input).trim() === check.key,
+    ({ input, check }) =>
+      check.kind === 'hasLiteral' && input.tag === 'echo' && markupOf(input).trim() === check.key,
   ).length;
   console.log(
     `Runtime-key probes: ${runtimeKeyProbes}, string keys of Reflect.ownKeys(Object.prototype): ${runtimePrototypeKeys().length}`,
@@ -480,7 +659,15 @@ function docBodies(id: string, source: string): DocInput[] {
     if (doc.name !== 'doc') return [];
     const end = envelopes.find((e) => e.name === 'enddoc' && e.start >= doc.closeEnd);
     if (!end) return [];
-    return [{ id: `${id}@${doc.closeEnd}`, inputClass: 'doc' as const, source, bodyStart: doc.closeEnd, bodyEnd: end.start }];
+    return [
+      {
+        id: `${id}@${doc.closeEnd}`,
+        inputClass: 'doc' as const,
+        source,
+        bodyStart: doc.closeEnd,
+        bodyEnd: end.start,
+      },
+    ];
   });
 }
 
@@ -511,7 +698,13 @@ async function docMode(): Promise<number> {
   );
   const bodies = wellFormed.flatMap((input) => docBodies(input.id, input.source));
   const wholes = wellFormed.map(
-    (input): DocInput => ({ id: input.id, inputClass: 'whole', source: input.source, bodyStart: 0, bodyEnd: input.source.length }),
+    (input): DocInput => ({
+      id: input.id,
+      inputClass: 'whole',
+      source: input.source,
+      bodyStart: 0,
+      bodyEnd: input.source.length,
+    }),
   );
   console.log(
     `Doc mode corpus: ${corpus.length} whole inputs, ${corpus.length - wellFormed.length} skipped as not well-formed`,
@@ -525,11 +718,14 @@ async function docMode(): Promise<number> {
     const mismatch = canonicalOutcome(ts, input.source) !== canonicalOutcome(rust, input.source);
     perClass.add(input.inputClass, mismatch);
     if (!mismatch) continue;
-    console.log(`MISMATCH doc ${input.id} body=${input.bodyStart}..${input.bodyEnd}: ${firstDivergentPath(ts, rust)}`);
+    console.log(
+      `MISMATCH doc ${input.id} body=${input.bodyStart}..${input.bodyEnd}: ${firstDivergentPath(ts, rust)}`,
+    );
   }
 
   perClass.print('class', ['doc', 'whole']);
-  for (const { site, unreachable } of DOC_SYNTHETIC) console.log(`site ${site}: unreachable: ${unreachable}`);
+  for (const { site, unreachable } of DOC_SYNTHETIC)
+    console.log(`site ${site}: unreachable: ${unreachable}`);
   const mismatches = perClass.total();
   console.log(`Doc total mismatches: ${mismatches}`);
   return mismatches === 0 ? 0 : 1;

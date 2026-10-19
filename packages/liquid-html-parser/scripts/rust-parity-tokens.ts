@@ -13,18 +13,18 @@
  * Prints input id, options, and the first differing token of every mismatch,
  * then a count per option set. Exits 1 on any mismatch.
  */
-import * as path from "node:path";
-import { fileURLToPath } from "node:url";
-import { tokenize } from "../src/document/tokenizer";
-import type { TokenizeOptions } from "../src/document/tokenizer";
-import { tokenizeMarkup } from "../src/markup/tokenizer";
-import { loadNodeCorpus } from "../src/rust-parity/corpus";
-import type { CorpusInput } from "../src/rust-parity/corpus";
-import wasmBase64 from "../rust/pkg/bytes.mjs";
-import { debug_tokenize, debug_tokenize_markup, initSync } from "../rust/pkg/liquid_html_parser.js";
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { tokenize } from '../src/document/tokenizer';
+import type { TokenizeOptions } from '../src/document/tokenizer';
+import { tokenizeMarkup } from '../src/markup/tokenizer';
+import { loadNodeCorpus } from '../src/rust-parity/corpus';
+import type { CorpusInput } from '../src/rust-parity/corpus';
+import wasmBase64 from '../rust/pkg/bytes.mjs';
+import { debug_tokenize, debug_tokenize_markup, initSync } from '../rust/pkg/liquid_html_parser.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PKG = path.resolve(__dirname, "..");
+const PKG = path.resolve(__dirname, '..');
 
 const TOKENIZE_OPTIONS: TokenizeOptions[] = [
   {},
@@ -99,13 +99,15 @@ function runCheck(check: Check, corpus: CorpusInput[]): Tally {
 }
 
 async function main(): Promise<number> {
-  initSync({ module: Buffer.from(wasmBase64, "base64") });
+  initSync({ module: Buffer.from(wasmBase64, 'base64') });
   const corpus = await loadNodeCorpus(PKG);
   console.log(`Token parity corpus: ${corpus.length} inputs`);
 
   const tallies = [...tokenizeChecks(), ...markupChecks()].map((check) => runCheck(check, corpus));
   for (const tally of tallies) {
-    console.log(`${tally.label}: ${tally.inputs} inputs, ${tally.tokens} TS tokens, ${tally.mismatches} mismatches`);
+    console.log(
+      `${tally.label}: ${tally.inputs} inputs, ${tally.tokens} TS tokens, ${tally.mismatches} mismatches`,
+    );
   }
   const mismatches = tallies.reduce((sum, tally) => sum + tally.mismatches, 0);
   console.log(`Total mismatches: ${mismatches}`);
