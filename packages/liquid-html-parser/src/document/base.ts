@@ -92,9 +92,22 @@ export class ParserBase {
    * trusting wherever a nested parse left the cursor.
    */
   seekToSourceOffset(sourceOffset: number): void {
-    let i = 0;
-    while (i < this.tokens.length && this.tokens[i].start < sourceOffset) i++;
-    this.p = i;
+    this.p = this.firstTokenAtOrAfter(sourceOffset);
+  }
+
+  /**
+   * Index of the first token whose `start` is at or after `sourceOffset`, or
+   * `tokens.length` if none. Binary search: tokens are sorted and never overlap.
+   */
+  private firstTokenAtOrAfter(sourceOffset: number): number {
+    let lo = 0;
+    let hi = this.tokens.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >>> 1;
+      if (this.tokens[mid].start < sourceOffset) lo = mid + 1;
+      else hi = mid;
+    }
+    return lo;
   }
 
   /**
@@ -165,9 +178,9 @@ export class ParserBase {
   }
 
   resliceTokensFrom(sourceOffset: number): void {
-    const straddles = this.tokens.some(
-      (token) => token.start < sourceOffset && token.end > sourceOffset,
-    );
+    // Tokens never overlap, so only the last one starting before the boundary can straddle it.
+    const firstAfter = this.firstTokenAtOrAfter(sourceOffset);
+    const straddles = firstAfter > 0 && this.tokens[firstAfter - 1].end > sourceOffset;
 
     if (straddles) {
       const prefix = this.tokens.filter((token) => token.end <= sourceOffset);
@@ -203,8 +216,6 @@ export class ParserBase {
     // past the raw end tag is the only thing the reslice needed to do here.
     // (The trailing EndOfInput token has `start === source.length`, so it is
     // never skipped past, keeping `this.p` in bounds.)
-    let i = 0;
-    while (i < this.tokens.length && this.tokens[i].start < sourceOffset) i++;
-    this.p = i;
+    this.p = firstAfter;
   }
 }
