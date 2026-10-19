@@ -4,7 +4,9 @@
  * They reach document-level paths no corpus input reaches: tag lookups keyed
  * by an `Object.prototype` name, and JS whitespace, line-terminator and
  * case-folding rules. Adding them to the corpus would change the frozen
- * digest, so they live here.
+ * digest, so they live here. Three more pin tolerant recovery inside an
+ * element, a block body and a branch, which the corpus reaches only through
+ * prefix cuts.
  *
  * | Mode | Assertion per input and config                                      |
  * |------|---------------------------------------------------------------------|
@@ -84,6 +86,30 @@ const FIXED_INPUTS: Input[] = [
   { id: 'liquid-line', source: '{% liquid\n  constructor\n  echo valueOf\n%}' },
   { id: 'liquid-line-end', source: '{% liquid\n  if a\n  endisPrototypeOf\n  endif\n%}' },
   { id: 'html-attr', source: '<div class="{% constructor %}">{{ __proto__ }}</div>' },
+  {
+    id: 'tolerant-html-child',
+    source: '<div><span></p></div>',
+    check: throws(
+      'LiquidHTMLASTParsingError',
+      "Attempting to close HtmlElement 'p' before HtmlElement 'span' was closed",
+    ),
+  },
+  {
+    id: 'tolerant-block-child',
+    source: '{% capture x %}{% if a %}{% endcapture %}',
+    check: throws(
+      'LiquidHTMLASTParsingError',
+      "Attempting to close LiquidTag 'capture' before LiquidTag 'if' was closed",
+    ),
+  },
+  {
+    id: 'tolerant-branch-child',
+    source: '{% if a %}{% else %}{% capture z %}{% endif %}',
+    check: throws(
+      'LiquidHTMLASTParsingError',
+      "Attempting to close LiquidTag 'if' before LiquidTag 'capture' was closed",
+    ),
+  },
 ];
 
 const J_INPUTS: Input[] = [
