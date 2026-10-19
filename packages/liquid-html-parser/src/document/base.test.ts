@@ -27,11 +27,17 @@ describe('Unit: ParserBase', () => {
   });
 
   describe('resliceTokensFrom', () => {
-    it('only moves the cursor when the boundary falls between tokens', () => {
+    it.each([
+      ['before the first token', 0],
+      ['between two tokens', 4],
+    ])('only moves the cursor when the boundary falls %s', (_, offset) => {
       const parser = parserFor('a<p>b</p>');
-      parser.resliceTokensFrom(4);
-      expect(parser.getPosition()).to.equal(4);
+      const originalTokens = [...Array(parser.tokenCount()).keys()].map((i) => parser.tokenAt(i));
+      parser.resliceTokensFrom(offset);
+      expect(parser.getPosition()).to.equal(offset);
       expect(parser.tokenCount()).to.equal(9);
+      // A re-tokenize would build new token objects with the same values.
+      originalTokens.forEach((token, i) => expect(parser.tokenAt(i)).to.equal(token));
     });
 
     it('re-tokenizes from the boundary when a token straddles it', () => {
