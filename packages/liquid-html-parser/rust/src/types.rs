@@ -1,7 +1,6 @@
 //! Port of `NodeTypes` and `Comparators` from `src/types.ts`.
 //!
-//! Only the variants the parser emits. `LiquidErrorNode` comes with the
-//! tolerant parser in 5d.
+//! Only the variants the parser emits.
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum NodeTypes {
@@ -49,6 +48,7 @@ pub enum NodeTypes {
     LiquidDocParamNode,
     LiquidDocExampleNode,
     LiquidDocPromptNode,
+    LiquidErrorNode,
 }
 
 impl NodeTypes {
@@ -98,6 +98,7 @@ impl NodeTypes {
             NodeTypes::LiquidDocParamNode => "LiquidDocParamNode",
             NodeTypes::LiquidDocExampleNode => "LiquidDocExampleNode",
             NodeTypes::LiquidDocPromptNode => "LiquidDocPromptNode",
+            NodeTypes::LiquidErrorNode => "LiquidErrorNode",
         }
     }
 }

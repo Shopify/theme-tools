@@ -11,6 +11,7 @@ use crate::document::factories::make_document_node;
 use crate::document::liquid_lines::parse_liquid_statement;
 use crate::document::node_dispatch::parse_node as parse_node_fn;
 use crate::document::tokenizer::{Token, TokenType};
+use crate::document::tolerant_parser;
 use crate::document::tree_builder::{ChildFilterMode, filter_children};
 use crate::errors::ParseError;
 use crate::tag_definitions::{LiquidLineContext, Parser};
@@ -52,9 +53,27 @@ impl<'a> DocumentParser<'a> {
         }
     }
 
+    /// TS `new TolerantDocumentParser(...)`, which takes `DocumentParser`'s
+    /// arguments.
+    pub fn new_tolerant(
+        tokens: Vec<Token>,
+        source: &'a str,
+        parse_html: bool,
+        allow_unclosed_document_node: bool,
+    ) -> Self {
+        Self {
+            tolerant: true,
+            ..Self::new(tokens, source, parse_html, allow_unclosed_document_node)
+        }
+    }
+
     /// TS DocumentParser.parseNode(), the dispatch point TolerantDocumentParser overrides.
     pub fn parse_node(&mut self) -> Result<JsVal, ParseError> {
-        parse_node_fn(self)
+        if self.tolerant {
+            tolerant_parser::parse_node(self)
+        } else {
+            parse_node_fn(self)
+        }
     }
 
     // document := yamlFrontmatter? node*
