@@ -45,10 +45,12 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.0",
+    "@vitest/browser-playwright": "4.1.11",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.3",
     "html-webpack-plugin": "^5.5.0",
     "jsdom": "^22.1.0",
+    "playwright": "1.60.0",
     "prettier": "^3.0.0",
     "ts-loader": "^9.4.2",
     "ts-node": "^10.9.1",

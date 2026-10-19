@@ -29,7 +29,8 @@
     "build:ts": "tsc -p tsconfig.build.json",
     "build:rust": "node scripts/build-rust.mjs",
     "type-check": "tsc --noEmit",
-    "test": "vitest --root ../.. --run src/**/*.test.ts"
+    "test": "vitest --root ../.. --run src/**/*.test.ts",
+    "test:rust:browser": "vitest --config vitest.browser.config.mjs --run"
   },
   "dependencies": {
     "line-column": "^1.0.2"
