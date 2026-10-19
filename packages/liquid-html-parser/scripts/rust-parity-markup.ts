@@ -28,19 +28,17 @@
  */
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { hydrate, type BackendError, type BackendResult } from '../src/backend';
+import { hydrate } from '../src/backend';
+import type { BackendError, BackendResult } from '../src/backend';
 import { tokenize, TokenType } from '../src/document/tokenizer';
-import { LiquidHTMLASTParsingError, type UnclosedNode } from '../src/errors';
+import { LiquidHTMLASTParsingError } from '../src/errors';
+import type { UnclosedNode } from '../src/errors';
 import { parseLiquidDoc } from '../src/liquid-doc/parser';
 import { MarkupParser } from '../src/markup/parser';
 import { MarkupTokenType, tokenizeMarkup } from '../src/markup/tokenizer';
 import { loadNodeCorpus } from '../src/rust-parity/corpus';
-import {
-  canonicalOutcome,
-  firstDivergentPath,
-  nodesOf,
-  type Outcome,
-} from '../src/rust-parity/outcome';
+import { canonicalOutcome, firstDivergentPath, nodesOf } from '../src/rust-parity/outcome';
+import type { Outcome } from '../src/rust-parity/outcome';
 import type { Parser, TagDefinition } from '../src/tag-definitions';
 import { builtinTags } from '../src/tags';
 import wasmBase64 from '../rust/pkg/bytes.mjs';

@@ -26,7 +26,8 @@
 
 import type { ASTBuildOptions, DocumentNode } from './ast';
 import { Environment } from './environment';
-import { LiquidHTMLASTParsingError, type UnclosedNode } from './errors';
+import { LiquidHTMLASTParsingError } from './errors';
+import type { UnclosedNode } from './errors';
 
 export const BACKEND_KEY = Symbol.for('@shopify/liquid-html-parser/backend');
 

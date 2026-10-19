@@ -7,7 +7,8 @@
  * - anything else throws, so a typo can never turn a Rust run into a TS run.
  */
 import * as fs from 'node:fs';
-import { BACKEND_KEY, type ParserBackend } from '../backend';
+import { BACKEND_KEY } from '../backend';
+import type { ParserBackend } from '../backend';
 
 /*
  * A path held in a variable keeps tsc from resolving a file that only exists

@@ -1,14 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { toLiquidAST, toLiquidHtmlAST } from './ast';
-import {
-  ALIAS_KEY,
-  BACKEND_KEY,
-  UNDEFINED_KEY,
-  type BackendResult,
-  type ParserBackend,
-} from './backend';
+import { ALIAS_KEY, BACKEND_KEY, UNDEFINED_KEY } from './backend';
+import type { BackendResult, ParserBackend } from './backend';
 import { Environment, TagKind } from './environment';
-import { LiquidHTMLASTParsingError, type UnclosedNode } from './errors';
+import { LiquidHTMLASTParsingError } from './errors';
+import type { UnclosedNode } from './errors';
 import { builtinTags } from './tags/index';
 import { toTolerantLiquidHtmlAST } from './tolerant';
 import { NodeTypes } from './types';
