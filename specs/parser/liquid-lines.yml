@@ -1,0 +1,2055 @@
+cases:
+  - name: should not include a leading newline in comment body.value inside {% liquid %}
+    source: |-
+      {% liquid
+      comment
+      this is a comment
+      endcomment
+      %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          comment
+          this is a comment
+          endcomment
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+              this is a comment
+              endcomment
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              comment
+              this is a comment
+              endcomment
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+              this is a comment
+              endcomment
+              %}
+          markup:
+            - type: LiquidRawTag
+              name: comment
+              markup: ""
+              markupPosition: { start: [1, 7], text: "" }
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: comment }
+              blockEndPosition: { start: [3, 0], text: endcomment }
+              position:
+                start: [1, 0]
+                text: |-
+                  comment
+                  this is a comment
+                  endcomment
+              body:
+                type: RawMarkup
+                kind: text
+                value: |
+                  this is a comment
+                position:
+                  start: [1, 7]
+                  text: |
+                    
+                    this is a comment
+                nodes:
+                  - type: TextNode
+                    value: this is a comment
+                    position: { start: [2, 0], text: this is a comment }
+  - name: should parse an empty liquid tag
+    source: "{% liquid %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% liquid %}" }
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% liquid %}" }
+          markupPosition: { start: [0, 10], text: "" }
+          position: { start: [0, 0], text: "{% liquid %}" }
+          markup: []
+  - name: should parse a single echo statement
+    source: |-
+      {% liquid
+      echo "hi"
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          echo "hi"
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              echo "hi"
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              echo "hi"
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              echo "hi"
+              %}
+          markup:
+            - type: LiquidTag
+              name: echo
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: echo "hi" }
+              markupPosition: { start: [1, 5], text: '"hi"' }
+              position: { start: [1, 0], text: echo "hi" }
+              markup:
+                type: LiquidVariable
+                rawSource: '"hi"'
+                position: { start: [1, 5], text: '"hi"' }
+                expression:
+                  type: String
+                  single: false
+                  value: hi
+                  position: { start: [1, 5], text: '"hi"' }
+                filters: []
+  - name: should parse multiple statements
+    source: |-
+      {% liquid
+      assign x = 1
+      echo x
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          assign x = 1
+          echo x
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              assign x = 1
+              echo x
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              assign x = 1
+              echo x
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              assign x = 1
+              echo x
+              %}
+          markup:
+            - type: LiquidTag
+              name: assign
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: assign x = 1 }
+              markupPosition: { start: [1, 7], text: x = 1 }
+              position: { start: [1, 0], text: assign x = 1 }
+              markup:
+                type: AssignMarkup
+                name: x
+                position: { start: [1, 7], text: x = 1 }
+                value:
+                  type: LiquidVariable
+                  rawSource: "1"
+                  position: { start: [1, 11], text: "1" }
+                  expression:
+                    type: Number
+                    value: "1"
+                    position: { start: [1, 11], text: "1" }
+                  filters: []
+            - type: LiquidTag
+              name: echo
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [2, 0], text: echo x }
+              markupPosition: { start: [2, 5], text: x }
+              position: { start: [2, 0], text: echo x }
+              markup:
+                type: LiquidVariable
+                rawSource: x
+                position: { start: [2, 5], text: x }
+                expression:
+                  type: VariableLookup
+                  name: x
+                  position: { start: [2, 5], text: x }
+                  lookups: []
+                  lookupModes: []
+                filters: []
+  - name: should parse a block tag (if/endif)
+    source: |-
+      {% liquid
+      if true
+      echo "yes"
+      endif
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          if true
+          echo "yes"
+          endif
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              if true
+              echo "yes"
+              endif
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              if true
+              echo "yes"
+              endif
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              if true
+              echo "yes"
+              endif
+              %}
+          markup:
+            - type: LiquidTag
+              name: if
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: if true }
+              blockEndPosition: { start: [3, 0], text: endif }
+              markupPosition: { start: [1, 3], text: "true" }
+              position:
+                start: [1, 0]
+                text: |-
+                  if true
+                  echo "yes"
+                  endif
+              markup:
+                type: LiquidLiteral
+                keyword: "true"
+                value: true
+                position: { start: [1, 3], text: "true" }
+              children:
+                - type: LiquidBranch
+                  name: null
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [1, 7], text: "" }
+                  blockStartPosition: { start: [1, 7], text: "" }
+                  blockEndPosition: { start: [3, 0], text: "" }
+                  position:
+                    start: [1, 7]
+                    text: |
+                      
+                      echo "yes"
+                  children:
+                    - type: LiquidTag
+                      name: echo
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      blockStartPosition: { start: [2, 0], text: echo "yes" }
+                      markupPosition: { start: [2, 5], text: '"yes"' }
+                      position: { start: [2, 0], text: echo "yes" }
+                      markup:
+                        type: LiquidVariable
+                        rawSource: '"yes"'
+                        position: { start: [2, 5], text: '"yes"' }
+                        expression:
+                          type: String
+                          single: false
+                          value: yes
+                          position: { start: [2, 5], text: '"yes"' }
+                        filters: []
+  - name: should parse branched block (if/elsif/else)
+    source: |-
+      {% liquid
+      if a
+      echo "1"
+      elsif b
+      echo "2"
+      else
+      echo "3"
+      endif
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          if a
+          echo "1"
+          elsif b
+          echo "2"
+          else
+          echo "3"
+          endif
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              if a
+              echo "1"
+              elsif b
+              echo "2"
+              else
+              echo "3"
+              endif
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              if a
+              echo "1"
+              elsif b
+              echo "2"
+              else
+              echo "3"
+              endif
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              if a
+              echo "1"
+              elsif b
+              echo "2"
+              else
+              echo "3"
+              endif
+              %}
+          markup:
+            - type: LiquidTag
+              name: if
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: if a }
+              blockEndPosition: { start: [7, 0], text: endif }
+              markupPosition: { start: [1, 3], text: a }
+              position:
+                start: [1, 0]
+                text: |-
+                  if a
+                  echo "1"
+                  elsif b
+                  echo "2"
+                  else
+                  echo "3"
+                  endif
+              markup:
+                type: VariableLookup
+                name: a
+                position: { start: [1, 3], text: a }
+                lookups: []
+                lookupModes: []
+              children:
+                - type: LiquidBranch
+                  name: null
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [1, 4], text: "" }
+                  blockStartPosition: { start: [1, 4], text: "" }
+                  blockEndPosition: { start: [3, 0], text: "" }
+                  position:
+                    start: [1, 4]
+                    text: |
+                      
+                      echo "1"
+                  children:
+                    - type: LiquidTag
+                      name: echo
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      blockStartPosition: { start: [2, 0], text: echo "1" }
+                      markupPosition: { start: [2, 5], text: '"1"' }
+                      position: { start: [2, 0], text: echo "1" }
+                      markup:
+                        type: LiquidVariable
+                        rawSource: '"1"'
+                        position: { start: [2, 5], text: '"1"' }
+                        expression:
+                          type: String
+                          single: false
+                          value: "1"
+                          position: { start: [2, 5], text: '"1"' }
+                        filters: []
+                - type: LiquidBranch
+                  name: elsif
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [3, 6], text: b }
+                  blockStartPosition: { start: [3, 0], text: elsif b }
+                  blockEndPosition: { start: [5, 0], text: "" }
+                  position:
+                    start: [3, 0]
+                    text: |
+                      elsif b
+                      echo "2"
+                  markup:
+                    type: VariableLookup
+                    name: b
+                    position: { start: [3, 6], text: b }
+                    lookups: []
+                    lookupModes: []
+                  children:
+                    - type: LiquidTag
+                      name: echo
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      blockStartPosition: { start: [4, 0], text: echo "2" }
+                      markupPosition: { start: [4, 5], text: '"2"' }
+                      position: { start: [4, 0], text: echo "2" }
+                      markup:
+                        type: LiquidVariable
+                        rawSource: '"2"'
+                        position: { start: [4, 5], text: '"2"' }
+                        expression:
+                          type: String
+                          single: false
+                          value: "2"
+                          position: { start: [4, 5], text: '"2"' }
+                        filters: []
+                - type: LiquidBranch
+                  name: else
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [5, 4], text: "" }
+                  blockStartPosition: { start: [5, 0], text: else }
+                  blockEndPosition: { start: [7, 0], text: "" }
+                  position:
+                    start: [5, 0]
+                    text: |
+                      else
+                      echo "3"
+                  children:
+                    - type: LiquidTag
+                      name: echo
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      blockStartPosition: { start: [6, 0], text: echo "3" }
+                      markupPosition: { start: [6, 5], text: '"3"' }
+                      position: { start: [6, 0], text: echo "3" }
+                      markup:
+                        type: LiquidVariable
+                        rawSource: '"3"'
+                        position: { start: [6, 5], text: '"3"' }
+                        expression:
+                          type: String
+                          single: false
+                          value: "3"
+                          position: { start: [6, 5], text: '"3"' }
+                        filters: []
+  - name: should parse case/when
+    source: |-
+      {% liquid
+      case x
+      when 1
+      echo "one"
+      when 2
+      echo "two"
+      endcase
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          case x
+          when 1
+          echo "one"
+          when 2
+          echo "two"
+          endcase
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              case x
+              when 1
+              echo "one"
+              when 2
+              echo "two"
+              endcase
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              case x
+              when 1
+              echo "one"
+              when 2
+              echo "two"
+              endcase
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              case x
+              when 1
+              echo "one"
+              when 2
+              echo "two"
+              endcase
+              %}
+          markup:
+            - type: LiquidTag
+              name: case
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: case x }
+              blockEndPosition: { start: [6, 0], text: endcase }
+              markupPosition: { start: [1, 5], text: x }
+              position:
+                start: [1, 0]
+                text: |-
+                  case x
+                  when 1
+                  echo "one"
+                  when 2
+                  echo "two"
+                  endcase
+              markup:
+                type: VariableLookup
+                name: x
+                position: { start: [1, 5], text: x }
+                lookups: []
+                lookupModes: []
+              children:
+                - type: LiquidBranch
+                  name: null
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [1, 6], text: "" }
+                  blockStartPosition: { start: [1, 6], text: "" }
+                  blockEndPosition: { start: [2, 0], text: "" }
+                  position:
+                    start: [1, 6]
+                    text: |+
+                      
+                  children: []
+                - type: LiquidBranch
+                  name: when
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [2, 5], text: "1" }
+                  blockStartPosition: { start: [2, 0], text: when 1 }
+                  blockEndPosition: { start: [4, 0], text: "" }
+                  position:
+                    start: [2, 0]
+                    text: |
+                      when 1
+                      echo "one"
+                  markup:
+                    - type: Number
+                      value: "1"
+                      position: { start: [2, 5], text: "1" }
+                  children:
+                    - type: LiquidTag
+                      name: echo
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      blockStartPosition: { start: [3, 0], text: echo "one" }
+                      markupPosition: { start: [3, 5], text: '"one"' }
+                      position: { start: [3, 0], text: echo "one" }
+                      markup:
+                        type: LiquidVariable
+                        rawSource: '"one"'
+                        position: { start: [3, 5], text: '"one"' }
+                        expression:
+                          type: String
+                          single: false
+                          value: one
+                          position: { start: [3, 5], text: '"one"' }
+                        filters: []
+                - type: LiquidBranch
+                  name: when
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [4, 5], text: "2" }
+                  blockStartPosition: { start: [4, 0], text: when 2 }
+                  blockEndPosition: { start: [6, 0], text: "" }
+                  position:
+                    start: [4, 0]
+                    text: |
+                      when 2
+                      echo "two"
+                  markup:
+                    - type: Number
+                      value: "2"
+                      position: { start: [4, 5], text: "2" }
+                  children:
+                    - type: LiquidTag
+                      name: echo
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      blockStartPosition: { start: [5, 0], text: echo "two" }
+                      markupPosition: { start: [5, 5], text: '"two"' }
+                      position: { start: [5, 0], text: echo "two" }
+                      markup:
+                        type: LiquidVariable
+                        rawSource: '"two"'
+                        position: { start: [5, 5], text: '"two"' }
+                        expression:
+                          type: String
+                          single: false
+                          value: two
+                          position: { start: [5, 5], text: '"two"' }
+                        filters: []
+  - name: should parse for/else
+    source: |-
+      {% liquid
+      for item in items
+      echo item
+      else
+      echo "empty"
+      endfor
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          for item in items
+          echo item
+          else
+          echo "empty"
+          endfor
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              for item in items
+              echo item
+              else
+              echo "empty"
+              endfor
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              for item in items
+              echo item
+              else
+              echo "empty"
+              endfor
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              for item in items
+              echo item
+              else
+              echo "empty"
+              endfor
+              %}
+          markup:
+            - type: LiquidTag
+              name: for
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: for item in items }
+              blockEndPosition: { start: [5, 0], text: endfor }
+              markupPosition: { start: [1, 4], text: item in items }
+              position:
+                start: [1, 0]
+                text: |-
+                  for item in items
+                  echo item
+                  else
+                  echo "empty"
+                  endfor
+              markup:
+                type: ForMarkup
+                variableName: item
+                reversed: false
+                position: { start: [1, 4], text: item in items }
+                collection:
+                  type: VariableLookup
+                  name: items
+                  position: { start: [1, 12], text: items }
+                  lookups: []
+                  lookupModes: []
+                args: []
+              children:
+                - type: LiquidBranch
+                  name: null
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [1, 17], text: "" }
+                  blockStartPosition: { start: [1, 17], text: "" }
+                  blockEndPosition: { start: [3, 0], text: "" }
+                  position:
+                    start: [1, 17]
+                    text: |
+                      
+                      echo item
+                  children:
+                    - type: LiquidTag
+                      name: echo
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      blockStartPosition: { start: [2, 0], text: echo item }
+                      markupPosition: { start: [2, 5], text: item }
+                      position: { start: [2, 0], text: echo item }
+                      markup:
+                        type: LiquidVariable
+                        rawSource: item
+                        position: { start: [2, 5], text: item }
+                        expression:
+                          type: VariableLookup
+                          name: item
+                          position: { start: [2, 5], text: item }
+                          lookups: []
+                          lookupModes: []
+                        filters: []
+                - type: LiquidBranch
+                  name: else
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [3, 4], text: "" }
+                  blockStartPosition: { start: [3, 0], text: else }
+                  blockEndPosition: { start: [5, 0], text: "" }
+                  position:
+                    start: [3, 0]
+                    text: |
+                      else
+                      echo "empty"
+                  children:
+                    - type: LiquidTag
+                      name: echo
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      blockStartPosition: { start: [4, 0], text: echo "empty" }
+                      markupPosition: { start: [4, 5], text: '"empty"' }
+                      position: { start: [4, 0], text: echo "empty" }
+                      markup:
+                        type: LiquidVariable
+                        rawSource: '"empty"'
+                        position: { start: [4, 5], text: '"empty"' }
+                        expression:
+                          type: String
+                          single: false
+                          value: empty
+                          position: { start: [4, 5], text: '"empty"' }
+                        filters: []
+  - name: should parse raw tag (comment)
+    source: |-
+      {% liquid
+      comment
+      this is ignored
+      endcomment
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          comment
+          this is ignored
+          endcomment
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+              this is ignored
+              endcomment
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              comment
+              this is ignored
+              endcomment
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+              this is ignored
+              endcomment
+              %}
+          markup:
+            - type: LiquidRawTag
+              name: comment
+              markup: ""
+              markupPosition: { start: [1, 7], text: "" }
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: comment }
+              blockEndPosition: { start: [3, 0], text: endcomment }
+              position:
+                start: [1, 0]
+                text: |-
+                  comment
+                  this is ignored
+                  endcomment
+              body:
+                type: RawMarkup
+                kind: text
+                value: |
+                  this is ignored
+                position:
+                  start: [1, 7]
+                  text: |
+                    
+                    this is ignored
+                nodes:
+                  - type: TextNode
+                    value: this is ignored
+                    position: { start: [2, 0], text: this is ignored }
+  - name: should set RawMarkup start position to lineEnd, not lineEnd+1 (Bug 47 regression)
+    source: |-
+      {% liquid
+      comment
+      body text
+      endcomment
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          comment
+          body text
+          endcomment
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+              body text
+              endcomment
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              comment
+              body text
+              endcomment
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+              body text
+              endcomment
+              %}
+          markup:
+            - type: LiquidRawTag
+              name: comment
+              markup: ""
+              markupPosition: { start: [1, 7], text: "" }
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: comment }
+              blockEndPosition: { start: [3, 0], text: endcomment }
+              position:
+                start: [1, 0]
+                text: |-
+                  comment
+                  body text
+                  endcomment
+              body:
+                type: RawMarkup
+                kind: text
+                value: |
+                  body text
+                position:
+                  start: [1, 7]
+                  text: |
+                    
+                    body text
+                nodes:
+                  - type: TextNode
+                    value: body text
+                    position: { start: [2, 0], text: body text }
+  - name: should parse inline comment (#)
+    source: |-
+      {% liquid
+      # a comment
+      echo "hi"
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          # a comment
+          echo "hi"
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              # a comment
+              echo "hi"
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              # a comment
+              echo "hi"
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              # a comment
+              echo "hi"
+              %}
+          markup:
+            - type: LiquidTag
+              name: "#"
+              markup: a comment
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: "# a comment" }
+              markupPosition: { start: [1, 2], text: a comment }
+              position: { start: [1, 0], text: "# a comment" }
+            - type: LiquidTag
+              name: echo
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [2, 0], text: echo "hi" }
+              markupPosition: { start: [2, 5], text: '"hi"' }
+              position: { start: [2, 0], text: echo "hi" }
+              markup:
+                type: LiquidVariable
+                rawSource: '"hi"'
+                position: { start: [2, 5], text: '"hi"' }
+                expression:
+                  type: String
+                  single: false
+                  value: hi
+                  position: { start: [2, 5], text: '"hi"' }
+                filters: []
+  - name: should preserve inner indentation after `#`, stripping only one separator space (Category J)
+    source: |-
+      {% liquid
+      #     fancy
+      echo "hi"
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          #     fancy
+          echo "hi"
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              #     fancy
+              echo "hi"
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              #     fancy
+              echo "hi"
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              #     fancy
+              echo "hi"
+              %}
+          markup:
+            - type: LiquidTag
+              name: "#"
+              markup: "    fancy"
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: "#     fancy" }
+              markupPosition: { start: [1, 2], text: "    fancy" }
+              position: { start: [1, 0], text: "#     fancy" }
+            - type: LiquidTag
+              name: echo
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [2, 0], text: echo "hi" }
+              markupPosition: { start: [2, 5], text: '"hi"' }
+              position: { start: [2, 0], text: echo "hi" }
+              markup:
+                type: LiquidVariable
+                rawSource: '"hi"'
+                position: { start: [2, 5], text: '"hi"' }
+                expression:
+                  type: String
+                  single: false
+                  value: hi
+                  position: { start: [2, 5], text: '"hi"' }
+                filters: []
+  - name: should skip empty lines
+    source: |-
+      {% liquid
+
+      echo "hi"
+
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+
+          echo "hi"
+
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+
+              echo "hi"
+
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |+
+              
+
+              echo "hi"
+
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+
+              echo "hi"
+
+              %}
+          markup:
+            - type: LiquidTag
+              name: echo
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [2, 0], text: echo "hi" }
+              markupPosition: { start: [2, 5], text: '"hi"' }
+              position: { start: [2, 0], text: echo "hi" }
+              markup:
+                type: LiquidVariable
+                rawSource: '"hi"'
+                position: { start: [2, 5], text: '"hi"' }
+                expression:
+                  type: String
+                  single: false
+                  value: hi
+                  position: { start: [2, 5], text: '"hi"' }
+                filters: []
+  - name: should parse unknown tag as base case
+    source: |-
+      {% liquid
+      unknown_tag foo
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          unknown_tag foo
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              unknown_tag foo
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              unknown_tag foo
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              unknown_tag foo
+              %}
+          markup:
+            - type: LiquidTag
+              name: unknown_tag
+              markup: foo
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: unknown_tag foo }
+              markupPosition: { start: [1, 12], text: foo }
+              position: { start: [1, 0], text: unknown_tag foo }
+  - name: should parse nested blocks
+    source: |-
+      {% liquid
+      for item in items
+      if item
+      echo item
+      endif
+      endfor
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          for item in items
+          if item
+          echo item
+          endif
+          endfor
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              for item in items
+              if item
+              echo item
+              endif
+              endfor
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              for item in items
+              if item
+              echo item
+              endif
+              endfor
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              for item in items
+              if item
+              echo item
+              endif
+              endfor
+              %}
+          markup:
+            - type: LiquidTag
+              name: for
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: for item in items }
+              blockEndPosition: { start: [5, 0], text: endfor }
+              markupPosition: { start: [1, 4], text: item in items }
+              position:
+                start: [1, 0]
+                text: |-
+                  for item in items
+                  if item
+                  echo item
+                  endif
+                  endfor
+              markup:
+                type: ForMarkup
+                variableName: item
+                reversed: false
+                position: { start: [1, 4], text: item in items }
+                collection:
+                  type: VariableLookup
+                  name: items
+                  position: { start: [1, 12], text: items }
+                  lookups: []
+                  lookupModes: []
+                args: []
+              children:
+                - type: LiquidBranch
+                  name: null
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [1, 17], text: "" }
+                  blockStartPosition: { start: [1, 17], text: "" }
+                  blockEndPosition: { start: [5, 0], text: "" }
+                  position:
+                    start: [1, 17]
+                    text: |
+                      
+                      if item
+                      echo item
+                      endif
+                  children:
+                    - type: LiquidTag
+                      name: if
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      delimiterWhitespaceStart: ""
+                      delimiterWhitespaceEnd: ""
+                      blockStartPosition: { start: [2, 0], text: if item }
+                      blockEndPosition: { start: [4, 0], text: endif }
+                      markupPosition: { start: [2, 3], text: item }
+                      position:
+                        start: [2, 0]
+                        text: |-
+                          if item
+                          echo item
+                          endif
+                      markup:
+                        type: VariableLookup
+                        name: item
+                        position: { start: [2, 3], text: item }
+                        lookups: []
+                        lookupModes: []
+                      children:
+                        - type: LiquidBranch
+                          name: null
+                          markup: ""
+                          whitespaceStart: ""
+                          whitespaceEnd: ""
+                          markupPosition: { start: [2, 7], text: "" }
+                          blockStartPosition: { start: [2, 7], text: "" }
+                          blockEndPosition: { start: [4, 0], text: "" }
+                          position:
+                            start: [2, 7]
+                            text: |
+                              
+                              echo item
+                          children:
+                            - type: LiquidTag
+                              name: echo
+                              whitespaceStart: ""
+                              whitespaceEnd: ""
+                              blockStartPosition: { start: [3, 0], text: echo item }
+                              markupPosition: { start: [3, 5], text: item }
+                              position: { start: [3, 0], text: echo item }
+                              markup:
+                                type: LiquidVariable
+                                rawSource: item
+                                position: { start: [3, 5], text: item }
+                                expression:
+                                  type: VariableLookup
+                                  name: item
+                                  position: { start: [3, 5], text: item }
+                                  lookups: []
+                                  lookupModes: []
+                                filters: []
+  - name: should fall back to base case for bad markup (tolerant)
+    source: |-
+      {% liquid
+      assign !bad
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          assign !bad
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              assign !bad
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              assign !bad
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              assign !bad
+              %}
+          markup:
+            - type: LiquidTag
+              name: assign
+              markup: "!bad"
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: assign !bad }
+              markupPosition: { start: [1, 7], text: "!bad" }
+              position: { start: [1, 0], text: assign !bad }
+              reason: Expected Equality but found EndOfString ()
+  - name: should parse multiple blocks at same level
+    source: |-
+      {% liquid
+      if a
+      echo "1"
+      endif
+      if b
+      echo "2"
+      endif
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          if a
+          echo "1"
+          endif
+          if b
+          echo "2"
+          endif
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              if a
+              echo "1"
+              endif
+              if b
+              echo "2"
+              endif
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              if a
+              echo "1"
+              endif
+              if b
+              echo "2"
+              endif
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              if a
+              echo "1"
+              endif
+              if b
+              echo "2"
+              endif
+              %}
+          markup:
+            - type: LiquidTag
+              name: if
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: if a }
+              blockEndPosition: { start: [3, 0], text: endif }
+              markupPosition: { start: [1, 3], text: a }
+              position:
+                start: [1, 0]
+                text: |-
+                  if a
+                  echo "1"
+                  endif
+              markup:
+                type: VariableLookup
+                name: a
+                position: { start: [1, 3], text: a }
+                lookups: []
+                lookupModes: []
+              children:
+                - type: LiquidBranch
+                  name: null
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [1, 4], text: "" }
+                  blockStartPosition: { start: [1, 4], text: "" }
+                  blockEndPosition: { start: [3, 0], text: "" }
+                  position:
+                    start: [1, 4]
+                    text: |
+                      
+                      echo "1"
+                  children:
+                    - type: LiquidTag
+                      name: echo
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      blockStartPosition: { start: [2, 0], text: echo "1" }
+                      markupPosition: { start: [2, 5], text: '"1"' }
+                      position: { start: [2, 0], text: echo "1" }
+                      markup:
+                        type: LiquidVariable
+                        rawSource: '"1"'
+                        position: { start: [2, 5], text: '"1"' }
+                        expression:
+                          type: String
+                          single: false
+                          value: "1"
+                          position: { start: [2, 5], text: '"1"' }
+                        filters: []
+            - type: LiquidTag
+              name: if
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [4, 0], text: if b }
+              blockEndPosition: { start: [6, 0], text: endif }
+              markupPosition: { start: [4, 3], text: b }
+              position:
+                start: [4, 0]
+                text: |-
+                  if b
+                  echo "2"
+                  endif
+              markup:
+                type: VariableLookup
+                name: b
+                position: { start: [4, 3], text: b }
+                lookups: []
+                lookupModes: []
+              children:
+                - type: LiquidBranch
+                  name: null
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [4, 4], text: "" }
+                  blockStartPosition: { start: [4, 4], text: "" }
+                  blockEndPosition: { start: [6, 0], text: "" }
+                  position:
+                    start: [4, 4]
+                    text: |
+                      
+                      echo "2"
+                  children:
+                    - type: LiquidTag
+                      name: echo
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      blockStartPosition: { start: [5, 0], text: echo "2" }
+                      markupPosition: { start: [5, 5], text: '"2"' }
+                      position: { start: [5, 0], text: echo "2" }
+                      markup:
+                        type: LiquidVariable
+                        rawSource: '"2"'
+                        position: { start: [5, 5], text: '"2"' }
+                        expression:
+                          type: String
+                          single: false
+                          value: "2"
+                          position: { start: [5, 5], text: '"2"' }
+                        filters: []
+  - name: should have non-zero-width blockEndPosition for case/endcase
+    source: |-
+      {% liquid
+      case x
+      when 1
+      echo "one"
+      endcase
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          case x
+          when 1
+          echo "one"
+          endcase
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              case x
+              when 1
+              echo "one"
+              endcase
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              case x
+              when 1
+              echo "one"
+              endcase
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              case x
+              when 1
+              echo "one"
+              endcase
+              %}
+          markup:
+            - type: LiquidTag
+              name: case
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: case x }
+              blockEndPosition: { start: [4, 0], text: endcase }
+              markupPosition: { start: [1, 5], text: x }
+              position:
+                start: [1, 0]
+                text: |-
+                  case x
+                  when 1
+                  echo "one"
+                  endcase
+              markup:
+                type: VariableLookup
+                name: x
+                position: { start: [1, 5], text: x }
+                lookups: []
+                lookupModes: []
+              children:
+                - type: LiquidBranch
+                  name: null
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [1, 6], text: "" }
+                  blockStartPosition: { start: [1, 6], text: "" }
+                  blockEndPosition: { start: [2, 0], text: "" }
+                  position:
+                    start: [1, 6]
+                    text: |+
+                      
+                  children: []
+                - type: LiquidBranch
+                  name: when
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [2, 5], text: "1" }
+                  blockStartPosition: { start: [2, 0], text: when 1 }
+                  blockEndPosition: { start: [4, 0], text: "" }
+                  position:
+                    start: [2, 0]
+                    text: |
+                      when 1
+                      echo "one"
+                  markup:
+                    - type: Number
+                      value: "1"
+                      position: { start: [2, 5], text: "1" }
+                  children:
+                    - type: LiquidTag
+                      name: echo
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      blockStartPosition: { start: [3, 0], text: echo "one" }
+                      markupPosition: { start: [3, 5], text: '"one"' }
+                      position: { start: [3, 0], text: echo "one" }
+                      markup:
+                        type: LiquidVariable
+                        rawSource: '"one"'
+                        position: { start: [3, 5], text: '"one"' }
+                        expression:
+                          type: String
+                          single: false
+                          value: one
+                          position: { start: [3, 5], text: '"one"' }
+                        filters: []
+  - name: should have non-zero-width blockEndPosition for raw tags (comment)
+    source: |-
+      {% liquid
+      comment
+      ignored
+      endcomment
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          comment
+          ignored
+          endcomment
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+              ignored
+              endcomment
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              comment
+              ignored
+              endcomment
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+              ignored
+              endcomment
+              %}
+          markup:
+            - type: LiquidRawTag
+              name: comment
+              markup: ""
+              markupPosition: { start: [1, 7], text: "" }
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: comment }
+              blockEndPosition: { start: [3, 0], text: endcomment }
+              position:
+                start: [1, 0]
+                text: |-
+                  comment
+                  ignored
+                  endcomment
+              body:
+                type: RawMarkup
+                kind: text
+                value: |
+                  ignored
+                position:
+                  start: [1, 7]
+                  text: |
+                    
+                    ignored
+                nodes:
+                  - type: TextNode
+                    value: ignored
+                    position: { start: [2, 0], text: ignored }
+  - name: should balance nested comments so the outer endcomment closes the block
+    source: |-
+      {% liquid
+      comment
+      outer
+      comment
+      inner
+      endcomment
+      endcomment
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          comment
+          outer
+          comment
+          inner
+          endcomment
+          endcomment
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+              outer
+              comment
+              inner
+              endcomment
+              endcomment
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              comment
+              outer
+              comment
+              inner
+              endcomment
+              endcomment
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+              outer
+              comment
+              inner
+              endcomment
+              endcomment
+              %}
+          markup:
+            - type: LiquidRawTag
+              name: comment
+              markup: ""
+              markupPosition: { start: [1, 7], text: "" }
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: comment }
+              blockEndPosition: { start: [6, 0], text: endcomment }
+              position:
+                start: [1, 0]
+                text: |-
+                  comment
+                  outer
+                  comment
+                  inner
+                  endcomment
+                  endcomment
+              body:
+                type: RawMarkup
+                kind: text
+                value: |
+                  outer
+                  comment
+                  inner
+                  endcomment
+                position:
+                  start: [1, 7]
+                  text: |
+                    
+                    outer
+                    comment
+                    inner
+                    endcomment
+                nodes:
+                  - type: TextNode
+                    value: |-
+                      outer
+                      comment
+                      inner
+                      endcomment
+                    position:
+                      start: [2, 0]
+                      text: |-
+                        outer
+                        comment
+                        inner
+                        endcomment
+  - name: should carve out a nested raw so a literal endcomment inside it does not close early
+    source: |-
+      {% liquid
+      comment
+      before
+      raw
+      endcomment
+      endraw
+      after
+      endcomment
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          comment
+          before
+          raw
+          endcomment
+          endraw
+          after
+          endcomment
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+              before
+              raw
+              endcomment
+              endraw
+              after
+              endcomment
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              comment
+              before
+              raw
+              endcomment
+              endraw
+              after
+              endcomment
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+              before
+              raw
+              endcomment
+              endraw
+              after
+              endcomment
+              %}
+          markup:
+            - type: LiquidRawTag
+              name: comment
+              markup: ""
+              markupPosition: { start: [1, 7], text: "" }
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: comment }
+              blockEndPosition: { start: [7, 0], text: endcomment }
+              position:
+                start: [1, 0]
+                text: |-
+                  comment
+                  before
+                  raw
+                  endcomment
+                  endraw
+                  after
+                  endcomment
+              body:
+                type: RawMarkup
+                kind: text
+                value: |
+                  before
+                  raw
+                  endcomment
+                  endraw
+                  after
+                position:
+                  start: [1, 7]
+                  text: |
+                    
+                    before
+                    raw
+                    endcomment
+                    endraw
+                    after
+                nodes:
+                  - type: TextNode
+                    value: |-
+                      before
+                      raw
+                      endcomment
+                      endraw
+                      after
+                    position:
+                      start: [2, 0]
+                      text: |-
+                        before
+                        raw
+                        endcomment
+                        endraw
+                        after
