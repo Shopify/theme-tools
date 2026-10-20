@@ -87,6 +87,12 @@ pnpm --dir packages/liquid-html-parser build:rust
 
 This writes `rust/pkg/`, which is gitignored.
 
+The tests import the workspace packages from their built `dist/` output, so also build the TS packages from the repo root:
+
+```bash
+pnpm build:ts
+```
+
 ### Run the tests against the Rust backend
 
 `LIQUID_PARSER=rust` registers the Rust backend before any test runs. `LIQUID_PARSER=ts`, or leaving it unset, uses the TS parser. Any other value fails the run.
