@@ -1,0 +1,219 @@
+check: MissingBlockArguments
+severity: warning
+cases:
+  - name: does not require schema settings with implicit platform defaults
+    files:
+      blocks/card.liquid: |-
+        {% schema %}
+        {"settings":[{"id":"title","type":"text"},{"id":"enabled","type":"checkbox"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card' %}{% endblock %}"
+  - name: does not require schema settings with explicit schema defaults
+    files:
+      blocks/card.liquid: |-
+        {% schema %}
+        {"settings":[{"id":"columns","type":"range","min":1,"max":4,"step":1,"default":2},{"id":"heading_font","type":"font_picker","default":"assistant_n4"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card' %}{% endblock %}"
+  - name: does not require schema settings with settings that forbid defaults
+    files:
+      blocks/card.liquid: |-
+        {% schema %}
+        {"settings":[{"id":"product","type":"product"},{"id":"image","type":"image_picker"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card' %}{% endblock %}"
+  - name: requires a LiquidDoc echo of a schema setting with an implicit platform default
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {boolean} enabled - Enabled
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"enabled","type":"checkbox"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card' %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Missing required argument 'enabled' in block tag for 'card'."
+        start: [0, 0]
+        highlight: "{% block 'card' %}"
+  - name: requires a LiquidDoc echo of a schema setting with an explicit schema default
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {number} columns - Columns
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"columns","type":"range","min":1,"max":4,"step":1,"default":2}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card' %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Missing required argument 'columns' in block tag for 'card'."
+        start: [0, 0]
+        highlight: "{% block 'card' %}"
+  - name: requires a LiquidDoc echo of a schema setting with a setting that forbids defaults
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {image} image - Image
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"image","type":"image_picker"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card' %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Missing required argument 'image' in block tag for 'card'."
+        start: [0, 0]
+        highlight: "{% block 'card' %}"
+  - name: keeps optional LiquidDoc echoes of schema settings optional
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {string} [title] - Title
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"title","type":"text"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card' %}{% endblock %}"
+  - name: applies requiredness to LiquidDoc-only developer parameters
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {string} developer_id - Developer-only id
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"title","type":"text"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card' %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Missing required argument 'developer_id' in block tag for 'card'."
+        start: [0, 0]
+        highlight: "{% block 'card' %}"
+  - name: requires LiquidDoc-only parameters from a schema-less block
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {string} tracking_id - Tracking id
+        {% enddoc %}
+      templates/test.liquid: "{% block 'card' %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Missing required argument 'tracking_id' in block tag for 'card'."
+        start: [0, 0]
+        highlight: "{% block 'card' %}"
+  - name: accepts an explicit argument for required built-in content
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {string} content - Body
+        {% enddoc %}
+        {% schema %}
+        {"settings":[]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card', content: body %}{% endblock %}"
+  - name: accepts an explicit argument for required schema-backed content
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {string} content - Body
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"content","type":"text"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card', content: body %}{% endblock %}"
+  - name: treats text in the invocation body as required content
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {string} content - Body
+        {% enddoc %}
+        {% schema %}
+        {"settings":[]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card' %}Body{% endblock %}"
+  - name: treats a comment in the invocation body as required content
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {string} content - Body
+        {% enddoc %}
+        {% schema %}
+        {"settings":[]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card' %}{% comment %}Hidden{% endcomment %}{% endblock %}"
+  - name: treats an assignment in the invocation body as required content
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {string} content - Body
+        {% enddoc %}
+        {% schema %}
+        {"settings":[]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card' %}{% assign value = 'hidden' %}{% endblock %}"
+  - name: accepts a body for required schema-backed content
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {string} content - Body
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"content","type":"text"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card' %}Body{% endblock %}"
+  - name: does not treat a whitespace-only body as required content
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {string} content - Body
+        {% enddoc %}
+        {% schema %}
+        {"settings":[]}
+        {% endschema %}
+      templates/test.liquid: |-
+        {% block 'card' %}
+          	
+        {% endblock %}
+    offenses:
+      - file: templates/test.liquid
+        message: "Missing required argument 'content' in block tag for 'card'."
+        start: [0, 0]
+        highlight: "{% block 'card' %}"
+  - name: requires schema-backed content when LiquidDoc declares it required
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {string} content - Body
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"content","type":"text"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card' %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Missing required argument 'content' in block tag for 'card'."
+        start: [0, 0]
+        highlight: "{% block 'card' %}"
+  - name: keeps schema-backed content optional when LiquidDoc declares it optional
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {string} [content] - Body
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"content","type":"text"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card' %}{% endblock %}"
+  - name: does not report missing arguments for an unreadable missing target
+    files:
+      templates/test.liquid: "{% block 'card' %}{% endblock %}"
+  - name: does not report missing arguments for an unreadable invalid target schema
+    files:
+      blocks/card.liquid: |-
+        {% schema %}
+        { invalid
+        {% endschema %}
+      templates/test.liquid: "{% block 'card' %}{% endblock %}"

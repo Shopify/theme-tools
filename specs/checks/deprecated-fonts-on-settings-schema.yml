@@ -1,0 +1,72 @@
+check: DeprecatedFontsOnSettingsSchema
+severity: warning
+cases:
+  - name: reports a warning when settings_schema.json has a deprecated font
+    files:
+      config/settings_schema.json: |-
+        [
+              {
+                "name": "Fonts",
+                "settings": [
+                  {
+                    "type": "font_picker",
+                    "id": "heading_font",
+                    "label": "Heading font",
+                    "default": "helvetica_n4"
+                  }
+                ]
+              }
+            ]
+    offenses:
+      - file: config/settings_schema.json
+        message: 'The font "helvetica_n4" is deprecated'
+        start: [8, 23]
+        highlight: '"helvetica_n4"'
+  - name: reports no warning when settings_schema.json has non-deprecated fonts
+    files:
+      config/settings_schema.json: |-
+        [
+              {
+                "name": "Fonts",
+                "settings": [
+                  {
+                    "type": "font_picker",
+                    "id": "heading_font",
+                    "label": "Heading font",
+                    "default": "alegreya_n4"
+                  }
+                ]
+              }
+            ]
+  - name: reports no warning for non-font_picker settings
+    files:
+      config/settings_schema.json: |-
+        [
+              {
+                "name": "Fonts",
+                "settings": [
+                  {
+                    "type": "text",
+                    "id": "heading_text",
+                    "label": "Heading text",
+                    "default": "helvetica_n4"
+                  }
+                ]
+              }
+            ]
+  - name: does not run check on files other than settings_schema.json
+    files:
+      config/other_file.json: |-
+        [
+              {
+                "name": "Fonts",
+                "settings": [
+                  {
+                    "type": "font_picker",
+                    "id": "heading_font",
+                    "label": "Heading font",
+                    "default": "helvetica_n4"
+                  }
+                ]
+              }
+            ]
