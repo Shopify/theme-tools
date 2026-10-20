@@ -37,6 +37,7 @@ import {
   ValidateJSON,
 } from './types';
 import { getPosition } from './utils';
+import { getFileSize } from './utils/file-utils';
 import { visitJSON, visitLiquid } from './visitors';
 
 export * from './AbstractFileSystem';
@@ -92,6 +93,7 @@ export async function check(
     mode: config.context,
     fileExists: makeFileExists(fs),
     fileSize: makeFileSize(fs),
+    remoteFileSize: injectedDependencies.remoteFileSize ?? getFileSize,
     getDefaultLocale: makeGetDefaultLocale(fs, rootUri),
     getDefaultTranslations: makeGetDefaultTranslations(fs, theme, rootUri),
     getDefaultSchemaLocale: makeGetDefaultSchemaLocale(fs, rootUri),
