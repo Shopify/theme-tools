@@ -1,0 +1,20 @@
+[workspace]
+resolver = "2"
+members = ["crates/liquid-ast", "crates/liquid-parser", "crates/theme-check"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.84"
+license = "MIT"
+repository = "https://github.com/Shopify/theme-tools"
+
+[workspace.dependencies]
+liquid-ast = { path = "crates/liquid-ast", version = "0.1.0" }
+liquid-parser = { path = "crates/liquid-parser", version = "0.1.0" }
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+debug = 1
