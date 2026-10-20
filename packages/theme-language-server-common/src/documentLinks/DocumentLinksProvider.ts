@@ -1,21 +1,18 @@
-import { LiquidHtmlNode, LiquidString, NamedTags, NodeTypes } from '@shopify/liquid-html-parser';
 import { SourceCodeType } from '@shopify/theme-check-common';
 import { DocumentLink, Range } from 'vscode-languageserver';
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import { URI, Utils } from 'vscode-uri';
-
-import { visit, Visitor } from '@shopify/theme-check-common';
 import { DocumentManager } from '../documents';
-import { FindThemeRootURI } from '../internal-types';
+import { AugmentedReference } from '../types';
+
+type GetDependencies = (uri: string) => Promise<AugmentedReference[]>;
 
 export class DocumentLinksProvider {
   constructor(
     private documentManager: DocumentManager,
-    private findThemeRootURI: FindThemeRootURI,
+    private getDependencies: GetDependencies,
   ) {}
 
-  async documentLinks(uriString: string): Promise<DocumentLink[]> {
-    const sourceCode = this.documentManager.get(uriString);
+  async documentLinks(uri: string): Promise<DocumentLink[]> {
+    const sourceCode = this.documentManager.get(uri);
     if (
       !sourceCode ||
       sourceCode.type !== SourceCodeType.LiquidHtml ||
@@ -24,91 +21,15 @@ export class DocumentLinksProvider {
       return [];
     }
 
-    const rootUri = await this.findThemeRootURI(uriString);
-    if (!rootUri) {
-      return [];
-    }
+    const dependencies = await this.getDependencies(uri);
+    return dependencies.flatMap(({ source, target }) => {
+      if (!source.range) return [];
 
-    const visitor = documentLinksVisitor(sourceCode.textDocument, URI.parse(rootUri));
-    return visit(sourceCode.ast, visitor);
-  }
-}
-
-function documentLinksVisitor(
-  textDocument: TextDocument,
-  root: URI,
-): Visitor<SourceCodeType.LiquidHtml, DocumentLink> {
-  return {
-    LiquidTag(node) {
-      // {% render 'snippet' %}
-      // {% include 'snippet' %}
-      if (
-        (node.name === 'render' || node.name === 'include') &&
-        typeof node.markup !== 'string' &&
-        isLiquidString(node.markup.snippet)
-      ) {
-        const snippet = node.markup.snippet;
-        return DocumentLink.create(
-          range(textDocument, snippet),
-          Utils.resolvePath(root, 'snippets', snippet.value + '.liquid').toString(),
-        );
-      }
-
-      // {% section 'section' %}
-      if (node.name === 'section' && typeof node.markup !== 'string') {
-        const sectionName = node.markup.name;
-        return DocumentLink.create(
-          range(textDocument, sectionName),
-          Utils.resolvePath(root, 'sections', sectionName.value + '.liquid').toString(),
-        );
-      }
-
-      // {% block 'name' %}
-      if (node.name === NamedTags.block && typeof node.markup !== 'string') {
-        const blockName = node.markup.name;
-        return DocumentLink.create(
-          range(textDocument, blockName),
-          Utils.resolvePath(root, 'blocks', blockName.value + '.liquid').toString(),
-        );
-      }
-
-      // {% content_for 'block', type: 'block_name' %}
-      if (node.name === NamedTags.content_for && typeof node.markup !== 'string') {
-        const typeArg = node.markup.args.find((arg) => arg.name === 'type');
-        if (typeArg && typeArg.value.type === 'String') {
-          return DocumentLink.create(
-            range(textDocument, typeArg.value),
-            Utils.resolvePath(root, 'blocks', typeArg.value.value + '.liquid').toString(),
-          );
-        }
-      }
-    },
-
-    // {{ 'theme.js' | asset_url }}
-    LiquidVariable(node) {
-      if (node.filters.length === 0 || node.filters[0].name !== 'asset_url') {
-        return;
-      }
-
-      if (!isLiquidString(node.expression)) {
-        return;
-      }
-
-      const expression = node.expression;
-      return DocumentLink.create(
-        range(textDocument, node.expression),
-        Utils.resolvePath(root, 'assets', expression.value).toString(),
+      const range = Range.create(
+        sourceCode.textDocument.positionAt(source.range[0]),
+        sourceCode.textDocument.positionAt(source.range[1]),
       );
-    },
-  };
-}
-
-function range(textDocument: TextDocument, node: { position: LiquidHtmlNode['position'] }): Range {
-  const start = textDocument.positionAt(node.position.start + 1);
-  const end = textDocument.positionAt(node.position.end - 1);
-  return Range.create(start, end);
-}
-
-function isLiquidString(node: LiquidHtmlNode): node is LiquidString {
-  return node.type === NodeTypes.String;
+      return [DocumentLink.create(range, target.uri)];
+    });
+  }
 }
