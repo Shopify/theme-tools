@@ -1,13 +1,14 @@
 import { expect, describe, it, beforeEach, afterEach, vi, assert } from 'vitest';
 import { ThemeLiquidDocsManager } from './themeLiquidDocsManager';
-import { downloadResource, Resources } from './themeLiquidDocsDownloader';
+import { download, replaceThemeLiquidDocs, resourceUrl } from './themeLiquidDocsDownloader';
 import { noop } from './utils';
 
 vi.mock('./themeLiquidDocsDownloader', async (importOriginal) => {
   const actual: any = await importOriginal();
   return {
     ...actual,
-    downloadResource: vi.fn(),
+    download: vi.fn().mockResolvedValue('{"revision": "1"}'),
+    replaceThemeLiquidDocs: vi.fn(),
   };
 });
 
@@ -59,16 +60,18 @@ describe('Module: ThemeLiquidDocsManager', async () => {
 
   it('should not download remote files if the revision is stable', async () => {
     await Promise.all([manager.filters(), manager.objects(), manager.tags()]);
-    expect(vi.mocked(downloadResource)).toHaveBeenNthCalledWith(
-      1,
-      'latest',
+    expect(vi.mocked(download)).toHaveBeenCalledOnce();
+    expect(vi.mocked(download)).toHaveBeenCalledWith(resourceUrl('latest'), noop);
+    expect(vi.mocked(replaceThemeLiquidDocs)).not.toHaveBeenCalled();
+  });
+
+  it('should replace the local docs if the revision changed', async () => {
+    vi.mocked(download).mockResolvedValueOnce('{"revision": "2"}');
+    await manager.filters();
+    expect(vi.mocked(replaceThemeLiquidDocs)).toHaveBeenCalledWith(
       'MOCKED_CACHE/theme-liquid-docs',
       noop,
     );
-    expect(vi.mocked(downloadResource)).toHaveBeenCalledTimes(1);
-    for (const resource of Resources) {
-      expect(vi.mocked(downloadResource)).not.toHaveBeenCalledWith(resource, expect.any(String));
-    }
   });
 
   describe('Unit: filters', () => {
