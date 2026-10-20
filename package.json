@@ -19,7 +19,8 @@
     "packages/theme-graph",
     "packages/theme-language-server-*",
     "packages/vscode-extension",
-    "packages/release-orchestrator"
+    "packages/release-orchestrator",
+    "crates/theme-check"
   ],
   "scripts": {
     "admin:build": "sh ./scripts/dev-admin-build.sh",
