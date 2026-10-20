@@ -1,4 +1,5 @@
 packages:
+  - crates/theme-check
   - packages/codemirror-language-client
   - packages/lang-*
   - packages/liquid-html-parser

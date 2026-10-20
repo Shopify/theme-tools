@@ -2,6 +2,7 @@
 resolver = "2"
 members = ["crates/liquid-ast", "crates/liquid-parser", "crates/theme-check"]
 
+# The release sets the version from crates/theme-check/package.json, which changesets bumps.
 [workspace.package]
 version = "0.1.0"
 edition = "2021"

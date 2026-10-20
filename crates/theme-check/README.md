@@ -48,3 +48,6 @@ Ported code keeps the TypeScript's behavior, quirks included, with a few rules:
 - Where TypeScript throws, a check returns `Err(CheckError)`. The runner stops that check on that
   file, as TypeScript's `onError` does.
 - A simplification with a known limit is marked with a `ponytail:` comment.
+
+Release versions come from changesets. Add a changeset for `theme-check-rs`, the private
+package in `crates/theme-check/package.json`, and the release sets that version in `Cargo.toml`.
