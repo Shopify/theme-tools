@@ -1,0 +1,302 @@
+check: ValidBlockArgumentTypes
+severity: warning
+cases:
+  - name: checks literals against schema-derived primitive types
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {number} developer_count - Developer-only count
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"heading","type":"text"},{"id":"count","type":"number"},{"id":"product","type":"product"},{"id":"products","type":"product_list"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card', heading: 42, count: 'many' %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Type mismatch for argument 'heading': expected string, got number"
+        start: [0, 26]
+        highlight: "42"
+      - file: templates/test.liquid
+        message: "Type mismatch for argument 'count': expected number, got string"
+        start: [0, 37]
+        highlight: "'many'"
+  - name: accepts literals that match schema-derived types
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {number} developer_count - Developer-only count
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"heading","type":"text"},{"id":"count","type":"number"},{"id":"product","type":"product"},{"id":"products","type":"product_list"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card', heading: 'Title', count: 2, product: product, products: products %}{% endblock %}"
+  - name: checks literals against LiquidDoc-only developer parameter types
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {number} developer_count - Developer-only count
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"heading","type":"text"},{"id":"count","type":"number"},{"id":"product","type":"product"},{"id":"products","type":"product_list"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card', developer_count: 'many' %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Type mismatch for argument 'developer_count': expected number, got string"
+        start: [0, 34]
+        highlight: "'many'"
+  - name: checks LiquidDoc-only parameter types from a schema-less block
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {number} developer_count - Developer-only count
+        {% enddoc %}
+      templates/test.liquid: "{% block 'card', developer_count: 'many' %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Type mismatch for argument 'developer_count': expected number, got string"
+        start: [0, 34]
+        highlight: "'many'"
+  - name: checks resource and list settings exactly
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {number} developer_count - Developer-only count
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"heading","type":"text"},{"id":"count","type":"number"},{"id":"product","type":"product"},{"id":"products","type":"product_list"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card', product: 'handle', products: ['one', 'two'] %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Type mismatch for argument 'product': expected product, got string"
+        start: [0, 26]
+        highlight: "'handle'"
+      - file: templates/test.liquid
+        message: "Type mismatch for argument 'products': expected product[], got string[]"
+        start: [0, 46]
+        highlight: "['one', 'two']"
+  - name: requires arrays to match the element type exactly
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {number} developer_count - Developer-only count
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"heading","type":"text"},{"id":"count","type":"number"},{"id":"product","type":"product"},{"id":"products","type":"product_list"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card', products: ['one', 2] %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Type mismatch for argument 'products': expected product[], got mixed[]"
+        start: [0, 27]
+        highlight: "['one', 2]"
+  - name: does not speculate about variable lookups or empty and partly unknown arrays
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {number} developer_count - Developer-only count
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"heading","type":"text"},{"id":"count","type":"number"},{"id":"product","type":"product"},{"id":"products","type":"product_list"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card', product: selected_product, products: [], heading: [selected, 'x'] %}{% endblock %}"
+  - name: accepts any literal for an object parameter
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {object} a
+          @param {object} b
+          @param {object} c
+          @param {object} d
+        {% enddoc %}
+      templates/test.liquid: "{% block 'card', a: 'x', b: 1, c: (1..2), d: ['x'] %}{% endblock %}"
+  - name: accepts any scalar for a boolean parameter but not a range or array
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {boolean} a
+          @param {boolean} b
+          @param {boolean} c
+          @param {boolean} d
+          @param {boolean} e
+        {% enddoc %}
+      templates/test.liquid: "{% block 'card', a: 'yes', b: 1, c: nil, d: (1..2), e: [true] %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Type mismatch for argument 'd': expected boolean, got object"
+        start: [0, 44]
+        highlight: "(1..2)"
+      - file: templates/test.liquid
+        message: "Type mismatch for argument 'e': expected boolean, got boolean[]"
+        start: [0, 55]
+        highlight: "[true]"
+  - name: checks explicit content as a string without LiquidDoc
+    files:
+      blocks/card.liquid: |-
+        {% schema %}
+        {"settings":[]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card', content: 42 %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Type mismatch for argument 'content': expected string, got number"
+        start: [0, 26]
+        highlight: "42"
+  - name: checks explicit content as a string when the schema content setting is not
+    files:
+      blocks/card.liquid: |-
+        {% schema %}
+        {"settings":[{"id":"content","type":"number"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card', content: 42 %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Type mismatch for argument 'content': expected string, got number"
+        start: [0, 26]
+        highlight: "42"
+  - name: does not report type mismatches for an unreadable missing target
+    files:
+      templates/test.liquid: "{% block 'card', heading: 42 %}{% endblock %}"
+  - name: does not report type mismatches for an unreadable invalid target schema
+    files:
+      blocks/card.liquid: |-
+        {% schema %}
+        { invalid
+        {% endschema %}
+      templates/test.liquid: "{% block 'card', heading: 42 %}{% endblock %}"
+  - name: accepts exact and less-specific compatible LiquidDoc types
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {object} [product] - Product
+          @param {product[]} [products] - Products
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"product","type":"product"},{"id":"products","type":"product_list"}]}
+        {% endschema %}
+  - name: compares resource and list LiquidDoc types exactly
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {collection} [product] - Product
+          @param {product} [products] - Products
+          @param {product[]} [collections] - Collections
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"product","type":"product"},{"id":"products","type":"product_list"},{"id":"collections","type":"collection_list"}]}
+        {% endschema %}
+    offenses:
+      - file: blocks/card.liquid
+        message: "The schema setting 'product' has Liquid type 'product', but LiquidDoc declares 'collection'. The schema setting type is authoritative."
+        start: [1, 9]
+        highlight: "{collection}"
+      - file: blocks/card.liquid
+        message: "The schema setting 'products' has Liquid type 'product[]', but LiquidDoc declares 'product'. The schema setting type is authoritative."
+        start: [2, 9]
+        highlight: "{product}"
+      - file: blocks/card.liquid
+        message: "The schema setting 'collections' has Liquid type 'collection[]', but LiquidDoc declares 'product[]'. The schema setting type is authoritative."
+        start: [3, 9]
+        highlight: "{product[]}"
+  - name: points incompatible type declarations at the LiquidDoc type
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {number} [heading] - Heading
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"heading","type":"text"}]}
+        {% endschema %}
+    offenses:
+      - file: blocks/card.liquid
+        message: "The schema setting 'heading' has Liquid type 'string', but LiquidDoc declares 'number'. The schema setting type is authoritative."
+        start: [1, 9]
+        highlight: "{number}"
+  - name: accepts an optional LiquidDoc declaration of a schema setting
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {string} [heading] - Heading
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"heading","type":"text"}]}
+        {% endschema %}
+  - name: keeps the schema type of a setting that LiquidDoc declares as a string enum (1)
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {'heading' | 'small'} [variant] - Variant
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"variant","type":"text"}]}
+        {% endschema %}
+  - name: keeps the schema type of a setting that LiquidDoc declares as a string enum (2)
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {'heading' | 'small'} [variant] - Variant
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"variant","type":"text"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card', variant: 'body' %}{% endblock %}"
+  - name: keeps the schema type of a setting that LiquidDoc declares as a string enum (3)
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {'heading' | 'small'} [variant] - Variant
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"variant","type":"text"}]}
+        {% endschema %}
+      templates/test.liquid: "{% block 'card', variant: 42 %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Type mismatch for argument 'variant': expected string, got number"
+        start: [0, 26]
+        highlight: "42"
+  - name: does not speculate about omitted LiquidDoc or unmapped schema types
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param [item] - Item
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"item","type":"metaobject"}]}
+        {% endschema %}
+  - name: requires LiquidDoc content types to remain string-compatible
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {number} [content] - Body
+        {% enddoc %}
+        {% schema %}
+        {"settings":[]}
+        {% endschema %}
+    offenses:
+      - file: blocks/card.liquid
+        message: "The built-in parameter 'content' has Liquid type 'string', but LiquidDoc declares 'number'. The built-in parameter type is authoritative."
+        start: [1, 9]
+        highlight: "{number}"
+  - name: leaves a non-string schema content setting without LiquidDoc to ValidBlockContentSettingType
+    files:
+      blocks/card.liquid: |-
+        {% schema %}
+        {"settings":[{"id":"content","type":"number"}]}
+        {% endschema %}
+  - name: leaves a non-string schema content setting with a LiquidDoc string echo to ValidBlockContentSettingType
+    files:
+      blocks/card.liquid: |-
+        {% doc %}
+          @param {string} [content] - Body
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"content","type":"number"}]}
+        {% endschema %}
+  - name: accepts a string-compatible schema content setting
+    files:
+      blocks/card.liquid: |-
+        {% schema %}
+        {"settings":[{"id":"content","type":"text"}]}
+        {% endschema %}

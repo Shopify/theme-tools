@@ -1,0 +1,229 @@
+check: UnusedAssign
+severity: warning
+cases:
+  - name: reports a variable that is assigned but not used
+    files:
+      file.liquid: |
+        {% assign unusedVar = "value" %}
+        {% assign usedVar = "anotherValue" %}
+        {{ usedVar }}
+    offenses:
+      - file: file.liquid
+        message: The variable 'unusedVar' is assigned but not used
+        start: [0, 0]
+        highlight: '{% assign unusedVar = "value" %}'
+        suggest:
+          - message: Remove the unused variable 'unusedVar'
+            result: |
+
+              {% assign usedVar = "anotherValue" %}
+              {{ usedVar }}
+
+  - name: does not report a variable that is assigned and used
+    files:
+      file.liquid: |
+        {% assign usedVar = "value" %}
+        {{ usedVar }}
+
+  - name: suggests removing the only assign in a file
+    files:
+      file.liquid: |
+        {% assign unusedVar = "value" %}
+    offenses:
+      - file: file.liquid
+        message: The variable 'unusedVar' is assigned but not used
+        start: [0, 0]
+        highlight: '{% assign unusedVar = "value" %}'
+        suggest:
+          - message: Remove the unused variable 'unusedVar'
+            result: "\n"
+
+  - name: counts uses inside a capture tag
+    files:
+      file.liquid: |
+        {% assign usedVar = "anotherValue" %}
+        {% capture foo %}
+          {{ usedVar }}
+        {% endcapture %}
+        {{ foo }}
+
+  - name: reports an unused capture
+    files:
+      file.liquid: |
+        {% assign usedVar = "anotherValue" %}
+        {% capture foo %}
+          {{ usedVar }}
+        {% endcapture %}
+    offenses:
+      - file: file.liquid
+        message: The variable 'foo' is assigned but not used
+        start: [1, 0]
+        highlight: "{% capture foo %}"
+        suggest:
+          - message: Remove the unused variable 'foo'
+            result: "{% assign usedVar = \"anotherValue\" %}\n\n"
+
+  - name: counts uses inside a style tag
+    files:
+      file.liquid: |
+        {% assign usedVar = 1 %}
+        {% style %}
+          {{ usedVar }}
+        {% endstyle %}
+
+  - name: does not count uses inside a schema tag
+    files:
+      file.liquid: |
+        {% assign usedVar = 1 %}
+        {% schema %}
+          {{ usedVar }}
+        {% endschema %}
+    offenses:
+      - file: file.liquid
+        message: The variable 'usedVar' is assigned but not used
+        start: [0, 0]
+        highlight: "{% assign usedVar = 1 %}"
+        suggest:
+          - message: Remove the unused variable 'usedVar'
+            result: |
+
+              {% schema %}
+                {{ usedVar }}
+              {% endschema %}
+
+  - name: does not count uses inside a javascript tag
+    files:
+      file.liquid: |
+        {% assign usedVar = 1 %}
+        {% javascript %}
+          {{ usedVar }}
+        {% endjavascript %}
+    offenses:
+      - file: file.liquid
+        message: The variable 'usedVar' is assigned but not used
+        start: [0, 0]
+        highlight: "{% assign usedVar = 1 %}"
+        suggest:
+          - message: Remove the unused variable 'usedVar'
+            result: |
+
+              {% javascript %}
+                {{ usedVar }}
+              {% endjavascript %}
+
+  - name: does not count uses inside a stylesheet tag
+    files:
+      file.liquid: |
+        {% assign usedVar = 1 %}
+        {% stylesheet %}
+          {{ usedVar }}
+        {% endstylesheet %}
+    offenses:
+      - file: file.liquid
+        message: The variable 'usedVar' is assigned but not used
+        start: [0, 0]
+        highlight: "{% assign usedVar = 1 %}"
+        suggest:
+          - message: Remove the unused variable 'usedVar'
+            result: |
+
+              {% stylesheet %}
+                {{ usedVar }}
+              {% endstylesheet %}
+
+  - name: counts uses in a schema visible_if expression
+    files:
+      blocks/logo.liquid: |
+        {% assign has_logo_image = true %}
+        {% schema %}
+          {
+            "name": "Logo",
+            "settings": [
+              {
+                "type": "range",
+                "id": "height",
+                "min": 16,
+                "max": 80,
+                "step": 4,
+                "default": 32,
+                "visible_if": "{{ has_logo_image == true }}"
+              }
+            ]
+          }
+        {% endschema %}
+
+  - name: does not count other schema strings as uses
+    files:
+      blocks/example.liquid: |
+        {% assign unused_var = true %}
+        {% schema %}
+          {
+            "name": "unused_var",
+            "settings": []
+          }
+        {% endschema %}
+    offenses:
+      - file: blocks/example.liquid
+        message: The variable 'unused_var' is assigned but not used
+        start: [0, 0]
+        highlight: "{% assign unused_var = true %}"
+        suggest:
+          - message: Remove the unused variable 'unused_var'
+            result: |
+
+              {% schema %}
+                {
+                  "name": "unused_var",
+                  "settings": []
+                }
+              {% endschema %}
+
+  - name: counts uses inside an HTML style element
+    files:
+      file.liquid: |
+        {% assign usedVar = 1 %}
+        <style>
+          {{ usedVar }}
+        </style>
+
+  - name: counts uses inside an HTML script element
+    files:
+      file.liquid: |
+        {% assign usedVar = 1 %}
+        <script>
+          {{ usedVar }}
+        </script>
+
+  - name: ignores variables that start with an underscore
+    files:
+      file.liquid: |
+        {% assign _ = 1 %}
+        {% assign _unusedVar = 1 %}
+        {% capture _ %}
+          {% form "cart", cart %}
+            {% assign some_var = cart.successfully_posted? %}
+          {% endform %}
+        {% endcapture %}
+        {{ some_var }}
+
+  - name: does not count uses inside a raw tag
+    files:
+      file.liquid: |
+        {% assign unusedVar = 1 %}
+        {% # It's a trap. It's not really used %}
+        {% raw %}
+          {{ unusedVar }}
+        {% endraw %}
+    offenses:
+      - file: file.liquid
+        message: The variable 'unusedVar' is assigned but not used
+        start: [0, 0]
+        highlight: "{% assign unusedVar = 1 %}"
+        suggest:
+          - message: Remove the unused variable 'unusedVar'
+            result: |
+
+              {% # It's a trap. It's not really used %}
+              {% raw %}
+                {{ unusedVar }}
+              {% endraw %}

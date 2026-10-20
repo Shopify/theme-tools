@@ -1,0 +1,63 @@
+check: MissingTemplate
+severity: error
+cases:
+  - name: should report missing template errors (1)
+    files:
+      snippets/snippet.liquid: |
+        {% render 'existing' %}
+        {% render 'missing' with foo as arg          %}
+        {% render myvariable %}
+      snippets/existing.liquid: ""
+    offenses:
+      - file: snippets/snippet.liquid
+        message: "'snippets/missing.liquid' does not exist"
+        start: [1, 10]
+        highlight: "'missing'"
+  - name: should report missing template errors (2)
+    files:
+      snippets/snippet.liquid: "{% include 'missing' %}"
+      snippets/existing.liquid: ""
+    offenses:
+      - file: snippets/snippet.liquid
+        message: "'snippets/missing.liquid' does not exist"
+        start: [0, 11]
+        highlight: "'missing'"
+  - name: should report missing template errors (3)
+    files:
+      sections/section.liquid: "{% section 'missing' %}"
+      sections/existing.liquid: ""
+    offenses:
+      - file: sections/section.liquid
+        message: "'sections/missing.liquid' does not exist"
+        start: [0, 11]
+        highlight: "'missing'"
+  - name: ignores missing files if ignored by ignore_missing pattern (1)
+    files:
+      file.liquid: '{% render "ignored" %}'
+    config:
+      MissingTemplate: { ignoreMissing: ["snippets/ignored.liquid"] }
+  - name: ignores missing files if ignored by ignore_missing pattern (2)
+    files:
+      file.liquid: '{% render "ignored" %}'
+    config:
+      MissingTemplate: { ignoreMissing: ["snippets/*.liquid"] }
+  - name: ignores missing files if ignored by ignore_missing pattern (3)
+    files:
+      file.liquid: '{% render "ignored" %}'
+    config:
+      MissingTemplate: { ignoreMissing: ["*/ignored.liquid"] }
+  - name: ignores missing files if ignored by ignore_missing pattern (4)
+    files:
+      file.liquid: '{% section "ignored" %}'
+    config:
+      MissingTemplate: { ignoreMissing: ["sections/ignored.liquid"] }
+  - name: ignores missing files if ignored by ignore_missing pattern (5)
+    files:
+      file.liquid: '{% section "ignored" %}'
+    config:
+      MissingTemplate: { ignoreMissing: ["sections/ignored.liquid"] }
+  - name: ignores missing files if ignored by ignore_missing pattern (6)
+    files:
+      file.liquid: '{% section "ignored" %}'
+    config:
+      MissingTemplate: { ignoreMissing: ["*/ignored.liquid"] }
