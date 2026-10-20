@@ -126,3 +126,50 @@ jobs:
 
       - name: Run the prettier3 idempotence tests
         run: pnpm --dir packages/prettier-plugin-liquid test:idempotence:3
+
+  tests-rust:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    name: Tests / Rust backend parity
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: "pnpm"
+          cache-dependency-path: "pnpm-lock.yaml"
+
+      - name: Install the packages
+        run: pnpm install --frozen-lockfile
+
+      - name: Install the Rust toolchain
+        run: rustup toolchain install
+
+      - name: Cache wasm-bindgen
+        id: wasm-bindgen-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cargo/bin/wasm-bindgen
+          key: wasm-bindgen-cli-0.2.129-${{ runner.os }}
+
+      - name: Install wasm-bindgen
+        if: steps.wasm-bindgen-cache.outputs.cache-hit != 'true'
+        run: cargo install wasm-bindgen-cli --version 0.2.129 --locked
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run the test suites against both parser backends
+        run: packages/liquid-html-parser/scripts/ci-rust-parity.sh
+        env:
+          GH_TOKEN: ${{ github.token }}
