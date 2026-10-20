@@ -15,6 +15,7 @@ const isolatedTests = [
   'packages/release-orchestrator/src/steps/getPackageJsonRecord.spec.ts',
   'packages/theme-check-common/src/checks/asset-size-css/index.spec.ts',
   'packages/theme-check-common/src/checks/asset-size-javascript/index.spec.ts',
+  'packages/theme-check-docs-updater/src/themeLiquidDocsManager.spec.ts',
   'packages/theme-language-server-common/src/completions/providers/ContentForParameterCompletionProvider.spec.ts',
   'packages/theme-language-server-common/src/completions/providers/ObjectCompletionProvider.spec.ts',
 ];
