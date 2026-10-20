@@ -6,6 +6,8 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+# The specs it runs are at the repo root, outside the crate.
+exclude = ["/tests"]
 
 [dependencies]
 liquid-ast.workspace = true

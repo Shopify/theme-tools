@@ -1,6 +1,7 @@
 import { changesetVersion } from './steps/changesetVersion';
 import { getPackageJsonPaths } from './steps/getPackageJsonPaths';
 import { getPackageJsonRecord } from './steps/getPackageJsonRecord';
+import { syncCrateVersion } from './steps/syncCrateVersion';
 import { writeDependentPatchChangesets } from './steps/writeDependentPatchChangesets';
 import type { StepFunction } from './types';
 import { flow } from './utils';
@@ -11,6 +12,7 @@ const main = async () => {
     getPackageJsonRecord,
     writeDependentPatchChangesets,
     changesetVersion,
+    syncCrateVersion,
   ];
 
   const startRelease = flow(steps);
