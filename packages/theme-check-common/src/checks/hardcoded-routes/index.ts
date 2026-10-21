@@ -70,7 +70,7 @@ export const HardcodedRoutes: LiquidCheckDefinition = {
         const linkToArg = node.args[0];
         const linkToValue = linkToArg.type === 'String' ? linkToArg.value : '';
         const route = HARDCODED_ROUTES.find((route) =>
-          route === '/' ? route === linkToValue : linkToValue.startsWith(route),
+          route === '/' ? route === linkToValue : startsWithRoute(linkToValue, route),
         );
 
         if (route) {
@@ -95,6 +95,13 @@ function hardcodedRoute(attr: ValuedHtmlAttribute): string | undefined {
   const value = attr.value[0].value;
 
   return HARDCODED_ROUTES.find((route) =>
-    route === '/' ? route === value && attr.value.length === 1 : value.startsWith(route),
+    route === '/' ? route === value && attr.value.length === 1 : startsWithRoute(value, route),
   );
+}
+
+// Matches /cart, /cart/, /cart?... and /cart#... but not /cartography
+function startsWithRoute(value: string, route: string): boolean {
+  if (!value.startsWith(route)) return false;
+  const next = value.charAt(route.length);
+  return next === '' || next === '/' || next === '?' || next === '#';
 }
