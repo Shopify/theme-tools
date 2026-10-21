@@ -11,6 +11,23 @@ describe('Unit: liquid-tags', () => {
     expectPath(ast, 'children.0.children').to.eql(undefined);
   });
 
+  it.each(['constructor', 'toString', 'hasOwnProperty', '__proto__'])(
+    'should parse Object.prototype name %s as an unknown tag',
+    (name) => {
+      for (const toAST of [toLiquidHtmlAST, toLiquidAST]) {
+        const ast = toAST(`{% ${name} a %}`);
+        expectPath(ast, 'children.0.type').to.eql('LiquidTag');
+        expectPath(ast, 'children.0.name').to.eql(name);
+        expectPath(ast, 'children.0.markup').to.eql('a');
+
+        const lines = toAST(`{% liquid\n  ${name} a\n%}`);
+        expectPath(lines, 'children.0.markup.0.type').to.eql('LiquidTag');
+        expectPath(lines, 'children.0.markup.0.name').to.eql(name);
+        expectPath(lines, 'children.0.markup.0.markup').to.eql('a');
+      }
+    },
+  );
+
   it('should parse unknown tag with markup', () => {
     const ast = toLiquidHtmlAST('{% unknown_tag foo bar %}');
     expectPath(ast, 'children.0.type').to.eql('LiquidTag');
