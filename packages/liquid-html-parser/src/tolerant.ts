@@ -14,6 +14,7 @@ import type { ASTBuildOptions, DocumentNode, LiquidErrorNode, LiquidHtmlNode } f
 import { walk } from './ast';
 import { TolerantDocumentParser } from './document/tolerant-parser';
 import { tokenize } from './document/tokenizer';
+import { rawBodyRuleLookup } from './document/raw-body';
 import { Environment } from './environment';
 import { NodeTypes } from './types';
 
@@ -30,7 +31,9 @@ export function toTolerantLiquidAST(
   },
 ): DocumentNode {
   const env = options.environment ?? Environment.default();
-  const tokens = tokenize(source);
+  const tokens = tokenize(source, {
+    rawBodyRule: rawBodyRuleLookup((name) => env.tagForName(name)),
+  });
   const parser = new TolerantDocumentParser(
     tokens,
     source,
@@ -54,7 +57,9 @@ export function toTolerantLiquidHtmlAST(
   },
 ): DocumentNode {
   const env = options.environment ?? Environment.default();
-  const tokens = tokenize(source);
+  const tokens = tokenize(source, {
+    rawBodyRule: rawBodyRuleLookup((name) => env.tagForName(name)),
+  });
   const parser = new TolerantDocumentParser(
     tokens,
     source,

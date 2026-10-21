@@ -5995,9 +5995,9 @@ cases:
     source: <script>if(i<n){}{% comment %}</script>
     parse: [html]
     error:
-      message: Attempting to end parsing before HtmlRawNode 'script' was closed
-      start: [0, 0]
-      text: <script>
+      message: Attempting to end parsing before LiquidRawTag 'comment' was closed
+      start: [0, 17]
+      text: "{% comment %}"
   - name: rejects a script with a < comparison that is never closed
     source: |
       <script>
@@ -6014,3 +6014,1149 @@ cases:
       message: Attempting to end parsing before HtmlRawNode 'script' was closed
       start: [0, 0]
       text: <script>
+  - name: parses an HTML comment holding a tag opener
+    source: <!-- a <b --><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!-- a <b --><p>after</p> }
+      children:
+        - type: HtmlComment
+          body: a <b
+          position: { start: [0, 0], text: <!-- a <b --> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 13], text: <p> }
+          blockEndPosition: { start: [0, 21], text: </p> }
+          position: { start: [0, 13], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 14], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 16], text: after }
+  - name: parses an HTML comment holding an unbalanced quote
+    source: <!-- <a title="x --><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!-- <a title="x --><p>after</p> }
+      children:
+        - type: HtmlComment
+          body: <a title="x
+          position: { start: [0, 0], text: <!-- <a title="x --> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 20], text: <p> }
+          blockEndPosition: { start: [0, 28], text: </p> }
+          position: { start: [0, 20], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 21], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 23], text: after }
+  - name: parses an HTML comment holding a close tag
+    source: <!-- </div> --><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!-- </div> --><p>after</p> }
+      children:
+        - type: HtmlComment
+          body: </div>
+          position: { start: [0, 0], text: <!-- </div> --> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 15], text: <p> }
+          blockEndPosition: { start: [0, 23], text: </p> }
+          position: { start: [0, 15], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 16], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 18], text: after }
+  - name: parses an HTML comment holding a nested <!--
+    source: <!-- <!-- x --><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!-- <!-- x --><p>after</p> }
+      children:
+        - type: HtmlComment
+          body: <!-- x
+          position: { start: [0, 0], text: <!-- <!-- x --> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 15], text: <p> }
+          blockEndPosition: { start: [0, 23], text: </p> }
+          position: { start: [0, 15], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 16], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 18], text: after }
+  - name: parses an HTML comment holding Liquid after a tag opener
+    source: <!-- <b {{ x }} --><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<!-- <b {{ x }} --><p>after</p>" }
+      children:
+        - type: HtmlComment
+          body: <b {{ x }}
+          position: { start: [0, 0], text: "<!-- <b {{ x }} -->" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 19], text: <p> }
+          blockEndPosition: { start: [0, 27], text: </p> }
+          position: { start: [0, 19], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 20], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 22], text: after }
+  - name: closes an HTML comment on --!>
+    source: <!-- a --!><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!-- a --!><p>after</p> }
+      children:
+        - type: HtmlComment
+          body: a
+          position: { start: [0, 0], text: <!-- a --!> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 11], text: <p> }
+          blockEndPosition: { start: [0, 19], text: </p> }
+          position: { start: [0, 11], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 12], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 14], text: after }
+  - name: closes the empty HTML comment <!-->
+    source: <!--><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!--><p>after</p> }
+      children:
+        - type: HtmlComment
+          body: ""
+          position: { start: [0, 0], text: <!--> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 5], text: <p> }
+          blockEndPosition: { start: [0, 13], text: </p> }
+          position: { start: [0, 5], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 6], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 8], text: after }
+  - name: closes the empty HTML comment <!--->
+    source: <!---><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!---><p>after</p> }
+      children:
+        - type: HtmlComment
+          body: ""
+          position: { start: [0, 0], text: <!---> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 6], text: <p> }
+          blockEndPosition: { start: [0, 14], text: </p> }
+          position: { start: [0, 6], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 7], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 9], text: after }
+  - name: closes the empty HTML comment <!---->
+    source: <!----><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!----><p>after</p> }
+      children:
+        - type: HtmlComment
+          body: ""
+          position: { start: [0, 0], text: <!----> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 7], text: <p> }
+          blockEndPosition: { start: [0, 15], text: </p> }
+          position: { start: [0, 7], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 8], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 10], text: after }
+  - name: parses an IE conditional comment
+    source: <!--[if IE]><p>old</p><![endif]-->
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<!--[if IE]><p>old</p><![endif]-->" }
+      children:
+        - type: HtmlComment
+          body: "[if IE]><p>old</p><![endif]"
+          position: { start: [0, 0], text: "<!--[if IE]><p>old</p><![endif]-->" }
+  - name: parses a downlevel-revealed conditional comment
+    source: <!--[if !IE]><!--><p>modern</p><!--<![endif]-->
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<!--[if !IE]><!--><p>modern</p><!--<![endif]-->" }
+      children:
+        - type: HtmlComment
+          body: "[if !IE]><!"
+          position: { start: [0, 0], text: "<!--[if !IE]><!-->" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 18], text: <p> }
+          blockEndPosition: { start: [0, 27], text: </p> }
+          position: { start: [0, 18], text: <p>modern</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 19], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: modern
+              position: { start: [0, 21], text: modern }
+        - type: HtmlComment
+          body: <![endif]
+          position: { start: [0, 31], text: "<!--<![endif]-->" }
+  - name: parses an HTML comment holding --
+    source: <!-- a -- b -->
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!-- a -- b --> }
+      children:
+        - type: HtmlComment
+          body: a -- b
+          position: { start: [0, 0], text: <!-- a -- b --> }
+  - name: reads a --> outside an HTML comment as text
+    source: <p>a --> b</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <p>a --> b</p> }
+      children:
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 0], text: <p> }
+          blockEndPosition: { start: [0, 10], text: </p> }
+          position: { start: [0, 0], text: <p>a --> b</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 1], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: a --> b
+              position: { start: [0, 3], text: a --> b }
+  - name: parses an HTML comment inside a Liquid comment
+    source: "{% comment %}<!-- x -->{% endcomment %}<div>y</div>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% comment %}<!-- x -->{% endcomment %}<div>y</div>" }
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [0, 23], text: "{% endcomment %}" }
+          position: { start: [0, 0], text: "{% comment %}<!-- x -->{% endcomment %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: <!-- x -->
+            position: { start: [0, 13], text: <!-- x --> }
+            nodes:
+              - type: TextNode
+                value: <!-- x -->
+                position: { start: [0, 13], text: <!-- x --> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 39], text: <div> }
+          blockEndPosition: { start: [0, 45], text: </div> }
+          position: { start: [0, 39], text: <div>y</div> }
+          name:
+            - type: TextNode
+              value: div
+              position: { start: [0, 40], text: div }
+          attributes: []
+          children:
+            - type: TextNode
+              value: y
+              position: { start: [0, 44], text: y }
+  - name: keeps an HTML comment in a script body as text
+    source: <script><!-- alert(1) //--></script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <script><!-- alert(1) //--></script> }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 27], text: </script> }
+          position: { start: [0, 0], text: <script><!-- alert(1) //--></script> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: <!-- alert(1) //-->
+            position: { start: [0, 8], text: <!-- alert(1) //--> }
+            nodes:
+              - type: TextNode
+                value: <!-- alert(1) //-->
+                position: { start: [0, 8], text: <!-- alert(1) //--> }
+  - name: keeps an HTML comment in a style body as text
+    source: "<style><!-- body { color: red } --></style>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<style><!-- body { color: red } --></style>" }
+      children:
+        - type: HtmlRawNode
+          name: style
+          blockStartPosition: { start: [0, 0], text: <style> }
+          blockEndPosition: { start: [0, 35], text: </style> }
+          position: { start: [0, 0], text: "<style><!-- body { color: red } --></style>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: css
+            value: "<!-- body { color: red } -->"
+            position: { start: [0, 7], text: "<!-- body { color: red } -->" }
+            nodes:
+              - type: TextNode
+                value: "<!-- body { color: red } -->"
+                position: { start: [0, 7], text: "<!-- body { color: red } -->" }
+  - name: keeps an HTML comment in an svg body as text
+    source: <svg><!-- icon --><path d="M0 0"/></svg>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <svg><!-- icon --><path d="M0 0"/></svg> }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 34], text: </svg> }
+          position: { start: [0, 0], text: <svg><!-- icon --><path d="M0 0"/></svg> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <!-- icon --><path d="M0 0"/>
+            position: { start: [0, 5], text: <!-- icon --><path d="M0 0"/> }
+            nodes:
+              - type: TextNode
+                value: <!-- icon --><path d="M0 0"/>
+                position: { start: [0, 5], text: <!-- icon --><path d="M0 0"/> }
+  - name: closes a script whose body opens an HTML comment it never closes
+    source: <script>const s = "<!--";</script><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <script>const s = "<!--";</script><p>after</p> }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 25], text: </script> }
+          position: { start: [0, 0], text: <script>const s = "<!--";</script> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: const s = "<!--";
+            position: { start: [0, 8], text: const s = "<!--"; }
+            nodes:
+              - type: TextNode
+                value: const s = "<!--";
+                position: { start: [0, 8], text: const s = "<!--"; }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 34], text: <p> }
+          blockEndPosition: { start: [0, 42], text: </p> }
+          position: { start: [0, 34], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 35], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 37], text: after }
+  - name: closes a script whose body opens a quoted attribute it never closes
+    source: <script>const s = "<a title='x";</script><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <script>const s = "<a title='x";</script><p>after</p> }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 32], text: </script> }
+          position: { start: [0, 0], text: <script>const s = "<a title='x";</script> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: const s = "<a title='x";
+            position: { start: [0, 8], text: const s = "<a title='x"; }
+            nodes:
+              - type: TextNode
+                value: const s = "<a title='x";
+                position: { start: [0, 8], text: const s = "<a title='x"; }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 41], text: <p> }
+          blockEndPosition: { start: [0, 49], text: </p> }
+          position: { start: [0, 41], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 42], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 44], text: after }
+  - name: closes a style whose body opens an HTML comment it never closes
+    source: '<style>.x::after { content: "<!--"; }</style><p>after</p>'
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<style>.x::after { content: "<!--"; }</style><p>after</p>' }
+      children:
+        - type: HtmlRawNode
+          name: style
+          blockStartPosition: { start: [0, 0], text: <style> }
+          blockEndPosition: { start: [0, 37], text: </style> }
+          position: { start: [0, 0], text: '<style>.x::after { content: "<!--"; }</style>' }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: css
+            value: '.x::after { content: "<!--"; }'
+            position: { start: [0, 7], text: '.x::after { content: "<!--"; }' }
+            nodes:
+              - type: TextNode
+                value: '.x::after { content: "<!--"; }'
+                position: { start: [0, 7], text: '.x::after { content: "<!--"; }' }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 45], text: <p> }
+          blockEndPosition: { start: [0, 53], text: </p> }
+          position: { start: [0, 45], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 46], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 48], text: after }
+  - name: closes an svg holding a <!-- in CDATA
+    source: <svg><text><![CDATA[x > y <!-- z]]></text></svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<svg><text><![CDATA[x > y <!-- z]]></text></svg><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 42], text: </svg> }
+          position: { start: [0, 0], text: "<svg><text><![CDATA[x > y <!-- z]]></text></svg>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <text><![CDATA[x > y <!-- z]]></text>
+            position: { start: [0, 5], text: "<text><![CDATA[x > y <!-- z]]></text>" }
+            nodes:
+              - type: TextNode
+                value: <text><![CDATA[x > y <!-- z]]></text>
+                position: { start: [0, 5], text: "<text><![CDATA[x > y <!-- z]]></text>" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 48], text: <p> }
+          blockEndPosition: { start: [0, 56], text: </p> }
+          position: { start: [0, 48], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 49], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 51], text: after }
+  - name: closes an svg holding a <!-- in a CDATA style
+    source: '<svg><style><![CDATA[a > b { content: "<!--" }]]></style></svg><p>after</p>'
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<svg><style><![CDATA[a > b { content: "<!--" }]]></style></svg><p>after</p>' }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 57], text: </svg> }
+          position: { start: [0, 0], text: '<svg><style><![CDATA[a > b { content: "<!--" }]]></style></svg>' }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: '<style><![CDATA[a > b { content: "<!--" }]]></style>'
+            position: { start: [0, 5], text: '<style><![CDATA[a > b { content: "<!--" }]]></style>' }
+            nodes:
+              - type: TextNode
+                value: '<style><![CDATA[a > b { content: "<!--" }]]></style>'
+                position: { start: [0, 5], text: '<style><![CDATA[a > b { content: "<!--" }]]></style>' }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 63], text: <p> }
+          blockEndPosition: { start: [0, 71], text: </p> }
+          position: { start: [0, 63], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 64], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 66], text: after }
+  - name: closes an svg holding a <!-- in CDATA, after a ]]> inside a Liquid comment
+    source: <svg><text><![CDATA[x > {% comment %}]]>{% endcomment %} <!-- z]]></text></svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<svg><text><![CDATA[x > {% comment %}]]>{% endcomment %} <!-- z]]></text></svg><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 73], text: </svg> }
+          position: { start: [0, 0], text: "<svg><text><![CDATA[x > {% comment %}]]>{% endcomment %} <!-- z]]></text></svg>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <text><![CDATA[x > {% comment %}]]>{% endcomment %} <!-- z]]></text>
+            position: { start: [0, 5], text: "<text><![CDATA[x > {% comment %}]]>{% endcomment %} <!-- z]]></text>" }
+            nodes:
+              - type: TextNode
+                value: <text><![CDATA[x >
+                position: { start: [0, 5], text: "<text><![CDATA[x >" }
+              - type: LiquidRawTag
+                name: comment
+                markup: ""
+                markupPosition: { start: [0, 35], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 24], text: "{% comment %}" }
+                blockEndPosition: { start: [0, 40], text: "{% endcomment %}" }
+                position: { start: [0, 24], text: "{% comment %}]]>{% endcomment %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "]]>"
+                  position: { start: [0, 37], text: "]]>" }
+                  nodes:
+                    - type: TextNode
+                      value: "]]>"
+                      position: { start: [0, 37], text: "]]>" }
+              - type: TextNode
+                value: <!-- z]]></text>
+                position: { start: [0, 57], text: "<!-- z]]></text>" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 79], text: <p> }
+          blockEndPosition: { start: [0, 87], text: </p> }
+          position: { start: [0, 79], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 80], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 82], text: after }
+  - name: closes an svg holding a <!-- in CDATA, after a </script>
+    source: <svg><text><![CDATA[x > </script> <!-- z]]></text></svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<svg><text><![CDATA[x > </script> <!-- z]]></text></svg><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 50], text: </svg> }
+          position: { start: [0, 0], text: "<svg><text><![CDATA[x > </script> <!-- z]]></text></svg>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <text><![CDATA[x > </script> <!-- z]]></text>
+            position: { start: [0, 5], text: "<text><![CDATA[x > </script> <!-- z]]></text>" }
+            nodes:
+              - type: TextNode
+                value: <text><![CDATA[x > </script> <!-- z]]></text>
+                position: { start: [0, 5], text: "<text><![CDATA[x > </script> <!-- z]]></text>" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 56], text: <p> }
+          blockEndPosition: { start: [0, 64], text: </p> }
+          position: { start: [0, 56], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 57], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 59], text: after }
+  - name: closes an svg holding a <!-- in a CDATA script, after a </style>
+    source: <svg><script><![CDATA[if (a < b) s = '</style> <!--';]]></script></svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<svg><script><![CDATA[if (a < b) s = '</style> <!--';]]></script></svg><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 65], text: </svg> }
+          position: { start: [0, 0], text: "<svg><script><![CDATA[if (a < b) s = '</style> <!--';]]></script></svg>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <script><![CDATA[if (a < b) s = '</style> <!--';]]></script>
+            position: { start: [0, 5], text: "<script><![CDATA[if (a < b) s = '</style> <!--';]]></script>" }
+            nodes:
+              - type: TextNode
+                value: <script><![CDATA[if (a < b) s = '</style> <!--';]]></script>
+                position: { start: [0, 5], text: "<script><![CDATA[if (a < b) s = '</style> <!--';]]></script>" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 71], text: <p> }
+          blockEndPosition: { start: [0, 79], text: </p> }
+          position: { start: [0, 71], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 72], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 74], text: after }
+  - name: closes an svg holding a <!-- in a foreignObject script
+    source: <svg><foreignObject><script>const s = "<!--";</script></foreignObject></svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <svg><foreignObject><script>const s = "<!--";</script></foreignObject></svg><p>after</p> }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 70], text: </svg> }
+          position: { start: [0, 0], text: <svg><foreignObject><script>const s = "<!--";</script></foreignObject></svg> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <foreignObject><script>const s = "<!--";</script></foreignObject>
+            position: { start: [0, 5], text: <foreignObject><script>const s = "<!--";</script></foreignObject> }
+            nodes:
+              - type: TextNode
+                value: <foreignObject><script>const s = "<!--";</script></foreignObject>
+                position: { start: [0, 5], text: <foreignObject><script>const s = "<!--";</script></foreignObject> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 76], text: <p> }
+          blockEndPosition: { start: [0, 84], text: </p> }
+          position: { start: [0, 76], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 77], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 79], text: after }
+  - name: closes an svg holding a <!-- in a foreignObject style
+    source: '<svg><foreignObject><style>a::after { content: "<!--" }</style></foreignObject></svg><p>after</p>'
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<svg><foreignObject><style>a::after { content: "<!--" }</style></foreignObject></svg><p>after</p>' }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 79], text: </svg> }
+          position: { start: [0, 0], text: '<svg><foreignObject><style>a::after { content: "<!--" }</style></foreignObject></svg>' }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: '<foreignObject><style>a::after { content: "<!--" }</style></foreignObject>'
+            position: { start: [0, 5], text: '<foreignObject><style>a::after { content: "<!--" }</style></foreignObject>' }
+            nodes:
+              - type: TextNode
+                value: '<foreignObject><style>a::after { content: "<!--" }</style></foreignObject>'
+                position: { start: [0, 5], text: '<foreignObject><style>a::after { content: "<!--" }</style></foreignObject>' }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 85], text: <p> }
+          blockEndPosition: { start: [0, 93], text: </p> }
+          position: { start: [0, 85], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 86], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 88], text: after }
+  - name: closes an svg holding an HTML comment that never closes
+    source: <svg><!-- icon</svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <svg><!-- icon</svg><p>after</p> }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 14], text: </svg> }
+          position: { start: [0, 0], text: <svg><!-- icon</svg> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <!-- icon
+            position: { start: [0, 5], text: <!-- icon }
+            nodes:
+              - type: TextNode
+                value: <!-- icon
+                position: { start: [0, 5], text: <!-- icon }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 20], text: <p> }
+          blockEndPosition: { start: [0, 28], text: </p> }
+          position: { start: [0, 20], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 21], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 23], text: after }
+  - name: closes an svg holding a <!-- in CDATA, after a </svg marker>
+    source: <svg><text><![CDATA[a > </svg marker> <!-- z]]></text></svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<svg><text><![CDATA[a > </svg marker> <!-- z]]></text></svg><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 54], text: </svg> }
+          position: { start: [0, 0], text: "<svg><text><![CDATA[a > </svg marker> <!-- z]]></text></svg>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <text><![CDATA[a > </svg marker> <!-- z]]></text>
+            position: { start: [0, 5], text: "<text><![CDATA[a > </svg marker> <!-- z]]></text>" }
+            nodes:
+              - type: TextNode
+                value: <text><![CDATA[a > </svg marker> <!-- z]]></text>
+                position: { start: [0, 5], text: "<text><![CDATA[a > </svg marker> <!-- z]]></text>" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 60], text: <p> }
+          blockEndPosition: { start: [0, 68], text: </p> }
+          position: { start: [0, 60], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 61], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 63], text: after }
+  - name: parses an HTML comment after a script whose body holds an unpaired <![CDATA[
+    source: <script>/* <![CDATA[ */ if (x > y) {}</script><!-- </div> --><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>/* <![CDATA[ */ if (x > y) {}</script><!-- </div> --><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 37], text: </script> }
+          position: { start: [0, 0], text: "<script>/* <![CDATA[ */ if (x > y) {}</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: /* <![CDATA[ */ if (x > y) {}
+            position: { start: [0, 8], text: "/* <![CDATA[ */ if (x > y) {}" }
+            nodes:
+              - type: TextNode
+                value: /* <![CDATA[ */ if (x > y) {}
+                position: { start: [0, 8], text: "/* <![CDATA[ */ if (x > y) {}" }
+        - type: HtmlComment
+          body: </div>
+          position: { start: [0, 46], text: <!-- </div> --> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 61], text: <p> }
+          blockEndPosition: { start: [0, 69], text: </p> }
+          position: { start: [0, 61], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 62], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 64], text: after }
+  - name: parses an HTML comment after a style whose body holds an unpaired <![CDATA[
+    source: <style>/* <![CDATA[ */ a > b {}</style><!-- </div> --><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<style>/* <![CDATA[ */ a > b {}</style><!-- </div> --><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: style
+          blockStartPosition: { start: [0, 0], text: <style> }
+          blockEndPosition: { start: [0, 31], text: </style> }
+          position: { start: [0, 0], text: "<style>/* <![CDATA[ */ a > b {}</style>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: css
+            value: /* <![CDATA[ */ a > b {}
+            position: { start: [0, 7], text: "/* <![CDATA[ */ a > b {}" }
+            nodes:
+              - type: TextNode
+                value: /* <![CDATA[ */ a > b {}
+                position: { start: [0, 7], text: "/* <![CDATA[ */ a > b {}" }
+        - type: HtmlComment
+          body: </div>
+          position: { start: [0, 39], text: <!-- </div> --> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 54], text: <p> }
+          blockEndPosition: { start: [0, 62], text: </p> }
+          position: { start: [0, 54], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 55], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 57], text: after }
+  - name: closes an svg whose open tag has a glued Liquid attribute
+    source: <svg{% if x %} class="x"{% endif %}><text><![CDATA[x > <!-- z]]></text></svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<svg{% if x %} class="x"{% endif %}><text><![CDATA[x > <!-- z]]></text></svg><p>after</p>' }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: '<svg{% if x %} class="x"{% endif %}>' }
+          blockEndPosition: { start: [0, 71], text: </svg> }
+          position: { start: [0, 0], text: '<svg{% if x %} class="x"{% endif %}><text><![CDATA[x > <!-- z]]></text></svg>' }
+          attributes:
+            - type: LiquidTag
+              name: if
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [0, 4], text: "{% if x %}" }
+              blockEndPosition: { start: [0, 24], text: "{% endif %}" }
+              markupPosition: { start: [0, 10], text: "x " }
+              position: { start: [0, 4], text: '{% if x %} class="x"{% endif %}' }
+              markup:
+                type: VariableLookup
+                name: x
+                position: { start: [0, 10], text: x }
+                lookups: []
+                lookupModes: []
+              children:
+                - type: LiquidBranch
+                  name: null
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [0, 14], text: "" }
+                  blockStartPosition: { start: [0, 14], text: "" }
+                  blockEndPosition: { start: [0, 24], text: "" }
+                  position: { start: [0, 14], text: ' class="x"' }
+                  children:
+                    - type: AttrDoubleQuoted
+                      attributePosition: { start: [0, 22], text: x }
+                      position: { start: [0, 15], text: class="x" }
+                      name:
+                        - type: TextNode
+                          value: class
+                          position: { start: [0, 15], text: class }
+                      value:
+                        - type: TextNode
+                          value: x
+                          position: { start: [0, 22], text: x }
+          body:
+            type: RawMarkup
+            kind: text
+            value: <text><![CDATA[x > <!-- z]]></text>
+            position: { start: [0, 36], text: "<text><![CDATA[x > <!-- z]]></text>" }
+            nodes:
+              - type: TextNode
+                value: <text><![CDATA[x > <!-- z]]></text>
+                position: { start: [0, 36], text: "<text><![CDATA[x > <!-- z]]></text>" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 77], text: <p> }
+          blockEndPosition: { start: [0, 85], text: </p> }
+          position: { start: [0, 77], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 78], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 80], text: after }
+  - name: does not close a script body on a close tag inside a drop before a <!--
+    source: <script>{{ '</script>' }}<!--</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<script>{{ '</script>' }}<!--</script>" }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 29], text: </script> }
+          position: { start: [0, 0], text: "<script>{{ '</script>' }}<!--</script>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: "{{ '</script>' }}<!--"
+            position: { start: [0, 8], text: "{{ '</script>' }}<!--" }
+            nodes:
+              - type: LiquidVariableOutput
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                markupPosition: { start: [0, 10], text: " '</script>' " }
+                position: { start: [0, 8], text: "{{ '</script>' }}" }
+                markup:
+                  type: LiquidVariable
+                  rawSource: "'</script>'"
+                  position: { start: [0, 11], text: "'</script>' " }
+                  expression:
+                    type: String
+                    single: true
+                    value: </script>
+                    position: { start: [0, 11], text: "'</script>'" }
+                  filters: []
+              - type: TextNode
+                value: <!--
+                position: { start: [0, 25], text: <!-- }
+  - name: parses Liquid in an HTML comment holding an unbalanced quote
+    source: <!-- <a title="{{ x }} -->
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<!-- <a title="{{ x }} -->' }
+      children:
+        - type: TextNode
+          value: <!-- <a title="
+          position: { start: [0, 0], text: <!-- <a title=" }
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 17], text: " x " }
+          position: { start: [0, 15], text: "{{ x }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: x
+            position: { start: [0, 18], text: "x " }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 18], text: x }
+              lookups: []
+              lookupModes: []
+            filters: []
+        - type: TextNode
+          value: -->
+          position: { start: [0, 23], text: --> }
+  - name: closes a nested svg at its outer </svg> when CDATA after the inner one holds a <!--
+    source: <svg><svg></svg><text><![CDATA[a > <!-- z]]></text></svg><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<svg><svg></svg><text><![CDATA[a > <!-- z]]></text></svg><p>after</p>" }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 51], text: </svg> }
+          position: { start: [0, 0], text: "<svg><svg></svg><text><![CDATA[a > <!-- z]]></text></svg>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <svg></svg><text><![CDATA[a > <!-- z]]></text>
+            position: { start: [0, 5], text: "<svg></svg><text><![CDATA[a > <!-- z]]></text>" }
+            nodes:
+              - type: TextNode
+                value: <svg></svg><text><![CDATA[a > <!-- z]]></text>
+                position: { start: [0, 5], text: "<svg></svg><text><![CDATA[a > <!-- z]]></text>" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 57], text: <p> }
+          blockEndPosition: { start: [0, 65], text: </p> }
+          position: { start: [0, 57], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 58], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 60], text: after }
+  - name: parses an HTML comment right after a nested svg
+    source: <svg><svg></svg></svg><!-- </div> --><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <svg><svg></svg></svg><!-- </div> --><p>after</p> }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 16], text: </svg> }
+          position: { start: [0, 0], text: <svg><svg></svg></svg> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: <svg></svg>
+            position: { start: [0, 5], text: <svg></svg> }
+            nodes:
+              - type: TextNode
+                value: <svg></svg>
+                position: { start: [0, 5], text: <svg></svg> }
+        - type: HtmlComment
+          body: </div>
+          position: { start: [0, 22], text: <!-- </div> --> }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 37], text: <p> }
+          blockEndPosition: { start: [0, 45], text: </p> }
+          position: { start: [0, 37], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 38], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 40], text: after }

@@ -2858,3 +2858,545 @@ cases:
                   lookups: []
                   lookupModes: []
                 filters: []
+  - name: parses the markup after a comment whose body opens a tag
+    source: "{% comment %} a<b {% endcomment %}<div>x</div>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% comment %} a<b {% endcomment %}<div>x</div>" }
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [0, 18], text: "{% endcomment %}" }
+          position: { start: [0, 0], text: "{% comment %} a<b {% endcomment %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: " a<b "
+            position: { start: [0, 13], text: " a<b " }
+            nodes:
+              - type: TextNode
+                value: a<b
+                position: { start: [0, 14], text: a<b }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 34], text: <div> }
+          blockEndPosition: { start: [0, 40], text: </div> }
+          position: { start: [0, 34], text: <div>x</div> }
+          name:
+            - type: TextNode
+              value: div
+              position: { start: [0, 35], text: div }
+          attributes: []
+          children:
+            - type: TextNode
+              value: x
+              position: { start: [0, 39], text: x }
+  - name: parses the markup after a comment whose body opens a quoted attribute
+    source: '{% comment %} <a title="x {% endcomment %}<div>x</div>'
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% comment %} <a title="x {% endcomment %}<div>x</div>' }
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [0, 26], text: "{% endcomment %}" }
+          position: { start: [0, 0], text: '{% comment %} <a title="x {% endcomment %}' }
+          body:
+            type: RawMarkup
+            kind: text
+            value: ' <a title="x '
+            position: { start: [0, 13], text: ' <a title="x ' }
+            nodes:
+              - type: TextNode
+                value: <a title="x
+                position: { start: [0, 14], text: <a title="x }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 42], text: <div> }
+          blockEndPosition: { start: [0, 48], text: </div> }
+          position: { start: [0, 42], text: <div>x</div> }
+          name:
+            - type: TextNode
+              value: div
+              position: { start: [0, 43], text: div }
+          attributes: []
+          children:
+            - type: TextNode
+              value: x
+              position: { start: [0, 47], text: x }
+  - name: parses the markup after a comment whose body opens an HTML comment
+    source: "{% comment %}<!-- old {% endcomment %}<div>x</div>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% comment %}<!-- old {% endcomment %}<div>x</div>" }
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [0, 22], text: "{% endcomment %}" }
+          position: { start: [0, 0], text: "{% comment %}<!-- old {% endcomment %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: "<!-- old "
+            position: { start: [0, 13], text: "<!-- old " }
+            nodes:
+              - type: TextNode
+                value: <!-- old
+                position: { start: [0, 13], text: <!-- old }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 38], text: <div> }
+          blockEndPosition: { start: [0, 44], text: </div> }
+          position: { start: [0, 38], text: <div>x</div> }
+          name:
+            - type: TextNode
+              value: div
+              position: { start: [0, 39], text: div }
+          attributes: []
+          children:
+            - type: TextNode
+              value: x
+              position: { start: [0, 43], text: x }
+  - name: parses the markup after a raw whose body opens an HTML comment
+    source: "{% raw %}<!--{% endraw %}<div>x</div>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% raw %}<!--{% endraw %}<div>x</div>" }
+      children:
+        - type: LiquidRawTag
+          name: raw
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% raw %}" }
+          blockEndPosition: { start: [0, 13], text: "{% endraw %}" }
+          position: { start: [0, 0], text: "{% raw %}<!--{% endraw %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: <!--
+            position: { start: [0, 9], text: <!-- }
+            nodes:
+              - type: TextNode
+                value: <!--
+                position: { start: [0, 9], text: <!-- }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 25], text: <div> }
+          blockEndPosition: { start: [0, 31], text: </div> }
+          position: { start: [0, 25], text: <div>x</div> }
+          name:
+            - type: TextNode
+              value: div
+              position: { start: [0, 26], text: div }
+          attributes: []
+          children:
+            - type: TextNode
+              value: x
+              position: { start: [0, 30], text: x }
+  - name: parses the markup after two scripts whose bodies open an HTML comment
+    source: <script>var a = "<!--";</script><script>var b = "<!--";</script><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <script>var a = "<!--";</script><script>var b = "<!--";</script><p>after</p> }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 23], text: </script> }
+          position: { start: [0, 0], text: <script>var a = "<!--";</script> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: var a = "<!--";
+            position: { start: [0, 8], text: var a = "<!--"; }
+            nodes:
+              - type: TextNode
+                value: var a = "<!--";
+                position: { start: [0, 8], text: var a = "<!--"; }
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 32], text: <script> }
+          blockEndPosition: { start: [0, 55], text: </script> }
+          position: { start: [0, 32], text: <script>var b = "<!--";</script> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: var b = "<!--";
+            position: { start: [0, 40], text: var b = "<!--"; }
+            nodes:
+              - type: TextNode
+                value: var b = "<!--";
+                position: { start: [0, 40], text: var b = "<!--"; }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 64], text: <p> }
+          blockEndPosition: { start: [0, 72], text: </p> }
+          position: { start: [0, 64], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 65], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 67], text: after }
+  - name: parses the markup after a script, then a raw, whose bodies open an HTML comment
+    source: <script>var a = "<!--";</script>{% raw %}{{{% endraw %}<p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<script>var a = "<!--";</script>{% raw %}{{{% endraw %}<p>after</p>' }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 23], text: </script> }
+          position: { start: [0, 0], text: <script>var a = "<!--";</script> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: var a = "<!--";
+            position: { start: [0, 8], text: var a = "<!--"; }
+            nodes:
+              - type: TextNode
+                value: var a = "<!--";
+                position: { start: [0, 8], text: var a = "<!--"; }
+        - type: LiquidRawTag
+          name: raw
+          markup: ""
+          markupPosition: { start: [0, 39], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 32], text: "{% raw %}" }
+          blockEndPosition: { start: [0, 43], text: "{% endraw %}" }
+          position: { start: [0, 32], text: "{% raw %}{{{% endraw %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: "{{"
+            position: { start: [0, 41], text: "{{" }
+            nodes:
+              - type: TextNode
+                value: "{{"
+                position: { start: [0, 41], text: "{{" }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 55], text: <p> }
+          blockEndPosition: { start: [0, 63], text: </p> }
+          position: { start: [0, 55], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 56], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 58], text: after }
+  - name: parses the markup after a comment, then a script, whose bodies open an HTML comment
+    source: '{% comment %}<!--{% endcomment %}<script>var b = "<!--";</script><p>after</p>'
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% comment %}<!--{% endcomment %}<script>var b = "<!--";</script><p>after</p>' }
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [0, 17], text: "{% endcomment %}" }
+          position: { start: [0, 0], text: "{% comment %}<!--{% endcomment %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: <!--
+            position: { start: [0, 13], text: <!-- }
+            nodes:
+              - type: TextNode
+                value: <!--
+                position: { start: [0, 13], text: <!-- }
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 33], text: <script> }
+          blockEndPosition: { start: [0, 56], text: </script> }
+          position: { start: [0, 33], text: <script>var b = "<!--";</script> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: var b = "<!--";
+            position: { start: [0, 41], text: var b = "<!--"; }
+            nodes:
+              - type: TextNode
+                value: var b = "<!--";
+                position: { start: [0, 41], text: var b = "<!--"; }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 65], text: <p> }
+          blockEndPosition: { start: [0, 73], text: </p> }
+          position: { start: [0, 65], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 66], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 68], text: after }
+  - name: parses the markup after a comment, then a raw, whose bodies open markup
+    source: "{% comment %}<!--{% endcomment %}{% raw %}<a{% endraw %}<p>after</p>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% comment %}<!--{% endcomment %}{% raw %}<a{% endraw %}<p>after</p>" }
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [0, 17], text: "{% endcomment %}" }
+          position: { start: [0, 0], text: "{% comment %}<!--{% endcomment %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: <!--
+            position: { start: [0, 13], text: <!-- }
+            nodes:
+              - type: TextNode
+                value: <!--
+                position: { start: [0, 13], text: <!-- }
+        - type: LiquidRawTag
+          name: raw
+          markup: ""
+          markupPosition: { start: [0, 40], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 33], text: "{% raw %}" }
+          blockEndPosition: { start: [0, 44], text: "{% endraw %}" }
+          position: { start: [0, 33], text: "{% raw %}<a{% endraw %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: <a
+            position: { start: [0, 42], text: <a }
+            nodes:
+              - type: TextNode
+                value: <a
+                position: { start: [0, 42], text: <a }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 56], text: <p> }
+          blockEndPosition: { start: [0, 64], text: </p> }
+          position: { start: [0, 56], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 57], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 59], text: after }
+  - name: resumes inside a script body after a raw tag in it
+    source: <script>{% raw %}{{{% endraw %} s = "<!--"; t = "}}";</script><p>after</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<script>{% raw %}{{{% endraw %} s = "<!--"; t = "}}";</script><p>after</p>' }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 53], text: </script> }
+          position: { start: [0, 0], text: '<script>{% raw %}{{{% endraw %} s = "<!--"; t = "}}";</script>' }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: '{% raw %}{{{% endraw %} s = "<!--"; t = "}}";'
+            position: { start: [0, 8], text: '{% raw %}{{{% endraw %} s = "<!--"; t = "}}";' }
+            nodes:
+              - type: LiquidRawTag
+                name: raw
+                markup: ""
+                markupPosition: { start: [0, 15], text: "" }
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 8], text: "{% raw %}" }
+                blockEndPosition: { start: [0, 19], text: "{% endraw %}" }
+                position: { start: [0, 8], text: "{% raw %}{{{% endraw %}" }
+                body:
+                  type: RawMarkup
+                  kind: text
+                  value: "{{"
+                  position: { start: [0, 17], text: "{{" }
+                  nodes:
+                    - type: TextNode
+                      value: "{{"
+                      position: { start: [0, 17], text: "{{" }
+              - type: TextNode
+                value: s = "<!--"; t = "}}";
+                position: { start: [0, 32], text: 's = "<!--"; t = "}}";' }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 62], text: <p> }
+          blockEndPosition: { start: [0, 70], text: </p> }
+          position: { start: [0, 62], text: <p>after</p> }
+          name:
+            - type: TextNode
+              value: p
+              position: { start: [0, 63], text: p }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 65], text: after }
+  - name: keeps a quote in a raw body from closing the attribute value it sits in
+    source: <a title="{% raw %}"{% endraw %}">x</a>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<a title="{% raw %}"{% endraw %}">x</a>' }
+      children:
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 0], text: '<a title="{% raw %}"{% endraw %}">' }
+          blockEndPosition: { start: [0, 35], text: </a> }
+          position: { start: [0, 0], text: '<a title="{% raw %}"{% endraw %}">x</a>' }
+          name:
+            - type: TextNode
+              value: a
+              position: { start: [0, 1], text: a }
+          attributes:
+            - type: AttrDoubleQuoted
+              attributePosition: { start: [0, 10], text: '{% raw %}"{% endraw %}' }
+              position: { start: [0, 3], text: 'title="{% raw %}"{% endraw %}"' }
+              name:
+                - type: TextNode
+                  value: title
+                  position: { start: [0, 3], text: title }
+              value:
+                - type: LiquidRawTag
+                  name: raw
+                  markup: ""
+                  markupPosition: { start: [0, 17], text: "" }
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  delimiterWhitespaceStart: ""
+                  delimiterWhitespaceEnd: ""
+                  blockStartPosition: { start: [0, 10], text: "{% raw %}" }
+                  blockEndPosition: { start: [0, 20], text: "{% endraw %}" }
+                  position: { start: [0, 10], text: '{% raw %}"{% endraw %}' }
+                  body:
+                    type: RawMarkup
+                    kind: text
+                    value: '"'
+                    position: { start: [0, 19], text: '"' }
+                    nodes:
+                      - type: TextNode
+                        value: '"'
+                        position: { start: [0, 19], text: '"' }
+          children:
+            - type: TextNode
+              value: x
+              position: { start: [0, 34], text: x }
+  - name: resumes inside the quoted attribute a raw tag sits in when its body opens an HTML comment
+    source: <div data="{% raw %}<!--{% endraw %}">x</div>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<div data="{% raw %}<!--{% endraw %}">x</div>' }
+      children:
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 0], text: '<div data="{% raw %}<!--{% endraw %}">' }
+          blockEndPosition: { start: [0, 39], text: </div> }
+          position: { start: [0, 0], text: '<div data="{% raw %}<!--{% endraw %}">x</div>' }
+          name:
+            - type: TextNode
+              value: div
+              position: { start: [0, 1], text: div }
+          attributes:
+            - type: AttrDoubleQuoted
+              attributePosition: { start: [0, 11], text: "{% raw %}<!--{% endraw %}" }
+              position: { start: [0, 5], text: 'data="{% raw %}<!--{% endraw %}"' }
+              name:
+                - type: TextNode
+                  value: data
+                  position: { start: [0, 5], text: data }
+              value:
+                - type: LiquidRawTag
+                  name: raw
+                  markup: ""
+                  markupPosition: { start: [0, 18], text: "" }
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  delimiterWhitespaceStart: ""
+                  delimiterWhitespaceEnd: ""
+                  blockStartPosition: { start: [0, 11], text: "{% raw %}" }
+                  blockEndPosition: { start: [0, 24], text: "{% endraw %}" }
+                  position: { start: [0, 11], text: "{% raw %}<!--{% endraw %}" }
+                  body:
+                    type: RawMarkup
+                    kind: text
+                    value: <!--
+                    position: { start: [0, 20], text: <!-- }
+                    nodes:
+                      - type: TextNode
+                        value: <!--
+                        position: { start: [0, 20], text: <!-- }
+          children:
+            - type: TextNode
+              value: x
+              position: { start: [0, 38], text: x }

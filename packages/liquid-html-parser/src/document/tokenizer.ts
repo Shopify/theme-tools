@@ -1,4 +1,6 @@
 import { assertNever } from '../utils';
+import { findRawBodyEnd, liquidTagTokenName } from './raw-body';
+import type { RawBodyRuleFor } from './raw-body';
 
 export enum TokenType {
   Text = 'Text',
@@ -68,6 +70,17 @@ export interface TokenizeOptions {
    * `ParserBase.retokenizeRawText`.
    */
   rawText?: boolean;
+
+  /**
+   * The body rule of each Liquid raw tag (`comment`, `raw`, `doc`, `schema`,
+   * …), from the tag registry. When set, a raw tag's body is opaque: it ends
+   * where `findRawBodyEnd` ends it, the same rule the parser uses, only
+   * Liquid delimiters are tokens inside it, and the mode before the tag holds
+   * again after it. So a `<!--`, a `<b` or a quote in `{% comment %}` can't
+   * open a mode that outlives the body. Without it, raw bodies are tokenized
+   * like any other markup.
+   */
+  rawBodyRule?: RawBodyRuleFor;
 }
 
 export function tokenize(source: string, options: TokenizeOptions = {}): Token[] {
@@ -118,6 +131,26 @@ export function createTokenizer(source: string, tokens: Token[], fastPath = true
   let textIsSpace = false;
   let quoteChar = '';
   let ended = false;
+  let rawBodyRule: RawBodyRuleFor | undefined;
+  // Where the current comment's body starts, for the spec's empty comments
+  // `<!-->` and `<!--->`, which close only right after `<!--`.
+  let commentBodyStart = -1;
+  // Where the `{%` of the Liquid tag being tokenized starts.
+  let liquidTagStart = -1;
+  // How many `<svg>` elements are open. The parser keeps an `<svg>` body raw
+  // and closes it at the `</svg>` token that balances it, so inside one the
+  // tokenizer opens no comment mode that could hide that token: SVG holds
+  // CDATA, `foreignObject` scripts and other text where a `<!--` is not a
+  // comment. There `<!--` and `-->` tokenize as they did before comment mode.
+  // Nested `<svg` open tags count as `scanForHtmlCloseTag` counts them,
+  // self-closing ones included.
+  let svgDepth = 0;
+  // The element whose open tag is being tokenized, when it is `svg`, `script`
+  // or `style`: the tag's `>` opens it.
+  let pendingElement: 'svg' | 'script' | 'style' | undefined;
+  // The `<script>` or `<style>` whose body is being tokenized in RawText mode,
+  // or "" when the input is a body passed with `rawText` (no close tag).
+  let rawTextTag = '';
   // The last search for `}}`: where it started, and where it found one (-1 for
   // nowhere). Restarts after raw tags can land inside the same unclosed `{{`
   // again and again, and this keeps each from searching the rest anew.
@@ -189,6 +222,12 @@ export function createTokenizer(source: string, tokens: Token[], fastPath = true
     pos = start;
     textStart = -1;
     ended = false;
+    rawBodyRule = options.rawBodyRule;
+    commentBodyStart = -1;
+    liquidTagStart = -1;
+    svgDepth = 0;
+    pendingElement = undefined;
+    rawTextTag = '';
 
     // Resume inside a quoted attribute value when reslicing a suffix that begins
     // mid-attribute (e.g. `...{% endraw %}">` straddled by a stray `{{`). The
@@ -222,7 +261,7 @@ export function createTokenizer(source: string, tokens: Token[], fastPath = true
     }
   }
 
-  // Liquid open check — reused in Default, HtmlTag, and QuotedValue modes
+  // Liquid open check — reused in every mode outside Liquid
   function scanLiquidOpen(): boolean {
     if (source.charCodeAt(pos) !== CHAR_OPEN_BRACE) return false;
     if (match('{{-')) {
@@ -236,16 +275,88 @@ export function createTokenizer(source: string, tokens: Token[], fastPath = true
       return true;
     }
     if (match('{%-')) {
+      liquidTagStart = pos;
       emit(TokenType.LiquidTagOpen, 3);
       pushMode(Mode.LiquidTag);
       return true;
     }
     if (match('{%')) {
+      liquidTagStart = pos;
       emit(TokenType.LiquidTagOpen, 2);
       pushMode(Mode.LiquidTag);
       return true;
     }
     return false;
+  }
+
+  // After the close of a Liquid tag, when the tag is a raw tag whose body
+  // closes: tokenize the body on its own, so nothing in it can change the mode
+  // the tag sits in, and resume at its end tag in that mode. A body Liquid
+  // reports as never closed is left to the parser, which throws on it.
+  function skipRawBody() {
+    if (!rawBodyRule) return;
+    const name = liquidTagTokenName(source.slice(liquidTagStart, pos));
+    const rule = name === undefined ? undefined : rawBodyRule(name);
+    if (name === undefined || rule === undefined) return;
+    const end = findRawBodyEnd(source, pos, name, rule, rawBodyRule);
+    if (!end || end.tagStart <= pos) return;
+
+    const bodyStart = pos;
+    const body = tokenizeToEnd(
+      source.slice(bodyStart, end.tagStart),
+      { skipFrontmatter: true, rawText: true, rawBodyRule },
+      fastPath,
+    );
+    for (const token of body) {
+      if (token.type === TokenType.EndOfInput) continue;
+      tokens.push({ type: token.type, start: token.start + bodyStart, end: token.end + bodyStart });
+    }
+    pos = end.tagStart;
+  }
+
+  // The lowercase name at `at` when it is `svg`, `script` or `style` followed by
+  // whitespace, `/` or `>` (or the end), as the parser names those elements.
+  function elementNameAt(at: number): 'svg' | 'script' | 'style' | undefined {
+    const match = /^(svg|script|style)(?=[\s/>]|$)/i.exec(source.slice(at, at + 7));
+    if (match) return match[1]!.toLowerCase() as 'svg' | 'script' | 'style';
+    // An `<svg` glued to Liquid, as in `<svg{% if x %} class="x"{% endif %}>`, may
+    // be the `svg` element with a Liquid attribute or a compound name such as
+    // `<svg{{ x }}-icon>`; only the parser can tell. Treat it as an `<svg>`: in
+    // one, comments tokenize as they did before comment mode, so a wrong guess
+    // costs nothing.
+    return /^svg\{/i.test(source.slice(at, at + 4)) ? 'svg' : undefined;
+  }
+
+  // Whether `</` at `at` begins a `</svg>` the parser closes an `<svg>` raw body
+  // on: the whole `</svg>`, whitespace allowed before `>`. `</svg marker>`
+  // doesn't close it, so it doesn't end the SVG body here either.
+  function closesSvg(at: number): boolean {
+    return /^<\/svg\s*>/i.test(source.slice(at, at + 64));
+  }
+
+  // Whether `</` at `at` begins the close tag of the current raw text element:
+  // the whole `</script>`, whitespace allowed before `>`.
+  function closesRawText(at: number): boolean {
+    if (rawTextTag === '') return false;
+    const name = source.slice(at + 2, at + 2 + rawTextTag.length);
+    if (name.toLowerCase() !== rawTextTag) return false;
+    let i = at + 2 + rawTextTag.length;
+    while (i < source.length && /\s/.test(source[i]!)) i++;
+    return source[i] === '>';
+  }
+
+  // At the `>` of an open tag: enter the element it named, if it matters. An
+  // `<svg>` starts an SVG body. A `<script>` or `<style>` outside SVG
+  // has a raw text body; inside SVG it is foreign content, read as markup.
+  function openPendingElement() {
+    const element = pendingElement;
+    pendingElement = undefined;
+    if (element === 'svg') {
+      if (svgDepth === 0) svgDepth = 1;
+    } else if (element !== undefined && svgDepth === 0 && mode === Mode.Default) {
+      rawTextTag = element;
+      pushMode(Mode.RawText);
+    }
   }
 
   function fill(index: number): boolean {
@@ -255,9 +366,11 @@ export function createTokenizer(source: string, tokens: Token[], fastPath = true
           if (match('-%}')) {
             emit(TokenType.LiquidTagClose, 3);
             popMode();
+            skipRawBody();
           } else if (match('%}')) {
             emit(TokenType.LiquidTagClose, 2);
             popMode();
+            skipRawBody();
           } else {
             startText();
             skipText();
@@ -282,13 +395,22 @@ export function createTokenizer(source: string, tokens: Token[], fastPath = true
         case Mode.Default: {
           if (scanLiquidOpen()) continue;
 
-          if (match('<!--')) {
+          // Inside an `<svg>`, `<!--` and `-->` are the one-off tokens they were
+          // before comment mode, and open no mode.
+          if (match('<!--') && svgDepth > 0) {
             emit(TokenType.HtmlCommentOpen, 4);
             continue;
           }
 
-          if (match('-->')) {
+          if (match('-->') && svgDepth > 0) {
             emit(TokenType.HtmlCommentClose, 3);
+            continue;
+          }
+
+          if (match('<!--')) {
+            emit(TokenType.HtmlCommentOpen, 4);
+            pushMode(Mode.HtmlComment);
+            commentBodyStart = pos;
             continue;
           }
 
@@ -300,6 +422,7 @@ export function createTokenizer(source: string, tokens: Token[], fastPath = true
 
           if (match('</')) {
             if (isTagNameStart(source.charCodeAt(pos + 2))) {
+              if (svgDepth > 0 && closesSvg(pos)) svgDepth--;
               emit(TokenType.HtmlCloseTagOpen, 2);
               pushMode(Mode.HtmlTag);
               continue;
@@ -308,6 +431,8 @@ export function createTokenizer(source: string, tokens: Token[], fastPath = true
 
           if (ch(0) === '<') {
             if (isTagNameStart(source.charCodeAt(pos + 1))) {
+              pendingElement = elementNameAt(pos + 1);
+              if (svgDepth > 0 && pendingElement === 'svg') svgDepth++;
               emit(TokenType.HtmlTagOpen, 1);
               pushMode(Mode.HtmlTag);
               continue;
@@ -325,12 +450,14 @@ export function createTokenizer(source: string, tokens: Token[], fastPath = true
           if (match('/>')) {
             emit(TokenType.HtmlSelfClose, 2);
             popMode();
+            pendingElement = undefined;
             continue;
           }
 
           if (ch(0) === '>') {
             emit(TokenType.HtmlTagClose, 1);
             popMode();
+            openPendingElement();
             continue;
           }
 
@@ -386,8 +513,60 @@ export function createTokenizer(source: string, tokens: Token[], fastPath = true
           break;
         }
 
-        case Mode.RawText: {
+        case Mode.HtmlComment: {
+          // A comment's body is text, except for Liquid, which still renders
+          // inside it, and the comment's close. Markup in the body (`<b`, an
+          // unbalanced quote, a nested `<!--`) is text, as it is to a browser, so
+          // it can't open a tag that swallows the close.
           if (scanLiquidOpen()) continue;
+
+          // The HTML spec closes `<!-->` and `<!--->` as empty comments
+          // ("abrupt-closing-of-empty-comment"). This applies only right after
+          // `<!--`; anywhere later, `>` and `->` are text.
+          if (pos === commentBodyStart) {
+            if (ch(0) === '>') {
+              emit(TokenType.HtmlCommentClose, 1);
+              popMode();
+              continue;
+            }
+            if (match('->')) {
+              emit(TokenType.HtmlCommentClose, 2);
+              popMode();
+              continue;
+            }
+          }
+
+          if (match('-->')) {
+            emit(TokenType.HtmlCommentClose, 3);
+            popMode();
+            continue;
+          }
+
+          // `--!>` closes a comment too ("incorrectly-closed-comment").
+          if (match('--!>')) {
+            emit(TokenType.HtmlCommentClose, 4);
+            popMode();
+            continue;
+          }
+
+          startText();
+          skipText();
+          break;
+        }
+
+        case Mode.RawText: {
+          // A `<script>` or `<style>` body is text, except for Liquid, which
+          // still renders inside it, and the element's close tag. A `<!--`, a
+          // `<svg`, or a quote in the body is text, as it is to a browser.
+          if (scanLiquidOpen()) continue;
+
+          if (match('</') && closesRawText(pos)) {
+            popMode();
+            rawTextTag = '';
+            emit(TokenType.HtmlCloseTagOpen, 2);
+            pushMode(Mode.HtmlTag);
+            continue;
+          }
 
           startText();
           skipText();
@@ -441,6 +620,8 @@ function nextTextCandidate(
       return nextLiquidTagCloseCandidate(source, from);
     case Mode.RawText:
       return nextRawTextCandidate(source, from);
+    case Mode.HtmlComment:
+      return nextHtmlCommentCandidate(source, from);
     default:
       return assertNever(mode);
   }
@@ -457,7 +638,7 @@ const CHAR_OPEN_BRACE = 0x7b; // {
 const CHAR_LEFT_SINGLE_CURLY_QUOTE = 0x2018; // ‘
 const CHAR_RIGHT_DOUBLE_CURLY_QUOTE = 0x201d; // ”
 
-/** Default mode tokens start with `{` (Liquid), `<` (HTML), or `-` (`-->`). */
+/** Default mode tokens start with `{` (Liquid), `<` (HTML), or `-` (`-->` in an `<svg>`). */
 function nextDefaultCandidate(source: string, from: number): number {
   for (let i = from; i < source.length; i++) {
     const c = source.charCodeAt(i);
@@ -466,10 +647,26 @@ function nextDefaultCandidate(source: string, from: number): number {
   return source.length;
 }
 
-/** RawText mode tokens start with `{` (Liquid). */
+/**
+ * HtmlComment mode tokens start with `{` (Liquid) or `-` (`-->`, `--!>`). The
+ * empty-comment closes `>` and `->` are checked only at the body's first
+ * character, before any text run starts.
+ */
+function nextHtmlCommentCandidate(source: string, from: number): number {
+  for (let i = from; i < source.length; i++) {
+    const c = source.charCodeAt(i);
+    if (c === CHAR_OPEN_BRACE || c === CHAR_DASH) return i;
+  }
+  return source.length;
+}
+
+/** RawText mode tokens start with `{` (Liquid) or `<` (the element's close tag). */
 function nextRawTextCandidate(source: string, from: number): number {
-  const i = source.indexOf('{', from);
-  return i === -1 ? source.length : i;
+  for (let i = from; i < source.length; i++) {
+    const c = source.charCodeAt(i);
+    if (c === CHAR_OPEN_BRACE || c === CHAR_LESS_THAN) return i;
+  }
+  return source.length;
 }
 
 /**
@@ -546,6 +743,7 @@ enum Mode {
   LiquidTag = 'LiquidTag',
   LiquidVariableOutput = 'LiquidVariableOutput',
   RawText = 'RawText',
+  HtmlComment = 'HtmlComment',
 }
 
 // Curly (smart) quotes come in directional pairs: a value opened with a left

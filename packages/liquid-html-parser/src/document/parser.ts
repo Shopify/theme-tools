@@ -1,5 +1,6 @@
 import { TokenType } from './tokenizer';
 import type { Token } from './tokenizer';
+import { rawBodyRuleLookup } from './raw-body';
 import { ParserBase } from './base';
 import { makeDocumentNode } from './factories';
 import { ChildFilterMode, filterChildren } from './tree-builder';
@@ -78,6 +79,7 @@ export class DocumentParser
   ) {
     super(tokens, source);
     this.env = env;
+    this.rawBodyRule = rawBodyRuleLookup((name) => env.tagForName(name));
     this._parseHtml = parseHtml;
     this._allowUnclosedHtml = allowUnclosedDocumentNode;
     this._allowUnclosedDocumentNode = allowUnclosedDocumentNode;

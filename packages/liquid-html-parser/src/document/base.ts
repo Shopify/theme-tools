@@ -1,6 +1,7 @@
 import { TokenType, createTokenizer, tokenize } from './tokenizer';
 import type { Token, TokenizeOptions, Tokenizer } from './tokenizer';
 import { LiquidHTMLASTParsingError } from '../errors';
+import type { RawBodyRuleFor } from './raw-body';
 
 export class ParserBase {
   protected tokens: Token[];
@@ -16,6 +17,11 @@ export class ParserBase {
   private scanned = 0;
   private openQuote: Token | undefined;
   private openTag = false;
+  /**
+   * The tag registry's raw-tag body rules, passed to every re-tokenize so raw
+   * bodies stay opaque there too (see `TokenizeOptions.rawBodyRule`).
+   */
+  protected rawBodyRule: RawBodyRuleFor | undefined;
   constructor(tokens: Token[], source: string) {
     this.tokens = tokens;
     this.source = source;
@@ -236,6 +242,7 @@ export class ParserBase {
       this.tokens.length = before;
       this.tokenizer ??= createTokenizer(this.source, this.tokens);
       this.tokenizer.restart(sourceOffset, {
+        rawBodyRule: this.rawBodyRule,
         skipFrontmatter: true,
         insideQuotedAttribute,
         insideHtmlTag,
@@ -283,7 +290,7 @@ export class ParserBase {
     } else {
       this.replaceTokens(before, this.tokens.length, body);
       this.tokenizer ??= createTokenizer(this.source, this.tokens);
-      this.tokenizer.restart(bodyEnd, { skipFrontmatter: true });
+      this.tokenizer.restart(bodyEnd, { rawBodyRule: this.rawBodyRule, skipFrontmatter: true });
     }
     this.p = before;
   }
@@ -312,7 +319,11 @@ export class ParserBase {
   // Tokens for `source[start, end)`, with offsets in the whole source, without
   // the slice's EndOfInput.
   private tokenizeSlice(start: number, end: number, options: TokenizeOptions = {}): Token[] {
-    const tokens = tokenize(this.source.slice(start, end), { ...options, skipFrontmatter: true });
+    const tokens = tokenize(this.source.slice(start, end), {
+      ...options,
+      rawBodyRule: this.rawBodyRule,
+      skipFrontmatter: true,
+    });
     return tokens
       .filter((token) => token.type !== TokenType.EndOfInput)
       .map((token) => ({ type: token.type, start: token.start + start, end: token.end + start }));

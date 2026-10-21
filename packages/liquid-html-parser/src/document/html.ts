@@ -245,15 +245,11 @@ export function parseHtmlComment(parser: HtmlParserDelegate): HtmlComment {
   const openToken = parser.consume(TokenType.HtmlCommentOpen);
   const bodyStart = openToken.end;
 
-  // Find the closing `-->` by scanning the source rather than walking tokens.
-  // A conditional comment body (`<!--[if IE]>…<![endif]-->`) contains
-  // `<![endif]`, which the tokenizer treats as a doctype open — it enters
-  // HtmlTag mode and consumes the trailing `-->` as an HtmlTagClose, so no
-  // HtmlCommentClose token is ever emitted and the token walk would run to EOF.
-  // A source scan pins us to the real comment close, so the (unchanged)
-  // HtmlComment node feeds getConditionalComment correctly in the printer.
-  const closeIdx = source.indexOf('-->', bodyStart);
-  if (closeIdx === -1) {
+  while (!parser.isAtEnd() && !parser.check(TokenType.HtmlCommentClose)) {
+    parser.advance();
+  }
+
+  if (parser.isAtEnd()) {
     throw new LiquidHTMLASTParsingError(
       `Attempting to end parsing before HtmlComment '<!--' was closed`,
       source,
@@ -262,13 +258,11 @@ export function parseHtmlComment(parser: HtmlParserDelegate): HtmlComment {
     );
   }
 
-  const bodyEnd = closeIdx;
-  const commentEnd = closeIdx + 3; // past `-->`
+  const bodyEnd = parser.peek().start;
+  const closeToken = parser.consume(TokenType.HtmlCommentClose);
   const body = source.slice(bodyStart, bodyEnd).trim();
 
-  parser.seekToSourceOffset(commentEnd);
-
-  return makeHtmlComment(body, openToken.start, commentEnd, source);
+  return makeHtmlComment(body, openToken.start, closeToken.end, source);
 }
 
 // htmlDoctype := "<!" text ">"
