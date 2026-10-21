@@ -55,4 +55,21 @@ describe('Module: HardcodedRoutes', () => {
     const offenses = await runLiquidCheck(HardcodedRoutes, sourceCode);
     expect(offenses).to.have.length(0);
   });
+
+  it('should only match whole path segments', async () => {
+    const sourceCode = `
+      <a href="/cartography"></a>
+      <a href="/searching"></a>
+      <a href="/accounting"></a>
+      <li>{{ 'Carts' | link_to: '/carts' }}</li>
+      <a href="/collections/all-shoes"></a>
+      <a href="/cart#drawer"></a>
+    `;
+
+    const offenses = await runLiquidCheck(HardcodedRoutes, sourceCode);
+    expect(offenses.map((offense) => offense.message)).to.deep.equal([
+      'Use routes object {{ routes.collections_url }} instead of hardcoding /collections',
+      'Use routes object {{ routes.cart_url }} instead of hardcoding /cart',
+    ]);
+  });
 });
