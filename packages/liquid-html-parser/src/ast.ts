@@ -18,6 +18,7 @@ import { Comparators, NamedTags, NodeTypes, RawTags, nonTraversableProperties } 
 import type { Position } from './types';
 import { DocumentParser } from './document/parser';
 import { tokenize } from './document/tokenizer';
+import { rawBodyRuleLookup } from './document/raw-body';
 import { Environment } from './environment';
 
 /** The union type of all possible node types inside a LiquidHTML AST. */
@@ -966,7 +967,9 @@ export function toLiquidAST(
   },
 ) {
   const env = options.environment ?? Environment.default();
-  const tokens = tokenize(source);
+  const tokens = tokenize(source, {
+    rawBodyRule: rawBodyRuleLookup((name) => env.tagForName(name)),
+  });
   const parser = new DocumentParser(tokens, source, env, false, options.allowUnclosedDocumentNode);
   return parser.parseDocument();
 }
@@ -979,7 +982,9 @@ export function toLiquidHtmlAST(
   },
 ): DocumentNode {
   const env = options.environment ?? Environment.default();
-  const tokens = tokenize(source);
+  const tokens = tokenize(source, {
+    rawBodyRule: rawBodyRuleLookup((name) => env.tagForName(name)),
+  });
   const parser = new DocumentParser(tokens, source, env, true, options.allowUnclosedDocumentNode);
   parser.pairDanglingCloseTags = options.pairDanglingCloseTags ?? false;
   return parser.parseDocument();

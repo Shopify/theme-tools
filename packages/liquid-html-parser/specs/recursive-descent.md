@@ -307,7 +307,7 @@ htmlVoid     := '<' voidTagName attributes '>'
 htmlSelfClosing := '<' tagName attributes '/>'
 htmlRawNode  := '<' rawTagName attributes '>' rawBody '</' rawTagName '>'
 htmlDoctype  := '<!doctype' ... '>'
-htmlComment  := '<!--' ... '-->'
+htmlComment  := '<!--' ... ('-->' | '--!>') | '<!-->' | '<!--->'
 ```
 
 **Tag names can be compound** — they may contain Liquid variable outputs: `<{{ header_type }}--header>`.
