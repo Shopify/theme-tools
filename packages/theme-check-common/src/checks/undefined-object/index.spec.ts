@@ -121,6 +121,41 @@ describe('Module: UndefinedObject', () => {
     expect(offenses).toHaveLength(0);
   });
 
+  it('should not report an offense for the continue keyword in a for loop offset', async () => {
+    const sourceCode = `
+      {% for product in collections.all.products limit: 3 %}{{ product.title }}{% endfor %}
+      {% for product in collections.all.products limit: 3 offset: continue %}{{ product.title }}{% endfor %}
+      {%- for product in collections.all.products
+        limit: 3
+        offset: continue
+      -%}
+        {{ product.title }}
+      {%- endfor -%}
+    `;
+
+    const offenses = await runLiquidCheck(UndefinedObject, sourceCode);
+
+    expect(offenses).toHaveLength(0);
+  });
+
+  it('should report an offense when continue is used as a variable outside of a for loop offset', async () => {
+    const sourceCode = `
+      {{ continue }}
+      {% for product in collections.all.products limit: continue %}{% endfor %}
+      {% for product in collections.all.products offset: continue.size %}{% endfor %}
+      {% tablerow product in collections.all.products offset: continue %}{% endtablerow %}
+    `;
+
+    const offenses = await runLiquidCheck(UndefinedObject, sourceCode);
+
+    expect(offenses.map((e) => e.message)).toEqual([
+      "Unknown object 'continue' used.",
+      "Unknown object 'continue' used.",
+      "Unknown object 'continue' used.",
+      "Unknown object 'continue' used.",
+    ]);
+  });
+
   it('should report an offense when object is defined in a for loop but used outside of the scope', async () => {
     const sourceCode = `
       {% for c in collections %}
