@@ -1,0 +1,1308 @@
+check: LiquidSyntaxError
+severity: error
+cases:
+  - name: accepts section keyword arguments
+    files:
+      snippets/test.liquid: "{% section 'header', color: 'red' %}"
+
+  # The parser (LiquidHTMLSyntaxError) catches this one, not this check.
+  - name: does not report bare bracket section keyword argument values
+    files:
+      snippets/test.liquid: "{% section 'header', foo: [0] %}"
+
+  - name: knows tags from the docset inside liquid blocks
+    docset:
+      tags: [{ name: custom_tag }]
+    files:
+      snippets/test.liquid: |-
+        {% liquid
+          custom_tag
+        %}
+
+  - name: reports unknown tags inside liquid blocks
+    files:
+      snippets/test.liquid: |-
+        {% liquid
+          hello world
+        %}
+    offenses:
+      - file: snippets/test.liquid
+        message: Unknown tag 'hello'
+        start: [1, 2]
+        highlight: hello world
+
+  - name: reports each unknown tag where it is, even when the text repeats
+    files:
+      snippets/test.liquid: |-
+        {% liquid
+          echo 'hello world'
+          hello world
+          hello world
+        %}
+    offenses:
+      - file: snippets/test.liquid
+        message: Unknown tag 'hello'
+        start: [2, 2]
+        highlight: hello world
+      - file: snippets/test.liquid
+        message: Unknown tag 'hello'
+        start: [3, 2]
+        highlight: hello world
+  - name: reports parameter offenses for plain arguments
+    checks: &block-checks
+      - LiquidSyntaxError
+      - MissingBlockArguments
+      - UnrecognizedBlockArguments
+      - ValidBlockArgumentTypes
+      - DuplicateBlockArguments
+    docset: default
+    files:
+      templates/test.liquid: "{% block 'card', unknown: true, count: 'many', count: 'more' %}{% endblock %}"
+      blocks/card.liquid: &card |-
+        {% doc %}
+          @param {string} heading - Heading
+          @param {string} tracking_id - Tracking id
+        {% enddoc %}
+        {% schema %}
+        {"settings":[{"id":"heading","type":"text"},{"id":"count","type":"number"}]}
+        {% endschema %}
+    offenses:
+      - check: DuplicateBlockArguments
+        file: templates/test.liquid
+        message: "Duplicate argument 'count' in block tag for 'card'."
+        start: [0, 47]
+        highlight: "count: 'more'"
+      - check: MissingBlockArguments
+        file: templates/test.liquid
+        message: "Missing required argument 'heading' in block tag for 'card'."
+        start: [0, 0]
+        highlight: "{% block 'card', unknown: true, count: 'many', count: 'more' %}"
+      - check: MissingBlockArguments
+        file: templates/test.liquid
+        message: "Missing required argument 'tracking_id' in block tag for 'card'."
+        start: [0, 0]
+        highlight: "{% block 'card', unknown: true, count: 'many', count: 'more' %}"
+      - check: UnrecognizedBlockArguments
+        file: templates/test.liquid
+        message: "Unknown argument 'unknown' in block tag for 'card'."
+        start: [0, 17]
+        highlight: "unknown: true"
+      - check: ValidBlockArgumentTypes
+        file: templates/test.liquid
+        message: "Type mismatch for argument 'count': expected number, got string"
+        start: [0, 39]
+        highlight: "'many'"
+      - check: ValidBlockArgumentTypes
+        file: templates/test.liquid
+        message: "Type mismatch for argument 'count': expected number, got string"
+        start: [0, 54]
+        highlight: "'more'"
+  - name: accepts block.name with a string value
+    checks: *block-checks
+    docset: default
+    files:
+      templates/test.liquid: "{% block 'card', block.name: 'Card', heading: 'Hello', count: 1, tracking_id: 'id' %}{% endblock %}"
+      blocks/card.liquid: *card
+  - name: "reports only one syntax error for block.settings.heading: 'Hello'"
+    checks: *block-checks
+    docset: default
+    files:
+      templates/test.liquid: "{% block 'card', block.settings.heading: 'Hello', count: 'many', count: 'more' %}{% endblock %}"
+      blocks/card.liquid: *card
+    offenses:
+      - check: LiquidSyntaxError
+        file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use 'heading:' instead of 'block.settings.heading:' when calling a block."
+        start: [0, 17]
+        highlight: "block.settings.heading: 'Hello'"
+  - name: 'reports only one syntax error for block.settings.count: 1'
+    checks: *block-checks
+    docset: default
+    files:
+      templates/test.liquid: "{% block 'card', block.settings.count: 1, count: 'many', count: 'more' %}{% endblock %}"
+      blocks/card.liquid: *card
+    offenses:
+      - check: LiquidSyntaxError
+        file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use 'count:' instead of 'block.settings.count:' when calling a block."
+        start: [0, 17]
+        highlight: "block.settings.count: 1"
+  - name: 'reports only one syntax error for block.content: body'
+    checks: *block-checks
+    docset: default
+    files:
+      templates/test.liquid: "{% block 'card', block.content: body, count: 'many', count: 'more' %}{% endblock %}"
+      blocks/card.liquid: *card
+    offenses:
+      - check: LiquidSyntaxError
+        file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value"
+        start: [0, 17]
+        highlight: "block.content: body"
+  - name: "reports only one syntax error for block.settings.heading.label: 'Hello'"
+    checks: *block-checks
+    docset: default
+    files:
+      templates/test.liquid: "{% block 'card', block.settings.heading.label: 'Hello', count: 'many', count: 'more' %}{% endblock %}"
+      blocks/card.liquid: *card
+    offenses:
+      - check: LiquidSyntaxError
+        file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value"
+        start: [0, 17]
+        highlight: "block.settings.heading.label: 'Hello'"
+  - name: "reports only one syntax error for heading.label: 'Hello'"
+    checks: *block-checks
+    docset: default
+    files:
+      templates/test.liquid: "{% block 'card', heading.label: 'Hello', count: 'many', count: 'more' %}{% endblock %}"
+      blocks/card.liquid: *card
+    offenses:
+      - check: LiquidSyntaxError
+        file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value"
+        start: [0, 17]
+        highlight: "heading.label: 'Hello'"
+  - name: 'reports only one syntax error for block.name: value'
+    checks: *block-checks
+    docset: default
+    files:
+      templates/test.liquid: "{% block 'card', block.name: value, count: 'many', count: 'more' %}{% endblock %}"
+      blocks/card.liquid: *card
+    offenses:
+      - check: LiquidSyntaxError
+        file: templates/test.liquid
+        message: "Syntax error in 'block' tag"
+        start: [0, 0]
+        highlight: "{% block 'card', block.name: value, count: 'many', count: 'more' %}{% endblock %}"
+  - name: "reports only one syntax error for block.name: value, heading.label: 'Hello'"
+    checks: *block-checks
+    docset: default
+    files:
+      templates/test.liquid: "{% block 'card', block.name: value, heading.label: 'Hello', count: 'many', count: 'more' %}{% endblock %}"
+      blocks/card.liquid: *card
+    offenses:
+      - check: LiquidSyntaxError
+        file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value"
+        start: [0, 36]
+        highlight: "heading.label: 'Hello'"
+  - name: 'reports only one syntax error for block.name: value, block.settings.count: 1'
+    checks: *block-checks
+    docset: default
+    files:
+      templates/test.liquid: "{% block 'card', block.name: value, block.settings.count: 1, count: 'many', count: 'more' %}{% endblock %}"
+      blocks/card.liquid: *card
+    offenses:
+      - check: LiquidSyntaxError
+        file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use 'count:' instead of 'block.settings.count:' when calling a block."
+        start: [0, 36]
+        highlight: "block.settings.count: 1"
+  - name: "reports only one syntax error for block.settings.heading: 'Hello', block.content: body"
+    checks: *block-checks
+    docset: default
+    files:
+      templates/test.liquid: "{% block 'card', block.settings.heading: 'Hello', block.content: body, count: 'many', count: 'more' %}{% endblock %}"
+      blocks/card.liquid: *card
+    offenses:
+      - check: LiquidSyntaxError
+        file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use 'heading:' instead of 'block.settings.heading:' when calling a block."
+        start: [0, 17]
+        highlight: "block.settings.heading: 'Hello'"
+  - name: "reports only one syntax error for block.content: body, block.settings.heading: 'Hello'"
+    checks: *block-checks
+    docset: default
+    files:
+      templates/test.liquid: "{% block 'card', block.content: body, block.settings.heading: 'Hello', count: 'many', count: 'more' %}{% endblock %}"
+      blocks/card.liquid: *card
+    offenses:
+      - check: LiquidSyntaxError
+        file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value"
+        start: [0, 17]
+        highlight: "block.content: body"
+  - name: does not report unknown tags like {% foobar %}
+    files:
+      snippets/test.liquid: "{% foobar %}"
+  - name: reports misplaced branch keyword else
+    files:
+      snippets/test.liquid: "{% else %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Unknown tag 'else'"
+        start: [0, 0]
+        highlight: "{% else %}"
+  - name: reports misplaced branch keyword when
+    files:
+      snippets/test.liquid: "{% when x %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Unknown tag 'when'"
+        start: [0, 0]
+        highlight: "{% when x %}"
+  - name: reports misplaced branch keyword when inside if
+    files:
+      snippets/test.liquid: "{% if true %}{% when x %}{% endif %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Unknown tag 'when'"
+        start: [0, 13]
+        highlight: "{% when x %}"
+  - name: reports misplaced branch keyword when inside for
+    files:
+      snippets/test.liquid: "{% for x in xs %}{% when x %}{% endfor %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Unknown tag 'when'"
+        start: [0, 17]
+        highlight: "{% when x %}"
+  - name: reports misplaced branch keyword when inside liquid
+    files:
+      snippets/test.liquid: |-
+        {% liquid
+          when x
+        %}
+    offenses:
+      - file: snippets/test.liquid
+        message: "Unknown tag 'when'"
+        start: [1, 2]
+        highlight: when x
+  - name: reports misplaced branch keyword elsif inside liquid
+    files:
+      snippets/test.liquid: |-
+        {% liquid
+          elsif x
+        %}
+    offenses:
+      - file: snippets/test.liquid
+        message: "Unknown tag 'elsif'"
+        start: [1, 2]
+        highlight: elsif x
+  - name: does not report valid else branches in {% if true %}{% else %}{% endif %}
+    files:
+      snippets/test.liquid: "{% if true %}{% else %}{% endif %}"
+  - name: does not report valid else branches in {% case x %}{% when x %}{% else %}{% endcase %}
+    files:
+      snippets/test.liquid: "{% case x %}{% when x %}{% else %}{% endcase %}"
+  - name: does not report valid else branches in {% for x in xs %}{% else %}{% endfor %}
+    files:
+      snippets/test.liquid: "{% for x in xs %}{% else %}{% endfor %}"
+  - name: reports no-space multiline comments without prefixed continuation lines
+    files:
+      snippets/test.liquid: |-
+        {% #hello
+        world %}
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in tag '#' - Each line of comments must be prefixed by the '#' character"
+        start: [0, 0]
+        highlight: |-
+          {% #hello
+          world %}
+  - name: accepts no-space multiline comments with prefixed continuation lines
+    files:
+      snippets/test.liquid: |-
+        {% #hello
+        #world %}
+  - name: "accepts Ruby's blank-first-line single-continuation shape"
+    files:
+      snippets/test.liquid: |-
+        {% #
+        world %}
+  - name: "produces no diagnostics for {% assign x = 1 %}"
+    files:
+      snippets/test.liquid: "{% assign x = 1 %}"
+  - name: "produces no diagnostics for {% assign x = 'hello' %}"
+    files:
+      snippets/test.liquid: "{% assign x = 'hello' %}"
+  - name: "produces no diagnostics for {% assign x = foo.bar %}"
+    files:
+      snippets/test.liquid: "{% assign x = foo.bar %}"
+  - name: "produces no diagnostics for {% assign x = foo | filter %}"
+    files:
+      snippets/test.liquid: "{% assign x = foo | filter %}"
+  - name: "produces no diagnostics for {% assign x = %} (empty RHS)"
+    files:
+      snippets/test.liquid: "{% assign x = %}"
+  - name: "produces no diagnostics for {% assign x extra = x %}"
+    files:
+      snippets/test.liquid: "{% assign x extra = x %}"
+  - name: 'matches Ruby Liquid parity for unclosed assign quote prefix in {% assign "x = y %}'
+    files:
+      snippets/test.liquid: '{% assign "x = y %}'
+  - name: "matches Ruby Liquid parity for unclosed assign quote prefix in {% assign 'x = y %}"
+    files:
+      snippets/test.liquid: "{% assign 'x = y %}"
+  - name: "reports LiquidSyntaxError for {% assign = 1 %} (missing LHS)"
+    files:
+      snippets/test.liquid: "{% assign = 1 %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'assign' tag"
+        start: [0, 0]
+        highlight: "{% assign = 1 %}"
+  - name: "reports LiquidSyntaxError for {% assign x.y = 1 %} (dotted LHS)"
+    files:
+      snippets/test.liquid: "{% assign x.y = 1 %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'assign' tag"
+        start: [0, 0]
+        highlight: "{% assign x.y = 1 %}"
+  - name: "reports LiquidSyntaxError for {% assign !x = 1 %} (garbage before target)"
+    files:
+      snippets/test.liquid: "{% assign !x = 1 %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'assign' tag"
+        start: [0, 0]
+        highlight: "{% assign !x = 1 %}"
+  - name: "reports diagnostics for {% assign x 42 = x %}"
+    files:
+      snippets/test.liquid: "{% assign x 42 = x %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'assign' tag"
+        start: [0, 0]
+        highlight: "{% assign x 42 = x %}"
+  - name: "reports diagnostics for {% assign x 'hi' = x %}"
+    files:
+      snippets/test.liquid: "{% assign x 'hi' = x %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'assign' tag"
+        start: [0, 0]
+        highlight: "{% assign x 'hi' = x %}"
+  - name: "reports diagnostics for {% assign x ? = x %}"
+    files:
+      snippets/test.liquid: "{% assign x ? = x %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'assign' tag"
+        start: [0, 0]
+        highlight: "{% assign x ? = x %}"
+  - name: "reports LiquidSyntaxError for {% assign x = foo | %} (empty filter)"
+    files:
+      snippets/test.liquid: "{% assign x = foo | %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'assign' tag"
+        start: [0, 0]
+        highlight: "{% assign x = foo | %}"
+  - name: produces no diagnostics for valid capture tags inside liquid blocks
+    files:
+      snippets/test.liquid: |-
+        {% liquid
+          capture x
+          endcapture
+        %}
+  - name: reports LiquidSyntaxError for skipped capture markup inside liquid blocks
+    files:
+      snippets/test.liquid: |-
+        {% liquid
+          capture @x
+          endcapture
+        %}
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'capture' tag"
+        start: [1, 2]
+        highlight: |-
+          capture @x
+            endcapture
+  - name: produces no diagnostics for {% include 42 %}
+    files:
+      snippets/test.liquid: "{% include 42 %}"
+  - name: produces no diagnostics for {% include 3.14 %}
+    files:
+      snippets/test.liquid: "{% include 3.14 %}"
+  - name: produces no diagnostics for {% include -5 %}
+    files:
+      snippets/test.liquid: "{% include -5 %}"
+  - name: produces no diagnostics for {% include true %}
+    files:
+      snippets/test.liquid: "{% include true %}"
+  - name: produces no diagnostics for {% include false %}
+    files:
+      snippets/test.liquid: "{% include false %}"
+  - name: produces no diagnostics for {% include nil %}
+    files:
+      snippets/test.liquid: "{% include nil %}"
+  - name: produces no diagnostics for {% include blank %}
+    files:
+      snippets/test.liquid: "{% include blank %}"
+  - name: produces no diagnostics for {% include empty %}
+    files:
+      snippets/test.liquid: "{% include empty %}"
+  - name: produces no diagnostics for {% include (1..5) %}
+    files:
+      snippets/test.liquid: "{% include (1..5) %}"
+  - name: "reports LiquidSyntaxError for {% include ? %}"
+    files:
+      snippets/test.liquid: "{% include ? %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'include' tag"
+        start: [0, 0]
+        highlight: "{% include ? %}"
+  - name: reports LiquidSyntaxError for bare bracket access in include bindings
+    files:
+      snippets/test.liquid: "{% include 42 for [0] %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: Bare bracket access is not allowed in strict2 mode
+        start: [0, 0]
+        highlight: "{% include 42 for [0] %}"
+  - name: reports LiquidSyntaxError for multipart include named arguments
+    files:
+      snippets/test.liquid: "{% include 42, key.secondkey: value %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'include' tag"
+        start: [0, 0]
+        highlight: "{% include 42, key.secondkey: value %}"
+  - name: produces no diagnostics for {% echo %}
+    files:
+      snippets/test.liquid: "{% echo %}"
+  - name: produces no diagnostics for {% echo    %}
+    files:
+      snippets/test.liquid: "{% echo    %}"
+  - name: produces no diagnostics for {{ }}
+    files:
+      snippets/test.liquid: "{{ }}"
+  - name: produces no diagnostics for {{    }}
+    files:
+      snippets/test.liquid: "{{    }}"
+  - name: reports LiquidSyntaxError for garbage-only variable output
+    files:
+      snippets/test.liquid: "{{ @ }}"
+    offenses:
+      - file: snippets/test.liquid
+        message: Syntax error in variable output
+        start: [0, 0]
+        highlight: "{{ @ }}"
+  - name: "produces no diagnostics for {{ product.title | append: }}"
+    files:
+      snippets/test.liquid: "{{ product.title | append: }}"
+  - name: "produces no diagnostics for {% echo product.title | append: %}"
+    files:
+      snippets/test.liquid: "{% echo product.title | append: %}"
+  - name: "produces no diagnostics for {% assign title = product.title | append: %}"
+    files:
+      snippets/test.liquid: "{% assign title = product.title | append: %}"
+  - name: "reports diagnostics for malformed prefixes in {{ x y | append: }}"
+    files:
+      snippets/test.liquid: "{{ x y | append: }}"
+    offenses:
+      - file: snippets/test.liquid
+        message: Syntax error in variable output
+        start: [0, 0]
+        highlight: "{{ x y | append: }}"
+  - name: "reports diagnostics for malformed prefixes in {% echo x y | append: %}"
+    files:
+      snippets/test.liquid: "{% echo x y | append: %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'echo' tag"
+        start: [0, 0]
+        highlight: "{% echo x y | append: %}"
+  - name: "reports diagnostics for malformed prefixes in {% assign a = x y | append: %}"
+    files:
+      snippets/test.liquid: "{% assign a = x y | append: %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'assign' tag"
+        start: [0, 0]
+        highlight: "{% assign a = x y | append: %}"
+  - name: "reports diagnostics for {{ product.title | }}"
+    files:
+      snippets/test.liquid: "{{ product.title | }}"
+    offenses:
+      - file: snippets/test.liquid
+        message: Syntax error in variable output
+        start: [0, 0]
+        highlight: "{{ product.title | }}"
+  - name: "reports diagnostics for {% echo product.title | %}"
+    files:
+      snippets/test.liquid: "{% echo product.title | %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'echo' tag"
+        start: [0, 0]
+        highlight: "{% echo product.title | %}"
+  - name: reports LiquidSyntaxError for bare bracket tablerow named argument values
+    files:
+      snippets/test.liquid: "{% tablerow product in collection.products cols: [0] %}{% endtablerow %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: Bare bracket access is not allowed
+        start: [0, 0]
+        highlight: "{% tablerow product in collection.products cols: [0] %}{% endtablerow %}"
+  - name: uses injected tag docs to allow known loop arguments
+    files:
+      snippets/test.liquid: "{% tablerow product in collection.products cols: 3 limit: 6 %}{% endtablerow %}"
+  - name: produces no diagnostics for {% cycle x, %}
+    files:
+      snippets/test.liquid: "{% cycle x, %}"
+  - name: produces no diagnostics for {% tablerow product in collection.products, %}{% endtablerow %}
+    files:
+      snippets/test.liquid: "{% tablerow product in collection.products, %}{% endtablerow %}"
+  - name: produces no diagnostics for {% paginate collection.products by 12, %}{% endpaginate %}
+    files:
+      snippets/test.liquid: "{% paginate collection.products by 12, %}{% endpaginate %}"
+  - name: reports diagnostics for {% cycle x,, %}
+    files:
+      snippets/test.liquid: "{% cycle x,, %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'cycle' tag"
+        start: [0, 0]
+        highlight: "{% cycle x,, %}"
+  - name: "reports diagnostics for {% cycle x @, %}"
+    files:
+      snippets/test.liquid: "{% cycle x @, %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'cycle' tag"
+        start: [0, 0]
+        highlight: "{% cycle x @, %}"
+  - name: reports diagnostics for {% tablerow product in collection.products,, %}{% endtablerow %}
+    files:
+      snippets/test.liquid: "{% tablerow product in collection.products,, %}{% endtablerow %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'tablerow' tag"
+        start: [0, 0]
+        highlight: "{% tablerow product in collection.products,, %}{% endtablerow %}"
+  - name: "reports diagnostics for {% tablerow product in collection.products @, %}{% endtablerow %}"
+    files:
+      snippets/test.liquid: "{% tablerow product in collection.products @, %}{% endtablerow %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'tablerow' tag"
+        start: [0, 0]
+        highlight: "{% tablerow product in collection.products @, %}{% endtablerow %}"
+  - name: reports diagnostics for {% paginate collection.products by 12,, %}{% endpaginate %}
+    files:
+      snippets/test.liquid: "{% paginate collection.products by 12,, %}{% endpaginate %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'paginate' tag"
+        start: [0, 0]
+        highlight: "{% paginate collection.products by 12,, %}"
+  - name: "reports diagnostics for {% paginate collection.products by 12 @, %}{% endpaginate %}"
+    files:
+      snippets/test.liquid: "{% paginate collection.products by 12 @, %}{% endpaginate %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'paginate' tag"
+        start: [0, 0]
+        highlight: "{% paginate collection.products by 12 @, %}"
+  - name: emits a single LiquidSyntaxError on the same line
+    files:
+      snippets/test.liquid: "{% assign x = foo | %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'assign' tag"
+        start: [0, 0]
+        highlight: "{% assign x = foo | %}"
+  - name: keeps one offense per line when errors are on different lines
+    files:
+      snippets/test.liquid: |-
+        {% assign x = foo | %}
+        {% assign = 1 %}
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'assign' tag"
+        start: [0, 0]
+        highlight: "{% assign x = foo | %}"
+      - file: snippets/test.liquid
+        message: "Syntax error in 'assign' tag"
+        start: [1, 0]
+        highlight: "{% assign = 1 %}"
+  - name: "reports LiquidSyntaxError for {% case [0] %} (bare bracket in case expression)"
+    files:
+      snippets/test.liquid: "{% case [0] %}{% when 1 %}{% endcase %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: Bare bracket access is not allowed
+        start: [0, 0]
+        highlight: "{% case [0] %}{% when 1 %}{% endcase %}"
+  - name: "reports LiquidSyntaxError for {% when [0] %} (bare bracket in when value)"
+    files:
+      snippets/test.liquid: "{% case x %}{% when [0] %}{% endcase %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: Bare bracket access is not allowed
+        start: [0, 12]
+        highlight: "{% when [0] %}"
+  - name: "reports LiquidSyntaxError for {% capture [0] %} (bare bracket in capture tag)"
+    files:
+      snippets/test.liquid: "{% capture [0] %}{% endcapture %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: Bare bracket access is not allowed
+        start: [0, 0]
+        highlight: "{% capture [0] %}{% endcapture %}"
+  - name: "reports LiquidSyntaxError for {% decrement [0] %} (bare bracket in decrement tag)"
+    files:
+      snippets/test.liquid: "{% decrement [0] %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: Bare bracket access is not allowed
+        start: [0, 0]
+        highlight: "{% decrement [0] %}"
+  - name: "reports LiquidSyntaxError for {{ [0] }} (bare bracket in variable output)"
+    files:
+      snippets/test.liquid: "{{ [0] }}"
+    offenses:
+      - file: snippets/test.liquid
+        message: Bare bracket access is not allowed in strict2 mode
+        start: [0, 0]
+        highlight: "{{ [0] }}"
+  - name: produces no diagnostics for valid unless conditions (1)
+    files:
+      snippets/test.liquid: "{% unless product.available %}Sold out{% endunless %}"
+  - name: produces no diagnostics for valid unless conditions (2)
+    files:
+      snippets/test.liquid: "{% unless product.available or customer.tags contains 'vip' %}Hidden{% endunless %}"
+  - name: produces no diagnostics for valid unless conditions (3)
+    files:
+      snippets/test.liquid: "{% unless items[0] %}Empty{% endunless %}"
+  - name: produces no diagnostics for valid unless conditions (4)
+    files:
+      snippets/test.liquid: |-
+        {% unless
+          product.available
+        %}Sold out{% endunless %}
+  - name: produces no diagnostics for valid unless conditions (5)
+    files:
+      snippets/test.liquid: |-
+        {% liquid
+          unless product.available
+            echo 'Sold out'
+          endunless
+        %}
+  - name: reports LiquidSyntaxError for skipped unless garbage (1)
+    files:
+      snippets/test.liquid: "{% unless product.available @ %}Sold out{% endunless %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'unless' tag"
+        start: [0, 0]
+        highlight: "{% unless product.available @ %}Sold out{% endunless %}"
+  - name: reports LiquidSyntaxError for skipped unless garbage (2)
+    files:
+      snippets/test.liquid: "{% unless product.available @ and customer %}Hidden{% endunless %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'unless' tag"
+        start: [0, 0]
+        highlight: "{% unless product.available @ and customer %}Hidden{% endunless %}"
+  - name: reports LiquidSyntaxError for skipped unless garbage (3)
+    files:
+      snippets/test.liquid: |-
+        {% unless
+          product.available
+          @
+        %}Sold out{% endunless %}
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'unless' tag"
+        start: [0, 0]
+        highlight: |-
+          {% unless
+            product.available
+            @
+          %}Sold out{% endunless %}
+  - name: reports LiquidSyntaxError for bare unless bracket access
+    files:
+      snippets/test.liquid: "{% unless [0] %}Hidden{% endunless %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: Bare bracket access is not allowed in strict2 mode
+        start: [0, 0]
+        highlight: "{% unless [0] %}Hidden{% endunless %}"
+  - name: reports LiquidSyntaxError for whitespace-separated unless quote prefixes (1)
+    files:
+      snippets/test.liquid: "{% unless ' product.available %}Sold out{% endunless %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'unless' tag"
+        start: [0, 0]
+        highlight: "{% unless ' product.available %}Sold out{% endunless %}"
+  - name: reports LiquidSyntaxError for whitespace-separated unless quote prefixes (2)
+    files:
+      snippets/test.liquid: '{% unless " product.available %}Sold out{% endunless %}'
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'unless' tag"
+        start: [0, 0]
+        highlight: '{% unless " product.available %}Sold out{% endunless %}'
+  - name: "reports LiquidSyntaxError for adjacent unless quote prefixes in {% unless 'product.available %}Sold out{% endunless %}"
+    files:
+      snippets/test.liquid: "{% unless 'product.available %}Sold out{% endunless %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'unless' tag"
+        start: [0, 0]
+        highlight: "{% unless 'product.available %}Sold out{% endunless %}"
+  - name: 'reports LiquidSyntaxError for adjacent unless quote prefixes in {% unless "product.available %}Sold out{% endunless %}'
+    files:
+      snippets/test.liquid: '{% unless "product.available %}Sold out{% endunless %}'
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'unless' tag"
+        start: [0, 0]
+        highlight: '{% unless "product.available %}Sold out{% endunless %}'
+  - name: "produces no diagnostics for closed string markup in {% if product.title == 'Hat' %}Hat{% endif %}"
+    files:
+      snippets/test.liquid: "{% if product.title == 'Hat' %}Hat{% endif %}"
+  - name: "produces no diagnostics for closed string markup in {% case product.type %}{% when 'shirt' %}Shirt{% endcase %}"
+    files:
+      snippets/test.liquid: "{% case product.type %}{% when 'shirt' %}Shirt{% endcase %}"
+  - name: "produces no diagnostics for closed string markup in {{ 'hello' }}"
+    files:
+      snippets/test.liquid: "{{ 'hello' }}"
+  - name: "reports LiquidSyntaxError for unclosed string markup in {% if ' product.available %}Available{% endif %}"
+    files:
+      snippets/test.liquid: "{% if ' product.available %}Available{% endif %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'if' tag"
+        start: [0, 0]
+        highlight: "{% if ' product.available %}Available{% endif %}"
+  - name: "reports LiquidSyntaxError for unclosed string markup in {% case product.type %}{% when ' shirt %}Shirt{% endcase %}"
+    files:
+      snippets/test.liquid: "{% case product.type %}{% when ' shirt %}Shirt{% endcase %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'when' tag"
+        start: [0, 23]
+        highlight: "{% when ' shirt %}"
+  - name: "reports LiquidSyntaxError for unclosed string markup in {{ 'hello }}"
+    files:
+      snippets/test.liquid: "{{ 'hello }}"
+    offenses:
+      - file: snippets/test.liquid
+        message: Syntax error in variable output
+        start: [0, 0]
+        highlight: "{{ 'hello }}"
+  - name: tells authors to pass heading as a plain argument
+    files:
+      templates/test.liquid: "{% block 'card', block.settings.heading: 'Heading' %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use 'heading:' instead of 'block.settings.heading:' when calling a block."
+        start: [0, 17]
+        highlight: "block.settings.heading: 'Heading'"
+  - name: tells authors to pass image_url as a plain argument
+    files:
+      templates/test.liquid: "{% block 'card', block.settings.image_url: product.featured_image %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use 'image_url:' instead of 'block.settings.image_url:' when calling a block."
+        start: [0, 17]
+        highlight: "block.settings.image_url: product.featured_image"
+  - name: "rejects the unsupported dotted argument block.content: body"
+    files:
+      templates/test.liquid: "{% block 'card', block.content: body %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value"
+        start: [0, 17]
+        highlight: "block.content: body"
+  - name: "rejects the unsupported dotted argument block.settings.heading.label: 'Heading'"
+    files:
+      templates/test.liquid: "{% block 'card', block.settings.heading.label: 'Heading' %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value"
+        start: [0, 17]
+        highlight: "block.settings.heading.label: 'Heading'"
+  - name: "rejects the unsupported dotted argument block.unknown: 'value'"
+    files:
+      templates/test.liquid: "{% block 'card', block.unknown: 'value' %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value"
+        start: [0, 17]
+        highlight: "block.unknown: 'value'"
+  - name: "rejects the unsupported dotted argument heading.label: 'Heading'"
+    files:
+      templates/test.liquid: "{% block 'card', heading.label: 'Heading' %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value"
+        start: [0, 17]
+        highlight: "heading.label: 'Heading'"
+  - name: reports only the dotted argument in a body-form block
+    files:
+      templates/test.liquid: |-
+        {% block 'card', block.settings.heading: 'Heading' %}
+          Child content
+        {% endblock %}
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use 'heading:' instead of 'block.settings.heading:' when calling a block."
+        start: [0, 17]
+        highlight: "block.settings.heading: 'Heading'"
+  - name: "reports only the first of several dotted arguments in block.settings.heading: 'Heading', block.content: body, heading.label: 'Label'"
+    files:
+      templates/test.liquid: "{% block 'card', title: 'Title', block.settings.heading: 'Heading', block.content: body, heading.label: 'Label' %}Child{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use 'heading:' instead of 'block.settings.heading:' when calling a block."
+        start: [0, 33]
+        highlight: "block.settings.heading: 'Heading'"
+  - name: "reports only the first of several dotted arguments in block.content: body, block.settings.heading: 'Heading', block.settings.count: 1"
+    files:
+      templates/test.liquid: "{% block 'card', title: 'Title', block.content: body, block.settings.heading: 'Heading', block.settings.count: 1 %}Child{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value"
+        start: [0, 33]
+        highlight: "block.content: body"
+  - name: "reports only the first of several dotted arguments in block.settings.heading: 'Heading', block.settings.count: 1"
+    files:
+      templates/test.liquid: "{% block 'card', title: 'Title', block.settings.heading: 'Heading', block.settings.count: 1 %}Child{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Liquid syntax error: in 'block' - Use 'heading:' instead of 'block.settings.heading:' when calling a block."
+        start: [0, 33]
+        highlight: "block.settings.heading: 'Heading'"
+  - name: accepts block.name with a string value alongside plain arguments
+    files:
+      templates/test.liquid: "{% block 'card', block.name: 'Card', heading: 'Heading' %}{% endblock %}"
+  - name: "reports other malformed block tags on the whole tag in {% block 'card', block.settings %}{% endblock %}"
+    files:
+      templates/test.liquid: "{% block 'card', block.settings %}{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Syntax error in 'block' tag"
+        start: [0, 0]
+        highlight: "{% block 'card', block.settings %}{% endblock %}"
+  - name: "reports other malformed block tags on the whole tag in {% block 'card', block.name: value %}Child content{% endblock %}"
+    files:
+      templates/test.liquid: "{% block 'card', block.name: value %}Child content{% endblock %}"
+    offenses:
+      - file: templates/test.liquid
+        message: "Syntax error in 'block' tag"
+        start: [0, 0]
+        highlight: "{% block 'card', block.name: value %}Child content{% endblock %}"
+  - name: "reports LiquidSyntaxError for unclosed 'block' tags inside liquid blocks"
+    files:
+      snippets/test.liquid: |-
+        {% liquid
+          block 'hero'
+        %}
+    offenses:
+      - file: snippets/test.liquid
+        message: "Unclosed block tag 'block' in {% liquid %} block"
+        start: [0, 0]
+        highlight: |-
+          {% liquid
+            block 'hero'
+          %}
+  - name: "reports LiquidSyntaxError for unclosed 'partial' tags inside liquid blocks"
+    files:
+      snippets/test.liquid: |-
+        {% liquid
+          partial 'product-card'
+        %}
+    offenses:
+      - file: snippets/test.liquid
+        message: "Unclosed block tag 'partial' in {% liquid %} block"
+        start: [0, 0]
+        highlight: |-
+          {% liquid
+            partial 'product-card'
+          %}
+  - name: "reports LiquidSyntaxError for standalone end'block' tags"
+    files:
+      snippets/test.liquid: "{% endblock %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Attempting to close LiquidTag 'block' before it was opened without a matching 'block'"
+        start: [0, 0]
+        highlight: "{% endblock %"
+  - name: "reports LiquidSyntaxError for standalone end'partial' tags"
+    files:
+      snippets/test.liquid: "{% endpartial %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Attempting to close LiquidTag 'partial' before it was opened without a matching 'partial'"
+        start: [0, 0]
+        highlight: "{% endpartial %"
+  - name: produces no diagnostics for doc closing markup
+    files:
+      snippets/test.liquid: "{% doc %}content{% enddoc foo %}"
+  - name: reports later unclosed doc blocks after accepted doc closing markup
+    files:
+      snippets/test.liquid: "{% doc %}content{% enddoc foo %}{% doc %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Attempting to end parsing before LiquidRawTag 'doc' was closed"
+        start: [0, 0]
+        highlight: "{% doc %}"
+  - name: accepts later balanced doc blocks after accepted doc closing markup
+    files:
+      snippets/test.liquid: "{% doc %}content{% enddoc foo %}{% doc %}later{% enddoc %}"
+  - name: produces no diagnostics for whitespace-control doc closing markup
+    files:
+      snippets/test.liquid: "{% doc %}content{%- enddoc foo -%}"
+  - name: reports nested doc tags with whitespace-control delimiters
+    files:
+      snippets/test.liquid: "{% doc %}{%- doc -%}{% enddoc %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: Nested doc tags are not allowed
+        start: [0, 0]
+        highlight: "{% doc %}"
+  - name: does not treat similarly-prefixed doc tag names as nested doc tags
+    files:
+      snippets/test.liquid: "{% doc %}{% docx %}{% enddoc %}"
+  - name: reports nested comment blocks masked by a later independent comment block
+    files:
+      snippets/test.liquid: "{% comment %}{% comment %}inner{% endcomment %}{% comment %}second{% endcomment %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Liquid syntax error: 'comment' tag was never closed"
+        start: [0, 0]
+        highlight: "{% comment %}"
+  - name: reports nested raw blocks masked by a later independent raw block
+    files:
+      snippets/test.liquid: "{% comment %}{% raw %}inner{% endcomment %}{% raw %}second{% endraw %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Attempting to end parsing before LiquidRawTag 'comment' was closed"
+        start: [0, 0]
+        highlight: "{% comment %}"
+  - name: accepts nested comment and raw blocks closed immediately after the parsed comment closer (1)
+    files:
+      snippets/test.liquid: "{% comment %}{% comment %}inner{% endcomment %}{% endcomment %}"
+  - name: accepts nested comment and raw blocks closed immediately after the parsed comment closer (2)
+    files:
+      snippets/test.liquid: "{% comment %}{% raw %}{% endcomment %}{% endraw %}{% endcomment %}"
+  - name: produces no diagnostics for Liquid syntax inside a valid raw body
+    files:
+      snippets/test.liquid: "{% raw %}{% if broken %}{% endraw %}"
+  - name: produces no diagnostics for raw closing markup
+    files:
+      snippets/test.liquid: "{% raw %}c{% endraw foo %}"
+  - name: reports later unclosed raw blocks after accepted raw closing markup
+    files:
+      snippets/test.liquid: "{% raw %}c{% endraw foo %}{% raw %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Attempting to end parsing before LiquidRawTag 'raw' was closed"
+        start: [0, 0]
+        highlight: "{% raw %}"
+  - name: accepts later balanced raw blocks after accepted raw closing markup
+    files:
+      snippets/test.liquid: "{% raw %}c{% endraw foo %}{% raw %}later{% endraw %}"
+  - name: produces no diagnostics for whitespace-control raw closing markup
+    files:
+      snippets/test.liquid: "{% raw %}c{%- endraw foo -%}"
+  - name: reports parser errors for similarly-prefixed raw closing tags
+    files:
+      snippets/test.liquid: "{% raw %}c{% endrawx foo %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Attempting to end parsing before LiquidRawTag 'raw' was closed"
+        start: [0, 0]
+        highlight: "{% raw %}"
+  - name: reports LiquidSyntaxError for raw opening markup
+    files:
+      snippets/test.liquid: "{% raw foo %}{% endraw %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'raw' tag"
+        start: [0, 7]
+        highlight: foo
+  - name: reports LiquidSyntaxError for skipped raw opening characters
+    files:
+      snippets/test.liquid: "{% raw @#$ %}{% endraw %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'raw' tag"
+        start: [0, 7]
+        highlight: "@#$"
+  - name: reports LiquidSyntaxError for quoted raw opening markup
+    files:
+      snippets/test.liquid: "{% raw 'hello' %}{% endraw %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'raw' tag"
+        start: [0, 7]
+        highlight: "'hello'"
+  - name: reports LiquidSyntaxError for unclosed quoted raw opening markup
+    files:
+      snippets/test.liquid: "{% raw 'hello %}{% endraw %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'raw' tag"
+        start: [0, 7]
+        highlight: "'hello"
+  - name: reports LiquidSyntaxError for unclosed raw tags inside liquid blocks
+    files:
+      snippets/test.liquid: |-
+        {% liquid
+          raw
+        %}
+    offenses:
+      - file: snippets/test.liquid
+        message: "Unclosed raw tag 'raw' in {% liquid %} block"
+        start: [0, 0]
+        highlight: |-
+          {% liquid
+            raw
+          %}
+  - name: does not report raw parser errors when source text merely mentions raw
+    files:
+      snippets/test.liquid: This text mentions raw and endraw without Liquid tags.
+  - name: produces no diagnostics for empty javascript markup in {% javascript %}{% endjavascript %}
+    files:
+      sections/test.liquid: "{% javascript %}{% endjavascript %}"
+  - name: produces no diagnostics for empty javascript markup in {% javascript    %}{% endjavascript %}
+    files:
+      sections/test.liquid: "{% javascript    %}{% endjavascript %}"
+  - name: produces no diagnostics for empty javascript markup in {%- javascript -%}{%- endjavascript -%}
+    files:
+      sections/test.liquid: "{%- javascript -%}{%- endjavascript -%}"
+  - name: "reports LiquidSyntaxError for invalid javascript opening markup: {% javascript foo %}{% endjavascript %}"
+    files:
+      sections/test.liquid: "{% javascript foo %}{% endjavascript %}"
+    offenses:
+      - file: sections/test.liquid
+        message: "Syntax Error in 'javascript' - Valid syntax: javascript"
+        start: [0, 0]
+        highlight: "{% javascript foo %}"
+  - name: "reports LiquidSyntaxError for invalid javascript opening markup: {% javascript @#$ %}{% endjavascript %}"
+    files:
+      sections/test.liquid: "{% javascript @#$ %}{% endjavascript %}"
+    offenses:
+      - file: sections/test.liquid
+        message: "Syntax Error in 'javascript' - Valid syntax: javascript"
+        start: [0, 0]
+        highlight: "{% javascript @#$ %}"
+  - name: does not treat similarly-prefixed javascript tags as javascript openings
+    files:
+      snippets/test.liquid: "{% javascriptx foo %}"
+  - name: produces no diagnostics for javascript closing markup
+    files:
+      sections/test.liquid: "{% javascript %}console.log('x');{% endjavascript foo %}"
+  - name: reports parser errors for similarly-prefixed javascript closing tags
+    files:
+      snippets/test.liquid: "{% javascript %}console.log('x');{% endjavascriptx foo %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "'javascript' tag was never closed"
+        start: [0, 0]
+        highlight: "{% javascript %}"
+  - name: produces no diagnostics for empty style markup in {% style %}{% endstyle %}
+    files:
+      snippets/test.liquid: "{% style %}{% endstyle %}"
+  - name: produces no diagnostics for empty style markup in {% style    %}{% endstyle %}
+    files:
+      snippets/test.liquid: "{% style    %}{% endstyle %}"
+  - name: reports LiquidSyntaxError for style arguments
+    files:
+      snippets/test.liquid: "{% style extra %}{% endstyle %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "'style' tag does not accept any arguments in \"extra\""
+        start: [0, 0]
+        highlight: "{% style extra %}"
+  - name: produces no diagnostics for valid stylesheet markup in {% stylesheet %}{% endstylesheet %}
+    files:
+      sections/test.liquid: "{% stylesheet %}{% endstylesheet %}"
+  - name: produces no diagnostics for valid stylesheet markup in {% stylesheet    %}{% endstylesheet %}
+    files:
+      sections/test.liquid: "{% stylesheet    %}{% endstylesheet %}"
+  - name: "produces no diagnostics for valid stylesheet markup in {% stylesheet 'scss' %}{% endstylesheet %}"
+    files:
+      sections/test.liquid: "{% stylesheet 'scss' %}{% endstylesheet %}"
+  - name: reports LiquidSyntaxError for invalid stylesheet markup in {% stylesheet scss %}{% endstylesheet %}
+    files:
+      sections/test.liquid: "{% stylesheet scss %}{% endstylesheet %}"
+    offenses:
+      - file: sections/test.liquid
+        message: "'stylesheet' tag can only accept the string argument 'scss' in \"scss\""
+        start: [0, 0]
+        highlight: "{% stylesheet scss %}"
+  - name: reports LiquidSyntaxError for invalid stylesheet markup in {% stylesheet scssx %}{% endstylesheet %}
+    files:
+      sections/test.liquid: "{% stylesheet scssx %}{% endstylesheet %}"
+    offenses:
+      - file: sections/test.liquid
+        message: "'stylesheet' tag can only accept the string argument 'scss' in \"scssx\""
+        start: [0, 0]
+        highlight: "{% stylesheet scssx %}"
+  - name: reports LiquidSyntaxError for invalid stylesheet markup in {% stylesheet scss extra %}{% endstylesheet %}
+    files:
+      sections/test.liquid: "{% stylesheet scss extra %}{% endstylesheet %}"
+    offenses:
+      - file: sections/test.liquid
+        message: "'stylesheet' tag can only accept the string argument 'scss' in \"scss extra\""
+        start: [0, 0]
+        highlight: "{% stylesheet scss extra %}"
+  - name: "reports LiquidSyntaxError for invalid stylesheet markup in {% stylesheet scss? %}{% endstylesheet %}"
+    files:
+      sections/test.liquid: "{% stylesheet scss? %}{% endstylesheet %}"
+    offenses:
+      - file: sections/test.liquid
+        message: "'stylesheet' tag can only accept the string argument 'scss' in \"scss?\""
+        start: [0, 0]
+        highlight: "{% stylesheet scss? %}"
+  - name: "reports LiquidSyntaxError for Ruby-stricter comment raw bodies: {% comment %}{% comment %}inner{% endcomment %}"
+    files:
+      snippets/test.liquid: "{% comment %}{% comment %}inner{% endcomment %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Liquid syntax error: 'comment' tag was never closed"
+        start: [0, 0]
+        highlight: "{% comment %}"
+  - name: "reports LiquidSyntaxError for Ruby-stricter comment raw bodies: {%- comment -%}{%- comment -%}inner{%- endcomment -%}"
+    files:
+      snippets/test.liquid: "{%- comment -%}{%- comment -%}inner{%- endcomment -%}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Liquid syntax error: 'comment' tag was never closed"
+        start: [0, 0]
+        highlight: "{%- comment -%}"
+  - name: "reports LiquidSyntaxError for Ruby-stricter comment raw bodies: {% comment %}{% raw %}hello{% endcomment %}"
+    files:
+      snippets/test.liquid: "{% comment %}{% raw %}hello{% endcomment %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Attempting to end parsing before LiquidRawTag 'comment' was closed"
+        start: [0, 0]
+        highlight: "{% comment %}"
+  - name: "reports LiquidSyntaxError for Ruby-stricter comment raw bodies: {% comment %}this is {{{ not }}} valid{{ liquid{% endcomment %}"
+    files:
+      snippets/test.liquid: "{% comment %}this is {{{ not }}} valid{{ liquid{% endcomment %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Liquid syntax error: 'comment' tag was never closed"
+        start: [0, 13]
+        highlight: this is {{{ not }}} valid{{ liquid
+  - name: "reports LiquidSyntaxError for Ruby-stricter comment raw bodies: {% comment %}this is {% if liquid{% endcomment %}"
+    files:
+      snippets/test.liquid: "{% comment %}this is {% if liquid{% endcomment %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Liquid syntax error: 'comment' tag was never closed"
+        start: [0, 13]
+        highlight: this is {% if liquid
+  - name: produces no diagnostics for inert closed Liquid tags inside comment bodies
+    files:
+      snippets/test.liquid: "{% comment %}{% if %}{% endcomment %}"
+  - name: produces no diagnostics for closed raw tags inside comment bodies
+    files:
+      snippets/test.liquid: "{% comment %}{% raw %}hello{% endraw %}{% endcomment %}"
+  - name: does not treat similarly-prefixed names as comment or raw tags
+    files:
+      snippets/test.liquid: "{% comment %}{% commentx %}{% rawx %}{% endcomment %}"
+  - name: does not report parser errors when source text merely mentions comment tags
+    files:
+      snippets/test.liquid: This text mentions comment and endcomment without Liquid tags.
+  - name: "produces no diagnostics for Ruby-accepted inert comment raw bodies: {% comment %}{% comment %}inner{% endcomment %}{% endcomment %}"
+    files:
+      snippets/test.liquid: "{% comment %}{% comment %}inner{% endcomment %}{% endcomment %}"
+  - name: "produces no diagnostics for Ruby-accepted inert comment raw bodies: {% comment %}{% comment %}{% comment %}deep{% endcomment %}{% endcomment %}{% endcomment %}"
+    files:
+      snippets/test.liquid: "{% comment %}{% comment %}{% comment %}deep{% endcomment %}{% endcomment %}{% endcomment %}"
+  - name: "produces no diagnostics for Ruby-accepted inert comment raw bodies: {% comment %}{% raw %}{% endcomment %}{% endraw %}{% endcomment %}"
+    files:
+      snippets/test.liquid: "{% comment %}{% raw %}{% endcomment %}{% endraw %}{% endcomment %}"
+  - name: "produces no diagnostics for Ruby-accepted inert comment raw bodies: {%- comment -%}{%- raw -%}{%- endcomment -%}{%- endraw -%}{%- endcomment -%}"
+    files:
+      snippets/test.liquid: "{%- comment -%}{%- raw -%}{%- endcomment -%}{%- endraw -%}{%- endcomment -%}"
+  - name: produces no diagnostics for valid Liquid
+    files:
+      snippets/test.liquid: "{% if true %}hello{% endif %}"
+  - name: produces no diagnostics for Liquid output tags
+    files:
+      snippets/test.liquid: "{{ shop.name }}"
+  - name: produces no diagnostics for valid render markup
+    files:
+      snippets/test.liquid: "{% render 'snippet' %}"
+  - name: produces no diagnostics for valid render markup inside liquid blocks
+    files:
+      snippets/test.liquid: |-
+        {% liquid
+          render 'snippet', product: product
+        %}
+  - name: reports LiquidSyntaxError for skipped quote prefixes
+    files:
+      snippets/test.liquid: "{% render \"'snippet' %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'render' tag"
+        start: [0, 0]
+        highlight: "{% render \"'snippet' %}"
+  - name: reports LiquidSyntaxError for malformed string markup
+    files:
+      snippets/test.liquid: "{% render %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'render' tag"
+        start: [0, 0]
+        highlight: "{% render %}"
+  - name: reports LiquidSyntaxError for malformed string markup inside liquid blocks
+    files:
+      snippets/test.liquid: |-
+        {% liquid
+          render
+        %}
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'render' tag"
+        start: [1, 2]
+        highlight: render
+  - name: reports LiquidSyntaxError for bare bracket access in render snippet lookups
+    files:
+      snippets/test.liquid: "{% render [0] %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: Bare bracket access is not allowed in strict2 mode
+        start: [0, 0]
+        highlight: "{% render [0] %}"
+  - name: reports LiquidSyntaxError for bare bracket access in render binding values
+    files:
+      snippets/test.liquid: "{% render 'snippet' for [0] %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: Bare bracket access is not allowed in strict2 mode
+        start: [0, 0]
+        highlight: "{% render 'snippet' for [0] %}"
+  - name: reports LiquidSyntaxError for bare bracket access in render keyword values
+    files:
+      snippets/test.liquid: "{% render 'snippet', x: [0] %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: Bare bracket access is not allowed in strict2 mode
+        start: [0, 0]
+        highlight: "{% render 'snippet', x: [0] %}"
+  - name: reports LiquidSyntaxError for skipped trailing garbage in render markup
+    files:
+      snippets/test.liquid: "{% render 'snippet' ? %}"
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'render' tag"
+        start: [0, 0]
+        highlight: "{% render 'snippet' ? %}"
+  - name: reports LiquidSyntaxError for skipped trailing garbage inside liquid blocks
+    files:
+      snippets/test.liquid: |-
+        {% liquid
+          render 'snippet' ?
+        %}
+    offenses:
+      - file: snippets/test.liquid
+        message: "Syntax error in 'render' tag"
+        start: [1, 2]
+        highlight: "render 'snippet' ?"
