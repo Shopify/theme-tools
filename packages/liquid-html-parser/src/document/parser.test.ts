@@ -183,6 +183,9 @@ describe('Unit: document-parser', () => {
       // Verify inner structure is properly parsed (not base case fallback)
       expectPath(ast, 'children.0.markup.0.name').to.eql('assign');
       expectPath(ast, 'children.0.markup.1.name').to.eql('if');
+      // It ends where its last line does, since there's no endif.
+      expectPosition(ast, 'children.0.markup.1').toEqual('if use_variant\n    assign var2 = var1');
+      expectPath(ast, 'children.0.markup.1.blockEndPosition').to.eql({ start: 74, end: 74 });
     });
 
     it('should parse raw Liquid tags normally (doc, comment, raw)', () => {
