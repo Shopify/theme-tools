@@ -1,5 +1,27 @@
 # @shopify/theme-language-server-common
 
+## 2.23.2
+
+### Patch Changes
+
+- 286b04fb: Accept canonical app block paths in `{% block %}` tags.
+
+  The parser accepts `shopify://apps/<app>/blocks/<handle>/<uuid>` as a block type and keeps rejecting malformed app paths. `LiquidSyntaxError` reports arguments and content on app block paths, because app blocks render with the settings their app provides. `block.name` stays allowed.
+
+  App block paths do not produce local theme-file document links or dependencies in the theme graph.
+
+- b9a862fb: Rebuild a theme graph that failed to build when a file changes. Before, the failed graph stayed until the language server restarted.
+- Updated dependencies [286b04fb]
+- Updated dependencies [84a458be]
+- Updated dependencies [c0ae8785]
+- Updated dependencies [d9c843c3]
+- Updated dependencies [af297bab]
+- Updated dependencies [c81fc198]
+- Updated dependencies [02380e2f]
+  - @shopify/liquid-html-parser@2.11.0
+  - @shopify/theme-check-common@3.31.0
+  - @shopify/theme-graph@0.3.6
+
 ## 2.23.1
 
 ### Patch Changes

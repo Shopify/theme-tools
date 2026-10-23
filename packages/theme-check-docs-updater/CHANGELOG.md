@@ -1,5 +1,16 @@
 # @shopify/theme-check-docs-updater
 
+## 3.31.0
+
+### Patch Changes
+
+- fca4a62b: Update the docs cache as a whole. Each update downloads into a new folder and swaps it in, so a failed download keeps the old docs and is retried on the next run, and files removed upstream no longer linger.
+- Updated dependencies [286b04fb]
+- Updated dependencies [d9c843c3]
+- Updated dependencies [af297bab]
+- Updated dependencies [c81fc198]
+  - @shopify/theme-check-common@3.31.0
+
 ## 3.30.1
 
 ### Patch Changes
