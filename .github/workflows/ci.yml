@@ -44,6 +44,32 @@ jobs:
       - name: Check formatting
         run: pnpm format:check
 
+      - name: Check the Rust crate's copies of TypeScript data
+        run: |
+          diff -r packages/theme-check-node/configs crates/theme-check/src/node/configs
+          node -e "console.log(JSON.stringify(require('./packages/theme-check-common').allChecks.map((c) => c.meta)))" \
+            | diff - crates/theme-check/src/node/checks-meta.json
+
+  rust:
+    runs-on: ubuntu-latest
+    name: Rust
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check formatting
+        run: cargo fmt --all --check
+
+      - name: Run the unit tests and the specs
+        run: cargo test --workspace --locked
+
+      - name: Check that the crates package and build on their own
+        run: cargo publish --dry-run --workspace --locked
+
+      - name: Check that the crates have the version of crates/theme-check/package.json
+        run: |
+          cargo metadata --no-deps --format-version 1 \
+            | jq -e --arg version "$(jq -r .version crates/theme-check/package.json)" 'all(.packages[]; .version == $version)'
+
   e2e:
     runs-on: ubuntu-latest
     name: E2E tests
