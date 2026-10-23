@@ -1,9 +1,45 @@
 import { type LiquidVariableLookup, NodeTypes, toLiquidHtmlAST } from '@shopify/liquid-html-parser';
-import { Context, SourceCodeType } from '../..';
+import { Context, SourceCodeType, type JSONNode } from '../..';
 import { parseJSON } from '../../json';
 import { visit } from '../../visitor';
 
 export type Vars = { [key: string]: Vars | true };
+
+/**
+ * Setting types that accept a `visible_if` property without failing to save,
+ * but where the theme editor ignores it and always shows the setting.
+ * Mirrors Theme::SettingTypeSpecs::CONDITIONAL_SETTING_UNSUPPORTED_TYPES in Shopify Core.
+ */
+export const VISIBLE_IF_UNSUPPORTED_SETTING_TYPES: ReadonlySet<string> = new Set([
+  'article',
+  'article_list',
+  'blog',
+  'collection',
+  'collection_list',
+  'metaobject',
+  'metaobject_list',
+  'page',
+  'product',
+  'product_list',
+  'color_scheme_group',
+  'color_palette',
+]);
+
+export function isVisibleIfUnsupportedSettingType(type: unknown): type is string {
+  return typeof type === 'string' && VISIBLE_IF_UNSUPPORTED_SETTING_TYPES.has(type);
+}
+
+export function settingTypeOf(node: JSONNode | undefined): string | undefined {
+  if (!node || node.type !== 'Object') return;
+  const typeProperty = node.children.find((child) => child.key.value === 'type');
+  if (typeProperty?.value.type !== 'Literal') return;
+  const value = typeProperty.value.value;
+  return typeof value === 'string' ? value : undefined;
+}
+
+export function unsupportedVisibleIfMessage(type: string): string {
+  return `visible_if is not supported on settings of type '${type}' and will be ignored. The setting is always visible in the theme editor.`;
+}
 
 export const variableExpressionMatcher = /{{(.+?)}}/;
 export const adjustedPrefix = '{% if ';

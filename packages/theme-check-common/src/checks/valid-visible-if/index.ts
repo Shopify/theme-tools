@@ -17,6 +17,8 @@ import { reportWarning } from '../../utils';
 import {
   getGlobalSettings,
   getVariableLookupsInExpression,
+  isVisibleIfUnsupportedSettingType,
+  settingTypeOf,
   validateLookup,
   offsetAdjust,
   type Vars,
@@ -93,6 +95,8 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
 
         for (const [i, setting] of validSchema.settings.entries()) {
           if (!('visible_if' in setting) || typeof setting.visible_if !== 'string') continue;
+          // Ignored on these types; reported by UnsupportedVisibleIf instead.
+          if (isVisibleIfUnsupportedSettingType(setting.type)) continue;
 
           const visibleIfNode = nodeAtPath(ast, ['settings', i, 'visible_if'])!;
 
@@ -157,8 +161,10 @@ export const ValidVisibleIfSettingsSchema: JSONCheckDefinition = {
     if (relativePath !== 'config/settings_schema.json') return {};
 
     return {
-      async Property(node) {
+      async Property(node, ancestors) {
         if (node.key.value !== 'visible_if' || node.value.type !== 'Literal') return;
+        // Ignored on these types; reported by UnsupportedVisibleIfSettingsSchema instead.
+        if (isVisibleIfUnsupportedSettingType(settingTypeOf(ancestors.at(-1)))) return;
         const visibleIfExpression = node.value.value;
         if (typeof visibleIfExpression !== 'string') return;
         const offset = node.value.loc.start.offset;

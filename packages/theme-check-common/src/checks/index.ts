@@ -68,6 +68,7 @@ import { ValidSettingsKey } from './valid-settings-key';
 import { ValidStandardEventData } from './valid-standard-event-data';
 import { ValidStaticBlockType } from './valid-static-block-type';
 import { ValidVisibleIf, ValidVisibleIfSettingsSchema } from './valid-visible-if';
+import { UnsupportedVisibleIf, UnsupportedVisibleIfSettingsSchema } from './unsupported-visible-if';
 import { VariableName } from './variable-name';
 import { AppBlockMissingSchema } from './app-block-missing-schema';
 import { UniqueSettingIds } from './unique-settings-id';
@@ -145,6 +146,8 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   UnrecognizedContentForArguments,
   UnrecognizedRenderSnippetArguments,
   UnsupportedDocTag,
+  UnsupportedVisibleIf,
+  UnsupportedVisibleIfSettingsSchema,
   UnusedAssign,
   UnusedDocParam,
   ValidBlockTarget,
