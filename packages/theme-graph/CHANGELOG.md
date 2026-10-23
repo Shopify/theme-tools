@@ -1,5 +1,25 @@
 # shopify/theme-graph
 
+## 0.3.6
+
+### Patch Changes
+
+- 286b04fb: Accept canonical app block paths in `{% block %}` tags.
+
+  The parser accepts `shopify://apps/<app>/blocks/<handle>/<uuid>` as a block type and keeps rejecting malformed app paths. `LiquidSyntaxError` reports arguments and content on app block paths, because app blocks render with the settings their app provides. `block.name` stays allowed.
+
+  App block paths do not produce local theme-file document links or dependencies in the theme graph.
+
+- 02380e2f: Build the theme graph for a theme without an `assets` folder. `getWebComponentMap` used to reject, so the language server never had a graph for that theme, even after the folder was created.
+- Updated dependencies [286b04fb]
+- Updated dependencies [84a458be]
+- Updated dependencies [c0ae8785]
+- Updated dependencies [d9c843c3]
+- Updated dependencies [af297bab]
+- Updated dependencies [c81fc198]
+  - @shopify/liquid-html-parser@2.11.0
+  - @shopify/theme-check-common@3.31.0
+
 ## 0.3.5
 
 ### Patch Changes

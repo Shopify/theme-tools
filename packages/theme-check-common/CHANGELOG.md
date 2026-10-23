@@ -1,5 +1,26 @@
 # @shopify/theme-check-common
 
+## 3.31.0
+
+### Minor Changes
+
+- 286b04fb: Accept canonical app block paths in `{% block %}` tags.
+
+  The parser accepts `shopify://apps/<app>/blocks/<handle>/<uuid>` as a block type and keeps rejecting malformed app paths. `LiquidSyntaxError` reports arguments and content on app block paths, because app blocks render with the settings their app provides. `block.name` stays allowed.
+
+  App block paths do not produce local theme-file document links or dependencies in the theme graph.
+
+### Patch Changes
+
+- d9c843c3: Fix the line and character of an offense that ends at the end of a file. They were one character short, or on the previous line when the file ends with a newline.
+- af297bab: Parse `section` as a standalone tag. Removes the hybrid block form, whose forward scan for `{% endsection %}` made files with many `section` tags parse in quadratic time.
+- c81fc198: Fix the autofix for a filter chain that ends in several pipes (`{{ x | upcase | | }}`): LiquidHTMLSyntaxError now reports one trailing-pipe offense that removes them all, instead of two overlapping fixes that couldn't be applied together.
+- Updated dependencies [286b04fb]
+- Updated dependencies [84a458be]
+- Updated dependencies [c0ae8785]
+- Updated dependencies [af297bab]
+  - @shopify/liquid-html-parser@2.11.0
+
 ## 3.30.1
 
 ### Patch Changes
