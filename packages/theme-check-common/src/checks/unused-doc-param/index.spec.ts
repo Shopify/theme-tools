@@ -38,6 +38,72 @@ describe('Module: UnusedDocParam', () => {
     expect(offenses[0]!.suggest![0].message).to.equal("Remove unused parameter 'param2'");
   });
 
+  it('should report a used parameter that is never passed to the snippet', async () => {
+    const sourceCode = `
+      {% doc %}
+        @param {string} [style] - Example style
+      {% enddoc %}
+
+      {{ style }}
+    `;
+
+    const offenses = await runLiquidCheck(
+      UnusedDocParam,
+      sourceCode,
+      'snippets/card.liquid',
+      {
+        async getReferences() {
+          return [
+            {
+              source: { uri: 'file:///templates/product.liquid' },
+              target: { uri: 'file:///snippets/card.liquid' },
+              type: 'direct',
+            },
+          ];
+        },
+      },
+      { 'templates/product.liquid': "{% render 'card' %}" },
+    );
+
+    expect(offenses).to.have.length(1);
+    expect(offenses[0].message).to.equal("The parameter 'style' is never passed to this snippet.");
+  });
+
+  it('should not report a used parameter that is passed to the snippet', async () => {
+    const sourceCode = `
+      {% doc %}
+        @param {string} [style] - Example style
+      {% enddoc %}
+
+      {{ style }}
+    `;
+
+    const offenses = await runLiquidCheck(
+      UnusedDocParam,
+      sourceCode,
+      'snippets/card.liquid',
+      {
+        async getReferences() {
+          return [
+            {
+              source: { uri: 'file:///templates/product.liquid' },
+              target: { uri: 'file:///snippets/card.liquid' },
+              type: 'direct',
+            },
+          ];
+        },
+      },
+      {
+        'templates/product.liquid': `
+          {% render 'card' %}
+          {% render 'card', style: 'default' %}
+        `,
+      },
+    );
+
+    expect(offenses).to.be.empty;
+  });
+
   it('should apply suggestion when a variable is defined but not used', async () => {
     const sourceCode = `
       {% doc %}
