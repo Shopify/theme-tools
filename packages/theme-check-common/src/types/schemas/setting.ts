@@ -17,6 +17,7 @@ export declare namespace Setting {
     | Product
     | CollectionList
     | ProductList
+    | ArticleList
     | MetaobjectList
     | Text
     | Textarea
@@ -57,6 +58,7 @@ export declare namespace Setting {
     // Resource List Settings
     CollectionList = 'collection_list',
     ProductList = 'product_list',
+    ArticleList = 'article_list',
     MetaobjectList = 'metaobject_list',
 
     // Text Settings
@@ -140,6 +142,7 @@ export declare namespace Setting {
 
   export interface CollectionList extends ResourceList<Type.CollectionList> {}
   export interface ProductList extends ResourceList<Type.ProductList> {}
+  export interface ArticleList extends ResourceList<Type.ArticleList> {}
   export interface MetaobjectList extends ResourceList<Type.MetaobjectList> {
     metaobject_type: string;
   }
