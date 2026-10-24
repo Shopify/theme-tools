@@ -41,6 +41,7 @@ This VS Code extensions comes with batteries included.
 - `"themeCheck.checkOnChange": boolean`, (default: `true`) makes it so theme check runs on file change.
 - `"themeCheck.checkOnSave": boolean`, (default: `true`) makes it so theme check runs on file save.
 - `"themeCheck.preloadOnBoot": boolean`, (default: `true`) makes it so all files are preloaded on extension activation.
+- `"themeCheck.fetchMetafieldDefinitions": boolean`, (default: `false`) fetches metafield definitions from Shopify when a theme workspace is opened. This may prompt you to log in to Shopify.
 
 ## License
 
