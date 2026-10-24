@@ -80,7 +80,6 @@ export function printElement(
 
   if (shouldPreserveContent(node)) {
     return [
-      printOpeningTagPrefix(node, options),
       group(printOpeningTag(path, options, print, attrGroupId), {
         id: attrGroupId,
       }),
