@@ -1,5 +1,5 @@
 import { expect, describe, it } from 'vitest';
-import { applyFix, runLiquidCheck } from '../../../test';
+import { applyFix, autofix, runLiquidCheck } from '../../../test';
 import { LiquidHTMLSyntaxError } from '../index';
 
 describe('detectInvalidLoopArguments', async () => {
@@ -15,6 +15,16 @@ describe('detectInvalidLoopArguments', async () => {
       const offenses = await testCheck(sourceCode);
       expect(offenses).to.have.length(0);
     }
+  });
+
+  it('does not flag or rewrite a quoted lookup key containing spaces', async () => {
+    const sourceCode =
+      "{%- for value in product.options_by_name['hello world'].values -%}{{ value }}{%- endfor -%}";
+    const offenses = await testCheck(sourceCode);
+
+    expect(offenses).to.have.length(0);
+    const fixed = await autofix({ 'file.liquid': sourceCode }, offenses);
+    expect(fixed['file.liquid']).to.equal(sourceCode);
   });
 
   it('should report when invalid args are found', async () => {
