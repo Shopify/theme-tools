@@ -389,7 +389,7 @@ describe('Module: TypeSystem', () => {
     }
   });
 
-  it('should support section settings in section files', async () => {
+  it('should support article_list section settings in section files', async () => {
     const sourceCode = `
       {{ section.settings.my_list }}
       {% schema %}
@@ -400,7 +400,7 @@ describe('Module: TypeSystem', () => {
           {
             "id": "my_list",
             "label": "t:my-setting.label",
-            "type": "product_list"
+            "type": "article_list"
           }
         ]
       }
@@ -414,7 +414,7 @@ describe('Module: TypeSystem', () => {
       ast,
       'file:///sections/my-section.liquid',
     );
-    expect(inferredType).to.eql({ kind: 'array', valueType: 'product' } as ArrayType);
+    expect(inferredType).to.eql({ kind: 'array', valueType: 'article' } as ArrayType);
   });
 
   it.each([
@@ -447,6 +447,7 @@ describe('Module: TypeSystem', () => {
     ['video', 'video'],
     ['collection_list', { kind: 'array', valueType: 'collection' }],
     ['product_list', { kind: 'array', valueType: 'product' }],
+    ['article_list', { kind: 'array', valueType: 'article' }],
   ] as const)('infers block.settings values for %s settings', async (settingType, expectedType) => {
     const sourceCode = `
       {{ block.settings.value }}
