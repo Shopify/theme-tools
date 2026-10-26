@@ -69,6 +69,42 @@ describe('Unit: html', () => {
     expectPath(ast, 'children.0.attributes.0.value.0.value').to.eql('foo');
   });
 
+  // Browsers allow whitespace on either side of `=`. Reading `ratio = '{{ r }}'` as a
+  // valueless `ratio` turned the value's drop and text into attributes of their own.
+  it.each([
+    ["<img data-ratio = '{{ ratio }}'>", 'AttrSingleQuoted', '{{ ratio }}'],
+    ['<img srcset= "{{ a }}, {{ b }} 2x">', 'AttrDoubleQuoted', '{{ a }}, {{ b }} 2x'],
+    ['<img alt ="x">', 'AttrDoubleQuoted', 'x'],
+    ['<img alt = x>', 'AttrUnquoted', 'x'],
+    ['<img alt\n  =\n  "x">', 'AttrDoubleQuoted', 'x'],
+  ])('should parse whitespace around `=` as one attribute: %j', (source, type, value) => {
+    const ast = toLiquidHtmlAST(source);
+    expectPath(ast, 'children.0.attributes').to.have.lengthOf(1);
+    expectPath(ast, 'children.0.attributes.0.type').to.eql(type);
+    const attr = deepGet('children.0.attributes.0'.split('.'), ast) as any;
+    expect(source.slice(attr.attributePosition.start, attr.attributePosition.end)).to.eql(value);
+    expect(source.slice(attr.position.start, attr.position.end)).to.eql(
+      source.slice('<img '.length, -1),
+    );
+  });
+
+  it('should keep whitespace-separated attributes apart when no `=` follows', () => {
+    const ast = toLiquidHtmlAST('<div hidden  class="x">y</div>');
+    expectPath(ast, 'children.0.attributes.0.type').to.eql('AttrEmpty');
+    expectPath(ast, 'children.0.attributes.0.name.0.value').to.eql('hidden');
+    expectPath(ast, 'children.0.attributes.1.type').to.eql('AttrDoubleQuoted');
+    expectPath(ast, 'children.0.attributes.1.name.0.value').to.eql('class');
+  });
+
+  it('should parse whitespace around `=` inside a Liquid branch in attribute position', () => {
+    const ast = toLiquidHtmlAST('<div {% if a %}data-x = "{{ v }}"{% endif %}></div>');
+    const branch = deepGet('children.0.attributes.0.children.0'.split('.'), ast) as any;
+    expect(branch.children).to.have.lengthOf(1);
+    expect(branch.children[0].type).to.eql('AttrDoubleQuoted');
+    expect(branch.children[0].name[0].value).to.eql('data-x');
+    expect(branch.children[0].value[0].type).to.eql('LiquidVariableOutput');
+  });
+
   it('should parse Liquid drops in attribute values', () => {
     const ast = toLiquidHtmlAST('<div class="{{ x }}">text</div>');
     expectPath(ast, 'children.0.type').to.eql('HtmlElement');
@@ -288,6 +324,19 @@ describe('Unit: html', () => {
     expectPath(ast, 'children.0.body.kind').to.eql('css');
     expectPath(ast, 'children.0.body.value').to.eql('.x { color: red; }');
   });
+
+  // The tokenizer splits `</script marker>` (NBSP) into several Text tokens. As
+  // in browsers, that is body text, not a close tag.
+  it.each(['script', 'style'])(
+    'should keep a %s close-tag candidate with a non-ASCII space in the body',
+    (tag) => {
+      const body = `x = "</${tag} marker>";`;
+      const ast = toLiquidHtmlAST(`<${tag}>${body}</${tag}>`);
+      expectPath(ast, 'children').to.have.lengthOf(1);
+      expectPath(ast, 'children.0.type').to.eql('HtmlRawNode');
+      expectPath(ast, 'children.0.body.value').to.eql(body);
+    },
+  );
 
   it('should parse Liquid drops inside raw HTML body', () => {
     const ast = toLiquidHtmlAST('<script>const a = {{ product | json }};</script>');

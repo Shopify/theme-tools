@@ -4,7 +4,7 @@ import { envelopeFromTokens, makeLiquidTagBaseCase, makeLiquidTagNamed } from '.
 import type { LiquidTagEnvelope } from './factories';
 import type { LiquidRawTag, LiquidTag } from '../ast';
 import type { TagDefinition, TagDefinitionTag } from '../environment';
-import { TagKind } from '../environment';
+import { TagKind, isStructuralEndTag } from '../environment';
 import { LiquidHTMLASTParsingError } from '../errors';
 import { assertNever } from '../utils';
 import { MarkupParser } from '../markup/parser';
@@ -13,7 +13,6 @@ import { parseBlockTag } from './liquid-blocks';
 import type { BlockParserDelegate } from './liquid-blocks';
 import { parseRawTag } from './liquid-raw';
 import type { RawParserDelegate } from './liquid-raw';
-import { parseHybridTag } from './liquid-hybrid';
 
 /**
  * Interface capturing what the liquid-tag dispatch function needs from
@@ -24,7 +23,7 @@ export interface TagParserDelegate extends BlockParserDelegate, RawParserDelegat
   tagForName(name: string): TagDefinition | undefined;
 }
 
-// liquidTag := "{%" tagName markup "%}" (block | raw | hybrid)?
+// liquidTag := "{%" tagName markup "%}" (block | raw)?
 export function parseLiquidTag(parser: TagParserDelegate): LiquidTag | LiquidRawTag {
   const openToken = parser.consume(TokenType.LiquidTagOpen);
   parser.accept(TokenType.Text);
@@ -46,7 +45,7 @@ export function parseLiquidTag(parser: TagParserDelegate): LiquidTag | LiquidRaw
   if (envelope.tagName.startsWith('end')) {
     const innerName = envelope.tagName.slice(3);
     const innerDef = parser.tagForName(innerName);
-    if (innerDef) {
+    if (isStructuralEndTag(innerName, innerDef)) {
       throw new LiquidHTMLASTParsingError(
         `Attempting to close LiquidTag '${innerName}' before it was opened without a matching '${innerName}'`,
         parser.getSource(),
@@ -71,9 +70,6 @@ export function parseLiquidTag(parser: TagParserDelegate): LiquidTag | LiquidRaw
 
     case TagKind.Raw:
       return parseRawTag(parser, def, envelope, closeToken);
-
-    case TagKind.Hybrid:
-      return parseHybridTag(parser, def, envelope, closeToken);
 
     default:
       return assertNever(def);

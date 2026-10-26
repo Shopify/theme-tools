@@ -18,6 +18,8 @@ const SYNTAX_ERROR = "Syntax error in 'block' tag";
 const BARE_ARRAY_ACCESS = 'Bare bracket access is not allowed in strict2 mode';
 const DOTTED_ARGUMENT =
   "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value";
+const APP_BLOCK_ARGUMENTS = "Liquid syntax error: in 'block' - app blocks do not accept arguments";
+const APP_BLOCK_CONTENT = "Liquid syntax error: in 'block' - app blocks do not accept content";
 const UNCLOSED_BLOCK_PARSER_ERROR = "Attempting to end parsing before LiquidTag 'block' was closed";
 const UNCLOSED_BLOCK_IN_LIQUID_PARSER_ERROR = "Unclosed block tag 'block' in {% liquid %} block";
 const BLOCK_PARSER_ERROR_MESSAGES = new Set([
@@ -38,11 +40,16 @@ export function blockTagSyntaxError(
 
   const markup = node.markup as BlockMarkup;
 
-  if (hasInvalidBlockName(markup.name.value)) {
-    return syntaxProblem(
-      node.position,
-      "Liquid syntax error: in 'block' - Valid syntax: block '[file_name]'",
-    );
+  /*
+   * The parser only accepts theme block names and canonical app block paths
+   * (shopify://apps/<app>/blocks/<handle>/<uuid>). App blocks render with the
+   * settings their app provides, so they take no arguments and no content.
+   */
+  if (isAppBlockPath(markup.name.value)) {
+    if (markup.args.some((argument) => argument.name !== 'block.name')) {
+      return syntaxProblem(node.position, APP_BLOCK_ARGUMENTS);
+    }
+    if (hasContent(node)) return syntaxProblem(node.position, APP_BLOCK_CONTENT);
   }
 
   /*
@@ -100,8 +107,14 @@ function syntaxProblem(position: Position, message: string): Problem<SourceCodeT
   return { message, startIndex: position.start, endIndex: position.end };
 }
 
-function hasInvalidBlockName(value: string): boolean {
-  return value.includes('/') || value.includes('.');
+function isAppBlockPath(value: string): boolean {
+  return value.startsWith('shopify://apps/');
+}
+
+function hasContent(node: LiquidTag): boolean {
+  return (node.children ?? []).some(
+    (child) => child.type !== NodeTypes.TextNode || child.value.trim() !== '',
+  );
 }
 
 function isInvalidBlockNameArgument(argument: BlockMarkup['args'][number]): boolean {

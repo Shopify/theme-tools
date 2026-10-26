@@ -98,11 +98,11 @@ describe('Module: InvalidPipeSyntax', () => {
     it('should detect and fix multiple trailing pipes', async () => {
       const sourceCode = `{{ 'hello' | upcase | | }}`;
       const offenses = await runLiquidCheck(LiquidHTMLSyntaxError, sourceCode);
-      expect(offenses).toHaveLength(2); // Double pipe AND trailing pipe
-      expect(offenses[0].message).toContain('Remove extra `|` character(s)');
-      expect(offenses[1].message).toContain('Remove the trailing `|` character');
-      expect(offenses[0].fix).toBeDefined();
-      expect(offenses[1].fix).toBeDefined();
+      expect(offenses).toHaveLength(1);
+      expect(offenses[0].message).toContain('Remove the trailing `|` character');
+
+      const fixedCode = applyFix(sourceCode, offenses[0]);
+      expect(fixedCode).toBe(`{{ 'hello' | upcase }}`);
     });
   });
 

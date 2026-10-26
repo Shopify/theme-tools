@@ -1,5 +1,21 @@
 # @shopify/liquid-html-parser
 
+## 2.11.0
+
+### Minor Changes
+
+- 286b04fb: Accept canonical app block paths in `{% block %}` tags.
+
+  The parser accepts `shopify://apps/<app>/blocks/<handle>/<uuid>` as a block type and keeps rejecting malformed app paths. `LiquidSyntaxError` reports arguments and content on app block paths, because app blocks render with the settings their app provides. `block.name` stays allowed.
+
+  App block paths do not produce local theme-file document links or dependencies in the theme graph.
+
+### Patch Changes
+
+- 84a458be: Parse HTML attributes with whitespace around `=` (`data-ratio = '{{ r }}'`, `srcset= "…"`) as one attribute, as browsers do, instead of splitting the value into junk attributes.
+- c0ae8785: Fix the end of an unclosed block in `{% liquid %}`. It ended past the end of the template, as if its end tag came after the last line. It now ends where the last line does, as an unclosed block outside `{% liquid %}` does.
+- af297bab: Parse `section` as a standalone tag. Removes the hybrid block form, whose forward scan for `{% endsection %}` made files with many `section` tags parse in quadratic time.
+
 ## 2.10.2
 
 ### Patch Changes
