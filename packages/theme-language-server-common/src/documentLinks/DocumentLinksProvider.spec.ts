@@ -141,6 +141,20 @@ describe('DocumentLinksProvider', () => {
     expect(result).toEqual([]);
   });
 
+  it.each([
+    "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000' %}{% endblock %}",
+    "{% liquid\n block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000'\n endblock\n %}",
+  ])('should skip app block links while preserving theme block links: %s', async (appBlock) => {
+    const theme = createTheme(`${appBlock}{% block 'container' %}{% endblock %}`, rootUri, {
+      'blocks/container.liquid': '',
+    });
+
+    const result = await theme.documentLinksProvider.documentLinks(theme.uri);
+    expect(result.map((link) => link.target)).toEqual([
+      path.join(rootUri, 'blocks/container.liquid'),
+    ]);
+  });
+
   it('should not create a link for the {% partial %} tag', async () => {
     const theme = createTheme(`{% partial 'x' %}{% endpartial %}`, rootUri, {});
     const result = await theme.documentLinksProvider.documentLinks(theme.uri);
