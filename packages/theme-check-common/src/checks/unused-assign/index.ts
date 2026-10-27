@@ -4,6 +4,8 @@ import {
   LiquidTagAssign,
   LiquidTagCapture,
   NodeTypes,
+  toLiquidHtmlAST,
+  walk,
 } from '@shopify/liquid-html-parser';
 import { LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
 import { getSchema } from '../../to-schema';
@@ -55,7 +57,26 @@ export const UnusedAssign: LiquidCheckDefinition = {
         checkVariableUsage(node);
       },
 
-      async LiquidRawTag(node) {
+      async LiquidRawTag(node, ancestors) {
+        if (
+          node.name === 'style' &&
+          ancestors.some(
+            (ancestor) => ancestor.type === NodeTypes.LiquidTag && ancestor.name === 'liquid',
+          )
+        ) {
+          for (const line of node.body.value.split('\n')) {
+            const echo = /^\s*echo\s+(.+?)\s*$/.exec(line);
+            if (!echo) continue;
+
+            try {
+              const echoAst = toLiquidHtmlAST(`{% echo ${echo[1]} %}`);
+              walk(echoAst, checkVariableUsage);
+            } catch {
+              // The style body is normally CSS and may not be valid Liquid.
+            }
+          }
+        }
+
         if (node.name !== 'schema' || node.body.kind !== 'json') return;
 
         const schema = await getSchema(context);
