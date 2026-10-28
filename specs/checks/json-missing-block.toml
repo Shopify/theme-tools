@@ -1,0 +1,403 @@
+check = "JSONMissingBlock"
+severity = "error"
+
+[[cases]]
+name = "should report an offense when a block does not exist"
+
+[cases.files]
+"templates/product.failing.json" = '''
+{
+          "sections": {
+            "custom-section": {
+              "type": "custom-section",
+              "blocks": {
+                "text_tqQTNE": {
+                  "type": "missing_block"
+                }
+              },
+              "block_order": ["text_tqQTNE"]
+            }
+          },
+          "order": ["custom-section"]
+        }'''
+"sections/custom-section.liquid" = '''
+{% schema %}
+{
+  "name": "Custom Section",
+  "blocks": [
+    {
+      "type": "missing_block"
+    }
+  ]
+}
+{% endschema %}
+'''
+
+[[cases.offenses]]
+file = "templates/product.failing.json"
+message = "Theme block 'blocks/missing_block.liquid' does not exist."
+start = [ 6, 26 ]
+highlight = "\"missing_block\""
+
+[[cases]]
+name = "should not report an offense when block exists"
+
+[cases.files]
+"templates/product.valid.json" = '''
+{
+          "sections": {
+            "custom-section": {
+              "type": "custom-section",
+              "blocks": {
+                "text_block": {
+                  "type": "text"
+                }
+              },
+              "block_order": ["text_block"]
+            }
+          },
+          "order": ["custom-section"]
+        }'''
+"sections/custom-section.liquid" = '''
+{% schema %}
+{
+  "name": "Custom Section",
+  "blocks": [
+    {
+      "type": "text"
+    }
+  ]
+}
+{% endschema %}
+'''
+"blocks/text.liquid" = ""
+
+[[cases]]
+name = "should report an offense when a nested block does not exist"
+
+[cases.files]
+"templates/product.nested.json" = '''
+{
+          "sections": {
+            "custom-section": {
+              "type": "custom-section",
+              "blocks": {
+                "parent_block": {
+                  "type": "text",
+                  "blocks": {
+                    "child_block": {
+                      "type": "missing_nested"
+                    }
+                  }
+                }
+              },
+              "block_order": ["parent_block"]
+            }
+          },
+          "order": ["custom-section"]
+        }'''
+"sections/custom-section.liquid" = '''
+{% schema %}
+{
+  "name": "Custom Section",
+  "blocks": [
+    {
+      "type": "text"
+    }
+  ]
+}
+{% endschema %}
+'''
+"blocks/text.liquid" = '''
+{% schema %}
+  {
+    "name": "Text Block",
+    "blocks": [
+      {
+        "type": "missing_nested"
+      }
+    ]
+  }
+  {% endschema %}
+'''
+
+[[cases.offenses]]
+file = "templates/product.nested.json"
+message = "Theme block 'blocks/missing_nested.liquid' does not exist."
+start = [ 9, 30 ]
+highlight = "\"missing_nested\""
+
+[[cases]]
+name = "should report an offense when block exists but is not in the section liquid schema"
+
+[cases.files]
+"templates/product.valid.json" = '''
+{
+          "sections": {
+            "custom-section": {
+              "type": "custom-section",
+              "blocks": {
+                "text_block": {
+                  "type": "text"
+                }
+              },
+              "block_order": ["text_block"]
+            }
+          },
+          "order": ["custom-section"]
+        }'''
+"sections/custom-section.liquid" = '''
+{% schema %}
+{
+  "name": "Custom Section",
+  "blocks": [
+    {
+      "type": "image"
+    }
+  ]
+}
+{% endschema %}
+'''
+"blocks/text.liquid" = ""
+"blocks/image.liquid" = ""
+
+[[cases.offenses]]
+file = "templates/product.valid.json"
+message = "Block type 'text' is not allowed in 'sections/custom-section.liquid'."
+start = [ 6, 26 ]
+highlight = "\"text\""
+
+[[cases]]
+name = "should report an offense when a nested block exists but is not in the block liquid schema"
+
+[cases.files]
+"templates/product.nested.json" = '''
+{
+          "sections": {
+            "custom-section": {
+              "type": "custom-section",
+              "blocks": {
+                "parent_block": {
+                  "type": "text",
+                  "blocks": {
+                    "child_block": {
+                      "type": "missing_nested"
+                    }
+                  }
+                }
+              },
+              "block_order": ["parent_block"]
+            }
+          },
+          "order": ["custom-section"]
+        }'''
+"sections/custom-section.liquid" = '''
+{% schema %}
+{
+  "name": "Custom Section",
+  "blocks": [
+    {
+      "type": "text"
+    }
+  ]
+}
+{% endschema %}
+'''
+"blocks/text.liquid" = '''
+{% schema %}
+  {
+    "name": "Text Block",
+    "blocks": [
+      {
+        "type": "image"
+      }
+    ]
+  }
+  {% endschema %}
+'''
+"blocks/image.liquid" = ""
+"blocks/missing_nested.liquid" = ""
+
+[[cases.offenses]]
+file = "templates/product.nested.json"
+message = "Block type 'missing_nested' is not allowed in 'blocks/text.liquid'."
+start = [ 9, 30 ]
+highlight = "\"missing_nested\""
+
+[[cases]]
+name = "should report an offense when a nested private block exists but is not in the block liquid schema"
+
+[cases.files]
+"templates/product.nested.json" = '''
+{
+          "sections": {
+            "custom-section": {
+              "type": "custom-section",
+              "blocks": {
+                "parent_block": {
+                  "type": "text",
+                  "blocks": {
+                    "child_block": {
+                      "type": "_private_block"
+                    }
+                  }
+                }
+              },
+              "block_order": ["parent_block"]
+            }
+          },
+          "order": ["custom-section"]
+        }'''
+"sections/custom-section.liquid" = '''
+{% schema %}
+{
+  "name": "Custom Section",
+  "blocks": [
+    {
+      "type": "text"
+    }
+  ]
+}
+{% endschema %}
+'''
+"blocks/text.liquid" = '''
+{% schema %}
+  {
+    "name": "Text Block",
+    "blocks": [
+      {
+        "type": "@theme"
+      }
+    ]
+  }
+  {% endschema %}
+'''
+"blocks/image.liquid" = ""
+"blocks/_private_block.liquid" = ""
+
+[[cases.offenses]]
+file = "templates/product.nested.json"
+message = "Block type '_private_block' is not allowed in 'blocks/text.liquid'."
+start = [ 9, 30 ]
+highlight = "\"_private_block\""
+
+[[cases]]
+name = "should not report an offense when a static block exists and is not in the block liquid schema"
+
+[cases.files]
+"templates/product.static.json" = '''
+{
+          "sections": {
+            "custom-section": {
+              "type": "custom-section",
+              "blocks": {
+                "child_block": {
+                  "type": "text"
+                },
+                "static_block": {
+                  "type": "static_block",
+                  "static": true
+                }
+              },
+              "block_order": ["child_block"]
+            }
+          },
+          "order": ["custom-section"]
+        }'''
+"sections/custom-section.liquid" = '''
+{% schema %}
+{
+  "name": "Custom Section",
+  "blocks": [
+    {
+      "type": "text"
+    }
+  ]
+}
+{% endschema %}
+'''
+"blocks/text.liquid" = '''
+{% schema %}
+  {
+    "name": "Text Block",
+    "blocks": [
+      {
+        "type": "@theme"
+      }
+    ]
+  }
+  {% endschema %}
+'''
+"blocks/static_block.liquid" = '''
+{% schema %}
+  {
+    "name": "Static Block",
+  }
+  {% endschema %}
+'''
+
+[[cases]]
+name = "should ignore non-template JSON files"
+
+[cases.files]
+"config/index.json" = '''
+{
+          "blocks": {
+            "text_block": {
+              "type": "nonexistent"
+            }
+          }
+        }'''
+
+[[cases]]
+name = "should ignore templates with local blocks"
+
+[cases.files]
+"templates/product.nested.json" = '''
+{
+          "sections": {
+            "custom-section": {
+              "type": "custom-section",
+              "blocks": {
+                "parent_block": {
+                  "type": "text",
+                  "blocks": {
+                    "child_block": {
+                      "type": "_private_block"
+                    }
+                  }
+                }
+              },
+              "block_order": ["parent_block"]
+            }
+          },
+          "order": ["custom-section"]
+        }'''
+"sections/custom-section.liquid" = '''
+{% schema %}
+{
+  "name": "Custom Section",
+  "blocks": [
+    {
+      "type": "text",
+      "name": "Text Block"
+    }
+  ]
+}
+{% endschema %}
+'''
+"blocks/text.liquid" = '''
+{% schema %}
+  {
+    "name": "Text Block",
+    "blocks": [
+      {
+        "type": "image",
+        "name": "Image Block"
+      }
+    ]
+  }
+  {% endschema %}
+'''
+"blocks/image.liquid" = ""
+"blocks/_private_block.liquid" = ""

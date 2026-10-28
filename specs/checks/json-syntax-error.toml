@@ -1,0 +1,78 @@
+check = "JSONSyntaxError"
+severity = "error"
+
+[[cases]]
+name = "should report an error for invalid JSON (0)"
+
+[cases.files]
+"file.json" = '''
+{
+      "key1": "value1",
+      "key2": "value2",,
+    }'''
+
+[[cases.offenses]]
+file = "file.json"
+message = "Property name expected"
+start = [ 2, 23 ]
+highlight = ","
+
+[[cases.offenses]]
+file = "file.json"
+message = "Expecting a value"
+start = [ 2, 23 ]
+highlight = ","
+
+[[cases]]
+name = "should report an error for invalid JSON (1)"
+
+[cases.files]
+"file.json" = '''
+{
+      "key1": "value1",
+      "key2": "value2"
+'''
+
+[[cases.offenses]]
+file = "file.json"
+message = "Expecting a closing brace (})"
+start = [ 3, 0 ]
+highlight = ""
+
+[[cases]]
+name = "should report an error for invalid JSON (2)"
+
+[cases.files]
+"file.json" = '''
+{
+      'key1': "value1",
+      "key2": "value2"
+    }'''
+
+[[cases.offenses]]
+file = "file.json"
+message = "Invalid symbol"
+start = [ 1, 6 ]
+highlight = "'key1'"
+
+[[cases.offenses]]
+file = "file.json"
+message = "Property name expected"
+start = [ 1, 12 ]
+highlight = ":"
+
+[[cases.offenses]]
+file = "file.json"
+message = "Expecting a value"
+start = [ 1, 22 ]
+highlight = ","
+
+[[cases]]
+name = "should not report any errors for valid JSON"
+
+[cases.files]
+"file.json" = '''
+{
+      "key1": "value1",
+      "key2": "value2"
+    }'''

@@ -1,0 +1,55 @@
+check = "AssetSizeAppBlockJavaScript"
+severity = "error"
+
+[[cases]]
+name = "should not report any offenses if JavaScript is smaller than threshold"
+
+[cases.files]
+"assets/app.js" = "console.log(\"Hello, world!\");"
+"blocks/app.liquid" = '''
+{% schema %}
+{
+  "javascript": "app.js"
+}
+{% endschema %}
+'''
+
+[[cases]]
+name = "should report an offense if JavaScript is larger than threshold"
+
+[cases.files]
+"assets/app.js" = "console.log(\"Hello, world!\");"
+"blocks/app.liquid" = '''
+{% schema %}
+{
+  "javascript": "app.js"
+}
+{% endschema %}
+'''
+
+[cases.config.AssetSizeAppBlockJavaScript]
+thresholdInBytes = 1
+
+[[cases.offenses]]
+file = "blocks/app.liquid"
+message = "The file size for 'app.js' (29 B) exceeds the configured threshold (1 B)"
+start = [ 2, 17 ]
+highlight = "app.js"
+
+[[cases]]
+name = "should report an offense if the JavaScript file does not exist"
+
+[cases.files]
+"blocks/app.liquid" = '''
+{% schema %}
+{
+  "javascript": "nonexistent.js"
+}
+{% endschema %}
+'''
+
+[[cases.offenses]]
+file = "blocks/app.liquid"
+message = "'nonexistent.js' does not exist."
+start = [ 2, 17 ]
+highlight = "nonexistent.js"

@@ -1,0 +1,696 @@
+check = "ValidContentForArgumentTypes"
+severity = "warning"
+
+[[cases]]
+name = "should accept 'hello' for string"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: 'hello' %}"
+
+[[cases]]
+name = "should accept '' for string"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: '' %}"
+
+[[cases]]
+name = "should accept product for string"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: product %}"
+
+[[cases]]
+name = "should reject 123 for string"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: 123 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got number"
+start = [ 0, 45 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% content_for 'block', type: 'card', param: '' %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% content_for 'block', type: 'card', param:  %}"
+
+[[cases]]
+name = "should reject true for string"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: true %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got boolean"
+start = [ 0, 45 ]
+highlight = "true"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% content_for 'block', type: 'card', param: '' %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% content_for 'block', type: 'card', param:  %}"
+
+[[cases]]
+name = "should accept 0 for number"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {number} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: 0 %}"
+
+[[cases]]
+name = "should accept 123 for number"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {number} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: 123 %}"
+
+[[cases]]
+name = "should accept -1 for number"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {number} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: -1 %}"
+
+[[cases]]
+name = "should accept product for number"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {number} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: product %}"
+
+[[cases]]
+name = "should reject 'hello' for number"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {number} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: 'hello' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected number, got string"
+start = [ 0, 45 ]
+highlight = "'hello'"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '0' for number"
+result = "{% content_for 'block', type: 'card', param: 0 %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% content_for 'block', type: 'card', param:  %}"
+
+[[cases]]
+name = "should reject true for number"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {number} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: true %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected number, got boolean"
+start = [ 0, 45 ]
+highlight = "true"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '0' for number"
+result = "{% content_for 'block', type: 'card', param: 0 %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% content_for 'block', type: 'card', param:  %}"
+
+[[cases]]
+name = "should accept true for boolean"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {boolean} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: true %}"
+
+[[cases]]
+name = "should accept false for boolean"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {boolean} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: false %}"
+
+[[cases]]
+name = "should accept nil for boolean"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {boolean} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: nil %}"
+
+[[cases]]
+name = "should accept empty for boolean"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {boolean} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: empty %}"
+
+[[cases]]
+name = "should accept product for boolean"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {boolean} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: product %}"
+
+[[cases]]
+name = "should accept 123 for boolean"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {boolean} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: 123 %}"
+
+[[cases]]
+name = "should accept 'hello' for boolean"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {boolean} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: 'hello' %}"
+
+[[cases]]
+name = "should accept product for object"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {object} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: product %}"
+
+[[cases]]
+name = "should accept (1..3) for object"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {object} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: (1..3) %}"
+
+[[cases]]
+name = "should reject 'hello' for object"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {object} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: 'hello' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected object, got string"
+start = [ 0, 45 ]
+highlight = "'hello'"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% content_for 'block', type: 'card', param:  %}"
+
+[[cases]]
+name = "should reject 123 for object"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {object} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: 123 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected object, got number"
+start = [ 0, 45 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% content_for 'block', type: 'card', param:  %}"
+
+[[cases]]
+name = "should reject true for object"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {object} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: true %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected object, got boolean"
+start = [ 0, 45 ]
+highlight = "true"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% content_for 'block', type: 'card', param:  %}"
+
+[[cases]]
+name = "should reject empty for object"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {object} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: empty %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected object, got boolean"
+start = [ 0, 45 ]
+highlight = "empty"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% content_for 'block', type: 'card', param:  %}"
+
+[[cases]]
+name = "should handle mixed case type annotations"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {String} text - The text
+  @param {NUMBER} count - The count
+  @param {BOOLEAN} flag - The flag
+  @param {Object} data - The data
+{% enddoc %}
+<div>{{ text }}{{ count }}{{ flag }}{{ data }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', text: \"hello\", count: 5, flag: true, data: product %}"
+
+[[cases]]
+name = "should ignore variable lookups"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {String} title - The title
+{% enddoc %}
+<div>{{ title }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', title: product_title %}"
+
+[[cases]]
+name = "should not report when snippet has no doc comment"
+
+[cases.files]
+"blocks/card.liquid" = "<h1>This snippet has no doc comment</h1>"
+"file.liquid" = "{% content_for 'block', type: 'card', title: 123 %}"
+
+[[cases]]
+name = "should not enforce unsupported types"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {Unsupported} title - The title
+{% enddoc %}
+<div>{{ title }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', title: 123 %}"
+
+[[cases]]
+name = "should not report for unrecognized arguments"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {String} title - The title
+{% enddoc %}
+<div>{{ title }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', title: \"hello\", unrecognized: 123 %}"
+
+[[cases]]
+name = "should suggest replacing with default value for type or removing value"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: 123 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got number"
+start = [ 0, 45 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% content_for 'block', type: 'card', param: '' %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% content_for 'block', type: 'card', param:  %}"
+
+[[cases]]
+name = "should allow users to fix a single argument when multiple are provided`"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} title - The title
+  @param {number} count - The count
+{% enddoc %}
+<div>{{ title }} {{ count }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', title: 123, count: 5 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'title': expected string, got number"
+start = [ 0, 45 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% content_for 'block', type: 'card', title: '', count: 5 %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% content_for 'block', type: 'card', title: , count: 5 %}"
+
+[[cases]]
+name = "should handle arguments with trailing commas"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: 123, %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got number"
+start = [ 0, 45 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% content_for 'block', type: 'card', param: '', %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% content_for 'block', type: 'card', param: , %}"
+
+[[cases]]
+name = "should handle arguments with complex spacing"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} title - The title
+  @param {number} count - The count
+{% enddoc %}
+'''
+"file.liquid" = '''
+{% content_for 'block', type: 'card',
+        title: 123,
+        count: 5
+      %}'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'title': expected string, got number"
+start = [ 1, 15 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = '''
+{% content_for 'block', type: 'card',
+        title: '',
+        count: 5
+      %}'''
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = '''
+{% content_for 'block', type: 'card',
+        title: ,
+        count: 5
+      %}'''
+
+[[cases]]
+name = "should handle argument with no space after colon"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param:123 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got number"
+start = [ 0, 44 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% content_for 'block', type: 'card', param:'' %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% content_for 'block', type: 'card', param: %}"
+
+[[cases]]
+name = "should handle argument with multiple spaces after colon"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param:     123 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got number"
+start = [ 0, 49 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% content_for 'block', type: 'card', param:     '' %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% content_for 'block', type: 'card', param:      %}"
+
+[[cases]]
+name = "should handle argument with newlines"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = """
+{% content_for 'block', type: 'card', param:\u0020
+        123\u0020
+      %}"""
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got number"
+start = [ 1, 8 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = """
+{% content_for 'block', type: 'card', param:\u0020
+        ''\u0020
+      %}"""
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = """
+{% content_for 'block', type: 'card', param:\u0020
+\u0020\u0020\u0020\u0020\u0020\u0020\u0020\u0020\u0020
+      %}"""
+
+[[cases]]
+name = "should suggest removal and replacement if expected type has a default value"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: 123 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got number"
+start = [ 0, 45 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% content_for 'block', type: 'card', param: '' %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% content_for 'block', type: 'card', param:  %}"
+
+[[cases]]
+name = "should only suggest removal if expected type default value is ''"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {object} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', param: 123 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected object, got number"
+start = [ 0, 45 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% content_for 'block', type: 'card', param:  %}"

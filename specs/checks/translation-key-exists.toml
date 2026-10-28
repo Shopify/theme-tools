@@ -1,0 +1,183 @@
+check = "TranslationKeyExists"
+severity = "error"
+
+[[cases]]
+name = "should report all keys if default locale file does not exist"
+docset = "default"
+
+[cases.files]
+"code.liquid" = '''
+{{"key" | t}}
+{{"nested.key" | t}}'''
+
+[[cases.offenses]]
+file = "code.liquid"
+message = "'key' does not have a matching entry in 'locales/en.default.json'"
+start = [ 0, 2 ]
+highlight = "\"key\""
+
+[[cases.offenses]]
+file = "code.liquid"
+message = "'nested.key' does not have a matching entry in 'locales/en.default.json'"
+start = [ 1, 2 ]
+highlight = "\"nested.key\""
+
+[[cases]]
+name = "should report nothing if default locale file is invalid"
+docset = "default"
+
+[cases.files]
+"locales/en.default.json" = "{"
+"code.liquid" = '''
+{{"key" | t}}
+{{"nested.key" | t}}
+{% schema %}
+  {
+    "locales": {
+      "en": {
+        "key": "I will be ignored",
+        "nested": {
+          "key": "Me too!"
+        }
+      }
+    }
+  }
+{% endschema %}'''
+
+[[cases]]
+name = "should report unknown keys even if schema is invalid"
+docset = "default"
+
+[cases.files]
+"locales/en.default.json" = "{}"
+"code.liquid" = '''
+{{"key" | t}}
+{% schema %}
+  {
+{% endschema %}'''
+
+[[cases.offenses]]
+file = "code.liquid"
+message = "'key' does not have a matching entry in 'locales/en.default.json'"
+start = [ 0, 2 ]
+highlight = "\"key\""
+
+[[cases]]
+name = "should ignore existing keys"
+docset = "default"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "key": "",
+  "nested": {
+    "key": ""
+  }
+}'''
+"code.liquid" = '''
+{{"key" | t}}
+{{"nested.key" | t}}'''
+
+[[cases]]
+name = "should ignore keys included in schema"
+docset = "default"
+
+[cases.files]
+"code.liquid" = '''
+{{"submit" | t}}
+{{ "this.does.not.exist" | translate }}
+{% schema %}
+  {
+    "locales": {
+      "en": {
+        "submit": "Subscribe"
+      }
+    }
+  }
+{% endschema %}'''
+
+[[cases.offenses]]
+file = "code.liquid"
+message = "'this.does.not.exist' does not have a matching entry in 'locales/en.default.json' or 'code.liquid'"
+start = [ 1, 3 ]
+highlight = "\"this.does.not.exist\""
+
+[[cases]]
+name = "should not crash if the schema locales does not exist"
+docset = "default"
+
+[cases.files]
+"code.liquid" = '''
+{{ "this.does.not.exist" | translate }}
+{% schema %}
+  {
+    "name": "Slideshow",
+    "tag": "section",
+    "class": "slideshow",
+    "limit": 1
+  }
+{% endschema %}'''
+
+[[cases.offenses]]
+file = "code.liquid"
+message = "'this.does.not.exist' does not have a matching entry in 'locales/en.default.json'"
+start = [ 0, 3 ]
+highlight = "\"this.does.not.exist\""
+
+[[cases]]
+name = "should only report unknown keys for translate filter"
+docset = "default"
+
+[cases.files]
+"locales/en.default.json" = "{}"
+"code.liquid" = '''
+{{ "unknownkey" | t }}
+{{ "do.not.report.me" | unknown_filter }}
+{{ "unknown.nested.key" | translate }}'''
+
+[[cases.offenses]]
+file = "code.liquid"
+message = "'unknownkey' does not have a matching entry in 'locales/en.default.json'"
+start = [ 0, 3 ]
+highlight = "\"unknownkey\""
+
+[[cases.offenses]]
+file = "code.liquid"
+message = "'unknown.nested.key' does not have a matching entry in 'locales/en.default.json'"
+start = [ 2, 3 ]
+highlight = "\"unknown.nested.key\""
+
+[[cases]]
+name = "should count Shopify-provided translations as defined"
+docset = "default"
+
+[cases.files]
+"locales/en.default.json" = "{}"
+"code.liquid" = '''
+{{ 'shopify.sentence.words_connector' | t }}
+{{ 'shopify.this.does.not.exist' | t }}'''
+
+[[cases.offenses]]
+file = "code.liquid"
+message = "'shopify.this.does.not.exist' does not have a matching entry in 'locales/en.default.json'"
+start = [ 1, 3 ]
+highlight = "'shopify.this.does.not.exist'"
+
+[[cases]]
+name = "should handle key conflicts"
+docset = "default"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "product": {
+    "quantity": "TODO"
+  }
+}'''
+"code.liquid" = "{{\"product.quantity.decrease\" | t}}"
+
+[[cases.offenses]]
+file = "code.liquid"
+message = "'product.quantity.decrease' does not have a matching entry in 'locales/en.default.json'"
+start = [ 0, 2 ]
+highlight = "\"product.quantity.decrease\""

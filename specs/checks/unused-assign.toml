@@ -1,0 +1,301 @@
+check = "UnusedAssign"
+severity = "warning"
+
+[[cases]]
+name = "reports a variable that is assigned but not used"
+
+[cases.files]
+"file.liquid" = '''
+{% assign unusedVar = "value" %}
+{% assign usedVar = "anotherValue" %}
+{{ usedVar }}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "The variable 'unusedVar' is assigned but not used"
+start = [ 0, 0 ]
+highlight = "{% assign unusedVar = \"value\" %}"
+
+[[cases.offenses.suggest]]
+message = "Remove the unused variable 'unusedVar'"
+result = '''
+
+{% assign usedVar = "anotherValue" %}
+{{ usedVar }}
+'''
+
+[[cases]]
+name = "does not report a variable that is assigned and used"
+
+[cases.files]
+"file.liquid" = '''
+{% assign usedVar = "value" %}
+{{ usedVar }}
+'''
+
+[[cases]]
+name = "suggests removing the only assign in a file"
+
+[cases.files]
+"file.liquid" = '''
+{% assign unusedVar = "value" %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "The variable 'unusedVar' is assigned but not used"
+start = [ 0, 0 ]
+highlight = "{% assign unusedVar = \"value\" %}"
+
+[[cases.offenses.suggest]]
+message = "Remove the unused variable 'unusedVar'"
+result = '''
+
+'''
+
+[[cases]]
+name = "counts uses inside a capture tag"
+
+[cases.files]
+"file.liquid" = '''
+{% assign usedVar = "anotherValue" %}
+{% capture foo %}
+  {{ usedVar }}
+{% endcapture %}
+{{ foo }}
+'''
+
+[[cases]]
+name = "reports an unused capture"
+
+[cases.files]
+"file.liquid" = '''
+{% assign usedVar = "anotherValue" %}
+{% capture foo %}
+  {{ usedVar }}
+{% endcapture %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "The variable 'foo' is assigned but not used"
+start = [ 1, 0 ]
+highlight = "{% capture foo %}"
+
+[[cases.offenses.suggest]]
+message = "Remove the unused variable 'foo'"
+result = '''
+{% assign usedVar = "anotherValue" %}
+
+'''
+
+[[cases]]
+name = "counts uses inside a style tag"
+
+[cases.files]
+"file.liquid" = '''
+{% assign usedVar = 1 %}
+{% style %}
+  {{ usedVar }}
+{% endstyle %}
+'''
+
+[[cases]]
+name = "does not count uses inside a schema tag"
+
+[cases.files]
+"file.liquid" = '''
+{% assign usedVar = 1 %}
+{% schema %}
+  {{ usedVar }}
+{% endschema %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "The variable 'usedVar' is assigned but not used"
+start = [ 0, 0 ]
+highlight = "{% assign usedVar = 1 %}"
+
+[[cases.offenses.suggest]]
+message = "Remove the unused variable 'usedVar'"
+result = '''
+
+{% schema %}
+  {{ usedVar }}
+{% endschema %}
+'''
+
+[[cases]]
+name = "does not count uses inside a javascript tag"
+
+[cases.files]
+"file.liquid" = '''
+{% assign usedVar = 1 %}
+{% javascript %}
+  {{ usedVar }}
+{% endjavascript %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "The variable 'usedVar' is assigned but not used"
+start = [ 0, 0 ]
+highlight = "{% assign usedVar = 1 %}"
+
+[[cases.offenses.suggest]]
+message = "Remove the unused variable 'usedVar'"
+result = '''
+
+{% javascript %}
+  {{ usedVar }}
+{% endjavascript %}
+'''
+
+[[cases]]
+name = "does not count uses inside a stylesheet tag"
+
+[cases.files]
+"file.liquid" = '''
+{% assign usedVar = 1 %}
+{% stylesheet %}
+  {{ usedVar }}
+{% endstylesheet %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "The variable 'usedVar' is assigned but not used"
+start = [ 0, 0 ]
+highlight = "{% assign usedVar = 1 %}"
+
+[[cases.offenses.suggest]]
+message = "Remove the unused variable 'usedVar'"
+result = '''
+
+{% stylesheet %}
+  {{ usedVar }}
+{% endstylesheet %}
+'''
+
+[[cases]]
+name = "counts uses in a schema visible_if expression"
+
+[cases.files]
+"blocks/logo.liquid" = '''
+{% assign has_logo_image = true %}
+{% schema %}
+  {
+    "name": "Logo",
+    "settings": [
+      {
+        "type": "range",
+        "id": "height",
+        "min": 16,
+        "max": 80,
+        "step": 4,
+        "default": 32,
+        "visible_if": "{{ has_logo_image == true }}"
+      }
+    ]
+  }
+{% endschema %}
+'''
+
+[[cases]]
+name = "does not count other schema strings as uses"
+
+[cases.files]
+"blocks/example.liquid" = '''
+{% assign unused_var = true %}
+{% schema %}
+  {
+    "name": "unused_var",
+    "settings": []
+  }
+{% endschema %}
+'''
+
+[[cases.offenses]]
+file = "blocks/example.liquid"
+message = "The variable 'unused_var' is assigned but not used"
+start = [ 0, 0 ]
+highlight = "{% assign unused_var = true %}"
+
+[[cases.offenses.suggest]]
+message = "Remove the unused variable 'unused_var'"
+result = '''
+
+{% schema %}
+  {
+    "name": "unused_var",
+    "settings": []
+  }
+{% endschema %}
+'''
+
+[[cases]]
+name = "counts uses inside an HTML style element"
+
+[cases.files]
+"file.liquid" = '''
+{% assign usedVar = 1 %}
+<style>
+  {{ usedVar }}
+</style>
+'''
+
+[[cases]]
+name = "counts uses inside an HTML script element"
+
+[cases.files]
+"file.liquid" = '''
+{% assign usedVar = 1 %}
+<script>
+  {{ usedVar }}
+</script>
+'''
+
+[[cases]]
+name = "ignores variables that start with an underscore"
+
+[cases.files]
+"file.liquid" = '''
+{% assign _ = 1 %}
+{% assign _unusedVar = 1 %}
+{% capture _ %}
+  {% form "cart", cart %}
+    {% assign some_var = cart.successfully_posted? %}
+  {% endform %}
+{% endcapture %}
+{{ some_var }}
+'''
+
+[[cases]]
+name = "does not count uses inside a raw tag"
+
+[cases.files]
+"file.liquid" = '''
+{% assign unusedVar = 1 %}
+{% # It's a trap. It's not really used %}
+{% raw %}
+  {{ unusedVar }}
+{% endraw %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "The variable 'unusedVar' is assigned but not used"
+start = [ 0, 0 ]
+highlight = "{% assign unusedVar = 1 %}"
+
+[[cases.offenses.suggest]]
+message = "Remove the unused variable 'unusedVar'"
+result = '''
+
+{% # It's a trap. It's not really used %}
+{% raw %}
+  {{ unusedVar }}
+{% endraw %}
+'''

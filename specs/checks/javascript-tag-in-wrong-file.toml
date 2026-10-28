@@ -1,0 +1,32 @@
+check = "JavascriptTagInWrongFile"
+severity = "error"
+
+[[cases]]
+name = "allows javascript tags in sections/test.liquid"
+
+[cases.files]
+"sections/test.liquid" = "{% javascript %}{% endjavascript %}"
+
+[[cases]]
+name = "allows javascript tags in blocks/test.liquid"
+
+[cases.files]
+"blocks/test.liquid" = "{% javascript %}{% endjavascript %}"
+
+[[cases]]
+name = "allows javascript tags in snippets/test.liquid"
+
+[cases.files]
+"snippets/test.liquid" = "{% javascript %}{% endjavascript %}"
+
+[[cases]]
+name = "reports javascript tags in templates/index.liquid"
+
+[cases.files]
+"templates/index.liquid" = "{% javascript %}{% endjavascript %}"
+
+[[cases.offenses]]
+file = "templates/index.liquid"
+message = "{% javascript %} is only valid in section, block, or snippet files."
+start = [ 0, 0 ]
+highlight = "{% javascript %}"

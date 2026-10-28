@@ -1,0 +1,31 @@
+check = "OrphanedSnippet"
+severity = "warning"
+
+[[cases]]
+name = "should report a warning"
+
+[cases.files]
+"snippets/orphaned.liquid" = "<div>Orphaned content</div>"
+
+[[cases.offenses]]
+file = "snippets/orphaned.liquid"
+message = "This snippet is not referenced by any other files"
+start = [ 0, 0 ]
+highlight = "<"
+
+[[cases]]
+name = "should not report a warning"
+
+[cases.files]
+"snippets/product-card.liquid" = "<div>Referenced snippet</div>"
+"templates/product.liquid" = "{% render 'product-card' %}"
+
+[[cases.references]]
+source = "templates/product.liquid"
+target = "snippets/product-card.liquid"
+
+[[cases]]
+name = "should not report warnings for templates"
+
+[cases.files]
+"templates/index.liquid" = "{% section 'header' %}"

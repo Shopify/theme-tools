@@ -1,0 +1,38 @@
+check = "SchemaSectionOrBlockOnly"
+severity = "error"
+
+[[cases]]
+name = "allows schema tags in sections/test.liquid"
+
+[cases.files]
+"sections/test.liquid" = "{% schema %}{% endschema %}"
+
+[[cases]]
+name = "allows schema tags in blocks/test.liquid"
+
+[cases.files]
+"blocks/test.liquid" = "{% schema %}{% endschema %}"
+
+[[cases]]
+name = "reports schema tags in templates/index.liquid"
+
+[cases.files]
+"templates/index.liquid" = "{% schema %}{% endschema %}"
+
+[[cases.offenses]]
+file = "templates/index.liquid"
+message = "{% schema %} is only valid in section or block files."
+start = [ 0, 0 ]
+highlight = "{% schema %}"
+
+[[cases]]
+name = "reports schema tags in snippets/test.liquid"
+
+[cases.files]
+"snippets/test.liquid" = "{% schema %}{% endschema %}"
+
+[[cases.offenses]]
+file = "snippets/test.liquid"
+message = "{% schema %} is only valid in section or block files."
+start = [ 0, 0 ]
+highlight = "{% schema %}"

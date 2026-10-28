@@ -1,0 +1,130 @@
+check = "DuplicateContentForArguments"
+severity = "warning"
+
+[[cases]]
+name = "should report duplicate arguments in content_for tags"
+
+[cases.files]
+"file.liquid" = '''
+{% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param1: 'value3' %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Duplicate argument 'param1' in content_for tag for static block 'fake-block'."
+start = [ 0, 80 ]
+highlight = "param1: 'value3'"
+
+[[cases.offenses.suggest]]
+message = "Remove duplicate argument 'param1'"
+result = '''
+{% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2' %}
+'''
+
+[[cases]]
+name = "should report multiple duplicate arguments in content_for tags"
+
+[cases.files]
+"file.liquid" = '''
+{% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param1: 'value3', param2: 'value4', param1: 'value5' %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Duplicate argument 'param1' in content_for tag for static block 'fake-block'."
+start = [ 0, 80 ]
+highlight = "param1: 'value3'"
+
+[[cases.offenses.suggest]]
+message = "Remove duplicate argument 'param1'"
+result = '''
+{% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param2: 'value4', param1: 'value5' %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Duplicate argument 'param2' in content_for tag for static block 'fake-block'."
+start = [ 0, 98 ]
+highlight = "param2: 'value4'"
+
+[[cases.offenses.suggest]]
+message = "Remove duplicate argument 'param2'"
+result = '''
+{% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param1: 'value3', param1: 'value5' %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Duplicate argument 'param1' in content_for tag for static block 'fake-block'."
+start = [ 0, 116 ]
+highlight = "param1: 'value5'"
+
+[[cases.offenses.suggest]]
+message = "Remove duplicate argument 'param1'"
+result = '''
+{% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param1: 'value3', param2: 'value4' %}
+'''
+
+[[cases]]
+name = "should correctly suggest fixing all duplicate arguments except for the first"
+
+[cases.files]
+"file.liquid" = "{% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param1: 'value3', param1: 'value4' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Duplicate argument 'param1' in content_for tag for static block 'fake-block'."
+start = [ 0, 80 ]
+highlight = "param1: 'value3'"
+
+[[cases.offenses.suggest]]
+message = "Remove duplicate argument 'param1'"
+result = "{% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param1: 'value4' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Duplicate argument 'param1' in content_for tag for static block 'fake-block'."
+start = [ 0, 98 ]
+highlight = "param1: 'value4'"
+
+[[cases.offenses.suggest]]
+message = "Remove duplicate argument 'param1'"
+result = "{% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param1: 'value3' %}"
+
+[[cases]]
+name = "should not report when there are no duplicate arguments"
+
+[cases.files]
+"file.liquid" = '''
+{% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param3: 'value3' %}
+'''
+
+[[cases]]
+name = "should not report for variable render tags where snippet name is a variable"
+
+[cases.files]
+"file.liquid" = '''
+{% render my_variable, param1: 'value1', param1: 'value2' %}
+'''
+
+[[cases]]
+name = "should handle remove duplicate param when there are multiple render tags"
+
+[cases.files]
+"file.liquid" = '''
+{% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param3: 'value3' %}
+{% content_for 'block', type: 'fake-block', param1: 'value4', param2: 'value5', param1: 'value6' %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Duplicate argument 'param1' in content_for tag for static block 'fake-block'."
+start = [ 1, 80 ]
+highlight = "param1: 'value6'"
+
+[[cases.offenses.suggest]]
+message = "Remove duplicate argument 'param1'"
+result = '''
+{% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param3: 'value3' %}
+{% content_for 'block', type: 'fake-block', param1: 'value4', param2: 'value5' %}
+'''

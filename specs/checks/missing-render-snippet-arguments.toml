@@ -1,0 +1,260 @@
+check = "MissingRenderSnippetArguments"
+severity = "warning"
+
+[[cases]]
+name = "should report missing required arguments"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} required_string - A required string
+  @param {number} required_number - A required number
+  @param {boolean} required_boolean - A required boolean
+  @param {object} required_object - A required object
+  @param {string} [optional_string] - An optional string
+  @param {number} [optional_number] - An optional number
+  @param {object} [optional_object] - An optional object
+  @param {boolean} [optional_boolean] - An optional boolean
+{% enddoc %}
+'''
+"file.liquid" = "{% render 'card' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing required argument 'required_string' in render tag for snippet 'card'."
+start = [ 0, 10 ]
+highlight = "'card' "
+
+[[cases.offenses.suggest]]
+message = "Add required argument 'required_string'"
+result = "{% render 'card', required_string: '' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing required argument 'required_number' in render tag for snippet 'card'."
+start = [ 0, 10 ]
+highlight = "'card' "
+
+[[cases.offenses.suggest]]
+message = "Add required argument 'required_number'"
+result = "{% render 'card', required_number: 0 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing required argument 'required_boolean' in render tag for snippet 'card'."
+start = [ 0, 10 ]
+highlight = "'card' "
+
+[[cases.offenses.suggest]]
+message = "Add required argument 'required_boolean'"
+result = "{% render 'card', required_boolean: false %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing required argument 'required_object' in render tag for snippet 'card'."
+start = [ 0, 10 ]
+highlight = "'card' "
+
+[[cases.offenses.suggest]]
+message = "Add required argument 'required_object'"
+result = "{% render 'card', required_object:  %}"
+
+[[cases]]
+name = "should suggest adding missing required arguments when none already exist"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} required_string - A required string
+  @param {number} required_number - A required number
+  @param {boolean} required_boolean - A required boolean
+  @param {object} required_object - A required object
+  @param {string} [optional_string] - An optional string
+  @param {number} [optional_number] - An optional number
+  @param {object} [optional_object] - An optional object
+  @param {boolean} [optional_boolean] - An optional boolean
+{% enddoc %}
+'''
+"file.liquid" = "{% render 'card' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing required argument 'required_string' in render tag for snippet 'card'."
+start = [ 0, 10 ]
+highlight = "'card' "
+
+[[cases.offenses.suggest]]
+message = "Add required argument 'required_string'"
+result = "{% render 'card', required_string: '' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing required argument 'required_number' in render tag for snippet 'card'."
+start = [ 0, 10 ]
+highlight = "'card' "
+
+[[cases.offenses.suggest]]
+message = "Add required argument 'required_number'"
+result = "{% render 'card', required_number: 0 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing required argument 'required_boolean' in render tag for snippet 'card'."
+start = [ 0, 10 ]
+highlight = "'card' "
+
+[[cases.offenses.suggest]]
+message = "Add required argument 'required_boolean'"
+result = "{% render 'card', required_boolean: false %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing required argument 'required_object' in render tag for snippet 'card'."
+start = [ 0, 10 ]
+highlight = "'card' "
+
+[[cases.offenses.suggest]]
+message = "Add required argument 'required_object'"
+result = "{% render 'card', required_object:  %}"
+
+[[cases]]
+name = "should suggest adding missing argument after provided alias variable (1)"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} title - The title of the card
+  @param {string} description - The description of the card
+{% enddoc %}
+<div>{{ title }}</div>
+<div>{{ description }}</div>
+'''
+"file.liquid" = "{% render 'card' with 'my-card' as title %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing required argument 'description' in render tag for snippet 'card'."
+start = [ 0, 10 ]
+highlight = "'card' with 'my-card' as title "
+
+[[cases.offenses.suggest]]
+message = "Add required argument 'description'"
+result = "{% render 'card' with 'my-card' as title, description: '' %}"
+
+[[cases]]
+name = "should suggest adding missing argument after provided alias variable (2)"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} title - The title of the card
+  @param {string} description - The description of the card
+{% enddoc %}
+<div>{{ title }}</div>
+<div>{{ description }}</div>
+'''
+"file.liquid" = "{% render 'card' for titles as title %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing required argument 'description' in render tag for snippet 'card'."
+start = [ 0, 10 ]
+highlight = "'card' for titles as title "
+
+[[cases.offenses.suggest]]
+message = "Add required argument 'description'"
+result = "{% render 'card' for titles as title, description: '' %}"
+
+[[cases]]
+name = "should handle mixed case type annotations"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {String} text - The text
+  @param {NUMBER} count - The count
+  @param {BOOLEAN} flag - The flag
+  @param {Object} data - The data
+{% enddoc %}
+<div>{{ text }}{{ count }}{{ flag }}{{ data }}</div>
+'''
+"file.liquid" = "{% render 'card', text: \"hello\", count: 5, flag: true, data: product %}"
+
+[[cases]]
+name = "should not report when snippet has no doc comment"
+
+[cases.files]
+"snippets/card.liquid" = "<h1>This snippet has no doc comment</h1>"
+"file.liquid" = "{% render 'card', title: 'My Card' %}"
+
+[[cases]]
+name = "should not report when LiquidDoc definition has no defined params"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @description this is a description
+  @example this is an example
+{% enddoc %}
+<div>{{ title }}</div>
+<div>{{ description }}</div>
+'''
+"file.liquid" = "{% render 'card', title: 'My Card' %}"
+
+[[cases]]
+name = "should not report when snippet name is a VariableLookup"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} title - The title of the card
+  @param {string} description - The description of the card
+{% enddoc %}
+<div>{{ title }}</div>
+<div>{{ description }}</div>
+'''
+"file.liquid" = "{% assign snippet_name = 'card' %}{% render snippet_name, title: 'My Card' %}"
+
+[[cases]]
+name = "should report when \"with/for\" alias syntax is used (1)"
+
+[cases.files]
+"snippets/card.liquid" = """
+{% doc %}
+  @param {string} title - The title of the card
+{% enddoc %}
+<div>{{ title }}</div>\u0020\u0020
+"""
+"file.liquid" = "{% render 'card' with 'my-card' as unknown %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing required argument 'title' in render tag for snippet 'card'."
+start = [ 0, 10 ]
+highlight = "'card' with 'my-card' as unknown "
+
+[[cases.offenses.suggest]]
+message = "Add required argument 'title'"
+result = "{% render 'card' with 'my-card' as unknown, title: '' %}"
+
+[[cases]]
+name = "should report when \"with/for\" alias syntax is used (2)"
+
+[cases.files]
+"snippets/card.liquid" = """
+{% doc %}
+  @param {string} title - The title of the card
+{% enddoc %}
+<div>{{ title }}</div>\u0020\u0020
+"""
+"file.liquid" = "{% render 'card' for array as unknown %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing required argument 'title' in render tag for snippet 'card'."
+start = [ 0, 10 ]
+highlight = "'card' for array as unknown "
+
+[[cases.offenses.suggest]]
+message = "Add required argument 'title'"
+result = "{% render 'card' for array as unknown, title: '' %}"

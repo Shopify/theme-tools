@@ -1,0 +1,179 @@
+check = "ParserBlockingScript"
+severity = "error"
+
+[[cases]]
+name = "should report the correct offense for the Liquid filter"
+
+[cases.files]
+"code.liquid" = "{{ 'asset' | script_tag }}"
+
+[[cases.offenses]]
+file = "code.liquid"
+message = "The script_tag filter is parser-blocking. Use a <script> tag with async or defer for better performance"
+start = [ 0, 13 ]
+highlight = "script_tag"
+
+[[cases.offenses.suggest]]
+message = "Use an HTML script tag with the defer attribute instead"
+result = "<script src=\"{{ 'asset' }}\" defer></script>"
+
+[[cases.offenses.suggest]]
+message = "Use an HTML script tag with the async attribute instead"
+result = "<script src=\"{{ 'asset' }}\" async></script>"
+
+[[cases]]
+name = "should report the correct offense when using the script tag"
+
+[cases.files]
+"code.liquid" = '''
+<script src="https://foo.bar/baz.js"></script>
+'''
+
+[[cases.offenses]]
+file = "code.liquid"
+message = "Avoid parser blocking scripts by adding `defer` or `async` on this tag"
+start = [ 0, 0 ]
+highlight = "<script src=\"https://foo.bar/baz.js\"></script>"
+
+[[cases.offenses.suggest]]
+message = "Use an HTML script tag with the defer attribute instead"
+result = '''
+<script src="https://foo.bar/baz.js" defer></script>
+'''
+
+[[cases.offenses.suggest]]
+message = "Use an HTML script tag with the async attribute instead"
+result = '''
+<script src="https://foo.bar/baz.js" async></script>
+'''
+
+[[cases]]
+name = "should suggest to replace a LiquidVariableOutput with a script tag that has the expression as URL"
+
+[cases.files]
+"code.liquid" = "{{ 'asset' | script_tag }}"
+
+[[cases.offenses]]
+file = "code.liquid"
+message = "The script_tag filter is parser-blocking. Use a <script> tag with async or defer for better performance"
+start = [ 0, 13 ]
+highlight = "script_tag"
+
+[[cases.offenses.suggest]]
+message = "Use an HTML script tag with the defer attribute instead"
+result = "<script src=\"{{ 'asset' }}\" defer></script>"
+
+[[cases.offenses.suggest]]
+message = "Use an HTML script tag with the async attribute instead"
+result = "<script src=\"{{ 'asset' }}\" async></script>"
+
+[[cases]]
+name = "should suggest to replace a LiquidVariableOutput with a script tag that has the expression and previous filters as URL"
+
+[cases.files]
+"code.liquid" = "{{ 'asset' | asset_url | script_tag }}"
+
+[[cases.offenses]]
+file = "code.liquid"
+message = "The script_tag filter is parser-blocking. Use a <script> tag with async or defer for better performance"
+start = [ 0, 25 ]
+highlight = "script_tag"
+
+[[cases.offenses.suggest]]
+message = "Use an HTML script tag with the defer attribute instead"
+result = "<script src=\"{{ 'asset' | asset_url }}\" defer></script>"
+
+[[cases.offenses.suggest]]
+message = "Use an HTML script tag with the async attribute instead"
+result = "<script src=\"{{ 'asset' | asset_url }}\" async></script>"
+
+[[cases]]
+name = "should not suggest anything if the script_tag appears in an echo tag"
+
+[cases.files]
+"code.liquid" = "{% echo 'asset' | asset_url | script_tag %}"
+
+[[cases.offenses]]
+file = "code.liquid"
+message = "The script_tag filter is parser-blocking. Use a <script> tag with async or defer for better performance"
+start = [ 0, 30 ]
+highlight = "script_tag"
+
+[[cases]]
+name = "should not suggest anything if the script_tag appears in an assign tag"
+
+[cases.files]
+"code.liquid" = "{% assign script = 'asset' | asset_url | script_tag %}"
+
+[[cases.offenses]]
+file = "code.liquid"
+message = "The script_tag filter is parser-blocking. Use a <script> tag with async or defer for better performance"
+start = [ 0, 41 ]
+highlight = "script_tag"
+
+[[cases]]
+name = "should not suggest anything if the script_tag appears in a liquid tag"
+
+[cases.files]
+"code.liquid" = '''
+{% liquid
+echo 'asset' | asset_url | script_tag %}'''
+
+[[cases.offenses]]
+file = "code.liquid"
+message = "The script_tag filter is parser-blocking. Use a <script> tag with async or defer for better performance"
+start = [ 1, 27 ]
+highlight = "script_tag"
+
+[[cases]]
+name = "should suggest adding both attributes at the end"
+
+[cases.files]
+"code.liquid" = "<script src=\"a.js\"></script>"
+
+[[cases.offenses]]
+file = "code.liquid"
+message = "Avoid parser blocking scripts by adding `defer` or `async` on this tag"
+start = [ 0, 0 ]
+highlight = "<script src=\"a.js\"></script>"
+
+[[cases.offenses.suggest]]
+message = "Use an HTML script tag with the defer attribute instead"
+result = "<script src=\"a.js\" defer></script>"
+
+[[cases.offenses.suggest]]
+message = "Use an HTML script tag with the async attribute instead"
+result = "<script src=\"a.js\" async></script>"
+
+[[cases]]
+name = "should not report any offense when async is set on a script tag"
+
+[cases.files]
+"code.liquid" = '''
+<script src="https://foo.bar/baz.js" async></script>
+'''
+
+[[cases]]
+name = "should not report any offense when defer is set on a script tag"
+
+[cases.files]
+"code.liquid" = '''
+<script src="https://foo.bar/baz.js" defer="defer"></script>
+'''
+
+[[cases]]
+name = "should not report any offense when async and defer are set on a script tag"
+
+[cases.files]
+"code.liquid" = '''
+<script src="https://foo.bar/baz.js" async defer></script>
+'''
+
+[[cases]]
+name = "should not report any offense when using scripts of type module"
+
+[cases.files]
+"code.liquid" = '''
+<script src="https://foo.bar/baz.js" type="module"></script>
+<script src="https://foo.bar/baz.js" type="importmap"></script>
+'''

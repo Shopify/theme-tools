@@ -1,0 +1,842 @@
+check = "ValidRenderSnippetArgumentTypes"
+severity = "warning"
+
+[[cases]]
+name = "should accept 'hello' for string"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: 'hello' %}"
+
+[[cases]]
+name = "should accept '' for string"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: '' %}"
+
+[[cases]]
+name = "should accept product for string"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: product %}"
+
+[[cases]]
+name = "should reject 123 for string"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: 123 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got number"
+start = [ 0, 25 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% render 'card', param: '' %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card', param:  %}"
+
+[[cases]]
+name = "should reject true for string"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: true %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got boolean"
+start = [ 0, 25 ]
+highlight = "true"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% render 'card', param: '' %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card', param:  %}"
+
+[[cases]]
+name = "should accept 0 for number"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {number} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: 0 %}"
+
+[[cases]]
+name = "should accept 123 for number"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {number} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: 123 %}"
+
+[[cases]]
+name = "should accept -1 for number"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {number} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: -1 %}"
+
+[[cases]]
+name = "should accept product for number"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {number} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: product %}"
+
+[[cases]]
+name = "should reject 'hello' for number"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {number} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: 'hello' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected number, got string"
+start = [ 0, 25 ]
+highlight = "'hello'"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '0' for number"
+result = "{% render 'card', param: 0 %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card', param:  %}"
+
+[[cases]]
+name = "should reject true for number"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {number} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: true %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected number, got boolean"
+start = [ 0, 25 ]
+highlight = "true"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '0' for number"
+result = "{% render 'card', param: 0 %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card', param:  %}"
+
+[[cases]]
+name = "should accept true for boolean"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {boolean} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: true %}"
+
+[[cases]]
+name = "should accept false for boolean"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {boolean} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: false %}"
+
+[[cases]]
+name = "should accept nil for boolean"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {boolean} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: nil %}"
+
+[[cases]]
+name = "should accept empty for boolean"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {boolean} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: empty %}"
+
+[[cases]]
+name = "should accept product for boolean"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {boolean} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: product %}"
+
+[[cases]]
+name = "should accept 123 for boolean"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {boolean} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: 123 %}"
+
+[[cases]]
+name = "should accept 'hello' for boolean"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {boolean} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: 'hello' %}"
+
+[[cases]]
+name = "should accept product for object"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {object} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: product %}"
+
+[[cases]]
+name = "should accept (1..3) for object"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {object} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: (1..3) %}"
+
+[[cases]]
+name = "should reject 'hello' for object"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {object} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: 'hello' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected object, got string"
+start = [ 0, 25 ]
+highlight = "'hello'"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card', param:  %}"
+
+[[cases]]
+name = "should reject 123 for object"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {object} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: 123 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected object, got number"
+start = [ 0, 25 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card', param:  %}"
+
+[[cases]]
+name = "should reject true for object"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {object} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: true %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected object, got boolean"
+start = [ 0, 25 ]
+highlight = "true"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card', param:  %}"
+
+[[cases]]
+name = "should reject empty for object"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {object} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: empty %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected object, got boolean"
+start = [ 0, 25 ]
+highlight = "empty"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card', param:  %}"
+
+[[cases]]
+name = "should handle mixed case type annotations"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {String} text - The text
+  @param {NUMBER} count - The count
+  @param {BOOLEAN} flag - The flag
+  @param {Object} data - The data
+{% enddoc %}
+<div>{{ text }}{{ count }}{{ flag }}{{ data }}</div>
+'''
+"file.liquid" = "{% render 'card', text: \"hello\", count: 5, flag: true, data: product %}"
+
+[[cases]]
+name = "should ignore variable lookups"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {String} title - The title
+{% enddoc %}
+<div>{{ title }}</div>
+'''
+"file.liquid" = "{% render 'card', title: product_title %}"
+
+[[cases]]
+name = "should not report when snippet has no doc comment"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = "<h1>This snippet has no doc comment</h1>"
+"file.liquid" = "{% render 'card', title: 123 %}"
+
+[[cases]]
+name = "should not enforce unsupported types"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {Unsupported} title - The title
+{% enddoc %}
+<div>{{ title }}</div>
+'''
+"file.liquid" = "{% render 'card', title: 123 %}"
+
+[[cases]]
+name = "should not report for unrecognized arguments"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {String} title - The title
+{% enddoc %}
+<div>{{ title }}</div>
+'''
+"file.liquid" = "{% render 'card', title: \"hello\", unrecognized: 123 %}"
+
+[[cases]]
+name = "should report when `with` alias is used"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {String} title - The title
+{% enddoc %}
+<div>{{ title }}</div>
+'''
+"file.liquid" = "{% render 'card' with 12 as title %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'title': expected string, got number"
+start = [ 0, 22 ]
+highlight = "12"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% render 'card' with '' as title %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card' with  as title %}"
+
+[[cases]]
+name = "should report when `for` alias is used"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {String} title - The title
+{% enddoc %}
+<div>{{ title }}</div>
+'''
+"file.liquid" = "{% render 'card' for 123 as title %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'title': expected string, got number"
+start = [ 0, 21 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% render 'card' for '' as title %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card' for  as title %}"
+
+[[cases]]
+name = "should suggest replacing with default value for type or removing value"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: 123 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got number"
+start = [ 0, 25 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% render 'card', param: '' %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card', param:  %}"
+
+[[cases]]
+name = "should allow users to fix a single argument when multiple are provided`"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} title - The title
+  @param {number} count - The count
+{% enddoc %}
+<div>{{ title }} {{ count }}</div>
+'''
+"file.liquid" = "{% render 'card', title: 123, count: 5 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'title': expected string, got number"
+start = [ 0, 25 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% render 'card', title: '', count: 5 %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card', title: , count: 5 %}"
+
+[[cases]]
+name = "should handle arguments with trailing commas"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: 123, %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got number"
+start = [ 0, 25 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% render 'card', param: '', %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card', param: , %}"
+
+[[cases]]
+name = "should handle arguments with complex spacing"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} title - The title
+  @param {number} count - The count
+{% enddoc %}
+'''
+"file.liquid" = '''
+{% render 'card',
+        title: 123,
+        count: 5
+      %}'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'title': expected string, got number"
+start = [ 1, 15 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = '''
+{% render 'card',
+        title: '',
+        count: 5
+      %}'''
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = '''
+{% render 'card',
+        title: ,
+        count: 5
+      %}'''
+
+[[cases]]
+name = "should handle argument with no space after colon"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param:123 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got number"
+start = [ 0, 24 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% render 'card', param:'' %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card', param: %}"
+
+[[cases]]
+name = "should handle argument with multiple spaces after colon"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param:     123 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got number"
+start = [ 0, 29 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% render 'card', param:     '' %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card', param:      %}"
+
+[[cases]]
+name = "should handle argument with newlines"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = """
+{% render 'card', param:\u0020
+        123\u0020
+      %}"""
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got number"
+start = [ 1, 8 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = """
+{% render 'card', param:\u0020
+        ''\u0020
+      %}"""
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = """
+{% render 'card', param:\u0020
+\u0020\u0020\u0020\u0020\u0020\u0020\u0020\u0020\u0020
+      %}"""
+
+[[cases]]
+name = "should suggest removal and replacement if expected type has a default value"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: 123 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got number"
+start = [ 0, 25 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% render 'card', param: '' %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card', param:  %}"
+
+[[cases]]
+name = "should only suggest removal if expected type default value is ''"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {object} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card', param: 123 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected object, got number"
+start = [ 0, 25 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card', param:  %}"
+
+[[cases]]
+name = "should handle when aliases `with` syntax is used"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card' with 123 as param %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got number"
+start = [ 0, 22 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% render 'card' with '' as param %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card' with  as param %}"
+
+[[cases]]
+name = "should handle when aliases `for` syntax is used"
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% doc %}
+  @param {string} param - Description
+{% enddoc %}
+<div>{{ param }}</div>
+'''
+"file.liquid" = "{% render 'card' for 123 as param %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Type mismatch for argument 'param': expected string, got number"
+start = [ 0, 21 ]
+highlight = "123"
+
+[[cases.offenses.suggest]]
+message = "Replace with default value '''' for string"
+result = "{% render 'card' for '' as param %}"
+
+[[cases.offenses.suggest]]
+message = "Remove value"
+result = "{% render 'card' for  as param %}"

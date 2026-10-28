@@ -1,0 +1,23 @@
+check = "JavascriptOncePerFile"
+severity = "error"
+
+[[cases]]
+name = "reports second and subsequent javascript tags in a file"
+
+[cases.files]
+"sections/test.liquid" = '''
+{% javascript %}{% endjavascript %}
+{% javascript %}{% endjavascript %}
+{% javascript %}{% endjavascript %}'''
+
+[[cases.offenses]]
+file = "sections/test.liquid"
+message = "{% javascript %} can only appear once per file."
+start = [ 1, 0 ]
+highlight = "{% javascript %}"
+
+[[cases.offenses]]
+file = "sections/test.liquid"
+message = "{% javascript %} can only appear once per file."
+start = [ 2, 0 ]
+highlight = "{% javascript %}"

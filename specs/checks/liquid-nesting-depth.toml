@@ -1,0 +1,210 @@
+check = "LiquidNestingDepth"
+severity = "warning"
+
+[[cases]]
+name = "does not report when nesting equals the tolerated depth"
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% if condition_0 %}
+{% if condition_1 %}
+{% if condition_2 %}
+{% if condition_3 %}
+{% if condition_4 %}
+{% if condition_5 %}
+{% if condition_6 %}
+{% if condition_7 %}
+{% if condition_8 %}
+{% if condition_9 %}
+Nested content
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}'''
+
+[[cases]]
+name = "reports when nesting exceeds the tolerated depth"
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% if condition_0 %}
+{% if condition_1 %}
+{% if condition_2 %}
+{% if condition_3 %}
+{% if condition_4 %}
+{% if condition_5 %}
+{% if condition_6 %}
+{% if condition_7 %}
+{% if condition_8 %}
+{% if condition_9 %}
+{% if condition_10 %}
+Nested content
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}'''
+
+[[cases.offenses]]
+file = "snippets/test.liquid"
+message = "This Liquid block is nested 11 levels deep, which exceeds the maximum allowed depth of 10."
+start = [ 10, 0 ]
+highlight = "{% if condition_10 %}"
+
+[[cases]]
+name = "does not report a plain Liquid template"
+
+[cases.files]
+"snippets/test.liquid" = "<div>{{ product.title }}</div>"
+
+[cases.config.LiquidNestingDepth]
+maxDepth = 1
+
+[[cases]]
+name = "reports the first tag that exceeds a custom threshold"
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% if product.available %}
+        {% for variant in product.variants %}
+          {% unless hidden %}
+            Available variant
+          {% endunless %}
+        {% endfor %}
+      {% endif %}'''
+
+[cases.config.LiquidNestingDepth]
+maxDepth = 2
+
+[[cases.offenses]]
+file = "snippets/test.liquid"
+message = "This Liquid block is nested 3 levels deep, which exceeds the maximum allowed depth of 2."
+start = [ 2, 10 ]
+highlight = "{% unless hidden %}"
+
+[[cases]]
+name = "reports each nested control-flow tag deeper than the threshold"
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% if condition_0 %}
+{% if condition_1 %}
+{% if condition_2 %}
+{% if condition_3 %}
+{% if condition_4 %}
+Nested content
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}'''
+
+[cases.config.LiquidNestingDepth]
+maxDepth = 3
+
+[[cases.offenses]]
+file = "snippets/test.liquid"
+message = "This Liquid block is nested 4 levels deep, which exceeds the maximum allowed depth of 3."
+start = [ 3, 0 ]
+highlight = "{% if condition_3 %}"
+
+[[cases.offenses]]
+file = "snippets/test.liquid"
+message = "This Liquid block is nested 5 levels deep, which exceeds the maximum allowed depth of 3."
+start = [ 4, 0 ]
+highlight = "{% if condition_4 %}"
+
+[[cases]]
+name = "does not count elsif and else branches as additional nesting"
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% if product.available %}
+        Available
+      {% elsif product.tags contains 'coming-soon' %}
+        Coming soon
+      {% else %}
+        Unavailable
+      {% endif %}'''
+
+[cases.config.LiquidNestingDepth]
+maxDepth = 1
+
+[[cases]]
+name = "counts tablerow as a nesting tag"
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% if section.blocks.size > 0 %}
+        {% tablerow block in section.blocks %}
+          {% unless block.settings.hidden %}
+            {{ block.settings.title }}
+          {% endunless %}
+        {% endtablerow %}
+      {% endif %}'''
+
+[cases.config.LiquidNestingDepth]
+maxDepth = 2
+
+[[cases.offenses]]
+file = "snippets/test.liquid"
+message = "This Liquid block is nested 3 levels deep, which exceeds the maximum allowed depth of 2."
+start = [ 2, 10 ]
+highlight = "{% unless block.settings.hidden %}"
+
+[[cases]]
+name = "counts nested case blocks consistently with if, unless, and for blocks"
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% case section.settings.layout %}
+        {% when 'grid' %}
+          {% for product in collection.products %}
+            {% if product.available %}
+              {% unless product.tags contains 'hidden' %}
+                {{ product.title }}
+              {% endunless %}
+            {% endif %}
+          {% endfor %}
+      {% endcase %}'''
+
+[cases.config.LiquidNestingDepth]
+maxDepth = 3
+
+[[cases.offenses]]
+file = "snippets/test.liquid"
+message = "This Liquid block is nested 4 levels deep, which exceeds the maximum allowed depth of 3."
+start = [ 4, 14 ]
+highlight = "{% unless product.tags contains 'hidden' %}"
+
+[[cases]]
+name = "does not count HTML nesting as Liquid nesting depth"
+
+[cases.files]
+"snippets/test.liquid" = '''
+<div>
+        <div>
+          <div>
+            <div>
+              {% if product.available %}
+                Available
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>'''
+
+[cases.config.LiquidNestingDepth]
+maxDepth = 1

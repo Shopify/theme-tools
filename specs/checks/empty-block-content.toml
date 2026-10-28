@@ -1,0 +1,206 @@
+check = "EmptyBlockContent"
+severity = "warning"
+
+[[cases]]
+name = "should not report offenses when the blocks array is not empty in sections"
+
+[cases.files]
+"sections/test_block.liquid" = """
+<div>\u0020
+    {% content_for 'blocks' %}
+</div>
+{% schema %}
+{
+    \"name\": \"Test\",
+    \"blocks\": [
+      {
+        \"type\": \"test-block\"
+      }
+    ]
+}
+{% endschema %}
+"""
+
+[[cases]]
+name = "should report offenses when the blocks array is empty in sections"
+
+[cases.files]
+"sections/test_block.liquid" = """
+<div>\u0020
+    {% content_for 'blocks' %}
+</div>
+{% schema %}
+{
+    \"name\": \"Test\",
+    \"blocks\": []
+}
+{% endschema %}
+"""
+
+[[cases.offenses]]
+file = "sections/test_block.liquid"
+message = "The 'content_for \"blocks\"' tag is present, but the blocks array is empty."
+start = [ 1, 4 ]
+highlight = "{% content_for 'blocks' %}"
+
+[[cases]]
+name = "should report offenses when the blocks array is empty with the correct indices in sections"
+
+[cases.files]
+"sections/test_block.liquid" = """
+<div>\u0020
+    {% content_for 'blocks' %}
+</div>
+{% schema %}
+{
+    \"name\": \"Test\",
+    \"blocks\": []
+}
+{% endschema %}
+"""
+
+[[cases.offenses]]
+file = "sections/test_block.liquid"
+message = "The 'content_for \"blocks\"' tag is present, but the blocks array is empty."
+start = [ 1, 4 ]
+highlight = "{% content_for 'blocks' %}"
+
+[[cases]]
+name = "should report offenses when the blocks array has not been defined in sections"
+
+[cases.files]
+"sections/test_block.liquid" = """
+<div>\u0020
+    {% content_for 'blocks' %}
+</div>
+{% schema %}
+{
+    \"name\": \"Test\"
+}
+{% endschema %}
+"""
+
+[[cases.offenses]]
+file = "sections/test_block.liquid"
+message = "The 'content_for \"blocks\"' tag is present, but the blocks array is not defined."
+start = [ 1, 4 ]
+highlight = "{% content_for 'blocks' %}"
+
+[[cases]]
+name = "should not report offenses when 'content_for blocks' is not present in sections"
+
+[cases.files]
+"sections/test_block.liquid" = '''
+{% schema %}
+{
+    "name": "Test",
+    "blocks": [
+        {
+            "type": "test-block"
+        }
+    ]
+}
+{% endschema %}
+'''
+
+[[cases]]
+name = "should not report offenses when the blocks array is not empty in blocks"
+
+[cases.files]
+"blocks/test_block.liquid" = """
+<div>\u0020
+    {% content_for 'blocks' %}
+</div>
+{% schema %}
+{
+    \"name\": \"Test\",
+    \"blocks\": [
+      {
+        \"type\": \"test-block\"
+      }
+    ]
+}
+{% endschema %}
+"""
+
+[[cases]]
+name = "should report offenses when the blocks array is empty in blocks"
+
+[cases.files]
+"blocks/test_block.liquid" = """
+<div>\u0020
+    {% content_for 'blocks' %}
+</div>
+{% schema %}
+{
+    \"name\": \"Test\",
+    \"blocks\": []
+}
+{% endschema %}
+"""
+
+[[cases.offenses]]
+file = "blocks/test_block.liquid"
+message = "The 'content_for \"blocks\"' tag is present, but the blocks array is empty."
+start = [ 1, 4 ]
+highlight = "{% content_for 'blocks' %}"
+
+[[cases]]
+name = "should report offenses when the blocks array is empty with the correct indices in blocks"
+
+[cases.files]
+"blocks/test_block.liquid" = """
+<div>\u0020
+    {% content_for 'blocks' %}
+</div>
+{% schema %}
+{
+    \"name\": \"Test\",
+    \"blocks\": []
+}
+{% endschema %}
+"""
+
+[[cases.offenses]]
+file = "blocks/test_block.liquid"
+message = "The 'content_for \"blocks\"' tag is present, but the blocks array is empty."
+start = [ 1, 4 ]
+highlight = "{% content_for 'blocks' %}"
+
+[[cases]]
+name = "should report offenses when the blocks array has not been defined in blocks"
+
+[cases.files]
+"blocks/test_block.liquid" = """
+<div>\u0020
+    {% content_for 'blocks' %}
+</div>
+{% schema %}
+{
+    \"name\": \"Test\"
+}
+{% endschema %}
+"""
+
+[[cases.offenses]]
+file = "blocks/test_block.liquid"
+message = "The 'content_for \"blocks\"' tag is present, but the blocks array is not defined."
+start = [ 1, 4 ]
+highlight = "{% content_for 'blocks' %}"
+
+[[cases]]
+name = "should not report offenses when 'content_for blocks' is not present in blocks"
+
+[cases.files]
+"blocks/test_block.liquid" = '''
+{% schema %}
+{
+    "name": "Test",
+    "blocks": [
+        {
+            "type": "test-block"
+        }
+    ]
+}
+{% endschema %}
+'''

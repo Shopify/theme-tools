@@ -1,0 +1,222 @@
+check = "StaticStylesheetAndJavascriptTags"
+severity = "error"
+
+[[cases]]
+name = "should not report errors for static CSS content in stylesheet tags"
+
+[cases.files]
+"templates/test.liquid" = '''
+{% stylesheet %}
+  .button {
+    background-color: blue;
+    color: white;
+    padding: 10px 20px;
+  }
+{% endstylesheet %}
+'''
+
+[[cases]]
+name = "should not report errors for static JavaScript content in javascript tags"
+
+[cases.files]
+"templates/test.liquid" = '''
+{% javascript %}
+  function greet(name) {
+    console.log('Hello, ' + name + '!');
+  }
+  greet('World');
+{% endjavascript %}
+'''
+
+[[cases]]
+name = "should report error for liquid variable in stylesheet tag"
+
+[cases.files]
+"templates/test.liquid" = '''
+{% stylesheet %}
+  .button {
+    background-color: {{ settings.button_color }};
+    color: white;
+  }
+{% endstylesheet %}
+'''
+
+[[cases.offenses]]
+file = "templates/test.liquid"
+message = "Liquid variable found in CSS block. {% stylesheet %} tags should only contain static CSS code."
+start = [ 2, 22 ]
+highlight = "{{ settings.button_color }}"
+
+[[cases]]
+name = "should report error for liquid variable in javascript tag"
+
+[cases.files]
+"templates/test.liquid" = '''
+{% javascript %}
+  const apiUrl = '{{ shop.url }}';
+  fetch(apiUrl);
+{% endjavascript %}
+'''
+
+[[cases.offenses]]
+file = "templates/test.liquid"
+message = "Liquid variable found in JavaScript block. {% javascript %} tags should only contain static JavaScript code."
+start = [ 1, 18 ]
+highlight = "{{ shop.url }}"
+
+[[cases]]
+name = "should report error for liquid tag in stylesheet tag"
+
+[cases.files]
+"templates/test.liquid" = '''
+{% stylesheet %}
+  .button {
+    {% if settings.enable_hover %}
+      background-color: blue;
+    {% endif %}
+  }
+{% endstylesheet %}
+'''
+
+[[cases.offenses]]
+file = "templates/test.liquid"
+message = "Liquid tag found in CSS block. {% stylesheet %} tags should only contain static CSS code."
+start = [ 2, 4 ]
+highlight = '''
+{% if settings.enable_hover %}
+      background-color: blue;
+    {% endif %}'''
+
+[[cases]]
+name = "should report error for liquid tag in javascript tag"
+
+[cases.files]
+"templates/test.liquid" = '''
+{% javascript %}
+  {% if settings.enable_analytics %}
+    console.log('Analytics enabled');
+  {% endif %}
+{% endjavascript %}
+'''
+
+[[cases.offenses]]
+file = "templates/test.liquid"
+message = "Liquid tag found in JavaScript block. {% javascript %} tags should only contain static JavaScript code."
+start = [ 1, 2 ]
+highlight = '''
+{% if settings.enable_analytics %}
+    console.log('Analytics enabled');
+  {% endif %}'''
+
+[[cases]]
+name = "should report multiple errors for multiple liquid nodes"
+
+[cases.files]
+"templates/test.liquid" = '''
+{% stylesheet %}
+  .button {
+    background-color: {{ settings.button_color }};
+    {% if settings.show_border %}
+      border: 1px solid {{ settings.border_color }};
+    {% endif %}
+  }
+{% endstylesheet %}
+'''
+
+[[cases.offenses]]
+file = "templates/test.liquid"
+message = "Liquid variable found in CSS block. {% stylesheet %} tags should only contain static CSS code."
+start = [ 2, 22 ]
+highlight = "{{ settings.button_color }}"
+
+[[cases.offenses]]
+file = "templates/test.liquid"
+message = "Liquid tag found in CSS block. {% stylesheet %} tags should only contain static CSS code."
+start = [ 3, 4 ]
+highlight = '''
+{% if settings.show_border %}
+      border: 1px solid {{ settings.border_color }};
+    {% endif %}'''
+
+[[cases]]
+name = "should not report errors for other raw tags like schema"
+
+[cases.files]
+"sections/test.liquid" = '''
+{% schema %}
+{
+  "name": "Section",
+  "settings": [
+    {
+      "id": "color",
+      "type": "color",
+      "default": "{{ settings.default_color }}"
+    }
+  ]
+}
+{% endschema %}
+'''
+
+[[cases]]
+name = "should not report errors for liquid in regular content outside raw tags"
+
+[cases.files]
+"templates/test.liquid" = '''
+<div style="color: {{ settings.text_color }};">
+  {% if product.available %}
+    <button>Buy now</button>
+  {% endif %}
+</div>
+
+{% stylesheet %}
+  .static-style {
+    margin: 10px;
+  }
+{% endstylesheet %}
+'''
+
+[[cases]]
+name = "should report nested raw tags inside stylesheet tags"
+
+[cases.files]
+"templates/test.liquid" = '''
+{% stylesheet %}
+  /* This should trigger an error */
+  {% raw %}
+    .nested { color: red; }
+  {% endraw %}
+{% endstylesheet %}
+'''
+
+[[cases.offenses]]
+file = "templates/test.liquid"
+message = "Liquid tag found in CSS block. {% stylesheet %} tags should only contain static CSS code."
+start = [ 2, 2 ]
+highlight = '''
+{% raw %}
+    .nested { color: red; }
+  {% endraw %}'''
+
+[[cases]]
+name = "should not report offenses for empty stylesheet and javascript blocks"
+
+[cases.files]
+"templates/test.liquid" = '''
+{% stylesheet %}
+{% endstylesheet %}
+
+{% javascript %}
+{% endjavascript %}
+'''
+
+[[cases]]
+name = "should not report errors for liquid in style tags (different from stylesheet)"
+
+[cases.files]
+"templates/test.liquid" = '''
+{% style %}
+  .button {
+    color: {{ settings.color }};
+  }
+{% endstyle %}
+'''

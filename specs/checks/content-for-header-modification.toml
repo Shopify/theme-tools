@@ -1,0 +1,64 @@
+check = "ContentForHeaderModification"
+severity = "error"
+
+[[cases]]
+name = "reports a offense with the use of a filter"
+
+[cases.files]
+"file.liquid" = "{{ content_for_header | split: ',' }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Do not rely on the content of `content_for_header`"
+start = [ 0, 0 ]
+highlight = "{{ content_for_header | split: ',' }}"
+
+[[cases]]
+name = "reports offense with the use of assign"
+
+[cases.files]
+"file.liquid" = "{% assign x = content_for_header %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Do not rely on the content of `content_for_header`"
+start = [ 0, 0 ]
+highlight = "{% assign x = content_for_header %}"
+
+[[cases]]
+name = "reports offense with the use of capture"
+
+[cases.files]
+"file.liquid" = '''
+{% capture x %}
+  {{ content_for_header }}
+{% endcapture %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Do not rely on the content of `content_for_header`"
+start = [ 1, 2 ]
+highlight = "{{ content_for_header }}"
+
+[[cases]]
+name = "reports offense with the use of echo"
+
+[cases.files]
+"file.liquid" = '''
+{% liquid
+  echo content_for_header | split: ','
+%}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Do not rely on the content of `content_for_header`"
+start = [ 1, 2 ]
+highlight = "echo content_for_header | split: ','"
+
+[[cases]]
+name = "does not report an offense with normal use"
+
+[cases.files]
+"file.liquid" = "{{ content_for_header }}"

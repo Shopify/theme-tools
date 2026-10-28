@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { parse } from 'smol-toml';
 import { describe, expect, it } from 'vitest';
-import { parse } from 'yaml';
 import {
   allChecks,
   CheckDefinition,
@@ -65,8 +65,8 @@ const specsDir = resolve(__dirname, '../../../specs/checks');
 const rootUri = path.normalize('file:/');
 const specced = new Set<string>();
 
-for (const specFile of readdirSync(specsDir).filter((f) => f.endsWith('.yml'))) {
-  const spec: Spec = parse(readFileSync(resolve(specsDir, specFile), 'utf8'));
+for (const specFile of readdirSync(specsDir).filter((f) => f.endsWith('.toml'))) {
+  const spec = parse(readFileSync(resolve(specsDir, specFile), 'utf8')) as unknown as Spec;
   const checkDefs = allChecks.filter((def) => def.meta.code === spec.check);
   if (spec.check) specced.add(spec.check);
 
@@ -175,7 +175,7 @@ function toDocset(docset: Case['docset']): ThemeDocset | undefined {
   if (!docset) return undefined;
   const data: Docset =
     typeof docset === 'string'
-      ? parse(readFileSync(resolve(specsDir, 'docsets', `${docset}.yml`), 'utf8'))
+      ? parse(readFileSync(resolve(specsDir, 'docsets', `${docset}.toml`), 'utf8'))
       : docset;
   return {
     filters: async () => data.filters ?? [],

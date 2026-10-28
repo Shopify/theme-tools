@@ -1,0 +1,77 @@
+check = "HardcodedRoutes"
+severity = "warning"
+
+[[cases]]
+name = "should report offenses for hardcoded routes"
+
+[cases.files]
+"file.liquid" = '''
+<a href="/"></a>
+<form action="/search"></form>
+<a href="/account/login"></a>
+<a href="/collections/{{ collection.handle }}"></a>
+<a href="/cart/change?line={{ forloop.index }}&amp;quantity=0"></a>
+<li>{{ 'Socks' | link_to: '/collections/socks' }}</li>
+<li>{{ 'Home' | link_to: '/' }}</li>
+<li>{{ 'Cart (' | append: cart.item_count | append: ')' | link_to: '/cart' }}</li>
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Use routes object {{ routes.root_url }} instead of hardcoding /"
+start = [ 0, 9 ]
+highlight = "/"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Use routes object {{ routes.search_url }} instead of hardcoding /search"
+start = [ 1, 14 ]
+highlight = "/search"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Use routes object {{ routes.account_login_url }} instead of hardcoding /account/login"
+start = [ 2, 9 ]
+highlight = "/account/login"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Use routes object {{ routes.collections_url }} instead of hardcoding /collections"
+start = [ 3, 9 ]
+highlight = "/collections"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Use routes object {{ routes.cart_change_url }} instead of hardcoding /cart/change"
+start = [ 4, 9 ]
+highlight = "/cart/change"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Use routes object {{ routes.collections_url }} instead of hardcoding /collections"
+start = [ 5, 27 ]
+highlight = "/collections"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Use routes object {{ routes.root_url }} instead of hardcoding /"
+start = [ 6, 26 ]
+highlight = "/"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Use routes object {{ routes.cart_url }} instead of hardcoding /cart"
+start = [ 7, 68 ]
+highlight = "/cart"
+
+[[cases]]
+name = "should not report offenses for route objects"
+
+[cases.files]
+"file.liquid" = """
+<form action=\"{{ routes.search_url }}\"></form>
+<a href=\"/{{ blog.url }}\"></a>\u0020\u0020
+<a href=\"/admin\"></a>
+<a href=\"#MainContent\"></a>
+<li>{{ 'About' | link_to: '/pages/about' }}</li>
+"""

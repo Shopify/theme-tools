@@ -1,0 +1,40 @@
+check = "CdnPreconnect"
+severity = "error"
+
+[[cases]]
+name = "should report preconnect to cdn.shopify.com"
+
+[cases.files]
+"file.liquid" = '''
+<link rel="preconnect" href="https://cdn.shopify.com/"/>
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Preconnecting to cdn.shopify.com is unnecessary and can lead to worse performance"
+start = [ 0, 0 ]
+highlight = "<link rel=\"preconnect\" href=\"https://cdn.shopify.com/\"/>"
+
+[[cases]]
+name = "should report crossorigin preconnect to cdn.shopify.com"
+
+[cases.files]
+"file.liquid" = '''
+<link rel="preconnect" href="https://cdn.shopify.com/" crossorigin/>
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Preconnecting to cdn.shopify.com is unnecessary and can lead to worse performance"
+start = [ 0, 0 ]
+highlight = "<link rel=\"preconnect\" href=\"https://cdn.shopify.com/\" crossorigin/>"
+
+[[cases]]
+name = "should not report other link types"
+
+[cases.files]
+"file.liquid" = '''
+<link rel="preload" href="https://example.com/foo.css" as="style"/>
+<link rel="stylesheet" href="https://example.com/bar.css"/>
+<link rel="icon"/>
+'''

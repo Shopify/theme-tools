@@ -1,0 +1,465 @@
+check = "UnclosedHTMLElement"
+severity = "warning"
+
+[[cases]]
+name = "should not report for files without unbalanced tags (1)"
+
+[cases.files]
+"file.liquid" = '''
+<div>
+  {% if cond %}
+    <details>
+      <summary>
+  {% else %}
+    <h2>
+  {% endif %}
+
+  {% if cond %}
+    </summary>
+  {% else %}
+    </h2>
+  {% endif %}
+
+  {% if cond %}
+    </details>
+  {% endif %}
+</div>
+'''
+
+[[cases]]
+name = "should not report for files without unbalanced tags (2)"
+
+[cases.files]
+"file.liquid" = '''
+<div>
+  {% if cond %}
+  {% else %}
+    <h1>
+  {% endif %}
+
+  {% unless cond %}
+    </h1>
+  {% endunless %}
+</div>
+'''
+
+[[cases]]
+name = "should not report for files without unbalanced tags (3)"
+
+[cases.files]
+"file.liquid" = '''
+<div>
+  {% case thing %}
+  {% when 'one', 'two' %}
+    <h1>
+  {% when 'three' %}
+    <h3>
+  {% else %}
+    <p>
+  {% endcase %}
+
+  {% case thing %}
+  {% when 'one','two' %}
+    </h1>
+  {% when 'three' %}
+    </h3>
+  {% else %}
+    </p>
+  {% endunless %}
+</div>
+'''
+
+[[cases]]
+name = "should not report offenses for similarly written, but not string-equal, conditions (1)"
+
+[cases.files]
+"file.liquid" = '''
+{% if number>10 %}
+  <h1>
+{% endif %}
+
+{% if number > 10 %}
+  </h1>
+{% endif %}
+'''
+
+[[cases]]
+name = "should not report offenses for similarly written, but not string-equal, conditions (2)"
+
+[cases.files]
+"file.liquid" = '''
+{% if "string" %}
+  <h1>
+{% endif %}
+
+{% if 'string' %}
+  </h1>
+{% endif %}
+'''
+
+[[cases]]
+name = "should not report offenses for similarly written, but not string-equal, conditions (3)"
+
+[cases.files]
+"file.liquid" = '''
+{% if x == nil %}
+  <h1>
+{% endif %}
+
+{% if x==null %}
+  </h1>
+{% endif %}
+'''
+
+[[cases]]
+name = "should not report offenses for similarly written, but not string-equal, conditions (4)"
+
+[cases.files]
+"file.liquid" = '''
+{% if x.a %}
+  <h1>
+{% endif %}
+
+{% if x["a"] %}
+  </h1>
+{% endif %}
+'''
+
+[[cases]]
+name = "should not report offenses for similarly written, but not string-equal, conditions (5)"
+
+[cases.files]
+"file.liquid" = '''
+{% if (0..a) %}
+  <h1>
+{% endif %}
+
+{% if ( 0 .. a ) %}
+  </h1>
+{% endif %}
+'''
+
+[[cases]]
+name = "should not report offenses for similarly written, but not string-equal, conditions (6)"
+
+[cases.files]
+"file.liquid" = '''
+{% if a or b %}
+  <h1>
+{% endif %}
+
+{% if a     or     b %}
+  </h1>
+{% endif %}
+'''
+
+[[cases]]
+name = "should report an offense for a branch open tag without its close tag"
+
+[cases.files]
+"file.liquid" = '''
+<div>
+  {% if cond %}
+    <main>
+  {% endif %}
+</div>
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Opening tag does not have a matching closing tag for condition `cond` in HtmlElement 'div'"
+start = [ 2, 4 ]
+highlight = "<main>"
+
+[[cases]]
+name = "should report an offense for a branch close tag without its open tag"
+
+[cases.files]
+"file.liquid" = '''
+<div>
+  {% if cond %}
+    </main>
+  {% endif %}
+</div>
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Closing tag does not have a matching opening tag for condition `cond` in HtmlElement 'div'"
+start = [ 2, 4 ]
+highlight = "</main>"
+
+[[cases]]
+name = "should report offenses when branches are closed in the wrong order"
+
+[cases.files]
+"file.liquid" = '''
+<div>
+  {% if cond %}
+    <details>
+      <summary>
+  {% endif %}
+
+  {% if cond %}
+    </details>
+    </summary>
+  {% endif %}
+</div>
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Opening tag does not have a matching closing tag for condition `cond` in HtmlElement 'div'"
+start = [ 2, 4 ]
+highlight = "<details>"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Opening tag does not have a matching closing tag for condition `cond` in HtmlElement 'div'"
+start = [ 3, 6 ]
+highlight = "<summary>"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Closing tag does not have a matching opening tag for condition `cond` in HtmlElement 'div'"
+start = [ 7, 4 ]
+highlight = "</details>"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Closing tag does not have a matching opening tag for condition `cond` in HtmlElement 'div'"
+start = [ 8, 4 ]
+highlight = "</summary>"
+
+[[cases]]
+name = "should report offenses when branches are closed in the wrong node"
+
+[cases.files]
+"file.liquid" = '''
+<div>
+  {% if cond %}
+    <details>
+      <summary>
+  {% endif %}
+
+  <div>
+    {% if cond %}
+      </details>
+      </summary>
+    {% endif %}
+  </div>
+</div>
+
+{% if cond %}
+  </details>
+  </summary>
+{% endif %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Opening tag does not have a matching closing tag for condition `cond` in HtmlElement 'div'"
+start = [ 2, 4 ]
+highlight = "<details>"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Opening tag does not have a matching closing tag for condition `cond` in HtmlElement 'div'"
+start = [ 3, 6 ]
+highlight = "<summary>"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Closing tag does not have a matching opening tag for condition `cond` in HtmlElement 'div'"
+start = [ 8, 6 ]
+highlight = "</details>"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Closing tag does not have a matching opening tag for condition `cond` in HtmlElement 'div'"
+start = [ 9, 6 ]
+highlight = "</summary>"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Closing tag does not have a matching opening tag for condition `cond` in Document 'Document'"
+start = [ 15, 2 ]
+highlight = "</details>"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Closing tag does not have a matching opening tag for condition `cond` in Document 'Document'"
+start = [ 16, 2 ]
+highlight = "</summary>"
+
+[[cases]]
+name = "should not report for paired conditional open/close in for-loop boundary conditions (1)"
+
+[cases.files]
+"file.liquid" = '''
+{% for item in items %}
+  {% if forloop.first or item_modulo == 1 %}
+    <div class="grid-row">
+  {% endif %}
+
+  <div class="grid-item">{{ item }}</div>
+
+  {% if forloop.last or item_modulo == 0 %}
+    </div>
+  {% endif %}
+{% endfor %}
+'''
+
+[[cases]]
+name = "should not report for paired conditional open/close in for-loop boundary conditions (2)"
+
+[cases.files]
+"file.liquid" = '''
+<div>
+  {% if condition_a %}
+    <section>
+  {% endif %}
+
+  {% if condition_b %}
+    </section>
+  {% endif %}
+</div>
+'''
+
+[[cases]]
+name = "should still report when cross-identifier tags do not balance by name"
+
+[cases.files]
+"file.liquid" = '''
+<div>
+  {% if condition_a %}
+    <section>
+  {% endif %}
+
+  {% if condition_b %}
+    </article>
+  {% endif %}
+</div>
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Opening tag does not have a matching closing tag for condition `condition_a` in HtmlElement 'div'"
+start = [ 2, 4 ]
+highlight = "<section>"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Closing tag does not have a matching opening tag for condition `condition_b` in HtmlElement 'div'"
+start = [ 6, 4 ]
+highlight = "</article>"
+
+[[cases]]
+name = "should report offenses when conditions do not match"
+
+[cases.files]
+"file.liquid" = '''
+<div>
+  {% if some_condition %}
+    <details>
+  {% else %}
+    <aside>
+  {% endif %}
+
+  {% if other_condition %}
+    </details>
+  {% else %}
+    </aside>
+  {% endif %}
+</div>
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Opening tag does not have a matching closing tag for condition `some_condition` in HtmlElement 'div'"
+start = [ 2, 4 ]
+highlight = "<details>"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Opening tag does not have a matching closing tag for condition `-some_condition` in HtmlElement 'div'"
+start = [ 4, 4 ]
+highlight = "<aside>"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Closing tag does not have a matching opening tag for condition `other_condition` in HtmlElement 'div'"
+start = [ 8, 4 ]
+highlight = "</details>"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Closing tag does not have a matching opening tag for condition `-other_condition` in HtmlElement 'div'"
+start = [ 10, 4 ]
+highlight = "</aside>"
+
+[[cases]]
+name = "should report an offense for unclosed or unopened in case statements"
+
+[cases.files]
+"file.liquid" = '''
+<div>
+  {% case thing %}
+    {% when 'one' %}
+      <h1>
+    {% else %}
+      <p>
+  {% endcase %}
+
+  {% case thing %}
+    {% when 'two' %}
+      </h2>
+  {% endcase %}
+</div>
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Opening tag does not have a matching closing tag for condition `case thing == 'one'` in HtmlElement 'div'"
+start = [ 3, 6 ]
+highlight = "<h1>"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Opening tag does not have a matching closing tag for condition `case thing` in HtmlElement 'div'"
+start = [ 5, 6 ]
+highlight = "<p>"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Closing tag does not have a matching opening tag for condition `case thing == 'two'` in HtmlElement 'div'"
+start = [ 10, 6 ]
+highlight = "</h2>"
+
+[[cases]]
+name = "should report an offense for doubly unclosed of the same name"
+
+[cases.files]
+"file.liquid" = '''
+<div>
+  {% if thing %}
+    </h1>
+  {% endif %}
+
+  {% if thing %}
+    </h1>
+  {% endif %}
+</div>
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Closing tag does not have a matching opening tag for condition `thing` in HtmlElement 'div'"
+start = [ 2, 4 ]
+highlight = "</h1>"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Closing tag does not have a matching opening tag for condition `thing` in HtmlElement 'div'"
+start = [ 6, 4 ]
+highlight = "</h1>"

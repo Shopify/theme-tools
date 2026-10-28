@@ -1,0 +1,1124 @@
+check = "UndefinedObject"
+severity = "warning"
+
+[[cases]]
+name = "allows section in a snippet in app mode"
+mode = "app"
+docset = "default"
+
+[cases.files]
+"snippets/my-snippet.liquid" = "{% doc %} @param {string} x - x {% enddoc %}{{ section }}"
+
+[[cases]]
+name = "allows block in a snippet in app mode"
+mode = "app"
+docset = "default"
+
+[cases.files]
+"snippets/my-snippet.liquid" = "{% doc %} @param {string} x - x {% enddoc %}{{ block }}"
+
+[[cases]]
+name = "allows recommendations in a snippet in app mode"
+mode = "app"
+docset = "default"
+
+[cases.files]
+"snippets/my-snippet.liquid" = "{% doc %} @param {string} x - x {% enddoc %}{{ recommendations }}"
+
+[[cases]]
+name = "allows app in a snippet in app mode"
+mode = "app"
+docset = "default"
+
+[cases.files]
+"snippets/my-snippet.liquid" = "{% doc %} @param {string} x - x {% enddoc %}{{ app }}"
+
+[[cases]]
+name = "reports schema settings used as bare variables in an app block"
+mode = "app"
+docset = "default"
+
+[cases.files]
+"blocks/card.liquid" = '''
+<h2>{{ heading }}</h2>
+{% schema %}{"name":"Card","settings":[{"type":"text","id":"heading","label":"Heading"}]}{% endschema %}
+'''
+
+[[cases.offenses]]
+file = "blocks/card.liquid"
+message = "Unknown object 'heading' used."
+start = [ 0, 7 ]
+highlight = "heading"
+
+[[cases]]
+name = "should report an offense when object is undefined"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{{ my_var }}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'my_var' used."
+start = [ 0, 3 ]
+highlight = "my_var"
+
+[[cases]]
+name = "should report an offense when object with an attribute is undefined"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{{ my_var.my_attr }}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'my_var' used."
+start = [ 0, 3 ]
+highlight = "my_var.my_attr"
+
+[[cases]]
+name = "should report an offense when undefined object is used as an argument"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{{ product[my_object] }}
+{{ product[my_object] }}
+
+{% comment %} string arguments should not be reported {% endcomment %}
+{{ product["my_object"] }}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'my_object' used."
+start = [ 0, 11 ]
+highlight = "my_object"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'my_object' used."
+start = [ 1, 11 ]
+highlight = "my_object"
+
+[[cases]]
+name = "should report an offense when object is undefined in a Liquid tag"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% liquid
+  echo my_var
+%}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'my_var' used."
+start = [ 1, 7 ]
+highlight = "my_var"
+
+[[cases]]
+name = "should not report an offense when object is defined with an assign tag"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% assign my_var = "value" %}
+{{ my_var }}
+'''
+
+[[cases]]
+name = "should not report an offense when object is defined with an assign tag and it is used as an argument"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% assign prop = "title" %}
+{{ product[prop] }}
+'''
+
+[[cases]]
+name = "should not report an offense when object is defined with an assign tag in a Liquid tag"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% liquid
+  assign my_var = "value"
+  echo my_var
+%}
+'''
+
+[[cases]]
+name = "should not report an offense when object is defined with a capture tag"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% capture my_var %} value {% endcapture %}
+{{ my_var }}
+'''
+
+[[cases]]
+name = "should not report an offense when object is defined in a for loop"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% for c in collections %}
+  {{ c }}
+{% endfor %}
+'''
+
+[[cases]]
+name = "should report an offense when object is defined in a for loop but used outside of the scope"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% for c in collections %}
+  {{ c }}
+{% endfor %}{{ c }}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'c' used."
+start = [ 2, 15 ]
+highlight = "c"
+
+[[cases]]
+name = "should report an offense when object is defined in a for loop but used outside of the scope (in scenarios where the same variable has multiple scopes in the file)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% for c in collections %}
+  {% comment %} -- Scope 1 -- {% endcomment %}
+  {{ c }}
+{% endfor %}
+{{ c }}
+{% for c in collections %}
+  {% comment %} -- Scope 2 -- {% endcomment %}
+  {{ c }}
+{% endfor %}
+{{ c }}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'c' used."
+start = [ 4, 3 ]
+highlight = "c"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'c' used."
+start = [ 9, 3 ]
+highlight = "c"
+
+[[cases]]
+name = "should report an offense when undefined object defines another object"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% assign my_object = my_var %}
+{{ my_object }}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'my_var' used."
+start = [ 0, 22 ]
+highlight = "my_var"
+
+[[cases]]
+name = "should not report an offense when object is defined in a tablerow loop"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% tablerow c in collections %}
+  {{ c }}
+{% endtablerow %}
+'''
+
+[[cases]]
+name = "should report an offense when object is defined in a tablerow loop but used outside of the scope"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% tablerow c in collections %}
+  {{ c }}
+{% endtablerow %}{{ c }}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'c' used."
+start = [ 2, 20 ]
+highlight = "c"
+
+[[cases]]
+name = "should contextually report on the undefined nature of the paginate object (defined in paginate tag, undefined outside)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% assign col = 'string' | split: '' %}
+{% paginate col by 5 %}
+  {{ paginate }}
+{% endpaginate %}{{ paginate }}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'paginate' used."
+start = [ 3, 20 ]
+highlight = "paginate"
+
+[[cases]]
+name = "should contextually report on the undefined nature of the form object (defined in form tag, undefined outside)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% form "cart" %}
+  {{ form }}
+{% endform %}{{ form }}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'form' used."
+start = [ 2, 16 ]
+highlight = "form"
+
+[[cases]]
+name = "should support {% layout none %}"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% layout none %}
+{{ none }}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'none' used."
+start = [ 1, 3 ]
+highlight = "none"
+
+[[cases]]
+name = "should support {% increment var %} and {% decrement var %} (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% increment var %}
+{{ var }}
+'''
+
+[[cases]]
+name = "should support {% increment var %} and {% decrement var %} (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% decrement var %}
+{{ var }}
+'''
+
+[[cases]]
+name = "should not report an offense when object is undefined in a \"snippet\" file with no presense of doc tags"
+docset = "default"
+
+[cases.files]
+"snippets/file.liquid" = '''
+{{ my_var }}
+'''
+
+[[cases]]
+name = "should report an offense when object is undefined in a \"snippet\" file with doc tags that are missing the associated param"
+docset = "default"
+
+[cases.files]
+"snippets/file.liquid" = '''
+{% doc %}
+{% enddoc %}
+{{ my_var }}
+'''
+
+[[cases.offenses]]
+file = "snippets/file.liquid"
+message = "Unknown object 'my_var' used."
+start = [ 2, 3 ]
+highlight = "my_var"
+
+[[cases]]
+name = "should not report an offense when object is defined with @param in a snippet file"
+docset = "default"
+
+[cases.files]
+"snippets/file.liquid" = '''
+{% doc %}
+  @param {string} text
+{% enddoc %}
+
+{{ text }}
+'''
+
+[[cases]]
+name = "should report an offense when object is not global"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{{ image }}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'image' used."
+start = [ 0, 3 ]
+highlight = "image"
+
+[[cases]]
+name = "should not report an offense for forloop/tablerowloop variables when in the correct context (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% for x in collections %}
+  {{ forloop }}
+{% endfor %}
+'''
+
+[[cases]]
+name = "should not report an offense for forloop/tablerowloop variables when in the correct context (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% tablerow x in collections %}
+  {{ tablerowloop }}
+{% endtablerow %}
+'''
+
+[[cases]]
+name = "should support contextual exceptions (1)"
+docset = "default"
+
+[cases.files]
+"sections/section.liquid" = "{{ section }}"
+
+[[cases]]
+name = "should support contextual exceptions (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ section }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'section' used."
+start = [ 0, 3 ]
+highlight = "section"
+
+[[cases]]
+name = "should support contextual exceptions (3)"
+docset = "default"
+
+[cases.files]
+"sections/predictive-search.liquid" = "{{ predictive_search }}"
+
+[[cases]]
+name = "should support contextual exceptions (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ predictive_search }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'predictive_search' used."
+start = [ 0, 3 ]
+highlight = "predictive_search"
+
+[[cases]]
+name = "should support contextual exceptions (5)"
+docset = "default"
+
+[cases.files]
+"sections/recommendations.liquid" = "{{ recommendations }}"
+
+[[cases]]
+name = "should support contextual exceptions (6)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ recommendations }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'recommendations' used."
+start = [ 0, 3 ]
+highlight = "recommendations"
+
+[[cases]]
+name = "should support contextual exceptions (7)"
+docset = "default"
+
+[cases.files]
+"sections/main-article.liquid" = "{{ comment }}"
+
+[[cases]]
+name = "should support contextual exceptions (8)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ comment }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'comment' used."
+start = [ 0, 3 ]
+highlight = "comment"
+
+[[cases]]
+name = "should support contextual exceptions (9)"
+docset = "default"
+
+[cases.files]
+"blocks/theme-app-extension.liquid" = "{{ block }}"
+
+[[cases]]
+name = "should support contextual exceptions (10)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ block }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'block' used."
+start = [ 0, 3 ]
+highlight = "block"
+
+[[cases]]
+name = "should support contextual exceptions (11)"
+docset = "default"
+
+[cases.files]
+"blocks/theme-app-extension.liquid" = "{{ app }}"
+
+[[cases]]
+name = "should support contextual exceptions (12)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ app }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'app' used."
+start = [ 0, 3 ]
+highlight = "app"
+
+[[cases]]
+name = "should support contextual exceptions (13)"
+docset = "default"
+
+[cases.files]
+"snippets/theme-app-extension.liquid" = "{{ app }}"
+
+[[cases]]
+name = "should support contextual exceptions (14)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ app }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'app' used."
+start = [ 0, 3 ]
+highlight = "app"
+
+[[cases]]
+name = "should allow app, section, and block in snippets when in theme mode (1)"
+docset = "default"
+
+[cases.files]
+"snippets/my-snippet.liquid" = "{% doc %} @param {string} x - x {% enddoc %}{{ app }}"
+
+[[cases]]
+name = "should allow app, section, and block in snippets when in theme mode (2)"
+docset = "default"
+
+[cases.files]
+"snippets/my-snippet.liquid" = "{% doc %} @param {string} x - x {% enddoc %}{{ section }}"
+
+[[cases]]
+name = "should allow app, section, and block in snippets when in theme mode (3)"
+docset = "default"
+
+[cases.files]
+"snippets/my-snippet.liquid" = "{% doc %} @param {string} x - x {% enddoc %}{{ block }}"
+
+[[cases]]
+name = "should still flag block-only objects in snippets when in theme mode"
+docset = "default"
+
+[cases.files]
+"snippets/my-snippet.liquid" = "{% doc %} @param {string} x - x {% enddoc %}{{ recommendations }}"
+
+[[cases.offenses]]
+file = "snippets/my-snippet.liquid"
+message = "Unknown object 'recommendations' used."
+start = [ 0, 47 ]
+highlight = "recommendations"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (1)"
+docset = "default"
+
+[cases.files]
+"layout/checkout.liquid" = "{{ locale }}"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ locale }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'locale' used."
+start = [ 0, 3 ]
+highlight = "locale"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (3)"
+docset = "default"
+
+[cases.files]
+"layout/checkout.liquid" = "{{ direction }}"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ direction }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'direction' used."
+start = [ 0, 3 ]
+highlight = "direction"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (5)"
+docset = "default"
+
+[cases.files]
+"layout/checkout.liquid" = "{{ skip_to_content_link }}"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (6)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ skip_to_content_link }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'skip_to_content_link' used."
+start = [ 0, 3 ]
+highlight = "skip_to_content_link"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (7)"
+docset = "default"
+
+[cases.files]
+"layout/checkout.liquid" = "{{ checkout_html_classes }}"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (8)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ checkout_html_classes }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'checkout_html_classes' used."
+start = [ 0, 3 ]
+highlight = "checkout_html_classes"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (9)"
+docset = "default"
+
+[cases.files]
+"layout/checkout.liquid" = "{{ checkout_stylesheets }}"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (10)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ checkout_stylesheets }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'checkout_stylesheets' used."
+start = [ 0, 3 ]
+highlight = "checkout_stylesheets"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (11)"
+docset = "default"
+
+[cases.files]
+"layout/checkout.liquid" = "{{ checkout_scripts }}"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (12)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ checkout_scripts }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'checkout_scripts' used."
+start = [ 0, 3 ]
+highlight = "checkout_scripts"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (13)"
+docset = "default"
+
+[cases.files]
+"layout/checkout.liquid" = "{{ content_for_logo }}"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (14)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ content_for_logo }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'content_for_logo' used."
+start = [ 0, 3 ]
+highlight = "content_for_logo"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (15)"
+docset = "default"
+
+[cases.files]
+"layout/checkout.liquid" = "{{ breadcrumb }}"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (16)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ breadcrumb }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'breadcrumb' used."
+start = [ 0, 3 ]
+highlight = "breadcrumb"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (17)"
+docset = "default"
+
+[cases.files]
+"layout/checkout.liquid" = "{{ order_summary_toggle }}"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (18)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ order_summary_toggle }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'order_summary_toggle' used."
+start = [ 0, 3 ]
+highlight = "order_summary_toggle"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (19)"
+docset = "default"
+
+[cases.files]
+"layout/checkout.liquid" = "{{ content_for_order_summary }}"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (20)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ content_for_order_summary }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'content_for_order_summary' used."
+start = [ 0, 3 ]
+highlight = "content_for_order_summary"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (21)"
+docset = "default"
+
+[cases.files]
+"layout/checkout.liquid" = "{{ alternative_payment_methods }}"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (22)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ alternative_payment_methods }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'alternative_payment_methods' used."
+start = [ 0, 3 ]
+highlight = "alternative_payment_methods"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (23)"
+docset = "default"
+
+[cases.files]
+"layout/checkout.liquid" = "{{ content_for_footer }}"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (24)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ content_for_footer }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'content_for_footer' used."
+start = [ 0, 3 ]
+highlight = "content_for_footer"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (25)"
+docset = "default"
+
+[cases.files]
+"layout/checkout.liquid" = "{{ tracking_code }}"
+
+[[cases]]
+name = "should support contextual exceptions for checkout.liquid (26)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ tracking_code }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'tracking_code' used."
+start = [ 0, 3 ]
+highlight = "tracking_code"
+
+[[cases]]
+name = "should report an offense for forloop/tablerowloop used outside of context"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{{ forloop }}
+{{ tablerowloop }}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'forloop' used."
+start = [ 0, 3 ]
+highlight = "forloop"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'tablerowloop' used."
+start = [ 1, 3 ]
+highlight = "tablerowloop"
+
+[[cases]]
+name = "should not report an offenses when definitions for global objects are unavailable"
+
+[cases.files]
+"file.liquid" = '''
+{{ my_var }}
+'''
+
+[[cases]]
+name = "should not report an offense when object is defined with @param in a block file"
+docset = "default"
+
+[cases.files]
+"blocks/my-custom-block.liquid" = '''
+{% doc %}
+  @param {string} text
+{% enddoc %}
+
+{{ text }}
+'''
+
+[[cases]]
+name = "should report an offense when an undefined object is used alongside @param in a block file"
+docset = "default"
+
+[cases.files]
+"blocks/my-custom-block.liquid" = '''
+{% doc %}
+  @param {string} text
+{% enddoc %}
+
+{{ text }}
+{{ undefined_variable }}
+'''
+
+[[cases.offenses]]
+file = "blocks/my-custom-block.liquid"
+message = "Unknown object 'undefined_variable' used."
+start = [ 5, 3 ]
+highlight = "undefined_variable"
+
+[[cases]]
+name = "does not report the built-in content variable in a block file"
+docset = "default"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{{ content }}
+{% if content != blank %}{{ content | upcase }}{% endif %}
+'''
+
+[[cases]]
+name = "reports content outside block files"
+docset = "default"
+
+[cases.files]
+"sections/main.liquid" = "{{ content }}"
+
+[[cases.offenses]]
+file = "sections/main.liquid"
+message = "Unknown object 'content' used."
+start = [ 0, 3 ]
+highlight = "content"
+
+[[cases]]
+name = "does not report a schema setting used as a bare variable"
+docset = "default"
+
+[cases.files]
+"blocks/card.liquid" = '''
+<h2>{{ heading }}</h2>
+{% schema %}{"name":"Card","settings":[{"type":"text","id":"heading","label":"Heading"}]}{% endschema %}
+'''
+
+[[cases]]
+name = "does not report a schema setting and a LiquidDoc-only parameter in the same block"
+docset = "default"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} [eyebrow]
+{% enddoc %}
+<p>{{ eyebrow }}</p>
+<h2>{{ heading }}</h2>
+{% schema %}{"name":"Card","settings":[{"type":"text","id":"heading","label":"Heading"}]}{% endschema %}
+'''
+
+[[cases]]
+name = "does not report a name declared by both schema and LiquidDoc"
+docset = "default"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} heading
+{% enddoc %}
+<h2>{{ heading }}</h2>
+{% schema %}{"name":"Card","settings":[{"type":"text","id":"heading","label":"Heading"}]}{% endschema %}
+'''
+
+[[cases]]
+name = "does not report content alongside schema and LiquidDoc variables"
+docset = "default"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} [eyebrow]
+{% enddoc %}
+<p>{{ eyebrow }}</p>
+<h2>{{ heading }}</h2>
+<div>{{ content }}</div>
+{% schema %}{"name":"Card","settings":[{"type":"text","id":"heading","label":"Heading"}]}{% endschema %}
+'''
+
+[[cases]]
+name = "reports an unknown root alongside schema and LiquidDoc variables"
+docset = "default"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} [eyebrow]
+{% enddoc %}
+<p>{{ eyebrow }}</p>
+<h2>{{ heading }}</h2>
+<h3>{{ subtitle }}</h3>
+{% schema %}{"name":"Card","settings":[{"type":"text","id":"heading","label":"Heading"}]}{% endschema %}
+'''
+
+[[cases.offenses]]
+file = "blocks/card.liquid"
+message = "Unknown object 'subtitle' used."
+start = [ 5, 7 ]
+highlight = "subtitle"
+
+[[cases]]
+name = "reports names from non-input schema entries and setting types"
+docset = "default"
+
+[cases.files]
+"blocks/card.liquid" = '''
+<div style="background: {{ background }}">
+  {{ layout_heading }}
+  {{ header }}
+  {{ color_background }}
+</div>
+{% schema %}{"name":"Card","settings":[{"type":"header","id":"layout_heading","content":"Layout"},{"type":"color_background","id":"background","label":"Background"}]}{% endschema %}
+'''
+
+[[cases.offenses]]
+file = "blocks/card.liquid"
+message = "Unknown object 'layout_heading' used."
+start = [ 1, 5 ]
+highlight = "layout_heading"
+
+[[cases.offenses]]
+file = "blocks/card.liquid"
+message = "Unknown object 'header' used."
+start = [ 2, 5 ]
+highlight = "header"
+
+[[cases.offenses]]
+file = "blocks/card.liquid"
+message = "Unknown object 'color_background' used."
+start = [ 3, 5 ]
+highlight = "color_background"
+
+[[cases]]
+name = "keeps LiquidDoc parameters and content defined when the schema is invalid"
+docset = "default"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} [eyebrow]
+{% enddoc %}
+<p>{{ eyebrow }}</p>
+<div>{{ content }}</div>
+{% schema %}
+  { "name": "Card", "settings": [
+{% endschema %}
+'''
+
+[[cases]]
+name = "reports schema settings used as bare variables in a section file"
+docset = "default"
+
+[cases.files]
+"sections/hero.liquid" = '''
+<h2>{{ heading }}</h2>
+{% schema %}{"name":"Card","settings":[{"type":"text","id":"heading","label":"Heading"}]}{% endschema %}
+'''
+
+[[cases.offenses]]
+file = "sections/hero.liquid"
+message = "Unknown object 'heading' used."
+start = [ 0, 7 ]
+highlight = "heading"
+
+[[cases]]
+name = "should not report an offense when a self defined variable is defined with a @param tag"
+docset = "default"
+
+[cases.files]
+"snippets/file.liquid" = '''
+{% doc %}
+  @param {string} text
+{% enddoc %}
+
+{% assign text = text | default: "value" %}
+'''
+
+[[cases]]
+name = "should report an offense when assigning an undefined variable to itself"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% assign my_var = my_var | default: "fallback" %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown object 'my_var' used."
+start = [ 0, 19 ]
+highlight = "my_var"
+
+[[cases]]
+name = "should not report an offense when using variables inside visible_if statements in a schema tag"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% schema %}
+{
+  "settings": [
+    {
+      "type": "text",
+      "label": "foo",
+      "id": "foo",
+    }
+    {
+      "type": "text",
+      "label": "bar",
+      "id": "bar",
+      "visible_if": "{{ block.settings.foo }}",
+    }
+  ]
+}
+{% endschema %}
+'''

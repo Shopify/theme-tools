@@ -1,0 +1,12 @@
+check = "ValidJSON"
+severity = "error"
+
+[[cases]]
+name = "should not report any errors for valid JSON"
+
+[cases.files]
+"file.json" = '''
+{
+      "key1": "value1",
+      "key2": "value2"
+    }'''

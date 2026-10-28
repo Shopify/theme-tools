@@ -1,0 +1,23 @@
+check = "StylesheetOncePerFile"
+severity = "error"
+
+[[cases]]
+name = "reports second and subsequent stylesheet tags in a file"
+
+[cases.files]
+"sections/test.liquid" = '''
+{% stylesheet %}{% endstylesheet %}
+{% stylesheet %}{% endstylesheet %}
+{% stylesheet %}{% endstylesheet %}'''
+
+[[cases.offenses]]
+file = "sections/test.liquid"
+message = "{% stylesheet %} can only appear once per file."
+start = [ 1, 0 ]
+highlight = "{% stylesheet %}"
+
+[[cases.offenses]]
+file = "sections/test.liquid"
+message = "{% stylesheet %} can only appear once per file."
+start = [ 2, 0 ]
+highlight = "{% stylesheet %}"

@@ -1,0 +1,128 @@
+# The docset most cases use: a few filters and objects, and no tags.
+tags = []
+
+[[filters]]
+name = "item_count_for_variant"
+
+[[filters]]
+name = "link_to_type"
+
+[[filters]]
+name = "link_to_vendor"
+
+[[filters]]
+name = "append"
+
+[[filters]]
+name = "upcase"
+
+[[filters]]
+name = "downcase"
+
+[[filters]]
+name = "color_to_rgb"
+
+[[filters]]
+name = "hex_to_rgba"
+deprecated = true
+deprecation_reason = "`hex_to_rgba` has been replaced by [`color_to_rgb`](/do..."
+
+[[filters]]
+name = "currency_selector"
+deprecated = true
+deprecation_reason = "Deprecated without a direct replacement because the [cur..."
+
+[[filters]]
+name = "article_img_url"
+deprecated = true
+deprecation_reason = "`article_img_url` has been replaced by [`image_url`](/d..."
+
+[[filters]]
+name = "collection_img_url"
+deprecated = true
+deprecation_reason = "`collection_img_url` has been replaced by [`image_url`](..."
+
+[[filters]]
+name = "img_tag"
+deprecated = true
+deprecation_reason = "`img_tag` has been replaced by [`image_tag`](/docs/api/..."
+
+[[filters]]
+name = "img_url"
+deprecated = true
+deprecation_reason = "`img_url` has been replaced by [`image_url`](/docs/api/..."
+
+[[filters]]
+name = "product_img_url"
+deprecated = true
+deprecation_reason = "`product_img_url` has been replaced by [`image_url`](/d..."
+
+[[objects]]
+name = "collections"
+
+[[objects]]
+name = "product"
+
+[objects.access]
+global = false
+parents = []
+template = [ "product" ]
+
+[[objects]]
+name = "image"
+
+[objects.access]
+global = false
+parents = []
+template = []
+
+[[objects]]
+name = "section"
+
+[objects.access]
+global = false
+parents = []
+template = []
+
+[[objects]]
+name = "block"
+
+[objects.access]
+global = false
+parents = []
+template = []
+
+[[objects]]
+name = "app"
+
+[objects.access]
+global = false
+parents = []
+template = []
+
+[[objects]]
+name = "predictive_search"
+
+[objects.access]
+global = false
+parents = []
+template = []
+
+[[objects]]
+name = "recommendations"
+
+[objects.access]
+global = false
+parents = []
+template = []
+
+[[objects]]
+name = "comment"
+
+[objects.access]
+global = false
+parents = []
+template = []
+
+[systemTranslations]
+"shopify.sentence.words_connector" = ", "

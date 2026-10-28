@@ -1,0 +1,268 @@
+check = "LiquidComplexity"
+severity = "warning"
+
+[[cases]]
+name = "does not report when complexity equals the default maximum of 120"
+
+[[cases.files."snippets/test.liquid"]]
+repeat = '''
+{% if enabled %}{% endif %}
+'''
+times = 119
+
+[[cases]]
+name = "reports when complexity exceeds the default maximum of 120"
+
+[[cases.files."snippets/test.liquid"]]
+repeat = '''
+{% if enabled %}{% endif %}
+'''
+times = 120
+
+[[cases.offenses]]
+file = "snippets/test.liquid"
+message = "Liquid complexity is 121, which exceeds the maximum of 120. The decision at line 120 pushed it over the limit. Consider simplifying conditional logic, or moving self-contained decision logic into snippets with the render tag."
+start = [ 119, 0 ]
+highlight = "{% if enabled %}"
+
+[[cases]]
+name = "counts nested logical expressions, with a maximum of 5"
+
+[cases.config.LiquidComplexity]
+maxComplexity = 5
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% if available and visible %}
+        Featured product
+      {% elsif featured or highlighted %}
+        Highlighted product
+      {% endif %}'''
+
+[[cases]]
+name = "counts nested logical expressions, with a maximum of 4"
+
+[cases.config.LiquidComplexity]
+maxComplexity = 4
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% if available and visible %}
+        Featured product
+      {% elsif featured or highlighted %}
+        Highlighted product
+      {% endif %}'''
+
+[[cases.offenses]]
+file = "snippets/test.liquid"
+message = "Liquid complexity is 5, which exceeds the maximum of 4. The decision at line 1 pushed it over the limit. Consider simplifying conditional logic, or moving self-contained decision logic into snippets with the render tag."
+start = [ 0, 6 ]
+highlight = "available and visible "
+
+[[cases]]
+name = "counts logical expressions in unless conditions, with a maximum of 3"
+
+[cases.config.LiquidComplexity]
+maxComplexity = 3
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% unless hidden or archived %}
+        Visible product
+      {% endunless %}'''
+
+[[cases]]
+name = "counts logical expressions in unless conditions, with a maximum of 2"
+
+[cases.config.LiquidComplexity]
+maxComplexity = 2
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% unless hidden or archived %}
+        Visible product
+      {% endunless %}'''
+
+[[cases.offenses]]
+file = "snippets/test.liquid"
+message = "Liquid complexity is 3, which exceeds the maximum of 2. The decision at line 1 pushed it over the limit. Consider simplifying conditional logic, or moving self-contained decision logic into snippets with the render tag."
+start = [ 0, 10 ]
+highlight = "hidden or archived "
+
+[[cases]]
+name = "does not count logical expressions in variable output or assign tags"
+
+[cases.config.LiquidComplexity]
+maxComplexity = 1
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% assign visible = product.available and customer %}
+      {{ product.available or customer }}'''
+
+[[cases]]
+name = "counts decision points inside liquid tags, with a maximum of 3"
+
+[cases.config.LiquidComplexity]
+maxComplexity = 3
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% liquid
+        if enabled
+          echo 'Enabled'
+        elsif archived
+          echo 'Archived'
+        endif
+      %}'''
+
+[[cases]]
+name = "counts decision points inside liquid tags, with a maximum of 2"
+
+[cases.config.LiquidComplexity]
+maxComplexity = 2
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% liquid
+        if enabled
+          echo 'Enabled'
+        elsif archived
+          echo 'Archived'
+        endif
+      %}'''
+
+[[cases.offenses]]
+file = "snippets/test.liquid"
+message = "Liquid complexity is 3, which exceeds the maximum of 2. The decision at line 4 pushed it over the limit. Consider simplifying conditional logic, or moving self-contained decision logic into snippets with the render tag."
+start = [ 3, 8 ]
+highlight = "elsif archived"
+
+[[cases]]
+name = "counts each nested condition as another decision point, with a maximum of 9"
+
+[cases.config.LiquidComplexity]
+maxComplexity = 9
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% if product.available and product.published %}
+        {% unless customer.banned or customer.guest %}
+          {% if customer.tags contains 'vip' and settings.vip_enabled %}
+            VIP offer
+          {% elsif product.tags contains 'sale' or product.compare_at_price > product.price %}
+            Sale offer
+          {% endif %}
+        {% endunless %}
+      {% endif %}'''
+
+[[cases]]
+name = "counts each nested condition as another decision point, with a maximum of 8"
+
+[cases.config.LiquidComplexity]
+maxComplexity = 8
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% if product.available and product.published %}
+        {% unless customer.banned or customer.guest %}
+          {% if customer.tags contains 'vip' and settings.vip_enabled %}
+            VIP offer
+          {% elsif product.tags contains 'sale' or product.compare_at_price > product.price %}
+            Sale offer
+          {% endif %}
+        {% endunless %}
+      {% endif %}'''
+
+[[cases.offenses]]
+file = "snippets/test.liquid"
+message = "Liquid complexity is 9, which exceeds the maximum of 8. The decision at line 1 pushed it over the limit. Consider simplifying conditional logic, or moving self-contained decision logic into snippets with the render tag."
+start = [ 0, 6 ]
+highlight = "product.available and product.published "
+
+[[cases]]
+name = "resets complexity for each file"
+
+[cases.config.LiquidComplexity]
+maxComplexity = 2
+
+[cases.files]
+"snippets/first.liquid" = "{% if enabled %}{% endif %}"
+"snippets/second.liquid" = "{% if enabled %}{% endif %}"
+
+[[cases]]
+name = "tolerates parse errors"
+
+[cases.config.LiquidComplexity]
+maxComplexity = 1
+
+[cases.files]
+"snippets/test.liquid" = "{% if enabled %}"
+
+[[cases]]
+name = "reports plain files when maxComplexity is 0"
+
+[cases.config.LiquidComplexity]
+maxComplexity = 0
+
+[cases.files]
+"snippets/test.liquid" = "Hello"
+
+[[cases.offenses]]
+file = "snippets/test.liquid"
+message = "Liquid complexity is 1, which exceeds the maximum of 0. The decision at line 1 pushed it over the limit. Consider simplifying conditional logic, or moving self-contained decision logic into snippets with the render tag."
+start = [ 0, 0 ]
+highlight = "Hello"
+
+[[cases]]
+name = "counts case consistently with if and elsif, with a maximum of 4"
+
+[cases.config.LiquidComplexity]
+maxComplexity = 4
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% case status %}
+      {% when 'active' %}
+        Active
+      {% when 'draft' %}
+        Draft
+      {% endcase %}'''
+
+[[cases]]
+name = "counts case consistently with if and elsif, with a maximum of 3"
+
+[cases.config.LiquidComplexity]
+maxComplexity = 3
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% case status %}
+      {% when 'active' %}
+        Active
+      {% when 'draft' %}
+        Draft
+      {% endcase %}'''
+
+[[cases.offenses]]
+file = "snippets/test.liquid"
+message = "Liquid complexity is 4, which exceeds the maximum of 3. The decision at line 4 pushed it over the limit. Consider simplifying conditional logic, or moving self-contained decision logic into snippets with the render tag."
+start = [ 3, 6 ]
+highlight = "{% when 'draft' %}"
+
+[[cases]]
+name = "reports the range of the decision point that first exceeds the maximum"
+
+[cases.config.LiquidComplexity]
+maxComplexity = 2
+
+[cases.files]
+"snippets/test.liquid" = '''
+{% if first %}{% endif %}
+{% if second %}{% endif %}'''
+
+[[cases.offenses]]
+file = "snippets/test.liquid"
+message = "Liquid complexity is 3, which exceeds the maximum of 2. The decision at line 2 pushed it over the limit. Consider simplifying conditional logic, or moving self-contained decision logic into snippets with the render tag."
+start = [ 1, 0 ]
+highlight = "{% if second %}"

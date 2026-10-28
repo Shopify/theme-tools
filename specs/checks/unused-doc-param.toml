@@ -1,0 +1,150 @@
+check = "UnusedDocParam"
+severity = "warning"
+
+[[cases]]
+name = "should not report a warning when a variable is defined and used"
+
+[cases.files]
+"file.liquid" = '''
+{% doc %}
+  @param param1 - Example param
+{% enddoc %}
+
+{{ param1 }}
+'''
+
+[[cases]]
+name = "should report a warning with suggestions when a variable is defined but not used"
+
+[cases.files]
+"file.liquid" = '''
+{% doc %}
+  @param param1 - Example param
+  @param param2 - Example param
+{% enddoc %}
+
+{{ param1 }}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "The parameter 'param2' is defined but not used in this file."
+start = [ 2, 2 ]
+highlight = "@param param2 - Example param"
+
+[[cases.offenses.suggest]]
+message = "Remove unused parameter 'param2'"
+result = """
+{% doc %}
+  @param param1 - Example param
+\u0020\u0020
+{% enddoc %}
+
+{{ param1 }}
+"""
+
+[[cases]]
+name = "should apply suggestion when a variable is defined but not used"
+
+[cases.files]
+"file.liquid" = '''
+{% doc %}
+  @param param1 - Example param
+  @param param2 - Example param
+{% enddoc %}
+
+{{ param1 }}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "The parameter 'param2' is defined but not used in this file."
+start = [ 2, 2 ]
+highlight = "@param param2 - Example param"
+
+[[cases.offenses.suggest]]
+message = "Remove unused parameter 'param2'"
+result = """
+{% doc %}
+  @param param1 - Example param
+\u0020\u0020
+{% enddoc %}
+
+{{ param1 }}
+"""
+
+[[cases]]
+name = "should report a warning when a variable is defined but not used outside 'for' loop context"
+
+[cases.files]
+"file.liquid" = '''
+{% doc %}
+  @param param1 - Example param
+  @param param2 - Example param
+{% enddoc %}
+
+{{ param1 }}
+
+{% for param2 in array %}
+  {{ param2 }}
+{% endfor %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "The parameter 'param2' is defined but not used in this file."
+start = [ 2, 2 ]
+highlight = "@param param2 - Example param"
+
+[[cases.offenses.suggest]]
+message = "Remove unused parameter 'param2'"
+result = """
+{% doc %}
+  @param param1 - Example param
+\u0020\u0020
+{% enddoc %}
+
+{{ param1 }}
+
+{% for param2 in array %}
+  {{ param2 }}
+{% endfor %}
+"""
+
+[[cases]]
+name = "should report a warning when a variable is defined but not used outside 'tablerow' loop context"
+
+[cases.files]
+"file.liquid" = '''
+{% doc %}
+  @param param1 - Example param
+  @param param2 - Example param
+{% enddoc %}
+
+{{ param1 }}
+
+{% tablerow param2 in array %}
+  {{ param2 }}
+{% endtablerow %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "The parameter 'param2' is defined but not used in this file."
+start = [ 2, 2 ]
+highlight = "@param param2 - Example param"
+
+[[cases.offenses.suggest]]
+message = "Remove unused parameter 'param2'"
+result = """
+{% doc %}
+  @param param1 - Example param
+\u0020\u0020
+{% enddoc %}
+
+{{ param1 }}
+
+{% tablerow param2 in array %}
+  {{ param2 }}
+{% endtablerow %}
+"""

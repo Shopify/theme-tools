@@ -1,0 +1,70 @@
+check = "ValidHTMLTranslation"
+severity = "warning"
+
+[[cases]]
+name = "should not report valid HTML in translations"
+
+[cases.files]
+"locales/en.json" = '''
+{
+  "hello_html": "<h1>Hello, world</h1>",
+  "image_html": "<img src='spongebob.png'>",
+  "line_break_html": "<br>",
+  "self_closing_svg_html": "<svg />",
+  "foo": "bar"
+}'''
+
+[[cases]]
+name = "should report invalid HTML in translations"
+
+[cases.files]
+"locales/en.json" = '''
+{
+  "hello_html": "<h1>Hello, world"
+}'''
+
+[[cases.offenses]]
+file = "locales/en.json"
+message = "LiquidHTMLParsingError: Attempting to end parsing before HtmlElement 'h1' was closed."
+start = [ 1, 16 ]
+highlight = "\"<h1>Hello, world\""
+
+[[cases]]
+name = "should report nested invalid HTML in translations"
+
+[cases.files]
+"locales/en.json" = '''
+{
+  "hello": {
+    "world": {
+      "today": {
+        "good": {
+          "day_html": "<h1>Hello, world"
+        }
+      }
+    }
+  }
+}'''
+
+[[cases.offenses]]
+file = "locales/en.json"
+message = "LiquidHTMLParsingError: Attempting to end parsing before HtmlElement 'h1' was closed."
+start = [ 5, 22 ]
+highlight = "\"<h1>Hello, world\""
+
+[[cases]]
+name = "should report pluralized key with invalid HTML"
+
+[cases.files]
+"locales/en.json" = '''
+{
+  "hello_html": {
+    "one": "<h1>Hello, world"
+  }
+}'''
+
+[[cases.offenses]]
+file = "locales/en.json"
+message = "LiquidHTMLParsingError: Attempting to end parsing before HtmlElement 'h1' was closed."
+start = [ 2, 11 ]
+highlight = "\"<h1>Hello, world\""

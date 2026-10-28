@@ -1,0 +1,24 @@
+check = "DeprecateLazysizes"
+severity = "warning"
+
+[[cases]]
+name = "should report data-srcset and data-sizes attributes"
+
+[cases.files]
+"file.liquid" = '''
+<img data-srcset="image.jpg" data-sizes="auto" class="lazyload" />
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Use the native loading=\"lazy\" attribute instead of lazysizes"
+start = [ 0, 0 ]
+highlight = "<img data-srcset=\"image.jpg\" data-sizes=\"auto\" class=\"lazyload\" />"
+
+[[cases]]
+name = "should not report srcset and sizes attributes"
+
+[cases.files]
+"file.liquid" = '''
+<img srcset="image.jpg" sizes="auto" loading="lazy" />
+'''

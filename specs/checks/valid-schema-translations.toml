@@ -1,0 +1,159 @@
+check = "ValidSchemaTranslations"
+severity = "error"
+
+[[cases]]
+name = "reports no offense when schema has no translation keys"
+
+[cases.files]
+"locales/en.default.schema.json" = "{}"
+"sections/file.liquid" = '''
+{% schema %}
+  {
+    "name": "My Section",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title"
+      }
+    ]
+  }
+{% endschema %}'''
+
+[[cases]]
+name = "reports no offense when all translation keys exist"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "sections": {
+    "header": {
+      "name": "Header",
+      "settings": {
+        "title": {
+          "label": "Title",
+          "info": "Enter a title"
+        }
+      }
+    }
+  }
+}'''
+"sections/file.liquid" = '''
+{% schema %}
+  {
+    "name": "t:sections.header.name",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "t:sections.header.settings.title.label",
+        "info": "t:sections.header.settings.title.info"
+      }
+    ]
+  }
+{% endschema %}'''
+
+[[cases]]
+name = "reports an offense when a translation key is missing"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "sections": {
+    "header": {
+      "name": "Header"
+    }
+  }
+}'''
+"sections/file.liquid" = '''
+{% schema %}
+  {
+    "name": "t:sections.header.missing_key"
+  }
+{% endschema %}'''
+
+[[cases.offenses]]
+file = "sections/file.liquid"
+message = "'t:sections.header.missing_key' does not have a matching entry in 'locales/en.default.schema.json'"
+start = [ 2, 12 ]
+highlight = "\"t:sections.header.missing_key\""
+
+[[cases]]
+name = "reports multiple offenses when multiple translation keys are missing"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "sections": {
+    "header": {
+      "name": "Header"
+    }
+  }
+}'''
+"sections/file.liquid" = '''
+{% schema %}
+  {
+    "name": "t:sections.header.name",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "t:sections.header.settings.title.label",
+        "info": "t:sections.header.settings.title.info"
+      }
+    ]
+  }
+{% endschema %}'''
+
+[[cases.offenses]]
+file = "sections/file.liquid"
+message = "'t:sections.header.settings.title.label' does not have a matching entry in 'locales/en.default.schema.json'"
+start = [ 7, 17 ]
+highlight = "\"t:sections.header.settings.title.label\""
+
+[[cases.offenses]]
+file = "sections/file.liquid"
+message = "'t:sections.header.settings.title.info' does not have a matching entry in 'locales/en.default.schema.json'"
+start = [ 8, 16 ]
+highlight = "\"t:sections.header.settings.title.info\""
+
+[[cases]]
+name = "reports offense for missing translation in nested arrays"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "sections": {
+    "header": {
+      "name": "Header"
+    }
+  }
+}'''
+"sections/file.liquid" = '''
+{% schema %}
+  {
+    "name": "t:sections.header.name",
+    "blocks": [
+      {
+        "type": "text",
+        "name": "t:sections.header.blocks.text.name"
+      }
+    ]
+  }
+{% endschema %}'''
+
+[[cases.offenses]]
+file = "sections/file.liquid"
+message = "'t:sections.header.blocks.text.name' does not have a matching entry in 'locales/en.default.schema.json'"
+start = [ 6, 16 ]
+highlight = "\"t:sections.header.blocks.text.name\""
+
+[[cases]]
+name = "reports no offense when schema is invalid JSON"
+
+[cases.files]
+"locales/en.default.schema.json" = "{}"
+"sections/file.liquid" = '''
+{% schema %}
+  { invalid json }
+{% endschema %}'''
