@@ -82,6 +82,10 @@ target = "snippets/layout-child.liquid"
 
 [[cases]]
 name = "an app block in a block tag isn't followed, and theme blocks still are"
+modules = [
+  { file = "blocks/text.liquid", type = "Liquid", kind = "block" },
+  { file = "layout/theme.liquid", type = "Liquid", kind = "layout" },
+]
 
 [cases.files]
 "layout/theme.liquid" = '''
@@ -92,16 +96,6 @@ name = "an app block in a block tag isn't followed, and theme blocks still are"
 Text
 '''
 
-[[cases.modules]]
-file = "blocks/text.liquid"
-type = "Liquid"
-kind = "block"
-
-[[cases.modules]]
-file = "layout/theme.liquid"
-type = "Liquid"
-kind = "layout"
-
 [[cases.edges]]
 source = "layout/theme.liquid"
 start = [ 1, 0 ]
@@ -110,6 +104,10 @@ target = "blocks/text.liquid"
 
 [[cases]]
 name = "an app block in a liquid tag isn't followed, and theme blocks still are"
+modules = [
+  { file = "blocks/text.liquid", type = "Liquid", kind = "block" },
+  { file = "layout/theme.liquid", type = "Liquid", kind = "layout" },
+]
 
 [cases.files]
 "layout/theme.liquid" = '''
@@ -122,16 +120,6 @@ name = "an app block in a liquid tag isn't followed, and theme blocks still are"
 "blocks/text.liquid" = '''
 Text
 '''
-
-[[cases.modules]]
-file = "blocks/text.liquid"
-type = "Liquid"
-kind = "block"
-
-[[cases.modules]]
-file = "layout/theme.liquid"
-type = "Liquid"
-kind = "layout"
 
 [[cases.edges]]
 source = "layout/theme.liquid"

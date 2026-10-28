@@ -15,14 +15,11 @@ highlight = "<"
 
 [[cases]]
 name = "should not report a warning"
+references = [{ source = "templates/product.liquid", target = "snippets/product-card.liquid" }]
 
 [cases.files]
 "snippets/product-card.liquid" = "<div>Referenced snippet</div>"
 "templates/product.liquid" = "{% render 'product-card' %}"
-
-[[cases.references]]
-source = "templates/product.liquid"
-target = "snippets/product-card.liquid"
 
 [[cases]]
 name = "should not report warnings for templates"

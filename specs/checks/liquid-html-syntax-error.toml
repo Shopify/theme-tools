@@ -1437,51 +1437,19 @@ filters = []
 
 [[cases.docset.tags]]
 name = "for"
-
-[[cases.docset.tags.parameters]]
-name = "reversed"
-positional = true
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.docset.tags]]
 name = "tablerow"
-
-[[cases.docset.tags.parameters]]
-name = "cols"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases]]
 name = "should not report when args are valid (2)"
@@ -1494,51 +1462,19 @@ filters = []
 
 [[cases.docset.tags]]
 name = "for"
-
-[[cases.docset.tags.parameters]]
-name = "reversed"
-positional = true
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.docset.tags]]
 name = "tablerow"
-
-[[cases.docset.tags.parameters]]
-name = "cols"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases]]
 name = "should not report when args are valid (3)"
@@ -1551,51 +1487,19 @@ filters = []
 
 [[cases.docset.tags]]
 name = "for"
-
-[[cases.docset.tags.parameters]]
-name = "reversed"
-positional = true
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.docset.tags]]
 name = "tablerow"
-
-[[cases.docset.tags.parameters]]
-name = "cols"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases]]
 name = "should not report when args are valid (4)"
@@ -1608,51 +1512,19 @@ filters = []
 
 [[cases.docset.tags]]
 name = "for"
-
-[[cases.docset.tags.parameters]]
-name = "reversed"
-positional = true
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.docset.tags]]
 name = "tablerow"
-
-[[cases.docset.tags.parameters]]
-name = "cols"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases]]
 name = "should report when invalid args are found (1)"
@@ -1665,51 +1537,19 @@ filters = []
 
 [[cases.docset.tags]]
 name = "for"
-
-[[cases.docset.tags.parameters]]
-name = "reversed"
-positional = true
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.docset.tags]]
 name = "tablerow"
-
-[[cases.docset.tags.parameters]]
-name = "cols"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.offenses]]
 file = "file.liquid"
@@ -1729,51 +1569,19 @@ filters = []
 
 [[cases.docset.tags]]
 name = "for"
-
-[[cases.docset.tags.parameters]]
-name = "reversed"
-positional = true
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.docset.tags]]
 name = "tablerow"
-
-[[cases.docset.tags.parameters]]
-name = "cols"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.offenses]]
 file = "file.liquid"
@@ -1793,51 +1601,19 @@ filters = []
 
 [[cases.docset.tags]]
 name = "for"
-
-[[cases.docset.tags.parameters]]
-name = "reversed"
-positional = true
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.docset.tags]]
 name = "tablerow"
-
-[[cases.docset.tags.parameters]]
-name = "cols"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.offenses]]
 file = "file.liquid"
@@ -1857,51 +1633,19 @@ filters = []
 
 [[cases.docset.tags]]
 name = "for"
-
-[[cases.docset.tags.parameters]]
-name = "reversed"
-positional = true
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.docset.tags]]
 name = "tablerow"
-
-[[cases.docset.tags.parameters]]
-name = "cols"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.offenses]]
 file = "file.liquid"
@@ -1921,51 +1665,19 @@ filters = []
 
 [[cases.docset.tags]]
 name = "for"
-
-[[cases.docset.tags.parameters]]
-name = "reversed"
-positional = true
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.docset.tags]]
 name = "tablerow"
-
-[[cases.docset.tags.parameters]]
-name = "cols"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.offenses]]
 file = "file.liquid"
@@ -1985,51 +1697,19 @@ filters = []
 
 [[cases.docset.tags]]
 name = "for"
-
-[[cases.docset.tags.parameters]]
-name = "reversed"
-positional = true
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.docset.tags]]
 name = "tablerow"
-
-[[cases.docset.tags.parameters]]
-name = "cols"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.offenses]]
 file = "file.liquid"
@@ -2049,51 +1729,19 @@ filters = []
 
 [[cases.docset.tags]]
 name = "for"
-
-[[cases.docset.tags.parameters]]
-name = "reversed"
-positional = true
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.docset.tags]]
 name = "tablerow"
-
-[[cases.docset.tags.parameters]]
-name = "cols"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.offenses]]
 file = "file.liquid"
@@ -2113,51 +1761,19 @@ filters = []
 
 [[cases.docset.tags]]
 name = "for"
-
-[[cases.docset.tags.parameters]]
-name = "reversed"
-positional = true
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.docset.tags]]
 name = "tablerow"
-
-[[cases.docset.tags.parameters]]
-name = "cols"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "limit"
-positional = false
-description = "..."
-required = false
-types = []
-
-[[cases.docset.tags.parameters]]
-name = "offset"
-positional = false
-description = "..."
-required = false
-types = []
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
 
 [[cases.offenses]]
 file = "file.liquid"

@@ -301,6 +301,7 @@ name = "does not report for empty class attribute"
 
 [[cases]]
 name = "considers classes from an ancestor file as in scope"
+references = [{ source = "sections/section.liquid", target = "snippets/child.liquid" }]
 
 [cases.files]
 "sections/section.liquid" = '''
@@ -313,12 +314,12 @@ name = "considers classes from an ancestor file as in scope"
 <div class="parent-class">Hello</div>
 '''
 
-[[cases.references]]
-source = "sections/section.liquid"
-target = "snippets/child.liquid"
-
 [[cases]]
 name = "follows grandparent ancestors via direct references"
+references = [
+  { source = "sections/section.liquid", target = "snippets/snippet.liquid" },
+  { source = "layout/theme.liquid", target = "sections/section.liquid" },
+]
 
 [cases.files]
 "layout/theme.liquid" = '''
@@ -334,16 +335,9 @@ name = "follows grandparent ancestors via direct references"
 <div class="layout-class">Hello</div>
 '''
 
-[[cases.references]]
-source = "sections/section.liquid"
-target = "snippets/snippet.liquid"
-
-[[cases.references]]
-source = "layout/theme.liquid"
-target = "sections/section.liquid"
-
 [[cases]]
 name = "does not consider indirect references as ancestors"
+references = [{ source = "sections/section.liquid", target = "snippets/child.liquid", type = "indirect" }]
 
 [cases.files]
 "sections/section.liquid" = '''
@@ -358,11 +352,6 @@ name = "does not consider indirect references as ancestors"
 <div class="local-class parent-class">Hello</div>
 '''
 
-[[cases.references]]
-source = "sections/section.liquid"
-target = "snippets/child.liquid"
-type = "indirect"
-
 [[cases.offenses]]
 file = "snippets/child.liquid"
 message = "CSS class 'parent-class' may be defined outside the scope of this file."
@@ -371,6 +360,7 @@ highlight = "parent-class"
 
 [[cases]]
 name = "considers classes from a rendered snippet as in scope"
+references = [{ source = "sections/section.liquid", target = "snippets/styles.liquid" }]
 
 [cases.files]
 "sections/section.liquid" = '''
@@ -383,12 +373,12 @@ name = "considers classes from a rendered snippet as in scope"
 {% endstylesheet %}
 '''
 
-[[cases.references]]
-source = "sections/section.liquid"
-target = "snippets/styles.liquid"
-
 [[cases]]
 name = "considers classes from snippet descendants (recursive)"
+references = [
+  { source = "sections/section.liquid", target = "snippets/outer.liquid" },
+  { source = "snippets/outer.liquid", target = "snippets/inner.liquid" },
+]
 
 [cases.files]
 "sections/section.liquid" = '''
@@ -404,16 +394,12 @@ name = "considers classes from snippet descendants (recursive)"
 {% endstylesheet %}
 '''
 
-[[cases.references]]
-source = "sections/section.liquid"
-target = "snippets/outer.liquid"
-
-[[cases.references]]
-source = "snippets/outer.liquid"
-target = "snippets/inner.liquid"
-
 [[cases]]
 name = "considers classes from snippets rendered by ancestors"
+references = [
+  { source = "sections/section.liquid", target = "snippets/child.liquid" },
+  { source = "sections/section.liquid", target = "snippets/styles.liquid" },
+]
 
 [cases.files]
 "sections/section.liquid" = '''
@@ -428,14 +414,6 @@ name = "considers classes from snippets rendered by ancestors"
 "snippets/child.liquid" = '''
 <div class="style-class">Hello</div>
 '''
-
-[[cases.references]]
-source = "sections/section.liquid"
-target = "snippets/child.liquid"
-
-[[cases.references]]
-source = "sections/section.liquid"
-target = "snippets/styles.liquid"
 
 [[cases]]
 name = "considers classes from .css files in the assets folder"

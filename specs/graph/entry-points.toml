@@ -1,6 +1,12 @@
 [[cases]]
 name = "templates, layouts and sections are entry points"
 entryPoints = [ "layout/theme.liquid", "sections/header.liquid", "templates/index.json", "templates/page.liquid" ]
+modules = [
+  { file = "layout/theme.liquid", type = "Liquid", kind = "layout" },
+  { file = "sections/header.liquid", type = "Liquid", kind = "section" },
+  { file = "templates/index.json", type = "JSON", kind = "template" },
+  { file = "templates/page.liquid", type = "Liquid", kind = "template" },
+]
 
 [cases.files]
 "layout/theme.liquid" = '''
@@ -25,26 +31,6 @@ Text
 Orphan
 '''
 
-[[cases.modules]]
-file = "layout/theme.liquid"
-type = "Liquid"
-kind = "layout"
-
-[[cases.modules]]
-file = "sections/header.liquid"
-type = "Liquid"
-kind = "section"
-
-[[cases.modules]]
-file = "templates/index.json"
-type = "JSON"
-kind = "template"
-
-[[cases.modules]]
-file = "templates/page.liquid"
-type = "Liquid"
-kind = "template"
-
 [[cases.edges]]
 source = "templates/index.json"
 target = "layout/theme.liquid"
@@ -54,6 +40,10 @@ type = "indirect"
 name = "in app mode, app blocks are entry points too"
 mode = "app"
 entryPoints = [ "blocks/app-block.liquid" ]
+modules = [
+  { file = "blocks/app-block.liquid", type = "Liquid", kind = "block" },
+  { file = "snippets/shared.liquid", type = "Liquid", kind = "snippet" },
+]
 
 [cases.files]
 "blocks/app-block.liquid" = '''
@@ -70,16 +60,6 @@ entryPoints = [ "blocks/app-block.liquid" ]
 "snippets/shared.liquid" = '''
 <div>Shared snippet</div>
 '''
-
-[[cases.modules]]
-file = "blocks/app-block.liquid"
-type = "Liquid"
-kind = "block"
-
-[[cases.modules]]
-file = "snippets/shared.liquid"
-type = "Liquid"
-kind = "snippet"
 
 [[cases.edges]]
 source = "blocks/app-block.liquid"

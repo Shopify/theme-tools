@@ -37,6 +37,8 @@ Each `[[cases]]` starts a case. Its tables, such as `[cases.files]` and `[[cases
 belong to that case until the next `[[cases]]`. Put case properties like `mode` and `entryPoints`
 before its tables. Quote file paths so dots aren't interpreted as nested keys.
 
+Use arrays of inline tables for simple lists like `modules`, with one entry per line.
+
 Multiline literal strings (`'''`) preserve quotes, backslashes and whitespace. The newline
 immediately after the opening delimiter is trimmed; a newline before the closing delimiter is
 part of the content. To omit a trailing newline, put the closing delimiter at the end of the

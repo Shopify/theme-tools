@@ -52,6 +52,16 @@ and `systemTranslations`. A case names a file in `docsets/`, or writes one out i
 tags = [{ name = "custom_tag" }]
 ```
 
+Use arrays of inline tables for simple lists such as filters, objects, tags, and references:
+
+```toml
+[cases.docset]
+filters = [
+  { name = "append" },
+  { name = "upcase" },
+]
+```
+
 `config` holds check options by check code, as in `.theme-check.yml`:
 
 ```toml
@@ -63,9 +73,11 @@ maxComplexity = 5
 is `direct` (a `{% render %}`, the default), `indirect` or `preset`:
 
 ```toml
-[[cases.references]]
-source = "sections/section.liquid"
-target = "snippets/child.liquid"
+[[cases]]
+name = "renders a child snippet"
+references = [
+  { source = "sections/section.liquid", target = "snippets/child.liquid" },
+]
 ```
 
 A file at an `http://` or `https://` URL is a remote file, like a script on a CDN. It isn't part

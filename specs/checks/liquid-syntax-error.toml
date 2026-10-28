@@ -17,8 +17,8 @@ name = "does not report bare bracket section keyword argument values"
 [[cases]]
 name = "knows tags from the docset inside liquid blocks"
 
-[[cases.docset.tags]]
-name = "custom_tag"
+[cases.docset]
+tags = [{ name = "custom_tag" }]
 
 [cases.files]
 "snippets/test.liquid" = '''

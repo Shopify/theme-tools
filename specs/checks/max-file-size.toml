@@ -4,16 +4,14 @@ severity = "error"
 [[cases]]
 name = "accepts assets at the exact byte limit"
 
-[[cases.files."assets/theme.css"]]
-repeat = "a"
-times = 20971520
+[cases.files]
+"assets/theme.css" = [{ repeat = "a", times = 20971520 }]
 
 [[cases]]
 name = "accepts blocks at the exact byte limit"
 
-[[cases.files."blocks/product-card.liquid"]]
-repeat = "a"
-times = 262144
+[cases.files]
+"blocks/product-card.liquid" = [{ repeat = "a", times = 262144 }]
 
 [[cases]]
 name = "accepts config/settings_data.json at the exact byte limit"
@@ -42,9 +40,8 @@ name = "accepts layout at the exact byte limit"
 [[cases]]
 name = "accepts snippets at the exact byte limit"
 
-[[cases.files."snippets/card.liquid"]]
-repeat = "a"
-times = 262144
+[cases.files]
+"snippets/card.liquid" = [{ repeat = "a", times = 262144 }]
 
 [[cases]]
 name = "accepts templates/*.json at the exact byte limit"
@@ -55,9 +52,8 @@ name = "accepts templates/*.json at the exact byte limit"
 [[cases]]
 name = "accepts templates at the exact byte limit"
 
-[[cases.files."templates/product.liquid"]]
-repeat = "a"
-times = 262144
+[cases.files]
+"templates/product.liquid" = [{ repeat = "a", times = 262144 }]
 
 [[cases]]
 name = "accepts locales at the exact byte limit"
@@ -74,41 +70,32 @@ name = "accepts sections/*.json at the exact byte limit"
 [[cases]]
 name = "accepts sections at the exact byte limit"
 
-[[cases.files."sections/product.liquid"]]
-repeat = "a"
-times = 262144
+[cases.files]
+"sections/product.liquid" = [{ repeat = "a", times = 262144 }]
 
 [[cases]]
 name = "reports assets one byte over the limit"
 
-[[cases.files."assets/theme.css"]]
-repeat = "a"
-times = 20971521
+[cases.files]
+"assets/theme.css" = [{ repeat = "a", times = 20971521 }]
 
 [[cases.offenses]]
 file = "assets/theme.css"
 message = "Theme file is too large. It is 20971521 bytes but the limit is 20 MB."
 start = [ 0, 0 ]
-
-[[cases.offenses.highlight]]
-repeat = "a"
-times = 20971521
+highlight = [{ repeat = "a", times = 20971521 }]
 
 [[cases]]
 name = "reports blocks one byte over the limit"
 
-[[cases.files."blocks/product-card.liquid"]]
-repeat = "a"
-times = 262145
+[cases.files]
+"blocks/product-card.liquid" = [{ repeat = "a", times = 262145 }]
 
 [[cases.offenses]]
 file = "blocks/product-card.liquid"
 message = "Theme file is too large. It is 262145 bytes but the limit is 256 KB."
 start = [ 0, 0 ]
-
-[[cases.offenses.highlight]]
-repeat = "a"
-times = 262145
+highlight = [{ repeat = "a", times = 262145 }]
 
 [[cases]]
 name = "reports config/settings_data.json one byte over the limit"
@@ -161,18 +148,14 @@ highlight = [ "<html><head>{{ content_for_header }}</head><body>{{ content_for_l
 [[cases]]
 name = "reports snippets one byte over the limit"
 
-[[cases.files."snippets/card.liquid"]]
-repeat = "a"
-times = 262145
+[cases.files]
+"snippets/card.liquid" = [{ repeat = "a", times = 262145 }]
 
 [[cases.offenses]]
 file = "snippets/card.liquid"
 message = "Theme file is too large. It is 262145 bytes but the limit is 256 KB."
 start = [ 0, 0 ]
-
-[[cases.offenses.highlight]]
-repeat = "a"
-times = 262145
+highlight = [{ repeat = "a", times = 262145 }]
 
 [[cases]]
 name = "reports templates/*.json one byte over the limit"
@@ -189,18 +172,14 @@ highlight = [ "{\"d\":\"", { repeat = "a", times = 524281 }, "\"}" ]
 [[cases]]
 name = "reports templates one byte over the limit"
 
-[[cases.files."templates/product.liquid"]]
-repeat = "a"
-times = 262145
+[cases.files]
+"templates/product.liquid" = [{ repeat = "a", times = 262145 }]
 
 [[cases.offenses]]
 file = "templates/product.liquid"
 message = "Theme file is too large. It is 262145 bytes but the limit is 256 KB."
 start = [ 0, 0 ]
-
-[[cases.offenses.highlight]]
-repeat = "a"
-times = 262145
+highlight = [{ repeat = "a", times = 262145 }]
 
 [[cases]]
 name = "reports locales one byte over the limit"
@@ -229,34 +208,26 @@ highlight = [ "{\"d\":\"", { repeat = "a", times = 524281 }, "\"}" ]
 [[cases]]
 name = "reports sections one byte over the limit"
 
-[[cases.files."sections/product.liquid"]]
-repeat = "a"
-times = 262145
+[cases.files]
+"sections/product.liquid" = [{ repeat = "a", times = 262145 }]
 
 [[cases.offenses]]
 file = "sections/product.liquid"
 message = "Theme file is too large. It is 262145 bytes but the limit is 256 KB."
 start = [ 0, 0 ]
-
-[[cases.offenses.highlight]]
-repeat = "a"
-times = 262145
+highlight = [{ repeat = "a", times = 262145 }]
 
 [[cases]]
 name = "reports oversized files under a VFS-prefixed theme path"
 
-[[cases.files."workspace/themes/123/templates/index.liquid"]]
-repeat = "a"
-times = 262145
+[cases.files]
+"workspace/themes/123/templates/index.liquid" = [{ repeat = "a", times = 262145 }]
 
 [[cases.offenses]]
 file = "workspace/themes/123/templates/index.liquid"
 message = "Theme file is too large. It is 262145 bytes but the limit is 256 KB."
 start = [ 0, 0 ]
-
-[[cases.offenses.highlight]]
-repeat = "a"
-times = 262145
+highlight = [{ repeat = "a", times = 262145 }]
 
 [[cases]]
 name = "excludes schema block bytes for template-table files"
@@ -285,18 +256,14 @@ name = "ignores oversized draft file _drafts/bfcm/sections/product.json"
 [[cases]]
 name = "measures UTF-8 bytes instead of JavaScript string length"
 
-[[cases.files."snippets/multibyte.liquid"]]
-repeat = "é"
-times = 131073
+[cases.files]
+"snippets/multibyte.liquid" = [{ repeat = "é", times = 131073 }]
 
 [[cases.offenses]]
 file = "snippets/multibyte.liquid"
 message = "Theme file is too large. It is 262146 bytes but the limit is 256 KB."
 start = [ 0, 0 ]
-
-[[cases.offenses.highlight]]
-repeat = "é"
-times = 131073
+highlight = [{ repeat = "é", times = 131073 }]
 
 [[cases]]
 name = "reports oversized files even when the Liquid parser cannot build an AST"

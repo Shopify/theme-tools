@@ -1,5 +1,18 @@
 [[cases]]
 name = "a module's type and kind follow from its folder"
+modules = [
+  { file = "assets/icon.svg", type = "SVG", kind = "unused" },
+  { file = "assets/logo.png", type = "Image", kind = "unused" },
+  { file = "assets/theme.css", type = "CSS", kind = "unused" },
+  { file = "assets/theme.js", type = "JavaScript", kind = "unused" },
+  { file = "blocks/text.liquid", type = "Liquid", kind = "block" },
+  { file = "layout/theme.liquid", type = "Liquid", kind = "layout" },
+  { file = "sections/header-group.json", type = "JSON", kind = "section-group" },
+  { file = "sections/main.liquid", type = "Liquid", kind = "section" },
+  { file = "snippets/snippet.liquid", type = "Liquid", kind = "snippet" },
+  { file = "templates/index.json", type = "JSON", kind = "template" },
+  { file = "templates/page.liquid", type = "Liquid", kind = "template" },
+]
 
 [cases.files]
 "layout/theme.liquid" = '''
@@ -39,61 +52,6 @@ Snippet
 <svg></svg>
 '''
 "assets/logo.png" = ""
-
-[[cases.modules]]
-file = "assets/icon.svg"
-type = "SVG"
-kind = "unused"
-
-[[cases.modules]]
-file = "assets/logo.png"
-type = "Image"
-kind = "unused"
-
-[[cases.modules]]
-file = "assets/theme.css"
-type = "CSS"
-kind = "unused"
-
-[[cases.modules]]
-file = "assets/theme.js"
-type = "JavaScript"
-kind = "unused"
-
-[[cases.modules]]
-file = "blocks/text.liquid"
-type = "Liquid"
-kind = "block"
-
-[[cases.modules]]
-file = "layout/theme.liquid"
-type = "Liquid"
-kind = "layout"
-
-[[cases.modules]]
-file = "sections/header-group.json"
-type = "JSON"
-kind = "section-group"
-
-[[cases.modules]]
-file = "sections/main.liquid"
-type = "Liquid"
-kind = "section"
-
-[[cases.modules]]
-file = "snippets/snippet.liquid"
-type = "Liquid"
-kind = "snippet"
-
-[[cases.modules]]
-file = "templates/index.json"
-type = "JSON"
-kind = "template"
-
-[[cases.modules]]
-file = "templates/page.liquid"
-type = "Liquid"
-kind = "template"
 
 [[cases.edges]]
 source = "blocks/text.liquid"
@@ -156,29 +114,17 @@ target = "snippets/snippet.liquid"
 
 [[cases]]
 name = "a file that's referenced but missing is a module that doesn't exist"
+modules = [
+  { file = "assets/missing.js", type = "JavaScript", kind = "unused", exists = false },
+  { file = "sections/main.liquid", type = "Liquid", kind = "section" },
+  { file = "snippets/missing.liquid", type = "Liquid", kind = "snippet", exists = false },
+]
 
 [cases.files]
 "sections/main.liquid" = '''
 {% render 'missing' %}
 {{ 'missing.js' | asset_url }}
 '''
-
-[[cases.modules]]
-file = "assets/missing.js"
-type = "JavaScript"
-kind = "unused"
-exists = false
-
-[[cases.modules]]
-file = "sections/main.liquid"
-type = "Liquid"
-kind = "section"
-
-[[cases.modules]]
-file = "snippets/missing.liquid"
-type = "Liquid"
-kind = "snippet"
-exists = false
 
 [[cases.edges]]
 source = "sections/main.liquid"
