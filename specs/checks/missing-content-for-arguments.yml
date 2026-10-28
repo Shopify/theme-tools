@@ -1,0 +1,124 @@
+check: MissingContentForArguments
+severity: warning
+cases:
+  - name: should report missing required arguments
+    files:
+      blocks/card.liquid: |
+        {% doc %}
+          @param {string} required_string - A required string
+          @param {number} required_number - A required number
+          @param {boolean} required_boolean - A required boolean
+          @param {object} required_object - A required object
+          @param {string} [optional_string] - An optional string
+          @param {number} [optional_number] - An optional number
+          @param {object} [optional_object] - An optional object
+          @param {boolean} [optional_boolean] - An optional boolean
+        {% enddoc %}
+      file.liquid: "{% content_for 'block', type: 'card' %}"
+    offenses:
+      - file: file.liquid
+        message: "Missing required argument 'required_string' in content_for tag for static block 'card'."
+        start: [0, 15]
+        highlight: "'block', type: 'card' "
+        suggest:
+          - message: "Add required argument 'required_string'"
+            result: "{% content_for 'block', type: 'card', required_string: '' %}"
+      - file: file.liquid
+        message: "Missing required argument 'required_number' in content_for tag for static block 'card'."
+        start: [0, 15]
+        highlight: "'block', type: 'card' "
+        suggest:
+          - message: "Add required argument 'required_number'"
+            result: "{% content_for 'block', type: 'card', required_number: 0 %}"
+      - file: file.liquid
+        message: "Missing required argument 'required_boolean' in content_for tag for static block 'card'."
+        start: [0, 15]
+        highlight: "'block', type: 'card' "
+        suggest:
+          - message: "Add required argument 'required_boolean'"
+            result: "{% content_for 'block', type: 'card', required_boolean: false %}"
+      - file: file.liquid
+        message: "Missing required argument 'required_object' in content_for tag for static block 'card'."
+        start: [0, 15]
+        highlight: "'block', type: 'card' "
+        suggest:
+          - message: "Add required argument 'required_object'"
+            result: "{% content_for 'block', type: 'card', required_object:  %}"
+  - name: should suggest adding missing required arguments when none already exist
+    files:
+      blocks/card.liquid: |
+        {% doc %}
+          @param {string} required_string - A required string
+          @param {number} required_number - A required number
+          @param {boolean} required_boolean - A required boolean
+          @param {object} required_object - A required object
+          @param {string} [optional_string] - An optional string
+          @param {number} [optional_number] - An optional number
+          @param {object} [optional_object] - An optional object
+          @param {boolean} [optional_boolean] - An optional boolean
+        {% enddoc %}
+      file.liquid: "{% content_for 'block', type: 'card' %}"
+    offenses:
+      - file: file.liquid
+        message: "Missing required argument 'required_string' in content_for tag for static block 'card'."
+        start: [0, 15]
+        highlight: "'block', type: 'card' "
+        suggest:
+          - message: "Add required argument 'required_string'"
+            result: "{% content_for 'block', type: 'card', required_string: '' %}"
+      - file: file.liquid
+        message: "Missing required argument 'required_number' in content_for tag for static block 'card'."
+        start: [0, 15]
+        highlight: "'block', type: 'card' "
+        suggest:
+          - message: "Add required argument 'required_number'"
+            result: "{% content_for 'block', type: 'card', required_number: 0 %}"
+      - file: file.liquid
+        message: "Missing required argument 'required_boolean' in content_for tag for static block 'card'."
+        start: [0, 15]
+        highlight: "'block', type: 'card' "
+        suggest:
+          - message: "Add required argument 'required_boolean'"
+            result: "{% content_for 'block', type: 'card', required_boolean: false %}"
+      - file: file.liquid
+        message: "Missing required argument 'required_object' in content_for tag for static block 'card'."
+        start: [0, 15]
+        highlight: "'block', type: 'card' "
+        suggest:
+          - message: "Add required argument 'required_object'"
+            result: "{% content_for 'block', type: 'card', required_object:  %}"
+  - name: should handle mixed case type annotations
+    files:
+      blocks/card.liquid: |
+        {% doc %}
+          @param {String} text - The text
+          @param {NUMBER} count - The count
+          @param {BOOLEAN} flag - The flag
+          @param {Object} data - The data
+        {% enddoc %}
+        <div>{{ text }}{{ count }}{{ flag }}{{ data }}</div>
+      file.liquid: "{% content_for 'block', type: 'card', text: \"hello\", count: 5, flag: true, data: product %}"
+  - name: should not report when block has no doc comment
+    files:
+      blocks/card.liquid: "<h1>This snippet has no doc comment</h1>"
+      file.liquid: "{% content_for 'block', type: 'card', title: 'My Card' %}"
+  - name: should not report when LiquidDoc definition has no defined params
+    files:
+      blocks/card.liquid: |
+        {% doc %}
+          @description this is a description
+          @example this is an example
+        {% enddoc %}
+        <div>{{ title }}</div>
+        <div>{{ description }}</div>
+      file.liquid: "{% content_for 'block', type: 'card', title: 'My Card' %}"
+  - name: should not report when block name is a VariableLookup
+    files:
+      blocks/card.liquid: |
+        {% doc %}
+          @param {string} title - The title of the card
+          @param {string} description - The description of the card
+        {% enddoc %}
+        <div>{{ title }}</div>
+        <div>{{ description }}</div>
+      file.liquid: "{% assign block_name = 'card' %}{% content_for 'block', type: block_name, title: 'My Card' %}"

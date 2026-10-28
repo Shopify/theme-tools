@@ -1,0 +1,758 @@
+check: UndefinedObject
+severity: warning
+cases:
+  - name: allows section in a snippet in app mode
+    mode: app
+    docset: default
+    files:
+      snippets/my-snippet.liquid: '{% doc %} @param {string} x - x {% enddoc %}{{ section }}'
+  - name: allows block in a snippet in app mode
+    mode: app
+    docset: default
+    files:
+      snippets/my-snippet.liquid: '{% doc %} @param {string} x - x {% enddoc %}{{ block }}'
+  - name: allows recommendations in a snippet in app mode
+    mode: app
+    docset: default
+    files:
+      snippets/my-snippet.liquid: '{% doc %} @param {string} x - x {% enddoc %}{{ recommendations }}'
+  - name: allows app in a snippet in app mode
+    mode: app
+    docset: default
+    files:
+      snippets/my-snippet.liquid: '{% doc %} @param {string} x - x {% enddoc %}{{ app }}'
+  - name: reports schema settings used as bare variables in an app block
+    mode: app
+    docset: default
+    files:
+      blocks/card.liquid: |
+        <h2>{{ heading }}</h2>
+        {% schema %}{"name":"Card","settings":[{"type":"text","id":"heading","label":"Heading"}]}{% endschema %}
+    offenses:
+      - file: blocks/card.liquid
+        message: Unknown object 'heading' used.
+        start: [0, 7]
+        highlight: heading
+  - name: should report an offense when object is undefined
+    files:
+      file.liquid: |
+        {{ my_var }}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'my_var' used."
+        start: [0, 3]
+        highlight: my_var
+  - name: should report an offense when object with an attribute is undefined
+    files:
+      file.liquid: |
+        {{ my_var.my_attr }}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'my_var' used."
+        start: [0, 3]
+        highlight: my_var.my_attr
+  - name: should report an offense when undefined object is used as an argument
+    files:
+      file.liquid: |
+        {{ product[my_object] }}
+        {{ product[my_object] }}
+
+        {% comment %} string arguments should not be reported {% endcomment %}
+        {{ product["my_object"] }}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'my_object' used."
+        start: [0, 11]
+        highlight: my_object
+      - file: file.liquid
+        message: "Unknown object 'my_object' used."
+        start: [1, 11]
+        highlight: my_object
+  - name: should report an offense when object is undefined in a Liquid tag
+    files:
+      file.liquid: |
+        {% liquid
+          echo my_var
+        %}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'my_var' used."
+        start: [1, 7]
+        highlight: my_var
+  - name: should not report an offense when object is defined with an assign tag
+    files:
+      file.liquid: |
+        {% assign my_var = "value" %}
+        {{ my_var }}
+    docset: default
+  - name: should not report an offense when object is defined with an assign tag and it is used as an argument
+    files:
+      file.liquid: |
+        {% assign prop = "title" %}
+        {{ product[prop] }}
+    docset: default
+  - name: should not report an offense when object is defined with an assign tag in a Liquid tag
+    files:
+      file.liquid: |
+        {% liquid
+          assign my_var = "value"
+          echo my_var
+        %}
+    docset: default
+  - name: should not report an offense when object is defined with a capture tag
+    files:
+      file.liquid: |
+        {% capture my_var %} value {% endcapture %}
+        {{ my_var }}
+    docset: default
+  - name: should not report an offense when object is defined in a for loop
+    files:
+      file.liquid: |
+        {% for c in collections %}
+          {{ c }}
+        {% endfor %}
+    docset: default
+  - name: should report an offense when object is defined in a for loop but used outside of the scope
+    files:
+      file.liquid: |
+        {% for c in collections %}
+          {{ c }}
+        {% endfor %}{{ c }}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'c' used."
+        start: [2, 15]
+        highlight: c
+  - name: should report an offense when object is defined in a for loop but used outside of the scope (in scenarios where the same variable has multiple scopes in the file)
+    files:
+      file.liquid: |
+        {% for c in collections %}
+          {% comment %} -- Scope 1 -- {% endcomment %}
+          {{ c }}
+        {% endfor %}
+        {{ c }}
+        {% for c in collections %}
+          {% comment %} -- Scope 2 -- {% endcomment %}
+          {{ c }}
+        {% endfor %}
+        {{ c }}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'c' used."
+        start: [4, 3]
+        highlight: c
+      - file: file.liquid
+        message: "Unknown object 'c' used."
+        start: [9, 3]
+        highlight: c
+  - name: should report an offense when undefined object defines another object
+    files:
+      file.liquid: |
+        {% assign my_object = my_var %}
+        {{ my_object }}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'my_var' used."
+        start: [0, 22]
+        highlight: my_var
+  - name: should not report an offense when object is defined in a tablerow loop
+    files:
+      file.liquid: |
+        {% tablerow c in collections %}
+          {{ c }}
+        {% endtablerow %}
+    docset: default
+  - name: should report an offense when object is defined in a tablerow loop but used outside of the scope
+    files:
+      file.liquid: |
+        {% tablerow c in collections %}
+          {{ c }}
+        {% endtablerow %}{{ c }}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'c' used."
+        start: [2, 20]
+        highlight: c
+  - name: should contextually report on the undefined nature of the paginate object (defined in paginate tag, undefined outside)
+    files:
+      file.liquid: |
+        {% assign col = 'string' | split: '' %}
+        {% paginate col by 5 %}
+          {{ paginate }}
+        {% endpaginate %}{{ paginate }}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'paginate' used."
+        start: [3, 20]
+        highlight: paginate
+  - name: should contextually report on the undefined nature of the form object (defined in form tag, undefined outside)
+    files:
+      file.liquid: |
+        {% form "cart" %}
+          {{ form }}
+        {% endform %}{{ form }}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'form' used."
+        start: [2, 16]
+        highlight: form
+  - name: should support {% layout none %}
+    files:
+      file.liquid: |
+        {% layout none %}
+        {{ none }}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'none' used."
+        start: [1, 3]
+        highlight: none
+  - name: should support {% increment var %} and {% decrement var %} (1)
+    files:
+      file.liquid: |
+        {% increment var %}
+        {{ var }}
+    docset: default
+  - name: should support {% increment var %} and {% decrement var %} (2)
+    files:
+      file.liquid: |
+        {% decrement var %}
+        {{ var }}
+    docset: default
+  - name: 'should not report an offense when object is undefined in a "snippet" file with no presense of doc tags'
+    files:
+      snippets/file.liquid: |
+        {{ my_var }}
+    docset: default
+  - name: 'should report an offense when object is undefined in a "snippet" file with doc tags that are missing the associated param'
+    files:
+      snippets/file.liquid: |
+        {% doc %}
+        {% enddoc %}
+        {{ my_var }}
+    docset: default
+    offenses:
+      - file: snippets/file.liquid
+        message: "Unknown object 'my_var' used."
+        start: [2, 3]
+        highlight: my_var
+  - name: "should not report an offense when object is defined with @param in a snippet file"
+    files:
+      snippets/file.liquid: |
+        {% doc %}
+          @param {string} text
+        {% enddoc %}
+
+        {{ text }}
+    docset: default
+  - name: should report an offense when object is not global
+    files:
+      file.liquid: |
+        {{ image }}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'image' used."
+        start: [0, 3]
+        highlight: image
+  - name: should not report an offense for forloop/tablerowloop variables when in the correct context (1)
+    files:
+      file.liquid: |
+        {% for x in collections %}
+          {{ forloop }}
+        {% endfor %}
+    docset: default
+  - name: should not report an offense for forloop/tablerowloop variables when in the correct context (2)
+    files:
+      file.liquid: |
+        {% tablerow x in collections %}
+          {{ tablerowloop }}
+        {% endtablerow %}
+    docset: default
+  - name: should support contextual exceptions (1)
+    files:
+      sections/section.liquid: "{{ section }}"
+    docset: default
+  - name: should support contextual exceptions (2)
+    files:
+      file.liquid: "{{ section }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'section' used."
+        start: [0, 3]
+        highlight: section
+  - name: should support contextual exceptions (3)
+    files:
+      sections/predictive-search.liquid: "{{ predictive_search }}"
+    docset: default
+  - name: should support contextual exceptions (4)
+    files:
+      file.liquid: "{{ predictive_search }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'predictive_search' used."
+        start: [0, 3]
+        highlight: predictive_search
+  - name: should support contextual exceptions (5)
+    files:
+      sections/recommendations.liquid: "{{ recommendations }}"
+    docset: default
+  - name: should support contextual exceptions (6)
+    files:
+      file.liquid: "{{ recommendations }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'recommendations' used."
+        start: [0, 3]
+        highlight: recommendations
+  - name: should support contextual exceptions (7)
+    files:
+      sections/main-article.liquid: "{{ comment }}"
+    docset: default
+  - name: should support contextual exceptions (8)
+    files:
+      file.liquid: "{{ comment }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'comment' used."
+        start: [0, 3]
+        highlight: comment
+  - name: should support contextual exceptions (9)
+    files:
+      blocks/theme-app-extension.liquid: "{{ block }}"
+    docset: default
+  - name: should support contextual exceptions (10)
+    files:
+      file.liquid: "{{ block }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'block' used."
+        start: [0, 3]
+        highlight: block
+  - name: should support contextual exceptions (11)
+    files:
+      blocks/theme-app-extension.liquid: "{{ app }}"
+    docset: default
+  - name: should support contextual exceptions (12)
+    files:
+      file.liquid: "{{ app }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'app' used."
+        start: [0, 3]
+        highlight: app
+  - name: should support contextual exceptions (13)
+    files:
+      snippets/theme-app-extension.liquid: "{{ app }}"
+    docset: default
+  - name: should support contextual exceptions (14)
+    files:
+      file.liquid: "{{ app }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'app' used."
+        start: [0, 3]
+        highlight: app
+  - name: should allow app, section, and block in snippets when in theme mode (1)
+    files:
+      snippets/my-snippet.liquid: "{% doc %} @param {string} x - x {% enddoc %}{{ app }}"
+    docset: default
+  - name: should allow app, section, and block in snippets when in theme mode (2)
+    files:
+      snippets/my-snippet.liquid: "{% doc %} @param {string} x - x {% enddoc %}{{ section }}"
+    docset: default
+  - name: should allow app, section, and block in snippets when in theme mode (3)
+    files:
+      snippets/my-snippet.liquid: "{% doc %} @param {string} x - x {% enddoc %}{{ block }}"
+    docset: default
+  - name: should still flag block-only objects in snippets when in theme mode
+    files:
+      snippets/my-snippet.liquid: "{% doc %} @param {string} x - x {% enddoc %}{{ recommendations }}"
+    docset: default
+    offenses:
+      - file: snippets/my-snippet.liquid
+        message: "Unknown object 'recommendations' used."
+        start: [0, 47]
+        highlight: recommendations
+  - name: should support contextual exceptions for checkout.liquid (1)
+    files:
+      layout/checkout.liquid: "{{ locale }}"
+    docset: default
+  - name: should support contextual exceptions for checkout.liquid (2)
+    files:
+      file.liquid: "{{ locale }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'locale' used."
+        start: [0, 3]
+        highlight: locale
+  - name: should support contextual exceptions for checkout.liquid (3)
+    files:
+      layout/checkout.liquid: "{{ direction }}"
+    docset: default
+  - name: should support contextual exceptions for checkout.liquid (4)
+    files:
+      file.liquid: "{{ direction }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'direction' used."
+        start: [0, 3]
+        highlight: direction
+  - name: should support contextual exceptions for checkout.liquid (5)
+    files:
+      layout/checkout.liquid: "{{ skip_to_content_link }}"
+    docset: default
+  - name: should support contextual exceptions for checkout.liquid (6)
+    files:
+      file.liquid: "{{ skip_to_content_link }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'skip_to_content_link' used."
+        start: [0, 3]
+        highlight: skip_to_content_link
+  - name: should support contextual exceptions for checkout.liquid (7)
+    files:
+      layout/checkout.liquid: "{{ checkout_html_classes }}"
+    docset: default
+  - name: should support contextual exceptions for checkout.liquid (8)
+    files:
+      file.liquid: "{{ checkout_html_classes }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'checkout_html_classes' used."
+        start: [0, 3]
+        highlight: checkout_html_classes
+  - name: should support contextual exceptions for checkout.liquid (9)
+    files:
+      layout/checkout.liquid: "{{ checkout_stylesheets }}"
+    docset: default
+  - name: should support contextual exceptions for checkout.liquid (10)
+    files:
+      file.liquid: "{{ checkout_stylesheets }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'checkout_stylesheets' used."
+        start: [0, 3]
+        highlight: checkout_stylesheets
+  - name: should support contextual exceptions for checkout.liquid (11)
+    files:
+      layout/checkout.liquid: "{{ checkout_scripts }}"
+    docset: default
+  - name: should support contextual exceptions for checkout.liquid (12)
+    files:
+      file.liquid: "{{ checkout_scripts }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'checkout_scripts' used."
+        start: [0, 3]
+        highlight: checkout_scripts
+  - name: should support contextual exceptions for checkout.liquid (13)
+    files:
+      layout/checkout.liquid: "{{ content_for_logo }}"
+    docset: default
+  - name: should support contextual exceptions for checkout.liquid (14)
+    files:
+      file.liquid: "{{ content_for_logo }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'content_for_logo' used."
+        start: [0, 3]
+        highlight: content_for_logo
+  - name: should support contextual exceptions for checkout.liquid (15)
+    files:
+      layout/checkout.liquid: "{{ breadcrumb }}"
+    docset: default
+  - name: should support contextual exceptions for checkout.liquid (16)
+    files:
+      file.liquid: "{{ breadcrumb }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'breadcrumb' used."
+        start: [0, 3]
+        highlight: breadcrumb
+  - name: should support contextual exceptions for checkout.liquid (17)
+    files:
+      layout/checkout.liquid: "{{ order_summary_toggle }}"
+    docset: default
+  - name: should support contextual exceptions for checkout.liquid (18)
+    files:
+      file.liquid: "{{ order_summary_toggle }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'order_summary_toggle' used."
+        start: [0, 3]
+        highlight: order_summary_toggle
+  - name: should support contextual exceptions for checkout.liquid (19)
+    files:
+      layout/checkout.liquid: "{{ content_for_order_summary }}"
+    docset: default
+  - name: should support contextual exceptions for checkout.liquid (20)
+    files:
+      file.liquid: "{{ content_for_order_summary }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'content_for_order_summary' used."
+        start: [0, 3]
+        highlight: content_for_order_summary
+  - name: should support contextual exceptions for checkout.liquid (21)
+    files:
+      layout/checkout.liquid: "{{ alternative_payment_methods }}"
+    docset: default
+  - name: should support contextual exceptions for checkout.liquid (22)
+    files:
+      file.liquid: "{{ alternative_payment_methods }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'alternative_payment_methods' used."
+        start: [0, 3]
+        highlight: alternative_payment_methods
+  - name: should support contextual exceptions for checkout.liquid (23)
+    files:
+      layout/checkout.liquid: "{{ content_for_footer }}"
+    docset: default
+  - name: should support contextual exceptions for checkout.liquid (24)
+    files:
+      file.liquid: "{{ content_for_footer }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'content_for_footer' used."
+        start: [0, 3]
+        highlight: content_for_footer
+  - name: should support contextual exceptions for checkout.liquid (25)
+    files:
+      layout/checkout.liquid: "{{ tracking_code }}"
+    docset: default
+  - name: should support contextual exceptions for checkout.liquid (26)
+    files:
+      file.liquid: "{{ tracking_code }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'tracking_code' used."
+        start: [0, 3]
+        highlight: tracking_code
+  - name: should report an offense for forloop/tablerowloop used outside of context
+    files:
+      file.liquid: |
+        {{ forloop }}
+        {{ tablerowloop }}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'forloop' used."
+        start: [0, 3]
+        highlight: forloop
+      - file: file.liquid
+        message: "Unknown object 'tablerowloop' used."
+        start: [1, 3]
+        highlight: tablerowloop
+  - name: should not report an offenses when definitions for global objects are unavailable
+    files:
+      file.liquid: |
+        {{ my_var }}
+  - name: "should not report an offense when object is defined with @param in a block file"
+    files:
+      blocks/my-custom-block.liquid: |
+        {% doc %}
+          @param {string} text
+        {% enddoc %}
+
+        {{ text }}
+    docset: default
+  - name: "should report an offense when an undefined object is used alongside @param in a block file"
+    files:
+      blocks/my-custom-block.liquid: |
+        {% doc %}
+          @param {string} text
+        {% enddoc %}
+
+        {{ text }}
+        {{ undefined_variable }}
+    docset: default
+    offenses:
+      - file: blocks/my-custom-block.liquid
+        message: "Unknown object 'undefined_variable' used."
+        start: [5, 3]
+        highlight: undefined_variable
+  - name: does not report the built-in content variable in a block file
+    files:
+      blocks/card.liquid: |
+        {{ content }}
+        {% if content != blank %}{{ content | upcase }}{% endif %}
+    docset: default
+  - name: reports content outside block files
+    files:
+      sections/main.liquid: "{{ content }}"
+    docset: default
+    offenses:
+      - file: sections/main.liquid
+        message: "Unknown object 'content' used."
+        start: [0, 3]
+        highlight: content
+  - name: does not report a schema setting used as a bare variable
+    files:
+      blocks/card.liquid: |
+        <h2>{{ heading }}</h2>
+        {% schema %}{"name":"Card","settings":[{"type":"text","id":"heading","label":"Heading"}]}{% endschema %}
+    docset: default
+  - name: does not report a schema setting and a LiquidDoc-only parameter in the same block
+    files:
+      blocks/card.liquid: |
+        {% doc %}
+          @param {string} [eyebrow]
+        {% enddoc %}
+        <p>{{ eyebrow }}</p>
+        <h2>{{ heading }}</h2>
+        {% schema %}{"name":"Card","settings":[{"type":"text","id":"heading","label":"Heading"}]}{% endschema %}
+    docset: default
+  - name: does not report a name declared by both schema and LiquidDoc
+    files:
+      blocks/card.liquid: |
+        {% doc %}
+          @param {string} heading
+        {% enddoc %}
+        <h2>{{ heading }}</h2>
+        {% schema %}{"name":"Card","settings":[{"type":"text","id":"heading","label":"Heading"}]}{% endschema %}
+    docset: default
+  - name: does not report content alongside schema and LiquidDoc variables
+    files:
+      blocks/card.liquid: |
+        {% doc %}
+          @param {string} [eyebrow]
+        {% enddoc %}
+        <p>{{ eyebrow }}</p>
+        <h2>{{ heading }}</h2>
+        <div>{{ content }}</div>
+        {% schema %}{"name":"Card","settings":[{"type":"text","id":"heading","label":"Heading"}]}{% endschema %}
+    docset: default
+  - name: reports an unknown root alongside schema and LiquidDoc variables
+    files:
+      blocks/card.liquid: |
+        {% doc %}
+          @param {string} [eyebrow]
+        {% enddoc %}
+        <p>{{ eyebrow }}</p>
+        <h2>{{ heading }}</h2>
+        <h3>{{ subtitle }}</h3>
+        {% schema %}{"name":"Card","settings":[{"type":"text","id":"heading","label":"Heading"}]}{% endschema %}
+    docset: default
+    offenses:
+      - file: blocks/card.liquid
+        message: "Unknown object 'subtitle' used."
+        start: [5, 7]
+        highlight: subtitle
+  - name: reports names from non-input schema entries and setting types
+    files:
+      blocks/card.liquid: |
+        <div style="background: {{ background }}">
+          {{ layout_heading }}
+          {{ header }}
+          {{ color_background }}
+        </div>
+        {% schema %}{"name":"Card","settings":[{"type":"header","id":"layout_heading","content":"Layout"},{"type":"color_background","id":"background","label":"Background"}]}{% endschema %}
+    docset: default
+    offenses:
+      - file: blocks/card.liquid
+        message: "Unknown object 'layout_heading' used."
+        start: [1, 5]
+        highlight: layout_heading
+      - file: blocks/card.liquid
+        message: "Unknown object 'header' used."
+        start: [2, 5]
+        highlight: header
+      - file: blocks/card.liquid
+        message: "Unknown object 'color_background' used."
+        start: [3, 5]
+        highlight: color_background
+  - name: keeps LiquidDoc parameters and content defined when the schema is invalid
+    files:
+      blocks/card.liquid: |
+        {% doc %}
+          @param {string} [eyebrow]
+        {% enddoc %}
+        <p>{{ eyebrow }}</p>
+        <div>{{ content }}</div>
+        {% schema %}
+          { "name": "Card", "settings": [
+        {% endschema %}
+    docset: default
+  - name: reports schema settings used as bare variables in a section file
+    files:
+      sections/hero.liquid: |
+        <h2>{{ heading }}</h2>
+        {% schema %}{"name":"Card","settings":[{"type":"text","id":"heading","label":"Heading"}]}{% endschema %}
+    docset: default
+    offenses:
+      - file: sections/hero.liquid
+        message: "Unknown object 'heading' used."
+        start: [0, 7]
+        highlight: heading
+  - name: "should not report an offense when a self defined variable is defined with a @param tag"
+    files:
+      snippets/file.liquid: |
+        {% doc %}
+          @param {string} text
+        {% enddoc %}
+
+        {% assign text = text | default: "value" %}
+    docset: default
+  - name: should report an offense when assigning an undefined variable to itself
+    files:
+      file.liquid: |
+        {% assign my_var = my_var | default: "fallback" %}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'my_var' used."
+        start: [0, 19]
+        highlight: my_var
+  - name: should not report an offense when using variables inside visible_if statements in a schema tag
+    files:
+      file.liquid: |
+        {% schema %}
+        {
+          "settings": [
+            {
+              "type": "text",
+              "label": "foo",
+              "id": "foo",
+            }
+            {
+              "type": "text",
+              "label": "bar",
+              "id": "bar",
+              "visible_if": "{{ block.settings.foo }}",
+            }
+          ]
+        }
+        {% endschema %}
+    docset: default

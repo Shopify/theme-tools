@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "@shopify/theme-check-node": "workspace:^3.31.0",
-    "@types/node": "^22.18.8"
+    "@types/node": "^22.18.8",
+    "yaml": "^2.8.3"
   }
 }

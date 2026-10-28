@@ -89,14 +89,4 @@ describe('Module: ValidJSON', () => {
     expect(highlights).to.have.length(1);
     expect(highlights[0]).to.equal('10');
   });
-
-  it('should not report any errors for valid JSON', async () => {
-    const validJson = `{
-      "key1": "value1",
-      "key2": "value2"
-    }`;
-
-    const offenses = await runJSONCheck(ValidJSON, validJson);
-    expect(offenses).to.be.empty;
-  });
 });

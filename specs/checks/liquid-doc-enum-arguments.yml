@@ -1,0 +1,2492 @@
+cases:
+  - name: "render > accepts enum member 'heading'"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: 'heading' %}"
+    docset: default
+  - name: 'render > accepts enum member "heading"'
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: \"heading\" %}"
+    docset: default
+  - name: "render > accepts enum member 'small'"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: 'small' %}"
+    docset: default
+  - name: 'render > accepts enum member "small"'
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: \"small\" %}"
+    docset: default
+  - name: "render > rejects literal 'Heading' and highlights only the value"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: 'Heading' %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 'Heading'"
+        start: [0, 27]
+        highlight: "'Heading'"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text', variant: \"small\" %}"
+  - name: "render > rejects literal 'body' and highlights only the value"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: 'body' %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 'body'"
+        start: [0, 27]
+        highlight: "'body'"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text', variant: \"small\" %}"
+  - name: render > rejects literal 123 and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: 123 %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 123"
+        start: [0, 27]
+        highlight: "123"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text', variant: \"small\" %}"
+  - name: render > rejects literal false and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: false %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got false"
+        start: [0, 27]
+        highlight: "false"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text', variant: \"small\" %}"
+  - name: render > rejects literal nil and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: nil %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got nil"
+        start: [0, 27]
+        highlight: nil
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text', variant: \"small\" %}"
+  - name: render > rejects literal null and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: null %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got null"
+        start: [0, 27]
+        highlight: "null"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text', variant: \"small\" %}"
+  - name: render > rejects literal empty and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: empty %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got empty"
+        start: [0, 27]
+        highlight: empty
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text', variant: \"small\" %}"
+  - name: render > rejects literal blank and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: blank %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got blank"
+        start: [0, 27]
+        highlight: blank
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text', variant: \"small\" %}"
+  - name: render > rejects literal (1..3) and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: (1..3) %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got (1..3)"
+        start: [0, 27]
+        highlight: "(1..3)"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text', variant: \"small\" %}"
+  - name: render > leaves dynamic value style unverified
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: style %}"
+    docset: default
+  - name: render > leaves dynamic value block.settings.style unverified
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: block.settings.style %}"
+    docset: default
+  - name: "render > leaves dynamic value settings['style'] unverified"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: settings['style'] %}"
+    docset: default
+  - name: "render > does not cascade errors from unsupported declaration 'heading' |"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' |} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: 'body' %}"
+    docset: default
+  - name: "render > does not cascade errors from unsupported declaration 'heading' | number"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | number} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: 'body' %}"
+    docset: default
+  - name: render > offers each allowed member as a replacement and preserves its quoting (1)
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: 'body' %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 'body'"
+        start: [0, 27]
+        highlight: "'body'"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text', variant: \"small\" %}"
+  - name: render > offers each allowed member as a replacement and preserves its quoting (2)
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: 'heading' %}"
+    docset: default
+  - name: render > offers each allowed member as a replacement and preserves its quoting (3)
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: \"small\" %}"
+    docset: default
+  - name: "content_for > accepts enum member 'heading'"
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: 'heading' %}"
+  - name: 'content_for > accepts enum member "heading"'
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: \"heading\" %}"
+  - name: "content_for > accepts enum member 'small'"
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: 'small' %}"
+  - name: 'content_for > accepts enum member "small"'
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: \"small\" %}"
+  - name: "content_for > rejects literal 'Heading' and highlights only the value"
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: 'Heading' %}"
+    offenses:
+      - check: ValidContentForArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 'Heading'"
+        start: [0, 59]
+        highlight: "'Heading'"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: \"small\" %}"
+  - name: "content_for > rejects literal 'body' and highlights only the value"
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: 'body' %}"
+    offenses:
+      - check: ValidContentForArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 'body'"
+        start: [0, 59]
+        highlight: "'body'"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: \"small\" %}"
+  - name: content_for > rejects literal 123 and highlights only the value
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: 123 %}"
+    offenses:
+      - check: ValidContentForArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 123"
+        start: [0, 59]
+        highlight: "123"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: \"small\" %}"
+  - name: content_for > rejects literal false and highlights only the value
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: false %}"
+    offenses:
+      - check: ValidContentForArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got false"
+        start: [0, 59]
+        highlight: "false"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: \"small\" %}"
+  - name: content_for > rejects literal nil and highlights only the value
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: nil %}"
+    offenses:
+      - check: ValidContentForArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got nil"
+        start: [0, 59]
+        highlight: nil
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: \"small\" %}"
+  - name: content_for > rejects literal null and highlights only the value
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: null %}"
+    offenses:
+      - check: ValidContentForArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got null"
+        start: [0, 59]
+        highlight: "null"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: \"small\" %}"
+  - name: content_for > rejects literal empty and highlights only the value
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: empty %}"
+    offenses:
+      - check: ValidContentForArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got empty"
+        start: [0, 59]
+        highlight: empty
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: \"small\" %}"
+  - name: content_for > rejects literal blank and highlights only the value
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: blank %}"
+    offenses:
+      - check: ValidContentForArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got blank"
+        start: [0, 59]
+        highlight: blank
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: \"small\" %}"
+  - name: content_for > rejects literal (1..3) and highlights only the value
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: (1..3) %}"
+    offenses:
+      - check: ValidContentForArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got (1..3)"
+        start: [0, 59]
+        highlight: "(1..3)"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: \"small\" %}"
+  - name: content_for > leaves dynamic value style unverified
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: style %}"
+  - name: content_for > leaves dynamic value block.settings.style unverified
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: block.settings.style %}"
+  - name: "content_for > leaves dynamic value settings['style'] unverified"
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: settings['style'] %}"
+  - name: "content_for > does not cascade errors from unsupported declaration 'heading' |"
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' |} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: 'body' %}"
+  - name: "content_for > does not cascade errors from unsupported declaration 'heading' | number"
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | number} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: 'body' %}"
+  - name: content_for > offers each allowed member as a replacement and preserves its quoting (1)
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: 'body' %}"
+    offenses:
+      - check: ValidContentForArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 'body'"
+        start: [0, 59]
+        highlight: "'body'"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: 'heading' %}"
+          - message: 'Replace with "small"'
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: \"small\" %}"
+  - name: content_for > offers each allowed member as a replacement and preserves its quoting (2)
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: 'heading' %}"
+  - name: content_for > offers each allowed member as a replacement and preserves its quoting (3)
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: \"small\" %}"
+  - name: "block > accepts enum member 'heading'"
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: 'heading' %}Text{% endblock %}"
+  - name: 'block > accepts enum member "heading"'
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: \"heading\" %}Text{% endblock %}"
+  - name: "block > accepts enum member 'small'"
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: 'small' %}Text{% endblock %}"
+  - name: 'block > accepts enum member "small"'
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: \"small\" %}Text{% endblock %}"
+  - name: "block > rejects literal 'Heading' and highlights only the value"
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: 'Heading' %}Text{% endblock %}"
+    offenses:
+      - check: ValidBlockArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 'Heading'"
+        start: [0, 26]
+        highlight: "'Heading'"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% block 'text', variant: 'heading' %}Text{% endblock %}"
+          - message: 'Replace with "small"'
+            result: "{% block 'text', variant: \"small\" %}Text{% endblock %}"
+  - name: "block > rejects literal 'body' and highlights only the value"
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: 'body' %}Text{% endblock %}"
+    offenses:
+      - check: ValidBlockArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 'body'"
+        start: [0, 26]
+        highlight: "'body'"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% block 'text', variant: 'heading' %}Text{% endblock %}"
+          - message: 'Replace with "small"'
+            result: "{% block 'text', variant: \"small\" %}Text{% endblock %}"
+  - name: block > rejects literal 123 and highlights only the value
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: 123 %}Text{% endblock %}"
+    offenses:
+      - check: ValidBlockArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 123"
+        start: [0, 26]
+        highlight: "123"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% block 'text', variant: 'heading' %}Text{% endblock %}"
+          - message: 'Replace with "small"'
+            result: "{% block 'text', variant: \"small\" %}Text{% endblock %}"
+  - name: block > rejects literal false and highlights only the value
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: false %}Text{% endblock %}"
+    offenses:
+      - check: ValidBlockArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got false"
+        start: [0, 26]
+        highlight: "false"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% block 'text', variant: 'heading' %}Text{% endblock %}"
+          - message: 'Replace with "small"'
+            result: "{% block 'text', variant: \"small\" %}Text{% endblock %}"
+  - name: block > rejects literal nil and highlights only the value
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: nil %}Text{% endblock %}"
+    offenses:
+      - check: ValidBlockArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got nil"
+        start: [0, 26]
+        highlight: nil
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% block 'text', variant: 'heading' %}Text{% endblock %}"
+          - message: 'Replace with "small"'
+            result: "{% block 'text', variant: \"small\" %}Text{% endblock %}"
+  - name: block > rejects literal null and highlights only the value
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: null %}Text{% endblock %}"
+    offenses:
+      - check: ValidBlockArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got null"
+        start: [0, 26]
+        highlight: "null"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% block 'text', variant: 'heading' %}Text{% endblock %}"
+          - message: 'Replace with "small"'
+            result: "{% block 'text', variant: \"small\" %}Text{% endblock %}"
+  - name: block > rejects literal empty and highlights only the value
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: empty %}Text{% endblock %}"
+    offenses:
+      - check: ValidBlockArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got empty"
+        start: [0, 26]
+        highlight: empty
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% block 'text', variant: 'heading' %}Text{% endblock %}"
+          - message: 'Replace with "small"'
+            result: "{% block 'text', variant: \"small\" %}Text{% endblock %}"
+  - name: block > rejects literal blank and highlights only the value
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: blank %}Text{% endblock %}"
+    offenses:
+      - check: ValidBlockArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got blank"
+        start: [0, 26]
+        highlight: blank
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% block 'text', variant: 'heading' %}Text{% endblock %}"
+          - message: 'Replace with "small"'
+            result: "{% block 'text', variant: \"small\" %}Text{% endblock %}"
+  - name: block > rejects literal (1..3) and highlights only the value
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: (1..3) %}Text{% endblock %}"
+    offenses:
+      - check: ValidBlockArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got (1..3)"
+        start: [0, 26]
+        highlight: "(1..3)"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% block 'text', variant: 'heading' %}Text{% endblock %}"
+          - message: 'Replace with "small"'
+            result: "{% block 'text', variant: \"small\" %}Text{% endblock %}"
+  - name: block > leaves dynamic value style unverified
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: style %}Text{% endblock %}"
+  - name: block > leaves dynamic value block.settings.style unverified
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: block.settings.style %}Text{% endblock %}"
+  - name: "block > leaves dynamic value settings['style'] unverified"
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: settings['style'] %}Text{% endblock %}"
+  - name: "block > does not cascade errors from unsupported declaration 'heading' |"
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' |} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: 'body' %}Text{% endblock %}"
+  - name: "block > does not cascade errors from unsupported declaration 'heading' | number"
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | number} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: 'body' %}Text{% endblock %}"
+  - name: block > offers each allowed member as a replacement and preserves its quoting (1)
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: 'body' %}Text{% endblock %}"
+    offenses:
+      - check: ValidBlockArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 'body'"
+        start: [0, 26]
+        highlight: "'body'"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% block 'text', variant: 'heading' %}Text{% endblock %}"
+          - message: 'Replace with "small"'
+            result: "{% block 'text', variant: \"small\" %}Text{% endblock %}"
+  - name: block > offers each allowed member as a replacement and preserves its quoting (2)
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: 'heading' %}Text{% endblock %}"
+  - name: block > offers each allowed member as a replacement and preserves its quoting (3)
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: \"small\" %}Text{% endblock %}"
+  - name: "render with alias > accepts enum member 'heading'"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 'heading' as variant %}"
+    docset: default
+  - name: 'render with alias > accepts enum member "heading"'
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with \"heading\" as variant %}"
+    docset: default
+  - name: "render with alias > accepts enum member 'small'"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 'small' as variant %}"
+    docset: default
+  - name: 'render with alias > accepts enum member "small"'
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with \"small\" as variant %}"
+    docset: default
+  - name: "render with alias > rejects literal 'Heading' and highlights only the value"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 'Heading' as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 'Heading'"
+        start: [0, 22]
+        highlight: "'Heading'"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' with 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' with \"small\" as variant %}"
+  - name: "render with alias > rejects literal 'body' and highlights only the value"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 'body' as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 'body'"
+        start: [0, 22]
+        highlight: "'body'"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' with 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' with \"small\" as variant %}"
+  - name: render with alias > rejects literal 123 and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 123 as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 123"
+        start: [0, 22]
+        highlight: "123"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' with 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' with \"small\" as variant %}"
+  - name: render with alias > rejects literal false and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with false as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got false"
+        start: [0, 22]
+        highlight: "false"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' with 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' with \"small\" as variant %}"
+  - name: render with alias > rejects literal nil and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with nil as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got nil"
+        start: [0, 22]
+        highlight: nil
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' with 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' with \"small\" as variant %}"
+  - name: render with alias > rejects literal null and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with null as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got null"
+        start: [0, 22]
+        highlight: "null"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' with 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' with \"small\" as variant %}"
+  - name: render with alias > rejects literal empty and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with empty as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got empty"
+        start: [0, 22]
+        highlight: empty
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' with 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' with \"small\" as variant %}"
+  - name: render with alias > rejects literal blank and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with blank as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got blank"
+        start: [0, 22]
+        highlight: blank
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' with 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' with \"small\" as variant %}"
+  - name: render with alias > rejects literal (1..3) and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with (1..3) as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got (1..3)"
+        start: [0, 22]
+        highlight: "(1..3)"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' with 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' with \"small\" as variant %}"
+  - name: render with alias > leaves dynamic value style unverified
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with style as variant %}"
+    docset: default
+  - name: render with alias > leaves dynamic value block.settings.style unverified
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with block.settings.style as variant %}"
+    docset: default
+  - name: "render with alias > leaves dynamic value settings['style'] unverified"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with settings['style'] as variant %}"
+    docset: default
+  - name: "render with alias > does not cascade errors from unsupported declaration 'heading' |"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' |} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 'body' as variant %}"
+    docset: default
+  - name: "render with alias > does not cascade errors from unsupported declaration 'heading' | number"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | number} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 'body' as variant %}"
+    docset: default
+  - name: render with alias > offers each allowed member as a replacement and preserves its quoting (1)
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 'body' as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 'body'"
+        start: [0, 22]
+        highlight: "'body'"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' with 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' with \"small\" as variant %}"
+  - name: render with alias > offers each allowed member as a replacement and preserves its quoting (2)
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 'heading' as variant %}"
+    docset: default
+  - name: render with alias > offers each allowed member as a replacement and preserves its quoting (3)
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with \"small\" as variant %}"
+    docset: default
+  - name: "render for alias > accepts enum member 'heading'"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 'heading' as variant %}"
+    docset: default
+  - name: 'render for alias > accepts enum member "heading"'
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for \"heading\" as variant %}"
+    docset: default
+  - name: "render for alias > accepts enum member 'small'"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 'small' as variant %}"
+    docset: default
+  - name: 'render for alias > accepts enum member "small"'
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for \"small\" as variant %}"
+    docset: default
+  - name: "render for alias > rejects literal 'Heading' and highlights only the value"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 'Heading' as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 'Heading'"
+        start: [0, 21]
+        highlight: "'Heading'"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' for 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' for \"small\" as variant %}"
+  - name: "render for alias > rejects literal 'body' and highlights only the value"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 'body' as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 'body'"
+        start: [0, 21]
+        highlight: "'body'"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' for 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' for \"small\" as variant %}"
+  - name: render for alias > rejects literal 123 and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 123 as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 123"
+        start: [0, 21]
+        highlight: "123"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' for 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' for \"small\" as variant %}"
+  - name: render for alias > rejects literal false and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for false as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got false"
+        start: [0, 21]
+        highlight: "false"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' for 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' for \"small\" as variant %}"
+  - name: render for alias > rejects literal nil and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for nil as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got nil"
+        start: [0, 21]
+        highlight: nil
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' for 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' for \"small\" as variant %}"
+  - name: render for alias > rejects literal null and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for null as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got null"
+        start: [0, 21]
+        highlight: "null"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' for 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' for \"small\" as variant %}"
+  - name: render for alias > rejects literal empty and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for empty as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got empty"
+        start: [0, 21]
+        highlight: empty
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' for 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' for \"small\" as variant %}"
+  - name: render for alias > rejects literal blank and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for blank as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got blank"
+        start: [0, 21]
+        highlight: blank
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' for 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' for \"small\" as variant %}"
+  - name: render for alias > rejects literal (1..3) and highlights only the value
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for (1..3) as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got (1..3)"
+        start: [0, 21]
+        highlight: "(1..3)"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' for 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' for \"small\" as variant %}"
+  - name: render for alias > leaves dynamic value style unverified
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for style as variant %}"
+    docset: default
+  - name: render for alias > leaves dynamic value block.settings.style unverified
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for block.settings.style as variant %}"
+    docset: default
+  - name: "render for alias > leaves dynamic value settings['style'] unverified"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for settings['style'] as variant %}"
+    docset: default
+  - name: "render for alias > does not cascade errors from unsupported declaration 'heading' |"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' |} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 'body' as variant %}"
+    docset: default
+  - name: "render for alias > does not cascade errors from unsupported declaration 'heading' | number"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | number} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 'body' as variant %}"
+    docset: default
+  - name: render for alias > offers each allowed member as a replacement and preserves its quoting (1)
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 'body' as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 'body'"
+        start: [0, 21]
+        highlight: "'body'"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' for 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' for \"small\" as variant %}"
+  - name: render for alias > offers each allowed member as a replacement and preserves its quoting (2)
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 'heading' as variant %}"
+    docset: default
+  - name: render for alias > offers each allowed member as a replacement and preserves its quoting (3)
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for \"small\" as variant %}"
+    docset: default
+  - name: render permits omission of an optional enum
+    checks: [MissingRenderSnippetArguments]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' %}"
+  - name: render reports omission of a required enum
+    checks: [MissingRenderSnippetArguments]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} variant - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' %}"
+    offenses:
+      - check: MissingRenderSnippetArguments
+        file: templates/index.liquid
+        message: "Missing required argument 'variant' in render tag for snippet 'text'."
+        start: [0, 10]
+        highlight: "'text' "
+        suggest:
+          - message: "Add required argument 'variant'"
+            result: "{% render 'text', variant: 'heading' %}"
+  - name: content_for permits omission of an optional enum
+    checks: [MissingContentForArguments]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text' %}"
+  - name: content_for reports omission of a required enum
+    checks: [MissingContentForArguments]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} variant - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text' %}"
+    offenses:
+      - check: MissingContentForArguments
+        file: templates/index.liquid
+        message: "Missing required argument 'variant' in content_for tag for static block 'text'."
+        start: [0, 15]
+        highlight: "'block', type: 'text', id: 'text' "
+        suggest:
+          - message: "Add required argument 'variant'"
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: 'heading' %}"
+  - name: block permits omission of an optional enum
+    checks: [MissingBlockArguments]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text' %}Text{% endblock %}"
+  - name: block reports omission of a required enum
+    checks: [MissingBlockArguments]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} variant - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text' %}Text{% endblock %}"
+    offenses:
+      - check: MissingBlockArguments
+        file: templates/index.liquid
+        message: "Missing required argument 'variant' in block tag for 'text'."
+        start: [0, 0]
+        highlight: "{% block 'text' %}"
+  - name: render with alias preserves checking of literal values against named declaration product
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {product} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 123 as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Type mismatch for argument 'variant': expected product, got number"
+        start: [0, 22]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'text' with  as variant %}"
+  - name: "render with alias preserves checking of literal values against named declaration product[]"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {product[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 123 as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Type mismatch for argument 'variant': expected product[], got number"
+        start: [0, 22]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'text' with  as variant %}"
+  - name: "render with alias preserves checking of literal values against named declaration string[]"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {string[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 123 as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Type mismatch for argument 'variant': expected string[], got number"
+        start: [0, 22]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'text' with  as variant %}"
+  - name: leaves dynamic alias values unverified for named declarations (1)
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {product} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with product as variant %}"
+    docset: default
+  - name: render with alias leaves uppercase declaration Product to ValidDocParamTypes (1)
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {Product} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 123 as variant %}"
+    docset: default
+  - name: render with alias leaves uppercase declaration Product to ValidDocParamTypes (2)
+    checks: [ValidDocParamTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {Product} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+    docset: default
+    offenses:
+      - check: ValidDocParamTypes
+        file: snippets/text.liquid
+        message: "The parameter type 'Product' is not supported."
+        start: [1, 11]
+        highlight: "{Product}"
+        suggest:
+          - message: Remove invalid parameter type
+            result: |-
+              {% doc %}
+                  @param [variant] - Text style
+                {% enddoc %}
+                {{ variant }}
+  - name: "render with alias leaves uppercase declaration Product[] to ValidDocParamTypes (1)"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {Product[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 123 as variant %}"
+    docset: default
+  - name: "render with alias leaves uppercase declaration Product[] to ValidDocParamTypes (2)"
+    checks: [ValidDocParamTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {Product[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+    docset: default
+    offenses:
+      - check: ValidDocParamTypes
+        file: snippets/text.liquid
+        message: "The parameter type 'Product[]' is not supported."
+        start: [1, 11]
+        highlight: "{Product[]}"
+        suggest:
+          - message: Remove invalid parameter type
+            result: |-
+              {% doc %}
+                  @param [variant] - Text style
+                {% enddoc %}
+                {{ variant }}
+  - name: render with alias leaves named declaration unknown to ValidDocParamTypes when the docset lacks it
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {unknown} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 123 as variant %}"
+    docset: default
+  - name: "render with alias leaves named declaration unknown[] to ValidDocParamTypes when the docset lacks it"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {unknown[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 123 as variant %}"
+    docset: default
+  - name: render with alias without a docset > checks literal values against named declaration product
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {product} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 123 as variant %}"
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Type mismatch for argument 'variant': expected product, got number"
+        start: [0, 22]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'text' with  as variant %}"
+  - name: render with alias without a docset > checks literal values against named declaration Product
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {Product} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 123 as variant %}"
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Type mismatch for argument 'variant': expected product, got number"
+        start: [0, 22]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'text' with  as variant %}"
+  - name: "render with alias without a docset > checks literal values against named declaration product[]"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {product[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 123 as variant %}"
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Type mismatch for argument 'variant': expected product[], got number"
+        start: [0, 22]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'text' with  as variant %}"
+  - name: "render with alias without a docset > checks literal values against named declaration string[]"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {string[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 123 as variant %}"
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Type mismatch for argument 'variant': expected string[], got number"
+        start: [0, 22]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'text' with  as variant %}"
+  - name: render with alias without a docset > checks literal values against named declaration unknown
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {unknown} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 123 as variant %}"
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Type mismatch for argument 'variant': expected unknown, got number"
+        start: [0, 22]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'text' with  as variant %}"
+  - name: render with alias without a docset > checks literal values against enum declarations
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 'body' as variant %}"
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 'body'"
+        start: [0, 22]
+        highlight: "'body'"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' with 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' with \"small\" as variant %}"
+  - name: "render with alias without a docset > does not cascade errors from unsupported declaration 'heading' |"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' |} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 'body' as variant %}"
+  - name: "render with alias without a docset > does not cascade errors from unsupported declaration 'heading' | number"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | number} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 'body' as variant %}"
+  - name: "render with alias without a docset > does not cascade errors from unsupported declaration product["
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {product[} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with 'body' as variant %}"
+  - name: render with alias without a docset > leaves dynamic values unverified
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {product} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' with product as variant %}"
+  - name: render for alias preserves checking of literal values against named declaration product
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {product} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 123 as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Type mismatch for argument 'variant': expected product, got number"
+        start: [0, 21]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'text' for  as variant %}"
+  - name: "render for alias preserves checking of literal values against named declaration product[]"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {product[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 123 as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Type mismatch for argument 'variant': expected product[], got number"
+        start: [0, 21]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'text' for  as variant %}"
+  - name: "render for alias preserves checking of literal values against named declaration string[]"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {string[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 123 as variant %}"
+    docset: default
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Type mismatch for argument 'variant': expected string[], got number"
+        start: [0, 21]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'text' for  as variant %}"
+  - name: leaves dynamic alias values unverified for named declarations (2)
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {product} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for product as variant %}"
+    docset: default
+  - name: render for alias leaves uppercase declaration Product to ValidDocParamTypes (1)
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {Product} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 123 as variant %}"
+    docset: default
+  - name: render for alias leaves uppercase declaration Product to ValidDocParamTypes (2)
+    checks: [ValidDocParamTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {Product} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+    docset: default
+    offenses:
+      - check: ValidDocParamTypes
+        file: snippets/text.liquid
+        message: "The parameter type 'Product' is not supported."
+        start: [1, 11]
+        highlight: "{Product}"
+        suggest:
+          - message: Remove invalid parameter type
+            result: |-
+              {% doc %}
+                  @param [variant] - Text style
+                {% enddoc %}
+                {{ variant }}
+  - name: "render for alias leaves uppercase declaration Product[] to ValidDocParamTypes (1)"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {Product[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 123 as variant %}"
+    docset: default
+  - name: "render for alias leaves uppercase declaration Product[] to ValidDocParamTypes (2)"
+    checks: [ValidDocParamTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {Product[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+    docset: default
+    offenses:
+      - check: ValidDocParamTypes
+        file: snippets/text.liquid
+        message: "The parameter type 'Product[]' is not supported."
+        start: [1, 11]
+        highlight: "{Product[]}"
+        suggest:
+          - message: Remove invalid parameter type
+            result: |-
+              {% doc %}
+                  @param [variant] - Text style
+                {% enddoc %}
+                {{ variant }}
+  - name: render for alias leaves named declaration unknown to ValidDocParamTypes when the docset lacks it
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {unknown} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 123 as variant %}"
+    docset: default
+  - name: "render for alias leaves named declaration unknown[] to ValidDocParamTypes when the docset lacks it"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {unknown[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 123 as variant %}"
+    docset: default
+  - name: render for alias without a docset > checks literal values against named declaration product
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {product} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 123 as variant %}"
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Type mismatch for argument 'variant': expected product, got number"
+        start: [0, 21]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'text' for  as variant %}"
+  - name: render for alias without a docset > checks literal values against named declaration Product
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {Product} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 123 as variant %}"
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Type mismatch for argument 'variant': expected product, got number"
+        start: [0, 21]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'text' for  as variant %}"
+  - name: "render for alias without a docset > checks literal values against named declaration product[]"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {product[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 123 as variant %}"
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Type mismatch for argument 'variant': expected product[], got number"
+        start: [0, 21]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'text' for  as variant %}"
+  - name: "render for alias without a docset > checks literal values against named declaration string[]"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {string[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 123 as variant %}"
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Type mismatch for argument 'variant': expected string[], got number"
+        start: [0, 21]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'text' for  as variant %}"
+  - name: render for alias without a docset > checks literal values against named declaration unknown
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {unknown} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 123 as variant %}"
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Type mismatch for argument 'variant': expected unknown, got number"
+        start: [0, 21]
+        highlight: "123"
+        suggest:
+          - message: Remove value
+            result: "{% render 'text' for  as variant %}"
+  - name: render for alias without a docset > checks literal values against enum declarations
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 'body' as variant %}"
+    offenses:
+      - check: ValidRenderSnippetArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got 'body'"
+        start: [0, 21]
+        highlight: "'body'"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% render 'text' for 'heading' as variant %}"
+          - message: 'Replace with "small"'
+            result: "{% render 'text' for \"small\" as variant %}"
+  - name: "render for alias without a docset > does not cascade errors from unsupported declaration 'heading' |"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' |} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 'body' as variant %}"
+  - name: "render for alias without a docset > does not cascade errors from unsupported declaration 'heading' | number"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'heading' | number} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 'body' as variant %}"
+  - name: "render for alias without a docset > does not cascade errors from unsupported declaration product["
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {product[} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for 'body' as variant %}"
+  - name: render for alias without a docset > leaves dynamic values unverified
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {product} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' for product as variant %}"
+  - name: render preserves existing skips for named declaration product
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {product} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: 'heading' %}"
+    docset: default
+  - name: "render preserves existing skips for named declaration product[]"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {product[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: 'heading' %}"
+    docset: default
+  - name: "render preserves existing skips for named declaration string[]"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {string[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: 'heading' %}"
+    docset: default
+  - name: render preserves existing skips for named declaration unknown
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {unknown} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: 'heading' %}"
+    docset: default
+  - name: "render inserts a legal enum member for a missing required argument (\"Heading\" | 'small') (1)"
+    checks: [MissingRenderSnippetArguments]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {"Heading" | 'small'} variant - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' %}"
+    offenses:
+      - check: MissingRenderSnippetArguments
+        file: templates/index.liquid
+        message: "Missing required argument 'variant' in render tag for snippet 'text'."
+        start: [0, 10]
+        highlight: "'text' "
+        suggest:
+          - message: "Add required argument 'variant'"
+            result: "{% render 'text', variant: \"Heading\" %}"
+  - name: "render inserts a legal enum member for a missing required argument (\"Heading\" | 'small') (2)"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {"Heading" | 'small'} variant - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: \"Heading\" %}"
+    docset: default
+  - name: "render inserts a legal enum member for a missing required argument ('' | 'heading') (1)"
+    checks: [MissingRenderSnippetArguments]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'' | 'heading'} variant - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' %}"
+    offenses:
+      - check: MissingRenderSnippetArguments
+        file: templates/index.liquid
+        message: "Missing required argument 'variant' in render tag for snippet 'text'."
+        start: [0, 10]
+        highlight: "'text' "
+        suggest:
+          - message: "Add required argument 'variant'"
+            result: "{% render 'text', variant: '' %}"
+  - name: "render inserts a legal enum member for a missing required argument ('' | 'heading') (2)"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {'' | 'heading'} variant - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: '' %}"
+    docset: default
+  - name: "render inserts a legal enum member for a missing required argument (\"a'b\" | 'small') (1)"
+    checks: [MissingRenderSnippetArguments]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {"a'b" | 'small'} variant - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text' %}"
+    offenses:
+      - check: MissingRenderSnippetArguments
+        file: templates/index.liquid
+        message: "Missing required argument 'variant' in render tag for snippet 'text'."
+        start: [0, 10]
+        highlight: "'text' "
+        suggest:
+          - message: "Add required argument 'variant'"
+            result: "{% render 'text', variant: \"a'b\" %}"
+  - name: "render inserts a legal enum member for a missing required argument (\"a'b\" | 'small') (2)"
+    checks: [ValidRenderSnippetArgumentTypes]
+    files:
+      snippets/text.liquid: |-
+        {% doc %}
+            @param {"a'b" | 'small'} variant - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% render 'text', variant: \"a'b\" %}"
+    docset: default
+  - name: content_for preserves existing skips for named declaration product
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {product} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: 'heading' %}"
+  - name: "content_for preserves existing skips for named declaration product[]"
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {product[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: 'heading' %}"
+  - name: "content_for preserves existing skips for named declaration string[]"
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {string[]} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: 'heading' %}"
+  - name: content_for preserves existing skips for named declaration unknown
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {unknown} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: 'heading' %}"
+  - name: "content_for inserts a legal enum member for a missing required argument (\"Heading\" | 'small') (1)"
+    checks: [MissingContentForArguments]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {"Heading" | 'small'} variant - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text' %}"
+    offenses:
+      - check: MissingContentForArguments
+        file: templates/index.liquid
+        message: "Missing required argument 'variant' in content_for tag for static block 'text'."
+        start: [0, 15]
+        highlight: "'block', type: 'text', id: 'text' "
+        suggest:
+          - message: "Add required argument 'variant'"
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: \"Heading\" %}"
+  - name: "content_for inserts a legal enum member for a missing required argument (\"Heading\" | 'small') (2)"
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {"Heading" | 'small'} variant - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: \"Heading\" %}"
+  - name: "content_for inserts a legal enum member for a missing required argument ('' | 'heading') (1)"
+    checks: [MissingContentForArguments]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'' | 'heading'} variant - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text' %}"
+    offenses:
+      - check: MissingContentForArguments
+        file: templates/index.liquid
+        message: "Missing required argument 'variant' in content_for tag for static block 'text'."
+        start: [0, 15]
+        highlight: "'block', type: 'text', id: 'text' "
+        suggest:
+          - message: "Add required argument 'variant'"
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: '' %}"
+  - name: "content_for inserts a legal enum member for a missing required argument ('' | 'heading') (2)"
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'' | 'heading'} variant - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: '' %}"
+  - name: "content_for inserts a legal enum member for a missing required argument (\"a'b\" | 'small') (1)"
+    checks: [MissingContentForArguments]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {"a'b" | 'small'} variant - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text' %}"
+    offenses:
+      - check: MissingContentForArguments
+        file: templates/index.liquid
+        message: "Missing required argument 'variant' in content_for tag for static block 'text'."
+        start: [0, 15]
+        highlight: "'block', type: 'text', id: 'text' "
+        suggest:
+          - message: "Add required argument 'variant'"
+            result: "{% content_for 'block', type: 'text', id: 'text', variant: \"a'b\" %}"
+  - name: "content_for inserts a legal enum member for a missing required argument (\"a'b\" | 'small') (2)"
+    checks: [ValidContentForArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {"a'b" | 'small'} variant - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% content_for 'block', type: 'text', id: 'text', variant: \"a'b\" %}"
+  - name: rejects a block array literal for a string enum without trying to infer its primitive type
+    checks: [ValidBlockArgumentTypes]
+    files:
+      blocks/text.liquid: |-
+        {% doc %}
+            @param {'heading' | "small"} [variant] - Text style
+          {% enddoc %}
+          {{ variant }}
+      templates/index.liquid: "{% block 'text', variant: ['heading', 'small'] %}Text{% endblock %}"
+    offenses:
+      - check: ValidBlockArgumentTypes
+        file: templates/index.liquid
+        message: "Invalid value for argument 'variant': expected 'heading' | \"small\", got ['heading', 'small']"
+        start: [0, 26]
+        highlight: "['heading', 'small']"
+        suggest:
+          - message: "Replace with 'heading'"
+            result: "{% block 'text', variant: 'heading' %}Text{% endblock %}"
+          - message: 'Replace with "small"'
+            result: "{% block 'text', variant: \"small\" %}Text{% endblock %}"
