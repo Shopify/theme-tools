@@ -1,4 +1,5 @@
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest';
+import os from 'node:os';
 import path from 'node:path';
 import { Config, SourceCodeType, getTheme, getThemeFilesPathPattern, themeCheckRun } from './index';
 import { Workspace, makeTempWorkspace } from './test/test-helpers';
@@ -52,22 +53,25 @@ describe('Unit: getThemeFilesPathPattern', () => {
 });
 
 describe('Integration: themeCheckRun', () => {
-  it('reports LiquidDoc errors across files when paths use Windows separators', async () => {
-    const workspace = await makeTempWorkspace({
-      locales: {
-        'en.default.json': '{}',
-      },
-      sections: {
-        'main.liquid': "{% render 'card' %}",
-      },
-      snippets: {
-        'card.liquid': `
+  it('reports cross-file LiquidDoc errors with Windows separators and spaces in the root path', async () => {
+    const workspace = await makeTempWorkspace(
+      {
+        locales: {
+          'en.default.json': '{}',
+        },
+        sections: {
+          'main.liquid': "{% render 'card' %}",
+        },
+        snippets: {
+          'card.liquid': `
           {% doc %}
             @param {string} title - The card title
           {% enddoc %}
         `,
+        },
       },
-    });
+      path.join(os.tmpdir(), 'theme check.XXXXX'),
+    );
     const originalRelative = path.relative;
 
     const relativeSpy = vi.spyOn(path, 'relative').mockImplementation((from, to) => {
