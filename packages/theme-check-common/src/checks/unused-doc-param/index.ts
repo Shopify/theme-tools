@@ -110,6 +110,10 @@ async function getProvidedParams(context: Context<SourceCodeType.LiquidHtml>) {
       RenderMarkup(node: RenderMarkup) {
         if (getSnippetName(node) !== snippetName) return;
         node.args.forEach(({ name }) => providedParams.add(name));
+        if (node.variable) {
+          const variableName = node.alias?.value ?? snippetName.split('/').pop();
+          if (variableName) providedParams.add(variableName);
+        }
       },
     });
   }

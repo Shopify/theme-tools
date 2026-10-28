@@ -104,6 +104,44 @@ describe('Module: UnusedDocParam', () => {
     expect(offenses).to.be.empty;
   });
 
+  it('should recognise parameters passed through render aliases and the default snippet name', async () => {
+    const sourceCode = `
+      {% doc %}
+        @param {string} [item] - Rendered item
+        @param {string} [card] - Default render variable
+      {% enddoc %}
+
+      {{ item }}
+      {{ card }}
+    `;
+
+    const offenses = await runLiquidCheck(
+      UnusedDocParam,
+      sourceCode,
+      'snippets/cards/card.liquid',
+      {
+        async getReferences() {
+          return [
+            {
+              source: { uri: 'file:///templates/product.liquid' },
+              target: { uri: 'file:///snippets/cards/card.liquid' },
+              type: 'direct',
+            },
+          ];
+        },
+      },
+      {
+        'templates/product.liquid': `
+          {% render 'cards/card' with product as item %}
+          {% render 'cards/card' for products as item %}
+          {% render 'cards/card' with product %}
+        `,
+      },
+    );
+
+    expect(offenses).to.be.empty;
+  });
+
   it('should apply suggestion when a variable is defined but not used', async () => {
     const sourceCode = `
       {% doc %}
