@@ -118,13 +118,13 @@ describe('Module: UnusedDocParam', () => {
     const offenses = await runLiquidCheck(
       UnusedDocParam,
       sourceCode,
-      'snippets/cards/card.liquid',
+      'snippets/card.liquid',
       {
         async getReferences() {
           return [
             {
               source: { uri: 'file:///templates/product.liquid' },
-              target: { uri: 'file:///snippets/cards/card.liquid' },
+              target: { uri: 'file:///snippets/card.liquid' },
               type: 'direct',
             },
           ];
@@ -132,9 +132,9 @@ describe('Module: UnusedDocParam', () => {
       },
       {
         'templates/product.liquid': `
-          {% render 'cards/card' with product as item %}
-          {% render 'cards/card' for products as item %}
-          {% render 'cards/card' with product %}
+          {% render 'card' with product as item %}
+          {% render 'card' for products as item %}
+          {% render 'card' with product %}
         `,
       },
     );
