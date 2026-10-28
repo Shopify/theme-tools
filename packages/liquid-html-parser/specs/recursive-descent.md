@@ -2,7 +2,7 @@
 
 ## Public API
 
-`toLiquidHtmlAST(source, options)` and `toLiquidAST(source, options)` parse Liquid (and optionally HTML) source into a typed AST. All oracle tests pass. `ast.test.ts` unit tests pass.
+`toLiquidHtmlAST(source, options)` and `toLiquidAST(source, options)` parse Liquid (and optionally HTML) source into a typed AST. All oracle tests and parser specs pass.
 
 Performance is not a constraint. Correctness first.
 
@@ -481,19 +481,23 @@ For each `.liquid` file in `fixtures/theme/{base-theme,dawn,horizon}/`:
 
 The golden files represent the ground truth AST output for each fixture. Fixtures are generated locally per `fixtures/README.md`.
 
-### Unit tests (`ast.test.ts`)
+### Parser specs (`specs/parser` at the repo root)
 
-Fine-grained tests that assert specific properties at specific AST paths using `deepGet`. Tests cover:
+Language-neutral specs: each case is a template and the complete tree, or the error, that
+`toLiquidHtmlAST` or `toLiquidAST` gives for it. `src/specs.test.ts` runs them, and
+`specs/parser/README.md` describes the format. They cover:
 
 - All expression types (strings, numbers, literals, ranges, lookups, comparisons, logical ops)
 - All named tags (assign, echo, render, for, if, case, cycle, paginate, etc.)
 - HTML elements, attributes, void elements, raw tags
 - Error cases (unclosed nodes, mismatched tags, etc.)
-- Completion mode (dangling nodes, placeholder character)
 - Branch position tracking
 - Whitespace trim markers
 
-These tests import from `./ast`.
+### Unit tests
+
+The other tests, like `ast.test.ts` and `document/*.test.ts`, cover what a spec can't state: the
+tokenizers, the node factories, and parses with options, like completion mode.
 
 ---
 
@@ -510,6 +514,6 @@ These tests import from `./ast`.
 ```bash
 cd packages/liquid-html-parser
 pnpm vitest run src/parser-oracle.test.ts    # oracle golden tests
-pnpm vitest run src/ast.test.ts              # unit tests
+pnpm vitest run src/specs.test.ts            # parser specs
 pnpm vitest run                              # all tests
 ```
