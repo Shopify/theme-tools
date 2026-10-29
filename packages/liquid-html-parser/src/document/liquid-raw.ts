@@ -93,7 +93,7 @@ export function parseLiquidInRange(
   // token at each step (and re-checking against `bodyEnd`) keeps the walk
   // correct across that mutation; a cached end index would point at a stale slot.
   let i = parser.getPosition();
-  while (i < parser.tokenCount() && parser.tokenAt(i).start < bodyEnd) {
+  while (parser.hasToken(i) && parser.tokenAt(i).start < bodyEnd) {
     const token = parser.tokenAt(i);
 
     if (
@@ -112,12 +112,12 @@ export function parseLiquidInRange(
           ? TokenType.LiquidVariableOutputClose
           : TokenType.LiquidTagClose;
       let j = i + 1;
-      while (j < parser.tokenCount() && parser.tokenAt(j).type !== closeType) j++;
-      const closesWithinBody = j < parser.tokenCount() && parser.tokenAt(j).end <= bodyEnd;
+      while (parser.hasToken(j) && parser.tokenAt(j).type !== closeType) j++;
+      const closesWithinBody = parser.hasToken(j) && parser.tokenAt(j).end <= bodyEnd;
 
       if (!closesWithinBody) {
         nodes.push(makeTextNode(source.slice(token.start, bodyEnd), token.start, bodyEnd, source));
-        while (i < parser.tokenCount() && parser.tokenAt(i).start < bodyEnd) i++;
+        while (parser.hasToken(i) && parser.tokenAt(i).start < bodyEnd) i++;
         break;
       }
 

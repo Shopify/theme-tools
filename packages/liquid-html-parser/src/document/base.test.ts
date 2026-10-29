@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { ParserBase } from './base';
-import { TokenType } from './tokenizer';
+import { TokenType, tokenize } from './tokenizer';
 import type { Token } from './tokenizer';
 
 /**
@@ -81,5 +81,31 @@ describe('Unit: ParserBase#resliceTokensFrom', () => {
       expect(parser.getPosition()).toBe(offset);
     }
     expect(reads.count).toBeLessThan(n * 32);
+  });
+
+  it('re-tokenizes only as far as the parser reads after a straddling raw tag', () => {
+    // The stray `{{` in each raw body opens Liquid output that runs past the
+    // end tag, so every reslice re-tokenizes. Re-tokenizing the whole rest of
+    // the source each time is O(n²) across a document.
+    const n = 200;
+    const unit = '{% raw %}{{ x{% endraw %}';
+    const source = unit.repeat(n) + '}}' + '<a>b</a>'.repeat(n);
+    const parser = new ParserBase(tokenize(source), source);
+    const starts: number[] = [];
+    // The tokenizer probes the source with `startsWith` as it steps through it.
+    const spy = vi.spyOn(String.prototype, 'startsWith');
+    let probes: number;
+    try {
+      for (let i = 1; i <= n; i++) {
+        parser.resliceTokensFrom(i * unit.length);
+        starts.push(parser.peek().start);
+      }
+      probes = spy.mock.calls.length;
+    } finally {
+      spy.mockRestore();
+    }
+    expect(starts).toEqual(Array.from({ length: n }, (_, i) => (i + 1) * unit.length));
+    // Linear is ~4k probes here; the quadratic re-tokenize does ~2.8M.
+    expect(probes).toBeLessThan(source.length * 4);
   });
 });
