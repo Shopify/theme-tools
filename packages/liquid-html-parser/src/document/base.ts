@@ -94,18 +94,28 @@ export class ParserBase {
    * Token starts are non-decreasing (the tokenizer emits tokens in source
    * order and `resliceTokensFrom` keeps that order), so a binary search finds
    * the same token a scan from index 0 would, in O(log n), whichever side of
-   * the cursor it is on. This runs once per HTML comment and raw element, so
-   * a linear scan here made parsing quadratic in the number of those nodes.
+   * the cursor it is on. This runs once per HTML comment, raw element and raw
+   * Liquid tag, so a linear scan here made parsing quadratic in the number of
+   * those nodes.
    */
   seekToSourceOffset(sourceOffset: number): void {
+    this.p = this.countTokensWhile((token) => token.start < sourceOffset);
+  }
+
+  /**
+   * How many tokens, from the first, pass `test`, by binary search. Tokens are
+   * in source order and don't overlap, so a test like "starts before" or "ends
+   * at or before" an offset passes for a run of leading tokens and no others.
+   */
+  private countTokensWhile(test: (token: Token) => boolean): number {
     let lo = 0;
     let hi = this.tokens.length;
     while (lo < hi) {
       const mid = (lo + hi) >>> 1;
-      if (this.tokens[mid].start < sourceOffset) lo = mid + 1;
+      if (test(this.tokens[mid])) lo = mid + 1;
       else hi = mid;
     }
-    this.p = lo;
+    return lo;
   }
 
   /**
@@ -176,12 +186,13 @@ export class ParserBase {
   }
 
   resliceTokensFrom(sourceOffset: number): void {
-    const straddles = this.tokens.some(
-      (token) => token.start < sourceOffset && token.end > sourceOffset,
-    );
+    // Tokens don't overlap, so only the first one ending past the boundary can
+    // straddle it.
+    const before = this.countTokensWhile((token) => token.end <= sourceOffset);
+    const straddles = before < this.tokens.length && this.tokens[before].start < sourceOffset;
 
     if (straddles) {
-      const prefix = this.tokens.filter((token) => token.end <= sourceOffset);
+      const prefix = this.tokens.slice(0, before);
       // If the boundary lies inside a quoted HTML attribute value (the raw tag
       // was dispatched from `parseQuotedAttributeValue`), the suffix must be
       // re-tokenized in QuotedValue mode so the attribute's closing quote and
@@ -214,8 +225,6 @@ export class ParserBase {
     // past the raw end tag is the only thing the reslice needed to do here.
     // (The trailing EndOfInput token has `start === source.length`, so it is
     // never skipped past, keeping `this.p` in bounds.)
-    let i = 0;
-    while (i < this.tokens.length && this.tokens[i].start < sourceOffset) i++;
-    this.p = i;
+    this.seekToSourceOffset(sourceOffset);
   }
 }

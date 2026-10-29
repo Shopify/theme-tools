@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { ParserBase } from './base';
 import { TokenType } from './tokenizer';
 import type { Token } from './tokenizer';
-import { toLiquidHtmlAST } from '../ast';
 
 /**
  * Build `count` adjacent one-character tokens plus a trailing EndOfInput, and
@@ -71,24 +70,16 @@ describe('Unit: ParserBase#seekToSourceOffset', () => {
   });
 });
 
-describe('Unit: sequential HTML comments and raw elements', () => {
-  it('parses many adjacent comments', () => {
-    const n = 2000;
-    const ast = toLiquidHtmlAST('<!--x-->'.repeat(n));
-    expect(ast.children).toHaveLength(n);
-    expect(ast.children.every((child) => child.type === 'HtmlComment')).toBe(true);
-    expect(ast.children[n - 1].position).toEqual({ start: (n - 1) * 8, end: n * 8 });
-  });
-
-  it('parses many adjacent raw elements', () => {
-    const n = 2000;
-    const element = '<script></script>';
-    const ast = toLiquidHtmlAST(element.repeat(n));
-    expect(ast.children).toHaveLength(n);
-    expect(ast.children.every((child) => child.type === 'HtmlRawNode')).toBe(true);
-    expect(ast.children[n - 1].position).toEqual({
-      start: (n - 1) * element.length,
-      end: n * element.length,
-    });
+describe('Unit: ParserBase#resliceTokensFrom', () => {
+  it('does not rescan the tokens on successive reslices that need no re-tokenize', () => {
+    // parseLiquidRaw reslices once per raw Liquid tag ({% raw %}, {% comment %}, ...).
+    const n = 4096;
+    const { tokens, reads } = countingTokens(n);
+    const parser = new ParserBase(tokens, ' '.repeat(n));
+    for (let offset = 1; offset <= n; offset++) {
+      parser.resliceTokensFrom(offset);
+      expect(parser.getPosition()).toBe(offset);
+    }
+    expect(reads.count).toBeLessThan(n * 32);
   });
 });

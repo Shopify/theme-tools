@@ -4928,3 +4928,47 @@ cases:
                                   value: " b"
                                   position: { start: [0, 34], text: " b" }
           children: []
+  - name: should parse HTML comments and raw elements side by side
+    source: <!--a--><script>b</script><!--c--><style>d</style>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!--a--><script>b</script><!--c--><style>d</style> }
+      children:
+        - type: HtmlComment
+          body: a
+          position: { start: [0, 0], text: <!--a--> }
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 8], text: <script> }
+          blockEndPosition: { start: [0, 17], text: </script> }
+          position: { start: [0, 8], text: <script>b</script> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: b
+            position: { start: [0, 16], text: b }
+            nodes:
+              - type: TextNode
+                value: b
+                position: { start: [0, 16], text: b }
+        - type: HtmlComment
+          body: c
+          position: { start: [0, 26], text: <!--c--> }
+        - type: HtmlRawNode
+          name: style
+          blockStartPosition: { start: [0, 34], text: <style> }
+          blockEndPosition: { start: [0, 42], text: </style> }
+          position: { start: [0, 34], text: <style>d</style> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: css
+            value: d
+            position: { start: [0, 41], text: d }
+            nodes:
+              - type: TextNode
+                value: d
+                position: { start: [0, 41], text: d }
