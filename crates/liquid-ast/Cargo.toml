@@ -1,0 +1,8 @@
+[package]
+name = "liquid-ast"
+description = "The syntax tree of Liquid HTML templates, as @shopify/liquid-html-parser builds it"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
