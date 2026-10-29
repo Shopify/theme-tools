@@ -1,5 +1,16 @@
 # @shopify/theme-check-common
 
+## 3.32.0
+
+### Minor Changes
+
+- c587ae08: Add an optional `remoteFileSize` dependency: the size of a remote file, such as a script on a CDN. AssetSizeCSS and AssetSizeJavaScript use it, and by default it makes the same HEAD request as before.
+
+### Patch Changes
+
+- Updated dependencies [c8099ba8]
+  - @shopify/liquid-html-parser@2.11.1
+
 ## 3.31.0
 
 ### Minor Changes
