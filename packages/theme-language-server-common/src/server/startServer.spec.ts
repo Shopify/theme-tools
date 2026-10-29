@@ -33,7 +33,7 @@ describe('Module: server', () => {
   let dependencies: ReturnType<typeof getDependencies>;
   let fileTree: MockTheme;
   let logger: any;
-  let fetchMetafieldDefinitionsForURI: ReturnType<typeof vi.fn>;
+  let fetchMetafieldDefinitionsForURI: NonNullable<Dependencies['fetchMetafieldDefinitionsForURI']>;
 
   beforeEach(() => {
     checkOnChange = checkOnSave = checkOnOpen = fetchMetafieldDefinitionsSetting = null;
@@ -71,7 +71,7 @@ describe('Module: server', () => {
 
     fileTree = { '.theme-check.yml': '', 'snippets/code.liquid': fileContents };
     logger = vi.fn();
-    fetchMetafieldDefinitionsForURI = vi.fn();
+    fetchMetafieldDefinitionsForURI = vi.fn(async (_uri: string) => {});
     dependencies = getDependencies(logger, fileTree);
     dependencies.fetchMetafieldDefinitionsForURI = fetchMetafieldDefinitionsForURI;
 
@@ -96,7 +96,7 @@ describe('Module: server', () => {
     connection.setup({
       workspace: {
         configuration: true,
-        workspaceFolders: { supported: true },
+        workspaceFolders: true,
       },
     });
     await flushAsync();
@@ -109,7 +109,7 @@ describe('Module: server', () => {
     connection.setup({
       workspace: {
         configuration: true,
-        workspaceFolders: { supported: true },
+        workspaceFolders: true,
       },
     });
     await flushAsync();
