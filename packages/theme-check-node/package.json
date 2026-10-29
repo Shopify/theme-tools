@@ -1,6 +1,6 @@
 {
   "name": "@shopify/theme-check-node",
-  "version": "3.31.0",
+  "version": "3.32.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "CP Clermont <cp.clermont@shopify.com>",
@@ -33,10 +33,10 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@shopify/liquid-html-parser": "workspace:2.11.0",
-    "@shopify/theme-check-common": "workspace:3.31.0",
-    "@shopify/theme-check-docs-updater": "workspace:3.31.0",
-    "@shopify/theme-graph": "workspace:^0.3.6",
+    "@shopify/liquid-html-parser": "workspace:2.11.1",
+    "@shopify/theme-check-common": "workspace:3.32.0",
+    "@shopify/theme-check-docs-updater": "workspace:3.32.0",
+    "@shopify/theme-graph": "workspace:^0.3.7",
     "glob": "^8.0.3",
     "vscode-uri": "^3.0.7",
     "yaml": "^2.8.3"
