@@ -90,11 +90,22 @@ export class ParserBase {
    * that consumes the element's close tag as text while seeking `{% endif %}`).
    * Callers that know a token boundary by offset should re-seek here rather than
    * trusting wherever a nested parse left the cursor.
+   *
+   * Token starts are non-decreasing (the tokenizer emits tokens in source
+   * order and `resliceTokensFrom` keeps that order), so a binary search finds
+   * the same token a scan from index 0 would, in O(log n), whichever side of
+   * the cursor it is on. This runs once per HTML comment and raw element, so
+   * a linear scan here made parsing quadratic in the number of those nodes.
    */
   seekToSourceOffset(sourceOffset: number): void {
-    let i = 0;
-    while (i < this.tokens.length && this.tokens[i].start < sourceOffset) i++;
-    this.p = i;
+    let lo = 0;
+    let hi = this.tokens.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >>> 1;
+      if (this.tokens[mid].start < sourceOffset) lo = mid + 1;
+      else hi = mid;
+    }
+    this.p = lo;
   }
 
   /**
