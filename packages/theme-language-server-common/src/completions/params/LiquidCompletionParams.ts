@@ -469,9 +469,13 @@ function findCompletionNode(
         break;
       }
 
+      case NodeTypes.HtmlComment: {
+        finder.current = covering(current.children, cursor);
+        break;
+      }
+
       case NodeTypes.YAMLFrontmatter:
       case NodeTypes.HtmlDoctype:
-      case NodeTypes.HtmlComment:
       case NodeTypes.RawMarkup: {
         break;
       }

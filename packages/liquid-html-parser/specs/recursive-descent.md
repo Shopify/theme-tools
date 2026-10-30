@@ -78,7 +78,7 @@ LiquidHtmlNode (discriminated union of all traversable nodes)
   ├── TextNode                    { value: string }
   ├── YAMLFrontmatter             { body: string }
   ├── HtmlDoctype                 { legacyDoctypeString: string | null }
-  ├── HtmlComment                 { body: string }
+  ├── HtmlComment                 { body: string, children: (LiquidNode|TextNode)[] }
   │
   ├── LiquidVariableOutput        { markup: string | LiquidVariable, whitespace }
   │
@@ -307,8 +307,10 @@ htmlVoid     := '<' voidTagName attributes '>'
 htmlSelfClosing := '<' tagName attributes '/>'
 htmlRawNode  := '<' rawTagName attributes '>' rawBody '</' rawTagName '>'
 htmlDoctype  := '<!doctype' ... '>'
-htmlComment  := '<!--' ... ('-->' | '--!>') | '<!-->' | '<!--->'
+htmlComment  := '<!--' (text | liquidNode)* ('-->' | '--!>') | '<!-->' | '<!--->'
 ```
+
+**HTML comments hold Liquid.** Liquid renders the Liquid inside `<!-- -->`, so a comment's body is parsed into `children` as text and Liquid, never markup. A comment that crosses a Liquid block boundary is split there: one `HtmlComment` ends before the tag that ends or branches the enclosing block, and the next starts after it, with an empty `blockEndPosition` or `blockStartPosition` on the split side. When a block opened inside a comment holds the `-->`, the comment ends with that block. A comment that never closes ends at the end of the source, as in a browser. An end or branch tag inside a comment that matches no open block fails, as in Liquid. `opaqueHtmlComments` keeps comment bodies opaque, for HTML that is data rather than a template.
 
 **Tag names can be compound** — they may contain Liquid variable outputs: `<{{ header_type }}--header>`.
 

@@ -66,6 +66,7 @@ export function toTolerantLiquidHtmlAST(
     env,
     true,
     options.allowUnclosedDocumentNode,
+    options.opaqueHtmlComments,
   );
   return parser.parseDocument();
 }

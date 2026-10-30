@@ -53,12 +53,16 @@ import type { TagDefinition } from '../environment';
  * the coupling explicit and narrow.
  */
 export interface HtmlParserDelegate extends ParserBase {
-  readonly htmlParseHtml: boolean;
+  htmlParseHtml: boolean;
   htmlAllowUnclosedHtml: boolean;
   /** See `ASTBuildOptions.pairDanglingCloseTags`. */
   readonly htmlPairDanglingCloseTags: boolean;
   htmlInAttributeContext: boolean;
   htmlInAttributeValueContext: boolean;
+  /** The `<!--` of the comment the parser is inside, or `null` outside a comment. */
+  htmlOpenComment: Position | null;
+  /** Keep comment bodies as opaque text (`ASTBuildOptions.opaqueHtmlComments`). */
+  readonly htmlOpaqueComments: boolean;
 
   parseNode(): LiquidHtmlNode;
   parseLiquidVariableOutput(): LiquidVariableOutput;
@@ -239,30 +243,82 @@ export function parseHtmlRawBody(
   return makeHtmlRawNode(plainName, attributes, body, blockStartPosition, blockEndPosition, source);
 }
 
-// htmlComment := "<!--" text* "-->"
+// htmlComment := "<!--"? (text | liquidVariableOutput | liquidTag)* "-->"?
+//
+// The body is parsed as text and Liquid, never as markup. When the body reaches
+// a tag that ends or branches an enclosing block, the comment stops before that
+// tag and `parseNode` resumes it after the tag. When a block opened inside the
+// comment consumes the `-->`, the comment ends with that block.
 export function parseHtmlComment(parser: HtmlParserDelegate): HtmlComment {
+  if (parser.htmlOpaqueComments) return parseOpaqueHtmlComment(parser);
+
+  const source = parser.getSource();
+  const start = parser.peek().start;
+  let blockStartPosition: Position = { start, end: start };
+  if (parser.check(TokenType.HtmlCommentOpen)) {
+    const openToken = parser.consume(TokenType.HtmlCommentOpen);
+    blockStartPosition = { start: openToken.start, end: openToken.end };
+    parser.htmlOpenComment = blockStartPosition;
+  }
+
+  const children: LiquidHtmlNode[] = [];
+  let blockEndPosition: Position | null = null;
+  const savedParseHtml = parser.htmlParseHtml;
+  parser.htmlParseHtml = false;
+  try {
+    while (parser.htmlOpenComment !== null) {
+      // A browser ends an unclosed comment at the end of the input.
+      if (parser.isAtEnd()) {
+        parser.htmlOpenComment = null;
+        break;
+      }
+      if (parser.check(TokenType.HtmlCommentClose)) {
+        const closeToken = parser.consume(TokenType.HtmlCommentClose);
+        blockEndPosition = { start: closeToken.start, end: closeToken.end };
+        parser.htmlOpenComment = null;
+        break;
+      }
+      if (parser.isBlockTerminator()) break;
+      children.push(parser.parseNode());
+    }
+  } finally {
+    parser.htmlParseHtml = savedParseHtml;
+  }
+
+  const end = parser.peek().start;
+  return makeHtmlComment(
+    filterChildren(ChildFilterMode.Syntactic, children, source) as (LiquidNode | TextNode)[],
+    blockStartPosition,
+    blockEndPosition ?? { start: end, end },
+    source,
+  );
+}
+
+// opaqueHtmlComment := "<!--" token* "-->"
+function parseOpaqueHtmlComment(parser: HtmlParserDelegate): HtmlComment {
   const source = parser.getSource();
   const openToken = parser.consume(TokenType.HtmlCommentOpen);
-  const bodyStart = openToken.end;
-
-  while (!parser.isAtEnd() && !parser.check(TokenType.HtmlCommentClose)) {
-    parser.advance();
-  }
-
-  if (parser.isAtEnd()) {
-    throw new LiquidHTMLASTParsingError(
-      `Attempting to end parsing before HtmlComment '<!--' was closed`,
-      source,
-      openToken.start,
-      openToken.end,
-    );
-  }
-
-  const bodyEnd = parser.peek().start;
+  while (!parser.isAtEnd() && !parser.check(TokenType.HtmlCommentClose)) parser.advance();
+  if (parser.isAtEnd()) throw unclosedHtmlCommentError(source, openToken);
   const closeToken = parser.consume(TokenType.HtmlCommentClose);
-  const body = source.slice(bodyStart, bodyEnd).trim();
+  return makeHtmlComment(
+    [],
+    { start: openToken.start, end: openToken.end },
+    { start: closeToken.start, end: closeToken.end },
+    source,
+  );
+}
 
-  return makeHtmlComment(body, openToken.start, closeToken.end, source);
+function unclosedHtmlCommentError(
+  source: string,
+  openComment: Position,
+): LiquidHTMLASTParsingError {
+  return new LiquidHTMLASTParsingError(
+    `Attempting to end parsing before HtmlComment '<!--' was closed`,
+    source,
+    openComment.start,
+    openComment.end,
+  );
 }
 
 // htmlDoctype := "<!" text ">"

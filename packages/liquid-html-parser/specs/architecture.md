@@ -432,7 +432,7 @@ function makeHtmlRawNode(
   blockEndPosition,
   source,
 ): HtmlRawNode;
-function makeHtmlComment(body, start, end, source): HtmlComment;
+function makeHtmlComment(children, blockStartPosition, blockEndPosition, source): HtmlComment;
 function makeHtmlDoctype(legacyDoctypeString, start, end, source): HtmlDoctype;
 function makeAttrDoubleQuoted(name, value, attributePosition, position, source): AttrDoubleQuoted;
 function makeAttrSingleQuoted(name, value, attributePosition, position, source): AttrSingleQuoted;

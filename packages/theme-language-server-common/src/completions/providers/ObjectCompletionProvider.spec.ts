@@ -172,6 +172,13 @@ describe('Module: ObjectCompletionProvider', async () => {
     );
   });
 
+  it('should complete variable lookups inside HTML comments, since Liquid renders them', async () => {
+    const contexts = [`<!-- {{ a█ }} -->`, `<!-- {% if a█ %}{% endif %} -->`, `<p><!-- {{ a█`];
+    await Promise.all(
+      contexts.map((context) => expect(provider, context).to.complete(context, ['all_products'])),
+    );
+  });
+
   it('should complete variable lookups (placeholder mode)', async () => {
     const contexts = [
       `{{ █`,
