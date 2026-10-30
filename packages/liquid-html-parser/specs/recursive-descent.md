@@ -78,7 +78,7 @@ LiquidHtmlNode (discriminated union of all traversable nodes)
   ├── TextNode                    { value: string }
   ├── YAMLFrontmatter             { body: string }
   ├── HtmlDoctype                 { legacyDoctypeString: string | null }
-  ├── HtmlComment                 { body: string }
+  ├── HtmlComment                 { body: string, children: (LiquidNode|TextNode)[] }
   │
   ├── LiquidVariableOutput        { markup: string | LiquidVariable, whitespace }
   │
@@ -199,6 +199,24 @@ Block tags (`LiquidTag` with children) have:
 - `for`/`tablerow` can contain `else` branch
 - The **first** branch of any branched tag is an unnamed branch (`LiquidBranchUnnamed` with `name: null`)
 
+**Raw tag bodies:**
+
+Every raw tag definition carries a `body` rule (`RawBodyRule` in `tag-definitions.ts`), and one scanner (`document/raw-body.ts`) ends every raw body by it. The rule mirrors the Liquid class that parses the tag:
+
+| Tag                                         | Liquid class                         | `delimiter` | `sameName` | `opaque`               | Closes in `{% liquid %}` |
+| ------------------------------------------- | ------------------------------------ | ----------- | ---------- | ---------------------- | ------------------------ |
+| `raw`, `javascript`, `schema`, `stylesheet` | `Liquid::Raw`                        | `trailing`  | `ignored`  | none                   | no                       |
+| `doc`                                       | `Liquid::Doc`                        | `trailing`  | `rejected` | none                   | no                       |
+| `comment`                                   | `Liquid::Comment`                    | `leading`   | `nests`    | `raw`                  | yes                      |
+| `style`                                     | `Liquid::Block` (Shopify's `style`)  | `leading`   | `nests`    | the other six raw tags | yes                      |
+
+- The body is read as the tokens `Liquid::Tokenizer` produces: a `{%` tag runs to the first `%}`, and a `{{` output runs to its first `}` (taking a second `}` with it), or through the `%}` of a `{%` that opens inside it
+- `leading` names a `{% %}` token by the `#` or word that opens it (`BlockBody::FullToken`); `trailing` names it by its last tag and keeps any text before that tag in the body (`FullTokenPossiblyInvalid`). Either way markup after the name does not matter, so `{% endcomment xyz %}` closes and `{% endcommentXXXXX %}` does not
+- `sameName` says what an inner tag with the tag's own name does: `nests` opens another level that its own end tag closes, `ignored` does nothing, and `rejected` throws, as Liquid raises `Nested doc tags are not allowed`
+- An `opaque` inner tag is skipped whole, ending by its own rule, so a `{% endcomment %}` inside a `{% raw %}` inside a comment does not count
+- A body that runs out of tokens before it closes throws, as Liquid raises `'<name>' tag was never closed`
+- Inside `{% liquid %}` the same levels apply line by line, each line named by its leading `#` or word after ASCII-only indentation (a line indented with U+00A0 or other non-ASCII whitespace has no name, as in Liquid's `LiquidTagToken`). A `Liquid::Raw` or `Liquid::Doc` body never closes there, because a line cannot hold its `{% end<name> %}`
+
 **Inline comments `{% # %}`:**
 
 - `#` is a valid tag name, producing `LiquidTag` with `name: '#'` and `markup: string` (the rest of the line)
@@ -213,7 +231,7 @@ Block tags (`LiquidTag` with children) have:
 - Nesting is fully supported: `for` inside `if` inside `liquid` is valid
 - Branch tags (`elsif`, `else`, `when`) work inside `{% liquid %}` blocks
 - Blocks open and close within the same `{% liquid %}` boundary
-- Raw tags (`comment`/`endcomment`, `raw`/`endraw`) work inside `{% liquid %}`, consuming lines until their end tag
+- Raw tags (`comment`/`endcomment`, `raw`/`endraw`) work inside `{% liquid %}`, consuming lines until their end tag (a `comment` nests; see Comment bodies)
 - Nested `{% liquid %}` inside `{% liquid %}` is supported (inner scope is per-line)
 - There is no `{{ }}` syntax inside `{% liquid %}` — use `echo` instead
 - `markup` is `LiquidStatement[]`
@@ -289,8 +307,10 @@ htmlVoid     := '<' voidTagName attributes '>'
 htmlSelfClosing := '<' tagName attributes '/>'
 htmlRawNode  := '<' rawTagName attributes '>' rawBody '</' rawTagName '>'
 htmlDoctype  := '<!doctype' ... '>'
-htmlComment  := '<!--' ... '-->'
+htmlComment  := '<!--' (text | liquidNode)* ('-->' | '--!>') | '<!-->' | '<!--->'
 ```
+
+**HTML comments hold Liquid.** Liquid renders the Liquid inside `<!-- -->`, so a comment's body is parsed into `children` as text and Liquid, never markup. A comment that crosses a Liquid block boundary is split there: one `HtmlComment` ends before the tag that ends or branches the enclosing block, and the next starts after it, with an empty `blockEndPosition` or `blockStartPosition` on the split side. When a block opened inside a comment holds the `-->`, the comment ends with that block. A comment that never closes ends at the end of the source, as in a browser. An end or branch tag inside a comment that matches no open block fails, as in Liquid. `opaqueHtmlComments` keeps comment bodies opaque, for HTML that is data rather than a template.
 
 **Tag names can be compound** — they may contain Liquid variable outputs: `<{{ header_type }}--header>`.
 

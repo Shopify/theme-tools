@@ -1931,7 +1931,7 @@ cases:
                         comment
                         inner
                         endcomment
-  - name: should carve out a nested raw so a literal endcomment inside it does not close early
+  - name: should leave a comment unclosed when a raw inside it cannot close in {% liquid %}
     source: |-
       {% liquid
       comment
@@ -1961,6 +1961,14 @@ cases:
       children:
         - type: LiquidTag
           name: liquid
+          markup: |-
+            comment
+            before
+            raw
+            endcomment
+            endraw
+            after
+            endcomment
           whitespaceStart: ""
           whitespaceEnd: ""
           blockStartPosition:
@@ -1998,6 +2006,69 @@ cases:
               after
               endcomment
               %}
+          reason: Unclosed raw tag 'comment' in {% liquid %} block
+  - name: should close a nested comment at the endcomment of its outer level
+    source: |-
+      {% liquid
+      comment
+      comment
+      endcomment
+      echo 'X'
+      endcomment
+      echo 'Y'
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          comment
+          comment
+          endcomment
+          echo 'X'
+          endcomment
+          echo 'Y'
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+              comment
+              endcomment
+              echo 'X'
+              endcomment
+              echo 'Y'
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              comment
+              comment
+              endcomment
+              echo 'X'
+              endcomment
+              echo 'Y'
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+              comment
+              endcomment
+              echo 'X'
+              endcomment
+              echo 'Y'
+              %}
           markup:
             - type: LiquidRawTag
               name: comment
@@ -2008,48 +2079,355 @@ cases:
               delimiterWhitespaceStart: ""
               delimiterWhitespaceEnd: ""
               blockStartPosition: { start: [1, 0], text: comment }
-              blockEndPosition: { start: [7, 0], text: endcomment }
+              blockEndPosition: { start: [5, 0], text: endcomment }
               position:
                 start: [1, 0]
                 text: |-
                   comment
-                  before
-                  raw
+                  comment
                   endcomment
-                  endraw
-                  after
+                  echo 'X'
                   endcomment
               body:
                 type: RawMarkup
                 kind: text
                 value: |
-                  before
-                  raw
+                  comment
                   endcomment
-                  endraw
-                  after
+                  echo 'X'
                 position:
                   start: [1, 7]
                   text: |
                     
-                    before
-                    raw
+                    comment
                     endcomment
-                    endraw
-                    after
+                    echo 'X'
                 nodes:
                   - type: TextNode
                     value: |-
-                      before
-                      raw
+                      comment
                       endcomment
-                      endraw
-                      after
+                      echo 'X'
                     position:
                       start: [2, 0]
                       text: |-
-                        before
-                        raw
+                        comment
                         endcomment
-                        endraw
-                        after
+                        echo 'X'
+            - type: LiquidTag
+              name: echo
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [6, 0], text: echo 'Y' }
+              markupPosition: { start: [6, 5], text: "'Y'" }
+              position: { start: [6, 0], text: echo 'Y' }
+              markup:
+                type: LiquidVariable
+                rawSource: "'Y'"
+                position: { start: [6, 5], text: "'Y'" }
+                expression:
+                  type: String
+                  single: true
+                  value: Y
+                  position: { start: [6, 5], text: "'Y'" }
+                filters: []
+  - name: should not count a comment line indented with non-ASCII whitespace
+    source: |-
+      {% liquid
+      comment
+       comment
+      endcomment
+      echo 'Y'
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          comment
+           comment
+          endcomment
+          echo 'Y'
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+               comment
+              endcomment
+              echo 'Y'
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              comment
+               comment
+              endcomment
+              echo 'Y'
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+               comment
+              endcomment
+              echo 'Y'
+              %}
+          markup:
+            - type: LiquidRawTag
+              name: comment
+              markup: ""
+              markupPosition: { start: [1, 7], text: "" }
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: comment }
+              blockEndPosition: { start: [3, 0], text: endcomment }
+              position:
+                start: [1, 0]
+                text: |-
+                  comment
+                   comment
+                  endcomment
+              body:
+                type: RawMarkup
+                kind: text
+                value: |
+                   comment
+                position:
+                  start: [1, 7]
+                  text: |
+                    
+                     comment
+                nodes:
+                  - type: TextNode
+                    value: comment
+                    position: { start: [2, 1], text: comment }
+            - type: LiquidTag
+              name: echo
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [4, 0], text: echo 'Y' }
+              markupPosition: { start: [4, 5], text: "'Y'" }
+              position: { start: [4, 0], text: echo 'Y' }
+              markup:
+                type: LiquidVariable
+                rawSource: "'Y'"
+                position: { start: [4, 5], text: "'Y'" }
+                expression:
+                  type: String
+                  single: true
+                  value: Y
+                  position: { start: [4, 5], text: "'Y'" }
+                filters: []
+  - name: should not count a raw line indented with non-ASCII whitespace
+    source: |-
+      {% liquid
+      comment
+       raw
+      endcomment
+      echo 'Y'
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          comment
+           raw
+          endcomment
+          echo 'Y'
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+               raw
+              endcomment
+              echo 'Y'
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              comment
+               raw
+              endcomment
+              echo 'Y'
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+               raw
+              endcomment
+              echo 'Y'
+              %}
+          markup:
+            - type: LiquidRawTag
+              name: comment
+              markup: ""
+              markupPosition: { start: [1, 7], text: "" }
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: comment }
+              blockEndPosition: { start: [3, 0], text: endcomment }
+              position:
+                start: [1, 0]
+                text: |-
+                  comment
+                   raw
+                  endcomment
+              body:
+                type: RawMarkup
+                kind: text
+                value: |
+                   raw
+                position:
+                  start: [1, 7]
+                  text: |
+                    
+                     raw
+                nodes:
+                  - type: TextNode
+                    value: raw
+                    position: { start: [2, 1], text: raw }
+            - type: LiquidTag
+              name: echo
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [4, 0], text: echo 'Y' }
+              markupPosition: { start: [4, 5], text: "'Y'" }
+              position: { start: [4, 0], text: echo 'Y' }
+              markup:
+                type: LiquidVariable
+                rawSource: "'Y'"
+                position: { start: [4, 5], text: "'Y'" }
+                expression:
+                  type: String
+                  single: true
+                  value: Y
+                  position: { start: [4, 5], text: "'Y'" }
+                filters: []
+  - name: should not count an endcomment line indented with non-ASCII whitespace
+    source: |-
+      {% liquid
+      comment
+       endcomment
+      endcomment
+      echo 'Y'
+      %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+          comment
+           endcomment
+          endcomment
+          echo 'Y'
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+               endcomment
+              endcomment
+              echo 'Y'
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |
+              
+              comment
+               endcomment
+              endcomment
+              echo 'Y'
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+              comment
+               endcomment
+              endcomment
+              echo 'Y'
+              %}
+          markup:
+            - type: LiquidRawTag
+              name: comment
+              markup: ""
+              markupPosition: { start: [1, 7], text: "" }
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [1, 0], text: comment }
+              blockEndPosition: { start: [3, 0], text: endcomment }
+              position:
+                start: [1, 0]
+                text: |-
+                  comment
+                   endcomment
+                  endcomment
+              body:
+                type: RawMarkup
+                kind: text
+                value: |
+                   endcomment
+                position:
+                  start: [1, 7]
+                  text: |
+                    
+                     endcomment
+                nodes:
+                  - type: TextNode
+                    value: endcomment
+                    position: { start: [2, 1], text: endcomment }
+            - type: LiquidTag
+              name: echo
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [4, 0], text: echo 'Y' }
+              markupPosition: { start: [4, 5], text: "'Y'" }
+              position: { start: [4, 0], text: echo 'Y' }
+              markup:
+                type: LiquidVariable
+                rawSource: "'Y'"
+                position: { start: [4, 5], text: "'Y'" }
+                expression:
+                  type: String
+                  single: true
+                  value: Y
+                  position: { start: [4, 5], text: "'Y'" }
+                filters: []
