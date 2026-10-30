@@ -53,3 +53,21 @@ cases:
         <a href="/admin"></a>
         <a href="#MainContent"></a>
         <li>{{ 'About' | link_to: '/pages/about' }}</li>
+  - name: should only match whole path segments
+    files:
+      file.liquid: |
+        <a href="/cartography"></a>
+        <a href="/searching"></a>
+        <a href="/accounting"></a>
+        <li>{{ 'Carts' | link_to: '/carts' }}</li>
+        <a href="/collections/all-shoes"></a>
+        <a href="/cart#drawer"></a>
+    offenses:
+      - file: file.liquid
+        message: Use routes object {{ routes.collections_url }} instead of hardcoding /collections
+        start: [4, 9]
+        highlight: "/collections"
+      - file: file.liquid
+        message: Use routes object {{ routes.cart_url }} instead of hardcoding /cart
+        start: [5, 9]
+        highlight: "/cart"
