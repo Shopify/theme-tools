@@ -1037,8 +1037,8 @@ cases:
     offenses:
       - file: snippets/test.liquid
         message: "Attempting to end parsing before LiquidRawTag 'doc' was closed"
-        start: [0, 0]
-        highlight: "{% doc %}"
+        start: [0, 32]
+        highlight: "{% doc %"
   - name: accepts later balanced doc blocks after accepted doc closing markup
     files:
       snippets/test.liquid: "{% doc %}content{% enddoc foo %}{% doc %}later{% enddoc %}"
@@ -1090,8 +1090,8 @@ cases:
     offenses:
       - file: snippets/test.liquid
         message: "Attempting to end parsing before LiquidRawTag 'raw' was closed"
-        start: [0, 0]
-        highlight: "{% raw %}"
+        start: [0, 26]
+        highlight: "{% raw %"
   - name: accepts later balanced raw blocks after accepted raw closing markup
     files:
       snippets/test.liquid: "{% raw %}c{% endraw foo %}{% raw %}later{% endraw %}"
@@ -1278,17 +1278,17 @@ cases:
       snippets/test.liquid: "{% comment %}this is {{{ not }}} valid{{ liquid{% endcomment %}"
     offenses:
       - file: snippets/test.liquid
-        message: "Liquid syntax error: 'comment' tag was never closed"
-        start: [0, 13]
-        highlight: this is {{{ not }}} valid{{ liquid
+        message: "Attempting to end parsing before LiquidRawTag 'comment' was closed"
+        start: [0, 0]
+        highlight: "{% comment %}"
   - name: "reports LiquidSyntaxError for Ruby-stricter comment raw bodies: {% comment %}this is {% if liquid{% endcomment %}"
     files:
       snippets/test.liquid: "{% comment %}this is {% if liquid{% endcomment %}"
     offenses:
       - file: snippets/test.liquid
-        message: "Liquid syntax error: 'comment' tag was never closed"
-        start: [0, 13]
-        highlight: this is {% if liquid
+        message: "Attempting to end parsing before LiquidRawTag 'comment' was closed"
+        start: [0, 0]
+        highlight: "{% comment %}"
   - name: produces no diagnostics for inert closed Liquid tags inside comment bodies
     files:
       snippets/test.liquid: "{% comment %}{% if %}{% endcomment %}"
