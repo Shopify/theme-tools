@@ -65,6 +65,28 @@ describe('Unit: Stage 2 (AST)', () => {
     });
   });
 
+  describe('toLiquidHtmlAST(source, { opaqueHtmlComments: true })', () => {
+    const options = {
+      mode: 'strict',
+      allowUnclosedDocumentNode: false,
+      opaqueHtmlComments: true,
+    } as const;
+    const expectPath = makeExpectPath('opaqueHtmlComments');
+
+    it('should keep an HTML comment body opaque', () => {
+      ast = toLiquidHtmlAST('<p>a</p><!-- {% endif %} {% raw %} {{ b }} -->', options);
+      expectPath(ast, 'children.1.type').to.eql('HtmlComment');
+      expectPath(ast, 'children.1.children').to.eql([]);
+      expectPath(ast, 'children.1.body').to.eql('{% endif %} {% raw %} {{ b }}');
+    });
+
+    it('should reject an unclosed HTML comment', () => {
+      expect(() => toLiquidHtmlAST('<!-- {{ b }}', options)).to.throw(
+        /Attempting to end parsing before HtmlComment '<!--' was closed/,
+      );
+    });
+  });
+
   function makeExpectPath(message: string) {
     return function expectPath(ast: LiquidHtmlNode, path: string) {
       return expect(deepGet(path.split('.'), ast), message);

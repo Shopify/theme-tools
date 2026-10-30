@@ -16,13 +16,17 @@ import type {
   HtmlDanglingMarkerClose,
   YAMLFrontmatter,
 } from '../ast';
+import type { Position } from '../types';
 import { LiquidHTMLASTParsingError } from '../errors';
 import { assertNever } from '../utils';
 
 export interface NodeDispatchDelegate extends ParserBase {
   readonly dispatchParseHtml: boolean;
   readonly dispatchAllowUnclosedHtml: boolean;
+  /** The `<!--` of the comment the parser is inside, or `null` outside a comment. */
+  dispatchOpenHtmlComment: Position | null;
 
+  isBlockTerminator(): boolean;
   parseLiquidVariableOutput(): LiquidVariableOutput;
   parseLiquidTag(): LiquidTag | LiquidRawTag;
   parseHtmlElement(): HtmlElement | HtmlVoidElement | HtmlSelfClosingElement | HtmlRawNode;
@@ -34,6 +38,11 @@ export interface NodeDispatchDelegate extends ParserBase {
 
 // node := text | yamlFrontmatter | liquidVariableOutput | liquidTag | htmlElement | htmlComment | htmlDoctype
 export function parseNode(p: NodeDispatchDelegate): LiquidHtmlNode {
+  // A comment split by a block boundary resumes after the boundary tag.
+  if (p.dispatchParseHtml && p.dispatchOpenHtmlComment !== null && !p.isBlockTerminator()) {
+    return p.parseHtmlComment();
+  }
+
   const token = p.peek();
 
   switch (token.type) {
@@ -80,15 +89,22 @@ export function parseNode(p: NodeDispatchDelegate): LiquidHtmlNode {
 
     case TokenType.HtmlCommentOpen:
       if (p.dispatchParseHtml) return p.parseHtmlComment();
+      if (p.dispatchOpenHtmlComment === null) {
+        p.dispatchOpenHtmlComment = { start: token.start, end: token.end };
+      }
       return advanceAsText(p);
 
     case TokenType.HtmlDoctypeOpen:
       if (p.dispatchParseHtml) return p.parseHtmlDoctype();
       return advanceAsText(p);
 
+    case TokenType.HtmlCommentClose:
+      // A block opened inside a comment ran past the comment's `-->`.
+      p.dispatchOpenHtmlComment = null;
+      return advanceAsText(p);
+
     case TokenType.HtmlTagClose:
     case TokenType.HtmlSelfClose:
-    case TokenType.HtmlCommentClose:
     case TokenType.HtmlEquals:
     case TokenType.HtmlQuoteOpen:
     case TokenType.HtmlQuoteClose:

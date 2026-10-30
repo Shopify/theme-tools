@@ -69,6 +69,8 @@ export class DocumentParser
   private _pairDanglingCloseTags: boolean = false;
   private _inAttributeContext: boolean = false;
   private _inAttributeValueContext: boolean = false;
+  private _openHtmlComment: Position | null = null;
+  private readonly _opaqueHtmlComments: boolean;
 
   constructor(
     tokens: Token[],
@@ -76,6 +78,7 @@ export class DocumentParser
     env: Environment,
     parseHtml: boolean,
     allowUnclosedDocumentNode: boolean = false,
+    opaqueHtmlComments: boolean = false,
   ) {
     super(tokens, source);
     this.env = env;
@@ -83,6 +86,7 @@ export class DocumentParser
     this._parseHtml = parseHtml;
     this._allowUnclosedHtml = allowUnclosedDocumentNode;
     this._allowUnclosedDocumentNode = allowUnclosedDocumentNode;
+    this._opaqueHtmlComments = opaqueHtmlComments;
   }
 
   get rawParseHtml(): boolean {
@@ -117,6 +121,18 @@ export class DocumentParser
   }
   get htmlParseHtml(): boolean {
     return this._parseHtml;
+  }
+  set htmlParseHtml(v: boolean) {
+    this._parseHtml = v;
+  }
+  get htmlOpenComment(): Position | null {
+    return this._openHtmlComment;
+  }
+  set htmlOpenComment(v: Position | null) {
+    this._openHtmlComment = v;
+  }
+  get htmlOpaqueComments(): boolean {
+    return this._opaqueHtmlComments;
   }
   get htmlAllowUnclosedHtml(): boolean {
     return this._allowUnclosedHtml;
@@ -158,6 +174,12 @@ export class DocumentParser
   get dispatchAllowUnclosedHtml(): boolean {
     return this._allowUnclosedHtml;
   }
+  get dispatchOpenHtmlComment(): Position | null {
+    return this._openHtmlComment;
+  }
+  set dispatchOpenHtmlComment(v: Position | null) {
+    this._openHtmlComment = v;
+  }
 
   tagForName(name: string) {
     return this.env.tagForName(name);
@@ -168,6 +190,8 @@ export class DocumentParser
     const children: LiquidHtmlNode[] = [];
     if (this.check(TokenType.YamlFrontmatter)) children.push(parseNodeFn(this));
     while (!this.isAtEnd()) children.push(this.parseNodeInScope(children));
+    // A comment still open at the end of the input ends there, as in a browser.
+    this._openHtmlComment = null;
     return makeDocumentNode(
       filterChildren(ChildFilterMode.Syntactic, children, this.source),
       this.source,

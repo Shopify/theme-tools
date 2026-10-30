@@ -2558,12 +2558,37 @@ cases:
       children:
         - type: HtmlComment
           body: hello {{ product.name }}
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [2, 0], text: --> }
           position:
             start: [0, 0]
             text: |-
               <!--
                 hello {{ product.name }}
               -->
+          children:
+            - type: TextNode
+              value: hello
+              position: { start: [1, 2], text: hello }
+            - type: LiquidVariableOutput
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [1, 10], text: " product.name " }
+              position: { start: [1, 8], text: "{{ product.name }}" }
+              markup:
+                type: LiquidVariable
+                rawSource: product.name
+                position: { start: [1, 11], text: "product.name " }
+                expression:
+                  type: VariableLookup
+                  name: product
+                  position: { start: [1, 11], text: product.name }
+                  lookups:
+                    - type: String
+                      value: name
+                      position: { start: [1, 19], text: name }
+                  lookupModes: [bareword]
+                filters: []
   - name: should parse script tags as raw
     source: |-
       <script>
@@ -4507,7 +4532,13 @@ cases:
       children:
         - type: HtmlComment
           body: hello
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 11], text: --> }
           position: { start: [0, 0], text: <!-- hello --> }
+          children:
+            - type: TextNode
+              value: hello
+              position: { start: [0, 5], text: hello }
   - name: should parse style tags as HtmlRawNode
     source: "<style>.x { color: red; }</style>"
     parse: [html]
@@ -4938,7 +4969,13 @@ cases:
       children:
         - type: HtmlComment
           body: a
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 5], text: --> }
           position: { start: [0, 0], text: <!--a--> }
+          children:
+            - type: TextNode
+              value: a
+              position: { start: [0, 4], text: a }
         - type: HtmlRawNode
           name: script
           blockStartPosition: { start: [0, 8], text: <script> }
@@ -4956,7 +4993,13 @@ cases:
                 position: { start: [0, 16], text: b }
         - type: HtmlComment
           body: c
+          blockStartPosition: { start: [0, 26], text: <!-- }
+          blockEndPosition: { start: [0, 31], text: --> }
           position: { start: [0, 26], text: <!--c--> }
+          children:
+            - type: TextNode
+              value: c
+              position: { start: [0, 30], text: c }
         - type: HtmlRawNode
           name: style
           blockStartPosition: { start: [0, 34], text: <style> }
@@ -6024,7 +6067,13 @@ cases:
       children:
         - type: HtmlComment
           body: a <b
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 10], text: --> }
           position: { start: [0, 0], text: <!-- a <b --> }
+          children:
+            - type: TextNode
+              value: a <b
+              position: { start: [0, 5], text: a <b }
         - type: HtmlElement
           blockStartPosition: { start: [0, 13], text: <p> }
           blockEndPosition: { start: [0, 21], text: </p> }
@@ -6048,7 +6097,13 @@ cases:
       children:
         - type: HtmlComment
           body: <a title="x
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 17], text: --> }
           position: { start: [0, 0], text: <!-- <a title="x --> }
+          children:
+            - type: TextNode
+              value: <a title="x
+              position: { start: [0, 5], text: <a title="x }
         - type: HtmlElement
           blockStartPosition: { start: [0, 20], text: <p> }
           blockEndPosition: { start: [0, 28], text: </p> }
@@ -6072,7 +6127,13 @@ cases:
       children:
         - type: HtmlComment
           body: </div>
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 12], text: --> }
           position: { start: [0, 0], text: <!-- </div> --> }
+          children:
+            - type: TextNode
+              value: </div>
+              position: { start: [0, 5], text: </div> }
         - type: HtmlElement
           blockStartPosition: { start: [0, 15], text: <p> }
           blockEndPosition: { start: [0, 23], text: </p> }
@@ -6096,7 +6157,13 @@ cases:
       children:
         - type: HtmlComment
           body: <!-- x
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 12], text: --> }
           position: { start: [0, 0], text: <!-- <!-- x --> }
+          children:
+            - type: TextNode
+              value: <!-- x
+              position: { start: [0, 5], text: <!-- x }
         - type: HtmlElement
           blockStartPosition: { start: [0, 15], text: <p> }
           blockEndPosition: { start: [0, 23], text: </p> }
@@ -6120,7 +6187,29 @@ cases:
       children:
         - type: HtmlComment
           body: <b {{ x }}
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 16], text: --> }
           position: { start: [0, 0], text: "<!-- <b {{ x }} -->" }
+          children:
+            - type: TextNode
+              value: <b
+              position: { start: [0, 5], text: <b }
+            - type: LiquidVariableOutput
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 10], text: " x " }
+              position: { start: [0, 8], text: "{{ x }}" }
+              markup:
+                type: LiquidVariable
+                rawSource: x
+                position: { start: [0, 11], text: "x " }
+                expression:
+                  type: VariableLookup
+                  name: x
+                  position: { start: [0, 11], text: x }
+                  lookups: []
+                  lookupModes: []
+                filters: []
         - type: HtmlElement
           blockStartPosition: { start: [0, 19], text: <p> }
           blockEndPosition: { start: [0, 27], text: </p> }
@@ -6144,7 +6233,13 @@ cases:
       children:
         - type: HtmlComment
           body: a
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 7], text: --!> }
           position: { start: [0, 0], text: <!-- a --!> }
+          children:
+            - type: TextNode
+              value: a
+              position: { start: [0, 5], text: a }
         - type: HtmlElement
           blockStartPosition: { start: [0, 11], text: <p> }
           blockEndPosition: { start: [0, 19], text: </p> }
@@ -6168,7 +6263,10 @@ cases:
       children:
         - type: HtmlComment
           body: ""
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 4], text: ">" }
           position: { start: [0, 0], text: <!--> }
+          children: []
         - type: HtmlElement
           blockStartPosition: { start: [0, 5], text: <p> }
           blockEndPosition: { start: [0, 13], text: </p> }
@@ -6192,7 +6290,10 @@ cases:
       children:
         - type: HtmlComment
           body: ""
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 4], text: -> }
           position: { start: [0, 0], text: <!---> }
+          children: []
         - type: HtmlElement
           blockStartPosition: { start: [0, 6], text: <p> }
           blockEndPosition: { start: [0, 14], text: </p> }
@@ -6216,7 +6317,10 @@ cases:
       children:
         - type: HtmlComment
           body: ""
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 4], text: --> }
           position: { start: [0, 0], text: <!----> }
+          children: []
         - type: HtmlElement
           blockStartPosition: { start: [0, 7], text: <p> }
           blockEndPosition: { start: [0, 15], text: </p> }
@@ -6240,7 +6344,13 @@ cases:
       children:
         - type: HtmlComment
           body: "[if IE]><p>old</p><![endif]"
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 31], text: --> }
           position: { start: [0, 0], text: "<!--[if IE]><p>old</p><![endif]-->" }
+          children:
+            - type: TextNode
+              value: "[if IE]><p>old</p><![endif]"
+              position: { start: [0, 4], text: "[if IE]><p>old</p><![endif]" }
   - name: parses a downlevel-revealed conditional comment
     source: <!--[if !IE]><!--><p>modern</p><!--<![endif]-->
     parse: [html]
@@ -6251,7 +6361,13 @@ cases:
       children:
         - type: HtmlComment
           body: "[if !IE]><!"
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 15], text: --> }
           position: { start: [0, 0], text: "<!--[if !IE]><!-->" }
+          children:
+            - type: TextNode
+              value: "[if !IE]><!"
+              position: { start: [0, 4], text: "[if !IE]><!" }
         - type: HtmlElement
           blockStartPosition: { start: [0, 18], text: <p> }
           blockEndPosition: { start: [0, 27], text: </p> }
@@ -6267,7 +6383,13 @@ cases:
               position: { start: [0, 21], text: modern }
         - type: HtmlComment
           body: <![endif]
+          blockStartPosition: { start: [0, 31], text: <!-- }
+          blockEndPosition: { start: [0, 44], text: --> }
           position: { start: [0, 31], text: "<!--<![endif]-->" }
+          children:
+            - type: TextNode
+              value: <![endif]
+              position: { start: [0, 35], text: "<![endif]" }
   - name: parses an HTML comment holding --
     source: <!-- a -- b -->
     parse: [html]
@@ -6278,7 +6400,13 @@ cases:
       children:
         - type: HtmlComment
           body: a -- b
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 12], text: --> }
           position: { start: [0, 0], text: <!-- a -- b --> }
+          children:
+            - type: TextNode
+              value: a -- b
+              position: { start: [0, 5], text: a -- b }
   - name: reads a --> outside an HTML comment as text
     source: <p>a --> b</p>
     parse: [html]
@@ -6890,7 +7018,13 @@ cases:
                 position: { start: [0, 8], text: "/* <![CDATA[ */ if (x > y) {}" }
         - type: HtmlComment
           body: </div>
+          blockStartPosition: { start: [0, 46], text: <!-- }
+          blockEndPosition: { start: [0, 58], text: --> }
           position: { start: [0, 46], text: <!-- </div> --> }
+          children:
+            - type: TextNode
+              value: </div>
+              position: { start: [0, 51], text: </div> }
         - type: HtmlElement
           blockStartPosition: { start: [0, 61], text: <p> }
           blockEndPosition: { start: [0, 69], text: </p> }
@@ -6929,7 +7063,13 @@ cases:
                 position: { start: [0, 7], text: "/* <![CDATA[ */ a > b {}" }
         - type: HtmlComment
           body: </div>
+          blockStartPosition: { start: [0, 39], text: <!-- }
+          blockEndPosition: { start: [0, 51], text: --> }
           position: { start: [0, 39], text: <!-- </div> --> }
+          children:
+            - type: TextNode
+              value: </div>
+              position: { start: [0, 44], text: </div> }
         - type: HtmlElement
           blockStartPosition: { start: [0, 54], text: <p> }
           blockEndPosition: { start: [0, 62], text: </p> }
@@ -7146,7 +7286,13 @@ cases:
                 position: { start: [0, 5], text: <svg></svg> }
         - type: HtmlComment
           body: </div>
+          blockStartPosition: { start: [0, 22], text: <!-- }
+          blockEndPosition: { start: [0, 34], text: --> }
           position: { start: [0, 22], text: <!-- </div> --> }
+          children:
+            - type: TextNode
+              value: </div>
+              position: { start: [0, 27], text: </div> }
         - type: HtmlElement
           blockStartPosition: { start: [0, 37], text: <p> }
           blockEndPosition: { start: [0, 45], text: </p> }
@@ -7160,3 +7306,469 @@ cases:
             - type: TextNode
               value: after
               position: { start: [0, 40], text: after }
+  - name: parses the Liquid inside an HTML comment as text and Liquid
+    source: <!-- a {{ b }} <p> -->
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<!-- a {{ b }} <p> -->" }
+      children:
+        - type: HtmlComment
+          body: a {{ b }} <p>
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 19], text: --> }
+          position: { start: [0, 0], text: "<!-- a {{ b }} <p> -->" }
+          children:
+            - type: TextNode
+              value: a
+              position: { start: [0, 5], text: a }
+            - type: LiquidVariableOutput
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 9], text: " b " }
+              position: { start: [0, 7], text: "{{ b }}" }
+              markup:
+                type: LiquidVariable
+                rawSource: b
+                position: { start: [0, 10], text: "b " }
+                expression:
+                  type: VariableLookup
+                  name: b
+                  position: { start: [0, 10], text: b }
+                  lookups: []
+                  lookupModes: []
+                filters: []
+            - type: TextNode
+              value: <p>
+              position: { start: [0, 15], text: <p> }
+  - name: splits an HTML comment at the tag that closes an enclosing block
+    source: "{% for x in xs %}{% if x %}<!-- a {% endif %} b -->{% endfor %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% for x in xs %}{% if x %}<!-- a {% endif %} b -->{% endfor %}" }
+      children:
+        - type: LiquidTag
+          name: for
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% for x in xs %}" }
+          blockEndPosition: { start: [0, 51], text: "{% endfor %}" }
+          markupPosition: { start: [0, 7], text: "x in xs " }
+          position: { start: [0, 0], text: "{% for x in xs %}{% if x %}<!-- a {% endif %} b -->{% endfor %}" }
+          markup:
+            type: ForMarkup
+            variableName: x
+            reversed: false
+            position: { start: [0, 7], text: "x in xs " }
+            collection:
+              type: VariableLookup
+              name: xs
+              position: { start: [0, 12], text: xs }
+              lookups: []
+              lookupModes: []
+            args: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 17], text: "" }
+              blockStartPosition: { start: [0, 17], text: "" }
+              blockEndPosition: { start: [0, 51], text: "" }
+              position: { start: [0, 17], text: "{% if x %}<!-- a {% endif %} b -->" }
+              children:
+                - type: LiquidTag
+                  name: if
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  delimiterWhitespaceStart: ""
+                  delimiterWhitespaceEnd: ""
+                  blockStartPosition: { start: [0, 17], text: "{% if x %}" }
+                  blockEndPosition: { start: [0, 34], text: "{% endif %}" }
+                  markupPosition: { start: [0, 23], text: "x " }
+                  position: { start: [0, 17], text: "{% if x %}<!-- a {% endif %}" }
+                  markup:
+                    type: VariableLookup
+                    name: x
+                    position: { start: [0, 23], text: x }
+                    lookups: []
+                    lookupModes: []
+                  children:
+                    - type: LiquidBranch
+                      name: null
+                      markup: ""
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      markupPosition: { start: [0, 27], text: "" }
+                      blockStartPosition: { start: [0, 27], text: "" }
+                      blockEndPosition: { start: [0, 34], text: "" }
+                      position: { start: [0, 27], text: "<!-- a " }
+                      children:
+                        - type: HtmlComment
+                          body: a
+                          blockStartPosition: { start: [0, 27], text: <!-- }
+                          blockEndPosition: { start: [0, 34], text: "" }
+                          position: { start: [0, 27], text: "<!-- a " }
+                          children:
+                            - type: TextNode
+                              value: a
+                              position: { start: [0, 32], text: a }
+                - type: HtmlComment
+                  body: b
+                  blockStartPosition: { start: [0, 45], text: "" }
+                  blockEndPosition: { start: [0, 48], text: --> }
+                  position: { start: [0, 45], text: " b -->" }
+                  children:
+                    - type: TextNode
+                      value: b
+                      position: { start: [0, 46], text: b }
+  - name: ends an HTML comment with a block opened inside it that closes after it
+    source: <!-- {% if x %} --> a {% endif %}<b>c</b>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<!-- {% if x %} --> a {% endif %}<b>c</b>" }
+      children:
+        - type: HtmlComment
+          body: "{% if x %} --> a {% endif %}"
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 33], text: "" }
+          position: { start: [0, 0], text: "<!-- {% if x %} --> a {% endif %}" }
+          children:
+            - type: LiquidTag
+              name: if
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [0, 5], text: "{% if x %}" }
+              blockEndPosition: { start: [0, 22], text: "{% endif %}" }
+              markupPosition: { start: [0, 11], text: "x " }
+              position: { start: [0, 5], text: "{% if x %} --> a {% endif %}" }
+              markup:
+                type: VariableLookup
+                name: x
+                position: { start: [0, 11], text: x }
+                lookups: []
+                lookupModes: []
+              children:
+                - type: LiquidBranch
+                  name: null
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [0, 15], text: "" }
+                  blockStartPosition: { start: [0, 15], text: "" }
+                  blockEndPosition: { start: [0, 22], text: "" }
+                  position: { start: [0, 15], text: " --> a " }
+                  children:
+                    - type: TextNode
+                      value: --> a
+                      position: { start: [0, 16], text: --> a }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 33], text: <b> }
+          blockEndPosition: { start: [0, 37], text: </b> }
+          position: { start: [0, 33], text: <b>c</b> }
+          name:
+            - type: TextNode
+              value: b
+              position: { start: [0, 34], text: b }
+          attributes: []
+          children:
+            - type: TextNode
+              value: c
+              position: { start: [0, 36], text: c }
+  - name: ends an HTML comment that never closes at the end of the source, as a browser does
+    source: a <!-- b <p>c</p>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: a <!-- b <p>c</p> }
+      children:
+        - type: TextNode
+          value: a
+          position: { start: [0, 0], text: a }
+        - type: HtmlComment
+          body: b <p>c</p>
+          blockStartPosition: { start: [0, 2], text: <!-- }
+          blockEndPosition: { start: [0, 17], text: "" }
+          position: { start: [0, 2], text: <!-- b <p>c</p> }
+          children:
+            - type: TextNode
+              value: b <p>c</p>
+              position: { start: [0, 7], text: b <p>c</p> }
+  - name: ends the rest of a split HTML comment that never closes at the end of the source
+    source: "{% if x %}<!-- a {% endif %} b"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if x %}<!-- a {% endif %} b" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if x %}" }
+          blockEndPosition: { start: [0, 17], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "x " }
+          position: { start: [0, 0], text: "{% if x %}<!-- a {% endif %}" }
+          markup:
+            type: VariableLookup
+            name: x
+            position: { start: [0, 6], text: x }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 10], text: "" }
+              blockStartPosition: { start: [0, 10], text: "" }
+              blockEndPosition: { start: [0, 17], text: "" }
+              position: { start: [0, 10], text: "<!-- a " }
+              children:
+                - type: HtmlComment
+                  body: a
+                  blockStartPosition: { start: [0, 10], text: <!-- }
+                  blockEndPosition: { start: [0, 17], text: "" }
+                  position: { start: [0, 10], text: "<!-- a " }
+                  children:
+                    - type: TextNode
+                      value: a
+                      position: { start: [0, 15], text: a }
+        - type: HtmlComment
+          body: b
+          blockStartPosition: { start: [0, 28], text: "" }
+          blockEndPosition: { start: [0, 30], text: "" }
+          position: { start: [0, 28], text: " b" }
+          children:
+            - type: TextNode
+              value: b
+              position: { start: [0, 29], text: b }
+  - name: ends a split HTML comment at a block that closes at the end of the source
+    source: "{% if x %}<!-- a {% endif %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if x %}<!-- a {% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if x %}" }
+          blockEndPosition: { start: [0, 17], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "x " }
+          position: { start: [0, 0], text: "{% if x %}<!-- a {% endif %}" }
+          markup:
+            type: VariableLookup
+            name: x
+            position: { start: [0, 6], text: x }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 10], text: "" }
+              blockStartPosition: { start: [0, 10], text: "" }
+              blockEndPosition: { start: [0, 17], text: "" }
+              position: { start: [0, 10], text: "<!-- a " }
+              children:
+                - type: HtmlComment
+                  body: a
+                  blockStartPosition: { start: [0, 10], text: <!-- }
+                  blockEndPosition: { start: [0, 17], text: "" }
+                  position: { start: [0, 10], text: "<!-- a " }
+                  children:
+                    - type: TextNode
+                      value: a
+                      position: { start: [0, 15], text: a }
+  - name: tracks an HTML comment reopened inside a block before the block's end tag
+    source: <!--{% if true %}--><!--{% endif %}x--><b>after</b>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<!--{% if true %}--><!--{% endif %}x--><b>after</b>" }
+      children:
+        - type: HtmlComment
+          body: "{% if true %}--><!--{% endif %}x"
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 36], text: --> }
+          position: { start: [0, 0], text: "<!--{% if true %}--><!--{% endif %}x-->" }
+          children:
+            - type: LiquidTag
+              name: if
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [0, 4], text: "{% if true %}" }
+              blockEndPosition: { start: [0, 24], text: "{% endif %}" }
+              markupPosition: { start: [0, 10], text: "true " }
+              position: { start: [0, 4], text: "{% if true %}--><!--{% endif %}" }
+              markup:
+                type: LiquidLiteral
+                keyword: "true"
+                value: true
+                position: { start: [0, 10], text: "true" }
+              children:
+                - type: LiquidBranch
+                  name: null
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [0, 17], text: "" }
+                  blockStartPosition: { start: [0, 17], text: "" }
+                  blockEndPosition: { start: [0, 24], text: "" }
+                  position: { start: [0, 17], text: --><!-- }
+                  children:
+                    - type: TextNode
+                      value: --><!--
+                      position: { start: [0, 17], text: --><!-- }
+            - type: TextNode
+              value: x
+              position: { start: [0, 35], text: x }
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 39], text: <b> }
+          blockEndPosition: { start: [0, 47], text: </b> }
+          position: { start: [0, 39], text: <b>after</b> }
+          name:
+            - type: TextNode
+              value: b
+              position: { start: [0, 40], text: b }
+          attributes: []
+          children:
+            - type: TextNode
+              value: after
+              position: { start: [0, 42], text: after }
+  - name: splits an HTML comment at each branch of an enclosing block
+    source: "{% if a %}<!-- x {% else %} y -->{% endif %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if a %}<!-- x {% else %} y -->{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if a %}" }
+          blockEndPosition: { start: [0, 33], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "a " }
+          position: { start: [0, 0], text: "{% if a %}<!-- x {% else %} y -->{% endif %}" }
+          markup:
+            type: VariableLookup
+            name: a
+            position: { start: [0, 6], text: a }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 10], text: "" }
+              blockStartPosition: { start: [0, 10], text: "" }
+              blockEndPosition: { start: [0, 17], text: "" }
+              position: { start: [0, 10], text: "<!-- x " }
+              children:
+                - type: HtmlComment
+                  body: x
+                  blockStartPosition: { start: [0, 10], text: <!-- }
+                  blockEndPosition: { start: [0, 17], text: "" }
+                  position: { start: [0, 10], text: "<!-- x " }
+                  children:
+                    - type: TextNode
+                      value: x
+                      position: { start: [0, 15], text: x }
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 25], text: "" }
+              blockStartPosition: { start: [0, 17], text: "{% else %}" }
+              blockEndPosition: { start: [0, 33], text: "" }
+              position: { start: [0, 17], text: "{% else %} y -->" }
+              children:
+                - type: HtmlComment
+                  body: y
+                  blockStartPosition: { start: [0, 27], text: "" }
+                  blockEndPosition: { start: [0, 30], text: --> }
+                  position: { start: [0, 27], text: " y -->" }
+                  children:
+                    - type: TextNode
+                      value: y
+                      position: { start: [0, 28], text: y }
+  - name: rejects an orphan end tag inside an HTML comment, as Liquid does
+    source: <!-- {% endif %} -->
+    parse: [html]
+    error:
+      message: Attempting to close LiquidTag 'if' before it was opened without a matching 'if'
+      start: [0, 5]
+      text: "{% endif %}"
+  - name: rejects an unclosed block inside an HTML comment, as Liquid does
+    source: <!-- {% if a %} -->
+    parse: [html]
+    error:
+      message: Attempting to end parsing before LiquidTag 'if' was closed
+      start: [0, 5]
+      text: "{% if a %}"
+  - name: parses a raw tag inside an HTML comment as a raw tag
+    source: <!-- {% raw %}{{ a }} -->{% endraw %} -->
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<!-- {% raw %}{{ a }} -->{% endraw %} -->" }
+      children:
+        - type: HtmlComment
+          body: "{% raw %}{{ a }} -->{% endraw %}"
+          blockStartPosition: { start: [0, 0], text: <!-- }
+          blockEndPosition: { start: [0, 38], text: --> }
+          position: { start: [0, 0], text: "<!-- {% raw %}{{ a }} -->{% endraw %} -->" }
+          children:
+            - type: LiquidRawTag
+              name: raw
+              markup: ""
+              markupPosition: { start: [0, 12], text: "" }
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [0, 5], text: "{% raw %}" }
+              blockEndPosition: { start: [0, 25], text: "{% endraw %}" }
+              position: { start: [0, 5], text: "{% raw %}{{ a }} -->{% endraw %}" }
+              body:
+                type: RawMarkup
+                kind: text
+                value: "{{ a }} -->"
+                position: { start: [0, 14], text: "{{ a }} -->" }
+                nodes:
+                  - type: TextNode
+                    value: "{{ a }} -->"
+                    position: { start: [0, 14], text: "{{ a }} -->" }

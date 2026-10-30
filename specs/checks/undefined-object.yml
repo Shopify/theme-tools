@@ -756,3 +756,12 @@ cases:
         }
         {% endschema %}
     docset: default
+  - name: reports an undefined object inside an HTML comment, which Liquid renders
+    files:
+      file.liquid: "<!-- {{ my_var }} -->"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Unknown object 'my_var' used."
+        start: [0, 8]
+        highlight: my_var

@@ -778,9 +778,29 @@ export interface HtmlDoctype extends ASTNode<NodeTypes.HtmlDoctype> {
   legacyDoctypeString: string | null;
 }
 
-/** Represents `<!-- comments -->` */
+/**
+ * Represents `<!-- comments -->`.
+ *
+ * Liquid treats `<!--` and `-->` as plain text, so the Liquid inside a comment
+ * still renders and can close a block opened before the comment.
+ *
+ * This node describes the source, not the rendered page. The parser knows where
+ * each delimiter is written, not which `-->` closes which `<!--` once branches
+ * are chosen: depending on conditionals, a comment can close more than once, or
+ * never. So a comment that crosses a Liquid block boundary is split at that
+ * boundary, and a comment whose `-->` sits inside a block it opened ends with
+ * that block. Liquid outputs every delimiter as written, so only the rendered
+ * output shows which comments are open.
+ */
 export interface HtmlComment extends ASTNode<NodeTypes.HtmlComment> {
+  /** The source between the delimiters, trimmed. */
   body: string;
+  /** The text and Liquid between the delimiters. */
+  children: (LiquidNode | TextNode)[];
+  /** The range covered by this node's `<!--`, empty when the node starts at a block boundary. */
+  blockStartPosition: Position;
+  /** The range covered by this node's `-->`, empty when the node ends at a block boundary. */
+  blockEndPosition: Position;
 }
 
 export interface HtmlNodeBase<T> extends ASTNode<T> {
@@ -953,6 +973,13 @@ export interface ASTBuildOptions {
    * element. Off by default: it accepts templates the strict grammar rejects.
    */
   pairDanglingCloseTags?: boolean;
+
+  /**
+   * Keep each HTML comment's body as opaque text instead of parsing the Liquid
+   * inside it. For HTML that is data rather than a template, such as a rendered
+   * setting value or a translation, where `{% ... %}` inside a comment is not a tag.
+   */
+  opaqueHtmlComments?: boolean;
 }
 
 export function isBranchedTag(node: LiquidHtmlNode) {
@@ -985,7 +1012,14 @@ export function toLiquidHtmlAST(
   const tokens = tokenize(source, {
     rawBodyRule: rawBodyRuleLookup((name) => env.tagForName(name)),
   });
-  const parser = new DocumentParser(tokens, source, env, true, options.allowUnclosedDocumentNode);
+  const parser = new DocumentParser(
+    tokens,
+    source,
+    env,
+    true,
+    options.allowUnclosedDocumentNode,
+    options.opaqueHtmlComments,
+  );
   parser.pairDanglingCloseTags = options.pairDanglingCloseTags ?? false;
   return parser.parseDocument();
 }
