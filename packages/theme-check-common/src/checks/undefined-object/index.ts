@@ -26,6 +26,7 @@ import {
 } from '../../types';
 import { isError, last } from '../../utils';
 import { hasLiquidDoc } from '../../liquid-doc/liquidDoc';
+import { getAncestorUris } from '../../utils/traversal';
 import { isWithinRawTagThatDoesNotParseItsContents } from '../utils';
 
 type Scope = { start?: number; end?: number };
@@ -156,7 +157,7 @@ export const UndefinedObject: LiquidCheckDefinition = {
       },
 
       async onCodePathEnd() {
-        const objects = await globalObjects(themeDocset, relativePath, context.mode);
+        const objects = await globalObjects(themeDocset, context);
 
         objects.forEach((obj) => fileScopedVariables.add(obj.name));
         (await themeBlockParameterNames(context)).forEach((name) => fileScopedVariables.add(name));
@@ -183,20 +184,29 @@ export const UndefinedObject: LiquidCheckDefinition = {
   },
 };
 
-async function globalObjects(themeDocset: ThemeDocset, relativePath: string, mode: Mode = 'theme') {
+async function globalObjects(
+  themeDocset: ThemeDocset,
+  context: Context<SourceCodeType.LiquidHtml>,
+) {
   const objects = await themeDocset.objects();
-  const contextualObjects = getContextualObjects(relativePath, mode);
+  const relativePath = context.toRelativePath(context.file.uri);
+  const contextualObjects = new Set(getContextualObjects(relativePath, context.mode));
 
-  const globalObjects = objects.filter(({ access, name }) => {
+  if (relativePath.startsWith('snippets/') && context.getReferences) {
+    const ancestors = await getAncestorUris(context.file.uri, context.getReferences);
+    ancestors.forEach((uri) => {
+      const ancestorPath = context.toRelativePath(uri);
+      getContextualObjects(ancestorPath, context.mode).forEach((name) =>
+        contextualObjects.add(name),
+      );
+    });
+  }
+
+  return objects.filter(({ access, name }) => {
     return (
-      contextualObjects.includes(name) ||
-      !access ||
-      access.global === true ||
-      access.template.length > 0
+      contextualObjects.has(name) || !access || access.global === true || access.template.length > 0
     );
   });
-
-  return globalObjects;
 }
 
 /** Theme blocks always receive the built-in `content` parameter as a variable. */
