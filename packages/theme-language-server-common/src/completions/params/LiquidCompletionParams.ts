@@ -1,7 +1,9 @@
 import {
+  BlockArgument,
   BlockMarkup,
   findErrorNodeAtOffset,
   LiquidHtmlNode,
+  LiquidNamedArgument,
   LiquidTag,
   MarkupToken,
   MarkupTokenType,
@@ -746,7 +748,7 @@ function findCompletionNode(
       case NodeTypes.SectionMarkup: {
         if (isNotEmpty(current.args)) {
           const arg = last(current.args);
-          finder.current = isBlockArrayArgument(arg) ? arg.value.elements.at(-1) : arg;
+          finder.current = blockArgumentNode(arg);
         } else if (isCovered(cursor, current.name.position)) {
           finder.current = current.name;
         }
@@ -1835,7 +1837,7 @@ function blockMarkupChild(
   }
 
   if (coveredArg) {
-    return isBlockArrayArgument(coveredArg) ? coveredArg.value.elements.at(-1) : coveredArg;
+    return blockArgumentNode(coveredArg);
   }
 
   if (isCovered(cursor, markup.name.position)) return markup.name;
@@ -2401,8 +2403,12 @@ function isDefined<T>(x: T | undefined): x is T {
   return x !== undefined;
 }
 
-function isBlockArrayArgument(arg: any): arg is { value: { elements: LiquidHtmlNode[] } } {
-  return arg.value?.type === 'BlockArrayLiteral';
+// The node to complete in a block argument: its last array element, or the argument itself,
+// which is a LiquidNamedArgument once its value isn't an array literal.
+function blockArgumentNode(arg: BlockArgument): LiquidHtmlNode | undefined {
+  return arg.value.type === 'BlockArrayLiteral'
+    ? arg.value.elements.at(-1)
+    : (arg as LiquidNamedArgument);
 }
 
 function last<T = any>(x: NonEmptyArray<T>): T {
