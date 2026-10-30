@@ -2,8 +2,8 @@ import { Mode, Modes, path, Reference } from '@shopify/theme-check-common';
 import { MockFileSystem } from '@shopify/theme-check-common/src/test';
 import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { parse } from 'smol-toml';
 import { describe, expect, it } from 'vitest';
-import { parse } from 'yaml';
 import { getDependencies } from './graph/test-helpers';
 import { buildThemeGraph } from './index';
 import { ThemeModule } from './types';
@@ -49,8 +49,8 @@ const specsDir = resolve(__dirname, '../../../specs/graph');
 const rootUri = path.normalize('file:/');
 const caseKeys = ['name', 'mode', 'files', 'entryPoints', 'modules', 'edges'];
 
-for (const specFile of readdirSync(specsDir).filter((f) => f.endsWith('.yml'))) {
-  const spec: Spec = parse(readFileSync(resolve(specsDir, specFile), 'utf8'));
+for (const specFile of readdirSync(specsDir).filter((f) => f.endsWith('.toml'))) {
+  const spec = parse(readFileSync(resolve(specsDir, specFile), 'utf8')) as unknown as Spec;
 
   describe(`specs/${specFile}`, () => {
     for (const c of spec.cases) {

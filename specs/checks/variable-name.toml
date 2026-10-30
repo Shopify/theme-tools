@@ -1,0 +1,127 @@
+check = "VariableName"
+severity = "warning"
+
+[[cases]]
+name = "should report an error when a variable is using wrong naming format"
+
+[cases.files]
+"file.liquid" = "{% assign variableName = \"value\" %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "The variable 'variableName' uses wrong naming format"
+start = [ 0, 10 ]
+highlight = "variableName = \"value\" "
+
+[[cases.offenses.suggest]]
+message = "Change variable 'variableName' to 'variable_name'"
+result = "{% assign variable_name = \"value\" %}"
+
+[[cases]]
+name = "should not report an error when a variable is using correct format"
+
+[cases.files]
+"file.liquid" = "{% assign variable_name = \"value\" %}"
+
+[[cases]]
+name = "should allow a single leading underscore"
+
+[cases.files]
+"file.liquid" = '''
+{% assign _variable_name = "value" %}
+{% capture _captured_value %}value{% endcapture %}
+'''
+
+[[cases]]
+name = "should still enforce the naming format after a leading underscore"
+
+[cases.files]
+"file.liquid" = "{% assign _variableName = \"value\" %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "The variable '_variableName' uses wrong naming format"
+start = [ 0, 10 ]
+highlight = "_variableName = \"value\" "
+
+[[cases.offenses.suggest]]
+message = "Change variable '_variableName' to '_variable_name'"
+result = "{% assign _variable_name = \"value\" %}"
+
+[[cases]]
+name = "should reject more than one leading underscore"
+
+[cases.files]
+"file.liquid" = "{% assign __variable_name = \"value\" %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "The variable '__variable_name' uses wrong naming format"
+start = [ 0, 10 ]
+highlight = "__variable_name = \"value\" "
+
+[[cases.offenses.suggest]]
+message = "Change variable '__variable_name' to '_variable_name'"
+result = "{% assign _variable_name = \"value\" %}"
+
+[[cases]]
+name = "should provide a suggestion to change the variable naming"
+
+[cases.files]
+"file.liquid" = "{% assign variableName = \"value\" %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "The variable 'variableName' uses wrong naming format"
+start = [ 0, 10 ]
+highlight = "variableName = \"value\" "
+
+[[cases.offenses.suggest]]
+message = "Change variable 'variableName' to 'variable_name'"
+result = "{% assign variable_name = \"value\" %}"
+
+[[cases]]
+name = "should fix the code by changing the wrongly formatted variable"
+
+[cases.files]
+"file.liquid" = "{% assign variableName = \"value\" %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "The variable 'variableName' uses wrong naming format"
+start = [ 0, 10 ]
+highlight = "variableName = \"value\" "
+
+[[cases.offenses.suggest]]
+message = "Change variable 'variableName' to 'variable_name'"
+result = "{% assign variable_name = \"value\" %}"
+
+[[cases]]
+name = "should not complain about numbers inside variable names (1)"
+
+[cases.files]
+"file.liquid" = "{% assign first_b_2_b_model = \"value\" %}"
+
+[[cases]]
+name = "should not complain about numbers inside variable names (2)"
+
+[cases.files]
+"file.liquid" = "{% assign first_b2_b_model = \"value\" %}"
+
+[[cases]]
+name = "should not complain about numbers inside variable names (3)"
+
+[cases.files]
+"file.liquid" = "{% assign first_b2b_model = \"value\" %}"
+
+[[cases]]
+name = "should not complain about numbers inside variable names (4)"
+
+[cases.files]
+"file.liquid" = "{% assign first_3_d_model = \"value\" %}"
+
+[[cases]]
+name = "should not complain about numbers inside variable names (5)"
+
+[cases.files]
+"file.liquid" = "{% assign first3_d_model = \"value\" %}"

@@ -6,25 +6,43 @@ runs with the rest of the vitest suite. To change what the graph does, change it
 
 ## Format
 
-```yaml
-cases:
-  - name: follows a render
-    mode: app # optional: theme or app. Without it, theme.
-    files: # the theme, by path from its root
-      sections/main.liquid: |
-        {% render 'card' %}
-      snippets/card.liquid: |
-        Card
-    entryPoints: [sections/main.liquid] # optional: every entry point
-    modules: # optional: every module
-      - { file: sections/main.liquid, type: Liquid, kind: section }
-      - { file: snippets/card.liquid, type: Liquid, kind: snippet }
-    edges: # every edge. Without it, none.
-      - source: sections/main.liquid
-        start: [0, 0] # line and character
-        text: "{% render 'card' %}" # from start to the edge's end
-        target: snippets/card.liquid
+Specs use TOML (`.toml`):
+
+```toml
+[[cases]]
+name = "follows a render"
+mode = "app" # optional: theme or app. Without it, theme.
+entryPoints = ["sections/main.liquid"] # optional: every entry point
+modules = [ # optional: every module
+  { file = "sections/main.liquid", type = "Liquid", kind = "section" },
+  { file = "snippets/card.liquid", type = "Liquid", kind = "snippet" },
+]
+
+[cases.files] # the theme, by path from its root
+"sections/main.liquid" = '''
+{% render 'card' %}
+'''
+"snippets/card.liquid" = '''
+Card
+'''
+
+[[cases.edges]] # every edge. Without it, none.
+source = "sections/main.liquid"
+start = [0, 0] # line and character
+text = "{% render 'card' %}" # from start to the edge's end
+target = "snippets/card.liquid"
 ```
+
+Each `[[cases]]` starts a case. Its tables, such as `[cases.files]` and `[[cases.edges]]`,
+belong to that case until the next `[[cases]]`. Put case properties like `mode` and `entryPoints`
+before its tables. Quote file paths so dots aren't interpreted as nested keys.
+
+Use arrays of inline tables for simple lists like `modules`, with one entry per line.
+
+Multiline literal strings (`'''`) preserve quotes, backslashes and whitespace. The newline
+immediately after the opening delimiter is trimmed; a newline before the closing delimiter is
+part of the content. To omit a trailing newline, put the closing delimiter at the end of the
+last content line. Use basic strings (`"..."`) for escapes such as `\n` or `\r\n`.
 
 An edge goes from the file that depends to the file it depends on. `start` is where in the source
 it happens: line and character, 0-based, in UTF-16 code units. `text` is what the edge covers.
@@ -35,14 +53,14 @@ a template's layout, has neither. `type` is `direct` (the default), `indirect` o
 An edge to a custom element's definition also has `targetStart` and `targetText`, where the
 script defines it:
 
-```yaml
-edges:
-  - source: sections/main.liquid
-    start: [0, 0]
-    text: "<price-tag"
-    target: assets/theme.js
-    targetStart: [0, 15]
-    targetText: "define('price-tag'"
+```toml
+[[cases.edges]]
+source = "sections/main.liquid"
+start = [0, 0]
+text = "<price-tag"
+target = "assets/theme.js"
+targetStart = [0, 15]
+targetText = "define('price-tag'"
 ```
 
 A module's `type` and `kind` follow from its path. A module that's referenced but not in `files`

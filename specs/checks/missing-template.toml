@@ -1,0 +1,99 @@
+check = "MissingTemplate"
+severity = "error"
+
+[[cases]]
+name = "should report missing template errors (1)"
+
+[cases.files]
+"snippets/snippet.liquid" = '''
+{% render 'existing' %}
+{% render 'missing' with foo as arg          %}
+{% render myvariable %}
+'''
+"snippets/existing.liquid" = ""
+
+[[cases.offenses]]
+file = "snippets/snippet.liquid"
+message = "'snippets/missing.liquid' does not exist"
+start = [ 1, 10 ]
+highlight = "'missing'"
+
+[[cases]]
+name = "should report missing template errors (2)"
+
+[cases.files]
+"snippets/snippet.liquid" = "{% include 'missing' %}"
+"snippets/existing.liquid" = ""
+
+[[cases.offenses]]
+file = "snippets/snippet.liquid"
+message = "'snippets/missing.liquid' does not exist"
+start = [ 0, 11 ]
+highlight = "'missing'"
+
+[[cases]]
+name = "should report missing template errors (3)"
+
+[cases.files]
+"sections/section.liquid" = "{% section 'missing' %}"
+"sections/existing.liquid" = ""
+
+[[cases.offenses]]
+file = "sections/section.liquid"
+message = "'sections/missing.liquid' does not exist"
+start = [ 0, 11 ]
+highlight = "'missing'"
+
+[[cases]]
+name = "ignores missing files if ignored by ignore_missing pattern (1)"
+
+[cases.files]
+"file.liquid" = "{% render \"ignored\" %}"
+
+[cases.config.MissingTemplate]
+ignoreMissing = [ "snippets/ignored.liquid" ]
+
+[[cases]]
+name = "ignores missing files if ignored by ignore_missing pattern (2)"
+
+[cases.files]
+"file.liquid" = "{% render \"ignored\" %}"
+
+[cases.config.MissingTemplate]
+ignoreMissing = [ "snippets/*.liquid" ]
+
+[[cases]]
+name = "ignores missing files if ignored by ignore_missing pattern (3)"
+
+[cases.files]
+"file.liquid" = "{% render \"ignored\" %}"
+
+[cases.config.MissingTemplate]
+ignoreMissing = [ "*/ignored.liquid" ]
+
+[[cases]]
+name = "ignores missing files if ignored by ignore_missing pattern (4)"
+
+[cases.files]
+"file.liquid" = "{% section \"ignored\" %}"
+
+[cases.config.MissingTemplate]
+ignoreMissing = [ "sections/ignored.liquid" ]
+
+[[cases]]
+name = "ignores missing files if ignored by ignore_missing pattern (5)"
+
+[cases.files]
+"file.liquid" = "{% section \"ignored\" %}"
+
+[cases.config.MissingTemplate]
+ignoreMissing = [ "sections/ignored.liquid" ]
+
+[[cases]]
+name = "ignores missing files if ignored by ignore_missing pattern (6)"
+
+[cases.files]
+"file.liquid" = "{% section \"ignored\" %}"
+
+[cases.config.MissingTemplate]
+ignoreMissing = [ "*/ignored.liquid" ]

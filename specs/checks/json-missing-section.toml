@@ -1,0 +1,216 @@
+check = "JSONMissingSection"
+severity = "error"
+
+[[cases]]
+name = "JSON templates > should report an offense when a section file does not exist"
+
+[cases.files]
+"templates/index.json" = '''
+{
+          "sections": {
+            "hero_AAAAAA": {
+              "type": "featured-collection"
+            }
+          },
+          "order": ["hero_AAAAAA"]
+        }'''
+
+[[cases.offenses]]
+file = "templates/index.json"
+message = "Section type 'featured-collection' does not refer to an existing section file"
+start = [ 3, 22 ]
+highlight = "\"featured-collection\""
+
+[[cases]]
+name = "JSON templates > should not report an offense when the section file exists"
+
+[cases.files]
+"templates/index.json" = '''
+{
+          "sections": {
+            "hero_AAAAAA": {
+              "type": "featured-collection"
+            }
+          },
+          "order": ["hero_AAAAAA"]
+        }'''
+"sections/featured-collection.liquid" = ""
+
+[[cases]]
+name = "should report an offense for each missing section"
+
+[cases.files]
+"templates/index.json" = '''
+{
+          "sections": {
+            "hero_AAAAAA": {
+              "type": "missing-one"
+            },
+            "main": {
+              "type": "existing-section"
+            },
+            "footer_BBBBBB": {
+              "type": "missing-two"
+            }
+          },
+          "order": ["hero_AAAAAA", "main", "footer_BBBBBB"]
+        }'''
+"sections/existing-section.liquid" = ""
+
+[[cases.offenses]]
+file = "templates/index.json"
+message = "Section type 'missing-one' does not refer to an existing section file"
+start = [ 3, 22 ]
+highlight = "\"missing-one\""
+
+[[cases.offenses]]
+file = "templates/index.json"
+message = "Section type 'missing-two' does not refer to an existing section file"
+start = [ 9, 22 ]
+highlight = "\"missing-two\""
+
+[[cases]]
+name = "should not report an offense for section types with platform defaults"
+
+[cases.files]
+"templates/index.json" = '''
+{
+          "sections": {
+            "apps_section": {
+              "type": "apps"
+            },
+            "blocks_section": {
+              "type": "_blocks"
+            }
+          },
+          "order": ["apps_section", "blocks_section"]
+        }'''
+
+[[cases]]
+name = "should not report an offense when a section entry has no type"
+
+[cases.files]
+"templates/index.json" = '''
+{
+          "sections": {
+            "inherited_section": {
+              "settings": {}
+            }
+          },
+          "order": ["inherited_section"]
+        }'''
+
+[[cases]]
+name = "Section groups > should report an offense when a section file does not exist"
+
+[cases.files]
+"sections/header-group.json" = '''
+{
+          "type": "header",
+          "name": "Header group",
+          "sections": {
+            "announcement": {
+              "type": "missing-announcement-bar"
+            }
+          },
+          "order": ["announcement"]
+        }'''
+
+[[cases.offenses]]
+file = "sections/header-group.json"
+message = "Section type 'missing-announcement-bar' does not refer to an existing section file"
+start = [ 5, 22 ]
+highlight = "\"missing-announcement-bar\""
+
+[[cases]]
+name = "Section groups > should not report an offense when the section file exists"
+
+[cases.files]
+"sections/header-group.json" = '''
+{
+          "type": "header",
+          "name": "Header group",
+          "sections": {
+            "announcement": {
+              "type": "announcement-bar"
+            }
+          },
+          "order": ["announcement"]
+        }'''
+"sections/announcement-bar.liquid" = ""
+
+[[cases]]
+name = "should not report an offense for the section group type itself"
+
+[cases.files]
+"sections/header-group.json" = '''
+{
+          "type": "header",
+          "name": "Header group",
+          "sections": {},
+          "order": []
+        }'''
+
+[[cases]]
+name = "should ignore JSON files outside templates/ and sections/"
+
+[cases.files]
+"config/settings_data.json" = '''
+{
+          "sections": {
+            "main": {
+              "type": "nonexistent"
+            }
+          }
+        }'''
+"locales/en.default.json" = '''
+{
+          "sections": {
+            "main": { "type": "nonexistent" }
+          }
+        }'''
+
+[[cases]]
+name = "should not report an offense when sections is not an object"
+
+[cases.files]
+"templates/index.json" = '''
+{
+          "sections": "not-an-object",
+          "order": []
+        }'''
+
+[[cases]]
+name = "should report each duplicate section key at its own location"
+
+[cases.files]
+"templates/index.json" = '''
+{
+          "sections": {
+            "main": {
+              "type": "missing-one"
+            },
+            "main": {
+              "type": "missing-two"
+            }
+          },
+          "order": ["main"]
+        }'''
+
+[[cases.offenses]]
+file = "templates/index.json"
+message = "Section type 'missing-one' does not refer to an existing section file"
+start = [ 3, 22 ]
+highlight = "\"missing-one\""
+
+[[cases.offenses]]
+file = "templates/index.json"
+message = "Section type 'missing-two' does not refer to an existing section file"
+start = [ 6, 22 ]
+highlight = "\"missing-two\""
+
+[[cases]]
+name = "should not report an offense when the JSON is invalid"
+
+[cases.files]
+"templates/index.json" = "{ \"sections\": { \"main\": { \"type\": "

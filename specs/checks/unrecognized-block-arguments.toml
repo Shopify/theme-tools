@@ -1,0 +1,115 @@
+check = "UnrecognizedBlockArguments"
+severity = "warning"
+
+[[cases]]
+name = "accepts schema, LiquidDoc-only, and built-in content parameters"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} tracking_id - Developer-only tracking id
+{% enddoc %}
+{% schema %}
+{"settings":[{"id":"heading","type":"text"}]}
+{% endschema %}'''
+"templates/test.liquid" = "{% block 'card', heading: 'Hello', tracking_id: 'hero', content: body %}{% endblock %}"
+
+[[cases]]
+name = "accepts a schema parameter without LiquidDoc"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% schema %}
+{"settings":[{"id":"heading","type":"text"}]}
+{% endschema %}'''
+"templates/test.liquid" = "{% block 'card', heading: 'Hello' %}{% endblock %}"
+
+[[cases]]
+name = "reports an argument outside the merged interface"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} tracking_id - Developer-only tracking id
+{% enddoc %}
+{% schema %}
+{"settings":[{"id":"heading","type":"text"}]}
+{% endschema %}'''
+"templates/test.liquid" = "{% block 'card', heading: 'Hello', unknown: true %}{% endblock %}"
+
+[[cases.offenses]]
+file = "templates/test.liquid"
+message = "Unknown argument 'unknown' in block tag for 'card'."
+start = [ 0, 35 ]
+highlight = "unknown: true"
+
+[[cases]]
+name = "validates the LiquidDoc-only interface of a schema-less block"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} tracking_id - Developer-only tracking id
+{% enddoc %}'''
+"templates/test.liquid" = "{% block 'card', tracking_id: 'hero', unknown: true %}{% endblock %}"
+
+[[cases.offenses]]
+file = "templates/test.liquid"
+message = "Unknown argument 'unknown' in block tag for 'card'."
+start = [ 0, 38 ]
+highlight = "unknown: true"
+
+[[cases]]
+name = "preserves block.name as the supported caller-side system argument"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} tracking_id - Developer-only tracking id
+{% enddoc %}
+{% schema %}
+{"settings":[{"id":"heading","type":"text"}]}
+{% endschema %}'''
+"templates/test.liquid" = "{% block 'card', block.name: 'Card' %}{% endblock %}"
+
+[[cases]]
+name = "leaves dotted arguments to LiquidSyntaxError in {% block 'card', block.settings.heading: 'Hello', unknown: true %}{% endblock %}"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} tracking_id - Developer-only tracking id
+{% enddoc %}
+{% schema %}
+{"settings":[{"id":"heading","type":"text"}]}
+{% endschema %}'''
+"templates/test.liquid" = "{% block 'card', block.settings.heading: 'Hello', unknown: true %}{% endblock %}"
+
+[[cases]]
+name = "leaves dotted arguments to LiquidSyntaxError in {% block 'card', block.unknown: 'value', unknown: true %}{% endblock %}"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} tracking_id - Developer-only tracking id
+{% enddoc %}
+{% schema %}
+{"settings":[{"id":"heading","type":"text"}]}
+{% endschema %}'''
+"templates/test.liquid" = "{% block 'card', block.unknown: 'value', unknown: true %}{% endblock %}"
+
+[[cases]]
+name = "does not report unknown arguments for an unreadable missing target"
+
+[cases.files]
+"templates/test.liquid" = "{% block 'card', unknown: 'value' %}{% endblock %}"
+
+[[cases]]
+name = "does not report unknown arguments for an unreadable invalid target schema"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% schema %}
+{ invalid
+{% endschema %}'''
+"templates/test.liquid" = "{% block 'card', unknown: 'value' %}{% endblock %}"

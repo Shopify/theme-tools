@@ -1,0 +1,82 @@
+check = "UnknownFilter"
+severity = "error"
+
+[[cases]]
+name = "should report an offense when an unknown filter is used"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ \"hello\" | unknown_filter }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown filter 'unknown_filter' used."
+start = [ 0, 11 ]
+highlight = "| unknown_filter"
+
+[[cases]]
+name = "reports on unknown filter"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ \"foo\" | bar }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown filter 'bar' used."
+start = [ 0, 9 ]
+highlight = "| bar"
+
+[[cases]]
+name = "reports on unknown filter chained with known filters"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ \"foo\" | append: \".js\" | bar }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown filter 'bar' used."
+start = [ 0, 25 ]
+highlight = "| bar"
+
+[[cases]]
+name = "does not report on chain of known filters"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ \"foo\" | append: \".js\" | item_count_for_variant }}"
+
+[[cases]]
+name = "should not report an offense when a known filter is used (0)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'hello' | item_count_for_variant }}"
+
+[[cases]]
+name = "should not report an offense when a known filter is used (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'hello' | link_to_type }}"
+
+[[cases]]
+name = "should not report an offense when a known filter is used (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'hello' | link_to_vendor }}"
+
+[[cases]]
+name = "reports from the pipe when a non-breaking space comes before it"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'foo' | bar }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown filter 'bar' used."
+start = [ 0, 9 ]
+highlight = "| bar"

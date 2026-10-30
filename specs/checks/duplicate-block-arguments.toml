@@ -1,0 +1,89 @@
+check = "DuplicateBlockArguments"
+severity = "warning"
+
+[[cases]]
+name = "reports duplicate arguments after interface sources are merged"
+
+[cases.files]
+"templates/test.liquid" = "{% block 'card', heading: 'a', heading: 'b' %}{% endblock %}"
+
+[[cases.offenses]]
+file = "templates/test.liquid"
+message = "Duplicate argument 'heading' in block tag for 'card'."
+start = [ 0, 31 ]
+highlight = "heading: 'b'"
+
+[[cases]]
+name = "does not report unique arguments"
+
+[cases.files]
+"templates/test.liquid" = "{% block 'card', heading: 'a', content: body %}{% endblock %}"
+
+[[cases]]
+name = "warns that text body content takes precedence over content:"
+
+[cases.files]
+"templates/test.liquid" = "{% block 'card', content: body %}Body{% endblock %}"
+
+[[cases.offenses]]
+file = "templates/test.liquid"
+message = "The explicit 'content' argument has no effect because the inline block body takes precedence."
+start = [ 0, 17 ]
+highlight = "content: body"
+
+[[cases]]
+name = "warns that comment body content takes precedence over content:"
+
+[cases.files]
+"templates/test.liquid" = "{% block 'card', content: body %}{% comment %}x{% endcomment %}{% endblock %}"
+
+[[cases.offenses]]
+file = "templates/test.liquid"
+message = "The explicit 'content' argument has no effect because the inline block body takes precedence."
+start = [ 0, 17 ]
+highlight = "content: body"
+
+[[cases]]
+name = "does not let a whitespace-only body override content:"
+
+[cases.files]
+"templates/test.liquid" = """
+{% block 'card', content: body %}
+  \t
+{% endblock %}"""
+
+[[cases]]
+name = "preserves the duplicate warning when body content also overrides content:"
+
+[cases.files]
+"templates/test.liquid" = "{% block 'card', content: first, content: second %}Body{% endblock %}"
+
+[[cases.offenses]]
+file = "templates/test.liquid"
+message = "The explicit 'content' argument has no effect because the inline block body takes precedence."
+start = [ 0, 17 ]
+highlight = "content: first"
+
+[[cases.offenses]]
+file = "templates/test.liquid"
+message = "Duplicate argument 'content' in block tag for 'card'."
+start = [ 0, 33 ]
+highlight = "content: second"
+
+[[cases.offenses]]
+file = "templates/test.liquid"
+message = "The explicit 'content' argument has no effect because the inline block body takes precedence."
+start = [ 0, 33 ]
+highlight = "content: second"
+
+[[cases]]
+name = "reports duplicates without resolving the target block"
+
+[cases.files]
+"templates/test.liquid" = "{% block 'missing', value: 'a', value: 'b' %}{% endblock %}"
+
+[[cases.offenses]]
+file = "templates/test.liquid"
+message = "Duplicate argument 'value' in block tag for 'missing'."
+start = [ 0, 32 ]
+highlight = "value: 'b'"

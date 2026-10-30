@@ -1,0 +1,73 @@
+check = "AssetSizeAppBlockCSS"
+severity = "error"
+
+[[cases]]
+name = "should not report any offenses if CSS is smaller than threshold"
+
+[cases.files]
+"assets/app.css" = "* { color: green } "
+"blocks/app.liquid" = '''
+{% schema %}
+{
+  "stylesheet": "app.css"
+}
+{% endschema %}
+'''
+
+[[cases]]
+name = "should report an offense if CSS is larger than threshold"
+
+[cases.files]
+"assets/app.css" = "* { color: green } "
+"blocks/app.liquid" = '''
+{% schema %}
+{
+  "stylesheet": "app.css"
+}
+{% endschema %}
+'''
+
+[cases.config.AssetSizeAppBlockCSS]
+thresholdInBytes = 1
+
+[[cases.offenses]]
+file = "blocks/app.liquid"
+message = "The file size for 'app.css' (19 B) exceeds the configured threshold (1 B)"
+start = [ 2, 17 ]
+highlight = "app.css"
+
+[[cases]]
+name = "should report an offense if the CSS file does not exist"
+
+[cases.files]
+"blocks/app.liquid" = '''
+{% schema %}
+{
+  "stylesheet": "nonexistent.css"
+}
+{% endschema %}
+'''
+
+[[cases.offenses]]
+file = "blocks/app.liquid"
+message = "'nonexistent.css' does not exist."
+start = [ 2, 17 ]
+highlight = "nonexistent.css"
+
+[[cases]]
+name = "should reports offense if the CSS file does not exist and the asset has a trailing comma"
+
+[cases.files]
+"blocks/app.liquid" = '''
+{% schema %}
+{
+  "stylesheet": "nonexistent.css",
+}
+{% endschema %}
+'''
+
+[[cases.offenses]]
+file = "blocks/app.liquid"
+message = "'nonexistent.css' does not exist."
+start = [ 2, 17 ]
+highlight = "nonexistent.css"

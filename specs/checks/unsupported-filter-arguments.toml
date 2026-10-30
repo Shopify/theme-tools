@@ -1,0 +1,125 @@
+check = "UnsupportedFilterArguments"
+severity = "error"
+
+[[cases]]
+name = "reports an offense when a render argument uses a filter"
+
+[cases.files]
+"file.liquid" = "{% render 'foo', param1: 'bar', param2: 'hello' | append: ' world' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Filters cannot be used on arguments passed to the 'render' tag. Apply the filter beforehand (e.g. with {% assign %}) and pass the result instead."
+start = [ 0, 48 ]
+highlight = "| append: ' world'"
+
+[[cases]]
+name = "reports an offense when an include argument uses a filter"
+
+[cases.files]
+"file.liquid" = "{% include 'foo', x: bar | upcase %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Filters cannot be used on arguments passed to the 'include' tag. Apply the filter beforehand (e.g. with {% assign %}) and pass the result instead."
+start = [ 0, 25 ]
+highlight = "| upcase"
+
+[[cases]]
+name = "does not report when no filter is used"
+
+[cases.files]
+"file.liquid" = "{% render 'foo', param1: 'bar', param2: 'hello' %}"
+
+[[cases]]
+name = "reports an offense when a content_for argument uses a filter"
+
+[cases.files]
+"file.liquid" = "{% content_for 'block', type: 'foo', id: 'bar' | append: 'x' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Filters cannot be used on arguments passed to the 'content_for' tag. Apply the filter beforehand (e.g. with {% assign %}) and pass the result instead."
+start = [ 0, 47 ]
+highlight = "| append: 'x'"
+
+[[cases]]
+name = "does not report a false positive for a pipe inside a string literal"
+
+[cases.files]
+"file.liquid" = "{% render 'foo', sep: 'a|b' %}"
+
+[[cases]]
+name = "does not report a false positive for a quoted pipe even when strict parse fails"
+
+[cases.files]
+"file.liquid" = "{% render 'foo', sep: 'a|b', invalid_argument %}"
+
+[[cases]]
+name = "does not report a false positive for a double-quoted pipe even when strict parse fails"
+
+[cases.files]
+"file.liquid" = "{% render 'foo', sep: \"a|b\", invalid_argument %}"
+
+[[cases]]
+name = "highlights the real filter when a quoted pipe precedes it"
+
+[cases.files]
+"file.liquid" = "{% render 'foo', sep: 'a|b', x: bar | upcase %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Filters cannot be used on arguments passed to the 'render' tag. Apply the filter beforehand (e.g. with {% assign %}) and pass the result instead."
+start = [ 0, 36 ]
+highlight = "| upcase"
+
+[[cases]]
+name = "reports distinct highlights for two render tags on one line"
+
+[cases.files]
+"file.liquid" = "{% render 'foo', x: a | upcase %} {% render 'bar', y: b | downcase %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Filters cannot be used on arguments passed to the 'render' tag. Apply the filter beforehand (e.g. with {% assign %}) and pass the result instead."
+start = [ 0, 22 ]
+highlight = "| upcase"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Filters cannot be used on arguments passed to the 'render' tag. Apply the filter beforehand (e.g. with {% assign %}) and pass the result instead."
+start = [ 0, 56 ]
+highlight = "| downcase"
+
+[[cases]]
+name = "reports an offense for a render statement inside a {% liquid %} tag"
+
+[cases.files]
+"file.liquid" = '''
+{% liquid
+  render 'foo', x: bar | upcase
+%}'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Filters cannot be used on arguments passed to the 'render' tag. Apply the filter beforehand (e.g. with {% assign %}) and pass the result instead."
+start = [ 1, 23 ]
+highlight = "| upcase"
+
+[[cases]]
+name = "does not report on a plain render with no arguments"
+
+[cases.files]
+"file.liquid" = "{% render 'foo' %}"
+
+[[cases]]
+name = "reports offenses on nested render tags"
+
+[cases.files]
+"file.liquid" = "{% if true %}{% render 'foo', x: bar | upcase %}{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Filters cannot be used on arguments passed to the 'render' tag. Apply the filter beforehand (e.g. with {% assign %}) and pass the result instead."
+start = [ 0, 37 ]
+highlight = "| upcase"

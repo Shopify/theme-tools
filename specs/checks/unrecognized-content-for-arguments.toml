@@ -1,0 +1,127 @@
+check = "UnrecognizedContentForArguments"
+severity = "warning"
+
+[[cases]]
+name = "should report unknown arguments that are provided in the content_for markup"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} required_string - A required string
+  @param {number} required_number - A required number
+  @param {boolean} required_boolean - A required boolean
+  @param {object} required_object - A required object
+  @param {string} [optional_string] - An optional string
+  @param {number} [optional_number] - An optional number
+  @param {object} [optional_object] - An optional object
+  @param {boolean} [optional_boolean] - An optional boolean
+{% enddoc %}
+'''
+"file.liquid" = '''
+{% content_for 'block',
+type: 'card',
+required_string: 'My Card',
+required_number: 1,
+required_boolean: true,
+required_object: product,
+unknown_param: 'unknown',
+second_unknown_param: 'second unknown',
+%}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown argument 'unknown_param' in content_for tag for static block 'card'."
+start = [ 6, 0 ]
+highlight = "unknown_param: 'unknown'"
+
+[[cases.offenses.suggest]]
+message = "Remove 'unknown_param'"
+result = '''
+{% content_for 'block',
+type: 'card',
+required_string: 'My Card',
+required_number: 1,
+required_boolean: true,
+required_object: product,
+second_unknown_param: 'second unknown',
+%}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unknown argument 'second_unknown_param' in content_for tag for static block 'card'."
+start = [ 7, 0 ]
+highlight = "second_unknown_param: 'second unknown'"
+
+[[cases.offenses.suggest]]
+message = "Remove 'second_unknown_param'"
+result = '''
+{% content_for 'block',
+type: 'card',
+required_string: 'My Card',
+required_number: 1,
+required_boolean: true,
+required_object: product,
+unknown_param: 'unknown'
+%}
+'''
+
+[[cases]]
+name = "should not report when static block has no doc comment"
+
+[cases.files]
+"blocks/card.liquid" = "<h1>This block has no doc comment</h1>"
+"file.liquid" = "{% content_for 'block', type: 'card', title: 'My Card' %}"
+
+[[cases]]
+name = "should not report when LiquidDoc definition has no defined params"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @description this is a description
+  @example this is an example
+{% enddoc %}
+<div>{{ title }}</div>
+<div>{{ description }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', title: 'My Card' %}"
+
+[[cases]]
+name = "should not report when block name is a VariableLookup"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} title - The title of the card
+  @param {string} description - The description of the card
+{% enddoc %}
+<div>{{ title }}</div>
+<div>{{ description }}</div>
+'''
+"file.liquid" = "{% assign block_name = 'card' %}{% content_for 'block', type: block_name, title: 'My Card' %}"
+
+[[cases]]
+name = "should not report when argument begins with `.closest`"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} title - The title of the card
+{% enddoc %}
+<div>{{ title }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', id: '123', closest.product: product %}"
+
+[[cases]]
+name = "should not report when argument is a reserved word"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} title - The title of the card
+{% enddoc %}
+<div>{{ title }}</div>
+'''
+"file.liquid" = "{% content_for 'block', type: 'card', id: '123', attributes: product %}"

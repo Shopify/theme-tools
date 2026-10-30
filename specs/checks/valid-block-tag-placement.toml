@@ -1,0 +1,914 @@
+check = "ValidBlockTagPlacement"
+severity = "error"
+
+[[cases]]
+name = "allows 'a direct block tag' in 'templates/index.liquid'"
+
+[cases.files]
+"templates/index.liquid" = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "allows 'a block tag under control flow' in 'templates/index.liquid'"
+
+[cases.files]
+"templates/index.liquid" = "{% if product.available %}{% block 'card' %}Card{% endblock %}{% endif %}"
+
+[[cases]]
+name = "allows 'nested block tags' in 'templates/index.liquid'"
+
+[cases.files]
+"templates/index.liquid" = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases]]
+name = "allows 'a block tag nested through control fl…' in 'templates/index.liquid'"
+
+[cases.files]
+"templates/index.liquid" = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases]]
+name = "allows 'nested block tags inside a liquid tag' in 'templates/index.liquid'"
+
+[cases.files]
+"templates/index.liquid" = '''
+{% liquid
+  block 'outer'
+    block 'inner'
+    endblock
+  endblock
+%}'''
+
+[[cases]]
+name = "allows 'a direct block tag' in 'templates/metaobject/product.liquid'"
+
+[cases.files]
+"templates/metaobject/product.liquid" = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "allows 'a block tag under control flow' in 'templates/metaobject/product.liquid'"
+
+[cases.files]
+"templates/metaobject/product.liquid" = "{% if product.available %}{% block 'card' %}Card{% endblock %}{% endif %}"
+
+[[cases]]
+name = "allows 'nested block tags' in 'templates/metaobject/product.liquid'"
+
+[cases.files]
+"templates/metaobject/product.liquid" = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases]]
+name = "allows 'a block tag nested through control fl…' in 'templates/metaobject/product.liquid'"
+
+[cases.files]
+"templates/metaobject/product.liquid" = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases]]
+name = "allows 'nested block tags inside a liquid tag' in 'templates/metaobject/product.liquid'"
+
+[cases.files]
+"templates/metaobject/product.liquid" = '''
+{% liquid
+  block 'outer'
+    block 'inner'
+    endblock
+  endblock
+%}'''
+
+[[cases]]
+name = "allows 'a direct block tag' in 'templates/metaobject/custom/product.l…'"
+
+[cases.files]
+"templates/metaobject/custom/product.liquid" = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "allows 'a block tag under control flow' in 'templates/metaobject/custom/product.l…'"
+
+[cases.files]
+"templates/metaobject/custom/product.liquid" = "{% if product.available %}{% block 'card' %}Card{% endblock %}{% endif %}"
+
+[[cases]]
+name = "allows 'nested block tags' in 'templates/metaobject/custom/product.l…'"
+
+[cases.files]
+"templates/metaobject/custom/product.liquid" = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases]]
+name = "allows 'a block tag nested through control fl…' in 'templates/metaobject/custom/product.l…'"
+
+[cases.files]
+"templates/metaobject/custom/product.liquid" = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases]]
+name = "allows 'nested block tags inside a liquid tag' in 'templates/metaobject/custom/product.l…'"
+
+[cases.files]
+"templates/metaobject/custom/product.liquid" = '''
+{% liquid
+  block 'outer'
+    block 'inner'
+    endblock
+  endblock
+%}'''
+
+[[cases]]
+name = "allows 'a direct block tag' in 'layout/theme.liquid'"
+
+[cases.files]
+"layout/theme.liquid" = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "allows 'a block tag under control flow' in 'layout/theme.liquid'"
+
+[cases.files]
+"layout/theme.liquid" = "{% if product.available %}{% block 'card' %}Card{% endblock %}{% endif %}"
+
+[[cases]]
+name = "allows 'nested block tags' in 'layout/theme.liquid'"
+
+[cases.files]
+"layout/theme.liquid" = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases]]
+name = "allows 'a block tag nested through control fl…' in 'layout/theme.liquid'"
+
+[cases.files]
+"layout/theme.liquid" = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases]]
+name = "allows 'nested block tags inside a liquid tag' in 'layout/theme.liquid'"
+
+[cases.files]
+"layout/theme.liquid" = '''
+{% liquid
+  block 'outer'
+    block 'inner'
+    endblock
+  endblock
+%}'''
+
+[[cases]]
+name = "allows 'a direct block tag' in 'templates\\index.liquid'"
+
+[cases.files]
+"templates\\index.liquid" = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "allows 'a block tag under control flow' in 'templates\\index.liquid'"
+
+[cases.files]
+"templates\\index.liquid" = "{% if product.available %}{% block 'card' %}Card{% endblock %}{% endif %}"
+
+[[cases]]
+name = "allows 'nested block tags' in 'templates\\index.liquid'"
+
+[cases.files]
+"templates\\index.liquid" = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases]]
+name = "allows 'a block tag nested through control fl…' in 'templates\\index.liquid'"
+
+[cases.files]
+"templates\\index.liquid" = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases]]
+name = "allows 'nested block tags inside a liquid tag' in 'templates\\index.liquid'"
+
+[cases.files]
+"templates\\index.liquid" = '''
+{% liquid
+  block 'outer'
+    block 'inner'
+    endblock
+  endblock
+%}'''
+
+[[cases]]
+name = "allows 'a direct block tag' in 'templates\\metaobject\\product.liquid'"
+
+[cases.files]
+"templates\\metaobject\\product.liquid" = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "allows 'a block tag under control flow' in 'templates\\metaobject\\product.liquid'"
+
+[cases.files]
+"templates\\metaobject\\product.liquid" = "{% if product.available %}{% block 'card' %}Card{% endblock %}{% endif %}"
+
+[[cases]]
+name = "allows 'nested block tags' in 'templates\\metaobject\\product.liquid'"
+
+[cases.files]
+"templates\\metaobject\\product.liquid" = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases]]
+name = "allows 'a block tag nested through control fl…' in 'templates\\metaobject\\product.liquid'"
+
+[cases.files]
+"templates\\metaobject\\product.liquid" = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases]]
+name = "allows 'nested block tags inside a liquid tag' in 'templates\\metaobject\\product.liquid'"
+
+[cases.files]
+"templates\\metaobject\\product.liquid" = '''
+{% liquid
+  block 'outer'
+    block 'inner'
+    endblock
+  endblock
+%}'''
+
+[[cases]]
+name = "allows 'a direct block tag' in 'layout\\theme.liquid'"
+
+[cases.files]
+"layout\\theme.liquid" = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "allows 'a block tag under control flow' in 'layout\\theme.liquid'"
+
+[cases.files]
+"layout\\theme.liquid" = "{% if product.available %}{% block 'card' %}Card{% endblock %}{% endif %}"
+
+[[cases]]
+name = "allows 'nested block tags' in 'layout\\theme.liquid'"
+
+[cases.files]
+"layout\\theme.liquid" = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases]]
+name = "allows 'a block tag nested through control fl…' in 'layout\\theme.liquid'"
+
+[cases.files]
+"layout\\theme.liquid" = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases]]
+name = "allows 'nested block tags inside a liquid tag' in 'layout\\theme.liquid'"
+
+[cases.files]
+"layout\\theme.liquid" = '''
+{% liquid
+  block 'outer'
+    block 'inner'
+    endblock
+  endblock
+%}'''
+
+[[cases]]
+name = "reports 'a direct block tag' in 'blocks/card.liquid'"
+
+[cases.files]
+"blocks/card.liquid" = "{% block 'card' %}Card{% endblock %}"
+
+[[cases.offenses]]
+file = "blocks/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "reports 'a block tag under control flow' in 'blocks/card.liquid'"
+
+[cases.files]
+"blocks/card.liquid" = "{% if product.available %}{% block 'card' %}Card{% endblock %}{% endif %}"
+
+[[cases.offenses]]
+file = "blocks/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 26 ]
+highlight = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "reports 'nested block tags' in 'blocks/card.liquid'"
+
+[cases.files]
+"blocks/card.liquid" = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases.offenses]]
+file = "blocks/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases.offenses]]
+file = "blocks/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 25 ]
+highlight = "{% block 'inner' %}Inner{% endblock %}"
+
+[[cases]]
+name = "reports 'a block tag nested through control fl…' in 'blocks/card.liquid'"
+
+[cases.files]
+"blocks/card.liquid" = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases.offenses]]
+file = "blocks/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases.offenses]]
+file = "blocks/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 45 ]
+highlight = "{% block 'inner' %}Inner{% endblock %}"
+
+[[cases]]
+name = "reports 'nested block tags inside a liquid tag' in 'blocks/card.liquid'"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% liquid
+  block 'outer'
+    block 'inner'
+    endblock
+  endblock
+%}'''
+
+[[cases.offenses]]
+file = "blocks/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 1, 2 ]
+highlight = '''
+block 'outer'
+    block 'inner'
+    endblock
+  endblock'''
+
+[[cases.offenses]]
+file = "blocks/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 2, 4 ]
+highlight = '''
+block 'inner'
+    endblock'''
+
+[[cases]]
+name = "reports 'a direct block tag' in 'sections/main.liquid'"
+
+[cases.files]
+"sections/main.liquid" = "{% block 'card' %}Card{% endblock %}"
+
+[[cases.offenses]]
+file = "sections/main.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "reports 'a block tag under control flow' in 'sections/main.liquid'"
+
+[cases.files]
+"sections/main.liquid" = "{% if product.available %}{% block 'card' %}Card{% endblock %}{% endif %}"
+
+[[cases.offenses]]
+file = "sections/main.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 26 ]
+highlight = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "reports 'nested block tags' in 'sections/main.liquid'"
+
+[cases.files]
+"sections/main.liquid" = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases.offenses]]
+file = "sections/main.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases.offenses]]
+file = "sections/main.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 25 ]
+highlight = "{% block 'inner' %}Inner{% endblock %}"
+
+[[cases]]
+name = "reports 'a block tag nested through control fl…' in 'sections/main.liquid'"
+
+[cases.files]
+"sections/main.liquid" = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases.offenses]]
+file = "sections/main.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases.offenses]]
+file = "sections/main.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 45 ]
+highlight = "{% block 'inner' %}Inner{% endblock %}"
+
+[[cases]]
+name = "reports 'nested block tags inside a liquid tag' in 'sections/main.liquid'"
+
+[cases.files]
+"sections/main.liquid" = '''
+{% liquid
+  block 'outer'
+    block 'inner'
+    endblock
+  endblock
+%}'''
+
+[[cases.offenses]]
+file = "sections/main.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 1, 2 ]
+highlight = '''
+block 'outer'
+    block 'inner'
+    endblock
+  endblock'''
+
+[[cases.offenses]]
+file = "sections/main.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 2, 4 ]
+highlight = '''
+block 'inner'
+    endblock'''
+
+[[cases]]
+name = "reports 'a direct block tag' in 'snippets/card.liquid'"
+
+[cases.files]
+"snippets/card.liquid" = "{% block 'card' %}Card{% endblock %}"
+
+[[cases.offenses]]
+file = "snippets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "reports 'a block tag under control flow' in 'snippets/card.liquid'"
+
+[cases.files]
+"snippets/card.liquid" = "{% if product.available %}{% block 'card' %}Card{% endblock %}{% endif %}"
+
+[[cases.offenses]]
+file = "snippets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 26 ]
+highlight = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "reports 'nested block tags' in 'snippets/card.liquid'"
+
+[cases.files]
+"snippets/card.liquid" = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases.offenses]]
+file = "snippets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases.offenses]]
+file = "snippets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 25 ]
+highlight = "{% block 'inner' %}Inner{% endblock %}"
+
+[[cases]]
+name = "reports 'a block tag nested through control fl…' in 'snippets/card.liquid'"
+
+[cases.files]
+"snippets/card.liquid" = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases.offenses]]
+file = "snippets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases.offenses]]
+file = "snippets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 45 ]
+highlight = "{% block 'inner' %}Inner{% endblock %}"
+
+[[cases]]
+name = "reports 'nested block tags inside a liquid tag' in 'snippets/card.liquid'"
+
+[cases.files]
+"snippets/card.liquid" = '''
+{% liquid
+  block 'outer'
+    block 'inner'
+    endblock
+  endblock
+%}'''
+
+[[cases.offenses]]
+file = "snippets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 1, 2 ]
+highlight = '''
+block 'outer'
+    block 'inner'
+    endblock
+  endblock'''
+
+[[cases.offenses]]
+file = "snippets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 2, 4 ]
+highlight = '''
+block 'inner'
+    endblock'''
+
+[[cases]]
+name = "reports 'a direct block tag' in 'assets/card.liquid'"
+
+[cases.files]
+"assets/card.liquid" = "{% block 'card' %}Card{% endblock %}"
+
+[[cases.offenses]]
+file = "assets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "reports 'a block tag under control flow' in 'assets/card.liquid'"
+
+[cases.files]
+"assets/card.liquid" = "{% if product.available %}{% block 'card' %}Card{% endblock %}{% endif %}"
+
+[[cases.offenses]]
+file = "assets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 26 ]
+highlight = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "reports 'nested block tags' in 'assets/card.liquid'"
+
+[cases.files]
+"assets/card.liquid" = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases.offenses]]
+file = "assets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases.offenses]]
+file = "assets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 25 ]
+highlight = "{% block 'inner' %}Inner{% endblock %}"
+
+[[cases]]
+name = "reports 'a block tag nested through control fl…' in 'assets/card.liquid'"
+
+[cases.files]
+"assets/card.liquid" = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases.offenses]]
+file = "assets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases.offenses]]
+file = "assets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 45 ]
+highlight = "{% block 'inner' %}Inner{% endblock %}"
+
+[[cases]]
+name = "reports 'nested block tags inside a liquid tag' in 'assets/card.liquid'"
+
+[cases.files]
+"assets/card.liquid" = '''
+{% liquid
+  block 'outer'
+    block 'inner'
+    endblock
+  endblock
+%}'''
+
+[[cases.offenses]]
+file = "assets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 1, 2 ]
+highlight = '''
+block 'outer'
+    block 'inner'
+    endblock
+  endblock'''
+
+[[cases.offenses]]
+file = "assets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 2, 4 ]
+highlight = '''
+block 'inner'
+    endblock'''
+
+[[cases]]
+name = "reports 'a direct block tag' in 'theme.liquid'"
+
+[cases.files]
+"theme.liquid" = "{% block 'card' %}Card{% endblock %}"
+
+[[cases.offenses]]
+file = "theme.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "reports 'a block tag under control flow' in 'theme.liquid'"
+
+[cases.files]
+"theme.liquid" = "{% if product.available %}{% block 'card' %}Card{% endblock %}{% endif %}"
+
+[[cases.offenses]]
+file = "theme.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 26 ]
+highlight = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "reports 'nested block tags' in 'theme.liquid'"
+
+[cases.files]
+"theme.liquid" = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases.offenses]]
+file = "theme.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases.offenses]]
+file = "theme.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 25 ]
+highlight = "{% block 'inner' %}Inner{% endblock %}"
+
+[[cases]]
+name = "reports 'a block tag nested through control fl…' in 'theme.liquid'"
+
+[cases.files]
+"theme.liquid" = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases.offenses]]
+file = "theme.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases.offenses]]
+file = "theme.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 45 ]
+highlight = "{% block 'inner' %}Inner{% endblock %}"
+
+[[cases]]
+name = "reports 'nested block tags inside a liquid tag' in 'theme.liquid'"
+
+[cases.files]
+"theme.liquid" = '''
+{% liquid
+  block 'outer'
+    block 'inner'
+    endblock
+  endblock
+%}'''
+
+[[cases.offenses]]
+file = "theme.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 1, 2 ]
+highlight = '''
+block 'outer'
+    block 'inner'
+    endblock
+  endblock'''
+
+[[cases.offenses]]
+file = "theme.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 2, 4 ]
+highlight = '''
+block 'inner'
+    endblock'''
+
+[[cases]]
+name = "reports 'a direct block tag' in 'layout/custom/theme.liquid'"
+
+[cases.files]
+"layout/custom/theme.liquid" = "{% block 'card' %}Card{% endblock %}"
+
+[[cases.offenses]]
+file = "layout/custom/theme.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "reports 'a block tag under control flow' in 'layout/custom/theme.liquid'"
+
+[cases.files]
+"layout/custom/theme.liquid" = "{% if product.available %}{% block 'card' %}Card{% endblock %}{% endif %}"
+
+[[cases.offenses]]
+file = "layout/custom/theme.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 26 ]
+highlight = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "reports 'nested block tags' in 'layout/custom/theme.liquid'"
+
+[cases.files]
+"layout/custom/theme.liquid" = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases.offenses]]
+file = "layout/custom/theme.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases.offenses]]
+file = "layout/custom/theme.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 25 ]
+highlight = "{% block 'inner' %}Inner{% endblock %}"
+
+[[cases]]
+name = "reports 'a block tag nested through control fl…' in 'layout/custom/theme.liquid'"
+
+[cases.files]
+"layout/custom/theme.liquid" = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases.offenses]]
+file = "layout/custom/theme.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases.offenses]]
+file = "layout/custom/theme.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 45 ]
+highlight = "{% block 'inner' %}Inner{% endblock %}"
+
+[[cases]]
+name = "reports 'nested block tags inside a liquid tag' in 'layout/custom/theme.liquid'"
+
+[cases.files]
+"layout/custom/theme.liquid" = '''
+{% liquid
+  block 'outer'
+    block 'inner'
+    endblock
+  endblock
+%}'''
+
+[[cases.offenses]]
+file = "layout/custom/theme.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 1, 2 ]
+highlight = '''
+block 'outer'
+    block 'inner'
+    endblock
+  endblock'''
+
+[[cases.offenses]]
+file = "layout/custom/theme.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 2, 4 ]
+highlight = '''
+block 'inner'
+    endblock'''
+
+[[cases]]
+name = "reports 'a direct block tag' in 'snippets\\card.liquid'"
+
+[cases.files]
+"snippets\\card.liquid" = "{% block 'card' %}Card{% endblock %}"
+
+[[cases.offenses]]
+file = "snippets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "reports 'a block tag under control flow' in 'snippets\\card.liquid'"
+
+[cases.files]
+"snippets\\card.liquid" = "{% if product.available %}{% block 'card' %}Card{% endblock %}{% endif %}"
+
+[[cases.offenses]]
+file = "snippets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 26 ]
+highlight = "{% block 'card' %}Card{% endblock %}"
+
+[[cases]]
+name = "reports 'nested block tags' in 'snippets\\card.liquid'"
+
+[cases.files]
+"snippets\\card.liquid" = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases.offenses]]
+file = "snippets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'outer' %}Before{% block 'inner' %}Inner{% endblock %}After{% endblock %}"
+
+[[cases.offenses]]
+file = "snippets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 25 ]
+highlight = "{% block 'inner' %}Inner{% endblock %}"
+
+[[cases]]
+name = "reports 'a block tag nested through control fl…' in 'snippets\\card.liquid'"
+
+[cases.files]
+"snippets\\card.liquid" = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases.offenses]]
+file = "snippets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 0 ]
+highlight = "{% block 'outer' %}{% if product.available %}{% block 'inner' %}Inner{% endblock %}{% endif %}{% endblock %}"
+
+[[cases.offenses]]
+file = "snippets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 0, 45 ]
+highlight = "{% block 'inner' %}Inner{% endblock %}"
+
+[[cases]]
+name = "reports 'nested block tags inside a liquid tag' in 'snippets\\card.liquid'"
+
+[cases.files]
+"snippets\\card.liquid" = '''
+{% liquid
+  block 'outer'
+    block 'inner'
+    endblock
+  endblock
+%}'''
+
+[[cases.offenses]]
+file = "snippets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 1, 2 ]
+highlight = '''
+block 'outer'
+    block 'inner'
+    endblock
+  endblock'''
+
+[[cases.offenses]]
+file = "snippets/card.liquid"
+message = "The 'block' tag can only be used in templates/**/*.liquid and layout/*.liquid."
+start = [ 2, 4 ]
+highlight = '''
+block 'inner'
+    endblock'''
+
+[[cases]]
+name = "leaves malformed block tags with unstructured markup to LiquidSyntaxError"
+checks = [ "LiquidSyntaxError", "ValidBlockTagPlacement" ]
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = "{% block card %}{% endblock %}"
+
+[[cases.offenses]]
+check = "LiquidSyntaxError"
+file = "snippets/card.liquid"
+message = "Syntax error in 'block' tag"
+start = [ 0, 0 ]
+highlight = "{% block card %}{% endblock %}"
+
+[[cases]]
+name = "leaves malformed block tags with structured markup to LiquidSyntaxError"
+checks = [ "LiquidSyntaxError", "ValidBlockTagPlacement" ]
+docset = "default"
+
+[cases.files]
+"snippets/card.liquid" = "{% block 'card', block.bad: true %}Card{% endblock %}"
+
+[[cases.offenses]]
+check = "LiquidSyntaxError"
+file = "snippets/card.liquid"
+message = "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value"
+start = [ 0, 17 ]
+highlight = "block.bad: true"

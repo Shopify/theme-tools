@@ -1,0 +1,85 @@
+[[cases]]
+name = "links custom elements to the scripts that define them"
+
+[cases.files]
+"sections/main.liquid" = '''
+{% render 'parent' %}
+'''
+"snippets/parent.liquid" = '''
+{% doc %}
+  Parent snippet that renders the children and depends on the parent-element custom element
+
+  @param {string} children
+{% enddoc %}
+
+<parent-element>
+  {% render "child", children: children %}
+</parent-element>
+'''
+"snippets/child.liquid" = '''
+{% doc %}
+  Child fixture that depends on the child-element custom element
+
+  @param {string} children
+{% enddoc %}
+
+<child-element>
+  {{ children }}
+</child-element>
+'''
+"assets/theme.js" = '''
+window.customElements.define('parent-element', class extends HTMLElement {
+
+});
+
+customElements.define('child-element', class extends HTMLElement {
+
+});
+'''
+
+[[cases.edges]]
+source = "sections/main.liquid"
+start = [ 0, 0 ]
+text = "{% render 'parent' %}"
+target = "snippets/parent.liquid"
+
+[[cases.edges]]
+source = "snippets/child.liquid"
+start = [ 6, 0 ]
+text = "<child-element"
+target = "assets/theme.js"
+targetStart = [ 4, 15 ]
+targetText = "define('child-element'"
+
+[[cases.edges]]
+source = "snippets/parent.liquid"
+start = [ 6, 0 ]
+text = "<parent-element"
+target = "assets/theme.js"
+targetStart = [ 0, 22 ]
+targetText = "define('parent-element'"
+
+[[cases.edges]]
+source = "snippets/parent.liquid"
+start = [ 7, 2 ]
+text = "{% render \"child\", children: children %}"
+target = "snippets/child.liquid"
+
+[[cases]]
+name = "a custom element no script defines links to nothing"
+
+[cases.files]
+"sections/main.liquid" = '''
+<price-tag></price-tag>
+'''
+"assets/theme.js" = '''
+customElements.define('product-card', class extends HTMLElement {});
+'''
+
+[[cases]]
+name = "a theme without an assets folder has no web components"
+
+[cases.files]
+"sections/main.liquid" = '''
+<price-tag></price-tag>
+'''

@@ -1,0 +1,110 @@
+check = "DeprecatedTag"
+severity = "warning"
+
+[[cases]]
+name = "should report an offense when include tag is used"
+
+[cases.files]
+"file.liquid" = '''
+{% include 'templates/foo.liquid' %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Use the 'render' tag instead of 'include'"
+start = [ 0, 3 ]
+highlight = "include"
+
+[[cases.offenses.suggest]]
+message = "Replace 'include' with 'render'"
+result = '''
+{% render 'templates/foo.liquid' %}
+'''
+
+[[cases]]
+name = "should not report an offense when render tag is used"
+
+[cases.files]
+"file.liquid" = '''
+{% render 'templates/foo.liquid' %}
+'''
+
+[[cases]]
+name = "should suggest replacing include tag with render tag"
+
+[cases.files]
+"file.liquid" = '''
+{% include 'foo.liquid' %}
+{% assign greeting = "hello world" %}
+{% include 'greeting.liquid' %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Use the 'render' tag instead of 'include'"
+start = [ 0, 3 ]
+highlight = "include"
+
+[[cases.offenses.suggest]]
+message = "Replace 'include' with 'render'"
+result = '''
+{% render 'foo.liquid' %}
+{% assign greeting = "hello world" %}
+{% include 'greeting.liquid' %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Use the 'render' tag instead of 'include'"
+start = [ 2, 3 ]
+highlight = "include"
+
+[[cases.offenses.suggest]]
+message = "Replace 'include' with 'render'"
+result = '''
+{% include 'foo.liquid' %}
+{% assign greeting = "hello world" %}
+{% render 'greeting.liquid' %}
+'''
+
+[[cases]]
+name = "should report multiple offenses when multiple include tags are used in the same line"
+
+[cases.files]
+"file.liquid" = "{% include 'foo.liquid' %} Some text {% include 'bar.liquid' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Use the 'render' tag instead of 'include'"
+start = [ 0, 3 ]
+highlight = "include"
+
+[[cases.offenses.suggest]]
+message = "Replace 'include' with 'render'"
+result = "{% render 'foo.liquid' %} Some text {% include 'bar.liquid' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Use the 'render' tag instead of 'include'"
+start = [ 0, 40 ]
+highlight = "include"
+
+[[cases.offenses.suggest]]
+message = "Replace 'include' with 'render'"
+result = "{% include 'foo.liquid' %} Some text {% render 'bar.liquid' %}"
+
+[[cases]]
+name = "should report offenses when include tags are nested"
+
+[cases.files]
+"file.liquid" = "{% if true %} {% include 'foo.liquid' %} {% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Use the 'render' tag instead of 'include'"
+start = [ 0, 17 ]
+highlight = "include"
+
+[[cases.offenses.suggest]]
+message = "Replace 'include' with 'render'"
+result = "{% if true %} {% render 'foo.liquid' %} {% endif %}"

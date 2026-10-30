@@ -1,0 +1,84 @@
+check = "DeprecatedFontsOnSettingsSchema"
+severity = "warning"
+
+[[cases]]
+name = "reports a warning when settings_schema.json has a deprecated font"
+
+[cases.files]
+"config/settings_schema.json" = '''
+[
+      {
+        "name": "Fonts",
+        "settings": [
+          {
+            "type": "font_picker",
+            "id": "heading_font",
+            "label": "Heading font",
+            "default": "helvetica_n4"
+          }
+        ]
+      }
+    ]'''
+
+[[cases.offenses]]
+file = "config/settings_schema.json"
+message = "The font \"helvetica_n4\" is deprecated"
+start = [ 8, 23 ]
+highlight = "\"helvetica_n4\""
+
+[[cases]]
+name = "reports no warning when settings_schema.json has non-deprecated fonts"
+
+[cases.files]
+"config/settings_schema.json" = '''
+[
+      {
+        "name": "Fonts",
+        "settings": [
+          {
+            "type": "font_picker",
+            "id": "heading_font",
+            "label": "Heading font",
+            "default": "alegreya_n4"
+          }
+        ]
+      }
+    ]'''
+
+[[cases]]
+name = "reports no warning for non-font_picker settings"
+
+[cases.files]
+"config/settings_schema.json" = '''
+[
+      {
+        "name": "Fonts",
+        "settings": [
+          {
+            "type": "text",
+            "id": "heading_text",
+            "label": "Heading text",
+            "default": "helvetica_n4"
+          }
+        ]
+      }
+    ]'''
+
+[[cases]]
+name = "does not run check on files other than settings_schema.json"
+
+[cases.files]
+"config/other_file.json" = '''
+[
+      {
+        "name": "Fonts",
+        "settings": [
+          {
+            "type": "font_picker",
+            "id": "heading_font",
+            "label": "Heading font",
+            "default": "helvetica_n4"
+          }
+        ]
+      }
+    ]'''

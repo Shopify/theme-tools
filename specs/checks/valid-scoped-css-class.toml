@@ -1,0 +1,454 @@
+check = "ValidScopedCSSClass"
+severity = "warning"
+
+[[cases]]
+name = "reports no offense when a class is defined in the local stylesheet"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .my-class { color: red; }
+{% endstylesheet %}
+<div class="my-class">Hello</div>
+'''
+
+[[cases]]
+name = "does not report when a class is not defined anywhere in the theme"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .defined-class { color: red; }
+{% endstylesheet %}
+<div class="external-class">Hello</div>
+'''
+
+[[cases]]
+name = "reports an offense when a class exists in the theme but is out of scope"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .local-class { color: red; }
+{% endstylesheet %}
+<div class="other-class">Hello</div>
+'''
+"snippets/other.liquid" = '''
+{% stylesheet %}
+  .other-class { color: blue; }
+{% endstylesheet %}
+'''
+
+[[cases.offenses]]
+file = "sections/section.liquid"
+message = "CSS class 'other-class' may be defined outside the scope of this file."
+start = [ 3, 12 ]
+highlight = "other-class"
+
+[[cases]]
+name = "reports only out-of-scope theme classes, ignores unknown classes"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .a { color: red; }
+  .c { color: blue; }
+{% endstylesheet %}
+<div class="a b c external">Hello</div>
+'''
+"snippets/other.liquid" = '''
+{% stylesheet %}
+  .b { font-size: 14px; }
+{% endstylesheet %}
+'''
+
+[[cases.offenses]]
+file = "sections/section.liquid"
+message = "CSS class 'b' may be defined outside the scope of this file."
+start = [ 4, 14 ]
+highlight = "b"
+
+[[cases]]
+name = "handles multiple stylesheet tags"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .from-first { color: red; }
+{% endstylesheet %}
+{% stylesheet %}
+  .from-second { color: blue; }
+{% endstylesheet %}
+<div class="from-first from-second">Hello</div>
+'''
+
+[[cases]]
+name = "does not report when a class is in scope even if also defined out of scope"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .shared-class { color: red; }
+{% endstylesheet %}
+<div class="shared-class">Hello</div>
+'''
+"snippets/unrelated.liquid" = '''
+{% stylesheet %}
+  .shared-class { color: blue; }
+{% endstylesheet %}
+'''
+
+[[cases]]
+name = "skips dynamic Liquid output in class attribute values"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .static { color: red; }
+{% endstylesheet %}
+<div class="static {{ dynamic_var }}">Hello</div>
+'''
+
+[[cases]]
+name = "checks static parts and skips dynamic parts in mixed attributes"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .static { color: red; }
+{% endstylesheet %}
+<div class="static out-of-scope {{ dynamic }}">Hello</div>
+'''
+"snippets/other.liquid" = '''
+{% stylesheet %}
+  .out-of-scope { color: blue; }
+{% endstylesheet %}
+'''
+
+[[cases.offenses]]
+file = "sections/section.liquid"
+message = "CSS class 'out-of-scope' may be defined outside the scope of this file."
+start = [ 3, 19 ]
+highlight = "out-of-scope"
+
+[[cases]]
+name = "does not report partial tokens glued to Liquid nodes"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .static { color: red; }
+{% endstylesheet %}
+<div class="btn-{{ size }} static">Hello</div>
+'''
+"snippets/other.liquid" = '''
+{% stylesheet %}
+  .btn- { color: blue; }
+{% endstylesheet %}
+'''
+
+[[cases]]
+name = "extracts classes from complex selectors"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .parent > .child { color: red; }
+  .a + .b ~ .c { color: blue; }
+{% endstylesheet %}
+<div class="parent child a b c">Hello</div>
+'''
+
+[[cases]]
+name = "extracts classes from pseudo-class selectors"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .btn:hover { color: red; }
+  .link::before { content: ''; }
+{% endstylesheet %}
+<div class="btn link">Hello</div>
+'''
+
+[[cases]]
+name = "extracts classes from media queries"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  @media (min-width: 768px) {
+    .responsive { display: block; }
+  }
+{% endstylesheet %}
+<div class="responsive">Hello</div>
+'''
+
+[[cases]]
+name = "does not extract classes from CSS comments"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  /* .commented-out { color: red; } */
+  .real { color: blue; }
+{% endstylesheet %}
+<div class="commented-out real">Hello</div>
+'''
+"snippets/other.liquid" = '''
+{% stylesheet %}
+  .commented-out { color: green; }
+{% endstylesheet %}
+'''
+
+[[cases.offenses]]
+file = "sections/section.liquid"
+message = "CSS class 'commented-out' may be defined outside the scope of this file."
+start = [ 4, 12 ]
+highlight = "commented-out"
+
+[[cases]]
+name = "checks void elements"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .valid { color: red; }
+{% endstylesheet %}
+<input class="invalid">
+'''
+"snippets/other.liquid" = '''
+{% stylesheet %}
+  .invalid { color: blue; }
+{% endstylesheet %}
+'''
+
+[[cases.offenses]]
+file = "sections/section.liquid"
+message = "CSS class 'invalid' may be defined outside the scope of this file."
+start = [ 3, 14 ]
+highlight = "invalid"
+
+[[cases]]
+name = "checks self-closing elements"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .valid { color: red; }
+{% endstylesheet %}
+<img class="invalid" />
+'''
+"snippets/other.liquid" = '''
+{% stylesheet %}
+  .invalid { color: blue; }
+{% endstylesheet %}
+'''
+
+[[cases.offenses]]
+file = "sections/section.liquid"
+message = "CSS class 'invalid' may be defined outside the scope of this file."
+start = [ 3, 12 ]
+highlight = "invalid"
+
+[[cases]]
+name = "checks SVG elements and their children"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .valid { color: red; }
+{% endstylesheet %}
+<svg class="out-of-scope">
+  <rect class="out-of-scope" />
+  <g class="out-of-scope"></g>
+</svg>
+'''
+"snippets/other.liquid" = '''
+{% stylesheet %}
+  .out-of-scope { color: blue; }
+{% endstylesheet %}
+'''
+
+[[cases.offenses]]
+file = "sections/section.liquid"
+message = "CSS class 'out-of-scope' may be defined outside the scope of this file."
+start = [ 3, 12 ]
+highlight = "out-of-scope"
+
+[[cases.offenses]]
+file = "sections/section.liquid"
+message = "CSS class 'out-of-scope' may be defined outside the scope of this file."
+start = [ 4, 15 ]
+highlight = "out-of-scope"
+
+[[cases.offenses]]
+file = "sections/section.liquid"
+message = "CSS class 'out-of-scope' may be defined outside the scope of this file."
+start = [ 5, 12 ]
+highlight = "out-of-scope"
+
+[[cases]]
+name = "does not report for empty class attribute"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .a { color: red; }
+{% endstylesheet %}
+<div class="">Hello</div>
+'''
+
+[[cases]]
+name = "considers classes from an ancestor file as in scope"
+references = [{ source = "sections/section.liquid", target = "snippets/child.liquid" }]
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .parent-class { color: red; }
+{% endstylesheet %}
+{% render 'child' %}
+'''
+"snippets/child.liquid" = '''
+<div class="parent-class">Hello</div>
+'''
+
+[[cases]]
+name = "follows grandparent ancestors via direct references"
+references = [
+  { source = "sections/section.liquid", target = "snippets/snippet.liquid" },
+  { source = "layout/theme.liquid", target = "sections/section.liquid" },
+]
+
+[cases.files]
+"layout/theme.liquid" = '''
+{% stylesheet %}
+  .layout-class { color: red; }
+{% endstylesheet %}
+{% section 'section' %}
+'''
+"sections/section.liquid" = '''
+{% render 'snippet' %}
+'''
+"snippets/snippet.liquid" = '''
+<div class="layout-class">Hello</div>
+'''
+
+[[cases]]
+name = "does not consider indirect references as ancestors"
+references = [{ source = "sections/section.liquid", target = "snippets/child.liquid", type = "indirect" }]
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .parent-class { color: red; }
+{% endstylesheet %}
+'''
+"snippets/child.liquid" = '''
+{% stylesheet %}
+  .local-class { color: blue; }
+{% endstylesheet %}
+<div class="local-class parent-class">Hello</div>
+'''
+
+[[cases.offenses]]
+file = "snippets/child.liquid"
+message = "CSS class 'parent-class' may be defined outside the scope of this file."
+start = [ 3, 24 ]
+highlight = "parent-class"
+
+[[cases]]
+name = "considers classes from a rendered snippet as in scope"
+references = [{ source = "sections/section.liquid", target = "snippets/styles.liquid" }]
+
+[cases.files]
+"sections/section.liquid" = '''
+{% render 'styles' %}
+<div class="snippet-class">Hello</div>
+'''
+"snippets/styles.liquid" = '''
+{% stylesheet %}
+  .snippet-class { color: red; }
+{% endstylesheet %}
+'''
+
+[[cases]]
+name = "considers classes from snippet descendants (recursive)"
+references = [
+  { source = "sections/section.liquid", target = "snippets/outer.liquid" },
+  { source = "snippets/outer.liquid", target = "snippets/inner.liquid" },
+]
+
+[cases.files]
+"sections/section.liquid" = '''
+{% render 'outer' %}
+<div class="deep-class">Hello</div>
+'''
+"snippets/outer.liquid" = '''
+{% render 'inner' %}
+'''
+"snippets/inner.liquid" = '''
+{% stylesheet %}
+  .deep-class { color: red; }
+{% endstylesheet %}
+'''
+
+[[cases]]
+name = "considers classes from snippets rendered by ancestors"
+references = [
+  { source = "sections/section.liquid", target = "snippets/child.liquid" },
+  { source = "sections/section.liquid", target = "snippets/styles.liquid" },
+]
+
+[cases.files]
+"sections/section.liquid" = '''
+{% render 'styles' %}
+{% render 'child' %}
+'''
+"snippets/styles.liquid" = '''
+{% stylesheet %}
+  .style-class { color: red; }
+{% endstylesheet %}
+'''
+"snippets/child.liquid" = '''
+<div class="style-class">Hello</div>
+'''
+
+[[cases]]
+name = "considers classes from .css files in the assets folder"
+
+[cases.files]
+"assets/theme.css" = ".asset-class { color: red; }"
+"sections/section.liquid" = '''
+<div class="asset-class">Hello</div>
+'''
+
+[[cases]]
+name = "considers classes from multiple .css asset files"
+
+[cases.files]
+"assets/base.css" = ".base-class { color: red; }"
+"assets/components.css" = ".component-class { color: blue; }"
+"sections/section.liquid" = '''
+<div class="base-class component-class">Hello</div>
+'''
+
+[[cases]]
+name = "reports no offenses when no CSS classes are defined in scope"
+
+[cases.files]
+"sections/section.liquid" = '''
+<div class="some-class">Hello</div>
+'''
+
+[[cases]]
+name = "reports no offenses when there are no class attributes"
+
+[cases.files]
+"sections/section.liquid" = '''
+{% stylesheet %}
+  .some-class { color: red; }
+{% endstylesheet %}
+<div>Hello</div>
+'''

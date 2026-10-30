@@ -1,0 +1,212 @@
+check = "ValidStandardEventData"
+severity = "error"
+
+[[cases]]
+name = "reports an offense when the context is not a supported value for products"
+
+[cases.files]
+"file.liquid" = "{{ product | standard_event_data: 'view', context: 'homepage' }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unsupported context 'homepage' for product. Valid values: page, search, collection, dialog, recommendation. The 'context' argument can also be omitted."
+start = [ 0, 51 ]
+highlight = "'homepage'"
+
+[[cases]]
+name = "reports an offense when the context is not a supported value for carts"
+
+[cases.files]
+"file.liquid" = "{{ cart | standard_event_data: 'view', context: 'banner' }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unsupported context 'banner' for cart. Valid values: page, dialog. The 'context' argument can also be omitted."
+start = [ 0, 48 ]
+highlight = "'banner'"
+
+[[cases]]
+name = "reports an offense when the context is valid for products but the input is a cart"
+
+[cases.files]
+"file.liquid" = "{{ cart | standard_event_data: 'view', context: 'recommendation' }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unsupported context 'recommendation' for cart. Valid values: page, dialog. The 'context' argument can also be omitted."
+start = [ 0, 48 ]
+highlight = "'recommendation'"
+
+[[cases]]
+name = "does not report an offense on supported product context values (1)"
+
+[cases.files]
+"file.liquid" = "{{ product | standard_event_data: 'view', context: 'page' }}"
+
+[[cases]]
+name = "does not report an offense on supported product context values (2)"
+
+[cases.files]
+"file.liquid" = "{{ product | standard_event_data: 'view', context: 'search' }}"
+
+[[cases]]
+name = "does not report an offense on supported product context values (3)"
+
+[cases.files]
+"file.liquid" = "{{ product | standard_event_data: 'view', context: 'collection' }}"
+
+[[cases]]
+name = "does not report an offense on supported product context values (4)"
+
+[cases.files]
+"file.liquid" = "{{ product | standard_event_data: 'view', context: 'dialog' }}"
+
+[[cases]]
+name = "does not report an offense on supported product context values (5)"
+
+[cases.files]
+"file.liquid" = "{{ product | standard_event_data: 'view', context: 'recommendation' }}"
+
+[[cases]]
+name = "does not report an offense on supported cart context values (1)"
+
+[cases.files]
+"file.liquid" = "{{ cart | standard_event_data: 'view', context: 'page' }}"
+
+[[cases]]
+name = "does not report an offense on supported cart context values (2)"
+
+[cases.files]
+"file.liquid" = "{{ cart | standard_event_data: 'view', context: 'dialog' }}"
+
+[[cases]]
+name = "does not report an offense on collections, whose context is ignored"
+
+[cases.files]
+"file.liquid" = "{{ collection | standard_event_data: 'view', context: 'homepage' }}"
+
+[[cases]]
+name = "falls back to the union of contexts when the input is not a known global"
+
+[cases.files]
+"file.liquid" = "{{ line_item.product | standard_event_data: 'view', context: 'recommendation' }}"
+
+[[cases]]
+name = "falls back to the union of contexts when the filter input is chained"
+
+[cases.files]
+"file.liquid" = "{{ cart | default: other_cart | standard_event_data: 'view', context: 'recommendation' }}"
+
+[[cases]]
+name = "reports an offense when the context is outside the union for an unknown input"
+
+[cases.files]
+"file.liquid" = "{{ line_item.product | standard_event_data: 'view', context: 'homepage' }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unsupported context 'homepage'. Valid values: page, search, collection, dialog, recommendation. The 'context' argument can also be omitted."
+start = [ 0, 61 ]
+highlight = "'homepage'"
+
+[[cases]]
+name = "does not report an offense when the context is a variable"
+
+[cases.files]
+"file.liquid" = "{{ product | standard_event_data: 'view', context: section.settings.context }}"
+
+[[cases]]
+name = "reports an offense when the context is a non-string literal"
+
+[cases.files]
+"file.liquid" = "{{ product | standard_event_data: 'view', context: 123 }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unsupported context for product. Valid values: page, search, collection, dialog, recommendation. The 'context' argument can also be omitted."
+start = [ 0, 51 ]
+highlight = "123"
+
+[[cases]]
+name = "does not report an offense when the context argument is omitted"
+
+[cases.files]
+"file.liquid" = "{{ collection | standard_event_data: 'view' }}"
+
+[[cases]]
+name = "reports an offense when the event type is not supported"
+
+[cases.files]
+"file.liquid" = "{{ product | standard_event_data: 'click', context: 'page' }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unsupported event type 'click'. The only supported event type is 'view'."
+start = [ 0, 34 ]
+highlight = "'click'"
+
+[[cases]]
+name = "reports an offense when the event type is not supported on a collection"
+
+[cases.files]
+"file.liquid" = "{{ collection | standard_event_data: 'click' }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unsupported event type 'click'. The only supported event type is 'view'."
+start = [ 0, 37 ]
+highlight = "'click'"
+
+[[cases]]
+name = "does not report an offense when the event type is a variable"
+
+[cases.files]
+"file.liquid" = "{{ product | standard_event_data: event_type }}"
+
+[[cases]]
+name = "reports an offense when the event type is a non-string literal"
+
+[cases.files]
+"file.liquid" = "{{ product | standard_event_data: 123 }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unsupported event type. The only supported event type is 'view'."
+start = [ 0, 34 ]
+highlight = "123"
+
+[[cases]]
+name = "reports an offense when the event type is a boolean literal"
+
+[cases.files]
+"file.liquid" = "{{ product | standard_event_data: true }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unsupported event type. The only supported event type is 'view'."
+start = [ 0, 34 ]
+highlight = "true"
+
+[[cases]]
+name = "reports both offenses when the event type and the context are invalid"
+
+[cases.files]
+"file.liquid" = "{{ product | standard_event_data: 'click', context: 'homepage' }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unsupported event type 'click'. The only supported event type is 'view'."
+start = [ 0, 34 ]
+highlight = "'click'"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Unsupported context 'homepage' for product. Valid values: page, search, collection, dialog, recommendation. The 'context' argument can also be omitted."
+start = [ 0, 52 ]
+highlight = "'homepage'"
+
+[[cases]]
+name = "does not report an offense on other filters"
+
+[cases.files]
+"file.liquid" = "{{ product | json }}{{ 'homepage' | append: 'view' }}"

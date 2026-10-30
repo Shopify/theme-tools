@@ -1,0 +1,181 @@
+check = "ValidBlockContentSettingType"
+severity = "error"
+
+[[cases]]
+name = "reports a number schema setting named content on its type"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% schema %}
+{"settings":[{"id":"content","type":"number"}]}
+{% endschema %}'''
+
+[[cases.offenses]]
+file = "blocks/card.liquid"
+message = "Schema setting 'content' has Liquid type 'number', but the built-in 'content' parameter has type 'string'."
+start = [ 1, 36 ]
+highlight = "\"number\""
+
+[[cases]]
+name = "reports a checkbox schema setting named content on its type"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% schema %}
+{"settings":[{"id":"content","type":"checkbox"}]}
+{% endschema %}'''
+
+[[cases.offenses]]
+file = "blocks/card.liquid"
+message = "Schema setting 'content' has Liquid type 'boolean', but the built-in 'content' parameter has type 'string'."
+start = [ 1, 36 ]
+highlight = "\"checkbox\""
+
+[[cases]]
+name = "reports a product schema setting named content on its type"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% schema %}
+{"settings":[{"id":"content","type":"product"}]}
+{% endschema %}'''
+
+[[cases.offenses]]
+file = "blocks/card.liquid"
+message = "Schema setting 'content' has Liquid type 'product', but the built-in 'content' parameter has type 'string'."
+start = [ 1, 36 ]
+highlight = "\"product\""
+
+[[cases]]
+name = "reports a product_list schema setting named content on its type"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% schema %}
+{"settings":[{"id":"content","type":"product_list"}]}
+{% endschema %}'''
+
+[[cases.offenses]]
+file = "blocks/card.liquid"
+message = "Schema setting 'content' has Liquid type 'product[]', but the built-in 'content' parameter has type 'string'."
+start = [ 1, 36 ]
+highlight = "\"product_list\""
+
+[[cases]]
+name = "accepts a string-compatible text schema setting named content"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% schema %}
+{"settings":[{"id":"content","type":"text"}]}
+{% endschema %}'''
+
+[[cases]]
+name = "accepts a string-compatible textarea schema setting named content"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% schema %}
+{"settings":[{"id":"content","type":"textarea"}]}
+{% endschema %}'''
+
+[[cases]]
+name = "accepts a string-compatible richtext schema setting named content"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% schema %}
+{"settings":[{"id":"content","type":"richtext"}]}
+{% endschema %}'''
+
+[[cases]]
+name = "accepts a string-compatible inline_richtext schema setting named content"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% schema %}
+{"settings":[{"id":"content","type":"inline_richtext"}]}
+{% endschema %}'''
+
+[[cases]]
+name = "accepts a string-compatible html schema setting named content"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% schema %}
+{"settings":[{"id":"content","type":"html"}]}
+{% endschema %}'''
+
+[[cases]]
+name = "does not speculate about an unmapped schema setting type named content"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% schema %}
+{"settings":[{"id":"content","type":"metaobject"}]}
+{% endschema %}'''
+
+[[cases]]
+name = "accepts non-string schema settings with other IDs"
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% schema %}
+{"settings":[{"id":"count","type":"number"}]}
+{% endschema %}'''
+
+[[cases]]
+name = "does not report a non-string content setting outside theme block files"
+
+[cases.files]
+"sections/main.liquid" = '''
+{% schema %}
+{"settings":[{"id":"content","type":"number"}]}
+{% endschema %}'''
+
+[[cases]]
+name = "reports the schema mismatch once alongside ValidBlockArgumentTypes"
+checks = [ "ValidBlockArgumentTypes", "ValidBlockContentSettingType" ]
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {string} [content] - Body
+{% enddoc %}
+{% schema %}
+{"settings":[{"id":"content","type":"number"}]}
+{% endschema %}'''
+
+[[cases.offenses]]
+check = "ValidBlockContentSettingType"
+file = "blocks/card.liquid"
+message = "Schema setting 'content' has Liquid type 'number', but the built-in 'content' parameter has type 'string'."
+start = [ 4, 36 ]
+highlight = "\"number\""
+
+[[cases]]
+name = "names the built-in parameter as the string authority when schema and LiquidDoc agree on another type"
+checks = [ "ValidBlockArgumentTypes", "ValidBlockContentSettingType" ]
+
+[cases.files]
+"blocks/card.liquid" = '''
+{% doc %}
+  @param {number} [content] - Body
+{% enddoc %}
+{% schema %}
+{"settings":[{"id":"content","type":"number"}]}
+{% endschema %}'''
+
+[[cases.offenses]]
+check = "ValidBlockContentSettingType"
+file = "blocks/card.liquid"
+message = "Schema setting 'content' has Liquid type 'number', but the built-in 'content' parameter has type 'string'."
+start = [ 4, 36 ]
+highlight = "\"number\""
+
+[[cases.offenses]]
+check = "ValidBlockArgumentTypes"
+file = "blocks/card.liquid"
+message = "The built-in parameter 'content' has Liquid type 'string', but LiquidDoc declares 'number'. The built-in parameter type is authoritative."
+start = [ 1, 9 ]
+highlight = "{number}"

@@ -1,0 +1,970 @@
+check = "MatchingTranslations"
+severity = "error"
+
+[[cases]]
+name = "should report offenses when the translation file is missing a key (1)"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "hello": "Hello",
+  "world": "World"
+}'''
+"locales/pt-BR.json" = '''
+{
+  "hello": "Olá"
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.json"
+message = "The translation for 'world' is missing"
+start = [ 0, 0 ]
+highlight = '''
+{
+  "hello": "Olá"
+}'''
+fix = '''
+{
+  "hello": "Olá",
+  "world": "TODO"
+}'''
+
+[[cases]]
+name = "should report offenses when the translation file is missing a key (2)"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "hello": "Hello",
+  "world": "World"
+}'''
+"locales/pt-BR.schema.json" = '''
+{
+  "hello": "Olá"
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.schema.json"
+message = "The translation for 'world' is missing"
+start = [ 0, 0 ]
+highlight = '''
+{
+  "hello": "Olá"
+}'''
+fix = '''
+{
+  "hello": "Olá",
+  "world": "TODO"
+}'''
+
+[[cases]]
+name = "should report offenses when the default translation is missing a key (1)"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "hello": "Hello"
+}'''
+"locales/pt-BR.json" = '''
+{
+  "hello": "Olá",
+  "world": "Mundo"
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.json"
+message = "A default translation for 'world' does not exist"
+start = [ 2, 2 ]
+highlight = "\"world\": \"Mundo\""
+
+[[cases.offenses.suggest]]
+message = "Delete unneeded translation key"
+result = '''
+{
+  "hello": "Olá"
+}'''
+
+[[cases]]
+name = "should report offenses when the default translation is missing a key (2)"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "hello": "Hello"
+}'''
+"locales/pt-BR.schema.json" = '''
+{
+  "hello": "Olá",
+  "world": "Mundo"
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.schema.json"
+message = "A default translation for 'world' does not exist"
+start = [ 2, 2 ]
+highlight = "\"world\": \"Mundo\""
+
+[[cases.offenses.suggest]]
+message = "Delete unneeded translation key"
+result = '''
+{
+  "hello": "Olá"
+}'''
+
+[[cases]]
+name = "should report offenses when nested translation keys do not exist (1)"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "hello": {
+    "world": "Hello, world!"
+  }
+}'''
+"locales/pt-BR.json" = '''
+{
+  "hello": {}
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.json"
+message = "The translation for 'hello.world' is missing"
+start = [ 1, 2 ]
+highlight = "\"hello\": {}"
+fix = '''
+{
+  "hello": {
+    "world": "TODO"
+  }
+}'''
+
+[[cases]]
+name = "should report offenses when nested translation keys do not exist (2)"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "hello": {
+    "world": "Hello, world!"
+  }
+}'''
+"locales/pt-BR.schema.json" = '''
+{
+  "hello": {}
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.schema.json"
+message = "The translation for 'hello.world' is missing"
+start = [ 1, 2 ]
+highlight = "\"hello\": {}"
+fix = '''
+{
+  "hello": {
+    "world": "TODO"
+  }
+}'''
+
+[[cases]]
+name = "should report offenses when translation shapes do not match (1)"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "hello": {
+    "world": "Hello, world!"
+  }
+}'''
+"locales/pt-BR.json" = '''
+{
+  "hello": "Olá"
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.json"
+message = "A default translation for 'hello' does not exist"
+start = [ 1, 2 ]
+highlight = "\"hello\": \"Olá\""
+
+[[cases.offenses.suggest]]
+message = "Delete unneeded translation key"
+result = "{}"
+
+[[cases.offenses]]
+file = "locales/pt-BR.json"
+message = "The translation for 'hello.world' is missing"
+start = [ 1, 2 ]
+highlight = "\"hello\": \"Olá\""
+fix = '''
+{
+  "hello": {
+    "world": "TODO"
+  }
+}'''
+
+[[cases]]
+name = "should report offenses when translation shapes do not match (2)"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "hello": {
+    "world": "Hello, world!"
+  }
+}'''
+"locales/pt-BR.schema.json" = '''
+{
+  "hello": "Olá"
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.schema.json"
+message = "A default translation for 'hello' does not exist"
+start = [ 1, 2 ]
+highlight = "\"hello\": \"Olá\""
+
+[[cases.offenses.suggest]]
+message = "Delete unneeded translation key"
+result = "{}"
+
+[[cases.offenses]]
+file = "locales/pt-BR.schema.json"
+message = "The translation for 'hello.world' is missing"
+start = [ 1, 2 ]
+highlight = "\"hello\": \"Olá\""
+fix = '''
+{
+  "hello": {
+    "world": "TODO"
+  }
+}'''
+
+[[cases]]
+name = "should report offenses when nested translation keys do not match (1)"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "hello": {
+    "world": "Hello, world!"
+  }
+}'''
+"locales/fr.json" = '''
+{
+  "hello": {
+    "monde": "Bonjour, monde"
+  }
+}'''
+"locales/es-ES.json" = '''
+{
+  "hello": {
+    "world": "Hello, world!",
+    "mundo": {
+      "hola": "¡Hola, mundo!"
+    }
+  }
+}'''
+
+[[cases.offenses]]
+file = "locales/fr.json"
+message = "A default translation for 'hello.monde' does not exist"
+start = [ 2, 4 ]
+highlight = "\"monde\": \"Bonjour, monde\""
+
+[[cases.offenses.suggest]]
+message = "Delete unneeded translation key"
+result = '''
+{
+  "hello": {}
+}'''
+
+[[cases.offenses]]
+file = "locales/fr.json"
+message = "The translation for 'hello.world' is missing"
+start = [ 1, 2 ]
+highlight = '''
+"hello": {
+    "monde": "Bonjour, monde"
+  }'''
+fix = '''
+{
+  "hello": {
+    "monde": "Bonjour, monde",
+    "world": "TODO"
+  }
+}'''
+
+[[cases.offenses]]
+file = "locales/es-ES.json"
+message = "A default translation for 'hello.mundo.hola' does not exist"
+start = [ 4, 6 ]
+highlight = "\"hola\": \"¡Hola, mundo!\""
+
+[[cases.offenses.suggest]]
+message = "Delete unneeded translation key"
+result = '''
+{
+  "hello": {
+    "world": "Hello, world!",
+    "mundo": {}
+  }
+}'''
+
+[[cases]]
+name = "should report offenses when nested translation keys do not match (2)"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "hello": {
+    "world": "Hello, world!"
+  }
+}'''
+"locales/fr.schema.json" = '''
+{
+  "hello": {
+    "monde": "Bonjour, monde"
+  }
+}'''
+"locales/es-ES.schema.json" = '''
+{
+  "hello": {
+    "world": "Hello, world!",
+    "mundo": {
+      "hola": "¡Hola, mundo!"
+    }
+  }
+}'''
+
+[[cases.offenses]]
+file = "locales/fr.schema.json"
+message = "A default translation for 'hello.monde' does not exist"
+start = [ 2, 4 ]
+highlight = "\"monde\": \"Bonjour, monde\""
+
+[[cases.offenses.suggest]]
+message = "Delete unneeded translation key"
+result = '''
+{
+  "hello": {}
+}'''
+
+[[cases.offenses]]
+file = "locales/fr.schema.json"
+message = "The translation for 'hello.world' is missing"
+start = [ 1, 2 ]
+highlight = '''
+"hello": {
+    "monde": "Bonjour, monde"
+  }'''
+fix = '''
+{
+  "hello": {
+    "monde": "Bonjour, monde",
+    "world": "TODO"
+  }
+}'''
+
+[[cases.offenses]]
+file = "locales/es-ES.schema.json"
+message = "A default translation for 'hello.mundo.hola' does not exist"
+start = [ 4, 6 ]
+highlight = "\"hola\": \"¡Hola, mundo!\""
+
+[[cases.offenses.suggest]]
+message = "Delete unneeded translation key"
+result = '''
+{
+  "hello": {
+    "world": "Hello, world!",
+    "mundo": {}
+  }
+}'''
+
+[[cases]]
+name = "should not report offenses when default translations do not exist (1)"
+
+[cases.files]
+"locales/en.json" = '''
+{
+  "hello": "Hello"
+}'''
+"locales/pt-BR.json" = '''
+{
+  "hello": "Olá"
+}'''
+
+[[cases]]
+name = "should not report offenses when default translations do not exist (2)"
+
+[cases.files]
+"locales/en.schema.json" = '''
+{
+  "hello": "Hello"
+}'''
+"locales/pt-BR.schema.json" = '''
+{
+  "hello": "Olá"
+}'''
+
+[[cases]]
+name = "should not report offenses when translations match (1)"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "hello": "Hello",
+  "world": "World"
+}'''
+"locales/pt-BR.json" = '''
+{
+  "hello": "Olá",
+  "world": "Mundo"
+}'''
+
+[[cases]]
+name = "should not report offenses when translations match (2)"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "hello": "Hello",
+  "world": "World"
+}'''
+"locales/pt-BR.schema.json" = '''
+{
+  "hello": "Olá",
+  "world": "Mundo"
+}'''
+
+[[cases]]
+name = "should not report offenses when nested translations match (1)"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "hello": {
+    "world": "Hello, world!"
+  }
+}'''
+"locales/pt-BR.json" = '''
+{
+  "hello": {
+    "world": "Olá, mundo!"
+  }
+}'''
+"locales/fr.json" = '''
+{
+  "hello": {
+    "world": "Bonjour, monde"
+  }
+}'''
+
+[[cases]]
+name = "should not report offenses when nested translations match (2)"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "hello": {
+    "world": "Hello, world!"
+  }
+}'''
+"locales/pt-BR.schema.json" = '''
+{
+  "hello": {
+    "world": "Olá, mundo!"
+  }
+}'''
+"locales/fr.schema.json" = '''
+{
+  "hello": {
+    "world": "Bonjour, monde"
+  }
+}'''
+
+[[cases]]
+name = "should not report offenses and ignore pluralization (1)"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "hello": {
+    "one": "Hello, you",
+    "other": "Hello, y'all"
+  }
+}'''
+"locales/pt-BR.json" = '''
+{
+  "hello": {
+    "zero": "Estou sozinho :(",
+    "few": "Olá, galerinha :)"
+  }
+}'''
+
+[[cases]]
+name = "should not report offenses and ignore pluralization (2)"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "hello": {
+    "one": "Hello, you",
+    "other": "Hello, y'all"
+  }
+}'''
+"locales/pt-BR.schema.json" = '''
+{
+  "hello": {
+    "zero": "Estou sozinho :(",
+    "few": "Olá, galerinha :)"
+  }
+}'''
+
+[[cases]]
+name = "should not report offenses and ignore keys provided by Shopify (1)"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "hello": "Hello",
+  "shopify": {
+    "checkout": {
+      "general": {
+        "page_title": "Checkout"
+      }
+    }
+  }
+}'''
+"locales/pt-BR.json" = '''
+{
+  "hello": "Olá",
+  "shopify": {
+    "sentence": {
+      "words_connector": "hello world"
+    }
+  }
+}'''
+
+[[cases]]
+name = "should not report offenses and ignore keys provided by Shopify (2)"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "hello": "Hello",
+  "shopify": {
+    "checkout": {
+      "general": {
+        "page_title": "Checkout"
+      }
+    }
+  }
+}'''
+"locales/pt-BR.schema.json" = '''
+{
+  "hello": "Olá",
+  "shopify": {
+    "sentence": {
+      "words_connector": "hello world"
+    }
+  }
+}'''
+
+[[cases]]
+name = "should not report offenses and ignore keys provided by customer accounts (1)"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "hello": "Hello",
+  "customer_accounts": {
+    "order": {
+      "title": "Order"
+    }
+  }
+}'''
+"locales/pt-BR.json" = '''
+{
+  "hello": "Olá",
+  "customer_accounts": {
+    "profile": {
+      "title": "Perfil"
+    }
+  }
+}'''
+
+[[cases]]
+name = "should not report offenses and ignore keys provided by customer accounts (2)"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "hello": "Hello",
+  "customer_accounts": {
+    "order": {
+      "title": "Order"
+    }
+  }
+}'''
+"locales/pt-BR.schema.json" = '''
+{
+  "hello": "Olá",
+  "customer_accounts": {
+    "profile": {
+      "title": "Perfil"
+    }
+  }
+}'''
+
+[[cases]]
+name = "should not report offenses and ignore \"*.schema.json\" files"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "hello": "Hello"
+}'''
+"locales/pt-BR.schema.json" = "{}"
+
+[[cases]]
+name = "should highlight the proper element when the translation file is missing a key (1)"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "hello": "Hello",
+  "world": "World"
+}'''
+"locales/pt-BR.json" = '''
+{
+  "hello": "Olá"
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.json"
+message = "The translation for 'world' is missing"
+start = [ 0, 0 ]
+highlight = '''
+{
+  "hello": "Olá"
+}'''
+fix = '''
+{
+  "hello": "Olá",
+  "world": "TODO"
+}'''
+
+[[cases]]
+name = "should highlight the proper element when the translation file is missing a key (2)"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "hello": "Hello",
+  "world": "World"
+}'''
+"locales/pt-BR.schema.json" = '''
+{
+  "hello": "Olá"
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.schema.json"
+message = "The translation for 'world' is missing"
+start = [ 0, 0 ]
+highlight = '''
+{
+  "hello": "Olá"
+}'''
+fix = '''
+{
+  "hello": "Olá",
+  "world": "TODO"
+}'''
+
+[[cases]]
+name = "should highlight the proper element when the default translation is missing a key (1)"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "hello": "Hello"
+}'''
+"locales/pt-BR.json" = '''
+{
+  "hello": "Olá",
+  "world": "Mundo"
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.json"
+message = "A default translation for 'world' does not exist"
+start = [ 2, 2 ]
+highlight = "\"world\": \"Mundo\""
+
+[[cases.offenses.suggest]]
+message = "Delete unneeded translation key"
+result = '''
+{
+  "hello": "Olá"
+}'''
+
+[[cases]]
+name = "should highlight the proper element when the default translation is missing a key (2)"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "hello": "Hello"
+}'''
+"locales/pt-BR.schema.json" = '''
+{
+  "hello": "Olá",
+  "world": "Mundo"
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.schema.json"
+message = "A default translation for 'world' does not exist"
+start = [ 2, 2 ]
+highlight = "\"world\": \"Mundo\""
+
+[[cases.offenses.suggest]]
+message = "Delete unneeded translation key"
+result = '''
+{
+  "hello": "Olá"
+}'''
+
+[[cases]]
+name = "should highlight the proper element when nested translation keys do not exist (1)"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "hello": {
+    "world": "Hello, world!"
+  },
+  "welcome": "Welcome"
+}'''
+"locales/pt-BR.json" = '''
+{
+  "hello": {},
+  "welcome": "Bem-vinda"
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.json"
+message = "The translation for 'hello.world' is missing"
+start = [ 1, 2 ]
+highlight = "\"hello\": {}"
+fix = '''
+{
+  "hello": {
+    "world": "TODO"
+  },
+  "welcome": "Bem-vinda"
+}'''
+
+[[cases]]
+name = "should highlight the proper element when nested translation keys do not exist (2)"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "hello": {
+    "world": "Hello, world!"
+  },
+  "welcome": "Welcome"
+}'''
+"locales/pt-BR.schema.json" = '''
+{
+  "hello": {},
+  "welcome": "Bem-vinda"
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.schema.json"
+message = "The translation for 'hello.world' is missing"
+start = [ 1, 2 ]
+highlight = "\"hello\": {}"
+fix = '''
+{
+  "hello": {
+    "world": "TODO"
+  },
+  "welcome": "Bem-vinda"
+}'''
+
+[[cases]]
+name = "should highlight the proper element when nested translation keys do not exist and there is a sibling node (1)"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "hello": {
+    "shopify": "Shopify!",
+    "world": "Hello, world!"
+  },
+  "welcome": "Welcome"
+}'''
+"locales/pt-BR.json" = '''
+{
+  "hello": {
+    "shopify": "Shopify!"
+  },
+  "welcome": "Bem-vinda"
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.json"
+message = "The translation for 'hello.world' is missing"
+start = [ 1, 2 ]
+highlight = '''
+"hello": {
+    "shopify": "Shopify!"
+  }'''
+fix = '''
+{
+  "hello": {
+    "shopify": "Shopify!",
+    "world": "TODO"
+  },
+  "welcome": "Bem-vinda"
+}'''
+
+[[cases]]
+name = "should highlight the proper element when nested translation keys do not exist and there is a sibling node (2)"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "hello": {
+    "shopify": "Shopify!",
+    "world": "Hello, world!"
+  },
+  "welcome": "Welcome"
+}'''
+"locales/pt-BR.schema.json" = '''
+{
+  "hello": {
+    "shopify": "Shopify!"
+  },
+  "welcome": "Bem-vinda"
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.schema.json"
+message = "The translation for 'hello.world' is missing"
+start = [ 1, 2 ]
+highlight = '''
+"hello": {
+    "shopify": "Shopify!"
+  }'''
+fix = '''
+{
+  "hello": {
+    "shopify": "Shopify!",
+    "world": "TODO"
+  },
+  "welcome": "Bem-vinda"
+}'''
+
+[[cases]]
+name = "should highlight the proper element when translation shapes do not match (1)"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "hello": {
+    "world": "Hello, world!"
+  }
+}'''
+"locales/pt-BR.json" = '''
+{
+  "hello": "Olá"
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.json"
+message = "A default translation for 'hello' does not exist"
+start = [ 1, 2 ]
+highlight = "\"hello\": \"Olá\""
+
+[[cases.offenses.suggest]]
+message = "Delete unneeded translation key"
+result = "{}"
+
+[[cases.offenses]]
+file = "locales/pt-BR.json"
+message = "The translation for 'hello.world' is missing"
+start = [ 1, 2 ]
+highlight = "\"hello\": \"Olá\""
+fix = '''
+{
+  "hello": {
+    "world": "TODO"
+  }
+}'''
+
+[[cases]]
+name = "should highlight the proper element when translation shapes do not match (2)"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "hello": {
+    "world": "Hello, world!"
+  }
+}'''
+"locales/pt-BR.schema.json" = '''
+{
+  "hello": "Olá"
+}'''
+
+[[cases.offenses]]
+file = "locales/pt-BR.schema.json"
+message = "A default translation for 'hello' does not exist"
+start = [ 1, 2 ]
+highlight = "\"hello\": \"Olá\""
+
+[[cases.offenses.suggest]]
+message = "Delete unneeded translation key"
+result = "{}"
+
+[[cases.offenses]]
+file = "locales/pt-BR.schema.json"
+message = "The translation for 'hello.world' is missing"
+start = [ 1, 2 ]
+highlight = "\"hello\": \"Olá\""
+fix = '''
+{
+  "hello": {
+    "world": "TODO"
+  }
+}'''
+
+[[cases]]
+name = "should not highlight anything if the file is unparseable (1)"
+
+[cases.files]
+"locales/en.default.json" = '''
+{
+  "hello": {
+    "world": "Hello, world!"
+  }
+}'''
+"locales/pt-BR.json" = "{\"hello\": }"
+
+[[cases]]
+name = "should not highlight anything if the file is unparseable (2)"
+
+[cases.files]
+"locales/en.default.schema.json" = '''
+{
+  "hello": {
+    "world": "Hello, world!"
+  }
+}'''
+"locales/pt-BR.schema.json" = "{\"hello\": }"

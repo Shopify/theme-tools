@@ -1,0 +1,166 @@
+check = "DuplicateRenderSnippetArguments"
+severity = "warning"
+
+[[cases]]
+name = "should report duplicate arguments in render tags"
+
+[cases.files]
+"file.liquid" = '''
+{% render 'snippet', param1: 'value1', param2: 'value2', param1: 'value3' %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Duplicate argument 'param1' in render tag for snippet 'snippet'."
+start = [ 0, 57 ]
+highlight = "param1: 'value3'"
+
+[[cases.offenses.suggest]]
+message = "Remove duplicate argument 'param1'"
+result = '''
+{% render 'snippet', param1: 'value1', param2: 'value2' %}
+'''
+
+[[cases]]
+name = "should report multiple duplicate arguments in render tags"
+
+[cases.files]
+"file.liquid" = '''
+{% render 'snippet', param1: 'value1', param2: 'value2', param1: 'value3', param2: 'value4', param1: 'value5' %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Duplicate argument 'param1' in render tag for snippet 'snippet'."
+start = [ 0, 57 ]
+highlight = "param1: 'value3'"
+
+[[cases.offenses.suggest]]
+message = "Remove duplicate argument 'param1'"
+result = '''
+{% render 'snippet', param1: 'value1', param2: 'value2', param2: 'value4', param1: 'value5' %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Duplicate argument 'param2' in render tag for snippet 'snippet'."
+start = [ 0, 75 ]
+highlight = "param2: 'value4'"
+
+[[cases.offenses.suggest]]
+message = "Remove duplicate argument 'param2'"
+result = '''
+{% render 'snippet', param1: 'value1', param2: 'value2', param1: 'value3', param1: 'value5' %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Duplicate argument 'param1' in render tag for snippet 'snippet'."
+start = [ 0, 93 ]
+highlight = "param1: 'value5'"
+
+[[cases.offenses.suggest]]
+message = "Remove duplicate argument 'param1'"
+result = '''
+{% render 'snippet', param1: 'value1', param2: 'value2', param1: 'value3', param2: 'value4' %}
+'''
+
+[[cases]]
+name = "should not report when render tag is using `with/for` alias syntax"
+
+[cases.files]
+"file.liquid" = '''
+{% render 'snippet' with 'string' as param1, param1: 'value1' %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Duplicate argument 'param1' in render tag for snippet 'snippet'."
+start = [ 0, 45 ]
+highlight = "param1: 'value1'"
+
+[[cases.offenses.suggest]]
+message = "Remove duplicate argument 'param1'"
+result = '''
+{% render 'snippet' with 'string' as param1 %}
+'''
+
+[[cases]]
+name = "should correctly suggest fixing all duplicate arguments except for the first"
+
+[cases.files]
+"file.liquid" = "{% render 'snippet', param1: 'value1', param2: 'value2', param1: 'value3', param1: 'value4' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Duplicate argument 'param1' in render tag for snippet 'snippet'."
+start = [ 0, 57 ]
+highlight = "param1: 'value3'"
+
+[[cases.offenses.suggest]]
+message = "Remove duplicate argument 'param1'"
+result = "{% render 'snippet', param1: 'value1', param2: 'value2', param1: 'value4' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Duplicate argument 'param1' in render tag for snippet 'snippet'."
+start = [ 0, 75 ]
+highlight = "param1: 'value4'"
+
+[[cases.offenses.suggest]]
+message = "Remove duplicate argument 'param1'"
+result = "{% render 'snippet', param1: 'value1', param2: 'value2', param1: 'value3' %}"
+
+[[cases]]
+name = "should suggest removing duplicates when with / for alias is used"
+
+[cases.files]
+"file.liquid" = "{% render 'snippet' with 'string' as param2, param1: 'value1', param2: 'value2' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Duplicate argument 'param2' in render tag for snippet 'snippet'."
+start = [ 0, 63 ]
+highlight = "param2: 'value2'"
+
+[[cases.offenses.suggest]]
+message = "Remove duplicate argument 'param2'"
+result = "{% render 'snippet' with 'string' as param2, param1: 'value1' %}"
+
+[[cases]]
+name = "should not report when there are no duplicate arguments"
+
+[cases.files]
+"file.liquid" = '''
+{% render 'snippet', param1: 'value1', param2: 'value2', param3: 'value3' %}
+'''
+
+[[cases]]
+name = "should not report for variable render tags where snippet name is a variable"
+
+[cases.files]
+"file.liquid" = '''
+{% render my_variable, param1: 'value1', param1: 'value2' %}
+'''
+
+[[cases]]
+name = "should handle remove duplicate param when there are multiple render tags"
+
+[cases.files]
+"file.liquid" = '''
+{% render 'snippet', param1: 'value1', param2: 'value2', param3: 'value3' %}
+{% render 'snippet', param1: 'value4', param2: 'value5', param1: 'value6' %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Duplicate argument 'param1' in render tag for snippet 'snippet'."
+start = [ 1, 57 ]
+highlight = "param1: 'value6'"
+
+[[cases.offenses.suggest]]
+message = "Remove duplicate argument 'param1'"
+result = '''
+{% render 'snippet', param1: 'value1', param2: 'value2', param3: 'value3' %}
+{% render 'snippet', param1: 'value4', param2: 'value5' %}
+'''

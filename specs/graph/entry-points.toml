@@ -1,0 +1,68 @@
+[[cases]]
+name = "templates, layouts and sections are entry points"
+entryPoints = [ "layout/theme.liquid", "sections/header.liquid", "templates/index.json", "templates/page.liquid" ]
+modules = [
+  { file = "layout/theme.liquid", type = "Liquid", kind = "layout" },
+  { file = "sections/header.liquid", type = "Liquid", kind = "section" },
+  { file = "templates/index.json", type = "JSON", kind = "template" },
+  { file = "templates/page.liquid", type = "Liquid", kind = "template" },
+]
+
+[cases.files]
+"layout/theme.liquid" = '''
+{{ content_for_layout }}
+'''
+"templates/index.json" = '''
+{ "sections": {}, "order": [] }
+'''
+"templates/page.liquid" = '''
+Page
+'''
+"sections/header.liquid" = '''
+header content
+'''
+"sections/header-group.json" = '''
+{ "type": "header", "name": "Header", "sections": {}, "order": [] }
+'''
+"blocks/text.liquid" = '''
+Text
+'''
+"snippets/orphan.liquid" = '''
+Orphan
+'''
+
+[[cases.edges]]
+source = "templates/index.json"
+target = "layout/theme.liquid"
+type = "indirect"
+
+[[cases]]
+name = "in app mode, app blocks are entry points too"
+mode = "app"
+entryPoints = [ "blocks/app-block.liquid" ]
+modules = [
+  { file = "blocks/app-block.liquid", type = "Liquid", kind = "block" },
+  { file = "snippets/shared.liquid", type = "Liquid", kind = "snippet" },
+]
+
+[cases.files]
+"blocks/app-block.liquid" = '''
+{% render 'shared' %}
+
+{% schema %}
+{
+  "name": "App block",
+  "target": "section",
+  "settings": []
+}
+{% endschema %}
+'''
+"snippets/shared.liquid" = '''
+<div>Shared snippet</div>
+'''
+
+[[cases.edges]]
+source = "blocks/app-block.liquid"
+start = [ 0, 0 ]
+text = "{% render 'shared' %}"
+target = "snippets/shared.liquid"

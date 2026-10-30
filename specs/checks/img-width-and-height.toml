@@ -1,0 +1,85 @@
+check = "ImgWidthAndHeight"
+severity = "error"
+
+[[cases]]
+name = "should report missing attributes on multiple img tags with mixed attributes"
+
+[cases.files]
+"file.liquid" = '''
+<img src="example1.jpg" width="100" height="100">
+<img src="example2.jpg" width="100">
+<img src="example3.jpg" height="100">
+<img src="example4.jpg">
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing height attribute on img tag"
+start = [ 1, 0 ]
+highlight = "<img src=\"example2.jpg\" width=\"100\">"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing width attribute on img tag"
+start = [ 2, 0 ]
+highlight = "<img src=\"example3.jpg\" height=\"100\">"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing width and height attributes on img tag"
+start = [ 3, 0 ]
+highlight = "<img src=\"example4.jpg\">"
+
+[[cases]]
+name = "should report missing width and height attributes on img tags"
+
+[cases.files]
+"file.liquid" = '''
+<a-{{ product.id }} href="example.com">content</a-{{ product.id }}>
+<input type="submit">
+<img src="example.jpg">
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing width and height attributes on img tag"
+start = [ 2, 0 ]
+highlight = "<img src=\"example.jpg\">"
+
+[[cases]]
+name = "should report missing height attribute on img tags"
+
+[cases.files]
+"file.liquid" = '''
+<input type="submit">
+<img src="example.jpg" width="100">
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing height attribute on img tag"
+start = [ 1, 0 ]
+highlight = "<img src=\"example.jpg\" width=\"100\">"
+
+[[cases]]
+name = "should report missing width attribute on img tags"
+
+[cases.files]
+"file.liquid" = '''
+<input type="submit">
+<img src="example.jpg" height="100">
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Missing width attribute on img tag"
+start = [ 1, 0 ]
+highlight = "<img src=\"example.jpg\" height=\"100\">"
+
+[[cases]]
+name = "should not report missing attributes on img tags if they are not missing"
+
+[cases.files]
+"file.liquid" = '''
+<img src="example.jpg" width="100" height="100">
+'''

@@ -1,0 +1,2738 @@
+check = "LiquidHTMLSyntaxError"
+severity = "error"
+
+[[cases]]
+name = "should detect and fix double pipes in variable output"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'hello' | upcase | | downcase }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported. Remove extra `|` character(s)."
+start = [ 0, 20 ]
+highlight = "| | "
+fix = "{{ 'hello' | upcase | downcase }}"
+
+[[cases]]
+name = "should detect and fix double pipes with extra whitespace"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'hello' | upcase |   | downcase }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported. Remove extra `|` character(s)."
+start = [ 0, 20 ]
+highlight = "|   | "
+fix = "{{ 'hello' | upcase | downcase }}"
+
+[[cases]]
+name = "should detect and fix double pipes in assign tag"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign result = 'hello' | upcase | | downcase %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported. Remove extra `|` character(s)."
+start = [ 0, 36 ]
+highlight = "| | "
+fix = "{% assign result = 'hello' | upcase | downcase %}"
+
+[[cases]]
+name = "should detect and fix double pipes in echo tag"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo 'hello' | upcase | | downcase %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported. Remove extra `|` character(s)."
+start = [ 0, 25 ]
+highlight = "| | "
+fix = "{% echo 'hello' | upcase | downcase %}"
+
+[[cases]]
+name = "should handle multiple double pipes in one expression"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'hello' | upcase | | downcase | | reverse }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported. Remove extra `|` character(s)."
+start = [ 0, 20 ]
+highlight = "| | "
+fix = "{{ 'hello' | upcase | downcase | | reverse }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported. Remove extra `|` character(s)."
+start = [ 0, 33 ]
+highlight = "| | "
+fix = "{{ 'hello' | upcase | | downcase | reverse }}"
+
+[cases.autofix]
+"file.liquid" = "{{ 'hello' | upcase | downcase | reverse }}"
+
+[[cases]]
+name = "should detect and fix trailing pipe in variable output"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'hello' | upcase | }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported. Remove the trailing `|` character."
+start = [ 0, 19 ]
+highlight = " |"
+fix = "{{ 'hello' | upcase }}"
+
+[[cases]]
+name = "should detect and fix trailing pipe in assign tag"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign result = 'hello' | upcase | %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported. Remove the trailing `|` character."
+start = [ 0, 35 ]
+highlight = " |"
+fix = "{% assign result = 'hello' | upcase %}"
+
+[[cases]]
+name = "should detect and fix trailing pipe in echo tag"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo 'hello' | upcase | %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported. Remove the trailing `|` character."
+start = [ 0, 24 ]
+highlight = " |"
+fix = "{% echo 'hello' | upcase %}"
+
+[[cases]]
+name = "should detect and fix multiple trailing pipes"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'hello' | upcase | | }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported. Remove the trailing `|` character."
+start = [ 0, 19 ]
+highlight = " | |"
+fix = "{{ 'hello' | upcase }}"
+
+[[cases]]
+name = "should handle mixed valid and invalid pipes"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'hello' | upcase | | downcase | reverse | }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported. Remove extra `|` character(s)."
+start = [ 0, 20 ]
+highlight = "| | "
+fix = "{{ 'hello' | upcase | downcase | reverse | }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported. Remove the trailing `|` character."
+start = [ 0, 42 ]
+highlight = " |"
+fix = "{{ 'hello' | upcase | | downcase | reverse }}"
+
+[cases.autofix]
+"file.liquid" = "{{ 'hello' | upcase | downcase | reverse }}"
+
+[[cases]]
+name = "should not interfere with valid filter parameter syntax"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'hello' | append: 'world' | upcase }}"
+
+[[cases]]
+name = "should handle liquid tag with mixed pipe issues"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% liquid
+        assign foo = 'test' | upcase | | downcase |
+        echo bar | reverse
+      %}'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported. Remove extra `|` character(s)."
+start = [ 1, 37 ]
+highlight = "| | "
+fix = '''
+{% liquid
+        assign foo = 'test' | upcase | downcase |
+        echo bar | reverse
+      %}'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported. Remove the trailing `|` character."
+start = [ 1, 49 ]
+highlight = " |"
+fix = '''
+{% liquid
+        assign foo = 'test' | upcase | | downcase
+        echo bar | reverse
+      %}'''
+
+[cases.autofix]
+"file.liquid" = '''
+{% liquid
+        assign foo = 'test' | upcase | downcase
+        echo bar | reverse
+      %}'''
+
+[[cases]]
+name = "should not report on valid filter chains"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'hello' | upcase | append: 'world' | downcase }}"
+
+[[cases]]
+name = "should not report on simple filters"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'hello' | upcase }}"
+
+[[cases]]
+name = "should not report on filters with arguments"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ product.title | append: ' - ' | append: shop.name }}"
+
+[[cases]]
+name = "should not report on valid assign with filters"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign title = product.title | upcase | truncate: 50 %}"
+
+[[cases]]
+name = "should not report on valid echo with filters"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo product.title | upcase | truncate: 50 %}"
+
+[[cases]]
+name = "should handle pipes in string literals correctly"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'hello | world' | upcase }}"
+
+[[cases]]
+name = "should not report on conditional expressions with pipes"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ product.title | default: 'No title' }}"
+
+[[cases]]
+name = "should not report an offense for valid boolean expressions (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 1 > 2 %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid boolean expressions (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if variable == 5 %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid boolean expressions (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 'abc' contains 'a' %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid boolean expressions (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if product.title != '' %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid boolean expressions (5)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 1 and 2 %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid boolean expressions (6)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if true or false %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid boolean expressions (7)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 10 > 5 and user.active %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid boolean expressions (8)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if price >= 100 or discount %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid boolean expressions (9)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if user.name contains 'admin' or user.role == 'owner' %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid single values (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if variable %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid single values (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if user.active %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid single values (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if true %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid single values (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if false %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid single values (5)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 1 %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid single values (6)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 0 %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid single values (7)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 'string' %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid single values (8)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if contains %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense when parser stops at numbers"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 7 1 > 100 %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Expression stops at truthy value '7', and will ignore: '1 > 100'"
+start = [ 0, 6 ]
+highlight = "7 1 > 100"
+fix = "{% if 7 %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense when parser stops at strings"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 'hello' 1 > 100 %}world{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Expression stops at truthy value ''hello'', and will ignore: '1 > 100'"
+start = [ 0, 6 ]
+highlight = "'hello' 1 > 100"
+fix = "{% if 'hello' %}world{% endif %}"
+
+[[cases]]
+name = "should report an offense when parser stops at liquid literals (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if true 1 > 0 %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Expression stops at truthy value 'true', and will ignore: '1 > 0'"
+start = [ 0, 6 ]
+highlight = "true 1 > 0"
+fix = "{% if true %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense when parser stops at liquid literals (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if false 1 > 0 %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Expression stops at truthy value 'false', and will ignore: '1 > 0'"
+start = [ 0, 6 ]
+highlight = "false 1 > 0"
+fix = "{% if false %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense when parser stops at liquid literals (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if nil 6 > 5 %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Expression stops at truthy value 'nil', and will ignore: '6 > 5'"
+start = [ 0, 6 ]
+highlight = "nil 6 > 5"
+fix = "{% if nil %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense when parser stops at liquid literals (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if empty 123 456 %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Expression stops at truthy value 'empty', and will ignore: '123 456'"
+start = [ 0, 6 ]
+highlight = "empty 123 456"
+fix = "{% if empty %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense when parser stops at liquid literals (5)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if blank 789 %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Expression stops at truthy value 'blank', and will ignore: '789'"
+start = [ 0, 6 ]
+highlight = "blank 789"
+fix = "{% if blank %}hello{% endif %}"
+
+[[cases]]
+name = "should report offenses in different liquid tag types (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 7 1 > 100 %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Expression stops at truthy value '7', and will ignore: '1 > 100'"
+start = [ 0, 6 ]
+highlight = "7 1 > 100"
+fix = "{% if 7 %}hello{% endif %}"
+
+[[cases]]
+name = "should report offenses in different liquid tag types (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% unless 'test' 42 > 0 %}hello{% endunless %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Expression stops at truthy value ''test'', and will ignore: '42 > 0'"
+start = [ 0, 10 ]
+highlight = "'test' 42 > 0"
+fix = "{% unless 'test' %}hello{% endunless %}"
+
+[[cases]]
+name = "should report offenses in different liquid tag types (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if false %}no{% elsif 7 1 > 100 %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Expression stops at truthy value '7', and will ignore: '1 > 100'"
+start = [ 0, 25 ]
+highlight = "7 1 > 100"
+fix = "{% if false %}no{% elsif 7 %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for malformed expression starting with invalid token"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if > 2 %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional cannot start with '>'. Use a variable or value instead"
+start = [ 0, 6 ]
+highlight = "> 2"
+fix = "{% if false %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for bare operators with no operands (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if > %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional cannot start with '>'. Use a variable or value instead"
+start = [ 0, 6 ]
+highlight = ">"
+fix = "{% if false %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for bare operators with no operands (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if == %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional cannot start with '=='. Use a variable or value instead"
+start = [ 0, 6 ]
+highlight = "=="
+fix = "{% if false %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for bare operators with no operands (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if < %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional cannot start with '<'. Use a variable or value instead"
+start = [ 0, 6 ]
+highlight = "<"
+fix = "{% if false %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for bare operators with no operands (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if != %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional cannot start with '!='. Use a variable or value instead"
+start = [ 0, 6 ]
+highlight = "!="
+fix = "{% if false %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for bare operators with no operands (5)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if >= %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional cannot start with '>='. Use a variable or value instead"
+start = [ 0, 6 ]
+highlight = ">="
+fix = "{% if false %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for bare operators with no operands (6)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if <= %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional cannot start with '<='. Use a variable or value instead"
+start = [ 0, 6 ]
+highlight = "<="
+fix = "{% if false %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for other invalid starting characters (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if @ %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional cannot start with '@'. Use a variable or value instead"
+start = [ 0, 6 ]
+highlight = "@"
+fix = "{% if false %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for other invalid starting characters (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if # %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional cannot start with '#'. Use a variable or value instead"
+start = [ 0, 6 ]
+highlight = "#"
+fix = "{% if false %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for other invalid starting characters (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if $ %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional cannot start with '$'. Use a variable or value instead"
+start = [ 0, 6 ]
+highlight = "$"
+fix = "{% if false %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for other invalid starting characters (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if & %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional cannot start with '&'. Use a variable or value instead"
+start = [ 0, 6 ]
+highlight = "&"
+fix = "{% if false %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for malformed expressions in complex expressions (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if > 5 and true %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional cannot start with '>'. Use a variable or value instead"
+start = [ 0, 6 ]
+highlight = "> 5 and true"
+fix = "{% if false %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for malformed expressions in complex expressions (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if == 2 or false %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional cannot start with '=='. Use a variable or value instead"
+start = [ 0, 6 ]
+highlight = "== 2 or false"
+fix = "{% if false %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for malformed expressions in complex expressions (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if < 10 and variable %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional cannot start with '<'. Use a variable or value instead"
+start = [ 0, 6 ]
+highlight = "< 10 and variable"
+fix = "{% if false %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for trailing tokens after comparison"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 1 == 2 foobar %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional is invalid. Anything after '1 == 2' will be ignored"
+start = [ 0, 6 ]
+highlight = "1 == 2 foobar"
+fix = "{% if 1 == 2 %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for malformed comparisons like missing quotes (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 'wat' == 'squat > 2 %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional is invalid. Anything after ''wat' == 'squat' will be ignored"
+start = [ 0, 6 ]
+highlight = "'wat' == 'squat > 2"
+fix = "{% if 'wat' == 'squat %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for malformed comparisons like missing quotes (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 'wat' == 'squat' > 2 %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional is invalid. Anything after ''wat' == 'squat'' will be ignored"
+start = [ 0, 6 ]
+highlight = "'wat' == 'squat' > 2"
+fix = "{% if 'wat' == 'squat' %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for malformed comparisons like missing quotes (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if price == 'test' != 5 %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional is invalid. Anything after 'price == 'test'' will be ignored"
+start = [ 0, 6 ]
+highlight = "price == 'test' != 5"
+fix = "{% if price == 'test' %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for multiple trailing tokens"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 10 > 4 baz qux %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional is invalid. Anything after '10 > 4' will be ignored"
+start = [ 0, 6 ]
+highlight = "10 > 4 baz qux"
+fix = "{% if 10 > 4 %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for trailing junk with different operators (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 'abc' contains 'a' noise %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional is invalid. Anything after ''abc' contains 'a'' will be ignored"
+start = [ 0, 6 ]
+highlight = "'abc' contains 'a' noise"
+fix = "{% if 'abc' contains 'a' %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for trailing junk with different operators (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if price <= 50 extra %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional is invalid. Anything after 'price <= 50' will be ignored"
+start = [ 0, 6 ]
+highlight = "price <= 50 extra"
+fix = "{% if price <= 50 %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for trailing junk with different operators (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if count != 0 junk %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional is invalid. Anything after 'count != 0' will be ignored"
+start = [ 0, 6 ]
+highlight = "count != 0 junk"
+fix = "{% if count != 0 %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid logical continuations (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 1 > 0 and 2 < 3 %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid logical continuations (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if x == 5 or y != 10 %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for valid logical continuations (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if price >= 100 and discount %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for truthy values followed by logical operators (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if true and variable %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for truthy values followed by logical operators (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if false or variable %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for truthy values followed by logical operators (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 1 and user.active %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for truthy values followed by logical operators (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 0 or fallback %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for truthy values followed by logical operators (5)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 'string' and condition %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for truthy values followed by logical operators (6)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 'value' or default %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for truthy values followed by logical operators (7)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 42 and check %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for truthy values followed by logical operators (8)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 3.14 or backup %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for truthy values followed by logical operators (9)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if nil and something %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for truthy values followed by logical operators (10)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if empty or alternative %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for truthy values followed by logical operators (11)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if blank and other %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for complex expressions with truthy values and logical operators (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if true and variable > 5 %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for complex expressions with truthy values and logical operators (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 'test' or user.name == 'admin' %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for complex expressions with truthy values and logical operators (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 42 and price <= 100 %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for complex expressions with truthy values and logical operators (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if false or count != 0 %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for complex expressions with truthy values and logical operators (5)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if empty and product.title contains 'sale' %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for unknown operators errors after values (Liquid catches these) (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if my_var word > 5 %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for unknown operators errors after values (Liquid catches these) (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if jake johnson > 5 %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for unknown operators errors after values (Liquid catches these) (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 'test' invalid > thing %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for unknown operators errors after values (Liquid catches these) (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if user.name custom 'admin' %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for unknown operators after variables (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if variable unknown > 5 %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for unknown operators after variables (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if user.role badop 'admin' %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for unknown operators after variables (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if price fake 100 %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for unknown operators after variables (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if \"str\" blue == something %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for unknown operators after variables (5)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if red blue > something %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for unknown operators in complex expressions (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if user.active and name fake 'test' %}hello{% endif %}"
+
+[[cases]]
+name = "should not report an offense for unknown operators in complex expressions (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% unless 'test' some > thing %}hello{% endunless %}"
+
+[[cases]]
+name = "should not report an offense for pipe filter expressions"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if wat | something == something %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for misspelled logical operators (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if \"wat\" == \"squat\" adn \"wat\" == \"squat\" %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional is invalid. Anything after '\"wat\" == \"squat\"' will be ignored"
+start = [ 0, 6 ]
+highlight = "\"wat\" == \"squat\" adn \"wat\" == \"squat\""
+fix = "{% if \"wat\" == \"squat\" %}hello{% endif %}"
+
+[[cases]]
+name = "should report an offense for misspelled logical operators (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if variable > 5 andd other < 10 %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Conditional is invalid. Anything after 'variable > 5' will be ignored"
+start = [ 0, 6 ]
+highlight = "variable > 5 andd other < 10"
+fix = "{% if variable > 5 %}hello{% endif %}"
+
+[[cases]]
+name = "should report special message for JavaScript-style operators after literal values (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if true && false %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Expression stops at truthy value 'true', and will ignore: '&& false'. Use 'and'/'or' instead of '&&'/'||' for multiple conditions"
+start = [ 0, 6 ]
+highlight = "true && false"
+fix = "{% if true %}hello{% endif %}"
+
+[[cases]]
+name = "should report special message for JavaScript-style operators after literal values (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if false || true %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Expression stops at truthy value 'false', and will ignore: '|| true'. Use 'and'/'or' instead of '&&'/'||' for multiple conditions"
+start = [ 0, 6 ]
+highlight = "false || true"
+fix = "{% if false %}hello{% endif %}"
+
+[[cases]]
+name = "should report special message for JavaScript-style operators after literal values (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if \"hello\" && world %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Expression stops at truthy value '\"hello\"', and will ignore: '&& world'. Use 'and'/'or' instead of '&&'/'||' for multiple conditions"
+start = [ 0, 6 ]
+highlight = "\"hello\" && world"
+fix = "{% if \"hello\" %}hello{% endif %}"
+
+[[cases]]
+name = "should report special message for JavaScript-style operators after literal values (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if 42 || something %}hello{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported: Expression stops at truthy value '42', and will ignore: '|| something'. Use 'and'/'or' instead of '&&'/'||' for multiple conditions"
+start = [ 0, 6 ]
+highlight = "42 || something"
+fix = "{% if 42 %}hello{% endif %}"
+
+[[cases]]
+name = "should NOT report an offense for valid logical operators (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if price > 100 and discount < 50 %}hello{% endif %}"
+
+[[cases]]
+name = "should NOT report an offense for valid logical operators (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if user.active or user.premium %}hello{% endif %}"
+
+[[cases]]
+name = "should NOT report an offense for valid logical operators (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if x == 1 and y == 2 or z == 3 %}hello{% endif %}"
+
+[[cases]]
+name = "should not report on filters with alphanumeric trailing characters"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'HELLO' | append123: 'world' }}"
+
+[[cases]]
+name = "should not report on filters with underscore trailing characters"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'HELLO' | append_test }}"
+
+[[cases]]
+name = "should not report on valid filter names"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'hello' | append: 'world' }}"
+
+[[cases]]
+name = "should not report on unknown filters (handled by UnknownFilter check)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'hello' | completely_unknown_filter: 'world' }}"
+
+[[cases]]
+name = "should detect and fix append with trailing @ character"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'HELLO' | append@ }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported Filter 'append' has trailing characters '@' that should be removed."
+start = [ 0, 19 ]
+highlight = "@"
+fix = "{{ 'HELLO' | append }}"
+
+[[cases]]
+name = "should detect and fix filter with space followed by characters"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'HELLO' | append me: 'world' }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported Filter 'append' has trailing characters ' me' that should be removed."
+start = [ 0, 19 ]
+highlight = " me"
+fix = "{{ 'HELLO' | append: 'world' }}"
+
+[[cases]]
+name = "should handle normal filter followed by filter with special characters"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'test' | downcase | append@: 'world' }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported Filter 'append' has trailing characters '@' that should be removed."
+start = [ 0, 29 ]
+highlight = "@"
+fix = "{{ 'test' | downcase | append: 'world' }}"
+
+[[cases]]
+name = "should handle filter with special characters followed by normal filter"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'test' | append!: 'hello' | upcase }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported Filter 'append' has trailing characters '!' that should be removed."
+start = [ 0, 18 ]
+highlight = "!"
+fix = "{{ 'test' | append: 'hello' | upcase }}"
+
+[[cases]]
+name = "should handle two filters with special characters in a row"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'test' | append@: 'hello' | upcase# }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported Filter 'append' has trailing characters '@' that should be removed."
+start = [ 0, 18 ]
+highlight = "@"
+fix = "{{ 'test' | append: 'hello' | upcase# }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported Filter 'upcase' has trailing characters '#' that should be removed."
+start = [ 0, 37 ]
+highlight = "#"
+fix = "{{ 'test' | append@: 'hello' | upcase }}"
+
+[cases.autofix]
+"file.liquid" = "{{ 'test' | append: 'hello' | upcase }}"
+
+[[cases]]
+name = "should handle filter with space and characters followed by normal filter"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 'test' | append xyz: 'hello' | upcase }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported Filter 'append' has trailing characters ' xyz' that should be removed."
+start = [ 0, 18 ]
+highlight = " xyz"
+fix = "{{ 'test' | append: 'hello' | upcase }}"
+
+[[cases]]
+name = "should detect and fix assign with trailing @ character"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign foo = 'HELLO' | append@ %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported Filter 'append' has trailing characters '@' that should be removed."
+start = [ 0, 32 ]
+highlight = "@"
+fix = "{% assign foo = 'HELLO' | append %}"
+
+[[cases]]
+name = "should detect and fix assign with space followed by characters"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign bar = 'HELLO' | append me: 'world' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported Filter 'append' has trailing characters ' me' that should be removed."
+start = [ 0, 32 ]
+highlight = " me"
+fix = "{% assign bar = 'HELLO' | append: 'world' %}"
+
+[[cases]]
+name = "should handle assign with multiple filters with special characters"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign baz = 'test' | append@: 'hello' | upcase# %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported Filter 'append' has trailing characters '@' that should be removed."
+start = [ 0, 31 ]
+highlight = "@"
+fix = "{% assign baz = 'test' | append: 'hello' | upcase# %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported Filter 'upcase' has trailing characters '#' that should be removed."
+start = [ 0, 50 ]
+highlight = "#"
+fix = "{% assign baz = 'test' | append@: 'hello' | upcase %}"
+
+[cases.autofix]
+"file.liquid" = "{% assign baz = 'test' | append: 'hello' | upcase %}"
+
+[[cases]]
+name = "should not report on valid assign filters"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign valid = 'hello' | append: 'world' | upcase %}"
+
+[[cases]]
+name = "should detect and fix echo with trailing @ character"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo 'HELLO' | append@ %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported Filter 'append' has trailing characters '@' that should be removed."
+start = [ 0, 24 ]
+highlight = "@"
+fix = "{% echo 'HELLO' | append %}"
+
+[[cases]]
+name = "should detect and fix echo with space followed by characters"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo 'HELLO' | append me: 'world' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported Filter 'append' has trailing characters ' me' that should be removed."
+start = [ 0, 24 ]
+highlight = " me"
+fix = "{% echo 'HELLO' | append: 'world' %}"
+
+[[cases]]
+name = "should handle echo with multiple filters with special characters"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo 'test' | append@: 'hello' | upcase# %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported Filter 'append' has trailing characters '@' that should be removed."
+start = [ 0, 23 ]
+highlight = "@"
+fix = "{% echo 'test' | append: 'hello' | upcase# %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported Filter 'upcase' has trailing characters '#' that should be removed."
+start = [ 0, 42 ]
+highlight = "#"
+fix = "{% echo 'test' | append@: 'hello' | upcase %}"
+
+[cases.autofix]
+"file.liquid" = "{% echo 'test' | append: 'hello' | upcase %}"
+
+[[cases]]
+name = "should not report on valid echo filters"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo 'hello' | append: 'world' | upcase %}"
+
+[[cases]]
+name = "should detect and fix assign in liquid tag with trailing characters"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% liquid
+        assign foo = 'test' | append@: 'hello'
+      %}'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported Filter 'append' has trailing characters '@' that should be removed."
+start = [ 1, 36 ]
+highlight = "@"
+fix = '''
+{% liquid
+        assign foo = 'test' | append: 'hello'
+      %}'''
+
+[[cases]]
+name = "should detect and fix echo in liquid tag with trailing characters"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% liquid
+        echo 'test' | append@: 'hello'
+      %}'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported Filter 'append' has trailing characters '@' that should be removed."
+start = [ 1, 28 ]
+highlight = "@"
+fix = '''
+{% liquid
+        echo 'test' | append: 'hello'
+      %}'''
+
+[[cases]]
+name = "should not report when args are valid (1)"
+
+[cases.files]
+"file.liquid" = "{% for i in array reversed %}{% endfor %}"
+
+[cases.docset]
+filters = []
+
+[[cases.docset.tags]]
+name = "for"
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.docset.tags]]
+name = "tablerow"
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases]]
+name = "should not report when args are valid (2)"
+
+[cases.files]
+"file.liquid" = "{% for i in array reversed offset: 1 %}{% endfor %}"
+
+[cases.docset]
+filters = []
+
+[[cases.docset.tags]]
+name = "for"
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.docset.tags]]
+name = "tablerow"
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases]]
+name = "should not report when args are valid (3)"
+
+[cases.files]
+"file.liquid" = "{% tablerow x in array limit: 10 %}{% endtablerow %}"
+
+[cases.docset]
+filters = []
+
+[[cases.docset.tags]]
+name = "for"
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.docset.tags]]
+name = "tablerow"
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases]]
+name = "should not report when args are valid (4)"
+
+[cases.files]
+"file.liquid" = "{% tablerow x in array cols: 2 limit: 10 %}{% endtablerow %}"
+
+[cases.docset]
+filters = []
+
+[[cases.docset.tags]]
+name = "for"
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.docset.tags]]
+name = "tablerow"
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases]]
+name = "should report when invalid args are found (1)"
+
+[cases.files]
+"file.liquid" = "{% for i in array limit1: 10 %}{% endfor %}"
+
+[cases.docset]
+filters = []
+
+[[cases.docset.tags]]
+name = "for"
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.docset.tags]]
+name = "tablerow"
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Arguments must be provided in the format `for in <array> <positional arguments> <named arguments>`. Invalid/Unknown arguments: limit1: 10"
+start = [ 0, 18 ]
+highlight = "limit1: 10"
+fix = "{% for i in array  %}{% endfor %}"
+
+[[cases]]
+name = "should report when invalid args are found (2)"
+
+[cases.files]
+"file.liquid" = "{% for i in array !! range: (1..2) %}{% endfor %}"
+
+[cases.docset]
+filters = []
+
+[[cases.docset.tags]]
+name = "for"
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.docset.tags]]
+name = "tablerow"
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Arguments must be provided in the format `for in <array> <positional arguments> <named arguments>`. Invalid/Unknown arguments: !!, range: (1..2)"
+start = [ 0, 18 ]
+highlight = "!! range: (1..2)"
+fix = "{% for i in array  %}{% endfor %}"
+
+[[cases]]
+name = "should report when invalid args are found (3)"
+
+[cases.files]
+"file.liquid" = "{% tablerow i in (1..10) limit1: 10 %}{{ i }}{% endtablerow %}"
+
+[cases.docset]
+filters = []
+
+[[cases.docset.tags]]
+name = "for"
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.docset.tags]]
+name = "tablerow"
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Arguments must be provided in the format `tablerow in <array> <positional arguments> <named arguments>`. Invalid/Unknown arguments: limit1: 10"
+start = [ 0, 25 ]
+highlight = "limit1: 10"
+fix = "{% tablerow i in (1..10)  %}{{ i }}{% endtablerow %}"
+
+[[cases]]
+name = "should report when positional args are found after named/invalid args (1)"
+
+[cases.files]
+"file.liquid" = "{% for i in array limit: 10 reversed %}{% endfor %}"
+
+[cases.docset]
+filters = []
+
+[[cases.docset.tags]]
+name = "for"
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.docset.tags]]
+name = "tablerow"
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Arguments must be provided in the format `for in <array> <positional arguments> <named arguments>`. Invalid/Unknown arguments: reversed"
+start = [ 0, 18 ]
+highlight = "limit: 10 reversed"
+fix = "{% for i in array limit: 10 %}{% endfor %}"
+
+[[cases]]
+name = "should report when positional args are found after named/invalid args (2)"
+
+[cases.files]
+"file.liquid" = "{% for i in array reversed limit: 10 invalid %}{% endfor %}"
+
+[cases.docset]
+filters = []
+
+[[cases.docset.tags]]
+name = "for"
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.docset.tags]]
+name = "tablerow"
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Arguments must be provided in the format `for in <array> <positional arguments> <named arguments>`. Invalid/Unknown arguments: invalid"
+start = [ 0, 18 ]
+highlight = "reversed limit: 10 invalid"
+fix = "{% for i in array reversed limit: 10 %}{% endfor %}"
+
+[[cases]]
+name = "should report when positional args are found after named/invalid args (3)"
+
+[cases.files]
+"file.liquid" = "{% for i in array !! reversed limit: 10 invalid %}{% endfor %}"
+
+[cases.docset]
+filters = []
+
+[[cases.docset.tags]]
+name = "for"
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.docset.tags]]
+name = "tablerow"
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Arguments must be provided in the format `for in <array> <positional arguments> <named arguments>`. Invalid/Unknown arguments: !!, reversed, invalid"
+start = [ 0, 18 ]
+highlight = "!! reversed limit: 10 invalid"
+fix = "{% for i in array limit: 10 %}{% endfor %}"
+
+[[cases]]
+name = "should report when positional args are found after named/invalid args (4)"
+
+[cases.files]
+"file.liquid" = "{% for i in array reversed: (1..2) %}{% endfor %}"
+
+[cases.docset]
+filters = []
+
+[[cases.docset.tags]]
+name = "for"
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.docset.tags]]
+name = "tablerow"
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Arguments must be provided in the format `for in <array> <positional arguments> <named arguments>`. Invalid/Unknown arguments: reversed: (1..2)"
+start = [ 0, 18 ]
+highlight = "reversed: (1..2)"
+fix = "{% for i in array  %}{% endfor %}"
+
+[[cases]]
+name = "detectInvalidLoopArguments > should report when there are multiple instances of the error"
+
+[cases.files]
+"file.liquid" = "{% for i in array reversed limit: 10 invalid %}{% endfor %} {% tablerow x in array cols: 2 limit: 10 invalid %}{% endtablerow %}"
+
+[cases.docset]
+filters = []
+
+[[cases.docset.tags]]
+name = "for"
+parameters = [
+  { name = "reversed", positional = true, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.docset.tags]]
+name = "tablerow"
+parameters = [
+  { name = "cols", positional = false, description = "...", required = false, types = [] },
+  { name = "limit", positional = false, description = "...", required = false, types = [] },
+  { name = "offset", positional = false, description = "...", required = false, types = [] },
+]
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Arguments must be provided in the format `for in <array> <positional arguments> <named arguments>`. Invalid/Unknown arguments: invalid"
+start = [ 0, 18 ]
+highlight = "reversed limit: 10 invalid"
+fix = "{% for i in array reversed limit: 10 %}{% endfor %} {% tablerow x in array cols: 2 limit: 10 invalid %}{% endtablerow %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Arguments must be provided in the format `tablerow in <array> <positional arguments> <named arguments>`. Invalid/Unknown arguments: invalid"
+start = [ 0, 83 ]
+highlight = "cols: 2 limit: 10 invalid"
+fix = "{% for i in array reversed limit: 10 invalid %}{% endfor %} {% tablerow x in array cols: 2 limit: 10 %}{% endtablerow %}"
+
+[cases.autofix]
+"file.liquid" = "{% for i in array reversed limit: 10 %}{% endfor %} {% tablerow x in array cols: 2 limit: 10 %}{% endtablerow %}"
+
+[[cases]]
+name = "should not report when echo value is valid (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo '123' %}"
+
+[[cases]]
+name = "should not report when echo value is valid (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo '123' | upcase %}"
+
+[[cases]]
+name = "should not report when echo value is valid (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ '123' }}"
+
+[[cases]]
+name = "should not report when echo value is valid (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ '123' | upcase }}"
+
+[[cases]]
+name = "should not report when echo value is valid (5)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ }}"
+
+[[cases]]
+name = "should not report when echo value is valid (6)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ echo }}"
+
+[[cases]]
+name = "should not report when echo value is valid (7)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% liquid echo %}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should not report when there are no filters provided"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo '123' %}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should report when there are multiple values (no filters) (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo '123' 555 text %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 13 ]
+highlight = " 555 text"
+fix = "{% echo '123' %}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should report when there are multiple values (no filters) (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo \"123\" 555 text %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 13 ]
+highlight = " 555 text"
+fix = "{% echo \"123\" %}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should report when there are multiple values (no filters) (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo 123 555 text %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 11 ]
+highlight = " 555 text"
+fix = "{% echo 123 %}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should report when there are multiple values (no filters) (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo true 555 text %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 12 ]
+highlight = " 555 text"
+fix = "{% echo true %}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should report when there are multiple values (no filters) (5)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ '123' 555 text }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 8 ]
+highlight = " 555 text"
+fix = "{{ '123' }}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should report when there are multiple values (no filters) (6)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ \"123\" 555 text }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 8 ]
+highlight = " 555 text"
+fix = "{{ \"123\" }}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should report when there are multiple values (no filters) (7)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 123 555 text }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 6 ]
+highlight = " 555 text"
+fix = "{{ 123 }}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should report when there are multiple values (no filters) (8)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ true 555 text }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 7 ]
+highlight = " 555 text"
+fix = "{{ true }}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should report when there are multiple values (with filters) (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo '123' 555 text | upcase %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 13 ]
+highlight = " 555 text"
+fix = "{% echo '123' | upcase %}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should report when there are multiple values (with filters) (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo \"123\" 555 text | upcase %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 13 ]
+highlight = " 555 text"
+fix = "{% echo \"123\" | upcase %}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should report when there are multiple values (with filters) (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo 123 555 text | default: 0 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 11 ]
+highlight = " 555 text"
+fix = "{% echo 123 | default: 0 %}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should report when there are multiple values (with filters) (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo true 555 text | fake-filter: 'yes' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 12 ]
+highlight = " 555 text"
+fix = "{% echo true | fake-filter: 'yes' %}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should report when there are multiple values (with filters) (5)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ '123' 555 text | upcase }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 8 ]
+highlight = " 555 text"
+fix = "{{ '123' | upcase }}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should report when there are multiple values (with filters) (6)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ \"123\" 555 text | default: 0 }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 8 ]
+highlight = " 555 text"
+fix = "{{ \"123\" | default: 0 }}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should report when there are multiple values (with filters) (7)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ 123 555 text | fake-filter: 'yes' }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 6 ]
+highlight = " 555 text"
+fix = "{{ 123 | fake-filter: 'yes' }}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should report when there are multiple values (with filters) (8)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ true 555 text | fake-filter: 'yes' }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 7 ]
+highlight = " 555 text"
+fix = "{{ true | fake-filter: 'yes' }}"
+
+[[cases]]
+name = "detectInvalidEchoValue > should report when there are multiple instances of the error"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo zero %} {% echo one two %} {% echo one two %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 27 ]
+highlight = " two"
+fix = "{% echo zero %} {% echo one %} {% echo one two %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 46 ]
+highlight = " two"
+fix = "{% echo zero %} {% echo one two %} {% echo one %}"
+
+[cases.autofix]
+"file.liquid" = "{% echo zero %} {% echo one %} {% echo one %}"
+
+[[cases]]
+name = "should report when there is no value (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo | upcase %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 8 ]
+highlight = "| upcase"
+fix = "{% echo blank %}"
+
+[[cases]]
+name = "should report when there is no value (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ | upcase }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 3 ]
+highlight = "| upcase"
+fix = "{{ blank }}"
+
+[[cases]]
+name = "should report when there is no value (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% liquid echo | upcase %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 15 ]
+highlight = "| upcase"
+fix = "{% liquid echo blank %}"
+
+[[cases]]
+name = "should report unclosed Liquid tags"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% capture some_variable %}
+  Hello, world!
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Attempting to end parsing before LiquidTag 'capture' was closed"
+start = [ 0, 0 ]
+highlight = "{% capture some_variable %}"
+
+[[cases]]
+name = "should report unclosed HTML tags"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+<a href="abc">
+  Hello, world!
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Attempting to end parsing before HtmlElement 'a' was closed"
+start = [ 0, 0 ]
+highlight = "<a href=\"abc\">"
+
+[[cases]]
+name = "should report closing the wrong node (html/html)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+<a href="abc">
+  Hello, world!
+</b>
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Attempting to close HtmlElement 'b' before HtmlElement 'a' was closed"
+start = [ 2, 0 ]
+highlight = "</b>"
+
+[[cases]]
+name = "should report closing the wrong node (html/liquid)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+<a href="abc">
+  Hello, world!
+{% endif %}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Attempting to close LiquidTag 'endif' before HtmlElement 'a' was closed"
+start = [ 0, 0 ]
+highlight = "<a href=\"abc\">"
+
+[[cases]]
+name = "should report unexpected tokens (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% if cond }}
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Expected LiquidTagClose but got EndOfInput"
+start = [ 0, 13 ]
+highlight = '''
+
+'''
+
+[[cases]]
+name = "should report unexpected tokens (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+<a href="abc" "></a>
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Expected HtmlTagClose but got EndOfInput"
+start = [ 0, 20 ]
+highlight = '''
+
+'''
+
+[[cases]]
+name = "should report unexpected tokens (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+<a href="abc" {%></a>
+'''
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Expected LiquidTagClose but got EndOfInput"
+start = [ 0, 21 ]
+highlight = '''
+
+'''
+
+[[cases]]
+name = "should not report syntax error in valid Liquid code"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% if some_variable %}
+  Hello, world!
+{% endif %}
+{% schema %}
+{
+  "settings": [{ "visible_if": "{{ foo.bar == true }}" }]
+}
+{% endschema %}
+'''
+
+[[cases]]
+name = "should not report canonical inline app block paths"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000' %}{% endblock %}"
+
+[[cases]]
+name = "should highligh the error (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "<div><a></b></div>"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Attempting to close HtmlElement 'b' before HtmlElement 'a' was closed"
+start = [ 0, 8 ]
+highlight = "</b>"
+
+[[cases]]
+name = "should highligh the error (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "<div><a>{% endif %}</div>"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Attempting to close LiquidTag 'endif' before HtmlElement 'a' was closed"
+start = [ 0, 5 ]
+highlight = "<a>"
+
+[[cases]]
+name = "should highligh the error (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "<a href=abc \">"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Expected HtmlTagClose but got EndOfInput"
+start = [ 0, 13 ]
+highlight = ">"
+
+[[cases]]
+name = "detectMultipleAssignValues > should not report when there are no trailing values (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign foo = '123' %}"
+
+[[cases]]
+name = "detectMultipleAssignValues > should not report when there are no trailing values (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign foo = '123' | upcase %}"
+
+[[cases]]
+name = "detectMultipleAssignValues > should report when there are multiple values (no filters) (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign foo = '123' 555 text %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 21 ]
+highlight = " 555 text"
+fix = "{% assign foo = '123' %}"
+
+[[cases]]
+name = "detectMultipleAssignValues > should report when there are multiple values (no filters) (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign foo = \"123\" 555 text %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 21 ]
+highlight = " 555 text"
+fix = "{% assign foo = \"123\" %}"
+
+[[cases]]
+name = "detectMultipleAssignValues > should report when there are multiple values (no filters) (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign foo = 123 555 text %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 19 ]
+highlight = " 555 text"
+fix = "{% assign foo = 123 %}"
+
+[[cases]]
+name = "detectMultipleAssignValues > should report when there are multiple values (no filters) (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign foo = true 555 text %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 20 ]
+highlight = " 555 text"
+fix = "{% assign foo = true %}"
+
+[[cases]]
+name = "detectMultipleAssignValues > should not report when there are no filters provided"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign foo = '123' %}"
+
+[[cases]]
+name = "detectMultipleAssignValues > should report when there are multiple instances of the error"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign foo = blank %} {% assign foo = '123' 555 text %} {% assign foo = '123' 555 text %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 46 ]
+highlight = " 555 text"
+fix = "{% assign foo = blank %} {% assign foo = '123' %} {% assign foo = '123' 555 text %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 80 ]
+highlight = " 555 text"
+fix = "{% assign foo = blank %} {% assign foo = '123' 555 text %} {% assign foo = '123' %}"
+
+[cases.autofix]
+"file.liquid" = "{% assign foo = blank %} {% assign foo = '123' %} {% assign foo = '123' %}"
+
+[[cases]]
+name = "detectMultipleAssignValues > should report when there are multiple values (with filters) (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign foo = '123' 555 text | upcase %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 21 ]
+highlight = " 555 text"
+fix = "{% assign foo = '123' | upcase %}"
+
+[[cases]]
+name = "detectMultipleAssignValues > should report when there are multiple values (with filters) (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign foo = \"123\" 555 text | upcase %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 21 ]
+highlight = " 555 text"
+fix = "{% assign foo = \"123\" | upcase %}"
+
+[[cases]]
+name = "detectMultipleAssignValues > should report when there are multiple values (with filters) (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign foo = 123 555 text | default: 0 %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 19 ]
+highlight = " 555 text"
+fix = "{% assign foo = 123 | default: 0 %}"
+
+[[cases]]
+name = "detectMultipleAssignValues > should report when there are multiple values (with filters) (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign foo = true 555 text | fake-filter: 'yes' %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 20 ]
+highlight = " 555 text"
+fix = "{% assign foo = true | fake-filter: 'yes' %}"
+
+[[cases]]
+name = "should not report when range is valid (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% for i in (1..10) %}{% endfor %}"
+
+[[cases]]
+name = "should not report when range is valid (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% tablerow x in (a..b) %}{% endtablerow %}"
+
+[[cases]]
+name = "should report when there is an extra `.` character in range (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% for i in (1...10) %}{% endfor %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Ranges must be in the format `(<start>..<end>)`. The start and end of the range must be whole numbers or variables."
+start = [ 0, 12 ]
+highlight = "(1...10)"
+fix = "{% for i in (1..10) %}{% endfor %}"
+
+[[cases]]
+name = "should report when there is an extra `.` character in range (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% tablerow x in (a...b) %}{% endtablerow %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Ranges must be in the format `(<start>..<end>)`. The start and end of the range must be whole numbers or variables."
+start = [ 0, 17 ]
+highlight = "(a...b)"
+fix = "{% tablerow x in (a..b) %}{% endtablerow %}"
+
+[[cases]]
+name = "should report when there is an extra `.` character in range (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% tablerow x in (a .. b) %}{% endtablerow %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Ranges must be in the format `(<start>..<end>)`. The start and end of the range must be whole numbers or variables."
+start = [ 0, 17 ]
+highlight = "(a .. b)"
+fix = "{% tablerow x in (a..b) %}{% endtablerow %}"
+
+[[cases]]
+name = "should report when there is an extra `.` character in range (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% tablerow x in ( a..b ) %}{% endtablerow %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Ranges must be in the format `(<start>..<end>)`. The start and end of the range must be whole numbers or variables."
+start = [ 0, 17 ]
+highlight = "( a..b )"
+fix = "{% tablerow x in (a..b) %}{% endtablerow %}"
+
+[[cases]]
+name = "should report when the range contains a real number"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% for i in (-2.9..2.9) %}{% endfor %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Ranges must be in the format `(<start>..<end>)`. The start and end of the range must be whole numbers or variables."
+start = [ 0, 12 ]
+highlight = "(-2.9..2.9)"
+fix = "{% for i in (-2..2) %}{% endfor %}"
+
+[[cases]]
+name = "should report when the range contains a nested variable"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% for i in (some.var..some.other.var) %}{% endfor %}"
+
+[[cases]]
+name = "detectInvalidLoopRange > should report when there are multiple instances of the error"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% for i in (1...10) %}{% endfor %} {% tablerow x in (a...b) %}{% endtablerow %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Ranges must be in the format `(<start>..<end>)`. The start and end of the range must be whole numbers or variables."
+start = [ 0, 12 ]
+highlight = "(1...10)"
+fix = "{% for i in (1..10) %}{% endfor %} {% tablerow x in (a...b) %}{% endtablerow %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Ranges must be in the format `(<start>..<end>)`. The start and end of the range must be whole numbers or variables."
+start = [ 0, 53 ]
+highlight = "(a...b)"
+fix = "{% for i in (1...10) %}{% endfor %} {% tablerow x in (a..b) %}{% endtablerow %}"
+
+[cases.autofix]
+"file.liquid" = "{% for i in (1..10) %}{% endfor %} {% tablerow x in (a..b) %}{% endtablerow %}"
+
+[[cases]]
+name = "should not report no unsupported parenthesis in the markup (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if condition %}{% endif %}"
+
+[[cases]]
+name = "should not report no unsupported parenthesis in the markup (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if range == (1..2) %}{% endif %}"
+
+[[cases]]
+name = "should report when there are unsupported parenthesis in the markup (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if (this and that) or other %}{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 6 ]
+highlight = "(this and that) or other"
+fix = "{% if this and that or other %}{% endif %}"
+
+[[cases]]
+name = "should report when there are unsupported parenthesis in the markup (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if (a > b) and (c == d) %}{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 6 ]
+highlight = "(a > b) and (c == d)"
+fix = "{% if a > b and c == d %}{% endif %}"
+
+[[cases]]
+name = "detectConditionalNodeUnsupportedParenthesis > should report when there are multiple instances of the error"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% if (a or c) %}{% endif %} {% if (a == b) %}{% endif %} {% if condition %}{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 6 ]
+highlight = "(a or c)"
+fix = "{% if a or c %}{% endif %} {% if (a == b) %}{% endif %} {% if condition %}{% endif %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 35 ]
+highlight = "(a == b)"
+fix = "{% if (a or c) %}{% endif %} {% if a == b %}{% endif %} {% if condition %}{% endif %}"
+
+[cases.autofix]
+"file.liquid" = "{% if a or c %}{% endif %} {% if a == b %}{% endif %} {% if condition %}{% endif %}"
+
+[[cases]]
+name = "detectTrailingAssignValue > should not report when there are no trailing values (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign foo = '123' %}"
+
+[[cases]]
+name = "detectTrailingAssignValue > should not report when there are no trailing values (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign foo = '123' | upcase %}"
+
+[[cases]]
+name = "should not report when the boolean expression is in a schema tag"
+docset = "default"
+
+[cases.files]
+"file.liquid" = '''
+{% schema %}
+      {
+        "visible_if": "{{ this > that }}"
+      }
+    {% endschema %}'''
+
+[[cases]]
+name = "should report all use of boolean expressions (1)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% assign foo = something == else %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 16 ]
+highlight = "something == else"
+fix = "{% assign foo = something %}"
+
+[[cases]]
+name = "should report all use of boolean expressions (2)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{% echo foo != bar %}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 8 ]
+highlight = "foo != bar"
+fix = "{% echo foo %}"
+
+[[cases]]
+name = "should report all use of boolean expressions (3)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ this > that }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 3 ]
+highlight = "this > that"
+fix = "{{ this }}"
+
+[[cases]]
+name = "should report all use of boolean expressions (4)"
+docset = "default"
+
+[cases.files]
+"file.liquid" = "{{ bool and cond }}"
+
+[[cases.offenses]]
+file = "file.liquid"
+message = "Syntax is not supported"
+start = [ 0, 3 ]
+highlight = "bool and cond"
+fix = "{{ bool }}"

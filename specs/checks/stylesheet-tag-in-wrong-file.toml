@@ -1,0 +1,32 @@
+check = "StylesheetTagInWrongFile"
+severity = "error"
+
+[[cases]]
+name = "allows stylesheet tags in sections/test.liquid"
+
+[cases.files]
+"sections/test.liquid" = "{% stylesheet %}{% endstylesheet %}"
+
+[[cases]]
+name = "allows stylesheet tags in blocks/test.liquid"
+
+[cases.files]
+"blocks/test.liquid" = "{% stylesheet %}{% endstylesheet %}"
+
+[[cases]]
+name = "allows stylesheet tags in snippets/test.liquid"
+
+[cases.files]
+"snippets/test.liquid" = "{% stylesheet %}{% endstylesheet %}"
+
+[[cases]]
+name = "reports stylesheet tags in templates/index.liquid"
+
+[cases.files]
+"templates/index.liquid" = "{% stylesheet %}{% endstylesheet %}"
+
+[[cases.offenses]]
+file = "templates/index.liquid"
+message = "{% stylesheet %} is only valid in section, block, or snippet files."
+start = [ 0, 0 ]
+highlight = "{% stylesheet %}"
