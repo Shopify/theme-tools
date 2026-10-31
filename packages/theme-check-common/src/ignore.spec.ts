@@ -174,18 +174,79 @@ describe('Function: isIgnored', () => {
 
     expect(result).toBe(true);
   });
+
+  describe('When the theme root is inside a dot-directory', () => {
+    const rootUri = 'file:/path/.worktrees/theme';
+
+    it('should return true when the file matches a check ignore pattern', () => {
+      const result = isIgnored(
+        toUri('templates/product.json', rootUri),
+        config({
+          checkIgnore: ['templates/product.json'],
+          globalIgnore: [],
+          rootUri,
+        }),
+        checkDef,
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it('should return true when the file matches a global ignore pattern', () => {
+      const result = isIgnored(
+        toUri('node_modules/some-library/foo.liquid', rootUri),
+        config({
+          checkIgnore: [],
+          globalIgnore: ['node_modules/**'],
+          rootUri,
+        }),
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it('should return true when the file matches a root ignore pattern', () => {
+      const result = isIgnored(
+        toUri('node_modules/foo.liquid', rootUri),
+        config({
+          checkIgnore: ['/node_modules/*'],
+          globalIgnore: [],
+          rootUri,
+        }),
+        checkDef,
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it('should return false when the file does not match any ignore patterns', () => {
+      const result = isIgnored(
+        toUri('templates/index.json', rootUri),
+        config({
+          checkIgnore: ['templates/product.json'],
+          globalIgnore: [],
+          rootUri,
+        }),
+        checkDef,
+      );
+
+      expect(result).toBe(false);
+    });
+  });
 });
 
-function toUri(relativePath: string): UriString {
-  return `file:/path/to/${relativePath}`;
+function toUri(relativePath: string, rootUri: UriString = 'file:/path/to'): UriString {
+  return `${rootUri}/${relativePath}`;
 }
 
 function config({
   checkIgnore,
   globalIgnore,
+  rootUri = 'file:/path/to',
 }: {
   checkIgnore?: string[];
   globalIgnore?: string[];
+  rootUri?: UriString;
 }): Config {
   return {
     context: 'theme',
@@ -196,7 +257,7 @@ function config({
       },
     },
     checks: [],
-    rootUri: 'file:/path/to',
+    rootUri,
     ignore: globalIgnore,
   };
 }
