@@ -74,8 +74,11 @@ export interface Workspace {
   clean(): Promise<any>;
 }
 
-export async function makeTempWorkspace(structure: Tree): Promise<Workspace> {
-  const root = await mktemp.createDir(path.join(__dirname, '..', '.XXXXX'));
+export async function makeTempWorkspace(
+  structure: Tree,
+  rootTemplate = path.join(__dirname, '..', '.XXXXX'),
+): Promise<Workspace> {
+  const root = await mktemp.createDir(rootTemplate);
   if (!root) throw new Error('Could not create temp dir for temp workspace');
 
   await createFiles(structure, [root]);
