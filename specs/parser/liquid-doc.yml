@@ -1,0 +1,1653 @@
+cases:
+  - name: should preserve string enum doc types in Liquid and HTML documents
+    source: |-
+      {% doc %}
+        @param {'Heading' | 'a|b' | '}' | ''} [variant] - Shared text style
+      {% enddoc %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% doc %}
+            @param {'Heading' | 'a|b' | '}' | ''} [variant] - Shared text style
+          {% enddoc %}
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% doc %}" }
+          blockEndPosition: { start: [2, 0], text: "{% enddoc %}" }
+          position:
+            start: [0, 0]
+            text: |-
+              {% doc %}
+                @param {'Heading' | 'a|b' | '}' | ''} [variant] - Shared text style
+              {% enddoc %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |2
+              
+                @param {'Heading' | 'a|b' | '}' | ''} [variant] - Shared text style
+            position:
+              start: [0, 9]
+              text: |2
+                
+                  @param {'Heading' | 'a|b' | '}' | ''} [variant] - Shared text style
+            nodes:
+              - type: LiquidDocParamNode
+                name: param
+                required: false
+                position: { start: [1, 2], text: "@param {'Heading' | 'a|b' | '}' | ''} [variant] - Shared text style" }
+                paramName:
+                  type: TextNode
+                  value: variant
+                  position: { start: [1, 41], text: variant }
+                paramType:
+                  type: TextNode
+                  value: "'Heading' | 'a|b' | '}' | ''"
+                  position: { start: [1, 10], text: "'Heading' | 'a|b' | '}' | ''" }
+                paramDescription:
+                  type: TextNode
+                  value: Shared text style
+                  position: { start: [1, 52], text: Shared text style }
+  - name: should parse doc tags (1)
+    source: "{% doc %}{% enddoc %}"
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% doc %}{% enddoc %}" }
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% doc %}" }
+          blockEndPosition: { start: [0, 9], text: "{% enddoc %}" }
+          position: { start: [0, 0], text: "{% doc %}{% enddoc %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: ""
+            position: { start: [0, 9], text: "" }
+            nodes: []
+  - name: should parse doc tags (2)
+    source: "
+
+      \        {% doc -%}
+
+      \        @param requiredParamWithNoType
+
+      \        @param {String} paramWithDescription - param with description and `punctation`. This is still a valid param description.
+
+      \        @param {String} paramWithNoDescription
+
+      \        @param {String} [optionalParameterWithTypeAndDescription] - optional parameter with type and description
+
+      \        @param [optionalParameterWithDescription] - optional parameter description
+
+      \        @param {String} [optionalParameterWithType]
+
+      \        @unsupported this node falls back to a text node
+
+      \        {%- enddoc %}
+
+      \      "
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {% doc -%}
+
+          \        @param requiredParamWithNoType
+
+          \        @param {String} paramWithDescription - param with description and `punctation`. This is still a valid param description.
+
+          \        @param {String} paramWithNoDescription
+
+          \        @param {String} [optionalParameterWithTypeAndDescription] - optional parameter with type and description
+
+          \        @param [optionalParameterWithDescription] - optional parameter description
+
+          \        @param {String} [optionalParameterWithType]
+
+          \        @unsupported this node falls back to a text node
+
+          \        {%- enddoc %}
+
+          \      "
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [1, 15], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: "-"
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 8], text: "{% doc -%}" }
+          blockEndPosition: { start: [9, 8], text: "{%- enddoc %}" }
+          position:
+            start: [1, 8]
+            text: |-
+              {% doc -%}
+                      @param requiredParamWithNoType
+                      @param {String} paramWithDescription - param with description and `punctation`. This is still a valid param description.
+                      @param {String} paramWithNoDescription
+                      @param {String} [optionalParameterWithTypeAndDescription] - optional parameter with type and description
+                      @param [optionalParameterWithDescription] - optional parameter description
+                      @param {String} [optionalParameterWithType]
+                      @unsupported this node falls back to a text node
+                      {%- enddoc %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: "
+
+              \        @param requiredParamWithNoType
+
+              \        @param {String} paramWithDescription - param with description and `punctation`. This is still a valid param description.
+
+              \        @param {String} paramWithNoDescription
+
+              \        @param {String} [optionalParameterWithTypeAndDescription] - optional parameter with type and description
+
+              \        @param [optionalParameterWithDescription] - optional parameter description
+
+              \        @param {String} [optionalParameterWithType]
+
+              \        @unsupported this node falls back to a text node
+
+              \        "
+            position:
+              start: [1, 18]
+              text: "
+
+                \        @param requiredParamWithNoType
+
+                \        @param {String} paramWithDescription - param with description and `punctation`. This is still a valid param description.
+
+                \        @param {String} paramWithNoDescription
+
+                \        @param {String} [optionalParameterWithTypeAndDescription] - optional parameter with type and description
+
+                \        @param [optionalParameterWithDescription] - optional parameter description
+
+                \        @param {String} [optionalParameterWithType]
+
+                \        @unsupported this node falls back to a text node
+
+                \        "
+            nodes:
+              - type: LiquidDocParamNode
+                name: param
+                paramType: null
+                paramDescription: null
+                required: true
+                position: { start: [2, 8], text: "@param requiredParamWithNoType" }
+                paramName:
+                  type: TextNode
+                  value: requiredParamWithNoType
+                  position: { start: [2, 15], text: requiredParamWithNoType }
+              - type: LiquidDocParamNode
+                name: param
+                required: true
+                position: { start: [3, 8], text: "@param {String} paramWithDescription - param with description and `punctation`. This is still a valid param description." }
+                paramName:
+                  type: TextNode
+                  value: paramWithDescription
+                  position: { start: [3, 24], text: paramWithDescription }
+                paramType:
+                  type: TextNode
+                  value: String
+                  position: { start: [3, 16], text: String }
+                paramDescription:
+                  type: TextNode
+                  value: param with description and `punctation`. This is still a valid param description.
+                  position: { start: [3, 47], text: param with description and `punctation`. This is still a valid param description. }
+              - type: LiquidDocParamNode
+                name: param
+                paramDescription: null
+                required: true
+                position: { start: [4, 8], text: "@param {String} paramWithNoDescription" }
+                paramName:
+                  type: TextNode
+                  value: paramWithNoDescription
+                  position: { start: [4, 24], text: paramWithNoDescription }
+                paramType:
+                  type: TextNode
+                  value: String
+                  position: { start: [4, 16], text: String }
+              - type: LiquidDocParamNode
+                name: param
+                required: false
+                position: { start: [5, 8], text: "@param {String} [optionalParameterWithTypeAndDescription] - optional parameter with type and description" }
+                paramName:
+                  type: TextNode
+                  value: optionalParameterWithTypeAndDescription
+                  position: { start: [5, 25], text: optionalParameterWithTypeAndDescription }
+                paramType:
+                  type: TextNode
+                  value: String
+                  position: { start: [5, 16], text: String }
+                paramDescription:
+                  type: TextNode
+                  value: optional parameter with type and description
+                  position: { start: [5, 68], text: optional parameter with type and description }
+              - type: LiquidDocParamNode
+                name: param
+                paramType: null
+                required: false
+                position: { start: [6, 8], text: "@param [optionalParameterWithDescription] - optional parameter description" }
+                paramName:
+                  type: TextNode
+                  value: optionalParameterWithDescription
+                  position: { start: [6, 16], text: optionalParameterWithDescription }
+                paramDescription:
+                  type: TextNode
+                  value: optional parameter description
+                  position: { start: [6, 52], text: optional parameter description }
+              - type: LiquidDocParamNode
+                name: param
+                paramDescription: null
+                required: false
+                position: { start: [7, 8], text: "@param {String} [optionalParameterWithType]" }
+                paramName:
+                  type: TextNode
+                  value: optionalParameterWithType
+                  position: { start: [7, 25], text: optionalParameterWithType }
+                paramType:
+                  type: TextNode
+                  value: String
+                  position: { start: [7, 16], text: String }
+              - type: TextNode
+                value: "@unsupported this node falls back to a text node"
+                position: { start: [8, 8], text: "@unsupported this node falls back to a text node" }
+  - name: should parse doc tags (3)
+    source: "
+
+      \        {% doc -%}
+
+      \        @example simple inline example
+
+      \        {%- enddoc %}
+
+      \      "
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {% doc -%}
+
+          \        @example simple inline example
+
+          \        {%- enddoc %}
+
+          \      "
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [1, 15], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: "-"
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 8], text: "{% doc -%}" }
+          blockEndPosition: { start: [3, 8], text: "{%- enddoc %}" }
+          position:
+            start: [1, 8]
+            text: |-
+              {% doc -%}
+                      @example simple inline example
+                      {%- enddoc %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: "
+
+              \        @example simple inline example
+
+              \        "
+            position:
+              start: [1, 18]
+              text: "
+
+                \        @example simple inline example
+
+                \        "
+            nodes:
+              - type: LiquidDocExampleNode
+                name: example
+                isInline: true
+                position: { start: [2, 8], text: "@example simple inline example" }
+                content:
+                  type: TextNode
+                  value: simple inline example
+                  position: { start: [2, 17], text: simple inline example }
+  - name: should parse doc tags (4)
+    source: "
+
+      \        {% doc -%}
+
+      \        @example including inline code
+
+      \        This is a valid example
+
+      \        It can have multiple lines
+
+      \        {% enddoc %}
+
+      \      "
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {% doc -%}
+
+          \        @example including inline code
+
+          \        This is a valid example
+
+          \        It can have multiple lines
+
+          \        {% enddoc %}
+
+          \      "
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [1, 15], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 8], text: "{% doc -%}" }
+          blockEndPosition: { start: [5, 8], text: "{% enddoc %}" }
+          position:
+            start: [1, 8]
+            text: |-
+              {% doc -%}
+                      @example including inline code
+                      This is a valid example
+                      It can have multiple lines
+                      {% enddoc %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: "
+
+              \        @example including inline code
+
+              \        This is a valid example
+
+              \        It can have multiple lines
+
+              \        "
+            position:
+              start: [1, 18]
+              text: "
+
+                \        @example including inline code
+
+                \        This is a valid example
+
+                \        It can have multiple lines
+
+                \        "
+            nodes:
+              - type: LiquidDocExampleNode
+                name: example
+                isInline: true
+                position:
+                  start: [2, 8]
+                  text: "@example including inline code
+
+                    \        This is a valid example
+
+                    \        It can have multiple lines
+
+                    \        "
+                content:
+                  type: TextNode
+                  value: |
+                    including inline code
+                            This is a valid example
+                            It can have multiple lines
+                  position:
+                    start: [2, 17]
+                    text: "including inline code
+
+                      \        This is a valid example
+
+                      \        It can have multiple lines
+
+                      \        "
+  - name: should parse doc tags (5)
+    source: "
+
+      \        {% doc -%}
+
+      \        @example
+
+      \        First Example
+
+      \        @example
+
+      \        Second Example
+
+      \        {% enddoc %}
+
+      \      "
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {% doc -%}
+
+          \        @example
+
+          \        First Example
+
+          \        @example
+
+          \        Second Example
+
+          \        {% enddoc %}
+
+          \      "
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [1, 15], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 8], text: "{% doc -%}" }
+          blockEndPosition: { start: [6, 8], text: "{% enddoc %}" }
+          position:
+            start: [1, 8]
+            text: |-
+              {% doc -%}
+                      @example
+                      First Example
+                      @example
+                      Second Example
+                      {% enddoc %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: "
+
+              \        @example
+
+              \        First Example
+
+              \        @example
+
+              \        Second Example
+
+              \        "
+            position:
+              start: [1, 18]
+              text: "
+
+                \        @example
+
+                \        First Example
+
+                \        @example
+
+                \        Second Example
+
+                \        "
+            nodes:
+              - type: LiquidDocExampleNode
+                name: example
+                isInline: false
+                position:
+                  start: [2, 8]
+                  text: |
+                    @example
+                            First Example
+                content:
+                  type: TextNode
+                  value: |
+                    First Example
+                  position:
+                    start: [3, 8]
+                    text: |
+                      First Example
+              - type: LiquidDocExampleNode
+                name: example
+                isInline: false
+                position:
+                  start: [4, 8]
+                  text: "@example
+
+                    \        Second Example
+
+                    \        "
+                content:
+                  type: TextNode
+                  value: |
+                    Second Example
+                  position:
+                    start: [5, 8]
+                    text: "Second Example\n        "
+  - name: should parse doc tags (6)
+    source: "
+
+      \        {% doc -%}
+
+      \        @example
+
+      \        This is a valid example
+
+      \        It can have multiple lines
+
+      \        @param {String} paramWithDescription - param with description
+
+      \        {% enddoc %}
+
+      \      "
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {% doc -%}
+
+          \        @example
+
+          \        This is a valid example
+
+          \        It can have multiple lines
+
+          \        @param {String} paramWithDescription - param with description
+
+          \        {% enddoc %}
+
+          \      "
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [1, 15], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 8], text: "{% doc -%}" }
+          blockEndPosition: { start: [6, 8], text: "{% enddoc %}" }
+          position:
+            start: [1, 8]
+            text: |-
+              {% doc -%}
+                      @example
+                      This is a valid example
+                      It can have multiple lines
+                      @param {String} paramWithDescription - param with description
+                      {% enddoc %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: "
+
+              \        @example
+
+              \        This is a valid example
+
+              \        It can have multiple lines
+
+              \        @param {String} paramWithDescription - param with description
+
+              \        "
+            position:
+              start: [1, 18]
+              text: "
+
+                \        @example
+
+                \        This is a valid example
+
+                \        It can have multiple lines
+
+                \        @param {String} paramWithDescription - param with description
+
+                \        "
+            nodes:
+              - type: LiquidDocExampleNode
+                name: example
+                isInline: false
+                position:
+                  start: [2, 8]
+                  text: |
+                    @example
+                            This is a valid example
+                            It can have multiple lines
+                content:
+                  type: TextNode
+                  value: |
+                    This is a valid example
+                            It can have multiple lines
+                  position:
+                    start: [3, 8]
+                    text: |
+                      This is a valid example
+                              It can have multiple lines
+              - type: LiquidDocParamNode
+                name: param
+                required: true
+                position: { start: [5, 8], text: "@param {String} paramWithDescription - param with description" }
+                paramName:
+                  type: TextNode
+                  value: paramWithDescription
+                  position: { start: [5, 24], text: paramWithDescription }
+                paramType:
+                  type: TextNode
+                  value: String
+                  position: { start: [5, 16], text: String }
+                paramDescription:
+                  type: TextNode
+                  value: param with description
+                  position: { start: [5, 47], text: param with description }
+  - name: should parse doc tags (7)
+    source: "
+
+      \        {% doc -%}
+
+      \        @description This is a description
+
+      \        @description This is another description
+
+      \        it can have multiple lines
+
+      \        {% enddoc %}
+
+      \      "
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {% doc -%}
+
+          \        @description This is a description
+
+          \        @description This is another description
+
+          \        it can have multiple lines
+
+          \        {% enddoc %}
+
+          \      "
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [1, 15], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 8], text: "{% doc -%}" }
+          blockEndPosition: { start: [5, 8], text: "{% enddoc %}" }
+          position:
+            start: [1, 8]
+            text: |-
+              {% doc -%}
+                      @description This is a description
+                      @description This is another description
+                      it can have multiple lines
+                      {% enddoc %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: "
+
+              \        @description This is a description
+
+              \        @description This is another description
+
+              \        it can have multiple lines
+
+              \        "
+            position:
+              start: [1, 18]
+              text: "
+
+                \        @description This is a description
+
+                \        @description This is another description
+
+                \        it can have multiple lines
+
+                \        "
+            nodes:
+              - type: LiquidDocDescriptionNode
+                name: description
+                isImplicit: false
+                isInline: true
+                position: { start: [2, 8], text: "@description This is a description" }
+                content:
+                  type: TextNode
+                  value: This is a description
+                  position: { start: [2, 21], text: This is a description }
+              - type: LiquidDocDescriptionNode
+                name: description
+                isImplicit: false
+                isInline: true
+                position:
+                  start: [3, 8]
+                  text: "@description This is another description
+
+                    \        it can have multiple lines
+
+                    \        "
+                content:
+                  type: TextNode
+                  value: |
+                    This is another description
+                            it can have multiple lines
+                  position:
+                    start: [3, 21]
+                    text: "This is another description
+
+                      \        it can have multiple lines
+
+                      \        "
+  - name: should parse doc tags (8)
+    source: "
+
+      \        {% doc -%}
+
+      \        @description This is a description
+
+      \        @example This is an example
+
+      \        @param {String} paramWithDescription - param with description
+
+      \        {% enddoc %}
+
+      \      "
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {% doc -%}
+
+          \        @description This is a description
+
+          \        @example This is an example
+
+          \        @param {String} paramWithDescription - param with description
+
+          \        {% enddoc %}
+
+          \      "
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [1, 15], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 8], text: "{% doc -%}" }
+          blockEndPosition: { start: [5, 8], text: "{% enddoc %}" }
+          position:
+            start: [1, 8]
+            text: |-
+              {% doc -%}
+                      @description This is a description
+                      @example This is an example
+                      @param {String} paramWithDescription - param with description
+                      {% enddoc %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: "
+
+              \        @description This is a description
+
+              \        @example This is an example
+
+              \        @param {String} paramWithDescription - param with description
+
+              \        "
+            position:
+              start: [1, 18]
+              text: "
+
+                \        @description This is a description
+
+                \        @example This is an example
+
+                \        @param {String} paramWithDescription - param with description
+
+                \        "
+            nodes:
+              - type: LiquidDocDescriptionNode
+                name: description
+                isImplicit: false
+                isInline: true
+                position: { start: [2, 8], text: "@description This is a description" }
+                content:
+                  type: TextNode
+                  value: This is a description
+                  position: { start: [2, 21], text: This is a description }
+              - type: LiquidDocExampleNode
+                name: example
+                isInline: true
+                position: { start: [3, 8], text: "@example This is an example" }
+                content:
+                  type: TextNode
+                  value: This is an example
+                  position: { start: [3, 17], text: This is an example }
+              - type: LiquidDocParamNode
+                name: param
+                required: true
+                position: { start: [4, 8], text: "@param {String} paramWithDescription - param with description" }
+                paramName:
+                  type: TextNode
+                  value: paramWithDescription
+                  position: { start: [4, 24], text: paramWithDescription }
+                paramType:
+                  type: TextNode
+                  value: String
+                  position: { start: [4, 16], text: String }
+                paramDescription:
+                  type: TextNode
+                  value: param with description
+                  position: { start: [4, 47], text: param with description }
+  - name: should parse doc tags (9)
+    source: "
+
+      \        {% doc -%}
+
+      \        this is an implicit description
+
+      \        in a header
+
+
+      \        @description with a description annotation
+
+      \        {% enddoc %}
+
+      \      "
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {% doc -%}
+
+          \        this is an implicit description
+
+          \        in a header
+
+
+          \        @description with a description annotation
+
+          \        {% enddoc %}
+
+          \      "
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [1, 15], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 8], text: "{% doc -%}" }
+          blockEndPosition: { start: [6, 8], text: "{% enddoc %}" }
+          position:
+            start: [1, 8]
+            text: |-
+              {% doc -%}
+                      this is an implicit description
+                      in a header
+
+                      @description with a description annotation
+                      {% enddoc %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: "
+
+              \        this is an implicit description
+
+              \        in a header
+
+
+              \        @description with a description annotation
+
+              \        "
+            position:
+              start: [1, 18]
+              text: "
+
+                \        this is an implicit description
+
+                \        in a header
+
+
+                \        @description with a description annotation
+
+                \        "
+            nodes:
+              - type: LiquidDocDescriptionNode
+                name: description
+                isImplicit: true
+                isInline: true
+                position:
+                  start: [2, 8]
+                  text: |+
+                    this is an implicit description
+                            in a header
+
+                content:
+                  type: TextNode
+                  value: |+
+                    this is an implicit description
+                            in a header
+
+                  position:
+                    start: [2, 8]
+                    text: |+
+                      this is an implicit description
+                              in a header
+
+              - type: LiquidDocDescriptionNode
+                name: description
+                isImplicit: false
+                isInline: true
+                position: { start: [5, 8], text: "@description with a description annotation" }
+                content:
+                  type: TextNode
+                  value: with a description annotation
+                  position: { start: [5, 21], text: with a description annotation }
+  - name: should parse doc tags (10)
+    source: |-
+      
+      {% doc -%}
+        @prompt
+          This is a prompt
+          It can have multiple lines
+      {% enddoc %}
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          
+          {% doc -%}
+            @prompt
+              This is a prompt
+              It can have multiple lines
+          {% enddoc %}
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [1, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 0], text: "{% doc -%}" }
+          blockEndPosition: { start: [5, 0], text: "{% enddoc %}" }
+          position:
+            start: [1, 0]
+            text: |-
+              {% doc -%}
+                @prompt
+                  This is a prompt
+                  It can have multiple lines
+              {% enddoc %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |2
+              
+                @prompt
+                  This is a prompt
+                  It can have multiple lines
+            position:
+              start: [1, 10]
+              text: |2
+                
+                  @prompt
+                    This is a prompt
+                    It can have multiple lines
+            nodes:
+              - type: LiquidDocPromptNode
+                name: prompt
+                position:
+                  start: [2, 2]
+                  text: |
+                    @prompt
+                        This is a prompt
+                        It can have multiple lines
+                content:
+                  type: TextNode
+                  value: |2
+                    
+                        This is a prompt
+                        It can have multiple lines
+                  position:
+                    start: [2, 9]
+                    text: |2
+                      
+                          This is a prompt
+                          It can have multiple lines
+  - name: should parse doc tags (11)
+    source: "
+
+      {% doc -%}
+
+      \  this block was AI generated
+
+
+      \  @prompt
+
+      \    First prompt
+
+
+      \  @param {String} paramName - param description
+
+      {% enddoc %}
+
+      \      "
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          {% doc -%}
+
+          \  this block was AI generated
+
+
+          \  @prompt
+
+          \    First prompt
+
+
+          \  @param {String} paramName - param description
+
+          {% enddoc %}
+
+          \      "
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [1, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 0], text: "{% doc -%}" }
+          blockEndPosition: { start: [8, 0], text: "{% enddoc %}" }
+          position:
+            start: [1, 0]
+            text: |-
+              {% doc -%}
+                this block was AI generated
+
+                @prompt
+                  First prompt
+
+                @param {String} paramName - param description
+              {% enddoc %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |2
+              
+                this block was AI generated
+
+                @prompt
+                  First prompt
+
+                @param {String} paramName - param description
+            position:
+              start: [1, 10]
+              text: |2
+                
+                  this block was AI generated
+
+                  @prompt
+                    First prompt
+
+                  @param {String} paramName - param description
+            nodes:
+              - type: LiquidDocDescriptionNode
+                name: description
+                isImplicit: true
+                isInline: true
+                position:
+                  start: [2, 2]
+                  text: |+
+                    this block was AI generated
+
+                content:
+                  type: TextNode
+                  value: |+
+                    this block was AI generated
+
+                  position:
+                    start: [2, 2]
+                    text: |+
+                      this block was AI generated
+
+              - type: LiquidDocPromptNode
+                name: prompt
+                position:
+                  start: [4, 2]
+                  text: |+
+                    @prompt
+                        First prompt
+
+                content:
+                  type: TextNode
+                  value: |2+
+                    
+                        First prompt
+
+                  position:
+                    start: [4, 9]
+                    text: |2+
+                      
+                          First prompt
+
+              - type: LiquidDocParamNode
+                name: param
+                required: true
+                position: { start: [7, 2], text: "@param {String} paramName - param description" }
+                paramName:
+                  type: TextNode
+                  value: paramName
+                  position: { start: [7, 18], text: paramName }
+                paramType:
+                  type: TextNode
+                  value: String
+                  position: { start: [7, 10], text: String }
+                paramDescription:
+                  type: TextNode
+                  value: param description
+                  position: { start: [7, 30], text: param description }
+  - name: should split doc body at mid-line @word patterns (1)
+    source: |-
+      
+      {% doc %}
+        Description text with `@utility` mid-line token.
+
+        @param {string} [name] - A param
+        @category content
+      {% enddoc %}
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          
+          {% doc %}
+            Description text with `@utility` mid-line token.
+
+            @param {string} [name] - A param
+            @category content
+          {% enddoc %}
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [1, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 0], text: "{% doc %}" }
+          blockEndPosition: { start: [6, 0], text: "{% enddoc %}" }
+          position:
+            start: [1, 0]
+            text: |-
+              {% doc %}
+                Description text with `@utility` mid-line token.
+
+                @param {string} [name] - A param
+                @category content
+              {% enddoc %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |2
+              
+                Description text with `@utility` mid-line token.
+
+                @param {string} [name] - A param
+                @category content
+            position:
+              start: [1, 9]
+              text: |2
+                
+                  Description text with `@utility` mid-line token.
+
+                  @param {string} [name] - A param
+                  @category content
+            nodes:
+              - type: LiquidDocDescriptionNode
+                name: description
+                isImplicit: true
+                isInline: true
+                position: { start: [2, 2], text: Description text with ` }
+                content:
+                  type: TextNode
+                  value: Description text with `
+                  position: { start: [2, 2], text: Description text with ` }
+              - type: TextNode
+                value: "@utility` mid-line token."
+                position: { start: [2, 25], text: "@utility` mid-line token." }
+              - type: LiquidDocParamNode
+                name: param
+                required: false
+                position: { start: [4, 2], text: "@param {string} [name] - A param" }
+                paramName:
+                  type: TextNode
+                  value: name
+                  position: { start: [4, 19], text: name }
+                paramType:
+                  type: TextNode
+                  value: string
+                  position: { start: [4, 10], text: string }
+                paramDescription:
+                  type: TextNode
+                  value: A param
+                  position: { start: [4, 27], text: A param }
+              - type: TextNode
+                value: "@category content"
+                position: { start: [5, 2], text: "@category content" }
+  - name: should split doc body at mid-line @word patterns (2)
+    source: |-
+      
+      {% doc %}
+        @param {string} id - Unique id. @required
+        @category content
+      {% enddoc %}
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          
+          {% doc %}
+            @param {string} id - Unique id. @required
+            @category content
+          {% enddoc %}
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [1, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 0], text: "{% doc %}" }
+          blockEndPosition: { start: [4, 0], text: "{% enddoc %}" }
+          position:
+            start: [1, 0]
+            text: |-
+              {% doc %}
+                @param {string} id - Unique id. @required
+                @category content
+              {% enddoc %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |2
+              
+                @param {string} id - Unique id. @required
+                @category content
+            position:
+              start: [1, 9]
+              text: |2
+                
+                  @param {string} id - Unique id. @required
+                  @category content
+            nodes:
+              - type: LiquidDocParamNode
+                name: param
+                required: true
+                position: { start: [2, 2], text: "@param {string} id - Unique id. @required" }
+                paramName:
+                  type: TextNode
+                  value: id
+                  position: { start: [2, 18], text: id }
+                paramType:
+                  type: TextNode
+                  value: string
+                  position: { start: [2, 10], text: string }
+                paramDescription:
+                  type: TextNode
+                  value: Unique id. @required
+                  position: { start: [2, 23], text: Unique id. @required }
+              - type: TextNode
+                value: "@category content"
+                position: { start: [3, 2], text: "@category content" }
+  - name: should split doc body at mid-line @word patterns (3)
+    source: |-
+      {% doc %}
+        @param {string} [alignment] - The horizontal alignment
+        ('left', 'center', or 'right'). Defaults to 'center'.
+        @param {boolean} [full_width] - Spans full width.
+      {% enddoc %}
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% doc %}
+            @param {string} [alignment] - The horizontal alignment
+            ('left', 'center', or 'right'). Defaults to 'center'.
+            @param {boolean} [full_width] - Spans full width.
+          {% enddoc %}
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% doc %}" }
+          blockEndPosition: { start: [4, 0], text: "{% enddoc %}" }
+          position:
+            start: [0, 0]
+            text: |-
+              {% doc %}
+                @param {string} [alignment] - The horizontal alignment
+                ('left', 'center', or 'right'). Defaults to 'center'.
+                @param {boolean} [full_width] - Spans full width.
+              {% enddoc %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |2
+              
+                @param {string} [alignment] - The horizontal alignment
+                ('left', 'center', or 'right'). Defaults to 'center'.
+                @param {boolean} [full_width] - Spans full width.
+            position:
+              start: [0, 9]
+              text: |2
+                
+                  @param {string} [alignment] - The horizontal alignment
+                  ('left', 'center', or 'right'). Defaults to 'center'.
+                  @param {boolean} [full_width] - Spans full width.
+            nodes:
+              - type: LiquidDocParamNode
+                name: param
+                required: false
+                position:
+                  start: [1, 2]
+                  text: |-
+                    @param {string} [alignment] - The horizontal alignment
+                      ('left', 'center', or 'right'). Defaults to 'center'.
+                paramName:
+                  type: TextNode
+                  value: alignment
+                  position: { start: [1, 19], text: alignment }
+                paramType:
+                  type: TextNode
+                  value: string
+                  position: { start: [1, 10], text: string }
+                paramDescription:
+                  type: TextNode
+                  value: |-
+                    The horizontal alignment
+                      ('left', 'center', or 'right'). Defaults to 'center'.
+                  position:
+                    start: [1, 32]
+                    text: |-
+                      The horizontal alignment
+                        ('left', 'center', or 'right'). Defaults to 'center'.
+              - type: LiquidDocParamNode
+                name: param
+                required: false
+                position: { start: [3, 2], text: "@param {boolean} [full_width] - Spans full width." }
+                paramName:
+                  type: TextNode
+                  value: full_width
+                  position: { start: [3, 20], text: full_width }
+                paramType:
+                  type: TextNode
+                  value: boolean
+                  position: { start: [3, 10], text: boolean }
+                paramDescription:
+                  type: TextNode
+                  value: Spans full width.
+                  position: { start: [3, 34], text: Spans full width. }
+  - name: should split doc body at mid-line @word patterns (4)
+    source: |-
+      {% doc %}
+        @param {number} index
+        @param {boolean} [current]
+        @param {boolean} [image_only]
+      {% enddoc %}
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% doc %}
+            @param {number} index
+            @param {boolean} [current]
+            @param {boolean} [image_only]
+          {% enddoc %}
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% doc %}" }
+          blockEndPosition: { start: [4, 0], text: "{% enddoc %}" }
+          position:
+            start: [0, 0]
+            text: |-
+              {% doc %}
+                @param {number} index
+                @param {boolean} [current]
+                @param {boolean} [image_only]
+              {% enddoc %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |2
+              
+                @param {number} index
+                @param {boolean} [current]
+                @param {boolean} [image_only]
+            position:
+              start: [0, 9]
+              text: |2
+                
+                  @param {number} index
+                  @param {boolean} [current]
+                  @param {boolean} [image_only]
+            nodes:
+              - type: LiquidDocParamNode
+                name: param
+                paramDescription: null
+                required: true
+                position: { start: [1, 2], text: "@param {number} index" }
+                paramName:
+                  type: TextNode
+                  value: index
+                  position: { start: [1, 18], text: index }
+                paramType:
+                  type: TextNode
+                  value: number
+                  position: { start: [1, 10], text: number }
+              - type: LiquidDocParamNode
+                name: param
+                paramDescription: null
+                required: false
+                position: { start: [2, 2], text: "@param {boolean} [current]" }
+                paramName:
+                  type: TextNode
+                  value: current
+                  position: { start: [2, 20], text: current }
+                paramType:
+                  type: TextNode
+                  value: boolean
+                  position: { start: [2, 10], text: boolean }
+              - type: LiquidDocParamNode
+                name: param
+                paramDescription: null
+                required: false
+                position: { start: [3, 2], text: "@param {boolean} [image_only]" }
+                paramName:
+                  type: TextNode
+                  value: image_only
+                  position: { start: [3, 20], text: image_only }
+                paramType:
+                  type: TextNode
+                  value: boolean
+                  position: { start: [3, 10], text: boolean }
+  - name: should parse a description glued to @description
+    source: |-
+      {% doc %}
+        @descriptionRenders a product card
+        with its image.
+      {% enddoc %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% doc %}
+            @descriptionRenders a product card
+            with its image.
+          {% enddoc %}
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% doc %}" }
+          blockEndPosition: { start: [3, 0], text: "{% enddoc %}" }
+          position:
+            start: [0, 0]
+            text: |-
+              {% doc %}
+                @descriptionRenders a product card
+                with its image.
+              {% enddoc %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |2
+              
+                @descriptionRenders a product card
+                with its image.
+            position:
+              start: [0, 9]
+              text: |2
+                
+                  @descriptionRenders a product card
+                  with its image.
+            nodes:
+              - type: LiquidDocDescriptionNode
+                name: description
+                isImplicit: false
+                isInline: true
+                position:
+                  start: [1, 2]
+                  text: |
+                    @descriptionRenders a product card
+                      with its image.
+                content:
+                  type: TextNode
+                  value: |
+                    Renders a product card
+                      with its image.
+                  position:
+                    start: [1, 14]
+                    text: |
+                      Renders a product card
+                        with its image.

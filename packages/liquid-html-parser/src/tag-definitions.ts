@@ -14,7 +14,6 @@ export enum TagKind {
   Block = 'block',
   Tag = 'tag',
   Raw = 'raw',
-  Hybrid = 'hybrid',
 }
 
 export type BranchName = 'elsif' | 'else' | 'when';
@@ -37,16 +36,15 @@ export interface TagDefinitionRaw<M = unknown> {
   parse(name: string, markup: MarkupParser, parser: Parser): M;
 }
 
-export interface TagDefinitionHybrid<M = unknown> {
-  kind: TagKind.Hybrid;
-  parse(name: string, markup: MarkupParser, parser: Parser): M;
-}
-
 export type TagDefinition<M = unknown> =
   | TagDefinitionBlock<M>
   | TagDefinitionTag<M>
-  | TagDefinitionRaw<M>
-  | TagDefinitionHybrid<M>;
+  | TagDefinitionRaw<M>;
+
+/** Whether a stray `{% end<name> %}` for a registered tag is a structural parse error. */
+export function isStructuralEndTag(_innerName: string, def: { kind: string } | undefined): boolean {
+  return def !== undefined;
+}
 
 /** A parsed line from a {% liquid %} body. */
 export interface LiquidLine {

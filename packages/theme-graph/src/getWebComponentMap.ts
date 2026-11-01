@@ -2,6 +2,7 @@ import { path, recursiveReadDirectory } from '@shopify/theme-check-common';
 import { ancestor as visit } from 'acorn-walk';
 import { Dependencies, Void, WebComponentMap } from './types';
 import { CallExpression } from 'acorn';
+import { exists } from './utils';
 
 /**
  * Regular expression for web component names
@@ -26,6 +27,8 @@ export async function getWebComponentMap(
 ): Promise<WebComponentMap> {
   const webComponentDefs: WebComponentMap = new Map();
   const assetRoot = path.join(rootUri, 'assets');
+  if (!(await exists(fs, assetRoot))) return webComponentDefs;
+
   const jsFiles = await recursiveReadDirectory(fs, assetRoot, ([fileName]) =>
     fileName.endsWith('.js'),
   );
