@@ -158,17 +158,41 @@ function normalizeSchema(uri: string, schema: string): string {
 
   try {
     const parsed = JSON.parse(schema);
-    const metaobjectProperties = parsed.definitions?.metaobject?.properties;
-    if (
-      typeof metaobjectProperties !== 'object' ||
-      metaobjectProperties === null ||
-      !('default' in metaobjectProperties)
-    ) {
+    const metaobject = parsed.definitions?.metaobject;
+    const metaobjectProperties = metaobject?.properties;
+    if (typeof metaobjectProperties !== 'object' || metaobjectProperties === null) {
       return schema;
     }
 
-    // theme-liquid-docs currently lists `default` for metaobject settings, but it is unsupported.
-    delete metaobjectProperties.default;
+    const standardAttributesRef = '#/definitions/inputSettingsStandardAttributes';
+    const standardAttributes = parsed.definitions?.inputSettingsStandardAttributes;
+    const standardProperties = standardAttributes?.properties;
+    const hasInheritedDefault =
+      typeof standardProperties === 'object' &&
+      standardProperties !== null &&
+      'default' in standardProperties &&
+      Array.isArray(metaobject.allOf) &&
+      metaobject.allOf.some((schema: any) => schema?.$ref === standardAttributesRef);
+    const hasDirectDefault = 'default' in metaobjectProperties;
+
+    if (!hasDirectDefault && !hasInheritedDefault) return schema;
+
+    // The shared attributes include `default`, which is unsupported for metaobject settings.
+    if (hasDirectDefault) delete metaobjectProperties.default;
+
+    if (hasInheritedDefault && Array.isArray(metaobject.allOf)) {
+      metaobject.allOf = metaobject.allOf.map((schema: any) => {
+        if (schema?.$ref !== standardAttributesRef) return schema;
+
+        const attributesWithoutDefault = {
+          ...standardAttributes,
+          properties: { ...standardProperties },
+        };
+        delete attributesWithoutDefault.properties.default;
+        return attributesWithoutDefault;
+      });
+    }
+
     return JSON.stringify(parsed);
   } catch {
     return schema;

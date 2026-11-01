@@ -37,8 +37,17 @@ vi.mock('node:fs/promises', async () => {
       '{"schemas":[{"uri":"theme/setting.json"}]}',
     'setting.json': JSON.stringify({
       definitions: {
-        metaobject: { properties: { default: true, metaobject_type: { type: 'string' } } },
-        metaobject_list: { properties: { default: true, metaobject_type: { type: 'string' } } },
+        inputSettingsStandardAttributes: {
+          properties: { default: { description: 'Default value' }, id: true, label: true },
+        },
+        metaobject: {
+          allOf: [{ $ref: '#/definitions/inputSettingsStandardAttributes' }],
+          properties: { default: true, metaobject_type: { type: 'string' } },
+        },
+        metaobject_list: {
+          allOf: [{ $ref: '#/definitions/inputSettingsStandardAttributes' }],
+          properties: { default: true, metaobject_type: { type: 'string' } },
+        },
         text: { properties: { default: true } },
       },
     }),
@@ -116,7 +125,20 @@ describe('Module: ThemeLiquidDocsManager', async () => {
       const [settingSchema] = await manager.schemas('theme');
       const schema = JSON.parse(settingSchema.schema);
 
+      const [metaobjectAttributes] = schema.definitions.metaobject.allOf;
+      expect(metaobjectAttributes).not.toHaveProperty(
+        '$ref',
+        '#/definitions/inputSettingsStandardAttributes',
+      );
+      expect(metaobjectAttributes.properties).not.toHaveProperty('default');
+      expect(schema.definitions.inputSettingsStandardAttributes.properties).toHaveProperty(
+        'default',
+      );
       expect(schema.definitions.metaobject.properties).not.toHaveProperty('default');
+      expect(schema.definitions.metaobject_list.allOf[0]).toHaveProperty(
+        '$ref',
+        '#/definitions/inputSettingsStandardAttributes',
+      );
       expect(schema.definitions.metaobject_list.properties).toHaveProperty('default');
       expect(schema.definitions.text.properties).toHaveProperty('default');
     });
