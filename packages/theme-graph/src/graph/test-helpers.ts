@@ -23,7 +23,6 @@ export function makeGetSourceCode(fs: AbstractFileSystem) {
 
 export const fixturesRoot = pathUtils.join(URI.file(__dirname), ...'../../fixtures'.split('/'));
 export const skeleton = pathUtils.join(fixturesRoot, 'skeleton');
-export const themeAppExtension = pathUtils.join(fixturesRoot, 'theme-app-extension');
 
 export async function getDependencies(rootUri: string, fs: AbstractFileSystem = NodeFileSystem) {
   const getSourceCode = makeGetSourceCode(fs);

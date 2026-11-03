@@ -1,0 +1,191 @@
+check: MaxFileSize
+severity: error
+cases:
+  - name: accepts assets at the exact byte limit
+    files:
+      assets/theme.css: [{ repeat: a, times: 20971520 }]
+  - name: accepts blocks at the exact byte limit
+    files:
+      blocks/product-card.liquid: [{ repeat: a, times: 262144 }]
+  - name: accepts config/settings_data.json at the exact byte limit
+    files:
+      config/settings_data.json: ['{"d":"', { repeat: a, times: 1572856 }, '"}']
+  - name: accepts config/settings_schema.json at the exact byte limit
+    files:
+      config/settings_schema.json: ['[{"d":"', { repeat: a, times: 524278 }, '"}]']
+  - name: accepts config at the exact byte limit
+    files:
+      config/markets.json: ['{"d":"', { repeat: a, times: 262136 }, '"}']
+  - name: accepts layout at the exact byte limit
+    files:
+      layout/theme.liquid:
+        [
+          '<html><head>{{ content_for_header }}</head><body>{{ content_for_layout }}</body></html>',
+          { repeat: a, times: 262057 },
+        ]
+  - name: accepts snippets at the exact byte limit
+    files:
+      snippets/card.liquid: [{ repeat: a, times: 262144 }]
+  - name: accepts templates/*.json at the exact byte limit
+    files:
+      templates/product.json: ['{"d":"', { repeat: a, times: 524280 }, '"}']
+  - name: accepts templates at the exact byte limit
+    files:
+      templates/product.liquid: [{ repeat: a, times: 262144 }]
+  - name: accepts locales at the exact byte limit
+    files:
+      locales/en.default.json: ['{"d":"', { repeat: a, times: 1572856 }, '"}']
+  - name: accepts sections/*.json at the exact byte limit
+    files:
+      sections/product.json: ['{"d":"', { repeat: a, times: 524280 }, '"}']
+  - name: accepts sections at the exact byte limit
+    files:
+      sections/product.liquid: [{ repeat: a, times: 262144 }]
+  - name: reports assets one byte over the limit
+    files:
+      assets/theme.css: [{ repeat: a, times: 20971521 }]
+    offenses:
+      - file: assets/theme.css
+        message: Theme file is too large. It is 20971521 bytes but the limit is 20 MB.
+        start: [0, 0]
+        highlight: [{ repeat: a, times: 20971521 }]
+  - name: reports blocks one byte over the limit
+    files:
+      blocks/product-card.liquid: [{ repeat: a, times: 262145 }]
+    offenses:
+      - file: blocks/product-card.liquid
+        message: Theme file is too large. It is 262145 bytes but the limit is 256 KB.
+        start: [0, 0]
+        highlight: [{ repeat: a, times: 262145 }]
+  - name: reports config/settings_data.json one byte over the limit
+    files:
+      config/settings_data.json: ['{"d":"', { repeat: a, times: 1572857 }, '"}']
+    offenses:
+      - file: config/settings_data.json
+        message: Theme file is too large. It is 1572865 bytes but the limit is 1536 KB.
+        start: [0, 0]
+        highlight: ['{"d":"', { repeat: a, times: 1572857 }, '"}']
+  - name: reports config/settings_schema.json one byte over the limit
+    files:
+      config/settings_schema.json: ['[{"d":"', { repeat: a, times: 524279 }, '"}]']
+    offenses:
+      - file: config/settings_schema.json
+        message: Theme file is too large. It is 524289 bytes but the limit is 512 KB.
+        start: [0, 0]
+        highlight: ['[{"d":"', { repeat: a, times: 524279 }, '"}]']
+  - name: reports config one byte over the limit
+    files:
+      config/markets.json: ['{"d":"', { repeat: a, times: 262137 }, '"}']
+    offenses:
+      - file: config/markets.json
+        message: Theme file is too large. It is 262145 bytes but the limit is 256 KB.
+        start: [0, 0]
+        highlight: ['{"d":"', { repeat: a, times: 262137 }, '"}']
+  - name: reports layout one byte over the limit
+    files:
+      layout/theme.liquid:
+        [
+          '<html><head>{{ content_for_header }}</head><body>{{ content_for_layout }}</body></html>',
+          { repeat: a, times: 262058 },
+        ]
+    offenses:
+      - file: layout/theme.liquid
+        message: Theme file is too large. It is 262145 bytes but the limit is 256 KB.
+        start: [0, 0]
+        highlight: ['<html><head>{{ content_for_header }}</head><body>{{ content_for_layout }}</body></html>', { repeat: a, times: 262058 }]
+  - name: reports snippets one byte over the limit
+    files:
+      snippets/card.liquid: [{ repeat: a, times: 262145 }]
+    offenses:
+      - file: snippets/card.liquid
+        message: Theme file is too large. It is 262145 bytes but the limit is 256 KB.
+        start: [0, 0]
+        highlight: [{ repeat: a, times: 262145 }]
+  - name: reports templates/*.json one byte over the limit
+    files:
+      templates/product.json: ['{"d":"', { repeat: a, times: 524281 }, '"}']
+    offenses:
+      - file: templates/product.json
+        message: Theme file is too large. It is 524289 bytes but the limit is 512 KB.
+        start: [0, 0]
+        highlight: ['{"d":"', { repeat: a, times: 524281 }, '"}']
+  - name: reports templates one byte over the limit
+    files:
+      templates/product.liquid: [{ repeat: a, times: 262145 }]
+    offenses:
+      - file: templates/product.liquid
+        message: Theme file is too large. It is 262145 bytes but the limit is 256 KB.
+        start: [0, 0]
+        highlight: [{ repeat: a, times: 262145 }]
+  - name: reports locales one byte over the limit
+    files:
+      locales/en.default.json: ['{"d":"', { repeat: a, times: 1572857 }, '"}']
+    offenses:
+      - file: locales/en.default.json
+        message: Theme file is too large. It is 1572865 bytes but the limit is 1536 KB.
+        start: [0, 0]
+        highlight: ['{"d":"', { repeat: a, times: 1572857 }, '"}']
+  - name: reports sections/*.json one byte over the limit
+    files:
+      sections/product.json: ['{"d":"', { repeat: a, times: 524281 }, '"}']
+    offenses:
+      - file: sections/product.json
+        message: Theme file is too large. It is 524289 bytes but the limit is 512 KB.
+        start: [0, 0]
+        highlight: ['{"d":"', { repeat: a, times: 524281 }, '"}']
+  - name: reports sections one byte over the limit
+    files:
+      sections/product.liquid: [{ repeat: a, times: 262145 }]
+    offenses:
+      - file: sections/product.liquid
+        message: Theme file is too large. It is 262145 bytes but the limit is 256 KB.
+        start: [0, 0]
+        highlight: [{ repeat: a, times: 262145 }]
+  - name: reports oversized files under a VFS-prefixed theme path
+    files:
+      workspace/themes/123/templates/index.liquid: [{ repeat: a, times: 262145 }]
+    offenses:
+      - file: workspace/themes/123/templates/index.liquid
+        message: Theme file is too large. It is 262145 bytes but the limit is 256 KB.
+        start: [0, 0]
+        highlight: [{ repeat: a, times: 262145 }]
+  - name: excludes schema block bytes for template-table files
+    files:
+      sections/schema-test.liquid:
+        [
+          { repeat: a, times: 262144 },
+          '{% schema %}{"name":"Large schema","settings":[{"type":"textarea","id":"copy","label":"Copy","default":"',
+          { repeat: b, times: 1024 },
+          '"}]}{% endschema %}',
+        ]
+  - name: excludes whitespace-controlled schema block bytes for template-table files
+    files:
+      sections/schema-whitespace-control-test.liquid:
+        [
+          { repeat: a, times: 262144 },
+          '{%- schema -%}{"name":"Large schema","settings":[{"type":"textarea","id":"copy","label":"Copy","default":"',
+          { repeat: b, times: 1024 },
+          '"}]}{%- endschema -%}',
+        ]
+  - name: ignores oversized draft file _drafts/bfcm/templates/product.json
+    files:
+      _drafts/bfcm/templates/product.json: ['{"d":"', { repeat: a, times: 20971513 }, '"}']
+  - name: ignores oversized draft file _drafts/bfcm/sections/product.json
+    files:
+      _drafts/bfcm/sections/product.json: ['{"d":"', { repeat: a, times: 20971513 }, '"}']
+  - name: measures UTF-8 bytes instead of JavaScript string length
+    files:
+      snippets/multibyte.liquid: [{ repeat: é, times: 131073 }]
+    offenses:
+      - file: snippets/multibyte.liquid
+        message: Theme file is too large. It is 262146 bytes but the limit is 256 KB.
+        start: [0, 0]
+        highlight: [{ repeat: "é", times: 131073 }]
+  - name: reports oversized files even when the Liquid parser cannot build an AST
+    files:
+      snippets/broken.liquid: [{ repeat: a, times: 262145 }, '{% raw %}']
+    offenses:
+      - file: snippets/broken.liquid
+        message: Theme file is too large. It is 262154 bytes but the limit is 256 KB.
+        start: [0, 0]
+        highlight: [{ repeat: a, times: 262145 }, '{% raw %}']

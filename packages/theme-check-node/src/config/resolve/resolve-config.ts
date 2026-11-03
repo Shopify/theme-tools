@@ -20,18 +20,27 @@ const modernConfigsPath = () => {
 export async function resolveConfig(
   configPath: AbsolutePath | ModernIdentifier,
   isRootConfig: boolean = false,
+  /** the configs that extend this one, from the root config down */
+  extendedBy: AbsolutePath[] = [],
 ): Promise<ConfigDescription> {
   if (isModernIdentifier(configPath)) {
     const modernConfigPath = path.join(
       modernConfigsPath(),
       configPath.replace(/^theme-check:/, '') + '.yml',
     );
-    return resolveConfig(modernConfigPath);
+    return resolveConfig(modernConfigPath, false, extendedBy);
+  }
+
+  const chain = [...extendedBy, configPath];
+  if (extendedBy.includes(configPath)) {
+    throw new Error(`Cyclic extends in theme-check config: ${chain.join(' -> ')}`);
   }
 
   // TODO: Add support for more file formats.
   const current = await readYamlConfigDescription(configPath, isRootConfig);
-  const baseConfigs = await Promise.all(current.extends.map((extend) => resolveConfig(extend)));
+  const baseConfigs = await Promise.all(
+    current.extends.map((extend) => resolveConfig(extend, false, chain)),
+  );
   return mergeFragments(baseConfigs, current);
 }
 

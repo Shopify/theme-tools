@@ -1,0 +1,64 @@
+cases:
+  - name: links custom elements to the scripts that define them
+    files:
+      sections/main.liquid: |
+        {% render 'parent' %}
+      snippets/parent.liquid: |
+        {% doc %}
+          Parent snippet that renders the children and depends on the parent-element custom element
+
+          @param {string} children
+        {% enddoc %}
+
+        <parent-element>
+          {% render "child", children: children %}
+        </parent-element>
+      snippets/child.liquid: |
+        {% doc %}
+          Child fixture that depends on the child-element custom element
+
+          @param {string} children
+        {% enddoc %}
+
+        <child-element>
+          {{ children }}
+        </child-element>
+      assets/theme.js: |
+        window.customElements.define('parent-element', class extends HTMLElement {
+
+        });
+
+        customElements.define('child-element', class extends HTMLElement {
+
+        });
+    edges:
+      - source: sections/main.liquid
+        start: [0, 0]
+        text: "{% render 'parent' %}"
+        target: snippets/parent.liquid
+      - source: snippets/child.liquid
+        start: [6, 0]
+        text: "<child-element"
+        target: assets/theme.js
+        targetStart: [4, 15]
+        targetText: "define('child-element'"
+      - source: snippets/parent.liquid
+        start: [6, 0]
+        text: "<parent-element"
+        target: assets/theme.js
+        targetStart: [0, 22]
+        targetText: "define('parent-element'"
+      - source: snippets/parent.liquid
+        start: [7, 2]
+        text: '{% render "child", children: children %}'
+        target: snippets/child.liquid
+  - name: a custom element no script defines links to nothing
+    files:
+      sections/main.liquid: |
+        <price-tag></price-tag>
+      assets/theme.js: |
+        customElements.define('product-card', class extends HTMLElement {});
+  - name: a theme without an assets folder has no web components
+    files:
+      sections/main.liquid: |
+        <price-tag></price-tag>

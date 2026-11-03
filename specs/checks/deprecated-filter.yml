@@ -1,0 +1,1464 @@
+check: DeprecatedFilter
+severity: warning
+cases:
+  - name: should report an offense when a deprecated filter is used
+    files:
+      file.liquid: |
+        {{ '#EA5AB9' | hex_to_rgba }}
+        {{ '#EA5AB9' | hex_to_rgba: 0.5 }}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Deprecated filter 'hex_to_rgba', consider using 'color_to_rgb'."
+        start: [0, 13]
+        highlight: "| hex_to_rgba"
+        fix: |
+          {{ '#EA5AB9' | color_to_rgb }}
+          {{ '#EA5AB9' | hex_to_rgba: 0.5 }}
+      - file: file.liquid
+        message: "Deprecated filter 'hex_to_rgba', consider using 'color_to_rgb'."
+        start: [1, 13]
+        highlight: "| hex_to_rgba: 0.5"
+        fix: |
+          {{ '#EA5AB9' | hex_to_rgba }}
+          {{ '#EA5AB9' | color_to_rgb | color_modify: 'alpha', 0.5 }}
+    autofix:
+      file.liquid: |
+        {{ '#EA5AB9' | color_to_rgb }}
+        {{ '#EA5AB9' | color_to_rgb | color_modify: 'alpha', 0.5 }}
+  - name: should not report an offense when a non-deprecated filter is used
+    files:
+      file.liquid: |
+        {{ '#EA5AB9' | color_to_rgb }}
+        {{ '#EA5AB9' | color_to_rgb | color_modify: 'alpha', 0.5 }}
+    docset: default
+  - name: "should suggest a fix to replace the deprecated 'hex_to_rgba' filter"
+    files:
+      file.liquid: '{{ "#EA5AB9" | hex_to_rgba }}'
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Deprecated filter 'hex_to_rgba', consider using 'color_to_rgb'."
+        start: [0, 13]
+        highlight: "| hex_to_rgba"
+        fix: '{{ "#EA5AB9" | color_to_rgb }}'
+  - name: "should suggest a fix to replace the deprecated 'hex_to_rgba' filter when an alpha value is passed"
+    files:
+      file.liquid: '{{ "#EA5AB9" | hex_to_rgba: 0.5 }}'
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Deprecated filter 'hex_to_rgba', consider using 'color_to_rgb'."
+        start: [0, 13]
+        highlight: "| hex_to_rgba: 0.5"
+        fix: "{{ \"#EA5AB9\" | color_to_rgb | color_modify: 'alpha', 0.5 }}"
+  - name: "should suggest a fix to replace the deprecated 'img_url' filter"
+    files:
+      file.liquid: |
+        {{ product.featured_image | img_url: '200x', scale: 2, crop: 'center' }}
+        {{ product.featured_image | img_url: '200x', scale: 2 }}
+        {{ product.featured_image | img_url: '200x' }}
+        {{ product.featured_image | img_url: '200x300' }}
+        {{ product.featured_image | img_url: 'x300' }}
+        {{ product.featured_image | img_url }}
+        {{ product.featured_image
+          | img_url: '200x'
+        }}
+        {{ product.featured_image
+          | img_url: '200x',
+            format: format
+          | image_tag
+        }}
+        {{product.featured_image | img_url: '200x'}}
+        {{-product.featured_image | img_url: '200x'-}}
+        {% assign url = product.featured_image | img_url: '200x' %}
+        {% assign url =
+          product.featured_image | img_url: '200x'
+        %}
+        {{ product.featured_image | img_url: 'master' }}
+        {{ product.featured_image | img_url: '4000x', scale: 2 }}
+
+        // not supported:
+        {{ product.featured_image | img_url: variable }}
+        {{ product.featured_image | img_url: '200x', scale: variable }}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [0, 26]
+        highlight: "| img_url: '200x', scale: 2, crop: 'center'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | image_url: width: 400, crop: 'center' }}
+              {{ product.featured_image | img_url: '200x', scale: 2 }}
+              {{ product.featured_image | img_url: '200x' }}
+              {{ product.featured_image | img_url: '200x300' }}
+              {{ product.featured_image | img_url: 'x300' }}
+              {{ product.featured_image | img_url }}
+              {{ product.featured_image
+                | img_url: '200x'
+              }}
+              {{ product.featured_image
+                | img_url: '200x',
+                  format: format
+                | image_tag
+              }}
+              {{product.featured_image | img_url: '200x'}}
+              {{-product.featured_image | img_url: '200x'-}}
+              {% assign url = product.featured_image | img_url: '200x' %}
+              {% assign url =
+                product.featured_image | img_url: '200x'
+              %}
+              {{ product.featured_image | img_url: 'master' }}
+              {{ product.featured_image | img_url: '4000x', scale: 2 }}
+
+              // not supported:
+              {{ product.featured_image | img_url: variable }}
+              {{ product.featured_image | img_url: '200x', scale: variable }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [1, 26]
+        highlight: "| img_url: '200x', scale: 2"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: '200x', scale: 2, crop: 'center' }}
+              {{ product.featured_image | image_url: width: 400 }}
+              {{ product.featured_image | img_url: '200x' }}
+              {{ product.featured_image | img_url: '200x300' }}
+              {{ product.featured_image | img_url: 'x300' }}
+              {{ product.featured_image | img_url }}
+              {{ product.featured_image
+                | img_url: '200x'
+              }}
+              {{ product.featured_image
+                | img_url: '200x',
+                  format: format
+                | image_tag
+              }}
+              {{product.featured_image | img_url: '200x'}}
+              {{-product.featured_image | img_url: '200x'-}}
+              {% assign url = product.featured_image | img_url: '200x' %}
+              {% assign url =
+                product.featured_image | img_url: '200x'
+              %}
+              {{ product.featured_image | img_url: 'master' }}
+              {{ product.featured_image | img_url: '4000x', scale: 2 }}
+
+              // not supported:
+              {{ product.featured_image | img_url: variable }}
+              {{ product.featured_image | img_url: '200x', scale: variable }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [2, 26]
+        highlight: "| img_url: '200x'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: '200x', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: '200x', scale: 2 }}
+              {{ product.featured_image | image_url: width: 200 }}
+              {{ product.featured_image | img_url: '200x300' }}
+              {{ product.featured_image | img_url: 'x300' }}
+              {{ product.featured_image | img_url }}
+              {{ product.featured_image
+                | img_url: '200x'
+              }}
+              {{ product.featured_image
+                | img_url: '200x',
+                  format: format
+                | image_tag
+              }}
+              {{product.featured_image | img_url: '200x'}}
+              {{-product.featured_image | img_url: '200x'-}}
+              {% assign url = product.featured_image | img_url: '200x' %}
+              {% assign url =
+                product.featured_image | img_url: '200x'
+              %}
+              {{ product.featured_image | img_url: 'master' }}
+              {{ product.featured_image | img_url: '4000x', scale: 2 }}
+
+              // not supported:
+              {{ product.featured_image | img_url: variable }}
+              {{ product.featured_image | img_url: '200x', scale: variable }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [3, 26]
+        highlight: "| img_url: '200x300'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: '200x', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: '200x', scale: 2 }}
+              {{ product.featured_image | img_url: '200x' }}
+              {{ product.featured_image | image_url: width: 200, height: 300 }}
+              {{ product.featured_image | img_url: 'x300' }}
+              {{ product.featured_image | img_url }}
+              {{ product.featured_image
+                | img_url: '200x'
+              }}
+              {{ product.featured_image
+                | img_url: '200x',
+                  format: format
+                | image_tag
+              }}
+              {{product.featured_image | img_url: '200x'}}
+              {{-product.featured_image | img_url: '200x'-}}
+              {% assign url = product.featured_image | img_url: '200x' %}
+              {% assign url =
+                product.featured_image | img_url: '200x'
+              %}
+              {{ product.featured_image | img_url: 'master' }}
+              {{ product.featured_image | img_url: '4000x', scale: 2 }}
+
+              // not supported:
+              {{ product.featured_image | img_url: variable }}
+              {{ product.featured_image | img_url: '200x', scale: variable }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [4, 26]
+        highlight: "| img_url: 'x300'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: '200x', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: '200x', scale: 2 }}
+              {{ product.featured_image | img_url: '200x' }}
+              {{ product.featured_image | img_url: '200x300' }}
+              {{ product.featured_image | image_url: height: 300 }}
+              {{ product.featured_image | img_url }}
+              {{ product.featured_image
+                | img_url: '200x'
+              }}
+              {{ product.featured_image
+                | img_url: '200x',
+                  format: format
+                | image_tag
+              }}
+              {{product.featured_image | img_url: '200x'}}
+              {{-product.featured_image | img_url: '200x'-}}
+              {% assign url = product.featured_image | img_url: '200x' %}
+              {% assign url =
+                product.featured_image | img_url: '200x'
+              %}
+              {{ product.featured_image | img_url: 'master' }}
+              {{ product.featured_image | img_url: '4000x', scale: 2 }}
+
+              // not supported:
+              {{ product.featured_image | img_url: variable }}
+              {{ product.featured_image | img_url: '200x', scale: variable }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [5, 26]
+        highlight: "| img_url"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: '200x', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: '200x', scale: 2 }}
+              {{ product.featured_image | img_url: '200x' }}
+              {{ product.featured_image | img_url: '200x300' }}
+              {{ product.featured_image | img_url: 'x300' }}
+              {{ product.featured_image | image_url: width: 100, height: 100 }}
+              {{ product.featured_image
+                | img_url: '200x'
+              }}
+              {{ product.featured_image
+                | img_url: '200x',
+                  format: format
+                | image_tag
+              }}
+              {{product.featured_image | img_url: '200x'}}
+              {{-product.featured_image | img_url: '200x'-}}
+              {% assign url = product.featured_image | img_url: '200x' %}
+              {% assign url =
+                product.featured_image | img_url: '200x'
+              %}
+              {{ product.featured_image | img_url: 'master' }}
+              {{ product.featured_image | img_url: '4000x', scale: 2 }}
+
+              // not supported:
+              {{ product.featured_image | img_url: variable }}
+              {{ product.featured_image | img_url: '200x', scale: variable }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [7, 0]
+        highlight: "  | img_url: '200x'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: '200x', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: '200x', scale: 2 }}
+              {{ product.featured_image | img_url: '200x' }}
+              {{ product.featured_image | img_url: '200x300' }}
+              {{ product.featured_image | img_url: 'x300' }}
+              {{ product.featured_image | img_url }}
+              {{ product.featured_image
+                | image_url: width: 200
+              }}
+              {{ product.featured_image
+                | img_url: '200x',
+                  format: format
+                | image_tag
+              }}
+              {{product.featured_image | img_url: '200x'}}
+              {{-product.featured_image | img_url: '200x'-}}
+              {% assign url = product.featured_image | img_url: '200x' %}
+              {% assign url =
+                product.featured_image | img_url: '200x'
+              %}
+              {{ product.featured_image | img_url: 'master' }}
+              {{ product.featured_image | img_url: '4000x', scale: 2 }}
+
+              // not supported:
+              {{ product.featured_image | img_url: variable }}
+              {{ product.featured_image | img_url: '200x', scale: variable }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [10, 0]
+        highlight: |2-
+            | img_url: '200x',
+              format: format
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: '200x', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: '200x', scale: 2 }}
+              {{ product.featured_image | img_url: '200x' }}
+              {{ product.featured_image | img_url: '200x300' }}
+              {{ product.featured_image | img_url: 'x300' }}
+              {{ product.featured_image | img_url }}
+              {{ product.featured_image
+                | img_url: '200x'
+              }}
+              {{ product.featured_image
+                | image_url: width: 200, format: format
+                | image_tag
+              }}
+              {{product.featured_image | img_url: '200x'}}
+              {{-product.featured_image | img_url: '200x'-}}
+              {% assign url = product.featured_image | img_url: '200x' %}
+              {% assign url =
+                product.featured_image | img_url: '200x'
+              %}
+              {{ product.featured_image | img_url: 'master' }}
+              {{ product.featured_image | img_url: '4000x', scale: 2 }}
+
+              // not supported:
+              {{ product.featured_image | img_url: variable }}
+              {{ product.featured_image | img_url: '200x', scale: variable }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [14, 25]
+        highlight: "| img_url: '200x'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: '200x', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: '200x', scale: 2 }}
+              {{ product.featured_image | img_url: '200x' }}
+              {{ product.featured_image | img_url: '200x300' }}
+              {{ product.featured_image | img_url: 'x300' }}
+              {{ product.featured_image | img_url }}
+              {{ product.featured_image
+                | img_url: '200x'
+              }}
+              {{ product.featured_image
+                | img_url: '200x',
+                  format: format
+                | image_tag
+              }}
+              {{product.featured_image | image_url: width: 200}}
+              {{-product.featured_image | img_url: '200x'-}}
+              {% assign url = product.featured_image | img_url: '200x' %}
+              {% assign url =
+                product.featured_image | img_url: '200x'
+              %}
+              {{ product.featured_image | img_url: 'master' }}
+              {{ product.featured_image | img_url: '4000x', scale: 2 }}
+
+              // not supported:
+              {{ product.featured_image | img_url: variable }}
+              {{ product.featured_image | img_url: '200x', scale: variable }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [15, 26]
+        highlight: "| img_url: '200x'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: '200x', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: '200x', scale: 2 }}
+              {{ product.featured_image | img_url: '200x' }}
+              {{ product.featured_image | img_url: '200x300' }}
+              {{ product.featured_image | img_url: 'x300' }}
+              {{ product.featured_image | img_url }}
+              {{ product.featured_image
+                | img_url: '200x'
+              }}
+              {{ product.featured_image
+                | img_url: '200x',
+                  format: format
+                | image_tag
+              }}
+              {{product.featured_image | img_url: '200x'}}
+              {{-product.featured_image | image_url: width: 200-}}
+              {% assign url = product.featured_image | img_url: '200x' %}
+              {% assign url =
+                product.featured_image | img_url: '200x'
+              %}
+              {{ product.featured_image | img_url: 'master' }}
+              {{ product.featured_image | img_url: '4000x', scale: 2 }}
+
+              // not supported:
+              {{ product.featured_image | img_url: variable }}
+              {{ product.featured_image | img_url: '200x', scale: variable }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [16, 39]
+        highlight: "| img_url: '200x'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: '200x', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: '200x', scale: 2 }}
+              {{ product.featured_image | img_url: '200x' }}
+              {{ product.featured_image | img_url: '200x300' }}
+              {{ product.featured_image | img_url: 'x300' }}
+              {{ product.featured_image | img_url }}
+              {{ product.featured_image
+                | img_url: '200x'
+              }}
+              {{ product.featured_image
+                | img_url: '200x',
+                  format: format
+                | image_tag
+              }}
+              {{product.featured_image | img_url: '200x'}}
+              {{-product.featured_image | img_url: '200x'-}}
+              {% assign url = product.featured_image | image_url: width: 200 %}
+              {% assign url =
+                product.featured_image | img_url: '200x'
+              %}
+              {{ product.featured_image | img_url: 'master' }}
+              {{ product.featured_image | img_url: '4000x', scale: 2 }}
+
+              // not supported:
+              {{ product.featured_image | img_url: variable }}
+              {{ product.featured_image | img_url: '200x', scale: variable }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [18, 25]
+        highlight: "| img_url: '200x'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: '200x', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: '200x', scale: 2 }}
+              {{ product.featured_image | img_url: '200x' }}
+              {{ product.featured_image | img_url: '200x300' }}
+              {{ product.featured_image | img_url: 'x300' }}
+              {{ product.featured_image | img_url }}
+              {{ product.featured_image
+                | img_url: '200x'
+              }}
+              {{ product.featured_image
+                | img_url: '200x',
+                  format: format
+                | image_tag
+              }}
+              {{product.featured_image | img_url: '200x'}}
+              {{-product.featured_image | img_url: '200x'-}}
+              {% assign url = product.featured_image | img_url: '200x' %}
+              {% assign url =
+                product.featured_image | image_url: width: 200
+              %}
+              {{ product.featured_image | img_url: 'master' }}
+              {{ product.featured_image | img_url: '4000x', scale: 2 }}
+
+              // not supported:
+              {{ product.featured_image | img_url: variable }}
+              {{ product.featured_image | img_url: '200x', scale: variable }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [20, 26]
+        highlight: "| img_url: 'master'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: '200x', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: '200x', scale: 2 }}
+              {{ product.featured_image | img_url: '200x' }}
+              {{ product.featured_image | img_url: '200x300' }}
+              {{ product.featured_image | img_url: 'x300' }}
+              {{ product.featured_image | img_url }}
+              {{ product.featured_image
+                | img_url: '200x'
+              }}
+              {{ product.featured_image
+                | img_url: '200x',
+                  format: format
+                | image_tag
+              }}
+              {{product.featured_image | img_url: '200x'}}
+              {{-product.featured_image | img_url: '200x'-}}
+              {% assign url = product.featured_image | img_url: '200x' %}
+              {% assign url =
+                product.featured_image | img_url: '200x'
+              %}
+              {{ product.featured_image | image_url: width: 100 }}
+              {{ product.featured_image | img_url: '4000x', scale: 2 }}
+
+              // not supported:
+              {{ product.featured_image | img_url: variable }}
+              {{ product.featured_image | img_url: '200x', scale: variable }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [21, 26]
+        highlight: "| img_url: '4000x', scale: 2"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: '200x', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: '200x', scale: 2 }}
+              {{ product.featured_image | img_url: '200x' }}
+              {{ product.featured_image | img_url: '200x300' }}
+              {{ product.featured_image | img_url: 'x300' }}
+              {{ product.featured_image | img_url }}
+              {{ product.featured_image
+                | img_url: '200x'
+              }}
+              {{ product.featured_image
+                | img_url: '200x',
+                  format: format
+                | image_tag
+              }}
+              {{product.featured_image | img_url: '200x'}}
+              {{-product.featured_image | img_url: '200x'-}}
+              {% assign url = product.featured_image | img_url: '200x' %}
+              {% assign url =
+                product.featured_image | img_url: '200x'
+              %}
+              {{ product.featured_image | img_url: 'master' }}
+              {{ product.featured_image | image_url: width: 5760 }}
+
+              // not supported:
+              {{ product.featured_image | img_url: variable }}
+              {{ product.featured_image | img_url: '200x', scale: variable }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [24, 26]
+        highlight: "| img_url: variable"
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [25, 26]
+        highlight: "| img_url: '200x', scale: variable"
+  - name: "should suggest a fix to replace the deprecated 'img_url' filter with named sizes"
+    files:
+      file.liquid: |
+        {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+        {{ product.featured_image | img_url: 'pico' }}
+
+        {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+        {{ product.featured_image | img_url: 'icon' }}
+
+        {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+        {{ product.featured_image | img_url: 'thumb' }}
+
+        {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+        {{ product.featured_image | img_url: 'small' }}
+
+        {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+        {{ product.featured_image | img_url: 'compact' }}
+
+        {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+        {{ product.featured_image | img_url: 'medium' }}
+
+        {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+        {{ product.featured_image | img_url: 'large' }}
+
+        {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+        {{ product.featured_image | img_url: 'grande' }}
+
+        {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+        {{ product.featured_image | img_url: 'original' }}
+
+        {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+        {{ product.featured_image | img_url: 'master' }}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [0, 26]
+        highlight: "| img_url: 'pico', scale: 2, crop: 'center'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | image_url: width: 32, height: 32, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [1, 26]
+        highlight: "| img_url: 'pico'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | image_url: width: 16, height: 16 }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [3, 26]
+        highlight: "| img_url: 'icon', scale: 2, crop: 'center'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | image_url: width: 64, height: 64, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [4, 26]
+        highlight: "| img_url: 'icon'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | image_url: width: 32, height: 32 }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [6, 26]
+        highlight: "| img_url: 'thumb', scale: 2, crop: 'center'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | image_url: width: 100, height: 100, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [7, 26]
+        highlight: "| img_url: 'thumb'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | image_url: width: 50, height: 50 }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [9, 26]
+        highlight: "| img_url: 'small', scale: 2, crop: 'center'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | image_url: width: 200, height: 200, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [10, 26]
+        highlight: "| img_url: 'small'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | image_url: width: 100, height: 100 }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [12, 26]
+        highlight: "| img_url: 'compact', scale: 2, crop: 'center'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | image_url: width: 320, height: 320, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [13, 26]
+        highlight: "| img_url: 'compact'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | image_url: width: 160, height: 160 }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [15, 26]
+        highlight: "| img_url: 'medium', scale: 2, crop: 'center'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | image_url: width: 480, height: 480, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [16, 26]
+        highlight: "| img_url: 'medium'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | image_url: width: 240, height: 240 }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [18, 26]
+        highlight: "| img_url: 'large', scale: 2, crop: 'center'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | image_url: width: 960, height: 960, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [19, 26]
+        highlight: "| img_url: 'large'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | image_url: width: 480, height: 480 }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [21, 26]
+        highlight: "| img_url: 'grande', scale: 2, crop: 'center'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | image_url: width: 1200, height: 1200, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [22, 26]
+        highlight: "| img_url: 'grande'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | image_url: width: 600, height: 600 }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [24, 26]
+        highlight: "| img_url: 'original', scale: 2, crop: 'center'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | image_url: width: 2048, height: 2048, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [25, 26]
+        highlight: "| img_url: 'original'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | image_url: width: 1024, height: 1024 }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [27, 26]
+        highlight: "| img_url: 'master', scale: 2, crop: 'center'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | image_url: width: 100, crop: 'center' }}
+              {{ product.featured_image | img_url: 'master' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_url'."
+        start: [28, 26]
+        highlight: "| img_url: 'master'"
+        suggest:
+          - message: "Replace 'img_url' with 'image_url'."
+            result: |
+              {{ product.featured_image | img_url: 'pico', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'pico' }}
+
+              {{ product.featured_image | img_url: 'icon', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'icon' }}
+
+              {{ product.featured_image | img_url: 'thumb', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'thumb' }}
+
+              {{ product.featured_image | img_url: 'small', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'small' }}
+
+              {{ product.featured_image | img_url: 'compact', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'compact' }}
+
+              {{ product.featured_image | img_url: 'medium', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'medium' }}
+
+              {{ product.featured_image | img_url: 'large', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'large' }}
+
+              {{ product.featured_image | img_url: 'grande', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'grande' }}
+
+              {{ product.featured_image | img_url: 'original', scale: 2, crop: 'center' }}
+              {{ product.featured_image | img_url: 'original' }}
+
+              {{ product.featured_image | img_url: 'master', scale: 2, crop: 'center' }}
+              {{ product.featured_image | image_url: width: 100 }}
+  - name: "should suggest a fix to replace the deprecated 'article_img_url' filter"
+    files:
+      file.liquid: "{{ article.image | article_img_url }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Deprecated filter 'article_img_url'."
+        start: [0, 17]
+        highlight: "| article_img_url"
+        suggest:
+          - message: "Replace 'article_img_url' with 'image_url'."
+            result: "{{ article.image | image_url: width: 100, height: 100 }}"
+  - name: "should suggest a fix to replace the deprecated 'article_img_url' filter with named sizes"
+    files:
+      file.liquid: '{{ article.image | article_img_url: "grande" }}'
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Deprecated filter 'article_img_url'."
+        start: [0, 17]
+        highlight: '| article_img_url: "grande"'
+        suggest:
+          - message: "Replace 'article_img_url' with 'image_url'."
+            result: "{{ article.image | image_url: width: 600, height: 600 }}"
+  - name: "should suggest a fix to replace the deprecated 'collection_img_url' filter"
+    files:
+      file.liquid: "{{ collection.image | collection_img_url }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Deprecated filter 'collection_img_url'."
+        start: [0, 20]
+        highlight: "| collection_img_url"
+        suggest:
+          - message: "Replace 'collection_img_url' with 'image_url'."
+            result: "{{ collection.image | image_url: width: 100, height: 100 }}"
+  - name: "should suggest a fix to replace the deprecated 'collection_img_url' filter with named sizes"
+    files:
+      file.liquid: '{{ collection.image | collection_img_url: "grande" }}'
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Deprecated filter 'collection_img_url'."
+        start: [0, 20]
+        highlight: '| collection_img_url: "grande"'
+        suggest:
+          - message: "Replace 'collection_img_url' with 'image_url'."
+            result: "{{ collection.image | image_url: width: 600, height: 600 }}"
+  - name: "should suggest a fix to replace the deprecated 'product_img_url' filter"
+    files:
+      file.liquid: "{{ p.featured_image | product_img_url }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Deprecated filter 'product_img_url'."
+        start: [0, 20]
+        highlight: "| product_img_url"
+        suggest:
+          - message: "Replace 'product_img_url' with 'image_url'."
+            result: "{{ p.featured_image | image_url: width: 100, height: 100 }}"
+  - name: "should suggest a fix to replace the deprecated 'product_img_url' filter with named sizes"
+    files:
+      file.liquid: '{{ p.featured_image | product_img_url: "grande" }}'
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Deprecated filter 'product_img_url'."
+        start: [0, 20]
+        highlight: '| product_img_url: "grande"'
+        suggest:
+          - message: "Replace 'product_img_url' with 'image_url'."
+            result: "{{ p.featured_image | image_url: width: 600, height: 600 }}"
+  - name: "should suggest a fix to replace the deprecated 'img_tag' filter"
+    files:
+      file.liquid: |
+        {{ product | img_tag }}
+        {{ product | img_tag: 'image alt text' }}
+        {{ product | img_tag: 'image alt text', 'my-css-class' }}
+        {{ product | img_tag: 'image alt text', 'my-css-class', '200x300' }}
+        {{ product | img_tag: 'image alt text', 'my-css-class', 'grande' }}
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Deprecated filter 'img_tag'."
+        start: [0, 11]
+        highlight: "| img_tag"
+        suggest:
+          - message: "Replace 'img_tag' with 'image_tag'."
+            result: |
+              {{ product | image_url: width: 100 | image_tag }}
+              {{ product | img_tag: 'image alt text' }}
+              {{ product | img_tag: 'image alt text', 'my-css-class' }}
+              {{ product | img_tag: 'image alt text', 'my-css-class', '200x300' }}
+              {{ product | img_tag: 'image alt text', 'my-css-class', 'grande' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_tag'."
+        start: [1, 11]
+        highlight: "| img_tag: 'image alt text'"
+        suggest:
+          - message: "Replace 'img_tag' with 'image_tag'."
+            result: |
+              {{ product | img_tag }}
+              {{ product | image_url: width: 100 | image_tag: alt: 'image alt text' }}
+              {{ product | img_tag: 'image alt text', 'my-css-class' }}
+              {{ product | img_tag: 'image alt text', 'my-css-class', '200x300' }}
+              {{ product | img_tag: 'image alt text', 'my-css-class', 'grande' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_tag'."
+        start: [2, 11]
+        highlight: "| img_tag: 'image alt text', 'my-css-class'"
+        suggest:
+          - message: "Replace 'img_tag' with 'image_tag'."
+            result: |
+              {{ product | img_tag }}
+              {{ product | img_tag: 'image alt text' }}
+              {{ product | image_url: width: 100 | image_tag: alt: 'image alt text', class: 'my-css-class' }}
+              {{ product | img_tag: 'image alt text', 'my-css-class', '200x300' }}
+              {{ product | img_tag: 'image alt text', 'my-css-class', 'grande' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_tag'."
+        start: [3, 11]
+        highlight: "| img_tag: 'image alt text', 'my-css-class', '200x300'"
+        suggest:
+          - message: "Replace 'img_tag' with 'image_tag'."
+            result: |
+              {{ product | img_tag }}
+              {{ product | img_tag: 'image alt text' }}
+              {{ product | img_tag: 'image alt text', 'my-css-class' }}
+              {{ product | image_url: width: 200, height: 300 | image_tag: width: 200, height: 300, alt: 'image alt text', class: 'my-css-class' }}
+              {{ product | img_tag: 'image alt text', 'my-css-class', 'grande' }}
+      - file: file.liquid
+        message: "Deprecated filter 'img_tag'."
+        start: [4, 11]
+        highlight: "| img_tag: 'image alt text', 'my-css-class', 'grande'"
+        suggest:
+          - message: "Replace 'img_tag' with 'image_tag'."
+            result: |
+              {{ product | img_tag }}
+              {{ product | img_tag: 'image alt text' }}
+              {{ product | img_tag: 'image alt text', 'my-css-class' }}
+              {{ product | img_tag: 'image alt text', 'my-css-class', '200x300' }}
+              {{ product | image_url: width: 600, height: 600 | image_tag: width: 600, height: 600, alt: 'image alt text', class: 'my-css-class' }}
+  - name: reports from the pipe when a non-breaking space comes before it
+    files:
+      file.liquid: "{{ article.image\u00a0| article_img_url }}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: "Deprecated filter 'article_img_url'."
+        start: [0, 17]
+        highlight: "| article_img_url"
+        suggest:
+          - message: "Replace 'article_img_url' with 'image_url'."
+            result: "{{ article.image\u00a0| image_url: width: 100, height: 100 }}"

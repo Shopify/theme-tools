@@ -1,0 +1,86 @@
+check: DuplicateContentForArguments
+severity: warning
+cases:
+  - name: should report duplicate arguments in content_for tags
+    files:
+      file.liquid: |
+        {% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param1: 'value3' %}
+    offenses:
+      - file: file.liquid
+        message: "Duplicate argument 'param1' in content_for tag for static block 'fake-block'."
+        start: [0, 80]
+        highlight: "param1: 'value3'"
+        suggest:
+          - message: "Remove duplicate argument 'param1'"
+            result: |
+              {% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2' %}
+  - name: should report multiple duplicate arguments in content_for tags
+    files:
+      file.liquid: |
+        {% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param1: 'value3', param2: 'value4', param1: 'value5' %}
+    offenses:
+      - file: file.liquid
+        message: "Duplicate argument 'param1' in content_for tag for static block 'fake-block'."
+        start: [0, 80]
+        highlight: "param1: 'value3'"
+        suggest:
+          - message: "Remove duplicate argument 'param1'"
+            result: |
+              {% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param2: 'value4', param1: 'value5' %}
+      - file: file.liquid
+        message: "Duplicate argument 'param2' in content_for tag for static block 'fake-block'."
+        start: [0, 98]
+        highlight: "param2: 'value4'"
+        suggest:
+          - message: "Remove duplicate argument 'param2'"
+            result: |
+              {% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param1: 'value3', param1: 'value5' %}
+      - file: file.liquid
+        message: "Duplicate argument 'param1' in content_for tag for static block 'fake-block'."
+        start: [0, 116]
+        highlight: "param1: 'value5'"
+        suggest:
+          - message: "Remove duplicate argument 'param1'"
+            result: |
+              {% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param1: 'value3', param2: 'value4' %}
+  - name: should correctly suggest fixing all duplicate arguments except for the first
+    files:
+      file.liquid: "{% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param1: 'value3', param1: 'value4' %}"
+    offenses:
+      - file: file.liquid
+        message: "Duplicate argument 'param1' in content_for tag for static block 'fake-block'."
+        start: [0, 80]
+        highlight: "param1: 'value3'"
+        suggest:
+          - message: "Remove duplicate argument 'param1'"
+            result: "{% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param1: 'value4' %}"
+      - file: file.liquid
+        message: "Duplicate argument 'param1' in content_for tag for static block 'fake-block'."
+        start: [0, 98]
+        highlight: "param1: 'value4'"
+        suggest:
+          - message: "Remove duplicate argument 'param1'"
+            result: "{% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param1: 'value3' %}"
+  - name: should not report when there are no duplicate arguments
+    files:
+      file.liquid: |
+        {% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param3: 'value3' %}
+  - name: should not report for variable render tags where snippet name is a variable
+    files:
+      file.liquid: |
+        {% render my_variable, param1: 'value1', param1: 'value2' %}
+  - name: should handle remove duplicate param when there are multiple render tags
+    files:
+      file.liquid: |
+        {% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param3: 'value3' %}
+        {% content_for 'block', type: 'fake-block', param1: 'value4', param2: 'value5', param1: 'value6' %}
+    offenses:
+      - file: file.liquid
+        message: "Duplicate argument 'param1' in content_for tag for static block 'fake-block'."
+        start: [1, 80]
+        highlight: "param1: 'value6'"
+        suggest:
+          - message: "Remove duplicate argument 'param1'"
+            result: |
+              {% content_for 'block', type: 'fake-block', param1: 'value1', param2: 'value2', param3: 'value3' %}
+              {% content_for 'block', type: 'fake-block', param1: 'value4', param2: 'value5' %}

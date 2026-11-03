@@ -1,0 +1,1954 @@
+cases:
+  - name: should parse raw-like tags (1)
+    source: "
+
+      \            {% javascript %}
+
+      \              {% liquid
+
+      \                assign x = 1
+
+      \                assign x = 2
+
+      \              %}
+
+      \              /* comment string */
+
+      \            {% endjavascript %}
+
+      \          "
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \            {% javascript %}
+
+          \              {% liquid
+
+          \                assign x = 1
+
+          \                assign x = 2
+
+          \              %}
+
+          \              /* comment string */
+
+          \            {% endjavascript %}
+
+          \          "
+      children:
+        - type: LiquidRawTag
+          name: javascript
+          markup: ""
+          markupPosition: { start: [1, 26], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 12], text: "{% javascript %}" }
+          blockEndPosition: { start: [7, 12], text: "{% endjavascript %}" }
+          position:
+            start: [1, 12]
+            text: |-
+              {% javascript %}
+                            {% liquid
+                              assign x = 1
+                              assign x = 2
+                            %}
+                            /* comment string */
+                          {% endjavascript %}
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: "
+
+              \              {% liquid
+
+              \                assign x = 1
+
+              \                assign x = 2
+
+              \              %}
+
+              \              /* comment string */
+
+              \            "
+            position:
+              start: [1, 28]
+              text: "
+
+                \              {% liquid
+
+                \                assign x = 1
+
+                \                assign x = 2
+
+                \              %}
+
+                \              /* comment string */
+
+                \            "
+            nodes:
+              - type: LiquidTag
+                name: liquid
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                blockStartPosition:
+                  start: [2, 14]
+                  text: |-
+                    {% liquid
+                                    assign x = 1
+                                    assign x = 2
+                                  %}
+                markupPosition:
+                  start: [2, 23]
+                  text: "
+
+                    \                assign x = 1
+
+                    \                assign x = 2
+
+                    \              "
+                position:
+                  start: [2, 14]
+                  text: |-
+                    {% liquid
+                                    assign x = 1
+                                    assign x = 2
+                                  %}
+                markup:
+                  - type: LiquidTag
+                    name: assign
+                    whitespaceStart: ""
+                    whitespaceEnd: ""
+                    blockStartPosition: { start: [3, 16], text: assign x = 1 }
+                    markupPosition: { start: [3, 23], text: x = 1 }
+                    position: { start: [3, 16], text: assign x = 1 }
+                    markup:
+                      type: AssignMarkup
+                      name: x
+                      position: { start: [3, 23], text: x = 1 }
+                      value:
+                        type: LiquidVariable
+                        rawSource: "1"
+                        position: { start: [3, 27], text: "1" }
+                        expression:
+                          type: Number
+                          value: "1"
+                          position: { start: [3, 27], text: "1" }
+                        filters: []
+                  - type: LiquidTag
+                    name: assign
+                    whitespaceStart: ""
+                    whitespaceEnd: ""
+                    blockStartPosition: { start: [4, 16], text: assign x = 2 }
+                    markupPosition: { start: [4, 23], text: x = 2 }
+                    position: { start: [4, 16], text: assign x = 2 }
+                    markup:
+                      type: AssignMarkup
+                      name: x
+                      position: { start: [4, 23], text: x = 2 }
+                      value:
+                        type: LiquidVariable
+                        rawSource: "2"
+                        position: { start: [4, 27], text: "2" }
+                        expression:
+                          type: Number
+                          value: "2"
+                          position: { start: [4, 27], text: "2" }
+                        filters: []
+              - type: TextNode
+                value: /* comment string */
+                position: { start: [6, 14], text: /* comment string */ }
+  - name: should parse raw-like tags (2)
+    source: "
+
+      \            {% style %}
+
+      \              {% liquid
+
+      \                assign x = 1
+
+      \                assign x = 2
+
+      \              %}
+
+      \              /* comment string */
+
+      \            {% endstyle %}
+
+      \          "
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \            {% style %}
+
+          \              {% liquid
+
+          \                assign x = 1
+
+          \                assign x = 2
+
+          \              %}
+
+          \              /* comment string */
+
+          \            {% endstyle %}
+
+          \          "
+      children:
+        - type: LiquidRawTag
+          name: style
+          markup: ""
+          markupPosition: { start: [1, 21], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 12], text: "{% style %}" }
+          blockEndPosition: { start: [7, 12], text: "{% endstyle %}" }
+          position:
+            start: [1, 12]
+            text: |-
+              {% style %}
+                            {% liquid
+                              assign x = 1
+                              assign x = 2
+                            %}
+                            /* comment string */
+                          {% endstyle %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: "
+
+              \              {% liquid
+
+              \                assign x = 1
+
+              \                assign x = 2
+
+              \              %}
+
+              \              /* comment string */
+
+              \            "
+            position:
+              start: [1, 23]
+              text: "
+
+                \              {% liquid
+
+                \                assign x = 1
+
+                \                assign x = 2
+
+                \              %}
+
+                \              /* comment string */
+
+                \            "
+            nodes:
+              - type: LiquidTag
+                name: liquid
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                blockStartPosition:
+                  start: [2, 14]
+                  text: |-
+                    {% liquid
+                                    assign x = 1
+                                    assign x = 2
+                                  %}
+                markupPosition:
+                  start: [2, 23]
+                  text: "
+
+                    \                assign x = 1
+
+                    \                assign x = 2
+
+                    \              "
+                position:
+                  start: [2, 14]
+                  text: |-
+                    {% liquid
+                                    assign x = 1
+                                    assign x = 2
+                                  %}
+                markup:
+                  - type: LiquidTag
+                    name: assign
+                    whitespaceStart: ""
+                    whitespaceEnd: ""
+                    blockStartPosition: { start: [3, 16], text: assign x = 1 }
+                    markupPosition: { start: [3, 23], text: x = 1 }
+                    position: { start: [3, 16], text: assign x = 1 }
+                    markup:
+                      type: AssignMarkup
+                      name: x
+                      position: { start: [3, 23], text: x = 1 }
+                      value:
+                        type: LiquidVariable
+                        rawSource: "1"
+                        position: { start: [3, 27], text: "1" }
+                        expression:
+                          type: Number
+                          value: "1"
+                          position: { start: [3, 27], text: "1" }
+                        filters: []
+                  - type: LiquidTag
+                    name: assign
+                    whitespaceStart: ""
+                    whitespaceEnd: ""
+                    blockStartPosition: { start: [4, 16], text: assign x = 2 }
+                    markupPosition: { start: [4, 23], text: x = 2 }
+                    position: { start: [4, 16], text: assign x = 2 }
+                    markup:
+                      type: AssignMarkup
+                      name: x
+                      position: { start: [4, 23], text: x = 2 }
+                      value:
+                        type: LiquidVariable
+                        rawSource: "2"
+                        position: { start: [4, 27], text: "2" }
+                        expression:
+                          type: Number
+                          value: "2"
+                          position: { start: [4, 27], text: "2" }
+                        filters: []
+              - type: TextNode
+                value: /* comment string */
+                position: { start: [6, 14], text: /* comment string */ }
+  - name: should parse schema tag body as a TextNode (Bug 10 regression)
+    source: '{% schema %}{"name":"test"}{% endschema %}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% schema %}{"name":"test"}{% endschema %}' }
+      children:
+        - type: LiquidRawTag
+          name: schema
+          markup: ""
+          markupPosition: { start: [0, 10], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% schema %}" }
+          blockEndPosition: { start: [0, 27], text: "{% endschema %}" }
+          position: { start: [0, 0], text: '{% schema %}{"name":"test"}{% endschema %}' }
+          body:
+            type: RawMarkup
+            kind: json
+            value: '{"name":"test"}'
+            position: { start: [0, 12], text: '{"name":"test"}' }
+            nodes:
+              - type: TextNode
+                value: '{"name":"test"}'
+                position: { start: [0, 12], text: '{"name":"test"}' }
+  - name: should parse schema tag body with surrounding whitespace (Bug 10 regression)
+    source: |-
+      {% schema %}
+        {"name":"test"}
+      {% endschema %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% schema %}
+            {"name":"test"}
+          {% endschema %}
+      children:
+        - type: LiquidRawTag
+          name: schema
+          markup: ""
+          markupPosition: { start: [0, 10], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% schema %}" }
+          blockEndPosition: { start: [2, 0], text: "{% endschema %}" }
+          position:
+            start: [0, 0]
+            text: |-
+              {% schema %}
+                {"name":"test"}
+              {% endschema %}
+          body:
+            type: RawMarkup
+            kind: json
+            value: |2
+              
+                {"name":"test"}
+            position:
+              start: [0, 12]
+              text: |2
+                
+                  {"name":"test"}
+            nodes:
+              - type: TextNode
+                value: '{"name":"test"}'
+                position: { start: [1, 2], text: '{"name":"test"}' }
+  - name: should parse empty schema tag body as empty nodes (Bug 10 regression)
+    source: "{% schema %}{% endschema %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% schema %}{% endschema %}" }
+      children:
+        - type: LiquidRawTag
+          name: schema
+          markup: ""
+          markupPosition: { start: [0, 10], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% schema %}" }
+          blockEndPosition: { start: [0, 12], text: "{% endschema %}" }
+          position: { start: [0, 0], text: "{% schema %}{% endschema %}" }
+          body:
+            type: RawMarkup
+            kind: json
+            value: ""
+            position: { start: [0, 12], text: "" }
+            nodes: []
+  - name: should assign kind=css for {% style %} tags without Liquid (Bug 13+42 regression)
+    source: "{% style %}.foo { color: red }{% endstyle %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% style %}.foo { color: red }{% endstyle %}" }
+      children:
+        - type: LiquidRawTag
+          name: style
+          markup: ""
+          markupPosition: { start: [0, 9], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% style %}" }
+          blockEndPosition: { start: [0, 30], text: "{% endstyle %}" }
+          position: { start: [0, 0], text: "{% style %}.foo { color: red }{% endstyle %}" }
+          body:
+            type: RawMarkup
+            kind: css
+            value: ".foo { color: red }"
+            position: { start: [0, 11], text: ".foo { color: red }" }
+            nodes:
+              - type: TextNode
+                value: ".foo { color: red }"
+                position: { start: [0, 11], text: ".foo { color: red }" }
+  - name: should assign kind=css for HTML <style> elements (Bug 13 regression)
+    source: "<style>.foo { color: red }</style>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<style>.foo { color: red }</style>" }
+      children:
+        - type: HtmlRawNode
+          name: style
+          blockStartPosition: { start: [0, 0], text: <style> }
+          blockEndPosition: { start: [0, 26], text: </style> }
+          position: { start: [0, 0], text: "<style>.foo { color: red }</style>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: css
+            value: ".foo { color: red }"
+            position: { start: [0, 7], text: ".foo { color: red }" }
+            nodes:
+              - type: TextNode
+                value: ".foo { color: red }"
+                position: { start: [0, 7], text: ".foo { color: red }" }
+  - name: should assign kind=text for HTML <style> with Liquid content (Bug 42 regression)
+    source: "<style>.foo { color: {{ color }} }</style>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<style>.foo { color: {{ color }} }</style>" }
+      children:
+        - type: HtmlRawNode
+          name: style
+          blockStartPosition: { start: [0, 0], text: <style> }
+          blockEndPosition: { start: [0, 34], text: </style> }
+          position: { start: [0, 0], text: "<style>.foo { color: {{ color }} }</style>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: ".foo { color: {{ color }} }"
+            position: { start: [0, 7], text: ".foo { color: {{ color }} }" }
+            nodes:
+              - type: TextNode
+                value: ".foo { color:"
+                position: { start: [0, 7], text: ".foo { color:" }
+              - type: LiquidVariableOutput
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                markupPosition: { start: [0, 23], text: " color " }
+                position: { start: [0, 21], text: "{{ color }}" }
+                markup:
+                  type: LiquidVariable
+                  rawSource: color
+                  position: { start: [0, 24], text: "color " }
+                  expression:
+                    type: VariableLookup
+                    name: color
+                    position: { start: [0, 24], text: color }
+                    lookups: []
+                    lookupModes: []
+                  filters: []
+              - type: TextNode
+                value: "}"
+                position: { start: [0, 33], text: "}" }
+  - name: should assign kind=text for HTML <style> with Liquid tag (Bug 42 regression)
+    source: <style>{% if true %}.foo { }{% endif %}</style>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<style>{% if true %}.foo { }{% endif %}</style>" }
+      children:
+        - type: HtmlRawNode
+          name: style
+          blockStartPosition: { start: [0, 0], text: <style> }
+          blockEndPosition: { start: [0, 39], text: </style> }
+          position: { start: [0, 0], text: "<style>{% if true %}.foo { }{% endif %}</style>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: "{% if true %}.foo { }{% endif %}"
+            position: { start: [0, 7], text: "{% if true %}.foo { }{% endif %}" }
+            nodes:
+              - type: LiquidTag
+                name: if
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 7], text: "{% if true %}" }
+                blockEndPosition: { start: [0, 28], text: "{% endif %}" }
+                markupPosition: { start: [0, 13], text: "true " }
+                position: { start: [0, 7], text: "{% if true %}.foo { }{% endif %}" }
+                markup:
+                  type: LiquidLiteral
+                  keyword: "true"
+                  value: true
+                  position: { start: [0, 13], text: "true" }
+                children:
+                  - type: LiquidBranch
+                    name: null
+                    markup: ""
+                    whitespaceStart: ""
+                    whitespaceEnd: ""
+                    markupPosition: { start: [0, 20], text: "" }
+                    blockStartPosition: { start: [0, 20], text: "" }
+                    blockEndPosition: { start: [0, 28], text: "" }
+                    position: { start: [0, 20], text: ".foo { }" }
+                    children:
+                      - type: TextNode
+                        value: .foo { }
+                        position: { start: [0, 20], text: ".foo { }" }
+  - name: should assign kind=text for {% style %} with Liquid content (Bug 42 regression)
+    source: "{% style %}.foo { color: {{ color }} }{% endstyle %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% style %}.foo { color: {{ color }} }{% endstyle %}" }
+      children:
+        - type: LiquidRawTag
+          name: style
+          markup: ""
+          markupPosition: { start: [0, 9], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% style %}" }
+          blockEndPosition: { start: [0, 38], text: "{% endstyle %}" }
+          position: { start: [0, 0], text: "{% style %}.foo { color: {{ color }} }{% endstyle %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: ".foo { color: {{ color }} }"
+            position: { start: [0, 11], text: ".foo { color: {{ color }} }" }
+            nodes:
+              - type: TextNode
+                value: ".foo { color:"
+                position: { start: [0, 11], text: ".foo { color:" }
+              - type: LiquidVariableOutput
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                markupPosition: { start: [0, 27], text: " color " }
+                position: { start: [0, 25], text: "{{ color }}" }
+                markup:
+                  type: LiquidVariable
+                  rawSource: color
+                  position: { start: [0, 28], text: "color " }
+                  expression:
+                    type: VariableLookup
+                    name: color
+                    position: { start: [0, 28], text: color }
+                    lookups: []
+                    lookupModes: []
+                  filters: []
+              - type: TextNode
+                value: "}"
+                position: { start: [0, 37], text: "}" }
+  - name: should parse <use> inside SVG raw body with Liquid blocks as TextNode, not HtmlElement (Bug 46)
+    source: <svg>{% if true %}<use href="#icon" />{% endif %}</svg>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<svg>{% if true %}<use href="#icon" />{% endif %}</svg>' }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 49], text: </svg> }
+          position: { start: [0, 0], text: '<svg>{% if true %}<use href="#icon" />{% endif %}</svg>' }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: '{% if true %}<use href="#icon" />{% endif %}'
+            position: { start: [0, 5], text: '{% if true %}<use href="#icon" />{% endif %}' }
+            nodes:
+              - type: LiquidTag
+                name: if
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 5], text: "{% if true %}" }
+                blockEndPosition: { start: [0, 38], text: "{% endif %}" }
+                markupPosition: { start: [0, 11], text: "true " }
+                position: { start: [0, 5], text: '{% if true %}<use href="#icon" />{% endif %}' }
+                markup:
+                  type: LiquidLiteral
+                  keyword: "true"
+                  value: true
+                  position: { start: [0, 11], text: "true" }
+                children:
+                  - type: LiquidBranch
+                    name: null
+                    markup: ""
+                    whitespaceStart: ""
+                    whitespaceEnd: ""
+                    markupPosition: { start: [0, 18], text: "" }
+                    blockStartPosition: { start: [0, 18], text: "" }
+                    blockEndPosition: { start: [0, 38], text: "" }
+                    position: { start: [0, 18], text: <use href="#icon" /> }
+                    children:
+                      - type: TextNode
+                        value: <use href="#icon" />
+                        position: { start: [0, 18], text: <use href="#icon" /> }
+  - name: should depth-balance nested same-name raw tags and close at the outer tag (issue 156) (1)
+    source: <svg>a<svg>b</svg>c</svg>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <svg>a<svg>b</svg>c</svg> }
+      children:
+        - type: HtmlRawNode
+          name: svg
+          blockStartPosition: { start: [0, 0], text: <svg> }
+          blockEndPosition: { start: [0, 19], text: </svg> }
+          position: { start: [0, 0], text: <svg>a<svg>b</svg>c</svg> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: a<svg>b</svg>c
+            position: { start: [0, 5], text: a<svg>b</svg>c }
+            nodes:
+              - type: TextNode
+                value: a<svg>b</svg>c
+                position: { start: [0, 5], text: a<svg>b</svg>c }
+  - name: should depth-balance nested same-name raw tags and close at the outer tag (issue 156) (2)
+    source: <script>a<script>b</script>c</script>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <script>a<script>b</script>c</script> }
+      children:
+        - type: HtmlRawNode
+          name: script
+          blockStartPosition: { start: [0, 0], text: <script> }
+          blockEndPosition: { start: [0, 28], text: </script> }
+          position: { start: [0, 0], text: <script>a<script>b</script>c</script> }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: a<script>b</script>c
+            position: { start: [0, 8], text: a<script>b</script>c }
+            nodes:
+              - type: TextNode
+                value: a<script>b</script>c
+                position: { start: [0, 8], text: a<script>b</script>c }
+  - name: should parse basic raw tag
+    source: "{% raw %}hello world{% endraw %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% raw %}hello world{% endraw %}" }
+      children:
+        - type: LiquidRawTag
+          name: raw
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% raw %}" }
+          blockEndPosition: { start: [0, 20], text: "{% endraw %}" }
+          position: { start: [0, 0], text: "{% raw %}hello world{% endraw %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: hello world
+            position: { start: [0, 9], text: hello world }
+            nodes:
+              - type: TextNode
+                value: hello world
+                position: { start: [0, 9], text: hello world }
+  - name: should parse comment tag
+    source: "{% comment %}this is a comment{% endcomment %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% comment %}this is a comment{% endcomment %}" }
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [0, 30], text: "{% endcomment %}" }
+          position: { start: [0, 0], text: "{% comment %}this is a comment{% endcomment %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: this is a comment
+            position: { start: [0, 13], text: this is a comment }
+            nodes:
+              - type: TextNode
+                value: this is a comment
+                position: { start: [0, 13], text: this is a comment }
+  - name: should parse schema tag
+    source: '{% schema %}{"key": "value"}{% endschema %}'
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% schema %}{"key": "value"}{% endschema %}' }
+      children:
+        - type: LiquidRawTag
+          name: schema
+          markup: ""
+          markupPosition: { start: [0, 10], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% schema %}" }
+          blockEndPosition: { start: [0, 28], text: "{% endschema %}" }
+          position: { start: [0, 0], text: '{% schema %}{"key": "value"}{% endschema %}' }
+          body:
+            type: RawMarkup
+            kind: json
+            value: '{"key": "value"}'
+            position: { start: [0, 12], text: '{"key": "value"}' }
+            nodes:
+              - type: TextNode
+                value: '{"key": "value"}'
+                position: { start: [0, 12], text: '{"key": "value"}' }
+  - name: should parse javascript tag with Liquid in body
+    source: "{% javascript %}var x = {{ value }};{% endjavascript %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% javascript %}var x = {{ value }};{% endjavascript %}" }
+      children:
+        - type: LiquidRawTag
+          name: javascript
+          markup: ""
+          markupPosition: { start: [0, 14], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% javascript %}" }
+          blockEndPosition: { start: [0, 36], text: "{% endjavascript %}" }
+          position: { start: [0, 0], text: "{% javascript %}var x = {{ value }};{% endjavascript %}" }
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: var x = {{ value }};
+            position: { start: [0, 16], text: "var x = {{ value }};" }
+            nodes:
+              - type: TextNode
+                value: var x =
+                position: { start: [0, 16], text: var x = }
+              - type: LiquidVariableOutput
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                markupPosition: { start: [0, 26], text: " value " }
+                position: { start: [0, 24], text: "{{ value }}" }
+                markup:
+                  type: LiquidVariable
+                  rawSource: value
+                  position: { start: [0, 27], text: "value " }
+                  expression:
+                    type: VariableLookup
+                    name: value
+                    position: { start: [0, 27], text: value }
+                    lookups: []
+                    lookupModes: []
+                  filters: []
+              - type: TextNode
+                value: ;
+                position: { start: [0, 35], text: ; }
+  - name: should parse doc tag with param content
+    source: "{% doc %}@param {String} name - description{% enddoc %}"
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% doc %}@param {String} name - description{% enddoc %}" }
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% doc %}" }
+          blockEndPosition: { start: [0, 43], text: "{% enddoc %}" }
+          position: { start: [0, 0], text: "{% doc %}@param {String} name - description{% enddoc %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: "@param {String} name - description"
+            position: { start: [0, 9], text: "@param {String} name - description" }
+            nodes:
+              - type: LiquidDocParamNode
+                name: param
+                required: true
+                position: { start: [0, 9], text: "@param {String} name - description" }
+                paramName:
+                  type: TextNode
+                  value: name
+                  position: { start: [0, 25], text: name }
+                paramType:
+                  type: TextNode
+                  value: String
+                  position: { start: [0, 17], text: String }
+                paramDescription:
+                  type: TextNode
+                  value: description
+                  position: { start: [0, 32], text: description }
+  - name: should handle whitespace stripping on open and close
+    source: "{%- raw -%}hello{%- endraw -%}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{%- raw -%}hello{%- endraw -%}" }
+      children:
+        - type: LiquidRawTag
+          name: raw
+          markup: ""
+          markupPosition: { start: [0, 8], text: "" }
+          whitespaceStart: "-"
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: "-"
+          delimiterWhitespaceEnd: "-"
+          blockStartPosition: { start: [0, 0], text: "{%- raw -%}" }
+          blockEndPosition: { start: [0, 16], text: "{%- endraw -%}" }
+          position: { start: [0, 0], text: "{%- raw -%}hello{%- endraw -%}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: hello
+            position: { start: [0, 11], text: hello }
+            nodes:
+              - type: TextNode
+                value: hello
+                position: { start: [0, 11], text: hello }
+  - name: should track raw tag markup position
+    source: "{% raw foo %}{% endraw %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% raw foo %}{% endraw %}" }
+      children:
+        - type: LiquidRawTag
+          name: raw
+          markup: foo
+          markupPosition: { start: [0, 7], text: foo }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% raw foo %}" }
+          blockEndPosition: { start: [0, 13], text: "{% endraw %}" }
+          position: { start: [0, 0], text: "{% raw foo %}{% endraw %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: ""
+            position: { start: [0, 13], text: "" }
+            nodes: []
+  - name: should track whitespace-stripped raw tag markup position
+    source: "{%- raw foo -%}{%- endraw -%}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{%- raw foo -%}{%- endraw -%}" }
+      children:
+        - type: LiquidRawTag
+          name: raw
+          markup: foo
+          markupPosition: { start: [0, 8], text: foo }
+          whitespaceStart: "-"
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: "-"
+          delimiterWhitespaceEnd: "-"
+          blockStartPosition: { start: [0, 0], text: "{%- raw foo -%}" }
+          blockEndPosition: { start: [0, 15], text: "{%- endraw -%}" }
+          position: { start: [0, 0], text: "{%- raw foo -%}{%- endraw -%}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: ""
+            position: { start: [0, 15], text: "" }
+            nodes: []
+  - name: should track positions correctly with prefix
+    source: XXXXX{% raw %}hello{% endraw %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "XXXXX{% raw %}hello{% endraw %}" }
+      children:
+        - type: TextNode
+          value: XXXXX
+          position: { start: [0, 0], text: XXXXX }
+        - type: LiquidRawTag
+          name: raw
+          markup: ""
+          markupPosition: { start: [0, 12], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 5], text: "{% raw %}" }
+          blockEndPosition: { start: [0, 19], text: "{% endraw %}" }
+          position: { start: [0, 5], text: "{% raw %}hello{% endraw %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: hello
+            position: { start: [0, 14], text: hello }
+            nodes:
+              - type: TextNode
+                value: hello
+                position: { start: [0, 14], text: hello }
+  - name: should map RawMarkupKinds correctly for each tag name (1)
+    source: "{% raw %}body{% endraw %}"
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% raw %}body{% endraw %}" }
+      children:
+        - type: LiquidRawTag
+          name: raw
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% raw %}" }
+          blockEndPosition: { start: [0, 13], text: "{% endraw %}" }
+          position: { start: [0, 0], text: "{% raw %}body{% endraw %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: body
+            position: { start: [0, 9], text: body }
+            nodes:
+              - type: TextNode
+                value: body
+                position: { start: [0, 9], text: body }
+  - name: should map RawMarkupKinds correctly for each tag name (2)
+    source: "{% comment %}body{% endcomment %}"
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% comment %}body{% endcomment %}" }
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [0, 17], text: "{% endcomment %}" }
+          position: { start: [0, 0], text: "{% comment %}body{% endcomment %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: body
+            position: { start: [0, 13], text: body }
+            nodes:
+              - type: TextNode
+                value: body
+                position: { start: [0, 13], text: body }
+  - name: should map RawMarkupKinds correctly for each tag name (3)
+    source: "{% schema %}body{% endschema %}"
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% schema %}body{% endschema %}" }
+      children:
+        - type: LiquidRawTag
+          name: schema
+          markup: ""
+          markupPosition: { start: [0, 10], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% schema %}" }
+          blockEndPosition: { start: [0, 16], text: "{% endschema %}" }
+          position: { start: [0, 0], text: "{% schema %}body{% endschema %}" }
+          body:
+            type: RawMarkup
+            kind: json
+            value: body
+            position: { start: [0, 12], text: body }
+            nodes:
+              - type: TextNode
+                value: body
+                position: { start: [0, 12], text: body }
+  - name: should map RawMarkupKinds correctly for each tag name (4)
+    source: "{% javascript %}body{% endjavascript %}"
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% javascript %}body{% endjavascript %}" }
+      children:
+        - type: LiquidRawTag
+          name: javascript
+          markup: ""
+          markupPosition: { start: [0, 14], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% javascript %}" }
+          blockEndPosition: { start: [0, 20], text: "{% endjavascript %}" }
+          position: { start: [0, 0], text: "{% javascript %}body{% endjavascript %}" }
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: body
+            position: { start: [0, 16], text: body }
+            nodes:
+              - type: TextNode
+                value: body
+                position: { start: [0, 16], text: body }
+  - name: should map RawMarkupKinds correctly for each tag name (5)
+    source: "{% style %}body{% endstyle %}"
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% style %}body{% endstyle %}" }
+      children:
+        - type: LiquidRawTag
+          name: style
+          markup: ""
+          markupPosition: { start: [0, 9], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% style %}" }
+          blockEndPosition: { start: [0, 15], text: "{% endstyle %}" }
+          position: { start: [0, 0], text: "{% style %}body{% endstyle %}" }
+          body:
+            type: RawMarkup
+            kind: css
+            value: body
+            position: { start: [0, 11], text: body }
+            nodes:
+              - type: TextNode
+                value: body
+                position: { start: [0, 11], text: body }
+  - name: should map RawMarkupKinds correctly for each tag name (6)
+    source: "{% stylesheet %}body{% endstylesheet %}"
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% stylesheet %}body{% endstylesheet %}" }
+      children:
+        - type: LiquidRawTag
+          name: stylesheet
+          markup: ""
+          markupPosition: { start: [0, 14], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% stylesheet %}" }
+          blockEndPosition: { start: [0, 20], text: "{% endstylesheet %}" }
+          position: { start: [0, 0], text: "{% stylesheet %}body{% endstylesheet %}" }
+          body:
+            type: RawMarkup
+            kind: css
+            value: body
+            position: { start: [0, 16], text: body }
+            nodes:
+              - type: TextNode
+                value: body
+                position: { start: [0, 16], text: body }
+  - name: should map RawMarkupKinds correctly for each tag name (7)
+    source: "{% doc %}body{% enddoc %}"
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% doc %}body{% enddoc %}" }
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% doc %}" }
+          blockEndPosition: { start: [0, 13], text: "{% enddoc %}" }
+          position: { start: [0, 0], text: "{% doc %}body{% enddoc %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: body
+            position: { start: [0, 9], text: body }
+            nodes:
+              - type: LiquidDocDescriptionNode
+                name: description
+                isImplicit: true
+                isInline: true
+                position: { start: [0, 9], text: body }
+                content:
+                  type: TextNode
+                  value: body
+                  position: { start: [0, 9], text: body }
+  - name: should parse empty body
+    source: "{% raw %}{% endraw %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% raw %}{% endraw %}" }
+      children:
+        - type: LiquidRawTag
+          name: raw
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% raw %}" }
+          blockEndPosition: { start: [0, 9], text: "{% endraw %}" }
+          position: { start: [0, 0], text: "{% raw %}{% endraw %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: ""
+            position: { start: [0, 9], text: "" }
+            nodes: []
+  - name: should preserve newlines in multiline body
+    source: |-
+      {% comment %}
+      line1
+      line2
+      {% endcomment %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% comment %}
+          line1
+          line2
+          {% endcomment %}
+      children:
+        - type: LiquidRawTag
+          name: comment
+          markup: ""
+          markupPosition: { start: [0, 11], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% comment %}" }
+          blockEndPosition: { start: [3, 0], text: "{% endcomment %}" }
+          position:
+            start: [0, 0]
+            text: |-
+              {% comment %}
+              line1
+              line2
+              {% endcomment %}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |
+              
+              line1
+              line2
+            position:
+              start: [0, 13]
+              text: |
+                
+                line1
+                line2
+            nodes:
+              - type: TextNode
+                value: |-
+                  line1
+                  line2
+                position:
+                  start: [1, 0]
+                  text: |-
+                    line1
+                    line2
+  - name: should throw for unclosed raw tag
+    source: "{% raw %}hello"
+    parse: [html]
+    error:
+      message: Attempting to end parsing before LiquidRawTag 'raw' was closed
+      start: [0, 0]
+      text: "{% raw %}"
+  - name: should work with toLiquidAST
+    source: "{% raw %}hello{% endraw %}"
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% raw %}hello{% endraw %}" }
+      children:
+        - type: LiquidRawTag
+          name: raw
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% raw %}" }
+          blockEndPosition: { start: [0, 14], text: "{% endraw %}" }
+          position: { start: [0, 0], text: "{% raw %}hello{% endraw %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: hello
+            position: { start: [0, 9], text: hello }
+            nodes:
+              - type: TextNode
+                value: hello
+                position: { start: [0, 9], text: hello }
+  - name: should parse stylesheet tag
+    source: "{% stylesheet %}.cls { }{% endstylesheet %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% stylesheet %}.cls { }{% endstylesheet %}" }
+      children:
+        - type: LiquidRawTag
+          name: stylesheet
+          markup: ""
+          markupPosition: { start: [0, 14], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% stylesheet %}" }
+          blockEndPosition: { start: [0, 24], text: "{% endstylesheet %}" }
+          position: { start: [0, 0], text: "{% stylesheet %}.cls { }{% endstylesheet %}" }
+          body:
+            type: RawMarkup
+            kind: css
+            value: .cls { }
+            position: { start: [0, 16], text: ".cls { }" }
+            nodes:
+              - type: TextNode
+                value: .cls { }
+                position: { start: [0, 16], text: ".cls { }" }
+  - name: should parse doc tag whose body contains liquid-like syntax
+    source: |-
+      {%- doc -%}
+        @param {object} price - The price.
+        @example
+        {% render 'unit-price', price: variant.unit_price }
+      {%- enddoc -%}
+      after
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {%- doc -%}
+            @param {object} price - The price.
+            @example
+            {% render 'unit-price', price: variant.unit_price }
+          {%- enddoc -%}
+          after
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [0, 8], text: "" }
+          whitespaceStart: "-"
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: "-"
+          delimiterWhitespaceEnd: "-"
+          blockStartPosition: { start: [0, 0], text: "{%- doc -%}" }
+          blockEndPosition: { start: [4, 0], text: "{%- enddoc -%}" }
+          position:
+            start: [0, 0]
+            text: |-
+              {%- doc -%}
+                @param {object} price - The price.
+                @example
+                {% render 'unit-price', price: variant.unit_price }
+              {%- enddoc -%}
+          body:
+            type: RawMarkup
+            kind: text
+            value: |2
+              
+                @param {object} price - The price.
+                @example
+                {% render 'unit-price', price: variant.unit_price }
+            position:
+              start: [0, 11]
+              text: |2
+                
+                  @param {object} price - The price.
+                  @example
+                  {% render 'unit-price', price: variant.unit_price }
+            nodes:
+              - type: LiquidDocParamNode
+                name: param
+                required: true
+                position: { start: [1, 2], text: "@param {object} price - The price." }
+                paramName:
+                  type: TextNode
+                  value: price
+                  position: { start: [1, 18], text: price }
+                paramType:
+                  type: TextNode
+                  value: object
+                  position: { start: [1, 10], text: object }
+                paramDescription:
+                  type: TextNode
+                  value: The price.
+                  position: { start: [1, 26], text: The price. }
+              - type: LiquidDocExampleNode
+                name: example
+                isInline: false
+                position:
+                  start: [2, 2]
+                  text: |
+                    @example
+                      {% render 'unit-price', price: variant.unit_price }
+                content:
+                  type: TextNode
+                  value: |
+                    {% render 'unit-price', price: variant.unit_price }
+                  position:
+                    start: [3, 2]
+                    text: |
+                      {% render 'unit-price', price: variant.unit_price }
+        - type: TextNode
+          value: after
+          position: { start: [5, 0], text: after }
+  - name: should parse style tag with Liquid tag in body
+    source: "{% style %}{% if true %}.active{}{% endif %}{% endstyle %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% style %}{% if true %}.active{}{% endif %}{% endstyle %}" }
+      children:
+        - type: LiquidRawTag
+          name: style
+          markup: ""
+          markupPosition: { start: [0, 9], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% style %}" }
+          blockEndPosition: { start: [0, 44], text: "{% endstyle %}" }
+          position: { start: [0, 0], text: "{% style %}{% if true %}.active{}{% endif %}{% endstyle %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: "{% if true %}.active{}{% endif %}"
+            position: { start: [0, 11], text: "{% if true %}.active{}{% endif %}" }
+            nodes:
+              - type: LiquidTag
+                name: if
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                delimiterWhitespaceStart: ""
+                delimiterWhitespaceEnd: ""
+                blockStartPosition: { start: [0, 11], text: "{% if true %}" }
+                blockEndPosition: { start: [0, 33], text: "{% endif %}" }
+                markupPosition: { start: [0, 17], text: "true " }
+                position: { start: [0, 11], text: "{% if true %}.active{}{% endif %}" }
+                markup:
+                  type: LiquidLiteral
+                  keyword: "true"
+                  value: true
+                  position: { start: [0, 17], text: "true" }
+                children:
+                  - type: LiquidBranch
+                    name: null
+                    markup: ""
+                    whitespaceStart: ""
+                    whitespaceEnd: ""
+                    markupPosition: { start: [0, 24], text: "" }
+                    blockStartPosition: { start: [0, 24], text: "" }
+                    blockEndPosition: { start: [0, 33], text: "" }
+                    position: { start: [0, 24], text: ".active{}" }
+                    children:
+                      - type: TextNode
+                        value: .active{}
+                        position: { start: [0, 24], text: ".active{}" }
+  - name: preserves output after endraw when an unclosed {{ in the body straddles the boundary
+    source: "{% raw %} Foobar {{ invalid {% endraw %}{{ 1 }}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% raw %} Foobar {{ invalid {% endraw %}{{ 1 }}" }
+      children:
+        - type: LiquidRawTag
+          name: raw
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% raw %}" }
+          blockEndPosition: { start: [0, 28], text: "{% endraw %}" }
+          position: { start: [0, 0], text: "{% raw %} Foobar {{ invalid {% endraw %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: " Foobar {{ invalid "
+            position: { start: [0, 9], text: " Foobar {{ invalid " }
+            nodes:
+              - type: TextNode
+                value: Foobar {{ invalid
+                position: { start: [0, 10], text: "Foobar {{ invalid" }
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 42], text: " 1 " }
+          position: { start: [0, 40], text: "{{ 1 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "1"
+            position: { start: [0, 43], text: "1 " }
+            expression:
+              type: Number
+              value: "1"
+              position: { start: [0, 43], text: "1" }
+            filters: []
+  - name: preserves plain text after endraw when the raw body contains a stray {{
+    source: "{% raw %}{{ a {% endraw %}tail"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% raw %}{{ a {% endraw %}tail" }
+      children:
+        - type: LiquidRawTag
+          name: raw
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% raw %}" }
+          blockEndPosition: { start: [0, 14], text: "{% endraw %}" }
+          position: { start: [0, 0], text: "{% raw %}{{ a {% endraw %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: "{{ a "
+            position: { start: [0, 9], text: "{{ a " }
+            nodes:
+              - type: TextNode
+                value: "{{ a"
+                position: { start: [0, 9], text: "{{ a" }
+        - type: TextNode
+          value: tail
+          position: { start: [0, 26], text: tail }
+  - name: re-tokenizes a straddling endraw inside a quoted attribute without losing quote context
+    source: <div data="{% raw %}{{ invalid {% endraw %}">x</div>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<div data="{% raw %}{{ invalid {% endraw %}">x</div>' }
+      children:
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 0], text: '<div data="{% raw %}{{ invalid {% endraw %}">' }
+          blockEndPosition: { start: [0, 46], text: </div> }
+          position: { start: [0, 0], text: '<div data="{% raw %}{{ invalid {% endraw %}">x</div>' }
+          name:
+            - type: TextNode
+              value: div
+              position: { start: [0, 1], text: div }
+          attributes:
+            - type: AttrDoubleQuoted
+              attributePosition: { start: [0, 11], text: "{% raw %}{{ invalid {% endraw %}" }
+              position: { start: [0, 5], text: 'data="{% raw %}{{ invalid {% endraw %}"' }
+              name:
+                - type: TextNode
+                  value: data
+                  position: { start: [0, 5], text: data }
+              value:
+                - type: LiquidRawTag
+                  name: raw
+                  markup: ""
+                  markupPosition: { start: [0, 18], text: "" }
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  delimiterWhitespaceStart: ""
+                  delimiterWhitespaceEnd: ""
+                  blockStartPosition: { start: [0, 11], text: "{% raw %}" }
+                  blockEndPosition: { start: [0, 31], text: "{% endraw %}" }
+                  position: { start: [0, 11], text: "{% raw %}{{ invalid {% endraw %}" }
+                  body:
+                    type: RawMarkup
+                    kind: text
+                    value: "{{ invalid "
+                    position: { start: [0, 20], text: "{{ invalid " }
+                    nodes:
+                      - type: TextNode
+                        value: "{{ invalid"
+                        position: { start: [0, 20], text: "{{ invalid" }
+          children:
+            - type: TextNode
+              value: x
+              position: { start: [0, 45], text: x }
+  - name: handles a straddling endraw inside a single-quoted attribute
+    source: <div data='{% raw %}{{ invalid {% endraw %}'>y</div>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<div data='{% raw %}{{ invalid {% endraw %}'>y</div>" }
+      children:
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 0], text: "<div data='{% raw %}{{ invalid {% endraw %}'>" }
+          blockEndPosition: { start: [0, 46], text: </div> }
+          position: { start: [0, 0], text: "<div data='{% raw %}{{ invalid {% endraw %}'>y</div>" }
+          name:
+            - type: TextNode
+              value: div
+              position: { start: [0, 1], text: div }
+          attributes:
+            - type: AttrSingleQuoted
+              attributePosition: { start: [0, 11], text: "{% raw %}{{ invalid {% endraw %}" }
+              position: { start: [0, 5], text: "data='{% raw %}{{ invalid {% endraw %}'" }
+              name:
+                - type: TextNode
+                  value: data
+                  position: { start: [0, 5], text: data }
+              value:
+                - type: LiquidRawTag
+                  name: raw
+                  markup: ""
+                  markupPosition: { start: [0, 18], text: "" }
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  delimiterWhitespaceStart: ""
+                  delimiterWhitespaceEnd: ""
+                  blockStartPosition: { start: [0, 11], text: "{% raw %}" }
+                  blockEndPosition: { start: [0, 31], text: "{% endraw %}" }
+                  position: { start: [0, 11], text: "{% raw %}{{ invalid {% endraw %}" }
+                  body:
+                    type: RawMarkup
+                    kind: text
+                    value: "{{ invalid "
+                    position: { start: [0, 20], text: "{{ invalid " }
+                    nodes:
+                      - type: TextNode
+                        value: "{{ invalid"
+                        position: { start: [0, 20], text: "{{ invalid" }
+          children:
+            - type: TextNode
+              value: y
+              position: { start: [0, 45], text: y }
+  - name: recovers HtmlTag context for a straddling endraw in an unquoted attribute position
+    source: <div {% raw %}{{ invalid {% endraw %}{{ 1 }} data-x="1">ok</div>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '<div {% raw %}{{ invalid {% endraw %}{{ 1 }} data-x="1">ok</div>' }
+      children:
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 0], text: '<div {% raw %}{{ invalid {% endraw %}{{ 1 }} data-x="1">' }
+          blockEndPosition: { start: [0, 58], text: </div> }
+          position: { start: [0, 0], text: '<div {% raw %}{{ invalid {% endraw %}{{ 1 }} data-x="1">ok</div>' }
+          name:
+            - type: TextNode
+              value: div
+              position: { start: [0, 1], text: div }
+          attributes:
+            - type: LiquidRawTag
+              name: raw
+              markup: ""
+              markupPosition: { start: [0, 12], text: "" }
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [0, 5], text: "{% raw %}" }
+              blockEndPosition: { start: [0, 25], text: "{% endraw %}" }
+              position: { start: [0, 5], text: "{% raw %}{{ invalid {% endraw %}" }
+              body:
+                type: RawMarkup
+                kind: text
+                value: "{{ invalid "
+                position: { start: [0, 14], text: "{{ invalid " }
+                nodes:
+                  - type: TextNode
+                    value: "{{ invalid"
+                    position: { start: [0, 14], text: "{{ invalid" }
+            - type: LiquidVariableOutput
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 39], text: " 1 " }
+              position: { start: [0, 37], text: "{{ 1 }}" }
+              markup:
+                type: LiquidVariable
+                rawSource: "1"
+                position: { start: [0, 40], text: "1 " }
+                expression:
+                  type: Number
+                  value: "1"
+                  position: { start: [0, 40], text: "1" }
+                filters: []
+            - type: AttrDoubleQuoted
+              attributePosition: { start: [0, 53], text: "1" }
+              position: { start: [0, 45], text: data-x="1" }
+              name:
+                - type: TextNode
+                  value: data-x
+                  position: { start: [0, 45], text: data-x }
+              value:
+                - type: TextNode
+                  value: "1"
+                  position: { start: [0, 53], text: "1" }
+          children:
+            - type: TextNode
+              value: ok
+              position: { start: [0, 56], text: ok }
+  - name: does not duplicate a straddling {{ into both a Liquid-in-body raw body and a sibling
+    source: "{% style %}{{ invalid {% endstyle %}{{ 1 }}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% style %}{{ invalid {% endstyle %}{{ 1 }}" }
+      children:
+        - type: LiquidRawTag
+          name: style
+          markup: ""
+          markupPosition: { start: [0, 9], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% style %}" }
+          blockEndPosition: { start: [0, 22], text: "{% endstyle %}" }
+          position: { start: [0, 0], text: "{% style %}{{ invalid {% endstyle %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: "{{ invalid "
+            position: { start: [0, 11], text: "{{ invalid " }
+            nodes:
+              - type: TextNode
+                value: "{{ invalid"
+                position: { start: [0, 11], text: "{{ invalid" }
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 38], text: " 1 " }
+          position: { start: [0, 36], text: "{{ 1 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "1"
+            position: { start: [0, 39], text: "1 " }
+            expression:
+              type: Number
+              value: "1"
+              position: { start: [0, 39], text: "1" }
+            filters: []
+  - name: does not let a decoy endcommentXXXXX close the comment; only the real endcomment does
+    source: |-
+      {% if true %}
+        {% comment %}
+          {% commentXXXXX %}wut{% endcommentXXXXX %}
+        {% endcomment %}
+      {% endif %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% if true %}
+            {% comment %}
+              {% commentXXXXX %}wut{% endcommentXXXXX %}
+            {% endcomment %}
+          {% endif %}
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if true %}" }
+          blockEndPosition: { start: [4, 0], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "true " }
+          position:
+            start: [0, 0]
+            text: |-
+              {% if true %}
+                {% comment %}
+                  {% commentXXXXX %}wut{% endcommentXXXXX %}
+                {% endcomment %}
+              {% endif %}
+          markup:
+            type: LiquidLiteral
+            keyword: "true"
+            value: true
+            position: { start: [0, 6], text: "true" }
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 13], text: "" }
+              blockStartPosition: { start: [0, 13], text: "" }
+              blockEndPosition: { start: [4, 0], text: "" }
+              position:
+                start: [0, 13]
+                text: |2
+                  
+                    {% comment %}
+                      {% commentXXXXX %}wut{% endcommentXXXXX %}
+                    {% endcomment %}
+              children:
+                - type: LiquidRawTag
+                  name: comment
+                  markup: ""
+                  markupPosition: { start: [1, 13], text: "" }
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  delimiterWhitespaceStart: ""
+                  delimiterWhitespaceEnd: ""
+                  blockStartPosition: { start: [1, 2], text: "{% comment %}" }
+                  blockEndPosition: { start: [3, 2], text: "{% endcomment %}" }
+                  position:
+                    start: [1, 2]
+                    text: |-
+                      {% comment %}
+                          {% commentXXXXX %}wut{% endcommentXXXXX %}
+                        {% endcomment %}
+                  body:
+                    type: RawMarkup
+                    kind: text
+                    value: "
+
+                      \    {% commentXXXXX %}wut{% endcommentXXXXX %}
+
+                      \  "
+                    position:
+                      start: [1, 15]
+                      text: "
+
+                        \    {% commentXXXXX %}wut{% endcommentXXXXX %}
+
+                        \  "
+                    nodes:
+                      - type: TextNode
+                        value: "{% commentXXXXX %}wut{% endcommentXXXXX %}"
+                        position: { start: [2, 4], text: "{% commentXXXXX %}wut{% endcommentXXXXX %}" }
+  - name: parses a malformed {%comment}...{%endcomment} (no %}) into two flat base-case tags without throwing
+    source: "{%comment}{% assign a = 1 %}{%endcomment}{% endif %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{%comment}{% assign a = 1 %}{%endcomment}{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: comment}{%
+          markup: assign a = 1
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{%comment}{% assign a = 1 %}" }
+          markupPosition: { start: [0, 13], text: "assign a = 1 " }
+          position: { start: [0, 0], text: "{%comment}{% assign a = 1 %}" }
+        - type: LiquidTag
+          name: endcomment}{%
+          markup: endif
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 28], text: "{%endcomment}{% endif %}" }
+          markupPosition: { start: [0, 44], text: "endif " }
+          position: { start: [0, 28], text: "{%endcomment}{% endif %}" }
+  - name: distinguishes a trimming endraw -%} from a non-trimming endraw %} (1)
+    source: "> {%- raw -%} inner {%- endraw -%} <"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "> {%- raw -%} inner {%- endraw -%} <" }
+      children:
+        - type: TextNode
+          value: ">"
+          position: { start: [0, 0], text: ">" }
+        - type: LiquidRawTag
+          name: raw
+          markup: ""
+          markupPosition: { start: [0, 10], text: "" }
+          whitespaceStart: "-"
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: "-"
+          delimiterWhitespaceEnd: "-"
+          blockStartPosition: { start: [0, 2], text: "{%- raw -%}" }
+          blockEndPosition: { start: [0, 20], text: "{%- endraw -%}" }
+          position: { start: [0, 2], text: "{%- raw -%} inner {%- endraw -%}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: " inner "
+            position: { start: [0, 13], text: " inner " }
+            nodes:
+              - type: TextNode
+                value: inner
+                position: { start: [0, 14], text: inner }
+        - type: TextNode
+          value: <
+          position: { start: [0, 35], text: < }
+  - name: distinguishes a trimming endraw -%} from a non-trimming endraw %} (2)
+    source: "> {%- raw -%} inner {%- endraw %} <"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "> {%- raw -%} inner {%- endraw %} <" }
+      children:
+        - type: TextNode
+          value: ">"
+          position: { start: [0, 0], text: ">" }
+        - type: LiquidRawTag
+          name: raw
+          markup: ""
+          markupPosition: { start: [0, 10], text: "" }
+          whitespaceStart: "-"
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: "-"
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 2], text: "{%- raw -%}" }
+          blockEndPosition: { start: [0, 20], text: "{%- endraw %}" }
+          position: { start: [0, 2], text: "{%- raw -%} inner {%- endraw %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: " inner "
+            position: { start: [0, 13], text: " inner " }
+            nodes:
+              - type: TextNode
+                value: inner
+                position: { start: [0, 14], text: inner }
+        - type: TextNode
+          value: <
+          position: { start: [0, 34], text: < }

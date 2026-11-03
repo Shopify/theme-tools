@@ -1,5 +1,31 @@
 # @shopify/theme-check-node
 
+## 3.31.0
+
+### Minor Changes
+
+- 286b04fb: Accept canonical app block paths in `{% block %}` tags.
+
+  The parser accepts `shopify://apps/<app>/blocks/<handle>/<uuid>` as a block type and keeps rejecting malformed app paths. `LiquidSyntaxError` reports arguments and content on app block paths, because app blocks render with the settings their app provides. `block.name` stays allowed.
+
+  App block paths do not produce local theme-file document links or dependencies in the theme graph.
+
+### Patch Changes
+
+- 04110ed6: Report configs that extend each other instead of hanging while resolving them.
+- Updated dependencies [286b04fb]
+- Updated dependencies [84a458be]
+- Updated dependencies [fca4a62b]
+- Updated dependencies [c0ae8785]
+- Updated dependencies [d9c843c3]
+- Updated dependencies [af297bab]
+- Updated dependencies [c81fc198]
+- Updated dependencies [02380e2f]
+  - @shopify/liquid-html-parser@2.11.0
+  - @shopify/theme-check-common@3.31.0
+  - @shopify/theme-graph@0.3.6
+  - @shopify/theme-check-docs-updater@3.31.0
+
 ## 3.30.1
 
 ### Patch Changes

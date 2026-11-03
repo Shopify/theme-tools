@@ -36,8 +36,11 @@ export async function getFileSize(url: string): Promise<number> {
   }
 }
 
-export async function hasRemoteAssetSizeExceededThreshold(url: string, thresholdInBytes: number) {
-  const fileSize = await getFileSize(url);
+export async function hasRemoteAssetSizeExceededThreshold<
+  T extends SourceCodeType,
+  S extends Schema,
+>(context: Context<T, S>, url: string, thresholdInBytes: number) {
+  const fileSize = await context.remoteFileSize(url);
   return fileSize > thresholdInBytes;
 }
 

@@ -62,7 +62,7 @@ export const AssetSizeJavaScript: LiquidCheckDefinition<typeof schema> = {
     const thresholdInBytes = context.settings.thresholdInBytes;
 
     async function checkRemoteAssetSize(url: string, position: { start: number; end: number }) {
-      if (await hasRemoteAssetSizeExceededThreshold(url, thresholdInBytes)) {
+      if (await hasRemoteAssetSizeExceededThreshold(context, url, thresholdInBytes)) {
         context.report({
           message: `JavaScript on every page load exceeds compressed size threshold (${thresholdInBytes} Bytes), consider using the import on interaction pattern.`,
           startIndex: position.start,

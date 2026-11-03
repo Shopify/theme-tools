@@ -42,6 +42,10 @@ async function detectPipeSyntaxInMarkup(
   const extraPipesMatches = Array.from(trimmedMarkup.matchAll(extraPipesPattern));
 
   for (const match of extraPipesMatches) {
+    // Pipes that end the markup are a trailing pipe, reported below.
+    if (match.index! + match[0].length === trimmedMarkup.length) {
+      continue;
+    }
     const markupStartInSource = node.source.indexOf(markup, node.position.start);
     if (markupStartInSource === -1) {
       continue;
@@ -60,7 +64,7 @@ async function detectPipeSyntaxInMarkup(
   }
 
   // Check for trailing pipes
-  const trailingPipePattern = /\s*\|\s*$/;
+  const trailingPipePattern = /(\s*\|)+\s*$/;
   const trailingPipeMatch = trimmedMarkup.match(trailingPipePattern);
 
   if (trailingPipeMatch) {

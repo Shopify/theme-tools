@@ -1,5 +1,16 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.11.3
+
+### Patch Changes
+
+- Patch bump because it depends on @shopify/liquid-html-parser
+- Updated dependencies [286b04fb]
+- Updated dependencies [84a458be]
+- Updated dependencies [c0ae8785]
+- Updated dependencies [af297bab]
+  - @shopify/liquid-html-parser@2.11.0
+
 ## 1.11.2
 
 ### Patch Changes
