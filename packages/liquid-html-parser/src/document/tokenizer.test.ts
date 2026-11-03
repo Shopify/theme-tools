@@ -38,6 +38,53 @@ function assertTokenInvariants(source: string) {
 }
 
 describe('Unit: document-tokenizer', () => {
+  it.each([
+    ['hyphens', '-'.repeat(4096)],
+    ['inert delimiters', '{<1'.repeat(1024)],
+    ['Unicode', 'é😀'.repeat(1024)],
+  ])('preserves %s text before a trimmed output', (_name, text) => {
+    const source = `${text}{{ value -}}`;
+    expect(tokens(source)).toEqual([
+      { type: TokenType.Text, start: 0, end: text.length },
+      { type: TokenType.LiquidVariableOutputOpen, start: text.length, end: text.length + 2 },
+      { type: TokenType.Text, start: text.length + 2, end: text.length + 9 },
+      { type: TokenType.LiquidVariableOutputClose, start: text.length + 9, end: source.length },
+    ]);
+  });
+
+  it.each(['"', "'"])('preserves opposite quotes and slashes inside %s attributes', (quote) => {
+    const value = (quote === '"' ? "'/path/" : '"/path/').repeat(1024);
+    const source = `<div x=${quote}${value}${quote} y=/a/b/c/>`;
+    expect(
+      tokens(source).map((token) => [token.type, source.slice(token.start, token.end)]),
+    ).toEqual([
+      [TokenType.HtmlTagOpen, '<'],
+      [TokenType.Text, 'div'],
+      [TokenType.Text, ' '],
+      [TokenType.Text, 'x'],
+      [TokenType.HtmlEquals, '='],
+      [TokenType.HtmlQuoteOpen, quote],
+      [TokenType.Text, value],
+      [TokenType.HtmlQuoteClose, quote],
+      [TokenType.Text, ' '],
+      [TokenType.Text, 'y'],
+      [TokenType.HtmlEquals, '='],
+      [TokenType.Text, '/a/b/c'],
+      [TokenType.HtmlSelfClose, '/>'],
+    ]);
+  });
+
+  it.each([
+    ['{%-%}', ['{%-', '%}']],
+    ['{%- %}', ['{%-', ' ', '%}']],
+    ['{{-}}', ['{{-', '}}']],
+    ['{{--}}', ['{{-', '-}}']],
+    ['{{---}}', ['{{-', '-', '-}}']],
+  ])('preserves delimiter ownership in %s', (source, expected) => {
+    expect(tokens(source).map((token) => source.slice(token.start, token.end))).toEqual(expected);
+    assertTokenInvariants(source);
+  });
+
   describe('basic Liquid tokens', () => {
     // "{{ x }}" len=7: 0:{ 1:{ 2:  3:x 4:  5:} 6:}
     it('tokenizes a Liquid drop {{ x }}', () => {
@@ -363,6 +410,22 @@ describe('Unit: document-tokenizer', () => {
 
   describe('Liquid raw tag bodies (rawBodyRule)', () => {
     const rawBodyRule = rawBodyRuleLookup((name) => Environment.default().tagForName(name));
+
+    it.each<[string, string[]]>([
+      ['{% x %}', ['x']],
+      ['{% x %}\n', ['x']],
+      ['{% raw %}plain{% endraw %}', ['raw', 'endraw']],
+      ['{% raw %}{{ unfinished{% endraw %}', ['raw', 'endraw']],
+    ])('looks up each tag once in %j', (source, names) => {
+      const seen: string[] = [];
+      tokenize(source, {
+        rawBodyRule(name) {
+          seen.push(name);
+          return rawBodyRule(name);
+        },
+      });
+      expect(seen).toEqual(names);
+    });
 
     /** Each token as `[type, source text]`, without EndOfInput. */
     function texts(source: string): [TokenType, string][] {
@@ -888,6 +951,42 @@ describe('Unit: document-tokenizer', () => {
   });
 
   describe('matches tokenizeWithoutFastPath', () => {
+    it.each(['<!-- --!>Visible -->', '<!-- a --!>b -->'])(
+      'respects an alternate comment close: %s',
+      (source) => {
+        expect(tokenize(source)).toEqual(tokenizeWithoutFastPath(source));
+      },
+    );
+
+    it('clears raw boundaries when reusing tokenizer options', () => {
+      const options: TokenizeOptions = {
+        rawTags: Environment.default(),
+        builtinRawTags: true,
+        parseHtml: true,
+      };
+      tokenize('{% raw %}text{% endraw %}', options);
+      expect(options.rawBodyEnds).toBeDefined();
+      tokenize('<div>ok</div>', options);
+      expect(options.rawBodyEnds).toBeUndefined();
+    });
+
+    it.each([
+      '<div a="' + '{{ value }}'.repeat(1000),
+      '{{ one }}plain< text{% assign x = 1 %}',
+      '{{ value }}' + ' '.repeat(32000) + '<div>ok</div>',
+      "{{ '{% raw %}' }}<div>ok</div>",
+      '{% assign x = 1 %} \r\n\t',
+      '{{ one }}---\ntitle: x\n---\n<div>{{ two }}</div>',
+      '<div a="first" b="second" c="{{ value }}" d="last"></div>',
+      '<div a="first" b="second" c="third" d="last"></div>',
+      `<div a="single'quote" b='double"quote' c="é😀{{ value }}"></div>`,
+      '<div a="{% raw %}{{ unfinished {% endraw %}tail" b="{{ value }}"></div>',
+    ])('preserves text and quoted-value boundaries across tokens: %s', (source) => {
+      for (const options of [{}, { rawTags: Environment.default(), parseHtml: true }]) {
+        expect(tokenize(source, options)).toEqual(tokenizeWithoutFastPath(source, options));
+      }
+    });
+
     // Every string of up to 4 of these characters, in every entry state. The
     // set covers each character a mode's token can start with, plus near
     // misses (`!`, `\u201a`) and plain text.

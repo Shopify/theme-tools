@@ -13,8 +13,7 @@
 import type { ASTBuildOptions, DocumentNode, LiquidErrorNode, LiquidHtmlNode } from './ast';
 import { walk } from './ast';
 import { TolerantDocumentParser } from './document/tolerant-parser';
-import { tokenize } from './document/tokenizer';
-import { rawBodyRuleLookup } from './document/raw-body';
+import { tokenize, type TokenizeOptions } from './document/tokenizer';
 import { Environment } from './environment';
 import { NodeTypes } from './types';
 
@@ -31,15 +30,20 @@ export function toTolerantLiquidAST(
   },
 ): DocumentNode {
   const env = options.environment ?? Environment.default();
-  const tokens = tokenize(source, {
-    rawBodyRule: rawBodyRuleLookup((name) => env.tagForName(name)),
-  });
+  const tokenizeOptions: TokenizeOptions = {
+    rawTags: env,
+    builtinRawTags: env.usesBuiltinTags(),
+    parseHtml: false,
+  };
+  const tokens = tokenize(source, tokenizeOptions);
   const parser = new TolerantDocumentParser(
     tokens,
     source,
     env,
     false,
     options.allowUnclosedDocumentNode,
+    false,
+    tokenizeOptions.rawBodyEnds,
   );
   return parser.parseDocument();
 }
@@ -57,9 +61,12 @@ export function toTolerantLiquidHtmlAST(
   },
 ): DocumentNode {
   const env = options.environment ?? Environment.default();
-  const tokens = tokenize(source, {
-    rawBodyRule: rawBodyRuleLookup((name) => env.tagForName(name)),
-  });
+  const tokenizeOptions: TokenizeOptions = {
+    rawTags: env,
+    builtinRawTags: env.usesBuiltinTags(),
+    parseHtml: true,
+  };
+  const tokens = tokenize(source, tokenizeOptions);
   const parser = new TolerantDocumentParser(
     tokens,
     source,
@@ -67,6 +74,7 @@ export function toTolerantLiquidHtmlAST(
     true,
     options.allowUnclosedDocumentNode,
     options.opaqueHtmlComments,
+    tokenizeOptions.rawBodyEnds,
   );
   return parser.parseDocument();
 }

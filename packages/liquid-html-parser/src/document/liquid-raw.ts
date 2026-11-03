@@ -33,13 +33,15 @@ export function parseRawTag(
 ): LiquidRawTag {
   const tagName = envelope.tagName;
 
-  const endTag = findRawBodyEnd(
-    parser.getSource(),
-    parser.tokenAt(parser.getPosition()).start,
-    tagName,
-    def.body,
-    rawBodyRuleLookup((name) => parser.tagForName(name)),
-  );
+  const endTag =
+    parser.rawBodyEndFor(closeToken) ??
+    findRawBodyEnd(
+      parser.getSource(),
+      closeToken.end,
+      tagName,
+      def.body,
+      rawBodyRuleLookup((name) => parser.tagForName(name)),
+    );
   if (!endTag) {
     throw new LiquidHTMLASTParsingError(
       `Attempting to end parsing before LiquidRawTag '${tagName}' was closed`,
@@ -53,6 +55,7 @@ export function parseRawTag(
   const bodyEnd = endTag.tagStart;
   const bodyString = parser.getSource().slice(bodyStart, bodyEnd);
 
+  parser.ensureRawBoundary(bodyStart, bodyEnd);
   const bodyNodes = parseRawTagBody(parser, def, tagName, bodyStart, bodyEnd);
 
   const body = makeRawMarkup(
@@ -64,12 +67,8 @@ export function parseRawTag(
     parser.getSource(),
   );
 
-  // Re-tokenize from exactly the end tag's end offset. A stray `{{`/`{%`
-  // inside the raw body can open a tokenizer mode that greedily runs past
-  // the end tag, producing a token that straddles the boundary and swallows
-  // legitimate post-end-tag content; reslicing restores a clean token stream
-  // so that content (e.g. a trailing `{{ 1 }}`) is parsed normally.
-  parser.resliceTokensFrom(endTag.tagEnd);
+  // Body parsing or boundary recovery may move the cursor; offsets stay stable.
+  parser.seekToSourceOffset(endTag.tagEnd);
 
   const endPosition: Position = { start: endTag.tagStart, end: endTag.tagEnd };
 
@@ -94,11 +93,8 @@ export function parseLiquidInRange(
   const savedParseHtml = parser.rawParseHtml;
   parser.rawParseHtml = false;
 
-  // The body bound is the stable source offset `bodyEnd`, not a cached token
-  // index: parsing a nested raw tag can call `resliceTokensFrom`, which
-  // renumbers the tokens at/after the reslice boundary. Re-reading the current
-  // token at each step (and re-checking against `bodyEnd`) keeps the walk
-  // correct across that mutation; a cached end index would point at a stale slot.
+  // Keep the walk within the source body even when parsing a nested tag
+  // advances the token cursor beyond it.
   let i = parser.getPosition();
   while (parser.hasToken(i) && parser.tokenAt(i).start < bodyEnd) {
     const token = parser.tokenAt(i);
@@ -107,13 +103,8 @@ export function parseLiquidInRange(
       token.type === TokenType.LiquidVariableOutputOpen ||
       token.type === TokenType.LiquidTagOpen
     ) {
-      // A stray `{{`/`{%` near the body end can open a tokenizer mode that runs
-      // past `bodyEnd` (the raw end tag), so its closing `}}`/`%}` lands after
-      // the boundary. Parsing it would both produce a body node that spans past
-      // the end tag AND leave the same source for `resliceTokensFrom` to re-emit
-      // as a post-tag sibling — the range ends up in two overlapping nodes. When
-      // the construct does not close within the body, treat the rest of the body
-      // as literal text instead, so `body.nodes` matches the bounded `body.value`.
+      // An unfinished opener is literal body text. Do not let its node extend
+      // beyond this body or overlap the sibling after the raw end tag.
       const closeType =
         token.type === TokenType.LiquidVariableOutputOpen
           ? TokenType.LiquidVariableOutputClose
