@@ -20,12 +20,6 @@ const REGULAR_TOKEN = `[^\\s,]+`; // tokens separated by commas or spaces
 // Quoted strings pattern (combination of double and single quoted)
 const QUOTED_STRING = `(${DOUBLE_QUOTED_STRING}|${SINGLE_QUOTED_STRING})`;
 
-// Keep a lookup such as `product.options_by_name['hello world'].values`
-// together when splitting markup into space-separated fragments.
-const BRACKET_LOOKUP = `\\[(?:${QUOTED_STRING}|[^\\]]+)\\]`;
-const LOOKUP_ID = `[a-zA-Z_][\\w-]*\\??`;
-const VARIABLE_LOOKUP = `(?:${LOOKUP_ID}(?:\\.${LOOKUP_ID})*|${BRACKET_LOOKUP})(?:\\.${LOOKUP_ID}|${BRACKET_LOOKUP})*`;
-
 // Value pattern for key-value pairs (can be quoted, parenthesized, or regular token)
 const VALUE_PATTERN = `(${QUOTED_STRING}|${RANGE_MARKUP_REGEX}|${REGULAR_TOKEN})`;
 
@@ -33,13 +27,33 @@ const VALUE_PATTERN = `(${QUOTED_STRING}|${RANGE_MARKUP_REGEX}|${REGULAR_TOKEN})
 const KEY_VALUE_PAIR = `(\\S+):\\s*${VALUE_PATTERN}`;
 
 const MARKUP_FRAGMENTS_PATTERN = new RegExp(
-  `${QUOTED_STRING}|${RANGE_MARKUP_REGEX}|${KEY_VALUE_PAIR}|${VARIABLE_LOOKUP}|${REGULAR_TOKEN}`,
+  `${QUOTED_STRING}|${RANGE_MARKUP_REGEX}|${KEY_VALUE_PAIR}|${REGULAR_TOKEN}`,
   'g',
 );
 
 export function getFragmentsInMarkup(markup: string) {
-  return [...markup.matchAll(MARKUP_FRAGMENTS_PATTERN)].map((match) => ({
-    value: match[0],
+  // Hide separators inside bracket lookups from the fragment regex without
+  // changing offsets. Quotes prevent literal brackets from changing the depth.
+  let depth = 0;
+  let quote: string | undefined;
+  const masked = markup
+    .split('')
+    .map((character) => {
+      if (quote) {
+        if (character === quote) quote = undefined;
+      } else if (character === '"' || character === "'") {
+        quote = character;
+      } else if (character === '[') {
+        depth++;
+      } else if (character === ']') {
+        depth = Math.max(0, depth - 1);
+      }
+      return depth > 0 && /[\s,]/.test(character) ? '_' : character;
+    })
+    .join('');
+
+  return [...masked.matchAll(MARKUP_FRAGMENTS_PATTERN)].map((match) => ({
+    value: markup.slice(match.index, match.index + match[0].length),
     index: match.index,
   }));
 }
