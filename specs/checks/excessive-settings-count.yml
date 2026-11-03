@@ -1,0 +1,293 @@
+check: ExcessiveSettingsCount
+severity: warning
+cases:
+  - name: does not report at the tolerated maximum
+    files:
+      sections/test.liquid: |-
+        <div>section</div>
+        {% schema %}
+        {
+          "name": "Test",
+          "settings": [
+            { "type": "text", "id": "setting_0", "label": "Setting 0" },
+            { "type": "text", "id": "setting_1", "label": "Setting 1" },
+            { "type": "text", "id": "setting_2", "label": "Setting 2" },
+            { "type": "text", "id": "setting_3", "label": "Setting 3" },
+            { "type": "text", "id": "setting_4", "label": "Setting 4" },
+            { "type": "text", "id": "setting_5", "label": "Setting 5" },
+            { "type": "text", "id": "setting_6", "label": "Setting 6" },
+            { "type": "text", "id": "setting_7", "label": "Setting 7" },
+            { "type": "text", "id": "setting_8", "label": "Setting 8" },
+            { "type": "text", "id": "setting_9", "label": "Setting 9" },
+            { "type": "text", "id": "setting_10", "label": "Setting 10" },
+            { "type": "text", "id": "setting_11", "label": "Setting 11" },
+            { "type": "text", "id": "setting_12", "label": "Setting 12" },
+            { "type": "text", "id": "setting_13", "label": "Setting 13" },
+            { "type": "text", "id": "setting_14", "label": "Setting 14" },
+            { "type": "text", "id": "setting_15", "label": "Setting 15" },
+            { "type": "text", "id": "setting_16", "label": "Setting 16" },
+            { "type": "text", "id": "setting_17", "label": "Setting 17" },
+            { "type": "text", "id": "setting_18", "label": "Setting 18" },
+            { "type": "text", "id": "setting_19", "label": "Setting 19" },
+            { "type": "text", "id": "setting_20", "label": "Setting 20" },
+            { "type": "text", "id": "setting_21", "label": "Setting 21" },
+            { "type": "text", "id": "setting_22", "label": "Setting 22" },
+            { "type": "text", "id": "setting_23", "label": "Setting 23" },
+            { "type": "text", "id": "setting_24", "label": "Setting 24" },
+            { "type": "text", "id": "setting_25", "label": "Setting 25" },
+            { "type": "text", "id": "setting_26", "label": "Setting 26" },
+            { "type": "text", "id": "setting_27", "label": "Setting 27" },
+            { "type": "text", "id": "setting_28", "label": "Setting 28" },
+            { "type": "text", "id": "setting_29", "label": "Setting 29" },
+            { "type": "text", "id": "setting_30", "label": "Setting 30" },
+            { "type": "text", "id": "setting_31", "label": "Setting 31" },
+            { "type": "text", "id": "setting_32", "label": "Setting 32" },
+            { "type": "text", "id": "setting_33", "label": "Setting 33" },
+            { "type": "text", "id": "setting_34", "label": "Setting 34" },
+            { "type": "text", "id": "setting_35", "label": "Setting 35" },
+            { "type": "text", "id": "setting_36", "label": "Setting 36" },
+            { "type": "text", "id": "setting_37", "label": "Setting 37" },
+            { "type": "text", "id": "setting_38", "label": "Setting 38" },
+            { "type": "text", "id": "setting_39", "label": "Setting 39" }
+          ]
+        }
+        {% endschema %}
+  - name: reports when settings exceed the tolerated maximum
+    files:
+      sections/test.liquid: |-
+        <div>section</div>
+        {% schema %}
+        {
+          "name": "Test",
+          "settings": [
+            { "type": "text", "id": "setting_0", "label": "Setting 0" },
+            { "type": "text", "id": "setting_1", "label": "Setting 1" },
+            { "type": "text", "id": "setting_2", "label": "Setting 2" },
+            { "type": "text", "id": "setting_3", "label": "Setting 3" },
+            { "type": "text", "id": "setting_4", "label": "Setting 4" },
+            { "type": "text", "id": "setting_5", "label": "Setting 5" },
+            { "type": "text", "id": "setting_6", "label": "Setting 6" },
+            { "type": "text", "id": "setting_7", "label": "Setting 7" },
+            { "type": "text", "id": "setting_8", "label": "Setting 8" },
+            { "type": "text", "id": "setting_9", "label": "Setting 9" },
+            { "type": "text", "id": "setting_10", "label": "Setting 10" },
+            { "type": "text", "id": "setting_11", "label": "Setting 11" },
+            { "type": "text", "id": "setting_12", "label": "Setting 12" },
+            { "type": "text", "id": "setting_13", "label": "Setting 13" },
+            { "type": "text", "id": "setting_14", "label": "Setting 14" },
+            { "type": "text", "id": "setting_15", "label": "Setting 15" },
+            { "type": "text", "id": "setting_16", "label": "Setting 16" },
+            { "type": "text", "id": "setting_17", "label": "Setting 17" },
+            { "type": "text", "id": "setting_18", "label": "Setting 18" },
+            { "type": "text", "id": "setting_19", "label": "Setting 19" },
+            { "type": "text", "id": "setting_20", "label": "Setting 20" },
+            { "type": "text", "id": "setting_21", "label": "Setting 21" },
+            { "type": "text", "id": "setting_22", "label": "Setting 22" },
+            { "type": "text", "id": "setting_23", "label": "Setting 23" },
+            { "type": "text", "id": "setting_24", "label": "Setting 24" },
+            { "type": "text", "id": "setting_25", "label": "Setting 25" },
+            { "type": "text", "id": "setting_26", "label": "Setting 26" },
+            { "type": "text", "id": "setting_27", "label": "Setting 27" },
+            { "type": "text", "id": "setting_28", "label": "Setting 28" },
+            { "type": "text", "id": "setting_29", "label": "Setting 29" },
+            { "type": "text", "id": "setting_30", "label": "Setting 30" },
+            { "type": "text", "id": "setting_31", "label": "Setting 31" },
+            { "type": "text", "id": "setting_32", "label": "Setting 32" },
+            { "type": "text", "id": "setting_33", "label": "Setting 33" },
+            { "type": "text", "id": "setting_34", "label": "Setting 34" },
+            { "type": "text", "id": "setting_35", "label": "Setting 35" },
+            { "type": "text", "id": "setting_36", "label": "Setting 36" },
+            { "type": "text", "id": "setting_37", "label": "Setting 37" },
+            { "type": "text", "id": "setting_38", "label": "Setting 38" },
+            { "type": "text", "id": "setting_39", "label": "Setting 39" },
+            { "type": "text", "id": "setting_40", "label": "Setting 40" }
+          ]
+        }
+        {% endschema %}
+    offenses:
+      - file: sections/test.liquid
+        message: This schema declares 41 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header.
+        start: [1, 0]
+        highlight: "{% schema %}"
+  - name: reports when count exceeds a custom maximum
+    files:
+      sections/test.liquid: |-
+        <div>section</div>
+        {% schema %}
+        {
+          "name": "Test",
+          "settings": [
+            { "type": "text", "id": "setting_0", "label": "Setting 0" },
+            { "type": "text", "id": "setting_1", "label": "Setting 1" },
+            { "type": "text", "id": "setting_2", "label": "Setting 2" }
+          ]
+        }
+        {% endschema %}
+    config:
+      ExcessiveSettingsCount: { maxSettings: 2 }
+    offenses:
+      - file: sections/test.liquid
+        message: This schema declares 3 settings, which exceeds the maximum of 2. Consider splitting this section or block into smaller pieces, or grouping related options with a header.
+        start: [1, 0]
+        highlight: "{% schema %}"
+  - name: does not report when count equals the configured maximum
+    files:
+      sections/test.liquid: |-
+        <div>section</div>
+        {% schema %}
+        {
+          "name": "Test",
+          "settings": [
+            { "type": "text", "id": "setting_0", "label": "Setting 0" },
+            { "type": "text", "id": "setting_1", "label": "Setting 1" },
+            { "type": "text", "id": "setting_2", "label": "Setting 2" },
+            { "type": "text", "id": "setting_3", "label": "Setting 3" },
+            { "type": "text", "id": "setting_4", "label": "Setting 4" },
+            { "type": "text", "id": "setting_5", "label": "Setting 5" },
+            { "type": "text", "id": "setting_6", "label": "Setting 6" },
+            { "type": "text", "id": "setting_7", "label": "Setting 7" },
+            { "type": "text", "id": "setting_8", "label": "Setting 8" },
+            { "type": "text", "id": "setting_9", "label": "Setting 9" },
+            { "type": "text", "id": "setting_10", "label": "Setting 10" },
+            { "type": "text", "id": "setting_11", "label": "Setting 11" },
+            { "type": "text", "id": "setting_12", "label": "Setting 12" },
+            { "type": "text", "id": "setting_13", "label": "Setting 13" },
+            { "type": "text", "id": "setting_14", "label": "Setting 14" },
+            { "type": "text", "id": "setting_15", "label": "Setting 15" },
+            { "type": "text", "id": "setting_16", "label": "Setting 16" },
+            { "type": "text", "id": "setting_17", "label": "Setting 17" },
+            { "type": "text", "id": "setting_18", "label": "Setting 18" },
+            { "type": "text", "id": "setting_19", "label": "Setting 19" },
+            { "type": "text", "id": "setting_20", "label": "Setting 20" },
+            { "type": "text", "id": "setting_21", "label": "Setting 21" },
+            { "type": "text", "id": "setting_22", "label": "Setting 22" },
+            { "type": "text", "id": "setting_23", "label": "Setting 23" },
+            { "type": "text", "id": "setting_24", "label": "Setting 24" },
+            { "type": "text", "id": "setting_25", "label": "Setting 25" },
+            { "type": "text", "id": "setting_26", "label": "Setting 26" },
+            { "type": "text", "id": "setting_27", "label": "Setting 27" },
+            { "type": "text", "id": "setting_28", "label": "Setting 28" },
+            { "type": "text", "id": "setting_29", "label": "Setting 29" },
+            { "type": "text", "id": "setting_30", "label": "Setting 30" },
+            { "type": "text", "id": "setting_31", "label": "Setting 31" },
+            { "type": "text", "id": "setting_32", "label": "Setting 32" },
+            { "type": "text", "id": "setting_33", "label": "Setting 33" },
+            { "type": "text", "id": "setting_34", "label": "Setting 34" },
+            { "type": "text", "id": "setting_35", "label": "Setting 35" },
+            { "type": "text", "id": "setting_36", "label": "Setting 36" },
+            { "type": "text", "id": "setting_37", "label": "Setting 37" },
+            { "type": "text", "id": "setting_38", "label": "Setting 38" },
+            { "type": "text", "id": "setting_39", "label": "Setting 39" }
+          ]
+        }
+        {% endschema %}
+    config:
+      ExcessiveSettingsCount: { maxSettings: 40 }
+  - name: excludes header and paragraph entries that have no id
+    files:
+      sections/test.liquid: |-
+        <div>section</div>
+        {% schema %}
+        {
+          "settings": [
+            { "type": "header", "content": "Group" },
+            { "type": "text", "id": "a", "label": "A" },
+            { "type": "paragraph", "content": "Note" },
+            { "type": "text", "id": "b", "label": "B" },
+            { "type": "text", "id": "c", "label": "C" }
+          ]
+        }
+        {% endschema %}
+    config:
+      ExcessiveSettingsCount: { maxSettings: 3 }
+  - name: ignores settings nested in blocks
+    files:
+      sections/test.liquid: |-
+        <div>section</div>
+        {% schema %}
+        {
+          "settings": [
+            { "type": "text", "id": "setting_0", "label": "Setting 0" },
+            { "type": "text", "id": "setting_1", "label": "Setting 1" },
+            { "type": "text", "id": "setting_2", "label": "Setting 2" },
+            { "type": "text", "id": "setting_3", "label": "Setting 3" },
+            { "type": "text", "id": "setting_4", "label": "Setting 4" }
+          ],
+          "blocks": [
+            {
+              "type": "child",
+              "settings": [
+                { "type": "text", "id": "nested_0", "label": "N0" },
+                { "type": "text", "id": "nested_1", "label": "N1" },
+                { "type": "text", "id": "nested_2", "label": "N2" },
+                { "type": "text", "id": "nested_3", "label": "N3" },
+                { "type": "text", "id": "nested_4", "label": "N4" },
+                { "type": "text", "id": "nested_5", "label": "N5" },
+                { "type": "text", "id": "nested_6", "label": "N6" },
+                { "type": "text", "id": "nested_7", "label": "N7" },
+                { "type": "text", "id": "nested_8", "label": "N8" },
+                { "type": "text", "id": "nested_9", "label": "N9" },
+                { "type": "text", "id": "nested_10", "label": "N10" },
+                { "type": "text", "id": "nested_11", "label": "N11" },
+                { "type": "text", "id": "nested_12", "label": "N12" },
+                { "type": "text", "id": "nested_13", "label": "N13" },
+                { "type": "text", "id": "nested_14", "label": "N14" },
+                { "type": "text", "id": "nested_15", "label": "N15" },
+                { "type": "text", "id": "nested_16", "label": "N16" },
+                { "type": "text", "id": "nested_17", "label": "N17" },
+                { "type": "text", "id": "nested_18", "label": "N18" },
+                { "type": "text", "id": "nested_19", "label": "N19" }
+              ]
+            }
+          ]
+        }
+        {% endschema %}
+    config:
+      ExcessiveSettingsCount: { maxSettings: 6 }
+  - name: reports above the threshold and not at the threshold (1)
+    files:
+      sections/test.liquid: |-
+        <div>section</div>
+        {% schema %}
+        {
+          "name": "Test",
+          "settings": [
+            { "type": "text", "id": "setting_0", "label": "Setting 0" },
+            { "type": "text", "id": "setting_1", "label": "Setting 1" },
+            { "type": "text", "id": "setting_2", "label": "Setting 2" },
+            { "type": "text", "id": "setting_3", "label": "Setting 3" },
+            { "type": "text", "id": "setting_4", "label": "Setting 4" },
+            { "type": "text", "id": "setting_5", "label": "Setting 5" }
+          ]
+        }
+        {% endschema %}
+    config:
+      ExcessiveSettingsCount: { maxSettings: 5 }
+    offenses:
+      - file: sections/test.liquid
+        message: This schema declares 6 settings, which exceeds the maximum of 5. Consider splitting this section or block into smaller pieces, or grouping related options with a header.
+        start: [1, 0]
+        highlight: "{% schema %}"
+  - name: reports above the threshold and not at the threshold (2)
+    files:
+      sections/test.liquid: |-
+        <div>section</div>
+        {% schema %}
+        {
+          "name": "Test",
+          "settings": [
+            { "type": "text", "id": "setting_0", "label": "Setting 0" },
+            { "type": "text", "id": "setting_1", "label": "Setting 1" },
+            { "type": "text", "id": "setting_2", "label": "Setting 2" },
+            { "type": "text", "id": "setting_3", "label": "Setting 3" },
+            { "type": "text", "id": "setting_4", "label": "Setting 4" }
+          ]
+        }
+        {% endschema %}
+    config:
+      ExcessiveSettingsCount: { maxSettings: 5 }
+  - name: does not report when schema is absent
+    files:
+      sections/test.liquid: "<div>{{ product.title }}</div>"
+    config:
+      ExcessiveSettingsCount: { maxSettings: 1 }

@@ -1,11 +1,21 @@
-import { TokenType, tokenize } from './tokenizer';
-import type { Token } from './tokenizer';
+import { TokenType, createTokenizer } from './tokenizer';
+import type { Token, Tokenizer } from './tokenizer';
 import { LiquidHTMLASTParsingError } from '../errors';
 
 export class ParserBase {
   protected tokens: Token[];
   protected source: string;
   protected p: number;
+  /** Tokenizes the rest of the source as it's read, after a reslice. */
+  private tokenizer: Tokenizer | undefined;
+  /**
+   * The HTML context the first `scanned` tokens leave open: the quote that
+   * opened an attribute value, and whether a tag is open. See
+   * `scanHtmlContext`.
+   */
+  private scanned = 0;
+  private openQuote: Token | undefined;
+  private openTag = false;
   constructor(tokens: Token[], source: string) {
     this.tokens = tokens;
     this.source = source;
@@ -13,7 +23,7 @@ export class ParserBase {
   }
 
   consume(type: TokenType): Token {
-    const token = this.tokens[this.p];
+    const token = this.tokenAt(this.p);
     if (token.type !== type) {
       throw new LiquidHTMLASTParsingError(
         `Expected ${type} but got ${token.type}`,
@@ -27,7 +37,7 @@ export class ParserBase {
   }
 
   accept(type: TokenType): Token | null {
-    if (this.tokens[this.p].type === type) {
+    if (this.tokenAt(this.p).type === type) {
       return this.tokens[this.p++];
     }
     return null;
@@ -35,19 +45,19 @@ export class ParserBase {
 
   check(type: TokenType, ahead: number = 0): boolean {
     const index = this.p + ahead;
-    return index < this.tokens.length && this.tokens[index].type === type;
+    return this.hasToken(index) && this.tokens[index].type === type;
   }
 
   peek(): Token {
-    return this.tokens[this.p];
+    return this.tokenAt(this.p);
   }
 
   advance(): Token {
-    return this.tokens[this.p++];
+    return this.tokenAt(this.p++);
   }
 
   isAtEnd(): boolean {
-    return this.tokens[this.p].type === TokenType.EndOfInput;
+    return this.tokenAt(this.p).type === TokenType.EndOfInput;
   }
 
   getSource(): string {
@@ -65,12 +75,15 @@ export class ParserBase {
     return false;
   }
 
-  tokenAt(index: number): Token {
-    return this.tokens[index];
+  /** Whether there is a token at `index`, tokenizing up to it if need be. */
+  hasToken(index: number): boolean {
+    if (index >= this.tokens.length) this.tokenizer?.fill(index);
+    return index < this.tokens.length;
   }
 
-  tokenCount(): number {
-    return this.tokens.length;
+  tokenAt(index: number): Token {
+    this.hasToken(index);
+    return this.tokens[index];
   }
 
   getPosition(): number {
@@ -90,16 +103,82 @@ export class ParserBase {
    * that consumes the element's close tag as text while seeking `{% endif %}`).
    * Callers that know a token boundary by offset should re-seek here rather than
    * trusting wherever a nested parse left the cursor.
+   *
+   * Token starts are non-decreasing (the tokenizer emits tokens in source
+   * order and `resliceTokensFrom` keeps that order), so a binary search finds
+   * the same token a scan from index 0 would, in O(log n), whichever side of
+   * the cursor it is on. This runs once per HTML comment, raw element and raw
+   * Liquid tag, so a linear scan here made parsing quadratic in the number of
+   * those nodes.
    */
   seekToSourceOffset(sourceOffset: number): void {
-    let i = 0;
-    while (i < this.tokens.length && this.tokens[i].start < sourceOffset) i++;
-    this.p = i;
+    this.p = this.countTokensWhile((token) => token.start < sourceOffset);
   }
 
   /**
-   * Re-tokenize the source from `sourceOffset` onward and splice the fresh
-   * tokens in, positioning the parser at the first of them.
+   * How many tokens, from the first, pass `test`, by binary search. Tokens are
+   * in source order and don't overlap, so a test like "starts before" or "ends
+   * at or before" an offset passes for a run of leading tokens and no others.
+   */
+  private countTokensWhile(test: (token: Token) => boolean): number {
+    // Tokenize until a token fails the test, or the input runs out.
+    while (this.tokens.length === 0 || test(this.tokens[this.tokens.length - 1])) {
+      if (!this.hasToken(this.tokens.length)) break;
+    }
+    let lo = 0;
+    let hi = this.tokens.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >>> 1;
+      if (test(this.tokens[mid])) lo = mid + 1;
+      else hi = mid;
+    }
+    return lo;
+  }
+
+  /**
+   * Bring the HTML context up to date with the first `count` tokens:
+   *
+   * - `openQuote` is the last `HtmlQuoteOpen` not yet balanced by an
+   *   `HtmlQuoteClose`, an attribute value still open at the boundary;
+   * - `openTag` is whether the last `HtmlTagOpen` (`<div`), `HtmlCloseTagOpen`
+   *   (`</div`) or `HtmlDoctypeOpen` (`<!`) is not yet balanced by an
+   *   `HtmlTagClose` (`>`) or `HtmlSelfClose` (`/>`).
+   *
+   * A reslice only replaces the tokens past its boundary, so the tokens
+   * already scanned stay valid for a later reslice past them, which only has
+   * to scan the tokens in between.
+   */
+  private scanHtmlContext(count: number): void {
+    if (count < this.scanned) {
+      this.scanned = 0;
+      this.openQuote = undefined;
+      this.openTag = false;
+    }
+    for (; this.scanned < count; this.scanned++) {
+      const token = this.tokens[this.scanned];
+      switch (token.type) {
+        case TokenType.HtmlQuoteOpen:
+          this.openQuote = token;
+          break;
+        case TokenType.HtmlQuoteClose:
+          this.openQuote = undefined;
+          break;
+        case TokenType.HtmlTagOpen:
+        case TokenType.HtmlCloseTagOpen:
+        case TokenType.HtmlDoctypeOpen:
+          this.openTag = true;
+          break;
+        case TokenType.HtmlTagClose:
+        case TokenType.HtmlSelfClose:
+          this.openTag = false;
+          break;
+      }
+    }
+  }
+
+  /**
+   * Re-tokenize the source from `sourceOffset` onward in place of the tokens
+   * there, positioning the parser at the first of the new ones.
    *
    * This is needed after a raw-tag body is scanned at the source level
    * (see `liquid-raw.ts`): a stray `{{`/`{%` inside the raw body can open a
@@ -123,54 +202,14 @@ export class ParserBase {
    * we leave the stream untouched. Frontmatter is also suppressed in the
    * re-tokenize since the suffix never begins a document.
    */
-  /**
-   * If the given prefix tokens end inside an open HTML quoted attribute value,
-   * return the quote character (`"` or `'`) that opened it; otherwise `undefined`.
-   *
-   * An attribute value is "open" at the prefix boundary when the last
-   * `HtmlQuoteOpen` is not yet balanced by an `HtmlQuoteClose`. The quote char
-   * is read from the source at the open token's position so single- and
-   * double-quoted attributes are handled identically.
-   */
-  private openQuoteCharBefore(prefix: Token[]): string | undefined {
-    let openQuote: Token | undefined;
-    for (const token of prefix) {
-      if (token.type === TokenType.HtmlQuoteOpen) openQuote = token;
-      else if (token.type === TokenType.HtmlQuoteClose) openQuote = undefined;
-    }
-    return openQuote ? this.source[openQuote.start] : undefined;
-  }
-
-  /**
-   * Whether the prefix tokens end inside an open HTML tag — an `HtmlTagOpen`
-   * (`<div`), `HtmlCloseTagOpen` (`</div`), or `HtmlDoctypeOpen` (`<!`) that is
-   * not yet balanced by an `HtmlTagClose` (`>`) or `HtmlSelfClose` (`/>`). Used
-   * to resume a suffix re-tokenize in `HtmlTag` mode when a `{% raw %}` straddle
-   * lands in an *unquoted* attribute-list position (no enclosing quote).
-   */
-  private insideOpenHtmlTag(prefix: Token[]): boolean {
-    let open = false;
-    for (const token of prefix) {
-      if (
-        token.type === TokenType.HtmlTagOpen ||
-        token.type === TokenType.HtmlCloseTagOpen ||
-        token.type === TokenType.HtmlDoctypeOpen
-      ) {
-        open = true;
-      } else if (token.type === TokenType.HtmlTagClose || token.type === TokenType.HtmlSelfClose) {
-        open = false;
-      }
-    }
-    return open;
-  }
-
   resliceTokensFrom(sourceOffset: number): void {
-    const straddles = this.tokens.some(
-      (token) => token.start < sourceOffset && token.end > sourceOffset,
-    );
+    // Tokens don't overlap, so only the first one ending past the boundary can
+    // straddle it.
+    const before = this.countTokensWhile((token) => token.end <= sourceOffset);
+    const straddles = this.hasToken(before) && this.tokens[before].start < sourceOffset;
 
     if (straddles) {
-      const prefix = this.tokens.filter((token) => token.end <= sourceOffset);
+      this.scanHtmlContext(before);
       // If the boundary lies inside a quoted HTML attribute value (the raw tag
       // was dispatched from `parseQuotedAttributeValue`), the suffix must be
       // re-tokenized in QuotedValue mode so the attribute's closing quote and
@@ -178,23 +217,22 @@ export class ParserBase {
       // document-start tokenize would drop that context and make
       // `parser.consume(HtmlQuoteClose)` throw. Recover the enclosing quote
       // char (if any) from the still-open quote in the retained prefix.
-      const insideQuotedAttribute = this.openQuoteCharBefore(prefix);
+      const insideQuotedAttribute = this.openQuote && this.source[this.openQuote.start];
       // When the straddle lands in an unquoted attribute-list position (no
       // enclosing quote), resume in HtmlTag mode so the tag's closing `>` emits
       // as HtmlTagClose instead of Text. `insideQuotedAttribute` already nests
       // HtmlTag beneath QuotedValue, so this only applies when there is no quote.
-      const insideHtmlTag = !insideQuotedAttribute && this.insideOpenHtmlTag(prefix);
-      const rebased = tokenize(this.source.slice(sourceOffset), {
+      const insideHtmlTag = !insideQuotedAttribute && this.openTag;
+      // Re-tokenize only as far as the parser reads: the next straddling raw
+      // tag replaces the tokens past it again.
+      this.tokens.length = before;
+      this.tokenizer ??= createTokenizer(this.source, this.tokens);
+      this.tokenizer.restart(sourceOffset, {
         skipFrontmatter: true,
         insideQuotedAttribute,
         insideHtmlTag,
-      }).map((token) => ({
-        type: token.type,
-        start: token.start + sourceOffset,
-        end: token.end + sourceOffset,
-      }));
-      this.tokens = [...prefix, ...rebased];
-      this.p = prefix.length;
+      });
+      this.p = before;
       return;
     }
 
@@ -203,8 +241,6 @@ export class ParserBase {
     // past the raw end tag is the only thing the reslice needed to do here.
     // (The trailing EndOfInput token has `start === source.length`, so it is
     // never skipped past, keeping `this.p` in bounds.)
-    let i = 0;
-    while (i < this.tokens.length && this.tokens[i].start < sourceOffset) i++;
-    this.p = i;
+    this.seekToSourceOffset(sourceOffset);
   }
 }

@@ -1,0 +1,1096 @@
+cases:
+  - name: should parse {% capture x %}hello{% endcapture %}
+    source: "{% capture x %}hello{% endcapture %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% capture x %}hello{% endcapture %}" }
+      children:
+        - type: LiquidTag
+          name: capture
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% capture x %}" }
+          blockEndPosition: { start: [0, 20], text: "{% endcapture %}" }
+          markupPosition: { start: [0, 11], text: "x " }
+          position: { start: [0, 0], text: "{% capture x %}hello{% endcapture %}" }
+          markup:
+            type: VariableLookup
+            name: x
+            position: { start: [0, 11], text: x }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: TextNode
+              value: hello
+              position: { start: [0, 15], text: hello }
+  - name: should parse {% ifchanged %}content{% endifchanged %}
+    source: "{% ifchanged %}content{% endifchanged %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% ifchanged %}content{% endifchanged %}" }
+      children:
+        - type: LiquidTag
+          name: ifchanged
+          markup: null
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% ifchanged %}" }
+          blockEndPosition: { start: [0, 22], text: "{% endifchanged %}" }
+          markupPosition: { start: [0, 13], text: "" }
+          position: { start: [0, 0], text: "{% ifchanged %}content{% endifchanged %}" }
+          children:
+            - type: TextNode
+              value: content
+              position: { start: [0, 15], text: content }
+  - name: should parse empty branchless block
+    source: "{% capture x %}{% endcapture %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% capture x %}{% endcapture %}" }
+      children:
+        - type: LiquidTag
+          name: capture
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% capture x %}" }
+          blockEndPosition: { start: [0, 15], text: "{% endcapture %}" }
+          markupPosition: { start: [0, 11], text: "x " }
+          position: { start: [0, 0], text: "{% capture x %}{% endcapture %}" }
+          markup:
+            type: VariableLookup
+            name: x
+            position: { start: [0, 11], text: x }
+            lookups: []
+            lookupModes: []
+          children: []
+  - name: should parse block tag with Liquid children
+    source: "{% capture x %}{{ y }}{% endcapture %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% capture x %}{{ y }}{% endcapture %}" }
+      children:
+        - type: LiquidTag
+          name: capture
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% capture x %}" }
+          blockEndPosition: { start: [0, 22], text: "{% endcapture %}" }
+          markupPosition: { start: [0, 11], text: "x " }
+          position: { start: [0, 0], text: "{% capture x %}{{ y }}{% endcapture %}" }
+          markup:
+            type: VariableLookup
+            name: x
+            position: { start: [0, 11], text: x }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidVariableOutput
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 17], text: " y " }
+              position: { start: [0, 15], text: "{{ y }}" }
+              markup:
+                type: LiquidVariable
+                rawSource: y
+                position: { start: [0, 18], text: "y " }
+                expression:
+                  type: VariableLookup
+                  name: y
+                  position: { start: [0, 18], text: y }
+                  lookups: []
+                  lookupModes: []
+                filters: []
+  - name: should set delimiterWhitespace for end tag
+    source: "{% capture x %}hello{%- endcapture -%}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% capture x %}hello{%- endcapture -%}" }
+      children:
+        - type: LiquidTag
+          name: capture
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: "-"
+          delimiterWhitespaceEnd: "-"
+          blockStartPosition: { start: [0, 0], text: "{% capture x %}" }
+          blockEndPosition: { start: [0, 20], text: "{%- endcapture -%}" }
+          markupPosition: { start: [0, 11], text: "x " }
+          position: { start: [0, 0], text: "{% capture x %}hello{%- endcapture -%}" }
+          markup:
+            type: VariableLookup
+            name: x
+            position: { start: [0, 11], text: x }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: TextNode
+              value: hello
+              position: { start: [0, 15], text: hello }
+  - name: should fall back to base case for invalid markup (tolerant)
+    source: "{% capture x y z %}hello{% endcapture %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% capture x y z %}hello{% endcapture %}" }
+      children:
+        - type: LiquidTag
+          name: capture
+          markup: x y z
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% capture x y z %}" }
+          blockEndPosition: { start: [0, 24], text: "{% endcapture %}" }
+          markupPosition: { start: [0, 11], text: "x y z " }
+          position: { start: [0, 0], text: "{% capture x y z %}hello{% endcapture %}" }
+          reason: unexpected tokens after markup
+          children:
+            - type: TextNode
+              value: hello
+              position: { start: [0, 19], text: hello }
+  - name: should parse HTML elements inside block children
+    source: "{% capture x %}<div>hello</div>{% endcapture %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% capture x %}<div>hello</div>{% endcapture %}" }
+      children:
+        - type: LiquidTag
+          name: capture
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% capture x %}" }
+          blockEndPosition: { start: [0, 31], text: "{% endcapture %}" }
+          markupPosition: { start: [0, 11], text: "x " }
+          position: { start: [0, 0], text: "{% capture x %}<div>hello</div>{% endcapture %}" }
+          markup:
+            type: VariableLookup
+            name: x
+            position: { start: [0, 11], text: x }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: HtmlElement
+              blockStartPosition: { start: [0, 15], text: <div> }
+              blockEndPosition: { start: [0, 25], text: </div> }
+              position: { start: [0, 15], text: <div>hello</div> }
+              name:
+                - type: TextNode
+                  value: div
+                  position: { start: [0, 16], text: div }
+              attributes: []
+              children:
+                - type: TextNode
+                  value: hello
+                  position: { start: [0, 20], text: hello }
+  - name: should wrap children in LiquidBranch for {% if %}
+    source: "{% if true %}hello{% endif %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if true %}hello{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if true %}" }
+          blockEndPosition: { start: [0, 18], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "true " }
+          position: { start: [0, 0], text: "{% if true %}hello{% endif %}" }
+          markup:
+            type: LiquidLiteral
+            keyword: "true"
+            value: true
+            position: { start: [0, 6], text: "true" }
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 13], text: "" }
+              blockStartPosition: { start: [0, 13], text: "" }
+              blockEndPosition: { start: [0, 18], text: "" }
+              position: { start: [0, 13], text: hello }
+              children:
+                - type: TextNode
+                  value: hello
+                  position: { start: [0, 13], text: hello }
+  - name: should parse {% if %}...{% else %}...{% endif %}
+    source: "{% if true %}a{% else %}b{% endif %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if true %}a{% else %}b{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if true %}" }
+          blockEndPosition: { start: [0, 25], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "true " }
+          position: { start: [0, 0], text: "{% if true %}a{% else %}b{% endif %}" }
+          markup:
+            type: LiquidLiteral
+            keyword: "true"
+            value: true
+            position: { start: [0, 6], text: "true" }
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 13], text: "" }
+              blockStartPosition: { start: [0, 13], text: "" }
+              blockEndPosition: { start: [0, 14], text: "" }
+              position: { start: [0, 13], text: a }
+              children:
+                - type: TextNode
+                  value: a
+                  position: { start: [0, 13], text: a }
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 22], text: "" }
+              blockStartPosition: { start: [0, 14], text: "{% else %}" }
+              blockEndPosition: { start: [0, 25], text: "" }
+              position: { start: [0, 14], text: "{% else %}b" }
+              children:
+                - type: TextNode
+                  value: b
+                  position: { start: [0, 24], text: b }
+  - name: should parse {% if %}...{% elsif %}...{% else %}...{% endif %}
+    source: "{% if a %}1{% elsif b %}2{% else %}3{% endif %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if a %}1{% elsif b %}2{% else %}3{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if a %}" }
+          blockEndPosition: { start: [0, 36], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "a " }
+          position: { start: [0, 0], text: "{% if a %}1{% elsif b %}2{% else %}3{% endif %}" }
+          markup:
+            type: VariableLookup
+            name: a
+            position: { start: [0, 6], text: a }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 10], text: "" }
+              blockStartPosition: { start: [0, 10], text: "" }
+              blockEndPosition: { start: [0, 11], text: "" }
+              position: { start: [0, 10], text: "1" }
+              children:
+                - type: TextNode
+                  value: "1"
+                  position: { start: [0, 10], text: "1" }
+            - type: LiquidBranch
+              name: elsif
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 20], text: "b " }
+              blockStartPosition: { start: [0, 11], text: "{% elsif b %}" }
+              blockEndPosition: { start: [0, 25], text: "" }
+              position: { start: [0, 11], text: "{% elsif b %}2" }
+              markup:
+                type: VariableLookup
+                name: b
+                position: { start: [0, 20], text: b }
+                lookups: []
+                lookupModes: []
+              children:
+                - type: TextNode
+                  value: "2"
+                  position: { start: [0, 24], text: "2" }
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 33], text: "" }
+              blockStartPosition: { start: [0, 25], text: "{% else %}" }
+              blockEndPosition: { start: [0, 36], text: "" }
+              position: { start: [0, 25], text: "{% else %}3" }
+              children:
+                - type: TextNode
+                  value: "3"
+                  position: { start: [0, 35], text: "3" }
+  - name: should parse {% case %}...{% when %}...{% else %}...{% endcase %}
+    source: "{% case x %}{% when 1 %}one{% when 2 %}two{% else %}other{% endcase %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% case x %}{% when 1 %}one{% when 2 %}two{% else %}other{% endcase %}" }
+      children:
+        - type: LiquidTag
+          name: case
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% case x %}" }
+          blockEndPosition: { start: [0, 57], text: "{% endcase %}" }
+          markupPosition: { start: [0, 8], text: "x " }
+          position: { start: [0, 0], text: "{% case x %}{% when 1 %}one{% when 2 %}two{% else %}other{% endcase %}" }
+          markup:
+            type: VariableLookup
+            name: x
+            position: { start: [0, 8], text: x }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 12], text: "" }
+              blockStartPosition: { start: [0, 12], text: "" }
+              blockEndPosition: { start: [0, 12], text: "" }
+              position: { start: [0, 12], text: "" }
+              children: []
+            - type: LiquidBranch
+              name: when
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 20], text: "1 " }
+              blockStartPosition: { start: [0, 12], text: "{% when 1 %}" }
+              blockEndPosition: { start: [0, 27], text: "" }
+              position: { start: [0, 12], text: "{% when 1 %}one" }
+              markup:
+                - type: Number
+                  value: "1"
+                  position: { start: [0, 20], text: "1" }
+              children:
+                - type: TextNode
+                  value: one
+                  position: { start: [0, 24], text: one }
+            - type: LiquidBranch
+              name: when
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 35], text: "2 " }
+              blockStartPosition: { start: [0, 27], text: "{% when 2 %}" }
+              blockEndPosition: { start: [0, 42], text: "" }
+              position: { start: [0, 27], text: "{% when 2 %}two" }
+              markup:
+                - type: Number
+                  value: "2"
+                  position: { start: [0, 35], text: "2" }
+              children:
+                - type: TextNode
+                  value: two
+                  position: { start: [0, 39], text: two }
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 50], text: "" }
+              blockStartPosition: { start: [0, 42], text: "{% else %}" }
+              blockEndPosition: { start: [0, 57], text: "" }
+              position: { start: [0, 42], text: "{% else %}other" }
+              children:
+                - type: TextNode
+                  value: other
+                  position: { start: [0, 52], text: other }
+  - name: should parse {% for %}...{% else %}...{% endfor %}
+    source: "{% for item in items %}{{ item }}{% else %}empty{% endfor %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% for item in items %}{{ item }}{% else %}empty{% endfor %}" }
+      children:
+        - type: LiquidTag
+          name: for
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% for item in items %}" }
+          blockEndPosition: { start: [0, 48], text: "{% endfor %}" }
+          markupPosition: { start: [0, 7], text: "item in items " }
+          position: { start: [0, 0], text: "{% for item in items %}{{ item }}{% else %}empty{% endfor %}" }
+          markup:
+            type: ForMarkup
+            variableName: item
+            reversed: false
+            position: { start: [0, 7], text: "item in items " }
+            collection:
+              type: VariableLookup
+              name: items
+              position: { start: [0, 15], text: items }
+              lookups: []
+              lookupModes: []
+            args: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 23], text: "" }
+              blockStartPosition: { start: [0, 23], text: "" }
+              blockEndPosition: { start: [0, 33], text: "" }
+              position: { start: [0, 23], text: "{{ item }}" }
+              children:
+                - type: LiquidVariableOutput
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [0, 25], text: " item " }
+                  position: { start: [0, 23], text: "{{ item }}" }
+                  markup:
+                    type: LiquidVariable
+                    rawSource: item
+                    position: { start: [0, 26], text: "item " }
+                    expression:
+                      type: VariableLookup
+                      name: item
+                      position: { start: [0, 26], text: item }
+                      lookups: []
+                      lookupModes: []
+                    filters: []
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 41], text: "" }
+              blockStartPosition: { start: [0, 33], text: "{% else %}" }
+              blockEndPosition: { start: [0, 48], text: "" }
+              position: { start: [0, 33], text: "{% else %}empty" }
+              children:
+                - type: TextNode
+                  value: empty
+                  position: { start: [0, 43], text: empty }
+  - name: should parse empty branched block
+    source: "{% if true %}{% endif %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if true %}{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if true %}" }
+          blockEndPosition: { start: [0, 13], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "true " }
+          position: { start: [0, 0], text: "{% if true %}{% endif %}" }
+          markup:
+            type: LiquidLiteral
+            keyword: "true"
+            value: true
+            position: { start: [0, 6], text: "true" }
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 13], text: "" }
+              blockStartPosition: { start: [0, 13], text: "" }
+              blockEndPosition: { start: [0, 13], text: "" }
+              position: { start: [0, 13], text: "" }
+              children: []
+  - name: should parse {% when %} with multiple values
+    source: "{% case x %}{% when 1, 2 %}matched{% endcase %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% case x %}{% when 1, 2 %}matched{% endcase %}" }
+      children:
+        - type: LiquidTag
+          name: case
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% case x %}" }
+          blockEndPosition: { start: [0, 34], text: "{% endcase %}" }
+          markupPosition: { start: [0, 8], text: "x " }
+          position: { start: [0, 0], text: "{% case x %}{% when 1, 2 %}matched{% endcase %}" }
+          markup:
+            type: VariableLookup
+            name: x
+            position: { start: [0, 8], text: x }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 12], text: "" }
+              blockStartPosition: { start: [0, 12], text: "" }
+              blockEndPosition: { start: [0, 12], text: "" }
+              position: { start: [0, 12], text: "" }
+              children: []
+            - type: LiquidBranch
+              name: when
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 20], text: "1, 2 " }
+              blockStartPosition: { start: [0, 12], text: "{% when 1, 2 %}" }
+              blockEndPosition: { start: [0, 34], text: "" }
+              position: { start: [0, 12], text: "{% when 1, 2 %}matched" }
+              markup:
+                - type: Number
+                  value: "1"
+                  position: { start: [0, 20], text: "1" }
+                - type: Number
+                  value: "2"
+                  position: { start: [0, 23], text: "2" }
+              children:
+                - type: TextNode
+                  value: matched
+                  position: { start: [0, 27], text: matched }
+  - name: should expose branch markup positions
+    source: "{% case x %}{% when 1, 2 %}matched{% else %}other{% endcase %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% case x %}{% when 1, 2 %}matched{% else %}other{% endcase %}" }
+      children:
+        - type: LiquidTag
+          name: case
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% case x %}" }
+          blockEndPosition: { start: [0, 49], text: "{% endcase %}" }
+          markupPosition: { start: [0, 8], text: "x " }
+          position: { start: [0, 0], text: "{% case x %}{% when 1, 2 %}matched{% else %}other{% endcase %}" }
+          markup:
+            type: VariableLookup
+            name: x
+            position: { start: [0, 8], text: x }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 12], text: "" }
+              blockStartPosition: { start: [0, 12], text: "" }
+              blockEndPosition: { start: [0, 12], text: "" }
+              position: { start: [0, 12], text: "" }
+              children: []
+            - type: LiquidBranch
+              name: when
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 20], text: "1, 2 " }
+              blockStartPosition: { start: [0, 12], text: "{% when 1, 2 %}" }
+              blockEndPosition: { start: [0, 34], text: "" }
+              position: { start: [0, 12], text: "{% when 1, 2 %}matched" }
+              markup:
+                - type: Number
+                  value: "1"
+                  position: { start: [0, 20], text: "1" }
+                - type: Number
+                  value: "2"
+                  position: { start: [0, 23], text: "2" }
+              children:
+                - type: TextNode
+                  value: matched
+                  position: { start: [0, 27], text: matched }
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 42], text: "" }
+              blockStartPosition: { start: [0, 34], text: "{% else %}" }
+              blockEndPosition: { start: [0, 49], text: "" }
+              position: { start: [0, 34], text: "{% else %}other" }
+              children:
+                - type: TextNode
+                  value: other
+                  position: { start: [0, 44], text: other }
+  - name: should expose branch markup positions with whitespace-control delimiters
+    source: "{% if a %}A{%- elsif   b -%}B{% endif %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if a %}A{%- elsif   b -%}B{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if a %}" }
+          blockEndPosition: { start: [0, 29], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "a " }
+          position: { start: [0, 0], text: "{% if a %}A{%- elsif   b -%}B{% endif %}" }
+          markup:
+            type: VariableLookup
+            name: a
+            position: { start: [0, 6], text: a }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 10], text: "" }
+              blockStartPosition: { start: [0, 10], text: "" }
+              blockEndPosition: { start: [0, 11], text: "" }
+              position: { start: [0, 10], text: A }
+              children:
+                - type: TextNode
+                  value: A
+                  position: { start: [0, 10], text: A }
+            - type: LiquidBranch
+              name: elsif
+              whitespaceStart: "-"
+              whitespaceEnd: "-"
+              markupPosition: { start: [0, 23], text: "b " }
+              blockStartPosition: { start: [0, 11], text: "{%- elsif   b -%}" }
+              blockEndPosition: { start: [0, 29], text: "" }
+              position: { start: [0, 11], text: "{%- elsif   b -%}B" }
+              markup:
+                type: VariableLookup
+                name: b
+                position: { start: [0, 23], text: b }
+                lookups: []
+                lookupModes: []
+              children:
+                - type: TextNode
+                  value: B
+                  position: { start: [0, 28], text: B }
+  - name: should parse nested block tags
+    source: "{% if a %}{% for item in items %}{{ item }}{% endfor %}{% endif %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if a %}{% for item in items %}{{ item }}{% endfor %}{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if a %}" }
+          blockEndPosition: { start: [0, 55], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "a " }
+          position: { start: [0, 0], text: "{% if a %}{% for item in items %}{{ item }}{% endfor %}{% endif %}" }
+          markup:
+            type: VariableLookup
+            name: a
+            position: { start: [0, 6], text: a }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 10], text: "" }
+              blockStartPosition: { start: [0, 10], text: "" }
+              blockEndPosition: { start: [0, 55], text: "" }
+              position: { start: [0, 10], text: "{% for item in items %}{{ item }}{% endfor %}" }
+              children:
+                - type: LiquidTag
+                  name: for
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  delimiterWhitespaceStart: ""
+                  delimiterWhitespaceEnd: ""
+                  blockStartPosition: { start: [0, 10], text: "{% for item in items %}" }
+                  blockEndPosition: { start: [0, 43], text: "{% endfor %}" }
+                  markupPosition: { start: [0, 17], text: "item in items " }
+                  position: { start: [0, 10], text: "{% for item in items %}{{ item }}{% endfor %}" }
+                  markup:
+                    type: ForMarkup
+                    variableName: item
+                    reversed: false
+                    position: { start: [0, 17], text: "item in items " }
+                    collection:
+                      type: VariableLookup
+                      name: items
+                      position: { start: [0, 25], text: items }
+                      lookups: []
+                      lookupModes: []
+                    args: []
+                  children:
+                    - type: LiquidBranch
+                      name: null
+                      markup: ""
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      markupPosition: { start: [0, 33], text: "" }
+                      blockStartPosition: { start: [0, 33], text: "" }
+                      blockEndPosition: { start: [0, 43], text: "" }
+                      position: { start: [0, 33], text: "{{ item }}" }
+                      children:
+                        - type: LiquidVariableOutput
+                          whitespaceStart: ""
+                          whitespaceEnd: ""
+                          markupPosition: { start: [0, 35], text: " item " }
+                          position: { start: [0, 33], text: "{{ item }}" }
+                          markup:
+                            type: LiquidVariable
+                            rawSource: item
+                            position: { start: [0, 36], text: "item " }
+                            expression:
+                              type: VariableLookup
+                              name: item
+                              position: { start: [0, 36], text: item }
+                              lookups: []
+                              lookupModes: []
+                            filters: []
+  - name: should parse nested branchless in branched
+    source: "{% if true %}{% capture x %}hello{% endcapture %}{% endif %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if true %}{% capture x %}hello{% endcapture %}{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if true %}" }
+          blockEndPosition: { start: [0, 49], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "true " }
+          position: { start: [0, 0], text: "{% if true %}{% capture x %}hello{% endcapture %}{% endif %}" }
+          markup:
+            type: LiquidLiteral
+            keyword: "true"
+            value: true
+            position: { start: [0, 6], text: "true" }
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 13], text: "" }
+              blockStartPosition: { start: [0, 13], text: "" }
+              blockEndPosition: { start: [0, 49], text: "" }
+              position: { start: [0, 13], text: "{% capture x %}hello{% endcapture %}" }
+              children:
+                - type: LiquidTag
+                  name: capture
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  delimiterWhitespaceStart: ""
+                  delimiterWhitespaceEnd: ""
+                  blockStartPosition: { start: [0, 13], text: "{% capture x %}" }
+                  blockEndPosition: { start: [0, 33], text: "{% endcapture %}" }
+                  markupPosition: { start: [0, 24], text: "x " }
+                  position: { start: [0, 13], text: "{% capture x %}hello{% endcapture %}" }
+                  markup:
+                    type: VariableLookup
+                    name: x
+                    position: { start: [0, 24], text: x }
+                    lookups: []
+                    lookupModes: []
+                  children:
+                    - type: TextNode
+                      value: hello
+                      position: { start: [0, 28], text: hello }
+  - name: should handle whitespace stripping on open and end tags
+    source: "{%- if true -%}hello{%- endif -%}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{%- if true -%}hello{%- endif -%}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: "-"
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: "-"
+          delimiterWhitespaceEnd: "-"
+          blockStartPosition: { start: [0, 0], text: "{%- if true -%}" }
+          blockEndPosition: { start: [0, 20], text: "{%- endif -%}" }
+          markupPosition: { start: [0, 7], text: "true " }
+          position: { start: [0, 0], text: "{%- if true -%}hello{%- endif -%}" }
+          markup:
+            type: LiquidLiteral
+            keyword: "true"
+            value: true
+            position: { start: [0, 7], text: "true" }
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 15], text: "" }
+              blockStartPosition: { start: [0, 15], text: "" }
+              blockEndPosition: { start: [0, 20], text: "" }
+              position: { start: [0, 15], text: hello }
+              children:
+                - type: TextNode
+                  value: hello
+                  position: { start: [0, 15], text: hello }
+  - name: should handle whitespace stripping on branch tags
+    source: "{% if true %}a{%- else -%}b{% endif %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if true %}a{%- else -%}b{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if true %}" }
+          blockEndPosition: { start: [0, 27], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "true " }
+          position: { start: [0, 0], text: "{% if true %}a{%- else -%}b{% endif %}" }
+          markup:
+            type: LiquidLiteral
+            keyword: "true"
+            value: true
+            position: { start: [0, 6], text: "true" }
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 13], text: "" }
+              blockStartPosition: { start: [0, 13], text: "" }
+              blockEndPosition: { start: [0, 14], text: "" }
+              position: { start: [0, 13], text: a }
+              children:
+                - type: TextNode
+                  value: a
+                  position: { start: [0, 13], text: a }
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: "-"
+              whitespaceEnd: "-"
+              markupPosition: { start: [0, 23], text: "" }
+              blockStartPosition: { start: [0, 14], text: "{%- else -%}" }
+              blockEndPosition: { start: [0, 27], text: "" }
+              position: { start: [0, 14], text: "{%- else -%}b" }
+              children:
+                - type: TextNode
+                  value: b
+                  position: { start: [0, 26], text: b }
+  - name: should throw for unclosed block tag
+    source: "{% if true %}hello"
+    parse: [html]
+    error:
+      message: Attempting to end parsing before LiquidTag 'if' was closed
+      start: [0, 0]
+      text: "{% if true %}"
+  - name: should throw for orphaned endfor at top level
+    source: "{% endfor %}"
+    parse: [html]
+    error:
+      message: Attempting to close LiquidTag 'for' before it was opened without a matching 'for'
+      start: [0, 0]
+      text: "{% endfor %"
+  - name: should produce AttrEmpty for bare text inside capture in attribute position
+    source: <img {%- capture x %}{{ y }}%{%- endcapture -%}>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<img {%- capture x %}{{ y }}%{%- endcapture -%}>" }
+      children:
+        - type: HtmlVoidElement
+          name: img
+          blockStartPosition: { start: [0, 0], text: "<img {%- capture x %}{{ y }}%{%- endcapture -%}>" }
+          position: { start: [0, 0], text: "<img {%- capture x %}{{ y }}%{%- endcapture -%}>" }
+          attributes:
+            - type: LiquidTag
+              name: capture
+              whitespaceStart: "-"
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: "-"
+              delimiterWhitespaceEnd: "-"
+              blockStartPosition: { start: [0, 5], text: "{%- capture x %}" }
+              blockEndPosition: { start: [0, 29], text: "{%- endcapture -%}" }
+              markupPosition: { start: [0, 17], text: "x " }
+              position: { start: [0, 5], text: "{%- capture x %}{{ y }}%{%- endcapture -%}" }
+              markup:
+                type: VariableLookup
+                name: x
+                position: { start: [0, 17], text: x }
+                lookups: []
+                lookupModes: []
+              children:
+                - type: LiquidVariableOutput
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [0, 23], text: " y " }
+                  position: { start: [0, 21], text: "{{ y }}" }
+                  markup:
+                    type: LiquidVariable
+                    rawSource: y
+                    position: { start: [0, 24], text: "y " }
+                    expression:
+                      type: VariableLookup
+                      name: y
+                      position: { start: [0, 24], text: y }
+                      lookups: []
+                      lookupModes: []
+                    filters: []
+                - type: AttrEmpty
+                  position: { start: [0, 28], text: "%" }
+                  name:
+                    - type: TextNode
+                      value: "%"
+                      position: { start: [0, 28], text: "%" }
+  - name: should throw (not hang) on an orphan endwhen inside a case in attribute position
+    source: <li {% case x %}{% when 'a' %} data-a{% endwhen %}{% endcase %}>z</li>
+    parse: [html]
+    error:
+      message: Unexpected Liquid tag 'endwhen' inside LiquidTag 'case'
+      start: [0, 37]
+      text: "{%"
+  - name: tolerant mode (toLiquidAST) still degrades without looping
+    source: <li {% case x %}{% when 'a' %} data-a{% endwhen %}{% endcase %}>z</li>
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<li {% case x %}{% when 'a' %} data-a{% endwhen %}{% endcase %}>z</li>" }
+      children:
+        - type: TextNode
+          value: <li
+          position: { start: [0, 0], text: <li }
+        - type: LiquidTag
+          name: case
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 4], text: "{% case x %}" }
+          blockEndPosition: { start: [0, 50], text: "{% endcase %}" }
+          markupPosition: { start: [0, 12], text: "x " }
+          position: { start: [0, 4], text: "{% case x %}{% when 'a' %} data-a{% endwhen %}{% endcase %}" }
+          markup:
+            type: VariableLookup
+            name: x
+            position: { start: [0, 12], text: x }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 16], text: "" }
+              blockStartPosition: { start: [0, 16], text: "" }
+              blockEndPosition: { start: [0, 16], text: "" }
+              position: { start: [0, 16], text: "" }
+              children: []
+            - type: LiquidBranch
+              name: when
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 24], text: "'a' " }
+              blockStartPosition: { start: [0, 16], text: "{% when 'a' %}" }
+              blockEndPosition: { start: [0, 50], text: "" }
+              position: { start: [0, 16], text: "{% when 'a' %} data-a{% endwhen %}" }
+              markup:
+                - type: String
+                  single: true
+                  value: a
+                  position: { start: [0, 24], text: "'a'" }
+              children:
+                - type: TextNode
+                  value: data-a
+                  position: { start: [0, 31], text: data-a }
+                - type: LiquidTag
+                  name: endwhen
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  blockStartPosition: { start: [0, 37], text: "{% endwhen %}" }
+                  markupPosition: { start: [0, 48], text: "" }
+                  position: { start: [0, 37], text: "{% endwhen %}" }
+        - type: TextNode
+          value: ">z</li>"
+          position: { start: [0, 63], text: ">z</li>" }
+  - name: should throw (not hang) on an orphan end tag inside a branchless block
+    source: <li {% capture y %}{% endwhen %}{% endcapture %}>z</li>
+    parse: [html]
+    error:
+      message: Unexpected Liquid tag 'endwhen' inside LiquidTag 'capture'
+      start: [0, 19]
+      text: "{%"

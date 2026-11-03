@@ -1,0 +1,141 @@
+cases:
+  - name: "follows a layout's renders, assets, blocks and section groups"
+    files:
+      layout/theme.liquid: |
+        <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Document</title>
+            <script type="module" src="{{ 'theme.js' | asset_url }}"></script>
+            {{ 'theme.css' | asset_url | stylesheet_tag }}
+            {{ content_for_header }}
+          </head>
+          <body>
+            {% render 'layout-parent' %}
+            {% block 'layout-block' %}{% endblock %}
+            {% sections 'header-group' %}
+            {{ content_for_layout }}
+          </body>
+        </html>
+      snippets/layout-parent.liquid: |
+        {% render 'layout-child' %}
+      snippets/layout-child.liquid: |
+        Layout child
+      blocks/layout-block.liquid: |
+        {% render 'block-child' %}
+      snippets/block-child.liquid: |
+        Block child
+      sections/header-group.json: |
+        { "type": "header", "name": "Header", "sections": {}, "order": [] }
+      assets/theme.js: ""
+      assets/theme.css: ""
+    edges:
+      - source: blocks/layout-block.liquid
+        start: [0, 0]
+        text: "{% render 'block-child' %}"
+        target: snippets/block-child.liquid
+      - source: layout/theme.liquid
+        start: [5, 34]
+        text: "'theme.js' | asset_url "
+        target: assets/theme.js
+      - source: layout/theme.liquid
+        start: [6, 7]
+        text: "'theme.css' | asset_url | stylesheet_tag "
+        target: assets/theme.css
+      - source: layout/theme.liquid
+        start: [10, 4]
+        text: "{% render 'layout-parent' %}"
+        target: snippets/layout-parent.liquid
+      - source: layout/theme.liquid
+        start: [11, 4]
+        text: "{% block 'layout-block' %}{% endblock %}"
+        target: blocks/layout-block.liquid
+      - source: layout/theme.liquid
+        start: [12, 4]
+        text: "{% sections 'header-group' %}"
+        target: sections/header-group.json
+      - source: snippets/layout-parent.liquid
+        start: [0, 0]
+        text: "{% render 'layout-child' %}"
+        target: snippets/layout-child.liquid
+  - name: an app block in a block tag isn't followed, and theme blocks still are
+    files:
+      layout/theme.liquid: |
+        {% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000' %}{% endblock %}
+        {% block 'text' %}{% endblock %}
+      blocks/text.liquid: |
+        Text
+    modules:
+      - { file: blocks/text.liquid, type: Liquid, kind: block }
+      - { file: layout/theme.liquid, type: Liquid, kind: layout }
+    edges:
+      - source: layout/theme.liquid
+        start: [1, 0]
+        text: "{% block 'text' %}{% endblock %}"
+        target: blocks/text.liquid
+  - name: an app block in a liquid tag isn't followed, and theme blocks still are
+    files:
+      layout/theme.liquid: |
+        {% liquid
+          block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000'
+          endblock
+        %}
+        {% block 'text' %}{% endblock %}
+      blocks/text.liquid: |
+        Text
+    modules:
+      - { file: blocks/text.liquid, type: Liquid, kind: block }
+      - { file: layout/theme.liquid, type: Liquid, kind: layout }
+    edges:
+      - source: layout/theme.liquid
+        start: [4, 0]
+        text: "{% block 'text' %}{% endblock %}"
+        target: blocks/text.liquid
+  - name: follows a static block rendered with content_for
+    files:
+      sections/main.liquid: |
+        {% content_for 'block', type: 'render-static', id: 'render-static' %}
+      blocks/render-static.liquid: |
+        {% doc %}
+          This block renders the private _static block. Has no schema.
+        {% enddoc %}
+
+        <div class="static-block-wrapper">
+          {% content_for 'block',
+            type: '_static',
+            id: 'static',
+            content: 'hello world'
+          %}
+        </div>
+
+        {% schema %}
+        {
+          "name": "render static block",
+          "presets": [
+            {
+              "name": "Render Static Block"
+            }
+          ]
+        }
+        {% endschema %}
+      blocks/_static.liquid: |
+        {% doc %}
+          this block is statically rendered
+
+          @param {string} content
+
+        {% enddoc %}
+
+        <div class="static-block">
+          {{ content }}
+        </div>
+    edges:
+      - source: blocks/render-static.liquid
+        start: [5, 2]
+        text: "{% content_for 'block',\n    type: '_static',\n    id: 'static',\n    content: 'hello world'\n  "
+        target: blocks/_static.liquid
+      - source: sections/main.liquid
+        start: [0, 0]
+        text: "{% content_for 'block', type: 'render-static', id: 'render-static' "
+        target: blocks/render-static.liquid

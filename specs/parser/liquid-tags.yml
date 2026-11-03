@@ -1,0 +1,1913 @@
+cases:
+  - name: should transform a basic Liquid Tag into a LiquidTag
+    source: "{% name %}{% if -%}{%- endif %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% name %}{% if -%}{%- endif %}" }
+      children:
+        - type: LiquidTag
+          name: name
+          markup: ""
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% name %}" }
+          markupPosition: { start: [0, 8], text: "" }
+          position: { start: [0, 0], text: "{% name %}" }
+        - type: LiquidTag
+          name: if
+          markup: ""
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: "-"
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 10], text: "{% if -%}" }
+          blockEndPosition: { start: [0, 19], text: "{%- endif %}" }
+          markupPosition: { start: [0, 16], text: "" }
+          position: { start: [0, 10], text: "{% if -%}{%- endif %}" }
+          reason: Expected expression but found EndOfString ()
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 19], text: "" }
+              blockStartPosition: { start: [0, 19], text: "" }
+              blockEndPosition: { start: [0, 19], text: "" }
+              position: { start: [0, 19], text: "" }
+              children: []
+  - name: should parse echo tags (1)
+    source: '{% echo "hi" -%}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% echo "hi" -%}' }
+      children:
+        - type: LiquidTag
+          name: echo
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          blockStartPosition: { start: [0, 0], text: '{% echo "hi" -%}' }
+          markupPosition: { start: [0, 8], text: '"hi" ' }
+          position: { start: [0, 0], text: '{% echo "hi" -%}' }
+          markup:
+            type: LiquidVariable
+            rawSource: '"hi"'
+            position: { start: [0, 8], text: '"hi" ' }
+            expression:
+              type: String
+              single: false
+              value: hi
+              position: { start: [0, 8], text: '"hi"' }
+            filters: []
+  - name: should parse echo tags (2)
+    source: "{% echo x | f -%}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% echo x | f -%}" }
+      children:
+        - type: LiquidTag
+          name: echo
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          blockStartPosition: { start: [0, 0], text: "{% echo x | f -%}" }
+          markupPosition: { start: [0, 8], text: "x | f " }
+          position: { start: [0, 0], text: "{% echo x | f -%}" }
+          markup:
+            type: LiquidVariable
+            rawSource: x | f
+            position: { start: [0, 8], text: "x | f " }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 8], text: x }
+              lookups: []
+              lookupModes: []
+            filters:
+              - type: LiquidFilter
+                name: f
+                position: { start: [0, 9], text: " | f" }
+                args: []
+  - name: should parse assign tags (1)
+    source: '{% assign x = "hi" -%}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% assign x = "hi" -%}' }
+      children:
+        - type: LiquidTag
+          name: assign
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          blockStartPosition: { start: [0, 0], text: '{% assign x = "hi" -%}' }
+          markupPosition: { start: [0, 10], text: 'x = "hi" ' }
+          position: { start: [0, 0], text: '{% assign x = "hi" -%}' }
+          markup:
+            type: AssignMarkup
+            name: x
+            position: { start: [0, 10], text: 'x = "hi" ' }
+            value:
+              type: LiquidVariable
+              rawSource: '"hi"'
+              position: { start: [0, 14], text: '"hi" ' }
+              expression:
+                type: String
+                single: false
+                value: hi
+                position: { start: [0, 14], text: '"hi"' }
+              filters: []
+  - name: should parse assign tags (2)
+    source: "{% assign z = y | f -%}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% assign z = y | f -%}" }
+      children:
+        - type: LiquidTag
+          name: assign
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          blockStartPosition: { start: [0, 0], text: "{% assign z = y | f -%}" }
+          markupPosition: { start: [0, 10], text: "z = y | f " }
+          position: { start: [0, 0], text: "{% assign z = y | f -%}" }
+          markup:
+            type: AssignMarkup
+            name: z
+            position: { start: [0, 10], text: "z = y | f " }
+            value:
+              type: LiquidVariable
+              rawSource: y | f
+              position: { start: [0, 14], text: "y | f " }
+              expression:
+                type: VariableLookup
+                name: y
+                position: { start: [0, 14], text: y }
+                lookups: []
+                lookupModes: []
+              filters:
+                - type: LiquidFilter
+                  name: f
+                  position: { start: [0, 15], text: " | f" }
+                  args: []
+  - name: should parse render tags (1)
+    source: '{% render "snippet" -%}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% render "snippet" -%}' }
+      children:
+        - type: LiquidTag
+          name: render
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          blockStartPosition: { start: [0, 0], text: '{% render "snippet" -%}' }
+          markupPosition: { start: [0, 10], text: '"snippet" ' }
+          position: { start: [0, 0], text: '{% render "snippet" -%}' }
+          markup:
+            type: RenderMarkup
+            variable: null
+            alias: null
+            position: { start: [0, 10], text: '"snippet" ' }
+            snippet:
+              type: String
+              single: false
+              value: snippet
+              position: { start: [0, 10], text: '"snippet"' }
+            args: []
+  - name: should parse render tags (2)
+    source: '{% render "snippet" as foo -%}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% render "snippet" as foo -%}' }
+      children:
+        - type: LiquidTag
+          name: render
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          blockStartPosition: { start: [0, 0], text: '{% render "snippet" as foo -%}' }
+          markupPosition: { start: [0, 10], text: '"snippet" as foo ' }
+          position: { start: [0, 0], text: '{% render "snippet" as foo -%}' }
+          markup:
+            type: RenderMarkup
+            variable: null
+            position: { start: [0, 10], text: '"snippet" as foo ' }
+            snippet:
+              type: String
+              single: false
+              value: snippet
+              position: { start: [0, 10], text: '"snippet"' }
+            alias:
+              type: RenderAliasExpression
+              value: foo
+              position: { start: [0, 20], text: as foo }
+            args: []
+  - name: should parse render tags (3)
+    source: '{% render "snippet" with "string" as foo -%}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% render "snippet" with "string" as foo -%}' }
+      children:
+        - type: LiquidTag
+          name: render
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          blockStartPosition: { start: [0, 0], text: '{% render "snippet" with "string" as foo -%}' }
+          markupPosition: { start: [0, 10], text: '"snippet" with "string" as foo ' }
+          position: { start: [0, 0], text: '{% render "snippet" with "string" as foo -%}' }
+          markup:
+            type: RenderMarkup
+            position: { start: [0, 10], text: '"snippet" with "string" as foo ' }
+            snippet:
+              type: String
+              single: false
+              value: snippet
+              position: { start: [0, 10], text: '"snippet"' }
+            variable:
+              type: RenderVariableExpression
+              kind: with
+              position: { start: [0, 20], text: with "string" }
+              name:
+                type: String
+                single: false
+                value: string
+                position: { start: [0, 25], text: '"string"' }
+            alias:
+              type: RenderAliasExpression
+              value: foo
+              position: { start: [0, 34], text: as foo }
+            args: []
+  - name: should parse render tags (4)
+    source: '{% render "snippet" for products as product -%}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% render "snippet" for products as product -%}' }
+      children:
+        - type: LiquidTag
+          name: render
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          blockStartPosition: { start: [0, 0], text: '{% render "snippet" for products as product -%}' }
+          markupPosition: { start: [0, 10], text: '"snippet" for products as product ' }
+          position: { start: [0, 0], text: '{% render "snippet" for products as product -%}' }
+          markup:
+            type: RenderMarkup
+            position: { start: [0, 10], text: '"snippet" for products as product ' }
+            snippet:
+              type: String
+              single: false
+              value: snippet
+              position: { start: [0, 10], text: '"snippet"' }
+            variable:
+              type: RenderVariableExpression
+              kind: for
+              position: { start: [0, 20], text: for products }
+              name:
+                type: VariableLookup
+                name: products
+                position: { start: [0, 24], text: products }
+                lookups: []
+                lookupModes: []
+            alias:
+              type: RenderAliasExpression
+              value: product
+              position: { start: [0, 33], text: as product }
+            args: []
+  - name: should parse render tags (5)
+    source: '{% render variable with "string" as foo, key1: val1, key2: "hi" -%}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% render variable with "string" as foo, key1: val1, key2: "hi" -%}' }
+      children:
+        - type: LiquidTag
+          name: render
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          blockStartPosition: { start: [0, 0], text: '{% render variable with "string" as foo, key1: val1, key2: "hi" -%}' }
+          markupPosition: { start: [0, 10], text: 'variable with "string" as foo, key1: val1, key2: "hi" ' }
+          position: { start: [0, 0], text: '{% render variable with "string" as foo, key1: val1, key2: "hi" -%}' }
+          markup:
+            type: RenderMarkup
+            position: { start: [0, 10], text: 'variable with "string" as foo, key1: val1, key2: "hi" ' }
+            snippet:
+              type: VariableLookup
+              name: variable
+              position: { start: [0, 10], text: variable }
+              lookups: []
+              lookupModes: []
+            variable:
+              type: RenderVariableExpression
+              kind: with
+              position: { start: [0, 19], text: with "string" }
+              name:
+                type: String
+                single: false
+                value: string
+                position: { start: [0, 24], text: '"string"' }
+            alias:
+              type: RenderAliasExpression
+              value: foo
+              position: { start: [0, 33], text: as foo }
+            args:
+              - type: NamedArgument
+                name: key1
+                position: { start: [0, 41], text: "key1: val1" }
+                value:
+                  type: VariableLookup
+                  name: val1
+                  position: { start: [0, 47], text: val1 }
+                  lookups: []
+                  lookupModes: []
+              - type: NamedArgument
+                name: key2
+                position: { start: [0, 53], text: 'key2: "hi"' }
+                value:
+                  type: String
+                  single: false
+                  value: hi
+                  position: { start: [0, 59], text: '"hi"' }
+  - name: should parse render tags with named args and no comma (Bug 23 regression) (1)
+    source: "{% render 'snippet' section: section %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% render 'snippet' section: section %}" }
+      children:
+        - type: LiquidTag
+          name: render
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% render 'snippet' section: section %}" }
+          markupPosition: { start: [0, 10], text: "'snippet' section: section " }
+          position: { start: [0, 0], text: "{% render 'snippet' section: section %}" }
+          markup:
+            type: RenderMarkup
+            variable: null
+            alias: null
+            position: { start: [0, 10], text: "'snippet' section: section " }
+            snippet:
+              type: String
+              single: true
+              value: snippet
+              position: { start: [0, 10], text: "'snippet'" }
+            args:
+              - type: NamedArgument
+                name: section
+                position: { start: [0, 20], text: "section: section" }
+                value:
+                  type: VariableLookup
+                  name: section
+                  position: { start: [0, 29], text: section }
+                  lookups: []
+                  lookupModes: []
+  - name: should parse render tags with named args and no comma (Bug 23 regression) (2)
+    source: "{% render 'snippet', section: section %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% render 'snippet', section: section %}" }
+      children:
+        - type: LiquidTag
+          name: render
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% render 'snippet', section: section %}" }
+          markupPosition: { start: [0, 10], text: "'snippet', section: section " }
+          position: { start: [0, 0], text: "{% render 'snippet', section: section %}" }
+          markup:
+            type: RenderMarkup
+            variable: null
+            alias: null
+            position: { start: [0, 10], text: "'snippet', section: section " }
+            snippet:
+              type: String
+              single: true
+              value: snippet
+              position: { start: [0, 10], text: "'snippet'" }
+            args:
+              - type: NamedArgument
+                name: section
+                position: { start: [0, 21], text: "section: section" }
+                value:
+                  type: VariableLookup
+                  name: section
+                  position: { start: [0, 30], text: section }
+                  lookups: []
+                  lookupModes: []
+  - name: should parse render tags with named args and no comma (Bug 23 regression) (3)
+    source: "{% render 'snippet' key1: val1, key2: val2 %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% render 'snippet' key1: val1, key2: val2 %}" }
+      children:
+        - type: LiquidTag
+          name: render
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% render 'snippet' key1: val1, key2: val2 %}" }
+          markupPosition: { start: [0, 10], text: "'snippet' key1: val1, key2: val2 " }
+          position: { start: [0, 0], text: "{% render 'snippet' key1: val1, key2: val2 %}" }
+          markup:
+            type: RenderMarkup
+            variable: null
+            alias: null
+            position: { start: [0, 10], text: "'snippet' key1: val1, key2: val2 " }
+            snippet:
+              type: String
+              single: true
+              value: snippet
+              position: { start: [0, 10], text: "'snippet'" }
+            args:
+              - type: NamedArgument
+                name: key1
+                position: { start: [0, 20], text: "key1: val1" }
+                value:
+                  type: VariableLookup
+                  name: val1
+                  position: { start: [0, 26], text: val1 }
+                  lookups: []
+                  lookupModes: []
+              - type: NamedArgument
+                name: key2
+                position: { start: [0, 32], text: "key2: val2" }
+                value:
+                  type: VariableLookup
+                  name: val2
+                  position: { start: [0, 38], text: val2 }
+                  lookups: []
+                  lookupModes: []
+  - name: should parse render tags with named args and no comma (Bug 23 regression) (4)
+    source: "{% render 'snippet' for products section: section %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% render 'snippet' for products section: section %}" }
+      children:
+        - type: LiquidTag
+          name: render
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% render 'snippet' for products section: section %}" }
+          markupPosition: { start: [0, 10], text: "'snippet' for products section: section " }
+          position: { start: [0, 0], text: "{% render 'snippet' for products section: section %}" }
+          markup:
+            type: RenderMarkup
+            alias: null
+            position: { start: [0, 10], text: "'snippet' for products section: section " }
+            snippet:
+              type: String
+              single: true
+              value: snippet
+              position: { start: [0, 10], text: "'snippet'" }
+            variable:
+              type: RenderVariableExpression
+              kind: for
+              position: { start: [0, 20], text: for products }
+              name:
+                type: VariableLookup
+                name: products
+                position: { start: [0, 24], text: products }
+                lookups: []
+                lookupModes: []
+            args:
+              - type: NamedArgument
+                name: section
+                position: { start: [0, 33], text: "section: section" }
+                value:
+                  type: VariableLookup
+                  name: section
+                  position: { start: [0, 42], text: section }
+                  lookups: []
+                  lookupModes: []
+  - name: should parse conditional tags into conditional expressions (1)
+    source: "{% if a -%}{% endif %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if a -%}{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if a -%}" }
+          blockEndPosition: { start: [0, 11], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "a " }
+          position: { start: [0, 0], text: "{% if a -%}{% endif %}" }
+          markup:
+            type: VariableLookup
+            name: a
+            position: { start: [0, 6], text: a }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 11], text: "" }
+              blockStartPosition: { start: [0, 11], text: "" }
+              blockEndPosition: { start: [0, 11], text: "" }
+              position: { start: [0, 11], text: "" }
+              children: []
+  - name: should parse conditional tags into conditional expressions (2)
+    source: '{% if a and "string" -%}{% endif %}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% if a and "string" -%}{% endif %}' }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: '{% if a and "string" -%}' }
+          blockEndPosition: { start: [0, 24], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: 'a and "string" ' }
+          position: { start: [0, 0], text: '{% if a and "string" -%}{% endif %}' }
+          markup:
+            type: LogicalExpression
+            relation: and
+            position: { start: [0, 6], text: 'a and "string" ' }
+            left:
+              type: VariableLookup
+              name: a
+              position: { start: [0, 6], text: a }
+              lookups: []
+              lookupModes: []
+            right:
+              type: String
+              single: false
+              value: string
+              position: { start: [0, 12], text: '"string"' }
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 24], text: "" }
+              blockStartPosition: { start: [0, 24], text: "" }
+              blockEndPosition: { start: [0, 24], text: "" }
+              position: { start: [0, 24], text: "" }
+              children: []
+  - name: should parse conditional tags into conditional expressions (3)
+    source: '{% if a and "string" or a<1 -%}{% endif %}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% if a and "string" or a<1 -%}{% endif %}' }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: '{% if a and "string" or a<1 -%}' }
+          blockEndPosition: { start: [0, 31], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: 'a and "string" or a<1 ' }
+          position: { start: [0, 0], text: '{% if a and "string" or a<1 -%}{% endif %}' }
+          markup:
+            type: LogicalExpression
+            relation: and
+            position: { start: [0, 6], text: 'a and "string" or a<1 ' }
+            left:
+              type: VariableLookup
+              name: a
+              position: { start: [0, 6], text: a }
+              lookups: []
+              lookupModes: []
+            right:
+              type: LogicalExpression
+              relation: or
+              position: { start: [0, 8], text: 'and "string" or a<1 ' }
+              left:
+                type: String
+                single: false
+                value: string
+                position: { start: [0, 12], text: '"string"' }
+              right:
+                type: Comparison
+                comparator: <
+                position: { start: [0, 24], text: a<1 }
+                left:
+                  type: VariableLookup
+                  name: a
+                  position: { start: [0, 24], text: a }
+                  lookups: []
+                  lookupModes: []
+                right:
+                  type: Number
+                  value: "1"
+                  position: { start: [0, 26], text: "1" }
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 31], text: "" }
+              blockStartPosition: { start: [0, 31], text: "" }
+              blockEndPosition: { start: [0, 31], text: "" }
+              position: { start: [0, 31], text: "" }
+              children: []
+  - name: should parse conditional tags into conditional expressions (4)
+    source: "{% unless a -%}{% endunless %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% unless a -%}{% endunless %}" }
+      children:
+        - type: LiquidTag
+          name: unless
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% unless a -%}" }
+          blockEndPosition: { start: [0, 15], text: "{% endunless %}" }
+          markupPosition: { start: [0, 10], text: "a " }
+          position: { start: [0, 0], text: "{% unless a -%}{% endunless %}" }
+          markup:
+            type: VariableLookup
+            name: a
+            position: { start: [0, 10], text: a }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 15], text: "" }
+              blockStartPosition: { start: [0, 15], text: "" }
+              blockEndPosition: { start: [0, 15], text: "" }
+              position: { start: [0, 15], text: "" }
+              children: []
+  - name: should parse conditional tags into conditional expressions (5)
+    source: '{% unless a and "string" -%}{% endunless %}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% unless a and "string" -%}{% endunless %}' }
+      children:
+        - type: LiquidTag
+          name: unless
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: '{% unless a and "string" -%}' }
+          blockEndPosition: { start: [0, 28], text: "{% endunless %}" }
+          markupPosition: { start: [0, 10], text: 'a and "string" ' }
+          position: { start: [0, 0], text: '{% unless a and "string" -%}{% endunless %}' }
+          markup:
+            type: LogicalExpression
+            relation: and
+            position: { start: [0, 10], text: 'a and "string" ' }
+            left:
+              type: VariableLookup
+              name: a
+              position: { start: [0, 10], text: a }
+              lookups: []
+              lookupModes: []
+            right:
+              type: String
+              single: false
+              value: string
+              position: { start: [0, 16], text: '"string"' }
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 28], text: "" }
+              blockStartPosition: { start: [0, 28], text: "" }
+              blockEndPosition: { start: [0, 28], text: "" }
+              position: { start: [0, 28], text: "" }
+              children: []
+  - name: should parse conditional tags into conditional expressions (6)
+    source: '{% unless a and "string" or a<1 -%}{% endunless %}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% unless a and "string" or a<1 -%}{% endunless %}' }
+      children:
+        - type: LiquidTag
+          name: unless
+          whitespaceStart: ""
+          whitespaceEnd: "-"
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: '{% unless a and "string" or a<1 -%}' }
+          blockEndPosition: { start: [0, 35], text: "{% endunless %}" }
+          markupPosition: { start: [0, 10], text: 'a and "string" or a<1 ' }
+          position: { start: [0, 0], text: '{% unless a and "string" or a<1 -%}{% endunless %}' }
+          markup:
+            type: LogicalExpression
+            relation: and
+            position: { start: [0, 10], text: 'a and "string" or a<1 ' }
+            left:
+              type: VariableLookup
+              name: a
+              position: { start: [0, 10], text: a }
+              lookups: []
+              lookupModes: []
+            right:
+              type: LogicalExpression
+              relation: or
+              position: { start: [0, 12], text: 'and "string" or a<1 ' }
+              left:
+                type: String
+                single: false
+                value: string
+                position: { start: [0, 16], text: '"string"' }
+              right:
+                type: Comparison
+                comparator: <
+                position: { start: [0, 28], text: a<1 }
+                left:
+                  type: VariableLookup
+                  name: a
+                  position: { start: [0, 28], text: a }
+                  lookups: []
+                  lookupModes: []
+                right:
+                  type: Number
+                  value: "1"
+                  position: { start: [0, 30], text: "1" }
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 35], text: "" }
+              blockStartPosition: { start: [0, 35], text: "" }
+              blockEndPosition: { start: [0, 35], text: "" }
+              position: { start: [0, 35], text: "" }
+              children: []
+  - name: should parse content_for tags with no arguments
+    source: '{% content_for "blocks" %}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% content_for "blocks" %}' }
+      children:
+        - type: LiquidTag
+          name: content_for
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: '{% content_for "blocks" %}' }
+          markupPosition: { start: [0, 15], text: '"blocks" ' }
+          position: { start: [0, 0], text: '{% content_for "blocks" %}' }
+          markup:
+            type: ContentForMarkup
+            position: { start: [0, 15], text: '"blocks" ' }
+            contentForType:
+              type: String
+              single: false
+              value: blocks
+              position: { start: [0, 15], text: '"blocks"' }
+            args: []
+  - name: should parse content_for named expression arguments
+    source: "{% content_for \"snippet\", s: 'string', n: 10, r: (1..2), v: variable %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% content_for \"snippet\", s: 'string', n: 10, r: (1..2), v: variable %}" }
+      children:
+        - type: LiquidTag
+          name: content_for
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% content_for \"snippet\", s: 'string', n: 10, r: (1..2), v: variable %}" }
+          markupPosition: { start: [0, 15], text: "\"snippet\", s: 'string', n: 10, r: (1..2), v: variable " }
+          position: { start: [0, 0], text: "{% content_for \"snippet\", s: 'string', n: 10, r: (1..2), v: variable %}" }
+          markup:
+            type: ContentForMarkup
+            position: { start: [0, 15], text: "\"snippet\", s: 'string', n: 10, r: (1..2), v: variable " }
+            contentForType:
+              type: String
+              single: false
+              value: snippet
+              position: { start: [0, 15], text: '"snippet"' }
+            args:
+              - type: NamedArgument
+                name: s
+                position: { start: [0, 26], text: "s: 'string'" }
+                value:
+                  type: String
+                  single: true
+                  value: string
+                  position: { start: [0, 29], text: "'string'" }
+              - type: NamedArgument
+                name: n
+                position: { start: [0, 39], text: "n: 10" }
+                value:
+                  type: Number
+                  value: "10"
+                  position: { start: [0, 42], text: "10" }
+              - type: NamedArgument
+                name: r
+                position: { start: [0, 46], text: "r: (1..2)" }
+                value:
+                  type: Range
+                  position: { start: [0, 49], text: (1..2) }
+                  start:
+                    type: Number
+                    value: "1"
+                    position: { start: [0, 50], text: "1" }
+                  end:
+                    type: Number
+                    value: "2"
+                    position: { start: [0, 53], text: "2" }
+              - type: NamedArgument
+                name: v
+                position: { start: [0, 57], text: "v: variable" }
+                value:
+                  type: VariableLookup
+                  name: variable
+                  position: { start: [0, 60], text: variable }
+                  lookups: []
+                  lookupModes: []
+  - name: should parse content_for with dotted named argument keys
+    source: '{% content_for "block", closest.collection: collection %}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% content_for "block", closest.collection: collection %}' }
+      children:
+        - type: LiquidTag
+          name: content_for
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: '{% content_for "block", closest.collection: collection %}' }
+          markupPosition: { start: [0, 15], text: '"block", closest.collection: collection ' }
+          position: { start: [0, 0], text: '{% content_for "block", closest.collection: collection %}' }
+          markup:
+            type: ContentForMarkup
+            position: { start: [0, 15], text: '"block", closest.collection: collection ' }
+            contentForType:
+              type: String
+              single: false
+              value: block
+              position: { start: [0, 15], text: '"block"' }
+            args:
+              - type: NamedArgument
+                name: closest.collection
+                position: { start: [0, 24], text: "closest.collection: collection" }
+                value:
+                  type: VariableLookup
+                  name: collection
+                  position: { start: [0, 44], text: collection }
+                  lookups: []
+                  lookupModes: []
+  - name: should parse liquid inline comments (1)
+    source: "{% #%}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% #%}" }
+      children:
+        - type: LiquidTag
+          name: "#"
+          markup: ""
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% #%}" }
+          markupPosition: { start: [0, 4], text: "" }
+          position: { start: [0, 0], text: "{% #%}" }
+  - name: should parse liquid inline comments (2)
+    source: "{% #hello world %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% #hello world %}" }
+      children:
+        - type: LiquidTag
+          name: "#"
+          markup: hello world
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% #hello world %}" }
+          markupPosition: { start: [0, 4], text: "hello world " }
+          position: { start: [0, 0], text: "{% #hello world %}" }
+  - name: should parse liquid case as branches
+    source: '{% case A %}{% when A %}A{% when "B" %}B{% else    %}C{% endcase %}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% case A %}{% when A %}A{% when "B" %}B{% else    %}C{% endcase %}' }
+      children:
+        - type: LiquidTag
+          name: case
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% case A %}" }
+          blockEndPosition: { start: [0, 54], text: "{% endcase %}" }
+          markupPosition: { start: [0, 8], text: "A " }
+          position: { start: [0, 0], text: '{% case A %}{% when A %}A{% when "B" %}B{% else    %}C{% endcase %}' }
+          markup:
+            type: VariableLookup
+            name: A
+            position: { start: [0, 8], text: A }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 12], text: "" }
+              blockStartPosition: { start: [0, 12], text: "" }
+              blockEndPosition: { start: [0, 12], text: "" }
+              position: { start: [0, 12], text: "" }
+              children: []
+            - type: LiquidBranch
+              name: when
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 20], text: "A " }
+              blockStartPosition: { start: [0, 12], text: "{% when A %}" }
+              blockEndPosition: { start: [0, 25], text: "" }
+              position: { start: [0, 12], text: "{% when A %}A" }
+              markup:
+                - type: VariableLookup
+                  name: A
+                  position: { start: [0, 20], text: A }
+                  lookups: []
+                  lookupModes: []
+              children:
+                - type: TextNode
+                  value: A
+                  position: { start: [0, 24], text: A }
+            - type: LiquidBranch
+              name: when
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 33], text: '"B" ' }
+              blockStartPosition: { start: [0, 25], text: '{% when "B" %}' }
+              blockEndPosition: { start: [0, 40], text: "" }
+              position: { start: [0, 25], text: '{% when "B" %}B' }
+              markup:
+                - type: String
+                  single: false
+                  value: B
+                  position: { start: [0, 33], text: '"B"' }
+              children:
+                - type: TextNode
+                  value: B
+                  position: { start: [0, 39], text: B }
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 51], text: "" }
+              blockStartPosition: { start: [0, 40], text: "{% else    %}" }
+              blockEndPosition: { start: [0, 54], text: "" }
+              position: { start: [0, 40], text: "{% else    %}C" }
+              children:
+                - type: TextNode
+                  value: C
+                  position: { start: [0, 53], text: C }
+  - name: should parse liquid ifs as branches
+    source: "{% if a %}A{% elsif b %}B{% else %}C{% endif %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if a %}A{% elsif b %}B{% else %}C{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if a %}" }
+          blockEndPosition: { start: [0, 36], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "a " }
+          position: { start: [0, 0], text: "{% if a %}A{% elsif b %}B{% else %}C{% endif %}" }
+          markup:
+            type: VariableLookup
+            name: a
+            position: { start: [0, 6], text: a }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 10], text: "" }
+              blockStartPosition: { start: [0, 10], text: "" }
+              blockEndPosition: { start: [0, 11], text: "" }
+              position: { start: [0, 10], text: A }
+              children:
+                - type: TextNode
+                  value: A
+                  position: { start: [0, 10], text: A }
+            - type: LiquidBranch
+              name: elsif
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 20], text: "b " }
+              blockStartPosition: { start: [0, 11], text: "{% elsif b %}" }
+              blockEndPosition: { start: [0, 25], text: "" }
+              position: { start: [0, 11], text: "{% elsif b %}B" }
+              markup:
+                type: VariableLookup
+                name: b
+                position: { start: [0, 20], text: b }
+                lookups: []
+                lookupModes: []
+              children:
+                - type: TextNode
+                  value: B
+                  position: { start: [0, 24], text: B }
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 33], text: "" }
+              blockStartPosition: { start: [0, 25], text: "{% else %}" }
+              blockEndPosition: { start: [0, 36], text: "" }
+              position: { start: [0, 25], text: "{% else %}C" }
+              children:
+                - type: TextNode
+                  value: C
+                  position: { start: [0, 35], text: C }
+  - name: should parse ifchanged as a block tag with no markup and children
+    source: "{% ifchanged %}hello{% endifchanged %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% ifchanged %}hello{% endifchanged %}" }
+      children:
+        - type: LiquidTag
+          name: ifchanged
+          markup: null
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% ifchanged %}" }
+          blockEndPosition: { start: [0, 20], text: "{% endifchanged %}" }
+          markupPosition: { start: [0, 13], text: "" }
+          position: { start: [0, 0], text: "{% ifchanged %}hello{% endifchanged %}" }
+          children:
+            - type: TextNode
+              value: hello
+              position: { start: [0, 15], text: hello }
+  - name: should parse partial as a block tag with string markup
+    source: "{% partial 'header' %}content{% endpartial %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% partial 'header' %}content{% endpartial %}" }
+      children:
+        - type: LiquidTag
+          name: partial
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% partial 'header' %}" }
+          blockEndPosition: { start: [0, 29], text: "{% endpartial %}" }
+          markupPosition: { start: [0, 11], text: "'header' " }
+          position: { start: [0, 0], text: "{% partial 'header' %}content{% endpartial %}" }
+          markup:
+            type: String
+            single: true
+            value: header
+            position: { start: [0, 11], text: "'header'" }
+          children:
+            - type: TextNode
+              value: content
+              position: { start: [0, 22], text: content }
+  - name: should parse block as a block tag with name and children
+    source: "{% block 'foo' %}content{% endblock %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% block 'foo' %}content{% endblock %}" }
+      children:
+        - type: LiquidTag
+          name: block
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% block 'foo' %}" }
+          blockEndPosition: { start: [0, 24], text: "{% endblock %}" }
+          markupPosition: { start: [0, 9], text: "'foo' " }
+          position: { start: [0, 0], text: "{% block 'foo' %}content{% endblock %}" }
+          markup:
+            type: BlockMarkup
+            position: { start: [0, 9], text: "'foo' " }
+            name:
+              type: String
+              single: true
+              value: foo
+              position: { start: [0, 9], text: "'foo'" }
+            args: []
+          children:
+            - type: TextNode
+              value: content
+              position: { start: [0, 17], text: content }
+  - name: should include trailing whitespace in block markup position (Bug 29 fix) (1)
+    source: "{% block 'name' %}{% endblock %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% block 'name' %}{% endblock %}" }
+      children:
+        - type: LiquidTag
+          name: block
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% block 'name' %}" }
+          blockEndPosition: { start: [0, 18], text: "{% endblock %}" }
+          markupPosition: { start: [0, 9], text: "'name' " }
+          position: { start: [0, 0], text: "{% block 'name' %}{% endblock %}" }
+          markup:
+            type: BlockMarkup
+            position: { start: [0, 9], text: "'name' " }
+            name:
+              type: String
+              single: true
+              value: name
+              position: { start: [0, 9], text: "'name'" }
+            args: []
+          children: []
+  - name: should include trailing whitespace in block markup position (Bug 29 fix) (2)
+    source: "{% block 'name', key: 'val' %}{% endblock %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% block 'name', key: 'val' %}{% endblock %}" }
+      children:
+        - type: LiquidTag
+          name: block
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% block 'name', key: 'val' %}" }
+          blockEndPosition: { start: [0, 30], text: "{% endblock %}" }
+          markupPosition: { start: [0, 9], text: "'name', key: 'val' " }
+          position: { start: [0, 0], text: "{% block 'name', key: 'val' %}{% endblock %}" }
+          markup:
+            type: BlockMarkup
+            position: { start: [0, 9], text: "'name', key: 'val' " }
+            name:
+              type: String
+              single: true
+              value: name
+              position: { start: [0, 9], text: "'name'" }
+            args:
+              - type: NamedArgument
+                name: key
+                position: { start: [0, 17], text: "key: 'val'" }
+                value:
+                  type: String
+                  single: true
+                  value: val
+                  position: { start: [0, 22], text: "'val'" }
+          children: []
+  - name: should parse block with kwargs
+    source: "{% block 'foo', key: 'val' %}content{% endblock %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% block 'foo', key: 'val' %}content{% endblock %}" }
+      children:
+        - type: LiquidTag
+          name: block
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% block 'foo', key: 'val' %}" }
+          blockEndPosition: { start: [0, 36], text: "{% endblock %}" }
+          markupPosition: { start: [0, 9], text: "'foo', key: 'val' " }
+          position: { start: [0, 0], text: "{% block 'foo', key: 'val' %}content{% endblock %}" }
+          markup:
+            type: BlockMarkup
+            position: { start: [0, 9], text: "'foo', key: 'val' " }
+            name:
+              type: String
+              single: true
+              value: foo
+              position: { start: [0, 9], text: "'foo'" }
+            args:
+              - type: NamedArgument
+                name: key
+                position: { start: [0, 16], text: "key: 'val'" }
+                value:
+                  type: String
+                  single: true
+                  value: val
+                  position: { start: [0, 21], text: "'val'" }
+          children:
+            - type: TextNode
+              value: content
+              position: { start: [0, 29], text: content }
+  - name: should parse section self-closing (existing behavior preserved)
+    source: "{% section 'foo' %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% section 'foo' %}" }
+      children:
+        - type: LiquidTag
+          name: section
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% section 'foo' %}" }
+          markupPosition: { start: [0, 11], text: "'foo' " }
+          position: { start: [0, 0], text: "{% section 'foo' %}" }
+          markup:
+            type: SectionMarkup
+            position: { start: [0, 11], text: "'foo' " }
+            name:
+              type: String
+              single: true
+              value: foo
+              position: { start: [0, 11], text: "'foo'" }
+            args: []
+  - name: should parse section self-closing with kwargs
+    source: "{% section 'foo', key: 'val' %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% section 'foo', key: 'val' %}" }
+      children:
+        - type: LiquidTag
+          name: section
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% section 'foo', key: 'val' %}" }
+          markupPosition: { start: [0, 11], text: "'foo', key: 'val' " }
+          position: { start: [0, 0], text: "{% section 'foo', key: 'val' %}" }
+          markup:
+            type: SectionMarkup
+            position: { start: [0, 11], text: "'foo', key: 'val' " }
+            name:
+              type: String
+              single: true
+              value: foo
+              position: { start: [0, 11], text: "'foo'" }
+            args:
+              - type: NamedArgument
+                name: key
+                position: { start: [0, 18], text: "key: 'val'" }
+                value:
+                  type: String
+                  single: true
+                  value: val
+                  position: { start: [0, 23], text: "'val'" }
+  - name: should treat section as standalone and reject stray endsection tags (1)
+    source: "{% section 'foo' %}content{% endsection %}"
+    parse: [html, liquid]
+    error:
+      message: Attempting to close LiquidTag 'section' before it was opened without a matching 'section'
+      start: [0, 26]
+      text: "{% endsection %"
+  - name: should treat section as standalone and reject stray endsection tags (2)
+    source: "{% endsection %}"
+    parse: [html, liquid]
+    error:
+      message: Attempting to close LiquidTag 'section' before it was opened without a matching 'section'
+      start: [0, 0]
+      text: "{% endsection %"
+  - name: should treat section as standalone and reject stray endsection tags (3)
+    source: "{% if a %}{% endsection %}{% endif %}"
+    parse: [html, liquid]
+    error:
+      message: Attempting to close LiquidTag 'section' before LiquidTag 'if' was closed
+      start: [0, 0]
+      text: "{% if a %}"
+  - name: should still throw on stray end tags for other registered tags (1)
+    source: "{% endrender %}"
+    parse: [html, liquid]
+    error:
+      message: Attempting to close LiquidTag 'render' before it was opened without a matching 'render'
+      start: [0, 0]
+      text: "{% endrender %"
+  - name: should still throw on stray end tags for other registered tags (2)
+    source: "{% endsections %}"
+    parse: [html, liquid]
+    error:
+      message: Attempting to close LiquidTag 'sections' before it was opened without a matching 'sections'
+      start: [0, 0]
+      text: "{% endsections %"
+  - name: should still throw on stray end tags for other registered tags (3)
+    source: "{% if a %}{% endrender %}{% endif %}"
+    parse: [html, liquid]
+    error:
+      message: Attempting to close LiquidTag 'render' before LiquidTag 'if' was closed
+      start: [0, 0]
+      text: "{% if a %}"
+  - name: should correctly report the position of branches (1)
+    source: "{% if a %} <div>A</div> {% elsif b %} <span>B</span> {% else %} {% if C %}{% endif %} {% endif %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if a %} <div>A</div> {% elsif b %} <span>B</span> {% else %} {% if C %}{% endif %} {% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if a %}" }
+          blockEndPosition: { start: [0, 86], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "a " }
+          position: { start: [0, 0], text: "{% if a %} <div>A</div> {% elsif b %} <span>B</span> {% else %} {% if C %}{% endif %} {% endif %}" }
+          markup:
+            type: VariableLookup
+            name: a
+            position: { start: [0, 6], text: a }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 10], text: "" }
+              blockStartPosition: { start: [0, 10], text: "" }
+              blockEndPosition: { start: [0, 24], text: "" }
+              position: { start: [0, 10], text: " <div>A</div> " }
+              children:
+                - type: HtmlElement
+                  blockStartPosition: { start: [0, 11], text: <div> }
+                  blockEndPosition: { start: [0, 17], text: </div> }
+                  position: { start: [0, 11], text: <div>A</div> }
+                  name:
+                    - type: TextNode
+                      value: div
+                      position: { start: [0, 12], text: div }
+                  attributes: []
+                  children:
+                    - type: TextNode
+                      value: A
+                      position: { start: [0, 16], text: A }
+            - type: LiquidBranch
+              name: elsif
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 33], text: "b " }
+              blockStartPosition: { start: [0, 24], text: "{% elsif b %}" }
+              blockEndPosition: { start: [0, 53], text: "" }
+              position: { start: [0, 24], text: "{% elsif b %} <span>B</span> " }
+              markup:
+                type: VariableLookup
+                name: b
+                position: { start: [0, 33], text: b }
+                lookups: []
+                lookupModes: []
+              children:
+                - type: HtmlElement
+                  blockStartPosition: { start: [0, 38], text: <span> }
+                  blockEndPosition: { start: [0, 45], text: </span> }
+                  position: { start: [0, 38], text: <span>B</span> }
+                  name:
+                    - type: TextNode
+                      value: span
+                      position: { start: [0, 39], text: span }
+                  attributes: []
+                  children:
+                    - type: TextNode
+                      value: B
+                      position: { start: [0, 44], text: B }
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 61], text: "" }
+              blockStartPosition: { start: [0, 53], text: "{% else %}" }
+              blockEndPosition: { start: [0, 86], text: "" }
+              position: { start: [0, 53], text: "{% else %} {% if C %}{% endif %} " }
+              children:
+                - type: LiquidTag
+                  name: if
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  delimiterWhitespaceStart: ""
+                  delimiterWhitespaceEnd: ""
+                  blockStartPosition: { start: [0, 64], text: "{% if C %}" }
+                  blockEndPosition: { start: [0, 74], text: "{% endif %}" }
+                  markupPosition: { start: [0, 70], text: "C " }
+                  position: { start: [0, 64], text: "{% if C %}{% endif %}" }
+                  markup:
+                    type: VariableLookup
+                    name: C
+                    position: { start: [0, 70], text: C }
+                    lookups: []
+                    lookupModes: []
+                  children:
+                    - type: LiquidBranch
+                      name: null
+                      markup: ""
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      markupPosition: { start: [0, 74], text: "" }
+                      blockStartPosition: { start: [0, 74], text: "" }
+                      blockEndPosition: { start: [0, 74], text: "" }
+                      position: { start: [0, 74], text: "" }
+                      children: []
+  - name: should correctly report the position of branches (2)
+    source: "{% if a %} <div>A</div> {% elsif b %} <span>B</span> {% else %} {% if C %}{% endif %} {% endif %}"
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if a %} <div>A</div> {% elsif b %} <span>B</span> {% else %} {% if C %}{% endif %} {% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if a %}" }
+          blockEndPosition: { start: [0, 86], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "a " }
+          position: { start: [0, 0], text: "{% if a %} <div>A</div> {% elsif b %} <span>B</span> {% else %} {% if C %}{% endif %} {% endif %}" }
+          markup:
+            type: VariableLookup
+            name: a
+            position: { start: [0, 6], text: a }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 10], text: "" }
+              blockStartPosition: { start: [0, 10], text: "" }
+              blockEndPosition: { start: [0, 24], text: "" }
+              position: { start: [0, 10], text: " <div>A</div> " }
+              children:
+                - type: TextNode
+                  value: <div>A</div>
+                  position: { start: [0, 11], text: <div>A</div> }
+            - type: LiquidBranch
+              name: elsif
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 33], text: "b " }
+              blockStartPosition: { start: [0, 24], text: "{% elsif b %}" }
+              blockEndPosition: { start: [0, 53], text: "" }
+              position: { start: [0, 24], text: "{% elsif b %} <span>B</span> " }
+              markup:
+                type: VariableLookup
+                name: b
+                position: { start: [0, 33], text: b }
+                lookups: []
+                lookupModes: []
+              children:
+                - type: TextNode
+                  value: <span>B</span>
+                  position: { start: [0, 38], text: <span>B</span> }
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 61], text: "" }
+              blockStartPosition: { start: [0, 53], text: "{% else %}" }
+              blockEndPosition: { start: [0, 86], text: "" }
+              position: { start: [0, 53], text: "{% else %} {% if C %}{% endif %} " }
+              children:
+                - type: LiquidTag
+                  name: if
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  delimiterWhitespaceStart: ""
+                  delimiterWhitespaceEnd: ""
+                  blockStartPosition: { start: [0, 64], text: "{% if C %}" }
+                  blockEndPosition: { start: [0, 74], text: "{% endif %}" }
+                  markupPosition: { start: [0, 70], text: "C " }
+                  position: { start: [0, 64], text: "{% if C %}{% endif %}" }
+                  markup:
+                    type: VariableLookup
+                    name: C
+                    position: { start: [0, 70], text: C }
+                    lookups: []
+                    lookupModes: []
+                  children:
+                    - type: LiquidBranch
+                      name: null
+                      markup: ""
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      markupPosition: { start: [0, 74], text: "" }
+                      blockStartPosition: { start: [0, 74], text: "" }
+                      blockEndPosition: { start: [0, 74], text: "" }
+                      position: { start: [0, 74], text: "" }
+                      children: []
+  - name: should parse unknown tag as base case
+    source: "{% unknown_tag %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% unknown_tag %}" }
+      children:
+        - type: LiquidTag
+          name: unknown_tag
+          markup: ""
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% unknown_tag %}" }
+          markupPosition: { start: [0, 15], text: "" }
+          position: { start: [0, 0], text: "{% unknown_tag %}" }
+  - name: should parse unknown tag with markup
+    source: "{% unknown_tag foo bar %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% unknown_tag foo bar %}" }
+      children:
+        - type: LiquidTag
+          name: unknown_tag
+          markup: foo bar
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% unknown_tag foo bar %}" }
+          markupPosition: { start: [0, 15], text: "foo bar " }
+          position: { start: [0, 0], text: "{% unknown_tag foo bar %}" }
+  - name: "should expose inline comment raw markup for {% # hello %}"
+    source: "{% # hello %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% # hello %}" }
+      children:
+        - type: LiquidTag
+          name: "#"
+          markup: hello
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% # hello %}" }
+          markupPosition: { start: [0, 4], text: " hello " }
+          position: { start: [0, 0], text: "{% # hello %}" }
+  - name: "should expose inline comment raw markup for {% #ok foo %}"
+    source: |-
+      {% #ok
+      foo %}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% #ok
+          foo %}
+      children:
+        - type: LiquidTag
+          name: "#"
+          markup: |-
+            ok
+            foo
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% #ok
+              foo %}
+          markupPosition:
+            start: [0, 4]
+            text: |-
+              ok
+              foo 
+          position:
+            start: [0, 0]
+            text: |-
+              {% #ok
+              foo %}
+  - name: should parse known standalone echo
+    source: '{% echo "hi" %}'
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% echo "hi" %}' }
+      children:
+        - type: LiquidTag
+          name: echo
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: '{% echo "hi" %}' }
+          markupPosition: { start: [0, 8], text: '"hi" ' }
+          position: { start: [0, 0], text: '{% echo "hi" %}' }
+          markup:
+            type: LiquidVariable
+            rawSource: '"hi"'
+            position: { start: [0, 8], text: '"hi" ' }
+            expression:
+              type: String
+              single: false
+              value: hi
+              position: { start: [0, 8], text: '"hi"' }
+            filters: []
+  - name: should parse known standalone assign
+    source: '{% assign x = "hello" %}'
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% assign x = "hello" %}' }
+      children:
+        - type: LiquidTag
+          name: assign
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: '{% assign x = "hello" %}' }
+          markupPosition: { start: [0, 10], text: 'x = "hello" ' }
+          position: { start: [0, 0], text: '{% assign x = "hello" %}' }
+          markup:
+            type: AssignMarkup
+            name: x
+            position: { start: [0, 10], text: 'x = "hello" ' }
+            value:
+              type: LiquidVariable
+              rawSource: '"hello"'
+              position: { start: [0, 14], text: '"hello" ' }
+              expression:
+                type: String
+                single: false
+                value: hello
+                position: { start: [0, 14], text: '"hello"' }
+              filters: []
+  - name: should parse known standalone render
+    source: '{% render "snippet" %}'
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% render "snippet" %}' }
+      children:
+        - type: LiquidTag
+          name: render
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: '{% render "snippet" %}' }
+          markupPosition: { start: [0, 10], text: '"snippet" ' }
+          position: { start: [0, 0], text: '{% render "snippet" %}' }
+          markup:
+            type: RenderMarkup
+            variable: null
+            alias: null
+            position: { start: [0, 10], text: '"snippet" ' }
+            snippet:
+              type: String
+              single: false
+              value: snippet
+              position: { start: [0, 10], text: '"snippet"' }
+            args: []
+  - name: should fall back to base case for invalid markup (tolerant)
+    source: "{% assign !bad %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% assign !bad %}" }
+      children:
+        - type: LiquidTag
+          name: assign
+          markup: "!bad"
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% assign !bad %}" }
+          markupPosition: { start: [0, 10], text: "!bad " }
+          position: { start: [0, 0], text: "{% assign !bad %}" }
+          reason: Expected Equality but found EndOfString ()
+  - name: should handle whitespace stripping
+    source: '{%- echo "hi" -%}'
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{%- echo "hi" -%}' }
+      children:
+        - type: LiquidTag
+          name: echo
+          whitespaceStart: "-"
+          whitespaceEnd: "-"
+          blockStartPosition: { start: [0, 0], text: '{%- echo "hi" -%}' }
+          markupPosition: { start: [0, 9], text: '"hi" ' }
+          position: { start: [0, 0], text: '{%- echo "hi" -%}' }
+          markup:
+            type: LiquidVariable
+            rawSource: '"hi"'
+            position: { start: [0, 9], text: '"hi" ' }
+            expression:
+              type: String
+              single: false
+              value: hi
+              position: { start: [0, 9], text: '"hi"' }
+            filters: []
+  - name: should have correct position for tag node
+    source: before{% echo "x" %}after
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: 'before{% echo "x" %}after' }
+      children:
+        - type: TextNode
+          value: before
+          position: { start: [0, 0], text: before }
+        - type: LiquidTag
+          name: echo
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 6], text: '{% echo "x" %}' }
+          markupPosition: { start: [0, 14], text: '"x" ' }
+          position: { start: [0, 6], text: '{% echo "x" %}' }
+          markup:
+            type: LiquidVariable
+            rawSource: '"x"'
+            position: { start: [0, 14], text: '"x" ' }
+            expression:
+              type: String
+              single: false
+              value: x
+              position: { start: [0, 14], text: '"x"' }
+            filters: []
+        - type: TextNode
+          value: after
+          position: { start: [0, 20], text: after }
+  - name: should produce text before and after a tag
+    source: hello {% echo "x" %} world
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: 'hello {% echo "x" %} world' }
+      children:
+        - type: TextNode
+          value: hello
+          position: { start: [0, 0], text: hello }
+        - type: LiquidTag
+          name: echo
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 6], text: '{% echo "x" %}' }
+          markupPosition: { start: [0, 14], text: '"x" ' }
+          position: { start: [0, 6], text: '{% echo "x" %}' }
+          markup:
+            type: LiquidVariable
+            rawSource: '"x"'
+            position: { start: [0, 14], text: '"x" ' }
+            expression:
+              type: String
+              single: false
+              value: x
+              position: { start: [0, 14], text: '"x"' }
+            filters: []
+        - type: TextNode
+          value: world
+          position: { start: [0, 21], text: world }
+  - name: should parse multiple tags
+    source: '{% echo "a" %}{% assign x = "b" %}'
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% echo "a" %}{% assign x = "b" %}' }
+      children:
+        - type: LiquidTag
+          name: echo
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: '{% echo "a" %}' }
+          markupPosition: { start: [0, 8], text: '"a" ' }
+          position: { start: [0, 0], text: '{% echo "a" %}' }
+          markup:
+            type: LiquidVariable
+            rawSource: '"a"'
+            position: { start: [0, 8], text: '"a" ' }
+            expression:
+              type: String
+              single: false
+              value: a
+              position: { start: [0, 8], text: '"a"' }
+            filters: []
+        - type: LiquidTag
+          name: assign
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 14], text: '{% assign x = "b" %}' }
+          markupPosition: { start: [0, 24], text: 'x = "b" ' }
+          position: { start: [0, 14], text: '{% assign x = "b" %}' }
+          markup:
+            type: AssignMarkup
+            name: x
+            position: { start: [0, 24], text: 'x = "b" ' }
+            value:
+              type: LiquidVariable
+              rawSource: '"b"'
+              position: { start: [0, 28], text: '"b" ' }
+              expression:
+                type: String
+                single: false
+                value: b
+                position: { start: [0, 28], text: '"b"' }
+              filters: []
+  - name: should work with toLiquidAST
+    source: '{% echo "x" %}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% echo "x" %}' }
+      children:
+        - type: LiquidTag
+          name: echo
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: '{% echo "x" %}' }
+          markupPosition: { start: [0, 8], text: '"x" ' }
+          position: { start: [0, 0], text: '{% echo "x" %}' }
+          markup:
+            type: LiquidVariable
+            rawSource: '"x"'
+            position: { start: [0, 8], text: '"x" ' }
+            expression:
+              type: String
+              single: false
+              value: x
+              position: { start: [0, 8], text: '"x"' }
+            filters: []

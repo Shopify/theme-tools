@@ -153,19 +153,15 @@ export function parseLineBlockTag(
     reason = e instanceof Error ? e.message : 'unknown error';
   }
 
-  const endTagLength = 3 + envelope.tagName.length; // 'end' + tagName
-
   if (def.branches.length === 0) {
-    const { children, endNameOffset } = parseLineBlockBody(parser, envelope.tagName, ctx);
-    const endPosition: Position = { start: endNameOffset, end: endNameOffset + endTagLength };
+    const { children, endPosition } = parseLineBlockBody(parser, envelope.tagName, ctx);
     if (markupParsed) {
       return makeLiquidTagNamed(envelope, markup, children, endPosition, { start: '', end: '' });
     }
     return makeLiquidTagBaseCase(envelope, children, endPosition, { start: '', end: '' }, reason);
   }
 
-  const { branches, endNameOffset } = parseLineBranchedBody(parser, envelope.tagName, def, ctx);
-  const endPosition: Position = { start: endNameOffset, end: endNameOffset + endTagLength };
+  const { branches, endPosition } = parseLineBranchedBody(parser, envelope.tagName, def, ctx);
   if (markupParsed) {
     return makeLiquidTagNamed(envelope, markup, branches, endPosition, { start: '', end: '' });
   }
@@ -282,7 +278,7 @@ export function parseLineBlockBody(
   parser: LineParserDelegate,
   parentName: string,
   ctx: LiquidLineContext,
-): { children: LiquidStatement[]; endNameOffset: number } {
+): { children: LiquidStatement[]; endPosition: Position } {
   const children: LiquidStatement[] = [];
 
   while (ctx.index < ctx.lines.length) {
@@ -290,7 +286,8 @@ export function parseLineBlockBody(
 
     if (line.tagName === `end${parentName}`) {
       ctx.index++;
-      return { children, endNameOffset: line.nameOffset };
+      const endPosition = { start: line.nameOffset, end: line.nameOffset + line.tagName.length };
+      return { children, endPosition };
     }
 
     ctx.index++;
@@ -298,8 +295,9 @@ export function parseLineBlockBody(
   }
 
   if (parser.lineAllowUnclosedDocumentNode) {
-    const endNameOffset = ctx.lines.length > 0 ? ctx.lines[ctx.lines.length - 1].lineEnd : 0;
-    return { children, endNameOffset };
+    // An unclosed block ends where its last line does, as at the top level.
+    const end = ctx.lines.length > 0 ? ctx.lines[ctx.lines.length - 1].lineEnd : 0;
+    return { children, endPosition: { start: end, end } };
   }
 
   throw new LiquidHTMLASTParsingError(
@@ -316,7 +314,7 @@ export function parseLineBranchedBody(
   parentName: string,
   def: TagDefinitionBlock,
   ctx: LiquidLineContext,
-): { branches: LiquidBranch[]; endNameOffset: number } {
+): { branches: LiquidBranch[]; endPosition: Position } {
   const branches: LiquidBranch[] = [];
   const bodyStart = ctx.index > 0 ? ctx.lines[ctx.index - 1].lineEnd : 0;
   let currentBranch: LiquidBranchUnnamed | LiquidBranchNamed = makeLiquidBranchUnnamed(
@@ -338,7 +336,8 @@ export function parseLineBranchedBody(
       );
       branches.push(currentBranch);
       ctx.index++;
-      return { branches, endNameOffset: line.nameOffset };
+      const endPosition = { start: line.nameOffset, end: line.nameOffset + line.tagName.length };
+      return { branches, endPosition };
     }
 
     if (isBranchName(line.tagName) && def.branches.includes(line.tagName)) {
@@ -371,16 +370,16 @@ export function parseLineBranchedBody(
   }
 
   if (parser.lineAllowUnclosedDocumentNode) {
-    const endNameOffset = ctx.lines.length > 0 ? ctx.lines[ctx.lines.length - 1].lineEnd : 0;
+    const end = ctx.lines.length > 0 ? ctx.lines[ctx.lines.length - 1].lineEnd : 0;
     finalizeBranch(
       currentBranch,
       currentChildren,
-      endNameOffset,
+      end,
       parser.getSource(),
       parser.lineParseHtml ? ChildFilterMode.StripEdges : ChildFilterMode.Syntactic,
     );
     branches.push(currentBranch);
-    return { branches, endNameOffset };
+    return { branches, endPosition: { start: end, end } };
   }
 
   throw new LiquidHTMLASTParsingError(

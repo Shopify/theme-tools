@@ -622,10 +622,9 @@ function isLeftTrimmingOpen(
 
 function liquidTagBodyStartsWithWhitespace(parser: HtmlParserDelegate): boolean {
   const source = parser.getSource();
-  const count = parser.tokenCount();
   let inTag = false;
   let trimNext = false;
-  for (let i = parser.getPosition(); i < count; i++) {
+  for (let i = parser.getPosition(); parser.hasToken(i); i++) {
     const tok = parser.tokenAt(i);
     switch (tok.type) {
       case TokenType.LiquidTagOpen:
@@ -683,7 +682,6 @@ export function peekHtmlCloseTagMatches(
 export function scanForHtmlCloseTag(parser: ParserBase, tagName: string): number {
   const lowerName = tagName.toLowerCase();
   const source = parser.getSource();
-  const tokenCount = parser.tokenCount();
   const pos = parser.getPosition();
 
   // Depth-balance nested same-name elements so the OUTER close tag is
@@ -693,12 +691,12 @@ export function scanForHtmlCloseTag(parser: ParserBase, tagName: string): number
   // The scan begins after the outer open tag has been consumed, so the outer
   // open is never counted. Mirrors `scanForEndTagNested`.
   let depth = 0;
-  for (let i = pos; i < tokenCount; i++) {
+  for (let i = pos; parser.hasToken(i); i++) {
     const token = parser.tokenAt(i);
 
     if (token.type === TokenType.HtmlTagOpen) {
       const textIdx = i + 1;
-      if (textIdx >= tokenCount) continue;
+      if (!parser.hasToken(textIdx)) continue;
       if (parser.tokenAt(textIdx).type !== TokenType.Text) continue;
       const trimmed = source
         .slice(parser.tokenAt(textIdx).start, parser.tokenAt(textIdx).end)
@@ -713,7 +711,7 @@ export function scanForHtmlCloseTag(parser: ParserBase, tagName: string): number
     // The tokenizer splits whitespace inside a tag into Text tokens of its own,
     // so compare the whole run: `</script marker>` (NBSP) is body text, not a close.
     let end = i + 1;
-    while (end < tokenCount && parser.tokenAt(end).type === TokenType.Text) end++;
+    while (parser.hasToken(end) && parser.tokenAt(end).type === TokenType.Text) end++;
     if (end === i + 1) continue;
     const text = source.slice(token.end, parser.tokenAt(end - 1).end);
     if (text.trim().toLowerCase() === lowerName) {

@@ -63,6 +63,31 @@ export interface TokenizeOptions {
 
 export function tokenize(source: string, options: TokenizeOptions = {}): Token[] {
   const tokens: Token[] = [];
+  const tokenizer = createTokenizer(source, tokens);
+  tokenizer.restart(0, options);
+  tokenizer.fill(Infinity);
+  return tokens;
+}
+
+/**
+ * `tokenize`, run on demand. `ParserBase.resliceTokensFrom` uses it to
+ * re-tokenize the rest of a document only as far as the parser reads.
+ */
+export interface Tokenizer {
+  /**
+   * Start over at `start`, as if `source` began there; tokens keep their
+   * offsets in `source`.
+   */
+  restart(start: number, options?: TokenizeOptions): void;
+
+  /**
+   * Add tokens until there are more than `index` of them, or until the input
+   * runs out, which adds `EndOfInput`. Returns whether input remains.
+   */
+  fill(index: number): boolean;
+}
+
+export function createTokenizer(source: string, tokens: Token[]): Tokenizer {
   const modeStack: Mode[] = [];
   let mode = Mode.Default as Mode;
   let pos = 0;
@@ -70,21 +95,12 @@ export function tokenize(source: string, options: TokenizeOptions = {}): Token[]
   // Whether the pending Text run is whitespace. Only HtmlTag mode reads it.
   let textIsSpace = false;
   let quoteChar = '';
-
-  // Resume inside a quoted attribute value when reslicing a suffix that begins
-  // mid-attribute (e.g. `...{% endraw %}">` straddled by a stray `{{`). The
-  // enclosing HtmlTag mode is kept beneath QuotedValue so popping on the
-  // closing quote correctly emits the attribute close and trailing `>`.
-  if (options.insideQuotedAttribute) {
-    quoteChar = options.insideQuotedAttribute;
-    modeStack.push(Mode.HtmlTag);
-    mode = Mode.QuotedValue;
-  } else if (options.insideHtmlTag) {
-    // Resume inside the attribute list of an open tag. The empty mode stack
-    // means the closing `>` pops back to `Default`, so the rest of the suffix
-    // (`>ok</div>`) tokenizes as normal document content.
-    mode = Mode.HtmlTag;
-  }
+  let ended = false;
+  // The last search for `}}`: where it started, and where it found one (-1 for
+  // nowhere). Restarts after raw tags can land inside the same unclosed `{{`
+  // again and again, and this keeps each from searching the rest anew.
+  let closeSearchFrom = Infinity;
+  let closeFound = -1;
 
   function ch(offset: number): string {
     const i = pos + offset;
@@ -121,17 +137,53 @@ export function tokenize(source: string, options: TokenizeOptions = {}): Token[]
     if (textStart === -1) textStart = pos;
   }
 
-  // YAML frontmatter: only at position 0
-  if (!options.skipFrontmatter && (match('---\n') || match('---\r\n'))) {
-    const searchStart = source.indexOf('\n', 0) + 1;
-    const closeIdx = source.indexOf('\n---', searchStart);
-    if (closeIdx !== -1) {
-      let end = closeIdx + 4; // after \n---
-      // Include trailing newline/CRLF
-      if (end < source.length && source[end] === '\r') end++;
-      if (end < source.length && source[end] === '\n') end++;
-      tokens.push({ type: TokenType.YamlFrontmatter, start: 0, end });
-      pos = end;
+  /**
+   * Where the `-}}` or `}}` that closes Liquid output at `pos` begins, or the
+   * end of the input. Neither begins at `pos` itself.
+   */
+  function nextOutputClose(): number {
+    if (pos < closeSearchFrom || (closeFound !== -1 && pos > closeFound)) {
+      closeSearchFrom = pos;
+      closeFound = source.indexOf('}}', pos);
+    }
+    if (closeFound === -1) return source.length;
+    return source[closeFound - 1] === '-' ? closeFound - 1 : closeFound;
+  }
+
+  function restart(start: number, options: TokenizeOptions = {}) {
+    modeStack.length = 0;
+    mode = Mode.Default;
+    pos = start;
+    textStart = -1;
+    ended = false;
+
+    // Resume inside a quoted attribute value when reslicing a suffix that begins
+    // mid-attribute (e.g. `...{% endraw %}">` straddled by a stray `{{`). The
+    // enclosing HtmlTag mode is kept beneath QuotedValue so popping on the
+    // closing quote correctly emits the attribute close and trailing `>`.
+    if (options.insideQuotedAttribute) {
+      quoteChar = options.insideQuotedAttribute;
+      modeStack.push(Mode.HtmlTag);
+      mode = Mode.QuotedValue;
+    } else if (options.insideHtmlTag) {
+      // Resume inside the attribute list of an open tag. The empty mode stack
+      // means the closing `>` pops back to `Default`, so the rest of the suffix
+      // (`>ok</div>`) tokenizes as normal document content.
+      mode = Mode.HtmlTag;
+    }
+
+    // YAML frontmatter: only at position 0
+    if (!options.skipFrontmatter && (match('---\n') || match('---\r\n'))) {
+      const searchStart = source.indexOf('\n', pos) + 1;
+      const closeIdx = source.indexOf('\n---', searchStart);
+      if (closeIdx !== -1) {
+        let end = closeIdx + 4; // after \n---
+        // Include trailing newline/CRLF
+        if (end < source.length && source[end] === '\r') end++;
+        if (end < source.length && source[end] === '\n') end++;
+        tokens.push({ type: TokenType.YamlFrontmatter, start: pos, end });
+        pos = end;
+      }
     }
   }
 
@@ -160,153 +212,161 @@ export function tokenize(source: string, options: TokenizeOptions = {}): Token[]
     return false;
   }
 
-  while (pos < source.length) {
-    switch (mode) {
-      case Mode.LiquidTag: {
-        if (match('-%}')) {
-          emit(TokenType.LiquidTagClose, 3);
-          popMode();
-        } else if (match('%}')) {
-          emit(TokenType.LiquidTagClose, 2);
-          popMode();
-        } else {
-          startText();
-          pos++;
-        }
-        break;
-      }
-
-      case Mode.LiquidVariableOutput: {
-        if (match('-}}')) {
-          emit(TokenType.LiquidVariableOutputClose, 3);
-          popMode();
-        } else if (match('}}')) {
-          emit(TokenType.LiquidVariableOutputClose, 2);
-          popMode();
-        } else {
-          startText();
-          pos++;
-        }
-        break;
-      }
-
-      case Mode.Default: {
-        if (scanLiquidOpen()) continue;
-
-        if (match('<!--')) {
-          emit(TokenType.HtmlCommentOpen, 4);
-          continue;
+  function fill(index: number): boolean {
+    while (pos < source.length && tokens.length <= index) {
+      switch (mode) {
+        case Mode.LiquidTag: {
+          if (match('-%}')) {
+            emit(TokenType.LiquidTagClose, 3);
+            popMode();
+          } else if (match('%}')) {
+            emit(TokenType.LiquidTagClose, 2);
+            popMode();
+          } else {
+            startText();
+            pos++;
+          }
+          break;
         }
 
-        if (match('-->')) {
-          emit(TokenType.HtmlCommentClose, 3);
-          continue;
+        case Mode.LiquidVariableOutput: {
+          if (match('-}}')) {
+            emit(TokenType.LiquidVariableOutputClose, 3);
+            popMode();
+          } else if (match('}}')) {
+            emit(TokenType.LiquidVariableOutputClose, 2);
+            popMode();
+          } else {
+            // Jump to the close, rather than step to it a character at a time.
+            startText();
+            pos = nextOutputClose();
+          }
+          break;
         }
 
-        if (match('<!')) {
-          emit(TokenType.HtmlDoctypeOpen, 2);
-          pushMode(Mode.HtmlTag);
-          continue;
-        }
+        case Mode.Default: {
+          if (scanLiquidOpen()) continue;
 
-        if (match('</')) {
-          const after = ch(2);
-          if (/[a-zA-Z]/.test(after) || after === '{') {
-            emit(TokenType.HtmlCloseTagOpen, 2);
+          if (match('<!--')) {
+            emit(TokenType.HtmlCommentOpen, 4);
+            continue;
+          }
+
+          if (match('-->')) {
+            emit(TokenType.HtmlCommentClose, 3);
+            continue;
+          }
+
+          if (match('<!')) {
+            emit(TokenType.HtmlDoctypeOpen, 2);
             pushMode(Mode.HtmlTag);
             continue;
           }
+
+          if (match('</')) {
+            const after = ch(2);
+            if (/[a-zA-Z]/.test(after) || after === '{') {
+              emit(TokenType.HtmlCloseTagOpen, 2);
+              pushMode(Mode.HtmlTag);
+              continue;
+            }
+          }
+
+          if (ch(0) === '<') {
+            const after = ch(1);
+            if (/[a-zA-Z]/.test(after) || after === '{') {
+              emit(TokenType.HtmlTagOpen, 1);
+              pushMode(Mode.HtmlTag);
+              continue;
+            }
+          }
+
+          startText();
+          pos++;
+          break;
         }
 
-        if (ch(0) === '<') {
-          const after = ch(1);
-          if (/[a-zA-Z]/.test(after) || after === '{') {
-            emit(TokenType.HtmlTagOpen, 1);
-            pushMode(Mode.HtmlTag);
+        case Mode.HtmlTag: {
+          if (scanLiquidOpen()) continue;
+
+          if (match('/>')) {
+            emit(TokenType.HtmlSelfClose, 2);
+            popMode();
             continue;
           }
+
+          if (ch(0) === '>') {
+            emit(TokenType.HtmlTagClose, 1);
+            popMode();
+            continue;
+          }
+
+          if (ch(0) === '=') {
+            emit(TokenType.HtmlEquals, 1);
+            continue;
+          }
+
+          // Accept straight quotes and curly (smart) quotes as attribute-value
+          // openers. Curly quotes get normalized to straight quotes downstream;
+          // recognizing them here (HTML scope only — Liquid tokenization is
+          // untouched) stops the value from splitting at interior spaces.
+          if (
+            ch(0) === '"' ||
+            ch(0) === "'" ||
+            ch(0) === '“' ||
+            ch(0) === '”' ||
+            ch(0) === '‘' ||
+            ch(0) === '’'
+          ) {
+            quoteChar = ch(0);
+            emit(TokenType.HtmlQuoteOpen, 1);
+            pushMode(Mode.QuotedValue);
+            continue;
+          }
+
+          // A run of whitespace inside a tag is a Text token of its own, never
+          // part of a name or an unquoted value. It plays the part of ohm's
+          // `space`, which the grammar's syntactic attribute rules skipped
+          // implicitly (`attr = "v"` is one attribute).
+          const isSpace = /\s/.test(ch(0));
+          if (textStart !== -1 && isSpace !== textIsSpace) flushText();
+          if (textStart === -1) textIsSpace = isSpace;
+          startText();
+          pos++;
+          break;
         }
 
-        startText();
-        pos++;
-        break;
+        case Mode.QuotedValue: {
+          if (scanLiquidOpen()) continue;
+
+          // Curly quotes are directional, so a value opened with a left curly
+          // quote closes on its right partner (and vice-versa); straight quotes
+          // close on themselves.
+          if (ch(0) === closingQuoteFor(quoteChar) || ch(0) === quoteChar) {
+            emit(TokenType.HtmlQuoteClose, 1);
+            popMode();
+            continue;
+          }
+
+          startText();
+          pos++;
+          break;
+        }
+
+        default:
+          assertNever(mode);
       }
-
-      case Mode.HtmlTag: {
-        if (scanLiquidOpen()) continue;
-
-        if (match('/>')) {
-          emit(TokenType.HtmlSelfClose, 2);
-          popMode();
-          continue;
-        }
-
-        if (ch(0) === '>') {
-          emit(TokenType.HtmlTagClose, 1);
-          popMode();
-          continue;
-        }
-
-        if (ch(0) === '=') {
-          emit(TokenType.HtmlEquals, 1);
-          continue;
-        }
-
-        // Accept straight quotes and curly (smart) quotes as attribute-value
-        // openers. Curly quotes get normalized to straight quotes downstream;
-        // recognizing them here (HTML scope only — Liquid tokenization is
-        // untouched) stops the value from splitting at interior spaces.
-        if (
-          ch(0) === '"' ||
-          ch(0) === "'" ||
-          ch(0) === '“' ||
-          ch(0) === '”' ||
-          ch(0) === '‘' ||
-          ch(0) === '’'
-        ) {
-          quoteChar = ch(0);
-          emit(TokenType.HtmlQuoteOpen, 1);
-          pushMode(Mode.QuotedValue);
-          continue;
-        }
-
-        // A run of whitespace inside a tag is a Text token of its own, never
-        // part of a name or an unquoted value. It plays the part of ohm's
-        // `space`, which the grammar's syntactic attribute rules skipped
-        // implicitly (`attr = "v"` is one attribute).
-        const isSpace = /\s/.test(ch(0));
-        if (textStart !== -1 && isSpace !== textIsSpace) flushText();
-        if (textStart === -1) textIsSpace = isSpace;
-        startText();
-        pos++;
-        break;
-      }
-
-      case Mode.QuotedValue: {
-        if (scanLiquidOpen()) continue;
-
-        // Curly quotes are directional, so a value opened with a left curly
-        // quote closes on its right partner (and vice-versa); straight quotes
-        // close on themselves.
-        if (ch(0) === closingQuoteFor(quoteChar) || ch(0) === quoteChar) {
-          emit(TokenType.HtmlQuoteClose, 1);
-          popMode();
-          continue;
-        }
-
-        startText();
-        pos++;
-        break;
-      }
-
-      default:
-        assertNever(mode);
     }
+    if (pos < source.length) return true;
+    if (!ended) {
+      flushText();
+      tokens.push({ type: TokenType.EndOfInput, start: source.length, end: source.length });
+      ended = true;
+    }
+    return false;
   }
 
-  flushText();
-  tokens.push({ type: TokenType.EndOfInput, start: source.length, end: source.length });
-  return tokens;
+  return { restart, fill };
 }
 
 enum Mode {
