@@ -106,9 +106,15 @@ async function getProvidedParams(context: Context<SourceCodeType.LiquidHtml>) {
     const sourceCode = toSourceCode(sourceUri, source);
     if (sourceCode.type !== SourceCodeType.LiquidHtml || !isLiquidHtmlNode(sourceCode.ast)) return;
 
-    visit(sourceCode.ast, {
-      RenderMarkup(node: RenderMarkup) {
+    let hasIncludeCaller = false;
+    visit<SourceCodeType.LiquidHtml, void>(sourceCode.ast, {
+      RenderMarkup(node: RenderMarkup, ancestors) {
         if (getSnippetName(node) !== snippetName) return;
+        const tag = ancestors.at(-1);
+        if (tag?.type === NodeTypes.LiquidTag && tag.name === 'include') {
+          hasIncludeCaller = true;
+          return;
+        }
         node.args.forEach(({ name }) => providedParams.add(name));
         if (node.variable) {
           const variableName = node.alias?.value ?? snippetName.split('/').pop();
@@ -116,6 +122,10 @@ async function getProvidedParams(context: Context<SourceCodeType.LiquidHtml>) {
         }
       },
     });
+
+    // Includes inherit their caller's variables, so explicit arguments alone
+    // cannot establish that a documented parameter is never supplied.
+    if (hasIncludeCaller) return;
   }
 
   return providedParams;
