@@ -10,6 +10,7 @@ function parseForMarkup(_name: string, markup: MarkupParser, _parser: Parser): F
     throw new Error("Expected 'in'");
   }
   const collection = markup.valueExpression();
+  // Liquid only accepts `reversed` here, before any named argument.
   const reversed = markup.id('reversed');
 
   // Named args in for/tablerow accept optional commas between args
