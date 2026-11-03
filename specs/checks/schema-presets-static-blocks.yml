@@ -1,0 +1,130 @@
+check: SchemaPresetsStaticBlocks
+severity: error
+cases:
+  - name: 'reports no errors when there are {% content_for "block" ... %} for each static block in the preset blocks array'
+    files:
+      sections/file.liquid: |-
+        {% content_for "block" type:"text" id: "block-1" %}
+        {% content_for "block" type:"icon" id: "block-2" %}
+        {% schema %}
+        {
+          "name": "Test section",
+          "blocks": [{"type": "@theme"}],
+          "presets": [
+            {
+              "name": "Preset with two static blocks",
+              "blocks": [
+                {
+                  "type": "text",
+                  "static": true,
+                  "id": "block-1"
+                },
+                {
+                  "type": "icon",
+                  "static": true,
+                  "id": "block-2"
+                }
+              ]
+            }
+          ]
+        }
+        {% endschema %}
+  - name: 'reports an error when there are {% content_for "block" ... %} missing for static blocks in the preset blocks array'
+    files:
+      sections/file.liquid: |-
+        {% content_for "block" type:"text" id:"block-1" %}
+        {% comment %} here we are missing the other content_for block for block-2 {% endcomment %}
+        {% schema %}
+        {
+          "name": "Test section",
+          "blocks": [{"type": "@theme"}],
+          "presets": [
+            {
+              "name": "Preset with two static blocks",
+              "blocks": [
+                {
+                  "type": "text",
+                  "static": true,
+                  "id": "block-1"
+                },
+                {
+                  "type": "icon",
+                  "static": true,
+                  "id": "block-2"
+                }
+              ]
+            }
+          ]
+        }
+        {% endschema %}
+    offenses:
+      - file: sections/file.liquid
+        message: 'Static block block-2 is missing a corresponding content_for "block" tag.'
+        start: [15, 8]
+        highlight: |-
+          {
+                    "type": "icon",
+                    "static": true,
+                    "id": "block-2"
+                  }
+  - name: 'reports no errors when there are {% content_for "block" ... %} for each static block in the preset blocks hash'
+    files:
+      sections/file.liquid: |-
+        {% content_for "block" type:"text" id: "block-1" %}
+        {% content_for "block" type:"icon" id: "block-2" %}
+        {% schema %}
+        {
+          "name": "Test section",
+          "blocks": [{"type": "@theme"}],
+          "presets": [
+            {
+              "name": "Preset with two static blocks",
+              "blocks": {
+                "block-1": {
+                  "type": "text",
+                  "static": true
+                },
+                "block-2": {
+                  "type": "icon",
+                  "static": true
+                }
+              }
+            }
+          ]
+        }
+        {% endschema %}
+  - name: 'reports an error when there are {% content_for "block" ... %} missing for static blocks in the preset blocks hash'
+    files:
+      sections/file.liquid: |-
+        {% content_for "block" type:"text" id:"block-1" %}
+        {% comment %} here we are missing the other content_for block for block-2 {% endcomment %}
+        {% schema %}
+        {
+          "name": "Test section",
+          "blocks": [{"type": "@theme"}],
+          "presets": [
+            {
+              "name": "Preset with two static blocks",
+              "blocks": {
+                "block-1": {
+                  "type": "text",
+                  "static": true
+                },
+                "block-2": {
+                  "type": "icon",
+                  "static": true
+                }
+              }
+            }
+          ]
+        }
+        {% endschema %}
+    offenses:
+      - file: sections/file.liquid
+        message: 'Static block block-2 is missing a corresponding content_for "block" tag.'
+        start: [14, 19]
+        highlight: |-
+          {
+                    "type": "icon",
+                    "static": true
+                  }

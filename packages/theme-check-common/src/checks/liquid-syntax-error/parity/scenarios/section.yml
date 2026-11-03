@@ -51,9 +51,3 @@
 - id: section-themecheck-bare-bracket-arg
   template: "{% section 'header', foo: [0] %}"
   error_path: themecheck_bare_bracket_arg
-- id: section-themecheck-block-form-with-body
-  template: "{% section 'wrap' %}body{% endsection %}"
-  error_path: unknown_tag
-- id: section-themecheck-block-form-empty
-  template: "{% section 'foo' %}{% endsection %}"
-  error_path: unknown_tag

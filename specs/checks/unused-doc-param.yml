@@ -1,0 +1,231 @@
+check: UnusedDocParam
+severity: warning
+cases:
+  - name: should not report a warning when a variable is defined and used
+    files:
+      file.liquid: |
+        {% doc %}
+          @param param1 - Example param
+        {% enddoc %}
+
+        {{ param1 }}
+  - name: should report a warning with suggestions when a variable is defined but not used
+    files:
+      file.liquid: |
+        {% doc %}
+          @param param1 - Example param
+          @param param2 - Example param
+        {% enddoc %}
+
+        {{ param1 }}
+    offenses:
+      - file: file.liquid
+        message: "The parameter 'param2' is defined but not used in this file."
+        start: [2, 2]
+        highlight: "@param param2 - Example param"
+        suggest:
+          - message: "Remove unused parameter 'param2'"
+            result: |
+              {% doc %}
+                @param param1 - Example param
+                
+              {% enddoc %}
+
+              {{ param1 }}
+  - name: should apply suggestion when a variable is defined but not used
+    files:
+      file.liquid: |
+        {% doc %}
+          @param param1 - Example param
+          @param param2 - Example param
+        {% enddoc %}
+
+        {{ param1 }}
+    offenses:
+      - file: file.liquid
+        message: "The parameter 'param2' is defined but not used in this file."
+        start: [2, 2]
+        highlight: "@param param2 - Example param"
+        suggest:
+          - message: "Remove unused parameter 'param2'"
+            result: |
+              {% doc %}
+                @param param1 - Example param
+                
+              {% enddoc %}
+
+              {{ param1 }}
+  - name: "should report a warning when a variable is defined but not used outside 'for' loop context"
+    files:
+      file.liquid: |
+        {% doc %}
+          @param param1 - Example param
+          @param param2 - Example param
+        {% enddoc %}
+
+        {{ param1 }}
+
+        {% for param2 in array %}
+          {{ param2 }}
+        {% endfor %}
+    offenses:
+      - file: file.liquid
+        message: "The parameter 'param2' is defined but not used in this file."
+        start: [2, 2]
+        highlight: "@param param2 - Example param"
+        suggest:
+          - message: "Remove unused parameter 'param2'"
+            result: |
+              {% doc %}
+                @param param1 - Example param
+                
+              {% enddoc %}
+
+              {{ param1 }}
+
+              {% for param2 in array %}
+                {{ param2 }}
+              {% endfor %}
+  - name: "should report a warning when a variable is defined but not used outside 'tablerow' loop context"
+    files:
+      file.liquid: |
+        {% doc %}
+          @param param1 - Example param
+          @param param2 - Example param
+        {% enddoc %}
+
+        {{ param1 }}
+
+        {% tablerow param2 in array %}
+          {{ param2 }}
+        {% endtablerow %}
+    offenses:
+      - file: file.liquid
+        message: "The parameter 'param2' is defined but not used in this file."
+        start: [2, 2]
+        highlight: "@param param2 - Example param"
+        suggest:
+          - message: "Remove unused parameter 'param2'"
+            result: |
+              {% doc %}
+                @param param1 - Example param
+                
+              {% enddoc %}
+
+              {{ param1 }}
+
+              {% tablerow param2 in array %}
+                {{ param2 }}
+              {% endtablerow %}
+  - name: does not report parameters inherited by an include caller
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+        @param {string} [style] - Example style
+        {% enddoc %}
+        {{ style }}
+      templates/product.liquid: "{% assign style = 'default' %}{% include 'card' %}"
+    references:
+      - source: templates/product.liquid
+        target: snippets/card.liquid
+  - name: does not report inherited parameters with both render and include callers
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+        @param {string} [style] - Example style
+        {% enddoc %}
+        {{ style }}
+      templates/product.liquid:
+        "{% render 'card' %}{% assign style = 'default' %}{% include 'card'
+        %}"
+    references:
+      - source: templates/product.liquid
+        target: snippets/card.liquid
+  - name: still reports unused parameters inside a snippet with an include caller
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+        @param {string} [style] - Example style
+        {% enddoc %}
+      templates/product.liquid: "{% assign style = 'default' %}{% include 'card' %}"
+    references:
+      - source: templates/product.liquid
+        target: snippets/card.liquid
+    offenses:
+      - file: snippets/card.liquid
+        message: The parameter 'style' is defined but not used in this file.
+        start:
+          - 1
+          - 0
+        highlight: "@param {string} [style] - Example style"
+        suggest:
+          - message: Remove unused parameter 'style'
+            result: |
+              {% doc %}
+
+              {% enddoc %}
+  - name: reports a used parameter never passed to this snippet
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+        @param {string} [style] - Example style
+        {% enddoc %}
+        {{ style }}
+      templates/product.liquid: "{% render 'card' %}"
+    references:
+      - source: templates/product.liquid
+        target: snippets/card.liquid
+    offenses:
+      - file: snippets/card.liquid
+        message: The parameter 'style' is never passed to this snippet.
+        start:
+          - 1
+          - 0
+        highlight: "@param {string} [style] - Example style"
+  - name: does not let an unrelated include hide an unprovided parameter
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+        @param {string} [style] - Example style
+        {% enddoc %}
+        {{ style }}
+      templates/product.liquid: "{% include 'other' %}{% render 'card' %}"
+    references:
+      - source: templates/product.liquid
+        target: snippets/card.liquid
+    offenses:
+      - file: snippets/card.liquid
+        message: The parameter 'style' is never passed to this snippet.
+        start:
+          - 1
+          - 0
+        highlight: "@param {string} [style] - Example style"
+  - name: does not report a used parameter passed by one of multiple render calls
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+        @param {string} [style] - Example style
+        {% enddoc %}
+        {{ style }}
+      templates/product.liquid: |-
+        {% render 'card' %}
+        {% render 'card', style: 'default' %}
+    references:
+      - source: templates/product.liquid
+        target: snippets/card.liquid
+  - name: recognises render aliases and the default snippet variable
+    files:
+      snippets/card.liquid: |
+        {% doc %}
+          @param {string} [item] - Rendered item
+          @param {string} [card] - Default render variable
+        {% enddoc %}
+        {{ item }}
+        {{ card }}
+      templates/product.liquid: |-
+        {% render 'card' with product as item %}
+        {% render 'card' for products as item %}
+        {% render 'card' with product %}
+    references:
+      - source: templates/product.liquid
+        target: snippets/card.liquid

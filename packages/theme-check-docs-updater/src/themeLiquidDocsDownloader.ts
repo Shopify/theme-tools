@@ -72,6 +72,7 @@ export async function download(path: string, log: Logger) {
       });
   } else {
     const res = await fetch(path);
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}: ${path}`);
     return res.text();
   }
 }
@@ -167,6 +168,29 @@ export async function downloadThemeLiquidDocs(destination: string, log: Logger) 
         }),
     ),
   );
+}
+
+/**
+ * Downloads the docs into a new folder, then swaps it in for destination. So
+ * destination always holds one complete set: a failed download leaves it as it
+ * was, and files removed upstream don't linger.
+ */
+export async function replaceThemeLiquidDocs(destination: string, log: Logger) {
+  const tmp = `${destination}.${process.pid}.${Math.random().toString(36).slice(2)}`;
+  const staged = `${tmp}.tmp`;
+  const old = `${tmp}.old`;
+  try {
+    await downloadThemeLiquidDocs(staged, log);
+    // ponytail: two renames, not one atomic swap. Readers in between fall back to the bundled docs.
+    await fs.rename(destination, old).catch((error) => {
+      if (error.code !== 'ENOENT') throw error;
+    });
+    await fs.rename(staged, destination);
+  } finally {
+    // Downloads still in flight after a failure may write into staged while it's removed.
+    await fs.rm(staged, { recursive: true, force: true, maxRetries: 3 });
+    await fs.rm(old, { recursive: true, force: true, maxRetries: 3 });
+  }
 }
 
 function unique<T>(array: T[]): T[] {

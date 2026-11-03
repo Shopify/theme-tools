@@ -1,0 +1,81 @@
+check: VariableName
+severity: warning
+cases:
+  - name: should report an error when a variable is using wrong naming format
+    files:
+      file.liquid: '{% assign variableName = "value" %}'
+    offenses:
+      - file: file.liquid
+        message: "The variable 'variableName' uses wrong naming format"
+        start: [0, 10]
+        highlight: 'variableName = "value" '
+        suggest:
+          - message: "Change variable 'variableName' to 'variable_name'"
+            result: '{% assign variable_name = "value" %}'
+  - name: should not report an error when a variable is using correct format
+    files:
+      file.liquid: '{% assign variable_name = "value" %}'
+  - name: should allow a single leading underscore
+    files:
+      file.liquid: |
+        {% assign _variable_name = "value" %}
+        {% capture _captured_value %}value{% endcapture %}
+  - name: should still enforce the naming format after a leading underscore
+    files:
+      file.liquid: '{% assign _variableName = "value" %}'
+    offenses:
+      - file: file.liquid
+        message: "The variable '_variableName' uses wrong naming format"
+        start: [0, 10]
+        highlight: '_variableName = "value" '
+        suggest:
+          - message: "Change variable '_variableName' to '_variable_name'"
+            result: '{% assign _variable_name = "value" %}'
+  - name: should reject more than one leading underscore
+    files:
+      file.liquid: '{% assign __variable_name = "value" %}'
+    offenses:
+      - file: file.liquid
+        message: "The variable '__variable_name' uses wrong naming format"
+        start: [0, 10]
+        highlight: '__variable_name = "value" '
+        suggest:
+          - message: "Change variable '__variable_name' to '_variable_name'"
+            result: '{% assign _variable_name = "value" %}'
+  - name: should provide a suggestion to change the variable naming
+    files:
+      file.liquid: '{% assign variableName = "value" %}'
+    offenses:
+      - file: file.liquid
+        message: "The variable 'variableName' uses wrong naming format"
+        start: [0, 10]
+        highlight: 'variableName = "value" '
+        suggest:
+          - message: "Change variable 'variableName' to 'variable_name'"
+            result: '{% assign variable_name = "value" %}'
+  - name: should fix the code by changing the wrongly formatted variable
+    files:
+      file.liquid: '{% assign variableName = "value" %}'
+    offenses:
+      - file: file.liquid
+        message: "The variable 'variableName' uses wrong naming format"
+        start: [0, 10]
+        highlight: 'variableName = "value" '
+        suggest:
+          - message: "Change variable 'variableName' to 'variable_name'"
+            result: '{% assign variable_name = "value" %}'
+  - name: should not complain about numbers inside variable names (1)
+    files:
+      file.liquid: '{% assign first_b_2_b_model = "value" %}'
+  - name: should not complain about numbers inside variable names (2)
+    files:
+      file.liquid: '{% assign first_b2_b_model = "value" %}'
+  - name: should not complain about numbers inside variable names (3)
+    files:
+      file.liquid: '{% assign first_b2b_model = "value" %}'
+  - name: should not complain about numbers inside variable names (4)
+    files:
+      file.liquid: '{% assign first_3_d_model = "value" %}'
+  - name: should not complain about numbers inside variable names (5)
+    files:
+      file.liquid: '{% assign first3_d_model = "value" %}'

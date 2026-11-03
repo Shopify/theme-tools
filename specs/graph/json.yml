@@ -1,0 +1,180 @@
+cases:
+  - name: "follows a template's sections and blocks, and its layout"
+    files:
+      layout/theme.liquid: |
+        {{ content_for_layout }}
+      templates/index.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "custom-section",
+              "blocks": [
+                {
+                  "type": "group",
+                  "blocks": {
+                    "text1": {
+                      "type": "text",
+                    },
+                  },
+                  "block_order": [
+                    "text1"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      sections/custom-section.liquid: |
+        {% schema %}
+        {
+          "name": "custom section",
+          "blocks": [{ "type": "@theme" }, { "type": "_private" }]
+        }
+        {% endschema %}
+      blocks/group.liquid: |
+        Group
+      blocks/text.liquid: |
+        hello world
+
+        {% schema %}
+        {
+          "name": "Text block",
+          "settings": [],
+          "presets": [
+            {
+              "name": "Text block",
+              "category": "Text"
+            }
+          ]
+        }
+        {% endschema %}
+    edges:
+      - source: sections/custom-section.liquid
+        start: [3, 15]
+        text: '"type": "@theme"'
+        target: blocks/group.liquid
+        type: indirect
+      - source: sections/custom-section.liquid
+        start: [3, 15]
+        text: '"type": "@theme"'
+        target: blocks/text.liquid
+        type: indirect
+      - source: sections/custom-section.liquid
+        start: [3, 37]
+        text: '"type": "_private"'
+        target: blocks/_private.liquid
+      - source: templates/index.json
+        target: layout/theme.liquid
+        type: indirect
+      - source: templates/index.json
+        start: [3, 6]
+        text: '"type": "custom-section"'
+        target: sections/custom-section.liquid
+      - source: templates/index.json
+        start: [6, 10]
+        text: '"type": "group"'
+        target: blocks/group.liquid
+      - source: templates/index.json
+        start: [9, 14]
+        text: '"type": "text"'
+        target: blocks/text.liquid
+  - name: "follows a section group's sections, blocks and static blocks"
+    files:
+      layout/theme.liquid: |
+        {% sections 'header-group' %}
+      sections/header-group.json: |
+        {
+          "sections": {
+            "header": {
+              "type": "custom-section",
+              "block_order": [
+                "header",
+                "render-static",
+              ],
+              "blocks": {
+                "header": {
+                  "type": "group",
+                  "block_order": [
+                    "text"
+                  ],
+                  "blocks": {
+                    "text": {
+                      "type": "text",
+                    }
+                  },
+                },
+                "render-static": {
+                  "type": "render-static",
+                  "blocks": {
+                    "static": {
+                      "type": "_static",
+                      "static": true,
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "order": [
+            "header"
+          ],
+        }
+      sections/custom-section.liquid: |
+        {% schema %}
+        {
+          "name": "custom section",
+          "blocks": [{ "type": "@theme" }, { "type": "_private" }]
+        }
+        {% endschema %}
+      blocks/group.liquid: |
+        Group
+      blocks/text.liquid: |
+        Text
+      blocks/render-static.liquid: |
+        Render static
+      blocks/_static.liquid: |
+        Static
+    edges:
+      - source: layout/theme.liquid
+        start: [0, 0]
+        text: "{% sections 'header-group' %}"
+        target: sections/header-group.json
+      - source: sections/custom-section.liquid
+        start: [3, 15]
+        text: '"type": "@theme"'
+        target: blocks/group.liquid
+        type: indirect
+      - source: sections/custom-section.liquid
+        start: [3, 15]
+        text: '"type": "@theme"'
+        target: blocks/render-static.liquid
+        type: indirect
+      - source: sections/custom-section.liquid
+        start: [3, 15]
+        text: '"type": "@theme"'
+        target: blocks/text.liquid
+        type: indirect
+      - source: sections/custom-section.liquid
+        start: [3, 37]
+        text: '"type": "_private"'
+        target: blocks/_private.liquid
+      - source: sections/header-group.json
+        start: [3, 6]
+        text: '"type": "custom-section"'
+        target: sections/custom-section.liquid
+      - source: sections/header-group.json
+        start: [10, 10]
+        text: '"type": "group"'
+        target: blocks/group.liquid
+      - source: sections/header-group.json
+        start: [16, 14]
+        text: '"type": "text"'
+        target: blocks/text.liquid
+      - source: sections/header-group.json
+        start: [21, 10]
+        text: '"type": "render-static"'
+        target: blocks/render-static.liquid
+      - source: sections/header-group.json
+        start: [24, 14]
+        text: '"type": "_static"'
+        target: blocks/_static.liquid

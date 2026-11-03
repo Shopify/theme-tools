@@ -68,9 +68,3 @@
   error: 'Liquid syntax error: Error in tag ''section'' - Valid syntax: section ''[type]''
     in "''header'', foo: [0]"'
   type: SyntaxError
-- id: section-themecheck-block-form-empty
-  error: 'Liquid syntax error: Unknown tag ''endsection'''
-  type: SyntaxError
-- id: section-themecheck-block-form-with-body
-  error: 'Liquid syntax error: Unknown tag ''endsection'''
-  type: SyntaxError

@@ -1,0 +1,1826 @@
+cases:
+  - name: should parse nested unclosed tags
+    source: "{% for a in b %} <div> {% if true %}"
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% for a in b %} <div> {% if true %}" }
+      children:
+        - type: LiquidTag
+          name: for
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% for a in b %}" }
+          blockEndPosition: { start: [0, 36], text: "" }
+          markupPosition: { start: [0, 7], text: "a in b " }
+          position: { start: [0, 0], text: "{% for a in b %} <div> {% if true %}" }
+          markup:
+            type: ForMarkup
+            variableName: a
+            reversed: false
+            position: { start: [0, 7], text: "a in b " }
+            collection:
+              type: VariableLookup
+              name: b
+              position: { start: [0, 12], text: b }
+              lookups: []
+              lookupModes: []
+            args: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 16], text: "" }
+              blockStartPosition: { start: [0, 16], text: "" }
+              blockEndPosition: { start: [0, 36], text: "" }
+              position: { start: [0, 16], text: " <div> {% if true %}" }
+              children:
+                - type: TextNode
+                  value: <div>
+                  position: { start: [0, 17], text: <div> }
+                - type: LiquidTag
+                  name: if
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  delimiterWhitespaceStart: ""
+                  delimiterWhitespaceEnd: ""
+                  blockStartPosition: { start: [0, 23], text: "{% if true %}" }
+                  blockEndPosition: { start: [0, 36], text: "" }
+                  markupPosition: { start: [0, 29], text: "true " }
+                  position: { start: [0, 23], text: "{% if true %}" }
+                  markup:
+                    type: LiquidLiteral
+                    keyword: "true"
+                    value: true
+                    position: { start: [0, 29], text: "true" }
+                  children:
+                    - type: LiquidBranch
+                      name: null
+                      markup: ""
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      markupPosition: { start: [0, 36], text: "" }
+                      blockStartPosition: { start: [0, 36], text: "" }
+                      blockEndPosition: { start: [0, 36], text: "" }
+                      position: { start: [0, 36], text: "" }
+                      children: []
+  - name: should parse unclosed conditions with assignments
+    source: "
+
+      \        {%- liquid
+
+      \          assign var1 = product
+
+
+      \          if use_variant
+
+      \            assign var2 = var1
+
+      \            assign var3 = var2
+
+      \        -%}
+
+      \      "
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {%- liquid
+
+          \          assign var1 = product
+
+
+          \          if use_variant
+
+          \            assign var2 = var1
+
+          \            assign var3 = var2
+
+          \        -%}
+
+          \      "
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: "-"
+          whitespaceEnd: "-"
+          blockStartPosition:
+            start: [1, 8]
+            text: |-
+              {%- liquid
+                        assign var1 = product
+
+                        if use_variant
+                          assign var2 = var1
+                          assign var3 = var2
+                      -%}
+          markupPosition:
+            start: [1, 18]
+            text: "
+
+              \          assign var1 = product
+
+
+              \          if use_variant
+
+              \            assign var2 = var1
+
+              \            assign var3 = var2
+
+              \        "
+          position:
+            start: [1, 8]
+            text: |-
+              {%- liquid
+                        assign var1 = product
+
+                        if use_variant
+                          assign var2 = var1
+                          assign var3 = var2
+                      -%}
+          markup:
+            - type: LiquidTag
+              name: assign
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [2, 10], text: assign var1 = product }
+              markupPosition: { start: [2, 17], text: var1 = product }
+              position: { start: [2, 10], text: assign var1 = product }
+              markup:
+                type: AssignMarkup
+                name: var1
+                position: { start: [2, 17], text: var1 = product }
+                value:
+                  type: LiquidVariable
+                  rawSource: product
+                  position: { start: [2, 24], text: product }
+                  expression:
+                    type: VariableLookup
+                    name: product
+                    position: { start: [2, 24], text: product }
+                    lookups: []
+                    lookupModes: []
+                  filters: []
+            - type: LiquidTag
+              name: if
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [4, 10], text: if use_variant }
+              blockEndPosition: { start: [6, 30], text: "" }
+              markupPosition: { start: [4, 13], text: use_variant }
+              position:
+                start: [4, 10]
+                text: |-
+                  if use_variant
+                              assign var2 = var1
+                              assign var3 = var2
+              markup:
+                type: VariableLookup
+                name: use_variant
+                position: { start: [4, 13], text: use_variant }
+                lookups: []
+                lookupModes: []
+              children:
+                - type: LiquidBranch
+                  name: null
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [4, 24], text: "" }
+                  blockStartPosition: { start: [4, 24], text: "" }
+                  blockEndPosition: { start: [6, 30], text: "" }
+                  position:
+                    start: [4, 24]
+                    text: |2-
+                      
+                                  assign var2 = var1
+                                  assign var3 = var2
+                  children:
+                    - type: LiquidTag
+                      name: assign
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      blockStartPosition: { start: [5, 12], text: assign var2 = var1 }
+                      markupPosition: { start: [5, 19], text: var2 = var1 }
+                      position: { start: [5, 12], text: assign var2 = var1 }
+                      markup:
+                        type: AssignMarkup
+                        name: var2
+                        position: { start: [5, 19], text: var2 = var1 }
+                        value:
+                          type: LiquidVariable
+                          rawSource: var1
+                          position: { start: [5, 26], text: var1 }
+                          expression:
+                            type: VariableLookup
+                            name: var1
+                            position: { start: [5, 26], text: var1 }
+                            lookups: []
+                            lookupModes: []
+                          filters: []
+                    - type: LiquidTag
+                      name: assign
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      blockStartPosition: { start: [6, 12], text: assign var3 = var2 }
+                      markupPosition: { start: [6, 19], text: var3 = var2 }
+                      position: { start: [6, 12], text: assign var3 = var2 }
+                      markup:
+                        type: AssignMarkup
+                        name: var3
+                        position: { start: [6, 19], text: var3 = var2 }
+                        value:
+                          type: LiquidVariable
+                          rawSource: var2
+                          position: { start: [6, 26], text: var2 }
+                          expression:
+                            type: VariableLookup
+                            name: var2
+                            position: { start: [6, 26], text: var2 }
+                            lookups: []
+                            lookupModes: []
+                          filters: []
+  - name: should tolerate unclosed Liquid tags in {% liquid %} blocks
+    source: |-
+      {%- liquid
+        assign var1 = product
+        if use_variant
+          assign var2 = var1
+      -%}
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {%- liquid
+            assign var1 = product
+            if use_variant
+              assign var2 = var1
+          -%}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: "-"
+          whitespaceEnd: "-"
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {%- liquid
+                assign var1 = product
+                if use_variant
+                  assign var2 = var1
+              -%}
+          markupPosition:
+            start: [0, 10]
+            text: |2
+              
+                assign var1 = product
+                if use_variant
+                  assign var2 = var1
+          position:
+            start: [0, 0]
+            text: |-
+              {%- liquid
+                assign var1 = product
+                if use_variant
+                  assign var2 = var1
+              -%}
+          markup:
+            - type: LiquidTag
+              name: assign
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [1, 2], text: assign var1 = product }
+              markupPosition: { start: [1, 9], text: var1 = product }
+              position: { start: [1, 2], text: assign var1 = product }
+              markup:
+                type: AssignMarkup
+                name: var1
+                position: { start: [1, 9], text: var1 = product }
+                value:
+                  type: LiquidVariable
+                  rawSource: product
+                  position: { start: [1, 16], text: product }
+                  expression:
+                    type: VariableLookup
+                    name: product
+                    position: { start: [1, 16], text: product }
+                    lookups: []
+                    lookupModes: []
+                  filters: []
+            - type: LiquidTag
+              name: if
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              delimiterWhitespaceStart: ""
+              delimiterWhitespaceEnd: ""
+              blockStartPosition: { start: [2, 2], text: if use_variant }
+              blockEndPosition: { start: [3, 22], text: "" }
+              markupPosition: { start: [2, 5], text: use_variant }
+              position:
+                start: [2, 2]
+                text: |-
+                  if use_variant
+                      assign var2 = var1
+              markup:
+                type: VariableLookup
+                name: use_variant
+                position: { start: [2, 5], text: use_variant }
+                lookups: []
+                lookupModes: []
+              children:
+                - type: LiquidBranch
+                  name: null
+                  markup: ""
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [2, 16], text: "" }
+                  blockStartPosition: { start: [2, 16], text: "" }
+                  blockEndPosition: { start: [3, 22], text: "" }
+                  position:
+                    start: [2, 16]
+                    text: |2-
+                      
+                          assign var2 = var1
+                  children:
+                    - type: LiquidTag
+                      name: assign
+                      whitespaceStart: ""
+                      whitespaceEnd: ""
+                      blockStartPosition: { start: [3, 4], text: assign var2 = var1 }
+                      markupPosition: { start: [3, 11], text: var2 = var1 }
+                      position: { start: [3, 4], text: assign var2 = var1 }
+                      markup:
+                        type: AssignMarkup
+                        name: var2
+                        position: { start: [3, 11], text: var2 = var1 }
+                        value:
+                          type: LiquidVariable
+                          rawSource: var1
+                          position: { start: [3, 18], text: var1 }
+                          expression:
+                            type: VariableLookup
+                            name: var1
+                            position: { start: [3, 18], text: var1 }
+                            lookups: []
+                            lookupModes: []
+                          filters: []
+  - name: should parse unclosed tables with assignments
+    source: "
+
+      \        {%- liquid
+
+      \          assign var1 = product
+
+      \        -%}
+
+      \        <table>
+
+      \          {% tablerow var2 in collections.first.products %}
+
+      \            {% assign var3 = var2 %}
+
+      \            {{ var3.title }}
+
+      \      "
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {%- liquid
+
+          \          assign var1 = product
+
+          \        -%}
+
+          \        <table>
+
+          \          {% tablerow var2 in collections.first.products %}
+
+          \            {% assign var3 = var2 %}
+
+          \            {{ var3.title }}
+
+          \      "
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: "-"
+          whitespaceEnd: "-"
+          blockStartPosition:
+            start: [1, 8]
+            text: |-
+              {%- liquid
+                        assign var1 = product
+                      -%}
+          markupPosition:
+            start: [1, 18]
+            text: "
+
+              \          assign var1 = product
+
+              \        "
+          position:
+            start: [1, 8]
+            text: |-
+              {%- liquid
+                        assign var1 = product
+                      -%}
+          markup:
+            - type: LiquidTag
+              name: assign
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [2, 10], text: assign var1 = product }
+              markupPosition: { start: [2, 17], text: var1 = product }
+              position: { start: [2, 10], text: assign var1 = product }
+              markup:
+                type: AssignMarkup
+                name: var1
+                position: { start: [2, 17], text: var1 = product }
+                value:
+                  type: LiquidVariable
+                  rawSource: product
+                  position: { start: [2, 24], text: product }
+                  expression:
+                    type: VariableLookup
+                    name: product
+                    position: { start: [2, 24], text: product }
+                    lookups: []
+                    lookupModes: []
+                  filters: []
+        - type: TextNode
+          value: <table>
+          position: { start: [4, 8], text: <table> }
+        - type: LiquidTag
+          name: tablerow
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [5, 10], text: "{% tablerow var2 in collections.first.products %}" }
+          blockEndPosition: { start: [8, 6], text: "" }
+          markupPosition: { start: [5, 22], text: "var2 in collections.first.products " }
+          position:
+            start: [5, 10]
+            text: "{% tablerow var2 in collections.first.products %}
+
+              \            {% assign var3 = var2 %}
+
+              \            {{ var3.title }}
+
+              \      "
+          markup:
+            type: ForMarkup
+            variableName: var2
+            reversed: false
+            position: { start: [5, 22], text: "var2 in collections.first.products " }
+            collection:
+              type: VariableLookup
+              name: collections
+              position: { start: [5, 30], text: collections.first.products }
+              lookups:
+                - type: String
+                  value: first
+                  position: { start: [5, 42], text: first }
+                - type: String
+                  value: products
+                  position: { start: [5, 48], text: products }
+              lookupModes: [bareword, bareword]
+            args: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [5, 59], text: "" }
+              blockStartPosition: { start: [5, 59], text: "" }
+              blockEndPosition: { start: [8, 6], text: "" }
+              position:
+                start: [5, 59]
+                text: "
+
+                  \            {% assign var3 = var2 %}
+
+                  \            {{ var3.title }}
+
+                  \      "
+              children:
+                - type: LiquidTag
+                  name: assign
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  blockStartPosition: { start: [6, 12], text: "{% assign var3 = var2 %}" }
+                  markupPosition: { start: [6, 22], text: "var3 = var2 " }
+                  position: { start: [6, 12], text: "{% assign var3 = var2 %}" }
+                  markup:
+                    type: AssignMarkup
+                    name: var3
+                    position: { start: [6, 22], text: "var3 = var2 " }
+                    value:
+                      type: LiquidVariable
+                      rawSource: var2
+                      position: { start: [6, 29], text: "var2 " }
+                      expression:
+                        type: VariableLookup
+                        name: var2
+                        position: { start: [6, 29], text: var2 }
+                        lookups: []
+                        lookupModes: []
+                      filters: []
+                - type: LiquidVariableOutput
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [7, 14], text: " var3.title " }
+                  position: { start: [7, 12], text: "{{ var3.title }}" }
+                  markup:
+                    type: LiquidVariable
+                    rawSource: var3.title
+                    position: { start: [7, 15], text: "var3.title " }
+                    expression:
+                      type: VariableLookup
+                      name: var3
+                      position: { start: [7, 15], text: var3.title }
+                      lookups:
+                        - type: String
+                          value: title
+                          position: { start: [7, 20], text: title }
+                      lookupModes: [bareword]
+                    filters: []
+  - name: should allow for dangling html open tags inside branches when the conditions are right (1)
+    source: "
+
+      \        {% if condition %}
+
+      \          <section class=\"unclosed\">
+
+      \        {% endif %}
+
+      \      "
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {% if condition %}
+
+          \          <section class=\"unclosed\">
+
+          \        {% endif %}
+
+          \      "
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 8], text: "{% if condition %}" }
+          blockEndPosition: { start: [3, 8], text: "{% endif %}" }
+          markupPosition: { start: [1, 14], text: "condition " }
+          position:
+            start: [1, 8]
+            text: |-
+              {% if condition %}
+                        <section class="unclosed">
+                      {% endif %}
+          markup:
+            type: VariableLookup
+            name: condition
+            position: { start: [1, 14], text: condition }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [1, 26], text: "" }
+              blockStartPosition: { start: [1, 26], text: "" }
+              blockEndPosition: { start: [3, 8], text: "" }
+              position:
+                start: [1, 26]
+                text: "
+
+                  \          <section class=\"unclosed\">
+
+                  \        "
+              children:
+                - type: HtmlElement
+                  blockStartPosition: { start: [2, 10], text: <section class="unclosed"> }
+                  blockEndPosition: { start: [3, 8], text: "" }
+                  position:
+                    start: [2, 10]
+                    text: "<section class=\"unclosed\">
+
+                      \        "
+                  name:
+                    - type: TextNode
+                      value: section
+                      position: { start: [2, 11], text: section }
+                  attributes:
+                    - type: AttrDoubleQuoted
+                      attributePosition: { start: [2, 26], text: unclosed }
+                      position: { start: [2, 19], text: class="unclosed" }
+                      name:
+                        - type: TextNode
+                          value: class
+                          position: { start: [2, 19], text: class }
+                      value:
+                        - type: TextNode
+                          value: unclosed
+                          position: { start: [2, 26], text: unclosed }
+                  children: []
+  - name: should allow for dangling html open tags inside branches when the conditions are right (2)
+    source: "
+
+      \        {% if condition %}
+
+      \          <section class=\"unclosed\">
+
+      \        {% else %}
+
+      \          <section class=\"unclosed\">
+
+      \        {% endif %}
+
+      \      "
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {% if condition %}
+
+          \          <section class=\"unclosed\">
+
+          \        {% else %}
+
+          \          <section class=\"unclosed\">
+
+          \        {% endif %}
+
+          \      "
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 8], text: "{% if condition %}" }
+          blockEndPosition: { start: [5, 8], text: "{% endif %}" }
+          markupPosition: { start: [1, 14], text: "condition " }
+          position:
+            start: [1, 8]
+            text: |-
+              {% if condition %}
+                        <section class="unclosed">
+                      {% else %}
+                        <section class="unclosed">
+                      {% endif %}
+          markup:
+            type: VariableLookup
+            name: condition
+            position: { start: [1, 14], text: condition }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [1, 26], text: "" }
+              blockStartPosition: { start: [1, 26], text: "" }
+              blockEndPosition: { start: [3, 8], text: "" }
+              position:
+                start: [1, 26]
+                text: "
+
+                  \          <section class=\"unclosed\">
+
+                  \        "
+              children:
+                - type: HtmlElement
+                  blockStartPosition: { start: [2, 10], text: <section class="unclosed"> }
+                  blockEndPosition: { start: [3, 8], text: "" }
+                  position:
+                    start: [2, 10]
+                    text: "<section class=\"unclosed\">
+
+                      \        "
+                  name:
+                    - type: TextNode
+                      value: section
+                      position: { start: [2, 11], text: section }
+                  attributes:
+                    - type: AttrDoubleQuoted
+                      attributePosition: { start: [2, 26], text: unclosed }
+                      position: { start: [2, 19], text: class="unclosed" }
+                      name:
+                        - type: TextNode
+                          value: class
+                          position: { start: [2, 19], text: class }
+                      value:
+                        - type: TextNode
+                          value: unclosed
+                          position: { start: [2, 26], text: unclosed }
+                  children: []
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [3, 16], text: "" }
+              blockStartPosition: { start: [3, 8], text: "{% else %}" }
+              blockEndPosition: { start: [5, 8], text: "" }
+              position:
+                start: [3, 8]
+                text: "{% else %}
+
+                  \          <section class=\"unclosed\">
+
+                  \        "
+              children:
+                - type: HtmlElement
+                  blockStartPosition: { start: [4, 10], text: <section class="unclosed"> }
+                  blockEndPosition: { start: [5, 8], text: "" }
+                  position:
+                    start: [4, 10]
+                    text: "<section class=\"unclosed\">
+
+                      \        "
+                  name:
+                    - type: TextNode
+                      value: section
+                      position: { start: [4, 11], text: section }
+                  attributes:
+                    - type: AttrDoubleQuoted
+                      attributePosition: { start: [4, 26], text: unclosed }
+                      position: { start: [4, 19], text: class="unclosed" }
+                      name:
+                        - type: TextNode
+                          value: class
+                          position: { start: [4, 19], text: class }
+                      value:
+                        - type: TextNode
+                          value: unclosed
+                          position: { start: [4, 26], text: unclosed }
+                  children: []
+  - name: should allow for dangling html open tags inside branches when the conditions are right (3)
+    source: "
+
+      \        {% unless condition %}
+
+      \          <section class=\"unclosed\">
+
+      \        {% endunless %}
+
+      \      "
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {% unless condition %}
+
+          \          <section class=\"unclosed\">
+
+          \        {% endunless %}
+
+          \      "
+      children:
+        - type: LiquidTag
+          name: unless
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 8], text: "{% unless condition %}" }
+          blockEndPosition: { start: [3, 8], text: "{% endunless %}" }
+          markupPosition: { start: [1, 18], text: "condition " }
+          position:
+            start: [1, 8]
+            text: |-
+              {% unless condition %}
+                        <section class="unclosed">
+                      {% endunless %}
+          markup:
+            type: VariableLookup
+            name: condition
+            position: { start: [1, 18], text: condition }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [1, 30], text: "" }
+              blockStartPosition: { start: [1, 30], text: "" }
+              blockEndPosition: { start: [3, 8], text: "" }
+              position:
+                start: [1, 30]
+                text: "
+
+                  \          <section class=\"unclosed\">
+
+                  \        "
+              children:
+                - type: HtmlElement
+                  blockStartPosition: { start: [2, 10], text: <section class="unclosed"> }
+                  blockEndPosition: { start: [3, 8], text: "" }
+                  position:
+                    start: [2, 10]
+                    text: "<section class=\"unclosed\">
+
+                      \        "
+                  name:
+                    - type: TextNode
+                      value: section
+                      position: { start: [2, 11], text: section }
+                  attributes:
+                    - type: AttrDoubleQuoted
+                      attributePosition: { start: [2, 26], text: unclosed }
+                      position: { start: [2, 19], text: class="unclosed" }
+                      name:
+                        - type: TextNode
+                          value: class
+                          position: { start: [2, 19], text: class }
+                      value:
+                        - type: TextNode
+                          value: unclosed
+                          position: { start: [2, 26], text: unclosed }
+                  children: []
+  - name: should allow for dangling html open tags inside branches when the conditions are right (4)
+    source: "
+
+      \        {% unless condition %}
+
+      \          <section class=\"unclosed\">
+
+      \        {% else %}
+
+      \          <section class=\"unclosed\">
+
+      \        {% endunless %}
+
+      \      "
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {% unless condition %}
+
+          \          <section class=\"unclosed\">
+
+          \        {% else %}
+
+          \          <section class=\"unclosed\">
+
+          \        {% endunless %}
+
+          \      "
+      children:
+        - type: LiquidTag
+          name: unless
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 8], text: "{% unless condition %}" }
+          blockEndPosition: { start: [5, 8], text: "{% endunless %}" }
+          markupPosition: { start: [1, 18], text: "condition " }
+          position:
+            start: [1, 8]
+            text: |-
+              {% unless condition %}
+                        <section class="unclosed">
+                      {% else %}
+                        <section class="unclosed">
+                      {% endunless %}
+          markup:
+            type: VariableLookup
+            name: condition
+            position: { start: [1, 18], text: condition }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [1, 30], text: "" }
+              blockStartPosition: { start: [1, 30], text: "" }
+              blockEndPosition: { start: [3, 8], text: "" }
+              position:
+                start: [1, 30]
+                text: "
+
+                  \          <section class=\"unclosed\">
+
+                  \        "
+              children:
+                - type: HtmlElement
+                  blockStartPosition: { start: [2, 10], text: <section class="unclosed"> }
+                  blockEndPosition: { start: [3, 8], text: "" }
+                  position:
+                    start: [2, 10]
+                    text: "<section class=\"unclosed\">
+
+                      \        "
+                  name:
+                    - type: TextNode
+                      value: section
+                      position: { start: [2, 11], text: section }
+                  attributes:
+                    - type: AttrDoubleQuoted
+                      attributePosition: { start: [2, 26], text: unclosed }
+                      position: { start: [2, 19], text: class="unclosed" }
+                      name:
+                        - type: TextNode
+                          value: class
+                          position: { start: [2, 19], text: class }
+                      value:
+                        - type: TextNode
+                          value: unclosed
+                          position: { start: [2, 26], text: unclosed }
+                  children: []
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [3, 16], text: "" }
+              blockStartPosition: { start: [3, 8], text: "{% else %}" }
+              blockEndPosition: { start: [5, 8], text: "" }
+              position:
+                start: [3, 8]
+                text: "{% else %}
+
+                  \          <section class=\"unclosed\">
+
+                  \        "
+              children:
+                - type: HtmlElement
+                  blockStartPosition: { start: [4, 10], text: <section class="unclosed"> }
+                  blockEndPosition: { start: [5, 8], text: "" }
+                  position:
+                    start: [4, 10]
+                    text: "<section class=\"unclosed\">
+
+                      \        "
+                  name:
+                    - type: TextNode
+                      value: section
+                      position: { start: [4, 11], text: section }
+                  attributes:
+                    - type: AttrDoubleQuoted
+                      attributePosition: { start: [4, 26], text: unclosed }
+                      position: { start: [4, 19], text: class="unclosed" }
+                      name:
+                        - type: TextNode
+                          value: class
+                          position: { start: [4, 19], text: class }
+                      value:
+                        - type: TextNode
+                          value: unclosed
+                          position: { start: [4, 26], text: unclosed }
+                  children: []
+  - name: should allow for dangling html close tags inside branches when the conditions are right (1)
+    source: "
+
+      \        {% if condition %}
+
+      \          </section>
+
+      \        {% endif %}
+
+      \      "
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {% if condition %}
+
+          \          </section>
+
+          \        {% endif %}
+
+          \      "
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 8], text: "{% if condition %}" }
+          blockEndPosition: { start: [3, 8], text: "{% endif %}" }
+          markupPosition: { start: [1, 14], text: "condition " }
+          position:
+            start: [1, 8]
+            text: |-
+              {% if condition %}
+                        </section>
+                      {% endif %}
+          markup:
+            type: VariableLookup
+            name: condition
+            position: { start: [1, 14], text: condition }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [1, 26], text: "" }
+              blockStartPosition: { start: [1, 26], text: "" }
+              blockEndPosition: { start: [3, 8], text: "" }
+              position:
+                start: [1, 26]
+                text: "\n          </section>\n        "
+              children:
+                - type: HtmlDanglingMarkerClose
+                  blockStartPosition: { start: [2, 10], text: </section> }
+                  position: { start: [2, 10], text: </section> }
+                  name:
+                    - type: TextNode
+                      value: section
+                      position: { start: [2, 12], text: section }
+  - name: should allow for dangling html close tags inside branches when the conditions are right (2)
+    source: "
+
+      \        {% if condition %}
+
+      \          </section>
+
+      \        {% else %}
+
+      \          </main>
+
+      \        {% endif %}
+
+      \      "
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {% if condition %}
+
+          \          </section>
+
+          \        {% else %}
+
+          \          </main>
+
+          \        {% endif %}
+
+          \      "
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 8], text: "{% if condition %}" }
+          blockEndPosition: { start: [5, 8], text: "{% endif %}" }
+          markupPosition: { start: [1, 14], text: "condition " }
+          position:
+            start: [1, 8]
+            text: |-
+              {% if condition %}
+                        </section>
+                      {% else %}
+                        </main>
+                      {% endif %}
+          markup:
+            type: VariableLookup
+            name: condition
+            position: { start: [1, 14], text: condition }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [1, 26], text: "" }
+              blockStartPosition: { start: [1, 26], text: "" }
+              blockEndPosition: { start: [3, 8], text: "" }
+              position:
+                start: [1, 26]
+                text: "\n          </section>\n        "
+              children:
+                - type: HtmlDanglingMarkerClose
+                  blockStartPosition: { start: [2, 10], text: </section> }
+                  position: { start: [2, 10], text: </section> }
+                  name:
+                    - type: TextNode
+                      value: section
+                      position: { start: [2, 12], text: section }
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [3, 16], text: "" }
+              blockStartPosition: { start: [3, 8], text: "{% else %}" }
+              blockEndPosition: { start: [5, 8], text: "" }
+              position:
+                start: [3, 8]
+                text: "{% else %}
+
+                  \          </main>
+
+                  \        "
+              children:
+                - type: HtmlDanglingMarkerClose
+                  blockStartPosition: { start: [4, 10], text: </main> }
+                  position: { start: [4, 10], text: </main> }
+                  name:
+                    - type: TextNode
+                      value: main
+                      position: { start: [4, 12], text: main }
+  - name: should allow for dangling html close tags inside branches when the conditions are right (3)
+    source: "
+
+      \        {% unless condition %}
+
+      \          </section>
+
+      \        {% endunless %}
+
+      \      "
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {% unless condition %}
+
+          \          </section>
+
+          \        {% endunless %}
+
+          \      "
+      children:
+        - type: LiquidTag
+          name: unless
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 8], text: "{% unless condition %}" }
+          blockEndPosition: { start: [3, 8], text: "{% endunless %}" }
+          markupPosition: { start: [1, 18], text: "condition " }
+          position:
+            start: [1, 8]
+            text: |-
+              {% unless condition %}
+                        </section>
+                      {% endunless %}
+          markup:
+            type: VariableLookup
+            name: condition
+            position: { start: [1, 18], text: condition }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [1, 30], text: "" }
+              blockStartPosition: { start: [1, 30], text: "" }
+              blockEndPosition: { start: [3, 8], text: "" }
+              position:
+                start: [1, 30]
+                text: "\n          </section>\n        "
+              children:
+                - type: HtmlDanglingMarkerClose
+                  blockStartPosition: { start: [2, 10], text: </section> }
+                  position: { start: [2, 10], text: </section> }
+                  name:
+                    - type: TextNode
+                      value: section
+                      position: { start: [2, 12], text: section }
+  - name: should allow for dangling html close tags inside branches when the conditions are right (4)
+    source: "
+
+      \        {% unless condition %}
+
+      \          </section>
+
+      \        {% else %}
+
+      \          </main>
+
+      \        {% endunless %}
+
+      \      "
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "
+
+          \        {% unless condition %}
+
+          \          </section>
+
+          \        {% else %}
+
+          \          </main>
+
+          \        {% endunless %}
+
+          \      "
+      children:
+        - type: LiquidTag
+          name: unless
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [1, 8], text: "{% unless condition %}" }
+          blockEndPosition: { start: [5, 8], text: "{% endunless %}" }
+          markupPosition: { start: [1, 18], text: "condition " }
+          position:
+            start: [1, 8]
+            text: |-
+              {% unless condition %}
+                        </section>
+                      {% else %}
+                        </main>
+                      {% endunless %}
+          markup:
+            type: VariableLookup
+            name: condition
+            position: { start: [1, 18], text: condition }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [1, 30], text: "" }
+              blockStartPosition: { start: [1, 30], text: "" }
+              blockEndPosition: { start: [3, 8], text: "" }
+              position:
+                start: [1, 30]
+                text: "\n          </section>\n        "
+              children:
+                - type: HtmlDanglingMarkerClose
+                  blockStartPosition: { start: [2, 10], text: </section> }
+                  position: { start: [2, 10], text: </section> }
+                  name:
+                    - type: TextNode
+                      value: section
+                      position: { start: [2, 12], text: section }
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [3, 16], text: "" }
+              blockStartPosition: { start: [3, 8], text: "{% else %}" }
+              blockEndPosition: { start: [5, 8], text: "" }
+              position:
+                start: [3, 8]
+                text: "{% else %}
+
+                  \          </main>
+
+                  \        "
+              children:
+                - type: HtmlDanglingMarkerClose
+                  blockStartPosition: { start: [4, 10], text: </main> }
+                  position: { start: [4, 10], text: </main> }
+                  name:
+                    - type: TextNode
+                      value: main
+                      position: { start: [4, 12], text: main }
+  - name: should allow unclosed <div> with text child inside if/else
+    source: "{% if cond %}<div>text{% else %}more{% endif %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if cond %}<div>text{% else %}more{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if cond %}" }
+          blockEndPosition: { start: [0, 36], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "cond " }
+          position: { start: [0, 0], text: "{% if cond %}<div>text{% else %}more{% endif %}" }
+          markup:
+            type: VariableLookup
+            name: cond
+            position: { start: [0, 6], text: cond }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 13], text: "" }
+              blockStartPosition: { start: [0, 13], text: "" }
+              blockEndPosition: { start: [0, 22], text: "" }
+              position: { start: [0, 13], text: <div>text }
+              children:
+                - type: HtmlElement
+                  blockStartPosition: { start: [0, 13], text: <div> }
+                  blockEndPosition: { start: [0, 22], text: "" }
+                  position: { start: [0, 13], text: <div>text }
+                  name:
+                    - type: TextNode
+                      value: div
+                      position: { start: [0, 14], text: div }
+                  attributes: []
+                  children:
+                    - type: TextNode
+                      value: text
+                      position: { start: [0, 18], text: text }
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 30], text: "" }
+              blockStartPosition: { start: [0, 22], text: "{% else %}" }
+              blockEndPosition: { start: [0, 36], text: "" }
+              position: { start: [0, 22], text: "{% else %}more" }
+              children:
+                - type: TextNode
+                  value: more
+                  position: { start: [0, 32], text: more }
+  - name: should allow unclosed <div> inside unless
+    source: "{% unless cond %}<div>{% endunless %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% unless cond %}<div>{% endunless %}" }
+      children:
+        - type: LiquidTag
+          name: unless
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% unless cond %}" }
+          blockEndPosition: { start: [0, 22], text: "{% endunless %}" }
+          markupPosition: { start: [0, 10], text: "cond " }
+          position: { start: [0, 0], text: "{% unless cond %}<div>{% endunless %}" }
+          markup:
+            type: VariableLookup
+            name: cond
+            position: { start: [0, 10], text: cond }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 17], text: "" }
+              blockStartPosition: { start: [0, 17], text: "" }
+              blockEndPosition: { start: [0, 22], text: "" }
+              position: { start: [0, 17], text: <div> }
+              children:
+                - type: HtmlElement
+                  blockStartPosition: { start: [0, 17], text: <div> }
+                  blockEndPosition: { start: [0, 22], text: "" }
+                  position: { start: [0, 17], text: <div> }
+                  name:
+                    - type: TextNode
+                      value: div
+                      position: { start: [0, 18], text: div }
+                  attributes: []
+                  children: []
+  - name: should allow unclosed <div> inside case/when
+    source: "{% case x %}{% when y %}<div>{% endcase %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% case x %}{% when y %}<div>{% endcase %}" }
+      children:
+        - type: LiquidTag
+          name: case
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% case x %}" }
+          blockEndPosition: { start: [0, 29], text: "{% endcase %}" }
+          markupPosition: { start: [0, 8], text: "x " }
+          position: { start: [0, 0], text: "{% case x %}{% when y %}<div>{% endcase %}" }
+          markup:
+            type: VariableLookup
+            name: x
+            position: { start: [0, 8], text: x }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 12], text: "" }
+              blockStartPosition: { start: [0, 12], text: "" }
+              blockEndPosition: { start: [0, 12], text: "" }
+              position: { start: [0, 12], text: "" }
+              children: []
+            - type: LiquidBranch
+              name: when
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 20], text: "y " }
+              blockStartPosition: { start: [0, 12], text: "{% when y %}" }
+              blockEndPosition: { start: [0, 29], text: "" }
+              position: { start: [0, 12], text: "{% when y %}<div>" }
+              markup:
+                - type: VariableLookup
+                  name: y
+                  position: { start: [0, 20], text: y }
+                  lookups: []
+                  lookupModes: []
+              children:
+                - type: HtmlElement
+                  blockStartPosition: { start: [0, 24], text: <div> }
+                  blockEndPosition: { start: [0, 29], text: "" }
+                  position: { start: [0, 24], text: <div> }
+                  name:
+                    - type: TextNode
+                      value: div
+                      position: { start: [0, 25], text: div }
+                  attributes: []
+                  children: []
+  - name: "should throw for: {% for x in y %}<div>{% endfor %}"
+    source: "{% for x in y %}<div>{% endfor %}"
+    parse: [html]
+    error:
+      message: Attempting to close LiquidTag 'endfor' before HtmlElement 'div' was closed
+      start: [0, 16]
+      text: <div>
+  - name: "should throw for: {% tablerow x in y %}<div>{% endtablerow %}"
+    source: "{% tablerow x in y %}<div>{% endtablerow %}"
+    parse: [html]
+    error:
+      message: Attempting to close LiquidTag 'endtablerow' before HtmlElement 'div' was closed
+      start: [0, 21]
+      text: <div>
+  - name: 'should throw for: {% form "cart", cart %}<div>{% endform %}'
+    source: '{% form "cart", cart %}<div>{% endform %}'
+    parse: [html]
+    error:
+      message: Attempting to close LiquidTag 'endform' before HtmlElement 'div' was closed
+      start: [0, 23]
+      text: <div>
+  - name: "should throw for: {% capture x %}<div>{% endcapture %}"
+    source: "{% capture x %}<div>{% endcapture %}"
+    parse: [html]
+    error:
+      message: Attempting to close LiquidTag 'endcapture' before HtmlElement 'div' was closed
+      start: [0, 15]
+      text: <div>
+  - name: should produce HtmlDanglingMarkerClose for </section> in if
+    source: "{% if cond %}</section>{% endif %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if cond %}</section>{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if cond %}" }
+          blockEndPosition: { start: [0, 23], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "cond " }
+          position: { start: [0, 0], text: "{% if cond %}</section>{% endif %}" }
+          markup:
+            type: VariableLookup
+            name: cond
+            position: { start: [0, 6], text: cond }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 13], text: "" }
+              blockStartPosition: { start: [0, 13], text: "" }
+              blockEndPosition: { start: [0, 23], text: "" }
+              position: { start: [0, 13], text: </section> }
+              children:
+                - type: HtmlDanglingMarkerClose
+                  blockStartPosition: { start: [0, 13], text: </section> }
+                  position: { start: [0, 13], text: </section> }
+                  name:
+                    - type: TextNode
+                      value: section
+                      position: { start: [0, 15], text: section }
+  - name: should produce HtmlDanglingMarkerClose in both if/else branches
+    source: "{% if cond %}</div>{% else %}</main>{% endif %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if cond %}</div>{% else %}</main>{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if cond %}" }
+          blockEndPosition: { start: [0, 36], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "cond " }
+          position: { start: [0, 0], text: "{% if cond %}</div>{% else %}</main>{% endif %}" }
+          markup:
+            type: VariableLookup
+            name: cond
+            position: { start: [0, 6], text: cond }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 13], text: "" }
+              blockStartPosition: { start: [0, 13], text: "" }
+              blockEndPosition: { start: [0, 19], text: "" }
+              position: { start: [0, 13], text: </div> }
+              children:
+                - type: HtmlDanglingMarkerClose
+                  blockStartPosition: { start: [0, 13], text: </div> }
+                  position: { start: [0, 13], text: </div> }
+                  name:
+                    - type: TextNode
+                      value: div
+                      position: { start: [0, 15], text: div }
+            - type: LiquidBranch
+              name: else
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 27], text: "" }
+              blockStartPosition: { start: [0, 19], text: "{% else %}" }
+              blockEndPosition: { start: [0, 36], text: "" }
+              position: { start: [0, 19], text: "{% else %}</main>" }
+              children:
+                - type: HtmlDanglingMarkerClose
+                  blockStartPosition: { start: [0, 29], text: </main> }
+                  position: { start: [0, 29], text: </main> }
+                  name:
+                    - type: TextNode
+                      value: main
+                      position: { start: [0, 31], text: main }
+  - name: should throw for unclosed <div> at document level
+    source: <div>
+    parse: [html]
+    error:
+      message: Attempting to end parsing before HtmlElement 'div' was closed
+      start: [0, 0]
+      text: <div
+  - name: should throw for unclosed form at branch boundary
+    source: '{% if cond %}{% form "cart" %}{% else %}{% endif %}'
+    parse: [html]
+    error:
+      message: Attempting to open LiquidBranch 'else' before LiquidTag 'form' was closed
+      start: [0, 13]
+      text: '{% form "cart" %}'
+  - name: should parse unclosed element with attributes
+    source: '{% if cond %}<div class="foo" id="bar">{% endif %}'
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% if cond %}<div class="foo" id="bar">{% endif %}' }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if cond %}" }
+          blockEndPosition: { start: [0, 39], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "cond " }
+          position: { start: [0, 0], text: '{% if cond %}<div class="foo" id="bar">{% endif %}' }
+          markup:
+            type: VariableLookup
+            name: cond
+            position: { start: [0, 6], text: cond }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 13], text: "" }
+              blockStartPosition: { start: [0, 13], text: "" }
+              blockEndPosition: { start: [0, 39], text: "" }
+              position: { start: [0, 13], text: <div class="foo" id="bar"> }
+              children:
+                - type: HtmlElement
+                  blockStartPosition: { start: [0, 13], text: <div class="foo" id="bar"> }
+                  blockEndPosition: { start: [0, 39], text: "" }
+                  position: { start: [0, 13], text: <div class="foo" id="bar"> }
+                  name:
+                    - type: TextNode
+                      value: div
+                      position: { start: [0, 14], text: div }
+                  attributes:
+                    - type: AttrDoubleQuoted
+                      attributePosition: { start: [0, 25], text: foo }
+                      position: { start: [0, 18], text: class="foo" }
+                      name:
+                        - type: TextNode
+                          value: class
+                          position: { start: [0, 18], text: class }
+                      value:
+                        - type: TextNode
+                          value: foo
+                          position: { start: [0, 25], text: foo }
+                    - type: AttrDoubleQuoted
+                      attributePosition: { start: [0, 34], text: bar }
+                      position: { start: [0, 30], text: id="bar" }
+                      name:
+                        - type: TextNode
+                          value: id
+                          position: { start: [0, 30], text: id }
+                      value:
+                        - type: TextNode
+                          value: bar
+                          position: { start: [0, 34], text: bar }
+                  children: []
+  - name: should parse <br> inside if as HtmlVoidElement
+    source: "{% if cond %}<br>{% endif %}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if cond %}<br>{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if cond %}" }
+          blockEndPosition: { start: [0, 17], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "cond " }
+          position: { start: [0, 0], text: "{% if cond %}<br>{% endif %}" }
+          markup:
+            type: VariableLookup
+            name: cond
+            position: { start: [0, 6], text: cond }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 13], text: "" }
+              blockStartPosition: { start: [0, 13], text: "" }
+              blockEndPosition: { start: [0, 17], text: "" }
+              position: { start: [0, 13], text: <br> }
+              children:
+                - type: HtmlVoidElement
+                  name: br
+                  blockStartPosition: { start: [0, 13], text: <br> }
+                  position: { start: [0, 13], text: <br> }
+                  attributes: []
+  - name: should parse <img> with attribute inside if as HtmlVoidElement
+    source: '{% if cond %}<img src="x">{% endif %}'
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{% if cond %}<img src="x">{% endif %}' }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if cond %}" }
+          blockEndPosition: { start: [0, 26], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "cond " }
+          position: { start: [0, 0], text: '{% if cond %}<img src="x">{% endif %}' }
+          markup:
+            type: VariableLookup
+            name: cond
+            position: { start: [0, 6], text: cond }
+            lookups: []
+            lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 13], text: "" }
+              blockStartPosition: { start: [0, 13], text: "" }
+              blockEndPosition: { start: [0, 26], text: "" }
+              position: { start: [0, 13], text: <img src="x"> }
+              children:
+                - type: HtmlVoidElement
+                  name: img
+                  blockStartPosition: { start: [0, 13], text: <img src="x"> }
+                  position: { start: [0, 13], text: <img src="x"> }
+                  attributes:
+                    - type: AttrDoubleQuoted
+                      attributePosition: { start: [0, 23], text: x }
+                      position: { start: [0, 18], text: src="x" }
+                      name:
+                        - type: TextNode
+                          value: src
+                          position: { start: [0, 18], text: src }
+                      value:
+                        - type: TextNode
+                          value: x
+                          position: { start: [0, 23], text: x }
