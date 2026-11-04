@@ -30,6 +30,25 @@ export type ConfigDescription = Omit<ConfigFragment, 'extends' | 'context'> & {
   context: Mode;
 };
 
+export interface CustomCheckCandidate {
+  source: 'require' | 'discovery';
+  path: string;
+}
+
+export interface CustomCheckAuthorizationRequest {
+  root: string;
+  candidates: CustomCheckCandidate[];
+}
+
+export interface LoadConfigOptions {
+  /**
+   * Grants permission to execute the discovered custom check modules. Custom
+   * checks are disabled unless this callback explicitly returns true. The
+   * callback runs before any custom check module is evaluated.
+   */
+  authorizeCustomChecks?: (request: CustomCheckAuthorizationRequest) => boolean | Promise<boolean>;
+}
+
 export const ModernIdentifiers = [
   'theme-check:nothing',
   'theme-check:recommended',

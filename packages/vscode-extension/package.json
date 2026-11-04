@@ -138,6 +138,20 @@
             "verbose"
           ]
         },
+        "themeCheck.customChecks": {
+          "type": "string",
+          "scope": "application",
+          "default": "prompt",
+          "enum": [
+            "prompt",
+            "disabled"
+          ],
+          "enumDescriptions": [
+            "Ask for explicit permission to run custom checks in each language-server session. Workspace trust is also required.",
+            "Keep custom checks disabled without asking for permission. Built-in checks still run."
+          ],
+          "markdownDescription": "Controls custom JavaScript checks in the desktop extension. Permission is never remembered across language-server sessions. Changing this setting restarts the language server and clears session decisions. This setting can only be configured in User settings; theme workspace settings cannot grant execution permission."
+        },
         "themeCheck.checkOnOpen": {
           "type": [
             "boolean"
