@@ -31,9 +31,49 @@ export function liquidTagTokenName(token: string): string | undefined {
 }
 
 /**
+ * Answers to earlier `findRawBodyEnd` searches in one source, under one tag
+ * registry. A tolerant parse records an unclosed raw tag and carries on, so it
+ * can search for many bodies that run to the end of the document; this keeps
+ * each of those searches from reading the rest of the source again.
+ */
+export class RawBodyEndCache {
+  private readonly lastIndexes = new Map<string, number>();
+  private readonly nested = new Map<
+    string,
+    { rule: RawBodyRule; ends: Map<number, RawBodyEnd | null> }
+  >();
+
+  constructor(private readonly source: string) {}
+
+  /** Whether `source` has no `name` at or after `from`. */
+  absentFrom(name: string, from: number): boolean {
+    let index = this.lastIndexes.get(name);
+    if (index === undefined) {
+      index = this.source.lastIndexOf(name);
+      this.lastIndexes.set(name, index);
+    }
+    return index < from;
+  }
+
+  /** The ends of nesting bodies of `tagName` under `rule`, by where each body starts. */
+  nestedEnds(tagName: string, rule: RawBodyRule): Map<number, RawBodyEnd | null> {
+    let entry = this.nested.get(tagName);
+    if (entry?.rule !== rule) {
+      entry = { rule, ends: new Map() };
+      this.nested.set(tagName, entry);
+    }
+    return entry.ends;
+  }
+}
+
+/**
  * Where the body of `tagName` that starts at `bodyStart` ends under `rule`,
  * reading the source as `Liquid::Tokenizer` tokens. Returns null where Liquid
  * reports the tag as never closed, or rejects a tag nested inside it.
+ *
+ * With a `cache` for this source and registry, a search returns early when the
+ * closing name doesn't occur after the body, and a nesting body reuses what an
+ * enclosing search found for it.
  */
 export function findRawBodyEnd(
   source: string,
@@ -41,8 +81,22 @@ export function findRawBodyEnd(
   tagName: string,
   rule: RawBodyRule,
   ruleFor: RawBodyRuleFor,
+  cache?: RawBodyEndCache,
 ): RawBodyEnd | null {
   const endName = `end${tagName}`;
+  // A body only closes at a tag named `end<name>`.
+  if (cache?.absentFrom(endName, bodyStart)) return null;
+  const nestedEnds =
+    cache && rule.sameName === 'nests' ? cache.nestedEnds(tagName, rule) : undefined;
+  const known = nestedEnds?.get(bodyStart);
+  if (known !== undefined) return known;
+  // Where the bodies of the nested openers still open start. Each closes at the
+  // closing tag that brings the depth back below it, as its own search would find.
+  const open: number[] = [];
+  const finish = (end: RawBodyEnd | null): RawBodyEnd | null => {
+    if (nestedEnds) for (const start of open) nestedEnds.set(start, null);
+    return end;
+  };
   let tokenStart = bodyStart;
   let depth = 1;
 
@@ -67,23 +121,27 @@ export function findRawBodyEnd(
 
     if (tag?.[1] === endName) {
       depth -= 1;
-      if (depth === 0) {
-        const tagStart = tokenStart + tag.index;
-        return {
-          tagStart,
-          tagEnd: tokenEnd,
-          wsStart: source[tagStart + 2] === '-' ? '-' : '',
-          wsEnd: token[token.length - 3] === '-' ? '-' : '',
-        };
-      }
+      const tagStart = tokenStart + tag.index;
+      const end: RawBodyEnd = {
+        tagStart,
+        tagEnd: tokenEnd,
+        wsStart: source[tagStart + 2] === '-' ? '-' : '',
+        wsEnd: token[token.length - 3] === '-' ? '-' : '',
+      };
+      if (depth === 0) return finish(end);
+      const nested = open.pop();
+      if (nestedEnds && nested !== undefined) nestedEnds.set(nested, end);
     } else if (tag?.[1] === tagName) {
       if (rule.sameName === 'rejected') return null;
-      if (rule.sameName === 'nests') depth += 1;
+      if (rule.sameName === 'nests') {
+        depth += 1;
+        if (nestedEnds) open.push(tokenEnd);
+      }
     } else if (tag && rule.opaque.includes(tag[1])) {
       const innerRule = ruleFor(tag[1]);
       if (innerRule) {
-        const innerEnd = findRawBodyEnd(source, tokenEnd, tag[1], innerRule, ruleFor);
-        if (!innerEnd) return null;
+        const innerEnd = findRawBodyEnd(source, tokenEnd, tag[1], innerRule, ruleFor, cache);
+        if (!innerEnd) return finish(null);
         tokenStart = innerEnd.tagEnd;
         continue;
       }
@@ -91,7 +149,7 @@ export function findRawBodyEnd(
     tokenStart = tokenEnd;
   }
 
-  return null;
+  return finish(null);
 }
 
 /**
