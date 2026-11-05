@@ -1,4 +1,4 @@
-import { LiquidRawTag, NodeTypes } from '@shopify/liquid-html-parser';
+import { LiquidHtmlNode, LiquidRawTag, NodeTypes } from '@shopify/liquid-html-parser';
 import { Mode, Modes, SourceCodeType, findCurrentNode } from '@shopify/theme-check-common';
 import { LanguageService, Stylesheet, getCSSLanguageService } from 'vscode-css-languageservice';
 import {
@@ -81,7 +81,8 @@ export class CSSLanguageService {
             node.type === NodeTypes.LiquidRawTag && node.name === 'stylesheet',
         );
         if (isDiagnostics && 'children' in node && node.children) {
-          stylesheetTag = node.children.find(
+          const children: LiquidHtmlNode[] = node.children;
+          stylesheetTag = children.find(
             (node): node is LiquidRawTag =>
               node.type === NodeTypes.LiquidRawTag && node.name === 'stylesheet',
           );

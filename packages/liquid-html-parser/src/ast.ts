@@ -18,6 +18,7 @@ import { Comparators, NamedTags, NodeTypes, RawTags, nonTraversableProperties } 
 import type { Position } from './types';
 import { DocumentParser } from './document/parser';
 import { tokenize } from './document/tokenizer';
+import { rawBodyRuleLookup } from './document/raw-body';
 import { Environment } from './environment';
 
 /** The union type of all possible node types inside a LiquidHTML AST. */
@@ -358,11 +359,8 @@ export interface LiquidTagBlock extends LiquidTagNode<NamedTags.block, BlockMark
 export interface BlockMarkup extends ASTNode<NodeTypes.BlockMarkup> {
   /** The name of the block template */
   name: LiquidString;
-  // TODO: BlockArrayArgument exists as a separate type because
-  // LiquidNamedArgument.value is typed as LiquidExpression, which doesn't
-  // include BlockArrayLiteral. Once LiquidExpression supports array literals,
-  // unify BlockArrayArgument into LiquidNamedArgument.
-  args: (LiquidNamedArgument | BlockArrayArgument)[];
+  /** Optional named arguments, including block-local arrays. */
+  args: BlockArgument[];
 }
 
 /** https://shopify.dev/docs/api/liquid/tags#section */
@@ -373,7 +371,7 @@ export interface SectionMarkup extends ASTNode<NodeTypes.SectionMarkup> {
   /** The name of the section template */
   name: LiquidString;
   /** Optional named arguments */
-  args: (LiquidNamedArgument | BlockArrayArgument)[];
+  args: BlockArgument[];
 }
 
 /** https://shopify.dev/docs/api/liquid/tags#sections */
@@ -591,20 +589,29 @@ export interface LiquidRange extends ASTNode<NodeTypes.Range> {
  * A single-level array literal, e.g. `['a', 'b']` or `[1, 2, x]`.
  * Supported as a block or section tag argument value. Nested arrays are rejected.
  *
- * Reachable only via `BlockArrayArgument.value` and the block/section parser path.
+ * Reachable only via `BlockArgument.value` and the block/section parser path.
  */
 export interface BlockArrayLiteral extends ASTNode<'BlockArrayLiteral'> {
   /** The parsed element expressions, in source order */
   elements: LiquidExpression[];
 }
 
-/**
- * Tag arg whose value is a literal array. Lives on block and section markup.
- */
-export interface BlockArrayArgument extends ASTNode<NodeTypes.NamedArgument> {
+/** Value accepted by named arguments on block and section tags. */
+export type BlockArgumentValue = LiquidExpression | BlockArrayLiteral;
+
+/** Named argument accepted by block and section tags. */
+export interface BlockArgument extends ASTNode<NodeTypes.NamedArgument> {
   /** name: value */
   name: string;
 
+  /** Scalar or single-level array value. */
+  value: BlockArgumentValue;
+}
+
+/**
+ * Tag arg whose value is a literal array. Lives on block and section markup.
+ */
+export interface BlockArrayArgument extends BlockArgument {
   /** name: value (always an array literal) */
   value: BlockArrayLiteral;
 }
@@ -771,9 +778,29 @@ export interface HtmlDoctype extends ASTNode<NodeTypes.HtmlDoctype> {
   legacyDoctypeString: string | null;
 }
 
-/** Represents `<!-- comments -->` */
+/**
+ * Represents `<!-- comments -->`.
+ *
+ * Liquid treats `<!--` and `-->` as plain text, so the Liquid inside a comment
+ * still renders and can close a block opened before the comment.
+ *
+ * This node describes the source, not the rendered page. The parser knows where
+ * each delimiter is written, not which `-->` closes which `<!--` once branches
+ * are chosen: depending on conditionals, a comment can close more than once, or
+ * never. So a comment that crosses a Liquid block boundary is split at that
+ * boundary, and a comment whose `-->` sits inside a block it opened ends with
+ * that block. Liquid outputs every delimiter as written, so only the rendered
+ * output shows which comments are open.
+ */
 export interface HtmlComment extends ASTNode<NodeTypes.HtmlComment> {
+  /** The source between the delimiters, trimmed. */
   body: string;
+  /** The text and Liquid between the delimiters. */
+  children: (LiquidNode | TextNode)[];
+  /** The range covered by this node's `<!--`, empty when the node starts at a block boundary. */
+  blockStartPosition: Position;
+  /** The range covered by this node's `-->`, empty when the node ends at a block boundary. */
+  blockEndPosition: Position;
 }
 
 export interface HtmlNodeBase<T> extends ASTNode<T> {
@@ -932,6 +959,27 @@ export interface ASTBuildOptions {
 
   /** Optional environment for tag registration. Uses Environment.default() if omitted. */
   environment?: Environment;
+
+  /**
+   * Parse a close tag as an `HtmlDanglingMarkerClose` when it names the
+   * innermost element that earlier `if` / `unless` / `case` tags in the same
+   * scope left open on every path, instead of matching it against the enclosing
+   * element:
+   *
+   *   {% if a %}<div class="x">{% else %}<div class="y">{% endif %}...</div>
+   *
+   * Without it such a template throws. Liquid treats the markup as text, so
+   * Shopify renders it, and a renderer can pair the marker with the open
+   * element. Off by default: it accepts templates the strict grammar rejects.
+   */
+  pairDanglingCloseTags?: boolean;
+
+  /**
+   * Keep each HTML comment's body as opaque text instead of parsing the Liquid
+   * inside it. For HTML that is data rather than a template, such as a rendered
+   * setting value or a translation, where `{% ... %}` inside a comment is not a tag.
+   */
+  opaqueHtmlComments?: boolean;
 }
 
 export function isBranchedTag(node: LiquidHtmlNode) {
@@ -946,7 +994,9 @@ export function toLiquidAST(
   },
 ) {
   const env = options.environment ?? Environment.default();
-  const tokens = tokenize(source);
+  const tokens = tokenize(source, {
+    rawBodyRule: rawBodyRuleLookup((name) => env.tagForName(name)),
+  });
   const parser = new DocumentParser(tokens, source, env, false, options.allowUnclosedDocumentNode);
   return parser.parseDocument();
 }
@@ -959,8 +1009,18 @@ export function toLiquidHtmlAST(
   },
 ): DocumentNode {
   const env = options.environment ?? Environment.default();
-  const tokens = tokenize(source);
-  const parser = new DocumentParser(tokens, source, env, true, options.allowUnclosedDocumentNode);
+  const tokens = tokenize(source, {
+    rawBodyRule: rawBodyRuleLookup((name) => env.tagForName(name)),
+  });
+  const parser = new DocumentParser(
+    tokens,
+    source,
+    env,
+    true,
+    options.allowUnclosedDocumentNode,
+    options.opaqueHtmlComments,
+  );
+  parser.pairDanglingCloseTags = options.pairDanglingCloseTags ?? false;
   return parser.parseDocument();
 }
 

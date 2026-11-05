@@ -1,5 +1,6 @@
 import { TokenType } from './tokenizer';
 import type { Token } from './tokenizer';
+import { rawBodyRuleLookup } from './raw-body';
 import { ParserBase } from './base';
 import { makeDocumentNode } from './factories';
 import { ChildFilterMode, filterChildren } from './tree-builder';
@@ -43,6 +44,7 @@ import {
   parseOrphanedHtmlCloseTag as parseOrphanedHtmlCloseTagFn,
   parseHtmlDanglingMarkerClose as parseHtmlDanglingMarkerCloseFn,
   parseBranchAttributesImpl as parseBranchAttributesFn,
+  closesBranchOpenedElement,
 } from './html';
 import type { HtmlParserDelegate } from './html';
 import { parseLiquidStatement as parseLiquidStatementFn } from './liquid-lines';
@@ -64,8 +66,11 @@ export class DocumentParser
   private _parseHtml: boolean;
   private _allowUnclosedHtml: boolean;
   private readonly _allowUnclosedDocumentNode: boolean;
+  private _pairDanglingCloseTags: boolean = false;
   private _inAttributeContext: boolean = false;
   private _inAttributeValueContext: boolean = false;
+  private _openHtmlComment: Position | null = null;
+  private readonly _opaqueHtmlComments: boolean;
 
   constructor(
     tokens: Token[],
@@ -73,12 +78,15 @@ export class DocumentParser
     env: Environment,
     parseHtml: boolean,
     allowUnclosedDocumentNode: boolean = false,
+    opaqueHtmlComments: boolean = false,
   ) {
     super(tokens, source);
     this.env = env;
+    this.rawBodyRule = rawBodyRuleLookup((name) => env.tagForName(name));
     this._parseHtml = parseHtml;
     this._allowUnclosedHtml = allowUnclosedDocumentNode;
     this._allowUnclosedDocumentNode = allowUnclosedDocumentNode;
+    this._opaqueHtmlComments = opaqueHtmlComments;
   }
 
   get rawParseHtml(): boolean {
@@ -114,11 +122,30 @@ export class DocumentParser
   get htmlParseHtml(): boolean {
     return this._parseHtml;
   }
+  set htmlParseHtml(v: boolean) {
+    this._parseHtml = v;
+  }
+  get htmlOpenComment(): Position | null {
+    return this._openHtmlComment;
+  }
+  set htmlOpenComment(v: Position | null) {
+    this._openHtmlComment = v;
+  }
+  get htmlOpaqueComments(): boolean {
+    return this._opaqueHtmlComments;
+  }
   get htmlAllowUnclosedHtml(): boolean {
     return this._allowUnclosedHtml;
   }
   set htmlAllowUnclosedHtml(v: boolean) {
     this._allowUnclosedHtml = v;
+  }
+  get htmlPairDanglingCloseTags(): boolean {
+    return this._pairDanglingCloseTags;
+  }
+  /** See `ASTBuildOptions.pairDanglingCloseTags`. Set before `parseDocument`. */
+  set pairDanglingCloseTags(v: boolean) {
+    this._pairDanglingCloseTags = v;
   }
   get htmlInAttributeContext(): boolean {
     return this._inAttributeContext;
@@ -147,6 +174,12 @@ export class DocumentParser
   get dispatchAllowUnclosedHtml(): boolean {
     return this._allowUnclosedHtml;
   }
+  get dispatchOpenHtmlComment(): Position | null {
+    return this._openHtmlComment;
+  }
+  set dispatchOpenHtmlComment(v: Position | null) {
+    this._openHtmlComment = v;
+  }
 
   tagForName(name: string) {
     return this.env.tagForName(name);
@@ -156,7 +189,9 @@ export class DocumentParser
   parseDocument(): DocumentNode {
     const children: LiquidHtmlNode[] = [];
     if (this.check(TokenType.YamlFrontmatter)) children.push(parseNodeFn(this));
-    while (!this.isAtEnd()) children.push(this.parseNode());
+    while (!this.isAtEnd()) children.push(this.parseNodeInScope(children));
+    // A comment still open at the end of the input ends there, as in a browser.
+    this._openHtmlComment = null;
     return makeDocumentNode(
       filterChildren(ChildFilterMode.Syntactic, children, this.source),
       this.source,
@@ -165,6 +200,17 @@ export class DocumentParser
 
   parseNode(): LiquidHtmlNode {
     return parseNodeFn(this);
+  }
+  /**
+   * `parseNode` for a node whose earlier siblings are `scope`. Under
+   * `pairDanglingCloseTags`, a close tag ending an element those siblings left
+   * open in a conditional's branches is a dangling marker, not an orphan.
+   */
+  parseNodeInScope(scope: LiquidHtmlNode[]): LiquidHtmlNode {
+    if (this.check(TokenType.HtmlCloseTagOpen) && closesBranchOpenedElement(this, scope)) {
+      return this.parseHtmlDanglingMarkerClose();
+    }
+    return this.parseNode();
   }
   parseLiquidTag(): LiquidTag | LiquidRawTag {
     return parseLiquidTagFn(this);

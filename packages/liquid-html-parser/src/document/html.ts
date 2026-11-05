@@ -42,6 +42,10 @@ import type {
 } from '../ast';
 import { VOID_ELEMENTS, HTML_RAW_TAGS, BLOCKS } from '../grammar';
 import { LiquidHTMLASTParsingError } from '../errors';
+import { closesInnermostBranchOpenedElement } from './branch-opened-elements';
+import { findRawBodyEnd, liquidTagTokenName, rawBodyRuleLookup } from './raw-body';
+import type { RawBodyRuleFor } from './raw-body';
+import type { TagDefinition } from '../environment';
 
 /**
  * Interface capturing what HTML-parsing free functions need from the
@@ -49,10 +53,16 @@ import { LiquidHTMLASTParsingError } from '../errors';
  * the coupling explicit and narrow.
  */
 export interface HtmlParserDelegate extends ParserBase {
-  readonly htmlParseHtml: boolean;
+  htmlParseHtml: boolean;
   htmlAllowUnclosedHtml: boolean;
+  /** See `ASTBuildOptions.pairDanglingCloseTags`. */
+  readonly htmlPairDanglingCloseTags: boolean;
   htmlInAttributeContext: boolean;
   htmlInAttributeValueContext: boolean;
+  /** The `<!--` of the comment the parser is inside, or `null` outside a comment. */
+  htmlOpenComment: Position | null;
+  /** Keep comment bodies as opaque text (`ASTBuildOptions.opaqueHtmlComments`). */
+  readonly htmlOpaqueComments: boolean;
 
   parseNode(): LiquidHtmlNode;
   parseLiquidVariableOutput(): LiquidVariableOutput;
@@ -61,6 +71,7 @@ export interface HtmlParserDelegate extends ParserBase {
   isBlockTerminator(): boolean;
   parseBranchAttributes(): AttributeNode[];
   parseLiquidInRange(bodyStart: number, bodyEnd: number): (LiquidNode | TextNode)[];
+  tagForName(name: string): TagDefinition | undefined;
 }
 
 // htmlElement := "<" compoundName attributes ("/" | ">") children? "</" compoundName ">"
@@ -96,6 +107,10 @@ export function parseHtmlElement(
   const children: LiquidHtmlNode[] = [];
   while (!parser.isAtEnd()) {
     if (parser.check(TokenType.HtmlCloseTagOpen)) {
+      if (closesBranchOpenedElement(parser, children)) {
+        children.push(parseHtmlDanglingMarkerClose(parser));
+        continue;
+      }
       break;
     }
     if (parser.isBlockTerminator()) {
@@ -172,8 +187,18 @@ export function parseHtmlRawBody(
   const source = parser.getSource();
   const bodyStart = blockStartPosition.end;
 
+  const rawText = RAW_TEXT_ELEMENTS.has(plainName.toLowerCase())
+    ? findRawTextClose(
+        source,
+        bodyStart,
+        plainName,
+        rawBodyRuleLookup((name) => parser.tagForName(name)),
+      )
+    : null;
   const closeIdx = scanForHtmlCloseTag(parser, plainName);
-  if (closeIdx === -1) {
+  if (rawText && (closeIdx === -1 || parser.tokenAt(closeIdx).start !== rawText.start)) {
+    parser.retokenizeRawText(bodyStart, rawText.start, rawText.end);
+  } else if (!rawText && closeIdx === -1) {
     throw new LiquidHTMLASTParsingError(
       `Attempting to end parsing before HtmlRawNode '${plainName}' was closed`,
       source,
@@ -182,10 +207,17 @@ export function parseHtmlRawBody(
     );
   }
 
-  const bodyEnd = parser.tokenAt(closeIdx).start;
+  const bodyEnd = rawText ? rawText.start : parser.tokenAt(closeIdx).start;
   const bodyString = source.slice(bodyStart, bodyEnd);
 
-  const bodyNodes = parser.parseLiquidInRange(bodyStart, bodyEnd);
+  const savedRawTextBound = parser.rawTextBound;
+  if (rawText) parser.rawTextBound = bodyEnd;
+  let bodyNodes: (LiquidNode | TextNode)[];
+  try {
+    bodyNodes = parser.parseLiquidInRange(bodyStart, bodyEnd);
+  } finally {
+    parser.rawTextBound = savedRawTextBound;
+  }
 
   const kind = rawMarkupKindForHtmlTag(plainName, attributes, bodyString);
   const body = makeRawMarkup(kind, bodyString, bodyNodes, bodyStart, bodyEnd, source);
@@ -211,36 +243,82 @@ export function parseHtmlRawBody(
   return makeHtmlRawNode(plainName, attributes, body, blockStartPosition, blockEndPosition, source);
 }
 
-// htmlComment := "<!--" text* "-->"
+// htmlComment := "<!--"? (text | liquidVariableOutput | liquidTag)* "-->"?
+//
+// The body is parsed as text and Liquid, never as markup. When the body reaches
+// a tag that ends or branches an enclosing block, the comment stops before that
+// tag and `parseNode` resumes it after the tag. When a block opened inside the
+// comment consumes the `-->`, the comment ends with that block.
 export function parseHtmlComment(parser: HtmlParserDelegate): HtmlComment {
-  const source = parser.getSource();
-  const openToken = parser.consume(TokenType.HtmlCommentOpen);
-  const bodyStart = openToken.end;
+  if (parser.htmlOpaqueComments) return parseOpaqueHtmlComment(parser);
 
-  // Find the closing `-->` by scanning the source rather than walking tokens.
-  // A conditional comment body (`<!--[if IE]>…<![endif]-->`) contains
-  // `<![endif]`, which the tokenizer treats as a doctype open — it enters
-  // HtmlTag mode and consumes the trailing `-->` as an HtmlTagClose, so no
-  // HtmlCommentClose token is ever emitted and the token walk would run to EOF.
-  // A source scan pins us to the real comment close, so the (unchanged)
-  // HtmlComment node feeds getConditionalComment correctly in the printer.
-  const closeIdx = source.indexOf('-->', bodyStart);
-  if (closeIdx === -1) {
-    throw new LiquidHTMLASTParsingError(
-      `Attempting to end parsing before HtmlComment '<!--' was closed`,
-      source,
-      openToken.start,
-      openToken.end,
-    );
+  const source = parser.getSource();
+  const start = parser.peek().start;
+  let blockStartPosition: Position = { start, end: start };
+  if (parser.check(TokenType.HtmlCommentOpen)) {
+    const openToken = parser.consume(TokenType.HtmlCommentOpen);
+    blockStartPosition = { start: openToken.start, end: openToken.end };
+    parser.htmlOpenComment = blockStartPosition;
   }
 
-  const bodyEnd = closeIdx;
-  const commentEnd = closeIdx + 3; // past `-->`
-  const body = source.slice(bodyStart, bodyEnd).trim();
+  const children: LiquidHtmlNode[] = [];
+  let blockEndPosition: Position | null = null;
+  const savedParseHtml = parser.htmlParseHtml;
+  parser.htmlParseHtml = false;
+  try {
+    while (parser.htmlOpenComment !== null) {
+      // A browser ends an unclosed comment at the end of the input.
+      if (parser.isAtEnd()) {
+        parser.htmlOpenComment = null;
+        break;
+      }
+      if (parser.check(TokenType.HtmlCommentClose)) {
+        const closeToken = parser.consume(TokenType.HtmlCommentClose);
+        blockEndPosition = { start: closeToken.start, end: closeToken.end };
+        parser.htmlOpenComment = null;
+        break;
+      }
+      if (parser.isBlockTerminator()) break;
+      children.push(parser.parseNode());
+    }
+  } finally {
+    parser.htmlParseHtml = savedParseHtml;
+  }
 
-  parser.seekToSourceOffset(commentEnd);
+  const end = parser.peek().start;
+  return makeHtmlComment(
+    filterChildren(ChildFilterMode.Syntactic, children, source) as (LiquidNode | TextNode)[],
+    blockStartPosition,
+    blockEndPosition ?? { start: end, end },
+    source,
+  );
+}
 
-  return makeHtmlComment(body, openToken.start, commentEnd, source);
+// opaqueHtmlComment := "<!--" token* "-->"
+function parseOpaqueHtmlComment(parser: HtmlParserDelegate): HtmlComment {
+  const source = parser.getSource();
+  const openToken = parser.consume(TokenType.HtmlCommentOpen);
+  while (!parser.isAtEnd() && !parser.check(TokenType.HtmlCommentClose)) parser.advance();
+  if (parser.isAtEnd()) throw unclosedHtmlCommentError(source, openToken);
+  const closeToken = parser.consume(TokenType.HtmlCommentClose);
+  return makeHtmlComment(
+    [],
+    { start: openToken.start, end: openToken.end },
+    { start: closeToken.start, end: closeToken.end },
+    source,
+  );
+}
+
+function unclosedHtmlCommentError(
+  source: string,
+  openComment: Position,
+): LiquidHTMLASTParsingError {
+  return new LiquidHTMLASTParsingError(
+    `Attempting to end parsing before HtmlComment '<!--' was closed`,
+    source,
+    openComment.start,
+    openComment.end,
+  );
 }
 
 // htmlDoctype := "<!" text ">"
@@ -285,6 +363,26 @@ export function parseOrphanedHtmlCloseTag(parser: HtmlParserDelegate): never {
     closeStart,
     closeEnd,
   );
+}
+
+/**
+ * Whether the close tag at the cursor ends an element that an earlier
+ * conditional in the same scope left open, rather than the enclosing element.
+ * Only asked under `pairDanglingCloseTags`; see `closesInnermostBranchOpenedElement`.
+ * Reads the name from the source so the cursor never moves, and answers false
+ * for a compound (Liquid) name.
+ */
+export function closesBranchOpenedElement(
+  parser: HtmlParserDelegate,
+  scopeChildren: LiquidHtmlNode[],
+): boolean {
+  if (!parser.htmlPairDanglingCloseTags) return false;
+  const nameStart = parser.peek().end;
+  const match = /^([A-Za-z][^\s/>{}]*)\s*>/.exec(
+    parser.getSource().slice(nameStart, nameStart + 256),
+  );
+  if (!match) return false;
+  return closesInnermostBranchOpenedElement(scopeChildren, match[1]);
 }
 
 export function parseHtmlDanglingMarkerClose(parser: HtmlParserDelegate): HtmlDanglingMarkerClose {
@@ -720,6 +818,61 @@ export function scanForHtmlCloseTag(parser: ParserBase, tagName: string): number
     }
   }
   return -1;
+}
+
+// The HTML elements whose bodies are raw text: nothing in them but their own
+// close tag (and, in a theme, Liquid) is markup.
+const RAW_TEXT_ELEMENTS = new Set(['script', 'style']);
+
+const CLOSE_TAG_END = /\s*>/y;
+
+/**
+ * Where the first `</tagName>` after `from` starts and ends, read from the source
+ * rather than the token stream. Liquid delimiters are skipped the way the
+ * tokenizer skips them, and so is the body of a Liquid raw tag such as
+ * `{% comment %}`, so a close tag inside either does not count. An unterminated
+ * delimiter or raw tag leaves the element unclosed: returns null.
+ */
+function findRawTextClose(
+  source: string,
+  from: number,
+  tagName: string,
+  rawBodyRuleFor: RawBodyRuleFor,
+): { start: number; end: number } | null {
+  const lowerName = tagName.toLowerCase();
+  let i = from;
+  while (i < source.length) {
+    const liquidCloser = source.startsWith('{{', i)
+      ? '}}'
+      : source.startsWith('{%', i)
+        ? '%}'
+        : null;
+    if (liquidCloser) {
+      const close = source.indexOf(liquidCloser, i + 2);
+      if (close === -1) return null;
+      const tokenEnd = close + 2;
+      const name =
+        liquidCloser === '%}' ? liquidTagTokenName(source.slice(i, tokenEnd)) : undefined;
+      const rule = name ? rawBodyRuleFor(name) : undefined;
+      if (name && rule) {
+        const bodyEnd = findRawBodyEnd(source, tokenEnd, name, rule, rawBodyRuleFor);
+        if (!bodyEnd) return null;
+        i = bodyEnd.tagEnd;
+      } else {
+        i = tokenEnd;
+      }
+      continue;
+    }
+    if (
+      source.startsWith('</', i) &&
+      source.slice(i + 2, i + 2 + lowerName.length).toLowerCase() === lowerName
+    ) {
+      CLOSE_TAG_END.lastIndex = i + 2 + lowerName.length;
+      if (CLOSE_TAG_END.test(source)) return { start: i, end: CLOSE_TAG_END.lastIndex };
+    }
+    i++;
+  }
+  return null;
 }
 
 export function rawMarkupKindForHtmlTag(

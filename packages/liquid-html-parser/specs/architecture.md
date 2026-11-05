@@ -146,7 +146,7 @@ The parser calls these utilities while building the AST.
 
 | Module                               | Owns                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Does NOT do                                                                                                                                                   |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `document/tokenizer.ts`              | Modal document tokenizer. Default mode: scan for `{%`, `%}`, `{{`, `}}`, `<`, `>`, `/>`, `</`, `<!--`, `-->`, `<!`, `---`. In HTML tag context: `=` emits `HtmlEquals`, quotes emit `HtmlQuoteOpen`/`HtmlQuoteClose`. Liquid delimiters take priority inside quoted attribute values. Produces flat `Token[]`.                                                                                                                                                                                                                                                                                                                                      | Expression parsing. Tag-internal parsing. AST construction.                                                                                                   |
+| `document/tokenizer.ts`              | Modal document tokenizer. Default mode: scan for `{%`, `%}`, `{{`, `}}`, `<`, `>`, `/>`, `</`, `<!--`, `<!`, `---`. In HTML comment context and in a Liquid raw tag's body: only Liquid delimiters (and the comment's close). In HTML tag context: `=` emits `HtmlEquals`, quotes emit `HtmlQuoteOpen`/`HtmlQuoteClose`, and each whitespace run is its own `Text` token. Liquid delimiters take priority inside quoted attribute values. Produces flat `Token[]`.                                                                                                                                                                                  | Expression parsing. Tag-internal parsing. AST construction.                                                                                                   |
 | `document/base.ts`                   | `ParserBase` class: shared token consumption primitives (`consume`, `accept`, `check`, `peek`, `advance`, `isAtEnd`, `getSource`, `tokenAt`, `tokenCount`, `getPosition`, `setPosition`).                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Parsing logic. Node construction.                                                                                                                             |
 | `document/parser.ts`                 | `DocumentParser extends ParserBase`. Implements all delegate interfaces. Owns parser-level state: `parseHtml`, `allowUnclosedHtml`, `allowUnclosedDocumentNode`, `inAttributeContext`, `inAttributeValueContext`. Delegates all parsing to free functions in sibling modules via typed interfaces.                                                                                                                                                                                                                                                                                                                                                  | Expression parsing (delegates to `MarkupParser`). Tag-specific markup (delegates to tag functions). Node construction (delegates to `document/factories.ts`). |
 | `document/node-dispatch.ts`          | `parseNode()`: exhaustive switch on `TokenType` routing to the appropriate parse function. `parseYamlFrontmatter()`. `advanceAsText()`. Defines the `NodeDispatchDelegate` interface.                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Liquid tag parsing. HTML element parsing. Expression parsing.                                                                                                 |
@@ -206,7 +206,7 @@ enum TokenType {
   HtmlTagClose, // >
   HtmlSelfClose, // />
   HtmlCommentOpen, // <!--
-  HtmlCommentClose, // -->
+  HtmlCommentClose, // --> or --!>, or > / -> right after <!-- (only in a comment)
   HtmlDoctypeOpen, // <! (not followed by --)
 
   // HTML attribute tokens (emitted only in HTML tag context)
@@ -230,6 +230,10 @@ function tokenize(source: string): Token[];
 ```
 
 The tokenizer is modal. After emitting `HtmlTagOpen` or `HtmlCloseTagOpen`, it enters **HTML tag context** where `=` and quotes are significant. It exits HTML tag context on `HtmlTagClose`, `HtmlSelfClose`, or any Liquid open delimiter. Inside quoted attribute values, Liquid delimiters (`{{`, `{%`) take priority and are emitted as their own tokens; the quote context resumes after the Liquid close delimiter.
+
+After `HtmlCommentOpen` (`<!--`), the tokenizer enters **HTML comment context**, where only Liquid delimiters and the comment's close are significant and everything else is `Text`. A tag opener, a quote, a close tag, or a nested `<!--` in a comment can't open a mode that hides the close. The close is `-->` or `--!>`, or `>` or `->` right after `<!--` (the HTML spec's empty comments `<!-->` and `<!--->`). Outside a comment, `-->` is `Text`. Liquid inside a comment is still tokenized, because it still renders. Outside SVG, a `<script>` or `<style>` body is tokenized as raw text (only Liquid and its own close tag), so a `<!--` there is text. Inside an `<svg>` (from its open tag to the `</svg>` token that balances it, where the parser closes it, counting nested `<svg` open tags), `<!--` and `-->` tokenize as they did before comment mode existed and open no mode. An `<svg` glued to Liquid (`<svg{% if x %} class="x"{% endif %}>`) counts as an `<svg>`. The parser keeps an `<svg>` body raw and closes it at that `</svg>` token, and SVG can hold CDATA, `foreignObject` scripts, and other text where `<!--` isn't a comment.
+
+A Liquid raw tag's body (`{% comment %}`, `{% raw %}`, `{% doc %}`, `{% schema %}`, …) is opaque to the tokenizer as well as the parser. `tokenize` takes the tag registry's body rules (`rawBodyRule`, built by `rawBodyRuleLookup`), and after the `%}` of a raw tag it ends the body with `findRawBodyEnd`, the same rule the parser uses. It tokenizes the body on its own as raw text (Liquid delimiters only), then resumes at the end tag in the mode the raw tag sat in. A `<!--`, `<b`, or quote in the body can't change the mode around it, and a stray `{{` in it can't run past the end tag. A body Liquid reports as never closed is tokenized as markup and left to the parser, which throws. `ParserBase` passes the same rules to every re-tokenize.
 
 Tag name extraction is not tokenized. The parser slices the first word from the `Text` token content between `{%` and `%}`. No `LiquidTagName` token type.
 
@@ -428,7 +432,7 @@ function makeHtmlRawNode(
   blockEndPosition,
   source,
 ): HtmlRawNode;
-function makeHtmlComment(body, start, end, source): HtmlComment;
+function makeHtmlComment(children, blockStartPosition, blockEndPosition, source): HtmlComment;
 function makeHtmlDoctype(legacyDoctypeString, start, end, source): HtmlDoctype;
 function makeAttrDoubleQuoted(name, value, attributePosition, position, source): AttrDoubleQuoted;
 function makeAttrSingleQuoted(name, value, attributePosition, position, source): AttrSingleQuoted;
@@ -594,6 +598,8 @@ All except `AttrEmpty` extend `AttributeNodeBase<T>` with `name: (TextNode | Liq
 
 Defined in frozen `ast.ts`. Produced when a `</tagName>` close tag does not match any open element AND the current context has `allowUnclosedHtml: true` (i.e., inside `if`/`unless`/`case` branches). Has `name: (TextNode | LiquidVariableOutput)[]` and `blockStartPosition: Position`.
 
+With the `pairDanglingCloseTags` option, it is also produced for a close tag that names the innermost element earlier `if`/`unless`/`case` tags in the same scope left open on every path (`document/branch-opened-elements.ts`, which keeps that open stack per scope and extends it as nodes are appended). That case is checked before the close tag is matched against the enclosing element.
+
 ---
 
 ## 5. Decisions Log
@@ -616,7 +622,7 @@ The parser internally uses `BinaryExpr { kind: 'comparison' | 'logical', left, o
 
 ### D5: Modal document tokenizer
 
-After `<` (tag open), the tokenizer enters HTML tag context, emitting `HtmlEquals`, `HtmlQuoteOpen`, `HtmlQuoteClose`. Liquid delimiters take priority inside quoted values. This eliminates all character-level scanning in the parser for attributes.
+After `<` (tag open), the tokenizer enters HTML tag context, emitting `HtmlEquals`, `HtmlQuoteOpen`, `HtmlQuoteClose`. Liquid delimiters take priority inside quoted values. After `<!--`, it enters HTML comment context, where only Liquid and the comment's close are tokens; a Liquid raw tag's body is tokenized on its own as raw text. This eliminates all character-level scanning in the parser for attributes.
 
 Tag name extraction stays simple: slice first word from content between `{%` and `%}`. No `LiquidTagName` token.
 
@@ -745,7 +751,7 @@ liquid tag parse(name, markupParser, parser):
 
 **Block nesting:** Block tags inside `{% liquid %}` consume subsequent lines until their matching `end*` line, reusing `finalizeBranch()`.
 
-**Raw tags inside `{% liquid %}`:** When the line is a raw tag (e.g., `comment`), subsequent lines are consumed until `endcomment`.
+**Raw tags inside `{% liquid %}`:** When the line is a raw tag (e.g., `comment`), subsequent lines are consumed until the line that ends its body under the tag's `body` rule (`findRawLineBodyEnd` in `raw-body.ts`); a `comment` nests, and a `raw` or `doc` body never closes there.
 
 **Nested `{% liquid %}`:** Supported. Inner `liquid` tag processes its own body independently.
 

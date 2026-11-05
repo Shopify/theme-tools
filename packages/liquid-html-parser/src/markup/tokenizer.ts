@@ -31,16 +31,28 @@ const WHITESPACE_RE = /\s+/y;
 const SINGLE_STRING_RE = /'[^']*'/y;
 const DOUBLE_STRING_RE = /"[^"]*"/y;
 
+/** `\d` (no `u` flag): ASCII 0-9 only. NaN past the end is not a digit. */
+function isDigit(c: number): boolean {
+  return c >= 0x30 && c <= 0x39;
+}
+
+/** Pre-check for WHITESPACE_RE: every `\s` character is <= U+0020 or >= U+00A0. */
+function mayBeWhitespace(c: number): boolean {
+  return c <= 0x20 || c >= 0xa0;
+}
+
 export function tokenizeMarkup(markup: string, startOffset = 0): MarkupToken[] {
   const tokens: MarkupToken[] = [];
   let pos = 0;
   let lastTokenType: MarkupTokenType | undefined;
 
   while (pos < markup.length) {
-    WHITESPACE_RE.lastIndex = pos;
-    if (WHITESPACE_RE.test(markup)) {
-      pos = WHITESPACE_RE.lastIndex;
-      continue;
+    if (mayBeWhitespace(markup.charCodeAt(pos))) {
+      WHITESPACE_RE.lastIndex = pos;
+      if (WHITESPACE_RE.test(markup)) {
+        pos = WHITESPACE_RE.lastIndex;
+        continue;
+      }
     }
 
     const ch = markup[pos];
@@ -63,7 +75,7 @@ export function tokenizeMarkup(markup: string, startOffset = 0): MarkupToken[] {
       }
     }
 
-    if (ch === '-' && /\d/.test(next)) {
+    if (ch === '-' && isDigit(markup.charCodeAt(pos + 1))) {
       NUMBER_RE.lastIndex = pos + 1;
       if (NUMBER_RE.test(markup)) {
         const value = markup.slice(pos, NUMBER_RE.lastIndex);
@@ -79,7 +91,7 @@ export function tokenizeMarkup(markup: string, startOffset = 0): MarkupToken[] {
       }
     }
 
-    if (/\d/.test(ch)) {
+    if (isDigit(markup.charCodeAt(pos))) {
       NUMBER_RE.lastIndex = pos;
       if (NUMBER_RE.test(markup)) {
         const matchEnd = NUMBER_RE.lastIndex;

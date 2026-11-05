@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { tokenize, TokenType } from './tokenizer';
-import type { Token } from './tokenizer';
+import { tokenize, tokenizeWithoutFastPath, TokenType } from './tokenizer';
+import type { Token, TokenizeOptions } from './tokenizer';
+import { rawBodyRuleLookup } from './raw-body';
+import { Environment } from '../environment';
 
 /** Strip the trailing EndOfInput token for cleaner assertions. */
 function tokens(source: string): Token[] {
@@ -192,6 +194,235 @@ describe('Unit: document-tokenizer', () => {
         { type: TokenType.HtmlTagClose, start: 14, end: 15 },
       ]);
       assertTokenInvariants('<!DOCTYPE html>');
+    });
+  });
+
+  describe('HTML comment context (modal)', () => {
+    /** Each token as `[type, source text]`, without EndOfInput. */
+    function texts(source: string): [TokenType, string][] {
+      return tokens(source).map((t) => [t.type, source.slice(t.start, t.end)]);
+    }
+
+    it("reads a tag opener in a comment's body as text", () => {
+      // Before comment mode, `<b` opened HtmlTag mode and `>` closed the tag,
+      // so `-->` never tokenized as a comment close.
+      expect(texts('<!-- a <b --><p>')).toEqual([
+        [TokenType.HtmlCommentOpen, '<!--'],
+        [TokenType.Text, ' a <b '],
+        [TokenType.HtmlCommentClose, '-->'],
+        [TokenType.HtmlTagOpen, '<'],
+        [TokenType.Text, 'p'],
+        [TokenType.HtmlTagClose, '>'],
+      ]);
+    });
+
+    it("reads an unbalanced quote in a comment's body as text", () => {
+      expect(texts('<!-- <a title="x -->')).toEqual([
+        [TokenType.HtmlCommentOpen, '<!--'],
+        [TokenType.Text, ' <a title="x '],
+        [TokenType.HtmlCommentClose, '-->'],
+      ]);
+    });
+
+    it('reads close tags, doctypes, and a nested <!-- as text', () => {
+      expect(texts('<!-- </div> <!DOCTYPE html> <!-- x -->')).toEqual([
+        [TokenType.HtmlCommentOpen, '<!--'],
+        [TokenType.Text, ' </div> <!DOCTYPE html> <!-- x '],
+        [TokenType.HtmlCommentClose, '-->'],
+      ]);
+    });
+
+    it("still tokenizes Liquid in a comment's body", () => {
+      expect(texts('<!-- {{ x }} {%- if y -%} -->')).toEqual([
+        [TokenType.HtmlCommentOpen, '<!--'],
+        [TokenType.Text, ' '],
+        [TokenType.LiquidVariableOutputOpen, '{{'],
+        [TokenType.Text, ' x '],
+        [TokenType.LiquidVariableOutputClose, '}}'],
+        [TokenType.Text, ' '],
+        [TokenType.LiquidTagOpen, '{%-'],
+        [TokenType.Text, ' if y '],
+        [TokenType.LiquidTagClose, '-%}'],
+        [TokenType.Text, ' '],
+        [TokenType.HtmlCommentClose, '-->'],
+      ]);
+    });
+
+    it('does not close a comment on --> inside Liquid', () => {
+      expect(texts("<!-- {{ '-->' }} -->")).toEqual([
+        [TokenType.HtmlCommentOpen, '<!--'],
+        [TokenType.Text, ' '],
+        [TokenType.LiquidVariableOutputOpen, '{{'],
+        [TokenType.Text, " '-->' "],
+        [TokenType.LiquidVariableOutputClose, '}}'],
+        [TokenType.Text, ' '],
+        [TokenType.HtmlCommentClose, '-->'],
+      ]);
+    });
+
+    it('closes a comment on --!>', () => {
+      expect(texts('<!-- a --!> b')).toEqual([
+        [TokenType.HtmlCommentOpen, '<!--'],
+        [TokenType.Text, ' a '],
+        [TokenType.HtmlCommentClose, '--!>'],
+        [TokenType.Text, ' b'],
+      ]);
+    });
+
+    it('closes the empty comments <!--> and <!--->', () => {
+      expect(texts('<!-->a')).toEqual([
+        [TokenType.HtmlCommentOpen, '<!--'],
+        [TokenType.HtmlCommentClose, '>'],
+        [TokenType.Text, 'a'],
+      ]);
+      expect(texts('<!--->a')).toEqual([
+        [TokenType.HtmlCommentOpen, '<!--'],
+        [TokenType.HtmlCommentClose, '->'],
+        [TokenType.Text, 'a'],
+      ]);
+      expect(texts('<!---->')).toEqual([
+        [TokenType.HtmlCommentOpen, '<!--'],
+        [TokenType.HtmlCommentClose, '-->'],
+      ]);
+    });
+
+    it('reads > and -> as text anywhere but right after <!--', () => {
+      expect(texts('<!-- > -> --->')).toEqual([
+        [TokenType.HtmlCommentOpen, '<!--'],
+        [TokenType.Text, ' > -> -'],
+        [TokenType.HtmlCommentClose, '-->'],
+      ]);
+      // Liquid right after `<!--` means the `>` that follows is not `<!-->`.
+      expect(texts('<!--{{ x }}>-->')).toEqual([
+        [TokenType.HtmlCommentOpen, '<!--'],
+        [TokenType.LiquidVariableOutputOpen, '{{'],
+        [TokenType.Text, ' x '],
+        [TokenType.LiquidVariableOutputClose, '}}'],
+        [TokenType.Text, '>'],
+        [TokenType.HtmlCommentClose, '-->'],
+      ]);
+    });
+
+    it('opens no comment inside an <svg>', () => {
+      // The parser closes an `<svg>` raw body at the first `</svg>` token, so a
+      // `<!--` in SVG (in CDATA, a foreignObject script, or a comment that
+      // never closes) must not hide it. Inside SVG, `<!--` opens no mode, as
+      // before comment mode. An `<svg` glued to a Liquid attribute counts too.
+      for (const [open, body] of [
+        ['<svg>', '<text><![CDATA[x > </script> <!-- z]]></text>'],
+        ['<svg>', '<foreignObject><script>s = "<!--";</script></foreignObject>'],
+        ['<svg>', '<!-- icon'],
+        ['<svg{% if x %} class="x"{% endif %}>', '<text><![CDATA[x > <!-- z]]></text>'],
+        // The parser balances a nested `<svg>`, so the outer one is still open after it.
+        ['<svg>', '<svg></svg><text><![CDATA[x > <!-- z]]></text>'],
+        ['<svg>', '<svg/><!-- icon</svg>'],
+      ]) {
+        const result = texts(`${open}${body}</svg><p>`);
+        expect(result.slice(-6, -3)).toEqual([
+          [TokenType.HtmlCloseTagOpen, '</'],
+          [TokenType.Text, 'svg'],
+          [TokenType.HtmlTagClose, '>'],
+        ]);
+      }
+    });
+
+    it('opens comments again after the </svg>', () => {
+      expect(texts('<svg></svg><!-- a <b -->')).toContainEqual([TokenType.HtmlCommentOpen, '<!--']);
+      // A `<svg>` in a script body is text, so it doesn't turn comments off.
+      expect(texts('<script>s = "<svg>";</script><!-- a <b -->')).toContainEqual([
+        TokenType.HtmlCommentOpen,
+        '<!--',
+      ]);
+    });
+
+    it('reads a script or style body as raw text, but not one inside SVG', () => {
+      const types = (source: string) => texts(source).map(([type]) => type);
+      // Outside SVG the body is one Text token, closed by its own close tag.
+      expect(texts('<script>a<b; s = "<!--";</script>')[3]).toEqual([
+        TokenType.Text,
+        'a<b; s = "<!--";',
+      ]);
+      expect(texts('<style>a > b { }</STYLE >')[3]).toEqual([TokenType.Text, 'a > b { }']);
+      // In SVG a `<style>` is markup: its `<b>` is a tag.
+      expect(
+        types('<svg><style><b></b></style></svg>').filter((t) => t === TokenType.HtmlTagOpen),
+      ).toHaveLength(3);
+    });
+
+    it('reads a --> outside a comment as text', () => {
+      expect(texts('a --> b')).toEqual([[TokenType.Text, 'a --> b']]);
+    });
+
+    it("leaves an unclosed comment's body as text to the end", () => {
+      expect(texts('<!-- a <b')).toEqual([
+        [TokenType.HtmlCommentOpen, '<!--'],
+        [TokenType.Text, ' a <b'],
+      ]);
+    });
+  });
+
+  describe('Liquid raw tag bodies (rawBodyRule)', () => {
+    const rawBodyRule = rawBodyRuleLookup((name) => Environment.default().tagForName(name));
+
+    /** Each token as `[type, source text]`, without EndOfInput. */
+    function texts(source: string): [TokenType, string][] {
+      return tokenize(source, { rawBodyRule })
+        .slice(0, -1)
+        .map((t) => [t.type, source.slice(t.start, t.end)]);
+    }
+
+    it('keeps a <!-- in a comment body from opening a comment', () => {
+      expect(texts('{% comment %}<!-- old{% endcomment %}<p>')).toEqual([
+        [TokenType.LiquidTagOpen, '{%'],
+        [TokenType.Text, ' comment '],
+        [TokenType.LiquidTagClose, '%}'],
+        [TokenType.Text, '<!-- old'],
+        [TokenType.LiquidTagOpen, '{%'],
+        [TokenType.Text, ' endcomment '],
+        [TokenType.LiquidTagClose, '%}'],
+        [TokenType.HtmlTagOpen, '<'],
+        [TokenType.Text, 'p'],
+        [TokenType.HtmlTagClose, '>'],
+      ]);
+    });
+
+    it('resumes the mode the raw tag sits in after its end tag', () => {
+      // The `"` in the raw body does not close the attribute value.
+      const result = texts('<a title="{% raw %}"<b{% endraw %}">');
+      expect(result.slice(-3)).toEqual([
+        [TokenType.LiquidTagClose, '%}'],
+        [TokenType.HtmlQuoteClose, '"'],
+        [TokenType.HtmlTagClose, '>'],
+      ]);
+      expect(result).toContainEqual([TokenType.Text, '"<b']);
+    });
+
+    it('bounds a stray {{ in a raw body to the body', () => {
+      expect(texts('{% raw %}{{ a {% endraw %}{{ 1 }}').slice(3)).toEqual([
+        [TokenType.LiquidVariableOutputOpen, '{{'],
+        [TokenType.Text, ' a '],
+        [TokenType.LiquidTagOpen, '{%'],
+        [TokenType.Text, ' endraw '],
+        [TokenType.LiquidTagClose, '%}'],
+        [TokenType.LiquidVariableOutputOpen, '{{'],
+        [TokenType.Text, ' 1 '],
+        [TokenType.LiquidVariableOutputClose, '}}'],
+      ]);
+    });
+
+    it('ends a nested comment body by the comment rule', () => {
+      const source = '{% comment %}{% comment %}<!--{% endcomment %}<b{% endcomment %}<p>';
+      expect(texts(source).slice(-3)).toEqual([
+        [TokenType.HtmlTagOpen, '<'],
+        [TokenType.Text, 'p'],
+        [TokenType.HtmlTagClose, '>'],
+      ]);
+    });
+
+    it('tokenizes an unclosed raw body, and any body without a rule, as markup', () => {
+      expect(texts('{% raw %}<p>')[3]).toEqual([TokenType.HtmlTagOpen, '<']);
+      const withoutRule = tokenize('{% comment %}<p>{% endcomment %}');
+      expect(withoutRule[3]).toMatchObject({ type: TokenType.HtmlTagOpen });
     });
   });
 
@@ -543,6 +774,169 @@ describe('Unit: document-tokenizer', () => {
     });
   });
 
+  describe('text runs end at the next token', () => {
+    it('ends a Liquid tag body at a -%} preceded by another -', () => {
+      const source = '{% if a--%}';
+      expect(tokens(source)).toMatchObject([
+        { type: TokenType.LiquidTagOpen, start: 0, end: 2 },
+        { type: TokenType.Text, start: 2, end: 8 },
+        { type: TokenType.LiquidTagClose, start: 8, end: 11 },
+      ]);
+      assertTokenInvariants(source);
+    });
+
+    it('keeps %} as text inside a Liquid drop and ends it at -}}', () => {
+      const source = '{{ "%}" -}}';
+      expect(tokens(source)).toMatchObject([
+        { type: TokenType.LiquidVariableOutputOpen, start: 0, end: 2 },
+        { type: TokenType.Text, start: 2, end: 8 },
+        { type: TokenType.LiquidVariableOutputClose, start: 8, end: 11 },
+      ]);
+      assertTokenInvariants(source);
+    });
+
+    it('ends a curly-quoted value on its partner, not on a straight quote', () => {
+      const source = '<a b=\u201cx"y\u201d c>';
+      expect(tokens(source)).toMatchObject([
+        { type: TokenType.HtmlTagOpen, start: 0, end: 1 },
+        { type: TokenType.Text, start: 1, end: 2 },
+        { type: TokenType.Text, start: 2, end: 3 },
+        { type: TokenType.Text, start: 3, end: 4 },
+        { type: TokenType.HtmlEquals, start: 4, end: 5 },
+        { type: TokenType.HtmlQuoteOpen, start: 5, end: 6 },
+        { type: TokenType.Text, start: 6, end: 9 },
+        { type: TokenType.HtmlQuoteClose, start: 9, end: 10 },
+        { type: TokenType.Text, start: 10, end: 11 },
+        { type: TokenType.Text, start: 11, end: 12 },
+        { type: TokenType.HtmlTagClose, start: 12, end: 13 },
+      ]);
+      assertTokenInvariants(source);
+    });
+
+    it("finds <!-- and the comment's close in the middle of text", () => {
+      // Outside a comment, `-->` is text.
+      const source = 'a-b-->c<!--d-e-->f';
+      expect(tokens(source)).toMatchObject([
+        { type: TokenType.Text, start: 0, end: 7 },
+        { type: TokenType.HtmlCommentOpen, start: 7, end: 11 },
+        { type: TokenType.Text, start: 11, end: 14 },
+        { type: TokenType.HtmlCommentClose, start: 14, end: 17 },
+        { type: TokenType.Text, start: 17, end: 18 },
+      ]);
+      assertTokenInvariants(source);
+    });
+  });
+
+  describe('text fast path stops at every token start mid-text', () => {
+    // No character in `pad` can start a token in any mode, so the fast path
+    // skips the whole pad and must stop exactly where the token begins.
+    const pad = 'abc 1 ';
+    const quotePairs = [
+      ['"', '"'],
+      ["'", "'"],
+      ['\u201c', '\u201d'],
+      ['\u201d', '\u201c'],
+      ['\u2018', '\u2019'],
+      ['\u2019', '\u2018'],
+    ];
+    const cases: Array<[string, string, TokenizeOptions, string[]]> = [
+      [
+        'Default',
+        '',
+        {},
+        ['{{', '{{-', '{%', '{%-', '<!--', '<!', '</a', '</Z', '</{', '<a', '<Z', '<{'],
+      ],
+      ['HtmlComment', '<!--', {}, ['{{', '{{-', '{%', '{%-', '-->', '--!>']],
+      ['RawText script', '<script>', {}, ['{{', '{%', '</script>', '</SCRIPT >']],
+      [
+        'HtmlTag',
+        '',
+        { insideHtmlTag: true },
+        [
+          '{{',
+          '{{-',
+          '{%',
+          '{%-',
+          '/>',
+          '>',
+          '=',
+          '"',
+          "'",
+          '\u201c',
+          '\u201d',
+          '\u2018',
+          '\u2019',
+        ],
+      ],
+      ...quotePairs.map(([open, close]): [string, string, TokenizeOptions, string[]] => [
+        `QuotedValue ${open}`,
+        '',
+        { insideQuotedAttribute: open },
+        [...new Set(['{{', '{%', open, close])],
+      ]),
+      ['LiquidTag', '{% ', {}, ['%}', '-%}']],
+      ['LiquidVariableOutput', '{{ ', {}, ['}}', '-}}']],
+    ];
+
+    for (const [mode, prefix, options, starts] of cases) {
+      it.each(starts)(`${mode}: %j`, (start) => {
+        const offset = prefix.length + pad.length;
+        const result = tokenize(prefix + pad + start + pad, options);
+        expect(result.some((t) => t.type !== TokenType.Text && t.start === offset)).toBe(true);
+      });
+    }
+  });
+
+  describe('matches tokenizeWithoutFastPath', () => {
+    // Every string of up to 4 of these characters, in every entry state. The
+    // set covers each character a mode's token can start with, plus near
+    // misses (`!`, `\u201a`) and plain text.
+    const alphabet = [...'{}%-<>/=!"\'\u201c\u201d\u2018\u2019\u201a a\n'];
+    let sources = [''];
+    for (let length = 1, previous = ['']; length <= 4; length++) {
+      previous = previous.flatMap((s) => alphabet.map((c) => s + c));
+      sources = sources.concat(previous);
+    }
+
+    const entryStates: Array<[string, string, TokenizeOptions]> = [
+      ['document start', '', {}],
+      ['skipFrontmatter', '', { skipFrontmatter: true }],
+      ['insideHtmlTag', '', { insideHtmlTag: true }],
+      ['rawText', '', { rawText: true }],
+      ...['"', "'", '\u201c', '\u201d', '\u2018', '\u2019'].map(
+        (quote): [string, string, TokenizeOptions] => [
+          `insideQuotedAttribute ${quote}`,
+          '',
+          { insideQuotedAttribute: quote },
+        ],
+      ),
+      ['inside a comment', '<!--', {}],
+      ['inside a script', '<script>', {}],
+      ['inside an svg', '<svg>', {}],
+      ['inside a Liquid tag', '{% ', {}],
+      ['inside a Liquid output', '{{ ', {}],
+    ];
+
+    function sameTokens(a: Token[], b: Token[]): boolean {
+      return (
+        a.length === b.length &&
+        a.every((t, i) => t.type === b[i].type && t.start === b[i].start && t.end === b[i].end)
+      );
+    }
+
+    it.each(entryStates)('%s', (_name, prefix, options) => {
+      const mismatches: string[] = [];
+      for (const source of sources) {
+        const input = prefix + source;
+        if (!sameTokens(tokenize(input, options), tokenizeWithoutFastPath(input, options))) {
+          mismatches.push(input);
+          if (mismatches.length === 10) break;
+        }
+      }
+      expect(mismatches).toEqual([]);
+    });
+  });
+
   describe('structural invariants', () => {
     const cases = [
       '{{ x }}',
@@ -558,6 +952,13 @@ describe('Unit: document-tokenizer', () => {
       '<br/>',
       '<br />',
       '<!-- comment -->',
+      '<!-- a <b -->',
+      '<!-- <a title="x -->',
+      '<!-- a --!>',
+      '<!-->',
+      '<!--->',
+      '<!-- {{ x }} -->',
+      '<!-- unclosed',
       '<!DOCTYPE html>',
       '<div class="foo">',
       "<div class='foo'>",

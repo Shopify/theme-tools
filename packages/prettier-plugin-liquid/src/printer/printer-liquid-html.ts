@@ -253,7 +253,7 @@ function printNode(
     }
 
     case NodeTypes.RawMarkup: {
-      if (node.parentNode?.name === 'doc') {
+      if (node.parentNode?.type === NodeTypes.LiquidRawTag && node.parentNode.name === 'doc') {
         return printLiquidDoc(path as AstPath<RawMarkup>, options, print, args);
       }
 
@@ -332,6 +332,18 @@ function printNode(
     }
 
     case NodeTypes.HtmlComment: {
+      const { blockStartPosition: open, blockEndPosition: close } = node;
+      // Part of a comment split at a Liquid block boundary, or one that never
+      // closes: adding the missing delimiter would change the output. On a side
+      // without one, the next parse reads the line break printed there as part
+      // of this node, so trim it to keep formatting idempotent.
+      if (open.start === open.end || close.start === close.end) {
+        let text = node.source.slice(node.position.start, node.position.end);
+        if (open.start === open.end) text = text.trimStart();
+        if (close.start === close.end) text = text.trimEnd();
+        return text;
+      }
+
       const conditionalComment = getConditionalComment(
         node.source.slice(node.position.start, node.position.end),
       );
