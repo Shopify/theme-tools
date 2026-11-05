@@ -931,5 +931,39 @@ describe.each([toTolerantLiquidAST, toTolerantLiquidHtmlAST])(
         { type: 'LiquidVariableOutput', position: { end: source.length } },
       ]);
     });
+
+    it('closes a nested comment inside an unclosed one', () => {
+      const source = '{% comment %}a{% comment %}b{% endcomment %}c';
+      expect(parse(source).children).toMatchObject([
+        { type: 'LiquidErrorNode', position: { start: 0, end: 14 } },
+        { type: 'LiquidRawTag', name: 'comment', body: { value: 'b' } },
+        { type: 'TextNode', value: 'c' },
+      ]);
+    });
+
+    it('closes the innermost open comments a later search reaches', () => {
+      const source = '{% comment %}{% comment %}{% comment %}a{% endcomment %}b{% endcomment %}';
+      expect(parse(source).children).toMatchObject([
+        { type: 'LiquidErrorNode', position: { start: 0, end: 13 } },
+        {
+          type: 'LiquidRawTag',
+          name: 'comment',
+          body: { value: '{% comment %}a{% endcomment %}b' },
+          position: { end: source.length },
+        },
+      ]);
+    });
+
+    it.each([
+      ['unclosed raw tags', '{% raw %}'.repeat(8_000)],
+      ['unclosed comment tags', '{% comment %}'.repeat(8_000)],
+      ['comment tags with one close', '{% comment %}'.repeat(8_000) + '{% endcomment %}'],
+    ])('bounds work for repeated %s', (_name, source) => {
+      const started = performance.now();
+
+      parse(source);
+
+      expect(performance.now() - started).toBeLessThan(1_000);
+    });
   },
 );

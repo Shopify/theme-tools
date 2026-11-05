@@ -9,6 +9,7 @@ import { RawMarkupKinds } from '../ast';
 import type { LiquidRawTag, LiquidNode, TextNode, LiquidVariableOutput } from '../ast';
 import type { TagDefinition, TagDefinitionRaw } from '../environment';
 import { findRawBodyEnd, rawBodyRuleLookup } from './raw-body';
+import type { RawBodyEndCache } from './raw-body';
 import { LiquidHTMLASTParsingError } from '../errors';
 import { parseLiquidDoc } from '../liquid-doc/parser';
 
@@ -22,6 +23,8 @@ export interface RawParserDelegate extends ParserBase {
   tagForName(name: string): TagDefinition | undefined;
   parseLiquidVariableOutput(): LiquidVariableOutput;
   parseLiquidTag(): LiquidRawTag | import('../ast').LiquidTag;
+  /** Earlier raw-body searches in this source under the current tag registry. */
+  rawBodyEndCache(): RawBodyEndCache;
 }
 
 // rawTag := "{%" tagName markup "%}" rawBody "{%" "end" tagName "%}"
@@ -41,6 +44,7 @@ export function parseRawTag(
       tagName,
       def.body,
       rawBodyRuleLookup((name) => parser.tagForName(name)),
+      parser.rawBodyEndCache(),
     );
   if (!endTag) {
     throw new LiquidHTMLASTParsingError(
