@@ -47,7 +47,10 @@ describe('custom checks through the language server config loader', () => {
 
         const approved = vi.fn(async () => true);
         await loadConfig(uri, NodeFileSystem, { authorizeCustomChecks: approved });
-        expect(approved).toHaveBeenCalledWith({ root, candidates: expect.any(Array) });
+        expect(approved).toHaveBeenCalledWith({
+          root: URI.file(root).fsPath,
+          candidates: expect.any(Array),
+        });
         expect(await fs.readFile(marker, 'utf8')).toBe('yes');
       } finally {
         await fs.rm(root, { recursive: true, force: true });
