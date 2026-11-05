@@ -675,6 +675,27 @@ describe('raw-body token boundaries', () => {
     expect(performance.now() - started).toBeLessThan(1_000);
   });
 
+  // The tokenizer-only checks above don't run the parser, which is where an
+  // unclosed raw opener searches for its close.
+  describe.each([
+    ['repeated unclosed raw tags', '{% raw %}'.repeat(8_000)],
+    ['repeated unclosed comment tags', '{% comment %}'.repeat(8_000)],
+    [
+      'repeated inner raw tags closing beyond their enclosing body',
+      '{% javascript %}' + '{% raw %}'.repeat(8_000) + '{% endjavascript %}{% endraw %}',
+    ],
+  ])('bounds parser work for %s', (_name, source) => {
+    it.each([
+      ['toLiquidHtmlAST', toLiquidHtmlAST],
+      ['toLiquidAST', toLiquidAST],
+    ] as const)('in %s', (_entry, parse) => {
+      const started = performance.now();
+
+      expect(() => parse(source)).toThrow();
+      expect(performance.now() - started).toBeLessThan(1_000);
+    });
+  });
+
   it('still finds a sibling raw boundary after rejected inner boundaries', () => {
     const source =
       "{% javascript %}{% raw %}{% endjavascript %}<!-- {{ '{% endraw %}' }} -->" +
