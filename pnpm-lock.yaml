@@ -444,6 +444,9 @@ importers:
       '@shopify/theme-check-docs-updater':
         specifier: workspace:^3.31.0
         version: link:../theme-check-docs-updater
+      '@shopify/theme-check-node':
+        specifier: workspace:^3.31.0
+        version: link:../theme-check-node
       '@types/glob':
         specifier: ^8.0.0
         version: 8.1.0
