@@ -41,6 +41,7 @@ const asyncGlob = promisify(glob);
 export * from '@shopify/theme-check-common';
 export * from './config/types';
 export { NodeFileSystem };
+export { ThemeCheckConfigError } from './config';
 
 export const loadConfig: typeof resolveConfig = async (configPath, root) => {
   configPath ??= await findConfigPath(root);
