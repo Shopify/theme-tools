@@ -54,6 +54,7 @@ import type { TagDefinition } from '../environment';
  */
 export interface HtmlParserDelegate extends ParserBase {
   htmlParseHtml: boolean;
+  readonly htmlUsesBuiltinTags: boolean;
   htmlAllowUnclosedHtml: boolean;
   /** See `ASTBuildOptions.pairDanglingCloseTags`. */
   readonly htmlPairDanglingCloseTags: boolean;
@@ -187,15 +188,22 @@ export function parseHtmlRawBody(
   const source = parser.getSource();
   const bodyStart = blockStartPosition.end;
 
-  const rawText = RAW_TEXT_ELEMENTS.has(plainName.toLowerCase())
-    ? findRawTextClose(
-        source,
-        bodyStart,
-        plainName,
-        rawBodyRuleLookup((name) => parser.tagForName(name)),
-      )
-    : null;
+  // Builtin HTML tokenization already shields closes inside Liquid and raw
+  // bodies. Custom callbacks can change their registry after that scan.
+  const custom = !parser.htmlUsesBuiltinTags;
+  if (custom) parser.ensureRawBoundary(bodyStart, bodyStart);
   const closeIdx = scanForHtmlCloseTag(parser, plainName);
+  const rawText =
+    (custom || closeIdx === -1) &&
+    (RAW_TEXT_ELEMENTS.has(plainName.toLowerCase()) ||
+      (custom && closeIdx === -1 && plainName.toLowerCase() === 'svg'))
+      ? findRawTextClose(
+          source,
+          bodyStart,
+          plainName,
+          rawBodyRuleLookup((name) => parser.tagForName(name)),
+        )
+      : null;
   if (rawText && (closeIdx === -1 || parser.tokenAt(closeIdx).start !== rawText.start)) {
     parser.retokenizeRawText(bodyStart, rawText.start, rawText.end);
   } else if (!rawText && closeIdx === -1) {
@@ -210,14 +218,10 @@ export function parseHtmlRawBody(
   const bodyEnd = rawText ? rawText.start : parser.tokenAt(closeIdx).start;
   const bodyString = source.slice(bodyStart, bodyEnd);
 
-  const savedRawTextBound = parser.rawTextBound;
-  if (rawText) parser.rawTextBound = bodyEnd;
-  let bodyNodes: (LiquidNode | TextNode)[];
-  try {
-    bodyNodes = parser.parseLiquidInRange(bodyStart, bodyEnd);
-  } finally {
-    parser.rawTextBound = savedRawTextBound;
-  }
+  const previousBound = parser.rawTextBound;
+  if (custom) parser.rawTextBound = bodyEnd;
+  const bodyNodes = parser.parseLiquidInRange(bodyStart, bodyEnd);
+  if (custom) parser.rawTextBound = previousBound;
 
   const kind = rawMarkupKindForHtmlTag(plainName, attributes, bodyString);
   const body = makeRawMarkup(kind, bodyString, bodyNodes, bodyStart, bodyEnd, source);
@@ -225,7 +229,7 @@ export function parseHtmlRawBody(
   // Re-seek to the close tag by its stable source offset (`bodyEnd`) rather than
   // the pre-parse `closeIdx` or wherever the body parse left the cursor:
   //  - `closeIdx` can go stale: a nested raw tag in the body calls
-  //    `resliceTokensFrom`, which renumbers the token slots at/after that
+  //    raw-boundary recovery, which renumbers the token slots at/after that
   //    boundary, so the cached index would point at the wrong slot.
   //  - the live cursor can over-advance: a `{% if %}` block whose body straddles
   //    the close tag (e.g. `<script>{% if x %}</script>{% endif %}</script>`)
@@ -699,15 +703,6 @@ function liquidTagStartsAttributeList(
   return liquidTagBodyStartsWithWhitespace(parser);
 }
 
-/**
- * Peek whether the rendered body of the block tag at the current position
- * begins with whitespace. Markup *inside* `{% ... %}` (the control structure
- * itself, e.g. `if x`, `case y`, `when 'a'`) is skipped; only body content
- * emitted between tags is considered, so `{% case x %}{% when 'a' %} data-foo{% endcase %}`
- * is correctly read as whitespace-led. A trimming close delimiter (`-%}`) strips
- * the body's leading whitespace, so `{% if c -%} y{% endif %}` is content-led.
- */
-/** A `{{-` or `{%-` open delimiter (length 3) left-trims preceding whitespace. */
 function isLeftTrimmingOpen(
   tok: { type: TokenType; start: number; end: number } | undefined,
 ): boolean {

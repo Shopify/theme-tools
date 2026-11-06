@@ -1,6 +1,5 @@
 import { TokenType } from './tokenizer';
 import type { Token } from './tokenizer';
-import { rawBodyRuleLookup } from './raw-body';
 import { ParserBase } from './base';
 import { makeDocumentNode } from './factories';
 import { ChildFilterMode, filterChildren } from './tree-builder';
@@ -25,6 +24,7 @@ import type {
 import '../environment'; // side-effect: ensures builtinTags init before downstream imports
 import type { Environment, LiquidLineContext } from '../environment';
 import type { Position } from '../types';
+import type { RawBodyEnd } from '../tag-definitions';
 import type { LiquidOpenWhitespace, LiquidCloseWhitespace } from './factories';
 import { parseLiquidVariableOutput as parseLiquidVariableOutputFn } from './liquid-variable-output';
 import {
@@ -79,10 +79,15 @@ export class DocumentParser
     parseHtml: boolean,
     allowUnclosedDocumentNode: boolean = false,
     opaqueHtmlComments: boolean = false,
+    rawBodyEnds?: readonly RawBodyEnd[],
   ) {
-    super(tokens, source);
+    super(
+      tokens,
+      source,
+      env.usesBuiltinTags() ? undefined : { rawTags: env, parseHtml },
+      rawBodyEnds,
+    );
     this.env = env;
-    this.rawBodyRule = rawBodyRuleLookup((name) => env.tagForName(name));
     this._parseHtml = parseHtml;
     this._allowUnclosedHtml = allowUnclosedDocumentNode;
     this._allowUnclosedDocumentNode = allowUnclosedDocumentNode;
@@ -133,6 +138,9 @@ export class DocumentParser
   }
   get htmlOpaqueComments(): boolean {
     return this._opaqueHtmlComments;
+  }
+  get htmlUsesBuiltinTags(): boolean {
+    return this.env.usesBuiltinTags();
   }
   get htmlAllowUnclosedHtml(): boolean {
     return this._allowUnclosedHtml;

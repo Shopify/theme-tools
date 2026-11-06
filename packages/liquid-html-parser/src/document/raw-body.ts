@@ -7,9 +7,7 @@ const RUBY_WHITESPACE = '[ \\t\\n\\v\\f\\r]';
 const FULL_TOKEN = new RegExp(
   `^\\{%-?${RUBY_WHITESPACE}*(#|\\w+)${RUBY_WHITESPACE}*[\\s\\S]*?-?%\\}$`,
 );
-const FULL_TOKEN_POSSIBLY_INVALID = new RegExp(
-  `^([\\s\\S]*)\\{%-?${RUBY_WHITESPACE}*(\\w+)${RUBY_WHITESPACE}*[\\s\\S]*-?%\\}$`,
-);
+const TRAILING_TAG_NAME = new RegExp(`\\{%-?${RUBY_WHITESPACE}*(\\w+)`, 'y');
 const LIQUID_TAG_NAME = /^(#|\w+)/;
 const RUBY_LINE_INDENT = /^[ \t\v\f\r]*$/;
 const TAG_OR_VARIABLE_START = /\{[{%]/g;
@@ -49,14 +47,28 @@ export function findRawBodyEnd(
   let depth = 1;
 
   while (tokenStart < source.length) {
-    const tokenEnd = liquidTokenEnd(source, tokenStart);
+    // Text cannot name a tag. Advance straight to the next Liquid token,
+    // without slicing or inspecting the intervening text as another token.
+    TAG_OR_VARIABLE_START.lastIndex = tokenStart;
+    if (
+      source[tokenStart] !== '{' ||
+      (source[tokenStart + 1] !== '%' && source[tokenStart + 1] !== '{')
+    ) {
+      const open = TAG_OR_VARIABLE_START.exec(source);
+      if (!open) return null;
+      tokenStart = open.index;
+    }
+    const tokenEnd =
+      source[tokenStart + 1] === '%'
+        ? tagTokenEnd(source, tokenStart + 2)
+        : variableTokenEnd(source, tokenStart + 2);
     const token = source.slice(tokenStart, tokenEnd);
     const tag = tokenTag(token, rule.delimiter);
 
-    if (tag?.name === endName) {
+    if (tag?.[1] === endName) {
       depth -= 1;
       if (depth === 0) {
-        const tagStart = tokenStart + tag.offset;
+        const tagStart = tokenStart + tag.index;
         return {
           tagStart,
           tagEnd: tokenEnd,
@@ -64,13 +76,13 @@ export function findRawBodyEnd(
           wsEnd: token[token.length - 3] === '-' ? '-' : '',
         };
       }
-    } else if (tag?.name === tagName) {
+    } else if (tag?.[1] === tagName) {
       if (rule.sameName === 'rejected') return null;
       if (rule.sameName === 'nests') depth += 1;
-    } else if (tag && rule.opaque.includes(tag.name)) {
-      const innerRule = ruleFor(tag.name);
+    } else if (tag && rule.opaque.includes(tag[1])) {
+      const innerRule = ruleFor(tag[1]);
       if (innerRule) {
-        const innerEnd = findRawBodyEnd(source, tokenEnd, tag.name, innerRule, ruleFor);
+        const innerEnd = findRawBodyEnd(source, tokenEnd, tag[1], innerRule, ruleFor);
         if (!innerEnd) return null;
         tokenStart = innerEnd.tagEnd;
         continue;
@@ -123,16 +135,24 @@ export function findRawLineBodyEnd(
 }
 
 // The tag a token names under `delimiter`, and where that tag starts in the token.
-function tokenTag(
-  token: string,
-  delimiter: RawBodyRule['delimiter'],
-): { name: string; offset: number } | undefined {
+function tokenTag(token: string, delimiter: RawBodyRule['delimiter']): RegExpExecArray | undefined {
+  if (!token.endsWith('%}')) return undefined;
   if (delimiter === 'leading') {
-    const name = FULL_TOKEN.exec(token)?.[1];
-    return name === undefined ? undefined : { name, offset: 0 };
+    return FULL_TOKEN.exec(token) ?? undefined;
   }
-  const match = FULL_TOKEN_POSSIBLY_INVALID.exec(token);
-  return match ? { name: match[2], offset: match[1].length } : undefined;
+  // Raw accepts the last tag opener in a Liquid token, including one inside
+  // an unfinished output. Search backwards without backtracking over its text.
+  for (
+    let offset = token.lastIndexOf('{%', token.length - 3);
+    offset !== -1;
+    offset = token.lastIndexOf('{%', offset - 1)
+  ) {
+    TRAILING_TAG_NAME.lastIndex = offset;
+    const match = TRAILING_TAG_NAME.exec(token);
+    if (match) return match;
+    if (offset === 0) break;
+  }
+  return undefined;
 }
 
 // `BlockBody::LiquidTagToken` indents only with ASCII whitespace, so a line
@@ -141,20 +161,6 @@ function lineTagName(source: string, line: LiquidLine): string | undefined {
   const lineStart = source.lastIndexOf('\n', line.nameOffset - 1) + 1;
   if (!RUBY_LINE_INDENT.test(source.slice(lineStart, line.nameOffset))) return undefined;
   return LIQUID_TAG_NAME.exec(line.tagName)?.[1];
-}
-
-/**
- * The end offset of the Liquid token that starts at `start`, split the way
- * `Liquid::Tokenizer#next_token` splits it: a tag runs to the first `%}`, and
- * text runs to the next `{{` or `{%`.
- */
-function liquidTokenEnd(source: string, start: number): number {
-  if (source.startsWith('{%', start)) return tagTokenEnd(source, start + 2);
-  if (source.startsWith('{{', start)) return variableTokenEnd(source, start + 2);
-
-  TAG_OR_VARIABLE_START.lastIndex = start;
-  const next = TAG_OR_VARIABLE_START.exec(source);
-  return next ? next.index : source.length;
 }
 
 // `Tokenizer#next_tag_token`: an unterminated `{%` is a token of its own.

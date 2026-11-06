@@ -18,7 +18,7 @@ import { Comparators, NamedTags, NodeTypes, RawTags, nonTraversableProperties } 
 import type { Position } from './types';
 import { DocumentParser } from './document/parser';
 import { tokenize } from './document/tokenizer';
-import { rawBodyRuleLookup } from './document/raw-body';
+import type { TokenizeOptions } from './document/tokenizer';
 import { Environment } from './environment';
 
 /** The union type of all possible node types inside a LiquidHTML AST. */
@@ -994,10 +994,21 @@ export function toLiquidAST(
   },
 ) {
   const env = options.environment ?? Environment.default();
-  const tokens = tokenize(source, {
-    rawBodyRule: rawBodyRuleLookup((name) => env.tagForName(name)),
-  });
-  const parser = new DocumentParser(tokens, source, env, false, options.allowUnclosedDocumentNode);
+  const tokenizeOptions: TokenizeOptions = {
+    rawTags: env,
+    builtinRawTags: env.usesBuiltinTags(),
+    parseHtml: false,
+  };
+  const tokens = tokenize(source, tokenizeOptions);
+  const parser = new DocumentParser(
+    tokens,
+    source,
+    env,
+    false,
+    options.allowUnclosedDocumentNode,
+    false,
+    tokenizeOptions.rawBodyEnds,
+  );
   return parser.parseDocument();
 }
 
@@ -1009,9 +1020,12 @@ export function toLiquidHtmlAST(
   },
 ): DocumentNode {
   const env = options.environment ?? Environment.default();
-  const tokens = tokenize(source, {
-    rawBodyRule: rawBodyRuleLookup((name) => env.tagForName(name)),
-  });
+  const tokenizeOptions: TokenizeOptions = {
+    rawTags: env,
+    builtinRawTags: env.usesBuiltinTags(),
+    parseHtml: true,
+  };
+  const tokens = tokenize(source, tokenizeOptions);
   const parser = new DocumentParser(
     tokens,
     source,
@@ -1019,6 +1033,7 @@ export function toLiquidHtmlAST(
     true,
     options.allowUnclosedDocumentNode,
     options.opaqueHtmlComments,
+    tokenizeOptions.rawBodyEnds,
   );
   parser.pairDanglingCloseTags = options.pairDanglingCloseTags ?? false;
   return parser.parseDocument();
