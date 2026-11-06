@@ -1,5 +1,60 @@
 # @shopify/liquid-html-parser
 
+## 2.12.0
+
+### Minor Changes
+
+- 7cb4970d: Type `{% block %}` and `{% section %}` arguments as one `BlockArgument`, whose value is a scalar or a single-level array literal, instead of a `LiquidNamedArgument | BlockArrayArgument` union. Completions narrow on the argument's value.
+- 7cb4970d: Parse the Liquid inside HTML comments. Liquid renders it, and its tags can open, branch and close blocks, so `{% if a %}<!-- {% endif %} -->` no longer fails with an unclosed `if`.
+  - `HtmlComment` has `children` (text and Liquid) and `blockStartPosition`/`blockEndPosition` for its delimiters.
+  - A comment that crosses a Liquid block boundary is split there, and each part has an empty delimiter range on the split side.
+  - A comment that never closes ends at the end of the file, as in a browser.
+  - An end tag in a comment that closes no block is a parse error, as in Liquid.
+  - The `opaqueHtmlComments` option keeps comment bodies opaque.
+
+  **Behavior changes**
+  - Code that walks `children` now visits the Liquid and text inside HTML comments.
+  - `<!-- {% if a %} --><p>x</p><!-- {% endif %} -->` is one comment whose `if` holds `<p>x</p>` as text, not two comments around a `<p>` element.
+  - `<!-- {% endif %} -->` with no open `if` no longer parses. An unclosed `<!--` and `{% if a %}<!-- {% endif %} -->` now parse.
+  - Code that creates `HtmlComment` nodes must set `children`, `blockStartPosition` and `blockEndPosition`.
+
+  Pass `opaqueHtmlComments: true` to get the previous tree for these templates.
+
+  Checks now see the Liquid in HTML comments, and completions work inside them. Prettier prints an unclosed comment as written, and can move whitespace and line breaks inside a comment that holds a Liquid block or is split by one.
+
+- 7cb4970d: Tokenize HTML comments as a browser does. In a comment only Liquid and the comment's close count, so a `<b`, an unbalanced quote or a nested `<!--` can no longer hide the `-->`. A comment closes on `-->` or `--!>`, and `<!-->` and `<!--->` are empty comments. Outside a comment, `-->` is text. The bodies of Liquid raw tags like `{% comment %}` are opaque to the tokenizer too, so a `<!--` or a quote in one no longer affects the rest of the file.
+
+  **Behavior changes**
+  - `<!--><div>shown</div>-->` is an empty comment, a `<div>` element and the text `-->`. It used to be one comment.
+  - `<!-- a --!><p>b</p>` closes the comment at `--!>` instead of failing to parse.
+
+  `opaqueHtmlComments` doesn't change these.
+
+- 7cb4970d: Add a `pairDanglingCloseTags` option, off by default. Themes often open an element in each branch of a conditional and close it once after it (`{% if a %}<div class="x">{% else %}<div class="y">{% endif %}…</div>`). With the option, such a close tag becomes an `HtmlDanglingMarkerClose` when an earlier `if`, `unless` or `case` in the same scope leaves an element of that name open on every path, instead of a parse error. It pairs only with the innermost such element.
+- 7cb4970d: Read `<script>` and `<style>` bodies as raw text, as a browser does: a `<` in them is JavaScript or CSS, not an HTML tag, and the element closes at its first close tag outside Liquid. So `<script>a<script>b</script>c</script>` now ends the script at the first `</script>` and reports the second as an unmatched close tag. `<svg>` still pairs nested `<svg>` elements.
+
+  **Behavior changes**
+  - A `<script>` inside a script body no longer pairs with a `</script>`. `<script>document.write('<script src="a.js"></script>');</script>` and `<script type="text/template"><script>x</script></script>` now fail to parse in `strict` mode with "Attempting to close HtmlElement 'script' before it was opened".
+
+### Patch Changes
+
+- c8099ba8: Find the parser's position after each HTML comment, `<script>`, `<style>` or `<svg>` element and raw Liquid tag, like `{% raw %}` or `{% comment %}`, with a binary search instead of rescanning from the first token. When a stray `{{` or `{%` in a raw Liquid tag's body runs past its end tag, re-tokenize the rest of the file only as far as the parser reads it, instead of in full. Both avoid quadratic work in files with many of these nodes.
+- 320fa1fe: Trim whitespace around Liquid tags with `trimStart()`/`trimEnd()` instead of regular expressions. The trailing-whitespace regex was quadratic in the length of a whitespace run and was the single most expensive step of parsing a typical theme.
+- 5b634d93: Check character codes before running regular expressions or `startsWith` in the Liquid expression tokenizer and when looking for `{{`/`{%`. Tokens and ASTs are unchanged; parsing is 5–7% faster.
+- a73b174f: Parse names inherited from `Object.prototype` like any other name. `{{ constructor }}` and `{{ toString }}` were parsed as Liquid literals whose value was a JavaScript function, and `{% constructor %}` or `{% __proto__ %}` made the parser throw instead of producing an unknown tag. Recognizing literal keywords with a `switch` is also slightly faster.
+- 7cb4970d: End each raw tag's body by the rule of the Liquid class that parses it, in templates and in `{% liquid %}`:
+  - `{% comment %}` nests, skips the bodies of raw tags inside it, and closes on any tag named `endcomment`, so `{% endcomment xyz %}` closes it.
+  - `{% raw %}`, `{% javascript %}`, `{% schema %}` and `{% stylesheet %}` close at their first end tag, extra markup included, so `{% endraw xyz %}` closes `{% raw %}`.
+  - `{% doc %}` reads like `{% raw %}` but rejects a nested `{% doc %}`.
+  - `{% style %}` is a block, so it nests.
+
+  Templates that Liquid reports as never closed now fail to parse too, such as a comment whose body Liquid's tokenizer runs past the `{% endcomment %}`.
+
+- 5aec106f: Keep Liquid raw bodies within their closing tags during tokenization, preserving following content and enclosing HTML attribute context. Reuse closing offsets for built-in tags, recover boundaries when custom tag registrations change during parsing, and keep parse time proportional to the source for documents with many raw tags.
+- 34dae62b: Tokenize runs of plain text in one step instead of one character at a time. Most characters can't start a token, so the tokenizer now jumps to the next one that can.
+
+  Tokens and ASTs are unchanged. On Dawn, Horizon and the base theme, `tokenize` is about 6× faster and `toLiquidHtmlAST`/`toLiquidAST` about 2× faster.
+
 ## 2.11.0
 
 ### Minor Changes
