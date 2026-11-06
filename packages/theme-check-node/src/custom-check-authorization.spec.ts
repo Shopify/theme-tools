@@ -73,9 +73,28 @@ describe('custom check authorization', () => {
       );
     });
 
+    it.each([undefined, () => false])(
+      'reports skipped checks without evaluating code or writing to stderr',
+      async (authorizeCustomChecks) => {
+        const onDiagnostic = vi.fn(() => true);
+        await run(root, { authorizeCustomChecks, onDiagnostic });
+        expect(onDiagnostic).toHaveBeenCalledExactlyOnceWith({
+          code: 'custom-checks-disabled',
+          level: 'warning',
+          message: expect.any(String),
+          root,
+          candidates: [{ source: 'require', path: path.join(root, 'checks.js') }],
+        });
+        await expect(fs.stat(marker)).rejects.toMatchObject({ code: 'ENOENT' });
+        expect(console.error).not.toHaveBeenCalled();
+      },
+    );
+
     it('forwards authorization and loads approved code', async () => {
       const authorizeCustomChecks = vi.fn(() => true);
-      await run(root, { authorizeCustomChecks });
+      const onDiagnostic = vi.fn();
+      await run(root, { authorizeCustomChecks, onDiagnostic });
+      expect(onDiagnostic).not.toHaveBeenCalled();
       expect(authorizeCustomChecks).toHaveBeenCalledExactlyOnceWith({
         root,
         candidates: [{ source: 'require', path: path.join(root, 'checks.js') }],
@@ -145,8 +164,10 @@ describe('custom check authorization', () => {
 
   it('does not request authorization when there are no custom checks', async () => {
     const authorizeCustomChecks = vi.fn(() => false);
-    await loadConfig(undefined, root, { authorizeCustomChecks });
+    const onDiagnostic = vi.fn();
+    await loadConfig(undefined, root, { authorizeCustomChecks, onDiagnostic });
     expect(authorizeCustomChecks).not.toHaveBeenCalled();
+    expect(onDiagnostic).not.toHaveBeenCalled();
     expect(console.error).not.toHaveBeenCalled();
   });
 });

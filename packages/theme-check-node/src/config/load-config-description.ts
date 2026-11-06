@@ -10,7 +10,12 @@ import { fileExists } from '../file-utils';
 import { AbsolutePath } from '../temp';
 import { thisNodeModuleRoot } from './installation-location';
 import { findThirdPartyChecks, loadThirdPartyChecks } from './load-third-party-checks';
-import { ConfigDescription, CustomCheckCandidate, LoadConfigOptions } from './types';
+import {
+  ConfigDescription,
+  ConfigDiagnostic,
+  CustomCheckCandidate,
+  LoadConfigOptions,
+} from './types';
 import { URI, Utils } from 'vscode-uri';
 
 const flatten = <T>(arrs: T[][]): T[] => arrs.flat();
@@ -40,9 +45,19 @@ export async function loadConfigDescription(
   const authorized =
     candidates.length > 0 && (await options.authorizeCustomChecks?.({ root, candidates })) === true;
   if (candidates.length > 0 && !authorized) {
-    console.error(
-      'Custom Theme Checks are disabled. Explicit authorization is required to execute custom check JavaScript.',
-    );
+    const diagnostic: ConfigDiagnostic = {
+      code: 'custom-checks-disabled',
+      level: 'warning',
+      message:
+        'Custom Theme Checks are disabled. Explicit authorization is required to execute custom check JavaScript.',
+      root,
+      candidates,
+    };
+    if (options.onDiagnostic) {
+      options.onDiagnostic(diagnostic);
+    } else {
+      console.error(diagnostic.message);
+    }
   }
   const thirdPartyChecks = authorized
     ? loadThirdPartyChecks(candidates.map(({ path }) => path))

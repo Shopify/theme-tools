@@ -40,6 +40,13 @@ export interface CustomCheckAuthorizationRequest {
   candidates: CustomCheckCandidate[];
 }
 
+/** A nonfatal diagnostic produced while loading Theme Check configuration. */
+export type ConfigDiagnostic = CustomCheckAuthorizationRequest & {
+  code: 'custom-checks-disabled';
+  level: 'warning';
+  message: string;
+};
+
 export interface LoadConfigOptions {
   /**
    * Grants permission to execute the discovered custom check modules. Custom
@@ -47,6 +54,11 @@ export interface LoadConfigOptions {
    * callback runs before any custom check module is evaluated.
    */
   authorizeCustomChecks?: (request: CustomCheckAuthorizationRequest) => boolean | Promise<boolean>;
+  /**
+   * Reports skipped-check diagnostics instead of writing them to stderr.
+   * Diagnostic handling does not grant permission to execute custom checks.
+   */
+  onDiagnostic?: (diagnostic: ConfigDiagnostic) => void;
 }
 
 export const ModernIdentifiers = [

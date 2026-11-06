@@ -32,15 +32,27 @@ describe('startServer custom check authorization', () => {
           `require('node:fs').writeFileSync(${JSON.stringify(marker)}, 'yes'); exports.checks = [];`,
         );
         const authorizeCustomChecks = vi.fn(async () => allowed);
-        startServer({} as any, NodeFileSystem, { authorizeCustomChecks });
+        const onDiagnostic = vi.fn();
+        startServer({} as any, NodeFileSystem, { authorizeCustomChecks, onDiagnostic });
         const dependencies = vi.mocked(startCoreServer).mock.calls.at(-1)![1];
         await dependencies.loadConfig(URI.file(root).toString(), NodeFileSystem);
         expect(authorizeCustomChecks).toHaveBeenCalledOnce();
         if (allowed) {
           expect(await fs.readFile(marker, 'utf8')).toBe('yes');
+          expect(onDiagnostic).not.toHaveBeenCalled();
         } else {
           await expect(fs.stat(marker)).rejects.toMatchObject({ code: 'ENOENT' });
+          expect(onDiagnostic).toHaveBeenCalledExactlyOnceWith({
+            code: 'custom-checks-disabled',
+            level: 'warning',
+            message: expect.any(String),
+            root: URI.file(root).fsPath,
+            candidates: [
+              { source: 'require', path: path.join(URI.file(root).fsPath, 'checks.cjs') },
+            ],
+          });
         }
+        expect(warning).not.toHaveBeenCalled();
       } finally {
         warning.mockRestore();
         await fs.rm(root, { recursive: true, force: true });
