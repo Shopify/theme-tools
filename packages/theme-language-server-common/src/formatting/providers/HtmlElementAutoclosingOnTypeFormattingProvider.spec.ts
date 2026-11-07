@@ -51,6 +51,28 @@ describe('Module: HtmlElementAutoclosingOnTypeFormattingProvider', () => {
     );
   });
 
+  it('should close the newly opened child before an existing parent closing tag', async () => {
+    const CURSOR = '█';
+    const source = `<ul>\n  <li>${CURSOR}\n</ul>`;
+    const expected = `<ul>\n  <li></li>${CURSOR}\n</ul>`;
+    documentManager.open(uri, source.replace(CURSOR, ''), 1);
+    const document = documentManager.get(uri)?.textDocument!;
+
+    const indexOfCursor = source.indexOf(CURSOR);
+    const params: DocumentOnTypeFormattingParams = {
+      textDocument: { uri },
+      position: document.positionAt(indexOfCursor),
+      ch: '>',
+      options,
+    };
+
+    assert(document);
+
+    const result = await onTypeFormattingProvider.onTypeFormatting(params);
+    assert(result);
+    expect(result).to.applyEdits(document, expected.replace(CURSOR, ''));
+  });
+
   it('should return a TextEdit to insert a closing <tag> when you type > for an unclosed tag even if the unclosed tag is higher up', async () => {
     const CURSOR = '█';
     // in this scenario, the cursor is after div#inner, but the unclosed tag is div#main.
