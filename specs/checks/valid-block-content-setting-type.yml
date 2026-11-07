@@ -45,6 +45,17 @@ cases:
         message: "Schema setting 'content' has Liquid type 'product[]', but the built-in 'content' parameter has type 'string'."
         start: [1, 36]
         highlight: '"product_list"'
+  - name: reports an article_list schema setting named content on its type
+    files:
+      blocks/card.liquid: |-
+        {% schema %}
+        {"settings":[{"id":"content","type":"article_list"}]}
+        {% endschema %}
+    offenses:
+      - file: blocks/card.liquid
+        message: "Schema setting 'content' has Liquid type 'article[]', but the built-in 'content' parameter has type 'string'."
+        start: [1, 36]
+        highlight: '"article_list"'
   - name: accepts a string-compatible text schema setting named content
     files:
       blocks/card.liquid: |-
