@@ -96,6 +96,23 @@ describe('Unit: markup-tokenizer', () => {
       expect(result).toMatchObject([{ type: MarkupTokenType.Number, value: '-100_000' }]);
       expect(result).toHaveLength(1);
     });
+
+    it('treats only ASCII 0-9 as digits', () => {
+      // U+0661 and U+FF15 are digits in other scripts; `\d` without `u` excludes them.
+      expect(tokens('\u0661 -\uff15 0 9 -0')).toMatchObject([
+        { type: MarkupTokenType.Dash, value: '-' },
+        { type: MarkupTokenType.Number, value: '0' },
+        { type: MarkupTokenType.Number, value: '9' },
+        { type: MarkupTokenType.Number, value: '-0' },
+      ]);
+    });
+
+    it('tokenizes a trailing dash as Dash', () => {
+      expect(tokens('a -')).toMatchObject([
+        { type: MarkupTokenType.Id, value: 'a' },
+        { type: MarkupTokenType.Dash, value: '-' },
+      ]);
+    });
   });
 
   describe('operators', () => {

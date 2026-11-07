@@ -10,7 +10,12 @@ import { fileExists } from '../file-utils';
 import { AbsolutePath } from '../temp';
 import { thisNodeModuleRoot } from './installation-location';
 import { findThirdPartyChecks, loadThirdPartyChecks } from './load-third-party-checks';
-import { ConfigDescription } from './types';
+import {
+  ConfigDescription,
+  ConfigDiagnostic,
+  CustomCheckCandidate,
+  LoadConfigOptions,
+} from './types';
 import { URI, Utils } from 'vscode-uri';
 
 const flatten = <T>(arrs: T[][]): T[] => arrs.flat();
@@ -24,23 +29,45 @@ const flatten = <T>(arrs: T[][]): T[] => arrs.flat();
 export async function loadConfigDescription(
   configDescription: ConfigDescription,
   root: AbsolutePath,
+  options: LoadConfigOptions = {},
 ): Promise<Config> {
   const nodeModuleRoot = await findNodeModuleRoot(root);
   const thirdPartyChecksPaths = await Promise.all([
     findThirdPartyChecks(thisNodeModuleRoot()), // global checks
     findThirdPartyChecks(nodeModuleRoot),
   ]).then(flatten);
-  const thirdPartyChecks = loadThirdPartyChecks([
-    ...configDescription.require,
-    ...thirdPartyChecksPaths,
-  ]);
-  const checks: CheckDefinition<SourceCodeType>[] = allChecks
-    .concat(thirdPartyChecks)
-    .filter(isEnabledBy(configDescription));
+  const candidates: CustomCheckCandidate[] = [
+    ...configDescription.require.map((path) => ({ source: 'require' as const, path })),
+    ...thirdPartyChecksPaths.map((path) => ({ source: 'discovery' as const, path })),
+  ].filter(
+    (candidate, index, all) => all.findIndex(({ path }) => path === candidate.path) === index,
+  );
+  const authorized =
+    candidates.length > 0 && (await options.authorizeCustomChecks?.({ root, candidates })) === true;
+  if (candidates.length > 0 && !authorized) {
+    const diagnostic: ConfigDiagnostic = {
+      code: 'custom-checks-disabled',
+      level: 'warning',
+      message:
+        'Custom Theme Checks are disabled. Explicit authorization is required to execute custom check JavaScript.',
+      root,
+      candidates,
+    };
+    if (options.onDiagnostic) {
+      options.onDiagnostic(diagnostic);
+    } else {
+      console.error(diagnostic.message);
+    }
+  }
+  const thirdPartyChecks = authorized
+    ? loadThirdPartyChecks(candidates.map(({ path }) => path))
+    : [];
+  const availableChecks: CheckDefinition<SourceCodeType>[] = allChecks.concat(thirdPartyChecks);
+  const checks = availableChecks.filter(isEnabledBy(configDescription));
 
   const rootUri = URI.file(root);
   return {
-    settings: unaliasedSettings(configDescription.checkSettings, checks),
+    settings: unaliasedSettings(configDescription.checkSettings, availableChecks),
     context: configDescription.context ?? 'theme',
     checks,
     ignore: configDescription.ignore,
@@ -88,8 +115,9 @@ function unaliasedSettings(
   checks: CheckDefinition<SourceCodeType>[],
 ): ConfigDescription['checkSettings'] {
   return Object.fromEntries(
-    Object.entries(settings).map(([code, value]) => {
-      return [unaliasedCode(code, checks), value];
+    Object.entries(settings).flatMap(([code, value]) => {
+      const resolvedCode = unaliasedCode(code, checks);
+      return resolvedCode === undefined ? [] : [[resolvedCode, value]];
     }),
   );
 }

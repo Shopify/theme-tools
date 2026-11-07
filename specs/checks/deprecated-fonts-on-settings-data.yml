@@ -1,0 +1,85 @@
+check: DeprecatedFontsOnSettingsData
+severity: warning
+cases:
+  - name: reports a warning when settings_data.json has a deprecated font in current settings
+    files:
+      config/settings_data.json: |-
+        {
+          "current": {
+            "heading_font": "helvetica_n4",
+            "body_font": "alegreya_n4"
+          }
+        }
+    offenses:
+      - file: config/settings_data.json
+        message: 'The font "helvetica_n4" is deprecated'
+        start: [2, 20]
+        highlight: '"helvetica_n4"'
+  - name: reports warnings for deprecated fonts in presets
+    files:
+      config/settings_data.json: |-
+        {
+          "current": {},
+          "presets": {
+            "Default": {
+              "heading_font": "helvetica_n4",
+              "body_font": "agmena_n4"
+            }
+          }
+        }
+    offenses:
+      - file: config/settings_data.json
+        message: 'The font "helvetica_n4" is deprecated'
+        start: [4, 22]
+        highlight: '"helvetica_n4"'
+      - file: config/settings_data.json
+        message: 'The font "agmena_n4" is deprecated'
+        start: [5, 19]
+        highlight: '"agmena_n4"'
+  - name: reports no warning when settings_data.json has no deprecated fonts
+    files:
+      config/settings_data.json: |-
+        {
+          "current": {
+            "heading_font": "alegreya_n4",
+            "body_font": "bitter_n4"
+          }
+        }
+  - name: reports no warning for non-string values
+    files:
+      config/settings_data.json: |-
+        {
+          "current": {
+            "show_header": true,
+            "items_per_page": 12,
+            "colors_body_bg": "#ffffff"
+          }
+        }
+  - name: does not run check on files other than settings_data.json
+    files:
+      config/settings_schema.json: |-
+        {
+          "current": {
+            "heading_font": "helvetica_n4"
+          }
+        }
+  - name: reports warnings for deprecated fonts deeply nested in preset blocks
+    files:
+      config/settings_data.json: |-
+        {
+          "current": {
+            "blocks": {
+              "block-id-1": {
+                "type": "header",
+                "settings": {
+                  "heading_font": "helvetica_n4"
+                }
+              }
+            }
+          }
+        }
+    offenses:
+      - file: config/settings_data.json
+        message: 'The font "helvetica_n4" is deprecated'
+        start: [6, 26]
+        highlight: '"helvetica_n4"'

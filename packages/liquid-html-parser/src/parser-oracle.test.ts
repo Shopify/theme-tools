@@ -59,6 +59,7 @@ describe.skipIf(!hasFixtures)('Parser Oracle', () => {
   for (const theme of THEMES) {
     const themeDir = join(FIXTURES_DIR, theme);
     const files = findLiquidFiles(themeDir);
+    if (files.length === 0) continue;
 
     describe(`toLiquidHtmlAST - ${theme}`, () => {
       for (const { path, fullPath } of files) {

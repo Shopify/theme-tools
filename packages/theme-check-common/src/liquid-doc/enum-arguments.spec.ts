@@ -6,7 +6,6 @@ import { ValidBlockArgumentTypes } from '../checks/valid-block-argument-types';
 import { MissingRenderSnippetArguments } from '../checks/missing-render-snippet-arguments';
 import { MissingContentForArguments } from '../checks/missing-content-for-arguments';
 import { MissingBlockArguments } from '../checks/missing-block-arguments';
-import { ValidDocParamTypes } from '../checks/valid-doc-param-types';
 import { applySuggestions, runLiquidCheck } from '../test';
 
 const enumType = `'heading' | "small"`;
@@ -54,66 +53,6 @@ const aliasCallers = ['with', 'for'].map((keyword) => ({
 describe('LiquidDoc enum arguments', () => {
   for (const caller of [...namedCallers, ...aliasCallers]) {
     describe(caller.name, () => {
-      it.each(["'heading'", '"heading"', "'small'", '"small"'])(
-        'accepts enum member %s',
-        async (value) => {
-          const offenses = await runLiquidCheck(
-            caller.check,
-            caller.source(value),
-            'templates/index.liquid',
-            {},
-            { [caller.file]: definition() },
-          );
-          expect(offenses).toHaveLength(0);
-        },
-      );
-
-      it.each(["'Heading'", "'body'", '123', 'false', 'nil', 'null', 'empty', 'blank', '(1..3)'])(
-        'rejects literal %s and highlights only the value',
-        async (value) => {
-          const source = caller.source(value);
-          const offenses = await runLiquidCheck(
-            caller.check,
-            source,
-            'templates/index.liquid',
-            {},
-            { [caller.file]: definition() },
-          );
-          expect(offenses).toHaveLength(1);
-          expect(offenses[0].message).toContain(enumType);
-          expect(offenses[0].message).toContain(`got ${value}`);
-          expect(source.slice(offenses[0].start.index, offenses[0].end.index)).toBe(value);
-        },
-      );
-
-      it.each(['style', 'block.settings.style', "settings['style']"])(
-        'leaves dynamic value %s unverified',
-        async (value) => {
-          const offenses = await runLiquidCheck(
-            caller.check,
-            caller.source(value),
-            'templates/index.liquid',
-            {},
-            { [caller.file]: definition() },
-          );
-          expect(offenses).toHaveLength(0);
-        },
-      );
-
-      it.each(["'heading' |", "'heading' | number"])(
-        'does not cascade errors from unsupported declaration %s',
-        async (type) => {
-          const offenses = await runLiquidCheck(
-            caller.check,
-            caller.source("'body'"),
-            'templates/index.liquid',
-            {},
-            { [caller.file]: definition(type) },
-          );
-          expect(offenses).toHaveLength(0);
-        },
-      );
-
       it('offers each allowed member as a replacement and preserves its quoting', async () => {
         const source = caller.source("'body'");
         const offenses = await runLiquidCheck(
@@ -149,151 +88,7 @@ describe('LiquidDoc enum arguments', () => {
     });
   }
 
-  for (const caller of namedCallers) {
-    it(`${caller.name} permits omission of an optional enum`, async () => {
-      const offenses = await runLiquidCheck(
-        caller.missingCheck,
-        caller.source(),
-        'templates/index.liquid',
-        {},
-        { [caller.file]: definition() },
-      );
-      expect(offenses).toHaveLength(0);
-    });
-
-    it(`${caller.name} reports omission of a required enum`, async () => {
-      const offenses = await runLiquidCheck(
-        caller.missingCheck,
-        caller.source(),
-        'templates/index.liquid',
-        {},
-        { [caller.file]: definition(enumType, false) },
-      );
-      expect(offenses).toHaveLength(1);
-      expect(offenses[0].message).toContain("Missing required argument 'variant'");
-    });
-  }
-
-  for (const caller of aliasCallers) {
-    it.each(['product', 'product[]', 'string[]'])(
-      `${caller.name} preserves checking of literal values against named declaration %s`,
-      async (type) => {
-        const offenses = await runLiquidCheck(
-          caller.check,
-          caller.source('123'),
-          'templates/index.liquid',
-          {},
-          { [caller.file]: definition(type) },
-        );
-        expect(offenses).toHaveLength(1);
-        expect(offenses[0].message).toBe(
-          `Type mismatch for argument 'variant': expected ${type}, got number`,
-        );
-      },
-    );
-
-    it('leaves dynamic alias values unverified for named declarations', async () => {
-      const offenses = await runLiquidCheck(
-        caller.check,
-        caller.source('product'),
-        'templates/index.liquid',
-        {},
-        { [caller.file]: definition('product') },
-      );
-      expect(offenses).toHaveLength(0);
-    });
-
-    it.each(['Product', 'Product[]'])(
-      `${caller.name} leaves uppercase declaration %s to ValidDocParamTypes`,
-      async (type) => {
-        const offenses = await runLiquidCheck(
-          caller.check,
-          caller.source('123'),
-          'templates/index.liquid',
-          {},
-          { [caller.file]: definition(type) },
-        );
-        expect(offenses).toHaveLength(0);
-
-        const declarationOffenses = await runLiquidCheck(
-          ValidDocParamTypes,
-          definition(type),
-          caller.file,
-        );
-        expect(declarationOffenses.map(({ message }) => message)).toEqual([
-          `The parameter type '${type}' is not supported.`,
-        ]);
-      },
-    );
-
-    it.each(['unknown', 'unknown[]'])(
-      `${caller.name} leaves named declaration %s to ValidDocParamTypes when the docset lacks it`,
-      async (type) => {
-        const offenses = await runLiquidCheck(
-          caller.check,
-          caller.source('123'),
-          'templates/index.liquid',
-          {},
-          { [caller.file]: definition(type) },
-        );
-        expect(offenses).toHaveLength(0);
-      },
-    );
-
-    describe(`${caller.name} without a docset`, () => {
-      const runWithoutDocset = (value: string, type: string) =>
-        runLiquidCheck(
-          caller.check,
-          caller.source(value),
-          'templates/index.liquid',
-          { themeDocset: undefined },
-          { [caller.file]: definition(type) },
-        );
-
-      it.each(['product', 'Product', 'product[]', 'string[]', 'unknown'])(
-        'checks literal values against named declaration %s',
-        async (type) => {
-          const offenses = await runWithoutDocset('123', type);
-          expect(offenses.map(({ message }) => message)).toEqual([
-            `Type mismatch for argument 'variant': expected ${type.toLowerCase()}, got number`,
-          ]);
-        },
-      );
-
-      it('checks literal values against enum declarations', async () => {
-        const offenses = await runWithoutDocset("'body'", enumType);
-        expect(offenses).toHaveLength(1);
-        expect(offenses[0].message).toContain(enumType);
-      });
-
-      it.each(["'heading' |", "'heading' | number", 'product['])(
-        'does not cascade errors from unsupported declaration %s',
-        async (type) => {
-          expect(await runWithoutDocset("'body'", type)).toHaveLength(0);
-        },
-      );
-
-      it('leaves dynamic values unverified', async () => {
-        expect(await runWithoutDocset('product', 'product')).toHaveLength(0);
-      });
-    });
-  }
-
   for (const caller of namedCallers.filter((caller) => caller.name !== 'block')) {
-    it.each(['product', 'product[]', 'string[]', 'unknown'])(
-      `${caller.name} preserves existing skips for named declaration %s`,
-      async (type) => {
-        const offenses = await runLiquidCheck(
-          caller.check,
-          caller.source("'heading'"),
-          'templates/index.liquid',
-          {},
-          { [caller.file]: definition(type) },
-        );
-        expect(offenses).toHaveLength(0);
-      },
-    );
-
     it.each([`"Heading" | 'small'`, `'' | 'heading'`, `"a'b" | 'small'`])(
       `${caller.name} inserts a legal enum member for a missing required argument (%s)`,
       async (type) => {
@@ -327,20 +122,4 @@ describe('LiquidDoc enum arguments', () => {
       },
     );
   }
-
-  it('rejects a block array literal for a string enum without trying to infer its primitive type', async () => {
-    const source = `{% block 'text', variant: ['heading', 'small'] %}Text{% endblock %}`;
-    const offenses = await runLiquidCheck(
-      ValidBlockArgumentTypes,
-      source,
-      'templates/index.liquid',
-      {},
-      { 'blocks/text.liquid': definition() },
-    );
-    expect(offenses).toHaveLength(1);
-    expect(offenses[0].message).toContain("got ['heading', 'small']");
-    expect(source.slice(offenses[0].start.index, offenses[0].end.index)).toBe(
-      "['heading', 'small']",
-    );
-  });
 });

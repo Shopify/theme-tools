@@ -1,5 +1,48 @@
 # @shopify/theme-language-server-common
 
+## 3.0.0
+
+### Minor Changes
+
+- 803a88a5: Require consent for third-party Theme Checks and expose structured skipped-check diagnostics to callers.
+
+### Patch Changes
+
+- 7cb4970d: Type `{% block %}` and `{% section %}` arguments as one `BlockArgument`, whose value is a scalar or a single-level array literal, instead of a `LiquidNamedArgument | BlockArrayArgument` union. Completions narrow on the argument's value.
+- 7cb4970d: Parse the Liquid inside HTML comments. Liquid renders it, and its tags can open, branch and close blocks, so `{% if a %}<!-- {% endif %} -->` no longer fails with an unclosed `if`.
+  - `HtmlComment` has `children` (text and Liquid) and `blockStartPosition`/`blockEndPosition` for its delimiters.
+  - A comment that crosses a Liquid block boundary is split there, and each part has an empty delimiter range on the split side.
+  - A comment that never closes ends at the end of the file, as in a browser.
+  - An end tag in a comment that closes no block is a parse error, as in Liquid.
+  - The `opaqueHtmlComments` option keeps comment bodies opaque.
+
+  **Behavior changes**
+  - Code that walks `children` now visits the Liquid and text inside HTML comments.
+  - `<!-- {% if a %} --><p>x</p><!-- {% endif %} -->` is one comment whose `if` holds `<p>x</p>` as text, not two comments around a `<p>` element.
+  - `<!-- {% endif %} -->` with no open `if` no longer parses. An unclosed `<!--` and `{% if a %}<!-- {% endif %} -->` now parse.
+  - Code that creates `HtmlComment` nodes must set `children`, `blockStartPosition` and `blockEndPosition`.
+
+  Pass `opaqueHtmlComments: true` to get the previous tree for these templates.
+
+  Checks now see the Liquid in HTML comments, and completions work inside them. Prettier prints an unclosed comment as written, and can move whitespace and line breaks inside a comment that holds a Liquid block or is split by one.
+
+- Updated dependencies [7cb4970d]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [c8099ba8]
+- Updated dependencies [320fa1fe]
+- Updated dependencies [5b634d93]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [a73b174f]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [c587ae08]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [5aec106f]
+- Updated dependencies [34dae62b]
+  - @shopify/liquid-html-parser@2.12.0
+  - @shopify/theme-check-common@4.0.0
+  - @shopify/theme-graph@0.3.7
+
 ## 2.23.2
 
 ### Patch Changes

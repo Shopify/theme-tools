@@ -20,7 +20,12 @@ function makeStandaloneDef(): TagDefinitionTag {
 }
 
 function makeRawDef(parseLiquidInBody?: boolean): TagDefinitionRaw {
-  return { kind: TagKind.Raw, parse: stubParse, parseLiquidInBody };
+  return {
+    kind: TagKind.Raw,
+    parse: stubParse,
+    parseLiquidInBody,
+    body: { delimiter: 'trailing', sameName: 'ignored', opaque: [], closesInLiquidTag: false },
+  };
 }
 
 describe('Unit: Environment', () => {
@@ -47,6 +52,13 @@ describe('Unit: Environment', () => {
     it('returns undefined for unknown tag names', () => {
       const env = new Environment();
       expect(env.tagForName('nonexistent')).toBeUndefined();
+    });
+
+    it('returns undefined for Object.prototype names', () => {
+      const env = new Environment({ if: makeBlockDef(['elsif', 'else']) });
+      for (const name of ['constructor', 'toString', 'hasOwnProperty', '__proto__']) {
+        expect(env.tagForName(name)).toBeUndefined();
+      }
     });
 
     it('returns the builtin definition when constructed with builtins', () => {

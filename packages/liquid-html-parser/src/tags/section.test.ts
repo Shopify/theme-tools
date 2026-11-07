@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { sectionTag } from './section';
 import { TagKind, type Parser } from '../environment';
-import { tokenizeMarkup } from '../markup/tokenizer';
+import { MarkupTokenType, tokenizeMarkup } from '../markup/tokenizer';
 import { MarkupParser } from '../markup/parser';
 import { NodeTypes } from '../types';
 
@@ -15,6 +15,17 @@ function parser(markup: string): MarkupParser {
 const stubParser = {} as Parser;
 
 describe('sectionTag', () => {
+  it.each([
+    "'card' ",
+    "'card',  title: 'Hello',\n color: 'red' ",
+    "'card', products: ['classic-crewneck', 'cozy-beanie'] ",
+  ])('retains the full source for absolute markup positions: %s', (markup) => {
+    const result = sectionTag.parse('section', parser(markup), stubParser);
+    expect(result.source).toBe(PADDING + markup);
+    expect(result.position).toEqual({ start: OFFSET, end: OFFSET + markup.length });
+    expect(result.source.slice(result.position.start, result.position.end)).toBe(markup);
+  });
+
   it('has tag kind', () => {
     expect(sectionTag.kind).toBe(TagKind.Tag);
   });
@@ -54,6 +65,15 @@ describe('sectionTag', () => {
       name: 'key',
       value: { type: NodeTypes.VariableLookup, name: 'value' },
     });
+  });
+
+  it('leaves filtered named arguments unconsumed', () => {
+    const markup = parser("'featured', product: collections.frontpage.products | first");
+
+    sectionTag.parse('section', markup, stubParser);
+
+    expect(markup.peek().type).toBe(MarkupTokenType.Pipe);
+    expect(markup.isAtEnd()).toBe(false);
   });
 
   it('parses section setting args with array values', () => {

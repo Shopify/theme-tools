@@ -1,0 +1,461 @@
+# How theme-check-disable comments turn checks off. Each case lists the checks it runs.
+cases:
+  - name: should disable checks for the entire document if comment is placed on the first line, in an inline comment
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {% # theme-check-disable UnknownFilter %}
+        {% comment %}
+          This is some comment about the file...
+          Adding a comment here should not mess with theme-check-disable
+        {% endcomment %}
+        {{ 'asset' | random_filter }}
+        {% render 'something' %}
+    offenses:
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/something.liquid' does not exist"
+        start: [6, 10]
+        highlight: "'something'"
+  - name: should disable checks for the entire document if comment is placed on the first line, in a comment tag
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {% comment %}theme-check-disable UnknownFilter{% endcomment %}
+        {% comment %}
+          This is some comment about the file...
+          Adding a comment here should not mess with theme-check-disable
+        {% endcomment %}
+        {{ 'asset' | random_filter }}
+        {% render 'something' %}
+    offenses:
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/something.liquid' does not exist"
+        start: [6, 10]
+        highlight: "'something'"
+  - name: should disable all checks even if comment has additional spaces, in an inline comment
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {% #   theme-check-disable      %}
+        {{ 'asset' | random_filter }}
+        {% render 'something' %}
+  - name: should disable all checks even if comment has additional spaces, in a comment tag
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {% comment %}  theme-check-disable     {% endcomment %}
+        {{ 'asset' | random_filter }}
+        {% render 'something' %}
+  - name: should disable all checks for a section of the template, in an inline comment
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {{ 'asset-1' | random_filter }}
+        {% render 'something-1' %}
+        {% # theme-check-disable %}
+        {{ 'asset-2' | random_filter }}
+        {% render 'something-2' %}
+        {% # theme-check-enable %}
+        {{ 'asset-3' | random_filter }}
+    offenses:
+      - check: UnknownFilter
+        file: code.liquid
+        message: "Unknown filter 'random_filter' used."
+        start: [0, 13]
+        highlight: "| random_filter"
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/something-1.liquid' does not exist"
+        start: [1, 10]
+        highlight: "'something-1'"
+      - check: UnknownFilter
+        file: code.liquid
+        message: "Unknown filter 'random_filter' used."
+        start: [6, 13]
+        highlight: "| random_filter"
+  - name: should disable all checks for a section of the template, in a comment tag
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {{ 'asset-1' | random_filter }}
+        {% render 'something-1' %}
+        {% comment %}theme-check-disable{% endcomment %}
+        {{ 'asset-2' | random_filter }}
+        {% render 'something-2' %}
+        {% comment %}theme-check-enable{% endcomment %}
+        {{ 'asset-3' | random_filter }}
+    offenses:
+      - check: UnknownFilter
+        file: code.liquid
+        message: "Unknown filter 'random_filter' used."
+        start: [0, 13]
+        highlight: "| random_filter"
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/something-1.liquid' does not exist"
+        start: [1, 10]
+        highlight: "'something-1'"
+      - check: UnknownFilter
+        file: code.liquid
+        message: "Unknown filter 'random_filter' used."
+        start: [6, 13]
+        highlight: "| random_filter"
+  - name: should disable a specific check if check is included in the comment, in an inline comment
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {% # theme-check-disable UnknownFilter %}
+        {{ 'asset-1' | random_filter }}
+        {% render 'something' %}
+        {% # theme-check-enable UnknownFilter %}
+        {{ 'asset-2' | random_filter }}
+    offenses:
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/something.liquid' does not exist"
+        start: [2, 10]
+        highlight: "'something'"
+      - check: UnknownFilter
+        file: code.liquid
+        message: "Unknown filter 'random_filter' used."
+        start: [4, 13]
+        highlight: "| random_filter"
+  - name: should disable a specific check if check is included in the comment, in a comment tag
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {% comment %}theme-check-disable UnknownFilter{% endcomment %}
+        {{ 'asset-1' | random_filter }}
+        {% render 'something' %}
+        {% comment %}theme-check-enable UnknownFilter{% endcomment %}
+        {{ 'asset-2' | random_filter }}
+    offenses:
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/something.liquid' does not exist"
+        start: [2, 10]
+        highlight: "'something'"
+      - check: UnknownFilter
+        file: code.liquid
+        message: "Unknown filter 'random_filter' used."
+        start: [4, 13]
+        highlight: "| random_filter"
+  - name: should disable multiple checks if checks are separated by a comma (and maybe some spaces), in an inline comment
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {% # theme-check-disable UnknownFilter, MissingTemplate %}
+        {{ 'asset-1' | random_filter }}
+        {% render 'something' %}
+        {% # theme-check-enable UnknownFilter,MissingTemplate %}
+        {{ 'asset-2' | random_filter }}
+    offenses:
+      - check: UnknownFilter
+        file: code.liquid
+        message: "Unknown filter 'random_filter' used."
+        start: [4, 13]
+        highlight: "| random_filter"
+  - name: should disable multiple checks if checks are separated by a comma (and maybe some spaces), in a comment tag
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {% comment %}theme-check-disable UnknownFilter, MissingTemplate{% endcomment %}
+        {{ 'asset-1' | random_filter }}
+        {% render 'something' %}
+        {% comment %}theme-check-enable UnknownFilter,MissingTemplate{% endcomment %}
+        {{ 'asset-2' | random_filter }}
+    offenses:
+      - check: UnknownFilter
+        file: code.liquid
+        message: "Unknown filter 'random_filter' used."
+        start: [4, 13]
+        highlight: "| random_filter"
+  - name: should enable specific checks individually, in an inline comment
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {% # theme-check-disable UnknownFilter, MissingTemplate %}
+        {{ 'asset-1' | random_filter }}
+        {% render 'something-1' %}
+        {% # theme-check-enable MissingTemplate %}
+        {{ 'asset-2' | random_filter }}
+        {% render 'something-2' %}
+        {% # theme-check-enable UnknownFilter %}
+        {{ 'asset-3' | random_filter }}
+        {% render 'something-3' %}
+    offenses:
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/something-2.liquid' does not exist"
+        start: [5, 10]
+        highlight: "'something-2'"
+      - check: UnknownFilter
+        file: code.liquid
+        message: "Unknown filter 'random_filter' used."
+        start: [7, 13]
+        highlight: "| random_filter"
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/something-3.liquid' does not exist"
+        start: [8, 10]
+        highlight: "'something-3'"
+  - name: should enable specific checks individually, in a comment tag
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {% comment %}theme-check-disable UnknownFilter, MissingTemplate{% endcomment %}
+        {{ 'asset-1' | random_filter }}
+        {% render 'something-1' %}
+        {% comment %}theme-check-enable MissingTemplate{% endcomment %}
+        {{ 'asset-2' | random_filter }}
+        {% render 'something-2' %}
+        {% comment %}theme-check-enable UnknownFilter{% endcomment %}
+        {{ 'asset-3' | random_filter }}
+        {% render 'something-3' %}
+    offenses:
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/something-2.liquid' does not exist"
+        start: [5, 10]
+        highlight: "'something-2'"
+      - check: UnknownFilter
+        file: code.liquid
+        message: "Unknown filter 'random_filter' used."
+        start: [7, 13]
+        highlight: "| random_filter"
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/something-3.liquid' does not exist"
+        start: [8, 10]
+        highlight: "'something-3'"
+  - name: should not reenable specific check when all checks have been disabled before, in an inline comment
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {% # theme-check-disable %}
+        {{ 'asset-1' | random_filter }}
+        {% render 'something-1' %}
+        {% # theme-check-enable MissingTemplate %}
+        {{ 'asset-2' | random_filter }}
+        {% render 'something-2' %}
+  - name: should not reenable specific check when all checks have been disabled before, in a comment tag
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {% comment %}theme-check-disable{% endcomment %}
+        {{ 'asset-1' | random_filter }}
+        {% render 'something-1' %}
+        {% comment %}theme-check-enable MissingTemplate{% endcomment %}
+        {{ 'asset-2' | random_filter }}
+        {% render 'something-2' %}
+  - name: should reenable all checks when specific ones have been disabled before, in an inline comment
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {% # theme-check-disable UnknownFilter, MissingTemplate %}
+        {{ 'asset-3' | random_filter }}
+        {% render 'something-3' %}
+        {% # theme-check-enable %}
+        {{ 'asset-4' | random_filter }}
+        {% render 'something-4' %}
+    offenses:
+      - check: UnknownFilter
+        file: code.liquid
+        message: "Unknown filter 'random_filter' used."
+        start: [4, 13]
+        highlight: "| random_filter"
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/something-4.liquid' does not exist"
+        start: [5, 10]
+        highlight: "'something-4'"
+  - name: should reenable all checks when specific ones have been disabled before, in a comment tag
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {% comment %}theme-check-disable UnknownFilter, MissingTemplate{% endcomment %}
+        {{ 'asset-3' | random_filter }}
+        {% render 'something-3' %}
+        {% comment %}theme-check-enable{% endcomment %}
+        {{ 'asset-4' | random_filter }}
+        {% render 'something-4' %}
+    offenses:
+      - check: UnknownFilter
+        file: code.liquid
+        message: "Unknown filter 'random_filter' used."
+        start: [4, 13]
+        highlight: "| random_filter"
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/something-4.liquid' does not exist"
+        start: [5, 10]
+        highlight: "'something-4'"
+  - name: should disable the next line if there is one
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {% # theme-check-disable-next-line %}
+        {% render 'something' %}
+        {% render 'other-thing' %}
+    offenses:
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/other-thing.liquid' does not exist"
+        start: [2, 10]
+        highlight: "'other-thing'"
+  - name: "should not disable the liquid tag's children node if theme check is disabled"
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {% # theme-check-disable-next-line %}
+        {% if condition %}
+          {% render 'something' %}
+        {% endif %}
+        {% render 'other-thing' %}
+    offenses:
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/something.liquid' does not exist"
+        start: [2, 12]
+        highlight: "'something'"
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/other-thing.liquid' does not exist"
+        start: [4, 10]
+        highlight: "'other-thing'"
+  - name: should disable the next line inside a liquid tag if there is one
+    checks: [UnknownFilter, MissingTemplate]
+    docset: default
+    files:
+      code.liquid: |-
+        {% liquid
+          # theme-check-disable-next-line
+          render 'something'
+          render 'other-thing'
+        %}
+    offenses:
+      - check: MissingTemplate
+        file: code.liquid
+        message: "'snippets/other-thing.liquid' does not exist"
+        start: [3, 9]
+        highlight: "'other-thing'"
+  - name: "should disable the parent node's next node if theme check is disabled as the last child node"
+    checks: [UndefinedObject]
+    docset: default
+    files:
+      code.liquid: |-
+        {% liquid
+          if condition
+            # theme-check-disable-next-line
+          elsif other_condition
+          endif
+        %}
+    offenses:
+      - check: UndefinedObject
+        file: code.liquid
+        message: "Unknown object 'condition' used."
+        start: [1, 5]
+        highlight: condition
+  - name: should not disable any checks if theme-check is disabled at the end
+    checks: [UndefinedObject]
+    docset: default
+    files:
+      code.liquid: |-
+        {% liquid
+          echo hello
+          echo everyone
+          # theme-check-disable-next-line
+        %}
+    offenses:
+      - check: UndefinedObject
+        file: code.liquid
+        message: "Unknown object 'hello' used."
+        start: [1, 7]
+        highlight: hello
+      - check: UndefinedObject
+        file: code.liquid
+        message: "Unknown object 'everyone' used."
+        start: [2, 7]
+        highlight: everyone
+  - name: should disable the next line if the content is an HTML tag with liquid
+    checks: [UndefinedObject]
+    docset: default
+    files:
+      code.liquid: |-
+        {% # theme-check-disable-next-line %}
+        <div class="{{ foo }}"></div>
+        <div class="{{ bar }}"></div>
+    offenses:
+      - check: UndefinedObject
+        file: code.liquid
+        message: "Unknown object 'bar' used."
+        start: [2, 15]
+        highlight: bar
+  - name: should not disable the next line if the specified rule does not exist
+    checks: [UndefinedObject]
+    docset: default
+    files:
+      code.liquid: |-
+        {% # theme-check-disable-next-line FAKE_RULE %}
+        <div class="{{ foo }}"></div>
+    offenses:
+      - check: UndefinedObject
+        file: code.liquid
+        message: "Unknown object 'foo' used."
+        start: [1, 15]
+        highlight: foo
+  - name: should disable checks inside doc tags when disable-next-line is placed before the doc tag
+    checks: [UniqueDocParamNames]
+    docset: default
+    files:
+      code.liquid: |-
+        {% # theme-check-disable-next-line UniqueDocParamNames %}
+        {% doc %}
+          @param foo - first param
+          @param foo - duplicate param
+        {% enddoc %}
+  - name: should disable all checks inside doc tags when disable-next-line is used without specific check names
+    checks: [UniqueDocParamNames]
+    docset: default
+    files:
+      code.liquid: |-
+        {% # theme-check-disable-next-line %}
+        {% doc %}
+          @param bar - first param
+          @param bar - duplicate param
+        {% enddoc %}
+  - name: should still report offenses in doc tags when disable-next-line is not present
+    checks: [UniqueDocParamNames]
+    docset: default
+    files:
+      code.liquid: |-
+        {% doc %}
+          @param baz - first param
+          @param baz - duplicate param
+        {% enddoc %}
+    offenses:
+      - check: UniqueDocParamNames
+        file: code.liquid
+        message: "The parameter 'baz' is defined more than once."
+        start: [2, 9]
+        highlight: baz

@@ -39,3 +39,9 @@ printWidth: 80
 {% for element in collection reversed limit: 10 %}
   {{ element }}
 {% endfor %}
+
+It keeps a reversed after tag arguments where it is, since Liquid ignores it there
+printWidth: 1
+{% for element in collection limit: 10 reversed %}
+  {{ element }}
+{% endfor %}

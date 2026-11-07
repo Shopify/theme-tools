@@ -1,0 +1,81 @@
+check: AppBlockValidTags
+severity: error
+cases:
+  - name: should report an offense when the forbidden tag is used in blocks directory liquid file (1)
+    files:
+      blocks/app.liquid: |
+        {% include 'test' %}
+        {% schema %}
+        { }
+        {% endschema %}
+    offenses:
+      - file: blocks/app.liquid
+        message: "Theme app extension blocks cannot contain 'include' tags"
+        start: [0, 0]
+        highlight: "{% include 'test' %}"
+  - name: should report an offense when the forbidden tag is used in blocks directory liquid file (2)
+    files:
+      blocks/app.liquid: |
+        {% layout 'test' %}
+        {% schema %}
+        { }
+        {% endschema %}
+    offenses:
+      - file: blocks/app.liquid
+        message: "Theme app extension blocks cannot contain 'layout' tags"
+        start: [0, 0]
+        highlight: "{% layout 'test' %}"
+  - name: should report an offense when the forbidden tag is used in blocks directory liquid file (3)
+    files:
+      blocks/app.liquid: |
+        {% section 'test' %}
+        {% schema %}
+        { }
+        {% endschema %}
+    offenses:
+      - file: blocks/app.liquid
+        message: "Theme app extension blocks cannot contain 'section' tags"
+        start: [0, 0]
+        highlight: "{% section 'test' %}"
+  - name: should report an offense when the forbidden tag is used in blocks directory liquid file (4)
+    files:
+      blocks/app.liquid: |
+        {% sections 'test' %}
+        {% schema %}
+        { }
+        {% endschema %}
+    offenses:
+      - file: blocks/app.liquid
+        message: "Theme app extension blocks cannot contain 'sections' tags"
+        start: [0, 0]
+        highlight: "{% sections 'test' %}"
+  - name: should report an offense when the forbidden tag is used with an end tag in blocks directory liquid file (1)
+    files:
+      blocks/app.liquid: |
+        {% javascript %}
+        {% endjavascript %}
+        {% schema %}
+        { }
+        {% endschema %}
+    offenses:
+      - file: blocks/app.liquid
+        message: "Theme app extension blocks cannot contain 'javascript' tags"
+        start: [0, 0]
+        highlight: |-
+          {% javascript %}
+          {% endjavascript %}
+  - name: should report an offense when the forbidden tag is used with an end tag in blocks directory liquid file (2)
+    files:
+      blocks/app.liquid: |
+        {% stylesheet %}
+        {% endstylesheet %}
+        {% schema %}
+        { }
+        {% endschema %}
+    offenses:
+      - file: blocks/app.liquid
+        message: "Theme app extension blocks cannot contain 'stylesheet' tags"
+        start: [0, 0]
+        highlight: |-
+          {% stylesheet %}
+          {% endstylesheet %}

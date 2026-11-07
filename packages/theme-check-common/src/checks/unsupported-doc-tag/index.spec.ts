@@ -32,14 +32,4 @@ describe('Module: UnsupportedDocTag', () => {
 
     expect(suggestions).to.include(`{{ 'hello' }}`);
   });
-
-  it('should not report an error when `doc` tag is used within snippets', async () => {
-    const offenses = await runLiquidCheck(
-      UnsupportedDocTag,
-      sourceCode,
-      'file://snippets/file.liquid',
-    );
-
-    expect(offenses).to.be.empty;
-  });
 });

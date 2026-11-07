@@ -3,7 +3,8 @@ import type {
   LiquidExpression,
   LiquidVariableLookup,
   BlockArrayLiteral,
-  BlockArrayArgument,
+  BlockArgument,
+  BlockArgumentValue,
   LiquidVariableLookupMode,
   LiquidConditionalExpression,
   ComplexLiquidExpression,
@@ -1316,8 +1317,8 @@ export class MarkupParser {
    * section tags use this path because both accept scalar values and
    * single-level array literals.
    */
-  blockNamedArguments(): (LiquidNamedArgument | BlockArrayArgument)[] {
-    const args: (LiquidNamedArgument | BlockArrayArgument)[] = [];
+  blockNamedArguments(): BlockArgument[] {
+    const args: BlockArgument[] = [];
     this.pushBlockNamedArgument(args);
     while (this.consumeOptional(MarkupTokenType.Comma)) {
       if (!this.look(MarkupTokenType.Id)) break; /* trailing comma */
@@ -1328,10 +1329,10 @@ export class MarkupParser {
 
   /*
    * Parses one block named argument and appends it to the unified list.
-   * The if/else is required for TypeScript to narrow the value type into
-   * the correct branch of the LiquidNamedArgument | BlockArrayArgument union.
+   * The block-specific argument type keeps filtered and array values out of
+   * the shared LiquidNamedArgument contract used by other tags.
    */
-  private pushBlockNamedArgument(args: (LiquidNamedArgument | BlockArrayArgument)[]): void {
+  private pushBlockNamedArgument(args: BlockArgument[]): void {
     const nameToken = this.consume(MarkupTokenType.Id);
     let name = nameToken.value;
     while (this.consumeOptional(MarkupTokenType.Dot)) {
@@ -1342,30 +1343,20 @@ export class MarkupParser {
     const value = this.blockValueExpression();
     const position = { start: nameToken.start, end: value.position.end };
 
-    if (value.type === 'BlockArrayLiteral') {
-      args.push({
-        type: NodeTypes.NamedArgument,
-        name,
-        value,
-        position,
-        source: this.source,
-      });
-    } else {
-      args.push({
-        type: NodeTypes.NamedArgument,
-        name,
-        value,
-        position,
-        source: this.source,
-      });
-    }
+    args.push({
+      type: NodeTypes.NamedArgument,
+      name,
+      value,
+      position,
+      source: this.source,
+    });
   }
 
   /*
    * Parses a block or section argument value: a leading `[` opens an array
    * literal, and everything else delegates to the shared `valueExpression()`.
    */
-  private blockValueExpression(): LiquidExpression | BlockArrayLiteral {
+  private blockValueExpression(): BlockArgumentValue {
     if (this.look(MarkupTokenType.OpenSquare)) {
       return this.blockArrayLiteral();
     }
@@ -1438,6 +1429,18 @@ function isLogicalOp(s: string): s is LogicalOperator {
   return LOGICAL_OPERATORS.has(s);
 }
 
+// A switch rather than `s in LiquidLiteralValues`: `in` also matches inherited
+// names like `constructor`, and the switch is faster on this hot path.
 function isLiteralKeyword(s: string): s is keyof typeof LiquidLiteralValues {
-  return s in LiquidLiteralValues;
+  switch (s) {
+    case 'nil':
+    case 'null':
+    case 'true':
+    case 'false':
+    case 'blank':
+    case 'empty':
+      return true;
+    default:
+      return false;
+  }
 }
