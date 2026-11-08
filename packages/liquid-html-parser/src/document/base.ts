@@ -1,29 +1,33 @@
-import { TokenType, createTokenizer } from './tokenizer';
-import type { Token, Tokenizer } from './tokenizer';
+import { TokenType, tokenize } from './tokenizer';
+import type { Token, TokenizeOptions } from './tokenizer';
+import type { RawBodyEnd } from '../tag-definitions';
 import { LiquidHTMLASTParsingError } from '../errors';
+import { Environment } from '../environment';
 
 export class ParserBase {
   protected tokens: Token[];
   protected source: string;
   protected p: number;
-  /** Tokenizes the rest of the source as it's read, after a reslice. */
-  private tokenizer: Tokenizer | undefined;
-  /**
-   * The HTML context the first `scanned` tokens leave open: the quote that
-   * opened an attribute value, and whether a tag is open. See
-   * `scanHtmlContext`.
-   */
-  private scanned = 0;
-  private openQuote: Token | undefined;
-  private openTag = false;
-  constructor(tokens: Token[], source: string) {
+  private rawBodyEnds?: readonly RawBodyEnd[];
+  constructor(
+    tokens: Token[],
+    source: string,
+    private readonly tokenizeOptions?: TokenizeOptions,
+    rawBodyEnds?: readonly RawBodyEnd[],
+  ) {
     this.tokens = tokens;
     this.source = source;
     this.p = 0;
+    if (rawBodyEnds) this.rawBodyEnds = rawBodyEnds;
+    if (tokenizeOptions?.rawTags) {
+      this.rawTagVersion = tokenizeOptions.rawTags.tagRegistryVersion;
+      this.inspectedRawBodyEnd = 0;
+      this.rawTagValidUntil = source.length;
+    }
   }
 
   consume(type: TokenType): Token {
-    const token = this.tokenAt(this.p);
+    const token = this.tokens[this.p];
     if (token.type !== type) {
       throw new LiquidHTMLASTParsingError(
         `Expected ${type} but got ${token.type}`,
@@ -37,7 +41,7 @@ export class ParserBase {
   }
 
   accept(type: TokenType): Token | null {
-    if (this.tokenAt(this.p).type === type) {
+    if (this.tokens[this.p].type === type) {
       return this.tokens[this.p++];
     }
     return null;
@@ -45,49 +49,48 @@ export class ParserBase {
 
   check(type: TokenType, ahead: number = 0): boolean {
     const index = this.p + ahead;
-    return this.hasToken(index) && this.tokens[index].type === type;
+    return index < this.tokens.length && this.tokens[index].type === type;
   }
 
   peek(): Token {
-    return this.tokenAt(this.p);
+    return this.tokens[this.p];
   }
 
   advance(): Token {
-    return this.tokenAt(this.p++);
+    return this.tokens[this.p++];
   }
 
   isAtEnd(): boolean {
-    return this.tokenAt(this.p).type === TokenType.EndOfInput;
+    return this.tokens[this.p].type === TokenType.EndOfInput;
   }
 
   getSource(): string {
     return this.source;
   }
 
-  /**
-   * Whether this document parse is tolerant. The strict/default parser returns
-   * false; `TolerantDocumentParser` overrides it to true. Markup-construction
-   * sites consult this to enable the markup parser's tolerant recovery axis
-   * (`enableTolerant()`), leaving strict (and theme-check) parses untouched.
-   * Disjoint from the render-tree lax axis.
-   */
+  tokenAt(index: number): Token {
+    return this.tokens[index];
+  }
+
   isTolerant(): boolean {
     return false;
   }
 
-  /** Whether there is a token at `index`, tokenizing up to it if need be. */
   hasToken(index: number): boolean {
-    if (index >= this.tokens.length) this.tokenizer?.fill(index);
     return index < this.tokens.length;
   }
 
-  tokenAt(index: number): Token {
-    this.hasToken(index);
-    return this.tokens[index];
+  tokenCount(): number {
+    return this.tokens.length;
   }
 
   getPosition(): number {
     return this.p;
+  }
+
+  rawBodyEndFor(closeToken: Token): RawBodyEnd | undefined {
+    if (this.tokens[this.p - 1] === closeToken) return this.rawBodyEnds?.[this.p - 1];
+    return undefined;
   }
 
   setPosition(index: number): void {
@@ -97,150 +100,166 @@ export class ParserBase {
   /**
    * Move the cursor to the first token whose `start` is at or after
    * `sourceOffset`. Unlike a cached token index, a source offset is stable
-   * across `resliceTokensFrom` (which renumbers token slots but preserves
+   * across raw-boundary recovery (which renumbers token slots but preserves
    * offsets), and it is robust against a body parse that over-advances the
    * cursor past `sourceOffset` (e.g. a `{% if %}` block inside an HTML raw body
    * that consumes the element's close tag as text while seeking `{% endif %}`).
    * Callers that know a token boundary by offset should re-seek here rather than
    * trusting wherever a nested parse left the cursor.
-   *
-   * Token starts are non-decreasing (the tokenizer emits tokens in source
-   * order and `resliceTokensFrom` keeps that order), so a binary search finds
-   * the same token a scan from index 0 would, in O(log n), whichever side of
-   * the cursor it is on. This runs once per HTML comment, raw element and raw
-   * Liquid tag, so a linear scan here made parsing quadratic in the number of
-   * those nodes.
+   * Binary search avoids rescanning tokens after each independent raw body.
    */
   seekToSourceOffset(sourceOffset: number): void {
-    this.p = this.countTokensWhile((token) => token.start < sourceOffset);
-  }
-
-  /**
-   * How many tokens, from the first, pass `test`, by binary search. Tokens are
-   * in source order and don't overlap, so a test like "starts before" or "ends
-   * at or before" an offset passes for a run of leading tokens and no others.
-   */
-  private countTokensWhile(test: (token: Token) => boolean): number {
-    // Tokenize until a token fails the test, or the input runs out.
-    while (this.tokens.length === 0 || test(this.tokens[this.tokens.length - 1])) {
-      if (!this.hasToken(this.tokens.length)) break;
-    }
-    let lo = 0;
-    let hi = this.tokens.length;
-    while (lo < hi) {
-      const mid = (lo + hi) >>> 1;
-      if (test(this.tokens[mid])) lo = mid + 1;
-      else hi = mid;
-    }
-    return lo;
-  }
-
-  /**
-   * Bring the HTML context up to date with the first `count` tokens:
-   *
-   * - `openQuote` is the last `HtmlQuoteOpen` not yet balanced by an
-   *   `HtmlQuoteClose`, an attribute value still open at the boundary;
-   * - `openTag` is whether the last `HtmlTagOpen` (`<div`), `HtmlCloseTagOpen`
-   *   (`</div`) or `HtmlDoctypeOpen` (`<!`) is not yet balanced by an
-   *   `HtmlTagClose` (`>`) or `HtmlSelfClose` (`/>`).
-   *
-   * A reslice only replaces the tokens past its boundary, so the tokens
-   * already scanned stay valid for a later reslice past them, which only has
-   * to scan the tokens in between.
-   */
-  private scanHtmlContext(count: number): void {
-    if (count < this.scanned) {
-      this.scanned = 0;
-      this.openQuote = undefined;
-      this.openTag = false;
-    }
-    for (; this.scanned < count; this.scanned++) {
-      const token = this.tokens[this.scanned];
-      switch (token.type) {
-        case TokenType.HtmlQuoteOpen:
-          this.openQuote = token;
-          break;
-        case TokenType.HtmlQuoteClose:
-          this.openQuote = undefined;
-          break;
-        case TokenType.HtmlTagOpen:
-        case TokenType.HtmlCloseTagOpen:
-        case TokenType.HtmlDoctypeOpen:
-          this.openTag = true;
-          break;
-        case TokenType.HtmlTagClose:
-        case TokenType.HtmlSelfClose:
-          this.openTag = false;
-          break;
-      }
-    }
-  }
-
-  /**
-   * Re-tokenize the source from `sourceOffset` onward in place of the tokens
-   * there, positioning the parser at the first of the new ones.
-   *
-   * This is needed after a raw-tag body is scanned at the source level
-   * (see `liquid-raw.ts`): a stray `{{`/`{%` inside the raw body can open a
-   * tokenizer mode that greedily runs *past* the real end tag, producing a
-   * token that straddles the end-tag boundary and absorbs legitimate
-   * post-end-tag content. Re-tokenizing the remainder from exactly the end
-   * tag's end offset restores a clean token stream so content following the
-   * raw block (e.g. a trailing `{{ 1 }}`) is parsed normally.
-   *
-   * Tokens that lie entirely before `sourceOffset` are retained as a prefix
-   * (the parser only moves forward, so they are never revisited); every token
-   * that starts at or straddles the boundary is replaced.
-   *
-   * The re-tokenize is gated on an actual straddle: only when a token starts
-   * before `sourceOffset` and ends after it has the original stream been
-   * corrupted by the body's stray `{{`/`{%`. When the boundary already falls
-   * cleanly between tokens (e.g. `{% raw %}x{% endraw %}` with no stray opener),
-   * the existing tokens past it are correct and carry context a fresh suffix
-   * tokenize cannot reconstruct — an enclosing HTML attribute's closing quote
-   * (`...{% endraw %}">`) or a mid-document `---` that is NOT frontmatter — so
-   * we leave the stream untouched. Frontmatter is also suppressed in the
-   * re-tokenize since the suffix never begins a document.
-   */
-  resliceTokensFrom(sourceOffset: number): void {
-    // Tokens don't overlap, so only the first one ending past the boundary can
-    // straddle it.
-    const before = this.countTokensWhile((token) => token.end <= sourceOffset);
-    const straddles = this.hasToken(before) && this.tokens[before].start < sourceOffset;
-
-    if (straddles) {
-      this.scanHtmlContext(before);
-      // If the boundary lies inside a quoted HTML attribute value (the raw tag
-      // was dispatched from `parseQuotedAttributeValue`), the suffix must be
-      // re-tokenized in QuotedValue mode so the attribute's closing quote and
-      // `>` emit as HtmlQuoteClose/HtmlTagClose instead of Text. A plain
-      // document-start tokenize would drop that context and make
-      // `parser.consume(HtmlQuoteClose)` throw. Recover the enclosing quote
-      // char (if any) from the still-open quote in the retained prefix.
-      const insideQuotedAttribute = this.openQuote && this.source[this.openQuote.start];
-      // When the straddle lands in an unquoted attribute-list position (no
-      // enclosing quote), resume in HtmlTag mode so the tag's closing `>` emits
-      // as HtmlTagClose instead of Text. `insideQuotedAttribute` already nests
-      // HtmlTag beneath QuotedValue, so this only applies when there is no quote.
-      const insideHtmlTag = !insideQuotedAttribute && this.openTag;
-      // Re-tokenize only as far as the parser reads: the next straddling raw
-      // tag replaces the tokens past it again.
-      this.tokens.length = before;
-      this.tokenizer ??= createTokenizer(this.source, this.tokens);
-      this.tokenizer.restart(sourceOffset, {
-        skipFrontmatter: true,
-        insideQuotedAttribute,
-        insideHtmlTag,
-      });
-      this.p = before;
+    if (
+      this.tokens[this.p]?.start === sourceOffset &&
+      this.tokens[this.p - 1]?.start !== sourceOffset
+    )
+      return;
+    // An ordinary HTML close consists of an opener, name and closing `>`.
+    if (
+      this.tokens[this.p + 3]?.start === sourceOffset &&
+      this.tokens[this.p + 2].start < sourceOffset
+    ) {
+      this.p += 3;
       return;
     }
+    let low = 0;
+    let high = this.tokens.length;
 
-    // No corruption: the existing tokens past the boundary are correct. Just
-    // advance the cursor to the first token at/after `sourceOffset` — moving
-    // past the raw end tag is the only thing the reslice needed to do here.
-    // (The trailing EndOfInput token has `start === source.length`, so it is
-    // never skipped past, keeping `this.p` in bounds.)
+    while (low < high) {
+      const middle = low + ((high - low) >>> 1);
+
+      if (this.tokens[middle].start < sourceOffset) low = middle + 1;
+      else high = middle;
+    }
+
+    this.p = low;
+  }
+
+  declare private inspectedRawBodyEnd: number;
+  declare private rawTagVersion: number;
+  declare private rawTagValidUntil: number;
+  declare rawTextBound: number | undefined;
+
+  /** Repair only when a parser callback changed the registry since tokenization. */
+  ensureRawBoundary(bodyStart: number, bodyEnd: number): void {
+    if (!this.tokenizeOptions?.rawTags) return;
+    this.inspectedRawBodyEnd = Math.max(bodyEnd, this.inspectedRawBodyEnd);
+    if (
+      this.rawTagVersion === this.tokenizeOptions.rawTags.tagRegistryVersion &&
+      bodyStart < this.rawTagValidUntil &&
+      bodyEnd <= this.rawTagValidUntil
+    )
+      return;
+    this.rawTagValidUntil = this.recoverRawBoundaries(bodyStart, bodyEnd);
+    this.rawTagVersion = this.tokenizeOptions.rawTags.tagRegistryVersion;
+  }
+
+  /**
+   * Re-tokenize the `<script>`/`<style>` body from `bodyStart` to `bodyEnd` as
+   * raw text, with the close tag `bodyEnd`..`closeEnd` and the rest of the
+   * source as a normal document.
+   *
+   * The body is tokenized on its own, so no Liquid mode in it can run past the
+   * close tag. After the close tag the existing tokens are kept when the old
+   * stream already resumed a normal document there, which is the case when its
+   * `HtmlTagClose` ends exactly at `closeEnd`: a tag mode only pops back to the
+   * document. Otherwise the rest of the source is tokenized again.
+   *
+   * This renumbers every token slot after `bodyStart`.
+   * Callers must recompute any token index they cached, or re-seek by source
+   * offset. Leaves the cursor at the first body token.
+   */
+  retokenizeRawText(bodyStart: number, bodyEnd: number, closeEnd: number): void {
+    this.rawBodyEnds = undefined;
+    // Custom callbacks may have changed the registry since the initial scan.
+    const prefix = this.tokens.filter((token) => token.end <= bodyStart);
+    const body = this.tokenizeSlice(bodyStart, bodyEnd, { rawText: true });
+    const closeIndex = this.tokens.findIndex(
+      (token) => token.type === TokenType.HtmlTagClose && token.end === closeEnd,
+    );
+    const resumes = closeIndex !== -1 && this.tokens[closeIndex + 1]?.start === closeEnd;
+    const suffix = resumes
+      ? [...this.tokenizeSlice(bodyEnd, closeEnd), ...this.tokens.slice(closeIndex + 1)]
+      : this.tokenizeSlice(bodyEnd, this.source.length, {}, true);
+    this.tokens = [...prefix, ...body, ...suffix];
+    this.p = prefix.length;
+  }
+
+  // Tokens for `source[start, end)`, with offsets in the whole source. Drops the
+  // slice's EndOfInput unless `withEnd` is set.
+  private tokenizeSlice(
+    start: number,
+    end: number,
+    options: TokenizeOptions = {},
+    withEnd = false,
+  ): Token[] {
+    const tokens = tokenize(this.source.slice(start, end), {
+      ...(this.tokenizeOptions ?? { rawTags: Environment.default(), parseHtml: true }),
+      ...options,
+      skipFrontmatter: true,
+    });
+    if (!withEnd) tokens.pop();
+    for (const token of tokens) {
+      token.start += start;
+      token.end += start;
+    }
+    return tokens;
+  }
+
+  private recoverRawBoundaries(sourceOffset: number, bodyEnd: number): number {
+    this.rawBodyEnds = undefined;
     this.seekToSourceOffset(sourceOffset);
+    // Keep indices held by active ancestor parsers stable.
+    const prefix = this.tokens.slice(0, this.p);
+    // Replay only the current opener. Registrations cannot reinterpret the
+    // parsed prefix, whose tokens still describe its enclosing HTML mode.
+    let opener = prefix.length - 1;
+    const openerType =
+      prefix[opener]?.type === TokenType.HtmlTagClose
+        ? TokenType.HtmlTagOpen
+        : TokenType.LiquidTagOpen;
+    while (opener > 0 && prefix[opener].type !== openerType) opener--;
+    const kept = prefix.slice(0, opener);
+    let insideHtmlTag = false;
+    let insideHtmlComment = false;
+    let insideQuotedAttribute: string | undefined;
+    for (const token of kept) {
+      if (token.type === TokenType.HtmlCommentOpen) insideHtmlComment = true;
+      else if (token.type === TokenType.HtmlCommentClose) insideHtmlComment = false;
+      if (
+        token.type === TokenType.HtmlTagOpen ||
+        token.type === TokenType.HtmlCloseTagOpen ||
+        token.type === TokenType.HtmlDoctypeOpen
+      )
+        insideHtmlTag = true;
+      else if (token.type === TokenType.HtmlTagClose || token.type === TokenType.HtmlSelfClose)
+        insideHtmlTag = false;
+      else if (token.type === TokenType.HtmlQuoteOpen)
+        insideQuotedAttribute = this.source[token.start];
+      else if (token.type === TokenType.HtmlQuoteClose) insideQuotedAttribute = undefined;
+    }
+    const rawText = this.rawTextBound !== undefined;
+    const bound = Math.min(
+      this.rawTextBound ?? this.source.length,
+      this.inspectedRawBodyEnd > bodyEnd ? this.inspectedRawBodyEnd : this.source.length,
+    );
+    const start = prefix[opener]?.start ?? sourceOffset;
+    this.tokens = kept.concat(
+      this.tokenizeSlice(
+        start,
+        bound,
+        {
+          insideHtmlTag: !rawText && insideHtmlTag,
+          insideQuotedAttribute: rawText ? undefined : insideQuotedAttribute,
+          rawText,
+          insideHtmlComment: !rawText && insideHtmlComment,
+        },
+        bound === this.source.length,
+      ),
+      bound === this.source.length ? [] : this.tokens.filter((token) => token.start >= bound),
+    );
+    this.seekToSourceOffset(sourceOffset);
+    // A retained suffix still belongs to the previous registry version.
+    return bound;
   }
 }

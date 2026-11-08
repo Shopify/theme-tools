@@ -41,6 +41,34 @@ describe('commentRaw', () => {
   });
 });
 
+describe('raw tag body rules', () => {
+  it('follows the Liquid class that parses each tag', () => {
+    const liquidRaw = {
+      delimiter: 'trailing',
+      sameName: 'ignored',
+      opaque: [],
+      closesInLiquidTag: false,
+    };
+    expect(rawRaw.body).toEqual(liquidRaw);
+    expect(javascriptRaw.body).toEqual(liquidRaw);
+    expect(schemaRaw.body).toEqual(liquidRaw);
+    expect(stylesheetRaw.body).toEqual(liquidRaw);
+    expect(docRaw.body).toEqual({ ...liquidRaw, sameName: 'rejected' });
+    expect(commentRaw.body).toEqual({
+      delimiter: 'leading',
+      sameName: 'nests',
+      opaque: ['raw'],
+      closesInLiquidTag: true,
+    });
+    expect(styleRaw.body).toEqual({
+      delimiter: 'leading',
+      sameName: 'nests',
+      opaque: ['comment', 'doc', 'javascript', 'raw', 'schema', 'stylesheet'],
+      closesInLiquidTag: true,
+    });
+  });
+});
+
 describe('docRaw', () => {
   it('has raw kind', () => {
     expect(docRaw.kind).toBe(TagKind.Raw);
