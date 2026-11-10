@@ -38,7 +38,7 @@ export function liquidTagTokenName(token: string): string | undefined {
  */
 export class RawBodyEndCache {
   private readonly lastIndexes = new Map<string, number>();
-  private readonly nested = new Map<
+  private readonly known = new Map<
     string,
     { rule: RawBodyRule; ends: Map<number, RawBodyEnd | null> }
   >();
@@ -55,12 +55,15 @@ export class RawBodyEndCache {
     return index < from;
   }
 
-  /** The ends of nesting bodies of `tagName` under `rule`, by where each body starts. */
-  nestedEnds(tagName: string, rule: RawBodyRule): Map<number, RawBodyEnd | null> {
-    let entry = this.nested.get(tagName);
+  /**
+   * The ends that searches for bodies of `tagName` under `rule` found, by where
+   * a search from that position starts.
+   */
+  knownEnds(tagName: string, rule: RawBodyRule): Map<number, RawBodyEnd | null> {
+    let entry = this.known.get(tagName);
     if (entry?.rule !== rule) {
       entry = { rule, ends: new Map() };
-      this.nested.set(tagName, entry);
+      this.known.set(tagName, entry);
     }
     return entry.ends;
   }
@@ -72,8 +75,9 @@ export class RawBodyEndCache {
  * reports the tag as never closed, or rejects a tag nested inside it.
  *
  * With a `cache` for this source and registry, a search returns early when the
- * closing name doesn't occur after the body, and a nesting body reuses what an
- * enclosing search found for it.
+ * closing name doesn't occur after the body, a nesting body reuses what an
+ * enclosing search found for it, and a search under any other rule stops where it
+ * reaches a token an earlier search read.
  */
 export function findRawBodyEnd(
   source: string,
@@ -86,21 +90,32 @@ export function findRawBodyEnd(
   const endName = `end${tagName}`;
   // A body only closes at a tag named `end<name>`.
   if (cache?.absentFrom(endName, bodyStart)) return null;
-  const nestedEnds =
-    cache && rule.sameName === 'nests' ? cache.nestedEnds(tagName, rule) : undefined;
-  const known = nestedEnds?.get(bodyStart);
+  const knownEnds = cache?.knownEnds(tagName, rule);
+  const known = knownEnds?.get(bodyStart);
   if (known !== undefined) return known;
+  const nests = rule.sameName === 'nests';
   // Where the bodies of the nested openers still open start. Each closes at the
   // closing tag that brings the depth back below it, as its own search would find.
   const open: number[] = [];
+  // Under a rule that doesn't nest, each position this search reads a token from.
+  // A search from any of them reads the same tokens after it, so it ends where this one does.
+  const read: number[] = [];
   const finish = (end: RawBodyEnd | null): RawBodyEnd | null => {
-    if (nestedEnds) for (const start of open) nestedEnds.set(start, null);
+    if (knownEnds) {
+      for (const start of open) knownEnds.set(start, null);
+      for (const start of read) knownEnds.set(start, end);
+    }
     return end;
   };
   let tokenStart = bodyStart;
   let depth = 1;
 
   while (tokenStart < source.length) {
+    if (knownEnds && !nests) {
+      const earlier = knownEnds.get(tokenStart);
+      if (earlier !== undefined) return finish(earlier);
+      read.push(tokenStart);
+    }
     // Text cannot name a tag. Advance straight to the next Liquid token,
     // without slicing or inspecting the intervening text as another token.
     TAG_OR_VARIABLE_START.lastIndex = tokenStart;
@@ -108,9 +123,9 @@ export function findRawBodyEnd(
       source[tokenStart] !== '{' ||
       (source[tokenStart + 1] !== '%' && source[tokenStart + 1] !== '{')
     ) {
-      const open = TAG_OR_VARIABLE_START.exec(source);
-      if (!open) return null;
-      tokenStart = open.index;
+      const next = TAG_OR_VARIABLE_START.exec(source);
+      if (!next) return finish(null);
+      tokenStart = next.index;
     }
     const tokenEnd =
       source[tokenStart + 1] === '%'
@@ -130,12 +145,12 @@ export function findRawBodyEnd(
       };
       if (depth === 0) return finish(end);
       const nested = open.pop();
-      if (nestedEnds && nested !== undefined) nestedEnds.set(nested, end);
+      if (knownEnds && nested !== undefined) knownEnds.set(nested, end);
     } else if (tag?.[1] === tagName) {
-      if (rule.sameName === 'rejected') return null;
-      if (rule.sameName === 'nests') {
+      if (rule.sameName === 'rejected') return finish(null);
+      if (nests) {
         depth += 1;
-        if (nestedEnds) open.push(tokenEnd);
+        if (knownEnds) open.push(tokenEnd);
       }
     } else if (tag && rule.opaque.includes(tag[1])) {
       const innerRule = ruleFor(tag[1]);
