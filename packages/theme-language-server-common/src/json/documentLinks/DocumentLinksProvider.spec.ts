@@ -12,6 +12,8 @@ describe('JSON Document Links', () => {
   let jsonLanguageService: JSONLanguageService;
 
   beforeEach(async () => {
+    // Schema extraction requires mode and validation callbacks. Treat these fixtures as
+    // valid theme schemas so the Liquid tests exercise link generation without schema validation.
     documentManager = new DocumentManager(
       undefined,
       undefined,
