@@ -25,6 +25,10 @@ export function createJSONDocumentLinksVisitor(
         return;
       }
 
+      if (node.value.value.startsWith('shopify://')) {
+        return;
+      }
+
       if (origin === 'blocks' && ['@app', '@theme'].includes(node.value.value)) {
         return;
       }
