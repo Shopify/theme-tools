@@ -357,7 +357,7 @@ cases:
       blocks/image.liquid: ""
       blocks/_private_block.liquid: ""
 
-  - name: allows app and named section-local blocks in a Dawn-style section
+  - name: allows app blocks alongside section blocks
     files:
       templates/product.json: |
         {
@@ -400,7 +400,7 @@ cases:
           ]
         }
         {% endschema %}
-  - name: requires app permission in a Dawn-style section
+  - name: requires app permission in a section using section blocks
     files:
       templates/product.json: |
         {
@@ -504,7 +504,7 @@ cases:
         message: "Block type 'text' is not allowed in 'sections/main-product.liquid'."
         start: [18, 18]
         highlight: '"text"'
-  - name: allows app and theme blocks in a Horizon-style section
+  - name: allows app blocks alongside theme blocks
     files:
       templates/product.json: |
         {
