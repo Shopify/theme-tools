@@ -62,7 +62,7 @@ cases:
           ]
         }
         {% endschema %}
-      blocks/text.liquid: ""
+      blocks/text.liquid: ''
   - name: should report an offense when a nested block does not exist
     files:
       templates/product.nested.json: |-
@@ -140,8 +140,8 @@ cases:
           ]
         }
         {% endschema %}
-      blocks/text.liquid: ""
-      blocks/image.liquid: ""
+      blocks/text.liquid: ''
+      blocks/image.liquid: ''
     offenses:
       - file: templates/product.valid.json
         message: "Block type 'text' is not allowed in 'sections/custom-section.liquid'."
@@ -191,8 +191,8 @@ cases:
             ]
           }
           {% endschema %}
-      blocks/image.liquid: ""
-      blocks/missing_nested.liquid: ""
+      blocks/image.liquid: ''
+      blocks/missing_nested.liquid: ''
     offenses:
       - file: templates/product.nested.json
         message: "Block type 'missing_nested' is not allowed in 'blocks/text.liquid'."
@@ -242,8 +242,8 @@ cases:
             ]
           }
           {% endschema %}
-      blocks/image.liquid: ""
-      blocks/_private_block.liquid: ""
+      blocks/image.liquid: ''
+      blocks/_private_block.liquid: ''
     offenses:
       - file: templates/product.nested.json
         message: "Block type '_private_block' is not allowed in 'blocks/text.liquid'."
@@ -354,5 +354,852 @@ cases:
             ]
           }
           {% endschema %}
-      blocks/image.liquid: ""
-      blocks/_private_block.liquid: ""
+      blocks/image.liquid: ''
+      blocks/_private_block.liquid: ''
+
+  - name: allows app blocks alongside section blocks
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "title": {
+                  "type": "title"
+                },
+                "price": {
+                  "type": "price"
+                },
+                "widget": {
+                  "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/main-product.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": [
+            {
+              "type": "title",
+              "name": "Title"
+            },
+            {
+              "type": "price",
+              "name": "Price"
+            },
+            {
+              "type": "@app"
+            }
+          ]
+        }
+        {% endschema %}
+  - name: requires app permission in a section using section blocks
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "title": {
+                  "type": "title"
+                },
+                "price": {
+                  "type": "price"
+                },
+                "widget": {
+                  "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/main-product.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": [
+            {
+              "type": "title",
+              "name": "Title"
+            },
+            {
+              "type": "price",
+              "name": "Price"
+            }
+          ]
+        }
+        {% endschema %}
+    offenses:
+      - file: templates/product.json
+        message: "Block type 'shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000' is not allowed in 'sections/main-product.liquid'."
+        start: [12, 18]
+        highlight: '"shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"'
+  - name: does not treat undeclared section blocks as theme blocks when apps are allowed
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "title": {
+                  "type": "title"
+                },
+                "price": {
+                  "type": "price"
+                },
+                "missing": {
+                  "type": "missing"
+                },
+                "text": {
+                  "type": "text"
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/main-product.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": [
+            {
+              "type": "title",
+              "name": "Title"
+            },
+            {
+              "type": "price",
+              "name": "Price"
+            },
+            {
+              "type": "@app"
+            }
+          ]
+        }
+        {% endschema %}
+      blocks/text.liquid: |
+  - name: allows app blocks alongside theme blocks
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "widget": {
+                  "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"
+                },
+                "text": {
+                  "type": "text"
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/main-product.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": [
+            {
+              "type": "@theme"
+            },
+            {
+              "type": "@app"
+            }
+          ]
+        }
+        {% endschema %}
+      blocks/text.liquid: |
+  - name: does not let theme permission or static bypass section app permission
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "widget": {
+                  "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000",
+                  "static": true
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/main-product.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": [
+            {
+              "type": "@theme"
+            }
+          ]
+        }
+        {% endschema %}
+    offenses:
+      - file: templates/product.json
+        message: "Block type 'shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000' is not allowed in 'sections/main-product.liquid'."
+        start: [6, 18]
+        highlight: '"shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"'
+  - name: does not enable theme block validation in an app-only section
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "widget": {
+                  "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"
+                },
+                "text": {
+                  "type": "text"
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/main-product.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": [
+            {
+              "type": "@app"
+            }
+          ]
+        }
+        {% endschema %}
+      blocks/text.liquid: |
+  - name: rejects an app in a section with no allowed blocks
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "widget": {
+                  "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/main-product.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": []
+        }
+        {% endschema %}
+    offenses:
+      - file: templates/product.json
+        message: "Block type 'shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000' is not allowed in 'sections/main-product.liquid'."
+        start: [6, 18]
+        highlight: '"shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"'
+  - name: allows a nested app when only its immediate host allows apps
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "details": {
+                  "type": "product-details",
+                  "blocks": {
+                    "widget": {
+                      "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"
+                    },
+                    "text": {
+                      "type": "text"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/main-product.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": [
+            {
+              "type": "@theme"
+            }
+          ]
+        }
+        {% endschema %}
+      blocks/product-details.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": [
+            {
+              "type": "@theme"
+            },
+            {
+              "type": "@app"
+            }
+          ]
+        }
+        {% endschema %}
+      blocks/text.liquid: |
+  - name: does not inherit app permission from the containing section
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "details": {
+                  "type": "product-details",
+                  "blocks": {
+                    "widget": {
+                      "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/main-product.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": [
+            {
+              "type": "@theme"
+            },
+            {
+              "type": "@app"
+            }
+          ]
+        }
+        {% endschema %}
+      blocks/product-details.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": [
+            {
+              "type": "@theme"
+            }
+          ]
+        }
+        {% endschema %}
+    offenses:
+      - file: templates/product.json
+        message: "Block type 'shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000' is not allowed in 'blocks/product-details.liquid'."
+        start: [9, 22]
+        highlight: '"shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"'
+  - name: does not enable theme block validation in an app-only theme block
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "details": {
+                  "type": "product-details",
+                  "blocks": {
+                    "widget": {
+                      "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"
+                    },
+                    "text": {
+                      "type": "text"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/main-product.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": [
+            {
+              "type": "@theme"
+            }
+          ]
+        }
+        {% endschema %}
+      blocks/product-details.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": [
+            {
+              "type": "@app"
+            }
+          ]
+        }
+        {% endschema %}
+      blocks/text.liquid: |
+  - name: rejects a nested app when its host has no allowed blocks
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "details": {
+                  "type": "product-details",
+                  "blocks": {
+                    "widget": {
+                      "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/main-product.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": [
+            {
+              "type": "@theme"
+            }
+          ]
+        }
+        {% endschema %}
+      blocks/product-details.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": []
+        }
+        {% endschema %}
+    offenses:
+      - file: templates/product.json
+        message: "Block type 'shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000' is not allowed in 'blocks/product-details.liquid'."
+        start: [9, 22]
+        highlight: '"shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"'
+  - name: still detects a missing theme block alongside a valid nested app
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "details": {
+                  "type": "product-details",
+                  "blocks": {
+                    "widget": {
+                      "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"
+                    },
+                    "missing": {
+                      "type": "missing"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/main-product.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": [
+            {
+              "type": "@theme"
+            }
+          ]
+        }
+        {% endschema %}
+      blocks/product-details.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": [
+            {
+              "type": "@theme"
+            },
+            {
+              "type": "@app"
+            }
+          ]
+        }
+        {% endschema %}
+    offenses:
+      - file: templates/product.json
+        message: "Theme block 'blocks/missing.liquid' does not exist."
+        start: [12, 22]
+        highlight: '"missing"'
+  - name: does not treat other Shopify URIs as app blocks
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "other": {
+                  "type": "shopify://other/widget"
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/main-product.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": [
+            {
+              "type": "@theme"
+            },
+            {
+              "type": "@app"
+            }
+          ]
+        }
+        {% endschema %}
+    offenses:
+      - file: templates/product.json
+        message: "Theme block 'blocks/shopify://other/widget.liquid' does not exist."
+        start: [6, 18]
+        highlight: '"shopify://other/widget"'
+  - name: does not treat undeclared section blocks as theme blocks when apps are not allowed
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "main-product",
+              "blocks": {
+                "title": {
+                  "type": "title"
+                },
+                "price": {
+                  "type": "price"
+                },
+                "missing": {
+                  "type": "missing"
+                },
+                "text": {
+                  "type": "text"
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/main-product.liquid: |
+        {% schema %}
+        {
+          "name": "Example",
+          "blocks": [
+            {
+              "type": "title",
+              "name": "Title"
+            },
+            {
+              "type": "price",
+              "name": "Price"
+            }
+          ]
+        }
+        {% endschema %}
+      blocks/text.liquid: |
+  - name: allows apps alongside explicitly allowed theme blocks
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "host",
+              "blocks": {
+                "widget": {
+                  "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"
+                },
+                "text": {
+                  "type": "text"
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/host.liquid: |
+        {% schema %}
+        {
+          "name": "Host",
+          "blocks": [
+            {
+              "type": "text"
+            },
+            {
+              "type": "@app"
+            }
+          ]
+        }
+        {% endschema %}
+      blocks/text.liquid: |
+  - name: requires app support even when a theme block is explicitly allowed
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "host",
+              "blocks": {
+                "widget": {
+                  "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"
+                },
+                "text": {
+                  "type": "text"
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/host.liquid: |
+        {% schema %}
+        {
+          "name": "Host",
+          "blocks": [
+            {
+              "type": "text"
+            }
+          ]
+        }
+        {% endschema %}
+      blocks/text.liquid: |
+    offenses:
+      - file: templates/product.json
+        message: "Block type 'shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000' is not allowed in 'sections/host.liquid'."
+        start: [6, 18]
+        highlight: '"shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"'
+  - name: rejects app blocks when the section schema has no blocks key
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "host",
+              "blocks": {
+                "widget": {
+                  "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/host.liquid: |
+        {% schema %}
+        {
+          "name": "Host"
+        }
+        {% endschema %}
+    offenses:
+      - file: templates/product.json
+        message: "Block type 'shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000' is not allowed in 'sections/host.liquid'."
+        start: [6, 18]
+        highlight: '"shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"'
+  - name: rejects app blocks when the theme block schema has no blocks key
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "main",
+              "blocks": {
+                "host": {
+                  "type": "host",
+                  "blocks": {
+                    "widget": {
+                      "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/main.liquid: |
+        {% schema %}
+        {
+          "name": "Host",
+          "blocks": [
+            {
+              "type": "@theme"
+            }
+          ]
+        }
+        {% endschema %}
+      blocks/host.liquid: |
+        {% schema %}
+        {
+          "name": "Host"
+        }
+        {% endschema %}
+    offenses:
+      - file: templates/product.json
+        message: "Block type 'shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000' is not allowed in 'blocks/host.liquid'."
+        start: [9, 22]
+        highlight: '"shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"'
+  - name: skips app permission checks when the host file is missing
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "host",
+              "blocks": {
+                "widget": {
+                  "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+  - name: skips app permission checks when the host has no schema tag
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "host",
+              "blocks": {
+                "widget": {
+                  "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/host.liquid: |
+        <div>Host</div>
+  - name: skips app permission checks when the host schema JSON is malformed
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "host",
+              "blocks": {
+                "widget": {
+                  "type": "shopify://apps/example/blocks/widget/00000000-0000-4000-8000-000000000000"
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/host.liquid: |
+        {% schema %}{"name":{% endschema %}
+  - name: does not require a theme block file for a static section block
+    files:
+      templates/product.json: |
+        {
+          "sections": {
+            "main": {
+              "type": "host",
+              "blocks": {
+                "text": {
+                  "type": "text",
+                  "static": true
+                }
+              }
+            }
+          },
+          "order": [
+            "main"
+          ]
+        }
+      sections/host.liquid: |
+        {% schema %}
+        {
+          "name": "Host",
+          "blocks": [
+            {
+              "type": "text",
+              "name": "Text"
+            },
+            {
+              "type": "@app"
+            }
+          ]
+        }
+        {% endschema %}
