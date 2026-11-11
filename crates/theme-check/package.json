@@ -1,0 +1,6 @@
+{
+  "name": "theme-check-rs",
+  "version": "0.1.0",
+  "description": "Versions the Rust crates with changesets. The release copies this version into Cargo.toml.",
+  "private": true
+}

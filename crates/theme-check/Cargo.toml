@@ -1,0 +1,23 @@
+[package]
+name = "theme-check"
+description = "The linter for Shopify themes, ported from @shopify/theme-check-node"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+# The specs it runs are at the repo root, outside the crate.
+# ponytail: the CLI is theme-check-node's `cli.ts`, for the tests, so it isn't published either.
+# Publish it, with readable output and the docs embedded, when someone needs `cargo install`.
+exclude = ["/package.json", "/tests", "/src/bin"]
+
+[dependencies]
+liquid-ast.workspace = true
+liquid-parser.workspace = true
+serde_json = { version = "1", features = ["preserve_order"] }
+regex = "1"
+yaml-rust2 = { version = "0.11", default-features = false }
+
+[[test]]
+name = "specs"
+harness = false
