@@ -375,6 +375,7 @@ pub(crate) fn run<R>(
         &Uris(&Disk),
         docs.docset(),
         schemas,
+        0,
     );
     let result = after(&theme, &offenses);
     let theme = theme.iter().map(|f| f.uri.clone()).collect();
@@ -389,7 +390,8 @@ pub(crate) fn run<R>(
 }
 
 /// The rest of `themeCheckRun`: core `check(theme, config, dependencies)` with theme-check-node's
-/// dependencies. `root` is the one the run was given, and `root_uri` the config's.
+/// dependencies, on `threads` threads as in [`crate::runner::check`]. `root` is the one the run
+/// was given, and `root_uri` the config's.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn check_theme(
     core: &Config,
@@ -400,6 +402,7 @@ pub(crate) fn check_theme(
     fs: &dyn FileSystem,
     docset: &ThemeDocset,
     schemas: &[Schema],
+    threads: usize,
 ) -> Vec<Offense> {
     // `JSONValidator.create(themeLiquidDocsManager, config)`, whose `isValid` the schema getters
     // use, and the one `check()` makes again for `validateJSON`. Two instances, as in TS: schema
@@ -442,7 +445,7 @@ pub(crate) fn check_theme(
     // `getWebComponentDefinitionReference: () => undefined`. `getReferences` and
     // `getDependencies` answer `[]` when it fails. (`getAppBlockSchema` is `Deps::get_app_block_schema`.)
     deps.theme_graph = Some(crate::graph::build_theme_graph(&deps, &|_| None, None));
-    crate::runner::check(core, &deps, 0).offenses
+    crate::runner::check(core, &deps, threads).offenses
 }
 
 // ---------------------------------------------------------------------------------------------

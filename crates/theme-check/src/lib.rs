@@ -280,6 +280,7 @@ pub struct Checker {
     checks: Option<Vec<&'static Check>>,
     settings: Map<String, Value>,
     ignore: Vec<String>,
+    threads: usize,
     downloaded: docs::ThemeLiquidDocsManager,
 }
 
@@ -297,6 +298,7 @@ impl Checker {
             checks: None,
             settings: Map::new(),
             ignore: Vec::new(),
+            threads: 0,
             downloaded: docs::ThemeLiquidDocsManager::new(Box::new(|_| {})),
         }
     }
@@ -350,6 +352,13 @@ impl Checker {
     /// ```
     pub fn ignore(mut self, patterns: impl IntoIterator<Item = impl Into<String>>) -> Self {
         self.ignore = patterns.into_iter().map(Into::into).collect();
+        self
+    }
+
+    /// How many threads check the files. 0, the default, is one per core. With 1, they're checked
+    /// on the calling thread. A check that panics panics on the calling thread either way.
+    pub fn threads(mut self, threads: usize) -> Self {
+        self.threads = threads;
         self
     }
 
@@ -415,7 +424,91 @@ impl Checker {
             &fs::Uris(fs),
             docset,
             schemas,
+            self.threads,
         );
         Ok(report(&theme, &offenses))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::Mutex;
+    use std::thread::ThreadId;
+
+    static THREADS: Mutex<Vec<ThreadId>> = Mutex::new(Vec::new());
+
+    struct RecordThread;
+
+    impl<'a> LiquidCheck<'a> for RecordThread {
+        fn start(&mut self, _: &mut Context<'a>) -> CheckResult {
+            THREADS.lock().unwrap().push(std::thread::current().id());
+            Ok(())
+        }
+    }
+
+    struct Panic;
+
+    impl<'a> LiquidCheck<'a> for Panic {
+        fn start(&mut self, _: &mut Context<'a>) -> CheckResult {
+            panic!("boom")
+        }
+    }
+
+    const fn check(code: &'static str, create: Create) -> Check {
+        Check {
+            code,
+            name: code,
+            aliases: &[],
+            severity: Severity::Error,
+            recommended: false,
+            deprecated: false,
+            schema: &[],
+            create,
+        }
+    }
+
+    static RECORD_THREAD: Check = check(
+        "RecordThread",
+        Create::Liquid(|_| Some(Box::new(RecordThread))),
+    );
+    static PANIC: Check = check("Panic", Create::Liquid(|_| Some(Box::new(Panic))));
+
+    fn checker(check: &'static Check) -> Checker {
+        Checker::new()
+            .docs(Docs::from_json("[]", "[]", "[]", "{}").unwrap())
+            .schemas(Vec::new())
+            .checks([check])
+    }
+
+    fn theme() -> MemoryFs {
+        [
+            ("/theme/snippets/a.liquid", ""),
+            ("/theme/snippets/b.liquid", ""),
+        ]
+        .into_iter()
+        .collect()
+    }
+
+    #[test]
+    fn one_thread_is_the_calling_thread() {
+        checker(&RECORD_THREAD)
+            .threads(1)
+            .run(&theme(), "/theme")
+            .unwrap();
+        assert_eq!(*THREADS.lock().unwrap(), [std::thread::current().id(); 2]);
+    }
+
+    #[test]
+    fn a_panic_is_resumed_with_its_message() {
+        for threads in [0, 1, 2] {
+            let checker = checker(&PANIC).threads(threads);
+            let fs = theme();
+            let e = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                checker.run(&fs, "/theme")
+            }))
+            .unwrap_err();
+            assert_eq!(e.downcast_ref::<&str>(), Some(&"boom"), "{threads} threads");
+        }
     }
 }
