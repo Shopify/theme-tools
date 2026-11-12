@@ -29,7 +29,10 @@ export const CdnPreconnect: LiquidCheckDefinition = {
 
       const isShopifyCdn = node.attributes
         .filter(isValuedHtmlAttribute)
-        .some((attr) => isAttr(attr, 'href') && valueIncludes(attr, '.+cdn.shopify.com.+'));
+        .some(
+          (attr) =>
+            isAttr(attr, 'href') && valueIncludes(attr, '(https?:)?//cdn\\.shopify\\.com(/\\S*)?'),
+        );
 
       if (!isShopifyCdn) return;
 
