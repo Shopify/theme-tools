@@ -29,8 +29,13 @@ pub struct CheckOutput {
 
 /// `check(theme, config, dependencies)`. Files are independent, so they run on `threads` threads
 /// (`0` = all cores, `1` = the calling thread); output is in file order either way. A panic in a
-/// check is resumed on the calling thread.
-pub fn check<'a>(config: &'a Config, deps: &'a Deps<'a>, threads: usize) -> CheckOutput {
+/// check is resumed on the calling thread. `None` if `cancelled` returned true before a file.
+pub fn check<'a>(
+    config: &'a Config,
+    deps: &'a Deps<'a>,
+    threads: usize,
+    cancelled: &(dyn Fn() -> bool + Sync),
+) -> Option<CheckOutput> {
     let ignores: Vec<Vec<Minimatch>> = config
         .checks
         .iter()
@@ -50,7 +55,7 @@ pub fn check<'a>(config: &'a Config, deps: &'a Deps<'a>, threads: usize) -> Chec
         let mut out = Vec::new();
         loop {
             let i = next.fetch_add(1, Ordering::Relaxed);
-            if i >= n {
+            if i >= n || cancelled() {
                 break out;
             }
             out.push((i, run(i)));
@@ -67,13 +72,16 @@ pub fn check<'a>(config: &'a Config, deps: &'a Deps<'a>, threads: usize) -> Chec
                 .collect()
         })
     };
+    if per_file.len() < n {
+        return None;
+    }
     per_file.sort_by_key(|(i, _)| *i);
     let mut out = CheckOutput::default();
     for (_, o) in per_file {
         out.offenses.extend(o.offenses);
         out.errors.extend(o.errors);
     }
-    out
+    Some(out)
 }
 
 struct Slot<'a, C: ?Sized> {

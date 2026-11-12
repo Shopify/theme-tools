@@ -161,13 +161,38 @@ pub struct Position {
     pub column: usize,
 }
 
-/// Why a run failed, like a config that can't be read.
+/// Why a run failed, like a config that can't be read, or a [`Checker::cancelable`] run that was
+/// cancelled.
 #[derive(Clone, Debug)]
-pub struct Error(String);
+pub struct Error {
+    message: String,
+    cancelled: bool,
+}
+
+impl Error {
+    fn new(message: impl Into<String>) -> Self {
+        Error {
+            message: message.into(),
+            cancelled: false,
+        }
+    }
+
+    fn cancelled() -> Self {
+        Error {
+            message: "cancelled".into(),
+            cancelled: true,
+        }
+    }
+
+    /// Whether the run was cancelled, rather than failed.
+    pub fn is_cancelled(&self) -> bool {
+        self.cancelled
+    }
+}
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(&self.0)
+        f.write_str(&self.message)
     }
 }
 
@@ -175,7 +200,7 @@ impl std::error::Error for Error {}
 
 impl From<node::JsError> for Error {
     fn from(e: node::JsError) -> Self {
-        Error(e.message)
+        Error::new(e.message)
     }
 }
 
@@ -251,14 +276,14 @@ impl Docs {
         system_translations: &str,
     ) -> Result<Self, Error> {
         let parse = |name: &str, json: &str| {
-            serde_json::from_str::<Value>(json).map_err(|e| Error(format!("{name}: {e}")))
+            serde_json::from_str::<Value>(json).map_err(|e| Error::new(format!("{name}: {e}")))
         };
         let list = |name: &str, json: &str| match parse(name, json)? {
             Value::Array(a) => Ok(a),
-            _ => Err(Error(format!("{name}: not an array"))),
+            _ => Err(Error::new(format!("{name}: not an array"))),
         };
         let Value::Object(translations) = parse("system_translations", system_translations)? else {
-            return Err(Error("system_translations: not an object".into()));
+            return Err(Error::new("system_translations: not an object"));
         };
         Ok(Docs(docset::ThemeDocset::augmented(
             list("filters", filters)?,
@@ -366,11 +391,55 @@ impl Checker {
     /// `node_modules`, which the recommended config ignores, or [`Self::ignore`]'s. It fails if
     /// `root` or a directory below it can't be listed, or a file can't be read.
     pub fn run(&self, fs: &dyn FileSystem, root: impl AsRef<Path>) -> Result<Report, Error> {
+        self.cancelable(&|| false).run(fs, root)
+    }
+
+    /// This checker, for a run that stops when `cancelled` returns true. It's called before each
+    /// file is read, parsed and checked, and before the theme graph is built, from the threads
+    /// that do it.
+    ///
+    /// ```
+    /// # use theme_check::{Checker, Docs, MemoryFs};
+    /// use std::sync::atomic::{AtomicBool, Ordering};
+    ///
+    /// # let fs: MemoryFs = [("/theme/snippets/a.liquid", "")].into_iter().collect();
+    /// # let checker = Checker::new().docs(Docs::from_json("[]", "[]", "[]", "{}")?);
+    /// # let checker = checker.schemas(Vec::new());
+    /// let stop = AtomicBool::new(true);
+    /// let result = checker.cancelable(&|| stop.load(Ordering::Relaxed)).run(&fs, "/theme");
+    /// assert!(result.is_err_and(|e| e.is_cancelled()));
+    /// # Ok::<(), theme_check::Error>(())
+    /// ```
+    pub fn cancelable<'a>(&'a self, cancelled: &'a (dyn Fn() -> bool + Sync)) -> Cancelable<'a> {
+        Cancelable {
+            checker: self,
+            cancelled,
+        }
+    }
+}
+
+/// A [`Checker`] whose run can be cancelled, from [`Checker::cancelable`].
+pub struct Cancelable<'a> {
+    checker: &'a Checker,
+    cancelled: &'a (dyn Fn() -> bool + Sync),
+}
+
+impl Cancelable<'_> {
+    /// [`Checker::run`], or an error whose [`Error::is_cancelled`] is true if it was cancelled.
+    pub fn run(&self, fs: &dyn FileSystem, root: impl AsRef<Path>) -> Result<Report, Error> {
+        let Cancelable { checker, cancelled } = *self;
+        let stop = || {
+            if cancelled() {
+                Err(Error::cancelled())
+            } else {
+                Ok(())
+            }
+        };
         let root = resolve(root.as_ref());
         let root_uri = path::file_uri(&root);
-        let settings = node::config::resolve_check_settings(self.settings.clone())?;
+        let settings = node::config::resolve_check_settings(checker.settings.clone())?;
         let recommended = node::config::recommended_with(settings.clone())?;
-        let mut config = match &self.checks {
+        let mut config = match &checker.checks {
             None => recommended,
             Some(checks) => {
                 let enabled = |c: &&Check| {
@@ -386,10 +455,10 @@ impl Checker {
                 )
             }
         };
-        config.ignore.extend(self.ignore.iter().cloned());
+        config.ignore.extend(checker.ignore.iter().cloned());
 
         let mut paths = Vec::new();
-        fs::theme_files(fs, Path::new(&root), &mut paths).map_err(|e| Error(e.to_string()))?;
+        fs::theme_files(fs, Path::new(&root), &mut paths).map_err(|e| Error::new(e.to_string()))?;
         let ignores = runner::ignore_patterns(&config, None, &root_uri);
         let mut paths: Vec<String> = paths
             .into_iter()
@@ -399,21 +468,27 @@ impl Checker {
         paths.sort_by(|a, b| node::locale_compare(a, b));
         let files = paths
             .iter()
-            .map(|p| match fs.read_to_string(p.as_ref()) {
-                Ok(source) => Ok((path::file_uri(p), source)),
-                Err(e) => Err(Error(format!("{p}: {e}"))),
+            .map(|p| {
+                stop()?;
+                match fs.read_to_string(p.as_ref()) {
+                    Ok(source) => Ok((path::file_uri(p), source)),
+                    Err(e) => Err(Error::new(format!("{p}: {e}"))),
+                }
             })
             .collect::<Result<Vec<_>, _>>()?;
-        let theme: Vec<SourceCode> = files.iter().map(|(u, s)| to_source_code(u, s)).collect();
+        let theme = files
+            .iter()
+            .map(|(u, s)| stop().map(|()| to_source_code(u, s)))
+            .collect::<Result<Vec<SourceCode>, _>>()?;
         // ponytail: themes only. Theme app extensions need `Mode::App`, and its schemas and
         // checks; add a `Checker` setting for it when someone checks one.
-        let schemas = match &self.schemas {
+        let schemas = match &checker.schemas {
             Some(schemas) => schemas,
-            None => self.downloaded.schemas(Mode::Theme),
+            None => checker.downloaded.schemas(Mode::Theme),
         };
-        let docset = match &self.docs {
+        let docset = match &checker.docs {
             Some(docs) => &docs.0,
-            None => self.downloaded.docset(),
+            None => checker.downloaded.docset(),
         };
         let offenses = node::check_theme(
             &config,
@@ -424,8 +499,10 @@ impl Checker {
             &fs::Uris(fs),
             docset,
             schemas,
-            self.threads,
-        );
+            checker.threads,
+            cancelled,
+        )
+        .ok_or_else(Error::cancelled)?;
         Ok(report(&theme, &offenses))
     }
 }
@@ -433,16 +510,27 @@ impl Checker {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::atomic::{AtomicUsize, Ordering};
     use std::sync::Mutex;
     use std::thread::ThreadId;
 
     static THREADS: Mutex<Vec<ThreadId>> = Mutex::new(Vec::new());
+    static COUNTED: AtomicUsize = AtomicUsize::new(0);
 
     struct RecordThread;
 
     impl<'a> LiquidCheck<'a> for RecordThread {
         fn start(&mut self, _: &mut Context<'a>) -> CheckResult {
             THREADS.lock().unwrap().push(std::thread::current().id());
+            Ok(())
+        }
+    }
+
+    struct Count;
+
+    impl<'a> LiquidCheck<'a> for Count {
+        fn start(&mut self, _: &mut Context<'a>) -> CheckResult {
+            COUNTED.fetch_add(1, Ordering::Relaxed);
             Ok(())
         }
     }
@@ -472,6 +560,7 @@ mod tests {
         "RecordThread",
         Create::Liquid(|_| Some(Box::new(RecordThread))),
     );
+    static COUNT: Check = check("Count", Create::Liquid(|_| Some(Box::new(Count))));
     static PANIC: Check = check("Panic", Create::Liquid(|_| Some(Box::new(Panic))));
 
     fn checker(check: &'static Check) -> Checker {
@@ -510,5 +599,16 @@ mod tests {
             .unwrap_err();
             assert_eq!(e.downcast_ref::<&str>(), Some(&"boom"), "{threads} threads");
         }
+    }
+
+    #[test]
+    fn a_run_cancelled_between_files_is_cancelled() {
+        let checker = checker(&COUNT).threads(1);
+        let e = checker
+            .cancelable(&|| COUNTED.load(Ordering::Relaxed) > 0)
+            .run(&theme(), "/theme")
+            .unwrap_err();
+        assert!(e.is_cancelled());
+        assert_eq!(COUNTED.load(Ordering::Relaxed), 1);
     }
 }

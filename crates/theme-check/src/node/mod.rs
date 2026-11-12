@@ -376,7 +376,9 @@ pub(crate) fn run<R>(
         docs.docset(),
         schemas,
         0,
-    );
+        &|| false,
+    )
+    .unwrap_or_default();
     let result = after(&theme, &offenses);
     let theme = theme.iter().map(|f| f.uri.clone()).collect();
     Ok((
@@ -391,7 +393,8 @@ pub(crate) fn run<R>(
 
 /// The rest of `themeCheckRun`: core `check(theme, config, dependencies)` with theme-check-node's
 /// dependencies, on `threads` threads as in [`crate::runner::check`]. `root` is the one the run
-/// was given, and `root_uri` the config's.
+/// was given, and `root_uri` the config's. `None` if `cancelled` returned true before the graph
+/// or a file.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn check_theme(
     core: &Config,
@@ -403,7 +406,8 @@ pub(crate) fn check_theme(
     docset: &ThemeDocset,
     schemas: &[Schema],
     threads: usize,
-) -> Vec<Offense> {
+    cancelled: &(dyn Fn() -> bool + Sync),
+) -> Option<Vec<Offense>> {
     // `JSONValidator.create(themeLiquidDocsManager, config)`, whose `isValid` the schema getters
     // use, and the one `check()` makes again for `validateJSON`. Two instances, as in TS: schema
     // resolution state is per validator.
@@ -444,8 +448,11 @@ pub(crate) fn check_theme(
     // `buildThemeGraph(config.rootUri, ...)` with these schema getters, mode and
     // `getWebComponentDefinitionReference: () => undefined`. `getReferences` and
     // `getDependencies` answer `[]` when it fails. (`getAppBlockSchema` is `Deps::get_app_block_schema`.)
+    if cancelled() {
+        return None;
+    }
     deps.theme_graph = Some(crate::graph::build_theme_graph(&deps, &|_| None, None));
-    crate::runner::check(core, &deps, threads).offenses
+    Some(crate::runner::check(core, &deps, threads, cancelled)?.offenses)
 }
 
 // ---------------------------------------------------------------------------------------------

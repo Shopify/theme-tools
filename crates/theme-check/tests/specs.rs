@@ -416,7 +416,7 @@ fn run_check_specs(dir: &Path) -> (usize, usize) {
                 "getDependencies".into(),
                 "remoteFileSize".into(),
             ];
-            let out = theme_check::runner::check(&config, &deps, 1);
+            let out = theme_check::runner::check(&config, &deps, 1, &|| false).unwrap();
 
             let mut expected = case["offenses"].as_array().cloned().unwrap_or_default();
             for e in &mut expected {
@@ -709,7 +709,7 @@ fn run_parity(dir: &Path) -> (usize, usize) {
                     theme_schemas: true,
                 },
             );
-            let out = theme_check::runner::check(&config, &deps, 1);
+            let out = theme_check::runner::check(&config, &deps, 1, &|| false).unwrap();
             let reported = !out.offenses.is_empty();
             let problem = match ruby {
                 None => Some("no snapshot".to_string()),
