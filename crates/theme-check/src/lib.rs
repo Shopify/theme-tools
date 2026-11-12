@@ -279,6 +279,7 @@ pub struct Checker {
     schemas: Option<Vec<Schema>>,
     checks: Option<Vec<&'static Check>>,
     settings: Map<String, Value>,
+    ignore: Vec<String>,
     downloaded: docs::ThemeLiquidDocsManager,
 }
 
@@ -295,6 +296,7 @@ impl Checker {
             schemas: None,
             checks: None,
             settings: Map::new(),
+            ignore: Vec::new(),
             downloaded: docs::ThemeLiquidDocsManager::new(Box::new(|_| {})),
         }
     }
@@ -326,15 +328,40 @@ impl Checker {
         self
     }
 
-    /// Checks the theme at `root` in `fs`: its `.liquid` and `.json` files, but not dot files or
-    /// `node_modules`, which the recommended config ignores. It fails if `root` or a directory below
-    /// it can't be listed, or a file can't be read.
+    /// The files to leave out, as in `.theme-check.yml`'s `ignore`: `_drafts/**` leaves out every
+    /// `_drafts` folder, and a pattern that starts with `/` is from the root. They aren't read or
+    /// checked, so lookups like block schemas don't find them.
+    ///
+    /// ```
+    /// # use theme_check::{Checker, Docs, MemoryFs};
+    /// let fs: MemoryFs = [
+    ///     ("/theme/blocks/a.liquid", "{{ 'x' | nope }}"),
+    ///     ("/theme/blocks/_drafts/a.liquid", "{{ 'x' | nope }}"),
+    /// ]
+    /// .into_iter()
+    /// .collect();
+    /// let report = Checker::new()
+    /// #   .docs(Docs::from_json("[]", "[]", "[]", "{}")?)
+    /// #   .schemas(Vec::new())
+    ///     .ignore(["_drafts/**"])
+    ///     .run(&fs, "/theme")?;
+    /// assert_eq!(report.files, [std::path::PathBuf::from("/theme/blocks/a.liquid")]);
+    /// # Ok::<(), theme_check::Error>(())
+    /// ```
+    pub fn ignore(mut self, patterns: impl IntoIterator<Item = impl Into<String>>) -> Self {
+        self.ignore = patterns.into_iter().map(Into::into).collect();
+        self
+    }
+
+    /// Checks the theme at `root` in `fs`: its `.liquid` and `.json` files, but not dot files,
+    /// `node_modules`, which the recommended config ignores, or [`Self::ignore`]'s. It fails if
+    /// `root` or a directory below it can't be listed, or a file can't be read.
     pub fn run(&self, fs: &dyn FileSystem, root: impl AsRef<Path>) -> Result<Report, Error> {
         let root = resolve(root.as_ref());
         let root_uri = path::file_uri(&root);
         let settings = node::config::resolve_check_settings(self.settings.clone())?;
         let recommended = node::config::recommended_with(settings.clone())?;
-        let config = match &self.checks {
+        let mut config = match &self.checks {
             None => recommended,
             Some(checks) => {
                 let enabled = |c: &&Check| {
@@ -350,6 +377,7 @@ impl Checker {
                 )
             }
         };
+        config.ignore.extend(self.ignore.iter().cloned());
 
         let mut paths = Vec::new();
         fs::theme_files(fs, Path::new(&root), &mut paths).map_err(|e| Error(e.to_string()))?;
