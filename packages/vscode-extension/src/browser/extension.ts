@@ -10,6 +10,7 @@ import LiquidFormatter from '../common/formatter';
 import { vscodePrettierFormat } from './formatter';
 import { documentSelectors } from '../common/constants';
 import { makeDeadCode, openLocation } from '../common/commands';
+import { checkOrphanedFilesOnBoot } from '../common/orphanedFilesOnBoot';
 import {
   createReferencesTreeView,
   setupContext,
@@ -45,6 +46,9 @@ export async function activate(context: ExtensionContext) {
       createReferencesTreeView('shopify.themeGraph.dependencies', context, client, 'dependencies'),
       watchReferencesTreeViewConfig(),
     );
+
+    // Fire-and-forget: surfacing orphaned files must never block or fail activation.
+    checkOrphanedFilesOnBoot(client).catch((error) => console.error(error));
   }
 }
 
