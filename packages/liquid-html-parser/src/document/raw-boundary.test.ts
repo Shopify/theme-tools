@@ -954,10 +954,39 @@ describe.each([toTolerantLiquidAST, toTolerantLiquidHtmlAST])(
       ]);
     });
 
+    it('reuses the end a search in an unclosed comment found for a raw body', () => {
+      const source = '{% comment %}{% raw %}a{% endraw %}b';
+      expect(parse(source).children).toMatchObject([
+        { type: 'LiquidErrorNode', position: { start: 0, end: 13 } },
+        { type: 'LiquidRawTag', name: 'raw', body: { value: 'a' } },
+        { type: 'TextNode', value: 'b' },
+      ]);
+    });
+
+    it.each([
+      ['{% raw %}{% raw %}endraw', [0, 9, 24]],
+      ['{% raw %}endraw{% raw %}endraw', [0, 15, 30]],
+      ['{% comment %}{% comment %}endcomment', [0, 13, 36]],
+      ['{% comment %}{% raw %}{% raw %}endraw', [0, 13, 22, 37]],
+    ])('reports each unclosed tag in %j when end text follows', (source, bounds) => {
+      expect(parse(source).children).toMatchObject(
+        bounds.slice(0, -1).map((start, index) => ({
+          type: 'LiquidErrorNode',
+          position: { start, end: bounds[index + 1] },
+        })),
+      );
+    });
+
     it.each([
       ['unclosed raw tags', '{% raw %}'.repeat(8_000)],
       ['unclosed comment tags', '{% comment %}'.repeat(8_000)],
       ['comment tags with one close', '{% comment %}'.repeat(8_000) + '{% endcomment %}'],
+      ['unclosed raw tags before endraw text', '{% raw %}'.repeat(8_000) + 'endraw'],
+      ['unclosed raw tags after endraw text', '{% raw %}endraw'.repeat(8_000)],
+      [
+        'unclosed comment tags before endcomment text',
+        '{% comment %}'.repeat(8_000) + 'endcomment',
+      ],
     ])('bounds work for repeated %s', (_name, source) => {
       const started = performance.now();
 
