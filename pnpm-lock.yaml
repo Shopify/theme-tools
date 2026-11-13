@@ -154,7 +154,7 @@ importers:
   packages/prettier-plugin-liquid:
     dependencies:
       '@shopify/liquid-html-parser':
-        specifier: workspace:^2.12.0
+        specifier: workspace:^2.12.1
         version: link:../liquid-html-parser
       html-styles:
         specifier: ^1.0.0
@@ -197,13 +197,13 @@ importers:
   packages/theme-check-browser:
     dependencies:
       '@shopify/theme-check-common':
-        specifier: workspace:4.0.0
+        specifier: workspace:4.0.1
         version: link:../theme-check-common
 
   packages/theme-check-common:
     dependencies:
       '@shopify/liquid-html-parser':
-        specifier: workspace:2.12.0
+        specifier: workspace:2.12.1
         version: link:../liquid-html-parser
       cross-fetch:
         specifier: ^4.0.0
@@ -258,7 +258,7 @@ importers:
   packages/theme-check-docs-updater:
     dependencies:
       '@shopify/theme-check-common':
-        specifier: workspace:^4.0.0
+        specifier: workspace:^4.0.1
         version: link:../theme-check-common
       env-paths:
         specifier: ^2.2.1
@@ -274,16 +274,16 @@ importers:
   packages/theme-check-node:
     dependencies:
       '@shopify/liquid-html-parser':
-        specifier: workspace:2.12.0
+        specifier: workspace:2.12.1
         version: link:../liquid-html-parser
       '@shopify/theme-check-common':
-        specifier: workspace:4.0.0
+        specifier: workspace:4.0.1
         version: link:../theme-check-common
       '@shopify/theme-check-docs-updater':
-        specifier: workspace:4.0.0
+        specifier: workspace:4.0.1
         version: link:../theme-check-docs-updater
       '@shopify/theme-graph':
-        specifier: workspace:^0.3.7
+        specifier: workspace:^0.3.8
         version: link:../theme-graph
       glob:
         specifier: ^8.0.3
@@ -305,10 +305,10 @@ importers:
   packages/theme-graph:
     dependencies:
       '@shopify/liquid-html-parser':
-        specifier: workspace:^2.12.0
+        specifier: workspace:^2.12.1
         version: link:../liquid-html-parser
       '@shopify/theme-check-common':
-        specifier: workspace:^4.0.0
+        specifier: workspace:^4.0.1
         version: link:../theme-check-common
       acorn:
         specifier: ^8.14.1
@@ -321,7 +321,7 @@ importers:
         version: 3.1.0
     devDependencies:
       '@shopify/theme-check-node':
-        specifier: workspace:^4.0.0
+        specifier: workspace:^4.0.1
         version: link:../theme-check-node
       '@types/node':
         specifier: ^22.18.8
@@ -333,7 +333,7 @@ importers:
   packages/theme-language-server-browser:
     dependencies:
       '@shopify/theme-language-server-common':
-        specifier: workspace:3.0.0
+        specifier: workspace:3.0.1
         version: link:../theme-language-server-common
       vscode-languageserver:
         specifier: ^8.0.2
@@ -342,13 +342,13 @@ importers:
   packages/theme-language-server-common:
     dependencies:
       '@shopify/liquid-html-parser':
-        specifier: workspace:^2.12.0
+        specifier: workspace:^2.12.1
         version: link:../liquid-html-parser
       '@shopify/theme-check-common':
-        specifier: workspace:4.0.0
+        specifier: workspace:4.0.1
         version: link:../theme-check-common
       '@shopify/theme-graph':
-        specifier: workspace:^0.3.7
+        specifier: workspace:^0.3.8
         version: link:../theme-graph
       '@vscode/web-custom-data':
         specifier: ^0.4.6
@@ -382,13 +382,13 @@ importers:
   packages/theme-language-server-node:
     dependencies:
       '@shopify/theme-check-docs-updater':
-        specifier: workspace:^4.0.0
+        specifier: workspace:^4.0.1
         version: link:../theme-check-docs-updater
       '@shopify/theme-check-node':
-        specifier: workspace:^4.0.0
+        specifier: workspace:^4.0.1
         version: link:../theme-check-node
       '@shopify/theme-language-server-common':
-        specifier: workspace:3.0.0
+        specifier: workspace:3.0.1
         version: link:../theme-language-server-common
       glob:
         specifier: ^8.0.3
@@ -413,22 +413,22 @@ importers:
   packages/vscode-extension:
     dependencies:
       '@shopify/liquid-html-parser':
-        specifier: workspace:^2.12.0
+        specifier: workspace:^2.12.1
         version: link:../liquid-html-parser
       '@shopify/prettier-plugin-liquid':
-        specifier: workspace:^1.11.4
+        specifier: workspace:^1.11.5
         version: link:../prettier-plugin-liquid
       '@shopify/theme-check-common':
-        specifier: workspace:^4.0.0
+        specifier: workspace:^4.0.1
         version: link:../theme-check-common
       '@shopify/theme-language-server-browser':
-        specifier: workspace:^3.0.0
+        specifier: workspace:^3.0.1
         version: link:../theme-language-server-browser
       '@shopify/theme-language-server-common':
-        specifier: workspace:^3.0.0
+        specifier: workspace:^3.0.1
         version: link:../theme-language-server-common
       '@shopify/theme-language-server-node':
-        specifier: workspace:^3.0.0
+        specifier: workspace:^3.0.1
         version: link:../theme-language-server-node
       prettier:
         specifier: ^2.6.2
@@ -444,10 +444,10 @@ importers:
         version: 3.1.0
     devDependencies:
       '@shopify/theme-check-docs-updater':
-        specifier: workspace:^4.0.0
+        specifier: workspace:^4.0.1
         version: link:../theme-check-docs-updater
       '@shopify/theme-check-node':
-        specifier: workspace:^4.0.0
+        specifier: workspace:^4.0.1
         version: link:../theme-check-node
       '@types/glob':
         specifier: ^8.0.0
