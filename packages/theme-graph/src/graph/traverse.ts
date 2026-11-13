@@ -92,7 +92,10 @@ async function traverseLiquidModule(
 ) {
   const sourceCode = await deps.getSourceCode(module.uri);
 
-  if (sourceCode.ast instanceof Error) return; // can't visit what you can't parse
+  if (sourceCode.ast instanceof Error) {
+    themeGraph.parseErrors?.push({ uri: module.uri, message: sourceCode.ast.message });
+    return; // can't visit what you can't parse
+  }
 
   const visitor: Visitor<
     SourceCodeType.LiquidHtml,
