@@ -86,6 +86,17 @@ export function parseHtmlElement(
   const name = parseCompoundName(parser);
   const attributes = parseAttributes(parser);
 
+  if (parser.isBlockTerminator()) {
+    const tagName = parser.peekTagName()!;
+    const openTagEnd = parser.tokenAt(parser.getPosition() - 1).end;
+    throw new LiquidHTMLASTParsingError(
+      `Attempting to close LiquidTag '${tagName}' before HtmlElement '${extractPlainName(name) || 'compound'}' was closed`,
+      source,
+      openTagStart,
+      openTagEnd,
+    );
+  }
+
   if (parser.accept(TokenType.HtmlSelfClose)) {
     const openTagEnd = parser.tokenAt(parser.getPosition() - 1).end;
     const blockStartPosition: Position = { start: openTagStart, end: openTagEnd };
@@ -513,6 +524,7 @@ function parseAttributeList(parser: HtmlParserDelegate): AttributeNode[] {
     skipSpace(parser);
     if (parser.isAtEnd()) break;
     if (parser.check(TokenType.HtmlTagClose) || parser.check(TokenType.HtmlSelfClose)) break;
+    if (parser.isBlockTerminator()) break;
 
     // Liquid tag between attributes
     if (parser.check(TokenType.LiquidTagOpen)) {
