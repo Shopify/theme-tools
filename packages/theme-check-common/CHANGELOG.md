@@ -1,5 +1,14 @@
 # @shopify/theme-check-common
 
+## 4.0.1
+
+### Patch Changes
+
+- 0dcea3cd: Fix JSONMissingBlock resolving app block URIs as local theme block files. Require `@app` support on the immediate section or block host, while preserving section blocks and theme block validation.
+- Updated dependencies [f1f29bdd]
+- Updated dependencies [cbe4c7f2]
+  - @shopify/liquid-html-parser@2.12.1
+
 ## 4.0.0
 
 ### Minor Changes
