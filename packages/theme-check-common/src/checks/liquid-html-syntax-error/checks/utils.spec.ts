@@ -57,6 +57,42 @@ describe('getFragmentsInMarkup', () => {
     expect(values).toContainEqual(expect.objectContaining({ value: '( 1 .. 10 )' }));
     expect(values).toContainEqual(expect.objectContaining({ value: '( 1 ... 10 )' }));
   });
+
+  it('should keep spaces inside quoted bracket lookups within one fragment', () => {
+    const markup = "value in product.options_by_name['hello world'].values";
+    const values = getFragmentsInMarkup(markup);
+
+    expect(values.map(({ value }) => value)).toEqual([
+      'value',
+      'in',
+      "product.options_by_name['hello world'].values",
+    ]);
+  });
+  it.each([
+    'products[settings[collection]]',
+    "products[settings['selected collection']]",
+    `products[settings["selected ] collection"]]`,
+    `products['it"s [a, b]']`,
+    String.raw`products['a\b c']`,
+    "products[settings['a b']].values",
+  ])('keeps the lookup %s and its source offset intact', (lookup) => {
+    const markup = `value in ${lookup} reversed`;
+    expect(getFragmentsInMarkup(markup)).toEqual([
+      { value: 'value', index: 0 },
+      { value: 'in', index: 6 },
+      { value: lookup, index: 9 },
+      { value: 'reversed', index: 10 + lookup.length },
+    ]);
+  });
+
+  it('keeps lookup arguments intact without consuming subsequent arguments', () => {
+    const lookup = "limit: settings['item count']";
+    const markup = `${lookup}, offset: 1`;
+    expect(getFragmentsInMarkup(markup)).toEqual([
+      { value: lookup, index: 0 },
+      { value: 'offset: 1', index: lookup.length + 2 },
+    ]);
+  });
 });
 
 describe('fragmentKeyValuePair', () => {
