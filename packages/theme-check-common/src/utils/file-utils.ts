@@ -1,5 +1,30 @@
 import { Context, SourceCodeType, Schema, RelativePath } from '../types';
 import { fetch } from 'cross-fetch';
+import * as path from '../path';
+
+const PATH_SEPARATOR = /[/\\]/;
+
+/**
+ * Whether `fileName` is the name of a file directly in the theme's assets directory.
+ *
+ * A file system reads the decoded path of a URI, where `%2e%2e%2f` is `../`. So the name must
+ * have no path separator and must not be `.` or `..`, both as written and as the file system
+ * reads it.
+ */
+export function isAssetFileName<T extends SourceCodeType, S extends Schema>(
+  context: Context<T, S>,
+  fileName: string,
+): boolean {
+  const uri = context.toUri(`assets/${fileName}`);
+  const baseName = path.basename(uri);
+  return (
+    !PATH_SEPARATOR.test(fileName) &&
+    !PATH_SEPARATOR.test(baseName) &&
+    baseName !== '.' &&
+    baseName !== '..' &&
+    path.dirname(uri) === context.toUri('assets')
+  );
+}
 
 export async function doesFileExist<T extends SourceCodeType, S extends Schema>(
   context: Context<T, S>,
