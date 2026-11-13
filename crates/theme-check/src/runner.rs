@@ -28,8 +28,14 @@ pub struct CheckOutput {
 }
 
 /// `check(theme, config, dependencies)`. Files are independent, so they run on `threads` threads
-/// (`0` = all cores); output is in file order either way.
-pub fn check<'a>(config: &'a Config, deps: &'a Deps<'a>, threads: usize) -> CheckOutput {
+/// (`0` = all cores, `1` = the calling thread); output is in file order either way. A panic in a
+/// check is resumed on the calling thread. `None` if `cancelled` returned true before a file.
+pub fn check<'a>(
+    config: &'a Config,
+    deps: &'a Deps<'a>,
+    threads: usize,
+    cancelled: &(dyn Fn() -> bool + Sync),
+) -> Option<CheckOutput> {
     let ignores: Vec<Vec<Minimatch>> = config
         .checks
         .iter()
@@ -45,33 +51,37 @@ pub fn check<'a>(config: &'a Config, deps: &'a Deps<'a>, threads: usize) -> Chec
     }
     .min(n.max(1));
     let next = AtomicUsize::new(0);
-    let mut per_file: Vec<(usize, CheckOutput)> = std::thread::scope(|s| {
-        let handles: Vec<_> = (0..threads)
-            .map(|_| {
-                s.spawn(|| {
-                    let mut out = Vec::new();
-                    loop {
-                        let i = next.fetch_add(1, Ordering::Relaxed);
-                        if i >= n {
-                            break out;
-                        }
-                        out.push((i, run(i)));
-                    }
-                })
-            })
-            .collect();
-        handles
-            .into_iter()
-            .flat_map(|h| h.join().expect("check thread panicked"))
-            .collect()
-    });
+    let work = || {
+        let mut out = Vec::new();
+        loop {
+            let i = next.fetch_add(1, Ordering::Relaxed);
+            if i >= n || cancelled() {
+                break out;
+            }
+            out.push((i, run(i)));
+        }
+    };
+    let mut per_file: Vec<(usize, CheckOutput)> = if threads == 1 {
+        work()
+    } else {
+        std::thread::scope(|s| {
+            let handles: Vec<_> = (0..threads).map(|_| s.spawn(work)).collect();
+            handles
+                .into_iter()
+                .flat_map(|h| h.join().unwrap_or_else(|e| std::panic::resume_unwind(e)))
+                .collect()
+        })
+    };
+    if per_file.len() < n {
+        return None;
+    }
     per_file.sort_by_key(|(i, _)| *i);
     let mut out = CheckOutput::default();
     for (_, o) in per_file {
         out.offenses.extend(o.offenses);
         out.errors.extend(o.errors);
     }
-    out
+    Some(out)
 }
 
 struct Slot<'a, C: ?Sized> {
