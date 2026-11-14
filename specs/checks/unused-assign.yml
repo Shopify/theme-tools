@@ -71,6 +71,76 @@ cases:
           {{ usedVar }}
         {% endstyle %}
 
+  - name: counts assigns and captures echoed inside an inline liquid style block
+    files:
+      file.liquid: |
+        {% liquid
+          assign shopName = shop.name
+          capture example
+            echo 'Shopify'
+          endcapture
+          style
+            echo example
+            echo shopName
+          endstyle
+        %}
+
+  - name: does not count CSS literal mentions inside an inline liquid style block
+    files:
+      file.liquid: |
+        {% liquid
+          assign shopName = shop.name
+          style
+            .shop { color: shopName; }
+          endstyle
+        %}
+    offenses:
+      - file: file.liquid
+        message: The variable 'shopName' is assigned but not used
+        start: [1, 2]
+        highlight: "assign shopName = shop.name"
+        suggest:
+          - message: Remove the unused variable 'shopName'
+            result: "{% liquid\n  \n  style\n    .shop { color: shopName; }\n  endstyle\n%}\n"
+
+  - name: does not count malformed echo expressions inside an inline liquid style block
+    files:
+      file.liquid: |
+        {% liquid
+          assign shopName = shop.name
+          style
+            echo shopName |
+          endstyle
+        %}
+    offenses:
+      - file: file.liquid
+        message: The variable 'shopName' is assigned but not used
+        start: [1, 2]
+        highlight: "assign shopName = shop.name"
+        suggest:
+          - message: Remove the unused variable 'shopName'
+            result: "{% liquid\n  \n  style\n    echo shopName |\n  endstyle\n%}\n"
+
+  - name: does not treat literal echo text in ordinary style tags as Liquid
+    files:
+      file.liquid: |
+        {% assign shopName = shop.name %}
+        {% style %}
+          echo shopName
+        {% endstyle %}
+    offenses:
+      - file: file.liquid
+        message: The variable 'shopName' is assigned but not used
+        start: [0, 0]
+        highlight: "{% assign shopName = shop.name %}"
+        suggest:
+          - message: Remove the unused variable 'shopName'
+            result: |
+
+              {% style %}
+                echo shopName
+              {% endstyle %}
+
   - name: does not count uses inside a schema tag
     files:
       file.liquid: |
