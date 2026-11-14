@@ -366,7 +366,12 @@ export function startServer(
   );
 
   const fetchMetafieldDefinitionsForWorkspaceFolders = async (folders: WorkspaceFolder[]) => {
-    if (!fetchMetafieldDefinitionsForURI) return;
+    if (
+      !fetchMetafieldDefinitionsForURI ||
+      !(await configuration.shouldFetchMetafieldDefinitions())
+    ) {
+      return;
+    }
 
     for (let folder of folders) {
       const mode = await getModeForURI(folder.uri);
