@@ -417,6 +417,34 @@ describe('Module: TypeSystem', () => {
     expect(inferredType).to.eql({ kind: 'array', valueType: 'product' } as ArrayType);
   });
 
+  it('should support article_list section settings in section files', async () => {
+    const sourceCode = `
+      {{ section.settings.my_list }}
+      {% schema %}
+      {
+        "name": "section-settings-example",
+        "tag": "section",
+        "settings": [
+          {
+            "id": "my_list",
+            "label": "t:my-setting.label",
+            "type": "article_list"
+          }
+        ]
+      }
+      {% endschema %}
+    `;
+    const ast = toLiquidHtmlAST(sourceCode);
+    const variableOutput = ast.children[0];
+    assert(isLiquidVariableOutput(variableOutput));
+    const inferredType = await typeSystem.inferType(
+      variableOutput.markup,
+      ast,
+      'file:///sections/my-section.liquid',
+    );
+    expect(inferredType).to.eql({ kind: 'array', valueType: 'article' } as ArrayType);
+  });
+
   it.each([
     ['checkbox', 'boolean'],
     ['number', 'number'],
@@ -447,6 +475,7 @@ describe('Module: TypeSystem', () => {
     ['video', 'video'],
     ['collection_list', { kind: 'array', valueType: 'collection' }],
     ['product_list', { kind: 'array', valueType: 'product' }],
+    ['article_list', { kind: 'array', valueType: 'article' }],
   ] as const)('infers block.settings values for %s settings', async (settingType, expectedType) => {
     const sourceCode = `
       {{ block.settings.value }}
