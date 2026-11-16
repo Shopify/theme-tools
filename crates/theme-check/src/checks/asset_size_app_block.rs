@@ -1,7 +1,7 @@
 //! AssetSizeAppBlockCSS and AssetSizeAppBlockJavaScript: the same check on the schema's
 //! `stylesheet` / `javascript` asset.
 
-use super::file_utils::{does_file_exceed_threshold, does_file_exist};
+use super::file_utils::{does_file_exceed_threshold, does_file_exist, is_asset_file_name};
 use super::liquid_html_syntax_error::utils::add16;
 use crate::context::{CheckDef, CheckError, CheckResult, Context, Create, LiquidCheck, Severity};
 use crate::js;
@@ -90,6 +90,14 @@ impl<'a> LiquidCheck<'a> for Check {
             .find(name.as_str())
             .map_or(body.span.start - 1, |i| body.span.start + i);
         let end = add16(cx.source(), start, length);
+
+        if !is_asset_file_name(cx, &name) {
+            cx.report(
+                format!("'{name}' must be the name of a file in the assets directory."),
+                Span::new(start, end),
+            );
+            return Ok(());
+        }
 
         if !does_file_exist(cx, &relative_path) {
             cx.report(format!("'{name}' does not exist."), Span::new(start, end));
