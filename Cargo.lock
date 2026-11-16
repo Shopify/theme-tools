@@ -65,11 +65,11 @@ checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 
 [[package]]
 name = "liquid-ast"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "liquid-parser"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "liquid-ast",
  "serde_json",
@@ -186,7 +186,7 @@ dependencies = [
 
 [[package]]
 name = "theme-check"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "liquid-ast",
  "liquid-parser",

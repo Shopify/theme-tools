@@ -1,5 +1,19 @@
 # @shopify/theme-language-server-common
 
+## 3.0.1
+
+### Patch Changes
+
+- fe8a2f1f: Stop creating local file links for section and block `type` values starting with `shopify://` in JSON files and Liquid schema tags.
+- Updated dependencies
+- Updated dependencies [19c3b6ab]
+- Updated dependencies [f1f29bdd]
+- Updated dependencies [cbe4c7f2]
+- Updated dependencies [0dcea3cd]
+  - @shopify/theme-graph@0.3.8
+  - @shopify/theme-check-common@4.0.1
+  - @shopify/liquid-html-parser@2.12.1
+
 ## 3.0.0
 
 ### Minor Changes

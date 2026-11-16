@@ -1,5 +1,15 @@
 # @shopify/theme-check-common
 
+## 4.0.1
+
+### Patch Changes
+
+- 19c3b6ab: `AssetSizeAppBlockJavaScript` and `AssetSizeAppBlockCSS` look up only files directly in the `assets` directory. A `javascript` or `stylesheet` value that leaves that directory, including in its percent-encoded form, now gets the same offense whether or not the file exists, and the check does not read its size.
+- 0dcea3cd: Fix JSONMissingBlock resolving app block URIs as local theme block files. Require `@app` support on the immediate section or block host, while preserving section blocks and theme block validation.
+- Updated dependencies [f1f29bdd]
+- Updated dependencies [cbe4c7f2]
+  - @shopify/liquid-html-parser@2.12.1
+
 ## 4.0.0
 
 ### Minor Changes
