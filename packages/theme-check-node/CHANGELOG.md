@@ -1,5 +1,19 @@
 # @shopify/theme-check-node
 
+## 4.0.1
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [19c3b6ab]
+- Updated dependencies [f1f29bdd]
+- Updated dependencies [cbe4c7f2]
+- Updated dependencies [0dcea3cd]
+  - @shopify/theme-graph@0.3.8
+  - @shopify/theme-check-common@4.0.1
+  - @shopify/liquid-html-parser@2.12.1
+  - @shopify/theme-check-docs-updater@4.0.1
+
 ## 4.0.0
 
 ### Major Changes
