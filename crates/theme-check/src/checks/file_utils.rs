@@ -1,8 +1,20 @@
 //! `utils/file-utils.ts`
 
 use crate::context::{CheckError, Context};
-use crate::js;
+use crate::{js, path};
 use serde_json::{json, Value};
+
+/// `isAssetFileName(context, fileName)`: only files directly in `assets`, both as written
+/// and after the file system decodes the URI.
+pub fn is_asset_file_name(cx: &Context, file_name: &str) -> bool {
+    let uri = cx.to_uri(&format!("assets/{file_name}"));
+    let base_name = path::basename(&uri, None);
+    !file_name.contains(['/', '\\'])
+        && !base_name.contains(['/', '\\'])
+        && base_name != "."
+        && base_name != ".."
+        && path::dirname(&uri) == cx.to_uri("assets")
+}
 
 /// `doesFileExist(context, relativePath)`
 pub fn does_file_exist(cx: &Context, relative_path: &str) -> bool {
