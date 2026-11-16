@@ -1,5 +1,11 @@
 # theme-check-rs
 
+## 0.1.2
+
+### Patch Changes
+
+- 41f11363: Keep app block asset size checks inside the assets directory, matching TypeScript. Reject paths and encoded paths before checking whether a file exists or reading its size.
+
 ## 0.1.1
 
 ### Patch Changes

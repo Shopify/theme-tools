@@ -4,15 +4,15 @@ members = ["crates/liquid-ast", "crates/liquid-parser", "crates/theme-check"]
 
 # The release sets the version from crates/theme-check/package.json, which changesets bumps.
 [workspace.package]
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 rust-version = "1.84"
 license = "MIT"
 repository = "https://github.com/Shopify/theme-tools"
 
 [workspace.dependencies]
-liquid-ast = { path = "crates/liquid-ast", version = "0.1.1" }
-liquid-parser = { path = "crates/liquid-parser", version = "0.1.1" }
+liquid-ast = { path = "crates/liquid-ast", version = "0.1.2" }
+liquid-parser = { path = "crates/liquid-parser", version = "0.1.2" }
 
 [profile.release]
 lto = "fat"

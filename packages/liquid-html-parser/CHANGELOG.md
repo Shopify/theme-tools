@@ -1,5 +1,11 @@
 # @shopify/liquid-html-parser
 
+## 2.12.2
+
+### Patch Changes
+
+- 61cae020: Keep tolerant parsing proportional to the source for documents with many unclosed `{% raw %}` or `{% comment %}` tags followed by plain `endraw` or `endcomment` text. Each unclosed tag no longer searches the rest of the document again when that text appears after it.
+
 ## 2.12.1
 
 ### Patch Changes
