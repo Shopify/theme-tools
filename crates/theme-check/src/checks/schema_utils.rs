@@ -1,6 +1,7 @@
 //! `utils/block.ts`, `utils/object.ts` (`deepGet`) and the JS value helpers the schema checks
 //! share. Schemas are `any` in TS, so these follow JS semantics (and throws) on odd shapes.
 
+use super::file_utils::does_file_exist;
 use crate::context::{CheckError, CheckResult, Context};
 use crate::js;
 use crate::json::{JsonNode, PathSeg};
@@ -389,7 +390,7 @@ pub fn validate_block_file_existence(cx: &Context, block_type: Option<&Value>) -
     if is_str(block_type, "@theme") || is_str(block_type, "@app") {
         return true;
     }
-    cx.file_exists(&cx.to_uri(&format!("blocks/{}.liquid", s(block_type))))
+    does_file_exist(cx, &format!("blocks/{}.liquid", s(block_type)))
 }
 
 /// `validateNestedBlocks(context, parentNode, nestedBlocks, currentPath, offset, ast)`

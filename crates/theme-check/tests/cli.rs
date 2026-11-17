@@ -422,3 +422,58 @@ fn the_library_reports_byte_columns() {
         assert!(e.to_string().ends_with(&format!("{broken}: broken")), "{e}");
     }
 }
+
+#[test]
+fn looks_up_theme_files_only_in_the_theme() {
+    // Each name leads from the directory a check looks in to the directory with the theme in it.
+    let names = [
+        "../../outside",
+        "%2e%2e%2f%2e%2e%2foutside",
+        "..\\..\\outside",
+    ];
+    let mut files = vec![
+        (
+            "theme/.theme-check.yml".to_string(),
+            "extends: nothing\nMissingAsset:\n  enabled: true\nValidStaticBlockType:\n  enabled: true\nJSONMissingSection:\n  enabled: true\n".to_string(),
+        ),
+        // The file system resolves `..` in a directory only when the directory exists.
+        ("theme/assets/inside.js".to_string(), String::new()),
+        ("theme/blocks/inside.liquid".to_string(), String::new()),
+    ];
+    for (i, name) in names.iter().enumerate() {
+        files.push((
+            format!("theme/snippets/asset-{i}.liquid"),
+            format!("{{{{ '{name}.js' | asset_url }}}}"),
+        ));
+        files.push((
+            format!("theme/sections/block-{i}.liquid"),
+            format!(r#"{{% content_for "block", type: "{name}", id: "static" %}}"#),
+        ));
+        files.push((
+            format!("theme/templates/index-{i}.json"),
+            json!({ "sections": { "main": { "type": name } }, "order": ["main"] }).to_string(),
+        ));
+    }
+    let files: Vec<_> = files
+        .iter()
+        .map(|(p, t)| (p.as_str(), t.as_str()))
+        .collect();
+    let dir = fixture("outside", &files);
+
+    let (without_outside_files, _, _) = parse(&theme_check(&dir, &["theme"]));
+    std::fs::write(dir.join("outside.js"), "outside").unwrap();
+    std::fs::write(dir.join("outside.liquid"), "outside").unwrap();
+    let (with_outside_files, _, _) = parse(&theme_check(&dir, &["theme"]));
+
+    assert_eq!(with_outside_files, without_outside_files);
+    for code in ["JSONMissingSection", "MissingAsset", "ValidStaticBlockType"] {
+        let reported = with_outside_files
+            .iter()
+            .filter(|o| o.starts_with(&format!("{code} ")));
+        assert_eq!(
+            reported.count(),
+            names.len(),
+            "{code}: {with_outside_files:?}"
+        );
+    }
+}

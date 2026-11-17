@@ -1,3 +1,4 @@
+use super::file_utils::does_file_exist;
 use super::schema_utils::{content_for_block, string_arg};
 use crate::context::{CheckDef, CheckResult, Context, Create, LiquidCheck, Severity};
 use liquid_ast::{NodeKind, NodeRef};
@@ -33,7 +34,7 @@ impl<'a> LiquidCheck<'a> for Check {
             return Ok(());
         };
         let relative_path = format!("blocks/{}.liquid", type_node.value);
-        if !cx.file_exists(&cx.to_uri(&relative_path)) {
+        if !does_file_exist(cx, &relative_path) {
             let message = format!("'{relative_path}' does not exist");
             cx.report_with(message, type_node.span, None, Some(Vec::new()));
         }

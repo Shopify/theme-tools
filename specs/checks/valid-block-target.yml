@@ -2506,3 +2506,22 @@ cases:
           ]
         }
         {% endschema %}
+  - name: should report a block type that leaves the blocks directory, also when the file it names exists (sections bucket)
+    files:
+      snippets/outside.liquid: ""
+      sections/outside-section.liquid: |
+        {% schema %}
+        {
+          "name": "Section name",
+          "blocks": [
+            {
+              "type": "../snippets/outside"
+            }
+          ]
+        }
+        {% endschema %}
+    offenses:
+      - file: sections/outside-section.liquid
+        message: "Theme block 'blocks/../snippets/outside.liquid' does not exist."
+        start: [5, 14]
+        highlight: '"../snippets/outside"'

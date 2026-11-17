@@ -304,6 +304,12 @@ pub fn fs_path(uri: &str) -> String {
     }
 }
 
+/// `fileSystemPath(uri)`: the path that a file system reads at `uri`, decoded once, with `\` read
+/// as a separator as Windows does, and with `.` and `..` resolved.
+pub fn file_system_path(uri: &str) -> String {
+    posix_normalize(&format!("/{}", parse(uri).path.replace('\\', "/")))
+}
+
 /// `normalize(URI.file(absolutePath))` for a posix path.
 pub fn file_uri(fs_path: &str) -> String {
     // URI.file: a leading `//` is a UNC authority.
