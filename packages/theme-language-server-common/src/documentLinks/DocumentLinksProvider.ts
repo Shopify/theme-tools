@@ -66,6 +66,8 @@ function documentLinksVisitor(
       // {% block 'name' %}
       if (node.name === NamedTags.block && typeof node.markup !== 'string') {
         const blockName = node.markup.name;
+        // App blocks belong to an extension, not the theme's blocks directory.
+        if (blockName.value.startsWith('shopify://apps/')) return;
         return DocumentLink.create(
           range(textDocument, blockName),
           Utils.resolvePath(root, 'blocks', blockName.value + '.liquid').toString(),
