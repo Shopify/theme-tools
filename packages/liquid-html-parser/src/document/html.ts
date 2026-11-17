@@ -1,4 +1,5 @@
 import { TokenType } from './tokenizer';
+import type { Token } from './tokenizer';
 import { ParserBase } from './base';
 import {
   makeTextNode,
@@ -451,10 +452,16 @@ export function parseBranchAttributesImpl(parser: HtmlParserDelegate): Attribute
 // compoundName := (text | liquidVariableOutput | liquidTag)+
 export function parseCompoundName(parser: HtmlParserDelegate): CompoundNameSegment[] {
   const segments: CompoundNameSegment[] = [];
+  // Record the segment kinds as they arrive, so that the check of each glued
+  // tag does not read the whole name again.
+  let hasText = false;
+  let hasOutput = false;
+  let lookahead: BodyLookahead | undefined;
 
   while (!parser.isAtEnd()) {
     if (parser.check(TokenType.LiquidVariableOutputOpen)) {
       segments.push(parser.parseLiquidVariableOutput());
+      hasOutput = true;
       continue;
     }
 
@@ -468,8 +475,8 @@ export function parseCompoundName(parser: HtmlParserDelegate): CompoundNameSegme
     if (
       !parser.htmlInAttributeContext &&
       parser.check(TokenType.LiquidTagOpen) &&
-      !segments.some((s) => s.type === NodeTypes.LiquidVariableOutput) &&
-      !liquidTagStartsAttributeList(parser, segments)
+      !hasOutput &&
+      !liquidTagStartsAttributeList(parser, hasText, (lookahead ??= emptyBodyLookahead()))
     ) {
       segments.push(parser.parseLiquidTag());
       continue;
@@ -478,6 +485,7 @@ export function parseCompoundName(parser: HtmlParserDelegate): CompoundNameSegme
     const segment = consumeTextSegment(parser);
     if (segment !== null) {
       segments.push(segment);
+      hasText = true;
       continue;
     }
 
@@ -695,12 +703,29 @@ function consumeTextSegment(parser: HtmlParserDelegate): TextNode | null {
  */
 function liquidTagStartsAttributeList(
   parser: HtmlParserDelegate,
-  segments: CompoundNameSegment[],
+  nameHasText: boolean,
+  lookahead: BodyLookahead,
 ): boolean {
-  if (!segments.some((s) => s.type === NodeTypes.TextNode)) return false;
+  if (!nameHasText) return false;
   const tagName = parser.peekTagName();
   if (tagName === null || !BLOCKS.includes(tagName)) return false;
-  return liquidTagBodyStartsWithWhitespace(parser);
+  return liquidTagBodyStartsWithWhitespace(parser, lookahead);
+}
+
+/**
+ * The last body look-ahead of one compound name: the scan of `tokens` that
+ * started at index `from` gave `startsWithWhitespace` at index `to`, or ran out
+ * of tokens there.
+ */
+interface BodyLookahead {
+  tokens: readonly Token[];
+  from: number;
+  to: number;
+  startsWithWhitespace: boolean;
+}
+
+function emptyBodyLookahead(): BodyLookahead {
+  return { tokens: [], from: 0, to: 0, startsWithWhitespace: false };
 }
 
 function isLeftTrimmingOpen(
@@ -713,12 +738,32 @@ function isLeftTrimmingOpen(
   );
 }
 
-function liquidTagBodyStartsWithWhitespace(parser: HtmlParserDelegate): boolean {
+/**
+ * Whether the body of the block tag at the cursor starts with rendered
+ * whitespace. The scan reads past every Liquid tag up to the first rendered
+ * token, so it can also read past the next block tags glued to the name.
+ *
+ * After the scan reads a `LiquidTagOpen`, its state is the state of a scan that
+ * starts at that token: `inTag` is true in both, and the next `LiquidTagClose`
+ * sets `trimNext` before any token reads it. So a block tag that the last scan
+ * read past gets the same answer, and the answer is reused. Without the reuse, a
+ * name of many glued blocks with empty bodies scans to the end of its HTML tag
+ * once for each block, which is quadratic in the length of the name.
+ */
+function liquidTagBodyStartsWithWhitespace(
+  parser: HtmlParserDelegate,
+  last: BodyLookahead,
+): boolean {
+  const tokens = parser.tokenList();
+  const from = parser.getPosition();
+  if (last.tokens === tokens && last.from <= from && from < last.to) {
+    return last.startsWithWhitespace;
+  }
   const source = parser.getSource();
   let inTag = false;
   let trimNext = false;
-  for (let i = parser.getPosition(); parser.hasToken(i); i++) {
-    const tok = parser.tokenAt(i);
+  for (let i = from; i < tokens.length; i++) {
+    const tok = tokens[i];
     switch (tok.type) {
       case TokenType.LiquidTagOpen:
         inTag = true;
@@ -735,22 +780,36 @@ function liquidTagBodyStartsWithWhitespace(parser: HtmlParserDelegate): boolean 
           if (text.length === 0) break; // whitespace fully trimmed; keep scanning
           // A whitespace-only run immediately before a left-trimming `{{-`/`{%-`
           // is stripped from the rendered body, so it is not whitespace-led.
-          if (/^\s+$/.test(text) && isLeftTrimmingOpen(parser.tokenAt(i + 1))) break;
-          return /^\s/.test(text);
+          if (/^\s+$/.test(text) && isLeftTrimmingOpen(tokens[i + 1])) break;
+          return rememberLookahead(last, tokens, from, i, /^\s/.test(text));
         }
         break;
       case TokenType.LiquidVariableOutputOpen:
         // Body begins with a `{{ }}` drop -> name continuation, not attributes.
-        if (!inTag) return false;
+        if (!inTag) return rememberLookahead(last, tokens, from, i, false);
         break;
       case TokenType.HtmlTagClose:
       case TokenType.HtmlSelfClose:
       case TokenType.EndOfInput:
-        if (!inTag) return false;
+        if (!inTag) return rememberLookahead(last, tokens, from, i, false);
         break;
     }
   }
-  return false;
+  return rememberLookahead(last, tokens, from, tokens.length, false);
+}
+
+function rememberLookahead(
+  last: BodyLookahead,
+  tokens: readonly Token[],
+  from: number,
+  to: number,
+  startsWithWhitespace: boolean,
+): boolean {
+  last.tokens = tokens;
+  last.from = from;
+  last.to = to;
+  last.startsWithWhitespace = startsWithWhitespace;
+  return startsWithWhitespace;
 }
 
 export function extractPlainName(name: CompoundNameSegment[]): string | null {
