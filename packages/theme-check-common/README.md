@@ -60,6 +60,8 @@ async function main() {
 main();
 ```
 
+Custom JavaScript checks are disabled by default. Applications that run trusted custom checks must explicitly authorize them; see [Node custom check authorization](../theme-check-node#custom-checks-and-trusted-code).
+
 ### Browser
 
 The browser version is a bit more complex, you need to provide your own implementation of all the dependency injections.

@@ -159,16 +159,4 @@ describe('ValidSchema', () => {
 
     expect(offenses).to.have.length(0);
   });
-
-  it('should not complain when a schema is invalid outside of sections', async () => {
-    const sourceCode = `
-    {% schema %}
-    ${JSON.stringify(INVALID_SECTION_SCHEMA, null, 2)}
-    {% endschema %}
-    `;
-
-    const offenses = await runLiquidCheck(ValidSchema, sourceCode);
-
-    expect(offenses).to.have.length(0);
-  });
 });

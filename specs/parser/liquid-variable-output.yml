@@ -1,0 +1,2838 @@
+cases:
+  - name: should transform a base case Liquid Drop into a LiquidVariableOutput
+    source: "{{ !-asd }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ !-asd }}" }
+      children:
+        - type: LiquidVariableOutput
+          markup: "!-asd"
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " !-asd " }
+          position: { start: [0, 0], text: "{{ !-asd }}" }
+  - name: should set LiquidVariable end position to the markup boundary (Bug 7 regression) (1)
+    source: "{{ product.title }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ product.title }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " product.title " }
+          position: { start: [0, 0], text: "{{ product.title }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: product.title
+            position: { start: [0, 3], text: "product.title " }
+            expression:
+              type: VariableLookup
+              name: product
+              position: { start: [0, 3], text: product.title }
+              lookups:
+                - type: String
+                  value: title
+                  position: { start: [0, 11], text: title }
+              lookupModes: [bareword]
+            filters: []
+  - name: should set LiquidVariable end position to the markup boundary (Bug 7 regression) (2)
+    source: "{{ price | money }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ price | money }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " price | money " }
+          position: { start: [0, 0], text: "{{ price | money }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: price | money
+            position: { start: [0, 3], text: "price | money " }
+            expression:
+              type: VariableLookup
+              name: price
+              position: { start: [0, 3], text: price }
+              lookups: []
+              lookupModes: []
+            filters:
+              - type: LiquidFilter
+                name: money
+                position: { start: [0, 8], text: " | money" }
+                args: []
+  - name: should set rawSource for LiquidVariable inside {% liquid %} blocks (Bug 21 fix) (1)
+    source: |-
+      {% liquid
+        echo product.title
+      %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+            echo product.title
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                echo product.title
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |2
+              
+                echo product.title
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                echo product.title
+              %}
+          markup:
+            - type: LiquidTag
+              name: echo
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [1, 2], text: echo product.title }
+              markupPosition: { start: [1, 7], text: product.title }
+              position: { start: [1, 2], text: echo product.title }
+              markup:
+                type: LiquidVariable
+                rawSource: product.title
+                position: { start: [1, 7], text: product.title }
+                expression:
+                  type: VariableLookup
+                  name: product
+                  position: { start: [1, 7], text: product.title }
+                  lookups:
+                    - type: String
+                      value: title
+                      position: { start: [1, 15], text: title }
+                  lookupModes: [bareword]
+                filters: []
+  - name: should set rawSource for LiquidVariable inside {% liquid %} blocks (Bug 21 fix) (2)
+    source: |-
+      {% liquid
+        echo product.title | upcase
+      %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+            echo product.title | upcase
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                echo product.title | upcase
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |2
+              
+                echo product.title | upcase
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                echo product.title | upcase
+              %}
+          markup:
+            - type: LiquidTag
+              name: echo
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [1, 2], text: echo product.title | upcase }
+              markupPosition: { start: [1, 7], text: product.title | upcase }
+              position: { start: [1, 2], text: echo product.title | upcase }
+              markup:
+                type: LiquidVariable
+                rawSource: product.title | upcase
+                position: { start: [1, 7], text: product.title | upcase }
+                expression:
+                  type: VariableLookup
+                  name: product
+                  position: { start: [1, 7], text: product.title }
+                  lookups:
+                    - type: String
+                      value: title
+                      position: { start: [1, 15], text: title }
+                  lookupModes: [bareword]
+                filters:
+                  - type: LiquidFilter
+                    name: upcase
+                    position: { start: [1, 20], text: " | upcase" }
+                    args: []
+  - name: should set rawSource for LiquidVariable inside {% liquid %} blocks (Bug 21 fix) (3)
+    source: "{% echo product.title %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% echo product.title %}" }
+      children:
+        - type: LiquidTag
+          name: echo
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% echo product.title %}" }
+          markupPosition: { start: [0, 8], text: "product.title " }
+          position: { start: [0, 0], text: "{% echo product.title %}" }
+          markup:
+            type: LiquidVariable
+            rawSource: product.title
+            position: { start: [0, 8], text: "product.title " }
+            expression:
+              type: VariableLookup
+              name: product
+              position: { start: [0, 8], text: product.title }
+              lookups:
+                - type: String
+                  value: title
+                  position: { start: [0, 16], text: title }
+              lookupModes: [bareword]
+            filters: []
+  - name: should populate rawSource for LiquidVariable inside raw tag bodies (Bug 28) (1)
+    source: "{% style %}{{ product.title }}{% endstyle %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% style %}{{ product.title }}{% endstyle %}" }
+      children:
+        - type: LiquidRawTag
+          name: style
+          markup: ""
+          markupPosition: { start: [0, 9], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% style %}" }
+          blockEndPosition: { start: [0, 30], text: "{% endstyle %}" }
+          position: { start: [0, 0], text: "{% style %}{{ product.title }}{% endstyle %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: "{{ product.title }}"
+            position: { start: [0, 11], text: "{{ product.title }}" }
+            nodes:
+              - type: LiquidVariableOutput
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                markupPosition: { start: [0, 13], text: " product.title " }
+                position: { start: [0, 11], text: "{{ product.title }}" }
+                markup:
+                  type: LiquidVariable
+                  rawSource: product.title
+                  position: { start: [0, 14], text: "product.title " }
+                  expression:
+                    type: VariableLookup
+                    name: product
+                    position: { start: [0, 14], text: product.title }
+                    lookups:
+                      - type: String
+                        value: title
+                        position: { start: [0, 22], text: title }
+                    lookupModes: [bareword]
+                  filters: []
+  - name: should populate rawSource for LiquidVariable inside raw tag bodies (Bug 28) (2)
+    source: "{% javascript %}{{ settings.color }}{% endjavascript %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% javascript %}{{ settings.color }}{% endjavascript %}" }
+      children:
+        - type: LiquidRawTag
+          name: javascript
+          markup: ""
+          markupPosition: { start: [0, 14], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% javascript %}" }
+          blockEndPosition: { start: [0, 36], text: "{% endjavascript %}" }
+          position: { start: [0, 0], text: "{% javascript %}{{ settings.color }}{% endjavascript %}" }
+          body:
+            type: RawMarkup
+            kind: javascript
+            value: "{{ settings.color }}"
+            position: { start: [0, 16], text: "{{ settings.color }}" }
+            nodes:
+              - type: LiquidVariableOutput
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                markupPosition: { start: [0, 18], text: " settings.color " }
+                position: { start: [0, 16], text: "{{ settings.color }}" }
+                markup:
+                  type: LiquidVariable
+                  rawSource: settings.color
+                  position: { start: [0, 19], text: "settings.color " }
+                  expression:
+                    type: VariableLookup
+                    name: settings
+                    position: { start: [0, 19], text: settings.color }
+                    lookups:
+                      - type: String
+                        value: color
+                        position: { start: [0, 28], text: color }
+                    lookupModes: [bareword]
+                  filters: []
+  - name: should populate rawSource for LiquidVariable inside raw tag bodies (Bug 28) (3)
+    source: "{% style %}{% echo product.title %}{% endstyle %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% style %}{% echo product.title %}{% endstyle %}" }
+      children:
+        - type: LiquidRawTag
+          name: style
+          markup: ""
+          markupPosition: { start: [0, 9], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% style %}" }
+          blockEndPosition: { start: [0, 35], text: "{% endstyle %}" }
+          position: { start: [0, 0], text: "{% style %}{% echo product.title %}{% endstyle %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: "{% echo product.title %}"
+            position: { start: [0, 11], text: "{% echo product.title %}" }
+            nodes:
+              - type: LiquidTag
+                name: echo
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                blockStartPosition: { start: [0, 11], text: "{% echo product.title %}" }
+                markupPosition: { start: [0, 19], text: "product.title " }
+                position: { start: [0, 11], text: "{% echo product.title %}" }
+                markup:
+                  type: LiquidVariable
+                  rawSource: product.title
+                  position: { start: [0, 19], text: "product.title " }
+                  expression:
+                    type: VariableLookup
+                    name: product
+                    position: { start: [0, 19], text: product.title }
+                    lookups:
+                      - type: String
+                        value: title
+                        position: { start: [0, 27], text: title }
+                    lookupModes: [bareword]
+                  filters: []
+  - name: should populate rawSource for LiquidVariable inside raw tag bodies (Bug 28) (4)
+    source: "{% style %}{% assign x = product.title %}{% endstyle %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% style %}{% assign x = product.title %}{% endstyle %}" }
+      children:
+        - type: LiquidRawTag
+          name: style
+          markup: ""
+          markupPosition: { start: [0, 9], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% style %}" }
+          blockEndPosition: { start: [0, 41], text: "{% endstyle %}" }
+          position: { start: [0, 0], text: "{% style %}{% assign x = product.title %}{% endstyle %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: "{% assign x = product.title %}"
+            position: { start: [0, 11], text: "{% assign x = product.title %}" }
+            nodes:
+              - type: LiquidTag
+                name: assign
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                blockStartPosition: { start: [0, 11], text: "{% assign x = product.title %}" }
+                markupPosition: { start: [0, 21], text: "x = product.title " }
+                position: { start: [0, 11], text: "{% assign x = product.title %}" }
+                markup:
+                  type: AssignMarkup
+                  name: x
+                  position: { start: [0, 21], text: "x = product.title " }
+                  value:
+                    type: LiquidVariable
+                    rawSource: product.title
+                    position: { start: [0, 25], text: "product.title " }
+                    expression:
+                      type: VariableLookup
+                      name: product
+                      position: { start: [0, 25], text: product.title }
+                      lookups:
+                        - type: String
+                          value: title
+                          position: { start: [0, 33], text: title }
+                      lookupModes: [bareword]
+                    filters: []
+  - name: should populate rawSource for {{ }} drops inside HTML <style> bodies (Bug 28) (1)
+    source: <style>{{ section.id }}</style>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<style>{{ section.id }}</style>" }
+      children:
+        - type: HtmlRawNode
+          name: style
+          blockStartPosition: { start: [0, 0], text: <style> }
+          blockEndPosition: { start: [0, 23], text: </style> }
+          position: { start: [0, 0], text: "<style>{{ section.id }}</style>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: "{{ section.id }}"
+            position: { start: [0, 7], text: "{{ section.id }}" }
+            nodes:
+              - type: LiquidVariableOutput
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                markupPosition: { start: [0, 9], text: " section.id " }
+                position: { start: [0, 7], text: "{{ section.id }}" }
+                markup:
+                  type: LiquidVariable
+                  rawSource: section.id
+                  position: { start: [0, 10], text: "section.id " }
+                  expression:
+                    type: VariableLookup
+                    name: section
+                    position: { start: [0, 10], text: section.id }
+                    lookups:
+                      - type: String
+                        value: id
+                        position: { start: [0, 18], text: id }
+                    lookupModes: [bareword]
+                  filters: []
+  - name: should populate rawSource for {{ }} drops inside HTML <style> bodies (Bug 28) (2)
+    source: "<style>{{ settings.type_body_font | font_face: font_display: 'swap' }}</style>"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<style>{{ settings.type_body_font | font_face: font_display: 'swap' }}</style>" }
+      children:
+        - type: HtmlRawNode
+          name: style
+          blockStartPosition: { start: [0, 0], text: <style> }
+          blockEndPosition: { start: [0, 70], text: </style> }
+          position: { start: [0, 0], text: "<style>{{ settings.type_body_font | font_face: font_display: 'swap' }}</style>" }
+          attributes: []
+          body:
+            type: RawMarkup
+            kind: text
+            value: "{{ settings.type_body_font | font_face: font_display: 'swap' }}"
+            position: { start: [0, 7], text: "{{ settings.type_body_font | font_face: font_display: 'swap' }}" }
+            nodes:
+              - type: LiquidVariableOutput
+                whitespaceStart: ""
+                whitespaceEnd: ""
+                markupPosition: { start: [0, 9], text: " settings.type_body_font | font_face: font_display: 'swap' " }
+                position: { start: [0, 7], text: "{{ settings.type_body_font | font_face: font_display: 'swap' }}" }
+                markup:
+                  type: LiquidVariable
+                  rawSource: "settings.type_body_font | font_face: font_display: 'swap'"
+                  position: { start: [0, 10], text: "settings.type_body_font | font_face: font_display: 'swap' " }
+                  expression:
+                    type: VariableLookup
+                    name: settings
+                    position: { start: [0, 10], text: settings.type_body_font }
+                    lookups:
+                      - type: String
+                        value: type_body_font
+                        position: { start: [0, 19], text: type_body_font }
+                    lookupModes: [bareword]
+                  filters:
+                    - type: LiquidFilter
+                      name: font_face
+                      position: { start: [0, 33], text: " | font_face: font_display: 'swap'" }
+                      args:
+                        - type: NamedArgument
+                          name: font_display
+                          position: { start: [0, 47], text: "font_display: 'swap'" }
+                          value:
+                            type: String
+                            single: true
+                            value: swap
+                            position: { start: [0, 61], text: "'swap'" }
+  - name: should not truncate rawSource with filters inside {% liquid %} blocks (Bug 21 regression) (1)
+    source: |-
+      {% liquid
+        echo 'home.hero.title' | t
+      %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+            echo 'home.hero.title' | t
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                echo 'home.hero.title' | t
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |2
+              
+                echo 'home.hero.title' | t
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                echo 'home.hero.title' | t
+              %}
+          markup:
+            - type: LiquidTag
+              name: echo
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [1, 2], text: echo 'home.hero.title' | t }
+              markupPosition: { start: [1, 7], text: "'home.hero.title' | t" }
+              position: { start: [1, 2], text: echo 'home.hero.title' | t }
+              markup:
+                type: LiquidVariable
+                rawSource: "'home.hero.title' | t"
+                position: { start: [1, 7], text: "'home.hero.title' | t" }
+                expression:
+                  type: String
+                  single: true
+                  value: home.hero.title
+                  position: { start: [1, 7], text: "'home.hero.title'" }
+                filters:
+                  - type: LiquidFilter
+                    name: t
+                    position: { start: [1, 24], text: " | t" }
+                    args: []
+  - name: should not truncate rawSource with filters inside {% liquid %} blocks (Bug 21 regression) (2)
+    source: |-
+      {% liquid
+        assign x = 'foo'
+        echo x | upcase | append: '.bar'
+      %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+            assign x = 'foo'
+            echo x | upcase | append: '.bar'
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                assign x = 'foo'
+                echo x | upcase | append: '.bar'
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |2
+              
+                assign x = 'foo'
+                echo x | upcase | append: '.bar'
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                assign x = 'foo'
+                echo x | upcase | append: '.bar'
+              %}
+          markup:
+            - type: LiquidTag
+              name: assign
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [1, 2], text: assign x = 'foo' }
+              markupPosition: { start: [1, 9], text: x = 'foo' }
+              position: { start: [1, 2], text: assign x = 'foo' }
+              markup:
+                type: AssignMarkup
+                name: x
+                position: { start: [1, 9], text: x = 'foo' }
+                value:
+                  type: LiquidVariable
+                  rawSource: "'foo'"
+                  position: { start: [1, 13], text: "'foo'" }
+                  expression:
+                    type: String
+                    single: true
+                    value: foo
+                    position: { start: [1, 13], text: "'foo'" }
+                  filters: []
+            - type: LiquidTag
+              name: echo
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition: { start: [2, 2], text: "echo x | upcase | append: '.bar'" }
+              markupPosition: { start: [2, 7], text: "x | upcase | append: '.bar'" }
+              position: { start: [2, 2], text: "echo x | upcase | append: '.bar'" }
+              markup:
+                type: LiquidVariable
+                rawSource: "x | upcase | append: '.bar'"
+                position: { start: [2, 7], text: "x | upcase | append: '.bar'" }
+                expression:
+                  type: VariableLookup
+                  name: x
+                  position: { start: [2, 7], text: x }
+                  lookups: []
+                  lookupModes: []
+                filters:
+                  - type: LiquidFilter
+                    name: upcase
+                    position: { start: [2, 8], text: " | upcase" }
+                    args: []
+                  - type: LiquidFilter
+                    name: append
+                    position: { start: [2, 17], text: " | append: '.bar'" }
+                    args:
+                      - type: String
+                        single: true
+                        value: .bar
+                        position: { start: [2, 28], text: "'.bar'" }
+  - name: should parse multiline render inside {% liquid %} as a single statement (Bug 44)
+    source: |-
+      {% liquid
+        render 'foo',
+          bar: baz,
+          qux: quux
+      %}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {% liquid
+            render 'foo',
+              bar: baz,
+              qux: quux
+          %}
+      children:
+        - type: LiquidTag
+          name: liquid
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          blockStartPosition:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                render 'foo',
+                  bar: baz,
+                  qux: quux
+              %}
+          markupPosition:
+            start: [0, 9]
+            text: |2
+              
+                render 'foo',
+                  bar: baz,
+                  qux: quux
+          position:
+            start: [0, 0]
+            text: |-
+              {% liquid
+                render 'foo',
+                  bar: baz,
+                  qux: quux
+              %}
+          markup:
+            - type: LiquidTag
+              name: render
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              blockStartPosition:
+                start: [1, 2]
+                text: |-
+                  render 'foo',
+                      bar: baz,
+                      qux: quux
+              markupPosition:
+                start: [1, 9]
+                text: |-
+                  'foo',
+                      bar: baz,
+                      qux: quux
+              position:
+                start: [1, 2]
+                text: |-
+                  render 'foo',
+                      bar: baz,
+                      qux: quux
+              markup:
+                type: RenderMarkup
+                variable: null
+                alias: null
+                position:
+                  start: [1, 9]
+                  text: |-
+                    'foo',
+                        bar: baz,
+                        qux: quux
+                snippet:
+                  type: String
+                  single: true
+                  value: foo
+                  position: { start: [1, 9], text: "'foo'" }
+                args:
+                  - type: NamedArgument
+                    name: bar
+                    position: { start: [2, 4], text: "bar: baz" }
+                    value:
+                      type: VariableLookup
+                      name: baz
+                      position: { start: [2, 9], text: baz }
+                      lookups: []
+                      lookupModes: []
+                  - type: NamedArgument
+                    name: qux
+                    position: { start: [3, 4], text: "qux: quux" }
+                    value:
+                      type: VariableLookup
+                      name: quux
+                      position: { start: [3, 9], text: quux }
+                      lookups: []
+                      lookupModes: []
+  - name: should set LogicalExpression position.end to the markup boundary (Bug 9 regression) (1)
+    source: "{% if a and b %}{% endif %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if a and b %}{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if a and b %}" }
+          blockEndPosition: { start: [0, 16], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "a and b " }
+          position: { start: [0, 0], text: "{% if a and b %}{% endif %}" }
+          markup:
+            type: LogicalExpression
+            relation: and
+            position: { start: [0, 6], text: "a and b " }
+            left:
+              type: VariableLookup
+              name: a
+              position: { start: [0, 6], text: a }
+              lookups: []
+              lookupModes: []
+            right:
+              type: VariableLookup
+              name: b
+              position: { start: [0, 12], text: b }
+              lookups: []
+              lookupModes: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 16], text: "" }
+              blockStartPosition: { start: [0, 16], text: "" }
+              blockEndPosition: { start: [0, 16], text: "" }
+              position: { start: [0, 16], text: "" }
+              children: []
+  - name: should set LogicalExpression position.end to the markup boundary (Bug 9 regression) (2)
+    source: "{% if x == 1 %}{% endif %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if x == 1 %}{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if x == 1 %}" }
+          blockEndPosition: { start: [0, 15], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "x == 1 " }
+          position: { start: [0, 0], text: "{% if x == 1 %}{% endif %}" }
+          markup:
+            type: Comparison
+            comparator: ==
+            position: { start: [0, 6], text: x == 1 }
+            left:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 6], text: x }
+              lookups: []
+              lookupModes: []
+            right:
+              type: Number
+              value: "1"
+              position: { start: [0, 11], text: "1" }
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 15], text: "" }
+              blockStartPosition: { start: [0, 15], text: "" }
+              blockEndPosition: { start: [0, 15], text: "" }
+              position: { start: [0, 15], text: "" }
+              children: []
+  - name: should set nested LogicalExpression right.position.start to include operator keyword (Bug 19 regression)
+    source: "{% if a == 1 and b == 2 or c == 3 %}{% endif %}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% if a == 1 and b == 2 or c == 3 %}{% endif %}" }
+      children:
+        - type: LiquidTag
+          name: if
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% if a == 1 and b == 2 or c == 3 %}" }
+          blockEndPosition: { start: [0, 36], text: "{% endif %}" }
+          markupPosition: { start: [0, 6], text: "a == 1 and b == 2 or c == 3 " }
+          position: { start: [0, 0], text: "{% if a == 1 and b == 2 or c == 3 %}{% endif %}" }
+          markup:
+            type: LogicalExpression
+            relation: and
+            position: { start: [0, 6], text: "a == 1 and b == 2 or c == 3 " }
+            left:
+              type: Comparison
+              comparator: ==
+              position: { start: [0, 6], text: a == 1 }
+              left:
+                type: VariableLookup
+                name: a
+                position: { start: [0, 6], text: a }
+                lookups: []
+                lookupModes: []
+              right:
+                type: Number
+                value: "1"
+                position: { start: [0, 11], text: "1" }
+            right:
+              type: LogicalExpression
+              relation: or
+              position: { start: [0, 13], text: "and b == 2 or c == 3 " }
+              left:
+                type: Comparison
+                comparator: ==
+                position: { start: [0, 17], text: b == 2 }
+                left:
+                  type: VariableLookup
+                  name: b
+                  position: { start: [0, 17], text: b }
+                  lookups: []
+                  lookupModes: []
+                right:
+                  type: Number
+                  value: "2"
+                  position: { start: [0, 22], text: "2" }
+              right:
+                type: Comparison
+                comparator: ==
+                position: { start: [0, 27], text: c == 3 }
+                left:
+                  type: VariableLookup
+                  name: c
+                  position: { start: [0, 27], text: c }
+                  lookups: []
+                  lookupModes: []
+                right:
+                  type: Number
+                  value: "3"
+                  position: { start: [0, 32], text: "3" }
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 36], text: "" }
+              blockStartPosition: { start: [0, 36], text: "" }
+              blockEndPosition: { start: [0, 36], text: "" }
+              position: { start: [0, 36], text: "" }
+              children: []
+  - name: BooleanExpression > Comparison (1)
+    source: "{{ 1 == 1 }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 1 == 1 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 1 == 1 " }
+          position: { start: [0, 0], text: "{{ 1 == 1 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: 1 == 1
+            position: { start: [0, 3], text: "1 == 1 " }
+            expression:
+              type: BooleanExpression
+              position: { start: [0, 3], text: 1 == 1 }
+              condition:
+                type: Comparison
+                comparator: ==
+                position: { start: [0, 3], text: 1 == 1 }
+                left:
+                  type: Number
+                  value: "1"
+                  position: { start: [0, 3], text: "1" }
+                right:
+                  type: Number
+                  value: "1"
+                  position: { start: [0, 8], text: "1" }
+            filters: []
+  - name: BooleanExpression > Comparison (2)
+    source: "{{ 1 != 1 }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 1 != 1 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 1 != 1 " }
+          position: { start: [0, 0], text: "{{ 1 != 1 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: 1 != 1
+            position: { start: [0, 3], text: "1 != 1 " }
+            expression:
+              type: BooleanExpression
+              position: { start: [0, 3], text: 1 != 1 }
+              condition:
+                type: Comparison
+                comparator: "!="
+                position: { start: [0, 3], text: 1 != 1 }
+                left:
+                  type: Number
+                  value: "1"
+                  position: { start: [0, 3], text: "1" }
+                right:
+                  type: Number
+                  value: "1"
+                  position: { start: [0, 8], text: "1" }
+            filters: []
+  - name: BooleanExpression > Comparison (3)
+    source: "{{ 1 > 1 }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 1 > 1 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 1 > 1 " }
+          position: { start: [0, 0], text: "{{ 1 > 1 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: 1 > 1
+            position: { start: [0, 3], text: "1 > 1 " }
+            expression:
+              type: BooleanExpression
+              position: { start: [0, 3], text: 1 > 1 }
+              condition:
+                type: Comparison
+                comparator: ">"
+                position: { start: [0, 3], text: 1 > 1 }
+                left:
+                  type: Number
+                  value: "1"
+                  position: { start: [0, 3], text: "1" }
+                right:
+                  type: Number
+                  value: "1"
+                  position: { start: [0, 7], text: "1" }
+            filters: []
+  - name: BooleanExpression > Comparison (4)
+    source: "{{ 1 < 1 }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 1 < 1 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 1 < 1 " }
+          position: { start: [0, 0], text: "{{ 1 < 1 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: 1 < 1
+            position: { start: [0, 3], text: "1 < 1 " }
+            expression:
+              type: BooleanExpression
+              position: { start: [0, 3], text: 1 < 1 }
+              condition:
+                type: Comparison
+                comparator: <
+                position: { start: [0, 3], text: 1 < 1 }
+                left:
+                  type: Number
+                  value: "1"
+                  position: { start: [0, 3], text: "1" }
+                right:
+                  type: Number
+                  value: "1"
+                  position: { start: [0, 7], text: "1" }
+            filters: []
+  - name: BooleanExpression > Comparison (5)
+    source: "{{ 1 >= 1 }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 1 >= 1 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 1 >= 1 " }
+          position: { start: [0, 0], text: "{{ 1 >= 1 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: 1 >= 1
+            position: { start: [0, 3], text: "1 >= 1 " }
+            expression:
+              type: BooleanExpression
+              position: { start: [0, 3], text: 1 >= 1 }
+              condition:
+                type: Comparison
+                comparator: ">="
+                position: { start: [0, 3], text: 1 >= 1 }
+                left:
+                  type: Number
+                  value: "1"
+                  position: { start: [0, 3], text: "1" }
+                right:
+                  type: Number
+                  value: "1"
+                  position: { start: [0, 8], text: "1" }
+            filters: []
+  - name: BooleanExpression > Comparison (6)
+    source: "{{ 1 <= 1 }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 1 <= 1 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 1 <= 1 " }
+          position: { start: [0, 0], text: "{{ 1 <= 1 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: 1 <= 1
+            position: { start: [0, 3], text: "1 <= 1 " }
+            expression:
+              type: BooleanExpression
+              position: { start: [0, 3], text: 1 <= 1 }
+              condition:
+                type: Comparison
+                comparator: <=
+                position: { start: [0, 3], text: 1 <= 1 }
+                left:
+                  type: Number
+                  value: "1"
+                  position: { start: [0, 3], text: "1" }
+                right:
+                  type: Number
+                  value: "1"
+                  position: { start: [0, 8], text: "1" }
+            filters: []
+  - name: BooleanExpression > LogicalExpression (1)
+    source: "{{ 1 == 1 and 2 == 2 }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 1 == 1 and 2 == 2 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 1 == 1 and 2 == 2 " }
+          position: { start: [0, 0], text: "{{ 1 == 1 and 2 == 2 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: 1 == 1 and 2 == 2
+            position: { start: [0, 3], text: "1 == 1 and 2 == 2 " }
+            expression:
+              type: BooleanExpression
+              position: { start: [0, 3], text: 1 == 1 and 2 == 2 }
+              condition:
+                type: LogicalExpression
+                relation: and
+                position: { start: [0, 3], text: 1 == 1 and 2 == 2 }
+                left:
+                  type: Comparison
+                  comparator: ==
+                  position: { start: [0, 3], text: 1 == 1 }
+                  left:
+                    type: Number
+                    value: "1"
+                    position: { start: [0, 3], text: "1" }
+                  right:
+                    type: Number
+                    value: "1"
+                    position: { start: [0, 8], text: "1" }
+                right:
+                  type: Comparison
+                  comparator: ==
+                  position: { start: [0, 14], text: 2 == 2 }
+                  left:
+                    type: Number
+                    value: "2"
+                    position: { start: [0, 14], text: "2" }
+                  right:
+                    type: Number
+                    value: "2"
+                    position: { start: [0, 19], text: "2" }
+            filters: []
+  - name: BooleanExpression > LogicalExpression (2)
+    source: "{{ 1 == 1 or 2 == 2 }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 1 == 1 or 2 == 2 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 1 == 1 or 2 == 2 " }
+          position: { start: [0, 0], text: "{{ 1 == 1 or 2 == 2 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: 1 == 1 or 2 == 2
+            position: { start: [0, 3], text: "1 == 1 or 2 == 2 " }
+            expression:
+              type: BooleanExpression
+              position: { start: [0, 3], text: 1 == 1 or 2 == 2 }
+              condition:
+                type: LogicalExpression
+                relation: or
+                position: { start: [0, 3], text: 1 == 1 or 2 == 2 }
+                left:
+                  type: Comparison
+                  comparator: ==
+                  position: { start: [0, 3], text: 1 == 1 }
+                  left:
+                    type: Number
+                    value: "1"
+                    position: { start: [0, 3], text: "1" }
+                  right:
+                    type: Number
+                    value: "1"
+                    position: { start: [0, 8], text: "1" }
+                right:
+                  type: Comparison
+                  comparator: ==
+                  position: { start: [0, 13], text: 2 == 2 }
+                  left:
+                    type: Number
+                    value: "2"
+                    position: { start: [0, 13], text: "2" }
+                  right:
+                    type: Number
+                    value: "2"
+                    position: { start: [0, 18], text: "2" }
+            filters: []
+  - name: BooleanExpression > LogicalExpression (3)
+    source: "{{ 1 == 1 and 2 == 2 or 3 == 3 }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 1 == 1 and 2 == 2 or 3 == 3 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 1 == 1 and 2 == 2 or 3 == 3 " }
+          position: { start: [0, 0], text: "{{ 1 == 1 and 2 == 2 or 3 == 3 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: 1 == 1 and 2 == 2 or 3 == 3
+            position: { start: [0, 3], text: "1 == 1 and 2 == 2 or 3 == 3 " }
+            expression:
+              type: BooleanExpression
+              position: { start: [0, 3], text: 1 == 1 and 2 == 2 or 3 == 3 }
+              condition:
+                type: LogicalExpression
+                relation: and
+                position: { start: [0, 3], text: 1 == 1 and 2 == 2 or 3 == 3 }
+                left:
+                  type: Comparison
+                  comparator: ==
+                  position: { start: [0, 3], text: 1 == 1 }
+                  left:
+                    type: Number
+                    value: "1"
+                    position: { start: [0, 3], text: "1" }
+                  right:
+                    type: Number
+                    value: "1"
+                    position: { start: [0, 8], text: "1" }
+                right:
+                  type: LogicalExpression
+                  relation: or
+                  position: { start: [0, 10], text: and 2 == 2 or 3 == 3 }
+                  left:
+                    type: Comparison
+                    comparator: ==
+                    position: { start: [0, 14], text: 2 == 2 }
+                    left:
+                      type: Number
+                      value: "2"
+                      position: { start: [0, 14], text: "2" }
+                    right:
+                      type: Number
+                      value: "2"
+                      position: { start: [0, 19], text: "2" }
+                  right:
+                    type: Comparison
+                    comparator: ==
+                    position: { start: [0, 24], text: 3 == 3 }
+                    left:
+                      type: Number
+                      value: "3"
+                      position: { start: [0, 24], text: "3" }
+                    right:
+                      type: Number
+                      value: "3"
+                      position: { start: [0, 29], text: "3" }
+            filters: []
+  - name: BooleanExpression > LogicalExpression (4)
+    source: "{{ 1 == 1 and some_variable or 3 == 3 }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 1 == 1 and some_variable or 3 == 3 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 1 == 1 and some_variable or 3 == 3 " }
+          position: { start: [0, 0], text: "{{ 1 == 1 and some_variable or 3 == 3 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: 1 == 1 and some_variable or 3 == 3
+            position: { start: [0, 3], text: "1 == 1 and some_variable or 3 == 3 " }
+            expression:
+              type: BooleanExpression
+              position: { start: [0, 3], text: 1 == 1 and some_variable or 3 == 3 }
+              condition:
+                type: LogicalExpression
+                relation: and
+                position: { start: [0, 3], text: 1 == 1 and some_variable or 3 == 3 }
+                left:
+                  type: Comparison
+                  comparator: ==
+                  position: { start: [0, 3], text: 1 == 1 }
+                  left:
+                    type: Number
+                    value: "1"
+                    position: { start: [0, 3], text: "1" }
+                  right:
+                    type: Number
+                    value: "1"
+                    position: { start: [0, 8], text: "1" }
+                right:
+                  type: LogicalExpression
+                  relation: or
+                  position: { start: [0, 10], text: and some_variable or 3 == 3 }
+                  left:
+                    type: VariableLookup
+                    name: some_variable
+                    position: { start: [0, 14], text: some_variable }
+                    lookups: []
+                    lookupModes: []
+                  right:
+                    type: Comparison
+                    comparator: ==
+                    position: { start: [0, 31], text: 3 == 3 }
+                    left:
+                      type: Number
+                      value: "3"
+                      position: { start: [0, 31], text: "3" }
+                    right:
+                      type: Number
+                      value: "3"
+                      position: { start: [0, 36], text: "3" }
+            filters: []
+  - name: BooleanExpression > LogicalExpression (5)
+    source: "{{ some_var and 'raw string' }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ some_var and 'raw string' }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " some_var and 'raw string' " }
+          position: { start: [0, 0], text: "{{ some_var and 'raw string' }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: some_var and 'raw string'
+            position: { start: [0, 3], text: "some_var and 'raw string' " }
+            expression:
+              type: BooleanExpression
+              position: { start: [0, 3], text: some_var and 'raw string' }
+              condition:
+                type: LogicalExpression
+                relation: and
+                position: { start: [0, 3], text: some_var and 'raw string' }
+                left:
+                  type: VariableLookup
+                  name: some_var
+                  position: { start: [0, 3], text: some_var }
+                  lookups: []
+                  lookupModes: []
+                right:
+                  type: String
+                  single: true
+                  value: raw string
+                  position: { start: [0, 16], text: "'raw string'" }
+            filters: []
+  - name: should parse strings as LiquidVariable > String (1)
+    source: "{{ \"string o' string\" }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ \"string o' string\" }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " \"string o' string\" " }
+          position: { start: [0, 0], text: "{{ \"string o' string\" }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "\"string o' string\""
+            position: { start: [0, 3], text: "\"string o' string\" " }
+            expression:
+              type: String
+              single: false
+              value: string o' string
+              position: { start: [0, 3], text: "\"string o' string\"" }
+            filters: []
+  - name: should parse strings as LiquidVariable > String (2)
+    source: "{{ 'He said: \"hi!\"' }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 'He said: \"hi!\"' }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 'He said: \"hi!\"' " }
+          position: { start: [0, 0], text: "{{ 'He said: \"hi!\"' }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "'He said: \"hi!\"'"
+            position: { start: [0, 3], text: "'He said: \"hi!\"' " }
+            expression:
+              type: String
+              single: true
+              value: 'He said: "hi!"'
+              position: { start: [0, 3], text: "'He said: \"hi!\"'" }
+            filters: []
+  - name: should parse numbers as LiquidVariable > Number (1)
+    source: "{{ 1 }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 1 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 1 " }
+          position: { start: [0, 0], text: "{{ 1 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "1"
+            position: { start: [0, 3], text: "1 " }
+            expression:
+              type: Number
+              value: "1"
+              position: { start: [0, 3], text: "1" }
+            filters: []
+  - name: should parse numbers as LiquidVariable > Number (2)
+    source: "{{ 1.02 }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 1.02 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 1.02 " }
+          position: { start: [0, 0], text: "{{ 1.02 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "1.02"
+            position: { start: [0, 3], text: "1.02 " }
+            expression:
+              type: Number
+              value: "1.02"
+              position: { start: [0, 3], text: "1.02" }
+            filters: []
+  - name: should parse numbers as LiquidVariable > Number (3)
+    source: "{{ 0 }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 0 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 0 " }
+          position: { start: [0, 0], text: "{{ 0 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "0"
+            position: { start: [0, 3], text: "0 " }
+            expression:
+              type: Number
+              value: "0"
+              position: { start: [0, 3], text: "0" }
+            filters: []
+  - name: should parse numbers as LiquidVariable > Number (4)
+    source: "{{ -0 }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ -0 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " -0 " }
+          position: { start: [0, 0], text: "{{ -0 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "-0"
+            position: { start: [0, 3], text: "-0 " }
+            expression:
+              type: Number
+              value: "-0"
+              position: { start: [0, 3], text: "-0" }
+            filters: []
+  - name: should parse numbers as LiquidVariable > Number (5)
+    source: "{{ -0.0 }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ -0.0 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " -0.0 " }
+          position: { start: [0, 0], text: "{{ -0.0 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "-0.0"
+            position: { start: [0, 3], text: "-0.0 " }
+            expression:
+              type: Number
+              value: "-0.0"
+              position: { start: [0, 3], text: "-0.0" }
+            filters: []
+  - name: should parse numbers as LiquidVariable > LiquidLiteral (1)
+    source: "{{ nil }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ nil }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " nil " }
+          position: { start: [0, 0], text: "{{ nil }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: nil
+            position: { start: [0, 3], text: "nil " }
+            expression:
+              type: LiquidLiteral
+              keyword: nil
+              value: null
+              position: { start: [0, 3], text: nil }
+            filters: []
+  - name: should parse numbers as LiquidVariable > LiquidLiteral (2)
+    source: "{{ null }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ null }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " null " }
+          position: { start: [0, 0], text: "{{ null }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "null"
+            position: { start: [0, 3], text: "null " }
+            expression:
+              type: LiquidLiteral
+              keyword: "null"
+              value: null
+              position: { start: [0, 3], text: "null" }
+            filters: []
+  - name: should parse numbers as LiquidVariable > LiquidLiteral (3)
+    source: "{{ true }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ true }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " true " }
+          position: { start: [0, 0], text: "{{ true }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "true"
+            position: { start: [0, 3], text: "true " }
+            expression:
+              type: LiquidLiteral
+              keyword: "true"
+              value: true
+              position: { start: [0, 3], text: "true" }
+            filters: []
+  - name: should parse numbers as LiquidVariable > LiquidLiteral (4)
+    source: "{{ blank }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ blank }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " blank " }
+          position: { start: [0, 0], text: "{{ blank }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: blank
+            position: { start: [0, 3], text: "blank " }
+            expression:
+              type: LiquidLiteral
+              keyword: blank
+              value: ""
+              position: { start: [0, 3], text: blank }
+            filters: []
+  - name: should parse numbers as LiquidVariable > LiquidLiteral (5)
+    source: "{{ empty }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ empty }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " empty " }
+          position: { start: [0, 0], text: "{{ empty }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: empty
+            position: { start: [0, 3], text: "empty " }
+            expression:
+              type: LiquidLiteral
+              keyword: empty
+              value: ""
+              position: { start: [0, 3], text: empty }
+            filters: []
+  - name: should parse ranges as LiquidVariable > Range (1)
+    source: "{{ (0..5) }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ (0..5) }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " (0..5) " }
+          position: { start: [0, 0], text: "{{ (0..5) }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: (0..5)
+            position: { start: [0, 3], text: "(0..5) " }
+            expression:
+              type: Range
+              position: { start: [0, 3], text: (0..5) }
+              start:
+                type: Number
+                value: "0"
+                position: { start: [0, 4], text: "0" }
+              end:
+                type: Number
+                value: "5"
+                position: { start: [0, 7], text: "5" }
+            filters: []
+  - name: should parse ranges as LiquidVariable > Range (2)
+    source: "{{ ( 0 .. 5 ) }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ ( 0 .. 5 ) }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " ( 0 .. 5 ) " }
+          position: { start: [0, 0], text: "{{ ( 0 .. 5 ) }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: ( 0 .. 5 )
+            position: { start: [0, 3], text: "( 0 .. 5 ) " }
+            expression:
+              type: Range
+              position: { start: [0, 3], text: ( 0 .. 5 ) }
+              start:
+                type: Number
+                value: "0"
+                position: { start: [0, 5], text: "0" }
+              end:
+                type: Number
+                value: "5"
+                position: { start: [0, 10], text: "5" }
+            filters: []
+  - name: should parse ranges as LiquidVariable > Range (3)
+    source: "{{ (true..false) }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ (true..false) }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " (true..false) " }
+          position: { start: [0, 0], text: "{{ (true..false) }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: (true..false)
+            position: { start: [0, 3], text: "(true..false) " }
+            expression:
+              type: Range
+              position: { start: [0, 3], text: (true..false) }
+              start:
+                type: LiquidLiteral
+                keyword: "true"
+                value: true
+                position: { start: [0, 4], text: "true" }
+              end:
+                type: LiquidLiteral
+                keyword: "false"
+                value: false
+                position: { start: [0, 10], text: "false" }
+            filters: []
+  - name: should parse variable lookups as LiquidVariable > VariableLookup (1)
+    source: "{{ x }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ x }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " x " }
+          position: { start: [0, 0], text: "{{ x }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: x
+            position: { start: [0, 3], text: "x " }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 3], text: x }
+              lookups: []
+              lookupModes: []
+            filters: []
+  - name: should parse variable lookups as LiquidVariable > VariableLookup (2)
+    source: "{{ x.y }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ x.y }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " x.y " }
+          position: { start: [0, 0], text: "{{ x.y }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: x.y
+            position: { start: [0, 3], text: "x.y " }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 3], text: x.y }
+              lookups:
+                - type: String
+                  value: y
+                  position: { start: [0, 5], text: y }
+              lookupModes: [bareword]
+            filters: []
+  - name: should parse variable lookups as LiquidVariable > VariableLookup (3)
+    source: '{{ x["y"] }}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{{ x["y"] }}' }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: ' x["y"] ' }
+          position: { start: [0, 0], text: '{{ x["y"] }}' }
+          markup:
+            type: LiquidVariable
+            rawSource: x["y"]
+            position: { start: [0, 3], text: 'x["y"] ' }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 3], text: 'x["y"]' }
+              lookups:
+                - type: String
+                  single: false
+                  value: y
+                  position: { start: [0, 5], text: '"y"' }
+              lookupModes: [subscript]
+            filters: []
+  - name: should parse variable lookups as LiquidVariable > VariableLookup (4)
+    source: "{{ x['y'] }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ x['y'] }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " x['y'] " }
+          position: { start: [0, 0], text: "{{ x['y'] }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: x['y']
+            position: { start: [0, 3], text: "x['y'] " }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 3], text: "x['y']" }
+              lookups:
+                - type: String
+                  single: true
+                  value: y
+                  position: { start: [0, 5], text: "'y'" }
+              lookupModes: [subscript]
+            filters: []
+  - name: should parse variable lookups as LiquidVariable > VariableLookup (5)
+    source: "{{ x[1] }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ x[1] }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " x[1] " }
+          position: { start: [0, 0], text: "{{ x[1] }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: x[1]
+            position: { start: [0, 3], text: "x[1] " }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 3], text: "x[1]" }
+              lookups:
+                - type: Number
+                  value: "1"
+                  position: { start: [0, 5], text: "1" }
+              lookupModes: [subscript]
+            filters: []
+  - name: should parse variable lookups as LiquidVariable > VariableLookup (6)
+    source: "{{ x.y.z }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ x.y.z }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " x.y.z " }
+          position: { start: [0, 0], text: "{{ x.y.z }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: x.y.z
+            position: { start: [0, 3], text: "x.y.z " }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 3], text: x.y.z }
+              lookups:
+                - type: String
+                  value: y
+                  position: { start: [0, 5], text: y }
+                - type: String
+                  value: z
+                  position: { start: [0, 7], text: z }
+              lookupModes: [bareword, bareword]
+            filters: []
+  - name: should parse variable lookups as LiquidVariable > VariableLookup (7)
+    source: '{{ x["y"]["z"] }}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{{ x["y"]["z"] }}' }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: ' x["y"]["z"] ' }
+          position: { start: [0, 0], text: '{{ x["y"]["z"] }}' }
+          markup:
+            type: LiquidVariable
+            rawSource: x["y"]["z"]
+            position: { start: [0, 3], text: 'x["y"]["z"] ' }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 3], text: 'x["y"]["z"]' }
+              lookups:
+                - type: String
+                  single: false
+                  value: y
+                  position: { start: [0, 5], text: '"y"' }
+                - type: String
+                  single: false
+                  value: z
+                  position: { start: [0, 10], text: '"z"' }
+              lookupModes: [subscript, subscript]
+            filters: []
+  - name: should parse variable lookups as LiquidVariable > VariableLookup (8)
+    source: '{{ x["y"].z }}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{{ x["y"].z }}' }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: ' x["y"].z ' }
+          position: { start: [0, 0], text: '{{ x["y"].z }}' }
+          markup:
+            type: LiquidVariable
+            rawSource: x["y"].z
+            position: { start: [0, 3], text: 'x["y"].z ' }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 3], text: 'x["y"].z' }
+              lookups:
+                - type: String
+                  single: false
+                  value: y
+                  position: { start: [0, 5], text: '"y"' }
+                - type: String
+                  value: z
+                  position: { start: [0, 10], text: z }
+              lookupModes: [subscript, bareword]
+            filters: []
+  - name: should parse variable lookups as LiquidVariable > VariableLookup (9)
+    source: '{{ ["product"] }}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{{ ["product"] }}' }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: ' ["product"] ' }
+          position: { start: [0, 0], text: '{{ ["product"] }}' }
+          markup:
+            type: LiquidVariable
+            rawSource: '["product"]'
+            position: { start: [0, 3], text: '["product"] ' }
+            expression:
+              type: VariableLookup
+              name: null
+              position: { start: [0, 3], text: '["product"]' }
+              lookups:
+                - type: String
+                  single: false
+                  value: product
+                  position: { start: [0, 4], text: '"product"' }
+              lookupModes: [subscript]
+            filters: []
+  - name: should parse variable lookups as LiquidVariable > VariableLookup (10)
+    source: "{{ page.about-us }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ page.about-us }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " page.about-us " }
+          position: { start: [0, 0], text: "{{ page.about-us }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: page.about-us
+            position: { start: [0, 3], text: "page.about-us " }
+            expression:
+              type: VariableLookup
+              name: page
+              position: { start: [0, 3], text: page.about-us }
+              lookups:
+                - type: String
+                  value: about-us
+                  position: { start: [0, 8], text: about-us }
+              lookupModes: [bareword]
+            filters: []
+  - name: should parse variable lookups as LiquidVariable > VariableLookup (11)
+    source: '{{ ["x"].y }}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{{ ["x"].y }}' }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: ' ["x"].y ' }
+          position: { start: [0, 0], text: '{{ ["x"].y }}' }
+          markup:
+            type: LiquidVariable
+            rawSource: '["x"].y'
+            position: { start: [0, 3], text: '["x"].y ' }
+            expression:
+              type: VariableLookup
+              name: null
+              position: { start: [0, 3], text: '["x"].y' }
+              lookups:
+                - type: String
+                  single: false
+                  value: x
+                  position: { start: [0, 4], text: '"x"' }
+                - type: String
+                  value: y
+                  position: { start: [0, 9], text: y }
+              lookupModes: [subscript, bareword]
+            filters: []
+  - name: should parse variable lookups as LiquidVariable > VariableLookup (12)
+    source: '{{ ["x"]["y"] }}'
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{{ ["x"]["y"] }}' }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: ' ["x"]["y"] ' }
+          position: { start: [0, 0], text: '{{ ["x"]["y"] }}' }
+          markup:
+            type: LiquidVariable
+            rawSource: '["x"]["y"]'
+            position: { start: [0, 3], text: '["x"]["y"] ' }
+            expression:
+              type: VariableLookup
+              name: null
+              position: { start: [0, 3], text: '["x"]["y"]' }
+              lookups:
+                - type: String
+                  single: false
+                  value: x
+                  position: { start: [0, 4], text: '"x"' }
+                - type: String
+                  single: false
+                  value: y
+                  position: { start: [0, 9], text: '"y"' }
+              lookupModes: [subscript, subscript]
+            filters: []
+  - name: should parse variable lookups as LiquidVariable > VariableLookup (13)
+    source: "{{ x[y] }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ x[y] }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " x[y] " }
+          position: { start: [0, 0], text: "{{ x[y] }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: x[y]
+            position: { start: [0, 3], text: "x[y] " }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 3], text: "x[y]" }
+              lookups:
+                - type: VariableLookup
+                  name: y
+                  position: { start: [0, 5], text: y }
+                  lookups: []
+                  lookupModes: []
+              lookupModes: [subscript]
+            filters: []
+  - name: should parse variable lookups as LiquidVariable > VariableLookup (14)
+    source: "{{ x[y.z] }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ x[y.z] }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " x[y.z] " }
+          position: { start: [0, 0], text: "{{ x[y.z] }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: x[y.z]
+            position: { start: [0, 3], text: "x[y.z] " }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 3], text: "x[y.z]" }
+              lookups:
+                - type: VariableLookup
+                  name: y
+                  position: { start: [0, 5], text: y.z }
+                  lookups:
+                    - type: String
+                      value: z
+                      position: { start: [0, 7], text: z }
+                  lookupModes: [bareword]
+              lookupModes: [subscript]
+            filters: []
+  - name: should parse filters (1)
+    source: "{{ 'hello' | filter1 }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 'hello' | filter1 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 'hello' | filter1 " }
+          position: { start: [0, 0], text: "{{ 'hello' | filter1 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "'hello' | filter1"
+            position: { start: [0, 3], text: "'hello' | filter1 " }
+            expression:
+              type: String
+              single: true
+              value: hello
+              position: { start: [0, 3], text: "'hello'" }
+            filters:
+              - type: LiquidFilter
+                name: filter1
+                position: { start: [0, 10], text: " | filter1" }
+                args: []
+  - name: should parse filters (2)
+    source: "{{ 'hello' | filter1 | filter2 }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 'hello' | filter1 | filter2 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 'hello' | filter1 | filter2 " }
+          position: { start: [0, 0], text: "{{ 'hello' | filter1 | filter2 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "'hello' | filter1 | filter2"
+            position: { start: [0, 3], text: "'hello' | filter1 | filter2 " }
+            expression:
+              type: String
+              single: true
+              value: hello
+              position: { start: [0, 3], text: "'hello'" }
+            filters:
+              - type: LiquidFilter
+                name: filter1
+                position: { start: [0, 10], text: " | filter1" }
+                args: []
+              - type: LiquidFilter
+                name: filter2
+                position: { start: [0, 20], text: " | filter2" }
+                args: []
+  - name: should parse filters (3)
+    source: "{{ 'hello' | filter1: 'hi', 'there' }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 'hello' | filter1: 'hi', 'there' }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 'hello' | filter1: 'hi', 'there' " }
+          position: { start: [0, 0], text: "{{ 'hello' | filter1: 'hi', 'there' }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "'hello' | filter1: 'hi', 'there'"
+            position: { start: [0, 3], text: "'hello' | filter1: 'hi', 'there' " }
+            expression:
+              type: String
+              single: true
+              value: hello
+              position: { start: [0, 3], text: "'hello'" }
+            filters:
+              - type: LiquidFilter
+                name: filter1
+                position: { start: [0, 10], text: " | filter1: 'hi', 'there'" }
+                args:
+                  - type: String
+                    single: true
+                    value: hi
+                    position: { start: [0, 22], text: "'hi'" }
+                  - type: String
+                    single: true
+                    value: there
+                    position: { start: [0, 28], text: "'there'" }
+  - name: should parse filters (4)
+    source: "{{ 'hello' | filter1: key: value, kind: 'string' }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 'hello' | filter1: key: value, kind: 'string' }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 'hello' | filter1: key: value, kind: 'string' " }
+          position: { start: [0, 0], text: "{{ 'hello' | filter1: key: value, kind: 'string' }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "'hello' | filter1: key: value, kind: 'string'"
+            position: { start: [0, 3], text: "'hello' | filter1: key: value, kind: 'string' " }
+            expression:
+              type: String
+              single: true
+              value: hello
+              position: { start: [0, 3], text: "'hello'" }
+            filters:
+              - type: LiquidFilter
+                name: filter1
+                position: { start: [0, 10], text: " | filter1: key: value, kind: 'string'" }
+                args:
+                  - type: NamedArgument
+                    name: key
+                    position: { start: [0, 22], text: "key: value" }
+                    value:
+                      type: VariableLookup
+                      name: value
+                      position: { start: [0, 27], text: value }
+                      lookups: []
+                      lookupModes: []
+                  - type: NamedArgument
+                    name: kind
+                    position: { start: [0, 34], text: "kind: 'string'" }
+                    value:
+                      type: String
+                      single: true
+                      value: string
+                      position: { start: [0, 40], text: "'string'" }
+  - name: should parse filters (5)
+    source: "{{ 'hello' | f1: 'hi', key: (0..1) | f2: key: value, kind: 'string' }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 'hello' | f1: 'hi', key: (0..1) | f2: key: value, kind: 'string' }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 'hello' | f1: 'hi', key: (0..1) | f2: key: value, kind: 'string' " }
+          position: { start: [0, 0], text: "{{ 'hello' | f1: 'hi', key: (0..1) | f2: key: value, kind: 'string' }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "'hello' | f1: 'hi', key: (0..1) | f2: key: value, kind: 'string'"
+            position: { start: [0, 3], text: "'hello' | f1: 'hi', key: (0..1) | f2: key: value, kind: 'string' " }
+            expression:
+              type: String
+              single: true
+              value: hello
+              position: { start: [0, 3], text: "'hello'" }
+            filters:
+              - type: LiquidFilter
+                name: f1
+                position: { start: [0, 10], text: " | f1: 'hi', key: (0..1)" }
+                args:
+                  - type: String
+                    single: true
+                    value: hi
+                    position: { start: [0, 17], text: "'hi'" }
+                  - type: NamedArgument
+                    name: key
+                    position: { start: [0, 23], text: "key: (0..1)" }
+                    value:
+                      type: Range
+                      position: { start: [0, 28], text: (0..1) }
+                      start:
+                        type: Number
+                        value: "0"
+                        position: { start: [0, 29], text: "0" }
+                      end:
+                        type: Number
+                        value: "1"
+                        position: { start: [0, 32], text: "1" }
+              - type: LiquidFilter
+                name: f2
+                position: { start: [0, 34], text: " | f2: key: value, kind: 'string'" }
+                args:
+                  - type: NamedArgument
+                    name: key
+                    position: { start: [0, 41], text: "key: value" }
+                    value:
+                      type: VariableLookup
+                      name: value
+                      position: { start: [0, 46], text: value }
+                      lookups: []
+                      lookupModes: []
+                  - type: NamedArgument
+                    name: kind
+                    position: { start: [0, 53], text: "kind: 'string'" }
+                    value:
+                      type: String
+                      single: true
+                      value: string
+                      position: { start: [0, 59], text: "'string'" }
+  - name: should parse a simple variable
+    source: "{{ product }}"
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ product }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " product " }
+          position: { start: [0, 0], text: "{{ product }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: product
+            position: { start: [0, 3], text: "product " }
+            expression:
+              type: VariableLookup
+              name: product
+              position: { start: [0, 3], text: product }
+              lookups: []
+              lookupModes: []
+            filters: []
+  - name: should parse a string expression
+    source: '{{ "hello" }}'
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '{{ "hello" }}' }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: ' "hello" ' }
+          position: { start: [0, 0], text: '{{ "hello" }}' }
+          markup:
+            type: LiquidVariable
+            rawSource: '"hello"'
+            position: { start: [0, 3], text: '"hello" ' }
+            expression:
+              type: String
+              single: false
+              value: hello
+              position: { start: [0, 3], text: '"hello"' }
+            filters: []
+  - name: should parse a number expression
+    source: "{{ 42 }}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 42 }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 42 " }
+          position: { start: [0, 0], text: "{{ 42 }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "42"
+            position: { start: [0, 3], text: "42 " }
+            expression:
+              type: Number
+              value: "42"
+              position: { start: [0, 3], text: "42" }
+            filters: []
+  - name: should parse a filter
+    source: "{{ product | upcase }}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ product | upcase }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " product | upcase " }
+          position: { start: [0, 0], text: "{{ product | upcase }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: product | upcase
+            position: { start: [0, 3], text: "product | upcase " }
+            expression:
+              type: VariableLookup
+              name: product
+              position: { start: [0, 3], text: product }
+              lookups: []
+              lookupModes: []
+            filters:
+              - type: LiquidFilter
+                name: upcase
+                position: { start: [0, 10], text: " | upcase" }
+                args: []
+  - name: "should parse an empty filter argument list in strict mode: {{ 'key' | t:}}"
+    source: "{{ 'key' | t:}}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 'key' | t:}}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 'key' | t:" }
+          position: { start: [0, 0], text: "{{ 'key' | t:}}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "'key' | t:"
+            position: { start: [0, 3], text: "'key' | t:" }
+            expression:
+              type: String
+              single: true
+              value: key
+              position: { start: [0, 3], text: "'key'" }
+            filters:
+              - type: LiquidFilter
+                name: t
+                position: { start: [0, 8], text: " | t:" }
+                args: []
+  - name: "should parse an empty filter argument list in strict mode: {{ 'key' | t:  }}"
+    source: "{{ 'key' | t:  }}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 'key' | t:  }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 'key' | t:  " }
+          position: { start: [0, 0], text: "{{ 'key' | t:  }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "'key' | t:"
+            position: { start: [0, 3], text: "'key' | t:  " }
+            expression:
+              type: String
+              single: true
+              value: key
+              position: { start: [0, 3], text: "'key'" }
+            filters:
+              - type: LiquidFilter
+                name: t
+                position: { start: [0, 8], text: " | t:" }
+                args: []
+  - name: "should parse an empty filter argument list in strict mode: {{- 'key' | t: -}}"
+    source: |-
+      {{- 'key' | t:
+      -}}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          {{- 'key' | t:
+          -}}
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: "-"
+          whitespaceEnd: "-"
+          markupPosition:
+            start: [0, 3]
+            text: |2
+               'key' | t:
+          position:
+            start: [0, 0]
+            text: |-
+              {{- 'key' | t:
+              -}}
+          markup:
+            type: LiquidVariable
+            rawSource: "'key' | t:"
+            position:
+              start: [0, 4]
+              text: |
+                'key' | t:
+            expression:
+              type: String
+              single: true
+              value: key
+              position: { start: [0, 4], text: "'key'" }
+            filters:
+              - type: LiquidFilter
+                name: t
+                position: { start: [0, 9], text: " | t:" }
+                args: []
+  - name: should parse another filter after an empty argument list
+    source: "{{ 'key' | t: | escape }}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 'key' | t: | escape }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 'key' | t: | escape " }
+          position: { start: [0, 0], text: "{{ 'key' | t: | escape }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: "'key' | t: | escape"
+            position: { start: [0, 3], text: "'key' | t: | escape " }
+            expression:
+              type: String
+              single: true
+              value: key
+              position: { start: [0, 3], text: "'key'" }
+            filters:
+              - type: LiquidFilter
+                name: t
+                position: { start: [0, 8], text: " | t:" }
+                args: []
+              - type: LiquidFilter
+                name: escape
+                position: { start: [0, 13], text: " | escape" }
+                args: []
+  - name: "should keep malformed filter arguments as string markup: 'key' | t: title:"
+    source: "{{ 'key' | t: title: }}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 'key' | t: title: }}" }
+      children:
+        - type: LiquidVariableOutput
+          markup: "'key' | t: title:"
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 'key' | t: title: " }
+          position: { start: [0, 0], text: "{{ 'key' | t: title: }}" }
+  - name: "should keep malformed filter arguments as string markup: 'key' | t: title: | escape"
+    source: "{{ 'key' | t: title: | escape }}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 'key' | t: title: | escape }}" }
+      children:
+        - type: LiquidVariableOutput
+          markup: "'key' | t: title: | escape"
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 'key' | t: title: | escape " }
+          position: { start: [0, 0], text: "{{ 'key' | t: title: | escape }}" }
+  - name: "should keep malformed filter arguments as string markup: 'key' | t: ,"
+    source: "{{ 'key' | t: , }}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 'key' | t: , }}" }
+      children:
+        - type: LiquidVariableOutput
+          markup: "'key' | t: ,"
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 'key' | t: , " }
+          position: { start: [0, 0], text: "{{ 'key' | t: , }}" }
+  - name: "should keep malformed filter arguments as string markup: 'key' | t: title: product.title,"
+    source: "{{ 'key' | t: title: product.title, }}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 'key' | t: title: product.title, }}" }
+      children:
+        - type: LiquidVariableOutput
+          markup: "'key' | t: title: product.title,"
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 'key' | t: title: product.title, " }
+          position: { start: [0, 0], text: "{{ 'key' | t: title: product.title, }}" }
+  - name: "should keep malformed filter arguments as string markup: 'key' | t: @"
+    source: "{{ 'key' | t: @ }}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ 'key' | t: @ }}" }
+      children:
+        - type: LiquidVariableOutput
+          markup: "'key' | t: @"
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " 'key' | t: @ " }
+          position: { start: [0, 0], text: "{{ 'key' | t: @ }}" }
+  - name: should parse multiple filters
+    source: "{{ product | upcase | strip }}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ product | upcase | strip }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " product | upcase | strip " }
+          position: { start: [0, 0], text: "{{ product | upcase | strip }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: product | upcase | strip
+            position: { start: [0, 3], text: "product | upcase | strip " }
+            expression:
+              type: VariableLookup
+              name: product
+              position: { start: [0, 3], text: product }
+              lookups: []
+              lookupModes: []
+            filters:
+              - type: LiquidFilter
+                name: upcase
+                position: { start: [0, 10], text: " | upcase" }
+                args: []
+              - type: LiquidFilter
+                name: strip
+                position: { start: [0, 19], text: " | strip" }
+                args: []
+  - name: should handle whitespace stripping
+    source: "{{- x -}}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{- x -}}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: "-"
+          whitespaceEnd: "-"
+          markupPosition: { start: [0, 3], text: " x " }
+          position: { start: [0, 0], text: "{{- x -}}" }
+          markup:
+            type: LiquidVariable
+            rawSource: x
+            position: { start: [0, 4], text: "x " }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 4], text: x }
+              lookups: []
+              lookupModes: []
+            filters: []
+  - name: should have correct position for drop node
+    source: before{{ x }}after
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "before{{ x }}after" }
+      children:
+        - type: TextNode
+          value: before
+          position: { start: [0, 0], text: before }
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 8], text: " x " }
+          position: { start: [0, 6], text: "{{ x }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: x
+            position: { start: [0, 9], text: "x " }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 9], text: x }
+              lookups: []
+              lookupModes: []
+            filters: []
+        - type: TextNode
+          value: after
+          position: { start: [0, 13], text: after }
+  - name: should produce text before and after a drop
+    source: hello {{ x }} world
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "hello {{ x }} world" }
+      children:
+        - type: TextNode
+          value: hello
+          position: { start: [0, 0], text: hello }
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 8], text: " x " }
+          position: { start: [0, 6], text: "{{ x }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: x
+            position: { start: [0, 9], text: "x " }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 9], text: x }
+              lookups: []
+              lookupModes: []
+            filters: []
+        - type: TextNode
+          value: world
+          position: { start: [0, 14], text: world }
+  - name: should parse multiple drops
+    source: "{{ a }}{{ b }}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ a }}{{ b }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " a " }
+          position: { start: [0, 0], text: "{{ a }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: a
+            position: { start: [0, 3], text: "a " }
+            expression:
+              type: VariableLookup
+              name: a
+              position: { start: [0, 3], text: a }
+              lookups: []
+              lookupModes: []
+            filters: []
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 9], text: " b " }
+          position: { start: [0, 7], text: "{{ b }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: b
+            position: { start: [0, 10], text: "b " }
+            expression:
+              type: VariableLookup
+              name: b
+              position: { start: [0, 10], text: b }
+              lookups: []
+              lookupModes: []
+            filters: []
+  - name: should parse a range expression
+    source: "{{ (1..5) }}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ (1..5) }}" }
+      children:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " (1..5) " }
+          position: { start: [0, 0], text: "{{ (1..5) }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: (1..5)
+            position: { start: [0, 3], text: "(1..5) " }
+            expression:
+              type: Range
+              position: { start: [0, 3], text: (1..5) }
+              start:
+                type: Number
+                value: "1"
+                position: { start: [0, 4], text: "1" }
+              end:
+                type: Number
+                value: "5"
+                position: { start: [0, 7], text: "5" }
+            filters: []
+  - name: should fall back to string markup for empty drop
+    source: "{{ }}"
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{{ }}" }
+      children:
+        - type: LiquidVariableOutput
+          markup: ""
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 2], text: " " }
+          position: { start: [0, 0], text: "{{ }}" }
