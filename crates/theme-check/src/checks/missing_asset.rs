@@ -1,3 +1,4 @@
+use super::file_utils::does_file_exist;
 use crate::context::{CheckDef, CheckResult, Context, Create, LiquidCheck, Severity};
 use liquid_ast::{Node, NodeKind, NodeRef};
 
@@ -35,7 +36,7 @@ impl<'a> LiquidCheck<'a> for Check {
         };
 
         let original = format!("assets/{}", expression.value);
-        let exists = |rel: &str| cx.file_exists(&cx.to_uri(rel));
+        let exists = |rel: &str| does_file_exist(cx, rel);
         if exists(&original) {
             return Ok(());
         }

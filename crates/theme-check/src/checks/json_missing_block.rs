@@ -1,3 +1,4 @@
+use super::file_utils::does_file_exist;
 use super::schema_utils::all;
 use crate::context::{CheckDef, CheckError, CheckResult, Context, Create, JsonCheck, Severity};
 use crate::js;
@@ -205,7 +206,7 @@ fn validate_block(
         return Ok(());
     }
     let exists =
-        matches!(t, "@theme" | "@app") || cx.file_exists(&cx.to_uri(&format!("blocks/{t}.liquid")));
+        matches!(t, "@theme" | "@app") || does_file_exist(cx, &format!("blocks/{t}.liquid"));
     if !exists {
         cx.report(
             format!("Theme block 'blocks/{t}.liquid' does not exist."),
