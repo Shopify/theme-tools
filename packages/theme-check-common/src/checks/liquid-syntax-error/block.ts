@@ -1,5 +1,6 @@
 import {
   NodeTypes,
+  type BlockArgumentValue,
   type BlockMarkup,
   type LiquidTag,
   type Position,
@@ -18,7 +19,6 @@ const SYNTAX_ERROR = "Syntax error in 'block' tag";
 const BARE_ARRAY_ACCESS = 'Bare bracket access is not allowed in strict2 mode';
 const DOTTED_ARGUMENT =
   "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value";
-const APP_BLOCK_ARGUMENTS = "Liquid syntax error: in 'block' - app blocks do not accept arguments";
 const APP_BLOCK_CONTENT = "Liquid syntax error: in 'block' - app blocks do not accept content";
 const UNCLOSED_BLOCK_PARSER_ERROR = "Attempting to end parsing before LiquidTag 'block' was closed";
 const UNCLOSED_BLOCK_IN_LIQUID_PARSER_ERROR = "Unclosed block tag 'block' in {% liquid %} block";
@@ -41,18 +41,6 @@ export function blockTagSyntaxError(
   const markup = node.markup as BlockMarkup;
 
   /*
-   * The parser only accepts theme block names and canonical app block paths
-   * (shopify://apps/<app>/blocks/<handle>/<uuid>). App blocks render with the
-   * settings their app provides, so they take no arguments and no content.
-   */
-  if (isAppBlockPath(markup.name.value)) {
-    if (markup.args.some((argument) => argument.name !== 'block.name')) {
-      return syntaxProblem(node.position, APP_BLOCK_ARGUMENTS);
-    }
-    if (hasContent(node)) return syntaxProblem(node.position, APP_BLOCK_CONTENT);
-  }
-
-  /*
    * Ruby Liquid still accepts the unsupported experimental block.settings.<id>
    * and block.content caller forms. Theme Check intentionally rejects every
    * dotted argument except block.name so authors move to plain arguments.
@@ -61,6 +49,24 @@ export function blockTagSyntaxError(
   const dottedArgument = markup.args.find(isDottedArgument);
   if (dottedArgument) {
     return syntaxProblem(dottedArgument.position, dottedArgumentMessage(dottedArgument.name));
+  }
+
+  /*
+   * App settings map to JSON settings: only fixed scalars or flat arrays of
+   * them are allowed. Check every occurrence so a later fixed duplicate does
+   * not hide an earlier expression. block.name is metadata, not a setting.
+   */
+  if (isAppBlockPath(markup.name.value)) {
+    const dynamicArgument = markup.args.find(
+      (argument) => argument.name !== 'block.name' && !isFixedAppSetting(argument.value),
+    );
+    if (dynamicArgument) {
+      return syntaxProblem(
+        node.position,
+        `Liquid syntax error: in 'block' - app block settings must be fixed values; '${dynamicArgument.name}' is not a string, number, boolean or array of those`,
+      );
+    }
+    if (hasContent(node)) return syntaxProblem(node.position, APP_BLOCK_CONTENT);
   }
 
   if (markup.args.some(isInvalidBlockNameArgument)) {
@@ -109,6 +115,17 @@ function syntaxProblem(position: Position, message: string): Problem<SourceCodeT
 
 function isAppBlockPath(value: string): boolean {
   return value.startsWith('shopify://apps/');
+}
+
+function isFixedAppSetting(value: BlockArgumentValue): boolean {
+  const elements = value.type === 'BlockArrayLiteral' ? value.elements : [value];
+  return elements.every(
+    (element) =>
+      element.type === NodeTypes.String ||
+      element.type === NodeTypes.Number ||
+      (element.type === NodeTypes.LiquidLiteral &&
+        (element.keyword === 'true' || element.keyword === 'false')),
+  );
 }
 
 function hasContent(node: LiquidTag): boolean {
