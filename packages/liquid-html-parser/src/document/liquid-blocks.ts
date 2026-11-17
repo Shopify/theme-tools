@@ -20,6 +20,7 @@ import type {
   LiquidBranchNamed,
   AttributeNode,
 } from '../ast';
+import { isStructuralEndTag } from '../environment';
 import type { TagDefinitionBlock, BranchName, Parser } from '../environment';
 import { LiquidHTMLASTParsingError } from '../errors';
 import { assertNever } from '../utils';
@@ -44,6 +45,7 @@ export interface BlockParserDelegate extends ParserBase, Parser {
   readonly blockInAttributeValueContext: boolean;
 
   parseNode(): LiquidHtmlNode;
+  parseNodeInScope(scope: LiquidHtmlNode[]): LiquidHtmlNode;
   peekTagName(): string | null;
   consumeEndTag(): {
     position: Position;
@@ -126,7 +128,7 @@ export function parseBlockBody(
 
       if (tagName && tagName.startsWith('end')) {
         const innerName = tagName.slice(3);
-        if (parser.blockEnv.tagForName(innerName)) {
+        if (isStructuralEndTag(innerName, parser.blockEnv.tagForName(innerName))) {
           throw new LiquidHTMLASTParsingError(
             `Attempting to close LiquidTag '${innerName}' before LiquidTag '${parentName}' was closed`,
             parser.getSource(),
@@ -149,7 +151,7 @@ export function parseBlockBody(
     if (parser.blockInAttributeContext && !parser.blockInAttributeValueContext) {
       children.push(...(parser.parseBranchAttributes() as unknown as LiquidHtmlNode[]));
     } else {
-      children.push(parser.parseNode());
+      children.push(parser.parseNodeInScope(children));
     }
     if (parser.getPosition() === progressStart) {
       if (!parser.blockAllowUnclosedDocumentNode) {
@@ -252,7 +254,7 @@ export function parseBranchedBody(
 
       if (tagName && tagName.startsWith('end')) {
         const innerName = tagName.slice(3);
-        if (parser.blockEnv.tagForName(innerName)) {
+        if (isStructuralEndTag(innerName, parser.blockEnv.tagForName(innerName))) {
           throw new LiquidHTMLASTParsingError(
             `Attempting to close LiquidTag '${innerName}' before LiquidTag '${parentName}' was closed`,
             parser.getSource(),
@@ -266,7 +268,7 @@ export function parseBranchedBody(
     if (parser.blockInAttributeContext && !parser.blockInAttributeValueContext) {
       currentChildren.push(...(parser.parseBranchAttributes() as unknown as LiquidHtmlNode[]));
     } else {
-      currentChildren.push(parser.parseNode());
+      currentChildren.push(parser.parseNodeInScope(currentChildren));
     }
     if (parser.getPosition() === progressStart) {
       if (!parser.blockAllowUnclosedDocumentNode) {

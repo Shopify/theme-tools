@@ -1,0 +1,628 @@
+cases:
+  - name: should parse a basic text node into a TextNode
+    source: Hello world!
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: Hello world! }
+      children:
+        - type: TextNode
+          value: Hello world!
+          position: { start: [0, 0], text: Hello world! }
+  - name: should parse script tags as a text node
+    source: |-
+      <script>
+        const a = {{ product | json }};
+      </script>
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          <script>
+            const a = {{ product | json }};
+          </script>
+      children:
+        - type: TextNode
+          value: |-
+            <script>
+              const a =
+          position:
+            start: [0, 0]
+            text: |-
+              <script>
+                const a =
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [1, 14], text: " product | json " }
+          position: { start: [1, 12], text: "{{ product | json }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: product | json
+            position: { start: [1, 15], text: "product | json " }
+            expression:
+              type: VariableLookup
+              name: product
+              position: { start: [1, 15], text: product }
+              lookups: []
+              lookupModes: []
+            filters:
+              - type: LiquidFilter
+                name: json
+                position: { start: [1, 22], text: " | json" }
+                args: []
+        - type: TextNode
+          value: |-
+            ;
+            </script>
+          position:
+            start: [1, 32]
+            text: |-
+              ;
+              </script>
+  - name: should parse style tags as a text node
+    source: |-
+      <style>
+        :root { --bg: {{ settings.bg }}}
+      </style>
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          <style>
+            :root { --bg: {{ settings.bg }}}
+          </style>
+      children:
+        - type: TextNode
+          value: |-
+            <style>
+              :root { --bg:
+          position:
+            start: [0, 0]
+            text: |-
+              <style>
+                :root { --bg:
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [1, 18], text: " settings.bg " }
+          position: { start: [1, 16], text: "{{ settings.bg }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: settings.bg
+            position: { start: [1, 19], text: "settings.bg " }
+            expression:
+              type: VariableLookup
+              name: settings
+              position: { start: [1, 19], text: settings.bg }
+              lookups:
+                - type: String
+                  value: bg
+                  position: { start: [1, 28], text: bg }
+              lookupModes: [bareword]
+            filters: []
+        - type: TextNode
+          value: |-
+            }
+            </style>
+          position:
+            start: [1, 33]
+            text: |-
+              }
+              </style>
+  - name: should collapse DOCTYPE into text
+    source: <!DOCTYPE html>
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!DOCTYPE html> }
+      children:
+        - type: TextNode
+          value: <!DOCTYPE html>
+          position: { start: [0, 0], text: <!DOCTYPE html> }
+  - name: should parse Liquid drops between HTML text
+    source: <div>{{ x }}</div>
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "<div>{{ x }}</div>" }
+      children:
+        - type: TextNode
+          value: <div>
+          position: { start: [0, 0], text: <div> }
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 7], text: " x " }
+          position: { start: [0, 5], text: "{{ x }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: x
+            position: { start: [0, 8], text: "x " }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 8], text: x }
+              lookups: []
+              lookupModes: []
+            filters: []
+        - type: TextNode
+          value: </div>
+          position: { start: [0, 12], text: </div> }
+  - name: should return DocumentNode with empty children
+    source: ""
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "" }
+      children: []
+  - name: should parse plain text as a single TextNode
+    source: hello world
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: hello world }
+      children:
+        - type: TextNode
+          value: hello world
+          position: { start: [0, 0], text: hello world }
+  - name: should preserve whitespace and newlines
+    source: |2
+        hello
+        world
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |2
+            hello
+            world
+      children:
+        - type: TextNode
+          value: |-
+            hello
+              world
+          position:
+            start: [0, 2]
+            text: |-
+              hello
+                world
+  - name: should work with whitespace-only source
+    source: "  \ \n\t  "
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: "  \ \n\t  "
+      children: []
+  - name: should parse YAML frontmatter followed by text
+    source: |-
+      ---
+      key: value
+      ---
+      rest
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          ---
+          key: value
+          ---
+          rest
+      children:
+        - type: YAMLFrontmatter
+          body: |
+            key: value
+          position:
+            start: [0, 0]
+            text: |
+              ---
+              key: value
+              ---
+        - type: TextNode
+          value: rest
+          position: { start: [3, 0], text: rest }
+  - name: should parse YAML frontmatter without trailing text
+    source: |-
+      ---
+      key: value
+      ---
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          ---
+          key: value
+          ---
+      children:
+        - type: YAMLFrontmatter
+          body: |
+            key: value
+          position:
+            start: [0, 0]
+            text: |-
+              ---
+              key: value
+              ---
+  - name: should extract multi-line body correctly
+    source: |
+      ---
+      title: hello
+      author: world
+      ---
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |
+          ---
+          title: hello
+          author: world
+          ---
+      children:
+        - type: YAMLFrontmatter
+          body: |
+            title: hello
+            author: world
+          position:
+            start: [0, 0]
+            text: |
+              ---
+              title: hello
+              author: world
+              ---
+  - name: should handle YAML frontmatter + Liquid drop
+    source: |-
+      ---
+      k: v
+      ---
+      {{ x }}
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          ---
+          k: v
+          ---
+          {{ x }}
+      children:
+        - type: YAMLFrontmatter
+          body: |
+            k: v
+          position:
+            start: [0, 0]
+            text: |
+              ---
+              k: v
+              ---
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [3, 2], text: " x " }
+          position: { start: [3, 0], text: "{{ x }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: x
+            position: { start: [3, 3], text: "x " }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [3, 3], text: x }
+              lookups: []
+              lookupModes: []
+            filters: []
+  - name: 'should have correct structure for: "hello"'
+    source: hello
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: hello }
+      children:
+        - type: TextNode
+          value: hello
+          position: { start: [0, 0], text: hello }
+  - name: 'should have correct structure for: "--- k: v --- rest"'
+    source: |-
+      ---
+      k: v
+      ---
+      rest
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          ---
+          k: v
+          ---
+          rest
+      children:
+        - type: YAMLFrontmatter
+          body: |
+            k: v
+          position:
+            start: [0, 0]
+            text: |
+              ---
+              k: v
+              ---
+        - type: TextNode
+          value: rest
+          position: { start: [3, 0], text: rest }
+  - name: 'should have correct structure for: "<div>text</div>"'
+    source: <div>text</div>
+    parse: [html]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <div>text</div> }
+      children:
+        - type: HtmlElement
+          blockStartPosition: { start: [0, 0], text: <div> }
+          blockEndPosition: { start: [0, 9], text: </div> }
+          position: { start: [0, 0], text: <div>text</div> }
+          name:
+            - type: TextNode
+              value: div
+              position: { start: [0, 1], text: div }
+          attributes: []
+          children:
+            - type: TextNode
+              value: text
+              position: { start: [0, 5], text: text }
+  - name: should collapse all HTML into text nodes
+    source: <div class="a">text</div>
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <div class="a">text</div> }
+      children:
+        - type: TextNode
+          value: <div class="a">text</div>
+          position: { start: [0, 0], text: <div class="a">text</div> }
+  - name: should collapse HTML comments into text
+    source: <!-- comment -->
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <!-- comment --> }
+      children:
+        - type: TextNode
+          value: <!-- comment -->
+          position: { start: [0, 0], text: <!-- comment --> }
+  - name: should collapse self-closing tags into text
+    source: <img src="photo.jpg" />
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: <img src="photo.jpg" /> }
+      children:
+        - type: TextNode
+          value: <img src="photo.jpg" />
+          position: { start: [0, 0], text: <img src="photo.jpg" /> }
+  - name: should handle HTML inside Liquid block bodies
+    source: "{% for item in items %}<li>{{ item }}</li>{% endfor %}"
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% for item in items %}<li>{{ item }}</li>{% endfor %}" }
+      children:
+        - type: LiquidTag
+          name: for
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% for item in items %}" }
+          blockEndPosition: { start: [0, 42], text: "{% endfor %}" }
+          markupPosition: { start: [0, 7], text: "item in items " }
+          position: { start: [0, 0], text: "{% for item in items %}<li>{{ item }}</li>{% endfor %}" }
+          markup:
+            type: ForMarkup
+            variableName: item
+            reversed: false
+            position: { start: [0, 7], text: "item in items " }
+            collection:
+              type: VariableLookup
+              name: items
+              position: { start: [0, 15], text: items }
+              lookups: []
+              lookupModes: []
+            args: []
+          children:
+            - type: LiquidBranch
+              name: null
+              markup: ""
+              whitespaceStart: ""
+              whitespaceEnd: ""
+              markupPosition: { start: [0, 23], text: "" }
+              blockStartPosition: { start: [0, 23], text: "" }
+              blockEndPosition: { start: [0, 42], text: "" }
+              position: { start: [0, 23], text: "<li>{{ item }}</li>" }
+              children:
+                - type: TextNode
+                  value: <li>
+                  position: { start: [0, 23], text: <li> }
+                - type: LiquidVariableOutput
+                  whitespaceStart: ""
+                  whitespaceEnd: ""
+                  markupPosition: { start: [0, 29], text: " item " }
+                  position: { start: [0, 27], text: "{{ item }}" }
+                  markup:
+                    type: LiquidVariable
+                    rawSource: item
+                    position: { start: [0, 30], text: "item " }
+                    expression:
+                      type: VariableLookup
+                      name: item
+                      position: { start: [0, 30], text: item }
+                      lookups: []
+                      lookupModes: []
+                    filters: []
+                - type: TextNode
+                  value: </li>
+                  position: { start: [0, 37], text: </li> }
+  - name: should parse raw Liquid tags normally (doc, comment, raw)
+    source: "{% doc %}@param x{% enddoc %}"
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "{% doc %}@param x{% enddoc %}" }
+      children:
+        - type: LiquidRawTag
+          name: doc
+          markup: ""
+          markupPosition: { start: [0, 7], text: "" }
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          delimiterWhitespaceStart: ""
+          delimiterWhitespaceEnd: ""
+          blockStartPosition: { start: [0, 0], text: "{% doc %}" }
+          blockEndPosition: { start: [0, 17], text: "{% enddoc %}" }
+          position: { start: [0, 0], text: "{% doc %}@param x{% enddoc %}" }
+          body:
+            type: RawMarkup
+            kind: text
+            value: "@param x"
+            position: { start: [0, 9], text: "@param x" }
+            nodes:
+              - type: LiquidDocParamNode
+                name: param
+                paramType: null
+                paramDescription: null
+                required: true
+                position: { start: [0, 9], text: "@param x" }
+                paramName:
+                  type: TextNode
+                  value: x
+                  position: { start: [0, 16], text: x }
+  - name: should maintain position accuracy for merged text nodes
+    source: '  <div class="x">hello</div>  '
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: '  <div class="x">hello</div>  ' }
+      children:
+        - type: TextNode
+          value: <div class="x">hello</div>
+          position: { start: [0, 2], text: <div class="x">hello</div> }
+  - name: should parse YAML frontmatter normally
+    source: |-
+      ---
+      title: test
+      ---
+      <div>{{ x }}</div>
+    parse: [liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position:
+        start: [0, 0]
+        text: |-
+          ---
+          title: test
+          ---
+          <div>{{ x }}</div>
+      children:
+        - type: YAMLFrontmatter
+          body: |
+            title: test
+          position:
+            start: [0, 0]
+            text: |
+              ---
+              title: test
+              ---
+        - type: TextNode
+          value: <div>
+          position: { start: [3, 0], text: <div> }
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [3, 7], text: " x " }
+          position: { start: [3, 5], text: "{{ x }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: x
+            position: { start: [3, 8], text: "x " }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [3, 8], text: x }
+              lookups: []
+              lookupModes: []
+            filters: []
+        - type: TextNode
+          value: </div>
+          position: { start: [3, 12], text: </div> }
+  - name: should count positions in UTF-16 code units
+    source: 🙂 {{ x }}
+    parse: [html, liquid]
+    ast:
+      type: Document
+      name: "#document"
+      position: { start: [0, 0], text: "🙂 {{ x }}" }
+      children:
+        - type: TextNode
+          value: 🙂
+          position: { start: [0, 0], text: 🙂 }
+        - type: LiquidVariableOutput
+          whitespaceStart: ""
+          whitespaceEnd: ""
+          markupPosition: { start: [0, 5], text: " x " }
+          position: { start: [0, 3], text: "{{ x }}" }
+          markup:
+            type: LiquidVariable
+            rawSource: x
+            position: { start: [0, 6], text: "x " }
+            expression:
+              type: VariableLookup
+              name: x
+              position: { start: [0, 6], text: x }
+              lookups: []
+              lookupModes: []
+            filters: []
+  - name: should count error locations in UTF-16 code units
+    source: |-
+      🙂
+      🙂 {% if a %}
+    parse: [html]
+    error:
+      message: Attempting to end parsing before LiquidTag 'if' was closed
+      start: [1, 3]
+      text: "{% if a %"

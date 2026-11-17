@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { parseLiquidDoc } from './parser';
+import { LiquidDocParser, parseLiquidDoc } from './parser';
 import type { LiquidDocNode } from './parser';
+import { tokenizeLiquidDoc } from './tokenizer';
 import { NodeTypes } from '../types';
 import type {
   LiquidDocParamNode,
@@ -25,6 +26,24 @@ function parseDoc(body: string): LiquidDocNode[] {
   const source = prefix + body + suffix;
   const startOffset = prefix.length;
   return parseLiquidDoc(body, startOffset, source);
+}
+
+/**
+ * Helper: parses like `parseDoc` and counts how many times the parser reads a
+ * token from its token array.
+ */
+function parseDocCountingTokenReads(body: string): { nodes: LiquidDocNode[]; reads: number } {
+  const prefix = '{% doc %}';
+  const source = prefix + body + '{% enddoc %}';
+  let reads = 0;
+  const tokens = new Proxy(tokenizeLiquidDoc(body, prefix.length), {
+    get(target, key, receiver) {
+      if (typeof key === 'string' && /^\d+$/.test(key)) reads++;
+      return Reflect.get(target, key, receiver);
+    },
+  });
+  const nodes = new LiquidDocParser(tokens, source).parse();
+  return { nodes, reads };
 }
 
 function asParam(node: LiquidDocNode): LiquidDocParamNode {
@@ -389,6 +408,47 @@ describe('Unit: liquid-doc parser', () => {
       expect(desc.isImplicit).toBe(true);
       expect(desc.content.value).toContain('Header text');
       expect(desc.content.value).toContain('Body paragraph');
+    });
+  });
+
+  describe('blank-line runs', () => {
+    const blankLines = 2000;
+
+    it('keeps a long blank run between text lines in one implicit description', () => {
+      const body = `\nFirst line${'\n'.repeat(blankLines)}Last line\n`;
+      const nodes = parseDoc(body);
+      expect(nodes.length).toBe(1);
+      const desc = asDescription(nodes[0]);
+      expect(desc.isImplicit).toBe(true);
+      expect(desc.content.value).toBe(`First line${'\n'.repeat(blankLines)}Last line\n`);
+      expect(desc.position.end).toBe('{% doc %}'.length + body.length);
+    });
+
+    it('keeps whitespace-only lines of a blank run as newlines', () => {
+      const nodes = parseDoc('\nFirst line\n  \n\t\n\nLast line');
+      expect(nodes.length).toBe(1);
+      const desc = asDescription(nodes[0]);
+      expect(desc.content.value).toBe('First line\n\n\n\nLast line');
+    });
+
+    it('reads tokens in proportion to the length of a blank run that ends in text', () => {
+      const textEnded = parseDocCountingTokenReads(
+        `\nFirst line${'\n'.repeat(blankLines)}Last line\n`,
+      );
+      const annotationEnded = parseDocCountingTokenReads(
+        `\nFirst line${'\n'.repeat(blankLines)}@prompt\n`,
+      );
+      expect(textEnded.reads).toBeLessThan(2 * annotationEnded.reads);
+    });
+
+    it('reads tokens in proportion to the length of a blank run in an @example', () => {
+      const textEnded = parseDocCountingTokenReads(
+        `\n@example First line${'\n'.repeat(blankLines)}Last line\n`,
+      );
+      const annotationEnded = parseDocCountingTokenReads(
+        `\n@example First line${'\n'.repeat(blankLines)}@prompt\n`,
+      );
+      expect(textEnded.reads).toBeLessThan(2 * annotationEnded.reads);
     });
   });
 
