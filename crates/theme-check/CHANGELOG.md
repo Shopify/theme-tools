@@ -1,5 +1,12 @@
 # theme-check-rs
 
+## 0.1.3
+
+### Patch Changes
+
+- ede4d4fc: `liquid-parser` parses block tags glued to an HTML tag name (`<a{% if x %}{% endif %}…>`) in time linear in the length of the name. Before, each glued block with an empty body looked ahead to the end of the HTML tag again, so the parse time grew with the square of the number of such blocks. The parsed trees are unchanged.
+- f8e75c0b: Checks that look up a theme file by a name from theme content (`MissingAsset`, `ValidStaticBlockType`, `JSONMissingSection`, `MissingTemplate`, `JSONMissingBlock`, `ValidBlockTarget`, `AssetSizeJavaScript` and `AssetSizeCSS`) look only in the directory the path names, such as `assets`, `blocks` or `sections`. A name that leaves that directory, also in its percent-encoded form, now gets the same result whether or not a file exists at that path, and the check does not read the file system for it.
+
 ## 0.1.2
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @shopify/theme-check-common
 
+## 4.0.3
+
+### Patch Changes
+
+- f8e75c0b: Checks that look up a theme file by a name from theme content (`MissingAsset`, `ValidStaticBlockType`, `JSONMissingSection`, `MissingTemplate`, `JSONMissingBlock`, `ValidBlockTarget`, `AssetSizeJavaScript` and `AssetSizeCSS`) look only in the directory the path names, such as `assets`, `blocks` or `sections`. A name that leaves that directory, also in its percent-encoded form, now gets the same result whether or not a file exists at that path, and the check does not read the file system for it.
+- Updated dependencies [4eb8bb16]
+  - @shopify/liquid-html-parser@2.12.3
+
 ## 4.0.2
 
 ### Patch Changes
