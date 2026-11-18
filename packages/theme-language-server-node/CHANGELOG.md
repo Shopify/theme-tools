@@ -1,5 +1,13 @@
 # @shopify/theme-language-server-node
 
+## 3.0.3
+
+### Patch Changes
+
+- @shopify/theme-check-node@4.0.3
+- @shopify/theme-language-server-common@3.0.3
+- @shopify/theme-check-docs-updater@4.0.3
+
 ## 3.0.2
 
 ### Patch Changes
