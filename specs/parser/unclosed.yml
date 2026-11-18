@@ -1,4 +1,11 @@
 cases:
+  - name: should report an endcapture inside an unclosed HTML start tag
+    source: "{% capture a %}<svg h=\"1\"{% endcapture %}\nx"
+    parse: [html]
+    error:
+      message: Attempting to close LiquidTag 'endcapture' before HtmlElement 'svg' was closed
+      start: [0, 15]
+      text: '<svg h="1"'
   - name: should parse nested unclosed tags
     source: "{% for a in b %} <div> {% if true %}"
     parse: [liquid]

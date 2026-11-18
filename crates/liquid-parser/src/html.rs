@@ -97,6 +97,20 @@ impl<'a> Parser<'a> {
         self.consume(TT::HtmlTagOpen)?;
         let name = self.parse_compound_name()?;
         let attributes = self.parse_attributes()?;
+
+        if self.is_block_terminator() {
+            let tag_name = self.peek_tag_name().unwrap();
+            let open_end = self.tokens[self.p - 1].end;
+            return Err(error(
+                format!(
+                    "Attempting to close LiquidTag '{tag_name}' before HtmlElement '{}' was closed",
+                    display_name(plain_name(&name))
+                ),
+                open_start,
+                open_end,
+            ));
+        }
+
         if self.accept(TT::HtmlSelfClose).is_some() {
             let bsp = Span::new(open_start, self.tokens[self.p - 1].end);
             return Ok(Node::HtmlSelfClosingElement(HtmlSelfClosingElement {
@@ -408,19 +422,19 @@ impl<'a> Parser<'a> {
     }
 
     pub(crate) fn parse_branch_attributes(&mut self) -> PResult<Vec<Node<'a>>> {
-        self.parse_attribute_list(true)
+        self.parse_attribute_list()
     }
 
     fn parse_attributes(&mut self) -> PResult<Vec<Node<'a>>> {
         let saved = self.in_attribute_context;
         self.in_attribute_context = true;
-        let result = self.parse_attribute_list(false);
+        let result = self.parse_attribute_list();
         self.in_attribute_context = saved;
         result
     }
 
-    /// `parseAttributeList`, or `parseBranchAttributesImpl` when `in_branch`.
-    fn parse_attribute_list(&mut self, in_branch: bool) -> PResult<Vec<Node<'a>>> {
+    /// Parse HTML attributes, stopping before a Liquid block terminator.
+    fn parse_attribute_list(&mut self) -> PResult<Vec<Node<'a>>> {
         let mut attrs = Vec::new();
         while !self.is_at_end() {
             self.skip_space();
@@ -430,7 +444,7 @@ impl<'a> Parser<'a> {
             {
                 break;
             }
-            if in_branch && self.is_block_terminator() {
+            if self.is_block_terminator() {
                 break;
             }
             if self.check(TT::LiquidTagOpen, 0) {
