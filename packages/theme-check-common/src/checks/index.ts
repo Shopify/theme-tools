@@ -34,6 +34,7 @@ import { MissingTemplate } from './missing-template';
 import { OrphanedSnippet } from './orphaned-snippet';
 import { PaginationSize } from './pagination-size';
 import { ParserBlockingScript } from './parser-blocking-script';
+import { SchemaPresetsAndDefault } from './schema-presets-and-default';
 import { SchemaPresetsBlockOrder } from './schema-presets-block-order';
 import { SchemaPresetsStaticBlocks } from './schema-presets-static-blocks';
 import { RemoteAsset } from './remote-asset';
@@ -129,6 +130,7 @@ export const allChecks: (LiquidCheckDefinition | JSONCheckDefinition)[] = [
   OrphanedSnippet,
   PaginationSize,
   ParserBlockingScript,
+  SchemaPresetsAndDefault,
   SchemaPresetsBlockOrder,
   SchemaPresetsStaticBlocks,
   RemoteAsset,
