@@ -575,42 +575,80 @@ impl<'a> Parser<'a> {
 
     pub(crate) fn parse_compound_name(&mut self) -> PResult<Vec<Node<'a>>> {
         let mut segments: Vec<Node<'a>> = Vec::new();
+        // The kinds of the segments, recorded as they arrive, so that the checks for each glued
+        // tag do not read the whole name again.
+        let (mut has_text, mut has_output) = (false, false);
+        let mut lookahead = BodyLookahead::default();
         while !self.is_at_end() {
             if self.check(TT::LiquidVariableOutputOpen, 0) {
                 segments.push(Node::LiquidVariableOutput(
                     self.parse_liquid_variable_output()?,
                 ));
+                has_output = true;
                 continue;
             }
             if !self.in_attribute_context
                 && self.check(TT::LiquidTagOpen, 0)
-                && !segments
-                    .iter()
-                    .any(|s| matches!(s, Node::LiquidVariableOutput(_)))
-                && !self.liquid_tag_starts_attribute_list(&segments)
+                && !has_output
+                && !self.liquid_tag_starts_attribute_list(has_text, &mut lookahead)
             {
                 segments.push(self.parse_liquid_tag()?);
                 continue;
             }
             match self.consume_text_segment() {
-                Some(seg) => segments.push(seg),
+                Some(seg) => {
+                    segments.push(seg);
+                    has_text = true;
+                }
                 None => break,
             }
         }
         Ok(segments)
     }
 
-    fn liquid_tag_starts_attribute_list(&mut self, segments: &[Node<'a>]) -> bool {
-        if !segments.iter().any(|s| matches!(s, Node::TextNode(_))) {
+    fn liquid_tag_starts_attribute_list(
+        &mut self,
+        name_has_text: bool,
+        lookahead: &mut BodyLookahead,
+    ) -> bool {
+        if !name_has_text {
             return false;
         }
         match self.peek_tag_name() {
-            Some(name) if BLOCKS.contains(&name) => self.liquid_tag_body_starts_with_whitespace(),
+            Some(name) if BLOCKS.contains(&name) => {
+                self.liquid_tag_body_starts_with_whitespace(lookahead)
+            }
             _ => false,
         }
     }
 
-    fn liquid_tag_body_starts_with_whitespace(&mut self) -> bool {
+    /// Whether the body of the block tag at the cursor starts with rendered whitespace. The scan
+    /// reads past every Liquid tag to the first rendered token, so it can also read past the next
+    /// blocks glued to the name.
+    ///
+    /// After the scan reads a `LiquidTagOpen`, it has the state of a scan that starts there:
+    /// `in_tag` is true in both, and the next `LiquidTagClose` sets `trim_next` before any token
+    /// reads it. So a block that the last scan read past gets the same answer, and the answer is
+    /// reused.
+    /// Without the reuse, a name of many glued blocks with empty bodies scans to the end of its
+    /// HTML tag once for each block, which is quadratic in the length of the name.
+    fn liquid_tag_body_starts_with_whitespace(&self, last: &mut BodyLookahead) -> bool {
+        if let Some(answer) = last.answer_at(self.token_generation, self.p) {
+            return answer;
+        }
+        let (to, answer) = self.scan_body_start();
+        *last = BodyLookahead {
+            generation: self.token_generation,
+            from: self.p,
+            to,
+            answer,
+        };
+        answer
+    }
+
+    /// The index of the token that decides the scan, or the number of tokens when no token
+    /// does, and whether the body starts with rendered whitespace.
+    fn scan_body_start(&self) -> (usize, bool) {
         let source = self.source;
         let (mut in_tag, mut trim_next) = (false, false);
         for i in self.p.. {
@@ -641,7 +679,7 @@ impl<'a> Parser<'a> {
                     if text.chars().all(is_js_space) && left_trimming_next {
                         continue;
                     }
-                    return starts_with_js_space(text);
+                    return (i, starts_with_js_space(text));
                 }
                 TT::LiquidVariableOutputOpen
                 | TT::HtmlTagClose
@@ -649,12 +687,29 @@ impl<'a> Parser<'a> {
                 | TT::EndOfInput
                     if !in_tag =>
                 {
-                    return false
+                    return (i, false)
                 }
                 _ => {}
             }
         }
-        false
+        (self.tokens.len(), false)
+    }
+}
+
+/// The last body look-ahead of one compound name: the scan of the token vector of `generation`
+/// that started at index `from` decided `answer` at index `to`, or ran out of tokens there.
+#[derive(Default)]
+struct BodyLookahead {
+    generation: usize,
+    from: usize,
+    to: usize,
+    answer: bool,
+}
+
+impl BodyLookahead {
+    fn answer_at(&self, generation: usize, position: usize) -> Option<bool> {
+        (self.generation == generation && self.from <= position && position < self.to)
+            .then_some(self.answer)
     }
 }
 
@@ -731,5 +786,103 @@ mod tests {
         );
         assert_eq!(legacy_doctype("doctypehtml"), None);
         assert_eq!(legacy_doctype("doctype html5"), Some("5"));
+    }
+
+    fn element<'n, 'a>(node: &'n Node<'a>) -> (&'n [Node<'a>], &'n [Node<'a>]) {
+        match node {
+            Node::HtmlElement(e) => (&e.name, &e.attributes),
+            Node::HtmlSelfClosingElement(e) => (&e.name, &e.attributes),
+            node => panic!("{node:?}"),
+        }
+    }
+
+    fn is_text(node: &Node, value: &str) -> bool {
+        matches!(node, Node::TextNode(t) if t.value == value)
+    }
+
+    #[test]
+    fn parses_blocks_glued_to_a_name_in_linear_time() {
+        // A block glued to the text of a name looks ahead to the first rendered token of its body,
+        // to decide whether it opens the attribute list. An empty body renders nothing, so each
+        // look-ahead read to the end of the HTML tag, and the time grew with the square of the
+        // number of blocks. The check for an output segment also read the whole name again for
+        // each glued block, with a body or not. `plain` parses the same blocks as children.
+        let time = |source: &str| {
+            let start = std::time::Instant::now();
+            assert!(crate::parse(source).is_ok());
+            start.elapsed()
+        };
+        for (n, block) in [
+            (10_000, "{% if x %}{% endif %}"),
+            (50_000, "{% if x %}b{% endif %}"),
+        ] {
+            let blocks = block.repeat(n);
+            let plain = time(&format!("<div><a/>{blocks}{blocks}</div>"));
+            for glued in [
+                format!("<div><a{blocks}/></div>"),
+                format!("<a{blocks}>c</a{blocks}>"),
+            ] {
+                let took = time(&glued);
+                assert!(
+                    took < 5 * plain,
+                    "{took:?}, plain {plain:?}: {}",
+                    &glued[..40]
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn keeps_glued_empty_blocks_in_the_name() {
+        let blocks = "{% if x %}{% endif %}".repeat(3);
+        for source in [format!("<a{blocks}/>"), format!("<a{blocks}>c</a{blocks}>")] {
+            let doc = crate::parse(&source).unwrap();
+            let (name, attributes) = element(&doc.children[0]);
+            assert_eq!(name.len(), 4, "{source}");
+            assert!(is_text(&name[0], "a"), "{source}");
+            assert!(name[1..].iter().all(|n| matches!(n, Node::LiquidTag(_))));
+            assert!(attributes.is_empty(), "{source}");
+        }
+        // Whitespace after the blocks still opens the attribute list.
+        let source = format!("<a{blocks} />");
+        let doc = crate::parse(&source).unwrap();
+        let (name, attributes) = element(&doc.children[0]);
+        assert_eq!((name.len(), attributes.len()), (1, 3));
+    }
+
+    #[test]
+    fn decides_glued_blocks_after_an_empty_block_by_the_first_rendered_token() {
+        for (source, name_len, attributes_len) in [
+            // The look-ahead of the first block reads past the empty block to the body of the
+            // second, so both blocks get the answer of that body.
+            ("<a{% if x %}{% endif %}{% if y %} data-y{% endif %}>c</a>", 1, 2),
+            (
+                "<a{% if x %}{% endif %}{% if y %}-b{% endif %}>c</a{% if x %}{% endif %}{% if y %}-b{% endif %}>",
+                3,
+                0,
+            ),
+            (
+                "<a{% if x %}{% endif %}{% if y -%} b{% endif %}>c</a{% if x %}{% endif %}{% if y -%} b{% endif %}>",
+                3,
+                0,
+            ),
+            (
+                "<a{% if x %}{% endif %}{% if y %}{{ y }}{% endif %}>c</a{% if x %}{% endif %}{% if y %}{{ y }}{% endif %}>",
+                3,
+                0,
+            ),
+            // The body of the first block decides the first block only: the second block gets
+            // the answer of its own body.
+            (
+                "<a{% if x %}b{% endif %}{% if y %} c{% endif %}>d</a{% if x %}b{% endif %}>",
+                2,
+                1,
+            ),
+        ] {
+            let doc = crate::parse(source).unwrap();
+            let (name, attributes) = element(&doc.children[0]);
+            assert!(is_text(&name[0], "a"), "{source}");
+            assert_eq!((name.len(), attributes.len()), (name_len, attributes_len), "{source}");
+        }
     }
 }

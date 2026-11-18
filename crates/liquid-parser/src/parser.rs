@@ -40,6 +40,9 @@ pub(crate) type BlockEnd = (Span, bool, bool);
 pub(crate) struct Parser<'a> {
     pub source: &'a str,
     pub tokens: Vec<Token>,
+    /// Counts the replacements of `tokens`, so that a scan of one token vector is not read as a
+    /// scan of the next.
+    pub token_generation: usize,
     /// Where the tokenizer found raw bodies to end. Gone once tokens are re-tokenized.
     raw_body_ends: RawBodyEnds,
     pub p: usize,
@@ -369,6 +372,7 @@ pub(crate) fn parse_document(
     let mut p = Parser {
         source,
         tokens,
+        token_generation: 0,
         raw_body_ends,
         p: 0,
         parse_html,
@@ -466,6 +470,7 @@ impl<'a> Parser<'a> {
             None => tokens.extend(tokenize_slice(source, body_end, source.len(), false, true)),
         }
         self.tokens = tokens;
+        self.token_generation += 1;
         self.p = prefix;
     }
 
