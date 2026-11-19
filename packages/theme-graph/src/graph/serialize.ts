@@ -16,5 +16,6 @@ export function serializeThemeGraph(graph: ThemeGraph): SerializableGraph {
     rootUri: graph.rootUri,
     nodes,
     edges,
+    parseErrors: graph.parseErrors ?? [],
   };
 }

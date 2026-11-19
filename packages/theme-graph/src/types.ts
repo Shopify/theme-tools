@@ -48,6 +48,12 @@ export interface ThemeGraph {
   rootUri: UriString;
   entryPoints: ThemeModule[];
   modules: Record<UriString, ThemeModule>;
+  parseErrors?: GraphParseError[];
+}
+
+export interface GraphParseError {
+  uri: UriString;
+  message: string;
 }
 
 export type ThemeModule =
@@ -70,6 +76,7 @@ export interface SerializableGraph {
   rootUri: UriString;
   nodes: SerializableNode[];
   edges: SerializableEdge[];
+  parseErrors?: GraphParseError[];
 }
 
 export interface SerializableEdge {
