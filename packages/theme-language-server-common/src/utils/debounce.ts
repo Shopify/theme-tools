@@ -2,17 +2,14 @@ import { ArgumentTypes } from '@shopify/theme-check-common';
 
 export interface DebouncedFunction<F extends Function> {
   /**
-   * A function that will execute on the trailing edge of a timer with the
-   * last arguments it was called with (unless forced)
+   * A function that executes after the debounce interval. Calls made while a
+   * previous invocation is running are queued for a later invocation.
    */
   (...args: ArgumentTypes<F>): void;
 
   /**
-   * Debounced version of a function but making sure that it is called with
-   * this specific set of arguments.
-   *
-   * Subsequent calls will be ignored until the timer has expired and the
-   * function has executed.
+   * Mark this call as forced. Later calls may be queued, but do not replace
+   * this call while it is waiting for the timer.
    */
   force(...args: ArgumentTypes<F>): void;
 }
@@ -20,9 +17,8 @@ export interface DebouncedFunction<F extends Function> {
 /**
  * debounce(fn, ms)
  *
- * A debounced function only executes once after a timer has expired. Repeated
- * call to the debounced function before its timer has expired result in a delayed
- * execution of the function.
+ * Calls made before the timer expires are debounced. Calls made while the
+ * function is running are queued and run after the current invocation finishes.
  *
  * This is useful in cases where you have an "expensive" function that you only want
  * to execute after the user is idle for a little bit.
@@ -35,26 +31,63 @@ export interface DebouncedFunction<F extends Function> {
  *
  * @param fn a function that should be debounced
  * @param ms milliseconds after last function call for it to execute
- * @returns a function that will execute on the trailing edge of a timer with the last argument it was called with
+ * @param mergeArguments how to combine pending arguments. By default, the
+ * arguments from the latest call are used.
+ * @returns a debounced function
  */
-export function debounce<F extends Function>(fn: F, ms?: number): DebouncedFunction<F> {
+export function debounce<F extends Function>(
+  fn: F,
+  ms?: number,
+  mergeArguments: (previous: ArgumentTypes<F>, next: ArgumentTypes<F>) => ArgumentTypes<F> = (
+    _previous,
+    next,
+  ) => next,
+): DebouncedFunction<F> {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
-  let force = false; // force use a certain set of arguments in the next call
+  let pendingArgs: ArgumentTypes<F> | null = null;
+  let running = false;
+  let forcePending = false;
 
-  const debouncedFn = (...args: ArgumentTypes<F>): void => {
-    if (timeoutId !== null && force) return;
-    if (timeoutId !== null) clearTimeout(timeoutId);
-    timeoutId = setTimeout(async () => {
-      await Promise.resolve(fn(...args));
+  const schedule = () => {
+    if (running || timeoutId !== null || pendingArgs === null) return;
+
+    timeoutId = setTimeout(() => {
       timeoutId = null;
-      force = false;
+      const args = pendingArgs;
+      pendingArgs = null;
+      forcePending = false;
+      if (args === null) return;
+
+      running = true;
+      Promise.resolve()
+        .then(() => fn(...args))
+        .finally(() => {
+          running = false;
+          schedule();
+        });
     }, ms);
   };
 
-  debouncedFn.force = (...args: ArgumentTypes<F>): void => {
-    debouncedFn(...args);
-    force = true;
+  const enqueue = (args: ArgumentTypes<F>, force: boolean) => {
+    pendingArgs = pendingArgs === null ? args : mergeArguments(pendingArgs, args);
+
+    if (running) {
+      if (force) forcePending = true;
+      return;
+    }
+
+    if (timeoutId !== null) {
+      if (forcePending && !force) return;
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+
+    schedule();
+    if (force) forcePending = true;
   };
+
+  const debouncedFn = (...args: ArgumentTypes<F>): void => enqueue(args, false);
+  debouncedFn.force = (...args: ArgumentTypes<F>): void => enqueue(args, true);
 
   return debouncedFn;
 }

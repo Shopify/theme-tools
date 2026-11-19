@@ -191,6 +191,7 @@ export function startServer(
       themeGraphManager,
     }),
     100,
+    (previous, next): [string[]] => [[...new Set([...previous[0], ...next[0]])]],
   );
 
   const getTranslationsForURI: GetTranslationsForURI = async (uri) => {
