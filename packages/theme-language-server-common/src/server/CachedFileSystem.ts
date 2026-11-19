@@ -1,4 +1,4 @@
-import { AbstractFileSystem } from '@shopify/theme-check-common';
+import { AbstractFileSystem, path } from '@shopify/theme-check-common';
 
 export class CachedFileSystem implements AbstractFileSystem {
   readFile: Cached<AbstractFileSystem['readFile']>;
@@ -9,6 +9,19 @@ export class CachedFileSystem implements AbstractFileSystem {
     this.readFile = cachedByUri(fs.readFile.bind(fs));
     this.readDirectory = cachedByUri(fs.readDirectory.bind(fs));
     this.stat = cachedByUri(fs.stat.bind(fs));
+  }
+
+  invalidateDirectories(uri: string): void {
+    let directoryUri = path.dirname(uri);
+
+    while (true) {
+      this.readDirectory.invalidate(directoryUri);
+      this.stat.invalidate(directoryUri);
+
+      const parentUri = path.dirname(directoryUri);
+      if (parentUri === directoryUri) return;
+      directoryUri = parentUri;
+    }
   }
 }
 

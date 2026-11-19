@@ -626,9 +626,9 @@ export function startServer(
       // because that's the only thing that changed.
       documentManager.rename(oldUri, newUri);
 
-      // When a file is renamed, readDirectory to the parent folder is invalidated.
-      fs.readDirectory.invalidate(path.dirname(oldUri));
-      fs.readDirectory.invalidate(path.dirname(newUri));
+      // A rename can create or remove a directory, so invalidate every parent.
+      fs.invalidateDirectories(oldUri);
+      fs.invalidateDirectories(newUri);
 
       // When a file is renamed, readFile and stat for both the old and new URIs are invalidated.
       fs.readFile.invalidate(oldUri);
@@ -685,8 +685,8 @@ export function startServer(
 
       switch (change.type) {
         case FileChangeType.Created:
-          // A created file invalidates readDirectory, readFile and stat
-          fs.readDirectory.invalidate(path.dirname(change.uri));
+          // A created file can also create a directory, so invalidate every parent.
+          fs.invalidateDirectories(change.uri);
           fs.readFile.invalidate(change.uri);
           fs.stat.invalidate(change.uri);
           themeGraphManager.create(change.uri);
@@ -708,8 +708,8 @@ export function startServer(
           break;
 
         case FileChangeType.Deleted:
-          // A deleted file invalides readDirectory, readFile, and stat
-          fs.readDirectory.invalidate(path.dirname(change.uri));
+          // Deleting the last file in a directory can remove it, so invalidate every parent.
+          fs.invalidateDirectories(change.uri);
           fs.readFile.invalidate(change.uri);
           fs.stat.invalidate(change.uri);
           themeGraphManager.delete(change.uri);
