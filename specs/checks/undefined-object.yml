@@ -391,6 +391,24 @@ cases:
         message: "Unknown object 'recommendations' used."
         start: [0, 47]
         highlight: recommendations
+  - name: should allow section contextual objects in a snippet referenced by that section
+    mode: theme
+    files:
+      sections/predictive-search.liquid: "{% render 'predictive-search-results' %}"
+      snippets/predictive-search-results.liquid: "{% doc %} @param {string} x - x {% enddoc %}{{ predictive_search }}"
+    docset: default
+    references:
+      - source: sections/predictive-search.liquid
+        target: snippets/predictive-search-results.liquid
+  - name: should report section contextual objects in an unreferenced snippet
+    files:
+      snippets/my-snippet.liquid: "{% doc %} @param {string} x - x {% enddoc %}{{ predictive_search }}"
+    docset: default
+    offenses:
+      - file: snippets/my-snippet.liquid
+        message: "Unknown object 'predictive_search' used."
+        start: [0, 47]
+        highlight: predictive_search
   - name: should support contextual exceptions for checkout.liquid (1)
     files:
       layout/checkout.liquid: "{{ locale }}"
