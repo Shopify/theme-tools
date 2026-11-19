@@ -1,7 +1,9 @@
-import { afterEach, assert, beforeEach, describe, expect, it } from 'vitest';
-import { Config, SourceCodeType, getTheme, getThemeFilesPathPattern } from './index';
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest';
+import os from 'node:os';
+import path from 'node:path';
+import { Config, SourceCodeType, getTheme, getThemeFilesPathPattern, themeCheckRun } from './index';
 import { Workspace, makeTempWorkspace } from './test/test-helpers';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 describe('Unit: getTheme', () => {
   let workspace: Workspace;
@@ -47,5 +49,47 @@ describe('Unit: getThemeFilesPathPattern', () => {
     const normalizedGlob = getThemeFilesPathPattern(rootUri.toString());
 
     expect(normalizedGlob).to.equal(__dirname.replace(/\\/g, '/') + '/**/*.{liquid,json}');
+  });
+});
+
+describe('Integration: themeCheckRun', () => {
+  it('reports cross-file LiquidDoc errors with Windows separators and spaces in the root path', async () => {
+    const workspace = await makeTempWorkspace(
+      {
+        locales: {
+          'en.default.json': '{}',
+        },
+        sections: {
+          'main.liquid': "{% render 'card' %}",
+        },
+        snippets: {
+          'card.liquid': `
+          {% doc %}
+            @param {string} title - The card title
+          {% enddoc %}
+        `,
+        },
+      },
+      path.join(os.tmpdir(), 'theme check.XXXXX'),
+    );
+    const originalRelative = path.relative;
+
+    const relativeSpy = vi.spyOn(path, 'relative').mockImplementation((from, to) => {
+      const relative = originalRelative(from, to);
+      if (typeof from === 'string' && from.startsWith('file:')) {
+        return relative.replace(/\//g, '\\');
+      }
+      return relative;
+    });
+
+    try {
+      const { offenses } = await themeCheckRun(fileURLToPath(workspace.rootUri));
+      expect(
+        offenses.filter(({ check }) => check === 'MissingRenderSnippetArguments'),
+      ).toHaveLength(1);
+    } finally {
+      relativeSpy.mockRestore();
+      await workspace.clean();
+    }
   });
 });
