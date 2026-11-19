@@ -19,6 +19,25 @@ cases:
         message: Preconnecting to cdn.shopify.com is unnecessary and can lead to worse performance
         start: [0, 0]
         highlight: '<link rel="preconnect" href="https://cdn.shopify.com/" crossorigin/>'
+  - name: should report preconnect to cdn.shopify.com without a trailing slash
+    files:
+      file.liquid: |
+        <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+        <link rel="preconnect" href="//cdn.shopify.com">
+    offenses:
+      - file: file.liquid
+        message: Preconnecting to cdn.shopify.com is unnecessary and can lead to worse performance
+        start: [0, 0]
+        highlight: '<link rel="preconnect" href="https://cdn.shopify.com" crossorigin>'
+      - file: file.liquid
+        message: Preconnecting to cdn.shopify.com is unnecessary and can lead to worse performance
+        start: [1, 0]
+        highlight: '<link rel="preconnect" href="//cdn.shopify.com">'
+  - name: should not report preconnect to other hosts
+    files:
+      file.liquid: |
+        <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
+        <link rel="preconnect" href="https://example.com/cdn.shopify.com.html">
   - name: should not report other link types
     files:
       file.liquid: |
