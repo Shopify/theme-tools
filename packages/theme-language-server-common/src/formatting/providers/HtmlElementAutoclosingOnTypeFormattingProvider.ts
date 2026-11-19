@@ -103,7 +103,11 @@ function nodeAtCursor(textDocument: TextDocument, position: Position) {
       mode: 'tolerant',
     });
 
-    const [node, ancestors] = findCurrentNode(ast, textDocument.offsetAt(position));
+    const offset = textDocument.offsetAt(position);
+    const [node, ancestors] = findCurrentNode(ast, offset);
+    if (node.type === NodeTypes.HtmlElement && node.blockStartPosition.end === offset) {
+      return node;
+    }
     if (ancestors.at(-1)?.type === NodeTypes.HtmlElement) return ancestors.at(-1)!;
     if (node.type === NodeTypes.LiquidBranch) return ancestors.at(-1)!;
     return node;
