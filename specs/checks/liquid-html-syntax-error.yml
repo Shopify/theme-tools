@@ -1725,3 +1725,41 @@ cases:
         message: "Attempting to close LiquidTag 'if' before it was opened without a matching 'if'"
         start: [0, 5]
         highlight: "{% endif %}"
+  - name: should not report a false positive for a loop lookup with spaces in a quoted bracket key
+    files:
+      file.liquid: "{%- for value in product.options_by_name['hello world'].values -%}{{ value }}{%- endfor -%}"
+    docset: default
+  - name: does not remove closing brackets from nested quoted loop lookups
+    files:
+      file.liquid: "{% for item in products[settings['selected collection']] %}{{ item }}{% endfor %}"
+    docset: default
+  - name: keeps quoted lookup keys in named loop arguments
+    files:
+      file.liquid: "{% for item in products limit: settings['item count'] %}{{ item }}{% endfor %}"
+    docset:
+      tags:
+        - name: for
+          parameters:
+            - {name: limit, positional: false, description: '...', required: false, types: []}
+  - name: preserves dotted lookups inside loop brackets
+    files:
+      file.liquid: "{% for item in products[settings.collection] %}{{ item }}{% endfor %}"
+    docset: default
+  - name: does not remove closing brackets from nested loop lookups
+    files:
+      file.liquid: "{% for item in products[settings[collection]] %}{{ item }}{% endfor %}"
+    docset: default
+  - name: ignores closing brackets and commas inside quoted loop lookup keys
+    files:
+      file.liquid: "{% for item in products[settings['selected ], collection']] %}{{ item }}{% endfor %}"
+    docset: default
+  - name: removes invalid loop arguments without truncating a nested lookup
+    files:
+      file.liquid: "{% for item in products[settings['selected collection']] bogus %}{{ item }}{% endfor %}"
+    docset: default
+    offenses:
+      - file: file.liquid
+        message: 'Arguments must be provided in the format `for in <array> <positional arguments> <named arguments>`. Invalid/Unknown arguments: bogus'
+        start: [0, 57]
+        highlight: bogus
+        fix: "{% for item in products[settings['selected collection']]  %}{{ item }}{% endfor %}"
