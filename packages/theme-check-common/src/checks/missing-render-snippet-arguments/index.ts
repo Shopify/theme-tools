@@ -38,9 +38,12 @@ export const MissingRenderSnippetArguments: LiquidCheckDefinition = {
         if (!liquidDocParameters) return;
 
         const providedParams = new Map(node.args.map((arg) => [arg.name, arg]));
+        const alias =
+          node.alias?.value ??
+          (node.variable ? snippetName.slice(snippetName.lastIndexOf('/') + 1) : undefined);
 
         const missingRequiredParams = Array.from(liquidDocParameters.values()).filter(
-          (p) => p.required && !providedParams.has(p.name) && p.name !== node.alias?.value,
+          (p) => p.required && !providedParams.has(p.name) && p.name !== alias,
         );
 
         reportMissingArguments(context, node, missingRequiredParams, snippetName);

@@ -36,7 +36,11 @@ impl<'a> LiquidCheck<'a> for Check {
         let Some(params) = get_liquid_doc_params(cx, &format!("snippets/{name}.liquid")) else {
             return Ok(());
         };
-        let alias = node.alias.as_ref().map(|a| &*a.value);
+        let alias = node.alias.as_ref().map(|a| &*a.value).or_else(|| {
+            node.variable
+                .as_ref()
+                .map(|_| name.rsplit('/').next().unwrap_or(name))
+        });
         let missing = params.values().filter(|p| {
             p.required && !node.args.iter().any(|a| a.name == p.name) && Some(&*p.name) != alias
         });
