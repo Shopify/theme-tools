@@ -530,10 +530,7 @@ export class LiquidDocParser {
         // Text follows the blank run: consume the whole run now, so that the
         // look-ahead above runs once per run instead of once per newline.
         while (this.p < lookAhead) {
-          if (this.check(LiquidDocTokenType.Newline)) {
-            value += '\n';
-            endPos = this.peek().end;
-          }
+          if (this.check(LiquidDocTokenType.Newline)) value += '\n';
           this.advance();
         }
         continue;
