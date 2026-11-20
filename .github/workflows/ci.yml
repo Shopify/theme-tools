@@ -13,7 +13,8 @@ concurrency:
 
 jobs:
   code-quality:
-    runs-on: ubuntu-latest
+    # The maintenance branch's Playwright version does not support Ubuntu 26.04.
+    runs-on: ubuntu-24.04
     name: Code quality
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -45,7 +46,7 @@ jobs:
         run: pnpm format:check
 
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: E2E tests
     timeout-minutes: 15
     steps:
@@ -84,7 +85,7 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-24.04]
         node-version: [22, 24]
 
     name: Tests / OS ${{ matrix.os }} / NodeJS ${{ matrix.node-version }}
