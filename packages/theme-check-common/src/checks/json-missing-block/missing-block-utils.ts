@@ -2,6 +2,7 @@ import { Context, SourceCodeType, JSONNode } from '../../types';
 import { PropertyNode } from '../../jsonc/types';
 import { getLocEnd, getLocStart, nodeAtPath } from '../../json';
 import { doesFileExist } from '../../utils/file-utils';
+import { Section } from '../../types/schemas';
 
 export function isPropertyNode(node: unknown): node is PropertyNode {
   return typeof node === 'object' && node !== null;
@@ -35,30 +36,22 @@ async function validateBlockFileExistence(
   return await doesFileExist(context, blockPath);
 }
 
-async function getThemeBlocks(
+async function getAllowedBlocks(
   sectionType: string,
   currentPath: string[],
   context: Context<SourceCodeType.JSON>,
-): Promise<string[]> {
-  const themeBlocks: string[] = [];
-  if (!sectionType) return themeBlocks;
+): Promise<Section.Block[] | undefined> {
+  if (!sectionType) return;
 
   const schema = isNestedBlock(currentPath)
     ? await context.getBlockSchema?.(sectionType)
     : await context.getSectionSchema?.(sectionType);
-  if (!schema || schema instanceof Error) return themeBlocks;
+  if (!schema || schema instanceof Error) return;
 
   const { validSchema } = schema;
-  if (!validSchema || validSchema instanceof Error) return themeBlocks;
+  if (!validSchema || validSchema instanceof Error) return;
 
-  if (Array.isArray(validSchema.blocks)) {
-    validSchema.blocks.forEach((block) => {
-      if (!('name' in block) && block.type !== '@app') {
-        themeBlocks.push(block.type);
-      }
-    });
-  }
-  return themeBlocks;
+  return Array.isArray(validSchema.blocks) ? validSchema.blocks : [];
 }
 
 async function validateBlock(
@@ -70,7 +63,29 @@ async function validateBlock(
   offset: number,
   context: Context<SourceCodeType.JSON>,
 ) {
-  const themeBlocks = await getThemeBlocks(ancestorType, currentPath, context);
+  const allowedBlocks = await getAllowedBlocks(ancestorType, currentPath, context);
+  if (!allowedBlocks) return;
+
+  const themeBlocks = allowedBlocks
+    .filter((block) => !('name' in block))
+    .map((block) => block.type);
+  const location = isNestedBlock(currentPath) ? 'blocks' : 'sections';
+
+  // App blocks are remote references and require permission from their immediate host.
+  if (blockType.startsWith('shopify://apps/')) {
+    if (!themeBlocks.includes('@app')) {
+      reportWarning(
+        `Block type '${blockType}' is not allowed in '${location}/${ancestorType}.liquid'.`,
+        offset,
+        blockPath,
+        context,
+      );
+    }
+    return;
+  }
+
+  // Named section-local blocks do not need a file in blocks/.
+  if (allowedBlocks.some((block) => 'name' in block && block.type === blockType)) return;
   if (themeBlocks.length === 0) return;
 
   const exists = await validateBlockFileExistence(blockType, context);
@@ -94,7 +109,6 @@ async function validateBlock(
     ) {
       return;
     } else {
-      const location = isNestedBlock(currentPath) ? 'blocks' : 'sections';
       reportWarning(
         `Block type '${blockType}' is not allowed in '${location}/${ancestorType}.liquid'.`,
         offset,
