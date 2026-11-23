@@ -73,6 +73,8 @@ describe('DocumentLinksProvider', () => {
   it.each([
     "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000' %}{% endblock %}",
     "{% liquid\n block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000'\n endblock\n %}",
+    "{% block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', heading: 'Hi', items: [1, true] %}{% endblock %}",
+    "{% liquid\n block 'shopify://apps/example_app/blocks/example-block/00000000-0000-4000-8000-000000000000', heading: 'Hi', items: [1, true]\n endblock\n %}",
   ])('should skip app block links while preserving theme block links: %s', async (appBlock) => {
     rootUri = 'file:///path/to/project';
     uriString = `${rootUri}/templates/index.liquid`;
