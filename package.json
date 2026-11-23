@@ -13,6 +13,7 @@
   "workspaces": [
     "packages/lang-*",
     "packages/codemirror-language-client",
+    "packages/eslint-plugin-theme",
     "packages/liquid-html-parser",
     "packages/prettier-plugin-liquid",
     "packages/theme-check-*",

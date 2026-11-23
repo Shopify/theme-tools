@@ -3,6 +3,7 @@
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "fixed": [
+    ["@shopify/eslint-plugin-theme"],
     ["@shopify/prettier-plugin-liquid"],
     ["@shopify/theme-language-server-*"],
     ["@shopify/theme-check-*"],
