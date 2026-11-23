@@ -93,3 +93,33 @@ cases:
         </html>
     config:
       AssetSizeCSS: { thresholdInBytes: 1 }
+  - name: should not report the size of a remote file at a local or private address
+    files:
+      templates/index.liquid: |
+        <html>
+          <head>
+            <link href="http://127.0.0.1/loopback.css" rel="stylesheet">
+            <link href="http://localhost:8080/localhost.css" rel="stylesheet">
+            <link href="http://169.254.169.254/latest/metadata.css" rel="stylesheet">
+            <link href="http://[::1]/ipv6-loopback.css" rel="stylesheet">
+            <link href="http://0x7f000001/hex-loopback.css" rel="stylesheet">
+            <link href="https://user:password@cdn.example.com/credentials.css" rel="stylesheet">
+            {{ "http://10.0.0.1/private.css" | stylesheet_tag }}
+            <link href="https://cdn.example.com/public.css" rel="stylesheet">
+          </head>
+        </html>
+      http://127.0.0.1/loopback.css: "* { color: green; }"
+      http://localhost:8080/localhost.css: "* { color: green; }"
+      http://169.254.169.254/latest/metadata.css: "* { color: green; }"
+      http://[::1]/ipv6-loopback.css: "* { color: green; }"
+      http://0x7f000001/hex-loopback.css: "* { color: green; }"
+      https://user:password@cdn.example.com/credentials.css: "* { color: green; }"
+      http://10.0.0.1/private.css: "* { color: green; }"
+      https://cdn.example.com/public.css: "* { color: green; }"
+    config:
+      AssetSizeCSS: { thresholdInBytes: 1 }
+    offenses:
+      - file: templates/index.liquid
+        message: The CSS file size exceeds the threshold of 1 bytes
+        start: [9, 16]
+        highlight: "https://cdn.example.com/public.css"

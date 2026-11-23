@@ -101,3 +101,33 @@ cases:
         </html>
     config:
       AssetSizeJavaScript: { thresholdInBytes: 2 }
+  - name: should not report the size of a remote file at a local or private address
+    files:
+      templates/index.liquid: |
+        <html>
+          <head>
+            <script src="http://127.0.0.1/loopback.js" defer></script>
+            <script src="http://localhost:8080/localhost.js" defer></script>
+            <script src="http://169.254.169.254/latest/metadata.js" defer></script>
+            <script src="http://[::1]/ipv6-loopback.js" defer></script>
+            <script src="http://0x7f000001/hex-loopback.js" defer></script>
+            <script src="https://user:password@cdn.example.com/credentials.js" defer></script>
+            {{ "http://10.0.0.1/private.js" | script_tag }}
+            <script src="https://cdn.example.com/public.js" defer></script>
+          </head>
+        </html>
+      http://127.0.0.1/loopback.js: "console.log('hello world');"
+      http://localhost:8080/localhost.js: "console.log('hello world');"
+      http://169.254.169.254/latest/metadata.js: "console.log('hello world');"
+      http://[::1]/ipv6-loopback.js: "console.log('hello world');"
+      http://0x7f000001/hex-loopback.js: "console.log('hello world');"
+      https://user:password@cdn.example.com/credentials.js: "console.log('hello world');"
+      http://10.0.0.1/private.js: "console.log('hello world');"
+      https://cdn.example.com/public.js: "console.log('hello world');"
+    config:
+      AssetSizeJavaScript: { thresholdInBytes: 1 }
+    offenses:
+      - file: templates/index.liquid
+        message: JavaScript on every page load exceeds compressed size threshold (1 Bytes), consider using the import on interaction pattern.
+        start: [9, 17]
+        highlight: "https://cdn.example.com/public.js"

@@ -1,6 +1,7 @@
 import { Context, SourceCodeType, Schema, RelativePath } from '../types';
 import { fetch } from 'cross-fetch';
 import * as path from '../path';
+import { toRemoteAssetUrl } from './remote-asset-url';
 
 const PATH_SEPARATOR = /[/\\]/;
 
@@ -64,9 +65,27 @@ export async function doesFileExceedThreshold<T extends SourceCodeType, S extend
   return [fileSize > thresholdInBytes, fileSize];
 }
 
-export async function getFileSize(url: string): Promise<number> {
+/** Options for `getFileSize`. */
+export interface GetFileSizeOptions {
+  /**
+   * In Node, the `http.Agent` for the request, as node-fetch takes it: cross-fetch uses node-fetch
+   * in Node, and the platform's `fetch`, which has no such option, elsewhere.
+   */
+  agent?: (url: { protocol: string | null }) => unknown;
+}
+
+/**
+ * The `Content-Length` of a `HEAD` request to `url`, or 0 when the request fails or is refused.
+ *
+ * It requests only what `toRemoteAssetUrl` allows, and does not follow redirects: a redirect could
+ * lead anywhere, so its size is 0.
+ */
+export async function getFileSize(url: string, options: GetFileSizeOptions = {}): Promise<number> {
+  const target = toRemoteAssetUrl(url);
+  if (target === undefined) return 0;
+  const init: RequestInit & GetFileSizeOptions = { ...options, method: 'HEAD', redirect: 'manual' };
   try {
-    const response = await fetch(url, { method: 'HEAD' });
+    const response = await fetch(target, init);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -80,10 +99,12 @@ export async function getFileSize(url: string): Promise<number> {
   }
 }
 
+/** A check asks for the size of a remote asset only at a URL that `toRemoteAssetUrl` allows. */
 export async function hasRemoteAssetSizeExceededThreshold<
   T extends SourceCodeType,
   S extends Schema,
 >(context: Context<T, S>, url: string, thresholdInBytes: number) {
+  if (toRemoteAssetUrl(url) === undefined) return false;
   const fileSize = await context.remoteFileSize(url);
   return fileSize > thresholdInBytes;
 }
