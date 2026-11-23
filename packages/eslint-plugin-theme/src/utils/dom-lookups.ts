@@ -1,37 +1,32 @@
 import type { CallExpression, Expression, MemberExpression, Super } from 'estree';
 
-export type OutsideLookupKind = 'document' | 'closest';
+export type OutsideLookupKind = 'document-single' | 'document-snapshot' | 'closest';
 
 export interface OutsideLookupOptions {
   checkClosest?: boolean;
 }
 
-const DOCUMENT_LOOKUP_METHODS = new Set([
-  'querySelector',
-  'querySelectorAll',
-  'getElementById',
+const SINGLE_ELEMENT_DOCUMENT_METHODS = new Set(['querySelector', 'getElementById']);
+
+const SNAPSHOT_DOCUMENT_METHODS = new Set(['querySelectorAll']);
+
+const LIVE_COLLECTION_METHODS = new Set([
   'getElementsByClassName',
   'getElementsByTagName',
   'getElementsByTagNameNS',
   'getElementsByName',
 ]);
 
-const ELEMENT_LOOKUP_METHODS = new Set([
-  'querySelector',
-  'querySelectorAll',
-  'getElementsByClassName',
-  'getElementsByTagName',
-  'getElementsByTagNameNS',
-  'closest',
-]);
-
+const CHAINABLE_SINGLE_METHODS = new Set(['querySelector', 'closest']);
+const CHAINABLE_SNAPSHOT_METHODS = new Set(['querySelectorAll']);
 const DOCUMENT_ROOT_ELEMENTS = new Set(['body', 'documentElement', 'head']);
+const PAGE_STATE_ELEMENTS = new Set(['body', 'documentElement']);
 
-function isGlobalObject(node: Expression | Super): boolean {
+export function isGlobalObject(node: Expression | Super): boolean {
   return node.type === 'Identifier' && (node.name === 'window' || node.name === 'globalThis');
 }
 
-function unwrapChain(node: Expression): Expression {
+export function unwrapChain(node: Expression): Expression {
   return node.type === 'ChainExpression' ? node.expression : node;
 }
 
@@ -54,7 +49,7 @@ export function isDocumentObject(node: Expression | Super): boolean {
   return false;
 }
 
-function isDocumentRootElement(node: Expression | Super): boolean {
+export function isDocumentRootElement(node: Expression | Super): boolean {
   if (node.type === 'ChainExpression') {
     return isDocumentRootElement(node.expression);
   }
@@ -65,6 +60,26 @@ function isDocumentRootElement(node: Expression | Super): boolean {
     DOCUMENT_ROOT_ELEMENTS.has(node.property.name) &&
     isDocumentObject(node.object)
   );
+}
+
+export function isPageStateElement(node: Expression | Super): boolean {
+  if (node.type === 'ChainExpression') {
+    return isPageStateElement(node.expression);
+  }
+  return (
+    node.type === 'MemberExpression' &&
+    !node.computed &&
+    node.property.type === 'Identifier' &&
+    PAGE_STATE_ELEMENTS.has(node.property.name) &&
+    isDocumentObject(node.object)
+  );
+}
+
+export function isGlobalEventTarget(node: Expression | Super): boolean {
+  if (node.type === 'ChainExpression') {
+    return isGlobalEventTarget(node.expression);
+  }
+  return isGlobalObject(node) || isDocumentObject(node) || isDocumentRootElement(node);
 }
 
 function isArrayFromCall(node: CallExpression): boolean {
@@ -87,24 +102,16 @@ function isCollectionIndexing(node: MemberExpression): boolean {
   return true;
 }
 
-function mergeLookupKinds(
-  a: OutsideLookupKind | null,
-  b: OutsideLookupKind | null,
-): OutsideLookupKind | null {
-  if (a === 'document' || b === 'document') return 'document';
+type InternalKind = OutsideLookupKind | 'document-live';
+
+function mergeKinds(a: InternalKind | null, b: InternalKind | null): InternalKind | null {
+  if (a === 'document-single' || b === 'document-single') return 'document-single';
+  if (a === 'document-snapshot' || b === 'document-snapshot') return 'document-snapshot';
+  if (a === 'closest' || b === 'closest') return 'closest';
   return a ?? b;
 }
 
-/**
- * Classifies whether an expression produces a DOM element (or collection of elements)
- * obtained from a document-wide lookup or `this.closest(...)`.
- *
- * Returns `'document'`, `'closest'`, or `null`.
- */
-export function classifyOutsideLookup(
-  expr: Expression,
-  options: OutsideLookupOptions = {},
-): OutsideLookupKind | null {
+function classifyInternal(expr: Expression, options: OutsideLookupOptions): InternalKind | null {
   const node = unwrapChain(expr);
 
   switch (node.type) {
@@ -112,7 +119,11 @@ export function classifyOutsideLookup(
       if (isArrayFromCall(node)) {
         const firstArg = node.arguments[0];
         if (firstArg && firstArg.type !== 'SpreadElement') {
-          return classifyOutsideLookup(firstArg, options);
+          const inner = classifyInternal(firstArg, options);
+          if (inner === 'document-live' || inner === 'document-snapshot') {
+            return 'document-snapshot';
+          }
+          return inner;
         }
         return null;
       }
@@ -125,12 +136,16 @@ export function classifyOutsideLookup(
         const methodName = node.callee.property.name;
         const receiver = node.callee.object;
 
-        if (DOCUMENT_LOOKUP_METHODS.has(methodName) && isDocumentObject(receiver)) {
-          return 'document';
+        if (isDocumentObject(receiver)) {
+          if (SINGLE_ELEMENT_DOCUMENT_METHODS.has(methodName)) return 'document-single';
+          if (SNAPSHOT_DOCUMENT_METHODS.has(methodName)) return 'document-snapshot';
+          if (LIVE_COLLECTION_METHODS.has(methodName)) return 'document-live';
         }
 
-        if (ELEMENT_LOOKUP_METHODS.has(methodName) && isDocumentRootElement(receiver)) {
-          return 'document';
+        if (isDocumentRootElement(receiver)) {
+          if (CHAINABLE_SINGLE_METHODS.has(methodName)) return 'document-single';
+          if (CHAINABLE_SNAPSHOT_METHODS.has(methodName)) return 'document-snapshot';
+          if (LIVE_COLLECTION_METHODS.has(methodName)) return 'document-live';
         }
 
         if (
@@ -141,11 +156,22 @@ export function classifyOutsideLookup(
           return 'closest';
         }
 
-        if (
-          receiver.type !== 'Super' &&
-          (ELEMENT_LOOKUP_METHODS.has(methodName) || methodName === 'item')
-        ) {
-          return classifyOutsideLookup(receiver, options);
+        if (receiver.type !== 'Super') {
+          if (CHAINABLE_SINGLE_METHODS.has(methodName) || methodName === 'item') {
+            const inner = classifyInternal(receiver, options);
+            if (!inner) return null;
+            return inner === 'closest' ? 'closest' : 'document-single';
+          }
+          if (CHAINABLE_SNAPSHOT_METHODS.has(methodName)) {
+            const inner = classifyInternal(receiver, options);
+            if (!inner) return null;
+            return inner === 'closest' ? 'closest' : 'document-snapshot';
+          }
+          if (LIVE_COLLECTION_METHODS.has(methodName)) {
+            const inner = classifyInternal(receiver, options);
+            if (!inner) return null;
+            return 'document-live';
+          }
         }
       }
 
@@ -154,29 +180,34 @@ export function classifyOutsideLookup(
 
     case 'LogicalExpression': {
       if (node.operator === '||' || node.operator === '??') {
-        return mergeLookupKinds(
-          classifyOutsideLookup(node.left, options),
-          classifyOutsideLookup(node.right, options),
+        return mergeKinds(
+          classifyInternal(node.left, options),
+          classifyInternal(node.right, options),
         );
       }
       if (node.operator === '&&') {
-        return classifyOutsideLookup(node.right, options);
+        return classifyInternal(node.right, options);
       }
       return null;
     }
 
     case 'ConditionalExpression': {
-      return mergeLookupKinds(
-        classifyOutsideLookup(node.consequent, options),
-        classifyOutsideLookup(node.alternate, options),
+      return mergeKinds(
+        classifyInternal(node.consequent, options),
+        classifyInternal(node.alternate, options),
       );
     }
 
     case 'ArrayExpression': {
-      let kind: OutsideLookupKind | null = null;
+      let kind: InternalKind | null = null;
       for (const element of node.elements) {
         if (element?.type === 'SpreadElement') {
-          kind = mergeLookupKinds(kind, classifyOutsideLookup(element.argument, options));
+          const inner = classifyInternal(element.argument, options);
+          if (inner === 'document-live' || inner === 'document-snapshot') {
+            kind = mergeKinds(kind, 'document-snapshot');
+          } else {
+            kind = mergeKinds(kind, inner);
+          }
         }
       }
       return kind;
@@ -184,7 +215,11 @@ export function classifyOutsideLookup(
 
     case 'MemberExpression': {
       if (node.object.type !== 'Super' && isCollectionIndexing(node)) {
-        return classifyOutsideLookup(node.object, options);
+        const inner = classifyInternal(node.object, options);
+        if (inner === 'document-live' || inner === 'document-snapshot') {
+          return 'document-single';
+        }
+        return inner;
       }
       return null;
     }
@@ -192,4 +227,20 @@ export function classifyOutsideLookup(
     default:
       return null;
   }
+}
+
+/**
+ * Classifies whether an expression produces a DOM element or static snapshot list
+ * obtained from a document-wide lookup or `this.closest(...)`.
+ *
+ * Live collections (`getElementsByClassName`, `getElementsByTagName`, etc.) stored
+ * directly return `null` because the browser keeps them up to date automatically;
+ * indexing (`[0]`) or snapshotting (`[...]` / `Array.from`) them is still flagged.
+ */
+export function classifyOutsideLookup(
+  expr: Expression,
+  options: OutsideLookupOptions = {},
+): OutsideLookupKind | null {
+  const kind = classifyInternal(expr, options);
+  return kind === 'document-live' ? null : kind;
 }

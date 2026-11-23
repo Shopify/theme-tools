@@ -1,0 +1,142 @@
+import { describe, it } from 'vitest';
+import { RuleTester } from 'eslint';
+import rule from './require-page-state-cleanup';
+
+RuleTester.describe = describe;
+RuleTester.it = it;
+RuleTester.itOnly = it.only;
+
+const ruleTester = new RuleTester({
+  languageOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+});
+
+ruleTester.run('require-page-state-cleanup', rule, {
+  valid: [
+    {
+      name: 'body class cleaned up via close() called from disconnectedCallback',
+      code: `
+        class CartDrawer extends HTMLElement {
+          open() {
+            document.body.classList.add('overflow-hidden');
+          }
+          close() {
+            document.body.classList.remove('overflow-hidden');
+          }
+          disconnectedCallback() {
+            this.close();
+          }
+        }
+      `,
+    },
+    {
+      name: 'CSS custom properties skipped by default',
+      code: `
+        class HeaderMenu extends HTMLElement {
+          onToggle() {
+            document.documentElement.style.setProperty('--header-height', '80px');
+          }
+        }
+      `,
+    },
+    {
+      name: 'clearing style to empty string is not flagged',
+      code: `
+        class CartDrawer extends HTMLElement {
+          close() {
+            document.body.style.overflow = '';
+          }
+        }
+      `,
+    },
+  ],
+  invalid: [
+    {
+      name: 'document.body.classList.add without disconnectedCallback cleanup',
+      code: `class CartDrawer extends HTMLElement {
+  open() {
+    document.body.classList.add('overflow-hidden');
+  }
+  close() {
+    document.body.classList.remove('overflow-hidden');
+  }
+}`,
+      errors: [
+        {
+          messageId: 'uncleanedPageState',
+          suggestions: [
+            {
+              messageId: 'suggestCleanup',
+              output: `class CartDrawer extends HTMLElement {
+  open() {
+    document.body.classList.add('overflow-hidden');
+  }
+  close() {
+    document.body.classList.remove('overflow-hidden');
+  }
+
+  disconnectedCallback() {
+    document.body.classList.remove('overflow-hidden');
+  }
+}`,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'document.body.style.overflow assignment without cleanup',
+      code: `class ModalDialog extends HTMLElement {
+  open() {
+    document.body.style.overflow = 'hidden';
+  }
+}`,
+      errors: [
+        {
+          messageId: 'uncleanedPageState',
+          suggestions: [
+            {
+              messageId: 'suggestCleanup',
+              output: `class ModalDialog extends HTMLElement {
+  open() {
+    document.body.style.overflow = 'hidden';
+  }
+
+  disconnectedCallback() {
+    document.body.style.overflow = '';
+  }
+}`,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'CSS custom property flagged when checkCustomProperties is enabled',
+      options: [{ checkCustomProperties: true }],
+      code: `class HeaderMenu extends HTMLElement {
+  onToggle() {
+    document.documentElement.style.setProperty('--header-height', '80px');
+  }
+}`,
+      errors: [
+        {
+          messageId: 'uncleanedPageState',
+          suggestions: [
+            {
+              messageId: 'suggestCleanup',
+              output: `class HeaderMenu extends HTMLElement {
+  onToggle() {
+    document.documentElement.style.setProperty('--header-height', '80px');
+  }
+
+  disconnectedCallback() {
+    document.documentElement.style.removeProperty('--header-height');
+  }
+}`,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+});

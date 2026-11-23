@@ -43,7 +43,7 @@ function getSuperClassName(superClass: Expression | null | undefined): string | 
 
 /**
  * Extracts candidate base-class names from a `superClass` expression, including
- * mixin calls such as `createViewEventElement(HTMLElement)`.
+ * mixin calls such as `withMixin(HTMLElement)`.
  */
 function getCandidateSuperClassNames(superClass: Expression | null | undefined): string[] {
   if (!superClass) return [];

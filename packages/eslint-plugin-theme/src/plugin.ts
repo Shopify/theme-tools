@@ -28,7 +28,12 @@ plugin.configs.recommended = {
     theme: plugin,
   },
   rules: {
+    'theme/no-stale-element-after-await': 'warn',
     'theme/no-stored-outside-element': 'warn',
+    'theme/require-guarded-custom-element-define': 'warn',
+    'theme/require-listener-cleanup': 'warn',
+    'theme/require-page-state-cleanup': 'warn',
+    'theme/require-teardown': 'warn',
   },
 };
 

@@ -129,23 +129,16 @@ ruleTester.run('no-stored-outside-element', rule, {
         }
       `,
     },
-    // Cached collection checking first item or every item isConnected
+    // Live HTMLCollection / NodeList stored directly updates automatically
     {
-      name: 'cached collection checking element isConnected',
+      name: 'live collections (getElementsBy*) stored directly are not flagged',
       code: `
-        class SearchBar extends HTMLElement {
-          get inputs() {
-            if (!this._inputs?.[0]?.isConnected) {
-              this._inputs = document.querySelectorAll('input[type="search"]');
-            }
-            return this._inputs;
-          }
-
-          get items() {
-            if (!this._items?.every((el) => el.isConnected)) {
-              this._items = Array.from(document.querySelectorAll('.item'));
-            }
-            return this._items;
+        class CardList extends HTMLElement {
+          constructor() {
+            super();
+            this.cards = document.getElementsByClassName('card');
+            this.sections = document.getElementsByTagName('section');
+            this.named = document.getElementsByName('id');
           }
         }
       `,
@@ -543,7 +536,7 @@ customElements.define('header-menu', HeaderMenu);`,
 customElements.define('predictive-search', PredictiveSearch);`,
       errors: [
         {
-          messageId: 'storedOutsideElement',
+          messageId: 'storedOutsideList',
           data: {
             target: 'this.allInstances',
             element: '<predictive-search>',
@@ -571,7 +564,7 @@ customElements.define('predictive-search', PredictiveSearch);`,
     // Mixin base class wrapping HTMLElement
     {
       name: 'mixin base class wrapping HTMLElement',
-      code: `class CartItems extends createViewEventElement(HTMLElement) {
+      code: `class CartItems extends withMixin(HTMLElement) {
   constructor() {
     super();
     this.status = document.getElementById('cart-status');
@@ -589,7 +582,7 @@ customElements.define('predictive-search', PredictiveSearch);`,
             {
               messageId: 'replaceWithGetter',
               data: { target: 'this.status' },
-              output: `class CartItems extends createViewEventElement(HTMLElement) {
+              output: `class CartItems extends withMixin(HTMLElement) {
   constructor() {
     super();
   }
@@ -638,17 +631,17 @@ customElements.define('predictive-search', PredictiveSearch);`,
         },
       ],
     },
-    // All document lookup variants, ??, ternary, optional chaining, getElementsBy*, Array.from, spread, index
+    // Lookup variants: ??, ternary, optional chaining, spread/Array.from snapshot, indexed live collection
     {
-      name: 'lookup expression variants (??, ternary, optional chaining, getElementsBy*, spread, Array.from, index)',
+      name: 'lookup expression variants (??, ternary, optional chaining, snapshots, indexed live collections)',
       code: `class MyWidget extends HTMLElement {
   setup() {
     this.a = document.querySelector('a') ?? document.querySelector('b');
     this.b = this.useDrawer ? document.querySelector('cart-drawer') : this.querySelector('.local');
     this.c = document.querySelector('header')?.querySelector('.nav');
-    this.d = document.getElementsByClassName('card');
-    this.e = document.getElementsByTagName('section');
-    this.f = document.getElementsByName('id');
+    this.d = [...document.getElementsByClassName('card')];
+    this.e = Array.from(document.getElementsByTagName('section'));
+    this.f = document.getElementsByClassName('card')[0];
     this.g = [...document.querySelectorAll('cart-item')];
     this.h = Array.from(document.querySelectorAll('cart-item'));
     this.i = document.querySelectorAll('.pswp')[0];
@@ -670,11 +663,11 @@ customElements.define('predictive-search', PredictiveSearch);`,
           data: { target: 'this.c', element: 'MyWidget', getterName: 'c' },
         },
         {
-          messageId: 'storedOutsideElement',
+          messageId: 'storedOutsideList',
           data: { target: 'this.d', element: 'MyWidget', getterName: 'd' },
         },
         {
-          messageId: 'storedOutsideElement',
+          messageId: 'storedOutsideList',
           data: { target: 'this.e', element: 'MyWidget', getterName: 'e' },
         },
         {
@@ -682,11 +675,11 @@ customElements.define('predictive-search', PredictiveSearch);`,
           data: { target: 'this.f', element: 'MyWidget', getterName: 'f' },
         },
         {
-          messageId: 'storedOutsideElement',
+          messageId: 'storedOutsideList',
           data: { target: 'this.g', element: 'MyWidget', getterName: 'g' },
         },
         {
-          messageId: 'storedOutsideElement',
+          messageId: 'storedOutsideList',
           data: { target: 'this.h', element: 'MyWidget', getterName: 'h' },
         },
         {
@@ -700,6 +693,25 @@ customElements.define('predictive-search', PredictiveSearch);`,
         {
           messageId: 'storedOutsideElement',
           data: { target: 'this.k', element: 'MyWidget', getterName: 'k' },
+        },
+      ],
+    },
+    // Static snapshot list cannot rely on isConnected caching (misses newly added elements)
+    {
+      name: 'querySelectorAll snapshot with isConnected guard is still flagged',
+      code: `class SearchBar extends HTMLElement {
+  get inputs() {
+    if (!this._inputs?.[0]?.isConnected) {
+      this._inputs = document.querySelectorAll('input[type="search"]');
+    }
+    return this._inputs;
+  }
+}`,
+      errors: [
+        {
+          messageId: 'storedOutsideList',
+          data: { target: 'this._inputs', element: 'SearchBar', getterName: '_inputs' },
+          suggestions: [],
         },
       ],
     },

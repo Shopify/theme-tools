@@ -145,10 +145,6 @@ function matchesThisField(
   if (expr.type === 'MemberExpression') {
     const target = getThisFieldTarget(expr, sourceCode);
     if (target && target.key === fieldKey) return true;
-    // Allow indexed element access on a cached collection: `this._items?.[0]`
-    if (expr.computed && expr.object.type !== 'Super') {
-      return matchesThisField(expr.object, fieldKey, sourceCode);
-    }
   }
   return false;
 }
@@ -162,7 +158,7 @@ function exprChecksConnectedness(
     return exprChecksConnectedness(node.expression, fieldKey, sourceCode);
   }
 
-  // `this._cart?.isConnected` or `this._cart.isConnected` or `this._items?.[0]?.isConnected`
+  // `this._cart?.isConnected` or `this._cart.isConnected`
   if (
     node.type === 'MemberExpression' &&
     !node.computed &&
@@ -187,20 +183,6 @@ function exprChecksConnectedness(
     return true;
   }
 
-  // `this._items?.every((el) => el.isConnected)` or `.some(...)`
-  if (
-    node.type === 'CallExpression' &&
-    node.callee.type === 'MemberExpression' &&
-    !node.callee.computed &&
-    node.callee.property.type === 'Identifier' &&
-    (node.callee.property.name === 'every' || node.callee.property.name === 'some') &&
-    matchesThisField(node.callee.object, fieldKey, sourceCode) &&
-    node.arguments.length >= 1 &&
-    containsIdentifierIsConnected(node.arguments[0])
-  ) {
-    return true;
-  }
-
   if (node.type === 'UnaryExpression') {
     return exprChecksConnectedness(node.argument, fieldKey, sourceCode);
   }
@@ -220,31 +202,6 @@ function exprChecksConnectedness(
     );
   }
 
-  return false;
-}
-
-function containsIdentifierIsConnected(node: Node): boolean {
-  if (
-    node.type === 'MemberExpression' &&
-    !node.computed &&
-    node.property.type === 'Identifier' &&
-    node.property.name === 'isConnected'
-  ) {
-    return true;
-  }
-  for (const key of Object.keys(node)) {
-    if (key === 'parent' || key === 'loc' || key === 'range') continue;
-    const value = (node as unknown as Record<string, unknown>)[key];
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        if (item && typeof item === 'object' && typeof (item as Node).type === 'string') {
-          if (containsIdentifierIsConnected(item as Node)) return true;
-        }
-      }
-    } else if (value && typeof value === 'object' && typeof (value as Node).type === 'string') {
-      if (containsIdentifierIsConnected(value as Node)) return true;
-    }
-  }
   return false;
 }
 
@@ -630,6 +587,12 @@ const rule: Rule.RuleModule = {
         '  get {{getterName}}() { return document.querySelector(...); }\n' +
         "If it's inside this element, use this.querySelector(...) instead. " +
         'If this runs on every frame (scroll, pointermove), cache it and check isConnected before use.',
+      storedOutsideList:
+        "'{{target}}' stores a static snapshot from a document-wide lookup, which may include elements outside {{element}}. " +
+        'Elements can be replaced or added while this one stays on the page, and checking isConnected on a snapshot misses newly added elements. ' +
+        'Look them up when you use them:\n' +
+        '  get {{getterName}}() { return document.querySelectorAll(...); }\n' +
+        "If they're inside this element, use this.querySelectorAll(...) instead.",
       storedAncestorElement:
         "'{{target}}' stores the result of this.closest(...), which may be an ancestor outside {{element}}. " +
         'An outside element can be replaced while this one stays on the page. ' +
@@ -666,9 +629,15 @@ const rule: Rule.RuleModule = {
       customElement: CustomElementInfo,
       suggest?: Rule.SuggestionReportDescriptor[],
     ): void {
+      const messageId =
+        lookupKind === 'closest'
+          ? 'storedAncestorElement'
+          : lookupKind === 'document-snapshot'
+            ? 'storedOutsideList'
+            : 'storedOutsideElement';
       context.report({
         node: reportNode,
-        messageId: lookupKind === 'closest' ? 'storedAncestorElement' : 'storedOutsideElement',
+        messageId,
         data: {
           target: target.displayTarget,
           element: customElement.elementLabel,
@@ -773,7 +742,10 @@ const rule: Rule.RuleModule = {
         const lookupKind = classifyOutsideLookup(node.right, { checkClosest });
         if (!lookupKind) return;
 
+        // Static snapshot lists (e.g. querySelectorAll) cannot be safely guarded by isConnected
+        // because newly added elements are missed even when existing ones stay connected.
         if (
+          lookupKind !== 'document-snapshot' &&
           isGuardedByIsConnected(
             node as AssignmentExpression & { parent?: NodeWithParent },
             target.key,
