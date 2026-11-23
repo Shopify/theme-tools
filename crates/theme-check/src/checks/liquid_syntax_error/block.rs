@@ -66,7 +66,7 @@ pub fn block_tag_syntax_error(node: &LiquidTag, source: &str) -> Option<Problem>
             .find(|a| a.name != "block.name" && !is_fixed_app_setting(&a.value))
         {
             return syntax_problem(
-                node.span,
+                dynamic.span,
                 format!(
                     "Liquid syntax error: in 'block' - app block settings must be fixed values; '{}' is not a string, number, boolean or array of those",
                     dynamic.name

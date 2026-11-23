@@ -62,7 +62,7 @@ export function blockTagSyntaxError(
     );
     if (dynamicArgument) {
       return syntaxProblem(
-        node.position,
+        dynamicArgument.position,
         `Liquid syntax error: in 'block' - app block settings must be fixed values; '${dynamicArgument.name}' is not a string, number, boolean or array of those`,
       );
     }
