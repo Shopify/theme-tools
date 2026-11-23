@@ -17,6 +17,7 @@ import { isGlobalObject } from '../utils/dom-lookups';
 import {
   buildDisconnectedCallbackFix,
   collectReachableMethods,
+  getCallableBody,
   walkSubtree,
   type NodeWithParent,
 } from '../utils/lifecycle';
@@ -63,8 +64,10 @@ function collectDisconnectedTeardowns(classNode: ClassNode): DisconnectedTeardow
   };
 
   const reachable = collectReachableMethods(classNode, 'disconnectedCallback');
-  for (const method of reachable) {
-    walkSubtree(method.value.body, (node) => {
+  for (const member of reachable) {
+    const body = getCallableBody(member);
+    if (!body) continue;
+    walkSubtree(body, (node) => {
       if (node.type !== 'CallExpression') return;
 
       // `this.observer?.disconnect()` / `this.observer?.unobserve(...)`

@@ -68,6 +68,29 @@ ruleTester.run('require-listener-cleanup', rule, {
       `,
     },
     {
+      name: 'listener using local opts variable with signal and private #cleanup method',
+      code: `
+        class ThemeDrawer extends HTMLElement {
+          #onMove = () => {};
+          #onKeyDown = () => {};
+          onDrag() {
+            const ac = new AbortController();
+            const opts = { signal: ac.signal };
+            document.addEventListener('pointermove', this.#onMove, opts);
+          }
+          open() {
+            document.addEventListener('keydown', this.#onKeyDown);
+          }
+          disconnectedCallback() {
+            this.#removeListeners();
+          }
+          #removeListeners() {
+            document.removeEventListener('keydown', this.#onKeyDown);
+          }
+        }
+      `,
+    },
+    {
       name: 'non-HTMLElement class ignored',
       code: `
         class PlainController {

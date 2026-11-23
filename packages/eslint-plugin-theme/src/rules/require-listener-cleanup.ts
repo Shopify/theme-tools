@@ -20,6 +20,7 @@ import {
   buildDisconnectedCallbackFix,
   collectReachableMethods,
   findInstanceMethod,
+  getCallableBody,
   getIndentUnit,
   getLineIndentation,
   walkSubtree,
@@ -48,8 +49,15 @@ function getStaticEventName(arg: Node | undefined): string | null {
   return null;
 }
 
-function hasOnceOrSignalOption(optionsArg: Node | undefined): boolean {
-  if (!optionsArg || optionsArg.type !== 'ObjectExpression') return false;
+function hasOnceOrSignalOption(
+  optionsArg: Node | undefined,
+  signalOptionVars?: Set<string>,
+): boolean {
+  if (!optionsArg) return false;
+  if (optionsArg.type === 'Identifier' && signalOptionVars?.has(optionsArg.name)) {
+    return true;
+  }
+  if (optionsArg.type !== 'ObjectExpression') return false;
   for (const prop of (optionsArg as ObjectExpression).properties) {
     if (prop.type !== 'Property' || prop.computed) continue;
     const key = prop.key;
@@ -63,6 +71,21 @@ function hasOnceOrSignalOption(optionsArg: Node | undefined): boolean {
   return false;
 }
 
+function collectSignalOptionVars(node: Node): Set<string> {
+  const vars = new Set<string>();
+  walkSubtree(node, (n) => {
+    if (
+      n.type === 'VariableDeclarator' &&
+      n.id.type === 'Identifier' &&
+      n.init &&
+      hasOnceOrSignalOption(n.init)
+    ) {
+      vars.add(n.id.name);
+    }
+  });
+  return vars;
+}
+
 function collectDisconnectedListenerRemovals(
   classNode: ClassNode,
   sourceCode: Rule.RuleContext['sourceCode'],
@@ -70,8 +93,10 @@ function collectDisconnectedListenerRemovals(
   const removedEventsByTarget = new Map<string, Set<string | null>>();
   const reachable = collectReachableMethods(classNode, 'disconnectedCallback');
 
-  for (const method of reachable) {
-    walkSubtree(method.value.body, (node) => {
+  for (const member of reachable) {
+    const body = getCallableBody(member);
+    if (!body) continue;
+    walkSubtree(body, (node) => {
       if (
         node.type === 'CallExpression' &&
         node.callee.type === 'MemberExpression' &&
@@ -166,8 +191,10 @@ function methodInitializesAbortController(method: MethodDefinition): boolean {
 
 function disconnectedAbortsController(classNode: ClassNode): boolean {
   const reachable = collectReachableMethods(classNode, 'disconnectedCallback');
-  for (const method of reachable) {
-    const found = walkSubtree(method.value.body, (n) => {
+  for (const member of reachable) {
+    const body = getCallableBody(member);
+    if (!body) continue;
+    const found = walkSubtree(body, (n) => {
       if (
         n.type === 'CallExpression' &&
         n.callee.type === 'MemberExpression' &&
@@ -302,7 +329,11 @@ const rule: Rule.RuleModule = {
     }
 
     const classStack: ClassState[] = [];
-    const methodStack: Array<{ method: MethodDefinition | null; outsideVars: Set<string> }> = [];
+    const methodStack: Array<{
+      method: MethodDefinition | null;
+      outsideVars: Set<string>;
+      signalOptionVars: Set<string>;
+    }> = [];
 
     return {
       ClassDeclaration(node) {
@@ -333,12 +364,13 @@ const rule: Rule.RuleModule = {
       MethodDefinition(node) {
         const cls = classStack[classStack.length - 1];
         if (!cls?.info || node.static) {
-          methodStack.push({ method: null, outsideVars: new Set() });
+          methodStack.push({ method: null, outsideVars: new Set(), signalOptionVars: new Set() });
           return;
         }
         methodStack.push({
           method: node,
           outsideVars: collectOutsideLocalVars(node.value.body),
+          signalOptionVars: collectSignalOptionVars(node.value.body),
         });
       },
       'MethodDefinition:exit'() {
@@ -362,7 +394,7 @@ const rule: Rule.RuleModule = {
 
         const targetExpr = node.callee.object;
         if (!isOutsideListenerTarget(targetExpr, currentMethod.outsideVars)) return;
-        if (hasOnceOrSignalOption(node.arguments[2])) return;
+        if (hasOnceOrSignalOption(node.arguments[2], currentMethod.signalOptionVars)) return;
 
         const targetKey = getTargetKey(targetExpr, sourceCode);
         const eventName = getStaticEventName(node.arguments[0]);

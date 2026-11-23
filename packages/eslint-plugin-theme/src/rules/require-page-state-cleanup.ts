@@ -9,7 +9,9 @@ import { isPageStateElement } from '../utils/dom-lookups';
 import {
   buildDisconnectedCallbackFix,
   collectReachableMethods,
+  getCallableBody,
   walkSubtree,
+  type CallableMember,
 } from '../utils/lifecycle';
 
 interface RuleOptions {
@@ -23,6 +25,7 @@ interface PageCleanupInfo {
   hasDynamicAttrRemove: boolean;
   clearedStyleProps: Set<string>;
   hasAnyStyleClear: boolean;
+  disconnectedReachable: Set<CallableMember>;
 }
 
 function getStaticString(node: Node | undefined): string | null {
@@ -54,6 +57,7 @@ function getPageTargetLabel(node: Node): 'document.body' | 'document.documentEle
 }
 
 function collectDisconnectedPageCleanups(classNode: ClassNode): PageCleanupInfo {
+  const reachable = collectReachableMethods(classNode, 'disconnectedCallback');
   const info: PageCleanupInfo = {
     removedClasses: new Set(),
     hasDynamicClassRemove: false,
@@ -61,11 +65,13 @@ function collectDisconnectedPageCleanups(classNode: ClassNode): PageCleanupInfo 
     hasDynamicAttrRemove: false,
     clearedStyleProps: new Set(),
     hasAnyStyleClear: false,
+    disconnectedReachable: new Set(reachable),
   };
 
-  const reachable = collectReachableMethods(classNode, 'disconnectedCallback');
-  for (const method of reachable) {
-    walkSubtree(method.value.body, (node) => {
+  for (const member of reachable) {
+    const body = getCallableBody(member);
+    if (!body) continue;
+    walkSubtree(body, (node) => {
       if (
         node.type === 'CallExpression' &&
         node.callee.type === 'MemberExpression' &&
@@ -119,7 +125,7 @@ function collectDisconnectedPageCleanups(classNode: ClassNode): PageCleanupInfo 
         }
       }
 
-      // `document.body.style.overflow = ''`
+      // `document.body.style.overflow = ''` or restoring a saved value like `this.previousPadding`
       if (
         node.type === 'AssignmentExpression' &&
         node.operator === '=' &&
@@ -130,8 +136,7 @@ function collectDisconnectedPageCleanups(classNode: ClassNode): PageCleanupInfo 
         !node.left.object.computed &&
         node.left.object.property.type === 'Identifier' &&
         node.left.object.property.name === 'style' &&
-        isPageStateElement(node.left.object.object) &&
-        isEmptyOrNullish(node.right)
+        isPageStateElement(node.left.object.object)
       ) {
         info.hasAnyStyleClear = true;
         info.clearedStyleProps.add(node.left.property.name);

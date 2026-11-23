@@ -1,8 +1,34 @@
 import type { Rule } from 'eslint';
-import type { MethodDefinition, Node } from 'estree';
+import type {
+  ArrowFunctionExpression,
+  FunctionExpression,
+  MethodDefinition,
+  Node,
+  PropertyDefinition,
+} from 'estree';
 import type { ClassNode } from './custom-elements';
 
 export type NodeWithParent = Node & { parent?: NodeWithParent };
+export type CallableMember = MethodDefinition | PropertyDefinition;
+
+function getCallableMemberKey(member: CallableMember): string | null {
+  if (member.static || member.computed) return null;
+  if (member.key.type === 'Identifier') return member.key.name;
+  if (member.key.type === 'PrivateIdentifier') return `#${member.key.name}`;
+  return null;
+}
+
+export function getCallableBody(member: CallableMember): Node | null {
+  if (member.type === 'MethodDefinition') return member.value.body;
+  if (
+    member.type === 'PropertyDefinition' &&
+    member.value &&
+    (member.value.type === 'ArrowFunctionExpression' || member.value.type === 'FunctionExpression')
+  ) {
+    return (member.value as ArrowFunctionExpression | FunctionExpression).body;
+  }
+  return null;
+}
 
 export function walkSubtree(node: Node, visit: (n: Node) => boolean | void): boolean {
   if (visit(node) === true) return true;
@@ -33,16 +59,25 @@ export function walkSubtree(node: Node, visit: (n: Node) => boolean | void): boo
 export function getInstanceMethodMap(classNode: ClassNode): Map<string, MethodDefinition> {
   const methods = new Map<string, MethodDefinition>();
   for (const member of classNode.body.body) {
-    if (
-      member.type === 'MethodDefinition' &&
-      !member.static &&
-      !member.computed &&
-      member.key.type === 'Identifier'
-    ) {
-      methods.set(member.key.name, member);
+    if (member.type === 'MethodDefinition') {
+      const key = getCallableMemberKey(member);
+      if (key) methods.set(key, member);
     }
   }
   return methods;
+}
+
+export function getCallableMemberMap(classNode: ClassNode): Map<string, CallableMember> {
+  const members = new Map<string, CallableMember>();
+  for (const member of classNode.body.body) {
+    if (member.type === 'MethodDefinition' || member.type === 'PropertyDefinition') {
+      const key = getCallableMemberKey(member);
+      if (key && getCallableBody(member)) {
+        members.set(key, member);
+      }
+    }
+  }
+  return members;
 }
 
 export function findInstanceMethod(classNode: ClassNode, name: string): MethodDefinition | null {
@@ -50,36 +85,43 @@ export function findInstanceMethod(classNode: ClassNode, name: string): MethodDe
 }
 
 /**
- * Returns the target lifecycle method plus any same-class instance methods it calls
- * via `this.<method>()` (recursively within the class, cycle-safe).
+ * Returns the target lifecycle method plus any same-class instance methods (including
+ * private `#methods` and arrow-function class fields) it calls via `this.<method>()`.
  */
 export function collectReachableMethods(
   classNode: ClassNode,
   startMethodName: string,
-): MethodDefinition[] {
-  const methods = getInstanceMethodMap(classNode);
-  const start = methods.get(startMethodName);
+): CallableMember[] {
+  const members = getCallableMemberMap(classNode);
+  const start = members.get(startMethodName);
   if (!start) return [];
 
   const visited = new Set<string>([startMethodName]);
-  const queue: MethodDefinition[] = [start];
-  const result: MethodDefinition[] = [];
+  const queue: CallableMember[] = [start];
+  const result: CallableMember[] = [];
 
   while (queue.length > 0) {
     const current = queue.shift()!;
     result.push(current);
 
-    walkSubtree(current.value.body, (node) => {
+    const body = getCallableBody(current);
+    if (!body) continue;
+
+    walkSubtree(body, (node) => {
       if (
         node.type === 'CallExpression' &&
         node.callee.type === 'MemberExpression' &&
         !node.callee.computed &&
-        node.callee.object.type === 'ThisExpression' &&
-        node.callee.property.type === 'Identifier'
+        node.callee.object.type === 'ThisExpression'
       ) {
-        const calleeName = node.callee.property.name;
-        if (!visited.has(calleeName)) {
-          const target = methods.get(calleeName);
+        let calleeName: string | null = null;
+        if (node.callee.property.type === 'Identifier') {
+          calleeName = node.callee.property.name;
+        } else if (node.callee.property.type === 'PrivateIdentifier') {
+          calleeName = `#${node.callee.property.name}`;
+        }
+        if (calleeName && !visited.has(calleeName)) {
+          const target = members.get(calleeName);
           if (target) {
             visited.add(calleeName);
             queue.push(target);

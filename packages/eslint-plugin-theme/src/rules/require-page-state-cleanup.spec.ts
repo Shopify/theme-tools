@@ -39,6 +39,23 @@ ruleTester.run('require-page-state-cleanup', rule, {
       `,
     },
     {
+      name: 'body style restored via saved previous value in disconnectedCallback helper',
+      code: `
+        class CartDisclosureModal extends HTMLElement {
+          lockScroll() {
+            this.prevPadding = document.body.style.paddingRight;
+            document.body.style.paddingRight = '15px';
+          }
+          unlockScroll() {
+            document.body.style.paddingRight = this.prevPadding;
+          }
+          disconnectedCallback() {
+            this.unlockScroll();
+          }
+        }
+      `,
+    },
+    {
       name: 'clearing style to empty string is not flagged',
       code: `
         class CartDrawer extends HTMLElement {
