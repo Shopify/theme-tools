@@ -1,0 +1,44 @@
+{
+  "name": "@shopify/eslint-plugin-theme",
+  "version": "0.0.1",
+  "description": "ESLint rules for Shopify theme JavaScript",
+  "author": "Shopify",
+  "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/eslint-plugin-theme#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shopify/theme-tools.git",
+    "directory": "packages/eslint-plugin-theme"
+  },
+  "bugs": {
+    "url": "https://github.com/Shopify/theme-tools/issues"
+  },
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "dist/**/*.js.map",
+    "docs/**/*.md",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "@shopify:registry": "https://registry.npmjs.org"
+  },
+  "scripts": {
+    "build": "pnpm build:ts",
+    "build:ci": "pnpm build",
+    "build:ts": "tsc -p tsconfig.build.json",
+    "test": "vitest",
+    "type-check": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "eslint": "^9.0.0 || ^10.0.0"
+  },
+  "devDependencies": {
+    "@types/estree": "^1.0.8",
+    "@types/node": "^22.18.8",
+    "eslint": "^9.39.5"
+  }
+}

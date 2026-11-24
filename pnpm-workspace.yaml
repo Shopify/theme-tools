@@ -1,6 +1,7 @@
 packages:
   - crates/theme-check
   - packages/codemirror-language-client
+  - packages/eslint-plugin-theme
   - packages/lang-*
   - packages/liquid-html-parser
   - packages/prettier-plugin-liquid

@@ -1,0 +1,476 @@
+import type { Rule } from 'eslint';
+import type { AssignmentExpression, Node, Program } from 'estree';
+import {
+  collectCustomElements,
+  type ClassNode,
+  type CustomElementInfo,
+} from '../utils/custom-elements';
+import { isPageStateElement } from '../utils/dom-lookups';
+import {
+  buildDisconnectedCallbackFix,
+  collectReachableMethods,
+  getCallableBody,
+  walkSubtree,
+  type CallableMember,
+} from '../utils/lifecycle';
+
+interface RuleOptions {
+  checkCustomProperties?: boolean;
+}
+
+type PageTarget = 'document.body' | 'document.documentElement';
+
+interface TargetCleanup {
+  removedClasses: Set<string>;
+  hasDynamicClassRemove: boolean;
+  removedAttrs: Set<string>;
+  hasDynamicAttrRemove: boolean;
+  clearedStyleProps: Set<string>;
+  hasAnyStyleClear: boolean;
+}
+
+interface PageCleanupInfo {
+  byTarget: Record<PageTarget, TargetCleanup>;
+  disconnectedReachable: Set<CallableMember>;
+}
+
+function emptyTargetCleanup(): TargetCleanup {
+  return {
+    removedClasses: new Set(),
+    hasDynamicClassRemove: false,
+    removedAttrs: new Set(),
+    hasDynamicAttrRemove: false,
+    clearedStyleProps: new Set(),
+    hasAnyStyleClear: false,
+  };
+}
+
+function getStaticString(node: Node | undefined): string | null {
+  if (!node) return null;
+  if (node.type === 'Literal' && typeof node.value === 'string') return node.value;
+  if (node.type === 'TemplateLiteral' && node.expressions.length === 0) {
+    return node.quasis[0]?.value.cooked ?? null;
+  }
+  return null;
+}
+
+function isEmptyOrNullish(node: Node): boolean {
+  if (node.type === 'Literal') {
+    return node.value === '' || node.value === null;
+  }
+  return node.type === 'Identifier' && node.name === 'undefined';
+}
+
+/** Normalizes camelCase (`paddingRight`) and kebab-case (`padding-right`) CSS property names. */
+function normalizeStyleProp(name: string): string {
+  if (name.startsWith('--')) return name;
+  return name.replace(/[A-Z]/g, (ch) => `-${ch.toLowerCase()}`).toLowerCase();
+}
+
+function quoteJsString(value: string): string {
+  return `'${value
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\r/g, '\\r')
+    .replace(/\n/g, '\\n')}'`;
+}
+
+function getPageTargetLabel(node: Node): PageTarget {
+  if (node.type === 'ChainExpression') return getPageTargetLabel(node.expression);
+  if (
+    node.type === 'MemberExpression' &&
+    !node.computed &&
+    node.property.type === 'Identifier' &&
+    node.property.name === 'documentElement'
+  ) {
+    return 'document.documentElement';
+  }
+  return 'document.body';
+}
+
+function collectDisconnectedPageCleanups(classNode: ClassNode): PageCleanupInfo {
+  const reachable = collectReachableMethods(classNode, 'disconnectedCallback');
+  const info: PageCleanupInfo = {
+    byTarget: {
+      'document.body': emptyTargetCleanup(),
+      'document.documentElement': emptyTargetCleanup(),
+    },
+    disconnectedReachable: new Set(reachable),
+  };
+
+  for (const member of reachable) {
+    const body = getCallableBody(member);
+    if (!body) continue;
+    walkSubtree(body, (node) => {
+      if (
+        node.type === 'CallExpression' &&
+        node.callee.type === 'MemberExpression' &&
+        !node.callee.computed
+      ) {
+        const propName =
+          node.callee.property.type === 'Identifier' ? node.callee.property.name : null;
+
+        // `document.body.classList.remove(...)` or `.toggle('foo', false)`
+        if (
+          (propName === 'remove' || propName === 'toggle') &&
+          node.callee.object.type === 'MemberExpression' &&
+          !node.callee.object.computed &&
+          node.callee.object.property.type === 'Identifier' &&
+          node.callee.object.property.name === 'classList' &&
+          isPageStateElement(node.callee.object.object)
+        ) {
+          if (propName === 'toggle') {
+            const secondArg = node.arguments[1];
+            if (secondArg && secondArg.type === 'Literal' && secondArg.value === true) return;
+          }
+          const target = info.byTarget[getPageTargetLabel(node.callee.object.object)];
+          const args = propName === 'toggle' ? node.arguments.slice(0, 1) : node.arguments;
+          for (const arg of args) {
+            const name = getStaticString(arg);
+            if (name) target.removedClasses.add(name);
+            else target.hasDynamicClassRemove = true;
+          }
+          return;
+        }
+
+        // `document.body.removeAttribute('...')` or restoring `setAttribute('...', saved)`
+        if (
+          (propName === 'removeAttribute' || propName === 'setAttribute') &&
+          isPageStateElement(node.callee.object)
+        ) {
+          const target = info.byTarget[getPageTargetLabel(node.callee.object)];
+          const name = getStaticString(node.arguments[0]);
+          if (name) target.removedAttrs.add(name);
+          else target.hasDynamicAttrRemove = true;
+          return;
+        }
+
+        // `document.documentElement.style.removeProperty(...)` or restoring `setProperty(...)`
+        if (
+          (propName === 'removeProperty' || propName === 'setProperty') &&
+          node.callee.object.type === 'MemberExpression' &&
+          !node.callee.object.computed &&
+          node.callee.object.property.type === 'Identifier' &&
+          node.callee.object.property.name === 'style' &&
+          isPageStateElement(node.callee.object.object)
+        ) {
+          const target = info.byTarget[getPageTargetLabel(node.callee.object.object)];
+          target.hasAnyStyleClear = true;
+          const name = getStaticString(node.arguments[0]);
+          if (name) target.clearedStyleProps.add(normalizeStyleProp(name));
+        }
+      }
+
+      // `document.body.style.overflow = ''` or restoring saved `this.previousPadding`
+      if (
+        node.type === 'AssignmentExpression' &&
+        node.operator === '=' &&
+        node.left.type === 'MemberExpression' &&
+        !node.left.computed &&
+        node.left.property.type === 'Identifier' &&
+        node.left.object.type === 'MemberExpression' &&
+        !node.left.object.computed &&
+        node.left.object.property.type === 'Identifier' &&
+        node.left.object.property.name === 'style' &&
+        isPageStateElement(node.left.object.object)
+      ) {
+        const target = info.byTarget[getPageTargetLabel(node.left.object.object)];
+        target.hasAnyStyleClear = true;
+        target.clearedStyleProps.add(normalizeStyleProp(node.left.property.name));
+      }
+    });
+  }
+
+  return info;
+}
+
+const rule: Rule.RuleModule = {
+  meta: {
+    type: 'suggestion',
+    hasSuggestions: true,
+    docs: {
+      description:
+        'Require cleaning up document.body and document.documentElement state mutations in disconnectedCallback()',
+      recommended: true,
+      url: 'https://github.com/Shopify/theme-tools/blob/main/packages/eslint-plugin-theme/docs/rules/require-page-state-cleanup.md',
+    },
+    schema: [
+      {
+        type: 'object',
+        properties: {
+          checkCustomProperties: { type: 'boolean' },
+        },
+        additionalProperties: false,
+      },
+    ],
+    messages: {
+      uncleanedPageState:
+        '{{mutation}} inside {{element}} is not undone in disconnectedCallback(). ' +
+        'If this element is removed or replaced while active (for example while a drawer or modal is open), ' +
+        'page-level state such as scroll locks stays stuck until a full reload. ' +
+        'Clean it up in `disconnectedCallback()`.',
+      suggestCleanup: "Undo page state with '{{cleanup}}' in disconnectedCallback().",
+    },
+  },
+
+  create(context) {
+    const sourceCode = context.sourceCode;
+    const options: RuleOptions = context.options[0] ?? {};
+    const checkCustomProperties = options.checkCustomProperties ?? false;
+    const customElements = collectCustomElements(sourceCode.ast as Program);
+
+    interface ClassState {
+      classNode: ClassNode;
+      info: CustomElementInfo | null;
+      cleanup: PageCleanupInfo | null;
+    }
+
+    const classStack: ClassState[] = [];
+    const memberStack: Array<CallableMember | null> = [];
+
+    return {
+      ClassDeclaration(node) {
+        const info = customElements.get(node) ?? null;
+        classStack.push({
+          classNode: node,
+          info,
+          cleanup: info ? collectDisconnectedPageCleanups(node) : null,
+        });
+      },
+      'ClassDeclaration:exit'() {
+        classStack.pop();
+      },
+      ClassExpression(node) {
+        const info = customElements.get(node) ?? null;
+        classStack.push({
+          classNode: node,
+          info,
+          cleanup: info ? collectDisconnectedPageCleanups(node) : null,
+        });
+      },
+      'ClassExpression:exit'() {
+        classStack.pop();
+      },
+
+      MethodDefinition(node) {
+        const cls = classStack[classStack.length - 1];
+        memberStack.push(cls?.info && !node.static ? node : null);
+      },
+      'MethodDefinition:exit'() {
+        memberStack.pop();
+      },
+
+      PropertyDefinition(node) {
+        const cls = classStack[classStack.length - 1];
+        memberStack.push(cls?.info && !node.static && getCallableBody(node) ? node : null);
+      },
+      'PropertyDefinition:exit'() {
+        memberStack.pop();
+      },
+
+      CallExpression(node) {
+        const cls = classStack[classStack.length - 1];
+        const currentMember = memberStack[memberStack.length - 1];
+        if (!cls?.info || !cls.cleanup || !currentMember) return;
+        // Don't flag state-restoring calls inside disconnectedCallback() or its cleanup helpers
+        if (cls.cleanup.disconnectedReachable.has(currentMember)) return;
+
+        if (node.callee.type !== 'MemberExpression' || node.callee.computed) return;
+        const propName =
+          node.callee.property.type === 'Identifier' ? node.callee.property.name : null;
+        if (!propName) return;
+
+        // 1. `document.body.classList.add(...)` / `.toggle(...)`
+        if (
+          (propName === 'add' || propName === 'toggle') &&
+          node.callee.object.type === 'MemberExpression' &&
+          !node.callee.object.computed &&
+          node.callee.object.property.type === 'Identifier' &&
+          node.callee.object.property.name === 'classList' &&
+          isPageStateElement(node.callee.object.object)
+        ) {
+          if (propName === 'toggle') {
+            const secondArg = node.arguments[1];
+            if (secondArg && secondArg.type === 'Literal' && secondArg.value === false) return;
+          }
+
+          const targetLabel = getPageTargetLabel(node.callee.object.object);
+          const targetCleanup = cls.cleanup.byTarget[targetLabel];
+          const classArgs = propName === 'toggle' ? node.arguments.slice(0, 1) : node.arguments;
+          const staticClasses: string[] = [];
+          let allStatic = classArgs.length > 0;
+
+          for (const arg of classArgs) {
+            const name = getStaticString(arg);
+            if (name) {
+              staticClasses.push(name);
+            } else {
+              allStatic = false;
+            }
+          }
+
+          if (allStatic) {
+            if (staticClasses.every((c) => targetCleanup.removedClasses.has(c))) return;
+            if (targetCleanup.hasDynamicClassRemove) return;
+          } else {
+            if (targetCleanup.hasDynamicClassRemove || targetCleanup.removedClasses.size > 0)
+              return;
+          }
+
+          const cleanupStmt = allStatic
+            ? `${targetLabel}.classList.remove(${staticClasses.map(quoteJsString).join(', ')});`
+            : null;
+
+          context.report({
+            node,
+            messageId: 'uncleanedPageState',
+            data: {
+              mutation: sourceCode.getText(node),
+              element: cls.info.elementLabel,
+            },
+            suggest: cleanupStmt
+              ? [
+                  {
+                    messageId: 'suggestCleanup',
+                    data: { cleanup: cleanupStmt },
+                    fix: (fixer) =>
+                      buildDisconnectedCallbackFix(fixer, cls.classNode, [cleanupStmt], sourceCode),
+                  },
+                ]
+              : undefined,
+          });
+          return;
+        }
+
+        // 2. `document.body.setAttribute(name, val)`
+        if (propName === 'setAttribute' && isPageStateElement(node.callee.object)) {
+          const targetLabel = getPageTargetLabel(node.callee.object);
+          const targetCleanup = cls.cleanup.byTarget[targetLabel];
+          const attrName = getStaticString(node.arguments[0]);
+          if (attrName && targetCleanup.removedAttrs.has(attrName)) return;
+          if (targetCleanup.hasDynamicAttrRemove) return;
+          if (!attrName && targetCleanup.removedAttrs.size > 0) return;
+
+          const cleanupStmt = attrName
+            ? `${targetLabel}.removeAttribute(${quoteJsString(attrName)});`
+            : null;
+
+          context.report({
+            node,
+            messageId: 'uncleanedPageState',
+            data: {
+              mutation: sourceCode.getText(node),
+              element: cls.info.elementLabel,
+            },
+            suggest: cleanupStmt
+              ? [
+                  {
+                    messageId: 'suggestCleanup',
+                    data: { cleanup: cleanupStmt },
+                    fix: (fixer) =>
+                      buildDisconnectedCallbackFix(fixer, cls.classNode, [cleanupStmt], sourceCode),
+                  },
+                ]
+              : undefined,
+          });
+          return;
+        }
+
+        // 3. `document.documentElement.style.setProperty(name, val)`
+        if (
+          propName === 'setProperty' &&
+          node.callee.object.type === 'MemberExpression' &&
+          !node.callee.object.computed &&
+          node.callee.object.property.type === 'Identifier' &&
+          node.callee.object.property.name === 'style' &&
+          isPageStateElement(node.callee.object.object)
+        ) {
+          const styleProp = getStaticString(node.arguments[0]);
+          if (!checkCustomProperties && (!styleProp || styleProp.startsWith('--'))) {
+            return;
+          }
+          if (node.arguments[1] && isEmptyOrNullish(node.arguments[1])) return;
+
+          const targetLabel = getPageTargetLabel(node.callee.object.object);
+          const targetCleanup = cls.cleanup.byTarget[targetLabel];
+          if (styleProp && targetCleanup.clearedStyleProps.has(normalizeStyleProp(styleProp))) {
+            return;
+          }
+          if (!styleProp && targetCleanup.hasAnyStyleClear) return;
+
+          const cleanupStmt = styleProp
+            ? `${targetLabel}.style.removeProperty(${quoteJsString(styleProp)});`
+            : null;
+
+          context.report({
+            node,
+            messageId: 'uncleanedPageState',
+            data: {
+              mutation: sourceCode.getText(node),
+              element: cls.info.elementLabel,
+            },
+            suggest: cleanupStmt
+              ? [
+                  {
+                    messageId: 'suggestCleanup',
+                    data: { cleanup: cleanupStmt },
+                    fix: (fixer) =>
+                      buildDisconnectedCallbackFix(fixer, cls.classNode, [cleanupStmt], sourceCode),
+                  },
+                ]
+              : undefined,
+          });
+        }
+      },
+
+      // 4. `document.body.style.overflow = 'hidden'`
+      AssignmentExpression(node: AssignmentExpression) {
+        const cls = classStack[classStack.length - 1];
+        const currentMember = memberStack[memberStack.length - 1];
+        if (!cls?.info || !cls.cleanup || !currentMember) return;
+        if (cls.cleanup.disconnectedReachable.has(currentMember)) return;
+
+        if (node.operator !== '=' || isEmptyOrNullish(node.right)) return;
+        if (node.left.type !== 'MemberExpression' || node.left.computed) return;
+        if (node.left.property.type !== 'Identifier') return;
+
+        const styleObj = node.left.object;
+        if (
+          styleObj.type !== 'MemberExpression' ||
+          styleObj.computed ||
+          styleObj.property.type !== 'Identifier' ||
+          styleObj.property.name !== 'style' ||
+          !isPageStateElement(styleObj.object)
+        ) {
+          return;
+        }
+
+        const styleProp = node.left.property.name;
+        const targetLabel = getPageTargetLabel(styleObj.object);
+        const targetCleanup = cls.cleanup.byTarget[targetLabel];
+        if (targetCleanup.clearedStyleProps.has(normalizeStyleProp(styleProp))) return;
+
+        const cleanupStmt = `${targetLabel}.style.${styleProp} = '';`;
+
+        context.report({
+          node,
+          messageId: 'uncleanedPageState',
+          data: {
+            mutation: sourceCode.getText(node),
+            element: cls.info.elementLabel,
+          },
+          suggest: [
+            {
+              messageId: 'suggestCleanup',
+              data: { cleanup: cleanupStmt },
+              fix: (fixer) =>
+                buildDisconnectedCallbackFix(fixer, cls.classNode, [cleanupStmt], sourceCode),
+            },
+          ],
+        });
+      },
+    };
+  },
+};
+
+export default rule;
