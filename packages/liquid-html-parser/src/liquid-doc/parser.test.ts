@@ -336,6 +336,7 @@ describe('Unit: liquid-doc parser', () => {
       expect(nodes.length).toBe(1);
       const prompt = asPrompt(nodes[0]);
       expect(prompt.content.value).toBe('\n\nBuild it\n');
+      // The range keeps the skipped NBSP line, as it keeps blank lines inside content, so start is 17.
       expect(prompt.content.position.start).toBe(17);
     });
   });
