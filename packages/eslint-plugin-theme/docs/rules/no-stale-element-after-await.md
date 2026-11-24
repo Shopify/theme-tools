@@ -28,8 +28,9 @@ Re-query after the async boundary:
 class ProductForm extends HTMLElement {
   async onSubmit() {
     const response = await fetch(routes.cart_add_url);
+    const data = await response.json();
     const drawer = document.querySelector('cart-drawer');
-    drawer?.renderContents(await response.json());
+    drawer?.renderContents(data);
   }
 }
 ```

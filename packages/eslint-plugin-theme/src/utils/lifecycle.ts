@@ -5,14 +5,32 @@ import type {
   MethodDefinition,
   Node,
   PropertyDefinition,
+  Statement,
 } from 'estree';
 import type { ClassNode } from './custom-elements';
 
 export type NodeWithParent = Node & { parent?: NodeWithParent };
 export type CallableMember = MethodDefinition | PropertyDefinition;
 
+const BUILTIN_ELEMENT_CLASS = /^(?:HTML\w*Element|SVG\w*Element)$/;
+const REPARENT_METHODS = new Set([
+  'appendChild',
+  'append',
+  'prepend',
+  'before',
+  'after',
+  'insertBefore',
+]);
+
 function getCallableMemberKey(member: CallableMember): string | null {
   if (member.static || member.computed) return null;
+  if (
+    member.type === 'MethodDefinition' &&
+    member.kind !== 'method' &&
+    member.kind !== 'constructor'
+  ) {
+    return null;
+  }
   if (member.key.type === 'Identifier') return member.key.name;
   if (member.key.type === 'PrivateIdentifier') return `#${member.key.name}`;
   return null;
@@ -54,6 +72,20 @@ export function walkSubtree(node: Node, visit: (n: Node) => boolean | void): boo
     }
   }
   return false;
+}
+
+export function statementAlwaysExits(stmt: Statement): boolean {
+  switch (stmt.type) {
+    case 'ReturnStatement':
+    case 'ThrowStatement':
+    case 'ContinueStatement':
+    case 'BreakStatement':
+      return true;
+    case 'BlockStatement':
+      return stmt.body.some((s) => statementAlwaysExits(s));
+    default:
+      return false;
+  }
 }
 
 export function getInstanceMethodMap(classNode: ClassNode): Map<string, MethodDefinition> {
@@ -134,19 +166,7 @@ export function collectReachableMethods(
   return result;
 }
 
-export function getLineIndentation(node: Node, sourceCode: Rule.RuleContext['sourceCode']): string {
-  const line = sourceCode.lines[(node.loc?.start.line ?? 1) - 1] ?? '';
-  const match = /^(\s*)/.exec(line);
-  return match ? match[1] : '';
-}
-
-export function getIndentUnit(indent: string): string {
-  return indent.startsWith('\t') ? '\t' : '  ';
-}
-
-const BUILTIN_ELEMENT_CLASS = /^(?:HTML\w*Element|SVG\w*Element)$/;
-
-function isDirectBuiltinSuperClass(classNode: ClassNode): boolean {
+export function isDirectBuiltinSuperClass(classNode: ClassNode): boolean {
   const sc = classNode.superClass;
   if (!sc) return true;
   if (sc.type === 'Identifier') return BUILTIN_ELEMENT_CLASS.test(sc.name);
@@ -163,10 +183,63 @@ function isDirectBuiltinSuperClass(classNode: ClassNode): boolean {
 }
 
 /**
+ * Detects whether a `connectedCallback()` self-reparents the element (e.g.
+ * `document.body.appendChild(this)`) or uses an early-return one-time guard
+ * (`if (this.moved) return;`), where autofixing teardown in `disconnectedCallback()`
+ * would kill listeners/observers during initial mount.
+ */
+export function hasSelfReparentOrOneTimeGuard(method: MethodDefinition): boolean {
+  const body = method.value.body;
+  for (const stmt of body.body) {
+    if (stmt.type === 'IfStatement' && statementAlwaysExits(stmt.consequent)) {
+      return true;
+    }
+  }
+  return walkSubtree(body, (node) => {
+    if (
+      node.type === 'CallExpression' &&
+      node.callee.type === 'MemberExpression' &&
+      !node.callee.computed &&
+      node.callee.property.type === 'Identifier' &&
+      REPARENT_METHODS.has(node.callee.property.name) &&
+      node.arguments.some((arg) => arg.type === 'ThisExpression')
+    ) {
+      return true;
+    }
+  });
+}
+
+export function getLineIndentation(node: Node, sourceCode: Rule.RuleContext['sourceCode']): string {
+  const line = sourceCode.lines[(node.loc?.start.line ?? 1) - 1] ?? '';
+  const match = /^(\s*)/.exec(line);
+  return match ? match[1] : '';
+}
+
+export function getIndentUnit(indent: string): string {
+  return indent.startsWith('\t') ? '\t' : '  ';
+}
+
+const BLOCK_TERMINATED_STATEMENTS = new Set([
+  'BlockStatement',
+  'IfStatement',
+  'ForStatement',
+  'ForInStatement',
+  'ForOfStatement',
+  'WhileStatement',
+  'SwitchStatement',
+  'TryStatement',
+  'WithStatement',
+  'FunctionDeclaration',
+  'ClassDeclaration',
+  'EmptyStatement',
+]);
+
+/**
  * Produces a `Rule.Fix` that appends one or more statements to `disconnectedCallback()`
  * (creating the method right after `connectedCallback()` or at the end of the class if absent).
- * When creating a new `disconnectedCallback()` on a subclass of a custom base class,
- * automatically prepends `super.disconnectedCallback?.();` so parent cleanup is never shadowed.
+ *
+ * Returns `null` (skipping autofix) when insertion cannot be proven syntactically and
+ * semantically safe (e.g. arrow-field `disconnectedCallback = () => {}` or trailing `return`/`throw`).
  */
 export function buildDisconnectedCallbackFix(
   fixer: Rule.RuleFixer,
@@ -174,12 +247,25 @@ export function buildDisconnectedCallbackFix(
   statements: string[],
   sourceCode: Rule.RuleContext['sourceCode'],
 ): Rule.Fix | null {
+  // Don't shadow an arrow/function class-field `disconnectedCallback = () => {}`
+  const callableDisconnected = getCallableMemberMap(classNode).get('disconnectedCallback');
+  if (callableDisconnected && callableDisconnected.type === 'PropertyDefinition') {
+    return null;
+  }
+
   const disconnected = findInstanceMethod(classNode, 'disconnectedCallback');
 
   if (disconnected) {
     const body = disconnected.value.body;
+    const openBrace = sourceCode.getFirstToken(body);
     const closingBrace = sourceCode.getLastToken(body);
-    if (!closingBrace) return null;
+    if (!openBrace || !closingBrace) return null;
+
+    // Never append unreachable cleanup after a trailing `return` or `throw`
+    const lastStmt = body.body[body.body.length - 1];
+    if (lastStmt && statementAlwaysExits(lastStmt)) {
+      return null;
+    }
 
     const methodIndent = getLineIndentation(disconnected, sourceCode);
     const bodyIndent =
@@ -187,32 +273,28 @@ export function buildDisconnectedCallbackFix(
         ? getLineIndentation(body.body[0], sourceCode)
         : methodIndent + getIndentUnit(methodIndent);
 
-    // Handle single-line `disconnectedCallback() {}`
+    // Handle single-line `disconnectedCallback() { ... }`
     if (body.loc && body.loc.start.line === body.loc.end.line) {
       if (body.body.length === 0) {
+        if (sourceCode.getCommentsInside(body).length > 0) return null;
         const lines = statements.map((s) => `${bodyIndent}${s}`).join('\n');
         return fixer.replaceText(body, `{\n${lines}\n${methodIndent}}`);
       }
       const prevToken = sourceCode.getTokenBefore(closingBrace);
-      if (prevToken) {
-        const needsSemi =
-          prevToken.value !== ';' && prevToken.value !== '}' && prevToken.value !== '{';
-        return fixer.insertTextAfter(prevToken, `${needsSemi ? ';' : ''} ${statements.join(' ')}`);
-      }
-      return fixer.insertTextBefore(closingBrace, ` ${statements.join(' ')} `);
+      if (!prevToken) return null;
+      const needsSemi = prevToken.value !== ';' && !BLOCK_TERMINATED_STATEMENTS.has(lastStmt.type);
+      return fixer.insertTextAfter(prevToken, `${needsSemi ? ';' : ''} ${statements.join(' ')}`);
     }
 
-    if (body.body.length > 0) {
-      const lastStmt = body.body[body.body.length - 1];
+    if (lastStmt) {
       const lines = statements.map((s) => `\n${bodyIndent}${s}`).join('');
       return fixer.insertTextAfter(lastStmt, lines);
     }
 
-    const lines = statements.map((s) => `${bodyIndent}${s}`).join('\n');
-    return fixer.insertTextBeforeRange(
-      [closingBrace.range[0] - methodIndent.length, closingBrace.range[0] - methodIndent.length],
-      `${lines}\n`,
-    );
+    // Multiline empty body: insert safely right after the opening `{` so we never
+    // slice across `{` or corrupt comments on the closing line.
+    const lines = statements.map((s) => `\n${bodyIndent}${s}`).join('');
+    return fixer.insertTextAfter(openBrace, lines);
   }
 
   const allStatements = isDirectBuiltinSuperClass(classNode)

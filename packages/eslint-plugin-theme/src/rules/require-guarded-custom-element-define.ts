@@ -4,9 +4,12 @@ import { isGlobalObject } from '../utils/dom-lookups';
 import {
   getIndentUnit,
   getLineIndentation,
+  statementAlwaysExits,
   walkSubtree,
   type NodeWithParent,
 } from '../utils/lifecycle';
+
+const SAFE_WRAP_PARENTS = new Set(['Program', 'BlockStatement', 'SwitchCase', 'StaticBlock']);
 
 function isCustomElementsObject(node: Node): boolean {
   if (node.type === 'Identifier' && node.name === 'customElements') return true;
@@ -33,26 +36,88 @@ function isCustomElementsMethod(node: CallExpression, methodName: string): boole
   );
 }
 
-function containsCustomElementsGet(node: Node): boolean {
-  return walkSubtree(node, (n) => {
-    if (n.type === 'CallExpression' && isCustomElementsMethod(n, 'get')) {
-      return true;
-    }
-  });
+function getNormalizedTagKey(
+  node: Node | undefined,
+  sourceCode: Rule.RuleContext['sourceCode'],
+): string | null {
+  if (!node) return null;
+  if (node.type === 'Literal' && typeof node.value === 'string') {
+    return `str:${node.value}`;
+  }
+  if (node.type === 'TemplateLiteral' && node.expressions.length === 0) {
+    return `str:${node.quasis[0]?.value.cooked ?? ''}`;
+  }
+  return `expr:${sourceCode.getText(node).replace(/\s+/g, '')}`;
 }
 
-function statementAlwaysExits(stmt: Statement): boolean {
-  switch (stmt.type) {
-    case 'ReturnStatement':
-    case 'ThrowStatement':
-    case 'ContinueStatement':
-    case 'BreakStatement':
-      return true;
-    case 'BlockStatement':
-      return stmt.body.some((s) => statementAlwaysExits(s));
-    default:
-      return false;
+function isMatchingCustomElementsGet(
+  node: Node,
+  expectedTagKey: string,
+  sourceCode: Rule.RuleContext['sourceCode'],
+): boolean {
+  if (node.type !== 'CallExpression' || !isCustomElementsMethod(node, 'get')) return false;
+  const arg = node.arguments[0];
+  if (!arg || arg.type === 'SpreadElement') return false;
+  const key = getNormalizedTagKey(arg, sourceCode);
+  return key !== null && key === expectedTagKey;
+}
+
+/**
+ * Evaluates whether `expr` checks that `customElements.get(tag)` is falsy (`wantFalsy = true`)
+ * or truthy (`wantFalsy = false`) for the matching `expectedTagKey`.
+ */
+function exprChecksDefineGuard(
+  expr: Node,
+  expectedTagKey: string,
+  wantFalsy: boolean,
+  sourceCode: Rule.RuleContext['sourceCode'],
+): boolean {
+  if (expr.type === 'ChainExpression') {
+    return exprChecksDefineGuard(expr.expression, expectedTagKey, wantFalsy, sourceCode);
   }
+
+  // `customElements.get(tag)` -> truthy when defined
+  if (isMatchingCustomElementsGet(expr, expectedTagKey, sourceCode)) {
+    return !wantFalsy;
+  }
+
+  // `!customElements.get(tag)`
+  if (expr.type === 'UnaryExpression' && expr.operator === '!') {
+    return exprChecksDefineGuard(expr.argument, expectedTagKey, !wantFalsy, sourceCode);
+  }
+
+  // `customElements.get(tag) === undefined` / `== null` / `!== undefined` / `!= null`
+  if (expr.type === 'BinaryExpression') {
+    const isNullish = (n: Node) =>
+      (n.type === 'Literal' && n.value === null) ||
+      (n.type === 'Identifier' && n.name === 'undefined') ||
+      (n.type === 'UnaryExpression' && n.operator === 'void');
+
+    const leftIsGet = isMatchingCustomElementsGet(expr.left, expectedTagKey, sourceCode);
+    const rightIsGet = isMatchingCustomElementsGet(expr.right, expectedTagKey, sourceCode);
+
+    if ((leftIsGet && isNullish(expr.right)) || (rightIsGet && isNullish(expr.left))) {
+      if (expr.operator === '===' || expr.operator === '==') return wantFalsy;
+      if (expr.operator === '!==' || expr.operator === '!=') return !wantFalsy;
+    }
+  }
+
+  if (expr.type === 'LogicalExpression') {
+    if (expr.operator === '&&') {
+      return (
+        exprChecksDefineGuard(expr.left, expectedTagKey, wantFalsy, sourceCode) ||
+        exprChecksDefineGuard(expr.right, expectedTagKey, wantFalsy, sourceCode)
+      );
+    }
+    if (expr.operator === '||') {
+      return (
+        exprChecksDefineGuard(expr.left, expectedTagKey, wantFalsy, sourceCode) &&
+        exprChecksDefineGuard(expr.right, expectedTagKey, wantFalsy, sourceCode)
+      );
+    }
+  }
+
+  return false;
 }
 
 function isSideEffectFreeTagExpr(expr: Expression): boolean {
@@ -70,13 +135,36 @@ function isSideEffectFreeTagExpr(expr: Expression): boolean {
   return false;
 }
 
-function isDefineGuarded(callNode: CallExpression & { parent?: NodeWithParent }): boolean {
+function containsMultilineTemplateLiteral(node: Node): boolean {
+  return walkSubtree(node, (n) => {
+    if (n.type === 'TemplateLiteral') {
+      return n.quasis.some((q) => q.value.raw.includes('\n') || q.value.raw.includes('\r'));
+    }
+  });
+}
+
+function isDefineGuarded(
+  callNode: CallExpression & { parent?: NodeWithParent },
+  tagKey: string,
+  sourceCode: Rule.RuleContext['sourceCode'],
+): boolean {
   let current: NodeWithParent | undefined = callNode;
   while (current?.parent) {
     const parent: NodeWithParent = current.parent;
 
     if (parent.type === 'IfStatement') {
-      if (containsCustomElementsGet(parent.test)) return true;
+      if (
+        parent.consequent === current &&
+        exprChecksDefineGuard(parent.test, tagKey, true, sourceCode)
+      ) {
+        return true;
+      }
+      if (
+        parent.alternate === current &&
+        exprChecksDefineGuard(parent.test, tagKey, false, sourceCode)
+      ) {
+        return true;
+      }
     }
 
     if (parent.type === 'TryStatement' && parent.block === current) {
@@ -84,11 +172,35 @@ function isDefineGuarded(callNode: CallExpression & { parent?: NodeWithParent })
     }
 
     if (parent.type === 'LogicalExpression' && parent.right === current) {
-      if (containsCustomElementsGet(parent.left)) return true;
+      // `customElements.get(tag) || customElements.define(tag, ...)`
+      if (
+        (parent.operator === '||' || parent.operator === '??') &&
+        exprChecksDefineGuard(parent.left, tagKey, false, sourceCode)
+      ) {
+        return true;
+      }
+      // `!customElements.get(tag) && customElements.define(tag, ...)`
+      if (
+        parent.operator === '&&' &&
+        exprChecksDefineGuard(parent.left, tagKey, true, sourceCode)
+      ) {
+        return true;
+      }
     }
 
-    if (parent.type === 'ConditionalExpression' && parent.test !== current) {
-      if (containsCustomElementsGet(parent.test)) return true;
+    if (parent.type === 'ConditionalExpression') {
+      if (
+        parent.consequent === current &&
+        exprChecksDefineGuard(parent.test, tagKey, true, sourceCode)
+      ) {
+        return true;
+      }
+      if (
+        parent.alternate === current &&
+        exprChecksDefineGuard(parent.test, tagKey, false, sourceCode)
+      ) {
+        return true;
+      }
     }
 
     if (parent.type === 'BlockStatement') {
@@ -99,7 +211,7 @@ function isDefineGuarded(callNode: CallExpression & { parent?: NodeWithParent })
         if (
           prev.type === 'IfStatement' &&
           statementAlwaysExits(prev.consequent) &&
-          containsCustomElementsGet(prev.test)
+          exprChecksDefineGuard(prev.test, tagKey, false, sourceCode)
         ) {
           return true;
         }
@@ -134,16 +246,22 @@ const rule: Rule.RuleModule = {
     return {
       CallExpression(node) {
         if (!isCustomElementsMethod(node, 'define')) return;
-        const call = node as CallExpression & { parent?: NodeWithParent };
-        if (isDefineGuarded(call)) return;
 
         const tagArg = node.arguments[0];
         if (!tagArg || tagArg.type === 'SpreadElement') return;
 
+        const tagKey = getNormalizedTagKey(tagArg, sourceCode);
+        if (!tagKey) return;
+
+        const call = node as CallExpression & { parent?: NodeWithParent };
+        if (isDefineGuarded(call, tagKey, sourceCode)) return;
+
         const tagText = sourceCode.getText(tagArg);
         const parent = call.parent;
+        // Require a block-like parent so wrapping never introduces a dangling `else`.
         const canFix =
           parent?.type === 'ExpressionStatement' &&
+          Boolean(parent.parent && SAFE_WRAP_PARENTS.has(parent.parent.type)) &&
           isSideEffectFreeTagExpr(tagArg) &&
           Boolean(parent.range) &&
           Boolean(parent.loc);
@@ -160,15 +278,26 @@ const rule: Rule.RuleModule = {
                 const indent = getLineIndentation(stmt, sourceCode);
                 const unit = getIndentUnit(indent);
                 const stmtText = sourceCode.getText(stmt);
-                const indentedBody = stmtText
-                  .split('\n')
-                  .map((line, i) =>
-                    i === 0 ? `${indent}${unit}${line}` : line ? `${unit}${line}` : line,
-                  )
-                  .join('\n');
+                const hasMultilineTpl = containsMultilineTemplateLiteral(stmt);
+
+                // Avoid re-indenting inner lines when a multiline template literal is present,
+                // because prepending spaces would mutate runtime template string contents.
+                const body = hasMultilineTpl
+                  ? `${indent}${stmtText}`
+                  : stmtText
+                      .split(/\r?\n/)
+                      .map((line, i) =>
+                        i === 0
+                          ? `${indent}${unit}${line}`
+                          : line.length > 0
+                            ? `${unit}${line}`
+                            : line,
+                      )
+                      .join('\n');
+
                 return fixer.replaceText(
                   stmt,
-                  `if (!${registryText}.get(${tagText})) {\n${indentedBody}\n${indent}}`,
+                  `if (!${registryText}.get(${tagText})) {\n${body}\n${indent}}`,
                 );
               }
             : undefined,

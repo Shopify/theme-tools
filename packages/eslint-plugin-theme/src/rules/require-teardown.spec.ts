@@ -191,6 +191,49 @@ customElements.define('announcement-bar', AnnouncementBar);`,
 customElements.define('announcement-bar', AnnouncementBar);`,
     },
     {
+      name: 'single-line disconnectedCallback ending in object literal inserts semicolon safely',
+      code: `class Mini extends HTMLElement {
+  connectedCallback() { this.timer = setInterval(this.tick, 1000); }
+  disconnectedCallback() { this.state = {} }
+}`,
+      errors: [{ messageId: 'uncleanedInterval' }],
+      output: `class Mini extends HTMLElement {
+  connectedCallback() { this.timer = setInterval(this.tick, 1000); }
+  disconnectedCallback() { this.state = {}; clearInterval(this.timer); }
+}`,
+    },
+    {
+      name: 'multiline empty disconnectedCallback with zero indent before closing brace',
+      code: `class EmptyDc extends HTMLElement {
+  connectedCallback() {
+    this.timer = setInterval(this.tick, 1000);
+  }
+  disconnectedCallback() {
+}
+}`,
+      errors: [{ messageId: 'uncleanedInterval' }],
+      output: `class EmptyDc extends HTMLElement {
+  connectedCallback() {
+    this.timer = setInterval(this.tick, 1000);
+  }
+  disconnectedCallback() {
+    clearInterval(this.timer);
+}
+}`,
+    },
+    {
+      name: 'local IntersectionObserver observing outside element is still flagged',
+      code: `class Watcher extends HTMLElement {
+  connectedCallback() {
+    const io = new IntersectionObserver((entries, obs) => {
+      if (entries[0].isIntersecting) obs.disconnect();
+    });
+    io.observe(document.body);
+  }
+}`,
+      errors: [{ messageId: 'uncleanedObserver' }],
+    },
+    {
       name: 'subscribe() stored on this offers suggestion',
       code: `class PricePerItem extends HTMLElement {
   connectedCallback() {

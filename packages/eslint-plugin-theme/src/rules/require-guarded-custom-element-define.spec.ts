@@ -64,6 +64,29 @@ ruleTester.run('require-guarded-custom-element-define', rule, {
       output: `  if (!customElements.get('product-form')) {\n    customElements.define(\n      'product-form',\n      class extends HTMLElement {},\n    );\n  }`,
     },
     {
+      name: 'wrong tag name in customElements.get guard is still flagged',
+      code: `if (!customElements.get('other-el')) {\n  customElements.define('cart-drawer', CartDrawer);\n}`,
+      errors: [{ messageId: 'unguardedDefine', data: { tag: "'cart-drawer'" } }],
+      output: `if (!customElements.get('other-el')) {\n  if (!customElements.get('cart-drawer')) {\n    customElements.define('cart-drawer', CartDrawer);\n  }\n}`,
+    },
+    {
+      name: 'inverted polarity guard (missing !) is still flagged',
+      code: `if (customElements.get('cart-drawer')) {\n  customElements.define('cart-drawer', CartDrawer);\n}`,
+      errors: [{ messageId: 'unguardedDefine', data: { tag: "'cart-drawer'" } }],
+      output: `if (customElements.get('cart-drawer')) {\n  if (!customElements.get('cart-drawer')) {\n    customElements.define('cart-drawer', CartDrawer);\n  }\n}`,
+    },
+    {
+      name: 'dangling else prevents unsafe autofix',
+      code: `if (flag) customElements.define('cart-drawer', CartDrawer);\nelse fallback();`,
+      errors: [{ messageId: 'unguardedDefine', data: { tag: "'cart-drawer'" } }],
+    },
+    {
+      name: 'multiline template literal inside define is not corrupted by autofix',
+      code: `customElements.define(\n  'x-box',\n  class extends HTMLElement {\n    html() {\n      return \`line1\nline2\`;\n    }\n  },\n);`,
+      errors: [{ messageId: 'unguardedDefine', data: { tag: "'x-box'" } }],
+      output: `if (!customElements.get('x-box')) {\ncustomElements.define(\n  'x-box',\n  class extends HTMLElement {\n    html() {\n      return \`line1\nline2\`;\n    }\n  },\n);\n}`,
+    },
+    {
       name: 'unguarded window.customElements.define with identifier tag',
       code: `window.customElements.define(TAG_NAME, MyEl);`,
       errors: [{ messageId: 'unguardedDefine', data: { tag: 'TAG_NAME' } }],

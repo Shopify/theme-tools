@@ -8,7 +8,7 @@ import type {
   ObjectExpression,
   Program,
   Property,
-  VariableDeclarator,
+  PropertyDefinition,
 } from 'estree';
 import {
   collectCustomElements,
@@ -23,6 +23,8 @@ import {
   getCallableBody,
   getIndentUnit,
   getLineIndentation,
+  hasSelfReparentOrOneTimeGuard,
+  isDirectBuiltinSuperClass,
   walkSubtree,
   type NodeWithParent,
 } from '../utils/lifecycle';
@@ -67,6 +69,27 @@ function hasOnceOrSignalOption(
     if (name === 'once' && prop.value.type === 'Literal' && prop.value.value === true) {
       return true;
     }
+  }
+  return false;
+}
+
+/**
+ * Inline functions and `.bind(...)` calls create a fresh function identity each time,
+ * so a separate `removeEventListener` call can never match them (only `{ signal }` or `{ once: true }` can).
+ */
+function isUnremovableHandlerExpr(arg: Node | undefined): boolean {
+  if (!arg) return false;
+  if (arg.type === 'ArrowFunctionExpression' || arg.type === 'FunctionExpression') {
+    return true;
+  }
+  if (
+    arg.type === 'CallExpression' &&
+    arg.callee.type === 'MemberExpression' &&
+    !arg.callee.computed &&
+    arg.callee.property.type === 'Identifier' &&
+    arg.callee.property.name === 'bind'
+  ) {
+    return true;
   }
   return false;
 }
@@ -124,12 +147,13 @@ function isCleanedUpInDisconnected(
   cleanup: ListenerCleanupInfo,
   targetKey: string | null,
   eventName: string | null,
+  isGlobalTarget: boolean,
 ): boolean {
   if (cleanup.removedEventsByTarget.size === 0) return false;
 
   const checkSet = (events: Set<string | null> | undefined): boolean => {
     if (!events) return false;
-    if (events.has(null)) return true; // dynamic event name removed on same target
+    if (events.has(null)) return true;
     if (eventName === null) return events.size > 0;
     return events.has(eventName);
   };
@@ -138,10 +162,14 @@ function isCleanedUpInDisconnected(
     return true;
   }
 
-  // Fallback for document.* variables whose name may differ between add and remove
-  if (!targetKey) {
-    for (const events of cleanup.removedEventsByTarget.values()) {
-      if (checkSet(events)) return true;
+  // For non-global targets (e.g. a local variable from `document.querySelector`),
+  // also match `removeEventListener` called on a fresh `document.querySelector(...)` (`*`).
+  if (!isGlobalTarget) {
+    if (checkSet(cleanup.removedEventsByTarget.get('*'))) return true;
+    if (!targetKey) {
+      for (const events of cleanup.removedEventsByTarget.values()) {
+        if (checkSet(events)) return true;
+      }
     }
   }
 
@@ -171,22 +199,69 @@ function collectOutsideLocalVars(node: Node): Set<string> {
   return vars;
 }
 
-function methodInitializesAbortController(method: MethodDefinition): boolean {
-  return walkSubtree(method.value.body, (n) => {
+function findAbortControllerInitPos(method: MethodDefinition): number | null {
+  let pos: number | null = null;
+  for (const stmt of method.value.body.body) {
     if (
-      n.type === 'AssignmentExpression' &&
-      n.left.type === 'MemberExpression' &&
-      !n.left.computed &&
-      n.left.object.type === 'ThisExpression' &&
-      n.left.property.type === 'Identifier' &&
-      n.left.property.name === '_abortController' &&
-      n.right.type === 'NewExpression' &&
-      n.right.callee.type === 'Identifier' &&
-      n.right.callee.name === 'AbortController'
+      stmt.type === 'ExpressionStatement' &&
+      stmt.expression.type === 'AssignmentExpression' &&
+      stmt.expression.left.type === 'MemberExpression' &&
+      !stmt.expression.left.computed &&
+      stmt.expression.left.object.type === 'ThisExpression' &&
+      stmt.expression.left.property.type === 'Identifier' &&
+      stmt.expression.left.property.name === '_abortController' &&
+      stmt.expression.right.type === 'NewExpression' &&
+      stmt.expression.right.callee.type === 'Identifier' &&
+      stmt.expression.right.callee.name === 'AbortController' &&
+      stmt.range
     ) {
-      return true;
+      pos = stmt.range[0];
+      break;
     }
-  });
+  }
+  return pos;
+}
+
+/**
+ * Checks whether `_abortController` is already used anywhere in the class outside our
+ * standard `connectedCallback`/`disconnectedCallback` pattern (e.g. for `fetch` cancellation).
+ */
+function classUsesConflictingAbortController(
+  classNode: ClassNode,
+  connectedMethod: MethodDefinition,
+): boolean {
+  const disconnected = findInstanceMethod(classNode, 'disconnectedCallback');
+  let conflict = false;
+
+  for (const member of classNode.body.body) {
+    if (member === connectedMethod || member === disconnected) continue;
+    const found = walkSubtree(member, (n) => {
+      if (
+        n.type === 'MemberExpression' &&
+        !n.computed &&
+        n.object.type === 'ThisExpression' &&
+        n.property.type === 'Identifier' &&
+        n.property.name === '_abortController'
+      ) {
+        return true;
+      }
+      if (
+        member.type === 'PropertyDefinition' &&
+        !member.static &&
+        !member.computed &&
+        member.key.type === 'Identifier' &&
+        member.key.name === '_abortController'
+      ) {
+        return true;
+      }
+    });
+    if (found) {
+      conflict = true;
+      break;
+    }
+  }
+
+  return conflict;
 }
 
 function disconnectedAbortsController(classNode: ClassNode): boolean {
@@ -200,14 +275,18 @@ function disconnectedAbortsController(classNode: ClassNode): boolean {
         n.callee.type === 'MemberExpression' &&
         !n.callee.computed &&
         n.callee.property.type === 'Identifier' &&
-        n.callee.property.name === 'abort' &&
-        n.callee.object.type === 'MemberExpression' &&
-        !n.callee.object.computed &&
-        n.callee.object.object.type === 'ThisExpression' &&
-        n.callee.object.property.type === 'Identifier' &&
-        n.callee.object.property.name === '_abortController'
+        n.callee.property.name === 'abort'
       ) {
-        return true;
+        const obj = unwrapChain(n.callee.object as Expression);
+        if (
+          obj.type === 'MemberExpression' &&
+          !obj.computed &&
+          obj.object.type === 'ThisExpression' &&
+          obj.property.type === 'Identifier' &&
+          obj.property.name === '_abortController'
+        ) {
+          return true;
+        }
       }
     });
     if (found) return true;
@@ -277,18 +356,21 @@ function buildConnectedInitFix(
       ? getLineIndentation(body.body[0], sourceCode)
       : methodIndent + getIndentUnit(methodIndent);
 
-  // If the first statement is `super.connectedCallback();`, insert right after it
+  // If the first statement is `super.connectedCallback();` or `super.connectedCallback?.();`,
+  // insert right after it.
   const firstStmt = body.body[0];
-  if (
-    firstStmt?.type === 'ExpressionStatement' &&
-    firstStmt.expression.type === 'CallExpression' &&
-    firstStmt.expression.callee.type === 'MemberExpression' &&
-    firstStmt.expression.callee.object.type === 'Super'
-  ) {
-    return fixer.insertTextAfter(
-      firstStmt,
-      `\n${bodyIndent}this._abortController?.abort();\n${bodyIndent}this._abortController = new AbortController();`,
-    );
+  if (firstStmt?.type === 'ExpressionStatement') {
+    const expr = unwrapChain(firstStmt.expression);
+    if (
+      expr.type === 'CallExpression' &&
+      expr.callee.type === 'MemberExpression' &&
+      expr.callee.object.type === 'Super'
+    ) {
+      return fixer.insertTextAfter(
+        firstStmt,
+        `\n${bodyIndent}this._abortController?.abort();\n${bodyIndent}this._abortController = new AbortController();`,
+      );
+    }
   }
 
   return fixer.insertTextAfter(
@@ -325,15 +407,17 @@ const rule: Rule.RuleModule = {
       classNode: ClassNode;
       info: CustomElementInfo | null;
       cleanup: ListenerCleanupInfo | null;
-      fixedInThisPass: boolean;
+    }
+
+    interface ScopeEntry {
+      /** Non-null when `this` is bound to the custom element instance. */
+      member: MethodDefinition | PropertyDefinition | null;
+      outsideVars: Set<string>;
+      signalOptionVars: Set<string>;
     }
 
     const classStack: ClassState[] = [];
-    const methodStack: Array<{
-      method: MethodDefinition | null;
-      outsideVars: Set<string>;
-      signalOptionVars: Set<string>;
-    }> = [];
+    const scopeStack: ScopeEntry[] = [];
 
     return {
       ClassDeclaration(node) {
@@ -342,7 +426,6 @@ const rule: Rule.RuleModule = {
           classNode: node,
           info,
           cleanup: info ? collectDisconnectedListenerRemovals(node, sourceCode) : null,
-          fixedInThisPass: false,
         });
       },
       'ClassDeclaration:exit'() {
@@ -354,7 +437,6 @@ const rule: Rule.RuleModule = {
           classNode: node,
           info,
           cleanup: info ? collectDisconnectedListenerRemovals(node, sourceCode) : null,
-          fixedInThisPass: false,
         });
       },
       'ClassExpression:exit'() {
@@ -364,23 +446,68 @@ const rule: Rule.RuleModule = {
       MethodDefinition(node) {
         const cls = classStack[classStack.length - 1];
         if (!cls?.info || node.static) {
-          methodStack.push({ method: null, outsideVars: new Set(), signalOptionVars: new Set() });
+          scopeStack.push({ member: null, outsideVars: new Set(), signalOptionVars: new Set() });
           return;
         }
-        methodStack.push({
-          method: node,
+        scopeStack.push({
+          member: node,
           outsideVars: collectOutsideLocalVars(node.value.body),
           signalOptionVars: collectSignalOptionVars(node.value.body),
         });
       },
       'MethodDefinition:exit'() {
-        methodStack.pop();
+        scopeStack.pop();
+      },
+
+      PropertyDefinition(node) {
+        const cls = classStack[classStack.length - 1];
+        const body = !node.static && cls?.info ? getCallableBody(node) : null;
+        if (!body) {
+          scopeStack.push({ member: null, outsideVars: new Set(), signalOptionVars: new Set() });
+          return;
+        }
+        scopeStack.push({
+          member: node,
+          outsideVars: collectOutsideLocalVars(body),
+          signalOptionVars: collectSignalOptionVars(body),
+        });
+      },
+      'PropertyDefinition:exit'() {
+        scopeStack.pop();
+      },
+
+      // Track nested regular functions whose `this` is NOT the custom element instance
+      FunctionDeclaration() {
+        scopeStack.push({ member: null, outsideVars: new Set(), signalOptionVars: new Set() });
+      },
+      'FunctionDeclaration:exit'() {
+        scopeStack.pop();
+      },
+      FunctionExpression(node) {
+        const parent = (node as NodeWithParent).parent;
+        if (
+          (parent?.type === 'MethodDefinition' && parent.value === node) ||
+          (parent?.type === 'PropertyDefinition' && parent.value === node)
+        ) {
+          return;
+        }
+        scopeStack.push({ member: null, outsideVars: new Set(), signalOptionVars: new Set() });
+      },
+      'FunctionExpression:exit'(node) {
+        const parent = (node as NodeWithParent).parent;
+        if (
+          (parent?.type === 'MethodDefinition' && parent.value === node) ||
+          (parent?.type === 'PropertyDefinition' && parent.value === node)
+        ) {
+          return;
+        }
+        scopeStack.pop();
       },
 
       CallExpression(node) {
         const cls = classStack[classStack.length - 1];
-        const currentMethod = methodStack[methodStack.length - 1];
-        if (!cls?.info || !cls.cleanup || !currentMethod?.method) return;
+        const currentScope = scopeStack[scopeStack.length - 1];
+        if (!cls?.info || !cls.cleanup || !currentScope?.member) return;
 
         if (
           node.callee.type !== 'MemberExpression' ||
@@ -393,30 +520,59 @@ const rule: Rule.RuleModule = {
         }
 
         const targetExpr = node.callee.object;
-        if (!isOutsideListenerTarget(targetExpr, currentMethod.outsideVars)) return;
-        if (hasOnceOrSignalOption(node.arguments[2], currentMethod.signalOptionVars)) return;
+        if (!isOutsideListenerTarget(targetExpr, currentScope.outsideVars)) return;
+        if (hasOnceOrSignalOption(node.arguments[2], currentScope.signalOptionVars)) return;
 
         const targetKey = getTargetKey(targetExpr, sourceCode);
         const eventName = getStaticEventName(node.arguments[0]);
-        if (isCleanedUpInDisconnected(cls.cleanup, targetKey, eventName)) return;
+        const unremovableHandler = isUnremovableHandlerExpr(node.arguments[1]);
+        const globalTarget = isGlobalEventTarget(targetExpr);
 
-        // Only autofix listeners registered directly in connectedCallback() so moving/reconnecting
-        // elements cleanly re-registers listeners after disconnectedCallback() aborts them.
+        if (
+          !unremovableHandler &&
+          isCleanedUpInDisconnected(cls.cleanup, targetKey, eventName, globalTarget)
+        ) {
+          return;
+        }
+
+        // Only autofix when ALL safety invariants hold:
+        // 1. Directly inside `connectedCallback()` (so `this` is the element and reconnect re-binds).
+        // 2. Direct built-in superclass (`HTMLElement`, etc.) so `this._abortController` cannot
+        //    collide with a superclass's controller.
+        // 3. No conflicting `_abortController` usage elsewhere in the class.
+        // 4. `connectedCallback()` has no self-reparenting (`appendChild(this)`) or early-return guard.
+        // 5. Each report's fix is self-contained (ESLint runs multi-pass if multiple listeners exist).
         const connectedMethod = findInstanceMethod(cls.classNode, 'connectedCallback');
         const isInConnectedCallback =
-          connectedMethod !== null && currentMethod.method === connectedMethod;
-        const canAutofix = isInConnectedCallback && canSafelyAddSignalOption(node);
+          connectedMethod !== null && currentScope.member === connectedMethod;
+
+        let canAutofix =
+          isInConnectedCallback &&
+          isDirectBuiltinSuperClass(cls.classNode) &&
+          !hasSelfReparentOrOneTimeGuard(connectedMethod) &&
+          !classUsesConflictingAbortController(cls.classNode, connectedMethod) &&
+          canSafelyAddSignalOption(node);
+
+        let needsInit = false;
+        let needsAbort = false;
+        if (canAutofix && connectedMethod) {
+          const existingInitPos = findAbortControllerInitPos(connectedMethod);
+          if (existingInitPos !== null) {
+            // If `_abortController` is initialized *after* this listener, do not emit broken code.
+            if (!node.range || existingInitPos > node.range[0]) {
+              canAutofix = false;
+            }
+          } else {
+            needsInit = true;
+          }
+          needsAbort = !disconnectedAbortsController(cls.classNode);
+        }
 
         const targetDisplay = sourceCode.getText(targetExpr);
         const eventDisplay = eventName ?? sourceCode.getText(node.arguments[0]);
 
         let fix: Rule.ReportFixer | undefined;
-        if (canAutofix) {
-          const isFirstFix = !cls.fixedInThisPass;
-          cls.fixedInThisPass = true;
-          const needsInit = isFirstFix && !methodInitializesAbortController(connectedMethod);
-          const needsAbort = isFirstFix && !disconnectedAbortsController(cls.classNode);
-
+        if (canAutofix && connectedMethod) {
           fix = (fixer) => {
             const fixes: Rule.Fix[] = [];
             const signalFix = buildSignalArgFix(fixer, node, sourceCode);

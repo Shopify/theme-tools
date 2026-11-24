@@ -18,8 +18,35 @@ ruleTester.run('no-stale-element-after-await', rule, {
         class ProductForm extends HTMLElement {
           async onSubmit() {
             const response = await fetch('/cart/add.js');
+            const data = await response.json();
             const drawer = document.querySelector('cart-drawer');
-            drawer.renderContents(await response.json());
+            drawer.renderContents(data);
+          }
+        }
+      `,
+    },
+    {
+      name: 'element used in await operand synchronously before suspending',
+      code: `
+        class ProductForm extends HTMLElement {
+          async onSubmit() {
+            const drawer = document.querySelector('cart-drawer');
+            await fetch(drawer.dataset.url);
+          }
+        }
+      `,
+    },
+    {
+      name: 'await inside mutually exclusive early-return branch',
+      code: `
+        class ProductForm extends HTMLElement {
+          async onSubmit() {
+            const drawer = document.querySelector('cart-drawer');
+            if (!drawer) {
+              await fetch('/cart/add.js');
+              return;
+            }
+            drawer.open();
           }
         }
       `,
@@ -91,6 +118,34 @@ ruleTester.run('no-stale-element-after-await', rule, {
         }
       `,
       errors: [{ messageId: 'staleAfterAsync', data: { name: 'drawer', element: 'ProductForm' } }],
+    },
+    {
+      name: 'inverted isConnected check after await is still flagged',
+      code: `
+        class ProductForm extends HTMLElement {
+          async onSubmit() {
+            const drawer = document.querySelector('cart-drawer');
+            await fetch('/cart/add.js');
+            if (!drawer?.isConnected) {
+              drawer.renderContents({});
+            }
+          }
+        }
+      `,
+      errors: [{ messageId: 'staleAfterAsync', data: { name: 'drawer', element: 'ProductForm' } }],
+    },
+    {
+      name: 'used inside synchronous forEach callback after await',
+      code: `
+        class ProductForm extends HTMLElement {
+          async onSubmit(items) {
+            const list = document.querySelector('.cart-list');
+            await fetch('/cart/add.js');
+            items.forEach((i) => list.append(i));
+          }
+        }
+      `,
+      errors: [{ messageId: 'staleAfterAsync', data: { name: 'list', element: 'ProductForm' } }],
     },
     {
       name: 'document.getElementById used inside setTimeout callback',

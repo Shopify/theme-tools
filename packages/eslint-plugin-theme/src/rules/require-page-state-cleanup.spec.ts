@@ -56,6 +56,19 @@ ruleTester.run('require-page-state-cleanup', rule, {
       `,
     },
     {
+      name: 'camelCase style mutation cleaned up with kebab-case removeProperty',
+      code: `
+        class ModalDialog extends HTMLElement {
+          open() {
+            document.body.style.paddingRight = '15px';
+          }
+          disconnectedCallback() {
+            document.body.style.removeProperty('padding-right');
+          }
+        }
+      `,
+    },
+    {
       name: 'clearing style to empty string is not flagged',
       code: `
         class CartDrawer extends HTMLElement {
@@ -120,6 +133,36 @@ ruleTester.run('require-page-state-cleanup', rule, {
 
   disconnectedCallback() {
     document.body.style.overflow = '';
+  }
+}`,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'cleaning document.body does not satisfy mutation on document.documentElement',
+      code: `class Drawer extends HTMLElement {
+  open() {
+    document.documentElement.classList.add('lock-all');
+  }
+  disconnectedCallback() {
+    document.body.classList.remove('lock-all');
+  }
+}`,
+      errors: [
+        {
+          messageId: 'uncleanedPageState',
+          suggestions: [
+            {
+              messageId: 'suggestCleanup',
+              output: `class Drawer extends HTMLElement {
+  open() {
+    document.documentElement.classList.add('lock-all');
+  }
+  disconnectedCallback() {
+    document.body.classList.remove('lock-all');
+    document.documentElement.classList.remove('lock-all');
   }
 }`,
             },

@@ -1,5 +1,5 @@
 import type { Rule } from 'eslint';
-import type { AssignmentExpression, CallExpression, MemberExpression, Node, Program } from 'estree';
+import type { AssignmentExpression, Node, Program } from 'estree';
 import {
   collectCustomElements,
   type ClassNode,
@@ -18,14 +18,31 @@ interface RuleOptions {
   checkCustomProperties?: boolean;
 }
 
-interface PageCleanupInfo {
+type PageTarget = 'document.body' | 'document.documentElement';
+
+interface TargetCleanup {
   removedClasses: Set<string>;
   hasDynamicClassRemove: boolean;
   removedAttrs: Set<string>;
   hasDynamicAttrRemove: boolean;
   clearedStyleProps: Set<string>;
   hasAnyStyleClear: boolean;
+}
+
+interface PageCleanupInfo {
+  byTarget: Record<PageTarget, TargetCleanup>;
   disconnectedReachable: Set<CallableMember>;
+}
+
+function emptyTargetCleanup(): TargetCleanup {
+  return {
+    removedClasses: new Set(),
+    hasDynamicClassRemove: false,
+    removedAttrs: new Set(),
+    hasDynamicAttrRemove: false,
+    clearedStyleProps: new Set(),
+    hasAnyStyleClear: false,
+  };
 }
 
 function getStaticString(node: Node | undefined): string | null {
@@ -44,7 +61,22 @@ function isEmptyOrNullish(node: Node): boolean {
   return node.type === 'Identifier' && node.name === 'undefined';
 }
 
-function getPageTargetLabel(node: Node): 'document.body' | 'document.documentElement' {
+/** Normalizes camelCase (`paddingRight`) and kebab-case (`padding-right`) CSS property names. */
+function normalizeStyleProp(name: string): string {
+  if (name.startsWith('--')) return name;
+  return name.replace(/[A-Z]/g, (ch) => `-${ch.toLowerCase()}`).toLowerCase();
+}
+
+function quoteJsString(value: string): string {
+  return `'${value
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\r/g, '\\r')
+    .replace(/\n/g, '\\n')}'`;
+}
+
+function getPageTargetLabel(node: Node): PageTarget {
+  if (node.type === 'ChainExpression') return getPageTargetLabel(node.expression);
   if (
     node.type === 'MemberExpression' &&
     !node.computed &&
@@ -59,12 +91,10 @@ function getPageTargetLabel(node: Node): 'document.body' | 'document.documentEle
 function collectDisconnectedPageCleanups(classNode: ClassNode): PageCleanupInfo {
   const reachable = collectReachableMethods(classNode, 'disconnectedCallback');
   const info: PageCleanupInfo = {
-    removedClasses: new Set(),
-    hasDynamicClassRemove: false,
-    removedAttrs: new Set(),
-    hasDynamicAttrRemove: false,
-    clearedStyleProps: new Set(),
-    hasAnyStyleClear: false,
+    byTarget: {
+      'document.body': emptyTargetCleanup(),
+      'document.documentElement': emptyTargetCleanup(),
+    },
     disconnectedReachable: new Set(reachable),
   };
 
@@ -93,39 +123,45 @@ function collectDisconnectedPageCleanups(classNode: ClassNode): PageCleanupInfo 
             const secondArg = node.arguments[1];
             if (secondArg && secondArg.type === 'Literal' && secondArg.value === true) return;
           }
+          const target = info.byTarget[getPageTargetLabel(node.callee.object.object)];
           const args = propName === 'toggle' ? node.arguments.slice(0, 1) : node.arguments;
           for (const arg of args) {
             const name = getStaticString(arg);
-            if (name) info.removedClasses.add(name);
-            else info.hasDynamicClassRemove = true;
+            if (name) target.removedClasses.add(name);
+            else target.hasDynamicClassRemove = true;
           }
           return;
         }
 
-        // `document.body.removeAttribute('...')`
-        if (propName === 'removeAttribute' && isPageStateElement(node.callee.object)) {
+        // `document.body.removeAttribute('...')` or restoring `setAttribute('...', saved)`
+        if (
+          (propName === 'removeAttribute' || propName === 'setAttribute') &&
+          isPageStateElement(node.callee.object)
+        ) {
+          const target = info.byTarget[getPageTargetLabel(node.callee.object)];
           const name = getStaticString(node.arguments[0]);
-          if (name) info.removedAttrs.add(name);
-          else info.hasDynamicAttrRemove = true;
+          if (name) target.removedAttrs.add(name);
+          else target.hasDynamicAttrRemove = true;
           return;
         }
 
-        // `document.documentElement.style.removeProperty('--foo')`
+        // `document.documentElement.style.removeProperty(...)` or restoring `setProperty(...)`
         if (
-          propName === 'removeProperty' &&
+          (propName === 'removeProperty' || propName === 'setProperty') &&
           node.callee.object.type === 'MemberExpression' &&
           !node.callee.object.computed &&
           node.callee.object.property.type === 'Identifier' &&
           node.callee.object.property.name === 'style' &&
           isPageStateElement(node.callee.object.object)
         ) {
-          info.hasAnyStyleClear = true;
+          const target = info.byTarget[getPageTargetLabel(node.callee.object.object)];
+          target.hasAnyStyleClear = true;
           const name = getStaticString(node.arguments[0]);
-          if (name) info.clearedStyleProps.add(name);
+          if (name) target.clearedStyleProps.add(normalizeStyleProp(name));
         }
       }
 
-      // `document.body.style.overflow = ''` or restoring a saved value like `this.previousPadding`
+      // `document.body.style.overflow = ''` or restoring saved `this.previousPadding`
       if (
         node.type === 'AssignmentExpression' &&
         node.operator === '=' &&
@@ -138,8 +174,9 @@ function collectDisconnectedPageCleanups(classNode: ClassNode): PageCleanupInfo 
         node.left.object.property.name === 'style' &&
         isPageStateElement(node.left.object.object)
       ) {
-        info.hasAnyStyleClear = true;
-        info.clearedStyleProps.add(node.left.property.name);
+        const target = info.byTarget[getPageTargetLabel(node.left.object.object)];
+        target.hasAnyStyleClear = true;
+        target.clearedStyleProps.add(normalizeStyleProp(node.left.property.name));
       }
     });
   }
@@ -189,7 +226,7 @@ const rule: Rule.RuleModule = {
     }
 
     const classStack: ClassState[] = [];
-    const inInstanceMethodStack: boolean[] = [];
+    const memberStack: Array<CallableMember | null> = [];
 
     return {
       ClassDeclaration(node) {
@@ -217,16 +254,26 @@ const rule: Rule.RuleModule = {
 
       MethodDefinition(node) {
         const cls = classStack[classStack.length - 1];
-        inInstanceMethodStack.push(Boolean(cls?.info && !node.static));
+        memberStack.push(cls?.info && !node.static ? node : null);
       },
       'MethodDefinition:exit'() {
-        inInstanceMethodStack.pop();
+        memberStack.pop();
+      },
+
+      PropertyDefinition(node) {
+        const cls = classStack[classStack.length - 1];
+        memberStack.push(cls?.info && !node.static && getCallableBody(node) ? node : null);
+      },
+      'PropertyDefinition:exit'() {
+        memberStack.pop();
       },
 
       CallExpression(node) {
         const cls = classStack[classStack.length - 1];
-        const inInstance = inInstanceMethodStack[inInstanceMethodStack.length - 1];
-        if (!cls?.info || !cls.cleanup || !inInstance) return;
+        const currentMember = memberStack[memberStack.length - 1];
+        if (!cls?.info || !cls.cleanup || !currentMember) return;
+        // Don't flag state-restoring calls inside disconnectedCallback() or its cleanup helpers
+        if (cls.cleanup.disconnectedReachable.has(currentMember)) return;
 
         if (node.callee.type !== 'MemberExpression' || node.callee.computed) return;
         const propName =
@@ -248,6 +295,7 @@ const rule: Rule.RuleModule = {
           }
 
           const targetLabel = getPageTargetLabel(node.callee.object.object);
+          const targetCleanup = cls.cleanup.byTarget[targetLabel];
           const classArgs = propName === 'toggle' ? node.arguments.slice(0, 1) : node.arguments;
           const staticClasses: string[] = [];
           let allStatic = classArgs.length > 0;
@@ -262,14 +310,15 @@ const rule: Rule.RuleModule = {
           }
 
           if (allStatic) {
-            if (staticClasses.every((c) => cls.cleanup!.removedClasses.has(c))) return;
-            if (cls.cleanup.hasDynamicClassRemove) return;
+            if (staticClasses.every((c) => targetCleanup.removedClasses.has(c))) return;
+            if (targetCleanup.hasDynamicClassRemove) return;
           } else {
-            if (cls.cleanup.hasDynamicClassRemove || cls.cleanup.removedClasses.size > 0) return;
+            if (targetCleanup.hasDynamicClassRemove || targetCleanup.removedClasses.size > 0)
+              return;
           }
 
           const cleanupStmt = allStatic
-            ? `${targetLabel}.classList.remove(${staticClasses.map((c) => `'${c}'`).join(', ')});`
+            ? `${targetLabel}.classList.remove(${staticClasses.map(quoteJsString).join(', ')});`
             : null;
 
           context.report({
@@ -295,13 +344,16 @@ const rule: Rule.RuleModule = {
 
         // 2. `document.body.setAttribute(name, val)`
         if (propName === 'setAttribute' && isPageStateElement(node.callee.object)) {
-          const attrName = getStaticString(node.arguments[0]);
-          if (attrName && cls.cleanup.removedAttrs.has(attrName)) return;
-          if (cls.cleanup.hasDynamicAttrRemove) return;
-          if (!attrName && cls.cleanup.removedAttrs.size > 0) return;
-
           const targetLabel = getPageTargetLabel(node.callee.object);
-          const cleanupStmt = attrName ? `${targetLabel}.removeAttribute('${attrName}');` : null;
+          const targetCleanup = cls.cleanup.byTarget[targetLabel];
+          const attrName = getStaticString(node.arguments[0]);
+          if (attrName && targetCleanup.removedAttrs.has(attrName)) return;
+          if (targetCleanup.hasDynamicAttrRemove) return;
+          if (!attrName && targetCleanup.removedAttrs.size > 0) return;
+
+          const cleanupStmt = attrName
+            ? `${targetLabel}.removeAttribute(${quoteJsString(attrName)});`
+            : null;
 
           context.report({
             node,
@@ -334,18 +386,20 @@ const rule: Rule.RuleModule = {
           isPageStateElement(node.callee.object.object)
         ) {
           const styleProp = getStaticString(node.arguments[0]);
-          // CSS custom properties (`--header-height`, etc.) are usually shared layout metrics
-          // overwritten by replacement elements; skip by default to avoid noise.
           if (!checkCustomProperties && (!styleProp || styleProp.startsWith('--'))) {
             return;
           }
           if (node.arguments[1] && isEmptyOrNullish(node.arguments[1])) return;
-          if (styleProp && cls.cleanup.clearedStyleProps.has(styleProp)) return;
-          if (!styleProp && cls.cleanup.hasAnyStyleClear) return;
 
           const targetLabel = getPageTargetLabel(node.callee.object.object);
+          const targetCleanup = cls.cleanup.byTarget[targetLabel];
+          if (styleProp && targetCleanup.clearedStyleProps.has(normalizeStyleProp(styleProp))) {
+            return;
+          }
+          if (!styleProp && targetCleanup.hasAnyStyleClear) return;
+
           const cleanupStmt = styleProp
-            ? `${targetLabel}.style.removeProperty('${styleProp}');`
+            ? `${targetLabel}.style.removeProperty(${quoteJsString(styleProp)});`
             : null;
 
           context.report({
@@ -372,8 +426,9 @@ const rule: Rule.RuleModule = {
       // 4. `document.body.style.overflow = 'hidden'`
       AssignmentExpression(node: AssignmentExpression) {
         const cls = classStack[classStack.length - 1];
-        const inInstance = inInstanceMethodStack[inInstanceMethodStack.length - 1];
-        if (!cls?.info || !cls.cleanup || !inInstance) return;
+        const currentMember = memberStack[memberStack.length - 1];
+        if (!cls?.info || !cls.cleanup || !currentMember) return;
+        if (cls.cleanup.disconnectedReachable.has(currentMember)) return;
 
         if (node.operator !== '=' || isEmptyOrNullish(node.right)) return;
         if (node.left.type !== 'MemberExpression' || node.left.computed) return;
@@ -391,9 +446,10 @@ const rule: Rule.RuleModule = {
         }
 
         const styleProp = node.left.property.name;
-        if (cls.cleanup.clearedStyleProps.has(styleProp)) return;
-
         const targetLabel = getPageTargetLabel(styleObj.object);
+        const targetCleanup = cls.cleanup.byTarget[targetLabel];
+        if (targetCleanup.clearedStyleProps.has(normalizeStyleProp(styleProp))) return;
+
         const cleanupStmt = `${targetLabel}.style.${styleProp} = '';`;
 
         context.report({

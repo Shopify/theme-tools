@@ -91,6 +91,20 @@ ruleTester.run('require-listener-cleanup', rule, {
       `,
     },
     {
+      name: 'local variable target cleaned up via fresh querySelector in disconnectedCallback',
+      code: `
+        class CartDrawer extends HTMLElement {
+          connectedCallback() {
+            const link = document.querySelector('#cart-icon');
+            link?.addEventListener('click', this.onOpen);
+          }
+          disconnectedCallback() {
+            document.querySelector('#cart-icon')?.removeEventListener('click', this.onOpen);
+          }
+        }
+      `,
+    },
+    {
       name: 'non-HTMLElement class ignored',
       code: `
         class PlainController {
@@ -151,6 +165,49 @@ ruleTester.run('require-listener-cleanup', rule, {
     this._abortController?.abort();
   }
 }`,
+    },
+    {
+      name: 'bound handler cannot be removed by removeEventListener',
+      code: `class StickyHeader extends HTMLElement {
+  connectedCallback() {
+    window.addEventListener('scroll', this.onScroll.bind(this));
+  }
+  disconnectedCallback() {
+    window.removeEventListener('scroll', this.onScroll.bind(this));
+  }
+}`,
+      errors: [{ messageId: 'uncleanedListener' }],
+      output: `class StickyHeader extends HTMLElement {
+  connectedCallback() {
+    this._abortController?.abort();
+    this._abortController = new AbortController();
+    window.addEventListener('scroll', this.onScroll.bind(this), { signal: this._abortController.signal });
+  }
+  disconnectedCallback() {
+    window.removeEventListener('scroll', this.onScroll.bind(this));
+    this._abortController?.abort();
+  }
+}`,
+    },
+    {
+      name: 'no autofix on subclass of custom base class or self-reparenting connectedCallback',
+      code: `class SubEl extends BaseEl {
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener('resize', this.onResize);
+  }
+}
+customElements.define('sub-el', SubEl);
+
+class ModalDialog extends HTMLElement {
+  connectedCallback() {
+    if (this.moved) return;
+    this.moved = true;
+    document.body.appendChild(this);
+    window.addEventListener('resize', this.onResize);
+  }
+}`,
+      errors: [{ messageId: 'uncleanedListener' }, { messageId: 'uncleanedListener' }],
     },
     {
       name: 'listener on document.querySelector node in constructor (flagged, no autofix)',

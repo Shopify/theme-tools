@@ -7,9 +7,7 @@ export interface OutsideLookupOptions {
 }
 
 const SINGLE_ELEMENT_DOCUMENT_METHODS = new Set(['querySelector', 'getElementById']);
-
 const SNAPSHOT_DOCUMENT_METHODS = new Set(['querySelectorAll']);
-
 const LIVE_COLLECTION_METHODS = new Set([
   'getElementsByClassName',
   'getElementsByTagName',
@@ -22,27 +20,43 @@ const CHAINABLE_SNAPSHOT_METHODS = new Set(['querySelectorAll']);
 const DOCUMENT_ROOT_ELEMENTS = new Set(['body', 'documentElement', 'head']);
 const PAGE_STATE_ELEMENTS = new Set(['body', 'documentElement']);
 
+const TS_WRAPPER_TYPES = new Set([
+  'TSAsExpression',
+  'TSNonNullExpression',
+  'TSSatisfiesExpression',
+  'TSTypeAssertion',
+]);
+
 export function isGlobalObject(node: Expression | Super): boolean {
   return node.type === 'Identifier' && (node.name === 'window' || node.name === 'globalThis');
 }
 
 export function unwrapChain(node: Expression): Expression {
-  return node.type === 'ChainExpression' ? node.expression : node;
+  let current: Expression = node;
+  while (true) {
+    if (current.type === 'ChainExpression') {
+      current = current.expression;
+    } else if (TS_WRAPPER_TYPES.has((current as unknown as { type: string }).type)) {
+      current = (current as unknown as { expression: Expression }).expression;
+    } else {
+      break;
+    }
+  }
+  return current;
 }
 
 export function isDocumentObject(node: Expression | Super): boolean {
-  if (node.type === 'ChainExpression') {
-    return isDocumentObject(node.expression);
-  }
-  if (node.type === 'Identifier' && node.name === 'document') {
+  if (node.type === 'Super') return false;
+  const unwrapped = unwrapChain(node);
+  if (unwrapped.type === 'Identifier' && unwrapped.name === 'document') {
     return true;
   }
   if (
-    node.type === 'MemberExpression' &&
-    !node.computed &&
-    node.property.type === 'Identifier' &&
-    node.property.name === 'document' &&
-    isGlobalObject(node.object)
+    unwrapped.type === 'MemberExpression' &&
+    !unwrapped.computed &&
+    unwrapped.property.type === 'Identifier' &&
+    unwrapped.property.name === 'document' &&
+    isGlobalObject(unwrapped.object)
   ) {
     return true;
   }
@@ -50,36 +64,35 @@ export function isDocumentObject(node: Expression | Super): boolean {
 }
 
 export function isDocumentRootElement(node: Expression | Super): boolean {
-  if (node.type === 'ChainExpression') {
-    return isDocumentRootElement(node.expression);
-  }
+  if (node.type === 'Super') return false;
+  const unwrapped = unwrapChain(node);
   return (
-    node.type === 'MemberExpression' &&
-    !node.computed &&
-    node.property.type === 'Identifier' &&
-    DOCUMENT_ROOT_ELEMENTS.has(node.property.name) &&
-    isDocumentObject(node.object)
+    unwrapped.type === 'MemberExpression' &&
+    !unwrapped.computed &&
+    unwrapped.property.type === 'Identifier' &&
+    DOCUMENT_ROOT_ELEMENTS.has(unwrapped.property.name) &&
+    isDocumentObject(unwrapped.object)
   );
 }
 
 export function isPageStateElement(node: Expression | Super): boolean {
-  if (node.type === 'ChainExpression') {
-    return isPageStateElement(node.expression);
-  }
+  if (node.type === 'Super') return false;
+  const unwrapped = unwrapChain(node);
   return (
-    node.type === 'MemberExpression' &&
-    !node.computed &&
-    node.property.type === 'Identifier' &&
-    PAGE_STATE_ELEMENTS.has(node.property.name) &&
-    isDocumentObject(node.object)
+    unwrapped.type === 'MemberExpression' &&
+    !unwrapped.computed &&
+    unwrapped.property.type === 'Identifier' &&
+    PAGE_STATE_ELEMENTS.has(unwrapped.property.name) &&
+    isDocumentObject(unwrapped.object)
   );
 }
 
 export function isGlobalEventTarget(node: Expression | Super): boolean {
-  if (node.type === 'ChainExpression') {
-    return isGlobalEventTarget(node.expression);
-  }
-  return isGlobalObject(node) || isDocumentObject(node) || isDocumentRootElement(node);
+  if (node.type === 'Super') return false;
+  const unwrapped = unwrapChain(node);
+  return (
+    isGlobalObject(unwrapped) || isDocumentObject(unwrapped) || isDocumentRootElement(unwrapped)
+  );
 }
 
 function isArrayFromCall(node: CallExpression): boolean {
@@ -95,8 +108,10 @@ function isArrayFromCall(node: CallExpression): boolean {
 
 function isCollectionIndexing(node: MemberExpression): boolean {
   if (!node.computed) return false;
-  // String-literal computed keys like `el['id']` read a property rather than indexing a list.
   if (node.property.type === 'Literal' && typeof node.property.value === 'string') {
+    return false;
+  }
+  if (node.property.type === 'TemplateLiteral') {
     return false;
   }
   return true;
@@ -117,6 +132,9 @@ function classifyInternal(expr: Expression, options: OutsideLookupOptions): Inte
   switch (node.type) {
     case 'CallExpression': {
       if (isArrayFromCall(node)) {
+        // `Array.from(nodeList, mapFn)` transforms elements (e.g. `(el) => el.dataset.id`),
+        // so only classify single-argument `Array.from(nodeList)` as storing DOM nodes.
+        if (node.arguments.length !== 1) return null;
         const firstArg = node.arguments[0];
         if (firstArg && firstArg.type !== 'SpreadElement') {
           const inner = classifyInternal(firstArg, options);
@@ -216,10 +234,11 @@ function classifyInternal(expr: Expression, options: OutsideLookupOptions): Inte
     case 'MemberExpression': {
       if (node.object.type !== 'Super' && isCollectionIndexing(node)) {
         const inner = classifyInternal(node.object, options);
+        // Only indexing a collection yields an element; `document.getElementById('x')[propName]`
+        // reads a property from a single element.
         if (inner === 'document-live' || inner === 'document-snapshot') {
           return 'document-single';
         }
-        return inner;
       }
       return null;
     }

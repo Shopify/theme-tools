@@ -1,23 +1,17 @@
 import type { Rule } from 'eslint';
-import type {
-  AssignmentExpression,
-  CallExpression,
-  MemberExpression,
-  MethodDefinition,
-  NewExpression,
-  Node,
-  Program,
-} from 'estree';
+import type { CallExpression, MethodDefinition, NewExpression, Node, Program } from 'estree';
 import {
   collectCustomElements,
   type ClassNode,
   type CustomElementInfo,
 } from '../utils/custom-elements';
-import { isGlobalObject } from '../utils/dom-lookups';
+import { isGlobalObject, unwrapChain } from '../utils/dom-lookups';
 import {
   buildDisconnectedCallbackFix,
   collectReachableMethods,
+  findInstanceMethod,
   getCallableBody,
+  hasSelfReparentOrOneTimeGuard,
   walkSubtree,
   type CallableMember,
   type NodeWithParent,
@@ -71,17 +65,25 @@ function collectDisconnectedTeardowns(classNode: ClassNode): DisconnectedTeardow
     walkSubtree(body, (node) => {
       if (node.type !== 'CallExpression') return;
 
-      // `this.observer?.disconnect()` / `this.observer?.unobserve(...)`
+      // `this.observer?.disconnect()` or `this.observer?.unobserve(this)`
       if (
         node.callee.type === 'MemberExpression' &&
         !node.callee.computed &&
-        node.callee.property.type === 'Identifier' &&
-        (node.callee.property.name === 'disconnect' || node.callee.property.name === 'unobserve')
+        node.callee.property.type === 'Identifier'
       ) {
-        info.hasAnyDisconnect = true;
-        const prop = getThisPropName(node.callee.object);
-        if (prop) info.disconnectedFields.add(prop);
-        return;
+        const methodName = node.callee.property.name;
+        const isDisconnect = methodName === 'disconnect';
+        const isUnobserveThis =
+          methodName === 'unobserve' &&
+          node.arguments.length >= 1 &&
+          node.arguments[0].type === 'ThisExpression';
+
+        if (isDisconnect || isUnobserveThis) {
+          if (isDisconnect) info.hasAnyDisconnect = true;
+          const prop = getThisPropName(node.callee.object);
+          if (prop) info.disconnectedFields.add(prop);
+          return;
+        }
       }
 
       // `clearInterval(this.timer)` or `window.clearInterval(...)`
@@ -105,7 +107,8 @@ function collectDisconnectedTeardowns(classNode: ClassNode): DisconnectedTeardow
       }
 
       // `this.unsubscriber?.()` or `this.unsubscriber()`
-      const unsubProp = getThisPropName(node.callee);
+      const callee = node.callee.type === 'Super' ? node.callee : unwrapChain(node.callee);
+      const unsubProp = getThisPropName(callee);
       if (unsubProp) {
         info.calledUnsubFields.add(unsubProp);
       }
@@ -116,12 +119,13 @@ function collectDisconnectedTeardowns(classNode: ClassNode): DisconnectedTeardow
 }
 
 /**
- * One-shot IntersectionObservers that only observe `this` and call `observer.disconnect()`
+ * One-shot IntersectionObservers that ONLY observe `this` and call `observer.disconnect()`
  * or `observer.unobserve(...)` inside their own callback are common for lazy-loading and
  * are GC'd if the element is removed before intersecting.
  */
 function isOneShotSelfIntersectionObserver(
   node: NewExpression & { parent?: NodeWithParent },
+  enclosingBody: Node,
 ): boolean {
   if (node.callee.type !== 'Identifier' || node.callee.name !== 'IntersectionObserver') {
     return false;
@@ -142,7 +146,7 @@ function isOneShotSelfIntersectionObserver(
   });
   if (!selfDisconnectsInCallback) return false;
 
-  // Check if chained `.observe(this)` directly on `new IntersectionObserver(...)`
+  // Case 1: directly chained `new IntersectionObserver(cb).observe(this)`
   const parent = node.parent;
   if (
     parent?.type === 'MemberExpression' &&
@@ -152,14 +156,36 @@ function isOneShotSelfIntersectionObserver(
     parent.parent?.type === 'CallExpression'
   ) {
     const observeCall = parent.parent as CallExpression;
-    if (observeCall.arguments.length >= 1 && observeCall.arguments[0].type === 'ThisExpression') {
-      return true;
-    }
+    return observeCall.arguments.length >= 1 && observeCall.arguments[0].type === 'ThisExpression';
   }
 
-  // Or if stored in a local variable (not `this.<field>`), check same function observes `this`
-  if (getAssignedThisProp(node) === null) {
-    return true;
+  // Case 2: local variable `const io = new IntersectionObserver(cb); io.observe(this);`
+  // Only exempt if we find at least one `io.observe(...)` call and EVERY one observes `this`.
+  if (
+    parent?.type === 'VariableDeclarator' &&
+    parent.id.type === 'Identifier' &&
+    parent.init === node
+  ) {
+    const varName = parent.id.name;
+    let sawObserve = false;
+    let observedNonThis = false;
+    walkSubtree(enclosingBody, (n) => {
+      if (
+        n.type === 'CallExpression' &&
+        n.callee.type === 'MemberExpression' &&
+        !n.callee.computed &&
+        n.callee.object.type === 'Identifier' &&
+        n.callee.object.name === varName &&
+        n.callee.property.type === 'Identifier' &&
+        n.callee.property.name === 'observe'
+      ) {
+        sawObserve = true;
+        if (n.arguments.length === 0 || n.arguments[0].type !== 'ThisExpression') {
+          observedNonThis = true;
+        }
+      }
+    });
+    return sawObserve && !observedNonThis;
   }
 
   return false;
@@ -225,39 +251,39 @@ const rule: Rule.RuleModule = {
       info: CustomElementInfo | null;
       teardown: DisconnectedTeardownInfo | null;
       connectedReachable: Set<CallableMember>;
-      fixedInThisPass: boolean;
+      connectedHasReparentOrGuard: boolean;
     }
 
     const classStack: ClassState[] = [];
-    const methodStack: Array<MethodDefinition | null> = [];
+    const memberStack: Array<CallableMember | null> = [];
+
+    function pushClass(node: ClassNode): void {
+      const info = customElements.get(node) ?? null;
+      const connectedMethod: MethodDefinition | null = info
+        ? findInstanceMethod(node, 'connectedCallback')
+        : null;
+      classStack.push({
+        classNode: node,
+        info,
+        teardown: info ? collectDisconnectedTeardowns(node) : null,
+        connectedReachable: info
+          ? new Set(collectReachableMethods(node, 'connectedCallback'))
+          : new Set(),
+        connectedHasReparentOrGuard: connectedMethod
+          ? hasSelfReparentOrOneTimeGuard(connectedMethod)
+          : false,
+      });
+    }
 
     return {
       ClassDeclaration(node) {
-        const info = customElements.get(node) ?? null;
-        classStack.push({
-          classNode: node,
-          info,
-          teardown: info ? collectDisconnectedTeardowns(node) : null,
-          connectedReachable: info
-            ? new Set(collectReachableMethods(node, 'connectedCallback'))
-            : new Set(),
-          fixedInThisPass: false,
-        });
+        pushClass(node);
       },
       'ClassDeclaration:exit'() {
         classStack.pop();
       },
       ClassExpression(node) {
-        const info = customElements.get(node) ?? null;
-        classStack.push({
-          classNode: node,
-          info,
-          teardown: info ? collectDisconnectedTeardowns(node) : null,
-          connectedReachable: info
-            ? new Set(collectReachableMethods(node, 'connectedCallback'))
-            : new Set(),
-          fixedInThisPass: false,
-        });
+        pushClass(node);
       },
       'ClassExpression:exit'() {
         classStack.pop();
@@ -265,23 +291,32 @@ const rule: Rule.RuleModule = {
 
       MethodDefinition(node) {
         const cls = classStack[classStack.length - 1];
-        methodStack.push(cls?.info && !node.static ? node : null);
+        memberStack.push(cls?.info && !node.static ? node : null);
       },
       'MethodDefinition:exit'() {
-        methodStack.pop();
+        memberStack.pop();
+      },
+
+      PropertyDefinition(node) {
+        const cls = classStack[classStack.length - 1];
+        memberStack.push(cls?.info && !node.static && getCallableBody(node) ? node : null);
+      },
+      'PropertyDefinition:exit'() {
+        memberStack.pop();
       },
 
       NewExpression(node) {
         const cls = classStack[classStack.length - 1];
-        const currentMethod = methodStack[methodStack.length - 1];
-        if (!cls?.info || !cls.teardown || !currentMethod) return;
+        const currentMember = memberStack[memberStack.length - 1];
+        if (!cls?.info || !cls.teardown || !currentMember) return;
 
         if (node.callee.type !== 'Identifier' || !OBSERVER_CLASSES.has(node.callee.name)) {
           return;
         }
 
+        const enclosingBody = getCallableBody(currentMember);
         const newExpr = node as NewExpression & { parent?: NodeWithParent };
-        if (isOneShotSelfIntersectionObserver(newExpr)) return;
+        if (enclosingBody && isOneShotSelfIntersectionObserver(newExpr, enclosingBody)) return;
 
         const field = getAssignedThisProp(newExpr);
         if (field) {
@@ -290,10 +325,8 @@ const rule: Rule.RuleModule = {
           if (cls.teardown.hasAnyDisconnect) return;
         }
 
-        // Only autofix when created in connectedCallback (or a method called by it) so
-        // reparenting a constructor-initialized element cannot permanently kill the observer.
-        const isInConnectedLifecycle = cls.connectedReachable.has(currentMethod);
-        const canAutofix = Boolean(field) && isInConnectedLifecycle && !cls.fixedInThisPass;
+        const isInConnectedLifecycle =
+          cls.connectedReachable.has(currentMember) && !cls.connectedHasReparentOrGuard;
         let fix: Rule.ReportFixer | undefined;
         let suggest: Rule.SuggestionReportDescriptor[] | undefined;
 
@@ -305,10 +338,9 @@ const rule: Rule.RuleModule = {
               [`this.${field}?.disconnect();`],
               sourceCode,
             );
-          if (canAutofix) {
-            cls.fixedInThisPass = true;
+          if (isInConnectedLifecycle) {
             fix = makeFix;
-          } else if (!isInConnectedLifecycle) {
+          } else {
             suggest = [{ messageId: 'suggestDisconnect', data: { field }, fix: makeFix }];
           }
         }
@@ -327,8 +359,8 @@ const rule: Rule.RuleModule = {
 
       CallExpression(node) {
         const cls = classStack[classStack.length - 1];
-        const currentMethod = methodStack[methodStack.length - 1];
-        if (!cls?.info || !cls.teardown || !currentMethod) return;
+        const currentMember = memberStack[memberStack.length - 1];
+        if (!cls?.info || !cls.teardown || !currentMember) return;
 
         const call = node as CallExpression & { parent?: NodeWithParent };
 
@@ -340,8 +372,8 @@ const rule: Rule.RuleModule = {
             if (cls.teardown.hasAnyClearInterval) return;
           }
 
-          const isInConnectedLifecycle = cls.connectedReachable.has(currentMethod);
-          const canAutofix = Boolean(field) && isInConnectedLifecycle && !cls.fixedInThisPass;
+          const isInConnectedLifecycle =
+            cls.connectedReachable.has(currentMember) && !cls.connectedHasReparentOrGuard;
           let fix: Rule.ReportFixer | undefined;
           let suggest: Rule.SuggestionReportDescriptor[] | undefined;
 
@@ -353,10 +385,9 @@ const rule: Rule.RuleModule = {
                 [`clearInterval(this.${field});`],
                 sourceCode,
               );
-            if (canAutofix) {
-              cls.fixedInThisPass = true;
+            if (isInConnectedLifecycle) {
               fix = makeFix;
-            } else if (!isInConnectedLifecycle) {
+            } else {
               suggest = [{ messageId: 'suggestClearInterval', data: { field }, fix: makeFix }];
             }
           }

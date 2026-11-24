@@ -129,6 +129,19 @@ ruleTester.run('no-stored-outside-element', rule, {
         }
       `,
     },
+    {
+      name: 'Array.from with mapFn and computed property on single element are not flagged',
+      code: `
+        class ProductForm extends HTMLElement {
+          constructor() {
+            super();
+            this.ids = Array.from(document.querySelectorAll('.item'), (el) => el.dataset.id);
+            const prop = 'id';
+            this.singleProp = document.getElementById('cart')[prop];
+          }
+        }
+      `,
+    },
     // Live HTMLCollection / NodeList stored directly updates automatically
     {
       name: 'live collections (getElementsBy*) stored directly are not flagged',
@@ -906,6 +919,40 @@ customElements.define('predictive-search', PredictiveSearch);`,
           // Existing `#cart;` field declaration prevents safe getter suggestion
           suggestions: [],
         },
+      ],
+    },
+    // Inverted isConnected polarity is still flagged
+    {
+      name: 'inverted isConnected guard is still flagged',
+      code: `class ProductForm extends HTMLElement {
+  get cart() {
+    if (this._cart?.isConnected) {
+      this._cart = document.querySelector('cart-drawer');
+    }
+    return this._cart;
+  }
+}`,
+      errors: [{ messageId: 'storedOutsideElement', suggestions: [] }],
+    },
+    // No suggestion when early return precedes assignment or destructuring reassigns field
+    {
+      name: 'no suggestion when connectedCallback has early return or destructuring reassigns',
+      code: `class ProductForm extends HTMLElement {
+  connectedCallback() {
+    if (!this.enabled) return;
+    this.cart = document.querySelector('cart-drawer');
+  }
+  reset() {
+    [this.header] = [null];
+  }
+  constructor() {
+    super();
+    this.header = document.querySelector('sticky-header');
+  }
+}`,
+      errors: [
+        { messageId: 'storedOutsideElement', suggestions: [] },
+        { messageId: 'storedOutsideElement', suggestions: [] },
       ],
     },
     // checkClosest: true option

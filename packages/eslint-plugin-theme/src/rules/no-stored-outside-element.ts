@@ -24,8 +24,12 @@ import {
   isDocumentObject,
   type OutsideLookupKind,
 } from '../utils/dom-lookups';
-
-type NodeWithParent = Node & { parent?: NodeWithParent };
+import {
+  getLineIndentation,
+  statementAlwaysExits,
+  walkSubtree,
+  type NodeWithParent,
+} from '../utils/lifecycle';
 
 interface RuleOptions {
   checkClosest?: boolean;
@@ -63,7 +67,7 @@ function getThisFieldTarget(
       key: `prop:${name}`,
       displayTarget: `this.${name}`,
       getterName: name,
-      canSuggestGetter: true,
+      canSuggestGetter: name !== 'constructor',
     };
   }
 
@@ -112,7 +116,7 @@ function getPropertyDefinitionTarget(
       key: `prop:${name}`,
       displayTarget: `this.${name}`,
       getterName: name,
-      canSuggestGetter: true,
+      canSuggestGetter: name !== 'constructor',
     };
   }
 
@@ -149,74 +153,113 @@ function matchesThisField(
   return false;
 }
 
-function exprChecksConnectedness(
+function isDirectFieldConnectedCheck(
   node: Node,
   fieldKey: string,
   sourceCode: Rule.RuleContext['sourceCode'],
 ): boolean {
-  if (node.type === 'ChainExpression') {
-    return exprChecksConnectedness(node.expression, fieldKey, sourceCode);
-  }
+  const expr = node.type === 'ChainExpression' ? node.expression : node;
 
   // `this._cart?.isConnected` or `this._cart.isConnected`
   if (
-    node.type === 'MemberExpression' &&
-    !node.computed &&
-    node.property.type === 'Identifier' &&
-    node.property.name === 'isConnected' &&
-    matchesThisField(node.object, fieldKey, sourceCode)
+    expr.type === 'MemberExpression' &&
+    !expr.computed &&
+    expr.property.type === 'Identifier' &&
+    expr.property.name === 'isConnected' &&
+    matchesThisField(expr.object, fieldKey, sourceCode)
   ) {
     return true;
   }
 
   // `document.contains(this._cart)`
   if (
-    node.type === 'CallExpression' &&
-    node.callee.type === 'MemberExpression' &&
-    !node.callee.computed &&
-    node.callee.property.type === 'Identifier' &&
-    node.callee.property.name === 'contains' &&
-    isDocumentObject(node.callee.object) &&
-    node.arguments.length === 1 &&
-    matchesThisField(node.arguments[0], fieldKey, sourceCode)
+    expr.type === 'CallExpression' &&
+    expr.callee.type === 'MemberExpression' &&
+    !expr.callee.computed &&
+    expr.callee.property.type === 'Identifier' &&
+    expr.callee.property.name === 'contains' &&
+    isDocumentObject(expr.callee.object) &&
+    expr.arguments.length === 1 &&
+    matchesThisField(expr.arguments[0], fieldKey, sourceCode)
   ) {
     return true;
-  }
-
-  if (node.type === 'UnaryExpression') {
-    return exprChecksConnectedness(node.argument, fieldKey, sourceCode);
-  }
-
-  if (node.type === 'LogicalExpression' || node.type === 'BinaryExpression') {
-    return (
-      exprChecksConnectedness(node.left, fieldKey, sourceCode) ||
-      exprChecksConnectedness(node.right, fieldKey, sourceCode)
-    );
-  }
-
-  if (node.type === 'ConditionalExpression') {
-    return (
-      exprChecksConnectedness(node.test, fieldKey, sourceCode) ||
-      exprChecksConnectedness(node.consequent, fieldKey, sourceCode) ||
-      exprChecksConnectedness(node.alternate, fieldKey, sourceCode)
-    );
   }
 
   return false;
 }
 
-function statementAlwaysExits(stmt: Statement): boolean {
-  switch (stmt.type) {
-    case 'ReturnStatement':
-    case 'ThrowStatement':
-    case 'ContinueStatement':
-    case 'BreakStatement':
-      return true;
-    case 'BlockStatement':
-      return stmt.body.some((s) => statementAlwaysExits(s));
-    default:
-      return false;
+/**
+ * Evaluates whether `node` checks that `this.<field>` is connected (`wantConnected = true`)
+ * or disconnected (`wantConnected = false`), respecting `!`, `&&`, `||`, and `=== true/false`.
+ */
+function exprChecksConnectedness(
+  node: Node,
+  fieldKey: string,
+  wantConnected: boolean,
+  sourceCode: Rule.RuleContext['sourceCode'],
+): boolean {
+  if (node.type === 'ChainExpression') {
+    return exprChecksConnectedness(node.expression, fieldKey, wantConnected, sourceCode);
   }
+
+  if (isDirectFieldConnectedCheck(node, fieldKey, sourceCode)) {
+    return wantConnected;
+  }
+
+  if (node.type === 'UnaryExpression' && node.operator === '!') {
+    return exprChecksConnectedness(node.argument, fieldKey, !wantConnected, sourceCode);
+  }
+
+  if (node.type === 'BinaryExpression') {
+    const isBool = (n: Node, val: boolean) => n.type === 'Literal' && n.value === val;
+    if (isDirectFieldConnectedCheck(node.left, fieldKey, sourceCode)) {
+      if (isBool(node.right, true)) {
+        return node.operator === '===' || node.operator === '==' ? wantConnected : !wantConnected;
+      }
+      if (isBool(node.right, false)) {
+        return node.operator === '===' || node.operator === '==' ? !wantConnected : wantConnected;
+      }
+    }
+    if (isDirectFieldConnectedCheck(node.right, fieldKey, sourceCode)) {
+      if (isBool(node.left, true)) {
+        return node.operator === '===' || node.operator === '==' ? wantConnected : !wantConnected;
+      }
+      if (isBool(node.left, false)) {
+        return node.operator === '===' || node.operator === '==' ? !wantConnected : wantConnected;
+      }
+    }
+  }
+
+  if (node.type === 'LogicalExpression') {
+    if (node.operator === '||') {
+      if (!wantConnected) {
+        // `!this._cart || !this._cart.isConnected` -> disconnected when true
+        return (
+          exprChecksConnectedness(node.left, fieldKey, false, sourceCode) ||
+          exprChecksConnectedness(node.right, fieldKey, false, sourceCode)
+        );
+      }
+      return (
+        exprChecksConnectedness(node.left, fieldKey, true, sourceCode) &&
+        exprChecksConnectedness(node.right, fieldKey, true, sourceCode)
+      );
+    }
+    if (node.operator === '&&') {
+      if (wantConnected) {
+        // `this._cart && this._cart.isConnected` -> connected when true
+        return (
+          exprChecksConnectedness(node.left, fieldKey, true, sourceCode) ||
+          exprChecksConnectedness(node.right, fieldKey, true, sourceCode)
+        );
+      }
+      return (
+        exprChecksConnectedness(node.left, fieldKey, false, sourceCode) &&
+        exprChecksConnectedness(node.right, fieldKey, false, sourceCode)
+      );
+    }
+  }
+
+  return false;
 }
 
 function isGuardedByIsConnected(
@@ -225,18 +268,27 @@ function isGuardedByIsConnected(
   sourceCode: Rule.RuleContext['sourceCode'],
 ): boolean {
   // Pattern: `this._cart = this._cart?.isConnected ? this._cart : document.querySelector(...)`
-  if (
-    assignment.right.type === 'ConditionalExpression' &&
-    exprChecksConnectedness(assignment.right.test, fieldKey, sourceCode)
-  ) {
-    return true;
+  // or `this._cart = !this._cart?.isConnected ? document.querySelector(...) : this._cart`
+  if (assignment.right.type === 'ConditionalExpression') {
+    const cond = assignment.right;
+    if (
+      exprChecksConnectedness(cond.test, fieldKey, true, sourceCode) &&
+      matchesThisField(cond.consequent, fieldKey, sourceCode)
+    ) {
+      return true;
+    }
+    if (
+      exprChecksConnectedness(cond.test, fieldKey, false, sourceCode) &&
+      matchesThisField(cond.alternate, fieldKey, sourceCode)
+    ) {
+      return true;
+    }
   }
 
   let current: NodeWithParent | undefined = assignment;
   while (current?.parent) {
     const parent: NodeWithParent = current.parent;
 
-    // Stop at function or class boundaries
     if (
       parent.type === 'FunctionDeclaration' ||
       parent.type === 'FunctionExpression' ||
@@ -250,8 +302,14 @@ function isGuardedByIsConnected(
     if (parent.type === 'IfStatement') {
       const ifStmt = parent as IfStatement;
       if (
-        (ifStmt.consequent === current || ifStmt.alternate === current) &&
-        exprChecksConnectedness(ifStmt.test, fieldKey, sourceCode)
+        ifStmt.consequent === current &&
+        exprChecksConnectedness(ifStmt.test, fieldKey, false, sourceCode)
+      ) {
+        return true;
+      }
+      if (
+        ifStmt.alternate === current &&
+        exprChecksConnectedness(ifStmt.test, fieldKey, true, sourceCode)
       ) {
         return true;
       }
@@ -260,8 +318,14 @@ function isGuardedByIsConnected(
     if (parent.type === 'ConditionalExpression') {
       const cond = parent as ConditionalExpression;
       if (
-        (cond.consequent === current || cond.alternate === current) &&
-        exprChecksConnectedness(cond.test, fieldKey, sourceCode)
+        cond.consequent === current &&
+        exprChecksConnectedness(cond.test, fieldKey, false, sourceCode)
+      ) {
+        return true;
+      }
+      if (
+        cond.alternate === current &&
+        exprChecksConnectedness(cond.test, fieldKey, true, sourceCode)
       ) {
         return true;
       }
@@ -275,7 +339,7 @@ function isGuardedByIsConnected(
         if (
           prev.type === 'IfStatement' &&
           statementAlwaysExits(prev.consequent) &&
-          exprChecksConnectedness(prev.test, fieldKey, sourceCode)
+          exprChecksConnectedness(prev.test, fieldKey, true, sourceCode)
         ) {
           return true;
         }
@@ -285,24 +349,6 @@ function isGuardedByIsConnected(
     current = parent;
   }
 
-  return false;
-}
-
-function walkSubtree(node: Node, visit: (n: Node) => boolean | void): boolean {
-  if (visit(node) === true) return true;
-  for (const key of Object.keys(node)) {
-    if (key === 'parent' || key === 'loc' || key === 'range') continue;
-    const value = (node as unknown as Record<string, unknown>)[key];
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        if (item && typeof item === 'object' && typeof (item as Node).type === 'string') {
-          if (walkSubtree(item as Node, visit)) return true;
-        }
-      }
-    } else if (value && typeof value === 'object' && typeof (value as Node).type === 'string') {
-      if (walkSubtree(value as Node, visit)) return true;
-    }
-  }
   return false;
 }
 
@@ -367,7 +413,7 @@ function exprReferencesUnsafeBindings(
   sourceCode: Rule.RuleContext['sourceCode'],
 ): boolean {
   return walkSubtree(expr, (n) => {
-    if (n.type === 'Super') return true;
+    if (n.type === 'Super' || n.type === 'MetaProperty') return true;
     if (n.type === 'Identifier' && n.name === 'arguments') return true;
 
     // Avoid self-referential getter recursion: `this.header = this.header || ...`
@@ -394,6 +440,35 @@ function exprReferencesUnsafeBindings(
   });
 }
 
+function patternWritesTarget(
+  pattern: Node,
+  target: FieldTarget,
+  sourceCode: Rule.RuleContext['sourceCode'],
+): boolean {
+  switch (pattern.type) {
+    case 'MemberExpression': {
+      const leftTarget = getThisFieldTarget(pattern, sourceCode);
+      return Boolean(leftTarget && leftTarget.key === target.key);
+    }
+    case 'AssignmentPattern':
+      return patternWritesTarget(pattern.left, target, sourceCode);
+    case 'RestElement':
+      return patternWritesTarget(pattern.argument, target, sourceCode);
+    case 'ArrayPattern':
+      return pattern.elements.some(
+        (el) => el !== null && patternWritesTarget(el, target, sourceCode),
+      );
+    case 'ObjectPattern':
+      return pattern.properties.some((prop) =>
+        prop.type === 'RestElement'
+          ? patternWritesTarget(prop.argument, target, sourceCode)
+          : patternWritesTarget(prop.value, target, sourceCode),
+      );
+    default:
+      return false;
+  }
+}
+
 function classHasMemberOrOtherAssignment(
   classBody: ClassBody,
   target: FieldTarget,
@@ -415,11 +490,8 @@ function classHasMemberOrOtherAssignment(
 
   return walkSubtree(classBody, (n) => {
     if (n === ignoreNode) return false;
-    if (n.type === 'AssignmentExpression' && n.left.type === 'MemberExpression') {
-      const leftTarget = getThisFieldTarget(n.left, sourceCode);
-      if (leftTarget && leftTarget.key === target.key) {
-        return true;
-      }
+    if (n.type === 'AssignmentExpression' && patternWritesTarget(n.left, target, sourceCode)) {
+      return true;
     }
     if (n.type === 'UpdateExpression' && n.argument.type === 'MemberExpression') {
       const argTarget = getThisFieldTarget(n.argument, sourceCode);
@@ -428,12 +500,6 @@ function classHasMemberOrOtherAssignment(
       }
     }
   });
-}
-
-function getLineIndentation(node: Node, sourceCode: Rule.RuleContext['sourceCode']): string {
-  const line = sourceCode.lines[(node.loc?.start.line ?? 1) - 1] ?? '';
-  const match = /^(\s*)/.exec(line);
-  return match ? match[1] : '';
 }
 
 function getStatementRemovalRange(
@@ -496,6 +562,24 @@ function buildSetupMethodGetterSuggestion(
   if (!stmt || stmt.type !== 'ExpressionStatement') return undefined;
   if (stmt.parent !== setupMethod.value.body) return undefined;
   if (sourceCode.getCommentsInside(stmt).length > 0) return undefined;
+
+  // If an earlier statement in the setup method can early-return/throw, moving the
+  // assignment to a getter would make the property non-undefined even when setup bailed out.
+  const bodyStmts = setupMethod.value.body.body;
+  const stmtIdx = bodyStmts.indexOf(stmt as Statement);
+  for (let i = 0; i < stmtIdx; i++) {
+    const prev = bodyStmts[i];
+    if (
+      statementAlwaysExits(prev) ||
+      (prev.type === 'IfStatement' &&
+        (statementAlwaysExits(prev.consequent) ||
+          (prev.alternate !== null &&
+            prev.alternate !== undefined &&
+            statementAlwaysExits(prev.alternate))))
+    ) {
+      return undefined;
+    }
+  }
 
   const removalRange = getStatementRemovalRange(stmt as ExpressionStatement, sourceCode);
   if (!removalRange) return undefined;
