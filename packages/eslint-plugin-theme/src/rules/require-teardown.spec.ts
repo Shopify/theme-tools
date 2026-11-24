@@ -141,6 +141,56 @@ ruleTester.run('require-teardown', rule, {
 }`,
     },
     {
+      name: 'observer created in constructor offers suggestion instead of autofix',
+      code: `class ResponsiveBar extends HTMLElement {
+  constructor() {
+    super();
+    this.resizeObserver = new ResizeObserver(() => this.update());
+  }
+}`,
+      errors: [
+        {
+          messageId: 'uncleanedObserver',
+          suggestions: [
+            {
+              messageId: 'suggestDisconnect',
+              output: `class ResponsiveBar extends HTMLElement {
+  constructor() {
+    super();
+    this.resizeObserver = new ResizeObserver(() => this.update());
+  }
+
+  disconnectedCallback() {
+    this.resizeObserver?.disconnect();
+  }
+}`,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'subclass of custom base class calls super.disconnectedCallback?.() in autofix',
+      code: `class AnnouncementBar extends Component {
+  connectedCallback() {
+    this.interval = setInterval(() => this.next(), 3000);
+  }
+}
+customElements.define('announcement-bar', AnnouncementBar);`,
+      errors: [{ messageId: 'uncleanedInterval' }],
+      output: `class AnnouncementBar extends Component {
+  connectedCallback() {
+    this.interval = setInterval(() => this.next(), 3000);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback?.();
+    clearInterval(this.interval);
+  }
+}
+customElements.define('announcement-bar', AnnouncementBar);`,
+    },
+    {
       name: 'subscribe() stored on this offers suggestion',
       code: `class PricePerItem extends HTMLElement {
   connectedCallback() {

@@ -19,6 +19,7 @@ import {
   collectReachableMethods,
   getCallableBody,
   walkSubtree,
+  type CallableMember,
   type NodeWithParent,
 } from '../utils/lifecycle';
 
@@ -209,6 +210,8 @@ const rule: Rule.RuleModule = {
       uncleanedSubscription:
         "'this.{{field}}' stores a subscribe() unsubscriber inside {{element}}, but is not called in disconnectedCallback(). " +
         'Call `this.{{field}}?.()` in `disconnectedCallback()` so removed elements stop receiving events.',
+      suggestDisconnect: "Disconnect 'this.{{field}}' in disconnectedCallback().",
+      suggestClearInterval: "Clear 'this.{{field}}' in disconnectedCallback().",
       suggestUnsubscribe: "Call 'this.{{field}}?.()' in disconnectedCallback().",
     },
   },
@@ -221,11 +224,12 @@ const rule: Rule.RuleModule = {
       classNode: ClassNode;
       info: CustomElementInfo | null;
       teardown: DisconnectedTeardownInfo | null;
+      connectedReachable: Set<CallableMember>;
       fixedInThisPass: boolean;
     }
 
     const classStack: ClassState[] = [];
-    const inInstanceMethodStack: boolean[] = [];
+    const methodStack: Array<MethodDefinition | null> = [];
 
     return {
       ClassDeclaration(node) {
@@ -234,6 +238,9 @@ const rule: Rule.RuleModule = {
           classNode: node,
           info,
           teardown: info ? collectDisconnectedTeardowns(node) : null,
+          connectedReachable: info
+            ? new Set(collectReachableMethods(node, 'connectedCallback'))
+            : new Set(),
           fixedInThisPass: false,
         });
       },
@@ -246,6 +253,9 @@ const rule: Rule.RuleModule = {
           classNode: node,
           info,
           teardown: info ? collectDisconnectedTeardowns(node) : null,
+          connectedReachable: info
+            ? new Set(collectReachableMethods(node, 'connectedCallback'))
+            : new Set(),
           fixedInThisPass: false,
         });
       },
@@ -255,16 +265,16 @@ const rule: Rule.RuleModule = {
 
       MethodDefinition(node) {
         const cls = classStack[classStack.length - 1];
-        inInstanceMethodStack.push(Boolean(cls?.info && !node.static));
+        methodStack.push(cls?.info && !node.static ? node : null);
       },
       'MethodDefinition:exit'() {
-        inInstanceMethodStack.pop();
+        methodStack.pop();
       },
 
       NewExpression(node) {
         const cls = classStack[classStack.length - 1];
-        const inInstance = inInstanceMethodStack[inInstanceMethodStack.length - 1];
-        if (!cls?.info || !cls.teardown || !inInstance) return;
+        const currentMethod = methodStack[methodStack.length - 1];
+        if (!cls?.info || !cls.teardown || !currentMethod) return;
 
         if (node.callee.type !== 'Identifier' || !OBSERVER_CLASSES.has(node.callee.name)) {
           return;
@@ -280,17 +290,27 @@ const rule: Rule.RuleModule = {
           if (cls.teardown.hasAnyDisconnect) return;
         }
 
-        const canAutofix = Boolean(field) && !cls.fixedInThisPass;
+        // Only autofix when created in connectedCallback (or a method called by it) so
+        // reparenting a constructor-initialized element cannot permanently kill the observer.
+        const isInConnectedLifecycle = cls.connectedReachable.has(currentMethod);
+        const canAutofix = Boolean(field) && isInConnectedLifecycle && !cls.fixedInThisPass;
         let fix: Rule.ReportFixer | undefined;
-        if (canAutofix && field) {
-          cls.fixedInThisPass = true;
-          fix = (fixer) =>
+        let suggest: Rule.SuggestionReportDescriptor[] | undefined;
+
+        if (field) {
+          const makeFix: Rule.ReportFixer = (fixer) =>
             buildDisconnectedCallbackFix(
               fixer,
               cls.classNode,
               [`this.${field}?.disconnect();`],
               sourceCode,
             );
+          if (canAutofix) {
+            cls.fixedInThisPass = true;
+            fix = makeFix;
+          } else if (!isInConnectedLifecycle) {
+            suggest = [{ messageId: 'suggestDisconnect', data: { field }, fix: makeFix }];
+          }
         }
 
         context.report({
@@ -301,13 +321,14 @@ const rule: Rule.RuleModule = {
             element: cls.info.elementLabel,
           },
           fix,
+          suggest,
         });
       },
 
       CallExpression(node) {
         const cls = classStack[classStack.length - 1];
-        const inInstance = inInstanceMethodStack[inInstanceMethodStack.length - 1];
-        if (!cls?.info || !cls.teardown || !inInstance) return;
+        const currentMethod = methodStack[methodStack.length - 1];
+        if (!cls?.info || !cls.teardown || !currentMethod) return;
 
         const call = node as CallExpression & { parent?: NodeWithParent };
 
@@ -319,17 +340,25 @@ const rule: Rule.RuleModule = {
             if (cls.teardown.hasAnyClearInterval) return;
           }
 
-          const canAutofix = Boolean(field) && !cls.fixedInThisPass;
+          const isInConnectedLifecycle = cls.connectedReachable.has(currentMethod);
+          const canAutofix = Boolean(field) && isInConnectedLifecycle && !cls.fixedInThisPass;
           let fix: Rule.ReportFixer | undefined;
-          if (canAutofix && field) {
-            cls.fixedInThisPass = true;
-            fix = (fixer) =>
+          let suggest: Rule.SuggestionReportDescriptor[] | undefined;
+
+          if (field) {
+            const makeFix: Rule.ReportFixer = (fixer) =>
               buildDisconnectedCallbackFix(
                 fixer,
                 cls.classNode,
                 [`clearInterval(this.${field});`],
                 sourceCode,
               );
+            if (canAutofix) {
+              cls.fixedInThisPass = true;
+              fix = makeFix;
+            } else if (!isInConnectedLifecycle) {
+              suggest = [{ messageId: 'suggestClearInterval', data: { field }, fix: makeFix }];
+            }
           }
 
           context.report({
@@ -337,6 +366,7 @@ const rule: Rule.RuleModule = {
             messageId: 'uncleanedInterval',
             data: { element: cls.info.elementLabel },
             fix,
+            suggest,
           });
           return;
         }

@@ -144,9 +144,29 @@ export function getIndentUnit(indent: string): string {
   return indent.startsWith('\t') ? '\t' : '  ';
 }
 
+const BUILTIN_ELEMENT_CLASS = /^(?:HTML\w*Element|SVG\w*Element)$/;
+
+function isDirectBuiltinSuperClass(classNode: ClassNode): boolean {
+  const sc = classNode.superClass;
+  if (!sc) return true;
+  if (sc.type === 'Identifier') return BUILTIN_ELEMENT_CLASS.test(sc.name);
+  if (
+    sc.type === 'MemberExpression' &&
+    !sc.computed &&
+    sc.property.type === 'Identifier' &&
+    sc.object.type === 'Identifier' &&
+    (sc.object.name === 'window' || sc.object.name === 'globalThis')
+  ) {
+    return BUILTIN_ELEMENT_CLASS.test(sc.property.name);
+  }
+  return false;
+}
+
 /**
  * Produces a `Rule.Fix` that appends one or more statements to `disconnectedCallback()`
  * (creating the method right after `connectedCallback()` or at the end of the class if absent).
+ * When creating a new `disconnectedCallback()` on a subclass of a custom base class,
+ * automatically prepends `super.disconnectedCallback?.();` so parent cleanup is never shadowed.
  */
 export function buildDisconnectedCallbackFix(
   fixer: Rule.RuleFixer,
@@ -195,13 +215,17 @@ export function buildDisconnectedCallbackFix(
     );
   }
 
+  const allStatements = isDirectBuiltinSuperClass(classNode)
+    ? statements
+    : ['super.disconnectedCallback?.();', ...statements];
+
   const firstMember = classNode.body.body[0];
   const classIndent = getLineIndentation(classNode, sourceCode);
   const memberIndent = firstMember
     ? getLineIndentation(firstMember, sourceCode)
     : classIndent + getIndentUnit(classIndent);
   const bodyIndent = memberIndent + getIndentUnit(memberIndent);
-  const bodyLines = statements.map((s) => `${bodyIndent}${s}`).join('\n');
+  const bodyLines = allStatements.map((s) => `${bodyIndent}${s}`).join('\n');
   const methodCode = `\n\n${memberIndent}disconnectedCallback() {\n${bodyLines}\n${memberIndent}}`;
 
   const anchor =

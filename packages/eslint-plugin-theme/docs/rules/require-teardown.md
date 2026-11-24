@@ -36,6 +36,6 @@ class CountdownTimer extends HTMLElement {
 
 ## Autofix
 
-- Observers stored on `this.<field>` are autofixed by appending `this.<field>?.disconnect();` to `disconnectedCallback()`.
-- Intervals stored on `this.<field>` are autofixed by appending `clearInterval(this.<field>);` to `disconnectedCallback()`.
+- Observers and intervals stored on `this.<field>` inside `connectedCallback()` (or a method called from it) are autofixed by appending `this.<field>?.disconnect();` or `clearInterval(this.<field>);` to `disconnectedCallback()`. On subclasses of custom base classes, a newly created `disconnectedCallback()` automatically includes `super.disconnectedCallback?.();`.
+- Observers and intervals created in `constructor()` (or outside `connectedCallback()`) offer an ESLint suggestion instead of an automatic fix, so reparenting an element in the DOM cannot silently break constructor-only setup.
 - Pub/sub unsubscribers stored on `this.<field> = subscribe(...)` offer an ESLint suggestion to call `this.<field>?.()` in `disconnectedCallback()`.
