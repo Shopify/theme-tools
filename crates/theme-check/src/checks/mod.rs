@@ -164,6 +164,7 @@ pub static ALL_CHECKS: &[&CheckDef] = &[
     &valid_select_default::VALID_SELECT_DEFAULT,
     &valid_select_default::VALID_SELECT_DEFAULT_SETTINGS_SCHEMA,
     &valid_settings_key::VALID_SETTINGS_KEY,
+    &valid_settings_key::VALID_SETTINGS_KEY_JSON,
     &valid_standard_event_data::VALID_STANDARD_EVENT_DATA,
     &valid_static_block_type::VALID_STATIC_BLOCK_TYPE,
     &valid_visible_if::VALID_VISIBLE_IF,
