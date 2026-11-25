@@ -1459,16 +1459,31 @@ mod nonrecursive_glob_match {
         out
     }
 
-    /// `fixed(a, b)`: the digit strings from a to b, which have the same length.
+    /// `fixed(a, b)`: the digit strings from a to b, which have the same length. The digits they
+    /// share come first in each one, without a recursion for each: padding can make thousands.
+    /// The rest is at most 16 digits, as `b` is a safe integer.
     fn fixed(a: &[u8], b: &[u8]) -> Vec<Vec<Item>> {
+        let same = a.iter().zip(b).take_while(|(x, y)| x == y).count();
+        let alts = differing(&a[same..], &b[same..]);
+        if same == 0 {
+            return alts;
+        }
+        let head: Vec<Item> = a[..same]
+            .iter()
+            .map(|&d| digit(d - b'0', d - b'0'))
+            .collect();
+        alts.into_iter()
+            .map(|s| head.iter().cloned().chain(s).collect())
+            .collect()
+    }
+
+    /// `fixed(a, b)` where the first digits differ, or there are none.
+    fn differing(a: &[u8], b: &[u8]) -> Vec<Vec<Item>> {
         let Some((&a0, ra)) = a.split_first() else {
             return vec![Vec::new()];
         };
         let (&b0, rb) = b.split_first().unwrap();
         let (mut lo, mut hi) = (a0 - b'0', b0 - b'0');
-        if lo == hi {
-            return prefix(lo, fixed(ra, rb));
-        }
         let zeros = vec![b'0'; ra.len()];
         let nines = vec![b'9'; ra.len()];
         let mut out = Vec::new();
@@ -2100,5 +2115,19 @@ mod tests {
         };
         let thread = std::thread::Builder::new().stack_size(16 << 20);
         thread.spawn(deep).unwrap().join().unwrap();
+    }
+
+    /// A padded range is one portion, of any width, on the stack of a test thread.
+    #[test]
+    fn padded_ranges() {
+        let range = |zeros: usize| format!("{{{}1..100}}", "0".repeat(zeros));
+        let digits = |n: usize, s: &str| format!("{}{s}", "0".repeat(n - s.len()));
+        assert!(minimatch(&digits(3_001, "100"), &range(3_000)));
+        assert!(minimatch(&digits(3_001, "1"), &range(3_000)));
+        assert!(!minimatch(&digits(3_001, "101"), &range(3_000)));
+        assert!(!minimatch("100", &range(3_000)));
+        // JS runs out of stack on these.
+        assert!(minimatch(&digits(60_001, "42"), &range(60_000)));
+        assert!(!minimatch(&digits(60_000, "42"), &range(60_000)));
     }
 }
