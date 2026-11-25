@@ -4,7 +4,7 @@ use crate::context::{
     CheckDef, CheckError, Config, Context, Create, Deps, JsonCheck, LiquidCheck, Offense,
 };
 use crate::json::{visit_json, JsonKind};
-use crate::minimatch::Minimatch;
+use crate::minimatch::{Minimatch, Options};
 use crate::source::SourceCode;
 use crate::visitor::find_current_node;
 use liquid_ast::{visit_liquid, Markup, NodeKind, NodeRef, Span};
@@ -483,7 +483,8 @@ pub(crate) fn ignore_patterns(
             if let Some(stem) = p.strip_suffix("/*") {
                 p = format!("{stem}/**");
             }
-            Minimatch::new(&p)
+            // `dot`, so `**` also matches when the root is inside a dot-directory, like `.worktrees/`.
+            Minimatch::with_options(&p, Options { dot: true })
         })
         .collect()
 }
@@ -508,6 +509,29 @@ mod tests {
         assert!(!ignored("file:///other/snippets/a.liquid"));
         assert!(ignored("file:///root/x/tests/a.liquid"));
         assert!(ignored("file:///root/templates/index.json"));
-        assert!(!ignored("file:///root/.x/a.json"));
+        assert!(ignored("file:///root/.x/a.json"));
+    }
+
+    #[test]
+    fn globs_with_root_inside_a_dot_directory() {
+        let root = "file:///path/.worktrees/theme";
+        let check = crate::checks::find("UnknownFilter").unwrap();
+        let settings = serde_json::json!({
+            "UnknownFilter": { "ignore": ["templates/product.json", "/snippets/*"] }
+        });
+        let config = Config::new(
+            vec![check],
+            settings.as_object().unwrap().clone(),
+            vec!["node_modules/**".into()],
+        );
+        let ignored = |def: Option<&CheckDef>, path: &str| {
+            ignore_patterns(&config, def, root)
+                .iter()
+                .any(|m| m.matches(&format!("{root}/{path}")))
+        };
+        assert!(ignored(Some(check), "templates/product.json"));
+        assert!(ignored(Some(check), "snippets/a.liquid"));
+        assert!(ignored(None, "node_modules/some-library/foo.liquid"));
+        assert!(!ignored(Some(check), "templates/index.json"));
     }
 }

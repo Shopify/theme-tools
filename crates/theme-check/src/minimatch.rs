@@ -1,4 +1,4 @@
-//! `minimatch(path, pattern)` from minimatch@10.2.1 with default options (posix): brace expansion
+//! `minimatch(path, pattern)` from minimatch@10.2.1 with default options (posix), or with `dot`: brace expansion
 //! (brace-expansion@5 / balanced-match@4), `**` matching, the extglob AST and its regexp sources,
 //! which run on a small backtracking matcher with JS regexp semantics (lookaheads, `u` mode).
 
@@ -11,12 +11,20 @@ pub fn minimatch(path: &str, pattern: &str) -> bool {
     Minimatch::new(pattern).matches(path)
 }
 
-/// `new Minimatch(pattern)`.
+/// `new Minimatch(pattern, options)`.
 pub struct Minimatch {
     set: Vec<Vec<Part>>,
     negate: bool,
     comment: bool,
     empty: bool,
+    dot: bool,
+}
+
+/// The minimatch options this port supports.
+#[derive(Clone, Copy, Default)]
+pub struct Options {
+    /// `**` and wildcards also match path portions that start with a dot.
+    pub dot: bool,
 }
 
 enum Part {
@@ -26,11 +34,11 @@ enum Part {
 }
 
 enum Matcher {
-    /// The `test` overrides `parse()` installs for the common patterns.
-    Star,
-    StarDotExt(String),
-    Qmarks(usize, String),
-    StarDotStar,
+    /// The `test` overrides `parse()` installs for the common patterns, and whether `dot` is set.
+    Star(bool),
+    StarDotExt(String, bool),
+    Qmarks(usize, String, bool),
+    StarDotStar(bool),
     DotStar,
     Regex(JsRegex),
 }
@@ -38,12 +46,19 @@ enum Matcher {
 impl Matcher {
     fn test(&self, f: &str) -> bool {
         match self {
-            Matcher::Star => !f.is_empty() && !f.starts_with('.'),
-            Matcher::StarDotExt(ext) => !f.starts_with('.') && f.ends_with(ext.as_str()),
-            Matcher::Qmarks(len, ext) => {
+            Matcher::Star(false) => !f.is_empty() && !f.starts_with('.'),
+            Matcher::Star(true) => !f.is_empty() && f != "." && f != "..",
+            Matcher::StarDotExt(ext, false) => !f.starts_with('.') && f.ends_with(ext.as_str()),
+            // minimatch@11: unlike @10, `*.` with `dot` doesn't match `.` or `..`.
+            Matcher::StarDotExt(ext, true) => f != "." && f != ".." && f.ends_with(ext.as_str()),
+            Matcher::Qmarks(len, ext, false) => {
                 crate::js::len16(f) == *len && !f.starts_with('.') && f.ends_with(ext.as_str())
             }
-            Matcher::StarDotStar => !f.starts_with('.') && f.contains('.'),
+            Matcher::Qmarks(len, ext, true) => {
+                crate::js::len16(f) == *len && f != "." && f != ".." && f.ends_with(ext.as_str())
+            }
+            Matcher::StarDotStar(false) => !f.starts_with('.') && f.contains('.'),
+            Matcher::StarDotStar(true) => f != "." && f != ".." && f.contains('.'),
             Matcher::DotStar => f != "." && f != ".." && f.starts_with('.'),
             Matcher::Regex(re) => re.test(f),
         }
@@ -54,11 +69,17 @@ impl Minimatch {
     /// ponytail: no `assertValidPattern` length limit (64K), and a regexp JS would reject (`+()`
     /// alone, identity escapes in `u` mode) compiles leniently here instead of throwing.
     pub fn new(pattern: &str) -> Self {
+        Self::with_options(pattern, Options::default())
+    }
+
+    /// `new Minimatch(pattern, options)`.
+    pub fn with_options(pattern: &str, options: Options) -> Self {
         let mut mm = Minimatch {
             set: Vec::new(),
             negate: false,
             comment: false,
             empty: false,
+            dot: options.dot,
         };
         if pattern.starts_with('#') {
             mm.comment = true;
@@ -83,7 +104,7 @@ impl Minimatch {
             .map(|g| {
                 level_one_optimize(slash_split(g))
                     .into_iter()
-                    .map(parse)
+                    .map(|p| parse(p, options.dot))
                     .collect()
             })
             .collect();
@@ -100,7 +121,7 @@ impl Minimatch {
         }
         let file = slash_split(f);
         for pattern in &self.set {
-            if match_one(&file, pattern) {
+            if match_one(&file, pattern, self.dot) {
                 return !self.negate;
             }
         }
@@ -140,7 +161,7 @@ fn level_one_optimize(parts: Vec<&str>) -> Vec<&str> {
     set
 }
 
-fn match_one(file: &[&str], pattern: &[Part]) -> bool {
+fn match_one(file: &[&str], pattern: &[Part], dot: bool) -> bool {
     let (fl, pl) = (file.len(), pattern.len());
     let (mut fi, mut pi) = (0, 0);
     while fi < fl && pi < pl {
@@ -148,12 +169,12 @@ fn match_one(file: &[&str], pattern: &[Part]) -> bool {
         match &pattern[pi] {
             Part::Globstar => {
                 let pr = pi + 1;
-                let swallowable = |s: &str| s != "." && s != ".." && !s.starts_with('.');
+                let swallowable = |s: &str| s != "." && s != ".." && (dot || !s.starts_with('.'));
                 if pr == pl {
                     return file[fi..].iter().all(|s| swallowable(s));
                 }
                 for fr in fi..fl {
-                    if match_one(&file[fr..], &pattern[pr..]) {
+                    if match_one(&file[fr..], &pattern[pr..], dot) {
                         return true;
                     }
                     if !swallowable(file[fr]) {
@@ -188,7 +209,7 @@ fn match_one(file: &[&str], pattern: &[Part]) -> bool {
 // ---------------------------------------------------------------------------------------------
 // parse(pattern): one path portion
 
-fn parse(pattern: &str) -> Part {
+fn parse(pattern: &str, dot: bool) -> Part {
     if pattern == "**" {
         return Part::Globstar;
     }
@@ -198,19 +219,23 @@ fn parse(pattern: &str) -> Part {
     let stars = pattern.len() - pattern.trim_start_matches('*').len();
     let ext_ok = |e: &str| !e.contains(['+', '@', '!', '?', '*', '[', '(']);
     let fast = if stars > 0 && stars == pattern.len() {
-        Some(Matcher::Star)
+        Some(Matcher::Star(dot))
     } else if stars > 0 && ext_ok(&pattern[stars..]) {
-        Some(Matcher::StarDotExt(pattern[stars..].to_string()))
+        Some(Matcher::StarDotExt(pattern[stars..].to_string(), dot))
     } else if let Some(ext) =
         Some(pattern.trim_start_matches('?')).filter(|e| e.len() < pattern.len() && ext_ok(e))
     {
-        Some(Matcher::Qmarks(crate::js::len16(pattern), ext.to_string()))
+        Some(Matcher::Qmarks(
+            crate::js::len16(pattern),
+            ext.to_string(),
+            dot,
+        ))
     } else if stars > 0
         && pattern[stars..]
             .strip_prefix('.')
             .is_some_and(|r| !r.is_empty() && r.bytes().all(|c| c == b'*'))
     {
-        Some(Matcher::StarDotStar)
+        Some(Matcher::StarDotStar(dot))
     } else if pattern
         .strip_prefix('.')
         .is_some_and(|r| !r.is_empty() && r.bytes().all(|c| c == b'*'))
@@ -219,7 +244,7 @@ fn parse(pattern: &str) -> Part {
     } else {
         None
     };
-    match Ast::from_glob(pattern).to_mm_pattern() {
+    match Ast::from_glob(pattern, dot).to_mm_pattern() {
         Ok(re) => Part::Re(fast.unwrap_or(Matcher::Regex(re))),
         Err(lit) => Part::Lit(lit),
     }
@@ -256,6 +281,7 @@ struct Ast {
     nodes: Vec<Node>,
     negs: Vec<usize>,
     filled_negs: bool,
+    dot: bool,
 }
 
 fn is_extglob_type(c: char) -> bool {
@@ -272,11 +298,12 @@ fn regexp_escape(c: char, out: &mut String) {
 // minimatch's names: `toString()`, `toMMPattern()`, `toRegExpSource()`. They cache, hence `&mut`.
 #[allow(clippy::wrong_self_convention)]
 impl Ast {
-    fn from_glob(pattern: &str) -> Ast {
+    fn from_glob(pattern: &str, dot: bool) -> Ast {
         let mut ast = Ast {
             nodes: Vec::new(),
             negs: Vec::new(),
             filled_negs: false,
+            dot,
         };
         let root = ast.new_node(None, None);
         let chars: Vec<char> = pattern.chars().collect();
@@ -512,7 +539,7 @@ impl Ast {
         n: usize,
         allow_dot: Option<bool>,
     ) -> (String, String, bool, bool) {
-        let dot = allow_dot.unwrap_or(false);
+        let dot = allow_dot.unwrap_or(self.dot);
         if n == 0 {
             self.fill_negs();
         }
@@ -593,21 +620,17 @@ impl Ast {
         if !body_dot_allowed.is_empty() {
             body = format!("(?:{body})(?:{body_dot_allowed})*?");
         }
+        // minimatch@11: unlike @10, a leading `!(...)` with `dot` doesn't match `.` or `..`.
+        let start_no_dot = |dot: bool| match (is_start, dot) {
+            (false, _) => "",
+            (true, false) => START_NO_DOT,
+            (true, true) => START_NO_TRAVERSAL,
+        };
         let final_ = if ty == '!' && self.nodes[n].empty_ext {
-            format!(
-                "{}{STAR_NO_EMPTY}",
-                if is_start && !dot { START_NO_DOT } else { "" }
-            )
+            format!("{}{STAR_NO_EMPTY}", start_no_dot(dot))
         } else {
             let close = match ty {
-                '!' => format!(
-                    ")){}{STAR})",
-                    if is_start && !dot && !allow_dot.unwrap_or(false) {
-                        START_NO_DOT
-                    } else {
-                        ""
-                    }
-                ),
+                '!' => format!(")){}{STAR})", start_no_dot(dot)),
                 '@' => ")".into(),
                 '?' => ")?".into(),
                 '+' if !body_dot_allowed.is_empty() => ")".into(),
@@ -1471,8 +1494,8 @@ impl JsRegex {
 mod tests {
     use super::*;
 
-    /// minimatch.json has the answers of minimatch@10, which theme-check-common uses, on a grid of
-    /// paths and patterns.
+    /// minimatch.json has the answers of the minimatch theme-check-common uses on a grid of paths
+    /// and patterns: `cases` with default options, `dotCases` with `{ dot: true }`.
     #[test]
     fn matches_node() {
         let v: serde_json::Value = serde_json::from_str(include_str!("minimatch.json")).unwrap();
@@ -1483,18 +1506,20 @@ mod tests {
             .map(|p| p.as_str().unwrap())
             .collect();
         let mut bad = Vec::new();
-        for case in v["cases"].as_array().unwrap() {
-            let pattern = case[0].as_str().unwrap();
-            let want: Vec<&str> = case[1]
-                .as_array()
-                .unwrap()
-                .iter()
-                .map(|p| p.as_str().unwrap())
-                .collect();
-            let mm = Minimatch::new(pattern);
-            let got: Vec<&str> = paths.iter().copied().filter(|p| mm.matches(p)).collect();
-            if got != want {
-                bad.push(format!("{pattern:?}: node {want:?}, rust {got:?}"));
+        for (key, dot) in [("cases", false), ("dotCases", true)] {
+            for case in v[key].as_array().unwrap() {
+                let pattern = case[0].as_str().unwrap();
+                let want: Vec<&str> = case[1]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|p| p.as_str().unwrap())
+                    .collect();
+                let mm = Minimatch::with_options(pattern, Options { dot });
+                let got: Vec<&str> = paths.iter().copied().filter(|p| mm.matches(p)).collect();
+                if got != want {
+                    bad.push(format!("{key} {pattern:?}: node {want:?}, rust {got:?}"));
+                }
             }
         }
         assert!(bad.is_empty(), "{}", bad.join("\n"));
