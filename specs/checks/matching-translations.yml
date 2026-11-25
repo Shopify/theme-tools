@@ -817,3 +817,162 @@ cases:
           }
         }
       locales/pt-BR.schema.json: '{"hello": }'
+  - name: should report a pluralized default translation without other
+    files:
+      locales/en.default.json: |-
+        {
+          "items": {
+            "one": "One item"
+          }
+        }
+    offenses:
+      - file: locales/en.default.json
+        message: "The pluralized translation 'items' is missing the 'other' key"
+        start: [1, 2]
+        highlight: |-
+          "items": {
+              "one": "One item"
+            }
+  - name: should report each nested pluralized default translation without other
+    files:
+      locales/en.default.json: |-
+        {
+          "cart": {
+            "items": {
+              "zero": "No items",
+              "one": "One item"
+            }
+          },
+          "many": {
+            "results": {
+              "few": "A few results",
+              "many": "Many results"
+            }
+          }
+        }
+    offenses:
+      - file: locales/en.default.json
+        message: "The pluralized translation 'cart.items' is missing the 'other' key"
+        start: [2, 4]
+        highlight: |-
+          "items": {
+                "zero": "No items",
+                "one": "One item"
+              }
+      - file: locales/en.default.json
+        message: "The pluralized translation 'many.results' is missing the 'other' key"
+        start: [8, 4]
+        highlight: |-
+          "results": {
+                "few": "A few results",
+                "many": "Many results"
+              }
+  - name: should recognize every plural category in default translations
+    files:
+      locales/en.default.json: |-
+        {
+          "a": { "zero": "Zero" },
+          "b": { "two": "Two" },
+          "c": { "few": "Few" },
+          "d": { "many": "Many" }
+        }
+    offenses:
+      - file: locales/en.default.json
+        message: "The pluralized translation 'a' is missing the 'other' key"
+        start: [1, 2]
+        highlight: '"a": { "zero": "Zero" }'
+      - file: locales/en.default.json
+        message: "The pluralized translation 'b' is missing the 'other' key"
+        start: [2, 2]
+        highlight: '"b": { "two": "Two" }'
+      - file: locales/en.default.json
+        message: "The pluralized translation 'c' is missing the 'other' key"
+        start: [3, 2]
+        highlight: '"c": { "few": "Few" }'
+      - file: locales/en.default.json
+        message: "The pluralized translation 'd' is missing the 'other' key"
+        start: [4, 2]
+        highlight: '"d": { "many": "Many" }'
+  - name: should not report pluralized default translations with other
+    files:
+      locales/en.default.json: |-
+        {
+          "items": { "other": "{{ count }} items" },
+          "results": { "one": "One result", "other": "{{ count }} results" }
+        }
+  - name: should not treat other default translation objects as pluralized
+    files:
+      locales/en.default.json: |-
+        {
+          "title": "Items",
+          "empty": {},
+          "namespace": { "title": "Items", "description": "Your items" },
+          "suffixes": { "phone": "Phone", "someone": "Someone", "another": "Another" },
+          "mixed": { "one": "One", "title": "Items" },
+          "one": { "many": { "title": "Items" } },
+          "objects": { "one": { "title": "One" } },
+          "nonstrings": { "one": 1, "few": null, "many": true },
+          "arrays": [{ "count": { "one": "One" } }]
+        }
+  - name: should not require other in default translations provided by Shopify or customer accounts
+    files:
+      locales/en.default.json: |-
+        {
+          "shopify": { "items": { "one": "One" } },
+          "customer_accounts": { "one": "One" }
+        }
+  - name: should only require other in the storefront default locale
+    files:
+      locales/fr.json: '{ "items": { "one": "Un article" } }'
+      locales/en.default.schema.json: '{ "items": { "one": "One item" } }'
+      locales/fr.schema.json: '{ "items": { "one": "Un article" } }'
+      assets/en.default.json: '{ "items": { "one": "One item" } }'
+      config/settings_data.json: '{ "items": { "one": "One item" } }'
+  - name: should not report anything if the default translations are unparseable
+    files:
+      locales/en.default.json: '{"items":{"one":"One item"}'
+  - name: should require other alongside missing and extra translations
+    files:
+      locales/en.default.json: |-
+        {
+          "items": { "one": "One item" },
+          "title": "Items"
+        }
+      locales/fr.json: |-
+        {
+          "items": { "few": "Quelques articles" },
+          "extra": "Extra"
+        }
+    offenses:
+      - file: locales/en.default.json
+        message: "The pluralized translation 'items' is missing the 'other' key"
+        start: [1, 2]
+        highlight: '"items": { "one": "One item" }'
+      - file: locales/fr.json
+        message: "The translation for 'title' is missing"
+        start: [0, 0]
+        highlight: |-
+          {
+            "items": { "few": "Quelques articles" },
+            "extra": "Extra"
+          }
+        fix: |-
+          {
+            "items": {
+              "few": "Quelques articles"
+            },
+            "extra": "Extra",
+            "title": "TODO"
+          }
+      - file: locales/fr.json
+        message: "A default translation for 'extra' does not exist"
+        start: [2, 2]
+        highlight: '"extra": "Extra"'
+        suggest:
+          - message: Delete unneeded translation key
+            result: |-
+              {
+                "items": {
+                  "few": "Quelques articles"
+                }
+              }
