@@ -100,3 +100,10 @@ To make it available for others to use, you can [publish](https://docs.npmjs.com
      enabled: true
      severity: suggestion
    ```
+
+
+3. Authorize execution of the extension's JavaScript in the application running Theme Check.
+
+   Custom checks are disabled by default. In Shopify CLI, use `shopify theme check --allow-custom-checks` for a trusted theme. In Shopify Liquid for VS Code, grant custom check permission when prompted in a trusted workspace. Applications using the Node library must pass an [authorization callback](../../../packages/theme-check-node#custom-checks-and-trusted-code).
+
+   The theme's YAML configuration declares which checks it needs; it cannot grant itself permission to execute code. Custom checks and their dependencies run with your user permissions.

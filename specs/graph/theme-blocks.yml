@@ -1,0 +1,136 @@
+cases:
+  - name: "@theme in a section's schema means every public theme block, and private ones are named"
+    files:
+      sections/custom-section.liquid: |
+        {% schema %}
+        {
+          "name": "custom section",
+          "blocks": [{ "type": "@theme" }, { "type": "_private" }]
+        }
+        {% endschema %}
+      blocks/group.liquid: |
+        Group
+      blocks/layout-block.liquid: |
+        Layout block
+      blocks/render-static.liquid: |
+        Render static
+      blocks/text.liquid: |
+        Text
+      blocks/_private.liquid: |
+        hoho I'm private
+      blocks/_static.liquid: |
+        Static
+    edges:
+      - source: sections/custom-section.liquid
+        start: [3, 15]
+        text: '"type": "@theme"'
+        target: blocks/group.liquid
+        type: indirect
+      - source: sections/custom-section.liquid
+        start: [3, 15]
+        text: '"type": "@theme"'
+        target: blocks/layout-block.liquid
+        type: indirect
+      - source: sections/custom-section.liquid
+        start: [3, 15]
+        text: '"type": "@theme"'
+        target: blocks/render-static.liquid
+        type: indirect
+      - source: sections/custom-section.liquid
+        start: [3, 15]
+        text: '"type": "@theme"'
+        target: blocks/text.liquid
+        type: indirect
+      - source: sections/custom-section.liquid
+        start: [3, 37]
+        text: '"type": "_private"'
+        target: blocks/_private.liquid
+  - name: "@theme and presets in a block's schema"
+    files:
+      sections/main.liquid: |
+        {% content_for 'block', type: 'group', id: 'group' %}
+      blocks/group.liquid: |
+        {% doc %}
+          Fixture block component that passes its blocks to the parent snippet
+        {% enddoc %}
+
+        {% capture children %}
+          {%- content_for "blocks" -%}
+        {% endcapture %}
+
+        {% render 'parent', children: children %}
+
+        {% schema %}
+        {
+          "name": "Group block",
+          "blocks": [{ "type": "@theme" }],
+          "presets": [
+            {
+              "name": "Group block",
+              "category": "Group",
+              "blocks": [
+                {
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        }
+        {% endschema %}
+      blocks/layout-block.liquid: |
+        Layout block
+      blocks/render-static.liquid: |
+        Render static
+      blocks/text.liquid: |
+        hello world
+
+        {% schema %}
+        {
+          "name": "Text block",
+          "settings": [],
+          "presets": [
+            {
+              "name": "Text block",
+              "category": "Text"
+            }
+          ]
+        }
+        {% endschema %}
+      blocks/_private.liquid: |
+        Private
+      snippets/parent.liquid: |
+        Parent
+    edges:
+      - source: blocks/group.liquid
+        start: [8, 0]
+        text: "{% render 'parent', children: children %}"
+        target: snippets/parent.liquid
+      - source: blocks/group.liquid
+        start: [13, 15]
+        text: '"type": "@theme"'
+        target: blocks/group.liquid
+        type: indirect
+      - source: blocks/group.liquid
+        start: [13, 15]
+        text: '"type": "@theme"'
+        target: blocks/layout-block.liquid
+        type: indirect
+      - source: blocks/group.liquid
+        start: [13, 15]
+        text: '"type": "@theme"'
+        target: blocks/render-static.liquid
+        type: indirect
+      - source: blocks/group.liquid
+        start: [13, 15]
+        text: '"type": "@theme"'
+        target: blocks/text.liquid
+        type: indirect
+      - source: blocks/group.liquid
+        start: [20, 10]
+        text: '"type": "text"'
+        target: blocks/text.liquid
+        type: preset
+      - source: sections/main.liquid
+        start: [0, 0]
+        text: "{% content_for 'block', type: 'group', id: 'group' "
+        target: blocks/group.liquid

@@ -6,13 +6,8 @@ export default defineConfig({
   test: {
     exclude: [...configDefaults.exclude],
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true,
-        isolate: true,
-      },
-    },
+    maxWorkers: 1,
+    isolate: false,
     globalSetup: ['./src/test/test-setup.js'],
-    setupFiles: ['../liquid-html-parser/build/shims.js'],
   },
 });

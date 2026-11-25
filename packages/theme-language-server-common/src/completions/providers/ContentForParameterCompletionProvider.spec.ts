@@ -4,7 +4,8 @@ import { DocumentManager } from '../../documents';
 import { MetafieldDefinitionMap } from '@shopify/theme-check-common';
 import { TextEdit, InsertTextFormat } from 'vscode-languageserver-protocol';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { CURSOR } from '../params';
+
+const CURSOR = '█';
 
 vi.mock('./data/contentForParameterCompletionOptions', async () => {
   const actual = (await vi.importActual(

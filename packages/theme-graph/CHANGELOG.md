@@ -1,5 +1,176 @@
 # shopify/theme-graph
 
+## 0.3.9
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/liquid-html-parser
+  - @shopify/theme-check-common
+- Updated dependencies [61cae020]
+  - @shopify/liquid-html-parser@2.12.2
+  - @shopify/theme-check-common@4.0.2
+
+## 0.3.8
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/liquid-html-parser
+  - @shopify/theme-check-common
+- Updated dependencies [19c3b6ab]
+- Updated dependencies [f1f29bdd]
+- Updated dependencies [cbe4c7f2]
+- Updated dependencies [0dcea3cd]
+  - @shopify/theme-check-common@4.0.1
+  - @shopify/liquid-html-parser@2.12.1
+
+## 0.3.7
+
+### Patch Changes
+
+- Updated dependencies [7cb4970d]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [c8099ba8]
+- Updated dependencies [320fa1fe]
+- Updated dependencies [5b634d93]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [a73b174f]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [c587ae08]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [5aec106f]
+- Updated dependencies [34dae62b]
+  - @shopify/liquid-html-parser@2.12.0
+  - @shopify/theme-check-common@4.0.0
+
+## 0.3.6
+
+### Patch Changes
+
+- 286b04fb: Accept canonical app block paths in `{% block %}` tags.
+
+  The parser accepts `shopify://apps/<app>/blocks/<handle>/<uuid>` as a block type and keeps rejecting malformed app paths. `LiquidSyntaxError` reports arguments and content on app block paths, because app blocks render with the settings their app provides. `block.name` stays allowed.
+
+  App block paths do not produce local theme-file document links or dependencies in the theme graph.
+
+- 02380e2f: Build the theme graph for a theme without an `assets` folder. `getWebComponentMap` used to reject, so the language server never had a graph for that theme, even after the folder was created.
+- Updated dependencies [286b04fb]
+- Updated dependencies [84a458be]
+- Updated dependencies [c0ae8785]
+- Updated dependencies [d9c843c3]
+- Updated dependencies [af297bab]
+- Updated dependencies [c81fc198]
+  - @shopify/liquid-html-parser@2.11.0
+  - @shopify/theme-check-common@3.31.0
+
+## 0.3.5
+
+### Patch Changes
+
+- Patch bump because it depends on @shopify/theme-check-common
+- Updated dependencies [83512552]
+- Updated dependencies [e0f63a00]
+- Updated dependencies [4574b6ad]
+  - @shopify/theme-check-common@3.30.1
+
+## 0.3.4
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/liquid-html-parser
+  - @shopify/theme-check-common
+- Updated dependencies [699780b7]
+- Updated dependencies [0bbd0f8b]
+- Updated dependencies [86058651]
+- Updated dependencies [169ff04d]
+- Updated dependencies [2a150cd2]
+- Updated dependencies [9c04ccbc]
+- Updated dependencies [9f1fa97b]
+  - @shopify/theme-check-common@3.30.0
+  - @shopify/liquid-html-parser@2.10.2
+
+## 0.3.3
+
+### Patch Changes
+
+- 8bc5e038: Fix orphaned-snippet detection by following layout and `{% block %}` references.
+- Updated dependencies [74185263]
+- Updated dependencies [8bc5e038]
+- Updated dependencies [8bc5e038]
+- Updated dependencies [8bc5e038]
+- Updated dependencies [8bc5e038]
+  - @shopify/liquid-html-parser@2.10.1
+  - @shopify/theme-check-common@3.29.1
+
+## 0.3.2
+
+### Patch Changes
+
+- Patch bump because it depends on @shopify/theme-check-common
+- Updated dependencies [54c5cc81]
+- Updated dependencies [f2071b6d]
+- Updated dependencies [9c46aac0]
+  - @shopify/theme-check-common@3.29.0
+
+## 0.3.1
+
+### Patch Changes
+
+- Patch bump because it depends on @shopify/theme-check-common
+- Updated dependencies [d4ec896e]
+  - @shopify/theme-check-common@3.28.1
+
+## 0.3.0
+
+### Minor Changes
+
+- 6803e99c: Adopt the hand-written `liquid-html-parser` for performance
+
+  Replace the parser-combinator-based Liquid/HTML parser with a hand-written
+  recursive-descent parser. The new parser is significantly faster, adds
+  resilient parsing (it recovers from malformed input instead of bailing), and is
+  adapted to the theme-tools source model. `theme-language-server-common`,
+  `theme-check-common`, `prettier-plugin-liquid`, and `theme-graph` are updated to
+  consume the new parser.
+
+### Patch Changes
+
+- Updated dependencies [6803e99c]
+- Updated dependencies [6803e99c]
+  - @shopify/liquid-html-parser@2.10.0
+  - @shopify/theme-check-common@3.28.0
+
+## 0.2.8
+
+### Patch Changes
+
+- Patch bump because it depends on @shopify/theme-check-common
+- Updated dependencies [180eacbe]
+  - @shopify/theme-check-common@3.27.0
+
+## 0.2.7
+
+### Patch Changes
+
+- 8e63afac: Treat theme app extension blocks as theme graph entry points so snippets rendered by app blocks are not reported as orphaned.
+- cacd8f32: [internal] local development fix for breakpoints
+- Updated dependencies [388cd60b]
+- Updated dependencies [3cc63ff2]
+- Updated dependencies [cacd8f32]
+  - @shopify/theme-check-common@3.26.1
+
+## 0.2.6
+
+### Patch Changes
+
+- Patch bump because it depends on @shopify/theme-check-common
+- Updated dependencies [892683dc]
+- Updated dependencies [e330f115]
+  - @shopify/theme-check-common@3.26.0
+
 ## 0.2.5
 
 ### Patch Changes

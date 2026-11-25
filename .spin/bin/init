@@ -1,5 +1,0 @@
-set -ex
-
-yarn
-
-yarn build

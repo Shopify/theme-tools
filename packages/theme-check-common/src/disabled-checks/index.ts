@@ -154,8 +154,16 @@ export function findNextLinePosition(
   /*
    * If the node contains children nodes, we don't want to disable checks for them.
    * We want to keep it exclusively to the tag itself.
+   *
+   * Exception: For `{% doc %}` tags, the checks we care about (ValidDocParamTypes,
+   * UniqueDocParamNames, ReservedDocParamNames, etc.) report offenses at positions
+   * inside the doc body. Using only `blockStartPosition` would miss those offenses,
+   * so we use the full `position` span to cover the entire tag including its body.
    */
   if ('blockStartPosition' in nextNode) {
+    if (nextNode.type === LiquidHtmlNodeTypes.LiquidRawTag && nextNode.name === 'doc') {
+      return nextNode.position;
+    }
     return nextNode.blockStartPosition;
   }
 

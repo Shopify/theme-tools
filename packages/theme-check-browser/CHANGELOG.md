@@ -1,5 +1,117 @@
 # @shopify/theme-check-browser
 
+## 4.0.2
+
+### Patch Changes
+
+- @shopify/theme-check-common@4.0.2
+
+## 4.0.1
+
+### Patch Changes
+
+- Updated dependencies [19c3b6ab]
+- Updated dependencies [0dcea3cd]
+  - @shopify/theme-check-common@4.0.1
+
+## 4.0.0
+
+### Patch Changes
+
+- Updated dependencies [7cb4970d]
+- Updated dependencies [c587ae08]
+  - @shopify/theme-check-common@4.0.0
+
+## 3.31.0
+
+### Patch Changes
+
+- Updated dependencies [286b04fb]
+- Updated dependencies [d9c843c3]
+- Updated dependencies [af297bab]
+- Updated dependencies [c81fc198]
+  - @shopify/theme-check-common@3.31.0
+
+## 3.30.1
+
+### Patch Changes
+
+- Updated dependencies [83512552]
+- Updated dependencies [e0f63a00]
+- Updated dependencies [4574b6ad]
+  - @shopify/theme-check-common@3.30.1
+
+## 3.30.0
+
+### Patch Changes
+
+- Updated dependencies [699780b7]
+- Updated dependencies [0bbd0f8b]
+- Updated dependencies [86058651]
+- Updated dependencies [169ff04d]
+- Updated dependencies [2a150cd2]
+- Updated dependencies [9f1fa97b]
+  - @shopify/theme-check-common@3.30.0
+
+## 3.29.1
+
+### Patch Changes
+
+- Updated dependencies [8bc5e038]
+- Updated dependencies [8bc5e038]
+- Updated dependencies [8bc5e038]
+- Updated dependencies [8bc5e038]
+  - @shopify/theme-check-common@3.29.1
+
+## 3.29.0
+
+### Patch Changes
+
+- Updated dependencies [54c5cc81]
+- Updated dependencies [f2071b6d]
+- Updated dependencies [9c46aac0]
+  - @shopify/theme-check-common@3.29.0
+
+## 3.28.1
+
+### Patch Changes
+
+- Updated dependencies [d4ec896e]
+  - @shopify/theme-check-common@3.28.1
+
+## 3.28.0
+
+### Patch Changes
+
+- Updated dependencies [6803e99c]
+- Updated dependencies [6803e99c]
+  - @shopify/theme-check-common@3.28.0
+
+## 3.27.0
+
+### Patch Changes
+
+- Updated dependencies [180eacbe]
+  - @shopify/theme-check-common@3.27.0
+
+## 3.26.1
+
+### Patch Changes
+
+- cacd8f32: [internal] local development fix for breakpoints
+- Updated dependencies [388cd60b]
+- Updated dependencies [3cc63ff2]
+- Updated dependencies [cacd8f32]
+  - @shopify/theme-check-common@3.26.1
+
+## 3.26.0
+
+### Patch Changes
+
+- Updated dependencies [892683dc]
+- Updated dependencies [e330f115]
+  - @shopify/theme-check-common@3.26.0
+
 ## 3.25.1
 
 ### Patch Changes

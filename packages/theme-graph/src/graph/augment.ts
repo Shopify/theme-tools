@@ -25,6 +25,7 @@ export function augmentDependencies(rootUri: string, ideps: IDependencies): Augm
     ),
 
     getWebComponentDefinitionReference: ideps.getWebComponentDefinitionReference,
+    mode: ideps.mode ?? 'theme',
     getThemeBlockNames: memo(() =>
       findAllFiles(ideps.fs, path.join(rootUri, 'blocks'), ([uri]) => uri.endsWith('.liquid')).then(
         (uris) => uris.map((uri) => path.basename(uri, '.liquid')),

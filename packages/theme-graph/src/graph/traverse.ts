@@ -135,6 +135,17 @@ async function traverseLiquidModule(
       };
     },
 
+    // {% block 'block-name' %}
+    BlockMarkup: (node, ancestors) => {
+      // App blocks are external to the theme, not local file dependencies.
+      if (node.name.value.startsWith('shopify://apps/')) return;
+      const tag = ancestors.at(-1)!;
+      return {
+        target: getThemeBlockModule(themeGraph, node.name.value),
+        sourceRange: [tag.position.start, tag.position.end],
+      };
+    },
+
     // <custom-element></custom-element>
     HtmlElement: (node) => {
       if (node.name.length !== 1) return;
@@ -183,8 +194,8 @@ async function traverseLiquidModule(
 
         // {% section 'section' %}
         case NamedTags.section: {
-          if (!isString(node.markup)) {
-            const sectionType = node.markup.value;
+          if (!isString(node.markup) && node.markup.type === NodeTypes.SectionMarkup) {
+            const sectionType = node.markup.name.value;
             return {
               target: getSectionModule(themeGraph, sectionType),
               sourceRange: [node.position.start, node.position.end],
@@ -212,7 +223,7 @@ async function traverseLiquidModule(
     const sectionName = path.basename(module.uri, '.liquid');
     const sectionSchema = await deps.getSectionSchema(sectionName);
     promises.push(traverseLiquidSchema(sectionSchema, module, themeGraph, deps));
-  } else if (module.kind === LiquidModuleKind.Block) {
+  } else if (module.kind === LiquidModuleKind.Block && deps.mode === 'theme') {
     const blockName = path.basename(module.uri, '.liquid');
     const blockSchema = await deps.getBlockSchema(blockName);
     promises.push(traverseLiquidSchema(blockSchema, module, themeGraph, deps));

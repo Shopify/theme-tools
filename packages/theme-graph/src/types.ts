@@ -6,6 +6,7 @@ import {
   Reference,
   Location,
   Range,
+  Mode,
 } from '@shopify/theme-check-common';
 import { Program } from 'acorn';
 
@@ -31,11 +32,15 @@ export interface IDependencies {
   getWebComponentDefinitionReference: (
     customElementName: string,
   ) => { assetName: string; range: Range } | undefined;
+
+  /** Whether the graph is for a full theme or a theme app extension. */
+  mode?: Mode;
 }
 
-export type Dependencies = Required<IDependencies>;
+export type Dependencies = Required<Omit<IDependencies, 'mode'>> & Pick<IDependencies, 'mode'>;
 
-export type AugmentedDependencies = Dependencies & {
+export type AugmentedDependencies = Required<Omit<IDependencies, 'mode'>> & {
+  mode: Mode;
   getThemeBlockNames: () => Promise<string[]>;
 };
 

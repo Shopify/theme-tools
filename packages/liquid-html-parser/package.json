@@ -1,6 +1,6 @@
 {
   "name": "@shopify/liquid-html-parser",
-  "version": "2.9.2",
+  "version": "2.12.2",
   "description": "Liquid HTML parser by Shopify",
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/liquid-html-parser#readme",
@@ -20,22 +20,22 @@
     "@shopify:registry": "https://registry.npmjs.org"
   },
   "files": [
-    "grammar/*",
     "dist/**/*.js",
     "dist/**/*.ts"
   ],
   "scripts": {
-    "build": "yarn build:ts",
-    "build:ci": "yarn build",
+    "build": "pnpm build:ts",
+    "build:ci": "pnpm build",
     "build:ts": "tsc -p tsconfig.build.json",
-    "prebuild:ts": "node build/shims.js",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest --root ../.. --run src/**/*.test.ts"
   },
   "dependencies": {
-    "line-column": "^1.0.2",
-    "ohm-js": "^17.0.0"
+    "line-column": "^1.0.2"
   },
   "devDependencies": {
-    "@types/line-column": "^1.0.0"
+    "@types/line-column": "^1.0.0",
+    "@types/node": "^22.18.8",
+    "yaml": "^2.8.3"
   }
 }

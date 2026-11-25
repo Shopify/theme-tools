@@ -7,7 +7,7 @@ import {
   Range,
   TextEdit,
 } from 'vscode-languageserver';
-import { CURSOR, LiquidCompletionParams } from '../params';
+import { LiquidCompletionParams } from '../params';
 import { Provider } from './common';
 import { formatLiquidDocParameter, getParameterCompletionTemplate } from '../../utils/liquidDoc';
 import { GetDocDefinitionForURI } from '@shopify/theme-check-common';
@@ -33,7 +33,7 @@ export class RenderSnippetParameterCompletionProvider implements Provider {
       return [];
     }
 
-    const userInputStr = node.name?.replace(CURSOR, '') || '';
+    const userInputStr = node.name || '';
 
     const snippetDefinition = await this.getDocDefinitionForURI(
       params.textDocument.uri,
@@ -47,7 +47,7 @@ export class RenderSnippetParameterCompletionProvider implements Provider {
       return [];
     }
 
-    let offset = node.name === CURSOR ? 1 : 0;
+    let offset = node.name === '' ? 1 : 0;
 
     let start = params.document.textDocument.positionAt(node.position.start);
     let end = params.document.textDocument.positionAt(node.position.end - offset);

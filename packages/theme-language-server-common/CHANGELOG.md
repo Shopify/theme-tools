@@ -1,5 +1,228 @@
 # @shopify/theme-language-server-common
 
+## 3.0.2
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [61cae020]
+  - @shopify/theme-graph@0.3.9
+  - @shopify/liquid-html-parser@2.12.2
+  - @shopify/theme-check-common@4.0.2
+
+## 3.0.1
+
+### Patch Changes
+
+- fe8a2f1f: Stop creating local file links for section and block `type` values starting with `shopify://` in JSON files and Liquid schema tags.
+- Updated dependencies
+- Updated dependencies [19c3b6ab]
+- Updated dependencies [f1f29bdd]
+- Updated dependencies [cbe4c7f2]
+- Updated dependencies [0dcea3cd]
+  - @shopify/theme-graph@0.3.8
+  - @shopify/theme-check-common@4.0.1
+  - @shopify/liquid-html-parser@2.12.1
+
+## 3.0.0
+
+### Minor Changes
+
+- 803a88a5: Require consent for third-party Theme Checks and expose structured skipped-check diagnostics to callers.
+
+### Patch Changes
+
+- 7cb4970d: Type `{% block %}` and `{% section %}` arguments as one `BlockArgument`, whose value is a scalar or a single-level array literal, instead of a `LiquidNamedArgument | BlockArrayArgument` union. Completions narrow on the argument's value.
+- 7cb4970d: Parse the Liquid inside HTML comments. Liquid renders it, and its tags can open, branch and close blocks, so `{% if a %}<!-- {% endif %} -->` no longer fails with an unclosed `if`.
+  - `HtmlComment` has `children` (text and Liquid) and `blockStartPosition`/`blockEndPosition` for its delimiters.
+  - A comment that crosses a Liquid block boundary is split there, and each part has an empty delimiter range on the split side.
+  - A comment that never closes ends at the end of the file, as in a browser.
+  - An end tag in a comment that closes no block is a parse error, as in Liquid.
+  - The `opaqueHtmlComments` option keeps comment bodies opaque.
+
+  **Behavior changes**
+  - Code that walks `children` now visits the Liquid and text inside HTML comments.
+  - `<!-- {% if a %} --><p>x</p><!-- {% endif %} -->` is one comment whose `if` holds `<p>x</p>` as text, not two comments around a `<p>` element.
+  - `<!-- {% endif %} -->` with no open `if` no longer parses. An unclosed `<!--` and `{% if a %}<!-- {% endif %} -->` now parse.
+  - Code that creates `HtmlComment` nodes must set `children`, `blockStartPosition` and `blockEndPosition`.
+
+  Pass `opaqueHtmlComments: true` to get the previous tree for these templates.
+
+  Checks now see the Liquid in HTML comments, and completions work inside them. Prettier prints an unclosed comment as written, and can move whitespace and line breaks inside a comment that holds a Liquid block or is split by one.
+
+- Updated dependencies [7cb4970d]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [c8099ba8]
+- Updated dependencies [320fa1fe]
+- Updated dependencies [5b634d93]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [a73b174f]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [c587ae08]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [5aec106f]
+- Updated dependencies [34dae62b]
+  - @shopify/liquid-html-parser@2.12.0
+  - @shopify/theme-check-common@4.0.0
+  - @shopify/theme-graph@0.3.7
+
+## 2.23.2
+
+### Patch Changes
+
+- 286b04fb: Accept canonical app block paths in `{% block %}` tags.
+
+  The parser accepts `shopify://apps/<app>/blocks/<handle>/<uuid>` as a block type and keeps rejecting malformed app paths. `LiquidSyntaxError` reports arguments and content on app block paths, because app blocks render with the settings their app provides. `block.name` stays allowed.
+
+  App block paths do not produce local theme-file document links or dependencies in the theme graph.
+
+- b9a862fb: Rebuild a theme graph that failed to build when a file changes. Before, the failed graph stayed until the language server restarted.
+- Updated dependencies [286b04fb]
+- Updated dependencies [84a458be]
+- Updated dependencies [c0ae8785]
+- Updated dependencies [d9c843c3]
+- Updated dependencies [af297bab]
+- Updated dependencies [c81fc198]
+- Updated dependencies [02380e2f]
+  - @shopify/liquid-html-parser@2.11.0
+  - @shopify/theme-check-common@3.31.0
+  - @shopify/theme-graph@0.3.6
+
+## 2.23.1
+
+### Patch Changes
+
+- Updated dependencies [83512552]
+- Updated dependencies
+- Updated dependencies [e0f63a00]
+- Updated dependencies [4574b6ad]
+  - @shopify/theme-check-common@3.30.1
+  - @shopify/theme-graph@0.3.5
+
+## 2.23.0
+
+### Minor Changes
+
+- 96af869d: Support LiquidDoc string enums in hovers and completions
+
+  Allowed values are kept through assignments, and `render`, `content_for` and `block` parameter completions insert the first one. The `default` filter widens enum values to `string`.
+
+### Patch Changes
+
+- 0bbd0f8b: Complete and hover the implicit `content` parameter inside `blocks/*.liquid`.
+
+  Bare `content` is a `string` variable in every theme block file, and `block.content` is a `string` property there. A later assign or capture changes the variable's type from that point. A schema setting or LiquidDoc parameter named `content` keeps the `string` type.
+
+- 1dd77e8e: Complete and hover `block` tag arguments from the target block's schema settings, LiquidDoc parameters, and built-in `content`.
+
+  Completion offers plain parameter names with schema-derived value templates and skips arguments the call already passes. Completion and hover show requiredness, the Liquid type, the LiquidDoc description, and the theme setting's label and info, resolving `t:` keys from the default schema locale. The `block` tag is offered only in `templates/**/*.liquid` and `layout/*.liquid` files.
+
+  Inside `blocks/*.liquid`, each schema setting ID also completes and hovers as a plain variable with the same schema-derived type as `block.settings.<id>`. A same-named LiquidDoc parameter describes that variable, and the schema sets its type.
+
+- Updated dependencies
+- Updated dependencies [699780b7]
+- Updated dependencies [0bbd0f8b]
+- Updated dependencies [86058651]
+- Updated dependencies [169ff04d]
+- Updated dependencies [2a150cd2]
+- Updated dependencies [9c04ccbc]
+- Updated dependencies [9f1fa97b]
+  - @shopify/theme-graph@0.3.4
+  - @shopify/theme-check-common@3.30.0
+  - @shopify/liquid-html-parser@2.10.2
+
+## 2.22.3
+
+### Patch Changes
+
+- 4091c063: Add a document link for the `{% block 'name' %}` tag so cmd+click on the block
+  name navigates to `blocks/<name>.liquid`.
+- Updated dependencies [74185263]
+- Updated dependencies [8bc5e038]
+- Updated dependencies [8bc5e038]
+- Updated dependencies [8bc5e038]
+- Updated dependencies [8bc5e038]
+- Updated dependencies [8bc5e038]
+  - @shopify/liquid-html-parser@2.10.1
+  - @shopify/theme-check-common@3.29.1
+  - @shopify/theme-graph@0.3.3
+
+## 2.22.2
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [54c5cc81]
+- Updated dependencies [f2071b6d]
+- Updated dependencies [9c46aac0]
+  - @shopify/theme-graph@0.3.2
+  - @shopify/theme-check-common@3.29.0
+
+## 2.22.1
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [d4ec896e]
+  - @shopify/theme-graph@0.3.1
+  - @shopify/theme-check-common@3.28.1
+
+## 2.22.0
+
+### Minor Changes
+
+- 6803e99c: Adopt the hand-written `liquid-html-parser` for performance
+
+  Replace the parser-combinator-based Liquid/HTML parser with a hand-written
+  recursive-descent parser. The new parser is significantly faster, adds
+  resilient parsing (it recovers from malformed input instead of bailing), and is
+  adapted to the theme-tools source model. `theme-language-server-common`,
+  `theme-check-common`, `prettier-plugin-liquid`, and `theme-graph` are updated to
+  consume the new parser.
+
+### Patch Changes
+
+- Updated dependencies [6803e99c]
+- Updated dependencies [6803e99c]
+  - @shopify/liquid-html-parser@2.10.0
+  - @shopify/theme-check-common@3.28.0
+  - @shopify/theme-graph@0.3.0
+
+## 2.21.4
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [180eacbe]
+  - @shopify/theme-graph@0.2.8
+  - @shopify/theme-check-common@3.27.0
+
+## 2.21.3
+
+### Patch Changes
+
+- e7226d80: Fix tag/filter doc warnings collapsing onto the previous line on hover. Blockquote admonitions (e.g. the `image_url` filter's Caution/Note) are now preserved on their own lines instead of being flattened into the surrounding text.
+- 8e63afac: Treat theme app extension blocks as theme graph entry points so snippets rendered by app blocks are not reported as orphaned.
+- cacd8f32: [internal] local development fix for breakpoints
+- Updated dependencies [388cd60b]
+- Updated dependencies [3cc63ff2]
+- Updated dependencies [8e63afac]
+- Updated dependencies [cacd8f32]
+  - @shopify/theme-check-common@3.26.1
+  - @shopify/theme-graph@0.2.7
+
+## 2.21.2
+
+### Patch Changes
+
+- 892683dc: Restore `ValidScopedCSSClass` to the recommended config after fixing its save-latency regression on large themes. The check's per-file CSS class extraction now lives on the language server's document model, so it is memoized per file version and invalidated automatically when a file changes — no more full-theme rescan on every save. Also skips syntax-tree parsing for Liquid files that have no stylesheet tag. Resolves [#1179](https://github.com/Shopify/theme-tools/issues/1179) and reverses the temporary opt-out from [#1180](https://github.com/Shopify/theme-tools/pull/1180).
+- Updated dependencies
+- Updated dependencies [892683dc]
+- Updated dependencies [e330f115]
+  - @shopify/theme-graph@0.2.6
+  - @shopify/theme-check-common@3.26.0
+
 ## 2.21.1
 
 ### Patch Changes

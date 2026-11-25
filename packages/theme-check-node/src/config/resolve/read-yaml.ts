@@ -121,9 +121,10 @@ export async function readYamlConfigDescription(
  * resolves the `extends:` property of configuration files.
  *
  * pathLike can be any of the following:
- * - legacy identifiers:
+ * - legacy/convenience identifiers:
  *   - a symbol (e.g. :default, :nothing, :theme_app_extension)
  *   - the special string version of the symbols (e.g. default, nothing)
+ *   - common built-in config aliases (e.g. recommended, all, theme-app-extension)
  * - modern identifiers:
  *   - theme-check:all
  *   - theme-check:recommended

@@ -14,7 +14,7 @@ import {
   isNamedHtmlElementNode,
   isTextNode,
 } from '../../utils';
-import { CURSOR, LiquidCompletionParams } from '../params';
+import { LiquidCompletionParams } from '../params';
 import { Provider, sortByName } from './common';
 import { LiquidHtmlNode } from '@shopify/liquid-html-parser';
 
@@ -24,7 +24,7 @@ export class HtmlAttributeCompletionProvider implements Provider {
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
 
-    const { node, ancestors } = params.completionContext;
+    const { node, ancestors, partial } = params.completionContext;
     const parentNode = findLast(ancestors, isAttrEmpty);
     const grandParentNode = findLast(ancestors, isNamedHtmlElementNode);
     const document = this.documentManager.get(params.textDocument.uri);
@@ -38,8 +38,6 @@ export class HtmlAttributeCompletionProvider implements Provider {
     }
 
     const grandParentNodeName = getCompoundName(grandParentNode);
-    const name = node.value;
-    const partial = name.replace(CURSOR, '');
     const options = getOptions(partial, grandParentNodeName);
 
     const attributeTagRange = this.attributeTagRange(node, document);
@@ -66,7 +64,7 @@ export class HtmlAttributeCompletionProvider implements Provider {
   // Find the range of the attribute partial. If the attribute contains any liquid code, the range
   // will end before the first character of the liquid block.
   attributeTagRange(node: LiquidHtmlNode, document: AugmentedSourceCode): Range {
-    if (node.type === 'TextNode' && node.value === CURSOR) {
+    if (node.type === 'TextNode' && node.value === '') {
       // If you try to auto-complete with no provided attribute tag,
       // we will not try to override the subsequent character.
       // E.g. <a href="" █>

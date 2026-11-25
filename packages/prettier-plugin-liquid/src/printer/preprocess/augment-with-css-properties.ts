@@ -121,6 +121,8 @@ function getCssDisplay(node: AugmentedNode<WithSiblings>, options: LiquidParserO
     case NodeTypes.Range:
     case NodeTypes.VariableLookup:
     case NodeTypes.AssignMarkup:
+    case NodeTypes.BlockMarkup:
+    case NodeTypes.SectionMarkup:
     case NodeTypes.CycleMarkup:
     case NodeTypes.ContentForMarkup:
     case NodeTypes.ForMarkup:
@@ -134,6 +136,7 @@ function getCssDisplay(node: AugmentedNode<WithSiblings>, options: LiquidParserO
     case NodeTypes.LiquidDocExampleNode:
     case NodeTypes.LiquidDocDescriptionNode:
     case NodeTypes.LiquidDocPromptNode:
+    case NodeTypes.LiquidErrorNode:
       return 'should not be relevant';
 
     default:
@@ -232,6 +235,8 @@ function getNodeCssStyleWhiteSpace(
     case NodeTypes.Range:
     case NodeTypes.VariableLookup:
     case NodeTypes.AssignMarkup:
+    case NodeTypes.BlockMarkup:
+    case NodeTypes.SectionMarkup:
     case NodeTypes.CycleMarkup:
     case NodeTypes.ContentForMarkup:
     case NodeTypes.ForMarkup:
@@ -245,6 +250,7 @@ function getNodeCssStyleWhiteSpace(
     case NodeTypes.LiquidDocExampleNode:
     case NodeTypes.LiquidDocDescriptionNode:
     case NodeTypes.LiquidDocPromptNode:
+    case NodeTypes.LiquidErrorNode:
       return 'should not be relevant';
 
     default:

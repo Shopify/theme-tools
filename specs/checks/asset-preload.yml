@@ -1,0 +1,72 @@
+check: AssetPreload
+severity: warning
+cases:
+  - name: no offense with link element
+    files:
+      file.liquid: |
+        <link href="a.css" rel="stylesheet">
+        <link href="b.com" rel="preconnect">
+  - name: reports stylesheet preloading
+    files:
+      file.liquid: |
+        <link href="a.css" rel="preload" as="style">
+    offenses:
+      - file: file.liquid
+        message: For better performance, prefer using the preload argument of the stylesheet_tag filter
+        start: [0, 0]
+        highlight: '<link href="a.css" rel="preload" as="style">'
+  - name: reports image preloading
+    files:
+      file.liquid: |
+        <link href="a.png" rel="preload" as="image">
+    offenses:
+      - file: file.liquid
+        message: For better performance, prefer using the preload argument of the image_tag filter
+        start: [0, 0]
+        highlight: '<link href="a.png" rel="preload" as="image">'
+  - name: allows high-priority image preloading
+    files:
+      file.liquid: |
+        <link href="a.png" rel="preload" as="image" fetchpriority="high">
+  - name: reports image preloading when attribute values contain Liquid
+    files:
+      file.liquid: |
+        <link href="a.png" rel="preload" as="image{{ '-invalid' }}" fetchpriority="high">
+        <link href="b.png" rel="preload" as="image" fetchpriority="high{{ '-invalid' }}">
+    offenses:
+      - file: file.liquid
+        message: For better performance, prefer using the preload argument of the image_tag filter
+        start: [0, 0]
+        highlight: "<link href=\"a.png\" rel=\"preload\" as=\"image{{ '-invalid' }}\" fetchpriority=\"high\">"
+      - file: file.liquid
+        message: For better performance, prefer using the preload argument of the image_tag filter
+        start: [1, 0]
+        highlight: "<link href=\"b.png\" rel=\"preload\" as=\"image\" fetchpriority=\"high{{ '-invalid' }}\">"
+  - name: reports general preloading
+    files:
+      file.liquid: |
+        <link href="a.js" rel="preload" as="script">
+    offenses:
+      - file: file.liquid
+        message: For better performance, prefer using the preload_tag filter
+        start: [0, 0]
+        highlight: '<link href="a.js" rel="preload" as="script">'
+  - name: should report offenses for manual preloading of assets
+    files:
+      file.liquid: |
+        <link href="{{ 'script.js' | asset_url }}" rel="preload" as="script">
+        <link href="{{ 'style.css' | asset_url }}" rel="preload" as="style">
+        <link href="{{ 'image.png' | asset_url }}" rel="preload" as="image">
+    offenses:
+      - file: file.liquid
+        message: For better performance, prefer using the preload_tag filter
+        start: [0, 0]
+        highlight: "<link href=\"{{ 'script.js' | asset_url }}\" rel=\"preload\" as=\"script\">"
+      - file: file.liquid
+        message: For better performance, prefer using the preload argument of the stylesheet_tag filter
+        start: [1, 0]
+        highlight: "<link href=\"{{ 'style.css' | asset_url }}\" rel=\"preload\" as=\"style\">"
+      - file: file.liquid
+        message: For better performance, prefer using the preload argument of the image_tag filter
+        start: [2, 0]
+        highlight: "<link href=\"{{ 'image.png' | asset_url }}\" rel=\"preload\" as=\"image\">"

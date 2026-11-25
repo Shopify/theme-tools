@@ -6,7 +6,7 @@ export const changesetStatus = async (): Promise<ChangesetStatus> => {
   const basefile = `changeset-status.json`;
 
   try {
-    await run(`yarn changeset status --output=${basefile}`);
+    await run(`pnpm exec changeset status --output=${basefile}`);
   } catch (err) {
     console.log('Failed to get changeset status. This should not be happening...');
     console.log('Exiting changeset version process.');

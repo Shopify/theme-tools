@@ -1,8 +1,18 @@
-import { LiquidExpression, NodeTypes } from '@shopify/liquid-html-parser';
+import { BlockArrayLiteral, LiquidExpression, NodeTypes } from '@shopify/liquid-html-parser';
 import { assertNever } from '../utils';
 import { isSnippet } from '../to-schema';
 import { isBlock } from '../to-schema';
 import { ObjectEntry, UriString } from '../types';
+import { normalizeNamedParamType, parseStringLiterals } from './doc-param-type';
+
+export {
+  normalizeNamedParamType,
+  parseDocParamType,
+  parseParamType,
+  parseParamTypeSyntax,
+  parseStringLiterals,
+} from './doc-param-type';
+export type { DocParamType, StringLiteralType } from './doc-param-type';
 
 /**
  * The base set of supported param types for LiquidDoc.
@@ -29,6 +39,9 @@ export enum SupportedDocTagTypes {
  * Provides a default completion value for an argument / parameter of a given type.
  */
 export function getDefaultValueForType(type: string | null) {
+  const literals = type ? parseStringLiterals(type) : undefined;
+  if (literals) return literals[0].raw;
+
   switch (type?.toLowerCase()) {
     case BasicParamTypes.String:
       return "''";
@@ -78,6 +91,68 @@ export function isTypeCompatible(expectedType: string, actualType: BasicParamTyp
 }
 
 /**
+ * The result of checking an argument value against its LiquidDoc type.
+ *
+ * - `compatible` and `incompatible`: the literal value was checked.
+ * - `unchecked`: the value is dynamic, the type is malformed, or a block array
+ *   literal is compared with a type other than a string enum.
+ * - `named-type`: the type is a named Liquid type or array, such as `product`
+ *   or `string[]`, and `type` is its lowercase spelling. No literal matches
+ *   it, but only the docset can confirm that the type exists.
+ */
+export type ArgumentTypeCheck =
+  | { kind: 'compatible' }
+  | { kind: 'incompatible' }
+  | { kind: 'unchecked' }
+  | { kind: 'named-type'; type: string };
+
+/** Checks a literal argument value against a LiquidDoc type. */
+export function checkArgumentType(
+  expectedType: string,
+  argument: LiquidExpression | BlockArrayLiteral,
+): ArgumentTypeCheck {
+  if (argument.type === NodeTypes.VariableLookup) return { kind: 'unchecked' };
+
+  const literals = parseStringLiterals(expectedType);
+  if (literals) {
+    return literalCheck(
+      argument.type === NodeTypes.String &&
+        literals.some((literal) => literal.value === argument.value),
+    );
+  }
+
+  if (argument.type === 'BlockArrayLiteral') return { kind: 'unchecked' };
+
+  const type = normalizeNamedParamType(expectedType);
+  if (!type) return { kind: 'unchecked' };
+  if (!isBasicParamType(type)) return { kind: 'named-type', type };
+
+  return literalCheck(isTypeCompatible(type, inferArgumentType(argument)));
+}
+
+function literalCheck(matches: boolean): ArgumentTypeCheck {
+  return matches ? { kind: 'compatible' } : { kind: 'incompatible' };
+}
+
+function isBasicParamType(type: string): type is BasicParamTypes {
+  return Object.values(BasicParamTypes).some((basicType) => basicType === type);
+}
+
+export function getArgumentTypeMismatchMessage(
+  name: string,
+  expectedType: string,
+  argument: LiquidExpression | BlockArrayLiteral,
+): string {
+  if (parseStringLiterals(expectedType)) {
+    const actualValue = argument.source.slice(argument.position.start, argument.position.end);
+    return `Invalid value for argument '${name}': expected ${expectedType.trim()}, got ${actualValue}`;
+  }
+
+  const actualType = argument.type === 'BlockArrayLiteral' ? 'array' : inferArgumentType(argument);
+  return `Type mismatch for argument '${name}': expected ${expectedType.toLowerCase()}, got ${actualType}`;
+}
+
+/**
  * Checks if the provided file path supports the LiquidDoc tag.
  */
 export function filePathSupportsLiquidDoc(uri: UriString) {
@@ -106,20 +181,4 @@ export function getValidParamTypes(objectEntries: ObjectEntry[]): Map<string, st
   objectEntries.forEach((obj) => paramTypes.set(obj.name, obj.summary || obj.description));
 
   return paramTypes;
-}
-
-export function parseParamType(
-  validParamTypes: Set<string>,
-  value: string,
-): [pseudoType: string, isArray: boolean] | undefined {
-  const paramTypeMatch = value.match(/^([a-z_]+)(\[\])?$/);
-
-  if (!paramTypeMatch) return undefined;
-
-  const extractedParamType = paramTypeMatch[1];
-  const isArrayType = !!paramTypeMatch[2];
-
-  if (!validParamTypes.has(extractedParamType)) return undefined;
-
-  return [extractedParamType, isArrayType];
 }

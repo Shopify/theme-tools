@@ -1,39 +1,10 @@
 import lineColumn from 'line-column';
-import { MatchResult } from 'ohm-js';
-import { NodeTypes, Position } from './types';
+import { NodeTypes } from './types';
+import type { Position } from './types';
 
 interface LineColPosition {
   line: number;
   column: number;
-}
-
-export class LiquidHTMLCSTParsingError extends SyntaxError {
-  loc?: { start: LineColPosition; end: LineColPosition };
-
-  constructor(ohm: MatchResult) {
-    super(ohm.shortMessage);
-    this.name = 'LiquidHTMLParsingError';
-
-    const input = (ohm as any).input;
-    const errorPos = (ohm as any)._rightmostFailurePosition;
-    const lineCol = lineColumn(input).fromIndex(Math.min(errorPos, input.length - 1));
-
-    // Plugging ourselves into @babel/code-frame since this is how
-    // the babel parser can print where the parsing error occured.
-    // https://github.com/prettier/prettier/blob/cd4a57b113177c105a7ceb94e71f3a5a53535b81/src/main/parser.js
-    if (lineCol) {
-      this.loc = {
-        start: {
-          line: lineCol.line,
-          column: lineCol.col,
-        },
-        end: {
-          line: lineCol.line,
-          column: lineCol.col,
-        },
-      };
-    }
-  }
 }
 
 export type UnclosedNode = { type: NodeTypes; name: string; blockStartPosition: Position };
@@ -54,20 +25,44 @@ export class LiquidHTMLASTParsingError extends SyntaxError {
     this.unclosed = unclosed ?? null;
 
     const lc = lineColumn(source);
-    const start = lc.fromIndex(startIndex);
-    const end = lc.fromIndex(Math.min(endIndex, source.length - 1));
+
+    /*
+     * A parse can fail at a position that is out of the source's range: the
+     * end-of-input token sits one past the last character when a closing
+     * delimiter like "%}" is never found, and some failures report a -1
+     * sentinel position. line-column returns null for any out-of-range
+     * index, so dereferencing it while building `loc` below would throw a
+     * TypeError ("Cannot read properties of null") that masks the real
+     * syntax error.
+     *
+     * We have to guard this now because the tolerant parser is the first
+     * caller to drive malformed input through this throw site. The `loc`
+     * is built here at error-construction time, before the tolerant
+     * parser's recovery catch runs, so a null dereference would crash
+     * before the throw can become a recovered LiquidErrorNode, defeating
+     * the tolerant parser entirely.
+     *
+     * Clamping the indices into the valid range covers the out-of-range
+     * and -1 cases. The `?? 1` fallback on each line/column below stays
+     * load-bearing for empty or degenerate source, where fromIndex(0) on
+     * "" is still null even after clamping. Same root cause, both needed,
+     * so we always produce a real location.
+     */
+    const lastIndex = Math.max(0, source.length - 1);
+    const start = lc.fromIndex(Math.min(Math.max(startIndex, 0), lastIndex));
+    const end = lc.fromIndex(Math.min(Math.max(endIndex, 0), lastIndex));
 
     // Plugging ourselves into @babel/code-frame since this is how
     // the babel parser can print where the parsing error occured.
     // https://github.com/prettier/prettier/blob/cd4a57b113177c105a7ceb94e71f3a5a53535b81/src/main/parser.js
     this.loc = {
       start: {
-        line: start!.line,
-        column: start!.col,
+        line: start?.line ?? 1,
+        column: start?.col ?? 1,
       },
       end: {
-        line: end!.line,
-        column: end!.col,
+        line: end?.line ?? 1,
+        column: end?.col ?? 1,
       },
     };
   }

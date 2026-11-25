@@ -1,6 +1,6 @@
 {
   "name": "@shopify/codemirror-language-client",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "description": "A Language Client for CodeMirror",
   "author": "CP Clermont <cp.clermont@shopify.com>",
   "homepage": "https://github.com/Shopify/theme-tools/tree/main/packages/codemirror-language-client#readme",
@@ -25,14 +25,14 @@
     "@shopify:registry": "https://registry.npmjs.org"
   },
   "scripts": {
-    "build": "yarn build:esm && yarn build:umd",
-    "build:ci": "yarn build",
+    "build": "pnpm build:esm && pnpm build:umd",
+    "build:ci": "pnpm build",
     "build:ts": "true",
     "build:esm": "tsc -b tsconfig.json",
     "build:umd": "tsc -b tsconfig.umd.json",
     "build:playground": "tsc -b playground/tsconfig.json",
-    "dev": "yarn dev:client",
-    "dev:client": "yarn build:esm --watch",
+    "dev": "pnpm dev:client",
+    "dev:client": "pnpm build:esm --watch",
     "dev:playground": "webpack serve -c ./playground/webpack.config.js",
     "format": "prettier --write \"packages/*/src/**/*.ts\"",
     "format:check": "prettier --check --ignore-unknown \"packages/*/src/**/*.ts\"",
@@ -51,12 +51,12 @@
     "@codemirror/theme-one-dark": "^6.1.2",
     "@codemirror/view": "^6.9.2",
     "@replit/codemirror-vim": "^6.2.1",
-    "@shopify/theme-check-docs-updater": "^3.24.0",
-    "@shopify/theme-language-server-browser": "^2.20.2",
-    "@shopify/lang-jsonc": "^1.0.1",
+    "@shopify/theme-check-docs-updater": "workspace:^4.0.0",
+    "@shopify/theme-language-server-browser": "workspace:^3.0.0",
+    "@shopify/lang-jsonc": "workspace:^1.0.1",
     "@types/markdown-it": "^13.0.4",
     "codemirror": "^6.0.1",
-    "markdown-it": "^14.1.1"
+    "markdown-it": "^14.3.3"
   },
   "peerDependencies": {
     "@codemirror/autocomplete": "^6.0.0",
