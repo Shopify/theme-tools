@@ -1,5 +1,6 @@
 import {
   NodeTypes,
+  type BlockArgumentValue,
   type BlockMarkup,
   type LiquidTag,
   type Position,
@@ -18,6 +19,7 @@ const SYNTAX_ERROR = "Syntax error in 'block' tag";
 const BARE_ARRAY_ACCESS = 'Bare bracket access is not allowed in strict2 mode';
 const DOTTED_ARGUMENT =
   "Liquid syntax error: in 'block' - Use plain named arguments, for example: block 'name', heading: value";
+const APP_BLOCK_CONTENT = "Liquid syntax error: in 'block' - app blocks do not accept content";
 const UNCLOSED_BLOCK_PARSER_ERROR = "Attempting to end parsing before LiquidTag 'block' was closed";
 const UNCLOSED_BLOCK_IN_LIQUID_PARSER_ERROR = "Unclosed block tag 'block' in {% liquid %} block";
 const BLOCK_PARSER_ERROR_MESSAGES = new Set([
@@ -38,13 +40,6 @@ export function blockTagSyntaxError(
 
   const markup = node.markup as BlockMarkup;
 
-  if (hasInvalidBlockName(markup.name.value)) {
-    return syntaxProblem(
-      node.position,
-      "Liquid syntax error: in 'block' - Valid syntax: block '[file_name]'",
-    );
-  }
-
   /*
    * Ruby Liquid still accepts the unsupported experimental block.settings.<id>
    * and block.content caller forms. Theme Check intentionally rejects every
@@ -54,6 +49,24 @@ export function blockTagSyntaxError(
   const dottedArgument = markup.args.find(isDottedArgument);
   if (dottedArgument) {
     return syntaxProblem(dottedArgument.position, dottedArgumentMessage(dottedArgument.name));
+  }
+
+  /*
+   * App settings map to JSON settings: only fixed scalars or flat arrays of
+   * them are allowed. Check every occurrence so a later fixed duplicate does
+   * not hide an earlier expression. block.name is metadata, not a setting.
+   */
+  if (isAppBlockPath(markup.name.value)) {
+    const dynamicArgument = markup.args.find(
+      (argument) => argument.name !== 'block.name' && !isFixedAppSetting(argument.value),
+    );
+    if (dynamicArgument) {
+      return syntaxProblem(
+        dynamicArgument.position,
+        `Liquid syntax error: in 'block' - app block settings must be fixed values; '${dynamicArgument.name}' is not a string, number, boolean or array of those`,
+      );
+    }
+    if (hasContent(node)) return syntaxProblem(node.position, APP_BLOCK_CONTENT);
   }
 
   if (markup.args.some(isInvalidBlockNameArgument)) {
@@ -100,8 +113,25 @@ function syntaxProblem(position: Position, message: string): Problem<SourceCodeT
   return { message, startIndex: position.start, endIndex: position.end };
 }
 
-function hasInvalidBlockName(value: string): boolean {
-  return value.includes('/') || value.includes('.');
+function isAppBlockPath(value: string): boolean {
+  return value.startsWith('shopify://apps/');
+}
+
+function isFixedAppSetting(value: BlockArgumentValue): boolean {
+  const elements = value.type === 'BlockArrayLiteral' ? value.elements : [value];
+  return elements.every(
+    (element) =>
+      element.type === NodeTypes.String ||
+      element.type === NodeTypes.Number ||
+      (element.type === NodeTypes.LiquidLiteral &&
+        (element.keyword === 'true' || element.keyword === 'false')),
+  );
+}
+
+function hasContent(node: LiquidTag): boolean {
+  return (node.children ?? []).some(
+    (child) => child.type !== NodeTypes.TextNode || child.value.trim() !== '',
+  );
 }
 
 function isInvalidBlockNameArgument(argument: BlockMarkup['args'][number]): boolean {

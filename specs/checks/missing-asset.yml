@@ -1,0 +1,83 @@
+check: MissingAsset
+severity: error
+cases:
+  - name: should report the missing asset when assigned to a variable
+    files:
+      snippets/snippet.liquid: |
+        {% assign logo_url = 'logo.png' | asset_url %}
+        <img src="{{ logo_url }}" alt="Logo" />
+      snippets/existing.liquid: ""
+    offenses:
+      - file: snippets/snippet.liquid
+        message: "'assets/logo.png' does not exist"
+        start: [0, 21]
+        highlight: "'logo.png'"
+  - name: should report the missing asset when defined inline
+    files:
+      snippets/snippet.liquid: "<link rel=\"stylesheet\" href=\"{{ 'styles.css' | asset_url }}\" />"
+      snippets/existing.liquid: ""
+    offenses:
+      - file: snippets/snippet.liquid
+        message: "'assets/styles.css' does not exist"
+        start: [0, 32]
+        highlight: "'styles.css'"
+  - name: should report the missing asset when multiple filters applied
+    files:
+      snippets/snippet.liquid: "<link rel=\"stylesheet\" href=\"{{ 'styles.css' | asset_url | stylesheet_tag}}\" />"
+      snippets/existing.liquid: ""
+    offenses:
+      - file: snippets/snippet.liquid
+        message: "'assets/styles.css' does not exist"
+        start: [0, 32]
+        highlight: "'styles.css'"
+  - name: should report no offenses when an asset file exists
+    files:
+      snippets/snippet.liquid: "<link rel=\"stylesheet\" href=\"{{ 'styles.css' | asset_url }}\" />"
+      assets/styles.css: ""
+  - name: should not report for compiled .js.liquid files
+    files:
+      snippets/snippet.liquid: "{{ 'foo.js' | asset_url }} "
+      assets/foo.js.liquid: 'console.log("{{ "hi" }}");'
+  - name: should not report for compiled .css.liquid files
+    files:
+      snippets/snippet.liquid: "{{ 'foo.css' | asset_url }} "
+      assets/foo.css.liquid: 'body { color: {{ "blue" }}; }'
+  - name: should not report for compiled .scss.liquid files
+    files:
+      snippets/snippet.liquid: "{{ 'foo.scss.css' | asset_url }} "
+      assets/foo.scss.liquid: 'html { & body { color: {{ "blue" }}; } }'
+  - name: should report an asset path that leaves the assets directory, also when the file it names exists
+    files:
+      snippets/snippet.liquid: "{{ '../outside.js' | asset_url }}"
+      outside.js: console.log("hi");
+    offenses:
+      - file: snippets/snippet.liquid
+        message: "'assets/../outside.js' does not exist"
+        start: [0, 3]
+        highlight: "'../outside.js'"
+  - name: should report an asset path that leaves the assets directory the same way when the file it names does not exist
+    files:
+      snippets/snippet.liquid: "{{ '../outside.js' | asset_url }}"
+    offenses:
+      - file: snippets/snippet.liquid
+        message: "'assets/../outside.js' does not exist"
+        start: [0, 3]
+        highlight: "'../outside.js'"
+  - name: should report an asset path that leaves the assets directory when a compiled .js.liquid file exists there
+    files:
+      snippets/snippet.liquid: "{{ '../outside.js' | asset_url }}"
+      outside.js.liquid: 'console.log("{{ "hi" }}");'
+    offenses:
+      - file: snippets/snippet.liquid
+        message: "'assets/../outside.js' does not exist"
+        start: [0, 3]
+        highlight: "'../outside.js'"
+  - name: should report a percent-encoded asset path that leaves the assets directory
+    files:
+      snippets/snippet.liquid: "{{ '%2e%2e%2foutside.js' | asset_url }}"
+      outside.js: console.log("hi");
+    offenses:
+      - file: snippets/snippet.liquid
+        message: "'assets/%2e%2e%2foutside.js' does not exist"
+        start: [0, 3]
+        highlight: "'%2e%2e%2foutside.js'"

@@ -2,7 +2,7 @@ import { Config } from '@shopify/theme-check-common';
 import { AbsolutePath } from '../temp';
 import { loadConfigDescription } from './load-config-description';
 import { resolveConfig } from './resolve';
-import { ModernIdentifier } from './types';
+import { LoadConfigOptions, ModernIdentifier } from './types';
 import { validateConfig } from './validation';
 import fs from 'fs/promises';
 
@@ -21,6 +21,7 @@ export async function loadConfig(
   configPath: AbsolutePath | ModernIdentifier | undefined,
   /** The root of the theme */
   root: AbsolutePath,
+  options: LoadConfigOptions = {},
 ): Promise<Config> {
   if (!root) throw new Error('loadConfig cannot be called without a root argument');
   let defaultChecks = 'theme-check:recommended';
@@ -35,7 +36,7 @@ export async function loadConfig(
   }
 
   const configDescription = await resolveConfig(configPath ?? defaultChecks, true);
-  const config = await loadConfigDescription(configDescription, root);
+  const config = await loadConfigDescription(configDescription, root, options);
   validateConfig(config);
   return config;
 }

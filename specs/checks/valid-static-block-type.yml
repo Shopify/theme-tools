@@ -1,0 +1,46 @@
+check: ValidStaticBlockType
+severity: error
+cases:
+  - name: should not report any offenses if type is valid
+    files:
+      blocks/valid.liquid: Hello world!
+      blocks/file.liquid: '{% content_for "block", type: "valid", id: "static-block" %}'
+  - name: should report an offense if type is invalid
+    files:
+      blocks/valid.liquid: Hello world!
+      blocks/file.liquid: '{% content_for "block", type: "invalid", id: "static-block" %}'
+    offenses:
+      - file: blocks/file.liquid
+        message: "'blocks/invalid.liquid' does not exist"
+        start: [0, 30]
+        highlight: '"invalid"'
+        suggest: []
+  - name: should report a type that leaves the blocks directory, also when the file it names exists
+    files:
+      snippets/outside.liquid: Hello world!
+      blocks/file.liquid: '{% content_for "block", type: "../snippets/outside", id: "static-block" %}'
+    offenses:
+      - file: blocks/file.liquid
+        message: "'blocks/../snippets/outside.liquid' does not exist"
+        start: [0, 30]
+        highlight: '"../snippets/outside"'
+        suggest: []
+  - name: should report a type that leaves the blocks directory the same way when the file it names does not exist
+    files:
+      blocks/file.liquid: '{% content_for "block", type: "../snippets/outside", id: "static-block" %}'
+    offenses:
+      - file: blocks/file.liquid
+        message: "'blocks/../snippets/outside.liquid' does not exist"
+        start: [0, 30]
+        highlight: '"../snippets/outside"'
+        suggest: []
+  - name: should report a percent-encoded type that leaves the blocks directory
+    files:
+      snippets/outside.liquid: Hello world!
+      blocks/file.liquid: '{% content_for "block", type: "%2e%2e%2fsnippets%2foutside", id: "static-block" %}'
+    offenses:
+      - file: blocks/file.liquid
+        message: "'blocks/%2e%2e%2fsnippets%2foutside.liquid' does not exist"
+        start: [0, 30]
+        highlight: '"%2e%2e%2fsnippets%2foutside"'
+        suggest: []

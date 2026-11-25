@@ -85,6 +85,12 @@ describe('forTag', () => {
     expect(result.args).toHaveLength(2);
   });
 
+  it('rejects reversed after named args', () => {
+    expect(() =>
+      forTag.parse('for', parser('item in collection limit:5 reversed'), stubParser),
+    ).toThrow();
+  });
+
   it('parses for loop with comma-separated named args', () => {
     const result = forTag.parse('for', parser('item in collection limit:5, offset:2'), stubParser);
     expect(result).toMatchObject({
