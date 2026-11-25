@@ -5,16 +5,11 @@ import {
   Severity,
   SourceCodeType,
   PropertyNode,
-  SchemaProp,
 } from '../../types';
 
 const PLURALIZATION_KEYS = new Set(['zero', 'one', 'two', 'few', 'many', 'other']);
 
-const schema = {
-  requireOther: SchemaProp.boolean(true),
-};
-
-export const MatchingTranslations: JSONCheckDefinition<typeof schema> = {
+export const MatchingTranslations: JSONCheckDefinition = {
   meta: {
     code: 'MatchingTranslations',
     name: 'Translation files should have the same keys',
@@ -25,7 +20,7 @@ export const MatchingTranslations: JSONCheckDefinition<typeof schema> = {
     },
     type: SourceCodeType.JSON,
     severity: Severity.ERROR,
-    schema,
+    schema: {},
     targets: [],
   },
 
@@ -85,9 +80,10 @@ export const MatchingTranslations: JSONCheckDefinition<typeof schema> = {
     };
 
     if (isDefaultTranslationsFile) {
-      if (isSchemaTranslationFile || !context.settings.requireOther) return {};
+      if (isSchemaTranslationFile) return {};
 
-      // Validate pluralized entries locally, without comparing the default locale to itself.
+      // The storefront raises when a count has no matching plural key and no
+      // `other` to fall back to, so every pluralized entry needs `other`.
       return {
         async Property(node, ancestors) {
           const value = node.value;
