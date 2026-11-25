@@ -8,7 +8,7 @@ import { LiquidHtmlNode } from '@shopify/theme-check-common';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { HtmlData, Tag, renderHtmlEntry } from '../../docset';
 import { isTextNode } from '../../utils';
-import { CURSOR, LiquidCompletionParams } from '../params';
+import { LiquidCompletionParams } from '../params';
 import { Provider, sortByName } from './common';
 
 type CompletableParentNode = (HtmlElement | HtmlDanglingMarkerClose) & { name: [TextNode] };
@@ -19,7 +19,7 @@ export class HtmlTagCompletionProvider implements Provider {
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
 
-    const { node, ancestors } = params.completionContext;
+    const { node, ancestors, partial } = params.completionContext;
     const parentNode = ancestors.at(-1);
     const grandParentNode = ancestors.at(-2);
 
@@ -28,12 +28,27 @@ export class HtmlTagCompletionProvider implements Provider {
       return options.map(toCompletionItem);
     }
 
+    if (node && isTextNode(node) && node.value === '<') {
+      /*
+       * A bare `<` (`<█`, `<a><█`): a real trailing TextNode that isn't a
+       * member of any element's name array, so canComplete rejects it. Treat
+       * it as the start of a tag name (empty partial) and offer all tags, plus
+       * the enclosing element's close option when there is one.
+       */
+      const enclosing = ancestors.at(-1);
+      const closeName = getGrandParentName(enclosing);
+      const options = HtmlData.tags.concat(
+        closeName
+          ? [{ name: '/' + closeName, description: '', attributes: [], references: [] }]
+          : [],
+      );
+      return options.sort(sortByName).map(toCompletionItem);
+    }
+
     if (!node || !parentNode || !isTextNode(node) || !canComplete(node, parentNode)) {
       return [];
     }
 
-    const name = node.value;
-    const partial = name.replace(CURSOR, '');
     const options = getOptions(partial, parentNode, grandParentNode);
     return options.sort(sortByName).map(toCompletionItem);
   }
@@ -108,7 +123,7 @@ function getGrandParentName(grandParentNode: LiquidHtmlNode | undefined): string
     grandParentNode.name.length === 1 &&
     isTextNode(grandParentNode.name[0])
   ) {
-    return grandParentNode.name[0].value.replace(CURSOR, '');
+    return grandParentNode.name[0].value;
   }
 }
 

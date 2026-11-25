@@ -1,5 +1,108 @@
 # @shopify/prettier-plugin-liquid
 
+## 1.11.6
+
+### Patch Changes
+
+- Patch bump because it depends on @shopify/liquid-html-parser
+- Updated dependencies [61cae020]
+  - @shopify/liquid-html-parser@2.12.2
+
+## 1.11.5
+
+### Patch Changes
+
+- Patch bump because it depends on @shopify/liquid-html-parser
+- Updated dependencies [f1f29bdd]
+- Updated dependencies [cbe4c7f2]
+  - @shopify/liquid-html-parser@2.12.1
+
+## 1.11.4
+
+### Patch Changes
+
+- 7cb4970d: Parse the Liquid inside HTML comments. Liquid renders it, and its tags can open, branch and close blocks, so `{% if a %}<!-- {% endif %} -->` no longer fails with an unclosed `if`.
+  - `HtmlComment` has `children` (text and Liquid) and `blockStartPosition`/`blockEndPosition` for its delimiters.
+  - A comment that crosses a Liquid block boundary is split there, and each part has an empty delimiter range on the split side.
+  - A comment that never closes ends at the end of the file, as in a browser.
+  - An end tag in a comment that closes no block is a parse error, as in Liquid.
+  - The `opaqueHtmlComments` option keeps comment bodies opaque.
+
+  **Behavior changes**
+  - Code that walks `children` now visits the Liquid and text inside HTML comments.
+  - `<!-- {% if a %} --><p>x</p><!-- {% endif %} -->` is one comment whose `if` holds `<p>x</p>` as text, not two comments around a `<p>` element.
+  - `<!-- {% endif %} -->` with no open `if` no longer parses. An unclosed `<!--` and `{% if a %}<!-- {% endif %} -->` now parse.
+  - Code that creates `HtmlComment` nodes must set `children`, `blockStartPosition` and `blockEndPosition`.
+
+  Pass `opaqueHtmlComments: true` to get the previous tree for these templates.
+
+  Checks now see the Liquid in HTML comments, and completions work inside them. Prettier prints an unclosed comment as written, and can move whitespace and line breaks inside a comment that holds a Liquid block or is split by one.
+
+- Updated dependencies [7cb4970d]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [c8099ba8]
+- Updated dependencies [320fa1fe]
+- Updated dependencies [5b634d93]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [a73b174f]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [5aec106f]
+- Updated dependencies [34dae62b]
+  - @shopify/liquid-html-parser@2.12.0
+
+## 1.11.3
+
+### Patch Changes
+
+- Patch bump because it depends on @shopify/liquid-html-parser
+- Updated dependencies [286b04fb]
+- Updated dependencies [84a458be]
+- Updated dependencies [c0ae8785]
+- Updated dependencies [af297bab]
+  - @shopify/liquid-html-parser@2.11.0
+
+## 1.11.2
+
+### Patch Changes
+
+- 4d7201b4: Format wrapped `block` arguments with trailing commas and a closing delimiter on its own line, and avoid unnecessary whitespace stripping between childless Liquid tag delimiters.
+- Updated dependencies [9c04ccbc]
+  - @shopify/liquid-html-parser@2.10.2
+
+## 1.11.1
+
+### Patch Changes
+
+- 53f22f5a: Fix `{% # white-space: pre %}` comment hint being ignored for plain text nodes, which caused files with meaningful line breaks but no HTML tags (e.g. a `robots.txt.liquid` template) to have their lines incorrectly joined together
+- Updated dependencies [74185263]
+  - @shopify/liquid-html-parser@2.10.1
+
+## 1.11.0
+
+### Minor Changes
+
+- 6803e99c: Adopt the hand-written `liquid-html-parser` for performance
+
+  Replace the parser-combinator-based Liquid/HTML parser with a hand-written
+  recursive-descent parser. The new parser is significantly faster, adds
+  resilient parsing (it recovers from malformed input instead of bailing), and is
+  adapted to the theme-tools source model. `theme-language-server-common`,
+  `theme-check-common`, `prettier-plugin-liquid`, and `theme-graph` are updated to
+  consume the new parser.
+
+### Patch Changes
+
+- Updated dependencies [6803e99c]
+  - @shopify/liquid-html-parser@2.10.0
+
+## 1.10.3
+
+### Patch Changes
+
+- cacd8f32: [internal] local development fix for breakpoints
+
 ## 1.10.2
 
 ### Patch Changes

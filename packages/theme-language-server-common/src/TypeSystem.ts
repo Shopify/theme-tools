@@ -14,6 +14,7 @@ import {
 } from '@shopify/liquid-html-parser';
 import {
   ArrayReturnType,
+  BLOCK_CONTENT_PARAMETER,
   DocsetEntry,
   FilterEntry,
   MetafieldDefinitionMap,
@@ -29,7 +30,9 @@ import {
   FETCHED_METAFIELD_CATEGORIES,
   BasicParamTypes,
   getValidParamTypes,
-  parseParamType,
+  parseDocParamType,
+  schemaSettingLiquidType,
+  StringLiteralType,
 } from '@shopify/theme-check-common';
 import {
   GetThemeSettingsSchemaForURI,
@@ -54,7 +57,7 @@ export class TypeSystem {
     thing: Identifier | ComplexLiquidExpression | LiquidVariable | AssignMarkup,
     partialAst: LiquidHtmlNode,
     uri: string,
-  ): Promise<PseudoType | ArrayType> {
+  ): Promise<InferredType> {
     const [objectMap, filtersMap, symbolsTable] = await Promise.all([
       this.objectMap(uri, partialAst),
       this.filtersMap(),
@@ -69,7 +72,7 @@ export class TypeSystem {
     partial: string,
     node: LiquidVariableLookup,
     uri: string,
-  ): Promise<{ entry: DocsetEntry; type: PseudoType | ArrayType }[]> {
+  ): Promise<{ entry: DocsetEntry; type: InferredType }[]> {
     const [objectMap, filtersMap, symbolsTable] = await Promise.all([
       this.objectMap(uri, partialAst),
       this.filtersMap(),
@@ -85,7 +88,7 @@ export class TypeSystem {
       .map(([identifier, typeRanges]) => {
         const typeRange = findLast(typeRanges, (typeRange) => isCorrectTypeRange(typeRange, node))!;
         const type = resolveTypeRangeType(typeRange.type, symbolsTable, objectMap, filtersMap);
-        const entry = objectMap[isArrayType(type) ? type.valueType : type] ?? {};
+        const entry = objectMap[isArrayType(type) ? type.valueType : getBaseType(type)] ?? {};
         return {
           entry: { ...entry, name: identifier },
           type,
@@ -175,9 +178,13 @@ export class TypeSystem {
       };
     }
 
-    // Deal with blocks/files.liquid block.settings in a similar fashion
-    if (/[\/\\]blocks[\/\\]/.test(uri) && result.block) {
+    // Deal with blocks/files.liquid block.settings in a similar fashion.
+    // `block.content` is the built-in string `content` parameter.
+    if (isThemeBlockFile(uri) && result.block) {
       result.block = JSON.parse(JSON.stringify(result.block)); // easy deep clone
+      result.block.properties = (result.block.properties ?? [])
+        .filter((property) => property.name !== BLOCK_CONTENT_PARAMETER)
+        .concat({ name: BLOCK_CONTENT_PARAMETER, return_type: [{ type: String, name: '' }] });
       const settings = result.block.properties?.find((x) => x.name === 'settings');
       if (!settings || !settings.return_type) return result;
       settings.return_type = [{ type: 'block_settings', name: '' }];
@@ -288,8 +295,17 @@ export class TypeSystem {
   });
 
   private async symbolsTable(partialAst: LiquidHtmlNode, uri: string): Promise<SymbolsTable> {
-    const seedSymbolsTable = await this.seedSymbolsTable(uri);
-    return buildSymbolsTable(partialAst, seedSymbolsTable, await this.themeDocset.liquidDrops());
+    const blockVariableTypes = themeBlockVariableTypes(partialAst, uri);
+    const seedSymbolsTable = seedBlockVariables(
+      await this.seedSymbolsTable(uri),
+      blockVariableTypes,
+    );
+    return buildSymbolsTable(
+      partialAst,
+      seedSymbolsTable,
+      await this.themeDocset.liquidDrops(),
+      blockVariableTypes,
+    );
   }
 
   /**
@@ -336,7 +352,14 @@ const BLOCK_FILE_REGEX = /blocks[\/\\][^.\\\/]*\.liquid$/;
 const SNIPPET_FILE_REGEX = /snippets[\/\\][^.\\\/]*\.liquid$/;
 const LAYOUT_FILE_REGEX = /layout[\/\\]checkout\.liquid$/;
 
+const THEME_BLOCK_FILE_REGEX = /(?:^|[\/\\])blocks[\/\\][^.\\\/]*\.liquid$/;
+
 const BLOCK_CONTEXTUAL_ENTRIES = ['app', 'section', 'recommendations', 'block'];
+
+/** Only files directly inside a directory named exactly `blocks` are theme block files. */
+function isThemeBlockFile(uri: string): boolean {
+  return THEME_BLOCK_FILE_REGEX.test(path.normalize(uri));
+}
 
 function getContextualEntries(uri: string, mode: Mode = 'theme'): string[] {
   const normalizedUri = path.normalize(uri);
@@ -398,6 +421,8 @@ type String = typeof String;
 /** A pseudo-type is the possible values of an ObjectEntry's return_type.type */
 export type PseudoType = ObjectEntryName | String | Untyped | Unknown | 'number' | 'boolean';
 
+export type InferredType = PseudoType | ArrayType | StringLiteralType | UnionType;
+
 /**
  * A variable can have many types in the same file
  *
@@ -416,7 +441,7 @@ interface TypeRange {
   identifier: Identifier;
 
   /** The type of the variable */
-  type: PseudoType | ArrayType | LazyVariableType | LazyDeconstructedExpression;
+  type: InferredType | LazyVariableType | LazyDeconstructedExpression;
 
   /**
    * The range may be one of two things:
@@ -435,6 +460,12 @@ const arrayType = (valueType: PseudoType): ArrayType => ({
   kind: 'array',
   valueType,
 });
+
+/** A union type (e.g. 'heading' | 'small'). Only string literals can be members for now. */
+export type UnionType = {
+  kind: 'union';
+  types: StringLiteralType[];
+};
 
 /**
  * Because a type may depend on another, this represents the type of
@@ -488,6 +519,7 @@ function buildSymbolsTable(
   partialAst: LiquidHtmlNode,
   seedSymbolsTable: SymbolsTable,
   liquidDrops: ObjectEntry[],
+  blockVariableTypes: BlockVariableTypes,
 ): SymbolsTable {
   const typeRanges = visit<SourceCodeType.LiquidHtml, TypeRange>(partialAst, {
     // {% assign x = foo.x | filter %}
@@ -502,10 +534,14 @@ function buildSymbolsTable(
     // {% doc %}
     //   @param {string} name - your name
     // {% enddoc %}
+    //
+    // In a theme block, a schema setting with the same ID or the built-in
+    // `content` parameter decides the type.
     LiquidDocParamNode(node) {
+      const identifier = node.paramName.value;
       return {
-        identifier: node.paramName.value,
-        type: inferLiquidDocParamType(node, liquidDrops),
+        identifier,
+        type: blockVariableTypes.get(identifier) ?? inferLiquidDocParamType(node, liquidDrops),
         range: [node.position.end],
       };
     },
@@ -568,34 +604,67 @@ function buildSymbolsTable(
     }, seedSymbolsTable);
 }
 
+/** The type of each variable that a theme block file gets implicitly, by name. */
+type BlockVariableTypes = Map<Identifier, PseudoType | ArrayType>;
+
+/**
+ * A theme block's schema settings are also plain variables in the block file,
+ * and the built-in `content` parameter is always a string variable there,
+ * even when a schema setting named `content` declares another type.
+ * Other files get no block variables.
+ */
+function themeBlockVariableTypes(partialAst: LiquidHtmlNode, uri: string): BlockVariableTypes {
+  if (!isThemeBlockFile(uri)) return new Map();
+
+  const schemaSettingTypes: BlockVariableTypes = new Map(
+    schemaSettingsAsProperties(partialAst).map((setting) => [
+      setting.name,
+      objectEntryType(setting),
+    ]),
+  );
+  return schemaSettingTypes.set(BLOCK_CONTENT_PARAMETER, String);
+}
+
+/**
+ * Block variables start at the top of the file, like other seeded variables,
+ * so later assigns and captures change their type by position.
+ */
+function seedBlockVariables(
+  seedSymbolsTable: SymbolsTable,
+  blockVariableTypes: BlockVariableTypes,
+): SymbolsTable {
+  for (const [identifier, type] of blockVariableTypes) {
+    seedSymbolsTable[identifier] ??= [];
+    seedSymbolsTable[identifier].push({ identifier, type, range: [0] });
+  }
+  return seedSymbolsTable;
+}
+
 /**
  * Given a TypeRange['type'] (which may be lazy), resolve its type recursively.
  *
- * The output is a fully resolved PseudoType | ArrayType. Which means we
- * could use it to power completions.
+ * The output is a fully resolved type that can power completions.
  */
 function resolveTypeRangeType(
   typeRangeType: TypeRange['type'],
   symbolsTable: SymbolsTable,
   objectMap: ObjectMap,
   filtersMap: FiltersMap,
-): PseudoType | ArrayType {
+): InferredType {
   if (typeof typeRangeType === 'string') {
     return typeRangeType;
   }
 
   switch (typeRangeType.kind) {
-    case 'array': {
+    case 'array':
+    case 'literal':
+    case 'union': {
       return typeRangeType;
     }
 
     case 'deconstructed': {
       const arrayType = inferType(typeRangeType.node, symbolsTable, objectMap, filtersMap);
-      if (typeof arrayType === 'string') {
-        return Untyped;
-      } else {
-        return arrayType.valueType;
-      }
+      return isArrayType(arrayType) ? arrayType.valueType : Untyped;
     }
 
     default: {
@@ -609,7 +678,7 @@ function inferType(
   symbolsTable: SymbolsTable,
   objectMap: ObjectMap,
   filtersMap: FiltersMap,
-): PseudoType | ArrayType {
+): InferredType {
   if (typeof thing === 'string') {
     return objectMap[thing as PseudoType]?.name ?? Untyped;
   }
@@ -654,10 +723,9 @@ function inferType(
       if (thing.filters.length > 0) {
         const lastFilter = thing.filters.at(-1)!;
         if (lastFilter.name === 'default') {
-          // default filter is a special case, we need to return the type of the expression
-          // instead of the filter.
           if (lastFilter.args.length > 0 && lastFilter.args[0].type !== NodeTypes.NamedArgument) {
-            return inferType(lastFilter.args[0], symbolsTable, objectMap, filtersMap);
+            const fallbackType = inferType(lastFilter.args[0], symbolsTable, objectMap, filtersMap);
+            return getStringLiterals(fallbackType) ? 'string' : fallbackType;
           }
         }
         const filterEntry = filtersMap[lastFilter.name];
@@ -673,33 +741,35 @@ function inferType(
   }
 }
 
-function inferLiquidDocParamType(node: LiquidDocParamNode, liquidDrops: ObjectEntry[]) {
+function inferLiquidDocParamType(
+  node: LiquidDocParamNode,
+  liquidDrops: ObjectEntry[],
+): InferredType {
   const paramTypeValue = node.paramType?.value;
 
   if (!paramTypeValue) return Untyped;
 
   const validParamTypes = getValidParamTypes(liquidDrops);
 
-  const parsedParamType = parseParamType(new Set(validParamTypes.keys()), paramTypeValue);
+  const parsedParamType = parseDocParamType(new Set(validParamTypes.keys()), paramTypeValue);
 
   if (!parsedParamType) return Untyped;
 
-  const [type, isArray] = parsedParamType;
+  if (parsedParamType.kind === 'literal') return parsedParamType;
 
-  let transformedParamType;
+  if (parsedParamType.kind === 'union') {
+    const { types } = parsedParamType;
+    // The type system only has unions of string literals for now.
+    return types.every((type): type is StringLiteralType => type.kind === 'literal')
+      ? { kind: 'union', types }
+      : Untyped;
+  }
 
+  const type = parsedParamType.kind === 'array' ? parsedParamType.valueType : parsedParamType.name;
   // BasicParamTypes.Object does not map to any specific type in the type system.
-  if (type === BasicParamTypes.Object) {
-    transformedParamType = Untyped;
-  } else {
-    transformedParamType = type;
-  }
+  const transformedParamType = type === BasicParamTypes.Object ? Untyped : type;
 
-  if (isArray) {
-    return arrayType(transformedParamType);
-  }
-
-  return transformedParamType;
+  return parsedParamType.kind === 'array' ? arrayType(transformedParamType) : transformedParamType;
 }
 
 function inferLookupType(
@@ -707,7 +777,7 @@ function inferLookupType(
   symbolsTable: SymbolsTable,
   objectMap: ObjectMap,
   filtersMap: FiltersMap,
-): PseudoType | ArrayType {
+): InferredType {
   // we return the type of the drop, so a.b.c
   const node = thing;
 
@@ -744,7 +814,7 @@ function inferLookupType(
     // e.g. product.images -> ArrayType<images>
     // e.g. product.name -> string
     else {
-      curr = inferPseudoTypePropertyType(curr, lookup, objectMap);
+      curr = inferPseudoTypePropertyType(getBaseType(curr), lookup, objectMap);
     }
 
     // Early return
@@ -932,8 +1002,21 @@ function isArrayReturnType(rt: ReturnType): rt is ArrayReturnType {
   return rt.type === 'array';
 }
 
-export function isArrayType(thing: PseudoType | ArrayType): thing is ArrayType {
-  return typeof thing !== 'string';
+export function isArrayType(thing: InferredType): thing is ArrayType {
+  return typeof thing !== 'string' && thing.kind === 'array';
+}
+
+/** The string values a type allows, when it allows nothing else. */
+export function getStringLiterals(type: InferredType | undefined): StringLiteralType[] | undefined {
+  if (typeof type !== 'object' || type.kind === 'array') return undefined;
+  return type.kind === 'literal' ? [type] : type.types;
+}
+
+/** The primitive or object type used for property and filter lookup. */
+export function getBaseType(type: InferredType): PseudoType {
+  if (typeof type === 'string') return type;
+  // String literals and their unions are looked up as strings.
+  return isArrayType(type) ? 'array' : 'string';
 }
 
 /** Assumes findLast */
@@ -957,95 +1040,11 @@ function isLiquidTagDecrement(node: LiquidTag): node is LiquidTagDecrement {
 }
 
 function settingReturnType(setting: InputSetting): ObjectEntry['return_type'] {
-  switch (setting.type) {
-    // basic settings
-    case 'checkbox':
-      return [{ type: 'boolean', name: '' }];
+  const liquidType = schemaSettingLiquidType(setting.type);
+  if (!liquidType) return [];
+  if (liquidType.endsWith('[]')) return [{ type: 'array', array_value: liquidType.slice(0, -2) }];
 
-    case 'range':
-    case 'number':
-      return [{ type: 'number', name: '' }];
-
-    case 'radio':
-    case 'select':
-    case 'text':
-    case 'textarea':
-      return [{ type: 'string', name: '' }];
-
-    // specialized settings
-    case 'article':
-      return [{ type: 'article', name: '' }];
-
-    case 'blog':
-      return [{ type: 'blog', name: '' }];
-
-    case 'collection':
-      return [{ type: 'collection', name: '' }];
-
-    case 'collection_list':
-      return [{ type: 'array', array_value: 'collection' }];
-
-    case 'color':
-      return [{ type: 'color', name: '' }];
-
-    case 'color_background':
-      return [{ type: 'string', name: '' }];
-
-    case 'color_scheme':
-      return [{ type: 'color_scheme', name: '' }];
-
-    // TODO ??
-    case 'color_scheme_group':
-      return [];
-
-    case 'color_palette':
-      return [{ type: 'string', name: '' }];
-
-    case 'font_picker':
-      return [{ type: 'font', name: '' }];
-
-    case 'html':
-      return [{ type: 'string', name: '' }];
-
-    case 'image_picker':
-      return [{ type: 'image', name: '' }];
-
-    case 'inline_richtext':
-      return [{ type: 'string', name: '' }];
-
-    case 'link_list':
-      return [{ type: 'linklist', name: '' }];
-
-    case 'liquid':
-      return [{ type: 'string', name: '' }];
-
-    case 'page':
-      return [{ type: 'page', name: '' }];
-
-    case 'product':
-      return [{ type: 'product', name: '' }];
-
-    case 'product_list':
-      return [{ type: 'array', array_value: 'product' }];
-
-    case 'richtext':
-      return [{ type: 'string', name: '' }];
-
-    case 'text_alignment':
-      return [{ type: 'string', name: '' }];
-
-    case 'url':
-      return [{ type: 'string', name: '' }];
-
-    case 'video':
-      return [{ type: 'video', name: '' }];
-
-    case 'video_url':
-      return [{ type: 'string', name: '' }];
-
-    default:
-      return [];
-  }
+  return [{ type: liquidType, name: '' }];
 }
 
 const METAFIELD_TYPE_TO_TYPE = Object.freeze({

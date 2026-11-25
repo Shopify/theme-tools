@@ -55,10 +55,23 @@ import {
   printLiquidDocPrompt,
 } from './print/liquid';
 import { printClosingTagSuffix, printOpeningTagPrefix } from './print/tag';
-import { bodyLines, hasLineBreakInRange, isEmpty, isTextLikeNode, reindent } from './utils';
+import {
+  bodyLines,
+  hasLineBreakInRange,
+  isEmpty,
+  isPreLikeNode,
+  isTextLikeNode,
+  reindent,
+} from './utils';
 
 const { builders, utils } = doc;
-const { fill, group, hardline, dedentToRoot, indent, join, line, softline } = builders;
+const { fill, group, hardline, dedentToRoot, ifBreak, indent, join, line, softline } = builders;
+
+// `replaceEndOfLine` exists at runtime on both prettier 2 and prettier 3's
+// `doc.utils`, but is missing from prettier 2's type definitions.
+const { replaceEndOfLine } = utils as typeof utils & {
+  replaceEndOfLine: (doc: Doc, replacement?: Doc) => Doc;
+};
 
 const oppositeQuotes = {
   '"': "'",
@@ -161,6 +174,14 @@ function printTextNode(
   if (node.value.match(/^\s*$/)) return '';
   const text = node.value;
 
+  if (isPreLikeNode(node)) {
+    return [
+      printOpeningTagPrefix(node, options),
+      replaceEndOfLine(text),
+      printClosingTagSuffix(node, options),
+    ];
+  }
+
   const paragraphs = text
     .split(/(\r?\n){2,}/)
     .filter(Boolean) // removes empty paragraphs (trailingWhitespace)
@@ -194,6 +215,18 @@ function printNode(
   args: LiquidPrinterArgs = {},
 ): Doc {
   const node = path.getValue();
+
+  if ((node as any).type === 'BlockArrayLiteral') {
+    return [
+      '[',
+      join(
+        [',', line],
+        (path as any).map((p: any) => print(p), 'elements'),
+      ),
+      ']',
+    ];
+  }
+
   switch (node.type) {
     case NodeTypes.Document: {
       return [printChildren(path as AstPath<DocumentNode>, options, print, args), hardline];
@@ -220,7 +253,7 @@ function printNode(
     }
 
     case NodeTypes.RawMarkup: {
-      if (node.parentNode?.name === 'doc') {
+      if (node.parentNode?.type === NodeTypes.LiquidRawTag && node.parentNode.name === 'doc') {
         return printLiquidDoc(path as AstPath<RawMarkup>, options, print, args);
       }
 
@@ -299,6 +332,18 @@ function printNode(
     }
 
     case NodeTypes.HtmlComment: {
+      const { blockStartPosition: open, blockEndPosition: close } = node;
+      // Part of a comment split at a Liquid block boundary, or one that never
+      // closes: adding the missing delimiter would change the output. On a side
+      // without one, the next parse reads the line break printed there as part
+      // of this node, so trim it to keep formatting idempotent.
+      if (open.start === open.end || close.start === close.end) {
+        let text = node.source.slice(node.position.start, node.position.end);
+        if (open.start === open.end) text = text.trimStart();
+        if (close.start === close.end) text = text.trimEnd();
+        return text;
+      }
+
       const conditionalComment = getConditionalComment(
         node.source.slice(node.position.start, node.position.end),
       );
@@ -343,7 +388,7 @@ function printNode(
         whitespace,
         join(
           [',', whitespace],
-          path.map((p) => print(p), 'args'),
+          path.map((p: any) => print(p), 'args'),
         ),
       );
 
@@ -362,7 +407,7 @@ function printNode(
           line,
           join(
             line,
-            path.map((p) => print(p), 'args'),
+            path.map((p: any) => print(p), 'args'),
           ),
         ]);
       }
@@ -384,7 +429,7 @@ function printNode(
           line,
           join(
             [',', line],
-            path.map((p) => print(p), 'args'),
+            path.map((p: any) => print(p), 'args'),
           ),
         ]);
       }
@@ -401,7 +446,43 @@ function printNode(
           line,
           join(
             [',', line],
-            path.map((p) => print(p), 'args'),
+            path.map((p: any) => print(p), 'args'),
+          ),
+        );
+      }
+
+      return doc;
+    }
+
+    case NodeTypes.BlockMarkup: {
+      const name = path.call((p: any) => print(p), 'name');
+      if (node.args.length === 0) return name;
+
+      /*
+       * Keep the arguments in the surrounding start-tag group so they wrap
+       * whenever its closing delimiter wraps. Wrapped arguments end in a comma.
+       */
+      return [
+        name,
+        ',',
+        line,
+        join(
+          [',', line],
+          path.map((p: any) => print(p), 'args'),
+        ),
+        ifBreak(','),
+      ];
+    }
+
+    case NodeTypes.SectionMarkup: {
+      const doc: Doc = [path.call((p: any) => print(p), 'name')];
+      if (node.args.length > 0) {
+        doc.push(
+          ',',
+          line,
+          join(
+            [',', line],
+            path.map((p: any) => print(p), 'args'),
           ),
         );
       }
@@ -428,7 +509,7 @@ function printNode(
           line,
           join(
             [',', line],
-            path.map((p) => print(p), 'args'),
+            path.map((p: any) => print(p), 'args'),
           ),
         );
       }
@@ -479,7 +560,7 @@ function printNode(
       let args: Doc[] = [];
 
       if (node.args.length > 0) {
-        const printed = path.map((p) => print(p), 'args');
+        const printed = path.map((p: any) => print(p), 'args');
         const shouldPrintFirstArgumentSameLine = node.args[0].type !== NodeTypes.NamedArgument;
 
         if (shouldPrintFirstArgumentSameLine) {
@@ -588,6 +669,10 @@ function printNode(
 
     case NodeTypes.LiquidDocPromptNode: {
       return printLiquidDocPrompt(path as AstPath<LiquidDocPromptNode>, options, print, args);
+    }
+
+    case NodeTypes.LiquidErrorNode: {
+      return node.source.slice(node.position.start, node.position.end);
     }
 
     default: {

@@ -27,4 +27,4 @@ cd ../online-store-web && {
 }
 
 echo "You are ready to start developing in the Shopify Admin Theme Code Editor!"
-echo "To see your dev changes, please run 'yarn admin:build`"
+echo "To see your dev changes, please run 'pnpm admin:build'"

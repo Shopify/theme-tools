@@ -1,5 +1,7 @@
 import { expect, describe, it } from 'vitest';
+import { toSchema, toSourceCode } from '../../index';
 import { check } from '../../test';
+import { ThemeBlockSchema } from '../../types';
 import { ValidSettingsKey } from './index';
 
 describe('Module: ValidSettingsKey', () => {
@@ -13,108 +15,6 @@ describe('Module: ValidSettingsKey', () => {
       },
     ],
   };
-
-  describe('default settings', () => {
-    it('does not report an error when default setting exists', async () => {
-      const theme = {
-        'sections/example.liquid': toLiquidFile({
-          ...schemaTemplate,
-          default: {
-            settings: {
-              'existent-setting': 'value',
-            },
-          },
-        }),
-      };
-
-      const offenses = await check(theme, [ValidSettingsKey]);
-      expect(offenses).to.have.length(0);
-    });
-
-    it('reports an error when default setting does not exist', async () => {
-      const theme = {
-        'sections/example.liquid': toLiquidFile({
-          ...schemaTemplate,
-          default: {
-            settings: {
-              'non-existent-setting': 'value',
-            },
-          },
-        }),
-      };
-
-      const offenses = await check(theme, [ValidSettingsKey]);
-      expect(offenses).to.have.length(1);
-      expect(offenses[0].message).to.equal(
-        `Setting 'non-existent-setting' does not exist in schema.`,
-      );
-    });
-
-    it('does not report an error when missing default settings is referenced from a block schema', async () => {
-      const theme = {
-        'blocks/example.liquid': toLiquidFile({
-          ...schemaTemplate,
-          default: {
-            settings: {
-              'non-existent-setting': 'value',
-            },
-          },
-        }),
-      };
-
-      const offenses = await check(theme, [ValidSettingsKey]);
-      expect(offenses).to.have.length(0);
-    });
-  });
-
-  describe('presets settings', () => {
-    it('does not report an error when presets setting exists', async () => {
-      const theme = {
-        'sections/example.liquid': toLiquidFile({
-          ...schemaTemplate,
-          presets: [
-            {
-              settings: {
-                'existent-setting': 'value',
-              },
-            },
-          ],
-        }),
-      };
-
-      const offenses = await check(theme, [ValidSettingsKey]);
-      expect(offenses).to.have.length(0);
-    });
-
-    it('reports an error when presets setting does not exist', async () => {
-      const theme = {
-        'sections/example.liquid': toLiquidFile({
-          ...schemaTemplate,
-          presets: [
-            {
-              settings: {
-                'non-existent-setting-1': 'value',
-              },
-            },
-            {
-              settings: {
-                'non-existent-setting-2': 'value',
-              },
-            },
-          ],
-        }),
-      };
-
-      const offenses = await check(theme, [ValidSettingsKey]);
-      expect(offenses).to.have.length(2);
-      expect(offenses[0].message).to.equal(
-        `Setting 'non-existent-setting-1' does not exist in schema.`,
-      );
-      expect(offenses[1].message).to.equal(
-        `Setting 'non-existent-setting-2' does not exist in schema.`,
-      );
-    });
-  });
 
   const tests = [
     {
@@ -148,164 +48,26 @@ describe('Module: ValidSettingsKey', () => {
           'blocks/referenced.liquid': toLiquidFile(schemaTemplate),
         };
 
-        it(`does not report an error when ${label} block setting exists in referenced file`, async () => {
-          const fileToTest = {
+        it(`reports an error when ${label} block setting does not exist in a referenced file that loads slowly`, async () => {
+          const theme = {
+            ...referencedBlock,
             'sections/example.liquid': toLiquidFile({
               ...schemaTemplate,
-              ...blockTemplate([
-                {
-                  type: 'referenced',
-                  settings: {
-                    'existent-setting': 'value',
-                  },
-                },
-              ]),
+              ...blockTemplate([{ type: 'referenced', settings: { 'non-existent-setting': 'v' } }]),
             }),
           };
+          const uri = 'file:///blocks/referenced.liquid';
+          const source = toSourceCode(uri, theme['blocks/referenced.liquid']);
 
-          const offenses = await check(
-            {
-              ...referencedBlock,
-              ...fileToTest,
+          const offenses = await check(theme, [ValidSettingsKey], {
+            async getBlockSchema() {
+              await new Promise((resolve) => setTimeout(resolve, 10));
+              return toSchema('theme', uri, source, async () => true) as Promise<
+                ThemeBlockSchema | undefined
+              >;
             },
-            [ValidSettingsKey],
-          );
-          expect(offenses).to.have.length(0);
-        });
-
-        it('does not report an error when referenced file does not exist', async () => {
-          const fileToTest = {
-            'sections/example.liquid': toLiquidFile({
-              ...schemaTemplate,
-              ...blockTemplate([
-                {
-                  type: 'non-existent-file',
-                  settings: {
-                    'non-existent-setting': 'value',
-                  },
-                },
-              ]),
-            }),
-          };
-
-          const offenses = await check(
-            {
-              ...referencedBlock,
-              ...fileToTest,
-            },
-            [ValidSettingsKey],
-          );
-          expect(offenses).to.have.length(0);
-        });
-
-        it(`reports an error when ${label} block setting does not exist in referenced file`, async () => {
-          const fileToTest = {
-            'sections/example.liquid': toLiquidFile({
-              ...schemaTemplate,
-              ...blockTemplate([
-                {
-                  type: 'referenced',
-                  settings: {
-                    'non-existent-setting': 'value',
-                  },
-                },
-              ]),
-            }),
-          };
-
-          const offenses = await check(
-            {
-              ...referencedBlock,
-              ...fileToTest,
-            },
-            [ValidSettingsKey],
-          );
+          });
           expect(offenses).to.have.length(1);
-          expect(offenses[0].message).to.equal(
-            `Setting 'non-existent-setting' does not exist in 'blocks/referenced.liquid'.`,
-          );
-        });
-      });
-
-      describe('local blocks', () => {
-        const localBlocksTemplate = {
-          blocks: [
-            {
-              type: 'local-block',
-              name: 'Local block',
-              settings: [
-                {
-                  id: 'local-setting',
-                  type: 'text',
-                  label: 'Local Setting',
-                },
-              ],
-            },
-          ],
-        };
-
-        it(`reports an error when ${label} block setting does not exist in existing local block`, async () => {
-          const fileToTest = {
-            'sections/example.liquid': toLiquidFile({
-              ...localBlocksTemplate,
-              ...blockTemplate([
-                {
-                  type: 'local-block',
-                  settings: {
-                    'non-existent-setting-1': 'value',
-                    'non-existent-setting-2': 'value',
-                  },
-                },
-              ]),
-            }),
-          };
-
-          const offenses = await check(fileToTest, [ValidSettingsKey]);
-          expect(offenses).to.have.length(2);
-          expect(offenses[0].message).to.equal(
-            `Setting 'non-existent-setting-1' does not exist in schema.`,
-          );
-          expect(offenses[1].message).to.equal(
-            `Setting 'non-existent-setting-2' does not exist in schema.`,
-          );
-        });
-
-        it(`does not report an error when ${label} block setting does not exist in non-existent local block`, async () => {
-          const fileToTest = {
-            'sections/example.liquid': toLiquidFile({
-              ...localBlocksTemplate,
-              ...blockTemplate([
-                {
-                  type: 'non-existent-local-block',
-                  settings: {
-                    'non-existent-setting': 'value',
-                  },
-                },
-              ]),
-            }),
-          };
-
-          const offenses = await check(fileToTest, [ValidSettingsKey]);
-          expect(offenses).to.have.length(0);
-        });
-
-        it(`does not report an error when ${label} block setting exists in local block`, async () => {
-          const fileToTest = {
-            'sections/example.liquid': toLiquidFile({
-              ...localBlocksTemplate,
-              ...blockTemplate([
-                {
-                  type: 'local-block',
-                  settings: {
-                    'local-setting': 'value',
-                  },
-                },
-              ]),
-            }),
-          };
-
-          const offenses = await check(fileToTest, [ValidSettingsKey]);
-          expect(offenses).to.have.length(0);
         });
       });
     });

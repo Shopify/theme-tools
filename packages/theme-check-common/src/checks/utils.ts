@@ -2,6 +2,9 @@ import {
   Position,
   NodeTypes,
   HtmlElement,
+  HtmlSelfClosingElement,
+  HtmlVoidElement,
+  HtmlRawNode,
   TextNode,
   AttrEmpty,
   AttrSingleQuoted,
@@ -29,6 +32,25 @@ export function isNodeOfType<T extends NodeTypes>(
 
 export function isLiquidBranch(node: LiquidHtmlNode): node is LiquidBranch {
   return isNodeOfType(NodeTypes.LiquidBranch, node);
+}
+
+/**
+ * Returns the static tag name of an HTML node as a string.
+ *
+ * Void and raw nodes (`<img>`, `<script>`, …) carry a plain string name.
+ * General and self-closing elements carry a compound name (an array of
+ * segments) because the tag name can include Liquid, e.g.
+ * `<{{ header_type }}--header />`. Only a single TextNode segment resolves to
+ * a static string; anything dynamic returns undefined.
+ */
+export function getHtmlNodeName(
+  node: HtmlElement | HtmlSelfClosingElement | HtmlVoidElement | HtmlRawNode,
+): string | undefined {
+  if (typeof node.name === 'string') return node.name;
+  if (node.name.length === 1 && isNodeOfType(NodeTypes.TextNode, node.name[0])) {
+    return node.name[0].value;
+  }
+  return undefined;
 }
 
 export function isHtmlTag<T>(

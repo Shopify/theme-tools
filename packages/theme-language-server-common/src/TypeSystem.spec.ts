@@ -1,6 +1,8 @@
 import {
   AssignMarkup,
+  LiquidHtmlNode,
   LiquidVariable,
+  LiquidVariableLookup,
   LiquidVariableOutput,
   NamedTags,
   NodeTypes,
@@ -11,12 +13,21 @@ import {
   path as pathUtils,
   BasicParamTypes,
   ObjectEntry,
+  SourceCodeType,
+  StringLiteralType,
+  visit,
 } from '@shopify/theme-check-common';
 import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { URI } from 'vscode-uri';
 import { SettingsSchemaJSONFile } from './settings';
-import { ArrayType, TypeSystem } from './TypeSystem';
+import { ArrayType, InferredType, TypeSystem } from './TypeSystem';
 import { isLiquidVariableOutput, isNamedLiquidTag } from './utils';
+
+const literal = (raw: string): StringLiteralType => ({
+  kind: 'literal',
+  value: raw.slice(1, -1),
+  raw,
+});
 
 describe('Module: TypeSystem', () => {
   let typeSystem: TypeSystem;
@@ -113,6 +124,10 @@ describe('Module: TypeSystem', () => {
             name: 'settings',
             return_type: [{ type: 'untyped', name: '' }],
           },
+          {
+            name: 'blocks',
+            return_type: [{ type: 'array', array_value: 'block' }],
+          },
         ],
       },
       {
@@ -142,6 +157,14 @@ describe('Module: TypeSystem', () => {
           {
             name: 'size',
             return_type: [{ type: 'number', name: '' }],
+          },
+          {
+            name: 'upcase',
+            return_type: [{ type: 'string', name: '' }],
+          },
+          {
+            name: 'split',
+            return_type: [{ type: 'array', array_value: 'string' }],
           },
         ],
         systemTranslations: async () => ({}),
@@ -394,18 +417,47 @@ describe('Module: TypeSystem', () => {
     expect(inferredType).to.eql({ kind: 'array', valueType: 'product' } as ArrayType);
   });
 
-  it('should support block settings in blocks files', async () => {
+  it.each([
+    ['checkbox', 'boolean'],
+    ['number', 'number'],
+    ['range', 'number'],
+    ['color_background', 'string'],
+    ['color_palette', 'string'],
+    ['html', 'string'],
+    ['inline_richtext', 'string'],
+    ['liquid', 'string'],
+    ['radio', 'string'],
+    ['richtext', 'string'],
+    ['select', 'string'],
+    ['text', 'string'],
+    ['text_alignment', 'string'],
+    ['textarea', 'string'],
+    ['url', 'string'],
+    ['video_url', 'string'],
+    ['article', 'article'],
+    ['blog', 'blog'],
+    ['collection', 'collection'],
+    ['color', 'color'],
+    ['color_scheme', 'color_scheme'],
+    ['font_picker', 'font'],
+    ['image_picker', 'image'],
+    ['link_list', 'linklist'],
+    ['page', 'page'],
+    ['product', 'product'],
+    ['video', 'video'],
+    ['collection_list', { kind: 'array', valueType: 'collection' }],
+    ['product_list', { kind: 'array', valueType: 'product' }],
+  ] as const)('infers block.settings values for %s settings', async (settingType, expectedType) => {
     const sourceCode = `
-      {{ block.settings.my_list }}
+      {{ block.settings.value }}
       {% schema %}
       {
-        "name": "section-settings-example",
-        "tag": "section",
+        "name": "block-settings-example",
         "settings": [
           {
-            "id": "my_list",
-            "label": "t:my-setting.label",
-            "type": "product_list"
+            "id": "value",
+            "label": "Value",
+            "type": "${settingType}"
           }
         ]
       }
@@ -414,12 +466,247 @@ describe('Module: TypeSystem', () => {
     const ast = toLiquidHtmlAST(sourceCode);
     const variableOutput = ast.children[0];
     assert(isLiquidVariableOutput(variableOutput));
+
     const inferredType = await typeSystem.inferType(
       variableOutput.markup,
       ast,
-      'file:///blocks/my-section.liquid',
+      'file:///blocks/my-block.liquid',
     );
-    expect(inferredType).to.eql({ kind: 'array', valueType: 'product' } as ArrayType);
+
+    expect(inferredType).toEqual(expectedType);
+  });
+
+  describe('when a theme block schema defines settings', () => {
+    const articleCardSource = `
+      {% doc %}
+        @param {object} image - Card image
+        @param {string} heading - Card heading
+      {% enddoc %}
+      <div style="background: {{ background_color }}">
+        {{ image }}
+        {{ block.settings.image }}
+        {{ heading }}
+        {{ block.settings.heading }}
+        {{ block.settings.background_color }}
+      </div>
+      {% schema %}
+      {
+        "name": "Article card",
+        "settings": [
+          { "type": "color_background", "id": "background_color", "label": "Background" },
+          { "type": "image_picker", "id": "image", "label": "Image" },
+          { "type": "text", "id": "heading", "label": "Heading" }
+        ]
+      }
+      {% endschema %}
+    `;
+    const blockUri = 'file:///blocks/article-card.liquid';
+
+    it.each([
+      ['background_color', 'string'],
+      ['image', 'image'],
+      ['heading', 'string'],
+    ])(
+      'infers the same schema type for %s and its block.settings alias',
+      async (settingId, expectedType) => {
+        const ast = toLiquidHtmlAST(articleCardSource);
+
+        const bareType = await typeSystem.inferType(liquidVariable(ast, settingId), ast, blockUri);
+        const aliasType = await typeSystem.inferType(
+          liquidVariable(ast, `block.settings.${settingId}`),
+          ast,
+          blockUri,
+        );
+
+        expect(bareType).toEqual(expectedType);
+        expect(aliasType).toEqual(expectedType);
+      },
+    );
+
+    it('uses the schema type over a same-named LiquidDoc parameter', async () => {
+      const ast = toLiquidHtmlAST(articleCardSource);
+
+      const inferredType = await typeSystem.inferType(liquidVariable(ast, 'image'), ast, blockUri);
+
+      expect(inferredType).toEqual('image');
+    });
+
+    describe('when a schema setting ID is reassigned', () => {
+      const reassignedSource = `
+        {% doc %}
+          @param {number} image - Card image
+        {% enddoc %}
+        {{ background_color }}
+        {{ image }}
+        {% assign background_color = 1 %}
+        {% assign image = 'hero.png' %}
+        {{ background_color }}
+        {{ image }}
+        {% schema %}
+        {
+          "name": "Article card",
+          "settings": [
+            { "type": "color_background", "id": "background_color", "label": "Background" },
+            { "type": "image_picker", "id": "image", "label": "Image" }
+          ]
+        }
+        {% endschema %}
+      `;
+
+      it('infers the schema type before the assignment and the assigned type after it', async () => {
+        const ast = toLiquidHtmlAST(reassignedSource);
+        const [beforeAssign, afterAssign] = liquidVariables(ast, 'background_color');
+
+        const typeBeforeAssign = await typeSystem.inferType(beforeAssign, ast, blockUri);
+        const typeAfterAssign = await typeSystem.inferType(afterAssign, ast, blockUri);
+
+        expect(typeBeforeAssign).toEqual('string');
+        expect(typeAfterAssign).toEqual('number');
+      });
+
+      it('infers the schema type over a same-named LiquidDoc parameter until the assignment', async () => {
+        const ast = toLiquidHtmlAST(reassignedSource);
+        const [beforeAssign, afterAssign] = liquidVariables(ast, 'image');
+
+        const typeBeforeAssign = await typeSystem.inferType(beforeAssign, ast, blockUri);
+        const typeAfterAssign = await typeSystem.inferType(afterAssign, ast, blockUri);
+
+        expect(typeBeforeAssign).toEqual('image');
+        expect(typeAfterAssign).toEqual('string');
+      });
+    });
+
+    it('makes each setting ID available once, and never the setting type value', async () => {
+      const ast = toLiquidHtmlAST(articleCardSource);
+      const lookup = variableLookup(ast, 'heading');
+
+      const variables = await typeSystem.availableVariables(ast, '', lookup, blockUri);
+      const namesAndTypes = variables.map(({ entry, type }) => [entry.name, type]);
+
+      expect(namesAndTypes.filter(([name]) => name === 'image')).toEqual([['image', 'image']]);
+      expect(namesAndTypes.filter(([name]) => name === 'heading')).toEqual([['heading', 'string']]);
+      expect(namesAndTypes).toContainEqual(['background_color', 'string']);
+      expect(namesAndTypes.map(([name]) => name)).not.toContain('color_background');
+      expect(namesAndTypes.map(([name]) => name)).not.toContain('image_picker');
+    });
+
+    it.each(['sections/article-card.liquid', 'snippets/article-card.liquid'])(
+      'does not expose schema setting IDs as variables in %s',
+      async (relativePath) => {
+        const ast = toLiquidHtmlAST(articleCardSource);
+
+        const inferredType = await typeSystem.inferType(
+          liquidVariable(ast, 'background_color'),
+          ast,
+          `file:///${relativePath}`,
+        );
+
+        expect(inferredType).toEqual('unknown');
+      },
+    );
+  });
+
+  describe('when a theme block uses the built-in content parameter', () => {
+    const blockUri = 'file:///blocks/card.liquid';
+
+    it.each(['content', 'block.content'])(
+      'infers %s as a string without a schema or LiquidDoc',
+      async (expression) => {
+        const ast = toLiquidHtmlAST('{{ content }}{{ block.content }}');
+
+        const inferredType = await typeSystem.inferType(
+          liquidVariable(ast, expression),
+          ast,
+          blockUri,
+        );
+
+        expect(inferredType).toEqual('string');
+      },
+    );
+
+    it('makes content available as a string variable', async () => {
+      const ast = toLiquidHtmlAST('{{ content }}');
+
+      const variables = await typeSystem.availableVariables(
+        ast,
+        'cont',
+        variableLookup(ast, 'content'),
+        blockUri,
+      );
+
+      expect(variables.map(({ entry, type }) => [entry.name, type])).toEqual([
+        ['content', 'string'],
+      ]);
+    });
+
+    it('infers the assigned type after content is reassigned', async () => {
+      const ast = toLiquidHtmlAST('{{ content }}{% assign content = 1 %}{{ content }}');
+      const [beforeAssign, afterAssign] = liquidVariables(ast, 'content');
+
+      const typeBeforeAssign = await typeSystem.inferType(beforeAssign, ast, blockUri);
+      const typeAfterAssign = await typeSystem.inferType(afterAssign, ast, blockUri);
+
+      expect(typeBeforeAssign).toEqual('string');
+      expect(typeAfterAssign).toEqual('number');
+    });
+
+    it.each([
+      [
+        'a non-string schema setting',
+        '{{ content }}{{ block.content }}{% schema %}{ "settings": [{ "type": "number", "id": "content", "label": "Content" }] }{% endschema %}',
+      ],
+      [
+        'a non-string LiquidDoc parameter',
+        '{% doc %}@param {number} content - Body{% enddoc %}{{ content }}{{ block.content }}',
+      ],
+    ])('keeps the string type over %s named content', async (_name, source) => {
+      const ast = toLiquidHtmlAST(source);
+
+      const contentType = await typeSystem.inferType(liquidVariable(ast, 'content'), ast, blockUri);
+      const blockContentType = await typeSystem.inferType(
+        liquidVariable(ast, 'block.content'),
+        ast,
+        blockUri,
+      );
+
+      expect(contentType).toEqual('string');
+      expect(blockContentType).toEqual('string');
+    });
+
+    it.each([
+      'sections/card.liquid',
+      'snippets/card.liquid',
+      'shop/blocks/theme/sections/card.liquid',
+      'shop/myblocks/card.liquid',
+    ])('does not expose content as a variable in %s', async (relativePath) => {
+      const ast = toLiquidHtmlAST('{{ content }}');
+
+      const inferredType = await typeSystem.inferType(
+        liquidVariable(ast, 'content'),
+        ast,
+        `file:///${relativePath}`,
+      );
+
+      expect(inferredType).toEqual('unknown');
+    });
+
+    it.each([
+      'sections/main.liquid',
+      'shop/blocks/theme/sections/main.liquid',
+      'shop/myblocks/main.liquid',
+    ])('does not add content to the section block object in %s', async (relativePath) => {
+      const ast = toLiquidHtmlAST(
+        '{% for block in section.blocks %}{{ block.content }}{% endfor %}',
+      );
+
+      const inferredType = await typeSystem.inferType(
+        liquidVariable(ast, 'block.content'),
+        ast,
+        `file:///${relativePath}`,
+      );
+
+      expect(inferredType).toEqual('untyped');
+    });
   });
 
   // TODO
@@ -461,7 +748,7 @@ describe('Module: TypeSystem', () => {
   });
 
   it('should support path-contextual variable types', async () => {
-    let inferredType: string | ArrayType;
+    let inferredType: InferredType;
     const contexts: [string, string][] = [
       ['section', 'sections/my-section.liquid'],
       ['comment', 'sections/main-article.liquid'],
@@ -495,11 +782,16 @@ describe('Module: TypeSystem', () => {
   });
 
   describe('LiquidDoc inferred type', () => {
-    const liquidDocParamTypeToTypeMap = {
+    const liquidDocParamTypeToTypeMap: Record<string, InferredType> = {
       [BasicParamTypes.String]: 'string',
       [BasicParamTypes.Number]: 'number',
       [BasicParamTypes.Boolean]: 'boolean',
       [BasicParamTypes.Object]: 'untyped',
+      "'heading'": literal("'heading'"),
+      "'heading' | 'small'": { kind: 'union', types: [literal("'heading'"), literal("'small'")] },
+      [`'Heading' | "Small"`]: { kind: 'union', types: [literal("'Heading'"), literal('"Small"')] },
+      "'heading' |": 'untyped',
+      "'heading' | number": 'untyped',
       invalid: 'untyped',
     };
 
@@ -559,6 +851,121 @@ describe('Module: TypeSystem', () => {
       expect(inferredType).to.eql({
         kind: 'array',
         valueType: 'product',
+      });
+    });
+
+    describe('string enums', () => {
+      const enumType: InferredType = {
+        kind: 'union',
+        types: [literal("'heading'"), literal('"small"')],
+      };
+
+      async function inferOutput(source: string): Promise<InferredType> {
+        const ast = toLiquidHtmlAST(`
+          {% doc %}
+            @param {'heading' | "small"} [variant]
+          {% enddoc %}
+          ${source}
+        `);
+        const output = ast.children.at(-1)!;
+        assert(isLiquidVariableOutput(output));
+        return typeSystem.inferType(output.markup, ast, 'file:///snippets/example.liquid');
+      }
+
+      it('preserves members through chained assignments', async () => {
+        expect(
+          await inferOutput(`
+            {% assign style = variant %}
+            {% assign copy = style %}
+            {{ copy }}
+          `),
+        ).to.eql(enumType);
+      });
+
+      it('replaces the enum when the variable is reassigned', async () => {
+        expect(
+          await inferOutput(`
+            {% assign variant = 1 %}
+            {{ variant }}
+          `),
+        ).to.equal('number');
+      });
+
+      it('keeps the earlier enum type of a copy after reassigning the original', async () => {
+        expect(
+          await inferOutput(`
+            {% assign copy = variant %}
+            {% assign variant = 'other' %}
+            {{ copy }}
+          `),
+        ).to.eql(enumType);
+      });
+
+      it.each([
+        ['size', 'number'],
+        ['first', 'string'],
+        ['last', 'string'],
+        ['missing', 'unknown'],
+      ])('uses string semantics for the %s property', async (property, expected) => {
+        expect(await inferOutput(`{{ variant.${property} }}`)).to.equal(expected);
+      });
+
+      it.each([
+        ['size', 'number'],
+        ['upcase', 'string'],
+        ['split: ","', { kind: 'array', valueType: 'string' }],
+        ['unknown_filter', 'untyped'],
+      ])('uses the return type of the %s filter', async (filter, expected) => {
+        expect(await inferOutput(`{{ variant | ${filter} }}`)).to.eql(expected);
+      });
+
+      it.each([
+        ["variant | default: 'small'", 'string'],
+        ['variant | default: 1', 'number'],
+        ["'other' | default: variant", 'string'],
+      ])('uses the widened fallback type for %s', async (expression, expected) => {
+        expect(await inferOutput(`{{ ${expression} }}`)).to.equal(expected);
+      });
+
+      it('widens a default assignment without changing the documented enum', async () => {
+        const ast = toLiquidHtmlAST(`
+          {% doc %}
+            @param {'heading' | "small"} variant
+          {% enddoc %}
+          {% assign copy = variant | default: 'other' %}
+          {{ copy }}
+        `);
+        const output = ast.children.at(-1)!;
+        assert(isLiquidVariableOutput(output));
+        assert(typeof output.markup !== 'string');
+        const lookup = output.markup.expression;
+        assert(lookup.type === NodeTypes.VariableLookup);
+        const variables = await typeSystem.availableVariables(
+          ast,
+          '',
+          lookup,
+          'file:///snippets/example.liquid',
+        );
+        expect(variables.find(({ entry }) => entry.name === 'variant')?.type).to.eql(enumType);
+        expect(variables.find(({ entry }) => entry.name === 'copy')?.type).to.equal('string');
+      });
+
+      it('does not treat an enum as an array when resolving a loop variable', async () => {
+        const ast = toLiquidHtmlAST(`
+          {% doc %}
+            @param {'heading' | 'small'} variant
+          {% enddoc %}
+          {% for item in variant %}{{ item }}{% endfor %}
+        `);
+        const loop = ast.children[1];
+        assert(isNamedLiquidTag(loop, NamedTags.for));
+        const branch = loop.children![0];
+        assert(branch.type === NodeTypes.LiquidBranch);
+        const output = branch.children[0];
+        assert(isLiquidVariableOutput(output));
+        expect(
+          await typeSystem.inferType(output.markup, ast, 'file:///snippets/example.liquid'),
+        ).to.equal('untyped');
       });
     });
   });
@@ -642,3 +1049,23 @@ describe('Module: TypeSystem', () => {
     });
   });
 });
+
+function liquidVariable(ast: LiquidHtmlNode, expression: string): LiquidVariable {
+  const [variable] = liquidVariables(ast, expression);
+  assert(variable, `expected a {{ ${expression} }} output`);
+  return variable;
+}
+
+function liquidVariables(ast: LiquidHtmlNode, expression: string): LiquidVariable[] {
+  return visit<SourceCodeType.LiquidHtml, LiquidVariable>(ast, {
+    LiquidVariable: (node) => node,
+  }).filter(
+    (node) => node.source.slice(node.position.start, node.position.end).trim() === expression,
+  );
+}
+
+function variableLookup(ast: LiquidHtmlNode, expression: string): LiquidVariableLookup {
+  const { expression: lookup } = liquidVariable(ast, expression);
+  assert(lookup.type === NodeTypes.VariableLookup);
+  return lookup;
+}

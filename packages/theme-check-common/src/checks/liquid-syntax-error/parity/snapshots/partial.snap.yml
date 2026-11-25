@@ -1,0 +1,23 @@
+# Auto-generated Ruby Liquid parity corpus — do not edit by hand.
+---
+- id: partial-mut-end-trail-id
+  error: 'Liquid syntax error: Expected end_of_string but found id'
+  type: SyntaxError
+- id: partial-mut-partial_name-eos
+  error: 'Liquid syntax error: Expected string but found end_of_string'
+  type: SyntaxError
+- id: partial-mut-partial_name-id
+  error: 'Liquid syntax error: Expected string but found id'
+  type: SyntaxError
+- id: partial-mut-partial_name-invalid
+  error: 'Liquid syntax error: Error in tag ''partial'' - Valid syntax: partial ''[name]'''
+  type: SyntaxError
+- id: partial-mut-unclosed
+  error: 'Liquid syntax error: ''partial'' tag was never closed'
+  type: SyntaxError
+- id: partial-themecheck-empty-name
+  error: 'Liquid syntax error: Error in tag ''partial'' - Valid syntax: partial ''[name]'''
+  type: SyntaxError
+- id: partial-valid-basic
+  error:
+  type:

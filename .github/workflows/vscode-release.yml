@@ -3,38 +3,47 @@ name: VS Code Release Workflow in a pinch
 on: workflow_dispatch
 
 env:
-  VSCE_PAT: ${{ secrets.VSCE_PAT }}
-  OVSX_PAT: ${{ secrets.OPENVSX_TOKEN }}
-  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   npm_config_registry: "https://registry.npmjs.org"
+
+permissions:
+  contents: read
 
 jobs:
   publish-packages:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: true
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          run_install: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 20
-          cache: "yarn"
-          cache-dependency-path: "yarn.lock"
+          node-version: 24
+          cache: "pnpm"
+          cache-dependency-path: "pnpm-lock.yaml"
 
       - name: Install the packages
-        run: yarn install --frozen-lockfile --ignore-engines
+        run: pnpm install --frozen-lockfile
 
       - name: Build the code
-        run: yarn build
+        run: pnpm build
         env:
           NODE_ENV: production
 
       - name: VS Code Marketplace publish
-        run: yarn publish:vsce
+        run: pnpm publish:vsce
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
       - name: Open VSX Registry publish
-        run: yarn publish:ovsx
+        run: pnpm publish:ovsx
+        env:
+          OVSX_PAT: ${{ secrets.OPENVSX_TOKEN }}

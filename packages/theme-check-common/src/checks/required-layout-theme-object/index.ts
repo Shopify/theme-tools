@@ -1,8 +1,16 @@
-// src/checks/required-layout-theme-object/index.ts
-import { HtmlElement, LiquidVariableLookup } from '@shopify/liquid-html-parser';
-import { ConfigTarget, LiquidCheckDefinition, Severity, SourceCodeType } from '../../types';
+import { ConfigTarget, Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
+import { type HtmlElement, type LiquidVariableLookup } from '@shopify/liquid-html-parser';
 import { isHtmlTag } from '../utils';
 
+const LAYOUT_PATH_PATTERN = /^layout\/[^/]+\.liquid$/i;
+
+/**
+ * Copied from ../../types's RequiredLayoutThemeObject.
+ *
+ * When @editor/theme-check-common and @shopify/theme-check-common are merged,
+ * merge this fork back into the upstream check instead of keeping two
+ * layout-object implementations.
+ */
 export const RequiredLayoutThemeObject: LiquidCheckDefinition = {
   meta: {
     code: 'RequiredLayoutThemeObject',
@@ -20,7 +28,12 @@ export const RequiredLayoutThemeObject: LiquidCheckDefinition = {
   },
 
   create(context) {
-    if (context.toRelativePath(context.file.uri) !== 'layout/theme.liquid') {
+    /**
+     * @editor/theme-check-common runs this upstream check for every layout
+     * asset, not only layout/theme.liquid. Merge this scope difference back
+     * into @shopify/theme-check-common when the packages are unified.
+     */
+    if (!LAYOUT_PATH_PATTERN.test(context.toRelativePath(context.file.uri))) {
       return {};
     }
 

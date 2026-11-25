@@ -30,6 +30,37 @@ export type ConfigDescription = Omit<ConfigFragment, 'extends' | 'context'> & {
   context: Mode;
 };
 
+export interface CustomCheckCandidate {
+  source: 'require' | 'discovery';
+  path: string;
+}
+
+export interface CustomCheckAuthorizationRequest {
+  root: string;
+  candidates: CustomCheckCandidate[];
+}
+
+/** A nonfatal diagnostic produced while loading Theme Check configuration. */
+export type ConfigDiagnostic = CustomCheckAuthorizationRequest & {
+  code: 'custom-checks-disabled';
+  level: 'warning';
+  message: string;
+};
+
+export interface LoadConfigOptions {
+  /**
+   * Grants permission to execute the discovered custom check modules. Custom
+   * checks are disabled unless this callback explicitly returns true. The
+   * callback runs before any custom check module is evaluated.
+   */
+  authorizeCustomChecks?: (request: CustomCheckAuthorizationRequest) => boolean | Promise<boolean>;
+  /**
+   * Reports skipped-check diagnostics instead of writing them to stderr.
+   * Diagnostic handling does not grant permission to execute custom checks.
+   */
+  onDiagnostic?: (diagnostic: ConfigDiagnostic) => void;
+}
+
 export const ModernIdentifiers = [
   'theme-check:nothing',
   'theme-check:recommended',
@@ -42,8 +73,13 @@ export type ModernIdentifier = (typeof ModernIdentifiers)[number];
 export const LegacyIdentifiers = new Map(
   Object.entries({
     default: 'theme-check:recommended',
+    recommended: 'theme-check:recommended',
+    all: 'theme-check:all',
     nothing: 'theme-check:nothing',
+    theme_app_extension: 'theme-check:theme-app-extension',
     theme_app_extensions: 'theme-check:theme-app-extension',
+    'theme-app-extension': 'theme-check:theme-app-extension',
+    'theme-app-extensions': 'theme-check:theme-app-extension',
   }),
 );
 

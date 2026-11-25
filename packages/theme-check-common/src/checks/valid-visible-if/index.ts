@@ -1,4 +1,10 @@
-import { type LiquidVariableLookup } from '@shopify/liquid-html-parser';
+import {
+  NodeTypes,
+  type LiquidRawTag,
+  type LiquidTag,
+  type LiquidTagAssign,
+  type LiquidVariableLookup,
+} from '@shopify/liquid-html-parser';
 import {
   Severity,
   SourceCodeType,
@@ -39,9 +45,23 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
   meta: { ...meta, type: SourceCodeType.LiquidHtml },
 
   create(context) {
+    const assignedVariables: Vars = {};
+    let schemaNode: LiquidRawTag | undefined;
+
     return {
+      async LiquidTag(node) {
+        if (isLiquidTagAssign(node)) {
+          assignedVariables[node.markup.name] = true;
+        }
+      },
+
       async LiquidRawTag(node) {
         if (node.name !== 'schema' || node.body.kind !== 'json') return;
+        schemaNode = node;
+      },
+
+      async onCodePathEnd() {
+        if (!schemaNode) return;
 
         const schema = await getSchema(context);
 
@@ -56,7 +76,7 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
           return;
         }
 
-        const offset = node.blockStartPosition.end;
+        const offset = schemaNode.blockStartPosition.end;
         const settings = Object.fromEntries(
           (await getGlobalSettings(context)).map((s) => [s, true] as const),
         );
@@ -64,7 +84,7 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
           validSchema.settings.map((setting) => [setting.id, true] as const),
         );
 
-        const vars: Vars = { settings };
+        const vars: Vars = { ...assignedVariables, settings };
         if (isSectionSchema(schema)) {
           vars.section = { settings: currentFileSettings };
         } else if (isBlockSchema(schema)) {
@@ -122,6 +142,12 @@ export const ValidVisibleIf: LiquidCheckDefinition = {
     };
   },
 };
+
+function isLiquidTagAssign(node: LiquidTag): node is LiquidTagAssign {
+  return (
+    node.type === NodeTypes.LiquidTag && node.name === 'assign' && typeof node.markup !== 'string'
+  );
+}
 
 export const ValidVisibleIfSettingsSchema: JSONCheckDefinition = {
   meta: { ...meta, type: SourceCodeType.JSON },

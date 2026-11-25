@@ -6,7 +6,7 @@ import {
   InsertTextFormat,
   TextEdit,
 } from 'vscode-languageserver';
-import { CURSOR, LiquidCompletionParams } from '../params';
+import { LiquidCompletionParams } from '../params';
 import { Provider, createCompletionItem } from './common';
 import { AugmentedLiquidSourceCode } from '../../documents';
 
@@ -16,18 +16,17 @@ export class FilterNamedParameterCompletionProvider implements Provider {
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
 
-    const { node } = params.completionContext;
+    const { node, partial } = params.completionContext;
 
     if (!node || node.type !== NodeTypes.VariableLookup) {
       return [];
     }
 
-    if (!node.name || node.lookups.length > 0) {
+    if (node.lookups.length > 0) {
       // We only do top level in this one.
       return [];
     }
 
-    const partial = node.name.replace(CURSOR, '');
     const currentContext = params.completionContext.ancestors.at(-1);
 
     if (!currentContext || currentContext?.type !== NodeTypes.LiquidFilter) {
@@ -103,7 +102,7 @@ export class FilterNamedParameterCompletionProvider implements Provider {
     // options and should not replace any text.
     // e.g. `{{ product | image_url: █crop: 'center' }}`
     // e.g. `{{ product | image_url: █ }}`
-    if (node.name === '█') {
+    if (node.name === '') {
       end = start;
     }
 
