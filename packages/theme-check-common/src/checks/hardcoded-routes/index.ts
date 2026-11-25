@@ -99,9 +99,9 @@ function hardcodedRoute(attr: ValuedHtmlAttribute): string | undefined {
   );
 }
 
-// Matches /cart, /cart/, /cart?... and /cart#... but not /cartography
+// Matches /cart, /cart/, /cart?..., /cart#... and /cart.js but not /cartography
 function startsWithRoute(value: string, route: string): boolean {
   if (!value.startsWith(route)) return false;
   const next = value.charAt(route.length);
-  return next === '' || next === '/' || next === '?' || next === '#';
+  return next === '' || next === '/' || next === '?' || next === '#' || next === '.';
 }

@@ -55,10 +55,10 @@ fn hardcoded_route(attr: &Attr) -> Option<&'static (&'static str, &'static str)>
     })
 }
 
-// Matches /cart, /cart/, /cart?... and /cart#... but not /cartography
+// Matches /cart, /cart/, /cart?..., /cart#... and /cart.js but not /cartography
 fn starts_with_route(value: &str, route: &str) -> bool {
     match value.strip_prefix(route) {
-        Some(rest) => matches!(rest.bytes().next(), None | Some(b'/' | b'?' | b'#')),
+        Some(rest) => matches!(rest.bytes().next(), None | Some(b'/' | b'?' | b'#' | b'.')),
         None => false,
     }
 }
