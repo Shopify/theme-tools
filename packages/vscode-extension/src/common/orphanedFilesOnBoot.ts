@@ -1,8 +1,14 @@
-import { window, workspace, ConfigurationTarget } from 'vscode';
+import { path } from '@shopify/theme-check-common';
+import {
+  ThemeGraphDeadCodeRequest,
+  ThemeGraphRootRequest,
+} from '@shopify/theme-language-server-common';
+import { window, workspace, ConfigurationTarget, Uri } from 'vscode';
 import { BaseLanguageClient } from 'vscode-languageclient';
-import { fetchDeadCode, showDeadCodePicker } from './commands';
+import { showDeadCodePicker } from './commands';
 
 export const CHECK_ORPHANED_ON_BOOT_SETTING = 'themeCheck.checkOrphanedFilesOnBoot';
+const PRELOAD_ON_BOOT_SETTING = 'themeCheck.preloadOnBoot';
 
 const REVIEW = 'Review';
 const DONT_SHOW_AGAIN = "Don't show again";
@@ -18,32 +24,53 @@ const ROOT_ANCHOR_GLOB = '**/{.theme-check.yml,shopify.extension.toml,snippets/*
 /**
  * On extension startup, surface orphaned (dead) files with a dismissable
  * notification instead of requiring the user to run the dead-code command. Gated
- * by the `themeCheck.checkOrphanedFilesOnBoot` setting.
+ * by the `themeCheck.checkOrphanedFilesOnBoot` setting, and off when
+ * `themeCheck.preloadOnBoot` is false because finding dead code builds the theme
+ * graph that setting turns off.
  *
  * A workspace can contain more than one theme, so this prompts once per theme root
  * that has orphaned files — each notification's count matches the files its own
  * "Review" picker opens (no cross-theme aggregation).
  */
 export async function checkOrphanedFilesOnBoot(client: BaseLanguageClient): Promise<void> {
-  const enabled = workspace.getConfiguration().get(CHECK_ORPHANED_ON_BOOT_SETTING, true);
-  if (!enabled) return;
+  const config = workspace.getConfiguration();
+  if (!config.get(PRELOAD_ON_BOOT_SETTING, true)) return;
+  if (!config.get(CHECK_ORPHANED_ON_BOOT_SETTING, true)) return;
 
   const anchors = await workspace.findFiles(ROOT_ANCHOR_GLOB, '**/node_modules/**');
+  const roots = await themeRoots(client, anchors);
 
-  // Resolve each anchor to its theme root + dead code, then dedupe by root so a
-  // theme matched by several anchors is only prompted once.
-  const byRoot = new Map<string, string[]>();
-  for (const anchor of anchors) {
-    const { rootUri, deadCode } = await fetchDeadCode(client, anchor.toString());
-    if (rootUri && deadCode.length > 0 && !byRoot.has(rootUri)) {
-      byRoot.set(rootUri, deadCode);
-    }
-  }
+  for (const [rootUri, anchor] of roots) {
+    const deadCode = await client.sendRequest(ThemeGraphDeadCodeRequest.type, { uri: anchor });
+    if (deadCode.length === 0) continue;
 
-  for (const [rootUri, deadCode] of byRoot) {
     const shouldStop = await promptForRoot(rootUri, deadCode);
     if (shouldStop) return;
   }
+}
+
+/**
+ * Resolves the anchors to their theme roots, keeping one anchor per root.
+ *
+ * The glob matches every snippet, so anchors in the same directory are collapsed
+ * first: they share a root, and a theme with hundreds of snippets should cost one
+ * root lookup, not hundreds.
+ */
+async function themeRoots(client: BaseLanguageClient, anchors: Uri[]) {
+  const anchorByDirectory = new Map<string, string>();
+  for (const anchor of anchors) {
+    const uri = anchor.toString();
+    const directory = path.dirname(uri);
+    if (!anchorByDirectory.has(directory)) anchorByDirectory.set(directory, uri);
+  }
+
+  const anchorByRoot = new Map<string, string>();
+  for (const anchor of anchorByDirectory.values()) {
+    const rootUri = await client.sendRequest(ThemeGraphRootRequest.type, { uri: anchor });
+    if (rootUri && !anchorByRoot.has(rootUri)) anchorByRoot.set(rootUri, anchor);
+  }
+
+  return anchorByRoot;
 }
 
 /**

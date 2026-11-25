@@ -66,10 +66,14 @@ function clientWith(
   } as unknown as BaseLanguageClient;
 }
 
+function requestedMethods(client: BaseLanguageClient): string[] {
+  return (client.sendRequest as any).mock.calls.map(([type]: any[]) => type.method);
+}
+
 describe('checkOrphanedFilesOnBoot', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.getConfig.mockReturnValue(true);
+    mocks.getConfig.mockReset().mockReturnValue(true);
   });
 
   it('globs for every theme-root signal, not just .theme-check.yml', async () => {
@@ -119,6 +123,57 @@ describe('checkOrphanedFilesOnBoot', () => {
     expect(mocks.findFiles).not.toHaveBeenCalled();
     expect(client.sendRequest).not.toHaveBeenCalled();
     expect(mocks.showInformationMessage).not.toHaveBeenCalled();
+  });
+
+  it('does nothing when the theme graph is off because preloadOnBoot is false', async () => {
+    mocks.getConfig.mockImplementation((key: string) => key !== 'themeCheck.preloadOnBoot');
+    const client = clientWith({});
+
+    await checkOrphanedFilesOnBoot(client);
+
+    expect(mocks.findFiles).not.toHaveBeenCalled();
+    expect(client.sendRequest).not.toHaveBeenCalled();
+    expect(mocks.showInformationMessage).not.toHaveBeenCalled();
+  });
+
+  it('looks up the root once per directory, not once per snippet', async () => {
+    mocks.findFiles.mockResolvedValue([
+      uriLike('file:///theme/snippets/a.liquid'),
+      uriLike('file:///theme/snippets/b.liquid'),
+      uriLike('file:///theme/snippets/c.liquid'),
+    ]);
+    const client = clientWith({
+      'file:///theme/snippets/a.liquid': {
+        rootUri: 'file:///theme',
+        deadCode: ['file:///theme/snippets/c.liquid'],
+      },
+    });
+
+    await checkOrphanedFilesOnBoot(client);
+
+    expect(requestedMethods(client)).toEqual(['themeGraph/rootUri', 'themeGraph/deadCode']);
+    expect(mocks.showInformationMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it('asks for dead code once per root', async () => {
+    mocks.findFiles.mockResolvedValue([
+      uriLike('file:///theme/.theme-check.yml'),
+      uriLike('file:///theme/snippets/a.liquid'),
+    ]);
+    const client = clientWith({
+      'file:///theme/.theme-check.yml': {
+        rootUri: 'file:///theme',
+        deadCode: ['file:///theme/snippets/unused.liquid'],
+      },
+      'file:///theme/snippets/a.liquid': {
+        rootUri: 'file:///theme',
+        deadCode: ['file:///theme/snippets/unused.liquid'],
+      },
+    });
+
+    await checkOrphanedFilesOnBoot(client);
+
+    expect(requestedMethods(client).filter((m) => m === 'themeGraph/deadCode')).toHaveLength(1);
   });
 
   it('disables the setting when the user picks "Don\'t show again"', async () => {
