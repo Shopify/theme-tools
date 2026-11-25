@@ -15,13 +15,14 @@ pub static CDN_PRECONNECT: CheckDef = CheckDef {
     create: Create::Liquid(create),
 };
 
-/// `valueIncludes(attr, '.+cdn.shopify.com.+')`: the word is a regex, `(^|\s)<word>(\s|$)` with
-/// JS `\s` and `.`.
+/// `valueIncludes(attr, '(https?:)?//cdn\\.shopify\\.com(/\\S*)?')`: the word is a regex,
+/// `(^|\s)<word>(\s|$)` with JS `\s` and `\S`.
 static SHOPIFY_CDN: LazyLock<Regex> = LazyLock::new(|| {
-    let s = r"[\t\n\x0B\x0C\r \u{a0}\u{1680}\u{2000}-\u{200a}\u{2028}\u{2029}\u{202f}\u{205f}\u{3000}\u{feff}]";
-    let dot = r"[^\n\r\u{2028}\u{2029}]";
+    let space = r"\t\n\x0B\x0C\r \u{a0}\u{1680}\u{2000}-\u{200a}\u{2028}\u{2029}\u{202f}\u{205f}\u{3000}\u{feff}";
+    let s = format!("[{space}]");
+    let not_s = format!("[^{space}]");
     Regex::new(&format!(
-        "(?:^|{s}){dot}+cdn{dot}shopify{dot}com{dot}+(?:{s}|$)"
+        r"(?:^|{s})(?:https?:)?//cdn\.shopify\.com(?:/{not_s}*)?(?:{s}|$)"
     ))
     .unwrap()
 });
