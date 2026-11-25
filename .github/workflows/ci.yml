@@ -47,8 +47,8 @@ jobs:
       - name: Check the Rust crate's copies of TypeScript data
         run: |
           diff -r packages/theme-check-node/configs crates/theme-check/src/node/configs
-          node -e "console.log(JSON.stringify(require('./packages/theme-check-common').allChecks.map((c) => c.meta)))" \
-            | diff - crates/theme-check/src/node/checks-meta.json
+          pnpm rust:checks-meta
+          git diff --exit-code -- crates/theme-check/src/node/checks-meta.json
 
   rust:
     runs-on: ubuntu-latest
