@@ -138,7 +138,7 @@ export function getAssetModule(
   themeGraph: ThemeGraph,
   asset: string,
 ): JavaScriptModule | CssModule | SvgModule | ImageModule | undefined {
-  const extension = extname(asset);
+  const extension = extname(isLiquidAsset(asset) ? asset.slice(0, -'.liquid'.length) : asset);
 
   let type: ModuleType | undefined = undefined;
 
@@ -163,6 +163,14 @@ export function getAssetModule(
     references: [],
     uri: path.join(themeGraph.rootUri, 'assets', asset),
   });
+}
+
+/**
+ * Shopify renders `assets/theme.css.liquid` and serves it as `theme.css`. The
+ * same goes for `.js`.
+ */
+export function isLiquidAsset(asset: string): boolean {
+  return asset.endsWith('.css.liquid') || asset.endsWith('.js.liquid');
 }
 
 export function getSnippetModule(themeGraph: ThemeGraph, snippet: string): LiquidModule {

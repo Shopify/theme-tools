@@ -225,7 +225,11 @@ impl ThemeGraph {
 
     /// `getAssetModule(themeGraph, asset)`: `None` for unsupported extensions.
     fn asset_module(&mut self, asset: &str) -> Option<usize> {
-        let module_type = match extname(asset) {
+        let served = match is_liquid_asset(asset) {
+            true => &asset[..asset.len() - ".liquid".len()],
+            false => asset,
+        };
+        let module_type = match extname(served) {
             "jpg" | "jpeg" | "png" | "gif" | "webp" | "heic" | "ico" => ModuleType::Image,
             "js" => ModuleType::JavaScript,
             "css" => ModuleType::Css,
@@ -249,6 +253,12 @@ impl ThemeGraph {
 }
 
 /// utils `extname(uri)`: `uri.split('.').pop()`
+/// `isLiquidAsset(asset)`: Shopify renders `assets/theme.css.liquid` and serves it as
+/// `theme.css`. The same goes for `.js`.
+fn is_liquid_asset(asset: &str) -> bool {
+    asset.ends_with(".css.liquid") || asset.ends_with(".js.liquid")
+}
+
 fn extname(uri: &str) -> &str {
     uri.rsplit('.').next().unwrap_or("")
 }
@@ -569,6 +579,7 @@ impl<'d, 'a> Builder<'d, 'a> {
 
         let mut seen = HashSet::new();
         for &(target, source_range, target_range) in &refs {
+            let target = self.serving_asset(target);
             self.bind(m, target, Some(source_range), target_range, RefType::Direct);
             if seen.insert(target) {
                 self.queue.push_back(target);
@@ -611,6 +622,26 @@ impl<'d, 'a> Builder<'d, 'a> {
             }
         }
         Ok(false)
+    }
+
+    /// `servingAsset(target, themeGraph, deps)`: a reference to `theme.css` reaches
+    /// `assets/theme.css.liquid` when `assets/theme.css` doesn't exist. The same goes for `.js`.
+    fn serving_asset(&mut self, target: usize) -> usize {
+        let module = &self.g.all[target];
+        if !matches!(module.module_type, ModuleType::Css | ModuleType::JavaScript) {
+            return target;
+        }
+        let asset = path::basename(&module.uri, None);
+        if is_liquid_asset(&asset) || self.deps.fs.stat(&module.uri).is_ok() {
+            return target;
+        }
+        let Some(liquid_asset) = self.g.asset_module(&format!("{asset}.liquid")) else {
+            return target;
+        };
+        match self.deps.fs.stat(&self.g.all[liquid_asset].uri) {
+            Ok(_) => liquid_asset,
+            Err(_) => target,
+        }
     }
 
     /// `traverseLiquidSchema`. TS runs the blocks loop up to its first `@theme` (which awaits

@@ -36,6 +36,7 @@ import {
   getSectionModule,
   getSnippetModule,
   getThemeBlockModule,
+  isLiquidAsset,
 } from './module';
 
 export async function traverseModule(
@@ -206,7 +207,12 @@ async function traverseLiquidModule(
     },
   };
 
-  const references = visit(sourceCode.ast, visitor);
+  const references = await Promise.all(
+    visit(sourceCode.ast, visitor).map(async (reference) => ({
+      ...reference,
+      target: await servingAsset(reference.target, themeGraph, deps),
+    })),
+  );
 
   for (const reference of references) {
     bind(module, reference.target, {
@@ -230,6 +236,27 @@ async function traverseLiquidModule(
   }
 
   return Promise.all(promises);
+}
+
+/**
+ * A reference to `theme.css` reaches `assets/theme.css.liquid` when
+ * `assets/theme.css` doesn't exist, since Shopify serves the rendered Liquid
+ * asset under that name. The same goes for `.js`.
+ */
+async function servingAsset(
+  target: ThemeModule,
+  themeGraph: ThemeGraph,
+  deps: AugmentedDependencies,
+): Promise<ThemeModule> {
+  if (target.type !== ModuleType.Css && target.type !== ModuleType.JavaScript) return target;
+
+  const asset = path.basename(target.uri);
+  if (isLiquidAsset(asset)) return target;
+  if (await exists(deps.fs, target.uri)) return target;
+
+  const liquidAsset = getAssetModule(themeGraph, `${asset}.liquid`)!;
+  if (await exists(deps.fs, liquidAsset.uri)) return liquidAsset;
+  return target;
 }
 
 async function traverseLiquidSchema(
