@@ -55,15 +55,22 @@ function documentLinksVisitor(
       }
 
       // {% section 'section' %}
-      if (
-        node.name === 'section' &&
-        typeof node.markup !== 'string' &&
-        isLiquidString(node.markup)
-      ) {
-        const sectionName = node.markup;
+      if (node.name === 'section' && typeof node.markup !== 'string') {
+        const sectionName = node.markup.name;
         return DocumentLink.create(
           range(textDocument, sectionName),
           Utils.resolvePath(root, 'sections', sectionName.value + '.liquid').toString(),
+        );
+      }
+
+      // {% block 'name' %}
+      if (node.name === NamedTags.block && typeof node.markup !== 'string') {
+        const blockName = node.markup.name;
+        // App blocks belong to an extension, not the theme's blocks directory.
+        if (blockName.value.startsWith('shopify://apps/')) return;
+        return DocumentLink.create(
+          range(textDocument, blockName),
+          Utils.resolvePath(root, 'blocks', blockName.value + '.liquid').toString(),
         );
       }
 

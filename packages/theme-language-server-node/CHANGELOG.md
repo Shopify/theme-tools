@@ -1,5 +1,114 @@
 # @shopify/theme-language-server-node
 
+## 3.0.2
+
+### Patch Changes
+
+- @shopify/theme-check-node@4.0.2
+- @shopify/theme-language-server-common@3.0.2
+- @shopify/theme-check-docs-updater@4.0.2
+
+## 3.0.1
+
+### Patch Changes
+
+- Updated dependencies [fe8a2f1f]
+  - @shopify/theme-language-server-common@3.0.1
+  - @shopify/theme-check-node@4.0.1
+  - @shopify/theme-check-docs-updater@4.0.1
+
+## 3.0.0
+
+### Major Changes
+
+- 803a88a5: Require consent for third-party Theme Checks and expose structured skipped-check diagnostics to callers.
+
+### Patch Changes
+
+- Updated dependencies [7cb4970d]
+- Updated dependencies [803a88a5]
+- Updated dependencies [7cb4970d]
+  - @shopify/theme-language-server-common@3.0.0
+  - @shopify/theme-check-node@4.0.0
+  - @shopify/theme-check-docs-updater@4.0.0
+
+## 2.23.2
+
+### Patch Changes
+
+- Updated dependencies [286b04fb]
+- Updated dependencies [04110ed6]
+- Updated dependencies [fca4a62b]
+- Updated dependencies [b9a862fb]
+  - @shopify/theme-check-node@3.31.0
+  - @shopify/theme-language-server-common@2.23.2
+  - @shopify/theme-check-docs-updater@3.31.0
+
+## 2.23.1
+
+### Patch Changes
+
+- @shopify/theme-check-node@3.30.1
+- @shopify/theme-language-server-common@2.23.1
+- @shopify/theme-check-docs-updater@3.30.1
+
+## 2.23.0
+
+### Patch Changes
+
+- Updated dependencies [0bbd0f8b]
+- Updated dependencies [0bbd0f8b]
+- Updated dependencies [1dd77e8e]
+- Updated dependencies [86058651]
+- Updated dependencies [96af869d]
+- Updated dependencies [9f1fa97b]
+  - @shopify/theme-check-node@3.30.0
+  - @shopify/theme-language-server-common@2.23.0
+  - @shopify/theme-check-docs-updater@3.30.0
+
+## 2.22.3
+
+### Patch Changes
+
+- Updated dependencies [4091c063]
+  - @shopify/theme-language-server-common@2.22.3
+  - @shopify/theme-check-node@3.29.1
+  - @shopify/theme-check-docs-updater@3.29.1
+
+## 2.22.2
+
+### Patch Changes
+
+- Updated dependencies [54c5cc81]
+  - @shopify/theme-check-node@3.29.0
+  - @shopify/theme-language-server-common@2.22.2
+  - @shopify/theme-check-docs-updater@3.29.0
+
+## 2.22.1
+
+### Patch Changes
+
+- @shopify/theme-check-node@3.28.1
+- @shopify/theme-language-server-common@2.22.1
+- @shopify/theme-check-docs-updater@3.28.1
+
+## 2.22.0
+
+### Patch Changes
+
+- Updated dependencies [6803e99c]
+  - @shopify/theme-language-server-common@2.22.0
+  - @shopify/theme-check-node@3.28.0
+  - @shopify/theme-check-docs-updater@3.28.0
+
+## 2.21.4
+
+### Patch Changes
+
+- @shopify/theme-check-node@3.27.0
+- @shopify/theme-language-server-common@2.21.4
+- @shopify/theme-check-docs-updater@3.27.0
+
 ## 2.21.3
 
 ### Patch Changes

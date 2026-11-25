@@ -1,0 +1,56 @@
+# Auto-generated Ruby Liquid parity corpus — do not edit by hand.
+---
+- id: block-valid-basic
+  template: "{% block 'hero' %}{% endblock %}"
+  error_path: valid
+- id: block-valid-all-properties
+  template: "{% block '_hero', title: product.title, block.content: section.settings.body, block.settings.heading: 'Welcome', block.name: 'Hero' %}{% endblock %}"
+  error_path: valid
+- id: block-mut-file_name-eos
+  template: "{% block  %}{% endblock %}"
+  error_path: file_name
+- id: block-mut-file_name-id
+  template: "{% block x %}{% endblock %}"
+  error_path: file_name
+- id: block-mut-file_name-invalid
+  template: "{% block '../hero' %}{% endblock %}"
+  error_path: file_name_validation
+- id: block-themecheck-dotted-file-name
+  template: "{% block 'block.evil' %}{% endblock %}"
+  error_path: file_name_validation
+- id: block-mut-end-trail-id
+  template: "{% block 'hero' extra %}{% endblock %}"
+  error_path: end
+- id: block-mut-attr_colon-eos
+  template: "{% block 'hero', title %}{% endblock %}"
+  error_path: attr_colon
+- id: block-mut-attr_value-pipe-000
+  template: "{% block 'hero', title: | %}{% endblock %}"
+  error_path: attr_value/bad_start
+- id: block-mut-block_property-invalid
+  template: "{% block 'hero', block %}{% endblock %}"
+  error_path: block_property
+- id: block-mut-block_content_property-invalid
+  template: "{% block 'hero', block.content.title: body %}{% endblock %}"
+  error_path: block_content_property
+- id: block-mut-block_content_value-pipe-000
+  template: "{% block 'hero', block.content: | %}{% endblock %}"
+  error_path: block_content_value/bad_start
+- id: block-mut-block_settings_property-invalid
+  template: "{% block 'hero', block.settings %}{% endblock %}"
+  error_path: block_settings_property
+- id: block-mut-block_setting_property-invalid
+  template: "{% block 'hero', block.settings.heading.label: 'Heading' %}{% endblock %}"
+  error_path: block_setting_property
+- id: block-mut-block_setting_value-pipe-000
+  template: "{% block 'hero', block.settings.heading: | %}{% endblock %}"
+  error_path: block_setting_value/bad_start
+- id: block-mut-block_name-string
+  template: "{% block 'hero', block.name: x %}{% endblock %}"
+  error_path: block_name
+- id: block-mut-block_unknown_property-invalid
+  template: "{% block 'hero', block.unknown: 'x' %}{% endblock %}"
+  error_path: block_unknown_property
+- id: block-mut-unclosed
+  template: "{% block 'hero' %}"
+  error_path: unclosed

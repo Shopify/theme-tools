@@ -8,7 +8,7 @@ import {
   isNamedHtmlElementNode,
   isTextNode,
 } from '../../utils';
-import { CURSOR, LiquidCompletionParams } from '../params';
+import { LiquidCompletionParams } from '../params';
 import { Provider, sortByName } from './common';
 
 export class HtmlAttributeValueCompletionProvider implements Provider {
@@ -17,7 +17,7 @@ export class HtmlAttributeValueCompletionProvider implements Provider {
   async completions(params: LiquidCompletionParams): Promise<CompletionItem[]> {
     if (!params.completionContext) return [];
 
-    const { node, ancestors } = params.completionContext;
+    const { node, ancestors, partial } = params.completionContext;
     const attributeNode = findLast(ancestors, isHtmlAttribute);
     const tagNode = findLast(ancestors, isNamedHtmlElementNode);
 
@@ -36,8 +36,6 @@ export class HtmlAttributeValueCompletionProvider implements Provider {
 
     const tagName = getCompoundName(tagNode);
     const attrName = getCompoundName(attributeNode);
-    const name = node.value;
-    const partial = name.replace(CURSOR, '');
     const tagEntry = HtmlData.tags.find((tag) => tag.name === tagName);
     const attribute =
       HtmlData.globalAttributes.find((attr) => attr.name === attrName) ??

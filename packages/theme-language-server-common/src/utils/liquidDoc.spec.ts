@@ -1,6 +1,10 @@
 import { DocDefinition } from '@shopify/theme-check-common';
 import { describe, expect, it } from 'vitest';
-import { formatLiquidDocContentMarkdown, formatLiquidDocParameter } from './liquidDoc';
+import {
+  formatLiquidDocContentMarkdown,
+  formatLiquidDocParameter,
+  getParameterCompletionTemplate,
+} from './liquidDoc';
 
 describe('Module: liquidDoc', async () => {
   describe('formatLiquidDocContentMarkdown', async () => {
@@ -101,6 +105,41 @@ This is a description
   });
 
   describe('formatLiquidDocParameter', async () => {
+    it('preserves enum values, quotes, and case', () => {
+      const parameter = {
+        name: 'variant',
+        description: 'The text style',
+        type: `'Heading' | "Small"`,
+        required: false,
+        nodeType: 'param',
+      } as const;
+
+      expect(formatLiquidDocParameter(parameter)).toEqual(
+        '- `variant` (Optional): `\'Heading\' | "Small"` - The text style',
+      );
+      expect(formatLiquidDocParameter(parameter, true)).toEqual(
+        '### `variant` (Optional): `\'Heading\' | "Small"`\n\nThe text style',
+      );
+    });
+
+    it.each([
+      ["'**bold**' | '<small>'", "`'**bold**' | '<small>'`"],
+      ["'`heading`' | 'small'", "``'`heading`' | 'small'``"],
+      ["'``heading``' | '`small`'", "```'``heading``' | '`small`'```"],
+      [" \t' heading ' | ' small '\t ", "`' heading ' | ' small '`"],
+    ])('renders enum annotation %s as literal Markdown code', (type, expected) => {
+      const parameter = {
+        name: 'variant',
+        description: null,
+        type,
+        required: true,
+        nodeType: 'param',
+      } as const;
+
+      expect(formatLiquidDocParameter(parameter)).toEqual(`- \`variant\`: ${expected}`);
+      expect(formatLiquidDocParameter(parameter, true)).toEqual(`### \`variant\`: ${expected}`);
+    });
+
     it('should format a required parameter correctly', async () => {
       expect(
         formatLiquidDocParameter({
@@ -162,6 +201,30 @@ This is a description
           true,
         ),
       ).toEqual('### `title`: string\n\nThe title of the product');
+    });
+  });
+
+  describe('getParameterCompletionTemplate', () => {
+    it.each([
+      ['string', "value: '$1'$0"],
+      ['number', 'value: ${1:0}$0'],
+      ['boolean', 'value: ${1:false}$0'],
+      ['object', 'value: ${1:}$0'],
+      ['product[]', 'value: ${1:}$0'],
+      [null, 'value: ${1:}$0'],
+    ])('preserves the completion for %s parameters', (type, expected) => {
+      expect(getParameterCompletionTemplate('value', type)).toEqual(expected);
+    });
+
+    it.each([
+      ["'Heading' | 'small'", "variant: ${1:'Heading'}$0"],
+      ['"Heading" | \'small\'', 'variant: ${1:"Heading"}$0'],
+      ["'$1' | 'small'", "variant: ${1:'\\$1'}$0"],
+      ["'}' | 'small'", "variant: ${1:'\\}'}$0"],
+      ["'a\\b' | 'small'", "variant: ${1:'a\\\\b'}$0"],
+      ["'${1}\\path' | 'small'", "variant: ${1:'\\${1\\}\\\\path'}$0"],
+    ])('uses a snippet-safe first enum value for %s', (type, expected) => {
+      expect(getParameterCompletionTemplate('variant', type)).toEqual(expected);
     });
   });
 });

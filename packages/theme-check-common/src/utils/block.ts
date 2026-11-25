@@ -223,7 +223,7 @@ async function validateBlockTargeting(
   }
 
   if ('blocks' in nestedBlock && nestedBlock.blocks) {
-    validateNestedBlocks(
+    await validateNestedBlocks(
       context,
       nestedBlock,
       nestedBlock.blocks,
@@ -254,7 +254,7 @@ export async function validateNestedBlocks(
   const allowedBlockTypes = rootLevelThemeBlocks.map((block) => block.node.type);
 
   if (Array.isArray(nestedBlocks)) {
-    Promise.all(
+    await Promise.all(
       nestedBlocks.map((nestedBlock, index) => {
         const nestedPath = currentPath.concat(['blocks', String(index), 'type']);
         return validateBlockTargeting(
@@ -271,7 +271,7 @@ export async function validateNestedBlocks(
       }),
     );
   } else if (typeof nestedBlocks === 'object') {
-    Promise.all(
+    await Promise.all(
       Object.entries(nestedBlocks).map(([key, nestedBlock]) => {
         const nestedPath = currentPath.concat(['blocks', key, 'type']);
         return validateBlockTargeting(

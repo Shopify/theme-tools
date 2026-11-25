@@ -1,0 +1,997 @@
+import { TokenType } from './tokenizer';
+import type { Token } from './tokenizer';
+import { ParserBase } from './base';
+import {
+  makeTextNode,
+  makeRawMarkup,
+  makeHtmlElement,
+  makeHtmlVoidElement,
+  makeHtmlSelfClosingElement,
+  makeHtmlRawNode,
+  makeHtmlComment,
+  makeHtmlDoctype,
+  makeHtmlDanglingMarkerClose,
+  makeAttrDoubleQuoted,
+  makeAttrSingleQuoted,
+  makeAttrUnquoted,
+  makeAttrEmpty,
+} from './factories';
+import { ChildFilterMode, filterChildren, compoundNamesMatch } from './tree-builder';
+import { NodeTypes } from '../types';
+import type { Position } from '../types';
+import { RawMarkupKinds } from '../ast';
+import type {
+  LiquidHtmlNode,
+  LiquidVariableOutput,
+  LiquidRawTag,
+  LiquidTag,
+  TextNode,
+  HtmlElement,
+  HtmlVoidElement,
+  HtmlSelfClosingElement,
+  HtmlRawNode,
+  HtmlComment,
+  HtmlDoctype,
+  HtmlDanglingMarkerClose,
+  AttributeNode,
+  AttrDoubleQuoted,
+  AttrSingleQuoted,
+  AttrUnquoted,
+  ValueNode,
+  LiquidNode,
+  CompoundNameSegment,
+} from '../ast';
+import { VOID_ELEMENTS, HTML_RAW_TAGS, BLOCKS } from '../grammar';
+import { LiquidHTMLASTParsingError } from '../errors';
+import type { UnclosedNode } from '../errors';
+import { closesInnermostBranchOpenedElement } from './branch-opened-elements';
+import { findRawBodyEnd, liquidTagTokenName, rawBodyRuleLookup } from './raw-body';
+import type { RawBodyRuleFor } from './raw-body';
+import type { TagDefinition } from '../environment';
+
+/**
+ * Interface capturing what HTML-parsing free functions need from the
+ * DocumentParser.  The parser class satisfies this contract, keeping
+ * the coupling explicit and narrow.
+ */
+export interface HtmlParserDelegate extends ParserBase {
+  htmlParseHtml: boolean;
+  readonly htmlUsesBuiltinTags: boolean;
+  htmlAllowUnclosedHtml: boolean;
+  /** See `ASTBuildOptions.pairDanglingCloseTags`. */
+  readonly htmlPairDanglingCloseTags: boolean;
+  htmlInAttributeContext: boolean;
+  htmlInAttributeValueContext: boolean;
+  /** The `<!--` of the comment the parser is inside, or `null` outside a comment. */
+  htmlOpenComment: Position | null;
+  /** Keep comment bodies as opaque text (`ASTBuildOptions.opaqueHtmlComments`). */
+  readonly htmlOpaqueComments: boolean;
+
+  parseNode(): LiquidHtmlNode;
+  parseLiquidVariableOutput(): LiquidVariableOutput;
+  parseLiquidTag(): LiquidTag | LiquidRawTag;
+  peekTagName(): string | null;
+  isBlockTerminator(): boolean;
+  parseBranchAttributes(): AttributeNode[];
+  parseLiquidInRange(bodyStart: number, bodyEnd: number): (LiquidNode | TextNode)[];
+  tagForName(name: string): TagDefinition | undefined;
+}
+
+// htmlElement := "<" compoundName attributes ("/" | ">") children? "</" compoundName ">"
+export function parseHtmlElement(
+  parser: HtmlParserDelegate,
+): HtmlElement | HtmlVoidElement | HtmlSelfClosingElement | HtmlRawNode {
+  const source = parser.getSource();
+  const openTagStart = parser.peek().start;
+  parser.consume(TokenType.HtmlTagOpen);
+
+  const name = parseCompoundName(parser);
+  const attributes = parseAttributes(parser);
+
+  if (parser.accept(TokenType.HtmlSelfClose)) {
+    const openTagEnd = parser.tokenAt(parser.getPosition() - 1).end;
+    const blockStartPosition: Position = { start: openTagStart, end: openTagEnd };
+    return makeHtmlSelfClosingElement(name, attributes, blockStartPosition, source);
+  }
+
+  parser.consume(TokenType.HtmlTagClose);
+  const openTagEnd = parser.tokenAt(parser.getPosition() - 1).end;
+  const blockStartPosition: Position = { start: openTagStart, end: openTagEnd };
+
+  const plainName = extractPlainName(name);
+  if (plainName !== null && VOID_ELEMENTS.includes(plainName.toLowerCase())) {
+    return makeHtmlVoidElement(plainName, attributes, blockStartPosition, source);
+  }
+
+  if (plainName !== null && HTML_RAW_TAGS.includes(plainName.toLowerCase())) {
+    return parseHtmlRawBody(parser, plainName, attributes, blockStartPosition);
+  }
+
+  const unclosed: UnclosedNode = {
+    type: NodeTypes.HtmlElement,
+    name: compoundNameSource(source, name),
+    blockStartPosition,
+  };
+  const children: LiquidHtmlNode[] = [];
+  while (!parser.isAtEnd()) {
+    if (parser.check(TokenType.HtmlCloseTagOpen)) {
+      if (closesBranchOpenedElement(parser, children)) {
+        children.push(parseHtmlDanglingMarkerClose(parser));
+        continue;
+      }
+      break;
+    }
+    if (parser.isBlockTerminator()) {
+      if (!parser.htmlAllowUnclosedHtml) {
+        const tagName = parser.peekTagName()!;
+        throw new LiquidHTMLASTParsingError(
+          `Attempting to close LiquidTag '${tagName}' before HtmlElement '${plainName || 'compound'}' was closed`,
+          source,
+          openTagStart,
+          openTagEnd,
+          unclosed,
+        );
+      }
+      break;
+    }
+    children.push(parser.parseNode());
+  }
+
+  if (parser.isAtEnd() || (parser.htmlAllowUnclosedHtml && parser.isBlockTerminator())) {
+    if (!parser.htmlAllowUnclosedHtml) {
+      throw new LiquidHTMLASTParsingError(
+        `Attempting to end parsing before HtmlElement '${plainName || 'compound'}' was closed`,
+        source,
+        openTagStart,
+        openTagEnd,
+        unclosed,
+      );
+    }
+    const endPos = children.length > 0 ? children[children.length - 1].position.end : openTagEnd;
+    const blockEndPosition: Position = { start: endPos, end: endPos };
+    const merged = filterChildren(ChildFilterMode.Syntactic, children, source);
+    return makeHtmlElement(name, attributes, merged, blockStartPosition, blockEndPosition, source);
+  }
+
+  const closeStart = parser.peek().start;
+  parser.consume(TokenType.HtmlCloseTagOpen);
+  const closeName = parseCompoundName(parser);
+
+  while (parser.check(TokenType.Text)) {
+    const text = source.slice(
+      parser.tokenAt(parser.getPosition()).start,
+      parser.tokenAt(parser.getPosition()).end,
+    );
+    if (/^\s*$/.test(text)) {
+      parser.advance();
+    } else {
+      break;
+    }
+  }
+
+  parser.consume(TokenType.HtmlTagClose);
+  const closeEnd = parser.tokenAt(parser.getPosition() - 1).end;
+
+  if (!compoundNamesMatch(name, closeName)) {
+    const closePlainName = extractPlainName(closeName);
+    throw new LiquidHTMLASTParsingError(
+      `Attempting to close HtmlElement '${closePlainName || 'compound'}' before HtmlElement '${plainName || 'compound'}' was closed`,
+      source,
+      closeStart,
+      closeEnd,
+      unclosed,
+    );
+  }
+
+  const blockEndPosition: Position = { start: closeStart, end: closeEnd };
+  const merged = filterChildren(ChildFilterMode.Syntactic, children, source);
+  return makeHtmlElement(name, attributes, merged, blockStartPosition, blockEndPosition, source);
+}
+
+// htmlRawBody := (text | liquidVariableOutput | liquidTag)* "</" tagName ">"
+export function parseHtmlRawBody(
+  parser: HtmlParserDelegate,
+  plainName: string,
+  attributes: AttributeNode[],
+  blockStartPosition: Position,
+): HtmlRawNode {
+  const source = parser.getSource();
+  const bodyStart = blockStartPosition.end;
+
+  // Builtin HTML tokenization already shields closes inside Liquid and raw
+  // bodies. Custom callbacks can change their registry after that scan.
+  const custom = !parser.htmlUsesBuiltinTags;
+  if (custom) parser.ensureRawBoundary(bodyStart, bodyStart);
+  const closeIdx = scanForHtmlCloseTag(parser, plainName);
+  const rawText =
+    (custom || closeIdx === -1) &&
+    (RAW_TEXT_ELEMENTS.has(plainName.toLowerCase()) ||
+      (custom && closeIdx === -1 && plainName.toLowerCase() === 'svg'))
+      ? findRawTextClose(
+          source,
+          bodyStart,
+          plainName,
+          rawBodyRuleLookup((name) => parser.tagForName(name)),
+        )
+      : null;
+  if (rawText && (closeIdx === -1 || parser.tokenAt(closeIdx).start !== rawText.start)) {
+    parser.retokenizeRawText(bodyStart, rawText.start, rawText.end);
+  } else if (!rawText && closeIdx === -1) {
+    throw new LiquidHTMLASTParsingError(
+      `Attempting to end parsing before HtmlRawNode '${plainName}' was closed`,
+      source,
+      blockStartPosition.start,
+      blockStartPosition.end,
+      { type: NodeTypes.HtmlRawNode, name: plainName, blockStartPosition },
+    );
+  }
+
+  const bodyEnd = rawText ? rawText.start : parser.tokenAt(closeIdx).start;
+  const bodyString = source.slice(bodyStart, bodyEnd);
+
+  const previousBound = parser.rawTextBound;
+  if (custom) parser.rawTextBound = bodyEnd;
+  const bodyNodes = parser.parseLiquidInRange(bodyStart, bodyEnd);
+  if (custom) parser.rawTextBound = previousBound;
+
+  const kind = rawMarkupKindForHtmlTag(plainName, attributes, bodyString);
+  const body = makeRawMarkup(kind, bodyString, bodyNodes, bodyStart, bodyEnd, source);
+
+  // Re-seek to the close tag by its stable source offset (`bodyEnd`) rather than
+  // the pre-parse `closeIdx` or wherever the body parse left the cursor:
+  //  - `closeIdx` can go stale: a nested raw tag in the body calls
+  //    raw-boundary recovery, which renumbers the token slots at/after that
+  //    boundary, so the cached index would point at the wrong slot.
+  //  - the live cursor can over-advance: a `{% if %}` block whose body straddles
+  //    the close tag (e.g. `<script>{% if x %}</script>{% endif %}</script>`)
+  //    consumes the first `</script>` as text while seeking `{% endif %}`,
+  //    leaving the cursor at a *later* close tag.
+  // A source offset survives reslicing (offsets are preserved) and pins us to the
+  // first `</script>`, which is where the raw element actually closes.
+  parser.seekToSourceOffset(bodyEnd);
+  const closeStart = parser.peek().start;
+  parser.consume(TokenType.HtmlCloseTagOpen);
+  while (parser.check(TokenType.Text)) parser.advance();
+  const closeEnd = parser.consume(TokenType.HtmlTagClose).end;
+
+  const blockEndPosition: Position = { start: closeStart, end: closeEnd };
+  return makeHtmlRawNode(plainName, attributes, body, blockStartPosition, blockEndPosition, source);
+}
+
+// htmlComment := "<!--"? (text | liquidVariableOutput | liquidTag)* "-->"?
+//
+// The body is parsed as text and Liquid, never as markup. When the body reaches
+// a tag that ends or branches an enclosing block, the comment stops before that
+// tag and `parseNode` resumes it after the tag. When a block opened inside the
+// comment consumes the `-->`, the comment ends with that block.
+export function parseHtmlComment(parser: HtmlParserDelegate): HtmlComment {
+  if (parser.htmlOpaqueComments) return parseOpaqueHtmlComment(parser);
+
+  const source = parser.getSource();
+  const start = parser.peek().start;
+  let blockStartPosition: Position = { start, end: start };
+  if (parser.check(TokenType.HtmlCommentOpen)) {
+    const openToken = parser.consume(TokenType.HtmlCommentOpen);
+    blockStartPosition = { start: openToken.start, end: openToken.end };
+    parser.htmlOpenComment = blockStartPosition;
+  }
+
+  const children: LiquidHtmlNode[] = [];
+  let blockEndPosition: Position | null = null;
+  const savedParseHtml = parser.htmlParseHtml;
+  parser.htmlParseHtml = false;
+  try {
+    while (parser.htmlOpenComment !== null) {
+      // A browser ends an unclosed comment at the end of the input.
+      if (parser.isAtEnd()) {
+        parser.htmlOpenComment = null;
+        break;
+      }
+      if (parser.check(TokenType.HtmlCommentClose)) {
+        const closeToken = parser.consume(TokenType.HtmlCommentClose);
+        blockEndPosition = { start: closeToken.start, end: closeToken.end };
+        parser.htmlOpenComment = null;
+        break;
+      }
+      if (parser.isBlockTerminator()) break;
+      children.push(parser.parseNode());
+    }
+  } finally {
+    parser.htmlParseHtml = savedParseHtml;
+  }
+
+  const end = parser.peek().start;
+  return makeHtmlComment(
+    filterChildren(ChildFilterMode.Syntactic, children, source) as (LiquidNode | TextNode)[],
+    blockStartPosition,
+    blockEndPosition ?? { start: end, end },
+    source,
+  );
+}
+
+// opaqueHtmlComment := "<!--" token* "-->"
+function parseOpaqueHtmlComment(parser: HtmlParserDelegate): HtmlComment {
+  const source = parser.getSource();
+  const openToken = parser.consume(TokenType.HtmlCommentOpen);
+  while (!parser.isAtEnd() && !parser.check(TokenType.HtmlCommentClose)) parser.advance();
+  if (parser.isAtEnd()) throw unclosedHtmlCommentError(source, openToken);
+  const closeToken = parser.consume(TokenType.HtmlCommentClose);
+  return makeHtmlComment(
+    [],
+    { start: openToken.start, end: openToken.end },
+    { start: closeToken.start, end: closeToken.end },
+    source,
+  );
+}
+
+function unclosedHtmlCommentError(
+  source: string,
+  openComment: Position,
+): LiquidHTMLASTParsingError {
+  return new LiquidHTMLASTParsingError(
+    `Attempting to end parsing before HtmlComment '<!--' was closed`,
+    source,
+    openComment.start,
+    openComment.end,
+    { type: NodeTypes.HtmlComment, name: '<!--', blockStartPosition: openComment },
+  );
+}
+
+// htmlDoctype := "<!" text ">"
+export function parseHtmlDoctype(parser: HtmlParserDelegate): HtmlDoctype {
+  const source = parser.getSource();
+  const openToken = parser.consume(TokenType.HtmlDoctypeOpen);
+
+  while (!parser.isAtEnd() && !parser.check(TokenType.HtmlTagClose)) {
+    parser.advance();
+  }
+
+  const closeToken = parser.consume(TokenType.HtmlTagClose);
+  const body = source.slice(openToken.end, closeToken.start).trim();
+
+  const match = body.match(/^doctype\s+html\s*(.*)/i);
+  const legacyDoctypeString = match ? (match[1].length > 0 ? match[1] : null) : body;
+
+  return makeHtmlDoctype(legacyDoctypeString, openToken.start, closeToken.end, source);
+}
+
+export function parseOrphanedHtmlCloseTag(parser: HtmlParserDelegate): never {
+  const source = parser.getSource();
+  const closeStart = parser.peek().start;
+  parser.consume(TokenType.HtmlCloseTagOpen);
+  const closeName = parseCompoundName(parser);
+  while (parser.check(TokenType.Text)) {
+    const text = source.slice(
+      parser.tokenAt(parser.getPosition()).start,
+      parser.tokenAt(parser.getPosition()).end,
+    );
+    if (/^\s*$/.test(text)) {
+      parser.advance();
+    } else {
+      break;
+    }
+  }
+  const closeEnd = parser.consume(TokenType.HtmlTagClose).end;
+  const plainCloseName = extractPlainName(closeName);
+  throw new LiquidHTMLASTParsingError(
+    `Attempting to close HtmlElement '${plainCloseName || 'compound'}' before it was opened`,
+    source,
+    closeStart,
+    closeEnd,
+  );
+}
+
+/**
+ * Whether the close tag at the cursor ends an element that an earlier
+ * conditional in the same scope left open, rather than the enclosing element.
+ * Only asked under `pairDanglingCloseTags`; see `closesInnermostBranchOpenedElement`.
+ * Reads the name from the source so the cursor never moves, and answers false
+ * for a compound (Liquid) name.
+ */
+export function closesBranchOpenedElement(
+  parser: HtmlParserDelegate,
+  scopeChildren: LiquidHtmlNode[],
+): boolean {
+  if (!parser.htmlPairDanglingCloseTags) return false;
+  const nameStart = parser.peek().end;
+  const match = /^([A-Za-z][^\s/>{}]*)\s*>/.exec(
+    parser.getSource().slice(nameStart, nameStart + 256),
+  );
+  if (!match) return false;
+  return closesInnermostBranchOpenedElement(scopeChildren, match[1]);
+}
+
+export function parseHtmlDanglingMarkerClose(parser: HtmlParserDelegate): HtmlDanglingMarkerClose {
+  const source = parser.getSource();
+  const start = parser.peek().start;
+  parser.consume(TokenType.HtmlCloseTagOpen);
+  const name = parseCompoundName(parser);
+  while (parser.check(TokenType.Text)) {
+    const text = source.slice(
+      parser.tokenAt(parser.getPosition()).start,
+      parser.tokenAt(parser.getPosition()).end,
+    );
+    if (/^\s*$/.test(text)) {
+      parser.advance();
+    } else {
+      break;
+    }
+  }
+  parser.consume(TokenType.HtmlTagClose);
+  const end = parser.tokenAt(parser.getPosition() - 1).end;
+  return makeHtmlDanglingMarkerClose(name, start, end, source);
+}
+
+/**
+ * Parse attributes until a block terminator (end tag, branch keyword) is encountered.
+ * Used inside Liquid tag branches that appear in HTML attribute context.
+ */
+export function parseBranchAttributesImpl(parser: HtmlParserDelegate): AttributeNode[] {
+  const attrs: AttributeNode[] = [];
+
+  while (!parser.isAtEnd()) {
+    skipSpace(parser);
+    if (parser.isAtEnd()) break;
+    if (parser.check(TokenType.HtmlTagClose) || parser.check(TokenType.HtmlSelfClose)) break;
+    if (parser.isBlockTerminator()) break;
+
+    if (parser.check(TokenType.LiquidTagOpen)) {
+      const saved = parser.htmlInAttributeContext;
+      parser.htmlInAttributeContext = true;
+      attrs.push(parser.parseLiquidTag() as unknown as AttributeNode);
+      parser.htmlInAttributeContext = saved;
+      continue;
+    }
+
+    if (parser.check(TokenType.LiquidVariableOutputOpen)) {
+      attrs.push(parser.parseLiquidVariableOutput() as unknown as AttributeNode);
+      continue;
+    }
+
+    const attrStart = parser.peek().start;
+    const name = parseCompoundName(parser);
+    if (name.length === 0) {
+      parser.advance();
+      continue;
+    }
+    attrs.push(parseAttributeAfterName(parser, name, attrStart));
+  }
+
+  return attrs;
+}
+
+// compoundName := (text | liquidVariableOutput | liquidTag)+
+export function parseCompoundName(parser: HtmlParserDelegate): CompoundNameSegment[] {
+  const segments: CompoundNameSegment[] = [];
+  // Record the segment kinds as they arrive, so that the check of each glued
+  // tag does not read the whole name again.
+  let hasText = false;
+  let hasOutput = false;
+  let lookahead: BodyLookahead | undefined;
+
+  while (!parser.isAtEnd()) {
+    if (parser.check(TokenType.LiquidVariableOutputOpen)) {
+      segments.push(parser.parseLiquidVariableOutput());
+      hasOutput = true;
+      continue;
+    }
+
+    // Consume {% ... %} tags as part of the compound name (e.g.
+    // <{% if cond %}sticky-header{% else %}div{% endif %}>), but NOT when
+    // the name is already a complete LiquidVariableOutput like {{ tag }} —
+    // in that case the {% if %} belongs to the attribute context (e.g.
+    // <{{ tag }}{% if class %} class="..."{% endif %}>). Once a literal text
+    // name has been established, `liquidTagStartsAttributeList` decides whether
+    // a glued tag continues the name or opens the attribute list.
+    if (
+      !parser.htmlInAttributeContext &&
+      parser.check(TokenType.LiquidTagOpen) &&
+      !hasOutput &&
+      !liquidTagStartsAttributeList(parser, hasText, (lookahead ??= emptyBodyLookahead()))
+    ) {
+      segments.push(parser.parseLiquidTag());
+      continue;
+    }
+
+    const segment = consumeTextSegment(parser);
+    if (segment !== null) {
+      segments.push(segment);
+      hasText = true;
+      continue;
+    }
+
+    break;
+  }
+
+  return segments;
+}
+
+// attributes := (attribute | liquidVariableOutput | liquidTag)*
+export function parseAttributes(parser: HtmlParserDelegate): AttributeNode[] {
+  // We are past the element's (possibly compound) tag name and now inside its
+  // attribute list. Mark attribute context so a Liquid tag glued directly to an
+  // attribute name (e.g. `data-dock{% if x %} data-foo{% endif %}`) is parsed as a
+  // separate attribute-position Liquid tag instead of being swallowed into the
+  // attribute name by parseCompoundName. Otherwise the `{% if %}` block becomes part
+  // of the attribute name, later renders to an invalid DOM attribute name, and
+  // crashes the canvas. Compound *tag* names (parsed before this) still accept
+  // conditionals like `<{% if x %}a{% endif %}>`.
+  const savedAttrContext = parser.htmlInAttributeContext;
+  parser.htmlInAttributeContext = true;
+  try {
+    return parseAttributeList(parser);
+  } finally {
+    parser.htmlInAttributeContext = savedAttrContext;
+  }
+}
+
+function parseAttributeList(parser: HtmlParserDelegate): AttributeNode[] {
+  const attrs: AttributeNode[] = [];
+
+  while (!parser.isAtEnd()) {
+    skipSpace(parser);
+    if (parser.isAtEnd()) break;
+    if (parser.check(TokenType.HtmlTagClose) || parser.check(TokenType.HtmlSelfClose)) break;
+
+    // Liquid tag between attributes
+    if (parser.check(TokenType.LiquidTagOpen)) {
+      const saved = parser.htmlInAttributeContext;
+      parser.htmlInAttributeContext = true;
+      attrs.push(parser.parseLiquidTag() as unknown as AttributeNode);
+      parser.htmlInAttributeContext = saved;
+      continue;
+    }
+
+    // Liquid drop between attributes
+    if (parser.check(TokenType.LiquidVariableOutputOpen)) {
+      attrs.push(parser.parseLiquidVariableOutput() as unknown as AttributeNode);
+      continue;
+    }
+
+    const attrStart = parser.peek().start;
+    const name = parseCompoundName(parser);
+    if (name.length === 0) {
+      parser.advance();
+      continue;
+    }
+    attrs.push(parseAttributeAfterName(parser, name, attrStart));
+  }
+
+  return attrs;
+}
+
+// attribute := compoundName (space* "=" space* (quotedAttrValue | unquotedAttrValue))?
+//
+// Mirrors the ohm grammar's syntactic rules (`AttrDoubleQuoted = attrName "=" doubleQuote
+// ...`), which skipped `space` before the `=` and before the value. Without an `=` the
+// attribute is valueless; the whitespace this skipped only separates it from the next one,
+// which the attribute list would skip anyway.
+function parseAttributeAfterName(
+  parser: HtmlParserDelegate,
+  name: CompoundNameSegment[],
+  attrStart: number,
+): AttributeNode {
+  const source = parser.getSource();
+  skipSpace(parser);
+  if (!parser.accept(TokenType.HtmlEquals)) {
+    const lastSegment = name[name.length - 1];
+    return makeAttrEmpty(name, attrStart, lastSegment.position.end, source);
+  }
+  skipSpace(parser);
+
+  const quoteToken = parser.accept(TokenType.HtmlQuoteOpen);
+  if (!quoteToken) {
+    const { value, end: valueEnd } = parseUnquotedAttributeValue(parser);
+    const attributePosition: Position = {
+      start: value.length > 0 ? value[0].position.start : parser.peek().start,
+      end: valueEnd,
+    };
+    return makeAttrUnquoted(name, value, attributePosition, attrStart, valueEnd, source);
+  }
+
+  const quoteChar = source[quoteToken.start];
+  const valueStart = quoteToken.end;
+  const value = parseQuotedAttributeValue(parser);
+  const closeQuote = parser.consume(TokenType.HtmlQuoteClose);
+  const attributePosition: Position = { start: valueStart, end: closeQuote.start };
+  // Double straight quote and double curly quotes (“ ”) map to a
+  // double-quoted attr; single straight quote and single curly quotes
+  // (‘ ’) map to a single-quoted attr. The printer normalizes the curly
+  // variants to straight quotes.
+  return quoteChar === '"' || quoteChar === '“' || quoteChar === '”'
+    ? makeAttrDoubleQuoted(name, value, attributePosition, attrStart, closeQuote.end, source)
+    : makeAttrSingleQuoted(name, value, attributePosition, attrStart, closeQuote.end, source);
+}
+
+/**
+ * Skip whitespace inside a tag: the tokenizer emits each run as its own Text
+ * token, so this is ohm's implicit `space*` between the tokens of a syntactic rule.
+ */
+function skipSpace(parser: HtmlParserDelegate): void {
+  while (parser.check(TokenType.Text) && isSpaceToken(parser, parser.peek())) parser.advance();
+}
+
+function isSpaceToken(parser: HtmlParserDelegate, token: { start: number; end: number }): boolean {
+  return /^\s/.test(parser.getSource().slice(token.start, token.start + 1));
+}
+
+// quotedAttrValue := (text | liquidVariableOutput | liquidTag)*
+export function parseQuotedAttributeValue(parser: HtmlParserDelegate): ValueNode[] {
+  const values: ValueNode[] = [];
+  const source = parser.getSource();
+
+  while (!parser.isAtEnd() && !parser.check(TokenType.HtmlQuoteClose)) {
+    if (parser.check(TokenType.LiquidVariableOutputOpen)) {
+      values.push(parser.parseLiquidVariableOutput());
+    } else if (parser.check(TokenType.LiquidTagOpen)) {
+      // Detect branch/end keywords inside quoted attribute values -- this is invalid
+      const tagName = parser.peekTagName();
+      if (tagName && (BRANCH_KEYWORDS.has(tagName) || tagName.startsWith('end'))) {
+        const token = parser.peek();
+        throw new LiquidHTMLASTParsingError(
+          `Unexpected Liquid tag '${tagName}' inside quoted attribute value`,
+          source,
+          token.start,
+          token.end,
+        );
+      }
+      const saved = parser.htmlInAttributeValueContext;
+      parser.htmlInAttributeValueContext = true;
+      values.push(parser.parseLiquidTag());
+      parser.htmlInAttributeValueContext = saved;
+    } else if (parser.check(TokenType.Text)) {
+      const token = parser.advance();
+      values.push(
+        makeTextNode(source.slice(token.start, token.end), token.start, token.end, source),
+      );
+    } else {
+      break;
+    }
+  }
+
+  return values;
+}
+
+// unquotedAttrValue := (text | liquidVariableOutput)+
+export function parseUnquotedAttributeValue(parser: HtmlParserDelegate): {
+  value: ValueNode[];
+  end: number;
+} {
+  const values: ValueNode[] = [];
+  let end = parser.peek().start;
+
+  while (!parser.isAtEnd()) {
+    if (parser.check(TokenType.HtmlTagClose) || parser.check(TokenType.HtmlSelfClose)) break;
+
+    const segment = consumeTextSegment(parser);
+    if (segment) {
+      values.push(segment);
+      end = segment.position.end;
+      continue;
+    }
+
+    if (parser.check(TokenType.LiquidVariableOutputOpen)) {
+      const drop = parser.parseLiquidVariableOutput();
+      values.push(drop);
+      end = drop.position.end;
+      continue;
+    }
+
+    break;
+  }
+
+  return { value: values, end };
+}
+
+/**
+ * Consume the current Text token as a name or unquoted-value segment. Inside a
+ * tag the tokenizer emits whitespace as Text tokens of its own, so a Text token
+ * is either a separator (left for the caller, which returns null) or a segment.
+ */
+function consumeTextSegment(parser: HtmlParserDelegate): TextNode | null {
+  if (!parser.check(TokenType.Text)) return null;
+  const token = parser.peek();
+  if (isSpaceToken(parser, token)) return null;
+  parser.advance();
+  const source = parser.getSource();
+  return makeTextNode(source.slice(token.start, token.end), token.start, token.end, source);
+}
+
+/**
+ * Decide whether a `{% ... %}` tag glued to an in-progress compound name opens
+ * the element's attribute list rather than continuing the name. The parser must
+ * be positioned on the tag's `LiquidTagOpen`.
+ *
+ * This only applies once a literal text name (e.g. `li`) has been established:
+ * - Standalone/inline tags (`echo`, `cycle`, `render`, `assign`, ...) output
+ *   into the name the same way a `{{ drop }}` does, so they continue the name.
+ *   They have no body, so the whitespace heuristic must not be applied to them
+ *   (it would read unrelated following content as the body).
+ * - Block tags (`if`, `unless`, `for`, `case`, ...) wrap content: a body that
+ *   begins with whitespace opens the attribute list (`<li{% if x %} data-foo{% endif %}>`),
+ *   while a content-led body continues the name (`<component-{% if x %}{{ x }}{% endif %}>`).
+ *   The space is what delimits a tag name from its attributes.
+ */
+function liquidTagStartsAttributeList(
+  parser: HtmlParserDelegate,
+  nameHasText: boolean,
+  lookahead: BodyLookahead,
+): boolean {
+  if (!nameHasText) return false;
+  const tagName = parser.peekTagName();
+  if (tagName === null || !BLOCKS.includes(tagName)) return false;
+  return liquidTagBodyStartsWithWhitespace(parser, lookahead);
+}
+
+/**
+ * The last body look-ahead of one compound name: the scan of `tokens` that
+ * started at index `from` gave `startsWithWhitespace` at index `to`, or ran out
+ * of tokens there.
+ */
+interface BodyLookahead {
+  tokens: readonly Token[];
+  from: number;
+  to: number;
+  startsWithWhitespace: boolean;
+}
+
+function emptyBodyLookahead(): BodyLookahead {
+  return { tokens: [], from: 0, to: 0, startsWithWhitespace: false };
+}
+
+function isLeftTrimmingOpen(
+  tok: { type: TokenType; start: number; end: number } | undefined,
+): boolean {
+  return (
+    tok !== undefined &&
+    (tok.type === TokenType.LiquidVariableOutputOpen || tok.type === TokenType.LiquidTagOpen) &&
+    tok.end - tok.start === 3
+  );
+}
+
+/**
+ * Whether the body of the block tag at the cursor starts with rendered
+ * whitespace. The scan reads past every Liquid tag up to the first rendered
+ * token, so it can also read past the next block tags glued to the name.
+ *
+ * After the scan reads a `LiquidTagOpen`, its state is the state of a scan that
+ * starts at that token: `inTag` is true in both, and the next `LiquidTagClose`
+ * sets `trimNext` before any token reads it. So a block tag that the last scan
+ * read past gets the same answer, and the answer is reused. Without the reuse, a
+ * name of many glued blocks with empty bodies scans to the end of its HTML tag
+ * once for each block, which is quadratic in the length of the name.
+ */
+function liquidTagBodyStartsWithWhitespace(
+  parser: HtmlParserDelegate,
+  last: BodyLookahead,
+): boolean {
+  const tokens = parser.tokenList();
+  const from = parser.getPosition();
+  if (last.tokens === tokens && last.from <= from && from < last.to) {
+    return last.startsWithWhitespace;
+  }
+  const source = parser.getSource();
+  let inTag = false;
+  let trimNext = false;
+  for (let i = from; i < tokens.length; i++) {
+    const tok = tokens[i];
+    switch (tok.type) {
+      case TokenType.LiquidTagOpen:
+        inTag = true;
+        break;
+      case TokenType.LiquidTagClose:
+        inTag = false;
+        trimNext = tok.end - tok.start === 3; // `-%}` trims following whitespace
+        break;
+      case TokenType.Text:
+        if (!inTag) {
+          let text = source.slice(tok.start, tok.end);
+          if (trimNext) text = text.replace(/^\s+/, ''); // `-%}` strips leading whitespace
+          trimNext = false;
+          if (text.length === 0) break; // whitespace fully trimmed; keep scanning
+          // A whitespace-only run immediately before a left-trimming `{{-`/`{%-`
+          // is stripped from the rendered body, so it is not whitespace-led.
+          if (/^\s+$/.test(text) && isLeftTrimmingOpen(tokens[i + 1])) break;
+          return rememberLookahead(last, tokens, from, i, /^\s/.test(text));
+        }
+        break;
+      case TokenType.LiquidVariableOutputOpen:
+        // Body begins with a `{{ }}` drop -> name continuation, not attributes.
+        if (!inTag) return rememberLookahead(last, tokens, from, i, false);
+        break;
+      case TokenType.HtmlTagClose:
+      case TokenType.HtmlSelfClose:
+      case TokenType.EndOfInput:
+        if (!inTag) return rememberLookahead(last, tokens, from, i, false);
+        break;
+    }
+  }
+  return rememberLookahead(last, tokens, from, tokens.length, false);
+}
+
+function rememberLookahead(
+  last: BodyLookahead,
+  tokens: readonly Token[],
+  from: number,
+  to: number,
+  startsWithWhitespace: boolean,
+): boolean {
+  last.tokens = tokens;
+  last.from = from;
+  last.to = to;
+  last.startsWithWhitespace = startsWithWhitespace;
+  return startsWithWhitespace;
+}
+
+/** The element name as written, Liquid included: `h{{ level }}` for `<h{{ level }}>`. */
+function compoundNameSource(source: string, name: CompoundNameSegment[]): string {
+  if (name.length === 0) return '';
+  return source.slice(name[0].position.start, name[name.length - 1].position.end);
+}
+
+export function extractPlainName(name: CompoundNameSegment[]): string | null {
+  if (name.length === 1 && name[0].type === NodeTypes.TextNode) {
+    return name[0].value;
+  }
+  return null;
+}
+
+export function peekHtmlCloseTagMatches(
+  parser: HtmlParserDelegate,
+  openName: CompoundNameSegment[],
+): boolean {
+  if (!parser.check(TokenType.HtmlCloseTagOpen)) return false;
+  const saved = parser.getPosition();
+  parser.advance(); // skip HtmlCloseTagOpen
+  const closeName = parseCompoundName(parser);
+  parser.setPosition(saved);
+  return compoundNamesMatch(openName, closeName);
+}
+
+export function scanForHtmlCloseTag(parser: ParserBase, tagName: string): number {
+  const lowerName = tagName.toLowerCase();
+  const source = parser.getSource();
+  const pos = parser.getPosition();
+
+  // Depth-balance nested same-name elements so the OUTER close tag is
+  // returned, not the first inner one (e.g. `<svg>…<svg>…</svg>…</svg>`). A
+  // nested open tag is an `HtmlTagOpen` followed by a `Text` token whose first
+  // word matches the tag name.
+  // The scan begins after the outer open tag has been consumed, so the outer
+  // open is never counted. Mirrors `scanForEndTagNested`.
+  let depth = 0;
+  for (let i = pos; parser.hasToken(i); i++) {
+    const token = parser.tokenAt(i);
+
+    if (token.type === TokenType.HtmlTagOpen) {
+      const textIdx = i + 1;
+      if (!parser.hasToken(textIdx)) continue;
+      if (parser.tokenAt(textIdx).type !== TokenType.Text) continue;
+      const trimmed = source
+        .slice(parser.tokenAt(textIdx).start, parser.tokenAt(textIdx).end)
+        .trimStart();
+      const firstWs = trimmed.search(/\s/);
+      const name = firstWs === -1 ? trimmed.trim() : trimmed.slice(0, firstWs);
+      if (name.toLowerCase() === lowerName) depth++;
+      continue;
+    }
+
+    if (token.type !== TokenType.HtmlCloseTagOpen) continue;
+    // The tokenizer splits whitespace inside a tag into Text tokens of its own,
+    // so compare the whole run: `</script marker>` (NBSP) is body text, not a close.
+    let end = i + 1;
+    while (parser.hasToken(end) && parser.tokenAt(end).type === TokenType.Text) end++;
+    if (end === i + 1) continue;
+    const text = source.slice(token.end, parser.tokenAt(end - 1).end);
+    if (text.trim().toLowerCase() === lowerName) {
+      if (depth === 0) return i;
+      depth--;
+    }
+  }
+  return -1;
+}
+
+// The HTML elements whose bodies are raw text: nothing in them but their own
+// close tag (and, in a theme, Liquid) is markup.
+const RAW_TEXT_ELEMENTS = new Set(['script', 'style']);
+
+const CLOSE_TAG_END = /\s*>/y;
+
+/**
+ * Where the first `</tagName>` after `from` starts and ends, read from the source
+ * rather than the token stream. Liquid delimiters are skipped the way the
+ * tokenizer skips them, and so is the body of a Liquid raw tag such as
+ * `{% comment %}`, so a close tag inside either does not count. An unterminated
+ * delimiter or raw tag leaves the element unclosed: returns null.
+ */
+function findRawTextClose(
+  source: string,
+  from: number,
+  tagName: string,
+  rawBodyRuleFor: RawBodyRuleFor,
+): { start: number; end: number } | null {
+  const lowerName = tagName.toLowerCase();
+  let i = from;
+  while (i < source.length) {
+    const liquidCloser = source.startsWith('{{', i)
+      ? '}}'
+      : source.startsWith('{%', i)
+        ? '%}'
+        : null;
+    if (liquidCloser) {
+      const close = source.indexOf(liquidCloser, i + 2);
+      if (close === -1) return null;
+      const tokenEnd = close + 2;
+      const name =
+        liquidCloser === '%}' ? liquidTagTokenName(source.slice(i, tokenEnd)) : undefined;
+      const rule = name ? rawBodyRuleFor(name) : undefined;
+      if (name && rule) {
+        const bodyEnd = findRawBodyEnd(source, tokenEnd, name, rule, rawBodyRuleFor);
+        if (!bodyEnd) return null;
+        i = bodyEnd.tagEnd;
+      } else {
+        i = tokenEnd;
+      }
+      continue;
+    }
+    if (
+      source.startsWith('</', i) &&
+      source.slice(i + 2, i + 2 + lowerName.length).toLowerCase() === lowerName
+    ) {
+      CLOSE_TAG_END.lastIndex = i + 2 + lowerName.length;
+      if (CLOSE_TAG_END.test(source)) return { start: i, end: CLOSE_TAG_END.lastIndex };
+    }
+    i++;
+  }
+  return null;
+}
+
+export function rawMarkupKindForHtmlTag(
+  tagName: string,
+  attributes: AttributeNode[] = [],
+  bodySource: string = '',
+): RawMarkupKinds {
+  switch (tagName.toLowerCase()) {
+    case 'script':
+      return scriptKindFromAttributes(attributes);
+    case 'style':
+      return /\{[{%]/.test(bodySource) ? RawMarkupKinds.text : RawMarkupKinds.css;
+    default:
+      return RawMarkupKinds.text;
+  }
+}
+
+function scriptKindFromAttributes(attributes: AttributeNode[]): RawMarkupKinds {
+  const typeValue = extractPlainAttributeValue(attributes, 'type');
+  if (typeValue === null) return RawMarkupKinds.javascript;
+  if (typeValue === 'text/html') return RawMarkupKinds.html;
+  if (typeValue === 'text/markdown') return RawMarkupKinds.markdown;
+  if (
+    typeValue.endsWith('json') ||
+    typeValue.endsWith('importmap') ||
+    typeValue === 'speculationrules'
+  ) {
+    return RawMarkupKinds.json;
+  }
+  return RawMarkupKinds.javascript;
+}
+
+function extractPlainAttributeValue(
+  attributes: AttributeNode[],
+  targetName: string,
+): string | null {
+  for (const attr of attributes) {
+    if (!('name' in attr) || !('value' in attr)) continue;
+    const attrNode = attr as AttrDoubleQuoted | AttrSingleQuoted | AttrUnquoted;
+    const name = extractPlainName(attrNode.name);
+    if (name === null || name.toLowerCase() !== targetName) continue;
+    const values = attrNode.value;
+    if (values.length === 1 && values[0].type === NodeTypes.TextNode) {
+      return (values[0] as TextNode).value;
+    }
+    return null;
+  }
+  return null;
+}
+
+const BRANCH_KEYWORDS = new Set(['else', 'elsif', 'when']);

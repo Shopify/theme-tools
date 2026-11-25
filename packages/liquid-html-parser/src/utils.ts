@@ -1,4 +1,4 @@
-import { Position } from './types';
+import type { Position } from './types';
 
 export function assertNever(x: never): never {
   throw new Error(`Unexpected object: ${(x as any).type}`);

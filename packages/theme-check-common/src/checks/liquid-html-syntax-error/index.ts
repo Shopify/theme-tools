@@ -36,6 +36,7 @@ export const LiquidHTMLSyntaxError: LiquidCheckDefinition = {
     docs: {
       description: 'This check exists to inform the user of Liquid HTML syntax errors.',
       recommended: true,
+      url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/liquid-html-syntax-error',
     },
     type: SourceCodeType.LiquidHtml,
     severity: Severity.ERROR,
