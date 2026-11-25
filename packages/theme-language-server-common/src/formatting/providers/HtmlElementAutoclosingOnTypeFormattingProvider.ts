@@ -66,6 +66,9 @@ export class HtmlElementAutoclosingOnTypeFormattingProvider implements BaseOnTyp
       // here we fix `>` with `</$unclosed>`
       case '>': {
         const ast = document.ast;
+        const offset = textDocument.offsetAt(params.position);
+        let closedLater: boolean | undefined;
+        const elementIsClosedLater = () => (closedLater ??= isClosedLater(textDocument, offset));
         if (
           ast instanceof LiquidHTMLASTParsingError &&
           ast.unclosed &&
@@ -74,17 +77,13 @@ export class HtmlElementAutoclosingOnTypeFormattingProvider implements BaseOnTyp
             ast.unclosed.type === NodeTypes.HtmlRawNode) &&
           (ast.unclosed.blockStartPosition.end === textDocument.offsetAt(params.position) ||
             (shouldClose(ast.unclosed, nodeAtCursor(textDocument, params.position)) &&
-              !isClosedLater(textDocument, textDocument.offsetAt(params.position))))
+              !elementIsClosedLater()))
         ) {
           defer(() => this.setCursorPosition(textDocument, params.position));
           return [TextEdit.insert(Position.create(line, character), `</${ast.unclosed.name}>`)];
         } else if (ast instanceof LiquidHTMLASTParsingError) {
           const node = nodeAtCursor(textDocument, params.position);
-          if (
-            node &&
-            isDanglingHtmlElement(node) &&
-            !isClosedLater(textDocument, textDocument.offsetAt(params.position))
-          ) {
+          if (node && isDanglingHtmlElement(node) && !elementIsClosedLater()) {
             defer(() => this.setCursorPosition(textDocument, params.position));
             return [TextEdit.insert(Position.create(line, character), `</${getName(node)}>`)];
           }
