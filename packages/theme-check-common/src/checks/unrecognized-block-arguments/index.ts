@@ -1,6 +1,6 @@
 import { Severity, SourceCodeType, type LiquidCheckDefinition } from '../../types';
+import { blockTagSyntaxError } from '../liquid-syntax-error/block';
 import type { BlockMarkup } from '@shopify/liquid-html-parser';
-import { getBlockDocParams, isSystemArg } from '../common/block-doc';
 
 export const UnrecognizedBlockArguments: LiquidCheckDefinition = {
   meta: {
@@ -8,7 +8,7 @@ export const UnrecognizedBlockArguments: LiquidCheckDefinition = {
     name: 'Unrecognized Block Arguments',
     docs: {
       description:
-        "Reports arguments in a block tag that are not declared in the block's {% doc %} tag.",
+        "Reports arguments in a block tag that are not part of the block's merged schema, LiquidDoc, and content interface.",
       recommended: true,
       url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-check/checks/unrecognized-block-arguments',
     },
@@ -22,21 +22,19 @@ export const UnrecognizedBlockArguments: LiquidCheckDefinition = {
     return {
       async LiquidTag(node) {
         if (node.name !== 'block') return;
-        if (typeof node.markup === 'string') return;
+        if (blockTagSyntaxError(node)) return;
 
         const markup = node.markup as BlockMarkup;
-        const blockName = markup.name.value;
-        const docParams = await getBlockDocParams(context, blockName);
-        if (!docParams) return;
+        const parameters = await context.getBlockParameters(markup.name.value);
+        if (!parameters) return;
 
-        for (const arg of markup.args) {
-          if (isSystemArg(arg.name)) continue;
-          if (docParams.has(arg.name)) continue;
+        for (const argument of markup.args) {
+          if (argument.name === 'block.name' || parameters.has(argument.name)) continue;
 
           context.report({
-            message: `Unknown argument '${arg.name}' in block tag for '${blockName}'.`,
-            startIndex: arg.position.start,
-            endIndex: arg.position.end,
+            message: `Unknown argument '${argument.name}' in block tag for '${markup.name.value}'.`,
+            startIndex: argument.position.start,
+            endIndex: argument.position.end,
           });
         }
       },

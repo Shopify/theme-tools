@@ -21,12 +21,12 @@ jobs:
           submodules: true
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         with:
           run_install: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: "pnpm"
@@ -44,6 +44,35 @@ jobs:
       - name: Check formatting
         run: pnpm format:check
 
+      - name: Check the Rust crate's copies of TypeScript data
+        run: |
+          diff -r packages/theme-check-node/configs crates/theme-check/src/node/configs
+          node -e "console.log(JSON.stringify(require('./packages/theme-check-common').allChecks.map((c) => c.meta)))" \
+            | diff - crates/theme-check/src/node/checks-meta.json
+
+  rust:
+    runs-on: ubuntu-latest
+    name: Rust
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check formatting
+        run: cargo fmt --all --check
+
+      - name: Lint
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Run the unit tests and the specs
+        run: cargo test --workspace --locked
+
+      - name: Check that the crates package and build on their own
+        run: cargo publish --dry-run --workspace --locked
+
+      - name: Check that the crates have the version of crates/theme-check/package.json
+        run: |
+          cargo metadata --no-deps --format-version 1 \
+            | jq -e --arg version "$(jq -r .version crates/theme-check/package.json)" 'all(.packages[]; .version == $version)'
+
   e2e:
     runs-on: ubuntu-latest
     name: E2E tests
@@ -54,12 +83,12 @@ jobs:
           submodules: true
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         with:
           run_install: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: "pnpm"
@@ -95,12 +124,12 @@ jobs:
           submodules: true
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         with:
           run_install: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
           cache: "pnpm"
@@ -126,3 +155,14 @@ jobs:
 
       - name: Run the prettier3 idempotence tests
         run: pnpm --dir packages/prettier-plugin-liquid test:idempotence:3
+
+  # Branch protection requires this job instead of each matrix job, so changing
+  # the matrix doesn't leave a required check that never reports.
+  tests-passed:
+    runs-on: ubuntu-latest
+    name: Tests passed
+    needs: tests
+    if: always()
+    steps:
+      - name: Check that every test job passed
+        run: test "${{ needs.tests.result }}" = success

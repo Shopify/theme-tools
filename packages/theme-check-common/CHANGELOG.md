@@ -1,5 +1,139 @@
 # @shopify/theme-check-common
 
+## 4.0.2
+
+### Patch Changes
+
+- Updated dependencies [61cae020]
+  - @shopify/liquid-html-parser@2.12.2
+
+## 4.0.1
+
+### Patch Changes
+
+- 19c3b6ab: `AssetSizeAppBlockJavaScript` and `AssetSizeAppBlockCSS` look up only files directly in the `assets` directory. A `javascript` or `stylesheet` value that leaves that directory, including in its percent-encoded form, now gets the same offense whether or not the file exists, and the check does not read its size.
+- 0dcea3cd: Fix JSONMissingBlock resolving app block URIs as local theme block files. Require `@app` support on the immediate section or block host, while preserving section blocks and theme block validation.
+- Updated dependencies [f1f29bdd]
+- Updated dependencies [cbe4c7f2]
+  - @shopify/liquid-html-parser@2.12.1
+
+## 4.0.0
+
+### Minor Changes
+
+- c587ae08: Add an optional `remoteFileSize` dependency: the size of a remote file, such as a script on a CDN. AssetSizeCSS and AssetSizeJavaScript use it, and by default it makes the same HEAD request as before.
+
+### Patch Changes
+
+- 7cb4970d: Parse the Liquid inside HTML comments. Liquid renders it, and its tags can open, branch and close blocks, so `{% if a %}<!-- {% endif %} -->` no longer fails with an unclosed `if`.
+  - `HtmlComment` has `children` (text and Liquid) and `blockStartPosition`/`blockEndPosition` for its delimiters.
+  - A comment that crosses a Liquid block boundary is split there, and each part has an empty delimiter range on the split side.
+  - A comment that never closes ends at the end of the file, as in a browser.
+  - An end tag in a comment that closes no block is a parse error, as in Liquid.
+  - The `opaqueHtmlComments` option keeps comment bodies opaque.
+
+  **Behavior changes**
+  - Code that walks `children` now visits the Liquid and text inside HTML comments.
+  - `<!-- {% if a %} --><p>x</p><!-- {% endif %} -->` is one comment whose `if` holds `<p>x</p>` as text, not two comments around a `<p>` element.
+  - `<!-- {% endif %} -->` with no open `if` no longer parses. An unclosed `<!--` and `{% if a %}<!-- {% endif %} -->` now parse.
+  - Code that creates `HtmlComment` nodes must set `children`, `blockStartPosition` and `blockEndPosition`.
+
+  Pass `opaqueHtmlComments: true` to get the previous tree for these templates.
+
+  Checks now see the Liquid in HTML comments, and completions work inside them. Prettier prints an unclosed comment as written, and can move whitespace and line breaks inside a comment that holds a Liquid block or is split by one.
+
+- Updated dependencies [7cb4970d]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [c8099ba8]
+- Updated dependencies [320fa1fe]
+- Updated dependencies [5b634d93]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [a73b174f]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [5aec106f]
+- Updated dependencies [34dae62b]
+  - @shopify/liquid-html-parser@2.12.0
+
+## 3.31.0
+
+### Minor Changes
+
+- 286b04fb: Accept canonical app block paths in `{% block %}` tags.
+
+  The parser accepts `shopify://apps/<app>/blocks/<handle>/<uuid>` as a block type and keeps rejecting malformed app paths. `LiquidSyntaxError` reports arguments and content on app block paths, because app blocks render with the settings their app provides. `block.name` stays allowed.
+
+  App block paths do not produce local theme-file document links or dependencies in the theme graph.
+
+### Patch Changes
+
+- d9c843c3: Fix the line and character of an offense that ends at the end of a file. They were one character short, or on the previous line when the file ends with a newline.
+- af297bab: Parse `section` as a standalone tag. Removes the hybrid block form, whose forward scan for `{% endsection %}` made files with many `section` tags parse in quadratic time.
+- c81fc198: Fix the autofix for a filter chain that ends in several pipes (`{{ x | upcase | | }}`): LiquidHTMLSyntaxError now reports one trailing-pipe offense that removes them all, instead of two overlapping fixes that couldn't be applied together.
+- Updated dependencies [286b04fb]
+- Updated dependencies [84a458be]
+- Updated dependencies [c0ae8785]
+- Updated dependencies [af297bab]
+  - @shopify/liquid-html-parser@2.11.0
+
+## 3.30.1
+
+### Patch Changes
+
+- 83512552: Wait for nested block validation in `ValidBlockTarget` and referenced block validation in `ValidSettingsKey`. Neither was awaited, so their offenses could arrive after `check()` returned and be lost.
+- e0f63a00: Run all checks on a Liquid file in one walk of its AST, instead of one walk per check.
+
+  Each check still runs its methods in the order it did before, each one settled before the next, without waiting for other checks, and a check that throws still stops on that file only. On Dawn and Horizon, `check()` returns the same offenses 2–3× faster. Offenses from different checks may come back in a different order.
+
+- 4574b6ad: Stop `UndefinedObject` from reporting schema settings used as bare variables in theme blocks. A block file can now use `{{ heading }}` for a `heading` setting without repeating it as a LiquidDoc `@param`.
+
+## 3.30.0
+
+### Minor Changes
+
+- 0bbd0f8b: Guide theme blocks to the implicit `content` parameter.
+
+  Add the recommended `BlockContentUsage` error for `block.content` in `blocks/*.liquid`. Its message is "Use the implicit 'content' parameter directly instead of 'block.content'."
+
+  Add the recommended `ValidBlockContentSettingType` error for a theme block schema setting named `content` whose Liquid type is not `string`. This error replaces the `ValidBlockArgumentTypes` warning for the same schema declaration.
+
+  `UndefinedObject` accepts bare `content` in `blocks/*.liquid`.
+
+- 86058651: Validate block calls against the merged schema, LiquidDoc, and built-in content interface.
+
+  Schema settings define plain arguments, types, and merchant visibility without making arguments required. LiquidDoc controls requiredness for every parameter it declares, including schema-backed parameters and `content`. Schema-only parameters and built-in `content` without LiquidDoc are optional.
+
+  Theme Check reports incompatible types between schema, LiquidDoc, and built-in content declarations.
+
+  `LiquidSyntaxError` now rejects the unsupported experimental `block.settings.<id>` and `block.content` caller arguments, and every other dotted block argument except `block.name`. The obsolete `BlockArgumentSettingCollision` and `UnknownBlockSetting` checks are removed from check registration and generated configs.
+
+- 2a150cd2: Support string enums in LiquidDoc parameter types
+
+  `@param` accepts unions of string literals, such as `{'heading' | 'small'}`, and literal arguments to `render`, `content_for` and `block` are checked against them.
+
+- 9f1fa97b: Add the `ValidBlockTagPlacement` check
+
+  Reports uses of the `block` tag outside direct Liquid templates and layouts.
+
+### Patch Changes
+
+- 699780b7: Report unsupported dotted `block` arguments on the first offending argument instead of the entire `block` tag and its body.
+- 169ff04d: Tell authors to replace `block.settings.<id>:` with `<id>:` when calling a `block`.
+- Updated dependencies [9c04ccbc]
+  - @shopify/liquid-html-parser@2.10.2
+
+## 3.29.1
+
+### Patch Changes
+
+- 8bc5e038: Fix schema expressions to resolve assigned Liquid variables and recognize their usage.
+- 8bc5e038: Fix LiquidDoc parameter validation by reserving Liquid literal keywords.
+- 8bc5e038: Fix Liquid variable-name validation to allow a leading underscore.
+- 8bc5e038: Fix responsive LCP preload validation by allowing explicit image links with `fetchpriority="high"`.
+- Updated dependencies [74185263]
+  - @shopify/liquid-html-parser@2.10.1
+
 ## 3.29.0
 
 ### Minor Changes

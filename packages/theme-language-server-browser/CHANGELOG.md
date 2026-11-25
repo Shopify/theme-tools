@@ -1,5 +1,57 @@
 # @shopify/theme-language-server-browser
 
+## 3.0.2
+
+### Patch Changes
+
+- @shopify/theme-language-server-common@3.0.2
+
+## 3.0.1
+
+### Patch Changes
+
+- Updated dependencies [fe8a2f1f]
+  - @shopify/theme-language-server-common@3.0.1
+
+## 3.0.0
+
+### Patch Changes
+
+- Updated dependencies [7cb4970d]
+- Updated dependencies [803a88a5]
+- Updated dependencies [7cb4970d]
+  - @shopify/theme-language-server-common@3.0.0
+
+## 2.23.2
+
+### Patch Changes
+
+- Updated dependencies [286b04fb]
+- Updated dependencies [b9a862fb]
+  - @shopify/theme-language-server-common@2.23.2
+
+## 2.23.1
+
+### Patch Changes
+
+- @shopify/theme-language-server-common@2.23.1
+
+## 2.23.0
+
+### Patch Changes
+
+- Updated dependencies [0bbd0f8b]
+- Updated dependencies [1dd77e8e]
+- Updated dependencies [96af869d]
+  - @shopify/theme-language-server-common@2.23.0
+
+## 2.22.3
+
+### Patch Changes
+
+- Updated dependencies [4091c063]
+  - @shopify/theme-language-server-common@2.22.3
+
 ## 2.22.2
 
 ### Patch Changes

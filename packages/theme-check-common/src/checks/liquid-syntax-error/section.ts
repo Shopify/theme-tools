@@ -12,15 +12,6 @@ export function checkSectionTag(node: LiquidTag, context: Context): void {
     return;
   }
 
-  if (node.blockEndPosition) {
-    context.report({
-      message: "Unknown tag 'endsection'",
-      startIndex: node.blockEndPosition.start,
-      endIndex: node.blockEndPosition.end,
-    });
-    return;
-  }
-
   const markup = node.markup as SectionMarkup;
 
   /*

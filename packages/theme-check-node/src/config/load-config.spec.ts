@@ -190,7 +190,7 @@ describe('Unit: loadConfig', () => {
       'theme-check-global-extension',
       mockNodeModuleCheck,
     );
-    const config = await loadConfig(configPath, tempDir);
+    const config = await loadConfig(configPath, tempDir, { authorizeCustomChecks: () => true });
     await fs.rm(globalModulePath, { recursive: true });
     const nodeModuleCheck = config.checks.find((check) => check.meta.code === 'NodeModuleCheck');
     expect(nodeModuleCheck).to.exist;
@@ -199,7 +199,7 @@ describe('Unit: loadConfig', () => {
   it('loads a community-provided extension by automatic node_module discovery (unscoped)', async () => {
     const configPath = path.resolve(__dirname, 'fixtures/node-module-rec.yml');
     await createMockNodeModule(tempDir, 'theme-check-node-example', mockNodeModuleCheck);
-    const config = await loadConfig(configPath, tempDir);
+    const config = await loadConfig(configPath, tempDir, { authorizeCustomChecks: () => true });
     const nodeModuleCheck = config.checks.find((check) => check.meta.code === 'NodeModuleCheck');
     expect(nodeModuleCheck).to.exist;
   });
@@ -207,7 +207,7 @@ describe('Unit: loadConfig', () => {
   it('loads a community-provided extension by automatic node_module discovery (scoped)', async () => {
     const configPath = path.resolve(__dirname, 'fixtures/node-module-rec.yml');
     await createMockNodeModule(tempDir, '@acme/theme-check-node-example', mockNodeModuleCheck);
-    const config = await loadConfig(configPath, tempDir);
+    const config = await loadConfig(configPath, tempDir, { authorizeCustomChecks: () => true });
     const nodeModuleCheck = config.checks.find((check) => check.meta.code === 'NodeModuleCheck');
     expect(nodeModuleCheck).to.exist;
   });
@@ -223,7 +223,7 @@ NodeModuleCheck:
       `,
     );
     await createMockNodeModule(tempDir, '@acme/unconventional', mockNodeModuleCheck);
-    const config = await loadConfig(configPath, tempDir);
+    const config = await loadConfig(configPath, tempDir, { authorizeCustomChecks: () => true });
     const nodeModuleCheck = config.checks.find((check) => check.meta.code === 'NodeModuleCheck');
     expect(nodeModuleCheck).to.exist;
   });
@@ -239,7 +239,7 @@ NodeModuleCheck:
       `,
     );
     await fs.writeFile(path.join(tempDir, 'checks.js'), mockNodeModuleCheck);
-    const config = await loadConfig(configPath, tempDir);
+    const config = await loadConfig(configPath, tempDir, { authorizeCustomChecks: () => true });
     const nodeModuleCheck = config.checks.find((check) => check.meta.code === 'NodeModuleCheck');
     expect(nodeModuleCheck).to.exist;
   });

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { parseLiquidDoc } from './parser';
+import { LiquidDocParser, parseLiquidDoc } from './parser';
 import type { LiquidDocNode } from './parser';
+import { tokenizeLiquidDoc } from './tokenizer';
 import { NodeTypes } from '../types';
 import type {
   LiquidDocParamNode,
@@ -25,6 +26,24 @@ function parseDoc(body: string): LiquidDocNode[] {
   const source = prefix + body + suffix;
   const startOffset = prefix.length;
   return parseLiquidDoc(body, startOffset, source);
+}
+
+/**
+ * Helper: parses like `parseDoc` and counts how many times the parser reads a
+ * token from its token array.
+ */
+function parseDocCountingTokenReads(body: string): { nodes: LiquidDocNode[]; reads: number } {
+  const prefix = '{% doc %}';
+  const source = prefix + body + '{% enddoc %}';
+  let reads = 0;
+  const tokens = new Proxy(tokenizeLiquidDoc(body, prefix.length), {
+    get(target, key, receiver) {
+      if (typeof key === 'string' && /^\d+$/.test(key)) reads++;
+      return Reflect.get(target, key, receiver);
+    },
+  });
+  const nodes = new LiquidDocParser(tokens, source).parse();
+  return { nodes, reads };
 }
 
 function asParam(node: LiquidDocNode): LiquidDocParamNode {
@@ -103,6 +122,80 @@ describe('Unit: liquid-doc parser', () => {
       expect(param.paramName.value).toBe('count');
       expect(param.required).toBe(false);
     });
+
+    it.each([
+      "'heading' | 'small'",
+      '"heading"|"small"',
+      '\'Heading\' | "small"',
+      "'' | ' ' | 'two  spaces'",
+      "'a|b' | 'small'",
+      "'}' | '{' | '{}'",
+      "'a}b' | 'small'",
+      "'a} [variant] - b'",
+      "'a} [variant] Users'",
+      "'a} variant - Users'",
+      '"it\'s" | \'"quoted"\'',
+      String.raw`'backslash\' | 'small'`,
+      " 'heading' \t|\t 'small' ",
+    ])('preserves string enum type %s and its source positions', (paramType) => {
+      const nodes = parseDoc(`\n  @param {${paramType}} [variant] - Shared text style\n`);
+      expect(nodes).toHaveLength(1);
+      const param = asParam(nodes[0]);
+      expect(param.paramType!.value).toBe(paramType);
+      expect(param.paramName.value).toBe('variant');
+      expect(param.required).toBe(false);
+      expect(param.paramDescription!.value).toBe('Shared text style');
+      for (const text of [param.paramType!, param.paramName, param.paramDescription!]) {
+        expect(param.source.slice(text.position.start, text.position.end)).toBe(text.value);
+      }
+      expect(param.source[param.paramType!.position.start - 1]).toBe('{');
+      expect(param.source[param.paramType!.position.end]).toBe('}');
+    });
+
+    it('parses required enum parameters with multiline descriptions and CRLF', () => {
+      const nodes = parseDoc(
+        "\r\n@param {'heading' | 'small'} variant - Shared style\r\n  for text.\r\n@param {string} next\r\n",
+      );
+      expect(nodes).toHaveLength(2);
+      const param = asParam(nodes[0]);
+      expect(param.paramType!.value).toBe("'heading' | 'small'");
+      expect(param.paramName.value).toBe('variant');
+      expect(param.required).toBe(true);
+      expect(param.paramDescription!.value).toContain('for text.');
+      expect(asParam(nodes[1]).paramName.value).toBe('next');
+    });
+
+    it.each([
+      "'heading' |",
+      "| 'heading'",
+      "'heading' || 'small'",
+      "'heading' 'small'",
+      "'a}b' trailing",
+    ])('preserves malformed enum type %s for semantic validation', (paramType) => {
+      const description = "It's {the shared style}.";
+      const nodes = parseDoc(
+        `\n@param {${paramType}} [variant] - ${description}\n@param {number} next\n`,
+      );
+      expect(nodes).toHaveLength(2);
+      const param = asParam(nodes[0]);
+      expect(param.paramType!.value).toBe(paramType);
+      expect(param.paramName.value).toBe('variant');
+      expect(param.required).toBe(false);
+      expect(param.paramDescription!.value).toBe(description);
+      expect(asParam(nodes[1]).paramName.value).toBe('next');
+    });
+
+    it.each(["'heading", "'a}b'", "'a}b' | 'small'"])(
+      'keeps an unclosed type %s from consuming the next parameter',
+      (paramType) => {
+        const nodes = parseDoc(`\n@param {${paramType}\n@param {number} next\n`);
+        expect(nodes).toHaveLength(2);
+        const param = asParam(nodes[0]);
+        expect(param.paramType).toBeNull();
+        expect(param.paramName.value).toBe('');
+        expect(asParam(nodes[1]).paramName.value).toBe('next');
+      },
+    );
 
     it('parses param with description after dash', () => {
       const nodes = parseDoc('\n@param product - The product to display\n');
@@ -237,6 +330,15 @@ describe('Unit: liquid-doc parser', () => {
       // Content should start with \n because the annotation is on its own line
       expect(prompt.content.value[0]).toBe('\n');
     });
+
+    it('skips the blank line left by a non-breaking space after @prompt', () => {
+      const nodes = parseDoc('\n@prompt\u00a0\n\nBuild it\n');
+      expect(nodes.length).toBe(1);
+      const prompt = asPrompt(nodes[0]);
+      expect(prompt.content.value).toBe('\n\nBuild it\n');
+      // The range keeps the skipped NBSP line, as it keeps blank lines inside content, so start is 17.
+      expect(prompt.content.position.start).toBe(17);
+    });
   });
 
   describe('unsupported annotations', () => {
@@ -315,6 +417,47 @@ describe('Unit: liquid-doc parser', () => {
       expect(desc.isImplicit).toBe(true);
       expect(desc.content.value).toContain('Header text');
       expect(desc.content.value).toContain('Body paragraph');
+    });
+  });
+
+  describe('blank-line runs', () => {
+    const blankLines = 2000;
+
+    it('keeps a long blank run between text lines in one implicit description', () => {
+      const body = `\nFirst line${'\n'.repeat(blankLines)}Last line\n`;
+      const nodes = parseDoc(body);
+      expect(nodes.length).toBe(1);
+      const desc = asDescription(nodes[0]);
+      expect(desc.isImplicit).toBe(true);
+      expect(desc.content.value).toBe(`First line${'\n'.repeat(blankLines)}Last line\n`);
+      expect(desc.position.end).toBe('{% doc %}'.length + body.length);
+    });
+
+    it('keeps whitespace-only lines of a blank run as newlines', () => {
+      const nodes = parseDoc('\nFirst line\n  \n\t\n\nLast line');
+      expect(nodes.length).toBe(1);
+      const desc = asDescription(nodes[0]);
+      expect(desc.content.value).toBe('First line\n\n\n\nLast line');
+    });
+
+    it('reads tokens in proportion to the length of a blank run that ends in text', () => {
+      const textEnded = parseDocCountingTokenReads(
+        `\nFirst line${'\n'.repeat(blankLines)}Last line\n`,
+      );
+      const annotationEnded = parseDocCountingTokenReads(
+        `\nFirst line${'\n'.repeat(blankLines)}@prompt\n`,
+      );
+      expect(textEnded.reads).toBeLessThan(2 * annotationEnded.reads);
+    });
+
+    it('reads tokens in proportion to the length of a blank run in an @example', () => {
+      const textEnded = parseDocCountingTokenReads(
+        `\n@example First line${'\n'.repeat(blankLines)}Last line\n`,
+      );
+      const annotationEnded = parseDocCountingTokenReads(
+        `\n@example First line${'\n'.repeat(blankLines)}@prompt\n`,
+      );
+      expect(textEnded.reads).toBeLessThan(2 * annotationEnded.reads);
     });
   });
 

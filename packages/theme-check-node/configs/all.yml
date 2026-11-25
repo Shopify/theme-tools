@@ -28,9 +28,9 @@ AssetSizeJavaScript:
   enabled: true
   severity: 0
   thresholdInBytes: 10000
-BlockArgumentSettingCollision:
+BlockContentUsage:
   enabled: true
-  severity: 1
+  severity: 0
 BlockIdUsage:
   enabled: true
   severity: 1
@@ -197,9 +197,6 @@ UniqueSettingId:
 UniqueStaticBlockId:
   enabled: true
   severity: 0
-UnknownBlockSetting:
-  enabled: true
-  severity: 1
 UnknownFilter:
   enabled: true
   severity: 0
@@ -227,6 +224,12 @@ UnusedDocParam:
 ValidBlockArgumentTypes:
   enabled: true
   severity: 1
+ValidBlockContentSettingType:
+  enabled: true
+  severity: 0
+ValidBlockTagPlacement:
+  enabled: true
+  severity: 0
 ValidBlockTarget:
   enabled: true
   severity: 0

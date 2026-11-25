@@ -40,6 +40,15 @@ export function fsPath(uri: UriString | URI): string {
   return asUri(uri).fsPath;
 }
 
+/**
+ * The path that a file system reads at `uri`: decoded once, with `\` read as a separator as
+ * Windows does, and with `.` and `..` resolved.
+ */
+export function fileSystemPath(uri: UriString | URI): string {
+  const decodedPath = asUri(uri).path.replace(/\\/g, '/');
+  return Utils.joinPath(URI.file('/'), decodedPath).path;
+}
+
 function asUri(uri: UriString | URI): URI {
   return URI.isUri(uri) ? uri : URI.parse(uri);
 }

@@ -1,5 +1,69 @@
 # @shopify/theme-check-docs-updater
 
+## 4.0.2
+
+### Patch Changes
+
+- @shopify/theme-check-common@4.0.2
+
+## 4.0.1
+
+### Patch Changes
+
+- Updated dependencies [19c3b6ab]
+- Updated dependencies [0dcea3cd]
+  - @shopify/theme-check-common@4.0.1
+
+## 4.0.0
+
+### Patch Changes
+
+- Updated dependencies [7cb4970d]
+- Updated dependencies [c587ae08]
+  - @shopify/theme-check-common@4.0.0
+
+## 3.31.0
+
+### Patch Changes
+
+- fca4a62b: Update the docs cache as a whole. Each update downloads into a new folder and swaps it in, so a failed download keeps the old docs and is retried on the next run, and files removed upstream no longer linger.
+- Updated dependencies [286b04fb]
+- Updated dependencies [d9c843c3]
+- Updated dependencies [af297bab]
+- Updated dependencies [c81fc198]
+  - @shopify/theme-check-common@3.31.0
+
+## 3.30.1
+
+### Patch Changes
+
+- Updated dependencies [83512552]
+- Updated dependencies [e0f63a00]
+- Updated dependencies [4574b6ad]
+  - @shopify/theme-check-common@3.30.1
+
+## 3.30.0
+
+### Patch Changes
+
+- Updated dependencies [699780b7]
+- Updated dependencies [0bbd0f8b]
+- Updated dependencies [86058651]
+- Updated dependencies [169ff04d]
+- Updated dependencies [2a150cd2]
+- Updated dependencies [9f1fa97b]
+  - @shopify/theme-check-common@3.30.0
+
+## 3.29.1
+
+### Patch Changes
+
+- Updated dependencies [8bc5e038]
+- Updated dependencies [8bc5e038]
+- Updated dependencies [8bc5e038]
+- Updated dependencies [8bc5e038]
+  - @shopify/theme-check-common@3.29.1
+
 ## 3.29.0
 
 ### Patch Changes
