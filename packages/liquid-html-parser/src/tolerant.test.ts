@@ -189,6 +189,19 @@ describe('tolerant mode resynchronizes after an error (panic mode)', () => {
     expect(ast.children[0].position).toEqual({ start: 0, end: 12 });
     expect(ast.children[2].position).toEqual({ start: 22, end: 33 });
   });
+
+  it('resumes an interrupted HTML comment at its close, so the markup after it is HTML', () => {
+    const source = '<!-- {% endfor %} --><p>a</p>';
+    const ast = toTolerantLiquidHtmlAST(source);
+
+    expect(ast.children.map((child) => child.type)).toEqual([
+      NodeTypes.HtmlComment,
+      NodeTypes.LiquidErrorNode,
+      NodeTypes.HtmlComment,
+      NodeTypes.HtmlElement,
+    ]);
+    expect(source.slice(ast.children[2].position.start, ast.children[2].position.end)).toBe('-->');
+  });
 });
 
 describe('findErrorNodeAtOffset', () => {

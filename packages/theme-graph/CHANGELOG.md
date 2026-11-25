@@ -1,5 +1,70 @@
 # shopify/theme-graph
 
+## 0.3.9
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/liquid-html-parser
+  - @shopify/theme-check-common
+- Updated dependencies [61cae020]
+  - @shopify/liquid-html-parser@2.12.2
+  - @shopify/theme-check-common@4.0.2
+
+## 0.3.8
+
+### Patch Changes
+
+- Patch bump because it depends on:
+  - @shopify/liquid-html-parser
+  - @shopify/theme-check-common
+- Updated dependencies [19c3b6ab]
+- Updated dependencies [f1f29bdd]
+- Updated dependencies [cbe4c7f2]
+- Updated dependencies [0dcea3cd]
+  - @shopify/theme-check-common@4.0.1
+  - @shopify/liquid-html-parser@2.12.1
+
+## 0.3.7
+
+### Patch Changes
+
+- Updated dependencies [7cb4970d]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [c8099ba8]
+- Updated dependencies [320fa1fe]
+- Updated dependencies [5b634d93]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [a73b174f]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [c587ae08]
+- Updated dependencies [7cb4970d]
+- Updated dependencies [5aec106f]
+- Updated dependencies [34dae62b]
+  - @shopify/liquid-html-parser@2.12.0
+  - @shopify/theme-check-common@4.0.0
+
+## 0.3.6
+
+### Patch Changes
+
+- 286b04fb: Accept canonical app block paths in `{% block %}` tags.
+
+  The parser accepts `shopify://apps/<app>/blocks/<handle>/<uuid>` as a block type and keeps rejecting malformed app paths. `LiquidSyntaxError` reports arguments and content on app block paths, because app blocks render with the settings their app provides. `block.name` stays allowed.
+
+  App block paths do not produce local theme-file document links or dependencies in the theme graph.
+
+- 02380e2f: Build the theme graph for a theme without an `assets` folder. `getWebComponentMap` used to reject, so the language server never had a graph for that theme, even after the folder was created.
+- Updated dependencies [286b04fb]
+- Updated dependencies [84a458be]
+- Updated dependencies [c0ae8785]
+- Updated dependencies [d9c843c3]
+- Updated dependencies [af297bab]
+- Updated dependencies [c81fc198]
+  - @shopify/liquid-html-parser@2.11.0
+  - @shopify/theme-check-common@3.31.0
+
 ## 0.3.5
 
 ### Patch Changes
